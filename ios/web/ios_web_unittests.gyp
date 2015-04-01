@@ -27,6 +27,8 @@
         'navigation/navigation_item_impl_unittest.mm',
         'navigation/nscoder_util_unittest.mm',
         'net/cert_policy_unittest.cc',
+        'net/clients/crw_js_injection_network_client_unittest.mm',
+        'net/clients/crw_passkit_network_client_unittest.mm',
         'net/request_group_util_unittest.mm',
         'net/request_tracker_impl_unittest.mm',
         'net/web_http_protocol_handler_delegate_unittest.mm',
@@ -37,6 +39,20 @@
         'url_util_unittest.cc',
         'weak_nsobject_counter_unittest.mm',
         'web_state/ui/crw_static_file_web_view_unittest.mm',
+      ],
+      'actions': [
+        {
+          'action_name': 'copy_test_data',
+          'variables': {
+            'test_data_files': [
+              'test/data/chrome.html',
+              'test/data/testbadpass.pkpass',
+              'test/data/testpass.pkpass',
+            ],
+            'test_data_prefix': 'ios/web',
+          },
+          'includes': [ '../../build/copy_test_data_ios.gypi' ],
+        },
       ],
     },
   ],
