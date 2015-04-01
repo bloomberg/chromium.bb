@@ -75,10 +75,6 @@ FileType.types = [
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'RW2',
     pattern: /\.rw2?$/i, icon: 'image'
   },
-  {
-    type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'X3F',
-    pattern: /\.x3f?$/i, icon: 'image'
-  },
 
   // Video
   {
