@@ -87,13 +87,18 @@ def attribute_context(interface, attribute):
         attribute.name == 'onerror'):
         includes.add('bindings/core/v8/V8ErrorHandler.h')
 
+    cached_attribute_validation_method = extended_attributes.get('CachedAttribute')
+    keep_alive_for_gc = is_keep_alive_for_gc(interface, attribute)
+    if cached_attribute_validation_method or keep_alive_for_gc:
+        includes.add('bindings/core/v8/V8HiddenValue.h')
+
     context = {
         'access_control_list': access_control_list(interface, attribute),
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
         'activity_logging_world_check': v8_utilities.activity_logging_world_check(attribute),  # [ActivityLogging]
         'argument_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True),
-        'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
+        'cached_attribute_validation_method': cached_attribute_validation_method,
         'conditional_string': v8_utilities.conditional_string(attribute),
         'constructor_type': idl_type.constructor_type_name
                             if is_constructor_attribute(attribute) else None,
@@ -120,7 +125,7 @@ def attribute_context(interface, attribute):
         'is_implemented_in_private_script': is_implemented_in_private_script,
         'is_initialized_by_event_constructor':
             'InitializedByEventConstructor' in extended_attributes,
-        'is_keep_alive_for_gc': is_keep_alive_for_gc(interface, attribute),
+        'is_keep_alive_for_gc': keep_alive_for_gc,
         'is_nullable': idl_type.is_nullable,
         'is_explicit_nullable': idl_type.is_explicit_nullable,
         'is_partial_interface_member':
