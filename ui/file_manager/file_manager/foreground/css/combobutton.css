@@ -33,6 +33,7 @@ html[dir='rtl'] .dialog-header .combobutton > .action {
 .dialog-header .combobutton > .trigger {
   -webkit-margin-end: -8px;
   -webkit-margin-start: 2px;
+  margin-top: -1px;
   width: 22px;
 }
 
@@ -40,7 +41,7 @@ html[dir='rtl'] .dialog-header .combobutton > .action {
 .dialog-header .combobutton > .trigger::before {
   content: '';
   display: block;
-  height: 31px;
+  height: 40px;
   position: absolute;
   top: -2px;
   width: 30px;
@@ -48,10 +49,6 @@ html[dir='rtl'] .dialog-header .combobutton > .action {
 
 .dialog-header .combobutton:not([multiple]) > .trigger {
   display: none;
-}
-
-.dialog-header .combobutton > div > span.disclosureindicator {
-  -webkit-transform: rotate(90deg);
 }
 
 .dialog-header .combobutton[hidden] {

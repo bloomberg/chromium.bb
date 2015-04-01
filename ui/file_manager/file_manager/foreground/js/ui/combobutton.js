@@ -73,8 +73,8 @@ cr.define('cr.ui', function() {
       this.actionNode_.classList.add('action');
       this.appendChild(this.actionNode_);
 
-      var triggerIcon = this.ownerDocument.createElement('span');
-      triggerIcon.className = 'disclosureindicator';
+      var triggerIcon = this.ownerDocument.createElement('core-icon');
+      triggerIcon.setAttribute('icon', 'arrow-drop-down');
       this.trigger_ = this.ownerDocument.createElement('div');
       this.trigger_.classList.add('trigger');
       this.trigger_.appendChild(triggerIcon);

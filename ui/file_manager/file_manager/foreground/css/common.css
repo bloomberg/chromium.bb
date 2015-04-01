@@ -115,17 +115,6 @@ input.common[type='checkbox']::after {
   opacity: 0.7;
 }
 
-span.disclosureindicator {
-  background-image: -webkit-image-set(
-    url(../images/common/disclosure_arrow_dk_grey.png) 1x,
-    url(../images/common/2x/disclosure_arrow_dk_grey.png) 2x);
-  background-position: center;
-  background-repeat: no-repeat;
-  display: inline-block;
-  height: 7px;
-  width: 5px;
-}
-
 /* "chrome-menu" class overrides some standard menu.css styles, to make custom
    menus in FileBrowser look like native ChromeOS menus. */
 
