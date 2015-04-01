@@ -19,6 +19,7 @@
 #include "chrome/browser/net/cert_logger.pb.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/load_flags.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/base/test_data_directory.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -80,9 +81,9 @@ void EnableUrlRequestMocks(bool enable) {
 // Check that data uploaded in the request matches the test data (an SSL
 // report for one of the given hostnames, with the info returned by
 // |GetTestSSLInfo()|). The hostname sent in the report will be erased
-// from |expected_hostnames|.
+// from |expect_hostnames|.
 void CheckUploadData(URLRequest* request,
-                     std::set<std::string>* expected_hostnames) {
+                     std::set<std::string>* expect_hostnames) {
   const net::UploadDataStream* upload = request->get_upload();
   ASSERT_TRUE(upload);
   ASSERT_TRUE(upload->GetElementReaders());
@@ -96,8 +97,8 @@ void CheckUploadData(URLRequest* request,
 
   uploaded_request.ParseFromString(upload_data);
 
-  EXPECT_EQ(1u, expected_hostnames->count(uploaded_request.hostname()));
-  expected_hostnames->erase(uploaded_request.hostname());
+  EXPECT_EQ(1u, expect_hostnames->count(uploaded_request.hostname()));
+  expect_hostnames->erase(uploaded_request.hostname());
 
   EXPECT_EQ(GetPEMEncodedChain(), uploaded_request.cert_chain());
   EXPECT_EQ(1, uploaded_request.pin().size());
@@ -114,32 +115,13 @@ class TestCertificateErrorReporterNetworkDelegate : public NetworkDelegateImpl {
   TestCertificateErrorReporterNetworkDelegate()
       : url_request_destroyed_callback_(base::Bind(&base::DoNothing)),
         all_url_requests_destroyed_callback_(base::Bind(&base::DoNothing)),
-        num_requests_(0) {}
+        num_requests_(0),
+        expect_cookies_(false) {}
 
   ~TestCertificateErrorReporterNetworkDelegate() override {}
 
-  int OnBeforeURLRequest(URLRequest* request,
-                         const CompletionCallback& callback,
-                         GURL* new_url) override {
-    num_requests_++;
-    EXPECT_EQ(expected_url_, request->url());
-    EXPECT_EQ("POST", request->method());
-
-    std::string uploaded_request_hostname;
-    CheckUploadData(request, &expected_hostnames_);
-    expected_hostnames_.erase(uploaded_request_hostname);
-    return net::OK;
-  }
-
-  void OnURLRequestDestroyed(URLRequest* request) override {
-    url_request_destroyed_callback_.Run();
-
-    if (expected_hostnames_.empty())
-      all_url_requests_destroyed_callback_.Run();
-  }
-
   void ExpectHostname(const std::string& hostname) {
-    expected_hostnames_.insert(hostname);
+    expect_hostnames_.insert(hostname);
   }
 
   void set_all_url_requests_destroyed_callback(
@@ -152,18 +134,52 @@ class TestCertificateErrorReporterNetworkDelegate : public NetworkDelegateImpl {
     url_request_destroyed_callback_ = url_request_destroyed_callback;
   }
 
-  void set_expected_url(const GURL& expected_url) {
-    expected_url_ = expected_url;
-  }
+  void set_expect_url(const GURL& expect_url) { expect_url_ = expect_url; }
 
   int num_requests() const { return num_requests_; }
+
+  // Sets whether cookies are expected to be sent on requests. If set to
+  // true, then |OnHeadersReceived| will expect a cookie
+  // "cookie_name=cookie_value".
+  void set_expect_cookies(bool expect_cookies) {
+    expect_cookies_ = expect_cookies;
+  }
+
+  // NetworkDelegateImpl implementation
+  int OnBeforeURLRequest(URLRequest* request,
+                         const CompletionCallback& callback,
+                         GURL* new_url) override {
+    num_requests_++;
+    EXPECT_EQ(expect_url_, request->url());
+    EXPECT_EQ("POST", request->method());
+
+    if (expect_cookies_) {
+      EXPECT_FALSE(request->load_flags() & net::LOAD_DO_NOT_SEND_COOKIES);
+      EXPECT_FALSE(request->load_flags() & net::LOAD_DO_NOT_SAVE_COOKIES);
+    } else {
+      EXPECT_TRUE(request->load_flags() & net::LOAD_DO_NOT_SEND_COOKIES);
+      EXPECT_TRUE(request->load_flags() & net::LOAD_DO_NOT_SAVE_COOKIES);
+    }
+
+    std::string uploaded_request_hostname;
+    CheckUploadData(request, &expect_hostnames_);
+    expect_hostnames_.erase(uploaded_request_hostname);
+    return net::OK;
+  }
+
+  void OnURLRequestDestroyed(URLRequest* request) override {
+    url_request_destroyed_callback_.Run();
+    if (expect_hostnames_.empty())
+      all_url_requests_destroyed_callback_.Run();
+  }
 
  private:
   base::Closure url_request_destroyed_callback_;
   base::Closure all_url_requests_destroyed_callback_;
   int num_requests_;
-  GURL expected_url_;
-  std::set<std::string> expected_hostnames_;
+  GURL expect_url_;
+  std::set<std::string> expect_hostnames_;
+  bool expect_cookies_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCertificateErrorReporterNetworkDelegate);
 };
@@ -190,24 +206,21 @@ class CertificateErrorReporterTest : public ::testing::Test {
   TestURLRequestContext context_;
 };
 
-void SendReport(TestCertificateErrorReporterNetworkDelegate* network_delegate,
-                TestURLRequestContext* context,
+void SendReport(CertificateErrorReporter* reporter,
+                TestCertificateErrorReporterNetworkDelegate* network_delegate,
                 const std::string& report_hostname,
                 const GURL& url,
                 int request_sequence_number) {
   base::RunLoop run_loop;
   network_delegate->set_url_request_destroyed_callback(run_loop.QuitClosure());
 
-  network_delegate->set_expected_url(url);
+  network_delegate->set_expect_url(url);
   network_delegate->ExpectHostname(report_hostname);
-
-  CertificateErrorReporter reporter(
-      context, url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
 
   EXPECT_EQ(request_sequence_number, network_delegate->num_requests());
 
-  reporter.SendReport(CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION,
-                      report_hostname, GetTestSSLInfo());
+  reporter->SendReport(CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION,
+                       report_hostname, GetTestSSLInfo());
   run_loop.Run();
 
   EXPECT_EQ(request_sequence_number + 1, network_delegate->num_requests());
@@ -217,13 +230,17 @@ void SendReport(TestCertificateErrorReporterNetworkDelegate* network_delegate,
 // for the endpoint and sends the expected data.
 TEST_F(CertificateErrorReporterTest, SendReportSendsRequest) {
   GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  SendReport(network_delegate(), context(), kHostname, url, 0);
+  CertificateErrorReporter reporter(
+      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
+  SendReport(&reporter, network_delegate(), kHostname, url, 0);
 }
 
 TEST_F(CertificateErrorReporterTest, SendMultipleReportsSequentially) {
   GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  SendReport(network_delegate(), context(), kHostname, url, 0);
-  SendReport(network_delegate(), context(), kSecondRequestHostname, url, 1);
+  CertificateErrorReporter reporter(
+      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
+  SendReport(&reporter, network_delegate(), kHostname, url, 0);
+  SendReport(&reporter, network_delegate(), kSecondRequestHostname, url, 1);
 }
 
 TEST_F(CertificateErrorReporterTest, SendMultipleReportsSimultaneously) {
@@ -232,7 +249,7 @@ TEST_F(CertificateErrorReporterTest, SendMultipleReportsSimultaneously) {
       run_loop.QuitClosure());
 
   GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  network_delegate()->set_expected_url(url);
+  network_delegate()->set_expect_url(url);
   network_delegate()->ExpectHostname(kHostname);
   network_delegate()->ExpectHostname(kSecondRequestHostname);
 
@@ -261,7 +278,7 @@ TEST_F(CertificateErrorReporterTest, PendingRequestGetsDeleted) {
   GURL url = net::URLRequestMockHTTPJob::GetMockUrlWithFailure(
       base::FilePath(FILE_PATH_LITERAL("empty.html")),
       net::URLRequestMockHTTPJob::START, net::ERR_IO_PENDING);
-  network_delegate()->set_expected_url(url);
+  network_delegate()->set_expect_url(url);
   network_delegate()->ExpectHostname(kHostname);
 
   EXPECT_EQ(0, network_delegate()->num_requests());
@@ -280,7 +297,30 @@ TEST_F(CertificateErrorReporterTest, PendingRequestGetsDeleted) {
 // Test that a request that returns an error gets cleaned up.
 TEST_F(CertificateErrorReporterTest, ErroredRequestGetsDeleted) {
   GURL url = net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_FAILED);
-  SendReport(network_delegate(), context(), kHostname, url, 0);
+  CertificateErrorReporter reporter(
+      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
+  SendReport(&reporter, network_delegate(), kHostname, url, 0);
+}
+
+// Test that cookies are sent or not sent according to the error
+// reporter's cookies preference.
+
+TEST_F(CertificateErrorReporterTest, SendCookiesPreference) {
+  GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
+  CertificateErrorReporter reporter(context(), url,
+                                    CertificateErrorReporter::SEND_COOKIES);
+
+  network_delegate()->set_expect_cookies(true);
+  SendReport(&reporter, network_delegate(), kHostname, url, 0);
+}
+
+TEST_F(CertificateErrorReporterTest, DoNotSendCookiesPreference) {
+  GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
+  CertificateErrorReporter reporter(
+      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
+
+  network_delegate()->set_expect_cookies(false);
+  SendReport(&reporter, network_delegate(), kHostname, url, 0);
 }
 
 }  // namespace
