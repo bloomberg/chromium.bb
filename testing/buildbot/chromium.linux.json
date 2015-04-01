@@ -18,6 +18,9 @@
   "Linux Clang (dbg)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "accessibility_unittests"
       },
       {

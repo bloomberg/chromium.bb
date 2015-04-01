@@ -2,6 +2,9 @@
   "Linux ChromeOS MSan Tests": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "accessibility_unittests"
       },
       {
@@ -161,6 +164,9 @@
   "Linux MSan Tests": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "accessibility_unittests"
       },
       {
@@ -328,6 +334,9 @@
     },
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "accessibility_unittests"
       },
       {

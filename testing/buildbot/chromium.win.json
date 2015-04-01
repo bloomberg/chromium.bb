@@ -2,6 +2,9 @@
   "Vista Tests (1)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "accessibility_unittests"
       },
       {
@@ -222,6 +225,9 @@
   "Win 7 Tests x64 (1)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "accessibility_unittests"
       },
       {
@@ -470,6 +476,9 @@
   "Win7 Tests (1)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "accessibility_unittests"
       },
       {
@@ -718,6 +727,9 @@
   "Win7 Tests (dbg)(1)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "accessibility_unittests"
       },
       {
@@ -968,6 +980,9 @@
   "XP Tests (1)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "accessibility_unittests"
       },
       {
