@@ -124,15 +124,27 @@ std::string Value::ToString(bool quote_string) const {
       return base::Int64ToString(int_value_);
     case STRING:
       if (quote_string) {
-        std::string escaped = string_value_;
-        // First escape all special uses of a backslash.
-        ReplaceSubstringsAfterOffset(&escaped, 0, "\\$", "\\\\$");
-        ReplaceSubstringsAfterOffset(&escaped, 0, "\\\"", "\\\\\"");
-
-        // Now escape special chars.
-        ReplaceSubstringsAfterOffset(&escaped, 0, "$", "\\$");
-        ReplaceSubstringsAfterOffset(&escaped, 0, "\"", "\\\"");
-        return "\"" + escaped + "\"";
+        std::string result = "\"";
+        bool hanging_backslash = false;
+        for (char ch : string_value_) {
+          // If the last character was a literal backslash and the next
+          // character could form a valid escape sequence, we need to insert
+          // an extra backslash to prevent that.
+          if (hanging_backslash && (ch == '$' || ch == '"' || ch == '\\'))
+            result += '\\';
+          // If the next character is a dollar sign or double quote, it needs
+          // to be escaped; otherwise it can be printed as is.
+          if (ch == '$' || ch == '"')
+            result += '\\';
+          result += ch;
+          hanging_backslash = (ch == '\\');
+        }
+        // Again, we need to prevent the closing double quotes from becoming
+        // an escape sequence.
+        if (hanging_backslash)
+          result += '\\';
+        result += '"';
+        return result;
       }
       return string_value_;
     case LIST: {
