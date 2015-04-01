@@ -27,6 +27,7 @@ CertificateErrorReporter::CertificateErrorReporter(
     : request_context_(request_context),
       upload_url_(upload_url),
       cookies_preference_(cookies_preference) {
+  DCHECK(!upload_url.is_empty());
 }
 
 CertificateErrorReporter::~CertificateErrorReporter() {
@@ -36,7 +37,6 @@ CertificateErrorReporter::~CertificateErrorReporter() {
 void CertificateErrorReporter::SendReport(ReportType type,
                                           const std::string& hostname,
                                           const net::SSLInfo& ssl_info) {
-  DCHECK(!upload_url_.is_empty());
   CertLoggerRequest request;
   std::string out;
 
@@ -47,10 +47,9 @@ void CertificateErrorReporter::SendReport(ReportType type,
       SendCertLoggerRequest(request);
       break;
     case REPORT_TYPE_EXTENDED_REPORTING:
-      // TODO(estark): Double-check that the user is opted in.
-      // TODO(estark): Temporarily, since this is no upload endpoint, just
-      // log the information.
-      DVLOG(1) << "Would send certificate report for " << hostname;
+      // TODO(estark): Encrypt the report if not sending over HTTPS
+      DCHECK(upload_url_.SchemeIsSecure());
+      SendCertLoggerRequest(request);
       break;
     default:
       NOTREACHED();

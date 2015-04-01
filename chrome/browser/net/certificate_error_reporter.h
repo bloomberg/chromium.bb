@@ -53,6 +53,11 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
   // Construct, serialize, and send a certificate report to the report
   // collection server containing the |ssl_info| associated with a
   // connection to |hostname|.
+  //
+  // SendReport actually sends the report over the network; callers are
+  // responsible for enforcing any preconditions (such as obtaining user
+  // opt-in, only sending reports for certain hostnames, checking for
+  // incognito mode, etc.).
   virtual void SendReport(ReportType type,
                           const std::string& hostname,
                           const net::SSLInfo& ssl_info);

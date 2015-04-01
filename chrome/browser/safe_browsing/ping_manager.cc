@@ -25,8 +25,8 @@ using content::BrowserThread;
 
 namespace {
 // URL to upload invalid certificate chain reports
-// TODO(estark): Fill this in with the real URL when live.
-const char kExtendedReportingUploadUrl[] = "";
+const char kExtendedReportingUploadUrl[] =
+    "https://sb-ssl.google.com/safebrowsing/clientreport/chrome-certs";
 }  // namespace
 
 // SafeBrowsingPingManager implementation ----------------------------------

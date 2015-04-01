@@ -210,7 +210,8 @@ void SendReport(CertificateErrorReporter* reporter,
                 TestCertificateErrorReporterNetworkDelegate* network_delegate,
                 const std::string& report_hostname,
                 const GURL& url,
-                int request_sequence_number) {
+                int request_sequence_number,
+                CertificateErrorReporter::ReportType type) {
   base::RunLoop run_loop;
   network_delegate->set_url_request_destroyed_callback(run_loop.QuitClosure());
 
@@ -219,8 +220,7 @@ void SendReport(CertificateErrorReporter* reporter,
 
   EXPECT_EQ(request_sequence_number, network_delegate->num_requests());
 
-  reporter->SendReport(CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION,
-                       report_hostname, GetTestSSLInfo());
+  reporter->SendReport(type, report_hostname, GetTestSSLInfo());
   run_loop.Run();
 
   EXPECT_EQ(request_sequence_number + 1, network_delegate->num_requests());
@@ -228,19 +228,30 @@ void SendReport(CertificateErrorReporter* reporter,
 
 // Test that CertificateErrorReporter::SendReport creates a URLRequest
 // for the endpoint and sends the expected data.
-TEST_F(CertificateErrorReporterTest, SendReportSendsRequest) {
+TEST_F(CertificateErrorReporterTest, PinningViolationSendReportSendsRequest) {
   GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
   CertificateErrorReporter reporter(
       context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
-  SendReport(&reporter, network_delegate(), kHostname, url, 0);
+  SendReport(&reporter, network_delegate(), kHostname, url, 0,
+             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
+}
+
+TEST_F(CertificateErrorReporterTest, ExtendedReportingSendReportSendsRequest) {
+  GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
+  CertificateErrorReporter reporter(
+      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
+  SendReport(&reporter, network_delegate(), kHostname, url, 0,
+             CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING);
 }
 
 TEST_F(CertificateErrorReporterTest, SendMultipleReportsSequentially) {
   GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
   CertificateErrorReporter reporter(
       context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
-  SendReport(&reporter, network_delegate(), kHostname, url, 0);
-  SendReport(&reporter, network_delegate(), kSecondRequestHostname, url, 1);
+  SendReport(&reporter, network_delegate(), kHostname, url, 0,
+             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
+  SendReport(&reporter, network_delegate(), kSecondRequestHostname, url, 1,
+             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
 }
 
 TEST_F(CertificateErrorReporterTest, SendMultipleReportsSimultaneously) {
@@ -299,7 +310,8 @@ TEST_F(CertificateErrorReporterTest, ErroredRequestGetsDeleted) {
   GURL url = net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_FAILED);
   CertificateErrorReporter reporter(
       context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
-  SendReport(&reporter, network_delegate(), kHostname, url, 0);
+  SendReport(&reporter, network_delegate(), kHostname, url, 0,
+             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
 }
 
 // Test that cookies are sent or not sent according to the error
@@ -311,7 +323,8 @@ TEST_F(CertificateErrorReporterTest, SendCookiesPreference) {
                                     CertificateErrorReporter::SEND_COOKIES);
 
   network_delegate()->set_expect_cookies(true);
-  SendReport(&reporter, network_delegate(), kHostname, url, 0);
+  SendReport(&reporter, network_delegate(), kHostname, url, 0,
+             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
 }
 
 TEST_F(CertificateErrorReporterTest, DoNotSendCookiesPreference) {
@@ -320,7 +333,8 @@ TEST_F(CertificateErrorReporterTest, DoNotSendCookiesPreference) {
       context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
 
   network_delegate()->set_expect_cookies(false);
-  SendReport(&reporter, network_delegate(), kHostname, url, 0);
+  SendReport(&reporter, network_delegate(), kHostname, url, 0,
+             CertificateErrorReporter::REPORT_TYPE_PINNING_VIOLATION);
 }
 
 }  // namespace
