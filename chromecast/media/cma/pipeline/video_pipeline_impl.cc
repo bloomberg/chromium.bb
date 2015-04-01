@@ -23,13 +23,12 @@ VideoPipelineImpl::VideoPipelineImpl(VideoPipelineDevice* video_device)
     : video_device_(video_device),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
-  av_pipeline_impl_ = new AvPipelineImpl(
+  av_pipeline_impl_.reset(new AvPipelineImpl(
       video_device_,
-      base::Bind(&VideoPipelineImpl::OnUpdateConfig, base::Unretained(this)));
+      base::Bind(&VideoPipelineImpl::OnUpdateConfig, base::Unretained(this))));
 }
 
 VideoPipelineImpl::~VideoPipelineImpl() {
-  av_pipeline_impl_->Finalize();
 }
 
 void VideoPipelineImpl::SetCodedFrameProvider(

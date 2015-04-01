@@ -19,6 +19,7 @@
 namespace chromecast {
 namespace media {
 class AudioPipelineImpl;
+class BrowserCdmCast;
 class BufferingController;
 class MediaClockDevice;
 class MediaPipelineDevice;
@@ -55,7 +56,7 @@ class MediaPipelineImpl : public MediaPipeline {
   AudioPipelineImpl* GetAudioPipelineImpl() const;
   VideoPipelineImpl* GetVideoPipelineImpl() const;
 
-  void SetCdm(::media::BrowserCdm* cdm);
+  void SetCdm(BrowserCdmCast* cdm);
 
  private:
   void StateTransition(const ::media::PipelineStatusCB& status_cb,

@@ -12,6 +12,7 @@
 #include "chromecast/browser/media/cma_message_loop.h"
 #include "chromecast/browser/media/media_pipeline_host.h"
 #include "chromecast/common/media/cma_messages.h"
+#include "chromecast/media/cdm/browser_cdm_cast.h"
 #include "chromecast/media/cma/backend/video_plane.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
@@ -190,7 +191,10 @@ void CmaMessageFilterHost::SetCdmOnUiThread(
                << cdm_id << ")";
     return;
   }
-  FORWARD_CALL(media_pipeline, SetCdm, cdm);
+
+  BrowserCdmCast* browser_cdm_cast =
+      static_cast<BrowserCdmCastUi*>(cdm)->browser_cdm_cast();
+  FORWARD_CALL(media_pipeline, SetCdm, browser_cdm_cast);
 }
 
 void CmaMessageFilterHost::CreateAvPipe(

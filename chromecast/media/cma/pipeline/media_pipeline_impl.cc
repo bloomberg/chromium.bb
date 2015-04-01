@@ -112,11 +112,11 @@ void MediaPipelineImpl::SetCdm(int cdm_id) {
   // One possibility would be a GetCdmByIdCB that's passed in.
 }
 
-void MediaPipelineImpl::SetCdm(::media::BrowserCdm* media_keys) {
+void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  audio_pipeline_->SetCdm(static_cast<BrowserCdmCast*>(media_keys));
-  video_pipeline_->SetCdm(static_cast<BrowserCdmCast*>(media_keys));
+  audio_pipeline_->SetCdm(cdm);
+  video_pipeline_->SetCdm(cdm);
 }
 
 AudioPipeline* MediaPipelineImpl::GetAudioPipeline() const {

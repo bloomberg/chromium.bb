@@ -22,14 +22,13 @@ const size_t kMaxAudioFrameSize = 32 * 1024;
 AudioPipelineImpl::AudioPipelineImpl(AudioPipelineDevice* audio_device)
     : audio_device_(audio_device),
       weak_factory_(this) {
-  av_pipeline_impl_ = new AvPipelineImpl(
+  av_pipeline_impl_.reset(new AvPipelineImpl(
       audio_device_,
-      base::Bind(&AudioPipelineImpl::OnUpdateConfig, base::Unretained(this)));
+      base::Bind(&AudioPipelineImpl::OnUpdateConfig, base::Unretained(this))));
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 AudioPipelineImpl::~AudioPipelineImpl() {
-  av_pipeline_impl_->Finalize();
 }
 
 void AudioPipelineImpl::SetCodedFrameProvider(

@@ -53,6 +53,11 @@ AvPipelineImpl::AvPipelineImpl(
 }
 
 AvPipelineImpl::~AvPipelineImpl() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  media_component_device_->SetClient(MediaComponentDevice::Client());
+
+  if (media_keys_ && media_keys_callback_id_ != kNoCallbackId)
+    media_keys_->UnregisterPlayer(media_keys_callback_id_);
 }
 
 void AvPipelineImpl::TransitionToState(State state) {
@@ -93,20 +98,6 @@ bool AvPipelineImpl::Initialize() {
     return false;
 
   return true;
-}
-
-void AvPipelineImpl::Finalize() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  media_component_device_->SetClient(MediaComponentDevice::Client());
-
-  enable_feeding_ = false;
-  media_component_device_ = NULL;
-
-  {
-    base::AutoLock lock(media_keys_lock_);
-    if (media_keys_ && media_keys_callback_id_ != kNoCallbackId)
-      media_keys_->UnregisterPlayer(media_keys_callback_id_);
-  }
 }
 
 bool AvPipelineImpl::StartPlayingFrom(
@@ -190,23 +181,13 @@ void AvPipelineImpl::SetCdm(BrowserCdmCast* media_keys) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(media_keys);
 
-  {
-    base::AutoLock lock(media_keys_lock_);
-    if (media_keys_ && media_keys_callback_id_ != kNoCallbackId)
-      media_keys_->UnregisterPlayer(media_keys_callback_id_);
+  if (media_keys_ && media_keys_callback_id_ != kNoCallbackId)
+    media_keys_->UnregisterPlayer(media_keys_callback_id_);
 
-    media_keys_ = media_keys;
-    media_keys_callback_id_ = media_keys_->RegisterPlayer(
-        ::media::BindToCurrentLoop(
-            base::Bind(&AvPipelineImpl::OnCdmStateChanged, weak_this_)),
-        // Note: this callback gets invoked in ~BrowserCdmCast. Posting
-        // OnCdmDestroyed to the media thread results in a race condition
-        // with media_keys_ accesses. This callback must run synchronously,
-        // otherwise media_keys_ access might occur after it is deleted.
-        // It cannot use the weak-ptr reference, since it's invoked on the UI
-        // thread.
-        base::Bind(&AvPipelineImpl::OnCdmDestroyed, this));
-  }
+  media_keys_ = media_keys;
+  media_keys_callback_id_ = media_keys_->RegisterPlayer(
+      base::Bind(&AvPipelineImpl::OnCdmStateChanged, weak_this_),
+      base::Bind(&AvPipelineImpl::OnCdmDestroyed, weak_this_));
 }
 
 void AvPipelineImpl::OnEos() {
@@ -277,15 +258,12 @@ void AvPipelineImpl::ProcessPendingBuffer() {
     // Verify that CDM has the key ID.
     // Should not send the frame if the key ID is not available yet.
     std::string key_id(pending_buffer_->decrypt_config()->key_id());
-    {
-      base::AutoLock lock(media_keys_lock_);
-      if (!media_keys_) {
-        CMALOG(kLogControl) << "No CDM for frame: pts="
-                            << pending_buffer_->timestamp().InMilliseconds();
-        return;
-      }
-      decrypt_context = media_keys_->GetDecryptContext(key_id);
+    if (!media_keys_) {
+      CMALOG(kLogControl) << "No CDM for frame: pts="
+                          << pending_buffer_->timestamp().InMilliseconds();
+      return;
     }
+    decrypt_context = media_keys_->GetDecryptContext(key_id);
     if (!decrypt_context.get()) {
       CMALOG(kLogControl) << "frame(pts="
                           << pending_buffer_->timestamp().InMilliseconds()
@@ -346,7 +324,7 @@ void AvPipelineImpl::OnCdmStateChanged() {
 }
 
 void AvPipelineImpl::OnCdmDestroyed() {
-  base::AutoLock lock(media_keys_lock_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   media_keys_ = NULL;
 }
 

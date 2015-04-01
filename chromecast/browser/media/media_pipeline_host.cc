@@ -153,7 +153,7 @@ void MediaPipelineHost::SetVolume(TrackId track_id, float volume) {
   media_pipeline_->GetAudioPipeline()->SetVolume(volume);
 }
 
-void MediaPipelineHost::SetCdm(::media::BrowserCdm* cdm) {
+void MediaPipelineHost::SetCdm(BrowserCdmCast* cdm) {
   DCHECK(thread_checker_.CalledOnValidThread());
   media_pipeline_->SetCdm(cdm);
 }

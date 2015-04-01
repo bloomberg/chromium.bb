@@ -24,13 +24,13 @@ class SingleThreadTaskRunner;
 
 namespace media {
 class AudioDecoderConfig;
-class BrowserCdm;
 class VideoDecoderConfig;
 }
 
 namespace chromecast {
 namespace media {
 struct AvPipelineClient;
+class BrowserCdmCast;
 struct MediaPipelineClient;
 class MediaPipelineImpl;
 struct VideoPipelineClient;
@@ -61,7 +61,7 @@ class MediaPipelineHost {
 
   void SetPlaybackRate(float playback_rate);
   void SetVolume(TrackId track_id, float playback_rate);
-  void SetCdm(::media::BrowserCdm* cdm);
+  void SetCdm(BrowserCdmCast* cdm);
 
   void NotifyPipeWrite(TrackId track_id);
 

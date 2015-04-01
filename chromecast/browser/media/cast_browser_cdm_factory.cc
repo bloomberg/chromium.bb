@@ -4,6 +4,10 @@
 
 #include "chromecast/browser/media/cast_browser_cdm_factory.h"
 
+#include "base/bind.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "chromecast/browser/media/cma_message_loop.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
 
 namespace chromecast {
@@ -26,12 +30,18 @@ scoped_ptr< ::media::BrowserCdm> CastBrowserCdmFactory::CreateBrowserCdm(
   }
 
   if (browser_cdm) {
-    browser_cdm->SetCallbacks(session_message_cb,
-                              session_closed_cb,
-                              session_error_cb,
-                              session_keys_change_cb,
-                              session_expiration_update_cb);
-    return browser_cdm.Pass();
+    CmaMessageLoop::GetMessageLoopProxy()->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserCdmCast::Initialize,
+                   base::Unretained(browser_cdm.get()),
+                   session_message_cb,
+                   session_closed_cb,
+                   session_error_cb,
+                   session_keys_change_cb,
+                   session_expiration_update_cb));
+    return make_scoped_ptr(
+        new BrowserCdmCastUi(browser_cdm.Pass(),
+                             CmaMessageLoop::GetMessageLoopProxy()));
   }
 
   LOG(INFO) << "No matching key system found.";
