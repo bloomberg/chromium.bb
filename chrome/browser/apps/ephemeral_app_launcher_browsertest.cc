@@ -21,6 +21,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 using extensions::Extension;
@@ -321,9 +322,8 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTestDisabled, FeatureDisabled) {
 // ephemerally and launched without prompting the user.
 IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest,
                        LaunchAppWithNoPermissionWarnings) {
-  content::WindowedNotificationObserver unloaded_signal(
-      extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(profile()));
+  extensions::TestExtensionRegistryObserver observer(
+      ExtensionRegistry::Get(profile()));
 
   scoped_refptr<EphemeralAppLauncherForTest> launcher(
       new EphemeralAppLauncherForTest(kDefaultAppId, profile()));
@@ -334,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest,
   EXPECT_FALSE(launcher->install_prompt_created());
 
   // Ephemeral apps are unloaded after they stop running.
-  unloaded_signal.Wait();
+  observer.WaitForExtensionUnloaded();
 
   // After an app has been installed ephemerally, it can be launched again
   // without installing from the web store.

@@ -31,8 +31,8 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/api/alarms.h"
 #include "extensions/common/extension.h"
@@ -316,19 +316,17 @@ void EphemeralAppTestBase::CloseApp(const std::string& app_id) {
 
 void EphemeralAppTestBase::CloseAppWaitForUnload(const std::string& app_id) {
   // Ephemeral apps are unloaded from extension system after they stop running.
-  content::WindowedNotificationObserver unloaded_signal(
-      extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(profile()));
+  extensions::TestExtensionRegistryObserver observer(
+      ExtensionRegistry::Get(profile()), app_id);
   CloseApp(app_id);
-  unloaded_signal.Wait();
+  observer.WaitForExtensionUnloaded();
 }
 
 void EphemeralAppTestBase::EvictApp(const std::string& app_id) {
   // Uninstall the app, which is what happens when ephemeral apps get evicted
   // from the cache.
-  content::WindowedNotificationObserver uninstalled_signal(
-      extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-      content::Source<Profile>(profile()));
+  extensions::TestExtensionRegistryObserver observer(
+      ExtensionRegistry::Get(profile()), app_id);
 
   ExtensionService* service =
       ExtensionSystem::Get(profile())->extension_service();
@@ -339,7 +337,7 @@ void EphemeralAppTestBase::EvictApp(const std::string& app_id) {
       base::Bind(&base::DoNothing),
       NULL);
 
-  uninstalled_signal.Wait();
+  observer.WaitForExtensionUninstalled();
 }
 
 // EphemeralAppBrowserTest:
@@ -965,12 +963,11 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
   ReplaceEphemeralApp(app_id, kNotificationsTestApp, 0);
 
   // The delayed installation will occur when the ephemeral app is closed.
-  content::WindowedNotificationObserver installed_signal(
-      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
-      content::Source<Profile>(profile()));
+  extensions::TestExtensionRegistryObserver observer(
+      ExtensionRegistry::Get(profile()), app_id);
   InstallObserver installed_observer(profile());
   CloseAppWaitForUnload(app_id);
-  installed_signal.Wait();
+  observer.WaitForExtensionWillBeInstalled();
   VerifyPromotedApp(app_id, ExtensionRegistry::ENABLED);
 
   // Check the notification parameters.

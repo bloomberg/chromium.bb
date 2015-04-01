@@ -10,8 +10,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/notification_types.h"
-#include "extensions/common/manifest.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;
@@ -90,11 +89,10 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppServiceBrowserTest,
   prefs->SetLastLaunchTime(active_app_id, active_launch);
 
   // Perform garbage collection.
-  content::WindowedNotificationObserver uninstall_signal(
-      extensions::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-      content::Source<Profile>(browser()->profile()));
+  extensions::TestExtensionRegistryObserver observer(
+      ExtensionRegistry::Get(browser()->profile()));
   GarbageCollectEphemeralApps();
-  uninstall_signal.Wait();
+  observer.WaitForExtensionUninstalled();
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   ASSERT_TRUE(registry);
