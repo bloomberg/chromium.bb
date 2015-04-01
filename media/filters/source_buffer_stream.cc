@@ -387,12 +387,13 @@ void SourceBufferStream::Remove(base::TimeDelta start, base::TimeDelta end,
     SetSelectedRangeIfNeeded(deleted_buffers.front()->GetDecodeTimestamp());
 }
 
-void SourceBufferStream::RemoveInternal(
-    DecodeTimestamp start, DecodeTimestamp end, bool is_exclusive,
-    BufferQueue* deleted_buffers) {
-  DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName()
-           << " (" << start.InSecondsF() << ", " << end.InSecondsF()
-           << ", " << is_exclusive << ")";
+void SourceBufferStream::RemoveInternal(DecodeTimestamp start,
+                                        DecodeTimestamp end,
+                                        bool exclude_start,
+                                        BufferQueue* deleted_buffers) {
+  DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName() << " ("
+           << start.InSecondsF() << ", " << end.InSecondsF() << ", "
+           << exclude_start << ")";
   DVLOG(3) << __FUNCTION__ << " " << GetStreamTypeName()
            << ": before remove ranges_=" << RangesToString(ranges_);
 
@@ -408,8 +409,9 @@ void SourceBufferStream::RemoveInternal(
     if (range->GetStartTimestamp() >= end)
       break;
 
-    // Split off any remaining end piece and add it to |ranges_|.
-    SourceBufferRange* new_range = range->SplitRange(end, is_exclusive);
+    // Split off any remaining GOPs starting at or after |end| and add it to
+    // |ranges_|.
+    SourceBufferRange* new_range = range->SplitRange(end);
     if (new_range) {
       itr = ranges_.insert(++itr, new_range);
       --itr;
@@ -423,7 +425,7 @@ void SourceBufferStream::RemoveInternal(
     // Truncate the current range so that it only contains data before
     // the removal range.
     BufferQueue saved_buffers;
-    bool delete_range = range->TruncateAt(start, &saved_buffers, is_exclusive);
+    bool delete_range = range->TruncateAt(start, &saved_buffers, exclude_start);
 
     // Check to see if the current playback position was removed and
     // update the selected range appropriately.
@@ -812,7 +814,7 @@ void SourceBufferStream::PrepareRangesForNextAppend(
   // because we don't generate splice frames for same timestamp situations.
   DCHECK(new_buffers.front()->splice_timestamp() !=
          new_buffers.front()->timestamp());
-  const bool is_exclusive =
+  const bool exclude_start =
       new_buffers.front()->splice_buffers().empty() &&
       prev_timestamp == next_timestamp &&
       SourceBufferRange::AllowSameTimestamp(prev_is_keyframe, next_is_keyframe);
@@ -831,7 +833,7 @@ void SourceBufferStream::PrepareRangesForNextAppend(
     end += base::TimeDelta::FromInternalValue(1);
   }
 
-  RemoveInternal(start, end, is_exclusive, deleted_buffers);
+  RemoveInternal(start, end, exclude_start, deleted_buffers);
 
   // Restore the range seek state if necessary.
   if (temporarily_select_range)

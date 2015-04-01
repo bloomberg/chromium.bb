@@ -87,13 +87,12 @@ class SourceBufferRange {
   // Seeks to the beginning of the range.
   void SeekToStart();
 
-  // Finds the next keyframe from |buffers_| after |timestamp| (or at
-  // |timestamp| if |is_exclusive| is false) and creates and returns a new
-  // SourceBufferRange with the buffers from that keyframe onward.
-  // The buffers in the new SourceBufferRange are moved out of this range. If
-  // there is no keyframe after |timestamp|, SplitRange() returns null and this
-  // range is unmodified.
-  SourceBufferRange* SplitRange(DecodeTimestamp timestamp, bool is_exclusive);
+  // Finds the next keyframe from |buffers_| starting at or after |timestamp|
+  // and creates and returns a new SourceBufferRange with the buffers from that
+  // keyframe onward. The buffers in the new SourceBufferRange are moved out of
+  // this range. If there is no keyframe at or after |timestamp|, SplitRange()
+  // returns null and this range is unmodified.
+  SourceBufferRange* SplitRange(DecodeTimestamp timestamp);
 
   // Deletes the buffers from this range starting at |timestamp|, exclusive if
   // |is_exclusive| is true, inclusive otherwise.

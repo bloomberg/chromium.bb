@@ -102,14 +102,12 @@ void SourceBufferRange::SeekToStart() {
   next_buffer_index_ = 0;
 }
 
-SourceBufferRange* SourceBufferRange::SplitRange(
-    DecodeTimestamp timestamp, bool is_exclusive) {
+SourceBufferRange* SourceBufferRange::SplitRange(DecodeTimestamp timestamp) {
   CHECK(!buffers_.empty());
 
-  // Find the first keyframe after |timestamp|. If |is_exclusive|, do not
-  // include keyframes at |timestamp|.
+  // Find the first keyframe at or after |timestamp|.
   KeyframeMap::iterator new_beginning_keyframe =
-      GetFirstKeyframeAt(timestamp, is_exclusive);
+      GetFirstKeyframeAt(timestamp, false);
 
   // If there is no keyframe after |timestamp|, we can't split the range.
   if (new_beginning_keyframe == keyframe_map_.end())

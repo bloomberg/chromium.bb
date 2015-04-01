@@ -3934,6 +3934,31 @@ TEST_F(SourceBufferStreamTest, BFrames) {
   CheckNoNextBuffer();
 }
 
+TEST_F(SourceBufferStreamTest, RemoveShouldAlwaysExcludeEnd) {
+  NewSegmentAppend("10D2K 12D2 14D2");
+  CheckExpectedRangesByTimestamp("{ [10,16) }");
+
+  // Start new segment, appending KF to abut the start of previous segment.
+  NewSegmentAppend("0D10K");
+  Seek(0);
+  CheckExpectedRangesByTimestamp("{ [0,16) }");
+  CheckExpectedBuffers("0K 10K 12 14");
+  CheckNoNextBuffer();
+
+  // Append another buffer with the same timestamp as the last KF. This triggers
+  // special logic that allows two buffers to have the same timestamp. When
+  // preparing for this new append, there is no reason to remove the later GOP
+  // starting at timestamp 10. This verifies the fix for http://crbug.com/469325
+  // where the decision *not* to remove the start of the overlapped range was
+  // erroneously triggering buffers with a timestamp matching the end
+  // of the append (and any later dependent frames) to be removed.
+  AppendBuffers("0D10");
+  Seek(0);
+  CheckExpectedRangesByTimestamp("{ [0,16) }");
+  CheckExpectedBuffers("0K 0 10K 12 14");
+  CheckNoNextBuffer();
+}
+
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.
 // (crbug.com/133557)
 
