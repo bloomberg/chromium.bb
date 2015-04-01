@@ -43,23 +43,20 @@ class CONTENT_EXPORT WebRtcAudioCapturer
     : public base::RefCountedThreadSafe<WebRtcAudioCapturer>,
       NON_EXPORTED_BASE(public media::AudioCapturerSource::CaptureCallback) {
  public:
-  // Used to construct the audio capturer. |render_view_id| specifies the
-  // render view consuming audio for capture, |render_view_id| as -1 is used
-  // by the unittests to skip creating a source via
-  // AudioDeviceFactory::NewInputDevice(), and allow injecting their own source
-  // via SetCapturerSourceForTesting() at a later state.  |device_info|
-  // contains all the device information that the capturer is created for.
-  // |constraints| contains the settings for audio processing.
+  // Used to construct the audio capturer. |render_view_id| specifies the render
+  // view consuming audio for capture; -1 is used for tests. |render_frame_id|
+  // specifies the render frame consuming audio for capture; -1 is used for
+  // tests. |device_info| contains all the device information that the capturer
+  // is created for. |constraints| contains the settings for audio processing.
   // TODO(xians): Implement the interface for the audio source and move the
-  // |constraints| to ApplyConstraints().
-  // Called on the main render thread.
+  // |constraints| to ApplyConstraints(). Called on the main render thread.
   static scoped_refptr<WebRtcAudioCapturer> CreateCapturer(
       int render_view_id,
+      int render_frame_id,
       const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,
       WebRtcAudioDeviceImpl* audio_device,
       MediaStreamAudioSource* audio_source);
-
 
   // Add a audio track to the sinks of the capturer.
   // WebRtcAudioDeviceImpl calls this method on the main render thread but
@@ -123,6 +120,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   typedef TaggedList<TrackOwner> TrackList;
 
   WebRtcAudioCapturer(int render_view_id,
+                      int render_frame_id,
                       const StreamDeviceInfo& device_info,
                       const blink::WebMediaConstraints& constraints,
                       WebRtcAudioDeviceImpl* audio_device,
@@ -183,6 +181,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   bool running_;
 
   int render_view_id_;
+  int render_frame_id_;
 
   // Cached information of the device used by the capturer.
   const StreamDeviceInfo device_info_;

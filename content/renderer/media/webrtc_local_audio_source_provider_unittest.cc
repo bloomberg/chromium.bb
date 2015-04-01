@@ -28,9 +28,9 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
         WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize);
     sink_bus_ = media::AudioBus::Create(sink_params_);
     MockMediaConstraintFactory constraint_factory;
-      scoped_refptr<WebRtcAudioCapturer> capturer(
+    scoped_refptr<WebRtcAudioCapturer> capturer(
         WebRtcAudioCapturer::CreateCapturer(
-            -1, StreamDeviceInfo(),
+            -1, -1, StreamDeviceInfo(),
             constraint_factory.CreateWebMediaConstraints(), NULL, NULL));
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));

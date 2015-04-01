@@ -167,7 +167,8 @@ bool PepperPlatformAudioInput::Initialize(
 
   ipc_ = RenderThreadImpl::current()
              ->audio_input_message_filter()
-             ->CreateAudioInputIPC(render_frame->render_view()->GetRoutingID());
+             ->CreateAudioInputIPC(render_frame->render_view()->GetRoutingID(),
+                                   render_frame_id);
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LINEAR,
                 media::CHANNEL_LAYOUT_MONO,

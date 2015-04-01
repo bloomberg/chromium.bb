@@ -26,14 +26,14 @@ MediaStreamAudioSource::MediaStreamAudioSource(
     const SourceStoppedCallback& stop_callback,
     PeerConnectionDependencyFactory* factory)
     : render_view_id_(ToRenderViewId(render_frame_id)),
+      render_frame_id_(render_frame_id),
       factory_(factory) {
   SetDeviceInfo(device_info);
   SetStopCallback(stop_callback);
 }
 
 MediaStreamAudioSource::MediaStreamAudioSource()
-    : render_view_id_(-1),
-      factory_(NULL) {
+    : render_view_id_(-1), render_frame_id_(-1), factory_(NULL) {
 }
 
 MediaStreamAudioSource::~MediaStreamAudioSource() {}
@@ -49,9 +49,8 @@ void MediaStreamAudioSource::AddTrack(
     const ConstraintsCallback& callback) {
   // TODO(xians): Properly implement for audio sources.
   if (!local_audio_source_.get()) {
-    if (!factory_->InitializeMediaStreamAudioSource(render_view_id_,
-                                                    constraints,
-                                                    this)) {
+    if (!factory_->InitializeMediaStreamAudioSource(
+            render_view_id_, render_frame_id_, constraints, this)) {
       // The source failed to start.
       // UserMediaClientImpl rely on the |stop_callback| to be triggered when
       // the last track is removed from the source. But in this case, the

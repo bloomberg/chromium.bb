@@ -208,6 +208,7 @@ class MockPeerConnectionDependencyFactory
 
   scoped_refptr<WebRtcAudioCapturer> CreateAudioCapturer(
       int render_view_id,
+      int render_frame_id,
       const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,
       MediaStreamAudioSource* audio_source) override;

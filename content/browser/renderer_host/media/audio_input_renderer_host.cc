@@ -273,6 +273,7 @@ bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message) {
 void AudioInputRendererHost::OnCreateStream(
     int stream_id,
     int render_view_id,
+    int render_frame_id,
     int session_id,
     const AudioInputHostMsg_CreateStream_Config& config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -282,23 +283,22 @@ void AudioInputRendererHost::OnCreateStream(
       media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {
     media_stream_manager_->audio_input_device_manager()
         ->RegisterKeyboardMicStream(
-            base::Bind(&AudioInputRendererHost::DoCreateStream,
-                       this,
-                       stream_id,
-                       render_view_id,
-                       session_id,
-                       config));
+            base::Bind(&AudioInputRendererHost::DoCreateStream, this, stream_id,
+                       render_view_id, render_frame_id, session_id, config));
   } else {
-    DoCreateStream(stream_id, render_view_id, session_id, config);
+    DoCreateStream(stream_id, render_view_id, render_frame_id, session_id,
+                   config);
   }
 #else
-  DoCreateStream(stream_id, render_view_id, session_id, config);
+  DoCreateStream(stream_id, render_view_id, render_frame_id, session_id,
+                 config);
 #endif
 }
 
 void AudioInputRendererHost::DoCreateStream(
     int stream_id,
     int render_view_id,
+    int render_frame_id,
     int session_id,
     const AudioInputHostMsg_CreateStream_Config& config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -306,8 +306,10 @@ void AudioInputRendererHost::DoCreateStream(
   std::ostringstream oss;
   oss << "[stream_id=" << stream_id << "] "
       << "AIRH::OnCreateStream(render_view_id=" << render_view_id
+      << ", render_frame_id=" << render_frame_id
       << ", session_id=" << session_id << ")";
   DCHECK_GT(render_view_id, 0);
+  DCHECK_GT(render_frame_id, 0);
 
   // media::AudioParameters is validated in the deserializer.
   if (LookupById(stream_id) != NULL) {

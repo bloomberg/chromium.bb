@@ -163,7 +163,7 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
     StreamDeviceInfo device(MEDIA_DEVICE_AUDIO_CAPTURE,
                             std::string(), std::string());
     capturer_ = WebRtcAudioCapturer::CreateCapturer(
-        -1, device, constraint_factory.CreateWebMediaConstraints(), NULL,
+        -1, -1, device, constraint_factory.CreateWebMediaConstraints(), NULL,
         audio_source);
     audio_source->SetAudioCapturer(capturer_.get());
     capturer_source_ = new MockCapturerSource(capturer_.get());
@@ -417,7 +417,7 @@ TEST_F(WebRtcLocalAudioTrackTest,
                           std::string(), std::string());
   scoped_refptr<WebRtcAudioCapturer> new_capturer(
       WebRtcAudioCapturer::CreateCapturer(
-          -1, device, constraint_factory.CreateWebMediaConstraints(), NULL,
+          -1, -1, device, constraint_factory.CreateWebMediaConstraints(), NULL,
           NULL));
   scoped_refptr<MockCapturerSource> new_source(
       new MockCapturerSource(new_capturer.get()));
@@ -470,13 +470,10 @@ TEST_F(WebRtcLocalAudioTrackTest, TrackWorkWithSmallBufferSize) {
   factory.DisableDefaultAudioConstraints();
   scoped_refptr<WebRtcAudioCapturer> capturer(
       WebRtcAudioCapturer::CreateCapturer(
-          -1,
-          StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE,
-                           "", "", params.sample_rate(),
-                           params.channel_layout(),
-                           params.frames_per_buffer()),
-          factory.CreateWebMediaConstraints(),
-          NULL, NULL));
+          -1, -1, StreamDeviceInfo(
+                      MEDIA_DEVICE_AUDIO_CAPTURE, "", "", params.sample_rate(),
+                      params.channel_layout(), params.frames_per_buffer()),
+          factory.CreateWebMediaConstraints(), NULL, NULL));
   scoped_refptr<MockCapturerSource> source(
       new MockCapturerSource(capturer.get()));
   EXPECT_CALL(*source.get(), OnInitialize(_, capturer.get(), -1));

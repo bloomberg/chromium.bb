@@ -63,8 +63,8 @@ class MockAudioDeviceFactory : public AudioDeviceFactory {
  public:
   MockAudioDeviceFactory() {}
   virtual ~MockAudioDeviceFactory() {}
-  MOCK_METHOD1(CreateOutputDevice, media::AudioOutputDevice*(int));
-  MOCK_METHOD1(CreateInputDevice, media::AudioInputDevice*(int));
+  MOCK_METHOD2(CreateOutputDevice, media::AudioOutputDevice*(int, int));
+  MOCK_METHOD2(CreateInputDevice, media::AudioInputDevice*(int, int));
 };
 
 class MockAudioRendererSource : public WebRtcAudioRendererSource {
@@ -94,7 +94,7 @@ class WebRtcAudioRendererTest : public testing::Test {
         renderer_(new WebRtcAudioRenderer(message_loop_->message_loop_proxy(),
                                           stream_, 1, 1, 1, 44100,
                                           kHardwareBufferSize)) {
-    EXPECT_CALL(*factory_.get(), CreateOutputDevice(1))
+    EXPECT_CALL(*factory_.get(), CreateOutputDevice(1, 1))
         .WillOnce(Return(mock_output_device_.get()));
     EXPECT_CALL(*mock_output_device_.get(), Start());
     EXPECT_TRUE(renderer_->Initialize(source_.get()));

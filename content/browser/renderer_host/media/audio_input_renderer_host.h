@@ -141,6 +141,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   // For non-ChromeOS: Just calls DoCreateStream.
   void OnCreateStream(int stream_id,
                       int render_view_id,
+                      int render_frame_id,
                       int session_id,
                       const AudioInputHostMsg_CreateStream_Config& config);
 
@@ -151,6 +152,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   // NotifyStreamCreated message.
   void DoCreateStream(int stream_id,
                       int render_view_id,
+                      int render_frame_id,
                       int session_id,
                       const AudioInputHostMsg_CreateStream_Config& config);
 
