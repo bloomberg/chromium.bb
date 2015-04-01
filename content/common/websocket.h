@@ -52,7 +52,7 @@ struct WebSocketHandshakeResponse {
   // HTTP status text
   std::string status_text;
   // Additional HTTP response headers
-  std::vector<std::pair<std::string, std::string> > headers;
+  base::StringPairs headers;
   // HTTP response headers raw string
   std::string headers_text;
   // The time that this response arrives
