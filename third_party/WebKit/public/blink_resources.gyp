@@ -25,5 +25,26 @@
         ],
       },
     },
+    {
+      'target_name': 'blink_image_resources',
+      'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources',
+      },
+      'actions': [
+        {
+          'action_name': 'generate_blink_image_resources',
+          'variables': {
+            'grit_grd_file': 'blink_image_resources.grd',
+          },
+          'includes': [ '../../../build/grit_action.gypi' ],
+        },
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)',
+        ],
+      },
+    },
   ],
 }
