@@ -2325,6 +2325,7 @@
       'browser/ui/views/toolbar/wrench_toolbar_button.cc',
       'browser/ui/views/toolbar/wrench_toolbar_button.h',
       'browser/ui/views/touch_uma/touch_uma.h',
+      'browser/ui/views/translate/chrome_translate_client_views.cc',
       'browser/ui/views/translate/translate_bubble_view.cc',
       'browser/ui/views/translate/translate_bubble_view.h',
       'browser/ui/views/update_recommended_message_box.cc',

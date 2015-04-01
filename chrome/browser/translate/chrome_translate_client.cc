@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "components/infobars/core/infobar.h"
 #include "components/translate/content/browser/browser_cld_data_provider_factory.h"
 #include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/content/common/translate_messages.h"
@@ -233,16 +232,6 @@ ChromeTranslateClient::GetTranslateAcceptLanguages() {
 int ChromeTranslateClient::GetInfobarIconID() const {
   return IDR_INFOBAR_TRANSLATE;
 }
-
-// ChromeTranslateClient::CreateInfoBar() is implemented in platform-specific
-// files, except the TOOLKIT_VIEWS implementation, which has been removed. Note
-// for Mac, Cocoa is still providing the infobar in a toolkit-views build.
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
-scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
-    scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  return scoped_ptr<infobars::InfoBar>();
-}
-#endif
 
 bool ChromeTranslateClient::IsTranslatableURL(const GURL& url) {
   return TranslateService::IsTranslatableURL(url);
