@@ -373,9 +373,9 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
   // http://crbug.com/406944.
   base::mac::ScopedNSAutoreleasePool pool;
 
-  id window = [notification object];
   NSString* name = [notification name];
   if ([name isEqualToString:NSWindowDidBecomeMainNotification]) {
+    id window = [notification object];
     extensions::AppWindow* appWindow =
         AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
             window);
@@ -394,14 +394,16 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
     else
       [self removeMenuItems];
   } else if ([name isEqualToString:NSWindowWillCloseNotification]) {
-    // If there are any other windows that can become main, leave the menu. It
-    // will be changed when another window becomes main. Otherwise, restore the
-    // Chrome menu.
-    for (NSWindow* w : [NSApp windows]) {
-      if ([w canBecomeMainWindow] && ![w isEqual:window] && [w isOnActiveSpace])
-        return;
-    }
-
+    // Always reset back to the Chrome menu. This once scanned [NSApp windows]
+    // to predict whether we could expect another Chrome window to become main,
+    // and skip the reset. However, panels need to do strange things during
+    // window close to ensure panels never get chosen for key status over a
+    // browser window (which is likely because they are given an elevated
+    // [NSWindow level]). Trying to handle this case is not robust.
+    // Unfortunately, resetting the menu to Chrome unconditionally means that
+    // if another packaged app window becomes key, the menu will flicker.
+    // TODO(tapted): Investigate restoring the logic when the panel code is
+    // removed.
     [self removeMenuItems];
   } else {
     NOTREACHED();

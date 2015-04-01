@@ -651,27 +651,13 @@ void SwizzleInit() {
 }
 
 - (id)_removeWindow:(NSWindow*)window {
+  // Note _removeWindow is called from -[NSWindow dealloc], which can happen at
+  // unpredictable times due to reference counting. Just update state.
   {
     base::AutoLock lock(previousKeyWindowsLock_);
     [self removePreviousKeyWindow:window];
   }
-  id result = [super _removeWindow:window];
-
-  // Ensure app has a key window after a window is removed.
-  // OS wants to make a panel browser window key after closing an app window
-  // because panels use a higher priority window level, but panel windows may
-  // refuse to become key, leaving the app with no key window. The OS does
-  // not seem to consider other windows after the first window chosen refuses
-  // to become key. Force consideration of other windows here.
-  if ([self isActive] && [self keyWindow] == nil) {
-    NSWindow* key =
-        [self makeWindowsPerform:@selector(canBecomeKeyWindow) inOrder:YES];
-    [key makeKeyWindow];
-  }
-
-  // Return result from the super class. It appears to be the app that
-  // owns the removed window (determined via experimentation).
-  return result;
+  return [super _removeWindow:window];
 }
 
 - (id)_setKeyWindow:(NSWindow*)window {

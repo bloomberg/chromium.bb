@@ -46,6 +46,11 @@ const double kBoundsAnimationMaxDurationSeconds = 0.18;
 // Edge thickness to trigger user resizing via system, in screen pixels.
 const double kWidthOfMouseResizeArea = 15.0;
 
+// Notification observer to prevent panels becoming key when windows are closed.
+@interface WindowCloseWatcher : NSObject
+- (void)windowWillClose:(NSNotification*)notification;
+@end
+
 @interface PanelWindowControllerCocoa (PanelsCanBecomeKey)
 // Internal helper method for extracting the total number of panel windows
 // from the panel manager. Used to decide if panel can become the key window.
@@ -88,6 +93,7 @@ const double kWidthOfMouseResizeArea = 15.0;
   return ([app isHandlingSendEvent]  && [[app currentEvent] window] == self) ||
       [controller activationRequestedByPanel] ||
       [app isCyclingWindows] ||
+      [self isKeyWindow] ||
       [app previousKeyWindow] == self ||
       [[app windows] count] == static_cast<NSUInteger>([controller numPanels]);
 }
@@ -168,6 +174,10 @@ const double kWidthOfMouseResizeArea = 15.0;
     animateOnBoundsChange_ = YES;
     canBecomeKeyWindow_ = YES;
     activationRequestedByPanel_ = NO;
+
+    // Leaky singleton. Initialized when the first panel is created.
+    static WindowCloseWatcher* watcher = [[WindowCloseWatcher alloc] init];
+    (void)watcher;  // Suppress the unused variable warning.
   }
   return self;
 }
@@ -924,6 +934,48 @@ const double kWidthOfMouseResizeArea = 15.0;
   if (contentRect.size.height < 0)
     contentRect.size.height = 0;
   return contentRect;
+}
+
+@end
+
+@implementation WindowCloseWatcher
+
+- (id)init {
+  if ((self = [super init])) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(windowWillClose:)
+               name:NSWindowWillCloseNotification
+             object:nil];
+  }
+  return self;
+}
+
+- (void)windowWillClose:(NSNotification*)notification {
+  // If it looks like a panel may (refuse to) become key after this window is
+  // closed, then explicitly set the topmost browser window on the active space
+  // to be key (if there is one). Otherwise AppKit will stop looking for windows
+  // to make key once it encounters the panel.
+  id closingWindow = [notification object];
+  BOOL orderNext = NO;
+  for (NSWindow* window : [NSApp orderedWindows]) {
+    if ([window isEqual:closingWindow] || ![window isOnActiveSpace])
+      continue;
+
+    if ([window isKindOfClass:[PanelWindowCocoaImpl class]] &&
+        ![window canBecomeKeyWindow]) {
+      orderNext = YES;
+      continue;
+    }
+
+    if (orderNext) {
+      if (![window canBecomeKeyWindow])
+        continue;
+
+      [window makeKeyWindow];
+    }
+    return;
+  }
 }
 
 @end
