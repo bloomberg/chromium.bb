@@ -19,6 +19,8 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.chromium.android_webview.AwContents;
@@ -29,6 +31,8 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -188,12 +192,36 @@ public class AwContentsTest extends AwTestBase {
 
         Runtime.getRuntime().gc();
 
-        pollOnUiThread(new Callable<Boolean>() {
+        Criteria criteria = new Criteria() {
             @Override
-            public Boolean call() {
-                return AwContents.getNativeInstanceCount() <= maxIdleInstances;
+            public boolean isSatisfied() {
+                try {
+                    return runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
+                        @Override
+                        public Boolean call() {
+                            return AwContents.getNativeInstanceCount() <= maxIdleInstances;
+                        }
+                    });
+                } catch (Exception e) {
+                    return false;
+                }
             }
-        });
+        };
+
+        // Depending on a single gc call can make this test flaky. It's possible
+        // that the WebView still has transient references during load so it does not get
+        // gc-ed in the one gc-call above. Instead call gc again if exit criteria fails to
+        // catch this case.
+        final long timeoutBetweenGcMs = scaleTimeout(1000);
+        for (int i = 0; i < 15; ++i) {
+            if (CriteriaHelper.pollForCriteria(criteria, timeoutBetweenGcMs, CHECK_INTERVAL)) {
+                break;
+            } else {
+                Runtime.getRuntime().gc();
+            }
+        }
+
+        assertTrue(criteria.isSatisfied());
     }
 
     @SmallTest
