@@ -30,7 +30,7 @@
 #ifndef BasicShapeFunctions_h
 #define BasicShapeFunctions_h
 
-#include "core/layout/style/BasicShapes.h"
+#include "core/style/BasicShapes.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 

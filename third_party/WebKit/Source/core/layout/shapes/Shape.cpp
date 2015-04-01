@@ -38,7 +38,7 @@
 #include "core/layout/shapes/PolygonShape.h"
 #include "core/layout/shapes/RasterShape.h"
 #include "core/layout/shapes/RectangleShape.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatRoundedRect.h"

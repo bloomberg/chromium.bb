@@ -38,7 +38,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

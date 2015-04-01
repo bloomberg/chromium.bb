@@ -35,8 +35,8 @@
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
-#include "core/layout/style/ComputedStyle.h"
-#include "core/layout/style/StyleInheritedData.h"
+#include "core/style/ComputedStyle.h"
+#include "core/style/StyleInheritedData.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {

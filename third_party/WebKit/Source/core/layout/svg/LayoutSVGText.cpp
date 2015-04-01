@@ -35,7 +35,7 @@
 #include "core/layout/LayoutState.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/PointerEventsHitRules.h"
-#include "core/layout/style/ShadowList.h"
+#include "core/style/ShadowList.h"
 #include "core/layout/svg/LayoutSVGInline.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGRoot.h"

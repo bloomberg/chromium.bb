@@ -32,9 +32,9 @@
 #include "core/css/resolver/FontBuilder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/layout/style/CachedUAStyle.h"
-#include "core/layout/style/ComputedStyle.h"
-#include "core/layout/style/StyleInheritedData.h"
+#include "core/style/CachedUAStyle.h"
+#include "core/style/ComputedStyle.h"
+#include "core/style/StyleInheritedData.h"
 
 namespace blink {
 

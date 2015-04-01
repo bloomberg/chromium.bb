@@ -25,7 +25,7 @@
 #include "core/layout/OverflowModel.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
 #include "core/layout/line/InlineBox.h"
-#include "core/layout/style/ShadowData.h"
+#include "core/style/ShadowData.h"
 
 namespace blink {
 

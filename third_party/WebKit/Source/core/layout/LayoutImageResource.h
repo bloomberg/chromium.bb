@@ -28,7 +28,7 @@
 
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourcePtr.h"
-#include "core/layout/style/StyleImage.h"
+#include "core/style/StyleImage.h"
 
 namespace blink {
 

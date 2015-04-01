@@ -30,8 +30,8 @@
 #ifndef Shape_h
 #define Shape_h
 
-#include "core/layout/style/BasicShapes.h"
-#include "core/layout/style/StyleImage.h"
+#include "core/style/BasicShapes.h"
+#include "core/style/StyleImage.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Path.h"
 #include "platform/text/WritingMode.h"

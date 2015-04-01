@@ -22,7 +22,7 @@
 #ifndef PseudoStyleRequest_h
 #define PseudoStyleRequest_h
 
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "platform/scroll/ScrollTypes.h"
 
 namespace blink {

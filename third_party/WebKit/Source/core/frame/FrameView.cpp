@@ -60,7 +60,7 @@
 #include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"

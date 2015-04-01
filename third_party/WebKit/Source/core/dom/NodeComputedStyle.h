@@ -29,7 +29,7 @@
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

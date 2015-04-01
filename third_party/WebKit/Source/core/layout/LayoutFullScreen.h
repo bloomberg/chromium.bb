@@ -26,7 +26,7 @@
 #define LayoutFullScreen_h
 
 #include "core/layout/LayoutFlexibleBox.h"
-#include "core/layout/style/StyleInheritedData.h"
+#include "core/style/StyleInheritedData.h"
 
 namespace blink {
 

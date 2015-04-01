@@ -5,7 +5,7 @@
 #ifndef InlineTextBoxPainter_h
 #define InlineTextBoxPainter_h
 
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 
 namespace blink {
 

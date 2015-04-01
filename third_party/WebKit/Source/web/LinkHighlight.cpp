@@ -36,7 +36,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
-#include "core/layout/style/ShadowData.h"
+#include "core/style/ShadowData.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/DrawingRecorder.h"

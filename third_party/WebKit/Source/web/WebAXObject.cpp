@@ -40,7 +40,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/PinchViewport.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "modules/accessibility/AXObject.h"

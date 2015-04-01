@@ -30,7 +30,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/line/LineBoxList.h"
 #include "core/layout/line/RootInlineBox.h"
-#include "core/layout/style/ShapeValue.h"
+#include "core/style/ShapeValue.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
 #include "wtf/ListHashSet.h"

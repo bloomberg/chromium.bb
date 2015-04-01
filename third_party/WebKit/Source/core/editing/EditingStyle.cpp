@@ -56,7 +56,7 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

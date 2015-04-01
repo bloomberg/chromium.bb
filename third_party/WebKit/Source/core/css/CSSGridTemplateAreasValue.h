@@ -32,7 +32,7 @@
 #define CSSGridTemplateAreasValue_h
 
 #include "core/css/CSSValue.h"
-#include "core/layout/style/GridCoordinate.h"
+#include "core/style/GridCoordinate.h"
 #include "wtf/text/StringHash.h"
 
 namespace blink {

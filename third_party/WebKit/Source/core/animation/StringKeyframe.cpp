@@ -23,7 +23,7 @@
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

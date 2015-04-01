@@ -6,7 +6,7 @@
 #define TextPainter_h
 
 #include "core/layout/line/FloatToLayoutUnit.h"
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "platform/fonts/TextBlob.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"

@@ -11,7 +11,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/page/Page.h"
 #include "platform/graphics/Color.h"
 #include "platform/testing/URLTestHelpers.h"

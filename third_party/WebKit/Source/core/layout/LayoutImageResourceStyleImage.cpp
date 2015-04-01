@@ -30,7 +30,7 @@
 
 #include "core/fetch/ImageResource.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/StyleFetchedImage.h"
+#include "core/style/StyleFetchedImage.h"
 
 namespace blink {
 

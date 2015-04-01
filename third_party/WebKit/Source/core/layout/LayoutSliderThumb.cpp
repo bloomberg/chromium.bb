@@ -33,7 +33,7 @@
 #include "core/layout/LayoutSliderThumb.h"
 
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

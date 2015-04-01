@@ -31,7 +31,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutQuote.h"
-#include "core/layout/style/ContentData.h"
+#include "core/style/ContentData.h"
 
 namespace blink {
 

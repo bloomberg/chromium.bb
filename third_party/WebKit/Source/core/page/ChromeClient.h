@@ -28,7 +28,7 @@
 #include "core/loader/NavigationPolicy.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/html/forms/PopupMenuClient.h"
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "platform/Cursor.h"
 #include "platform/HostWindow.h"
 #include "platform/PopupMenu.h"

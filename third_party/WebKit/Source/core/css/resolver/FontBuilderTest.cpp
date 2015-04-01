@@ -9,7 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
 #include "core/frame/Settings.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/text/LocaleToScriptMapping.h"
 

@@ -5,7 +5,7 @@
 #ifndef InlineFlowBoxPainter_h
 #define InlineFlowBoxPainter_h
 
-#include "core/layout/style/ShadowData.h"
+#include "core/style/ShadowData.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/text/TextDirection.h"
 

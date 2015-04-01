@@ -23,7 +23,7 @@
 #define ElementResolveContext_h
 
 #include "core/dom/Element.h"
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 
 namespace blink {
 

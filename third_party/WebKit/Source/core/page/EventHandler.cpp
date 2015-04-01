@@ -66,7 +66,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/AutoscrollController.h"

@@ -35,7 +35,7 @@
 #include "core/html/HTMLFormControlElement.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutBlock.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

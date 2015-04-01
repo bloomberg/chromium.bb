@@ -12,7 +12,7 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "platform/graphics/Path.h"
 
 namespace blink {

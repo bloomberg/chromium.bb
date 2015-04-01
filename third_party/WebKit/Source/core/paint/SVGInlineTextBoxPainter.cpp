@@ -12,7 +12,7 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/PaintInfo.h"
-#include "core/layout/style/ShadowList.h"
+#include "core/style/ShadowList.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"

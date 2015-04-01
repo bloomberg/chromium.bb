@@ -32,7 +32,7 @@
 #include "core/css/CSSToLengthConversionData.h"
 
 #include "core/layout/LayoutView.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

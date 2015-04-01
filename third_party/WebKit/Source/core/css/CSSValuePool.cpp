@@ -28,7 +28,7 @@
 
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

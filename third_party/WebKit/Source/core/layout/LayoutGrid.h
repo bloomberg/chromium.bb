@@ -28,7 +28,7 @@
 
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/OrderIterator.h"
-#include "core/layout/style/GridResolvedPosition.h"
+#include "core/style/GridResolvedPosition.h"
 
 namespace blink {
 

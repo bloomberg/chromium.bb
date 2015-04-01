@@ -45,7 +45,7 @@
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/layout/style/KeyframeList.h"
+#include "core/style/KeyframeList.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"

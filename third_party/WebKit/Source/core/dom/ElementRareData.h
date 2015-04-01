@@ -32,7 +32,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/ClassList.h"
 #include "core/html/ime/InputMethodContext.h"
-#include "core/layout/style/StyleInheritedData.h"
+#include "core/style/StyleInheritedData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 

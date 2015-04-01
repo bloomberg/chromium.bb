@@ -31,7 +31,7 @@
 #include "core/css/Rect.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Node.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/Decimal.h"
 #include "platform/LayoutUnit.h"
 #include "platform/fonts/FontMetrics.h"

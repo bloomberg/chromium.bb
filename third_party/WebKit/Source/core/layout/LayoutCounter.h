@@ -23,7 +23,7 @@
 #define LayoutCounter_h
 
 #include "core/layout/LayoutText.h"
-#include "core/layout/style/CounterContent.h"
+#include "core/style/CounterContent.h"
 
 namespace blink {
 

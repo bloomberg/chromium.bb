@@ -21,7 +21,7 @@
 #include "core/layout/svg/SVGTextLayoutEngineBaseline.h"
 
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/SVGComputedStyle.h"
+#include "core/style/SVGComputedStyle.h"
 #include "core/layout/svg/SVGTextMetrics.h"
 #include "core/svg/SVGLengthContext.h"
 #include "platform/fonts/Font.h"

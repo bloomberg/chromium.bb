@@ -33,7 +33,11 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/style/StyleRareNonInheritedData.h"
 
 namespace blink {
 

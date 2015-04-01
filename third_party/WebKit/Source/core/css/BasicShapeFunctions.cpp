@@ -35,8 +35,8 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/Pair.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "core/layout/style/BasicShapes.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/BasicShapes.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

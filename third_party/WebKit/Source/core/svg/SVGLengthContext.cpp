@@ -26,7 +26,7 @@
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/LengthFunctions.h"
 #include "platform/fonts/FontMetrics.h"

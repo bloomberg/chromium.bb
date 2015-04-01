@@ -31,7 +31,7 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

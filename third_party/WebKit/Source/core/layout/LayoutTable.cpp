@@ -41,7 +41,7 @@
 #include "core/layout/TableLayoutAlgorithmAuto.h"
 #include "core/layout/TableLayoutAlgorithmFixed.h"
 #include "core/layout/TextAutosizer.h"
-#include "core/layout/style/StyleInheritedData.h"
+#include "core/style/StyleInheritedData.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/TablePainter.h"

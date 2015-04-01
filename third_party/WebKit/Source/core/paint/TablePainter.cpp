@@ -8,7 +8,7 @@
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableSection.h"
 #include "core/layout/PaintInfo.h"
-#include "core/layout/style/CollapsedBorderValue.h"
+#include "core/style/CollapsedBorderValue.h"
 #include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"

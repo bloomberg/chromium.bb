@@ -30,7 +30,7 @@
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "wtf/StdLibExtras.h"
 
 #ifndef NDEBUG

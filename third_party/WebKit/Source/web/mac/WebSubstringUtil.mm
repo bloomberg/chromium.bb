@@ -47,7 +47,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/fonts/Font.h"
 #include "platform/mac/ColorMac.h"
 #include "public/platform/WebRect.h"

@@ -40,7 +40,7 @@
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/line/TrailingObjects.h"
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 
 namespace blink {
 

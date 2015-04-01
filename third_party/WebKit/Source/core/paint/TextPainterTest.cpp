@@ -11,8 +11,8 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutText.h"
-#include "core/layout/style/ShadowData.h"
-#include "core/layout/style/ShadowList.h"
+#include "core/style/ShadowData.h"
+#include "core/style/ShadowList.h"
 #include <gtest/gtest.h>
 
 namespace blink {

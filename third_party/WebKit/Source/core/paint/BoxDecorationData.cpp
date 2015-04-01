@@ -6,8 +6,8 @@
 #include "core/paint/BoxDecorationData.h"
 
 #include "core/layout/LayoutBox.h"
-#include "core/layout/style/BorderEdge.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/BorderEdge.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 

@@ -21,7 +21,7 @@
 #include "core/layout/svg/SVGResources.h"
 
 #include "core/SVGNames.h"
-#include "core/layout/style/SVGComputedStyle.h"
+#include "core/style/SVGComputedStyle.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceMarker.h"

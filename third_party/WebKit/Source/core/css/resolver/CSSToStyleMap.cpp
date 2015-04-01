@@ -38,8 +38,8 @@
 #include "core/css/Rect.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "core/layout/style/BorderImageLengthBox.h"
-#include "core/layout/style/FillLayer.h"
+#include "core/style/BorderImageLengthBox.h"
+#include "core/style/FillLayer.h"
 
 namespace blink {
 

@@ -46,7 +46,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/svg/SVGElement.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"

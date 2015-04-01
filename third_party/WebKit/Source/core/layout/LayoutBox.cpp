@@ -52,7 +52,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
-#include "core/layout/style/ShadowList.h"
+#include "core/style/ShadowList.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"

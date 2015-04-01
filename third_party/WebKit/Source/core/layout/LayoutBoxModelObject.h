@@ -26,7 +26,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/ShadowData.h"
+#include "core/style/ShadowData.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {

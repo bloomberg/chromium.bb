@@ -34,8 +34,8 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/StylePropertySet.h"
-#include "core/layout/style/ComputedStyle.h"
-#include "core/layout/style/StyleInheritedData.h"
+#include "core/style/ComputedStyle.h"
+#include "core/style/StyleInheritedData.h"
 
 #include <gtest/gtest.h>
 

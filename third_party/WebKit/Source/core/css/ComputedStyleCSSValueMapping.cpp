@@ -47,10 +47,10 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/ContentData.h"
-#include "core/layout/style/ComputedStyle.h"
-#include "core/layout/style/PathStyleMotionPath.h"
-#include "core/layout/style/ShadowList.h"
+#include "core/style/ContentData.h"
+#include "core/style/ComputedStyle.h"
+#include "core/style/PathStyleMotionPath.h"
+#include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {

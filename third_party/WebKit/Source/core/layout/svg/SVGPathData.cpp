@@ -22,7 +22,7 @@
 
 #include "core/SVGNames.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/SVGComputedStyle.h"
+#include "core/style/SVGComputedStyle.h"
 #include "core/svg/SVGCircleElement.h"
 #include "core/svg/SVGEllipseElement.h"
 #include "core/svg/SVGLineElement.h"

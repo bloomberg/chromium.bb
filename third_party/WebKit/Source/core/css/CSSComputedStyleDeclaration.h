@@ -22,7 +22,7 @@
 #define CSSComputedStyleDeclaration_h
 
 #include "core/css/CSSStyleDeclaration.h"
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "platform/fonts/FixedPitchFontType.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"

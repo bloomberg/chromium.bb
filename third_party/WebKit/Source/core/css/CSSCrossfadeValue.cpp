@@ -28,7 +28,7 @@
 
 #include "core/css/CSSImageValue.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/StyleFetchedImage.h"
+#include "core/style/StyleFetchedImage.h"
 #include "platform/graphics/CrossfadeGeneratedImage.h"
 #include "wtf/text/StringBuilder.h"
 

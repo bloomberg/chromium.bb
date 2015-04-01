@@ -47,7 +47,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"

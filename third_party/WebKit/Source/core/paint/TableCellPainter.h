@@ -5,7 +5,7 @@
 #ifndef TableCellPainter_h
 #define TableCellPainter_h
 
-#include "core/layout/style/CollapsedBorderValue.h"
+#include "core/style/CollapsedBorderValue.h"
 
 namespace blink {
 

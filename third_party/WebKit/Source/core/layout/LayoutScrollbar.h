@@ -26,7 +26,7 @@
 #ifndef LayoutScrollbar_h
 #define LayoutScrollbar_h
 
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/Scrollbar.h"
 #include "wtf/HashMap.h"

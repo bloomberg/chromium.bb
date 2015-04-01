@@ -33,7 +33,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/layout/style/StyleInheritedData.h"
+#include "core/style/StyleInheritedData.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxPainter.h"

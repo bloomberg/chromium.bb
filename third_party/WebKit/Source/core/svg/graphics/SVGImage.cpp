@@ -35,7 +35,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"

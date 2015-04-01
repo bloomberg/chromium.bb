@@ -23,7 +23,7 @@
 #include "core/svg/SVGFESpecularLightingElement.h"
 
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/graphics/filters/FilterEffect.h"

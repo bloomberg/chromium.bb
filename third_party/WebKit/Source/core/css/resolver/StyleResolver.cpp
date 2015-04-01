@@ -81,7 +81,7 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/style/KeyframeList.h"
+#include "core/style/KeyframeList.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"

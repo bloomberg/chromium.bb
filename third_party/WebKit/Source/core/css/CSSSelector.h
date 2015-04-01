@@ -23,7 +23,7 @@
 #define CSSSelector_h
 
 #include "core/dom/QualifiedName.h"
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 

@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "platform/graphics/GraphicsContext.h"

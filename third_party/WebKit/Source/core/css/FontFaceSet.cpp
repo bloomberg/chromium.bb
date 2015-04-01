@@ -40,7 +40,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/layout/style/StyleInheritedData.h"
+#include "core/style/StyleInheritedData.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

@@ -34,7 +34,7 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutRubyRun.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {

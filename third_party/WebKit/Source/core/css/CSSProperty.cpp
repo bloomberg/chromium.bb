@@ -23,7 +23,7 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSValueList.h"
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 
 namespace blink {
 

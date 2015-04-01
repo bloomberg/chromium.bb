@@ -20,7 +20,7 @@
 #ifndef SVGTextLayoutEngineBaseline_h
 #define SVGTextLayoutEngineBaseline_h
 
-#include "core/layout/style/SVGComputedStyleDefs.h"
+#include "core/style/SVGComputedStyleDefs.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/unicode/Unicode.h"
 

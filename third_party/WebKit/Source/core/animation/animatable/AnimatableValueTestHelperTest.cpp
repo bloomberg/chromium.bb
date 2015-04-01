@@ -33,7 +33,7 @@
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
 
 #include "core/layout/ClipPathOperation.h"
-#include "core/layout/style/BasicShapes.h"
+#include "core/style/BasicShapes.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 

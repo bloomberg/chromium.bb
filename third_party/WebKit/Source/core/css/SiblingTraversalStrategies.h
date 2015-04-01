@@ -31,7 +31,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

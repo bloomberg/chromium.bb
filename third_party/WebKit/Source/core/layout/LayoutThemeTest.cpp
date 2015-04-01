@@ -9,7 +9,7 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"

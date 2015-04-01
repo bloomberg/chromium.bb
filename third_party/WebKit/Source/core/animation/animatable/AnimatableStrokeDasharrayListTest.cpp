@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableStrokeDasharrayList.h"
 
-#include "core/layout/style/SVGComputedStyleDefs.h"
+#include "core/style/SVGComputedStyleDefs.h"
 
 #include <gtest/gtest.h>
 

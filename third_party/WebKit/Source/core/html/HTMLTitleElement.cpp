@@ -28,8 +28,8 @@
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
-#include "core/layout/style/ComputedStyle.h"
-#include "core/layout/style/StyleInheritedData.h"
+#include "core/style/ComputedStyle.h"
+#include "core/style/StyleInheritedData.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

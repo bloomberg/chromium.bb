@@ -56,7 +56,7 @@
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "wtf/MathExtras.h"
 #include "wtf/TypeTraits.h"
 

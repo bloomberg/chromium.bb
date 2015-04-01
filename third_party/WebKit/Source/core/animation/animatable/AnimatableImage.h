@@ -33,7 +33,7 @@
 
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/css/CSSCrossfadeValue.h"
-#include "core/layout/style/StyleImage.h"
+#include "core/style/StyleImage.h"
 
 namespace blink {
 

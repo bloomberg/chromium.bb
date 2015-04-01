@@ -23,8 +23,8 @@
 
 #include "core/SVGNames.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/ComputedStyle.h"
-#include "core/layout/style/SVGComputedStyle.h"
+#include "core/style/ComputedStyle.h"
+#include "core/style/SVGComputedStyle.h"
 
 namespace blink {
 

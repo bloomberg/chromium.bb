@@ -60,7 +60,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/style/GridCoordinate.h"
+#include "core/style/GridCoordinate.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/RuntimeEnabledFeatures.h"
 

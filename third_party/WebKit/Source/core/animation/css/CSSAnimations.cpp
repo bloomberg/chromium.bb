@@ -53,7 +53,7 @@
 #include "core/events/TransitionEvent.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/style/KeyframeList.h"
+#include "core/style/KeyframeList.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/animation/TimingFunction.h"
 #include "public/platform/Platform.h"

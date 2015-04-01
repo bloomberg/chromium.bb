@@ -32,7 +32,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"

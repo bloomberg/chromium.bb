@@ -50,7 +50,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/PlatformScreen.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatRect.h"

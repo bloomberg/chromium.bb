@@ -30,7 +30,7 @@
 #ifndef ClipPathOperation_h
 #define ClipPathOperation_h
 
-#include "core/layout/style/BasicShapes.h"
+#include "core/style/BasicShapes.h"
 #include "platform/graphics/Path.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

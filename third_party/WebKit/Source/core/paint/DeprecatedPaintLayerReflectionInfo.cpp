@@ -46,7 +46,7 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutReplica.h"
-#include "core/layout/style/ComputedStyle.h"
+#include "core/style/ComputedStyle.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "platform/transforms/ScaleTransformOperation.h"

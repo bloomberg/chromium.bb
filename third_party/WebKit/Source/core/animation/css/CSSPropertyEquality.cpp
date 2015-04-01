@@ -6,9 +6,9 @@
 #include "core/animation/css/CSSPropertyEquality.h"
 
 #include "core/animation/css/CSSAnimations.h"
-#include "core/layout/style/DataEquivalency.h"
-#include "core/layout/style/ComputedStyle.h"
-#include "core/layout/style/ShadowList.h"
+#include "core/style/DataEquivalency.h"
+#include "core/style/ComputedStyle.h"
+#include "core/style/ShadowList.h"
 
 namespace blink {
 

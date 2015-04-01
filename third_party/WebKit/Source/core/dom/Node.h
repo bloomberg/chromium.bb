@@ -35,7 +35,7 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/events/EventTarget.h"
 #include "core/inspector/InspectorCounters.h"
-#include "core/layout/style/ComputedStyleConstants.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURLHash.h"
