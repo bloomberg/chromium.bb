@@ -97,8 +97,13 @@ class ChromeMetricsServiceClient
 
   // TrackingSynchronizerObserver:
   void ReceivedProfilerData(
-      const tracked_objects::ProcessDataSnapshot& process_data,
-      int process_type) override;
+      const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
+      base::ProcessId process_id,
+      content::ProcessType process_type,
+      int profiling_phase,
+      base::TimeDelta phase_start,
+      base::TimeDelta phase_finish,
+      const metrics::ProfilerEvents& past_profiler_events) override;
   void FinishedReceivingProfilerData() override;
 
   // Callbacks for various stages of final log info collection. Do not call

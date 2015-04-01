@@ -42,9 +42,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 #endif
       public ChildProcessLauncher::Client {
  public:
-  BrowserChildProcessHostImpl(
-      int process_type,
-      BrowserChildProcessHostDelegate* delegate);
+  BrowserChildProcessHostImpl(content::ProcessType process_type,
+                              BrowserChildProcessHostDelegate* delegate);
   ~BrowserChildProcessHostImpl() override;
 
   // Terminates all child processes and deletes each BrowserChildProcessHost

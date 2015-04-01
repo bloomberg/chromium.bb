@@ -263,6 +263,7 @@
       'metrics/net/net_metrics_log_uploader_unittest.cc',
       'metrics/persisted_logs_unittest.cc',
       'metrics/profiler/profiler_metrics_provider_unittest.cc',
+      'metrics/profiler/tracking_synchronizer_unittest.cc',
     ],
     'nacl_unittest_sources': [
       'nacl/browser/nacl_file_host_unittest.cc',

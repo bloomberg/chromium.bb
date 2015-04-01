@@ -985,7 +985,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_MACOSX)
 
   // Initialize tracking synchronizer system.
-  tracking_synchronizer_ = new metrics::TrackingSynchronizer();
+  tracking_synchronizer_ =
+      new metrics::TrackingSynchronizer(base::TimeTicks::Now());
 
 #if defined(OS_MACOSX)
   // Get the Keychain API to register for distributed notifications on the main

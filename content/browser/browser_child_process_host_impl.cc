@@ -60,7 +60,7 @@ void NotifyProcessCrashed(const ChildProcessData& data) {
 }  // namespace
 
 BrowserChildProcessHost* BrowserChildProcessHost::Create(
-    int process_type,
+    content::ProcessType process_type,
     BrowserChildProcessHostDelegate* delegate) {
   return new BrowserChildProcessHostImpl(process_type, delegate);
 }
@@ -92,7 +92,7 @@ void BrowserChildProcessHostImpl::RemoveObserver(
 }
 
 BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
-    int process_type,
+    content::ProcessType process_type,
     BrowserChildProcessHostDelegate* delegate)
     : data_(process_type),
       delegate_(delegate),

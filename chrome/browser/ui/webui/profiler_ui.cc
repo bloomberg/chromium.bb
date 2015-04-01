@@ -163,13 +163,17 @@ void ProfilerUI::GetData() {
 }
 
 void ProfilerUI::ReceivedProfilerData(
-    const tracked_objects::ProcessDataSnapshot& profiler_data,
-    int process_type) {
+    const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
+    base::ProcessId process_id,
+    content::ProcessType process_type,
+    int profiling_phase,
+    base::TimeDelta phase_start,
+    base::TimeDelta phase_finish,
+    const metrics::ProfilerEvents& past_events) {
   // Serialize the data to JSON.
   base::DictionaryValue json_data;
-  task_profiler::TaskProfilerDataSerializer::ToValue(profiler_data,
-                                                     process_type,
-                                                     &json_data);
+  task_profiler::TaskProfilerDataSerializer::ToValue(
+      process_data_phase, process_id, process_type, &json_data);
 
   // Send the data to the renderer.
   web_ui()->CallJavascriptFunction("g_browserBridge.receivedData", json_data);

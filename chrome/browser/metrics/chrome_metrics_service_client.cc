@@ -430,10 +430,19 @@ void ChromeMetricsServiceClient::OnInitTaskGotGoogleUpdateData() {
       weak_ptr_factory_.GetWeakPtr());
 }
 
+// TODO(vadimt): Consider wrapping params in a struct after the list of params
+// to ReceivedProfilerData settles. crbug/456354.
 void ChromeMetricsServiceClient::ReceivedProfilerData(
-    const tracked_objects::ProcessDataSnapshot& process_data,
-    int process_type) {
-  profiler_metrics_provider_->RecordProfilerData(process_data, process_type);
+    const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
+    base::ProcessId process_id,
+    content::ProcessType process_type,
+    int profiling_phase,
+    base::TimeDelta phase_start,
+    base::TimeDelta phase_finish,
+    const metrics::ProfilerEvents& past_events) {
+  profiler_metrics_provider_->RecordProfilerData(
+      process_data_phase, process_id, process_type, profiling_phase,
+      phase_start, phase_finish, past_events);
 }
 
 void ChromeMetricsServiceClient::FinishedReceivingProfilerData() {

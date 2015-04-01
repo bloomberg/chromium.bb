@@ -51,7 +51,7 @@ message ProfilerEventProto {
   // ProfilerEventProto. A given event will not occur twice in this set.
   // The field can be used to find all ProfilerEventProto instances recorded
   // before or not before a given event.
-  repeated ProfilerEvent past_session_events = 4;
+  repeated ProfilerEvent past_session_event = 4;
 
   // Time when profiling started. This is recorded as a time delta relative to
   // the start time of the profiler data recording in the current browser

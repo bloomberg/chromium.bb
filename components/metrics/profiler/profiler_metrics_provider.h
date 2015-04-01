@@ -8,10 +8,12 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "components/metrics/metrics_provider.h"
+#include "components/metrics/profiler/tracking_synchronizer_observer.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
+#include "content/public/common/process_type.h"
 
 namespace tracked_objects {
-struct ProcessDataSnapshot;
+struct ProcessDataPhaseSnapshot;
 }
 
 namespace metrics {
@@ -32,8 +34,13 @@ class ProfilerMetricsProvider : public MetricsProvider {
   // Records the passed profiled data, which should be a snapshot of the
   // browser's profiled performance during startup for a single process.
   void RecordProfilerData(
-      const tracked_objects::ProcessDataSnapshot& process_data,
-      int process_type);
+      const tracked_objects::ProcessDataPhaseSnapshot& process_data,
+      base::ProcessId process_id,
+      content::ProcessType process_type,
+      int profiling_phase,
+      base::TimeDelta phase_start,
+      base::TimeDelta phase_finish,
+      const ProfilerEvents& past_events);
 
  private:
   // Returns whether current connection is cellular or not according to the
@@ -41,12 +48,10 @@ class ProfilerMetricsProvider : public MetricsProvider {
   bool IsCellularConnection();
 
   // Saved cache of generated Profiler event protos, to be copied into the UMA
-  // proto when ProvideGeneralMetrics() is called.
-  ProfilerEventProto profiler_event_cache_;
-
-  // True if this instance has recorded profiler data since the last call to
-  // ProvideGeneralMetrics().
-  bool has_profiler_data_;
+  // proto when ProvideGeneralMetrics() is called. The map is from a profiling
+  // phase id to the profiler event proto that represents profiler data for the
+  // profiling phase.
+  std::map<int, ProfilerEventProto> profiler_events_cache_;
 
   // Callback function used to get current network connection type.
   base::Callback<void(bool*)> cellular_callback_;

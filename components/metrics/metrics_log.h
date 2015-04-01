@@ -27,10 +27,6 @@ namespace content {
 struct WebPluginInfo;
 }
 
-namespace tracked_objects {
-struct ProcessDataSnapshot;
-}
-
 namespace variations {
 struct ActiveGroupId;
 }

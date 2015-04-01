@@ -12,9 +12,6 @@
 #include "components/metrics/metrics_log.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/common/process_type.h"
-
-using tracked_objects::ProcessDataSnapshot;
 
 namespace metrics {
 
@@ -77,33 +74,31 @@ std::string NormalizeFileName(const std::string& file_name) {
   return offset != std::string::npos ? file_name.substr(offset + 1) : file_name;
 }
 
-void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
-                       int process_type,
-                       ProfilerEventProto* performance_profile) {
-  for (std::vector<tracked_objects::TaskSnapshot>::const_iterator it =
-           profiler_data.tasks.begin();
-       it != profiler_data.tasks.end();
-       ++it) {
-    const tracked_objects::DeathDataSnapshot& death_data = it->death_data;
+void WriteProfilerData(
+    const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
+    base::ProcessId process_id,
+    content::ProcessType process_type,
+    ProfilerEventProto* performance_profile) {
+  for (const auto& task : process_data_phase.tasks) {
+    const tracked_objects::DeathDataSnapshot& death_data = task.death_data;
     ProfilerEventProto::TrackedObject* tracked_object =
         performance_profile->add_tracked_object();
     tracked_object->set_birth_thread_name_hash(
-        MetricsLog::Hash(MapThreadName(it->birth.thread_name)));
+        MetricsLog::Hash(MapThreadName(task.birth.thread_name)));
     tracked_object->set_exec_thread_name_hash(
-        MetricsLog::Hash(MapThreadName(it->death_thread_name)));
+        MetricsLog::Hash(MapThreadName(task.death_thread_name)));
     tracked_object->set_source_file_name_hash(
-        MetricsLog::Hash(NormalizeFileName(
-            it->birth.location.file_name)));
+        MetricsLog::Hash(NormalizeFileName(task.birth.location.file_name)));
     tracked_object->set_source_function_name_hash(
-        MetricsLog::Hash(it->birth.location.function_name));
-    tracked_object->set_source_line_number(it->birth.location.line_number);
+        MetricsLog::Hash(task.birth.location.function_name));
+    tracked_object->set_source_line_number(task.birth.location.line_number);
     tracked_object->set_exec_count(death_data.count);
     tracked_object->set_exec_time_total(death_data.run_duration_sum);
     tracked_object->set_exec_time_sampled(death_data.run_duration_sample);
     tracked_object->set_queue_time_total(death_data.queue_duration_sum);
     tracked_object->set_queue_time_sampled(death_data.queue_duration_sample);
     tracked_object->set_process_type(AsProtobufProcessType(process_type));
-    tracked_object->set_process_id(profiler_data.process_id);
+    tracked_object->set_process_id(process_id);
   }
 }
 
@@ -117,12 +112,12 @@ bool IsCellularEnabledByExperiment() {
 
 }  // namespace
 
-ProfilerMetricsProvider::ProfilerMetricsProvider() : has_profiler_data_(false) {
+ProfilerMetricsProvider::ProfilerMetricsProvider() {
 }
 
 ProfilerMetricsProvider::ProfilerMetricsProvider(
     const base::Callback<void(bool*)>& cellular_callback)
-    : has_profiler_data_(false), cellular_callback_(cellular_callback) {
+    : cellular_callback_(cellular_callback) {
 }
 
 ProfilerMetricsProvider::~ProfilerMetricsProvider() {
@@ -130,21 +125,26 @@ ProfilerMetricsProvider::~ProfilerMetricsProvider() {
 
 void ProfilerMetricsProvider::ProvideGeneralMetrics(
     ChromeUserMetricsExtension* uma_proto) {
-  if (!has_profiler_data_)
-    return;
-
   DCHECK_EQ(tracked_objects::TIME_SOURCE_TYPE_WALL_TIME,
             tracked_objects::GetTimeSourceType());
 
   DCHECK_EQ(0, uma_proto->profiler_event_size());
-  ProfilerEventProto* profile = uma_proto->add_profiler_event();
-  profile->Swap(&profiler_event_cache_);
-  has_profiler_data_ = false;
+
+  for (auto& event : profiler_events_cache_) {
+    uma_proto->add_profiler_event()->Swap(&event.second);
+  }
+
+  profiler_events_cache_.clear();
 }
 
 void ProfilerMetricsProvider::RecordProfilerData(
-    const tracked_objects::ProcessDataSnapshot& process_data,
-    int process_type) {
+    const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
+    base::ProcessId process_id,
+    content::ProcessType process_type,
+    int profiling_phase,
+    base::TimeDelta phase_start,
+    base::TimeDelta phase_finish,
+    const ProfilerEvents& past_events) {
   if (IsCellularConnection() && IsCellularEnabledByExperiment())
     return;
   if (tracked_objects::GetTimeSourceType() !=
@@ -153,11 +153,22 @@ void ProfilerMetricsProvider::RecordProfilerData(
     return;
   }
 
-  has_profiler_data_ = true;
-  profiler_event_cache_.set_profile_version(
-      ProfilerEventProto::VERSION_STARTUP_PROFILE);
-  profiler_event_cache_.set_time_source(ProfilerEventProto::WALL_CLOCK_TIME);
-  WriteProfilerData(process_data, process_type, &profiler_event_cache_);
+  const bool new_phase = !ContainsKey(profiler_events_cache_, profiling_phase);
+  ProfilerEventProto* profiler_event = &profiler_events_cache_[profiling_phase];
+
+  if (new_phase) {
+    profiler_event->set_profile_version(
+        ProfilerEventProto::VERSION_SPLIT_PROFILE);
+    profiler_event->set_time_source(ProfilerEventProto::WALL_CLOCK_TIME);
+    profiler_event->set_profiling_start_ms(phase_start.InMilliseconds());
+    profiler_event->set_profiling_finish_ms(phase_finish.InMilliseconds());
+    for (const auto& event : past_events) {
+      profiler_event->add_past_session_event(event);
+    }
+  }
+
+  WriteProfilerData(process_data_phase, process_id, process_type,
+                    profiler_event);
 }
 
 bool ProfilerMetricsProvider::IsCellularConnection() {

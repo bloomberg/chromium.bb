@@ -35,7 +35,7 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // |process_type| needs to be either an enum value from ProcessType or an
   // embedder-defined value.
   static BrowserChildProcessHost* Create(
-      int process_type,
+      content::ProcessType process_type,
       BrowserChildProcessHostDelegate* delegate);
 
   ~BrowserChildProcessHost() override {}

@@ -268,7 +268,7 @@ NaClProcessHost::NaClProcessHost(
       render_view_id_(render_view_id),
       weak_factory_(this) {
   process_.reset(content::BrowserChildProcessHost::Create(
-      PROCESS_TYPE_NACL_LOADER, this));
+      static_cast<content::ProcessType>(PROCESS_TYPE_NACL_LOADER), this));
 
   // Set the display name so the user knows what plugin the process is running.
   // We aren't on the UI thread so getting the pref locale for language

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/common/process_type.h"
 
 namespace tracked_objects {
 struct ProcessDataSnapshot;
@@ -18,7 +19,7 @@ namespace content {
 // This class sends and receives profiler messages in the browser process.
 class ProfilerMessageFilter : public BrowserMessageFilter {
  public:
-  explicit ProfilerMessageFilter(int process_type);
+  explicit ProfilerMessageFilter(content::ProcessType process_type);
 
   // BrowserMessageFilter implementation.
   void OnChannelConnected(int32 peer_pid) override;
@@ -39,7 +40,7 @@ class ProfilerMessageFilter : public BrowserMessageFilter {
   void OnTcmallocStats(const std::string& output);
 #endif
 
-  int process_type_;
+  content::ProcessType process_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilerMessageFilter);
 };

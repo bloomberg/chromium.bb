@@ -13,6 +13,8 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "content/public/browser/profiler_subscriber.h"
 
 // This class maintains state that is used to upload profiler data from the
@@ -41,8 +43,9 @@ class TrackingSynchronizer
   // Construction also sets up the global singleton instance. This instance is
   // used to communicate between the IO and UI thread, and is destroyed only as
   // the main thread (browser_main) terminates, which means the IO thread has
-  // already completed, and will not need this instance any further.
-  TrackingSynchronizer();
+  // already completed, and will not need this instance any further. |now| is
+  // the current time, but can be something else in tests.
+  explicit TrackingSynchronizer(base::TimeTicks now);
 
   // Contact all processes, and get them to upload to the browser any/all
   // changes to profiler data. It calls |callback_object|'s SetData method with
@@ -63,6 +66,8 @@ class TrackingSynchronizer
 
  private:
   friend class base::RefCountedThreadSafe<TrackingSynchronizer>;
+  // TODO(vadimt): Remove friending TrackingSynchronizerTest_ProfilerData_Test.
+  friend class TrackingSynchronizerTest_ProfilerData_Test;
 
   class RequestContext;
 
@@ -75,7 +80,7 @@ class TrackingSynchronizer
   void OnProfilerDataCollected(
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data,
-      int process_type) override;
+      content::ProcessType process_type) override;
 
   // Establish a new sequence_number_, and use it to notify all the processes of
   // the need to supply, to the browser, their tracking data. It also registers
@@ -83,6 +88,14 @@ class TrackingSynchronizer
   // sequence_number_ that was used. This method is accessible on UI thread.
   int RegisterAndNotifyAllProcesses(
       const base::WeakPtr<TrackingSynchronizerObserver>& callback_object);
+
+  // Notify |observer| about |profiler_data| received from process of type
+  // |process_type|. |now| is the current time, but can be something else in
+  // tests.
+  void SendData(const tracked_objects::ProcessDataSnapshot& profiler_data,
+                content::ProcessType process_type,
+                base::TimeTicks now,
+                TrackingSynchronizerObserver* observer) const;
 
   // It finds the RequestContext for the given |sequence_number| and notifies
   // the RequestContext's |callback_object_| about the |value|. This is called
@@ -94,7 +107,7 @@ class TrackingSynchronizer
   void DecrementPendingProcessesAndSendData(
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data,
-      int process_type);
+      content::ProcessType process_type);
 
   // Get a new sequence number to be sent to processes from browser process.
   // This method is accessible on UI thread.
@@ -108,6 +121,20 @@ class TrackingSynchronizer
   // last_used_sequence_number_ is the most recently used number (used to avoid
   // reuse for a long time).
   int last_used_sequence_number_;
+
+  // Sequence of events associated with already completed profiling phases. The
+  // index in the vector is the phase number. The current phase is not included.
+  std::vector<ProfilerEventProto::ProfilerEvent>
+      phase_completion_events_sequence_;
+
+  // TODO(vadimt): consider moving 2 fields below to metrics service.
+  // Time of the profiling start. Used to calculate times of phase change
+  // moments relative to this value.
+  const base::TimeTicks start_time_;
+
+  // Times of starts of all profiling phases, including the current phase. The
+  // index in the vector is the phase number.
+  std::vector<base::TimeTicks> phase_start_times_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackingSynchronizer);
 };

@@ -182,6 +182,7 @@ source_set("unit_tests") {
     "metrics_state_manager_unittest.cc",
     "persisted_logs_unittest.cc",
     "profiler/profiler_metrics_provider_unittest.cc",
+    "profiler/tracking_synchronizer_unittest.cc",
   ]
 
   deps = [

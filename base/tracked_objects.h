@@ -18,6 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/process/process_handle.h"
 #include "base/profiler/alternate_timer.h"
 #include "base/profiler/tracked_time.h"
 #include "base/synchronization/lock.h"
@@ -147,10 +148,14 @@ struct TrackingInfo;
 // TaskSnapshot instances, so that such instances can be sorted and
 // aggregated (and remain frozen during our processing).
 //
-// The ProcessDataSnapshot struct is a serialized representation of the list
-// of ThreadData objects for a process.  It holds a set of TaskSnapshots
-// and tracks parent/child relationships for the executed tasks.  The statistics
-// in a snapshot are gathered asynhcronously relative to their ongoing updates.
+// Profiling consists of phases. The concrete phase in the sequence of phases is
+// identified by its 0-based index.
+//
+// The ProcessDataPhaseSnapshot struct is a serialized representation of the
+// list of ThreadData objects for a process for a concrete profiling phase. It
+// holds a set of TaskSnapshots and tracks parent/child relationships for the
+// executed tasks. The statistics in a snapshot are gathered asynhcronously
+// relative to their ongoing updates.
 // It is possible, though highly unlikely, that stats could be incorrectly
 // recorded by this process (all data is held in 32 bit ints, but we are not
 // atomically collecting all data, so we could have count that does not, for
@@ -342,8 +347,14 @@ struct BASE_EXPORT TaskSnapshot {
 // We also have a linked list of ThreadData instances, and that list is used to
 // harvest data from all existing instances.
 
+struct ProcessDataPhaseSnapshot;
 struct ProcessDataSnapshot;
 class BASE_EXPORT TaskStopwatch;
+
+// Map from profiling phase number to the process-wide snapshotted
+// representation of the list of ThreadData objects that died during the given
+// phase.
+typedef std::map<int, ProcessDataPhaseSnapshot> PhasedProcessDataSnapshotMap;
 
 class BASE_EXPORT ThreadData {
  public:
@@ -376,8 +387,9 @@ class BASE_EXPORT ThreadData {
   // This may return NULL if the system is disabled for any reason.
   static ThreadData* Get();
 
-  // Fills |process_data| with all the recursive results in our process.
-  static void Snapshot(ProcessDataSnapshot* process_data);
+  // Fills |process_data_snapshot| with phased snapshots of all profiling
+  // phases, including the current one.
+  static void Snapshot(ProcessDataSnapshot* process_data_snapshot);
 
   // Finds (or creates) a place to count births from the given location in this
   // thread, and increment that tally.
@@ -403,16 +415,14 @@ class BASE_EXPORT ThreadData {
   // the task.
   // The |end_of_run| was just obtained by a call to Now() (just after the task
   // finished).
-  static void TallyRunOnWorkerThreadIfTracking(
-      const Births* birth,
-      const TrackedTime& time_posted,
-      const TaskStopwatch& stopwatch);
+  static void TallyRunOnWorkerThreadIfTracking(const Births* birth,
+                                               const TrackedTime& time_posted,
+                                               const TaskStopwatch& stopwatch);
 
   // Record the end of execution in region, generally corresponding to a scope
   // being exited.
-  static void TallyRunInAScopedRegionIfTracking(
-      const Births* birth,
-      const TaskStopwatch& stopwatch);
+  static void TallyRunInAScopedRegionIfTracking(const Births* birth,
+                                                const TaskStopwatch& stopwatch);
 
   const std::string& thread_name() const { return thread_name_; }
 
@@ -514,16 +524,21 @@ class BASE_EXPORT ThreadData {
   // Snapshot (under a lock) the profiled data for the tasks in each ThreadData
   // instance.  Also updates the |birth_counts| tally for each task to keep
   // track of the number of living instances of the task.
-  static void SnapshotAllExecutedTasks(ProcessDataSnapshot* process_data,
-                                       BirthCountMap* birth_counts);
+  static void SnapshotAllExecutedTasks(
+      ProcessDataPhaseSnapshot* process_data_phase,
+      BirthCountMap* birth_counts);
+
+  // Fills |process_data_phase| with all the recursive results in our process.
+  static void SnapshotCurrentPhase(
+      ProcessDataPhaseSnapshot* process_data_phase);
 
   // Snapshots (under a lock) the profiled data for the tasks for this thread
   // and writes all of the executed tasks' data -- i.e. the data for the tasks
-  // with with entries in the death_map_ -- into |process_data|.  Also updates
-  // the |birth_counts| tally for each task to keep track of the number of
-  // living instances of the task -- that is, each task maps to the number of
+  // with with entries in the death_map_ -- into |process_data_phase|.  Also
+  // updates the |birth_counts| tally for each task to keep track of the number
+  // of living instances of the task -- that is, each task maps to the number of
   // births for the task that have not yet been balanced by a death.
-  void SnapshotExecutedTasks(ProcessDataSnapshot* process_data,
+  void SnapshotExecutedTasks(ProcessDataPhaseSnapshot* process_data_phase,
                              BirthCountMap* birth_counts);
 
   // Using our lock, make a copy of the specified maps.  This call may be made
@@ -747,16 +762,29 @@ struct BASE_EXPORT ParentChildPairSnapshot {
 };
 
 //------------------------------------------------------------------------------
-// A snapshotted representation of the list of ThreadData objects for a process.
+// A snapshotted representation of the list of ThreadData objects for a process,
+// for a single profiling phase.
+
+struct BASE_EXPORT ProcessDataPhaseSnapshot {
+ public:
+  ProcessDataPhaseSnapshot();
+  ~ProcessDataPhaseSnapshot();
+
+  std::vector<TaskSnapshot> tasks;
+  std::vector<ParentChildPairSnapshot> descendants;
+};
+
+//------------------------------------------------------------------------------
+// A snapshotted representation of the list of ThreadData objects for a process,
+// for all profiling phases, including the current one.
 
 struct BASE_EXPORT ProcessDataSnapshot {
  public:
   ProcessDataSnapshot();
   ~ProcessDataSnapshot();
 
-  std::vector<TaskSnapshot> tasks;
-  std::vector<ParentChildPairSnapshot> descendants;
-  int process_id;
+  PhasedProcessDataSnapshotMap phased_process_data_snapshots;
+  base::ProcessId process_id;
 };
 
 }  // namespace tracked_objects

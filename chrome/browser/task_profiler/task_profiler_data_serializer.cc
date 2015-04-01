@@ -21,7 +21,7 @@ using tracked_objects::DeathDataSnapshot;
 using tracked_objects::LocationSnapshot;
 using tracked_objects::ParentChildPairSnapshot;
 using tracked_objects::TaskSnapshot;
-using tracked_objects::ProcessDataSnapshot;
+using tracked_objects::ProcessDataPhaseSnapshot;
 
 namespace {
 
@@ -80,30 +80,27 @@ namespace task_profiler {
 
 // static
 void TaskProfilerDataSerializer::ToValue(
-    const ProcessDataSnapshot& process_data,
+    const ProcessDataPhaseSnapshot& process_data_phase,
+    base::ProcessId process_id,
     int process_type,
     base::DictionaryValue* dictionary) {
   scoped_ptr<base::ListValue> tasks_list(new base::ListValue);
-  for (std::vector<TaskSnapshot>::const_iterator it =
-           process_data.tasks.begin();
-       it != process_data.tasks.end(); ++it) {
+  for (const auto& task : process_data_phase.tasks) {
     scoped_ptr<base::DictionaryValue> snapshot(new base::DictionaryValue);
-    TaskSnapshotToValue(*it, snapshot.get());
+    TaskSnapshotToValue(task, snapshot.get());
     tasks_list->Append(snapshot.release());
   }
   dictionary->Set("list", tasks_list.release());
 
-  dictionary->SetInteger("process_id", process_data.process_id);
+  dictionary->SetInteger("process_id", process_id);
   dictionary->SetString("process_type",
                         content::GetProcessTypeNameInEnglish(process_type));
 
   scoped_ptr<base::ListValue> descendants_list(new base::ListValue);
-  for (std::vector<ParentChildPairSnapshot>::const_iterator it =
-           process_data.descendants.begin();
-       it != process_data.descendants.end(); ++it) {
+  for (const auto& entry : process_data_phase.descendants) {
     scoped_ptr<base::DictionaryValue> parent_child(new base::DictionaryValue);
-    BirthOnThreadSnapshotToValue(it->parent, "parent", parent_child.get());
-    BirthOnThreadSnapshotToValue(it->child, "child", parent_child.get());
+    BirthOnThreadSnapshotToValue(entry.parent, "parent", parent_child.get());
+    BirthOnThreadSnapshotToValue(entry.child, "child", parent_child.get());
     descendants_list->Append(parent_child.release());
   }
   dictionary->Set("descendants", descendants_list.release());

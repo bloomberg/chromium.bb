@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_TASK_PROFILER_TASK_PROFILER_DATA_SERIALIZER_H_
 
 #include "base/basictypes.h"
+#include "base/process/process_handle.h"
 
 namespace base {
 class DictionaryValue;
@@ -13,7 +14,7 @@ class FilePath;
 }
 
 namespace tracked_objects {
-struct ProcessDataSnapshot;
+struct ProcessDataPhaseSnapshot;
 }
 
 namespace task_profiler {
@@ -24,10 +25,13 @@ class TaskProfilerDataSerializer {
  public:
   TaskProfilerDataSerializer() {}
 
-  // Writes the contents of |process_data| and |process_type| into |dictionary|.
-  static void ToValue(const tracked_objects::ProcessDataSnapshot& process_data,
-                      int process_type,
-                      base::DictionaryValue* dictionary);
+  // Writes the contents of |process_data_phase|, |process_id| and
+  // |process_type| into |dictionary|.
+  static void ToValue(
+      const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
+      base::ProcessId process_id,
+      int process_type,
+      base::DictionaryValue* dictionary);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskProfilerDataSerializer);

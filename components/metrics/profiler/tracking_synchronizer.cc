@@ -9,6 +9,7 @@
 #include "base/threading/thread.h"
 #include "base/tracked_objects.h"
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/profiler_controller.h"
 #include "content/public/common/process_type.h"
@@ -179,15 +180,25 @@ base::LazyInstance
 
 // TrackingSynchronizer methods and members.
 
-TrackingSynchronizer::TrackingSynchronizer()
-    : last_used_sequence_number_(kNeverUsableSequenceNumber) {
+TrackingSynchronizer::TrackingSynchronizer(base::TimeTicks now)
+    : last_used_sequence_number_(kNeverUsableSequenceNumber), start_time_(now) {
   DCHECK(!g_tracking_synchronizer);
   g_tracking_synchronizer = this;
+  phase_start_times_.push_back(now);
+
+#if !defined(OS_IOS)
+  // TODO: This ifdef and other ifdefs for OS_IOS in this file are only
+  // short-term hacks to make this compile on iOS, and the proper solution is to
+  // refactor to remove content dependencies from shared code.
+  // See crbug/472210.
   content::ProfilerController::GetInstance()->Register(this);
+#endif
 }
 
 TrackingSynchronizer::~TrackingSynchronizer() {
+#if !defined(OS_IOS)
   content::ProfilerController::GetInstance()->Unregister(this);
+#endif
 
   // Just in case we have any pending tasks, clear them out.
   RequestContext::OnShutdown();
@@ -232,7 +243,7 @@ void TrackingSynchronizer::OnPendingProcesses(int sequence_number,
 void TrackingSynchronizer::OnProfilerDataCollected(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
-    int process_type) {
+    content::ProcessType process_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DecrementPendingProcessesAndSendData(sequence_number, profiler_data,
                                        process_type);
@@ -250,32 +261,70 @@ int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
   // Increment pending process count for sending browser's profiler data.
   request->IncrementProcessesPending();
 
+#if !defined(OS_IOS)
   // Get profiler data from renderer and browser child processes.
   content::ProfilerController::GetInstance()->GetProfilerData(sequence_number);
+#endif
 
-  // Send profiler_data from browser process.
-  tracked_objects::ProcessDataSnapshot process_data;
-  tracked_objects::ThreadData::Snapshot(&process_data);
-  DecrementPendingProcessesAndSendData(sequence_number, process_data,
+  // Send process data snapshot from browser process.
+  tracked_objects::ProcessDataSnapshot process_data_snapshot;
+  tracked_objects::ThreadData::Snapshot(&process_data_snapshot);
+  DecrementPendingProcessesAndSendData(sequence_number, process_data_snapshot,
                                        content::PROCESS_TYPE_BROWSER);
 
   return sequence_number;
 }
 
+void TrackingSynchronizer::SendData(
+    const tracked_objects::ProcessDataSnapshot& profiler_data,
+    content::ProcessType process_type,
+    base::TimeTicks now,
+    TrackingSynchronizerObserver* observer) const {
+  // We are going to loop though past profiling phases and notify the request
+  // about each phase that is contained in profiler_data. past_events
+  // will track the set of past profiling events as we go.
+  ProfilerEvents past_events;
+
+  // Go through all completed phases, and through the current one. The current
+  // one is not in phase_completion_events_sequence_, but note the <=
+  // comparison.
+  for (size_t phase = 0; phase <= phase_completion_events_sequence_.size();
+       ++phase) {
+    auto it = profiler_data.phased_process_data_snapshots.find(phase);
+
+    if (it != profiler_data.phased_process_data_snapshots.end()) {
+      // If the phase is contained in the received snapshot, notify the
+      // request.
+      const base::TimeDelta phase_start =
+          phase_start_times_[phase] - start_time_;
+      const base::TimeDelta phase_finish =
+          (phase + 1 < phase_start_times_.size() ? phase_start_times_[phase + 1]
+                                                 : now) -
+          start_time_;
+      observer->ReceivedProfilerData(it->second, profiler_data.process_id,
+                                     process_type, phase, phase_start,
+                                     phase_finish, past_events);
+    }
+
+    if (phase < phase_completion_events_sequence_.size()) {
+      past_events.push_back(phase_completion_events_sequence_[phase]);
+    }
+  }
+}
+
 void TrackingSynchronizer::DecrementPendingProcessesAndSendData(
     int sequence_number,
     const tracked_objects::ProcessDataSnapshot& profiler_data,
-    int process_type) {
+    content::ProcessType process_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RequestContext* request = RequestContext::GetRequestContext(sequence_number);
   if (!request)
     return;
 
-  if (request->callback_object_.get()) {
-    request->callback_object_
-        ->ReceivedProfilerData(profiler_data, process_type);
-  }
+  TrackingSynchronizerObserver* observer = request->callback_object_.get();
+  if (observer)
+    SendData(profiler_data, process_type, base::TimeTicks::Now(), observer);
 
   // Delete request if we have heard back from all child processes.
   request->DecrementProcessesPending();
