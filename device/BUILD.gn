@@ -29,12 +29,6 @@ test("device_unittests") {
     "nfc/nfc_chromeos_unittest.cc",
     "nfc/nfc_ndef_record_unittest.cc",
     "test/run_all_unittests.cc",
-    "test/usb_test_gadget_impl.cc",
-    "usb/usb_context_unittest.cc",
-    "usb/usb_device_filter_unittest.cc",
-    "usb/usb_device_handle_unittest.cc",
-    "usb/usb_ids_unittest.cc",
-    "usb/usb_service_unittest.cc",
   ]
 
   deps = [
@@ -43,12 +37,10 @@ test("device_unittests") {
     "//device/battery:mojo_bindings",
     "//device/bluetooth",
     "//device/nfc",
-    "//device/usb",
     "//mojo/environment:chromium",
     "//net",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/libusb",
     "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
@@ -59,8 +51,9 @@ test("device_unittests") {
   }
 
   # HID and Serial:
+  # Android doesn't compile.
   # Linux, requires udev.
-  if (!is_linux_without_udev) {
+  if (!is_linux_without_udev && !is_android) {
     sources += [
       "hid/hid_connection_unittest.cc",
       "hid/hid_device_filter_unittest.cc",
@@ -85,6 +78,22 @@ test("device_unittests") {
     deps += [ "//device/udev_linux" ]
   }
 
+  # USB does not compile on mobile platforms.
+  if (!is_android && !is_ios) {
+    sources += [
+      "test/usb_test_gadget_impl.cc",
+      "usb/usb_context_unittest.cc",
+      "usb/usb_device_filter_unittest.cc",
+      "usb/usb_device_handle_unittest.cc",
+      "usb/usb_ids_unittest.cc",
+      "usb/usb_service_unittest.cc",
+    ]
+    deps += [
+      "//device/usb",
+      "//third_party/libusb",
+    ]
+  }
+
   if (is_chromeos) {
     configs += [ "//build/config/linux:dbus" ]
 
@@ -96,7 +105,7 @@ test("device_unittests") {
     ]
   }
 
-  if (is_posix && !is_mac) {
+  if (is_posix && !is_android && !is_mac) {
     libs = [ "rt" ]
   }
 

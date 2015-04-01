@@ -53,6 +53,7 @@ group("gn_all") {
     "//content/test:content_perftests",
     "//content/test:content_unittests",
     "//crypto:crypto_unittests",
+    "//device:device_unittests",
     "//extensions:extensions_browsertests",
     "//extensions:extensions_unittests",
     "//google_apis/gcm:gcm_unit_tests",
