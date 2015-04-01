@@ -20,7 +20,6 @@ namespace blink {
 
 class BodyStreamBuffer;
 class ReadableByteStream;
-class ReadableByteStreamReader;
 class ScriptState;
 
 class Body
@@ -39,6 +38,11 @@ public:
         ResponseAsJSON,
         ResponseAsText
     };
+    enum LockBodyOption {
+        LockBodyOptionNone,
+        // Setting "body passed" flag in addition to acquiring a lock.
+        PassBody,
+    };
     explicit Body(ExecutionContext*);
     virtual ~Body() { }
 
@@ -49,12 +53,11 @@ public:
     ScriptPromise text(ScriptState*);
     ReadableByteStream* body();
 
-    // Sets the bodyUsed flag to true. This signifies that the contents of the
-    // body have been consumed and cannot be accessed again.
-    void setBodyUsed();
     bool bodyUsed() const;
+    void lockBody(LockBodyOption = LockBodyOptionNone);
 
     bool streamAccessed() const;
+    void refreshBody();
 
     // Creates a new BodyStreamBuffer to drain the data from the ReadableStream.
     BodyStreamBuffer* createDrainingStream();
@@ -101,7 +104,6 @@ private:
     RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
     Member<ReadableStreamSource> m_streamSource;
     Member<ReadableByteStream> m_stream;
-    Member<ReadableByteStreamReader> m_streamReader;
 };
 
 } // namespace blink

@@ -668,11 +668,13 @@ promise_test(function(t) {
                           {method: 'POST',
                            body: new Blob([''], {type: 'Text/Plain'}),
                            headers: [['Content-Type', 'Text/Html']]});
-    req = req.clone();
-    return req.blob()
-      .then(function(blob) {
-          assert_equals(blob.type, 'text/html');
+    var clone = req.clone();
+    return Promise.all([req.blob(), clone.blob()])
+      .then(function(blobs) {
+          assert_equals(blobs[0].type, 'text/html');
+          assert_equals(blobs[1].type, 'text/html');
           assert_equals(req.headers.get('Content-Type'), 'Text/Html');
+          assert_equals(clone.headers.get('Content-Type'), 'Text/Html');
         });
   }, 'Extract a MIME type with clone');
 

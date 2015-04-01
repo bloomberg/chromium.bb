@@ -105,13 +105,29 @@ sequential_promise_test(function(t) {
         assert_not_equals(read, 190);
 
         reader.releaseLock();
-        return read_until_end(original.clone().body.getReader());
-      }).then(function(chunks) {
-        for (var chunk of chunks) {
-          read += chunk.byteLength;
+        var original_body = original.body;
+        var clone = original.clone();
+        assert_not_equals(original.body, clone.body);
+        assert_not_equals(original.body, original_body);
+        assert_not_equals(clone.body, original_body);
+        assert_throws({name: 'TypeError'}, function() {
+            original_body.getReader();
+        });
+        var reader1 = original.body.getReader();
+        var reader2 = clone.body.getReader();
+        return Promise.all([read_until_end(reader1), read_until_end(reader2)]);
+      }).then(function(r) {
+        var read1 = 0;
+        var read2 = 0;
+        for (var chunk of r[0]) {
+          read1 += chunk.byteLength;
+        }
+        for (var chunk of r[1]) {
+          read2 += chunk.byteLength;
         }
         // Make sure that we received all data in total.
-        assert_equals(read, 190);
+        assert_equals(read + read1, 190);
+        assert_equals(read + read2, 190);
       });
   }, 'Clone after reading partially');
 

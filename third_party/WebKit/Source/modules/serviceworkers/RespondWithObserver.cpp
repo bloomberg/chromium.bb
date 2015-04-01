@@ -201,7 +201,7 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
         responseWasRejected();
         return;
     }
-    response->setBodyUsed();
+    response->lockBody(Body::PassBody);
     if (BodyStreamBuffer* buffer = response->internalBuffer()) {
         if (buffer == response->buffer() && response->streamAccessed())
             buffer = response->createDrainingStream();

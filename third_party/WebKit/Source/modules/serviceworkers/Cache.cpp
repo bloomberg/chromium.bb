@@ -364,9 +364,9 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, Request* request, Respons
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Response body is already used"));
 
     if (request->hasBody())
-        request->setBodyUsed();
+        request->lockBody(Body::PassBody);
     if (response->hasBody())
-        response->setBodyUsed();
+        response->lockBody(Body::PassBody);
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();

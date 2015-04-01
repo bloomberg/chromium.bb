@@ -24,17 +24,14 @@ function consume(reader) {
   return rec(reader);
 }
 
-function flatten(chunks) {
-  var size = 0;
+function decode(chunks) {
+  var decoder = new TextDecoder();
+  var result = '';
   for (var chunk of chunks) {
-    size += chunk.byteLength;
+    result += decoder.decode(chunk, {stream: true});
   }
-  var buffer = new Uint8Array(size);
-  var current = 0;
-  for (var chunk of chunks) {
-    buffer.set(chunk, 0);
-  }
-  return buffer;
+  result += decoder.decode(new Uint8Array(0));
+  return result;
 }
 
 test(function() {
@@ -296,9 +293,9 @@ test(function() {
 promise_test(function(t) {
     var res = new Response('hello');
     return consume(res.body.getReader()).then(function(chunks) {
-        return flatten(chunks);
-      }).then(function(view) {
-        assert_equals(new TextDecoder().decode(view), 'hello');
+        return decode(chunks);
+      }).then(function(text) {
+        assert_equals(text, 'hello');
         return res.body.getReader().read();
       }).then(function(r) {
         assert_true(r.done);
@@ -349,12 +346,33 @@ promise_test(function(t) {
 
 promise_test(function(t) {
     var res = new Response('hello');
+    var body = res.body;
     var clone = res.clone();
+    assert_not_equals(res.body, body);
+    assert_not_equals(res.body, clone.body);
+    assert_not_equals(body, clone.body);
+    assert_throws({name: 'TypeError'}, function() { body.getReader(); });
     return Promise.all([res.text(), clone.text()]).then(function(r) {
         assert_equals(r[0], 'hello');
         assert_equals(r[1], 'hello');
       });
-  }, 'Clone on Response');
+  }, 'Clone on Response (text)');
+
+promise_test(function(t) {
+    var res = new Response('hello');
+    var body = res.body;
+    var clone = res.clone();
+    assert_not_equals(res.body, body);
+    assert_not_equals(res.body, clone.body);
+    assert_not_equals(body, clone.body);
+    assert_throws({name: 'TypeError'}, function() { body.getReader(); });
+    var reader1 = res.body.getReader();
+    var reader2 = clone.body.getReader();
+    return Promise.all([consume(reader1), consume(reader2)]).then(function(r) {
+        assert_equals(decode(r[0]), 'hello');
+        assert_equals(decode(r[1]), 'hello');
+      });
+  }, 'Clone on Response (manual read)');
 
 promise_test(function(t) {
     var res = new Response('hello');

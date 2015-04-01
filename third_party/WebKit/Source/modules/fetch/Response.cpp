@@ -299,6 +299,10 @@ Response* Response::clone(ExceptionState& exceptionState)
         BodyStreamBuffer* drainingStream = createDrainingStream();
         m_response->replaceBodyStreamBuffer(drainingStream);
     }
+    // Lock the old body and set |body| property to the new one.
+    lockBody();
+    refreshBody();
+
     FetchResponseData* response = m_response->clone();
     Headers* headers = Headers::create(response->headerList());
     headers->setGuard(m_headers->guard());

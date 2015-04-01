@@ -51,7 +51,7 @@ Request* Request::createRequestWithRequestOrString(ExecutionContext* context, Re
             return 0;
         }
         // "2. Set input's used flag."
-        inputRequest->setBodyUsed();
+        inputRequest->lockBody(PassBody);
     }
 
     // "2. Let |request| be |input|'s associated request, if |input| is a
@@ -347,7 +347,7 @@ Request* Request::clone(ExceptionState& exceptionState) const
 FetchRequestData* Request::passRequestData()
 {
     ASSERT(!bodyUsed());
-    setBodyUsed();
+    lockBody(PassBody);
     return m_request->pass();
 }
 

@@ -273,7 +273,7 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
     if (!executionContext)
         return ScriptPromise();
 
-    setBodyUsed();
+    lockBody(PassBody);
     m_responseType = type;
 
     ASSERT(!m_resolver);
@@ -373,19 +373,27 @@ bool Body::bodyUsed() const
     return m_bodyUsed || m_stream->isLocked();
 }
 
-void Body::setBodyUsed()
+void Body::lockBody(LockBodyOption option)
 {
-    ASSERT(!m_bodyUsed);
+    ASSERT(!bodyUsed());
+    if (option == PassBody)
+        m_bodyUsed = true;
     ASSERT(!m_stream->isLocked());
     TrackExceptionState exceptionState;
-    m_streamReader = m_stream->getBytesReader(executionContext(), exceptionState);
+    m_stream->getBytesReader(executionContext(), exceptionState);
     ASSERT(!exceptionState.hadException());
-    m_bodyUsed = true;
 }
 
 bool Body::streamAccessed() const
 {
     return m_streamSource->state() != m_streamSource->Initial;
+}
+
+void Body::refreshBody()
+{
+    m_streamSource = new ReadableStreamSource(this);
+    m_stream = new ReadableByteStream(m_streamSource, new ReadableByteStream::StrictStrategy);
+    m_streamSource->startStream(m_stream);
 }
 
 BodyStreamBuffer* Body::createDrainingStream()
@@ -416,7 +424,6 @@ DEFINE_TRACE(Body)
     visitor->trace(m_resolver);
     visitor->trace(m_stream);
     visitor->trace(m_streamSource);
-    visitor->trace(m_streamReader);
     ActiveDOMObject::trace(visitor);
 }
 
