@@ -57,7 +57,8 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
 
 # RasterizeAndRecord disabled on mac because of crbug.com/350684.
 # RasterizeAndRecord disabled on windows because of crbug.com/338057.
-@benchmark.Disabled('mac', 'win')
+# Slimming paint version disabled on android because of crbug.com/472590.
+@benchmark.Disabled('mac', 'win', 'android')
 @benchmark.Disabled('reference')
 class RasterizeAndRecordMicroTop25WithSlimmingPaint(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance with --enable-slimming-paint.
