@@ -93,7 +93,7 @@ bool FakePicturePile::HasRecordingAt(int x, int y) const {
   return !!found->second.GetPicture();
 }
 
-void FakePicturePile::RerecordPile() {
+void FakePicturePile::Rerecord() {
   for (int y = 0; y < num_tiles_y(); ++y) {
     for (int x = 0; x < num_tiles_x(); ++x) {
       RemoveRecordingAt(x, y);

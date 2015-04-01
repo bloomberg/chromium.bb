@@ -26,7 +26,8 @@ const int kOpCountThatIsOkToAnalyze = 10;
 
 namespace cc {
 
-DisplayListRecordingSource::DisplayListRecordingSource()
+DisplayListRecordingSource::DisplayListRecordingSource(
+    const gfx::Size& grid_cell_size)
     : slow_down_raster_scale_factor_for_debug_(0),
       gather_pixel_refs_(false),
       requires_clear_(false),
@@ -34,6 +35,7 @@ DisplayListRecordingSource::DisplayListRecordingSource()
       solid_color_(SK_ColorTRANSPARENT),
       background_color_(SK_ColorTRANSPARENT),
       pixel_record_distance_(kPixelDistanceToRecord),
+      grid_cell_size_(grid_cell_size),
       is_suitable_for_gpu_rasterization_(true) {
 }
 
@@ -115,6 +117,8 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
   display_list_->EmitTraceSnapshot();
 
   display_list_->CreateAndCacheSkPicture();
+  if (gather_pixel_refs_)
+    display_list_->GatherPixelRefs(grid_cell_size_);
 
   return true;
 }
