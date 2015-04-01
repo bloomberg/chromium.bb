@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "content/common/view_messages.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/media/render_media_log.h"
@@ -14,17 +15,24 @@ class RenderMediaLogTest : public testing::Test {
  public:
   RenderMediaLogTest()
       : log_(new RenderMediaLog()),
-        tick_clock_(new base::SimpleTestTickClock()) {
+        tick_clock_(new base::SimpleTestTickClock()),
+        task_runner_(new base::TestMockTimeTaskRunner()) {
     log_->SetTickClockForTesting(scoped_ptr<base::TickClock>(tick_clock_));
+    log_->SetTaskRunnerForTesting(task_runner_);
   }
 
-  ~RenderMediaLogTest() override {}
+  ~RenderMediaLogTest() override {
+    task_runner_->ClearPendingTasks();
+  }
 
   void AddEvent(media::MediaLogEvent::Type type) {
     log_->AddEvent(log_->CreateEvent(type));
   }
 
-  void Advance(base::TimeDelta delta) { tick_clock_->Advance(delta); }
+  void Advance(base::TimeDelta delta) {
+    tick_clock_->Advance(delta);
+    task_runner_->FastForwardBy(delta);
+  }
 
   int message_count() { return render_thread_.sink().message_count(); }
 
@@ -45,6 +53,7 @@ class RenderMediaLogTest : public testing::Test {
   MockRenderThread render_thread_;
   scoped_refptr<RenderMediaLog> log_;
   base::SimpleTestTickClock* tick_clock_;  // Owned by |log_|.
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMediaLogTest);
 };
@@ -60,19 +69,29 @@ TEST_F(RenderMediaLogTest, ThrottleSendingEvents) {
 
   // Now we should expect an IPC.
   Advance(base::TimeDelta::FromMilliseconds(500));
-  AddEvent(media::MediaLogEvent::PLAY);
   EXPECT_EQ(1, message_count());
 
   // Verify contents.
   std::vector<media::MediaLogEvent> events = GetMediaLogEvents();
-  ASSERT_EQ(3u, events.size());
+  ASSERT_EQ(2u, events.size());
   EXPECT_EQ(media::MediaLogEvent::LOAD, events[0].type);
   EXPECT_EQ(media::MediaLogEvent::SEEK, events[1].type);
-  EXPECT_EQ(media::MediaLogEvent::PLAY, events[2].type);
 
   // Adding another event shouldn't send anything.
   AddEvent(media::MediaLogEvent::PIPELINE_ERROR);
   EXPECT_EQ(1, message_count());
+}
+
+TEST_F(RenderMediaLogTest, EventSentWithoutDelayAfterIpcInterval) {
+  AddEvent(media::MediaLogEvent::LOAD);
+  Advance(base::TimeDelta::FromMilliseconds(1000));
+  EXPECT_EQ(1, message_count());
+
+  // After the ipc send interval passes, the next event should be sent
+  // right away.
+  Advance(base::TimeDelta::FromMilliseconds(2000));
+  AddEvent(media::MediaLogEvent::LOAD);
+  EXPECT_EQ(2, message_count());
 }
 
 TEST_F(RenderMediaLogTest, BufferedExtents) {
@@ -85,20 +104,17 @@ TEST_F(RenderMediaLogTest, BufferedExtents) {
   AddEvent(media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED);
   AddEvent(media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED);
 
-  // Trigger IPC message.
   EXPECT_EQ(0, message_count());
   Advance(base::TimeDelta::FromMilliseconds(1000));
-  AddEvent(media::MediaLogEvent::PLAY);
   EXPECT_EQ(1, message_count());
 
   // Verify contents. There should only be a single buffered extents changed
   // event.
   std::vector<media::MediaLogEvent> events = GetMediaLogEvents();
-  ASSERT_EQ(4u, events.size());
+  ASSERT_EQ(3u, events.size());
   EXPECT_EQ(media::MediaLogEvent::LOAD, events[0].type);
   EXPECT_EQ(media::MediaLogEvent::SEEK, events[1].type);
-  EXPECT_EQ(media::MediaLogEvent::PLAY, events[2].type);
-  EXPECT_EQ(media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED, events[3].type);
+  EXPECT_EQ(media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED, events[2].type);
 }
 
 }  // namespace content

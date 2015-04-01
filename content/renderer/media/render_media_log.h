@@ -22,6 +22,8 @@ namespace content {
 //
 // To minimize the number of events sent over the wire, only the latest event
 // added is sent for high frequency events (e.g., BUFFERED_EXTENTS_CHANGED).
+//
+// It must be constructed on the render thread.
 class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
  public:
   RenderMediaLog();
@@ -31,11 +33,16 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
 
   // Will reset |last_ipc_send_time_| with the value of NowTicks().
   void SetTickClockForTesting(scoped_ptr<base::TickClock> tick_clock);
+  void SetTaskRunnerForTesting(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
  private:
   ~RenderMediaLog() override;
 
-  scoped_refptr<base::MessageLoopProxy> render_loop_;
+  // Posted as a delayed task to throttle ipc message frequency.
+  void SendQueuedMediaEvents();
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_ptr<base::TickClock> tick_clock_;
   base::TimeTicks last_ipc_send_time_;
   std::vector<media::MediaLogEvent> queued_media_events_;
