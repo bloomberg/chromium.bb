@@ -6,12 +6,10 @@
 
 from __future__ import print_function
 
-import json
 import os
 
 from chromite.lib import blueprint_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 from chromite.lib import workspace_lib
 
 
@@ -34,11 +32,7 @@ class BlueprintLibTest(cros_test_lib.MockTempDirTestCase):
     if main_package:
       config['main_package'] = main_package
 
-    osutils.WriteFile(path, json.dumps(config, sort_keys=True, indent=4,
-                                       separators=(',', ': ')),
-                      makedirs=True)
-
-    self.blueprint = blueprint_lib.Blueprint(path)
+    self.blueprint = blueprint_lib.Blueprint(path, initial_config=config)
 
   def SetupFakeWorkspace(self):
     self.PatchObject(workspace_lib, 'WorkspacePath', return_value=self.tempdir)

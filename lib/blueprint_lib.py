@@ -20,18 +20,25 @@ class BlueprintNotFound(Exception):
 class Blueprint(object):
   """Encapsulates the interaction with a blueprint."""
 
-  def __init__(self, blueprint_loc):
+  def __init__(self, blueprint_loc, initial_config=None):
     """Instantiates a blueprint object.
 
     Args:
       blueprint_loc: blueprint locator.  This can be a relative path to CWD, an
         absolute path, or a relative path to the root of the workspace prefixed
         with '//'.
+      initial_config: A dictionary of key-value pairs to seed a new blueprint
+        with if the specified blueprint doesn't already exist.
     """
     path = (workspace_lib.LocatorToPath(blueprint_loc)
             if workspace_lib.IsLocator(blueprint_loc) else blueprint_loc)
     if not os.path.exists(path):
-      raise BlueprintNotFound('blueprint %s not found.' % path)
+      if initial_config:
+        osutils.WriteFile(path, json.dumps(initial_config, sort_keys=True,
+                                           indent=4, separators=(',', ': ')),
+                          makedirs=True)
+      else:
+        raise BlueprintNotFound('blueprint %s not found.' % path)
 
     self.config = json.loads(osutils.ReadFile(path))
 

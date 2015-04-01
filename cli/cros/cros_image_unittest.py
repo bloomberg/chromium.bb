@@ -6,13 +6,101 @@
 
 from __future__ import print_function
 
+import os
+
+from chromite.cbuildbot import constants
+from chromite.cli import command_unittest
 from chromite.cli.cros import cros_image
+from chromite.lib import blueprint_lib
+from chromite.lib import brick_lib
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import workspace_lib
 
 
-class ImageCommandTest(cros_test_lib.TestCase):
+class MockImageCommand(command_unittest.MockCommand):
+  """Mock out the image command."""
+  TARGET = 'chromite.cli.cros.cros_image.ImageCommand'
+  TARGET_CLASS = cros_image.ImageCommand
+  COMMAND = 'image'
+
+  def __init__(self, *args, **kwargs):
+    super(MockImageCommand, self).__init__(*args, **kwargs)
+
+  def Run(self, inst):
+    return super(MockImageCommand, self).Run(inst)
+
+
+class ImageCommandTest(cros_test_lib.MockTempDirTestCase):
   """Test class for our ImageCommand class."""
+
+  def SetupCommandMock(self, cmd_args):
+    """Sets up the `cros image` command mock."""
+    self.cmd_mock = MockImageCommand(cmd_args)
+
+  def SetupFakeWorkspace(self):
+    self.PatchObject(workspace_lib, 'WorkspacePath', return_value=self.tempdir)
+
+  def SetupBrick(self, name='thebrickfoo', main_package='app-misc/bar'):
+    """Creates a new brick."""
+    # Creates the brick in a subdirectory of tempdir so that we can create other
+    # bricks without interfering with it.
+    brick_path = os.path.join(self.tempdir, name)
+    return brick_lib.Brick(brick_path,
+                           initial_config={'name': name,
+                                           'main_package': main_package})
+
+  def SetupBlueprint(self, blueprint_name='foo.json', bricks=None, bsp=None,
+                     main_package=None):
+    path = os.path.join(self.tempdir, blueprint_name)
+
+    config = {}
+    if bricks:
+      config['bricks'] = bricks
+    if bsp:
+      config['bsp'] = bsp
+    if main_package:
+      config['main_package'] = main_package
+
+    self.blueprint = blueprint_lib.Blueprint(path, initial_config=config)
+
+  def setUp(self):
+    self.blueprint = None
+    self.cmd_mock = None
+    self.SetupFakeWorkspace()
+
+    # Since the build_image command is mocked out and the workspace directory
+    # is patched, fake being in the chroot to allow running the unittest
+    # outside the chroot.
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+
+    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.rc_mock.SetDefaultCmdResult()
+
+  def testBlueprint(self):
+    """Tests running the full image command with a blueprint."""
+    self.SetupBrick(name='brick1', main_package='brick/foo')
+    self.SetupBrick(name='brick2', main_package='brick/bar')
+    self.SetupBrick(name='bsp1', main_package='bsp/baz')
+    self.SetupBlueprint(blueprint_name='foo.json', bricks=['//brick1',
+                                                           '//brick2'],
+                        bsp='//bsp1', main_package='virtual/target-os-test')
+
+    args = ['--blueprint=//foo.json']
+    self.SetupCommandMock(args)
+    self.cmd_mock.inst.Run()
+
+    expected_args = [os.path.join(constants.CROSUTILS_DIR, 'build_image'),
+                     '--extra_packages=brick/foo brick/bar bsp/baz',
+                     '--board=brick1', '--noenable_bootcache',
+                     '--enable_rootfs_verification', '--loglevel=7']
+    self.rc_mock.assertCommandContains(expected_args)
+
+
+class ImageCommandParserTest(cros_test_lib.TestCase):
+  """Test class for our ImageCommand's parser."""
 
   def testParserDefaults(self):
     """Tests that the parser's default values are correct."""

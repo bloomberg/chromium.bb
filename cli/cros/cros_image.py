@@ -10,6 +10,7 @@ import os
 
 from chromite.cbuildbot import constants
 from chromite.cli import command
+from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -29,6 +30,8 @@ class ImageCommand(command.CliCommand):
     super(ImageCommand, cls).AddParser(parser)
     parser.set_defaults(usage='Create an image')
     target = parser.add_mutually_exclusive_group()
+    target.add_argument('--blueprint', help="The blueprint that defines an "
+                        "image specification to build.")
     target.add_argument('--board', help="The board to build an image for.")
     target.add_argument('--brick', help='The brick to build an image for.')
 
@@ -59,7 +62,19 @@ class ImageCommand(command.CliCommand):
 
     cmd = [os.path.join(constants.CROSUTILS_DIR, 'build_image')]
 
-    if self.options.brick:
+    if self.options.blueprint:
+      blueprint = blueprint_lib.Blueprint(self.options.blueprint)
+      packages = []
+      for b in blueprint.GetBricks():
+        packages.extend(brick_lib.Brick(b).MainPackages())
+      if blueprint.GetBSP():
+        packages.extend(brick_lib.Brick(blueprint.GetBSP()).MainPackages())
+
+      cmd.append('--extra_packages=%s' % ' '.join(packages))
+      #TODO(stevefung): Support multiple sysroots (brbug.com/676)
+      cmd.append('--board=%s' %
+                 brick_lib.Brick(blueprint.GetBricks()[0]).FriendlyName())
+    elif self.options.brick:
       brick = brick_lib.Brick(self.options.brick)
       cmd.append('--extra_packages=%s' % ' '.join(brick.MainPackages()))
       cmd.append('--board=%s' % brick.FriendlyName())
