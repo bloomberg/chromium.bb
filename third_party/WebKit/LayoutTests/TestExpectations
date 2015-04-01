@@ -652,8 +652,6 @@ crbug.com/307777 [ Android ] tables/hittesting/filltable-levels.html [ Timeout P
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
-crbug.com/470505 fast/forms/select/popup-menu-appearance-fractional-width.html [ NeedsRebaseline ]
-
 crbug.com/321237 [ Lion ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Lion ] virtual/slimmingpaint/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Lion ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
