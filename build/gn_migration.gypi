@@ -68,7 +68,6 @@
         '../components/components_tests.gyp:components_browsertests',
         '../components/components_tests.gyp:components_perftests',
         '../components/components_tests.gyp:components_unittests',
-        '../components/nacl.gyp:nacl_loader_unittests',
         '../content/content.gyp:content_app_browser',
         '../content/content.gyp:content_app_child',
         '../content/content_shell_and_tests.gyp:content_browsertests',
@@ -187,6 +186,11 @@
           'dependencies': [
             '../components/components.gyp:session_manager_component',
           ],
+        }],
+        ['disable_nacl==0 and disable_nacl_untrusted==0', {
+          'dependencies': [
+            '../components/nacl.gyp:nacl_loader_unittests',
+          ]
         }],
         ['enable_extensions==1 and OS!="mac"', {
           'dependencies': [
@@ -412,6 +416,21 @@
       ],
     },
     {
+      'target_name': 'gyp_only',
+      'type': 'none',
+      'conditions': [
+        ['OS=="linux"', {
+          'conditions': [
+            ['disable_nacl==0 and disable_nacl_untrusted==0', {
+              'dependencies': [
+                '../mojo/mojo_nacl.gyp:monacl_shell',  # This should not be built in chromium.
+              ]
+            }],
+          ]
+        }],
+      ],
+    },
+    {
       'target_name': 'gyp_remaining',
       'type': 'none',
       'conditions': [
@@ -425,12 +444,6 @@
             '../ppapi/ppapi_internal.gyp:*',
           ],
           'conditions': [
-            ['disable_nacl==0 and disable_nacl_untrusted==0', {
-              'dependencies': [
-                '../mojo/mojo_nacl.gyp:monacl_shell',  # TODO(GYP) This will be deleted; don't port
-                 '../remoting/remoting.gyp:remoting_key_tester',
-              ]
-            }],
             ['remoting==1', {
               'dependencies': [
                 '../remoting/app_remoting_webapp.gyp:ar_sample_app',
@@ -441,6 +454,13 @@
                 '../remoting/remoting.gyp:remoting_native_messaging_manifests',
                 '../remoting/remoting.gyp:remoting_perftests',
                 '../remoting/remoting.gyp:remoting_start_host',
+              ],
+              'conditions': [
+                ['disable_nacl==0 and disable_nacl_untrusted==0', {
+                  'dependencies': [
+                    '../remoting/remoting.gyp:remoting_key_tester',
+                  ]
+                }],
               ],
             }],
             ['test_isolation_mode!="noop"', {
