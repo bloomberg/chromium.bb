@@ -35,11 +35,6 @@ enum PathCoordinateMode {
     RelativeCoordinates
 };
 
-enum PathParsingMode {
-    NormalizedParsing,
-    UnalteredParsing
-};
-
 struct PathSegmentData;
 
 class SVGPathConsumer : public NoBaseWillBeGarbageCollectedFinalized<SVGPathConsumer> {

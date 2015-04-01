@@ -24,6 +24,7 @@
 #include "config.h"
 #include "core/svg/SVGPathParser.h"
 
+#include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPathSource.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/MathExtras.h"

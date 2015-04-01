@@ -20,7 +20,7 @@
 #ifndef SVGPathUtilities_h
 #define SVGPathUtilities_h
 
-#include "core/svg/SVGPathConsumer.h"
+#include "core/svg/SVGPathParser.h"
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/text/WTFString.h"
 

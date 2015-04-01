@@ -24,12 +24,17 @@
 #ifndef SVGPathParser_h
 #define SVGPathParser_h
 
-#include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPathSeg.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
+enum PathParsingMode {
+    NormalizedParsing,
+    UnalteredParsing
+};
+
+class SVGPathConsumer;
 class SVGPathSource;
 
 class SVGPathParser final : public NoBaseWillBeGarbageCollected<SVGPathParser> {
