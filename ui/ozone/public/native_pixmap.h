@@ -11,7 +11,7 @@ namespace ui {
 
 // This represents a buffer that can be directly imported via GL for
 // rendering, or exported via dma-buf fds.
-class NativePixmap : public base::RefCounted<NativePixmap> {
+class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
  public:
   NativePixmap() {}
 
@@ -22,7 +22,8 @@ class NativePixmap : public base::RefCounted<NativePixmap> {
  protected:
   virtual ~NativePixmap() {}
 
-  friend class base::RefCounted<NativePixmap>;
+ private:
+  friend class base::RefCountedThreadSafe<NativePixmap>;
 
   DISALLOW_COPY_AND_ASSIGN(NativePixmap);
 };
