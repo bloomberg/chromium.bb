@@ -11,7 +11,17 @@
 var PiexRequestCallbacks;
 
 /**
- * @param {{id:number, thumbnail:!ArrayBuffer, orientation:number}}
+ * Color space.
+ * @enum {string}
+ */
+var ColorSpace = {
+  SRGB: 'sRgb',
+  ADOBE_RGB: 'adobeRgb'
+};
+
+/**
+ * @param {{id:number, thumbnail:!ArrayBuffer, orientation:number,
+ *          colorSpace: ColorSpace}}
  *     data Data directly returned from NaCl module.
  * @constructor
  * @struct
@@ -35,6 +45,12 @@ function PiexLoaderResponse(data) {
    */
   this.orientation =
       ImageOrientation.fromExifOrientation(data.orientation);
+
+  /**
+   * @public {ColorSpace}
+   * @const
+   */
+  this.colorSpace = data.colorSpace;
 }
 
 /**

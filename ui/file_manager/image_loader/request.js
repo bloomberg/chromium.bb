@@ -9,7 +9,8 @@
  *   taskId: number,
  *   timestamp: (number|undefined),
  *   url: string,
- *   orientation: ImageOrientation
+ *   orientation: ImageOrientation,
+ *   colorSpace: ?ColorSpace
  * }}
  */
 var LoadImageRequest;
@@ -241,6 +242,7 @@ Request.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
       var url = URL.createObjectURL(blob);
       this.image_.src = url;
       this.request_.orientation = data.orientation;
+      this.request_.colorSpace = data.colorSpace;
     }.bind(this), function(error) {
       console.error('PiexLoaderError: ', error);
       onFailure();
@@ -480,6 +482,8 @@ Request.prototype.onImageLoad_ = function() {
                                 this.image_.height,
                                 this.request_)) {
     ImageLoader.resize(this.image_, this.canvas_, this.request_);
+    ImageLoader.convertColorSpace(
+        this.canvas_, this.request_.colorSpace || ColorSpace.SRGB);
     this.sendImage_(true);  // Image changed.
   } else {
     this.sendImage_(false);  // Image not changed.
