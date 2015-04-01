@@ -879,16 +879,13 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
   }
 
   DCHECK(connection_->socket());
-  DCHECK(connection_->socket()->IsConnected());
-  if (connection_->socket()) {
-    UMA_HISTOGRAM_BOOLEAN("Net.SpdySession.CreateStreamWithSocketConnected",
-                          connection_->socket()->IsConnected());
-    if (!connection_->socket()->IsConnected()) {
-      DoDrainSession(
-          ERR_CONNECTION_CLOSED,
-          "Tried to create SPDY stream for a closed socket connection.");
-      return ERR_CONNECTION_CLOSED;
-    }
+  UMA_HISTOGRAM_BOOLEAN("Net.SpdySession.CreateStreamWithSocketConnected",
+                        connection_->socket()->IsConnected());
+  if (!connection_->socket()->IsConnected()) {
+    DoDrainSession(
+        ERR_CONNECTION_CLOSED,
+        "Tried to create SPDY stream for a closed socket connection.");
+    return ERR_CONNECTION_CLOSED;
   }
 
   scoped_ptr<SpdyStream> new_stream(
