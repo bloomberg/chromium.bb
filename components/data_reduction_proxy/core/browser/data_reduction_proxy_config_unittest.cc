@@ -698,7 +698,7 @@ TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {
                                                    tests[i].is_https,
                                                    NULL);
 
-    EXPECT_EQ(tests[i].expected_result, was_bypassed);
+    EXPECT_EQ(tests[i].expected_result, was_bypassed) << i;
   }
 }
 

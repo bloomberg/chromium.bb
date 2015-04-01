@@ -156,28 +156,16 @@ bool DataReductionProxyConfig::AreProxiesBypassed(
   if (!proxies)
     return false;
 
-  scoped_ptr<base::ListValue> proxy_list =
-      scoped_ptr<base::ListValue>(proxies->ToValue());
-
   base::TimeDelta min_delay = base::TimeDelta::Max();
-  base::TimeDelta delay;
   bool bypassed = false;
-  std::string proxy;
-  net::HostPortPair host_port_pair;
 
-  for (size_t i = 0; i < proxy_list->GetSize(); ++i) {
-    proxy_list->GetString(i, &proxy);
-    host_port_pair =  net::HostPortPair::FromString(std::string());
-    net::ProxyServer proxy_server =
-        net::ProxyServer::FromURI(proxy, net::ProxyServer::SCHEME_HTTP);
-    if (proxy_server.is_valid() && !proxy_server.is_direct())
-      host_port_pair = proxy_server.host_port_pair();
+  for (const net::ProxyServer proxy : proxies->GetAll()) {
+    if (!proxy.is_valid() || proxy.is_direct())
+      continue;
 
-    if (IsDataReductionProxy(host_port_pair, NULL)) {
-      if (!IsProxyBypassed(
-          retry_map,
-          net::ProxyServer::FromURI(proxy, net::ProxyServer::SCHEME_HTTP),
-          &delay))
+    base::TimeDelta delay;
+    if (IsDataReductionProxy(proxy.host_port_pair(), NULL)) {
+      if (!IsProxyBypassed(retry_map, proxy, &delay))
         return false;
       if (delay < min_delay)
         min_delay = delay;
