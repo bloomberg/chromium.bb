@@ -71,7 +71,7 @@ static NSAttributedString* attributedSubstringFromRange(const Range* range)
         if (!numCharacters)
             continue;
 
-        Node* container = it.startContainer();
+        Node* container = it.currentContainer();
         LayoutObject* renderer = container->layoutObject();
         ASSERT(renderer);
         if (!renderer)

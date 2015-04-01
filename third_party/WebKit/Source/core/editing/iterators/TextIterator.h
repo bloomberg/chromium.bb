@@ -77,7 +77,7 @@ public:
             ASSERT(length() == 1);
             output.append(&m_singleCharacterBuffer, 1);
         } else {
-            string().appendTo(output, startOffset() + position, lengthToAppend);
+            string().appendTo(output, startOffsetInCurrentContainer() + position, lengthToAppend);
         }
     }
 
@@ -85,12 +85,11 @@ public:
     Node* node() const;
 
     Document* ownerDocument() const;
-    Node* startContainer() const;
-    Node* endContainer() const;
-    int startOffset() const;
-    int endOffset() const;
-    Position startPosition() const;
-    Position endPosition() const;
+    Node* currentContainer() const;
+    int startOffsetInCurrentContainer() const;
+    int endOffsetInCurrentContainer() const;
+    Position startPositionInCurrentContainer() const;
+    Position endPositionInCurrentContainer() const;
 
     bool breaksAtReplacedElement() { return m_breaksAtReplacedElement; }
 

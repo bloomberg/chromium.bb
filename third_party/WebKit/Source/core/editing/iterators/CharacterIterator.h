@@ -57,8 +57,7 @@ public:
     PassRefPtrWillBeRawPtr<Range> createRange() const;
 
     Document* ownerDocument() const;
-    Node* startContainer() const;
-    Node* endContainer() const;
+    Node* currentContainer() const;
     int startOffset() const;
     int endOffset() const;
     Position startPosition() const;

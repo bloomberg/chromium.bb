@@ -1028,15 +1028,15 @@ Document* TextIterator::ownerDocument() const
 Node* TextIterator::node() const
 {
     if (m_positionNode || m_endContainer) {
-        Node* node = startContainer();
+        Node* node = currentContainer();
         if (node->offsetInCharacters())
             return node;
-        return NodeTraversal::childAt(*node, startOffset());
+        return NodeTraversal::childAt(*node, startOffsetInCurrentContainer());
     }
     return 0;
 }
 
-int TextIterator::startOffset() const
+int TextIterator::startOffsetInCurrentContainer() const
 {
     if (m_positionNode) {
         flushPositionOffsets();
@@ -1046,7 +1046,7 @@ int TextIterator::startOffset() const
     return m_endOffset;
 }
 
-int TextIterator::endOffset() const
+int TextIterator::endOffsetInCurrentContainer() const
 {
     if (m_positionNode) {
         flushPositionOffsets();
@@ -1056,7 +1056,7 @@ int TextIterator::endOffset() const
     return m_endOffset;
 }
 
-Node* TextIterator::startContainer() const
+Node* TextIterator::currentContainer() const
 {
     if (m_positionNode) {
         return m_positionNode;
@@ -1065,19 +1065,14 @@ Node* TextIterator::startContainer() const
     return m_endContainer;
 }
 
-Node* TextIterator::endContainer() const
+Position TextIterator::startPositionInCurrentContainer() const
 {
-    return startContainer();
+    return createLegacyEditingPosition(currentContainer(), startOffsetInCurrentContainer());
 }
 
-Position TextIterator::startPosition() const
+Position TextIterator::endPositionInCurrentContainer() const
 {
-    return createLegacyEditingPosition(startContainer(), startOffset());
-}
-
-Position TextIterator::endPosition() const
-{
-    return createLegacyEditingPosition(endContainer(), endOffset());
+    return createLegacyEditingPosition(currentContainer(), endOffsetInCurrentContainer());
 }
 
 int TextIterator::rangeLength(const Position& start, const Position& end, bool forSelectionPreservation)

@@ -590,7 +590,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
     }
 
     if (it.atEnd() && next == string.size()) {
-        pos = it.startPosition();
+        pos = it.startPositionInCurrentContainer();
     } else if (next != invalidOffset && next != prefixLength) {
         // Use the character iterator to translate the next value into a DOM position.
         CharacterIterator charIt(searchStart, searchEnd, TextIteratorEmitsCharactersBetweenAllVisiblePositions);

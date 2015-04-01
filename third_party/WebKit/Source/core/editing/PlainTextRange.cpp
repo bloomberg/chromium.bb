@@ -87,16 +87,16 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
 
     // FIXME: the atEnd() check shouldn't be necessary, workaround for <http://bugs.webkit.org/show_bug.cgi?id=6289>.
     if (!start() && !length() && it.atEnd()) {
-        resultRange->setStart(it.startContainer(), 0, ASSERT_NO_EXCEPTION);
-        resultRange->setEnd(it.startContainer(), 0, ASSERT_NO_EXCEPTION);
+        resultRange->setStart(it.currentContainer(), 0, ASSERT_NO_EXCEPTION);
+        resultRange->setEnd(it.currentContainer(), 0, ASSERT_NO_EXCEPTION);
         return resultRange.release();
     }
 
     for (; !it.atEnd(); it.advance()) {
         int len = it.length();
 
-        textRunStartPosition = it.startPosition();
-        textRunEndPosition = it.endPosition();
+        textRunStartPosition = it.startPositionInCurrentContainer();
+        textRunEndPosition = it.endPositionInCurrentContainer();
 
         bool foundStart = start() >= docTextPosition && start() <= docTextPosition + len;
         bool foundEnd = end() >= docTextPosition && end() <= docTextPosition + len;
@@ -110,7 +110,7 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
             if (len == 1 && (it.characterAt(0) == '\n' || it.isInsideReplacedElement())) {
                 it.advance();
                 if (!it.atEnd()) {
-                    textRunEndPosition = it.startPosition();
+                    textRunEndPosition = it.startPositionInCurrentContainer();
                 } else {
                     Position runEnd = VisiblePosition(textRunStartPosition).next().deepEquivalent();
                     if (runEnd.isNotNull())

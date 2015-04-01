@@ -1830,7 +1830,7 @@ VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const
 
     CharacterIterator it(start, end);
     it.advance(index - 1);
-    return VisiblePosition(Position(it.endContainer(), it.endOffset(), Position::PositionIsOffsetInAnchor), UPSTREAM);
+    return VisiblePosition(Position(it.currentContainer(), it.endOffset(), Position::PositionIsOffsetInAnchor), UPSTREAM);
 }
 
 int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& pos) const

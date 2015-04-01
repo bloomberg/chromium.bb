@@ -130,60 +130,55 @@ Document* CharacterIterator::ownerDocument() const
     return m_textIterator.ownerDocument();
 }
 
-Node* CharacterIterator::startContainer() const
+Node* CharacterIterator::currentContainer() const
 {
-    return m_textIterator.startContainer();
-}
-
-Node* CharacterIterator::endContainer() const
-{
-    return m_textIterator.endContainer();
+    return m_textIterator.currentContainer();
 }
 
 int CharacterIterator::startOffset() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1)
-            return m_textIterator.startOffset() + m_runOffset;
+            return m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
         ASSERT(!m_runOffset);
     }
-    return m_textIterator.startOffset();
+    return m_textIterator.startOffsetInCurrentContainer();
 }
 
 int CharacterIterator::endOffset() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1)
-            return m_textIterator.startOffset() + m_runOffset + 1;
+            return m_textIterator.startOffsetInCurrentContainer() + m_runOffset + 1;
         ASSERT(!m_runOffset);
     }
-    return m_textIterator.endOffset();
+    return m_textIterator.endOffsetInCurrentContainer();
 }
 
 Position CharacterIterator::startPosition() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1) {
-            Node* n = m_textIterator.startContainer();
-            int offset = m_textIterator.startOffset() + m_runOffset;
+            Node* n = m_textIterator.currentContainer();
+            int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
             return createLegacyEditingPosition(n, offset);
         }
         ASSERT(!m_runOffset);
     }
-    return m_textIterator.startPosition();
+    return m_textIterator.startPositionInCurrentContainer();
 }
 
 Position CharacterIterator::endPosition() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1) {
-            Node* n = m_textIterator.startContainer();
-            int offset = m_textIterator.startOffset() + m_runOffset;
+            Node* n = m_textIterator.currentContainer();
+            int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
             return createLegacyEditingPosition(n, offset + 1);
         }
         ASSERT(!m_runOffset);
     }
-    return m_textIterator.endPosition();
+    return m_textIterator.endPositionInCurrentContainer();
 }
 
 void CharacterIterator::advance(int count)
@@ -585,7 +580,7 @@ static size_t findPlainTextInternal(CharacterIterator& it, const String& target,
 
     if (buffer.needsMoreContext()) {
         RefPtrWillBeRawPtr<Range> beforeStartRange = it.ownerDocument()->createRange();
-        beforeStartRange->setEnd(it.startContainer(), it.startOffset(), IGNORE_EXCEPTION);
+        beforeStartRange->setEnd(it.currentContainer(), it.startOffset(), IGNORE_EXCEPTION);
         for (SimplifiedBackwardsTextIterator backwardsIterator(beforeStartRange.get()); !backwardsIterator.atEnd(); backwardsIterator.advance()) {
             Vector<UChar, 1024> characters;
             backwardsIterator.prependTextTo(characters);
