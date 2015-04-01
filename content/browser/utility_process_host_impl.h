@@ -58,7 +58,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 #endif
   bool StartMojoMode() override;
   ServiceRegistry* GetServiceRegistry() override;
-  void SetName(const std::string& name) override;
+  void SetName(const base::string16& name) override;
 
   void set_child_flags(int flags) { child_flags_ = flags; }
 
@@ -101,7 +101,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 
   // A user-visible name identifying this process. Used to indentify this
   // process in the task manager.
-  std::string name_;
+  base::string16 name_;
 
   scoped_ptr<BrowserChildProcessHostImpl> process_;
 

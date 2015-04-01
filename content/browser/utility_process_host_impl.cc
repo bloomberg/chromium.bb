@@ -109,7 +109,7 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
       child_flags_(ChildProcessHost::CHILD_NORMAL),
 #endif
       started_(false),
-      name_("utility process") {
+      name_(base::ASCIIToUTF16("utility process")) {
 }
 
 UtilityProcessHostImpl::~UtilityProcessHostImpl() {
@@ -192,7 +192,7 @@ ServiceRegistry* UtilityProcessHostImpl::GetServiceRegistry() {
   return mojo_application_host_->service_registry();
 }
 
-void UtilityProcessHostImpl::SetName(const std::string& name) {
+void UtilityProcessHostImpl::SetName(const base::string16& name) {
   name_ = name;
 }
 
@@ -207,7 +207,7 @@ bool UtilityProcessHostImpl::StartProcess() {
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
   process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this));
-  process_->SetName(base::UTF8ToUTF16(name_));
+  process_->SetName(name_);
 
   std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty())

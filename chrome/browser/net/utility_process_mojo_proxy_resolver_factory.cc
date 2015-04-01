@@ -39,7 +39,7 @@ void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
       content::UtilityProcessHost::Create(
           scoped_refptr<content::UtilityProcessHostClient>(),
           base::MessageLoopProxy::current().get());
-  utility_process_host->SetName(l10n_util::GetStringUTF8(
+  utility_process_host->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME));
   bool process_started = utility_process_host->StartMojoMode();
   if (process_started) {

@@ -85,7 +85,7 @@ class UtilityProcessHost : public IPC::Sender,
   virtual ServiceRegistry* GetServiceRegistry() = 0;
 
   // Set the name of the process to appear in the task manager.
-  virtual void SetName(const std::string& name) = 0;
+  virtual void SetName(const base::string16& name) = 0;
 };
 
 };  // namespace content
