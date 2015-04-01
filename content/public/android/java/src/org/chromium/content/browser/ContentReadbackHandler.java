@@ -78,10 +78,11 @@ public abstract class ContentReadbackHandler {
      * @param srcRect  A subrect of the original content to capture. If this is empty, it will grab
      *                 the whole surface.
      * @param view  The {@link ContentViewCore} to grab the bitmap from.
+     * @param config  The output content bitmap configuration.
      * @param callback The callback to be executed after readback completes.
      */
     public void getContentBitmapAsync(float scale, Rect srcRect, ContentViewCore view,
-            GetBitmapCallback callback) {
+            Bitmap.Config config, GetBitmapCallback callback) {
         if (!readyForReadback()) {
             callback.onFinishGetBitmap(null);
             return;
@@ -91,7 +92,7 @@ public abstract class ContentReadbackHandler {
         int readbackId = mNextReadbackId++;
         mGetBitmapRequests.put(readbackId, callback);
         nativeGetContentBitmap(mNativeContentReadbackHandler, readbackId, scale,
-                Bitmap.Config.ARGB_8888, srcRect.top, srcRect.left, srcRect.width(),
+                config, srcRect.top, srcRect.left, srcRect.width(),
                 srcRect.height(), view);
     }
 

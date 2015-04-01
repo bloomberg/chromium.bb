@@ -115,7 +115,7 @@ public class ContentViewReadbackTest extends ContentShellTestBase {
 
                 contentReadbackHandler.initNativeContentReadbackHandler();
                 contentReadbackHandler.getContentBitmapAsync(1.0f, new Rect(), getContentViewCore(),
-                        callback);
+                        Bitmap.Config.ARGB_8888, callback);
             }
         });
         assertWaitForReadback(readbackDone);

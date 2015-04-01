@@ -639,7 +639,7 @@ void ContentViewCoreImpl::GetScaledContentBitmap(
     gfx::Rect src_subrect,
     ReadbackRequestCallback& result_callback) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
-  if (!view) {
+  if (!view || color_type == kUnknown_SkColorType) {
     result_callback.Run(SkBitmap(), READBACK_FAILED);
     return;
   }
