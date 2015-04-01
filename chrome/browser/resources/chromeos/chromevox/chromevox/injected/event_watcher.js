@@ -868,6 +868,16 @@ cvox.ChromeVoxEventWatcher.changeEventWatcher = function(evt) {
  * @return {boolean} True if the default action should be performed.
  */
 cvox.ChromeVoxEventWatcher.clipboardEventWatcher = function(evt) {
+  // Don't announce anything unless this document has focus and the
+  // editable element that's the target of the clipboard event is visible.
+  var targetNode = /** @type {Node} */(evt.target);
+  if (!document.hasFocus() ||
+      !targetNode ||
+      !cvox.DomUtil.isVisible(targetNode) ||
+      cvox.AriaUtil.isHidden(targetNode)) {
+    return true;
+  }
+
   cvox.ChromeVox.tts.speak(cvox.ChromeVox.msgs.getMsg(evt.type).toLowerCase(),
                            cvox.QueueMode.QUEUE);
   var text = '';
