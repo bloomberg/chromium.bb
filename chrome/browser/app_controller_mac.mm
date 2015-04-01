@@ -44,6 +44,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -58,8 +59,6 @@
 #import "chrome/browser/ui/cocoa/apps/app_shim_menu_controller_mac.h"
 #include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
-#import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/confirm_quit.h"
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
@@ -67,13 +66,11 @@
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/profiles/profile_menu_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
-#include "chrome/browser/ui/cocoa/task_manager_mac.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -305,6 +302,33 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 @implementation AppController
 
 @synthesize startupComplete = startupComplete_;
+
++ (void)updateSigninItem:(id)signinItem
+              shouldShow:(BOOL)showSigninMenuItem
+          currentProfile:(Profile*)profile {
+  DCHECK([signinItem isKindOfClass:[NSMenuItem class]]);
+  NSMenuItem* signinMenuItem = static_cast<NSMenuItem*>(signinItem);
+
+  // Look for a separator immediately after the menu item so it can be hidden
+  // or shown appropriately along with the signin menu item.
+  NSMenuItem* followingSeparator = nil;
+  NSMenu* menu = [signinItem menu];
+  if (menu) {
+    NSInteger signinItemIndex = [menu indexOfItem:signinMenuItem];
+    DCHECK_NE(signinItemIndex, -1);
+    if ((signinItemIndex + 1) < [menu numberOfItems]) {
+      NSMenuItem* menuItem = [menu itemAtIndex:(signinItemIndex + 1)];
+      if ([menuItem isSeparatorItem]) {
+        followingSeparator = menuItem;
+      }
+    }
+  }
+
+  base::string16 label = signin_ui_util::GetSigninMenuLabel(profile);
+  [signinMenuItem setTitle:l10n_util::FixUpWindowsStyleLabel(label)];
+  [signinMenuItem setHidden:!showSigninMenuItem];
+  [followingSeparator setHidden:!showSigninMenuItem];
+}
 
 - (void)dealloc {
   [[closeTabMenuItem_ menu] setDelegate:nil];
@@ -558,8 +582,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
       // main window should be the one that handles the close menu item action.
       window = mainWindow;
     }
-    enableCloseTabShortcut =
-        [[window windowController] isKindOfClass:[TabWindowController class]];
+    Browser* browser = chrome::FindBrowserWithWindow(window);
+    enableCloseTabShortcut = browser && browser->is_type_tabbed();
   }
 
   [self adjustCloseWindowMenuItemKeyEquivalent:enableCloseTabShortcut];
@@ -578,14 +602,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 }
 
 - (void)windowDidBecomeMain:(NSNotification*)notify {
-  // If the window changed to a new BrowserWindowController, update the profile.
-  id windowController = [[notify object] windowController];
-  if (![windowController isKindOfClass:[BrowserWindowController class]])
-    return;
-
-  // If the profile is incognito, use the original profile.
-  Profile* newProfile = [windowController profile]->GetOriginalProfile();
-  [self windowChangedToProfile:newProfile];
+  Browser* browser = chrome::FindBrowserWithWindow([notify object]);
+  if (browser)
+    [self windowChangedToProfile:browser->profile()->GetOriginalProfile()];
 }
 
 - (void)windowDidResignMain:(NSNotification*)notify {
@@ -950,11 +969,10 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
           }
           SigninManager* signin = SigninManagerFactory::GetForProfile(
               lastProfile->GetOriginalProfile());
-          enable = signin->IsSigninAllowed() &&
-              ![self keyWindowIsModal];
-          [BrowserWindowController updateSigninItem:item
-                                         shouldShow:enable
-                                     currentProfile:lastProfile];
+          enable = signin->IsSigninAllowed() && ![self keyWindowIsModal];
+          [AppController updateSigninItem:item
+                               shouldShow:enable
+                           currentProfile:lastProfile];
           break;
         }
 #if defined(GOOGLE_CHROME_BUILD)
@@ -1001,7 +1019,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   // and is getting here because the foreground window is not a browser window.
   if ([sender respondsToSelector:@selector(window)]) {
     id delegate = [[sender window] windowController];
-    if ([delegate isKindOfClass:[BrowserWindowController class]]) {
+    if ([delegate respondsToSelector:@selector(commandDispatch:)]) {
       [delegate commandDispatch:sender];
       return;
     }
@@ -1145,7 +1163,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   DCHECK(sender);
   if ([sender respondsToSelector:@selector(window)]) {
     id delegate = [[sender window] windowController];
-    if ([delegate isKindOfClass:[BrowserWindowController class]]) {
+    if ([delegate respondsToSelector:
+            @selector(commandDispatchUsingKeyModifiers:)]) {
       [delegate commandDispatchUsingKeyModifiers:sender];
     }
   }
@@ -1318,7 +1337,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 }
 
 - (Profile*)lastProfile {
-  // Return the profile of the last-used BrowserWindowController, if available.
+  // Return the profile of the last-used Browser, if available.
   if (lastProfile_)
     return lastProfile_;
 

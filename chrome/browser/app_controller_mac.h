@@ -112,6 +112,12 @@ class WorkAreaWatcherObserver;
 @property(readonly, nonatomic) BOOL startupComplete;
 @property(readonly, nonatomic) Profile* lastProfile;
 
+// Helper method used to update the "Signin" menu item in the main menu and the
+// wrench menu to reflect the current signed in state.
++ (void)updateSigninItem:(id)signinItem
+              shouldShow:(BOOL)showSigninMenuItem
+          currentProfile:(Profile*)profile;
+
 - (void)didEndMainMessageLoop;
 
 // Try to close all browser windows, and if that succeeds then quit.

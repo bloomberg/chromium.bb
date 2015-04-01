@@ -195,13 +195,6 @@ class Command;
 // BWC. This method returns nil if no window in the chain has a BWC.
 + (BrowserWindowController*)browserWindowControllerForView:(NSView*)view;
 
-// Helper method used to update the "Signin" menu item to reflect the current
-// signed in state. Class-level function as it's still required even when there
-// are no open browser windows.
-+ (void)updateSigninItem:(id)signinItem
-              shouldShow:(BOOL)showSigninMenuItem
-          currentProfile:(Profile*)profile;
-
 // Load the browser window nib and do any Cocoa-specific initialization.
 // Takes ownership of |browser|.
 - (id)initWithBrowser:(Browser*)browser;
