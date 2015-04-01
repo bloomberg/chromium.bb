@@ -104,7 +104,7 @@ class FakePicturePile : public PicturePile {
   bool HasRecordingAt(int x, int y) const;
   int num_tiles_x() const { return tiling_.num_tiles_x(); }
   int num_tiles_y() const { return tiling_.num_tiles_y(); }
-  void Rerecord();
+  void RerecordPile();
 
  private:
   base::WaitableEvent* playback_allowed_event_;

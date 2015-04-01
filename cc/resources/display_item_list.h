@@ -11,7 +11,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/resources/display_item.h"
-#include "cc/resources/pixel_ref_map.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
@@ -45,8 +44,6 @@ class CC_EXPORT DisplayItemList
 
   void EmitTraceSnapshot() const;
 
-  void GatherPixelRefs(const gfx::Size& grid_cell_size);
-
  private:
   DisplayItemList();
   ~DisplayItemList();
@@ -57,10 +54,7 @@ class CC_EXPORT DisplayItemList
   bool is_suitable_for_gpu_rasterization_;
   int approximate_op_count_;
 
-  scoped_ptr<PixelRefMap> pixel_refs_;
-
   friend class base::RefCountedThreadSafe<DisplayItemList>;
-  friend class PixelRefMap::Iterator;
   DISALLOW_COPY_AND_ASSIGN(DisplayItemList);
 };
 
