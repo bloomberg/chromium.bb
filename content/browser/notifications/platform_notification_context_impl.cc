@@ -6,6 +6,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/notifications/notification_database.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -95,7 +96,8 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
                                       origin,
                                       &database_data);
 
-  // TODO(peter): Record UMA on |status| for reading from the database.
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.ReadResult",
+                            status, NotificationDatabase::STATUS_COUNT);
 
   if (status == NotificationDatabase::STATUS_OK) {
     BrowserThread::PostTask(BrowserThread::IO,
@@ -139,7 +141,8 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
                                        database_data,
                                        &notification_id);
 
-  // TODO(peter): Record UMA on |status| for reading from the database.
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.WriteResult",
+                            status, NotificationDatabase::STATUS_COUNT);
 
   if (status == NotificationDatabase::STATUS_OK) {
     DCHECK_GT(notification_id, 0);
@@ -181,7 +184,8 @@ void PlatformNotificationContextImpl::DoDeleteNotificationData(
   NotificationDatabase::Status status =
       database_->DeleteNotificationData(notification_id, origin);
 
-  // TODO(peter): Record UMA on |status| for reading from the database.
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.DeleteResult",
+                            status, NotificationDatabase::STATUS_COUNT);
 
   bool success = status == NotificationDatabase::STATUS_OK;
 
@@ -220,7 +224,9 @@ void PlatformNotificationContextImpl::
       database_->DeleteAllNotificationDataForServiceWorkerRegistration(
             origin, service_worker_registration_id, &deleted_notifications_set);
 
-  // TODO(peter): Record UMA on status for deleting from the database.
+  UMA_HISTOGRAM_ENUMERATION(
+      "Notifications.Database.DeleteServiceWorkerRegistrationResult",
+      status, NotificationDatabase::STATUS_COUNT);
 
   // Blow away the database if a corruption error occurred during the deletion.
   if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
@@ -269,7 +275,8 @@ void PlatformNotificationContextImpl::OpenDatabase(
   NotificationDatabase::Status status =
       database_->Open(true /* create_if_missing */);
 
-  // TODO(peter): Record UMA on |status| for opening the database.
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.OpenResult",
+                            status, NotificationDatabase::STATUS_COUNT);
 
   // When the database could not be opened due to corruption, destroy it, blow
   // away the contents of the directory and try re-opening the database.
@@ -296,8 +303,10 @@ bool PlatformNotificationContextImpl::DestroyDatabase() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(database_);
 
-  // TODO(peter): Record UMA on the status code of the Destroy() call.
-  database_->Destroy();
+  NotificationDatabase::Status status = database_->Destroy();
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.DestroyResult",
+                            status, NotificationDatabase::STATUS_COUNT);
+
   database_.reset();
 
   // TODO(peter): Close any existing persistent notifications on the platform.
