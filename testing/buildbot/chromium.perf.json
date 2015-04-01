@@ -1,87 +1,23 @@
 {
-  "Linux Perf (3)": {
-    "scripts": [
-      {
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
-      }
-    ]
-  },
-  "Android Nexus4 Perf": {
+  "Android MotoE Perf": {
     "scripts": [
       {
         "name": "host_info",
         "script": "host_info.py"
       },
       {
+        "args": [
+          "gpu_perftests"
+        ],
         "name": "gpu_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["gpu_perftests"]
+        "script": "gtest_perf_test.py"
       },
       {
+        "args": [
+          "cc_perftests"
+        ],
         "name": "cc_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["cc_perftests"]
-      }
-    ]
-  },
-  "Android Nexus5 Perf": {
-    "scripts": [
-      {
-        "name": "host_info",
-        "script": "host_info.py"
-      },
-      {
-        "name": "gpu_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["gpu_perftests"]
-      },
-      {
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["cc_perftests"]
-      }
-    ]
-  },
-  "Android Nexus6 Perf": {
-    "scripts": [
-      {
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["cc_perftests"]
-      }
-    ]
-  },
-  "Android Nexus7v2 Perf": {
-    "scripts": [
-      {
-        "name": "host_info",
-        "script": "host_info.py"
-      },
-      {
-        "name": "gpu_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["gpu_perftests"]
-      },
-      {
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["cc_perftests"]
-      }
-    ]
-  },
-  "Android Nexus9 Perf": {
-    "scripts": [
-      {
-        "name": "gpu_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["gpu_perftests"]
-      },
-      {
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["cc_perftests"]
+        "script": "gtest_perf_test.py"
       }
     ]
   },
@@ -92,72 +28,176 @@
         "script": "host_info.py"
       },
       {
+        "args": [
+          "gpu_perftests"
+        ],
         "name": "gpu_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["gpu_perftests"]
+        "script": "gtest_perf_test.py"
       },
       {
+        "args": [
+          "cc_perftests"
+        ],
         "name": "cc_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["cc_perftests"]
+        "script": "gtest_perf_test.py"
       }
     ]
   },
-  "Android One Perf": {
-    "scripts": [
-    ]
-  },
-  "Android MotoE Perf": {
+  "Android Nexus4 Perf": {
     "scripts": [
       {
         "name": "host_info",
         "script": "host_info.py"
       },
       {
+        "args": [
+          "gpu_perftests"
+        ],
         "name": "gpu_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["gpu_perftests"]
+        "script": "gtest_perf_test.py"
       },
       {
+        "args": [
+          "cc_perftests"
+        ],
         "name": "cc_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["cc_perftests"]
+        "script": "gtest_perf_test.py"
+      }
+    ]
+  },
+  "Android Nexus5 Perf": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      },
+      {
+        "args": [
+          "gpu_perftests"
+        ],
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
+          "cc_perftests"
+        ],
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py"
+      }
+    ]
+  },
+  "Android Nexus6 Perf": {
+    "scripts": [
+      {
+        "args": [
+          "cc_perftests"
+        ],
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py"
+      }
+    ]
+  },
+  "Android Nexus7v2 Perf": {
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      },
+      {
+        "args": [
+          "gpu_perftests"
+        ],
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
+          "cc_perftests"
+        ],
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py"
+      }
+    ]
+  },
+  "Android Nexus9 Perf": {
+    "scripts": [
+      {
+        "args": [
+          "gpu_perftests"
+        ],
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
+          "cc_perftests"
+        ],
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py"
+      }
+    ]
+  },
+  "Android One Perf": {
+    "scripts": []
+  },
+  "Linux Perf (3)": {
+    "scripts": [
+      {
+        "args": [
+          "cc_perftests",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py"
       }
     ]
   },
   "Mac 10.8 Perf (1)": {
     "scripts": [
       {
-	"name": "gpu_perftests",
-	"script": "gtest_perf_test.py",
-	"args": ["gpu_perftests", "--test-launcher-print-test-stdio=always"]
+        "args": [
+          "gpu_perftests",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py"
       }
     ]
   },
   "Mac 10.8 Perf (3)": {
     "scripts": [
       {
+        "args": [
+          "cc_perftests",
+          "--test-launcher-print-test-stdio=always"
+        ],
         "name": "cc_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
+        "script": "gtest_perf_test.py"
       }
     ]
   },
   "Mac 10.9 Perf (1)": {
     "scripts": [
       {
-	"name": "gpu_perftests",
-	"script": "gtest_perf_test.py",
-	"args": ["gpu_perftests", "--test-launcher-print-test-stdio=always"]
+        "args": [
+          "gpu_perftests",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py"
       }
     ]
   },
   "Mac 10.9 Perf (3)": {
     "scripts": [
       {
+        "args": [
+          "cc_perftests",
+          "--test-launcher-print-test-stdio=always"
+        ],
         "name": "cc_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
+        "script": "gtest_perf_test.py"
       }
     ]
   }

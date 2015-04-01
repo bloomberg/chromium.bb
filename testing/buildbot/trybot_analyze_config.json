@@ -1,4 +1,9 @@
 {
+  "android_webview": {
+    "exclusions": [
+      "android_webview/.*"
+    ]
+  },
   "base": {
     "exclusions": [
       ".*isolate",
@@ -14,11 +19,6 @@
       "testing/test_env.py",
       "tools/clang/blink_gc_plugin/CMakeLists.txt",
       "tools/whitespace.txt"
-    ]
-  },
-  "android_webview": {
-    "exclusions": [
-      "android_webview/.*"
     ]
   },
   "chromium": {
