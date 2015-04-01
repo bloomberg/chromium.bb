@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SCHEDULER_CANCELABLE_CLOSURE_HOLDER_H_
-#define CONTENT_RENDERER_SCHEDULER_CANCELABLE_CLOSURE_HOLDER_H_
+#ifndef CONTENT_CHILD_SCHEDULER_CANCELABLE_CLOSURE_HOLDER_H_
+#define CONTENT_CHILD_SCHEDULER_CANCELABLE_CLOSURE_HOLDER_H_
 
 #include "base/cancelable_callback.h"
 
@@ -36,4 +36,4 @@ class CancelableClosureHolder {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SCHEDULER_CANCELABLE_CLOSURE_HOLDER_H_
+#endif  // CONTENT_CHILD_SCHEDULER_CANCELABLE_CLOSURE_HOLDER_H_

@@ -2,33 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/scheduler/renderer_scheduler_message_loop_delegate.h"
+#include "content/child/scheduler/scheduler_message_loop_delegate.h"
 
 namespace content {
 
 // static
-scoped_refptr<RendererSchedulerMessageLoopDelegate>
-RendererSchedulerMessageLoopDelegate::Create(base::MessageLoop* message_loop) {
-  return make_scoped_refptr(
-      new RendererSchedulerMessageLoopDelegate(message_loop));
+scoped_refptr<SchedulerMessageLoopDelegate>
+SchedulerMessageLoopDelegate::Create(base::MessageLoop* message_loop) {
+  return make_scoped_refptr(new SchedulerMessageLoopDelegate(message_loop));
 }
 
-RendererSchedulerMessageLoopDelegate::RendererSchedulerMessageLoopDelegate(
+SchedulerMessageLoopDelegate::SchedulerMessageLoopDelegate(
     base::MessageLoop* message_loop)
     : message_loop_(message_loop) {
 }
 
-RendererSchedulerMessageLoopDelegate::~RendererSchedulerMessageLoopDelegate() {
+SchedulerMessageLoopDelegate::~SchedulerMessageLoopDelegate() {
 }
 
-bool RendererSchedulerMessageLoopDelegate::PostDelayedTask(
+bool SchedulerMessageLoopDelegate::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
   return message_loop_->task_runner()->PostDelayedTask(from_here, task, delay);
 }
 
-bool RendererSchedulerMessageLoopDelegate::PostNonNestableDelayedTask(
+bool SchedulerMessageLoopDelegate::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
@@ -36,11 +35,11 @@ bool RendererSchedulerMessageLoopDelegate::PostNonNestableDelayedTask(
                                                                   task, delay);
 }
 
-bool RendererSchedulerMessageLoopDelegate::RunsTasksOnCurrentThread() const {
+bool SchedulerMessageLoopDelegate::RunsTasksOnCurrentThread() const {
   return message_loop_->task_runner()->RunsTasksOnCurrentThread();
 }
 
-bool RendererSchedulerMessageLoopDelegate::IsNested() const {
+bool SchedulerMessageLoopDelegate::IsNested() const {
   return message_loop_->IsNested();
 }
 

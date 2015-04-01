@@ -69,11 +69,13 @@ class CONTENT_EXPORT TaskQueueManager {
   // Create a task queue manager with |task_queue_count| task queues.
   // |main_task_runner| identifies the thread on which where the tasks are
   // eventually run. |selector| is used to choose which task queue to service.
-  // It should outlive this class.
+  // It should outlive this class.  Category strings must have application
+  // lifetime (statics or literals). They may not include " chars.
   TaskQueueManager(
       size_t task_queue_count,
       scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
-      TaskQueueSelector* selector);
+      TaskQueueSelector* selector,
+      const char* disabled_by_default_tracing_category);
   ~TaskQueueManager();
 
   // Returns the task runner which targets the queue selected by |queue_index|.
@@ -193,6 +195,8 @@ class CONTENT_EXPORT TaskQueueManager {
   scoped_refptr<cc::TestNowSource> time_source_;
 
   ObserverList<base::MessageLoop::TaskObserver> task_observers_;
+
+  const char* disabled_by_default_tracing_category_;
 
   base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 

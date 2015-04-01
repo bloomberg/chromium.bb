@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
-#define CONTENT_RENDERER_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
+#ifndef CONTENT_CHILD_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
+#define CONTENT_CHILD_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -22,10 +22,13 @@ class SingleThreadIdleTaskRunner
  public:
   typedef base::Callback<void(base::TimeTicks)> IdleTask;
 
+  // NOTE Category strings must have application lifetime (statics or
+  // literals). They may not include " chars.
   SingleThreadIdleTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> after_wakeup_task_runner,
-      base::Callback<void(base::TimeTicks*)> deadline_supplier);
+      base::Callback<void(base::TimeTicks*)> deadline_supplier,
+      const char* tracing_category);
 
   virtual void PostIdleTask(const tracked_objects::Location& from_here,
                             const IdleTask& idle_task);
@@ -51,9 +54,12 @@ class SingleThreadIdleTaskRunner
   scoped_refptr<base::SingleThreadTaskRunner> idle_priority_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> after_wakeup_task_runner_;
   base::Callback<void(base::TimeTicks*)> deadline_supplier_;
+  const char* tracing_category_;
+  base::WeakPtr<SingleThreadIdleTaskRunner> weak_scheduler_ptr_;
+  base::WeakPtrFactory<SingleThreadIdleTaskRunner> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(SingleThreadIdleTaskRunner);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
+#endif  // CONTENT_CHILD_SCHEDULER_SINGLE_THREAD_IDLE_TASK_RUNNER_H_

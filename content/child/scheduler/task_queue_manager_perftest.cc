@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/scheduler/task_queue_manager.h"
+#include "content/child/scheduler/task_queue_manager.h"
 
 #include "base/bind.h"
 #include "base/threading/thread.h"
-#include "content/renderer/scheduler/renderer_scheduler_message_loop_delegate.h"
-#include "content/renderer/scheduler/task_queue_selector.h"
+#include "content/child/scheduler/scheduler_message_loop_delegate.h"
+#include "content/child/scheduler/task_queue_selector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -66,9 +66,8 @@ class TaskQueueManagerPerfTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop());
     selector_ = make_scoped_ptr(new SelectorForTest);
     manager_ = make_scoped_ptr(new TaskQueueManager(
-        num_queues,
-        RendererSchedulerMessageLoopDelegate::Create(message_loop_.get()),
-        selector_.get()));
+        num_queues, SchedulerMessageLoopDelegate::Create(message_loop_.get()),
+        selector_.get(), "fake.category"));
   }
 
   void TestDelayedTask() {

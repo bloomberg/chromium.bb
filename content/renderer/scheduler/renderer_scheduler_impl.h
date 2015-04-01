@@ -7,13 +7,9 @@
 
 #include "base/atomicops.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
-#include "cc/test/test_now_source.h"
-#include "content/renderer/scheduler/cancelable_closure_holder.h"
+#include "content/child/scheduler/scheduler_helper.h"
 #include "content/renderer/scheduler/deadline_task_runner.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
-#include "content/renderer/scheduler/single_thread_idle_task_runner.h"
-#include "content/renderer/scheduler/task_queue_manager.h"
 
 namespace base {
 namespace trace_event {
@@ -23,10 +19,9 @@ class ConvertableToTraceFormat;
 
 namespace content {
 
-class RendererTaskQueueSelector;
-class NestableSingleThreadTaskRunner;
-
-class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
+class CONTENT_EXPORT RendererSchedulerImpl
+    : public RendererScheduler,
+      public SchedulerHelper::SchedulerHelperDelegate {
  public:
   RendererSchedulerImpl(
       scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner);
@@ -34,8 +29,8 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
 
   // RendererScheduler implementation:
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
@@ -43,9 +38,9 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   void DidReceiveInputEventOnCompositorThread(
       const blink::WebInputEvent& web_input_event) override;
   void DidAnimateForInputOnCompositorThread() override;
-  bool CanExceedIdleDeadlineIfRequired() const override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
+  bool CanExceedIdleDeadlineIfRequired() const override;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
@@ -53,6 +48,7 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
 
   void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
+  base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
 
  private:
   friend class RendererSchedulerImplTest;
@@ -60,12 +56,8 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
 
   // Keep RendererSchedulerImpl::TaskQueueIdToString in sync with this enum.
   enum QueueId {
-    DEFAULT_TASK_QUEUE,
-    COMPOSITOR_TASK_QUEUE,
+    COMPOSITOR_TASK_QUEUE = SchedulerHelper::TASK_QUEUE_COUNT,
     LOADING_TASK_QUEUE,
-    IDLE_TASK_QUEUE,
-    CONTROL_TASK_QUEUE,
-    CONTROL_TASK_AFTER_WAKEUP_QUEUE,
     // Must be the last entry.
     TASK_QUEUE_COUNT,
   };
@@ -83,15 +75,6 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
     INACTIVE,
     ACTIVE,
     ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE
-  };
-
-  // Keep RendererSchedulerImpl::IdlePeriodStateToString in sync with this enum.
-  enum class IdlePeriodState {
-    NOT_IN_IDLE_PERIOD,
-    IN_SHORT_IDLE_PERIOD,
-    IN_LONG_IDLE_PERIOD,
-    IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE,
-    ENDING_LONG_IDLE_PERIOD
   };
 
   class PollableNeedsUpdateFlag {
@@ -112,13 +95,17 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
     DISALLOW_COPY_AND_ASSIGN(PollableNeedsUpdateFlag);
   };
 
+  // SchedulerHelperDelegate implementation:
+  bool CanEnterLongIdlePeriod(
+      base::TimeTicks now,
+      base::TimeDelta* next_long_idle_period_delay_out) override;
+
   // Returns the serialized scheduler state for tracing.
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(
       base::TimeTicks optional_now) const;
   static const char* TaskQueueIdToString(QueueId queue_id);
   static const char* PolicyToString(Policy policy);
   static const char* InputStreamStateToString(InputStreamState state);
-  static const char* IdlePeriodStateToString(IdlePeriodState state);
 
   static InputStreamState ComputeNewInputStreamState(
       InputStreamState current_state,
@@ -127,15 +114,6 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
 
   // The time we should stay in a priority-escalated mode after an input event.
   static const int kPriorityEscalationAfterInputMillis = 100;
-
-  // The maximum length of an idle period.
-  static const int kMaximumIdlePeriodMillis = 50;
-
-  // The minimum delay to wait between retrying to initiate a long idle time.
-  static const int kRetryInitiateLongIdlePeriodDelayMillis = 1;
-
-  // IdleTaskDeadlineSupplier Implementation:
-  void CurrentIdleTaskDeadlineCallback(base::TimeTicks* deadline_out) const;
 
   // Returns the current scheduler policy. Must be called from the main thread.
   Policy SchedulerPolicy() const;
@@ -174,48 +152,20 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   // input was processed.
   void DidProcessInputEvent(base::TimeTicks begin_frame_time);
 
-  // Returns the new idle period state for the next long idle period. Fills in
-  // |next_long_idle_period_delay_out| with the next time we should try to
-  // initiate the next idle period.
-  IdlePeriodState ComputeNewLongIdlePeriodState(
-      const base::TimeTicks now,
-      base::TimeDelta* next_long_idle_period_delay_out);
+  SchedulerHelper helper_;
 
-  // Initiate a long idle period.
-  void InitiateLongIdlePeriod();
-  void InitiateLongIdlePeriodAfterWakeup();
-
-  // Start and end an idle period.
-  void StartIdlePeriod(IdlePeriodState new_idle_period_state);
-  void EndIdlePeriod();
-
-  // Returns true if |state| represents being within an idle period state.
-  static bool IsInIdlePeriod(IdlePeriodState state);
-
-  base::TimeTicks Now() const;
-
-  base::ThreadChecker main_thread_checker_;
-  scoped_ptr<RendererTaskQueueSelector> renderer_task_queue_selector_;
-  scoped_ptr<TaskQueueManager> task_queue_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> control_task_after_wakeup_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
-  scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
 
   base::Closure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;
-  CancelableClosureHolder end_idle_period_closure_;
-  CancelableClosureHolder initiate_next_long_idle_period_closure_;
-  CancelableClosureHolder initiate_next_long_idle_period_after_wakeup_closure_;
 
   // Don't access current_policy_ directly, instead use SchedulerPolicy().
   Policy current_policy_;
-  IdlePeriodState idle_period_state_;
+  base::TimeTicks current_policy_expiration_time_;
 
   base::TimeTicks estimated_next_frame_begin_;
-  base::TimeTicks current_policy_expiration_time_;
 
   // The incoming_signals_lock_ mutex protects access to all variables in the
   // (contiguous) block below.
@@ -226,9 +176,6 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   InputStreamState input_stream_state_;
   PollableNeedsUpdateFlag policy_may_need_update_;
 
-  scoped_refptr<cc::TestNowSource> time_source_;
-
-  base::WeakPtr<RendererSchedulerImpl> weak_renderer_scheduler_ptr_;
   base::WeakPtrFactory<RendererSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImpl);

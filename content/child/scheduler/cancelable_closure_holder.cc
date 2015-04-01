@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/scheduler/cancelable_closure_holder.h"
+#include "content/child/scheduler/cancelable_closure_holder.h"
 
 namespace content {
 

@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_SCHEDULER_RENDERER_SCHEDULER_H_
 #define CONTENT_RENDERER_SCHEDULER_RENDERER_SCHEDULER_H_
 
-#include "content/renderer/scheduler/single_thread_idle_task_runner.h"
-#include "content/renderer/scheduler/task_queue_manager.h"
+#include "base/message_loop/message_loop.h"
+#include "content/child/scheduler/single_thread_idle_task_runner.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace cc {

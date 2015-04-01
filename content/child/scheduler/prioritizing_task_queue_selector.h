@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SCHEDULER_RENDERER_TASK_QUEUE_SELECTOR_H_
-#define CONTENT_RENDERER_SCHEDULER_RENDERER_TASK_QUEUE_SELECTOR_H_
+#ifndef CONTENT_CHILD_SCHEDULER_PRIORITIZING_TASK_QUEUE_SELECTOR_H_
+#define CONTENT_CHILD_SCHEDULER_PRIORITIZING_TASK_QUEUE_SELECTOR_H_
 
 #include <set>
 
 #include "base/compiler_specific.h"
 #include "base/threading/thread_checker.h"
+#include "content/child/scheduler/task_queue_selector.h"
 #include "content/common/content_export.h"
-#include "content/renderer/scheduler/task_queue_selector.h"
 
 namespace content {
 
-// A RendererTaskQueueSelector is a TaskQueueSelector which is used by the
-// RendererScheduler to enable prioritization of particular task queues.
-class CONTENT_EXPORT RendererTaskQueueSelector
+// A PrioritizingTaskQueueSelector is a TaskQueueSelector which is used by the
+// SchedulerHelper to enable prioritization of particular task queues.
+class CONTENT_EXPORT PrioritizingTaskQueueSelector
     : NON_EXPORTED_BASE(public TaskQueueSelector) {
  public:
   enum QueuePriority {
@@ -38,8 +38,8 @@ class CONTENT_EXPORT RendererTaskQueueSelector
     FIRST_QUEUE_PRIORITY = CONTROL_PRIORITY,
   };
 
-  RendererTaskQueueSelector();
-  ~RendererTaskQueueSelector() override;
+  PrioritizingTaskQueueSelector();
+  ~PrioritizingTaskQueueSelector() override;
 
   // Set the priority of |queue_index| to |priority|.
   void SetQueuePriority(size_t queue_index, QueuePriority priority);
@@ -93,9 +93,9 @@ class CONTENT_EXPORT RendererTaskQueueSelector
   std::vector<const base::TaskQueue*> work_queues_;
   std::set<size_t> queue_priorities_[QUEUE_PRIORITY_COUNT];
   size_t starvation_count_;
-  DISALLOW_COPY_AND_ASSIGN(RendererTaskQueueSelector);
+  DISALLOW_COPY_AND_ASSIGN(PrioritizingTaskQueueSelector);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SCHEDULER_RENDERER_TASK_QUEUE_SELECTOR_H_
+#endif  // CONTENT_CHILD_SCHEDULER_PRIORITIZING_TASK_QUEUE_SELECTOR_H_

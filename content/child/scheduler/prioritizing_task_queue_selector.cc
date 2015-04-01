@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/scheduler/renderer_task_queue_selector.h"
+#include "content/child/scheduler/prioritizing_task_queue_selector.h"
 
 #include "base/logging.h"
 #include "base/pending_task.h"
@@ -10,13 +10,14 @@
 
 namespace content {
 
-RendererTaskQueueSelector::RendererTaskQueueSelector() : starvation_count_(0) {
+PrioritizingTaskQueueSelector::PrioritizingTaskQueueSelector()
+    : starvation_count_(0) {
 }
 
-RendererTaskQueueSelector::~RendererTaskQueueSelector() {
+PrioritizingTaskQueueSelector::~PrioritizingTaskQueueSelector() {
 }
 
-void RendererTaskQueueSelector::RegisterWorkQueues(
+void PrioritizingTaskQueueSelector::RegisterWorkQueues(
     const std::vector<const base::TaskQueue*>& work_queues) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   work_queues_ = work_queues;
@@ -30,8 +31,8 @@ void RendererTaskQueueSelector::RegisterWorkQueues(
   }
 }
 
-void RendererTaskQueueSelector::SetQueuePriority(size_t queue_index,
-                                                 QueuePriority priority) {
+void PrioritizingTaskQueueSelector::SetQueuePriority(size_t queue_index,
+                                                     QueuePriority priority) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_LT(queue_index, work_queues_.size());
   DCHECK_LT(priority, QUEUE_PRIORITY_COUNT);
@@ -39,12 +40,12 @@ void RendererTaskQueueSelector::SetQueuePriority(size_t queue_index,
   queue_priorities_[priority].insert(queue_index);
 }
 
-void RendererTaskQueueSelector::EnableQueue(size_t queue_index,
-                                            QueuePriority priority) {
+void PrioritizingTaskQueueSelector::EnableQueue(size_t queue_index,
+                                                QueuePriority priority) {
   SetQueuePriority(queue_index, priority);
 }
 
-void RendererTaskQueueSelector::DisableQueue(size_t queue_index) {
+void PrioritizingTaskQueueSelector::DisableQueue(size_t queue_index) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_LT(queue_index, work_queues_.size());
   for (auto& queue_priority : queue_priorities_) {
@@ -52,7 +53,7 @@ void RendererTaskQueueSelector::DisableQueue(size_t queue_index) {
   }
 }
 
-bool RendererTaskQueueSelector::IsQueueEnabled(size_t queue_index) const {
+bool PrioritizingTaskQueueSelector::IsQueueEnabled(size_t queue_index) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_LT(queue_index, work_queues_.size());
   for (const auto& queue_priority : queue_priorities_) {
@@ -62,21 +63,21 @@ bool RendererTaskQueueSelector::IsQueueEnabled(size_t queue_index) const {
   return false;
 }
 
-bool RendererTaskQueueSelector::IsOlder(const base::TaskQueue* queueA,
-                                        const base::TaskQueue* queueB) {
+bool PrioritizingTaskQueueSelector::IsOlder(const base::TaskQueue* queueA,
+                                            const base::TaskQueue* queueB) {
   // Note: the comparison is correct due to the fact that the PendingTask
   // operator inverts its comparison operation in order to work well in a heap
   // based priority queue.
   return queueB->front() < queueA->front();
 }
 
-RendererTaskQueueSelector::QueuePriority
-RendererTaskQueueSelector::NextPriority(QueuePriority priority) {
+PrioritizingTaskQueueSelector::QueuePriority
+PrioritizingTaskQueueSelector::NextPriority(QueuePriority priority) {
   DCHECK(priority < QUEUE_PRIORITY_COUNT);
   return static_cast<QueuePriority>(static_cast<int>(priority) + 1);
 }
 
-bool RendererTaskQueueSelector::ChooseOldestWithPriority(
+bool PrioritizingTaskQueueSelector::ChooseOldestWithPriority(
     QueuePriority priority,
     size_t* out_queue_index) const {
   bool found_non_empty_queue = false;
@@ -98,7 +99,7 @@ bool RendererTaskQueueSelector::ChooseOldestWithPriority(
   return found_non_empty_queue;
 }
 
-bool RendererTaskQueueSelector::SelectWorkQueueToService(
+bool PrioritizingTaskQueueSelector::SelectWorkQueueToService(
     size_t* out_queue_index) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(work_queues_.size());
@@ -124,7 +125,7 @@ bool RendererTaskQueueSelector::SelectWorkQueueToService(
   return false;
 }
 
-void RendererTaskQueueSelector::DidSelectQueueWithPriority(
+void PrioritizingTaskQueueSelector::DidSelectQueueWithPriority(
     QueuePriority priority) {
   switch (priority) {
     case CONTROL_PRIORITY:
@@ -142,7 +143,7 @@ void RendererTaskQueueSelector::DidSelectQueueWithPriority(
 }
 
 // static
-const char* RendererTaskQueueSelector::PriorityToString(
+const char* PrioritizingTaskQueueSelector::PriorityToString(
     QueuePriority priority) {
   switch (priority) {
     case CONTROL_PRIORITY:
@@ -159,7 +160,7 @@ const char* RendererTaskQueueSelector::PriorityToString(
   }
 }
 
-void RendererTaskQueueSelector::AsValueInto(
+void PrioritizingTaskQueueSelector::AsValueInto(
     base::trace_event::TracedValue* state) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   state->BeginDictionary("priorities");

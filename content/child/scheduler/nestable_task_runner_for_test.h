@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_SCHEDULER_NESTABLE_TASK_RUNNER_FOR_TEST_H_
 #define CONTENT_RENDERER_SCHEDULER_NESTABLE_TASK_RUNNER_FOR_TEST_H_
 
-#include "content/renderer/scheduler/nestable_single_thread_task_runner.h"
+#include "content/child/scheduler/nestable_single_thread_task_runner.h"
 
 namespace content {
 

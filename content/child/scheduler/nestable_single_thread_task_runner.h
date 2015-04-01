@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SCHEDULER_NESTABLE_SINGLE_THREAD_TASK_RUNNER_H_
-#define CONTENT_RENDERER_SCHEDULER_NESTABLE_SINGLE_THREAD_TASK_RUNNER_H_
+#ifndef CONTENT_CHILD_SCHEDULER_NESTABLE_SINGLE_THREAD_TASK_RUNNER_H_
+#define CONTENT_CHILD_SCHEDULER_NESTABLE_SINGLE_THREAD_TASK_RUNNER_H_
 
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
@@ -28,4 +28,4 @@ class CONTENT_EXPORT NestableSingleThreadTaskRunner
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SCHEDULER_NESTABLE_SINGLE_THREAD_TASK_RUNNER_H_
+#endif  // CONTENT_CHILD_SCHEDULER_NESTABLE_SINGLE_THREAD_TASK_RUNNER_H_

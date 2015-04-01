@@ -10,8 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "content/child/scheduler/cancelable_closure_holder.h"
 #include "content/common/content_export.h"
-#include "content/renderer/scheduler/cancelable_closure_holder.h"
 
 namespace content {
 

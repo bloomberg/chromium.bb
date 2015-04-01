@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/scheduler/task_queue_manager.h"
+#include "content/child/scheduler/task_queue_manager.h"
 
 #include "base/threading/thread.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "cc/test/test_now_source.h"
-#include "content/renderer/scheduler/nestable_task_runner_for_test.h"
-#include "content/renderer/scheduler/renderer_scheduler_message_loop_delegate.h"
-#include "content/renderer/scheduler/task_queue_selector.h"
+#include "content/child/scheduler/nestable_task_runner_for_test.h"
+#include "content/child/scheduler/scheduler_message_loop_delegate.h"
+#include "content/child/scheduler/task_queue_selector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::ElementsAre;
@@ -111,7 +111,7 @@ class TaskQueueManagerTest : public testing::Test {
     selector_ = make_scoped_ptr(createSelectorForTest(type));
     manager_ = make_scoped_ptr(new TaskQueueManager(
         num_queues, NestableTaskRunnerForTest::Create(test_task_runner_.get()),
-        selector_.get()));
+        selector_.get(), "test.scheduler"));
     manager_->SetTimeSourceForTesting(now_src_);
 
     EXPECT_EQ(num_queues, selector_->work_queues().size());
@@ -121,9 +121,8 @@ class TaskQueueManagerTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop());
     selector_ = make_scoped_ptr(createSelectorForTest(type));
     manager_ = make_scoped_ptr(new TaskQueueManager(
-        num_queues,
-        RendererSchedulerMessageLoopDelegate::Create(message_loop_.get()),
-        selector_.get()));
+        num_queues, SchedulerMessageLoopDelegate::Create(message_loop_.get()),
+        selector_.get(), "test.scheduler"));
     EXPECT_EQ(num_queues, selector_->work_queues().size());
   }
 
@@ -288,9 +287,8 @@ TEST_F(TaskQueueManagerTest, NonNestableTaskDoesntExecuteInNestedLoop) {
       std::make_pair(base::Bind(&TestTask, 5, &run_order), true));
 
   runner->PostTask(
-      FROM_HERE,
-      base::Bind(&PostFromNestedRunloop, message_loop_.get(), runner,
-                 base::Unretained(&tasks_to_post_from_nested_loop)));
+      FROM_HERE, base::Bind(&PostFromNestedRunloop, message_loop_.get(), runner,
+                            base::Unretained(&tasks_to_post_from_nested_loop)));
 
   message_loop_->RunUntilIdle();
   // Note we expect task 3 to run last because it's non-nestable.
@@ -320,8 +318,8 @@ TEST_F(TaskQueueManagerTest, DelayedTaskPosting) {
       manager_->TaskRunnerForQueue(0);
 
   base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
-  runner->PostDelayedTask(
-      FROM_HERE, base::Bind(&TestTask, 1, &run_order), delay);
+  runner->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+                          delay);
   EXPECT_EQ(delay, test_task_runner_->DelayToNextTaskTime());
   EXPECT_TRUE(manager_->IsQueueEmpty(0));
   EXPECT_TRUE(run_order.empty());
@@ -524,8 +522,8 @@ TEST_F(TaskQueueManagerTest, ManualPumpingWithDelayedTask) {
   // Posting a delayed task when pumping will apply the delay, but won't cause
   // work to executed afterwards.
   base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
-  runner->PostDelayedTask(
-      FROM_HERE, base::Bind(&TestTask, 1, &run_order), delay);
+  runner->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+                          delay);
 
   // After pumping but before the delay period has expired, task does not run.
   manager_->PumpQueue(0);
@@ -668,9 +666,8 @@ TEST_F(TaskQueueManagerTest, PostFromThread) {
 void RePostingTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
                        int* run_count) {
   (*run_count)++;
-  runner->PostTask(
-      FROM_HERE,
-      Bind(&RePostingTestTask, base::Unretained(runner.get()), run_count));
+  runner->PostTask(FROM_HERE, Bind(&RePostingTestTask,
+                                   base::Unretained(runner.get()), run_count));
 }
 
 TEST_F(TaskQueueManagerTest, DoWorkCantPostItselfMultipleTimes) {
@@ -829,8 +826,7 @@ TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupFromTask) {
   // doesn't cause the queue to wake up.
   base::Closure after_wakeup_task = base::Bind(&TestTask, 1, &run_order);
   runners[1]->PostTask(
-      FROM_HERE,
-      base::Bind(&TestPostingTask, runners[0], after_wakeup_task));
+      FROM_HERE, base::Bind(&TestPostingTask, runners[0], after_wakeup_task));
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
@@ -859,11 +855,9 @@ TEST_F(TaskQueueManagerTest, AutoPumpAfterWakeupFromMultipleTasks) {
   base::Closure after_wakeup_task_1 = base::Bind(&TestTask, 1, &run_order);
   base::Closure after_wakeup_task_2 = base::Bind(&TestTask, 2, &run_order);
   runners[1]->PostTask(
-      FROM_HERE,
-      base::Bind(&TestPostingTask, runners[0], after_wakeup_task_1));
+      FROM_HERE, base::Bind(&TestPostingTask, runners[0], after_wakeup_task_1));
   runners[1]->PostTask(
-      FROM_HERE,
-      base::Bind(&TestPostingTask, runners[0], after_wakeup_task_2));
+      FROM_HERE, base::Bind(&TestPostingTask, runners[0], after_wakeup_task_2));
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
@@ -1044,4 +1038,3 @@ TEST_F(TaskQueueManagerTest, NextPendingDelayedTaskRunTime_MultipleQueues) {
 
 }  // namespace
 }  // namespace content
-

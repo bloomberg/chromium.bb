@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/scheduler/task_queue_manager.h"
+#include "content/child/scheduler/task_queue_manager.h"
 
 #include <queue>
 #include <set>
@@ -11,8 +11,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/test/test_now_source.h"
-#include "content/renderer/scheduler/nestable_single_thread_task_runner.h"
-#include "content/renderer/scheduler/task_queue_selector.h"
+#include "content/child/scheduler/nestable_single_thread_task_runner.h"
+#include "content/child/scheduler/task_queue_selector.h"
 
 namespace {
 const int64_t kMaxTimeTicks = std::numeric_limits<int64>::max();
@@ -46,7 +46,8 @@ class LazyNow {
 
 class TaskQueue : public base::SingleThreadTaskRunner {
  public:
-  TaskQueue(TaskQueueManager* task_queue_manager);
+  TaskQueue(TaskQueueManager* task_queue_manager,
+            const char* disabled_by_default_tracing_category);
 
   // base::SingleThreadTaskRunner implementation.
   bool RunsTasksOnCurrentThread() const override;
@@ -132,6 +133,7 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   base::TaskQueue incoming_queue_;
   TaskQueueManager::PumpPolicy pump_policy_;
   const char* name_;
+  const char* disabled_by_default_tracing_category_;
   base::DelayedTaskQueue delayed_task_queue_;
   std::set<base::TimeTicks> in_flight_kick_delayed_tasks_;
 
@@ -141,11 +143,14 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(TaskQueue);
 };
 
-TaskQueue::TaskQueue(TaskQueueManager* task_queue_manager)
+TaskQueue::TaskQueue(TaskQueueManager* task_queue_manager,
+                     const char* disabled_by_default_tracing_category)
     : thread_id_(base::PlatformThread::CurrentId()),
       task_queue_manager_(task_queue_manager),
       pump_policy_(TaskQueueManager::PumpPolicy::AUTO),
-      name_(nullptr) {
+      name_(nullptr),
+      disabled_by_default_tracing_category_(
+          disabled_by_default_tracing_category) {
 }
 
 TaskQueue::~TaskQueue() {
@@ -317,8 +322,8 @@ base::PendingTask TaskQueue::TakeTaskFromWorkQueue() {
 
 void TaskQueue::TraceQueueSize(bool is_locked) const {
   bool is_tracing;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), &is_tracing);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(disabled_by_default_tracing_category_,
+                                     &is_tracing);
   if (!is_tracing || !name_)
     return;
   if (!is_locked)
@@ -326,7 +331,7 @@ void TaskQueue::TraceQueueSize(bool is_locked) const {
   else
     lock_.AssertAcquired();
   TRACE_COUNTER1(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), name_,
+      disabled_by_default_tracing_category_, name_,
       incoming_queue_.size() + work_queue_.size() + delayed_task_queue_.size());
   if (!is_locked)
     lock_.Release();
@@ -450,35 +455,36 @@ void TaskQueue::TaskAsValueInto(const base::PendingTask& task,
 TaskQueueManager::TaskQueueManager(
     size_t task_queue_count,
     scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
-    TaskQueueSelector* selector)
+    TaskQueueSelector* selector,
+    const char* disabled_by_default_tracing_category)
     : main_task_runner_(main_task_runner),
       selector_(selector),
       pending_dowork_count_(0),
       work_batch_size_(1),
       time_source_(nullptr),
+      disabled_by_default_tracing_category_(
+          disabled_by_default_tracing_category),
       weak_factory_(this) {
   DCHECK(main_task_runner->RunsTasksOnCurrentThread());
-  TRACE_EVENT_OBJECT_CREATED_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager",
-      this);
+  TRACE_EVENT_OBJECT_CREATED_WITH_ID(disabled_by_default_tracing_category,
+                                     "TaskQueueManager", this);
 
   task_queue_manager_weak_ptr_ = weak_factory_.GetWeakPtr();
   for (size_t i = 0; i < task_queue_count; i++) {
-    scoped_refptr<internal::TaskQueue> queue(
-        make_scoped_refptr(new internal::TaskQueue(this)));
+    scoped_refptr<internal::TaskQueue> queue(make_scoped_refptr(
+        new internal::TaskQueue(this, disabled_by_default_tracing_category)));
     queues_.push_back(queue);
   }
 
   std::vector<const base::TaskQueue*> work_queues;
-  for (const auto& queue: queues_)
+  for (const auto& queue : queues_)
     work_queues.push_back(&queue->work_queue());
   selector_->RegisterWorkQueues(work_queues);
 }
 
 TaskQueueManager::~TaskQueueManager() {
-  TRACE_EVENT_OBJECT_DELETED_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager",
-      this);
+  TRACE_EVENT_OBJECT_DELETED_WITH_ID(disabled_by_default_tracing_category_,
+                                     "TaskQueueManager", this);
   for (auto& queue : queues_)
     queue->WillDeleteTaskQueueManager();
 }
@@ -600,7 +606,7 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
 bool TaskQueueManager::SelectWorkQueueToService(size_t* out_queue_index) {
   bool should_run = selector_->SelectWorkQueueToService(out_queue_index);
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager", this,
+      disabled_by_default_tracing_category_, "TaskQueueManager", this,
       AsValueWithSelectorResult(should_run, *out_queue_index));
   return should_run;
 }

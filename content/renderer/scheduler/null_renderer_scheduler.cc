@@ -6,36 +6,9 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "content/child/scheduler/null_idle_task_runner.h"
 
 namespace content {
-
-namespace {
-
-class NullIdleTaskRunner : public SingleThreadIdleTaskRunner {
- public:
-  NullIdleTaskRunner();
-  void PostIdleTask(const tracked_objects::Location& from_here,
-                    const IdleTask& idle_task) override;
-
- protected:
-  ~NullIdleTaskRunner() override;
-};
-
-}  // namespace
-
-NullIdleTaskRunner::NullIdleTaskRunner()
-    : SingleThreadIdleTaskRunner(nullptr,
-                                 nullptr,
-                                 base::Callback<void(base::TimeTicks*)>()) {
-}
-
-NullIdleTaskRunner::~NullIdleTaskRunner() {
-}
-
-void NullIdleTaskRunner::PostIdleTask(
-    const tracked_objects::Location& from_here,
-    const IdleTask& idle_task) {
-}
 
 NullRendererScheduler::NullRendererScheduler()
     : task_runner_(base::MessageLoopProxy::current()),

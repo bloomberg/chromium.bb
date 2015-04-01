@@ -7,8 +7,8 @@
 #include "base/callback.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"
-#include "content/renderer/scheduler/nestable_task_runner_for_test.h"
-#include "content/renderer/scheduler/renderer_scheduler_message_loop_delegate.h"
+#include "content/child/scheduler/nestable_task_runner_for_test.h"
+#include "content/child/scheduler/scheduler_message_loop_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,6 +40,85 @@ void AppendToVectorIdleTestTask(std::vector<std::string>* vector,
   AppendToVectorTestTask(vector, value);
 }
 
+void NullTask() {
+}
+
+void AppendToVectorReentrantTask(
+    base::SingleThreadTaskRunner* task_runner,
+    std::vector<int>* vector,
+    int* reentrant_count,
+    int max_reentrant_count) {
+  vector->push_back((*reentrant_count)++);
+  if (*reentrant_count < max_reentrant_count) {
+    task_runner->PostTask(
+        FROM_HERE, base::Bind(AppendToVectorReentrantTask,
+                              base::Unretained(task_runner), vector,
+                              reentrant_count, max_reentrant_count));
+  }
+}
+
+void IdleTestTask(int* run_count,
+                  base::TimeTicks* deadline_out,
+                  base::TimeTicks deadline) {
+  (*run_count)++;
+  *deadline_out = deadline;
+}
+
+int max_idle_task_reposts = 2;
+
+void RepostingIdleTestTask(
+    SingleThreadIdleTaskRunner* idle_task_runner,
+    int* run_count,
+    base::TimeTicks deadline) {
+  if ((*run_count + 1) < max_idle_task_reposts) {
+    idle_task_runner->PostIdleTask(
+        FROM_HERE,
+        base::Bind(&RepostingIdleTestTask, base::Unretained(idle_task_runner),
+                   run_count));
+  }
+  (*run_count)++;
+}
+
+void UpdateClockToDeadlineIdleTestTask(
+    cc::TestNowSource* clock,
+    base::SingleThreadTaskRunner* task_runner,
+    int* run_count,
+    base::TimeTicks deadline) {
+  clock->SetNow(deadline);
+  // Due to the way in which OrderedSimpleTestRunner orders tasks and the fact
+  // that we updated the time within a task, the delayed pending task to call
+  // EndIdlePeriod will not happen until after a TaskQueueManager DoWork, so
+  // post a normal task here to ensure it runs before the next idle task.
+  task_runner->PostTask(FROM_HERE, base::Bind(NullTask));
+  (*run_count)++;
+}
+
+void PostingYieldingTestTask(
+    RendererSchedulerImpl* scheduler,
+    base::SingleThreadTaskRunner* task_runner,
+    bool simulate_input,
+    bool* should_yield_before,
+    bool* should_yield_after) {
+  *should_yield_before = scheduler->ShouldYieldForHighPriorityWork();
+  task_runner->PostTask(FROM_HERE, base::Bind(NullTask));
+  if (simulate_input) {
+    scheduler->DidReceiveInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
+  }
+  *should_yield_after = scheduler->ShouldYieldForHighPriorityWork();
+}
+
+void AnticipationTestTask(RendererSchedulerImpl* scheduler,
+                          bool simulate_input,
+                          bool* is_anticipated_before,
+                          bool* is_anticipated_after) {
+  *is_anticipated_before = scheduler->IsHighPriorityWorkAnticipated();
+  if (simulate_input) {
+    scheduler->DidReceiveInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
+  }
+  *is_anticipated_after = scheduler->IsHighPriorityWorkAnticipated();
+}
 };  // namespace
 
 class RendererSchedulerImplTest : public testing::Test {
@@ -63,7 +142,7 @@ class RendererSchedulerImplTest : public testing::Test {
       : clock_(cc::TestNowSource::Create(5000)),
         message_loop_(message_loop),
         nestable_task_runner_(
-            RendererSchedulerMessageLoopDelegate::Create(message_loop)),
+            SchedulerMessageLoopDelegate::Create(message_loop)),
         scheduler_(new RendererSchedulerImpl(nestable_task_runner_)),
         default_task_runner_(scheduler_->DefaultTaskRunner()),
         compositor_task_runner_(scheduler_->CompositorTaskRunner()),
@@ -160,13 +239,7 @@ class RendererSchedulerImplTest : public testing::Test {
 
   static base::TimeDelta maximum_idle_period_duration() {
     return base::TimeDelta::FromMilliseconds(
-        RendererSchedulerImpl::kMaximumIdlePeriodMillis);
-  }
-
-  base::TimeTicks CurrentIdleTaskDeadline() {
-    base::TimeTicks deadline;
-    scheduler_->CurrentIdleTaskDeadlineCallback(&deadline);
-    return deadline;
+        SchedulerHelper::kMaximumIdlePeriodMillis);
   }
 
   scoped_refptr<cc::TestNowSource> clock_;
@@ -183,82 +256,6 @@ class RendererSchedulerImplTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImplTest);
 };
-
-void NullTask() {
-}
-
-void AppendToVectorReentrantTask(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::vector<int>* vector,
-    int* reentrant_count,
-    int max_reentrant_count) {
-  vector->push_back((*reentrant_count)++);
-  if (*reentrant_count < max_reentrant_count) {
-    task_runner->PostTask(
-        FROM_HERE, base::Bind(AppendToVectorReentrantTask, task_runner, vector,
-                              reentrant_count, max_reentrant_count));
-  }
-}
-
-void IdleTestTask(int* run_count,
-                  base::TimeTicks* deadline_out,
-                  base::TimeTicks deadline) {
-  (*run_count)++;
-  *deadline_out = deadline;
-}
-
-void RepostingIdleTestTask(
-    scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
-    int* run_count,
-    base::TimeTicks deadline) {
-  if (*run_count == 0) {
-    idle_task_runner->PostIdleTask(
-        FROM_HERE,
-        base::Bind(&RepostingIdleTestTask, idle_task_runner, run_count));
-  }
-  (*run_count)++;
-}
-
-void UpdateClockToDeadlineIdleTestTask(
-    scoped_refptr<cc::TestNowSource> clock,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    int* run_count,
-    base::TimeTicks deadline) {
-  clock->SetNow(deadline);
-  // Due to the way in which OrderedSimpleTestRunner orders tasks and the fact
-  // that we updated the time within a task, the delayed pending task to call
-  // EndIdlePeriod will not happen until after a TaskQueueManager DoWork, so
-  // post a normal task here to ensure it runs before the next idle task.
-  task_runner->PostTask(FROM_HERE, base::Bind(NullTask));
-  (*run_count)++;
-}
-
-void PostingYieldingTestTask(
-    RendererSchedulerImpl* scheduler,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    bool simulate_input,
-    bool* should_yield_before,
-    bool* should_yield_after) {
-  *should_yield_before = scheduler->ShouldYieldForHighPriorityWork();
-  task_runner->PostTask(FROM_HERE, base::Bind(NullTask));
-  if (simulate_input) {
-    scheduler->DidReceiveInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
-  }
-  *should_yield_after = scheduler->ShouldYieldForHighPriorityWork();
-}
-
-void AnticipationTestTask(RendererSchedulerImpl* scheduler,
-                          bool simulate_input,
-                          bool* is_anticipated_before,
-                          bool* is_anticipated_after) {
-  *is_anticipated_before = scheduler->IsHighPriorityWorkAnticipated();
-  if (simulate_input) {
-    scheduler->DidReceiveInputEventOnCompositorThread(
-        FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
-  }
-  *is_anticipated_after = scheduler->IsHighPriorityWorkAnticipated();
-}
 
 TEST_F(RendererSchedulerImplTest, TestPostDefaultTask) {
   std::vector<std::string> run_order;
@@ -326,6 +323,7 @@ TEST_F(RendererSchedulerImplTest, TestPostIdleTask) {
 TEST_F(RendererSchedulerImplTest, TestRepostingIdleTask) {
   int run_count = 0;
 
+  max_idle_task_reposts = 2;
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
       base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
@@ -1162,6 +1160,7 @@ TEST_F(RendererSchedulerImplTest,
 TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
   int run_count = 0;
 
+  max_idle_task_reposts = 3;
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
       base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
@@ -1196,11 +1195,13 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodDoesNotWakeScheduler) {
   // there are no idle tasks and no other task woke up the scheduler, thus
   // the idle period deadline shouldn't update at the end of the current long
   // idle period.
-  base::TimeTicks idle_period_deadline = CurrentIdleTaskDeadline();
+  base::TimeTicks idle_period_deadline =
+      scheduler_->CurrentIdleTaskDeadlineForTesting();
   clock_->AdvanceNow(maximum_idle_period_duration());
   RunUntilIdle();
 
-  base::TimeTicks new_idle_period_deadline = CurrentIdleTaskDeadline();
+  base::TimeTicks new_idle_period_deadline =
+      scheduler_->CurrentIdleTaskDeadlineForTesting();
   EXPECT_EQ(idle_period_deadline, new_idle_period_deadline);
 
   // Posting a after-wakeup idle task also shouldn't wake the scheduler or
@@ -1209,14 +1210,14 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodDoesNotWakeScheduler) {
       FROM_HERE,
       base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
   RunUntilIdle();
-  new_idle_period_deadline = CurrentIdleTaskDeadline();
+  new_idle_period_deadline = scheduler_->CurrentIdleTaskDeadlineForTesting();
   EXPECT_EQ(idle_period_deadline, new_idle_period_deadline);
   EXPECT_EQ(0, run_count);
 
   // Running a normal task should initiate a new long idle period though.
   default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
   RunUntilIdle();
-  new_idle_period_deadline = CurrentIdleTaskDeadline();
+  new_idle_period_deadline = scheduler_->CurrentIdleTaskDeadlineForTesting();
   EXPECT_EQ(idle_period_deadline + maximum_idle_period_duration(),
             new_idle_period_deadline);
 
