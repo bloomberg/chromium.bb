@@ -135,6 +135,9 @@ public:
     // Pass 0 as the GraphicsLayer to detatch the root layer.
     virtual void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override;
 
+    virtual void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) override;
+    virtual void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) override;
+
     virtual void enterFullScreenForElement(Element*) override;
     virtual void exitFullScreenForElement(Element*) override;
 

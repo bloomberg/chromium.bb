@@ -4239,6 +4239,18 @@ void WebViewImpl::scheduleAnimation()
         m_client->scheduleAnimation();
 }
 
+void WebViewImpl::attachCompositorAnimationTimeline(WebCompositorAnimationTimeline* timeline)
+{
+    if (m_layerTreeView)
+        m_layerTreeView->attachCompositorAnimationTimeline(timeline);
+}
+
+void WebViewImpl::detachCompositorAnimationTimeline(WebCompositorAnimationTimeline* timeline)
+{
+    if (m_layerTreeView)
+        m_layerTreeView->detachCompositorAnimationTimeline(timeline);
+}
+
 void WebViewImpl::initializeLayerTreeView()
 {
     if (m_client) {

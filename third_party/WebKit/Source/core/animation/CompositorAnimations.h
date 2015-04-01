@@ -53,9 +53,12 @@ public:
     virtual void cancelIncompatibleAnimationsOnCompositor(const Element&, const AnimationPlayer&, const AnimationEffect&);
     virtual bool canStartAnimationOnCompositor(const Element&);
     // FIXME: This should return void. We should know ahead of time whether these animations can be started.
-    virtual bool startAnimationOnCompositor(const Element&, int group, double startTime, double timeOffset, const Timing&, const AnimationPlayer*, const AnimationEffect&, Vector<int>& startedAnimationIds, double playerPlaybackRate);
-    virtual void cancelAnimationOnCompositor(const Element&, int id);
-    virtual void pauseAnimationForTestingOnCompositor(const Element&, int id, double pauseTime);
+    virtual bool startAnimationOnCompositor(const Element&, int group, double startTime, double timeOffset, const Timing&, const AnimationPlayer&, const AnimationEffect&, Vector<int>& startedAnimationIds, double playerPlaybackRate);
+    virtual void cancelAnimationOnCompositor(const Element&, const AnimationPlayer&, int id);
+    virtual void pauseAnimationForTestingOnCompositor(const Element&, const AnimationPlayer&, int id, double pauseTime);
+
+    virtual bool canAttachCompositedLayers(const Element&, const AnimationPlayer&);
+    virtual void attachCompositedLayers(const Element&, const AnimationPlayer&);
 
     virtual bool getAnimatedBoundingBox(FloatBox&, const AnimationEffect&, double minValue, double maxValue) const;
 protected:

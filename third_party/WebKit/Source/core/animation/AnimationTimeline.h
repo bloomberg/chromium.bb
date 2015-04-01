@@ -37,6 +37,7 @@
 #include "core/dom/Element.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebCompositorAnimationTimeline.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -97,6 +98,8 @@ public:
     void setPlaybackRate(double);
     double playbackRate() const;
 
+    WebCompositorAnimationTimeline* compositorTimeline() const { return m_compositorTimeline.get(); }
+
     Document* document() { return m_document.get(); }
 #if !ENABLE(OILPAN)
     void detachFromDocument();
@@ -124,6 +127,8 @@ private:
 
     OwnPtrWillBeMember<PlatformTiming> m_timing;
     double m_lastCurrentTimeInternal;
+
+    OwnPtr<WebCompositorAnimationTimeline> m_compositorTimeline;
 
     class AnimationTimelineTiming final : public PlatformTiming {
     public:

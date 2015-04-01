@@ -39,6 +39,8 @@
 namespace blink {
 
 class WebCompositorAnimationCurve;
+class WebCompositorAnimationPlayer;
+class WebCompositorAnimationTimeline;
 class WebCompositorOutputSurface;
 class WebContentLayer;
 class WebContentLayerClient;
@@ -102,6 +104,10 @@ public:
     virtual WebTransformOperations* createTransformOperations() { return 0; }
 
     virtual WebFilterOperations* createFilterOperations() { return 0; }
+
+    virtual WebCompositorAnimationPlayer* createAnimationPlayer() { return 0; }
+
+    virtual WebCompositorAnimationTimeline* createAnimationTimeline() { return 0; }
 
 protected:
     virtual ~WebCompositorSupport() { }

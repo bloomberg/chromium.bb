@@ -61,6 +61,7 @@ class Node;
 class Page;
 class PagePopupDriver;
 class PopupMenuClient;
+class WebCompositorAnimationTimeline;
 
 struct CompositedSelectionBound;
 struct DateTimeChooserParameters;
@@ -179,6 +180,9 @@ public:
     // This sets the graphics layer for the LocalFrame's WebWidget, if it has one. Otherwise
     // it sets it for the WebViewImpl.
     virtual void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) = 0;
+
+    virtual void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) { }
+    virtual void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) { }
 
     virtual void enterFullScreenForElement(Element*) { }
     virtual void exitFullScreenForElement(Element*) { }

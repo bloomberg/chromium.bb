@@ -79,6 +79,7 @@ class DeprecatedPaintLayerCompositor;
 class TopControls;
 class UserGestureToken;
 class WebActiveGestureAnimation;
+class WebCompositorAnimationTimeline;
 class WebDevToolsAgentImpl;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
@@ -446,6 +447,8 @@ public:
     DeprecatedPaintLayerCompositor* compositor() const;
     void registerForAnimations(WebLayer*);
     void scheduleAnimation();
+    void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*);
+    void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*);
 
     virtual void setVisibilityState(WebPageVisibilityState, bool) override;
 

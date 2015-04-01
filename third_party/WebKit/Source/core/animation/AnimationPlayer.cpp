@@ -39,7 +39,11 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebCompositorAnimationPlayer.h"
+#include "public/platform/WebCompositorSupport.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -66,6 +70,7 @@ PassRefPtrWillBeRawPtr<AnimationPlayer> AnimationPlayer::create(AnimationNode* s
 
     if (timeline) {
         timeline->playerAttached(*player);
+        player->attachCompositorTimeline();
     }
 
     return player.release();
@@ -108,6 +113,8 @@ AnimationPlayer::~AnimationPlayer()
     if (m_timeline)
         m_timeline->playerDestroyed(this);
 #endif
+
+    destroyCompositorPlayer();
 }
 
 double AnimationPlayer::sourceEnd() const
@@ -266,6 +273,9 @@ void AnimationPlayer::preCommit(int compositorGroup, bool startOnCompositor)
     if (shouldStart) {
         m_compositorGroup = compositorGroup;
         if (startOnCompositor) {
+            if (isCandidateForAnimationOnCompositor())
+                createCompositorPlayer();
+
             if (maybeStartAnimationOnCompositor())
                 m_compositorState = adoptPtr(new CompositorState(*this));
             else
@@ -424,7 +434,6 @@ void AnimationPlayer::setSource(AnimationNode* newSource)
 {
     if (m_content == newSource)
         return;
-
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand, SetCompositorPendingWithSourceChanged);
 
     double storedCurrentTime = currentTimeInternal();
@@ -665,13 +674,21 @@ void AnimationPlayer::setOutdated()
         m_timeline->setOutdatedAnimationPlayer(this);
 }
 
-bool AnimationPlayer::canStartAnimationOnCompositor()
+bool AnimationPlayer::canStartAnimationOnCompositor() const
 {
     // FIXME: Timeline playback rates should be compositable
     if (m_playbackRate == 0 || (std::isinf(sourceEnd()) && m_playbackRate < 0) || (timeline() && timeline()->playbackRate() != 1))
         return false;
 
     return m_timeline && m_content && m_content->isAnimation() && playing();
+}
+
+bool AnimationPlayer::isCandidateForAnimationOnCompositor() const
+{
+    if (!canStartAnimationOnCompositor())
+        return false;
+
+    return toAnimation(m_content.get())->isCandidateForAnimationOnCompositor(m_playbackRate);
 }
 
 bool AnimationPlayer::maybeStartAnimationOnCompositor()
@@ -699,6 +716,7 @@ void AnimationPlayer::setCompositorPending(bool sourceChanged)
 {
     // FIXME: Animation could notify this directly?
     if (!hasActiveAnimationsOnCompositor()) {
+        destroyCompositorPlayer();
         m_compositorState.release();
     }
     if (sourceChanged && m_compositorState) {
@@ -720,6 +738,8 @@ void AnimationPlayer::cancelAnimationOnCompositor()
 {
     if (hasActiveAnimationsOnCompositor())
         toAnimation(m_content.get())->cancelAnimationOnCompositor();
+
+    destroyCompositorPlayer();
 }
 
 void AnimationPlayer::restartAnimationOnCompositor()
@@ -820,6 +840,71 @@ void AnimationPlayer::endUpdatingState()
 {
     ASSERT(m_stateIsBeingUpdated);
     m_stateIsBeingUpdated = false;
+}
+
+void AnimationPlayer::createCompositorPlayer()
+{
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && !m_compositorPlayer && Platform::current()->compositorSupport()) {
+        m_compositorPlayer = adoptPtr(Platform::current()->compositorSupport()->createAnimationPlayer());
+        ASSERT(m_compositorPlayer);
+        m_compositorPlayer->setAnimationDelegate(this);
+        attachCompositorTimeline();
+    }
+
+    attachCompositedLayers();
+}
+
+void AnimationPlayer::destroyCompositorPlayer()
+{
+    detachCompositedLayers();
+
+    if (m_compositorPlayer) {
+        detachCompositorTimeline();
+        m_compositorPlayer->setAnimationDelegate(nullptr);
+    }
+    m_compositorPlayer.clear();
+}
+
+void AnimationPlayer::attachCompositorTimeline()
+{
+    if (m_compositorPlayer) {
+        WebCompositorAnimationTimeline* timeline = m_timeline ? m_timeline->compositorTimeline() : nullptr;
+        if (timeline)
+            timeline->playerAttached(*this);
+    }
+}
+
+void AnimationPlayer::detachCompositorTimeline()
+{
+    if (m_compositorPlayer) {
+        WebCompositorAnimationTimeline* timeline = m_timeline ? m_timeline->compositorTimeline() : nullptr;
+        if (timeline)
+            timeline->playerDestroyed(*this);
+    }
+}
+
+void AnimationPlayer::attachCompositedLayers()
+{
+    if (!RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() || !m_compositorPlayer)
+        return;
+
+    ASSERT(m_content);
+    ASSERT(m_content->isAnimation());
+
+    if (toAnimation(m_content.get())->canAttachCompositedLayers())
+        toAnimation(m_content.get())->attachCompositedLayers();
+}
+
+void AnimationPlayer::detachCompositedLayers()
+{
+    if (m_compositorPlayer && m_compositorPlayer->isLayerAttached())
+        m_compositorPlayer->detachLayer();
+}
+
+void AnimationPlayer::notifyAnimationStarted(double monotonicTime, int group)
+{
+    ASSERT(RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled());
+    timeline()->document()->compositorPendingAnimations().notifyCompositorAnimationStarted(monotonicTime, group);
 }
 
 AnimationPlayer::PlayStateUpdateScope::PlayStateUpdateScope(AnimationPlayer& player, TimingUpdateReason reason, CompositorPendingChange compositorPendingChange)

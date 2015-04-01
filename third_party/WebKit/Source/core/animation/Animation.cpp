@@ -251,7 +251,7 @@ bool Animation::maybeStartAnimationOnCompositor(int group, double startTime, dou
         return false;
     if (!CompositorAnimations::instance()->canStartAnimationOnCompositor(*m_target))
         return false;
-    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, group, startTime, currentTime, specifiedTiming(), player(), *effect(), m_compositorAnimationIds, playerPlaybackRate))
+    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, group, startTime, currentTime, specifiedTiming(), *player(), *effect(), m_compositorAnimationIds, playerPlaybackRate))
         return false;
     ASSERT(!m_compositorAnimationIds.isEmpty());
     return true;
@@ -282,8 +282,9 @@ bool Animation::cancelAnimationOnCompositor()
         return false;
     if (!m_target || !m_target->layoutObject())
         return false;
+    ASSERT(player());
     for (const auto& compositorAnimationId : m_compositorAnimationIds)
-        CompositorAnimations::instance()->cancelAnimationOnCompositor(*m_target, compositorAnimationId);
+        CompositorAnimations::instance()->cancelAnimationOnCompositor(*m_target, *player(), compositorAnimationId);
     m_compositorAnimationIds.clear();
     return true;
 }
@@ -305,8 +306,24 @@ void Animation::pauseAnimationForTestingOnCompositor(double pauseTime)
     ASSERT(hasActiveAnimationsOnCompositor());
     if (!m_target || !m_target->layoutObject())
         return;
+    ASSERT(player());
     for (const auto& compositorAnimationId : m_compositorAnimationIds)
-        CompositorAnimations::instance()->pauseAnimationForTestingOnCompositor(*m_target, compositorAnimationId, pauseTime);
+        CompositorAnimations::instance()->pauseAnimationForTestingOnCompositor(*m_target, *player(), compositorAnimationId, pauseTime);
+}
+
+bool Animation::canAttachCompositedLayers() const
+{
+    if (!m_target || !player())
+        return false;
+
+    return CompositorAnimations::instance()->canAttachCompositedLayers(*m_target, *player());
+}
+
+void Animation::attachCompositedLayers()
+{
+    ASSERT(m_target);
+    ASSERT(player());
+    CompositorAnimations::instance()->attachCompositedLayers(*m_target, *player());
 }
 
 DEFINE_TRACE(Animation)

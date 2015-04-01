@@ -1025,6 +1025,19 @@ void WebFrameWidgetImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     suppressInvalidations(false);
 }
 
+void WebFrameWidgetImpl::attachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline)
+{
+    if (m_layerTreeView)
+        m_layerTreeView->attachCompositorAnimationTimeline(compositorTimeline);
+
+}
+
+void WebFrameWidgetImpl::detachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline)
+{
+    if (m_layerTreeView)
+        m_layerTreeView->detachCompositorAnimationTimeline(compositorTimeline);
+}
+
 void WebFrameWidgetImpl::setVisibilityState(WebPageVisibilityState visibilityState, bool isInitialState)
 {
     if (!m_page)

@@ -107,6 +107,8 @@
 
 namespace blink {
 
+class WebCompositorAnimationTimeline;
+
 // Converts a AXObjectCache::AXNotification to a WebAXEvent
 static WebAXEvent toWebAXEvent(AXObjectCache::AXNotification notification)
 {
@@ -705,6 +707,44 @@ void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer, LocalFr
         }
         ASSERT(webFrame && webFrame->frameWidget());
         webFrame->frameWidget()->setRootGraphicsLayer(rootLayer);
+    }
+}
+
+void ChromeClientImpl::attachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline, LocalFrame* localRoot)
+{
+    // FIXME: For top-level frames we still use the WebView as a WebWidget. This special
+    // case will be removed when top-level frames get WebFrameWidgets.
+    if (localRoot->isMainFrame()) {
+        m_webView->attachCompositorAnimationTimeline(compositorTimeline);
+    } else {
+        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localRoot);
+        // FIXME: The following conditional is only needed for staging until the Chromium patch
+        // lands that instantiates a WebFrameWidget.
+        if (!webFrame->frameWidget()) {
+            m_webView->attachCompositorAnimationTimeline(compositorTimeline);
+            return;
+        }
+        ASSERT(webFrame && webFrame->frameWidget());
+        webFrame->frameWidget()->attachCompositorAnimationTimeline(compositorTimeline);
+    }
+}
+
+void ChromeClientImpl::detachCompositorAnimationTimeline(WebCompositorAnimationTimeline* compositorTimeline, LocalFrame* localRoot)
+{
+    // FIXME: For top-level frames we still use the WebView as a WebWidget. This special
+    // case will be removed when top-level frames get WebFrameWidgets.
+    if (localRoot->isMainFrame()) {
+        m_webView->detachCompositorAnimationTimeline(compositorTimeline);
+    } else {
+        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localRoot);
+        // FIXME: The following conditional is only needed for staging until the Chromium patch
+        // lands that instantiates a WebFrameWidget.
+        if (!webFrame->frameWidget()) {
+            m_webView->detachCompositorAnimationTimeline(compositorTimeline);
+            return;
+        }
+        ASSERT(webFrame && webFrame->frameWidget());
+        webFrame->frameWidget()->detachCompositorAnimationTimeline(compositorTimeline);
     }
 }
 

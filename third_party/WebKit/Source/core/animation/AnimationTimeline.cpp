@@ -37,7 +37,11 @@
 #include "core/frame/FrameView.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebCompositorAnimationTimeline.h"
+#include "public/platform/WebCompositorSupport.h"
 
 namespace blink {
 
@@ -71,6 +75,9 @@ AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<
         m_timing = adoptPtrWillBeNoop(new AnimationTimelineTiming(this));
     else
         m_timing = timing;
+
+    if (RuntimeEnabledFeatures::compositorAnimationTimelinesEnabled() && Platform::current()->compositorSupport())
+        m_compositorTimeline = adoptPtr(Platform::current()->compositorSupport()->createAnimationTimeline());
 
     ASSERT(document);
 }

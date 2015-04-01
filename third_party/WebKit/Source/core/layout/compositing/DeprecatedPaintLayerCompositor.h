@@ -190,6 +190,9 @@ private:
     void attachRootLayer(RootLayerAttachment);
     void detachRootLayer();
 
+    void attachCompositorTimeline();
+    void detachCompositorTimeline();
+
     void updateOverflowControlsLayers();
 
     Page* page() const;

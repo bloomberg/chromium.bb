@@ -27,6 +27,7 @@
 
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Fullscreen.h"
@@ -717,12 +718,14 @@ void DeprecatedPaintLayerCompositor::setIsInWindow(bool isInWindow)
             return;
 
         RootLayerAttachment attachment = m_layoutView.frame()->isLocalRoot() ? RootLayerAttachedViaChromeClient : RootLayerAttachedViaEnclosingFrame;
+        attachCompositorTimeline();
         attachRootLayer(attachment);
     } else {
         if (m_rootLayerAttachment == RootLayerUnattached)
             return;
 
         detachRootLayer();
+        detachCompositorTimeline();
     }
 }
 
@@ -992,9 +995,12 @@ void DeprecatedPaintLayerCompositor::ensureRootLayer()
     }
 
     // Check to see if we have to change the attachment
-    if (m_rootLayerAttachment != RootLayerUnattached)
+    if (m_rootLayerAttachment != RootLayerUnattached) {
         detachRootLayer();
+        detachCompositorTimeline();
+    }
 
+    attachCompositorTimeline();
     attachRootLayer(expectedAttachment);
 }
 
@@ -1104,6 +1110,30 @@ void DeprecatedPaintLayerCompositor::detachRootLayer()
 void DeprecatedPaintLayerCompositor::updateRootLayerAttachment()
 {
     ensureRootLayer();
+}
+
+void DeprecatedPaintLayerCompositor::attachCompositorTimeline()
+{
+    LocalFrame& frame = m_layoutView.frameView()->frame();
+    Page* page = frame.page();
+    if (!page)
+        return;
+
+    WebCompositorAnimationTimeline* compositorTimeline = frame.document() ? frame.document()->timeline().compositorTimeline() : nullptr;
+    if (compositorTimeline)
+        page->chrome().client().attachCompositorAnimationTimeline(compositorTimeline, &frame);
+}
+
+void DeprecatedPaintLayerCompositor::detachCompositorTimeline()
+{
+    LocalFrame& frame = m_layoutView.frameView()->frame();
+    Page* page = frame.page();
+    if (!page)
+        return;
+
+    WebCompositorAnimationTimeline* compositorTimeline = frame.document() ? frame.document()->timeline().compositorTimeline() : nullptr;
+    if (compositorTimeline)
+        page->chrome().client().detachCompositorAnimationTimeline(compositorTimeline, &frame);
 }
 
 ScrollingCoordinator* DeprecatedPaintLayerCompositor::scrollingCoordinator() const

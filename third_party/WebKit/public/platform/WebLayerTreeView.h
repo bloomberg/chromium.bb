@@ -39,6 +39,7 @@ class SkBitmap;
 namespace blink {
 
 class WebCompositeAndReadbackAsyncCallback;
+class WebCompositorAnimationTimeline;
 class WebLayer;
 struct WebPoint;
 struct WebSelectionBound;
@@ -54,6 +55,8 @@ public:
     virtual void setRootLayer(const WebLayer&) = 0;
     virtual void clearRootLayer() = 0;
 
+    virtual void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*) { }
+    virtual void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*) { }
 
     // View properties ---------------------------------------------------
 

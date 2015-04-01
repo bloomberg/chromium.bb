@@ -58,6 +58,11 @@ void WebRuntimeFeatures::enableBlinkScheduler(bool enable)
     RuntimeEnabledFeatures::setBlinkSchedulerEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableCompositorAnimationTimelines(bool enable)
+{
+    RuntimeEnabledFeatures::setCompositorAnimationTimelinesEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
 {
     RuntimeEnabledFeatures::setTestFeaturesEnabled(enable);

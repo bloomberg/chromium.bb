@@ -49,6 +49,7 @@ class LocalFrame;
 class Page;
 class DeprecatedPaintLayerCompositor;
 class UserGestureToken;
+class WebCompositorAnimationTimeline;
 class WebLayer;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
@@ -123,6 +124,8 @@ public:
     DeprecatedPaintLayerCompositor* compositor() const;
     void suppressInvalidations(bool enable);
     void setRootGraphicsLayer(GraphicsLayer*);
+    void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*);
+    void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*);
 
     void setVisibilityState(WebPageVisibilityState, bool) override;
 
