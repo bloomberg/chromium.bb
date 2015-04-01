@@ -534,9 +534,6 @@ crbug.com/393157 [ Mac ] virtual/threaded/printing/print-document-without-docume
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 
-crbug.com/471172 svg/text/columns-do-not-apply.html [ Failure ]
-crbug.com/471172 virtual/slimmingpaint/svg/text/columns-do-not-apply.html [ Failure ]
-
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
