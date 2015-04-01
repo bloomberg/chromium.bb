@@ -765,7 +765,7 @@ function WallpaperManager(dialogDom) {
     this.categoriesList_.selectionModel.addEventListener(
         'change', this.onCategoriesChange_.bind(this));
 
-    if (this.enableOnlineWallpaper_) {
+    if (this.enableOnlineWallpaper_ && this.manifest_) {
       // Adds all category as first category.
       this.categoriesList_.dataModel.push(str('allCategoryLabel'));
       for (var key in this.manifest_.categories) {
