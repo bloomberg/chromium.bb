@@ -100,7 +100,7 @@ bool DialogNotification::HasCheckbox() const {
   return type_ == DialogNotification::WALLET_USAGE_CONFIRMATION;
 }
 
-SkColor const kWarningColor = SkColorSetRGB(0xde, 0x49, 0x32);
+SkColor const kWarningColor = SkColorSetRGB(0xd3, 0x2f, 0x2f);
 SkColor const kLightShadingColor = SkColorSetARGB(7, 0, 0, 0);
 SkColor const kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
 

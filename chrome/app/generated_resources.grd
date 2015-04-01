@@ -11299,7 +11299,10 @@ Chrome ran out of memory.
         Your card is verified
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN" desc="Error message that encourages the user to try to re-enter their credit card CVC after a previous failed attempt.">
-        There was a problem verifying your card. Check your information and try again.
+        Check your CVC and try again
+      </message>
+      <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_WITH_EXPIRATION" desc="Error message that encourages the user to try to re-enter their credit card expiration date and CVC after a previous failed attempt.">
+        Check your expiration date and CVC and try again
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_PERMANENT" desc="Error message to show when a credit card cannot be verified and the user isn't allowed to retry.">
         Chrome was unable to verify your card at this time. Please try again later.
@@ -11308,7 +11311,7 @@ Chrome ran out of memory.
         There was a problem verifying your card. Check your internet connection and try again.
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE" desc="Error message to show when a user has input an invalid or old expiration date.">
-        Card expiration date should be after the current date.
+        The card is expired
       </message>
       <message name="IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR" desc="Separator for a credit card expiration date, e.g. the slash in 05/16." formatter_data="android_java">
         /

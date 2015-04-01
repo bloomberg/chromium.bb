@@ -6,6 +6,6 @@
 
 namespace views {
 
-const SkColor kWarningColor = SkColorSetRGB(0xde, 0x49, 0x32);
+const SkColor kWarningColor = SkColorSetRGB(0xd3, 0x2f, 0x2f);
 
 }  // namespace views

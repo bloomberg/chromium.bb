@@ -36,6 +36,8 @@ namespace autofill {
 // dialog.
 const int kEdgePadding = 19;
 
+SkColor kGreyTextColor = SkColorSetRGB(0x64, 0x64, 0x64);
+
 // static
 CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
     CardUnmaskPromptController* controller) {
@@ -53,6 +55,7 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
       cvc_input_(nullptr),
       month_input_(nullptr),
       year_input_(nullptr),
+      error_icon_(nullptr),
       error_label_(nullptr),
       storage_row_(nullptr),
       storage_checkbox_(nullptr),
@@ -133,9 +136,11 @@ void CardUnmaskPromptViews::SetRetriableErrorMessage(
   if (message.empty()) {
     error_label_->SetMultiLine(false);
     error_label_->SetText(base::ASCIIToUTF16(" "));
+    error_icon_->SetVisible(false);
   } else {
     error_label_->SetMultiLine(true);
     error_label_->SetText(message);
+    error_icon_->SetVisible(true);
   }
 
   // Update the dialog's size.
@@ -146,6 +151,8 @@ void CardUnmaskPromptViews::SetRetriableErrorMessage(
                          ->delegate()
                          ->GetWebContentsModalDialogHost());
   }
+
+  Layout();
 }
 
 void CardUnmaskPromptViews::SetInputsEnabled(bool enabled) {
@@ -300,7 +307,6 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
     if (month_input_->invalid()) {
       month_input_->SetInvalid(false);
       year_input_->SetInvalid(false);
-      error_label_->SetMultiLine(false);
       SetRetriableErrorMessage(base::string16());
     }
   } else if (month_input_->selected_index() !=
@@ -309,7 +315,6 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
                  year_combobox_model_.GetDefaultIndex()) {
     month_input_->SetInvalid(true);
     year_input_->SetInvalid(true);
-    error_label_->SetMultiLine(true);
     SetRetriableErrorMessage(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE));
   }
@@ -329,15 +334,17 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   main_contents_ = new views::View();
   main_contents_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 10));
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 12));
   AddChildView(main_contents_);
 
   permanent_error_label_ = new views::Label();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  permanent_error_label_->SetFontList(
+      rb.GetFontList(ui::ResourceBundle::BoldFont));
   permanent_error_label_->set_background(
-      views::Background::CreateSolidBackground(
-          SkColorSetRGB(0xdb, 0x44, 0x37)));
+      views::Background::CreateSolidBackground(kWarningColor));
   permanent_error_label_->SetBorder(
-      views::Border::CreateEmptyBorder(10, kEdgePadding, 10, kEdgePadding));
+      views::Border::CreateEmptyBorder(12, kEdgePadding, 12, kEdgePadding));
   permanent_error_label_->SetEnabledColor(SK_ColorWHITE);
   permanent_error_label_->SetAutoColorReadabilityEnabled(false);
   permanent_error_label_->SetVisible(false);
@@ -352,10 +359,10 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   views::Label* instructions =
       new views::Label(controller_->GetInstructionsMessage());
-
+  instructions->SetEnabledColor(kGreyTextColor);
   instructions->SetMultiLine(true);
   instructions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  instructions->SetBorder(views::Border::CreateEmptyBorder(0, 0, 15, 0));
+  instructions->SetBorder(views::Border::CreateEmptyBorder(0, 0, 16, 0));
   controls_container->AddChildView(instructions);
 
   input_row_ = new views::View();
@@ -367,12 +374,14 @@ void CardUnmaskPromptViews::InitIfNecessary() {
     month_input_ = new views::Combobox(&month_combobox_model_);
     month_input_->set_listener(this);
     input_row_->AddChildView(month_input_);
-    input_row_->AddChildView(new views::Label(l10n_util::GetStringUTF16(
-        IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR)));
+    views::Label* separator = new views::Label(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR));
+    separator->SetEnabledColor(kGreyTextColor);
+    input_row_->AddChildView(separator);
     year_input_ = new views::Combobox(&year_combobox_model_);
     year_input_->set_listener(this);
     input_row_->AddChildView(year_input_);
-    input_row_->AddChildView(new views::Label(base::ASCIIToUTF16("    ")));
+    input_row_->AddChildView(new views::Label(base::ASCIIToUTF16("  ")));
   }
 
   cvc_input_ = new DecoratedTextfield(
@@ -382,16 +391,31 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   input_row_->AddChildView(cvc_input_);
 
   views::ImageView* cvc_image = new views::ImageView();
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   cvc_image->SetImage(rb.GetImageSkiaNamed(controller_->GetCvcImageRid()));
   input_row_->AddChildView(cvc_image);
+
+  views::View* temporary_error = new views::View();
+  views::BoxLayout* temporary_error_layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 4);
+  temporary_error->SetLayoutManager(temporary_error_layout);
+  temporary_error_layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  temporary_error->SetBorder(views::Border::CreateEmptyBorder(8, 0, 0, 0));
+  controls_container->AddChildView(temporary_error);
+
+  error_icon_ = new views::ImageView();
+  error_icon_->SetVisible(false);
+  error_icon_->SetImage(ui::ResourceBundle::GetSharedInstance()
+                            .GetImageNamed(IDR_ALERT_RED)
+                            .ToImageSkia());
+  temporary_error->AddChildView(error_icon_);
 
   // Reserve vertical space for the error label, assuming it's one line.
   error_label_ = new views::Label(base::ASCIIToUTF16(" "));
   error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   error_label_->SetEnabledColor(kWarningColor);
-  error_label_->SetBorder(views::Border::CreateEmptyBorder(3, 0, 5, 0));
-  controls_container->AddChildView(error_label_);
+  temporary_error->AddChildView(error_label_);
+  temporary_error_layout->SetFlexForView(error_label_, 1);
 
   progress_overlay_ = new FadeOutView();
   progress_overlay_->set_fade_everything(true);

@@ -14,6 +14,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
+class ImageView;
 class Label;
 class Checkbox;
 class CheckmarkThrobber;
@@ -125,7 +126,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   MonthComboboxModel month_combobox_model_;
   YearComboboxModel year_combobox_model_;
 
-  // The error label for most errors, which lives beneath the inputs.
+  // The error icon and label for most errors, which live beneath the inputs.
+  views::ImageView* error_icon_;
   views::Label* error_label_;
 
   FadeOutView* storage_row_;
