@@ -1114,7 +1114,7 @@ const char kBluetoothAdapterInterface[] = "org.bluez.Adapter1";
 
 // Bluetooth Adapter methods.
 const char kStartDiscovery[] = "StartDiscovery";
-const char kStartFilteredDiscovery[] = "StartFilteredDiscvoery";
+const char kSetDiscoveryFilter[] = "SetDiscoveryFilter";
 const char kStopDiscovery[] = "StopDiscovery";
 const char kRemoveDevice[] = "RemoveDevice";
 
@@ -1137,6 +1137,12 @@ const char kErrorNotReady[] = "org.bluez.Error.NotReady";
 const char kErrorFailed[] = "org.bluez.Error.Failed";
 const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
 const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+
+// Bluetooth Adapter parameters supplied to SetDiscoveryFilter request.
+const char kDiscoveryFilterParameterUUIDs[] = "UUIDs";
+const char kDiscoveryFilterParameterRSSI[] = "RSSI";
+const char kDiscoveryFilterParameterPathloss[] = "Pathloss";
+const char kDiscoveryFilterParameterTransport[] = "Transport";
 }  // namespace bluetooth_adapter
 
 namespace bluetooth_agent_manager {
