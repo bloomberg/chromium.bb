@@ -386,7 +386,7 @@ void fillRelationships(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXPrope
 PassRefPtr<AXNode> buildObjectForNode(Element* element, AXObject* axObject, AXObjectCacheImpl* cacheImpl, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
 {
     AccessibilityRole role = axObject->roleValue();
-    RefPtr<AXNode> nodeObject = AXNode::create().setNodeId(String::number(axObject->axObjectID())).setRole(createValue(AXObject::roleName(role))).setProperties(properties);
+    RefPtr<AXNode> nodeObject = AXNode::create().setNodeId(String::number(axObject->axObjectID())).setRole(createValue(AXObject::roleName(role), AXValueType::Role)).setProperties(properties);
     String computedName = cacheImpl->computedNameForNode(element);
     if (!computedName.isEmpty())
         nodeObject->setName(createValue(computedName));

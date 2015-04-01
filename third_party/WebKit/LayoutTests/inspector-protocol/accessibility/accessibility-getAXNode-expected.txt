@@ -3,7 +3,7 @@ result: {
   "accessibilityNode": {
     "nodeId": "3",
     "role": {
-      "type": "string",
+      "type": "role",
       "value": "textbox"
     },
     "properties": [
