@@ -7,7 +7,7 @@
  * @param {!ErrorBanner} errorBanner Error banner.
  * @param {!cr.ui.ArrayDataModel} dataModel Data model.
  * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
- * @param {!VolumeManager} volumeManager Volume manager.
+ * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @param {function(Event=)} toggleMode Function to switch to the Slide mode.
  * @constructor
  * @struct
@@ -84,7 +84,7 @@ MosaicMode.prototype.debugMe = function() {
  * @param {!ErrorBanner} errorBanner Error banner.
  * @param {!cr.ui.ArrayDataModel} dataModel Data model.
  * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
- * @param {!VolumeManager} volumeManager Volume manager.
+ * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @return {!Element} Mosaic element.
  * @constructor
  * @struct
@@ -119,7 +119,7 @@ function Mosaic(document, errorBanner, dataModel, selectionModel,
   this.selectionModel_ = selectionModel;
 
   /**
-   * @type {!VolumeManager}
+   * @type {!VolumeManagerWrapper}
    * @private
    */
   this.volumeManager_ = volumeManager;

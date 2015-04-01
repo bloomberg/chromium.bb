@@ -16,7 +16,7 @@
  * @param {!MetadataModel} metadataModel
  * @param {!ThumbnailModel} thumbnailModel
  * @param {!Object} context Context.
- * @param {!VolumeManager} volumeManager Volume manager.
+ * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @param {function(function())} toggleMode Function to toggle the Gallery mode.
  * @param {function(string):string} displayStringFunction String formatting
  *     function.
@@ -92,7 +92,7 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
   this.context_ = context;
 
   /**
-   * @type {!VolumeManager}
+   * @type {!VolumeManagerWrapper}
    * @private
    * @const
    */
