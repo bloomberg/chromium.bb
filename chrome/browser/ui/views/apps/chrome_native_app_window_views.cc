@@ -66,21 +66,28 @@ void AddAcceleratorsFromMapping(const AcceleratorMapping mapping[],
 const std::map<ui::Accelerator, int>& GetAcceleratorTable() {
   typedef std::map<ui::Accelerator, int> AcceleratorMap;
   CR_DEFINE_STATIC_LOCAL(AcceleratorMap, accelerators, ());
-  if (accelerators.empty()) {
+  if (!chrome::IsRunningInForcedAppMode()) {
+    if (accelerators.empty()) {
+      AddAcceleratorsFromMapping(
+          kAppWindowAcceleratorMap,
+          arraysize(kAppWindowAcceleratorMap),
+          &accelerators);
+    }
+    return accelerators;
+  }
+
+  CR_DEFINE_STATIC_LOCAL(AcceleratorMap, app_mode_accelerators, ());
+  if (app_mode_accelerators.empty()) {
     AddAcceleratorsFromMapping(
         kAppWindowAcceleratorMap,
         arraysize(kAppWindowAcceleratorMap),
-        &accelerators);
-
-    // Add accelerators for kiosk mode.
-    if (chrome::IsRunningInForcedAppMode()) {
-      AddAcceleratorsFromMapping(
-          kAppWindowKioskAppModeAcceleratorMap,
-          arraysize(kAppWindowKioskAppModeAcceleratorMap),
-          &accelerators);
-    }
+        &app_mode_accelerators);
+    AddAcceleratorsFromMapping(
+        kAppWindowKioskAppModeAcceleratorMap,
+        arraysize(kAppWindowKioskAppModeAcceleratorMap),
+        &app_mode_accelerators);
   }
-  return accelerators;
+  return app_mode_accelerators;
 }
 
 }  // namespace
@@ -161,16 +168,17 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   // future proof). This is needed because GetAcceleratorTable() uses a static
   // to store data and only checks kiosk mode once. If a platform app is
   // launched before kiosk mode starts, the kiosk accelerators will not be
-  // registered. This DCHECK catches the case.
-  DCHECK(!is_kiosk_app_mode ||
-         accelerator_table.size() ==
-             arraysize(kAppWindowAcceleratorMap) +
-                 arraysize(kAppWindowKioskAppModeAcceleratorMap));
+  // registered. This CHECK catches the case.
+  CHECK(!is_kiosk_app_mode ||
+        accelerator_table.size() ==
+            arraysize(kAppWindowAcceleratorMap) +
+                arraysize(kAppWindowKioskAppModeAcceleratorMap));
 
   // Ensure there is a ZoomController in kiosk mode, otherwise the processing
-  // of the accelerators will cause a crash.
-  DCHECK(!is_kiosk_app_mode || ui_zoom::ZoomController::FromWebContents(
-                                   web_view()->GetWebContents()));
+  // of the accelerators will cause a crash. Note CHECK here because DCHECK
+  // will not be noticed, as this could only be relevant on real hardware.
+  CHECK(!is_kiosk_app_mode ||
+        ui_zoom::ZoomController::FromWebContents(web_view()->GetWebContents()));
 
   for (std::map<ui::Accelerator, int>::const_iterator iter =
            accelerator_table.begin();
