@@ -18681,6 +18681,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.NetInternalsUi.Feature" enum="NetInternalsUiFeature">
+  <owner>eroman@chromium.org</owner>
+  <summary>
+    Counts the number of browser launches where chrome://net-internals and
+    chrome://net-internals/#tests are used.
+  </summary>
+</histogram>
+
 <histogram name="Net.NetworkErrorsRecovered.MainFrame" enum="NetErrorCodes">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -55560,6 +55568,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="9" label="Both Buttons Shown"/>
   <int value="10" label="Both Buttons Shown, Show Saved Copy Clicked"/>
   <int value="11" label="Both Buttons Shown, Reload Clicked"/>
+</enum>
+
+<enum name="NetInternalsUiFeature" type="int">
+  <int value="0" label="NetInternals"/>
+  <int value="1" label="Connection tester"/>
 </enum>
 
 <enum name="NetPreconnectUtilization" type="int">

@@ -19,6 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_member.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/string_number_conversions.h"
@@ -111,6 +112,35 @@ namespace {
 // page.  All events that occur during this period are grouped together and
 // sent to the page at once, which reduces context switching and CPU usage.
 const int kNetLogEventDelayMilliseconds = 100;
+
+// TODO(eroman): Temporary while investigating http://crbug.com/472313
+//
+// The objective is to measure the usage of the connection tester relative to
+// the usage of chrome://net-internals. (It is expected that both will have low
+// overall usage).
+//
+// Rather than count total usages (which would be skewed towards the most active
+// users), only record 1 "usage" of these feature per launch of Chrome.
+
+enum Feature {
+  FEATURE_NET_INTERNALS_USED,
+  FEATURE_CONNECTION_TESTER,
+  FEATURE_COUNT,
+};
+
+void HistogramUsage(Feature feature) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Static is safe because this code only runs on the IO thread.
+  static unsigned int usages_bit_field = 0;
+
+  unsigned int bit_flag = 1 << feature;
+  if ((usages_bit_field & bit_flag) == 0) {
+    usages_bit_field |= bit_flag;
+    UMA_HISTOGRAM_ENUMERATION("Net.NetInternalsUi.Feature", feature,
+                              FEATURE_COUNT);
+  }
+}
 
 // Returns the HostCache for |context|'s primary HostResolver, or NULL if
 // there is none.
@@ -705,6 +735,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  HistogramUsage(FEATURE_NET_INTERNALS_USED);
+
   // If currently watching the NetLog, temporarily stop watching it and flush
   // pending events, so they won't appear before the status events created for
   // currently active network objects below.
@@ -774,6 +806,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnEnableIPv6(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
     const base::ListValue* list) {
+  HistogramUsage(FEATURE_CONNECTION_TESTER);
+
   // |value| should be: [<URL to test>].
   base::string16 url_str;
   CHECK(list->GetString(0, &url_str));
