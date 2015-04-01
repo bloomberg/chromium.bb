@@ -143,4 +143,14 @@ void DisplayItemList::EmitTraceSnapshot() const {
       "cc::DisplayItemList", this, AsValue());
 }
 
+void DisplayItemList::GatherPixelRefs(const gfx::Size& grid_cell_size) {
+  // This should be only called once, and only after CreateAndCacheSkPicture.
+  DCHECK(picture_);
+  DCHECK(!pixel_refs_);
+  pixel_refs_ = make_scoped_ptr(new PixelRefMap(grid_cell_size));
+  if (!picture_->willPlayBackBitmaps())
+    return;
+
+  pixel_refs_->GatherPixelRefsFromPicture(picture_.get());
+}
 }  // namespace cc
