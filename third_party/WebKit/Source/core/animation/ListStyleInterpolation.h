@@ -90,9 +90,21 @@ class ListStyleInterpolationImpl<InterpolationType, void> : public StyleInterpol
 public:
     static PassRefPtrWillBeRawPtr<ListStyleInterpolationImpl<InterpolationType, void>> maybeCreateFromList(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range = RangeAll)
     {
-        if (start.isValueList() && end.isValueList() && toCSSValueList(start).length() == toCSSValueList(end).length())
-            return adoptRefWillBeNoop(new ListStyleInterpolationImpl<InterpolationType, void>(listToInterpolableValue(start), listToInterpolableValue(end), id, range));
-        return nullptr;
+        if (!start.isValueList() || !end.isValueList())
+            return nullptr;
+        const CSSValueList& startList = toCSSValueList(start);
+        const CSSValueList& endList = toCSSValueList(end);
+        if (startList.length() != endList.length())
+            return nullptr;
+        for (const auto& value : startList) {
+            if (!InterpolationType::canCreateFrom(*value))
+                return nullptr;
+        }
+        for (const auto& value : endList) {
+            if (!InterpolationType::canCreateFrom(*value))
+                return nullptr;
+        }
+        return adoptRefWillBeNoop(new ListStyleInterpolationImpl<InterpolationType, void>(listToInterpolableValue(start), listToInterpolableValue(end), id, range));
     }
 
 private:

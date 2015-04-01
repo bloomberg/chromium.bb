@@ -21,6 +21,32 @@
 <script>
 assertInterpolation({
   property: 'transform-origin',
+  from: 'top left',
+  to: 'bottom right',
+}, [
+  {at: -0.3, is: '-15px -15px'},
+  {at: 0, is: '0px 0px'},
+  {at: 0.3, is: '15px 15px'},
+  {at: 0.6, is: '30px 30px'},
+  {at: 1, is: '50px 50px'},
+  {at: 1.5, is: '75px 75px'},
+]);
+
+assertInterpolation({
+  property: 'transform-origin',
+  from: 'center center',
+  to: '0% 100px',
+}, [
+  {at: -0.3, is: '32.5px 2.5px'},
+  {at: 0, is: '25px 25px'},
+  {at: 0.3, is: '17.5px 47.5px'},
+  {at: 0.6, is: '10px 70px'},
+  {at: 1, is: '0px 100px'},
+  {at: 1.5, is: '-12.5px 137.5px'},
+]);
+
+assertInterpolation({
+  property: 'transform-origin',
   from: '0% 50% 5px',
   to: '100% 150% 0px'
 }, [
@@ -29,7 +55,7 @@ assertInterpolation({
   {at: 0.3, is: '30% 80% 3.5px'},
   {at: 0.6, is: '60% 110% 2px'},
   {at: 1, is: '100% 150% 0px'},
-  {at: 1.5, is: '150% 200% -2.5px'}
+  {at: 1.5, is: '150% 200% -2.5px'},
 ]);
 </script>
 </body>

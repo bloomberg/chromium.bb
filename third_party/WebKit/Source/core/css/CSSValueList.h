@@ -30,6 +30,7 @@ namespace blink {
 class CSSValueList : public CSSValue {
 public:
     using iterator = WillBeHeapVector<RefPtrWillBeMember<CSSValue>, 4>::iterator;
+    using const_iterator = WillBeHeapVector<RefPtrWillBeMember<CSSValue>, 4>::const_iterator;
 
     static PassRefPtrWillBeRawPtr<CSSValueList> createCommaSeparated()
     {
@@ -46,6 +47,8 @@ public:
 
     iterator begin() { return m_values.begin(); }
     iterator end() { return m_values.end(); }
+    const_iterator begin() const { return m_values.begin(); }
+    const_iterator end() const { return m_values.end(); }
 
     size_t length() const { return m_values.size(); }
     CSSValue* item(size_t index) { return m_values[index].get(); }

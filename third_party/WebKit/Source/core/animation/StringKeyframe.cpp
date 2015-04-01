@@ -303,6 +303,10 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         RefPtrWillBeRawPtr<Interpolation> interpolation = ListStyleInterpolation<LengthStyleInterpolation>::maybeCreateFromList(*fromCSSValue, *toCSSValue, property, range);
         if (interpolation)
             return interpolation.release();
+
+        // FIXME: Handle keywords: top, right, left, center, bottom
+        fallBackToLegacy = true;
+
         break;
     }
 
