@@ -7,6 +7,7 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css/parser/CSSParserValues.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/dom/CSSSelectorWatch.h"
 
+#include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/loader/FrameLoaderClient.h"
 

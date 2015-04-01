@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/animation/AnimationInputHelpers.h"
 
+#include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 #include "wtf/text/StringBuilder.h"

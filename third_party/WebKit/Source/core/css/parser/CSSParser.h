@@ -5,9 +5,21 @@
 #ifndef CSSParser_h
 #define CSSParser_h
 
-#include "core/css/parser/BisonCSSParser.h"
+#include "core/CSSPropertyNames.h"
+#include "core/css/parser/CSSParserMode.h"
+#include "platform/graphics/Color.h"
 
 namespace blink {
+
+class CSSParserObserver;
+class CSSSelectorList;
+class Element;
+class ImmutableStylePropertySet;
+class MutableStylePropertySet;
+class StyleColor;
+class StyleRuleBase;
+class StyleRuleKeyframe;
+class StyleSheetContents;
 
 // This class serves as the public API for the css/parser subsystem
 class CSSParser {
