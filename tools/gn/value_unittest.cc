@@ -11,10 +11,6 @@ TEST(Value, ToString) {
   EXPECT_EQ("hi\" $me\\you\\$\\\"", strval.ToString(false));
   EXPECT_EQ("\"hi\\\" \\$me\\you\\\\\\$\\\\\\\"\"", strval.ToString(true));
 
-  // crbug.com/470217
-  Value strval2(nullptr, "\\foo\\\\bar\\");
-  EXPECT_EQ("\"\\foo\\\\\\bar\\\\\"", strval2.ToString(true));
-
   // Void type.
   EXPECT_EQ("<void>", Value().ToString(false));
 
@@ -39,3 +35,4 @@ TEST(Value, ToString) {
   scope->SetValue("b", Value(nullptr, "hello, world"), nullptr);
   EXPECT_EQ("{\n  a = 42\n  b = \"hello, world\"\n}", scopeval.ToString(false));
 }
+
