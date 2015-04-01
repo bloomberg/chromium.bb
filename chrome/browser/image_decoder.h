@@ -85,7 +85,8 @@ class ImageDecoder : public content::UtilityProcessHostClient {
   ~ImageDecoder() override;
 
   // Sends a request to the sandboxed process to decode the image. Starts
-  // batch mode if necessary.
+  // batch mode if necessary. If the utility process fails to start,
+  // an OnDecodeImageFailed task is posted to image_request's |task_runner_|.
   void DecodeImageInSandbox(ImageRequest* image_request,
                             const std::vector<unsigned char>& image_data,
                             ImageCodec image_codec,
@@ -96,6 +97,8 @@ class ImageDecoder : public content::UtilityProcessHostClient {
   using RequestMap = std::map<int, ImageRequest*>;
 
   // Starts UtilityProcessHost in batch mode and starts |batch_mode_timer_|.
+  // If the utility process fails to start, the method resets
+  // |utility_process_host_| and returns.
   void StartBatchMode();
 
   // Stops batch mode if no requests have come in since

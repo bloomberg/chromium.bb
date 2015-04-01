@@ -80,6 +80,16 @@ void ImageDecoder::DecodeImageInSandbox(
   if (!utility_process_host_) {
     StartBatchMode();
   }
+  if (!utility_process_host_) {
+    // Utility process failed to start; notify delegate and return.
+    // Without this check, we were seeing crashes on startup. Further
+    // investigation is needed to determine why the utility process
+    // is failing to start. See crbug.com/472272
+    image_request->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ImageRequest::OnDecodeImageFailed,
+                              base::Unretained(image_request)));
+    return;
+  }
 
   last_request_ = base::TimeTicks::Now();
   base::AutoLock lock(map_lock_);
@@ -117,7 +127,10 @@ void ImageDecoder::StartBatchMode() {
   utility_process_host_ =
       UtilityProcessHost::Create(this, base::MessageLoopProxy::current().get())
           ->AsWeakPtr();
-  utility_process_host_->StartBatchMode();
+  if (!utility_process_host_->StartBatchMode()) {
+     utility_process_host_.reset();
+     return;
+  }
   batch_mode_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kBatchModeTimeoutSeconds),
       this, &ImageDecoder::StopBatchMode);
