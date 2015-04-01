@@ -88,6 +88,8 @@ TEST(HTMLSrcsetParserTest, Basic)
         {0.9, 800, "src.gif", "400.gif 400w", "400.gif", 0.5, 400},
         {0.9, 800, "src.gif", "1x.gif 1x, 400.gif 400w", "1x.gif", 1.0, -1},
         {0.9, 800, "src.gif", "1x.gif 0.6x, 400.gif 400w", "1x.gif", 0.6, -1},
+        {0.9, 800, "src.gif", "1x.gif 1x, 400.gif 720w", "400.gif", 0.9, 720},
+        {0.9, 800, "src.gif", "1x.gif 1x, 400.gif 719w", "1x.gif", 1.0, -1},
         {2.0, 800, "src.gif", "400.gif 400w", "400.gif", 0.5, 400},
         {1.0, 400, "src.gif", "800.gif 800w", "800.gif", 2.0, 800},
         {1.0, 400, "src.gif", "0.gif 0w, 800.gif 800w", "800.gif", 2.0, 800},
