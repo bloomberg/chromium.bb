@@ -134,12 +134,6 @@ public class ForeignSessionHelper {
         mNativeForeignSessionHelper = 0;
     }
 
-    @Override
-    protected void finalize() {
-        // Just to make sure that we called destroy() before the java garbage collection picks up.
-        assert mNativeForeignSessionHelper == 0;
-    }
-
     /**
      * @return {@code True} iff Tab sync is enabled.
      */

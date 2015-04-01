@@ -87,12 +87,6 @@ public class LogoBridge {
         nativeGetCurrentLogo(mNativeLogoBridge, logoObserver);
     }
 
-    @Override
-    protected void finalize() {
-        // Ensure that destroy() was called.
-        assert mNativeLogoBridge == 0;
-    }
-
     @CalledByNative
     private static Logo createLogo(Bitmap image, String onClickUrl, String altText) {
         return new Logo(image, onClickUrl, altText);

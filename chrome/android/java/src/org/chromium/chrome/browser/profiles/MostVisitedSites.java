@@ -62,12 +62,6 @@ public class MostVisitedSites {
         mNativeMostVisitedSites = 0;
     }
 
-    @Override
-    protected void finalize() {
-        // Ensure that destroy() was called.
-        assert mNativeMostVisitedSites == 0;
-    }
-
     /**
      * Sets the MostVisitedURLsObserver to receive the list of most visited sites now or soon, and
      * after any changes to the list. Note: the observer may be notified synchronously or

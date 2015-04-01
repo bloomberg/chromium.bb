@@ -60,12 +60,6 @@ public class RecentlyClosedBridge {
         mNativeRecentlyClosedTabsBridge = nativeInit(profile);
     }
 
-    @Override
-    protected void finalize() {
-        // Ensure that destroy() was called.
-        assert mNativeRecentlyClosedTabsBridge == 0;
-    }
-
     /**
      * Cleans up the C++ side of this class. This instance must not be used after calling destroy().
      */

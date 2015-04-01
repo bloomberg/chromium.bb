@@ -102,11 +102,4 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
             }
         }
     }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-
-        assert mIsDestroyed;
-    }
 }

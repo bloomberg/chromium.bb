@@ -48,12 +48,6 @@ public class FaviconHelper {
         mNativeFaviconHelper = nativeInit();
     }
 
-    @Override
-    protected void finalize() {
-        // Ensure that destroy() was called.
-        assert mNativeFaviconHelper == 0;
-    }
-
     /**
      * Clean up the C++ side of this class. After the call, this class instance shouldn't be used.
      */
