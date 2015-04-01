@@ -198,6 +198,13 @@ void AutofillWebDataService::MaskServerCreditCard(const std::string& id) {
            autofill_backend_, id));
 }
 
+void AutofillWebDataService::ClearAllServerData() {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE,
+      Bind(&AutofillWebDataBackendImpl::ClearAllServerData,
+           autofill_backend_));
+}
+
 void AutofillWebDataService::UpdateUnmaskedCardUsageStats(
     const CreditCard& credit_card) {
   wdbs_->ScheduleDBTask(

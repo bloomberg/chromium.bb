@@ -200,11 +200,6 @@ void AutofillWalletSyncableService::StopSyncing(syncer::ModelType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(type, syncer::AUTOFILL_WALLET_DATA);
   sync_processor_.reset();
-
-  // This data type is special. Normal sync data stays on the client when
-  // sync is disabled, but this one is supposed to represent the data you
-  // have on the server. Explicitly clear our local copy.
-  SetSyncData(syncer::SyncDataList());
 }
 
 syncer::SyncDataList AutofillWalletSyncableService::GetAllSyncData(

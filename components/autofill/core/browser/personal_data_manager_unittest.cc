@@ -3165,4 +3165,39 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   EXPECT_LE(initial_use_date, personal_data_->GetCreditCards()[2]->use_date());
 }
 
+TEST_F(PersonalDataManagerTest, ClearAllServerData) {
+  // Add a server card.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
+  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
+                          "9012" /* Visa */, "01", "2010");
+  server_cards.back().SetTypeForMaskedCard(kVisaCard);
+  test::SetServerCreditCards(autofill_table_, server_cards);
+  personal_data_->Refresh();
+
+  // Need to set the google services username
+  EnableWalletCardImport();
+
+  // Add a server profile.
+  std::vector<AutofillProfile> server_profiles;
+  server_profiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, "a123"));
+  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "",
+                       "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
+                       "77401", "US", "");
+  autofill_table_->SetServerProfiles(server_profiles);
+
+  // The card and profile should be there.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+  EXPECT_FALSE(personal_data_->GetCreditCards().empty());
+  EXPECT_FALSE(personal_data_->GetProfiles().empty());
+
+  personal_data_->ClearAllServerData();
+
+  // Reload the database, everything should be gone.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+  EXPECT_TRUE(personal_data_->GetCreditCards().empty());
+  EXPECT_TRUE(personal_data_->GetProfiles().empty());
+}
+
 }  // namespace autofill

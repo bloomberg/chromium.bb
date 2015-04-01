@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/synced_pref_change_registrar.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -84,7 +83,6 @@ class PrefMetricsService : public KeyedService {
   PrefService* prefs_;
   PrefService* local_state_;
 
-  PrefChangeRegistrar pref_registrar_;
   scoped_ptr<SyncedPrefChangeRegistrar> synced_pref_change_registrar_;
 
   base::WeakPtrFactory<PrefMetricsService> weak_factory_;

@@ -1326,6 +1326,30 @@ bool AutofillTable::UpdateUnmaskedCardUsageStats(
   return db_->GetLastChangeCount() > 0;
 }
 
+bool AutofillTable::ClearAllServerData() {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;  // Some error, nothing was changed.
+
+  sql::Statement masked(db_->GetUniqueStatement(
+      "DELETE FROM masked_credit_cards"));
+  masked.Run();
+  bool changed = db_->GetLastChangeCount() > 0;
+
+  sql::Statement unmasked(db_->GetUniqueStatement(
+      "DELETE FROM unmasked_credit_cards"));
+  unmasked.Run();
+  changed |= db_->GetLastChangeCount() > 0;
+
+  sql::Statement addresses(db_->GetUniqueStatement(
+      "DELETE FROM server_addresses"));
+  addresses.Run();
+  changed |= db_->GetLastChangeCount() > 0;
+
+  transaction.Commit();
+  return changed;
+}
+
 bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
   DCHECK(base::IsValidGUID(credit_card.guid()));
 

@@ -127,6 +127,9 @@ class PersonalDataManager : public KeyedService,
   // Resets all unmasked cards to the masked state.
   void ResetFullServerCards();
 
+  // Deletes all server profiles and cards (both masked and unmasked).
+  void ClearAllServerData();
+
   // Returns the credit card with the specified |guid|, or NULL if there is
   // no credit card with the specified |guid|.
   CreditCard* GetCreditCardByGUID(const std::string& guid);

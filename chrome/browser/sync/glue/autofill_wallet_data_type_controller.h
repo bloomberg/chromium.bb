@@ -38,11 +38,18 @@ class AutofillWalletDataTypeController
 
   void WebDatabaseLoaded();
 
-  // Callback for changes to kAutofillWalletSyncExperimentEnabled.
-  void OnSyncExperimentPrefChanged();
+  // Callback for changes to the autofill prefs.
+  void OnSyncPrefChanged();
+
+  // Returns true if the prefs are set such that wallet sync should be enabled.
+  bool IsEnabled();
 
   Profile* const profile_;
   bool callback_registered_;
+
+  // Stores whether we're currently syncing wallet data. This is the last
+  // value computed by IsEnabled.
+  bool currently_enabled_;
 
   // Registrar for listening to kAutofillWalletSyncExperimentEnabled status.
   PrefChangeRegistrar pref_registrar_;

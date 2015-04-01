@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -13,9 +14,11 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/test/fake_server/fake_server_entity.h"
@@ -32,6 +35,37 @@ const char kWalletSyncEnabledPreferencesContents[] =
     "{\"autofill\": { \"wallet_import_sync_experiment_enabled\": true } }";
 
 const char kWalletSyncExperimentTag[] = "wallet_sync";
+
+const char kDefaultCardID[] = "wallet entity ID";
+const int kDefaultCardExpMonth = 8;
+const int kDefaultCardExpYear = 2087;
+const char kDefaultCardLastFour[] = "1234";
+const char kDefaultCardName[] = "Patrick Valenzuela";
+const sync_pb::WalletMaskedCreditCard_WalletCardType kDefaultCardType =
+    sync_pb::WalletMaskedCreditCard::AMEX;
+
+void AddDefaultCard(fake_server::FakeServer* server) {
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillWalletSpecifics* wallet_specifics =
+      specifics.mutable_autofill_wallet();
+  wallet_specifics->set_type(
+      sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD);
+
+  sync_pb::WalletMaskedCreditCard* credit_card =
+      wallet_specifics->mutable_masked_card();
+  credit_card->set_id(kDefaultCardID);
+  credit_card->set_exp_month(kDefaultCardExpMonth);
+  credit_card->set_exp_year(kDefaultCardExpYear);
+  credit_card->set_last_four(kDefaultCardLastFour);
+  credit_card->set_name_on_card(kDefaultCardName);
+  credit_card->set_status(sync_pb::WalletMaskedCreditCard::VALID);
+  credit_card->set_type(kDefaultCardType);
+
+  server->InjectEntity(fake_server::UniqueClientEntity::CreateForInjection(
+      syncer::AUTOFILL_WALLET_DATA,
+      kDefaultCardID,
+      specifics));
+}
 
 }  // namespace
 
@@ -167,35 +201,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, Download) {
   SetPreexistingPreferencesFileContents(kWalletSyncEnabledPreferencesContents);
-
-  std::string id = "wallet entity ID";
-  int expiration_month = 8;
-  int expiration_year = 2087;
-  std::string last_four_digits = "1234";
-  std::string name_on_card = "Patrick Valenzuela";
-
-  sync_pb::EntitySpecifics specifics;
-  sync_pb::AutofillWalletSpecifics* wallet_specifics =
-      specifics.mutable_autofill_wallet();
-  wallet_specifics->set_type(
-      sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD);
-
-  sync_pb::WalletMaskedCreditCard* credit_card =
-      wallet_specifics->mutable_masked_card();
-  credit_card->set_id(id);
-  credit_card->set_exp_month(expiration_month);
-  credit_card->set_exp_year(expiration_year);
-  credit_card->set_last_four(last_four_digits);
-  credit_card->set_name_on_card(name_on_card);
-  credit_card->set_status(sync_pb::WalletMaskedCreditCard::VALID);
-  credit_card->set_type(sync_pb::WalletMaskedCreditCard::AMEX);
-
-  GetFakeServer()->InjectEntity(
-      fake_server::UniqueClientEntity::CreateForInjection(
-          syncer::AUTOFILL_WALLET_DATA,
-          id,
-          specifics));
-
+  AddDefaultCard(GetFakeServer());
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed";
 
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
@@ -205,11 +211,70 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, Download) {
 
   autofill::CreditCard* card = cards[0];
   ASSERT_EQ(autofill::CreditCard::MASKED_SERVER_CARD, card->record_type());
-  ASSERT_EQ(id, card->server_id());
-  ASSERT_EQ(base::UTF8ToUTF16(last_four_digits), card->LastFourDigits());
+  ASSERT_EQ(kDefaultCardID, card->server_id());
+  ASSERT_EQ(base::UTF8ToUTF16(kDefaultCardLastFour), card->LastFourDigits());
   ASSERT_EQ(autofill::kAmericanExpressCard, card->type());
-  ASSERT_EQ(expiration_month, card->expiration_month());
-  ASSERT_EQ(expiration_year, card->expiration_year());
-  ASSERT_EQ(base::UTF8ToUTF16(name_on_card),
+  ASSERT_EQ(kDefaultCardExpMonth, card->expiration_month());
+  ASSERT_EQ(kDefaultCardExpYear, card->expiration_year());
+  ASSERT_EQ(base::UTF8ToUTF16(kDefaultCardName),
             card->GetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NAME));
+}
+
+// Wallet data should get cleared from the database when sync is disabled.
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableSync) {
+  SetPreexistingPreferencesFileContents(kWalletSyncEnabledPreferencesContents);
+  AddDefaultCard(GetFakeServer());
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed";
+
+  // Make sure the card is in the DB.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_TRUE(pdm != nullptr);
+  std::vector<autofill::CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+
+  // Turn off sync, the card should be gone.
+  ASSERT_TRUE(GetClient(0)->DisableSyncForAllDatatypes());
+  cards = pdm->GetCreditCards();
+  ASSERT_EQ(0uL, cards.size());
+}
+
+// Wallet data should get cleared from the database when the wallet sync type
+// flag is disabled.
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableWalletSync) {
+  SetPreexistingPreferencesFileContents(kWalletSyncEnabledPreferencesContents);
+  AddDefaultCard(GetFakeServer());
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed";
+
+  // Make sure the card is in the DB.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_TRUE(pdm != nullptr);
+  std::vector<autofill::CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+
+  // Turn off autofill sync, the card should be gone.
+  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::AUTOFILL));
+  cards = pdm->GetCreditCards();
+  ASSERT_EQ(0uL, cards.size());
+}
+
+// Wallet data should get cleared from the database when the wallet autofill
+// integration flag is disabled.
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+                       ClearOnDisableWalletAutofill) {
+  SetPreexistingPreferencesFileContents(kWalletSyncEnabledPreferencesContents);
+  AddDefaultCard(GetFakeServer());
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed";
+
+  // Make sure the card is in the DB.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_TRUE(pdm != nullptr);
+  std::vector<autofill::CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+
+  // Turn off the wallet autofill pref, the card should be gone as a side
+  // effect of the wallet data type controller noticing.
+  GetProfile(0)->GetPrefs()->SetBoolean(
+      autofill::prefs::kAutofillWalletImportEnabled, false);
+  cards = pdm->GetCreditCards();
+  ASSERT_EQ(0uL, cards.size());
 }

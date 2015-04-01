@@ -91,6 +91,9 @@ class AutofillWebDataService : public AutofillWebData,
   void UnmaskServerCreditCard(const std::string& id,
                               const base::string16& full_number) override;
   void MaskServerCreditCard(const std::string& id) override;
+
+  void ClearAllServerData();
+
   void UpdateUnmaskedCardUsageStats(const CreditCard& credit_card) override;
 
   void RemoveAutofillDataModifiedBetween(const base::Time& delete_begin,

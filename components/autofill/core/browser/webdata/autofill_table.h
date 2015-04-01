@@ -323,6 +323,11 @@ class AutofillTable : public WebDatabaseTable {
   // Updates the use count and last use date for an unmasked server card.
   bool UpdateUnmaskedCardUsageStats(const CreditCard& credit_card);
 
+  // Deletes all data from the server card and profile tables. Returns true if
+  // any data was deleted, false if not (so false means "commit not needed"
+  // rather than "error").
+  bool ClearAllServerData();
+
   // Removes rows from autofill_profiles and credit_cards if they were created
   // on or after |delete_begin| and strictly before |delete_end|.  Returns the
   // list of deleted profile guids in |profile_guids|.  Return value is true if

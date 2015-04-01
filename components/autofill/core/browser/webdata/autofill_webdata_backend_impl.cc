@@ -365,6 +365,16 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateUnmaskedCardUsageStats(
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
+WebDatabase::State AutofillWebDataBackendImpl::ClearAllServerData(
+    WebDatabase* db) {
+  DCHECK(db_thread_->BelongsToCurrentThread());
+  if (AutofillTable::FromWebDatabase(db)->ClearAllServerData()) {
+    NotifyOfMultipleAutofillChanges();
+    return WebDatabase::COMMIT_NEEDED;
+  }
+  return WebDatabase::COMMIT_NOT_NEEDED;
+}
+
 WebDatabase::State
     AutofillWebDataBackendImpl::RemoveAutofillDataModifiedBetween(
         const base::Time& delete_begin,

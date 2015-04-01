@@ -706,6 +706,20 @@ void PersonalDataManager::ResetFullServerCards() {
   }
 }
 
+void PersonalDataManager::ClearAllServerData() {
+  // This could theoretically be called before we get the data back from the
+  // database on startup, and it could get called when the wallet pref is
+  // off (meaning this class won't even query for the server data) so don't
+  // check the server_credit_cards_/profiles_ before posting to the DB.
+  database_->ClearAllServerData();
+
+  // The above call will eventually clear our server data by notifying us
+  // that the data changed and then this class will re-fetch. Preemptively
+  // clear so that tests can synchronously verify that this data was cleared.
+  server_credit_cards_.clear();
+  server_profiles_.clear();
+}
+
 void PersonalDataManager::RemoveByGUID(const std::string& guid) {
   if (is_off_the_record_)
     return;
