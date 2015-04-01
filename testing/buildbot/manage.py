@@ -10,6 +10,7 @@ formatted.
 """
 
 import argparse
+import collections
 import glob
 import json
 import os
@@ -17,7 +18,10 @@ import sys
 
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(
+    0, os.path.join(THIS_DIR, '..', '..', 'third_party', 'colorama', 'src'))
 
+import colorama
 
 # These are not 'builders'.
 SKIP = {
@@ -35,13 +39,27 @@ def upgrade_test(test):
 
 
 def main():
+  colorama.init()
   parser = argparse.ArgumentParser(description=sys.modules[__name__].__doc__)
   group = parser.add_mutually_exclusive_group(required=True)
   group.add_argument(
       '-c', '--check', action='store_true', help='Only check the files')
   group.add_argument(
+      '--remaining', action='store_true',
+      help='Count the number of tests not yet running on Swarming')
+  group.add_argument(
       '-w', '--write', action='store_true', help='Rewrite the files')
+  parser.add_argument(
+      'test_name', nargs='?',
+      help='The test name to print which configs to update; only to be used '
+           'with --remaining')
   args = parser.parse_args()
+
+  # Stats when running in --remaining mode;
+  tests_location = collections.defaultdict(
+      lambda: {
+        'count_run_local': 0, 'count_run_on_swarming': 0, 'local_configs': {}
+      })
 
   result = 0
   for filepath in glob.glob(os.path.join(THIS_DIR, '*.json')):
@@ -63,6 +81,16 @@ def main():
           (upgrade_test(l) for l in data['gtest_tests']),
           key=lambda x: x['test'])
 
+        if args.remaining:
+          for test in data['gtest_tests']:
+            name = test['test']
+            if test.get('swarming', {}).get('can_use_on_swarming_builders'):
+              tests_location[name]['count_run_on_swarming'] += 1
+            else:
+              tests_location[name]['count_run_local'] += 1
+              tests_location[name]['local_configs'].setdefault(
+                  filename, []).append(builder)
+
     expected = json.dumps(
         config, sort_keys=True, indent=2, separators=(',', ': ')) + '\n'
     if content != expected:
@@ -73,6 +101,42 @@ def main():
         print('Updated %s' % filename)
       else:
         print('%s is not in canonical format' % filename)
+
+  if args.remaining:
+    if args.test_name:
+      if args.test_name not in tests_location:
+        print('Unknown test %s' % args.test_name)
+        return 1
+      for config, builders in sorted(
+          tests_location[args.test_name]['local_configs'].iteritems()):
+        print('%s:' % config)
+        for builder in sorted(builders):
+          print('  %s' % builder)
+    else:
+      l = max(map(len, tests_location))
+      print('%-*s%sLocal       %sSwarming' %
+          (l, 'Test', colorama.Fore.RED, colorama.Fore.GREEN))
+      total_local = 0
+      total_swarming = 0
+      for name, location in sorted(tests_location.iteritems()):
+        if not location['count_run_on_swarming']:
+          c = colorama.Fore.RED
+        elif location['count_run_local']:
+          c = colorama.Fore.YELLOW
+        else:
+          c = colorama.Fore.GREEN
+        total_local += location['count_run_local']
+        total_swarming += location['count_run_on_swarming']
+        print('%s%-*s %4d           %4d' %
+            (c, l, name, location['count_run_local'],
+              location['count_run_on_swarming']))
+      total = total_local + total_swarming
+      p_local = 100. * total_local / total
+      p_swarming = 100. * total_swarming / total
+      print('%s%-*s %4d (%4.1f%%)   %4d (%4.1f%%)' %
+          (colorama.Fore.WHITE, l, 'Total:', total_local, p_local,
+            total_swarming, p_swarming))
+      print('%-*s                %4d' % (l, 'Total executions:', total))
   return result
 
 
