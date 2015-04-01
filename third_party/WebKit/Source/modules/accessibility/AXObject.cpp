@@ -431,9 +431,11 @@ bool AXObject::isDescendantOfBarrenParent() const
 
 bool AXObject::computeIsDescendantOfBarrenParent() const
 {
-    for (AXObject* object = parentObject(); object; object = object->parentObject()) {
-        if (!object->canHaveChildren())
+    if (AXObject* parent = parentObject()) {
+        if (!parent->canHaveChildren())
             return true;
+
+        return parent->isDescendantOfBarrenParent();
     }
 
     return false;
