@@ -77,6 +77,16 @@ public:
         return m_objectModelAllocator.root()->totalSizeOfCommittedPages;
     }
 
+    static size_t totalSizeOfCommittedPages()
+    {
+        size_t totalSize = 0;
+        totalSize += m_fastMallocAllocator.root()->totalSizeOfCommittedPages;
+        totalSize += m_bufferAllocator.root()->totalSizeOfCommittedPages;
+        totalSize += m_objectModelAllocator.root()->totalSizeOfCommittedPages;
+        totalSize += m_renderingAllocator.root()->totalSizeOfCommittedPages;
+        return totalSize;
+    }
+
 private:
     static bool s_initialized;
     static PartitionAllocatorGeneric m_fastMallocAllocator;
