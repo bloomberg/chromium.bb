@@ -25,9 +25,6 @@
 
 namespace WTF {
 
-// Initialization is implicit on first use.
-WTF_EXPORT void fastMallocShutdown();
-
 // These functions crash safely if an allocation fails.
 WTF_EXPORT void* fastMalloc(size_t);
 WTF_EXPORT void* fastZeroedMalloc(size_t);

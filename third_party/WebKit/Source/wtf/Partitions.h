@@ -42,21 +42,44 @@ public:
     static void shutdown();
     ALWAYS_INLINE static PartitionRootGeneric* getBufferPartition()
     {
+        // TODO(haraken): This check is needed because some call sites allocate
+        // Blink things before WTF::initialize(). We should fix those call sites
+        // and remove the check.
         if (UNLIKELY(!s_initialized))
             initialize();
         return m_bufferAllocator.root();
     }
 
-    ALWAYS_INLINE static PartitionRoot* getObjectModelPartition() { return m_objectModelAllocator.root(); }
-    ALWAYS_INLINE static PartitionRoot* getRenderingPartition() { return m_renderingAllocator.root(); }
+    ALWAYS_INLINE static PartitionRootGeneric* getFastMallocPartition()
+    {
+        // TODO(haraken): This check is needed because some call sites allocate
+        // Blink things before WTF::initialize(). We should fix those call sites
+        // and remove the check.
+        if (UNLIKELY(!s_initialized))
+            initialize();
+        return m_fastMallocAllocator.root();
+    }
+
+    ALWAYS_INLINE static PartitionRoot* getObjectModelPartition()
+    {
+        ASSERT(s_initialized);
+        return m_objectModelAllocator.root();
+    }
+    ALWAYS_INLINE static PartitionRoot* getRenderingPartition()
+    {
+        ASSERT(s_initialized);
+        return m_renderingAllocator.root();
+    }
 
     static size_t currentDOMMemoryUsage()
     {
+        ASSERT(s_initialized);
         return m_objectModelAllocator.root()->totalSizeOfCommittedPages;
     }
 
 private:
     static bool s_initialized;
+    static PartitionAllocatorGeneric m_fastMallocAllocator;
     static PartitionAllocatorGeneric m_bufferAllocator;
     static SizeSpecificPartitionAllocator<3328> m_objectModelAllocator;
     static SizeSpecificPartitionAllocator<1024> m_renderingAllocator;

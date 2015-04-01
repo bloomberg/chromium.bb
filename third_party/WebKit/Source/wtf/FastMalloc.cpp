@@ -31,15 +31,10 @@
 #include "config.h"
 #include "wtf/FastMalloc.h"
 
-#include "wtf/PartitionAlloc.h"
-#include "wtf/SpinLock.h"
+#include "wtf/Partitions.h"
 #include <string.h>
 
 namespace WTF {
-
-static PartitionAllocatorGeneric gPartition;
-static int gLock = 0;
-static bool gInitialized = false;
 
 void* fastZeroedMalloc(size_t n)
 {
@@ -56,32 +51,19 @@ char* fastStrDup(const char* src)
     return dup;
 }
 
-void fastMallocShutdown()
-{
-    gPartition.shutdown();
-}
-
 void* fastMalloc(size_t n)
 {
-    if (UNLIKELY(!gInitialized)) {
-        spinLockLock(&gLock);
-        if (!gInitialized) {
-            gInitialized = true;
-            gPartition.init();
-        }
-        spinLockUnlock(&gLock);
-    }
-    return partitionAllocGeneric(gPartition.root(), n);
+    return partitionAllocGeneric(Partitions::getFastMallocPartition(), n);
 }
 
 void fastFree(void* p)
 {
-    partitionFreeGeneric(gPartition.root(), p);
+    partitionFreeGeneric(Partitions::getFastMallocPartition(), p);
 }
 
 void* fastRealloc(void* p, size_t n)
 {
-    return partitionReallocGeneric(gPartition.root(), p, n);
+    return partitionReallocGeneric(Partitions::getFastMallocPartition(), p, n);
 }
 
 } // namespace WTF

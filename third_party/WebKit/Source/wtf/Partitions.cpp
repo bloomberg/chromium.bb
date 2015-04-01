@@ -38,6 +38,7 @@ namespace WTF {
 
 bool Partitions::s_initialized;
 
+PartitionAllocatorGeneric Partitions::m_fastMallocAllocator;
 PartitionAllocatorGeneric Partitions::m_bufferAllocator;
 SizeSpecificPartitionAllocator<3328> Partitions::m_objectModelAllocator;
 SizeSpecificPartitionAllocator<1024> Partitions::m_renderingAllocator;
@@ -48,6 +49,7 @@ void Partitions::initialize()
     // Guard against two threads hitting here in parallel.
     spinLockLock(&lock);
     if (!s_initialized) {
+        m_fastMallocAllocator.init();
         m_bufferAllocator.init();
         m_objectModelAllocator.init();
         m_renderingAllocator.init();
@@ -58,14 +60,13 @@ void Partitions::initialize()
 
 void Partitions::shutdown()
 {
-    fastMallocShutdown();
-
     // We could ASSERT here for a memory leak within the partition, but it leads
     // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
     // the valgrind and heapcheck bots, which run without partitions.
     (void) m_renderingAllocator.shutdown();
     (void) m_objectModelAllocator.shutdown();
     (void) m_bufferAllocator.shutdown();
+    (void) m_fastMallocAllocator.shutdown();
 }
 
 } // namespace WTF
