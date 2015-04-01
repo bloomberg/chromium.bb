@@ -10,19 +10,16 @@
 namespace blink {
 
 // This class serves as the public API for the css/parser subsystem
-
-// FIXME: This should probably be a static-only class or a singleton class
 class CSSParser {
-    STACK_ALLOCATED();
+    STATIC_ONLY(CSSParser);
 public:
-    explicit CSSParser(const CSSParserContext&);
-
-    bool parseDeclarationList(MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
-    void parseSelector(const String&, CSSSelectorList&);
-
     // As well as regular rules, allows @import and @namespace but not @charset
     static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const CSSParserContext&, StyleSheetContents*, const String&);
+    // TODO(timloh): Split into parseSheet and parseSheetForInspector
     static void parseSheet(const CSSParserContext&, StyleSheetContents*, const String&, const TextPosition& startPosition, CSSParserObserver*, bool logErrors = false);
+    static void parseSelector(const CSSParserContext&, const String&, CSSSelectorList&);
+    // TODO(timloh): Split into parseDeclarationList and parseDeclarationListForInspector
+    static bool parseDeclarationList(const CSSParserContext&, MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode, StyleSheetContents*);
 
     // This is for non-shorthands only
@@ -44,10 +41,6 @@ public:
 private:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
     static bool parseFastPath(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode);
-
-    // FIXME: We should store an OwnPtr<BisonCSSParser> and CSSParserContext here
-    // to avoid initializing the BisonCSSParser when using the new CSS parser.
-    BisonCSSParser m_bisonParser;
 };
 
 CSSPropertyID cssPropertyID(const String&);

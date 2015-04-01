@@ -514,9 +514,8 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors, const Docu
     if (it != m_entries.end())
         return it->value.get();
 
-    CSSParser parser(CSSParserContext(document, 0));
     CSSSelectorList selectorList;
-    parser.parseSelector(selectors, selectorList);
+    CSSParser::parseSelector(CSSParserContext(document, 0), selectors, selectorList);
 
     if (!selectorList.first()) {
         exceptionState.throwDOMException(SyntaxError, "'" + selectors + "' is not a valid selector.");

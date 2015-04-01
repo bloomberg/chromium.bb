@@ -135,13 +135,12 @@ static bool allCompound(const CSSSelectorList& selectorList)
 void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors)
 {
     m_watchedCallbackSelectors.clear();
-    CSSParser parser(CSSParserContext(UASheetMode, 0));
 
     const RefPtrWillBeRawPtr<StylePropertySet> callbackPropertySet = ImmutableStylePropertySet::create(nullptr, 0, UASheetMode);
 
     CSSSelectorList selectorList;
     for (unsigned i = 0; i < selectors.size(); ++i) {
-        parser.parseSelector(selectors[i], selectorList);
+        CSSParser::parseSelector(CSSParserContext(UASheetMode, 0), selectors[i], selectorList);
         if (!selectorList.isValid())
             continue;
 

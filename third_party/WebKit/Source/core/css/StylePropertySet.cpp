@@ -344,8 +344,7 @@ void MutableStylePropertySet::parseDeclarationList(const String& styleDeclaratio
         context.setMode(cssParserMode());
     }
 
-    CSSParser parser(context);
-    parser.parseDeclarationList(this, styleDeclaration, 0, contextStyleSheet);
+    CSSParser::parseDeclarationList(context, this, styleDeclaration, 0, contextStyleSheet);
 }
 
 void MutableStylePropertySet::addParsedProperties(const WillBeHeapVector<CSSProperty, 256>& properties)

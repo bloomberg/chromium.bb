@@ -18,27 +18,22 @@
 
 namespace blink {
 
-CSSParser::CSSParser(const CSSParserContext& context)
-    : m_bisonParser(context)
-{
-}
-
-bool CSSParser::parseDeclarationList(MutableStylePropertySet* propertySet, const String& declaration, CSSParserObserver* observer, StyleSheetContents* styleSheet)
+bool CSSParser::parseDeclarationList(const CSSParserContext& context, MutableStylePropertySet* propertySet, const String& declaration, CSSParserObserver* observer, StyleSheetContents* styleSheet)
 {
     // FIXME: Add inspector observer support in the new CSS parser
     if (!observer && RuntimeEnabledFeatures::newCSSParserEnabled())
-        return CSSParserImpl::parseDeclarationList(propertySet, declaration, m_bisonParser.m_context);
-    return m_bisonParser.parseDeclaration(propertySet, declaration, observer, styleSheet);
+        return CSSParserImpl::parseDeclarationList(propertySet, declaration, context);
+    return BisonCSSParser(context).parseDeclaration(propertySet, declaration, observer, styleSheet);
 }
 
-void CSSParser::parseSelector(const String& selector, CSSSelectorList& selectorList)
+void CSSParser::parseSelector(const CSSParserContext& context, const String& selector, CSSSelectorList& selectorList)
 {
     if (RuntimeEnabledFeatures::newCSSParserEnabled()) {
         CSSTokenizer::Scope scope(selector);
-        CSSSelectorParser::parseSelector(scope.tokenRange(), m_bisonParser.m_context, starAtom, nullptr, selectorList);
+        CSSSelectorParser::parseSelector(scope.tokenRange(), context, starAtom, nullptr, selectorList);
         return;
     }
-    m_bisonParser.parseSelector(selector, selectorList);
+    BisonCSSParser(context).parseSelector(selector, selectorList);
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParser::parseRule(const CSSParserContext& context, StyleSheetContents* styleSheet, const String& rule)
