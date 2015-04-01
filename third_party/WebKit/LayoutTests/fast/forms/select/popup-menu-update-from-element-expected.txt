@@ -1,7 +1,4 @@
 PASS picker._selectElement.options[0].style.color is "rgb(123, 0, 0)"
-PASS picker._selectElement.options[0].style.color is "rgb(123, 0, 0)"
-PASS picker._selectElement.options[0].style.color is "rgb(123, 0, 0)"
-PASS picker._selectElement.options[0].style.color is "rgb(123, 0, 0)"
 PASS picker._selectElement.options.length is 2
 PASS picker._selectElement.children[0].label is "FOO"
 PASS picker._selectElement.children[1].tagName is "OPTGROUP"

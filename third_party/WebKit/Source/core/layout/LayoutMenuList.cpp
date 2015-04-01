@@ -396,7 +396,6 @@ Element& LayoutMenuList::ownerElement() const
 
 const ComputedStyle* LayoutMenuList::computedStyleForItem(Element& element) const
 {
-    document().updateRenderTreeIfNeeded();
     return element.computedStyle() ? element.computedStyle() : element.ensureComputedStyle();
 }
 

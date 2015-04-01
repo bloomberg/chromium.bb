@@ -23,6 +23,8 @@ public:
     static PassRefPtrWillBeRawPtr<PopupMenuImpl> create(ChromeClientImpl*, PopupMenuClient*);
     virtual ~PopupMenuImpl();
 
+    void update();
+
     void dispose();
 
 private:
@@ -36,8 +38,8 @@ private:
     // PopupMenu functions:
     void show(const FloatQuad& controlPosition, const IntSize& controlSize, int index) override;
     void hide() override;
-    void updateFromElement() override;
     void disconnectClient() override;
+    void updateFromElement() override;
 
     // PagePopupClient functions:
     IntSize contentSize() override;
@@ -57,6 +59,7 @@ private:
     // This is used for keyboard navigation, where we want the
     // text to change immediately but set the value on close.
     int m_indexToSetOnClose;
+    bool m_needsUpdate;
 };
 
 }

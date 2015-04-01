@@ -8,6 +8,7 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/frame/FrameView.h"
@@ -69,6 +70,7 @@ PopupMenuImpl::PopupMenuImpl(ChromeClientImpl* chromeClient, PopupMenuClient* cl
     , m_client(client)
     , m_popup(nullptr)
     , m_indexToSetOnClose(-1)
+    , m_needsUpdate(false)
 {
 }
 
@@ -301,8 +303,20 @@ void PopupMenuImpl::hide()
 
 void PopupMenuImpl::updateFromElement()
 {
-    if (!m_popup)
+    if (m_needsUpdate)
         return;
+    m_needsUpdate = true;
+    ownerElement().document().postTask(FROM_HERE, createSameThreadTask(&PopupMenuImpl::update, PassRefPtrWillBeRawPtr<PopupMenuImpl>(this)));
+}
+
+void PopupMenuImpl::update()
+{
+    if (!m_popup || !m_client)
+        return;
+    ownerElement().document().updateRenderTreeIfNeeded();
+    if (!m_client)
+        return;
+    m_needsUpdate = false;
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     PagePopupClient::addString("window.updateData = {\n", data.get());
     PagePopupClient::addString("type: \"update\",\n", data.get());

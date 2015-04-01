@@ -27,14 +27,15 @@ openPicker(menu, test1, openPickerErrorCallback);
 function test1() {
     picker = window.internals.pagePopupWindow.global.picker;
 
-    menuElement.style.color = 'rgb(123, 0, 0)';
-
-    picker.on("didUpdate", function () {
-        setTimeout(function () {
+    function onUpdate() {
+        setTimeout(function() {
             shouldBeEqualToString('picker._selectElement.options[0].style.color', 'rgb(123, 0, 0)');
+            picker.removeListener("didUpdate", onUpdate);
             test2();
-        }, 0);
-    });
+        });
+    }
+    picker.on("didUpdate", onUpdate);
+    menuElement.style.color = 'rgb(123, 0, 0)';
 }
 
 function test2() {
