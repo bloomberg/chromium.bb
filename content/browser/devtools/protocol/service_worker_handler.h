@@ -53,6 +53,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   Response StartWorker(const std::string& scope_url);
   Response StopWorker(const std::string& version_id);
   Response InspectWorker(const std::string& version_id);
+  Response SetDebugOnStart(bool debug_on_start);
 
   // WorkerDevToolsManager::Observer implementation.
   void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) override;

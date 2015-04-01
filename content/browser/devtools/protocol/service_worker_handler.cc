@@ -345,6 +345,11 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
   return Response::OK();
 }
 
+Response ServiceWorkerHandler::SetDebugOnStart(bool debug_on_start) {
+  // TODO(horo): implement this.
+  return Response::OK();
+}
+
 void ServiceWorkerHandler::OpenNewDevToolsWindow(int process_id,
                                                  int devtools_agent_route_id) {
   scoped_refptr<DevToolsAgentHostImpl> agent_host(
