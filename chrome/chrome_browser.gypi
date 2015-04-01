@@ -2559,6 +2559,8 @@
       'browser/sessions/session_service_factory.h',
       'browser/sessions/session_service_utils.cc',
       'browser/sessions/session_service_utils.h',
+      'browser/sessions/tab_loader.cc',
+      'browser/sessions/tab_loader.h',
       'browser/sessions/tab_loader_delegate.cc',
       'browser/sessions/tab_loader_delegate.h',
     ],
