@@ -126,7 +126,7 @@ bool TouchHandler::UpdateMotionEvent(const mojo::Event& event) {
       }
       current_motion_event_->pointer(index) = properties;
       current_motion_event_->set_action(ui::MotionEvent::ACTION_MOVE);
-      current_motion_event_->set_action_index(0);
+      current_motion_event_->set_action_index(static_cast<int>(index));
       return true;
     }
 
