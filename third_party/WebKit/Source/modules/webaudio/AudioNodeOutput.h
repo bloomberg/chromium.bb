@@ -38,17 +38,16 @@ class AudioNodeInput;
 
 // AudioNodeOutput represents a single output for an AudioNode.
 // It may be connected to one or more AudioNodeInputs.
-class AudioNodeOutput : public GarbageCollectedFinalized<AudioNodeOutput> {
+class AudioNodeOutput final {
 public:
     // It's OK to pass 0 for numberOfChannels in which case
     // setNumberOfChannels() must be called later on.
-    static AudioNodeOutput* create(AudioNode*, unsigned numberOfChannels);
-    DECLARE_TRACE();
+    static PassOwnPtr<AudioNodeOutput> create(AudioNode*, unsigned numberOfChannels);
     void dispose();
 
     // Can be called from any thread.
-    AudioNode* node() const { return m_node; }
-    AudioContext* context() { return m_node->context(); }
+    AudioNode* node() const { return &m_node; }
+    AudioContext* context() { return m_node.context(); }
 
     // Causes our AudioNode to process if it hasn't already for this render quantum.
     // It returns the bus containing the processed audio for this output, returning inPlaceBus if in-place processing was possible.
@@ -93,7 +92,10 @@ public:
 private:
     AudioNodeOutput(AudioNode*, unsigned numberOfChannels);
 
-    Member<AudioNode> m_node;
+    // This reference to an Oilpan object is safe because the AudioNode owns
+    // this AudioNodeOutput object.
+    // TODO(tkent): Replace this to AudioNodeHandler.
+    AudioNode& m_node;
 
     friend class AudioNodeInput;
     friend class AudioParamHandler;

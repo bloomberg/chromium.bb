@@ -214,7 +214,7 @@ DEFINE_TRACE(AudioParam)
     // leaks.
     AudioContext::AutoLocker locker(context());
     for (unsigned i = 0; i < handler().numberOfRenderingConnections(); ++i)
-        visitor->trace(handler().renderingOutput(i));
+        visitor->trace(handler().renderingOutput(i)->node());
 }
 
 float AudioParam::value() const

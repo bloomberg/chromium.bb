@@ -33,7 +33,7 @@
 namespace blink {
 
 inline AudioNodeOutput::AudioNodeOutput(AudioNode* node, unsigned numberOfChannels)
-    : m_node(node)
+    : m_node(*node)
     , m_numberOfChannels(numberOfChannels)
     , m_desiredNumberOfChannels(numberOfChannels)
     , m_isInPlace(false)
@@ -49,14 +49,9 @@ inline AudioNodeOutput::AudioNodeOutput(AudioNode* node, unsigned numberOfChanne
     m_internalBus = AudioBus::create(numberOfChannels, AudioNode::ProcessingSizeInFrames);
 }
 
-AudioNodeOutput* AudioNodeOutput::create(AudioNode* node, unsigned numberOfChannels)
+PassOwnPtr<AudioNodeOutput> AudioNodeOutput::create(AudioNode* node, unsigned numberOfChannels)
 {
-    return new AudioNodeOutput(node, numberOfChannels);
-}
-
-DEFINE_TRACE(AudioNodeOutput)
-{
-    visitor->trace(m_node);
+    return adoptPtr(new AudioNodeOutput(node, numberOfChannels));
 }
 
 void AudioNodeOutput::dispose()

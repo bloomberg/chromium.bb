@@ -85,12 +85,14 @@ private:
     // TODO(tkent): Replace this to AudioNodeHandler.
     AudioNode& m_node;
 
-    // m_disabledOutputs contains the AudioNodeOutputs which are disabled (will not be processed) by the audio graph rendering.
-    // But, from JavaScript's perspective, these outputs are still connected to us.
-    // Generally, these represent disabled connections from "notes" which have finished playing but are not yet garbage collected.
-    // Oilpan: Since items are added to the hash set by the audio thread (not registered to Oilpan),
-    // we cannot use a HeapHashSet.
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
+    // m_disabledOutputs contains the AudioNodeOutputs which are disabled (will
+    // not be processed) by the audio graph rendering.  But, from JavaScript's
+    // perspective, these outputs are still connected to us.
+    // Generally, these represent disabled connections from "notes" which have
+    // finished playing but are not yet garbage collected.
+    // These raw pointers are safe. Owner AudioNodes of these AudioNodeOutputs
+    // manage their lifetime, and AudioNode::dispose() disconnects all of
+    // connections.
     HashSet<AudioNodeOutput*> m_disabledOutputs;
 
     // Called from context's audio thread.

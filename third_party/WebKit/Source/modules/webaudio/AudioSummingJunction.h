@@ -63,20 +63,22 @@ protected:
 
     RefPtr<DeferredTaskHandler> m_deferredTaskHandler;
 
-    // m_outputs contains the AudioNodeOutputs representing current connections which are not disabled.
-    // The rendering code should never use this directly, but instead uses m_renderingOutputs.
-    // Oilpan: Since items are added to the hash set by the audio thread (not registered to Oilpan),
-    // we cannot use a HeapHashSet.
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
+    // m_outputs contains the AudioNodeOutputs representing current connections
+    // which are not disabled.  The rendering code should never use this
+    // directly, but instead uses m_renderingOutputs.
+    // These raw pointers are safe. Owner AudioNodes of these AudioNodeOutputs
+    // manage their lifetime, and AudioNode::dispose() disconnects all of
+    // connections.
     HashSet<AudioNodeOutput*> m_outputs;
 
-    // m_renderingOutputs is a copy of m_outputs which will never be modified during the graph rendering on the audio thread.
-    // This is the list which is used by the rendering code.
-    // Whenever m_outputs is modified, the context is told so it can later update m_renderingOutputs from m_outputs at a safe time.
-    // Most of the time, m_renderingOutputs is identical to m_outputs.
-    // Oilpan: Since items are added to the vector by the audio thread (not registered to Oilpan),
-    // we cannot use a HeapVector.
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
+    // m_renderingOutputs is a copy of m_outputs which will never be modified
+    // during the graph rendering on the audio thread.  This is the list which
+    // is used by the rendering code.
+    // Whenever m_outputs is modified, the context is told so it can later
+    // update m_renderingOutputs from m_outputs at a safe time.  Most of the
+    // time, m_renderingOutputs is identical to m_outputs.
+    // These raw pointers are safe. Owner of this AudioSummingJunction has
+    // strong references to owners of these AudioNodeOutput.
     Vector<AudioNodeOutput*> m_renderingOutputs;
 
     // m_renderingStateNeedUpdating keeps track if m_outputs is modified.

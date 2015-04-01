@@ -836,7 +836,7 @@ DEFINE_TRACE(AudioNode)
         AudioContext::AutoLocker locker(context()->handler());
         for (const OwnPtr<AudioNodeInput>& input : m_inputs) {
             for (unsigned i = 0; i < input->numberOfRenderingConnections(); ++i)
-                visitor->trace(input->renderingOutput(i));
+                visitor->trace(input->renderingOutput(i)->node());
         }
     }
     visitor->trace(m_outputs);
