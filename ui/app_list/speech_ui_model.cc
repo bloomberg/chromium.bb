@@ -73,12 +73,18 @@ void SpeechUIModel::UpdateSoundLevel(int16 level) {
                     OnSpeechSoundLevelChanged(visible_level));
 }
 
-void SpeechUIModel::SetSpeechRecognitionState(
-    SpeechRecognitionState new_state) {
-  if (state_ == new_state)
+void SpeechUIModel::SetSpeechRecognitionState(SpeechRecognitionState new_state,
+                                              bool always_show_ui) {
+  // Don't show the speech view on a change to a network error or if the state
+  // has not changed, unless |always_show_ui| is true.
+  if (!always_show_ui &&
+      (state_ == new_state || new_state == SPEECH_RECOGNITION_NETWORK_ERROR)) {
+    state_ = new_state;
     return;
+  }
 
   state_ = new_state;
+
   // Revert the min/max sound level to the default.
   if (state_ != SPEECH_RECOGNITION_RECOGNIZING &&
       state_ != SPEECH_RECOGNITION_IN_SPEECH) {

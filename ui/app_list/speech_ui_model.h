@@ -23,7 +23,11 @@ class APP_LIST_EXPORT SpeechUIModel {
 
   void SetSpeechResult(const base::string16& result, bool is_final);
   void UpdateSoundLevel(int16 level);
-  void SetSpeechRecognitionState(SpeechRecognitionState new_state);
+  // Sets the speech recognition state. If |always_show_ui| is true,
+  // sends the state change to the UI observers regardless of whether
+  // the |new_state| is different from the old one.
+  void SetSpeechRecognitionState(SpeechRecognitionState new_state,
+                                 bool always_show_ui);
 
   void AddObserver(SpeechUIModelObserver* observer);
   void RemoveObserver(SpeechUIModelObserver* observer);

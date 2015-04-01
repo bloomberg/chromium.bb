@@ -327,10 +327,12 @@ void StartPageService::OnNetworkChanged(bool available) {
 
 void StartPageService::UpdateRecognitionState() {
   if (ShouldEnableSpeechRecognition()) {
-    if (state_ == SPEECH_RECOGNITION_OFF)
+    if (state_ == SPEECH_RECOGNITION_OFF ||
+        state_ == SPEECH_RECOGNITION_NETWORK_ERROR)
       OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_READY);
   } else {
-    OnSpeechRecognitionStateChanged(SPEECH_RECOGNITION_OFF);
+    OnSpeechRecognitionStateChanged(network_available_ ? SPEECH_RECOGNITION_OFF
+                                        : SPEECH_RECOGNITION_NETWORK_ERROR);
   }
 }
 
@@ -467,14 +469,17 @@ void StartPageService::OnSpeechRecognitionStateChanged(
   if (audio_status_ && !audio_status_->CanListen())
     new_state = SPEECH_RECOGNITION_OFF;
 #endif
-  if (!ShouldEnableSpeechRecognition())
+  if (!microphone_available_)
     new_state = SPEECH_RECOGNITION_OFF;
+  if (!network_available_)
+    new_state = SPEECH_RECOGNITION_NETWORK_ERROR;
 
   if (state_ == new_state)
     return;
 
   if ((new_state == SPEECH_RECOGNITION_READY ||
-       new_state == SPEECH_RECOGNITION_OFF) &&
+       new_state == SPEECH_RECOGNITION_OFF ||
+       new_state == SPEECH_RECOGNITION_NETWORK_ERROR) &&
       speech_recognizer_) {
     speech_recognizer_->Stop();
   }
