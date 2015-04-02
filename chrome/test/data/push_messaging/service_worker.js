@@ -38,7 +38,7 @@ function sendMessageToClients(type, data) {
     'type': type,
     'data': data
   });
-  clients.getAll().then(function(clients) {
+  clients.matchAll().then(function(clients) {
     clients.forEach(function(client) {
       client.postMessage(message);
     });
