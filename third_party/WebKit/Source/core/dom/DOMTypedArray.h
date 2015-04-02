@@ -78,25 +78,15 @@ private:
         : DOMArrayBufferView(bufferView, domArrayBuffer) { }
 };
 
-// Should not use CORE_EXPORT when compiling core with msvc, because
-// '__declspec(dllexport)' doesn't work with 'extern' (warning C4910).
-// c.f. https://msdn.microsoft.com/en-us/library/bb531392(v=vs.90).aspx
-#if COMPILER(MSVC) && defined(BLINK_CORE_IMPLEMENTATION) && BLINK_CORE_IMPLEMENTATION
-#define DOMTYPEDARRAY_EXPORT
-#else
-#define DOMTYPEDARRAY_EXPORT CORE_EXPORT
-#endif
-
-extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Int8Array, v8::Int8Array>;
-extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Int16Array, v8::Int16Array>;
-extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Int32Array, v8::Int32Array>;
-extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Uint8Array, v8::Uint8Array>;
-extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Uint8ClampedArray, v8::Uint8ClampedArray>;
-extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Uint16Array, v8::Uint16Array>;
-extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Uint32Array, v8::Uint32Array>;
-extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Float32Array, v8::Float32Array>;
-extern template class DOMTYPEDARRAY_EXPORT DOMTypedArray<WTF::Float64Array, v8::Float64Array>;
-#undef DOMTYPEDARRAY_EXPORT
+extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Int8Array, v8::Int8Array>;
+extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Int16Array, v8::Int16Array>;
+extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Int32Array, v8::Int32Array>;
+extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint8Array, v8::Uint8Array>;
+extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint8ClampedArray, v8::Uint8ClampedArray>;
+extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint16Array, v8::Uint16Array>;
+extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Uint32Array, v8::Uint32Array>;
+extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Float32Array, v8::Float32Array>;
+extern template class CORE_TEMPLATE_EXPORT DOMTypedArray<WTF::Float64Array, v8::Float64Array>;
 
 typedef DOMTypedArray<WTF::Int8Array, v8::Int8Array> DOMInt8Array;
 typedef DOMTypedArray<WTF::Int16Array, v8::Int16Array> DOMInt16Array;
