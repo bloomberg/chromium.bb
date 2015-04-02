@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_controller.h"
 
+#include <Carbon/Carbon.h>
+
 #include "base/mac/foundation_util.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -290,4 +292,17 @@ TEST_F(PermissionBubbleControllerTest, ChangePermissionSelection) {
   NSButton* menu_b = FindMenuButtonWithTitle(IDS_PERMISSION_DENY);
   ChangePermissionMenuSelection(menu_a, IDS_PERMISSION_DENY);
   ChangePermissionMenuSelection(menu_b, IDS_PERMISSION_ALLOW);
+}
+
+TEST_F(PermissionBubbleControllerTest, EscapeCloses) {
+  [controller_ showAtAnchor:NSZeroPoint
+               withDelegate:this
+                forRequests:requests_
+               acceptStates:accept_states_];
+
+  EXPECT_TRUE([[controller_ window] isVisible]);
+  [[controller_ window]
+      performKeyEquivalent:cocoa_test_event_utils::KeyEventWithKeyCode(
+                               kVK_Escape, '\e', NSKeyDown, 0)];
+  EXPECT_FALSE([[controller_ window] isVisible]);
 }

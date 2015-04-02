@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 
+#include <Carbon/Carbon.h>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
@@ -133,6 +135,16 @@ class AppNotificationBridge : public content::NotificationObserver {
     [self setAnimations:animations];
   }
   return self;
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent*)event {
+  if (([event keyCode] == kVK_Escape) ||
+      (([event keyCode] == kVK_ANSI_Period) &&
+       (([event modifierFlags] & NSCommandKeyMask) != 0))) {
+    [[self windowController] cancel:self];
+    return YES;
+  }
+  return [super performKeyEquivalent:event];
 }
 
 // According to

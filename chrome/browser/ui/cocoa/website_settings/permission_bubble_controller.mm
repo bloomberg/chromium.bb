@@ -145,6 +145,10 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 @implementation PermissionBubbleWindow
 - (BOOL)performKeyEquivalent:(NSEvent*)event {
+  // Before forwarding to parent, handle locally.
+  if ([super performKeyEquivalent:event])
+    return YES;
+
   // Only handle events if they should be forwarded to the parent window.
   if ([self allowShareParentKeyState]) {
     content::NativeWebKeyboardEvent wrappedEvent(event);
