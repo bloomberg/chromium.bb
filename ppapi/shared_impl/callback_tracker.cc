@@ -18,8 +18,7 @@ namespace ppapi {
 
 // CallbackTracker -------------------------------------------------------------
 
-CallbackTracker::CallbackTracker() : abort_all_called_(false) {
-}
+CallbackTracker::CallbackTracker() : abort_all_called_(false) {}
 
 void CallbackTracker::AbortAll() {
   // Iterate over a copy:

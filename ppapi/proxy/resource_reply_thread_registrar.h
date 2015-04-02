@@ -47,13 +47,6 @@ class PPAPI_PROXY_EXPORT ResourceReplyThreadRegistrar
                 scoped_refptr<TrackedCallback> reply_thread_hint);
   void Unregister(PP_Resource resource);
 
-  // This results in Resource::OnReplyReceived() for the specified message type
-  // to be called on the IO thread directly, while holding the Pepper proxy
-  // lock.
-  void HandleOnIOThread(uint32 nested_msg_type);
-
-  // This method returns NULL if the target thread is the IO thread (because
-  // that is the thread on which this method is supposed to be called).
   scoped_refptr<base::MessageLoopProxy> GetTargetThread(
       const ResourceMessageReplyParams& reply_params,
       const IPC::Message& nested_msg);
@@ -72,7 +65,6 @@ class PPAPI_PROXY_EXPORT ResourceReplyThreadRegistrar
   // holding |lock_|, otherwise we will cause deadlock.
   base::Lock lock_;
   ResourceMap map_;
-  std::set<uint32> io_thread_message_types_;
   scoped_refptr<base::MessageLoopProxy> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceReplyThreadRegistrar);

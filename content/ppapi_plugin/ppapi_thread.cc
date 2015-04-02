@@ -101,21 +101,23 @@ typedef int32_t (*InitializeBrokerFunc)
 
 PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
     : is_broker_(is_broker),
+      plugin_globals_(GetIOTaskRunner()),
       connect_instance_func_(NULL),
       local_pp_module_(base::RandInt(0, std::numeric_limits<PP_Module>::max())),
       next_plugin_dispatcher_id_(1) {
-  ppapi::proxy::PluginGlobals* globals = ppapi::proxy::PluginGlobals::Get();
-  globals->SetPluginProxyDelegate(this);
-  globals->set_command_line(
+  plugin_globals_.SetPluginProxyDelegate(this);
+  plugin_globals_.set_command_line(
       command_line.GetSwitchValueASCII(switches::kPpapiFlashArgs));
 
   blink_platform_impl_.reset(new PpapiBlinkPlatformImpl);
   blink::initialize(blink_platform_impl_.get());
 
   if (!is_broker_) {
-    channel()->AddFilter(
+    scoped_refptr<ppapi::proxy::PluginMessageFilter> plugin_filter(
         new ppapi::proxy::PluginMessageFilter(
-            NULL, globals->resource_reply_thread_registrar()));
+            NULL, plugin_globals_.resource_reply_thread_registrar()));
+    channel()->AddFilter(plugin_filter.get());
+    plugin_globals_.RegisterResourceMessageFilters(plugin_filter.get());
   }
 }
 

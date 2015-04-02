@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_local_storage.h"
 #include "ppapi/proxy/connection.h"
@@ -33,13 +34,16 @@ struct Preferences;
 namespace proxy {
 
 class MessageLoopResource;
+class PluginMessageFilter;
 class PluginProxyDelegate;
 class ResourceReplyThreadRegistrar;
+class UDPSocketFilter;
 
 class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
  public:
-  PluginGlobals();
-  explicit PluginGlobals(PpapiGlobals::PerThreadForTest);
+  explicit PluginGlobals(const scoped_refptr<base::TaskRunner>& task_runner);
+  PluginGlobals(PpapiGlobals::PerThreadForTest,
+                const scoped_refptr<base::TaskRunner>& task_runner);
   virtual ~PluginGlobals();
 
   // Getter for the global singleton. Generally, you should use
@@ -78,6 +82,8 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
 
   // Returns the channel for sending to the browser.
   IPC::Sender* GetBrowserSender();
+
+  base::TaskRunner* ipc_task_runner() { return ipc_task_runner_.get(); }
 
   // Returns the language code of the current UI language.
   std::string GetUILanguage();
@@ -136,6 +142,14 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
     return resource_reply_thread_registrar_.get();
   }
 
+  UDPSocketFilter* udp_socket_filter() const {
+    return udp_socket_filter_.get();
+  }
+  // Add any necessary ResourceMessageFilters to the PluginMessageFilter so
+  // that they can receive and handle appropriate messages on the IO thread.
+  void RegisterResourceMessageFilters(
+      ppapi::proxy::PluginMessageFilter* plugin_filter);
+
   // Interval to limit how many IPC messages are sent indicating that the plugin
   // is active and should be kept alive. The value must be smaller than any
   // threshold used to kill inactive plugins by the embedder host.
@@ -172,11 +186,15 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
 
   scoped_ptr<BrowserSender> browser_sender_;
 
+  scoped_refptr<base::TaskRunner> ipc_task_runner_;
+
   // Thread for performing potentially blocking file operations. It's created
   // lazily, since it might not be needed.
   scoped_ptr<base::Thread> file_thread_;
 
   scoped_refptr<ResourceReplyThreadRegistrar> resource_reply_thread_registrar_;
+
+  scoped_refptr<UDPSocketFilter> udp_socket_filter_;
 
   // Indicates activity by the plugin. Used to monitor when a plugin can be
   // shutdown due to idleness. Current needs do not require differentiating

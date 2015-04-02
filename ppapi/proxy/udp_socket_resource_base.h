@@ -6,7 +6,6 @@
 #define PPAPI_PROXY_UDP_SOCKET_RESOURCE_BASE_H_
 
 #include <queue>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -15,6 +14,7 @@
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/proxy/udp_socket_filter.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 
 namespace ppapi {
@@ -22,7 +22,7 @@ namespace proxy {
 
 class ResourceMessageReplyParams;
 
-class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
+class PPAPI_PROXY_EXPORT UDPSocketResourceBase : public PluginResource {
  public:
   // The maximum number of bytes that each
   // PpapiPluginMsg_PPBUDPSocket_PushRecvResult message is allowed to carry.
@@ -79,43 +79,20 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
                          scoped_refptr<TrackedCallback> callback);
 
  private:
-  struct RecvBuffer {
-    int32_t result;
-    std::string data;
-    PP_NetAddress_Private addr;
-  };
-
-  // Resource overrides.
-  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) override;
-
-  void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);
-
   // IPC message handlers.
   void OnPluginMsgGeneralReply(scoped_refptr<TrackedCallback> callback,
                                const ResourceMessageReplyParams& params);
   void OnPluginMsgBindReply(const ResourceMessageReplyParams& params,
                             const PP_NetAddress_Private& bound_addr);
-  void OnPluginMsgPushRecvResult(const ResourceMessageReplyParams& params,
-                                 int32_t result,
-                                 const std::string& data,
-                                 const PP_NetAddress_Private& addr);
   void OnPluginMsgSendToReply(const ResourceMessageReplyParams& params,
                               int32_t bytes_written);
 
-  void RunCallback(scoped_refptr<TrackedCallback> callback, int32_t pp_result);
-
-  // Callers must ensure that |output_buffer| is big enough to store |data|.
-  int32_t SetRecvFromOutput(int32_t browser_result,
-                            const std::string& data,
-                            const PP_NetAddress_Private& addr,
-                            char* output_buffer,
-                            int32_t num_bytes,
-                            PP_Resource* output_addr);
+  static void SlotBecameAvailable(PP_Resource resource);
+  static void SlotBecameAvailableWithLock(PP_Resource resource);
 
   bool private_api_;
 
-  // |bind_called_| is true after Bind() is called, while |bound_| is true,
+  // |bind_called_| is true after Bind() is called, while |bound_| is true
   // after Bind() succeeds. Bind() is an asynchronous method, so the timing
   // on which of these is set is slightly different.
   bool bind_called_;
@@ -123,16 +100,9 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
   bool closed_;
 
   scoped_refptr<TrackedCallback> bind_callback_;
-  scoped_refptr<TrackedCallback> recvfrom_callback_;
+  scoped_refptr<UDPSocketFilter> recv_filter_;
 
-  char* read_buffer_;
-  int32_t bytes_to_read_;
-  PP_Resource* recvfrom_addr_resource_;
-
-  PP_NetAddress_Private recvfrom_addr_;
   PP_NetAddress_Private bound_addr_;
-
-  std::queue<RecvBuffer> recv_buffers_;
 
   std::queue<scoped_refptr<TrackedCallback>> sendto_callbacks_;
 

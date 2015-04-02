@@ -27,7 +27,9 @@ void PpapiPluginRegisterThreadCreator(
 
 int PpapiPluginMain() {
   base::MessageLoop loop;
-  ppapi::proxy::PluginGlobals plugin_globals;
+  ppapi::proxy::PluginGlobals plugin_globals(
+      scoped_refptr<base::TaskRunner>(
+          ppapi::GetIOThread()->message_loop_proxy()));
 
   ppapi::PpapiDispatcher ppapi_dispatcher(
       ppapi::GetIOThread()->message_loop_proxy(),

@@ -50,11 +50,6 @@ void ResourceReplyThreadRegistrar::Unregister(PP_Resource resource) {
   map_.erase(resource);
 }
 
-void ResourceReplyThreadRegistrar::HandleOnIOThread(uint32 nested_msg_type) {
-  base::AutoLock auto_lock(lock_);
-  io_thread_message_types_.insert(nested_msg_type);
-}
-
 scoped_refptr<base::MessageLoopProxy>
 ResourceReplyThreadRegistrar::GetTargetThread(
     const ResourceMessageReplyParams& reply_params,
@@ -71,9 +66,6 @@ ResourceReplyThreadRegistrar::GetTargetThread(
       return target;
     }
   }
-
-  if (io_thread_message_types_.count(nested_msg.type()) != 0)
-    return scoped_refptr<base::MessageLoopProxy>();
 
   return main_thread_;
 }

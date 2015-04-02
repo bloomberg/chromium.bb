@@ -6,6 +6,7 @@
 #define PPAPI_PROXY_PLUGIN_MESSAGE_FILTER_H_
 
 #include <set>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -13,6 +14,7 @@
 #include "ipc/message_filter.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/proxy/resource_message_filter.h"
 
 namespace ppapi {
 namespace proxy {
@@ -48,6 +50,9 @@ class PPAPI_PROXY_EXPORT PluginMessageFilter : public IPC::MessageFilter,
   // IPC::Sender implementation.
   virtual bool Send(IPC::Message* msg) override;
 
+  void AddResourceMessageFilter(
+      const scoped_refptr<ResourceMessageFilter>& filter);
+
   // Simulates an incoming resource reply that is handled on the calling thread.
   // For testing only.
   static void DispatchResourceReplyForTest(
@@ -71,6 +76,8 @@ class PPAPI_PROXY_EXPORT PluginMessageFilter : public IPC::MessageFilter,
   std::set<PP_Instance>* seen_instance_ids_;
 
   scoped_refptr<ResourceReplyThreadRegistrar> resource_reply_thread_registrar_;
+
+  std::vector<scoped_refptr<ResourceMessageFilter>> resource_filters_;
 
   // The IPC sender to the renderer. May be NULL if we're not currently
   // attached as a filter.

@@ -54,6 +54,11 @@ bool PluginMessageFilter::Send(IPC::Message* msg) {
   return false;
 }
 
+void PluginMessageFilter::AddResourceMessageFilter(
+    const scoped_refptr<ResourceMessageFilter>& filter) {
+  resource_filters_.push_back(filter);
+}
+
 // static
 void PluginMessageFilter::DispatchResourceReplyForTest(
     const ResourceMessageReplyParams& reply_params,
@@ -82,17 +87,15 @@ void PluginMessageFilter::OnMsgReserveInstanceId(PP_Instance instance,
 void PluginMessageFilter::OnMsgResourceReply(
     const ResourceMessageReplyParams& reply_params,
     const IPC::Message& nested_msg) {
+  for (const auto& filter_ptr : resource_filters_) {
+    if (filter_ptr->OnResourceReplyReceived(reply_params, nested_msg))
+      return;
+  }
   scoped_refptr<base::MessageLoopProxy> target =
       resource_reply_thread_registrar_->GetTargetThread(reply_params,
                                                         nested_msg);
-
-  if (!target.get()) {
-    DispatchResourceReply(reply_params, nested_msg);
-  } else {
-    target->PostTask(
-        FROM_HERE,
-        base::Bind(&DispatchResourceReply, reply_params, nested_msg));
-  }
+  target->PostTask(
+      FROM_HERE, base::Bind(&DispatchResourceReply, reply_params, nested_msg));
 }
 
 // static

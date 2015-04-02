@@ -60,13 +60,18 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop,
   IPC::ChannelHandle channel_handle(
       "NaCl IPC", base::FileDescriptor(browser_ipc_fd, false));
 
+  proxy::PluginGlobals* globals = proxy::PluginGlobals::Get();
   // Delay initializing the SyncChannel until after we add filters. This
   // ensures that the filters won't miss any messages received by
   // the channel.
   channel_ =
       IPC::SyncChannel::Create(this, GetIPCMessageLoop(), GetShutdownEvent());
-  channel_->AddFilter(new proxy::PluginMessageFilter(
-      NULL, proxy::PluginGlobals::Get()->resource_reply_thread_registrar()));
+  scoped_refptr<ppapi::proxy::PluginMessageFilter> plugin_filter(
+      new ppapi::proxy::PluginMessageFilter(
+          NULL, globals->resource_reply_thread_registrar()));
+  channel_->AddFilter(plugin_filter.get());
+  globals->RegisterResourceMessageFilters(plugin_filter.get());
+
   channel_->AddFilter(
       new tracing::ChildTraceMessageFilter(message_loop_.get()));
   channel_->Init(channel_handle, IPC::Channel::MODE_SERVER, true);

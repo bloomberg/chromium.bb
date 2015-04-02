@@ -120,7 +120,6 @@ struct CallbackRunInfo {
   int32_t result() { return result_; }
   unsigned completion_task_run_count() { return completion_task_run_count_; }
   int32_t completion_task_result() { return completion_task_result_; }
-
  private:
   unsigned run_count_;
   int32_t result_;
@@ -141,10 +140,9 @@ void TestCallback(void* user_data, int32_t result) {
 
 class CallbackShutdownTest : public TrackedCallbackTest {
  public:
-  CallbackShutdownTest()
-      : info_did_run_(&thread_checker_),
-        info_did_abort_(&thread_checker_),
-        info_didnt_run_(&thread_checker_) {}
+  CallbackShutdownTest() : info_did_run_(&thread_checker_),
+                           info_did_abort_(&thread_checker_),
+                           info_didnt_run_(&thread_checker_) {}
 
   // Cases:
   // (1) A callback which is run (so shouldn't be aborted on shutdown).
@@ -247,9 +245,9 @@ class CallbackMockResource : public Resource {
     ProxyAutoLock acquire;
     // |thread_checker_| will bind to the background thread.
     thread_checker_.DetachFromThread();
-    loop_resource->message_loop_proxy()->PostTask(
-        FROM_HERE, RunWhileLocked(base::Bind(
-                       &CallbackMockResource::CreateCallbacks, this)));
+    loop_resource->message_loop_proxy()->PostTask(FROM_HERE,
+        RunWhileLocked(
+            base::Bind(&CallbackMockResource::CreateCallbacks, this)));
   }
 
   int32_t CompletionTask(CallbackRunInfo* info, int32_t result) {
@@ -350,10 +348,12 @@ class CallbackMockResource : public Resource {
     // In order to test that the completion task can override the callback
     // result, we need to test callbacks with and without a completion task.
     callback_did_run_with_completion_task_ = new TrackedCallback(
-        this, PP_MakeCompletionCallback(&TestCallback,
-                                        &info_did_run_with_completion_task_));
+        this,
+        PP_MakeCompletionCallback(&TestCallback,
+                                  &info_did_run_with_completion_task_));
     callback_did_run_with_completion_task_->set_completion_task(
-        Bind(&CallbackMockResource::CompletionTask, this,
+        Bind(&CallbackMockResource::CompletionTask,
+             this,
              &info_did_run_with_completion_task_));
 
     callback_did_abort_ = new TrackedCallback(

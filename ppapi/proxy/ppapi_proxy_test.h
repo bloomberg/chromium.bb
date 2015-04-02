@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_runner.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
 #include "ppapi/c/pp_instance.h"
@@ -165,7 +166,8 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
   };
 
  private:
-  void CreatePluginGlobals();
+  void CreatePluginGlobals(
+      const scoped_refptr<base::TaskRunner>& ipc_task_runner);
 
   GlobalsConfiguration globals_config_;
   scoped_ptr<PluginGlobals> plugin_globals_;

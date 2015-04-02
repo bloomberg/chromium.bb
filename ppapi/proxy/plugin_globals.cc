@@ -9,10 +9,12 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_message_loop_proxy.h"
 #include "ppapi/proxy/resource_reply_thread_registrar.h"
+#include "ppapi/proxy/udp_socket_filter.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/thunk/enter.h"
@@ -51,12 +53,15 @@ class PluginGlobals::BrowserSender : public IPC::Sender {
 
 PluginGlobals* PluginGlobals::plugin_globals_ = NULL;
 
-PluginGlobals::PluginGlobals()
+PluginGlobals::PluginGlobals(
+    const scoped_refptr<base::TaskRunner>& ipc_task_runner)
     : ppapi::PpapiGlobals(),
       plugin_proxy_delegate_(NULL),
       callback_tracker_(new CallbackTracker),
+      ipc_task_runner_(ipc_task_runner),
       resource_reply_thread_registrar_(
           new ResourceReplyThreadRegistrar(GetMainThreadMessageLoop())),
+      udp_socket_filter_(new UDPSocketFilter()),
       plugin_recently_active_(false),
       keepalive_throttle_interval_milliseconds_(
           ppapi::kKeepaliveThrottleIntervalDefaultMilliseconds),
@@ -72,10 +77,13 @@ PluginGlobals::PluginGlobals()
       new MessageLoopResource(MessageLoopResource::ForMainThread());
 }
 
-PluginGlobals::PluginGlobals(PerThreadForTest per_thread_for_test)
+PluginGlobals::PluginGlobals(
+    PerThreadForTest per_thread_for_test,
+    const scoped_refptr<base::TaskRunner>& ipc_task_runner)
     : ppapi::PpapiGlobals(per_thread_for_test),
       plugin_proxy_delegate_(NULL),
       callback_tracker_(new CallbackTracker),
+      ipc_task_runner_(ipc_task_runner),
       resource_reply_thread_registrar_(
           new ResourceReplyThreadRegistrar(GetMainThreadMessageLoop())),
       plugin_recently_active_(false),
@@ -234,6 +242,11 @@ void PluginGlobals::ResetPluginProxyDelegate() {
 
 MessageLoopResource* PluginGlobals::loop_for_main_thread() {
   return loop_for_main_thread_.get();
+}
+
+void PluginGlobals::RegisterResourceMessageFilters(
+    ppapi::proxy::PluginMessageFilter* plugin_filter) {
+  plugin_filter->AddResourceMessageFilter(udp_socket_filter_.get());
 }
 
 void PluginGlobals::set_keepalive_throttle_interval_milliseconds(unsigned i) {
