@@ -1012,6 +1012,14 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
         culledParent = culledParent->parent();
     }
 
+    if (layoutObject().style()->hasBorderRadius()) {
+        LayoutRect borderRect = logicalFrameRect();
+        borderRect.moveBy(accumulatedOffset);
+        FloatRoundedRect border = layoutObject().style()->getRoundedBorderFor(borderRect, includeLogicalLeftEdge(), includeLogicalRightEdge());
+        if (!locationInContainer.intersects(border))
+            return false;
+    }
+
     // Now check ourselves. Pixel snap hit testing.
     LayoutRect frameRect(roundedFrameRect());
     LayoutUnit minX = frameRect.x();
