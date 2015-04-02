@@ -1,0 +1,65 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="service-workers-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="../console-test.js"></script>
+<script>
+function test()
+{
+    function waitForConsoleMessage(regex)
+    {
+        return new Promise(function(resolve) {
+            function sniff(msg)
+            {
+                if (regex.test(msg.messageText))
+                    resolve(msg);
+                else
+                    InspectorTest.addConsoleSniffer(sniff);
+            }
+            InspectorTest.addConsoleSniffer(sniff);
+        });
+    }
+
+    var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/user-agent-override-worker.js";
+    var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/user-agent-override/";
+    var userAgentString = "Mozilla/5.0 (Overridden User Agent)";
+    var originalUserAgent = navigator.userAgent;
+
+    InspectorTest.addResult("Enable emulation and set User-Agent override");
+    WebInspector.overridesSupport.setEmulationEnabled(true);
+    WebInspector.overridesSupport.settings.userAgent.set(userAgentString);
+
+    var consolePromise = waitForConsoleMessage(/HTTP_USER_AGENT/);
+    InspectorTest.registerServiceWorker(scriptURL, scope);
+
+    consolePromise
+        .then(function(msg) {
+            var expected = 'HTTP_USER_AGENT: ' + userAgentString;
+            InspectorTest.assertEquals(expected, msg.messageText, "User-Agent with override");
+
+            InspectorTest.addResult("Disable emulation");
+            WebInspector.overridesSupport.setEmulationEnabled(false);
+            var consolePromise2 = waitForConsoleMessage(/HTTP_USER_AGENT/);
+            InspectorTest.registerServiceWorker(scriptURL + '?2', scope);
+            return consolePromise2;
+        }).then(function(msg) {
+            var expected = 'HTTP_USER_AGENT: ' + originalUserAgent;
+            InspectorTest.assertEquals(expected, msg.messageText, "User-Agent without override");
+
+            InspectorTest.unregisterServiceWorker(scope);
+
+            InspectorTest.addResult("Test complete");
+            InspectorTest.completeTest();
+        }).catch(function(err) {
+            console.log(err);
+            InspectorTest.completeTest();
+        });
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that User-Agent override works for requests from Service Workers.</p>
+</body>
+</html>
