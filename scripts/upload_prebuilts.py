@@ -185,9 +185,6 @@ def _GsUpload(gs_context, acl, local_file, remote_file):
     acl: The ACL to use for uploading the file.
     local_file: The local file to be uploaded.
     remote_file: The remote location to upload to.
-
-  Returns:
-    Return the arg tuple of two if the upload failed
   """
   CANNED_ACLS = ['public-read', 'private', 'bucket-owner-read',
                  'authenticated-read', 'bucket-owner-full-control',
@@ -197,7 +194,17 @@ def _GsUpload(gs_context, acl, local_file, remote_file):
   else:
     # For private uploads we assume that the overlay board is set up properly
     # and a googlestore_acl.xml is present. Otherwise, this script errors.
-    gs_context.Copy(local_file, remote_file, acl='private')
+    # We set version=0 here to ensure that the ACL is set only once (see
+    # http://b/15883752#comment54).
+    try:
+      gs_context.Copy(local_file, remote_file, version=0)
+    except gs.GSContextPreconditionFailed as ex:
+      # If we received a GSContextPreconditionFailed error, we know that the
+      # file exists now, but we don't know whether our specific update
+      # succeeded. See http://b/15883752#comment62
+      logging.warning(
+          'Assuming upload succeeded despite PreconditionFailed errors: %s', ex)
+
     if acl.endswith('.xml'):
       # Apply the passed in ACL xml file to the uploaded object.
       gs_context.SetACL(remote_file, acl=acl)
@@ -241,7 +248,7 @@ def GenerateUploadDict(base_local_path, base_remote_path, pkgs):
   for pkg in pkgs:
     suffix = pkg['CPV'] + '.tbz2'
     local_path = os.path.join(base_local_path, suffix)
-    assert os.path.exists(local_path)
+    assert os.path.exists(local_path), '%s does not exist' % local_path
     upload_files[local_path] = os.path.join(base_remote_path, suffix)
 
     if pkg.get('DEBUG_SYMBOLS') == 'yes':

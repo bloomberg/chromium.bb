@@ -518,7 +518,10 @@ class GSContext(object):
 
     error = e.result.error
     if error:
-      if 'PreconditionException' in error:
+      # gsutil usually prints PreconditionException when a precondition fails.
+      # It may also print "ResumableUploadAbortException: 412 Precondition
+      # Failed", so the logic needs to be a little more general.
+      if 'PreconditionException' in error or '412 Precondition Failed' in error:
         raise GSContextPreconditionFailed(e)
 
       # If the file does not exist, one of the following errors occurs. The
