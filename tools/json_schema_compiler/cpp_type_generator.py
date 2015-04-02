@@ -252,11 +252,15 @@ class CppTypeGenerator(object):
       c.Comment(prop.description)
 
     if prop.value is not None:
+      cpp_type = self.GetCppType(prop.type_)
+      cpp_value = prop.value
+      if cpp_type == 'std::string':
+        cpp_value = '"%s"' % cpp_type
       c.Append(line % {
-          "type": self.GetCppType(prop.type_),
-          "name": prop.name,
-          "value": prop.value
-        })
+        "type": cpp_type,
+        "name": prop.name,
+        "value": cpp_value
+      })
     else:
       has_child_code = False
       c.Sblock('namespace %s {' % prop.name)

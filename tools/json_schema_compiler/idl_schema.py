@@ -6,6 +6,7 @@
 import itertools
 import json
 import os.path
+import pprint
 import re
 import sys
 
@@ -167,7 +168,7 @@ class Member(object):
   def __init__(self, member_node):
     self.node = member_node
 
-  def process(self, callbacks):
+  def process(self, callbacks, functions_are_properties=False):
     properties = OrderedDict()
     name = self.node.GetName()
     if self.node.GetProperty('deprecated'):
@@ -187,33 +188,68 @@ class Member(object):
           properties['options'] = {}
         properties['options'][option_name] = sanitizer(self.node.GetProperty(
           option_name))
-    is_function = False
+    type_override = None
     parameter_comments = OrderedDict()
     for node in self.node.GetChildren():
       if node.cls == 'Comment':
         (parent_comment, parameter_comments) = ProcessComment(node.GetName())
         properties['description'] = parent_comment
       elif node.cls == 'Callspec':
-        is_function = True
         name, parameters, return_type = (Callspec(node, parameter_comments)
                                          .process(callbacks))
-        properties['parameters'] = parameters
-        if return_type is not None:
-          properties['returns'] = return_type
+        if functions_are_properties:
+          # If functions are treated as properties (which will happen if the
+          # interface is named Properties) then this isn't a function, it's a
+          # property which is encoded as a function with no arguments. The
+          # property type is the return type. This is an egregious hack in lieu
+          # of the IDL parser supporting 'const'.
+          assert parameters == [], (
+                 'Property "%s" must be no-argument functions '
+                 'with a non-void return type' % name)
+          assert return_type is not None, (
+                 'Property "%s" must be no-argument functions '
+                 'with a non-void return type' % name)
+          assert 'type' in return_type, (
+                 'Property return type "%s" from "%s" must specify a '
+                 'fundamental IDL type.' % (pprint.pformat(return_type), name))
+          type_override = return_type['type']
+        else:
+          type_override = 'function'
+          properties['parameters'] = parameters
+          if return_type is not None:
+            properties['returns'] = return_type
     properties['name'] = name
-    if is_function:
-      properties['type'] = 'function'
+    if type_override is not None:
+      properties['type'] = type_override
     else:
       properties = Typeref(self.node.GetProperty('TYPEREF'),
                            self.node, properties).process(callbacks)
+    value = self.node.GetProperty('value')
+    if value is not None:
+      # IDL always returns values as strings, so cast to their real type.
+      properties['value'] = self.cast_from_json_type(properties['type'], value)
     enum_values = self.node.GetProperty('legalValues')
     if enum_values:
-      if properties['type'] == 'integer':
-        enum_values = map(int, enum_values)
-      elif properties['type'] == 'double':
-        enum_values = map(float, enum_values)
-      properties['enum'] = enum_values
+      # IDL always returns enum values as strings, so cast to their real type.
+      properties['enum'] = [self.cast_from_json_type(properties['type'], enum)
+                            for enum in enum_values]
     return name, properties
+
+  def cast_from_json_type(self, json_type, string_value):
+    '''Casts from string |string_value| to a real Python type based on a JSON
+    Schema type |json_type|. For example, a string value of '42' and a JSON
+    Schema type 'integer' will cast to int('42') ==> 42.
+    '''
+    if json_type == 'integer':
+      return int(string_value)
+    if json_type == 'number':
+      return float(string_value)
+    # Add more as necessary.
+    assert json_type == 'string', (
+           'No rule exists to cast JSON Schema type "%s" to its equivalent '
+           'Python type for value "%s". You must add a new rule here.' %
+           (json_type, string_value))
+    return string_value
 
 
 class Typeref(object):
@@ -352,6 +388,7 @@ class Namespace(object):
     self.compiler_options = compiler_options
     self.events = []
     self.functions = []
+    self.properties = OrderedDict()
     self.types = []
     self.callbacks = OrderedDict()
     self.description = description
@@ -369,6 +406,17 @@ class Namespace(object):
         self.functions = self.process_interface(node)
       elif node.cls == 'Interface' and node.GetName() == 'Events':
         self.events = self.process_interface(node)
+      elif node.cls == 'Interface' and node.GetName() == 'Properties':
+        properties_as_list = self.process_interface(
+            node, functions_are_properties=True)
+        for prop in properties_as_list:
+          # Properties are given as key-value pairs, but IDL will parse
+          # it as a list. Convert back to key-value pairs.
+          prop_name = prop.pop('name')
+          assert not self.properties.has_key(prop_name), (
+                 'Property "%s" cannot be specified more than once.' %
+                 prop_name)
+          self.properties[prop_name] = prop
       elif node.cls == 'Enum':
         self.types.append(Enum(node).process())
       else:
@@ -380,6 +428,7 @@ class Namespace(object):
             'nodoc': self.nodoc,
             'types': self.types,
             'functions': self.functions,
+            'properties': self.properties,
             'internal': self.internal,
             'events': self.events,
             'platforms': self.platforms,
@@ -387,11 +436,13 @@ class Namespace(object):
             'deprecated': self.deprecated,
             'documentation_options': documentation_options}
 
-  def process_interface(self, node):
+  def process_interface(self, node, functions_are_properties=False):
     members = []
     for member in node.GetChildren():
       if member.cls == 'Member':
-        _, properties = Member(member).process(self.callbacks)
+        _, properties = Member(member).process(
+            self.callbacks,
+            functions_are_properties=functions_are_properties)
         members.append(properties)
     return members
 

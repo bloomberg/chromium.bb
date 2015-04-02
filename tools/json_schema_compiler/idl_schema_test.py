@@ -391,6 +391,30 @@ class IdlSchemaTest(unittest.TestCase):
 
     self.assertEquals(expected, badabish_params)
 
+  def testProperties(self):
+    schema = idl_schema.Load('test/idl_properties.idl')[0]
+    self.assertEquals(OrderedDict([
+      ('first', OrderedDict([
+        ('description', 'Integer property.'),
+        ('type', 'integer'),
+        ('value', 42),
+      ])),
+      ('second', OrderedDict([
+        ('description', 'Double property.'),
+        ('type', 'number'),
+        ('value', 42.0),
+      ])),
+      ('third', OrderedDict([
+        ('description', 'String property.'),
+        ('type', 'string'),
+        ('value', 'hello world'),
+      ])),
+      ('fourth', OrderedDict([
+        ('description', 'Unvalued property.'),
+        ('type', 'integer'),
+      ])),
+    ]), schema.get('properties'))
+
 
 if __name__ == '__main__':
   unittest.main()
