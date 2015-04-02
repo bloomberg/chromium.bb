@@ -1772,6 +1772,14 @@ google_apis::CancelCallback FakeDriveService::AddPermission(
   return CancelCallback();
 }
 
+scoped_ptr<BatchRequestConfiguratorInterface>
+FakeDriveService::StartBatchRequest() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  NOTREACHED();
+  return scoped_ptr<BatchRequestConfiguratorInterface>();
+}
+
 void FakeDriveService::NotifyObservers() {
   FOR_EACH_OBSERVER(ChangeObserver, change_observers_, OnNewChangeAvailable());
 }

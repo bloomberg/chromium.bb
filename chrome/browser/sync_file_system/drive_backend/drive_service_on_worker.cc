@@ -400,6 +400,12 @@ google_apis::CancelCallback DriveServiceOnWorker::MultipartUploadExistingFile(
   return google_apis::CancelCallback();
 }
 
+scoped_ptr<drive::BatchRequestConfiguratorInterface>
+DriveServiceOnWorker::StartBatchRequest() {
+  NOTREACHED();
+  return scoped_ptr<drive::BatchRequestConfiguratorInterface>();
+}
+
 google_apis::CancelCallback DriveServiceOnWorker::AuthorizeApp(
     const std::string& resource_id,
     const std::string& app_id,

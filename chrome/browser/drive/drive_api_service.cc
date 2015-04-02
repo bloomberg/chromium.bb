@@ -159,6 +159,51 @@ const char kDriveApiRootDirectoryResourceId[] = "root";
 
 }  // namespace
 
+BatchRequestConfigurator::BatchRequestConfigurator() {
+}
+
+BatchRequestConfigurator::~BatchRequestConfigurator() {
+}
+
+google_apis::CancelCallback BatchRequestConfigurator::MultipartUploadNewFile(
+    const std::string& content_type,
+    int64 content_length,
+    const std::string& parent_resource_id,
+    const std::string& title,
+    const base::FilePath& local_file_path,
+    const UploadNewFileOptions& options,
+    const google_apis::FileResourceCallback& callback,
+    const google_apis::ProgressCallback& progress_callback) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!callback.is_null());
+
+  NOTIMPLEMENTED();
+
+  return google_apis::CancelCallback();
+}
+
+google_apis::CancelCallback
+BatchRequestConfigurator::MultipartUploadExistingFile(
+    const std::string& content_type,
+    int64 content_length,
+    const std::string& resource_id,
+    const base::FilePath& local_file_path,
+    const UploadExistingFileOptions& options,
+    const google_apis::FileResourceCallback& callback,
+    const google_apis::ProgressCallback& progress_callback) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!callback.is_null());
+
+  NOTIMPLEMENTED();
+
+  return google_apis::CancelCallback();
+}
+
+void BatchRequestConfigurator::Commit() {
+  DCHECK(CalledOnValidThread());
+  NOTIMPLEMENTED();
+}
+
 DriveAPIService::DriveAPIService(
     OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* url_request_context_getter,
@@ -778,6 +823,12 @@ void DriveAPIService::OnOAuth2RefreshTokenChanged() {
     FOR_EACH_OBSERVER(
         DriveServiceObserver, observers_, OnRefreshTokenInvalid());
   }
+}
+
+scoped_ptr<BatchRequestConfiguratorInterface>
+DriveAPIService::StartBatchRequest() {
+  return make_scoped_ptr<BatchRequestConfiguratorInterface>(
+      new BatchRequestConfigurator);
 }
 
 }  // namespace drive

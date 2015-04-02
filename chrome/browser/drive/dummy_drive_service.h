@@ -158,6 +158,7 @@ class DummyDriveService : public DriveServiceInterface {
       const std::string& email,
       google_apis::drive::PermissionRole role,
       const google_apis::EntryActionCallback& callback) override;
+  scoped_ptr<BatchRequestConfiguratorInterface> StartBatchRequest() override;
 };
 
 }  // namespace drive

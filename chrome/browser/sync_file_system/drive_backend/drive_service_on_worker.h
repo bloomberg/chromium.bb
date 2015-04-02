@@ -172,6 +172,8 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const drive::UploadExistingFileOptions& options,
       const google_apis::FileResourceCallback& callback,
       const google_apis::ProgressCallback& progress_callback) override;
+  scoped_ptr<drive::BatchRequestConfiguratorInterface> StartBatchRequest()
+      override;
   google_apis::CancelCallback AuthorizeApp(
       const std::string& resource_id,
       const std::string& app_id,

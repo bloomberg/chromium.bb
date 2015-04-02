@@ -271,6 +271,7 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& email,
       google_apis::drive::PermissionRole role,
       const google_apis::EntryActionCallback& callback) override;
+  scoped_ptr<BatchRequestConfiguratorInterface> StartBatchRequest() override;
 
   // Adds a new file with the given parameters. On success, returns
   // HTTP_CREATED with the parsed entry.

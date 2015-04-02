@@ -34,6 +34,37 @@ class URLRequestContextGetter;
 
 namespace drive {
 
+// Builder for batch request returned by |DriveAPIService|.
+class BatchRequestConfigurator : public BatchRequestConfiguratorInterface,
+                                 public base::NonThreadSafe {
+ public:
+  BatchRequestConfigurator();
+  ~BatchRequestConfigurator() override;
+
+  // BatchRequestConfiguratorInterface overrides.
+  google_apis::CancelCallback MultipartUploadNewFile(
+      const std::string& content_type,
+      int64 content_length,
+      const std::string& parent_resource_id,
+      const std::string& title,
+      const base::FilePath& local_file_path,
+      const UploadNewFileOptions& options,
+      const google_apis::FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) override;
+  google_apis::CancelCallback MultipartUploadExistingFile(
+      const std::string& content_type,
+      int64 content_length,
+      const std::string& resource_id,
+      const base::FilePath& local_file_path,
+      const UploadExistingFileOptions& options,
+      const google_apis::FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) override;
+  void Commit() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BatchRequestConfigurator);
+};
+
 // This class provides Drive request calls using Drive V2 API.
 // Details of API call are abstracted in each request class and this class
 // works as a thin wrapper for the API.
@@ -196,6 +227,7 @@ class DriveAPIService : public DriveServiceInterface,
       const std::string& email,
       google_apis::drive::PermissionRole role,
       const google_apis::EntryActionCallback& callback) override;
+  scoped_ptr<BatchRequestConfiguratorInterface> StartBatchRequest() override;
 
  private:
   // AuthServiceObserver override.

@@ -99,14 +99,57 @@ struct UploadExistingFileOptions {
   google_apis::drive::Properties properties;
 };
 
+// Interface where we define operations that can be sent in batch requests.
+class DriveServiceBatchOperationsInterface {
+ public:
+  virtual ~DriveServiceBatchOperationsInterface() {}
+
+  // Uploads a file by a single request with multipart body. It's more efficient
+  // for small files than using |InitiateUploadNewFile| and |ResumeUpload|.
+  // |content_type| and |content_length| should be the ones of the file to be
+  // uploaded.  |callback| must not be null. |progress_callback| may be null.
+  virtual google_apis::CancelCallback MultipartUploadNewFile(
+      const std::string& content_type,
+      int64 content_length,
+      const std::string& parent_resource_id,
+      const std::string& title,
+      const base::FilePath& local_file_path,
+      const UploadNewFileOptions& options,
+      const google_apis::FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) = 0;
+
+  // Uploads a file by a single request with multipart body. It's more efficient
+  // for small files than using |InitiateUploadExistingFile| and |ResumeUpload|.
+  // |content_type| and |content_length| should be the ones of the file to be
+  // uploaded.  |callback| must not be null. |progress_callback| may be null.
+  virtual google_apis::CancelCallback MultipartUploadExistingFile(
+      const std::string& content_type,
+      int64 content_length,
+      const std::string& resource_id,
+      const base::FilePath& local_file_path,
+      const UploadExistingFileOptions& options,
+      const google_apis::FileResourceCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) = 0;
+};
+
+// Builder returned by DriveServiceInterface to build batch request.
+class BatchRequestConfiguratorInterface
+    : public DriveServiceBatchOperationsInterface {
+ public:
+  ~BatchRequestConfiguratorInterface() override {}
+
+  // Commits and sends the batch request.
+  virtual void Commit() = 0;
+};
+
 // This defines an interface for sharing by DriveService and MockDriveService
 // so that we can do testing of clients of DriveService.
 //
 // All functions must be called on UI thread. DriveService is built on top of
 // URLFetcher that runs on UI thread.
-class DriveServiceInterface {
+class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
  public:
-  virtual ~DriveServiceInterface() {}
+  ~DriveServiceInterface() override {}
 
   // Common service:
 
@@ -394,33 +437,6 @@ class DriveServiceInterface {
       int64 content_length,
       const google_apis::drive::UploadRangeCallback& callback) = 0;
 
-  // Uploads a file by a single request with multipart body. It's more efficient
-  // for small files than using |InitiateUploadNewFile| and |ResumeUpload|.
-  // |content_type| and |content_length| should be the ones of the file to be
-  // uploaded.  |callback| must not be null. |progress_callback| may be null.
-  virtual google_apis::CancelCallback MultipartUploadNewFile(
-      const std::string& content_type,
-      int64 content_length,
-      const std::string& parent_resource_id,
-      const std::string& title,
-      const base::FilePath& local_file_path,
-      const UploadNewFileOptions& options,
-      const google_apis::FileResourceCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) = 0;
-
-  // Uploads a file by a single request with multipart body. It's more efficient
-  // for small files than using |InitiateUploadExistingFile| and |ResumeUpload|.
-  // |content_type| and |content_length| should be the ones of the file to be
-  // uploaded.  |callback| must not be null. |progress_callback| may be null.
-  virtual google_apis::CancelCallback MultipartUploadExistingFile(
-      const std::string& content_type,
-      int64 content_length,
-      const std::string& resource_id,
-      const base::FilePath& local_file_path,
-      const UploadExistingFileOptions& options,
-      const google_apis::FileResourceCallback& callback,
-      const google_apis::ProgressCallback& progress_callback) = 0;
-
   // Authorizes a Drive app with the id |app_id| to open the given file.
   // Upon completion, invokes |callback| with the link to open the file with
   // the provided app. |callback| must not be null.
@@ -441,6 +457,9 @@ class DriveServiceInterface {
       const std::string& email,
       google_apis::drive::PermissionRole role,
       const google_apis::EntryActionCallback& callback) = 0;
+
+  // Starts batch request and returns |BatchRequestConfigurator|.
+  virtual scoped_ptr<BatchRequestConfiguratorInterface> StartBatchRequest() = 0;
 };
 
 }  // namespace drive

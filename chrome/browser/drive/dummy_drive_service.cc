@@ -216,5 +216,9 @@ CancelCallback DummyDriveService::AddPermission(
     const std::string& email,
     google_apis::drive::PermissionRole role,
     const EntryActionCallback& callback) { return CancelCallback(); }
+scoped_ptr<BatchRequestConfiguratorInterface>
+DummyDriveService::StartBatchRequest() {
+  return scoped_ptr<BatchRequestConfiguratorInterface>();
+}
 
 }  // namespace drive
