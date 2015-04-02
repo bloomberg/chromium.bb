@@ -61,6 +61,19 @@ class ChrootTest(cros_test_lib.MockTestCase):
     # Ensure we exec'd ls with arguments.
     self.cmd_mock.rc_mock.assertCommandContains(['ls'])
 
+  def testLoggingLevelNotice(self):
+    """Tests that logging level is passed to cros_sdk script."""
+    self.SetupCommandMock(['ls'])
+    self.cmd_mock.inst.options.log_level = 'notice'
+    # Pretend that we are outside the chroot so the logging level gets passed as
+    # an argument to cros_sdk.
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+    self.cmd_mock.inst.Run()
+
+    #Ensure that we exec'd with logging level notice.
+    self.cmd_mock.rc_mock.assertCommandContains(
+        ['ls'], chroot_args=['--log-level', 'notice'], enter_chroot=True)
+
   def testExplicitCmd(self):
     """Tests a non-interactive command as a single argument."""
     self.SetupCommandMock(['ls', '/tmp'])

@@ -9,7 +9,6 @@ from __future__ import print_function
 import argparse
 
 from chromite.cli import command
-from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import workspace_lib
 
@@ -45,14 +44,15 @@ class ChrootCommand(command.CliCommand):
     Returns:
       The commands result code.
     """
-    commandline.RunInsideChroot(self, auto_detect_brick=False)
-
     # If there is no command, run bash.
     if not cmd:
       cmd = ['bash']
 
     result = cros_build_lib.RunCommand(cmd, print_cmd=False, error_code_ok=True,
-                                       mute_output=False)
+                                       mute_output=False,
+                                       enter_chroot=True,
+                                       chroot_args=['--log-level',
+                                                    self.options.log_level])
     return result.returncode
 
   @classmethod

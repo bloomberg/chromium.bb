@@ -84,6 +84,7 @@ def FetchRemoteTarballs(storage_dir, urls):
   # fail if asked to resume a complete file.
   # pylint: disable=C0301,W0631
   # https://sourceforge.net/tracker/?func=detail&atid=100976&aid=3482927&group_id=976
+  logging.notice('Downloading chroot files.')
   for url in urls:
     # http://www.logilab.org/ticket/8766
     # pylint: disable=E1101
@@ -94,7 +95,7 @@ def FetchRemoteTarballs(storage_dir, urls):
         return parsed.path
       continue
     content_length = 0
-    print('Attempting download: %s' % url)
+    logging.debug('Attempting download from %s', url)
     result = retry_util.RunCurl(
         ['-I', url], redirect_stdout=True, redirect_stderr=True,
         print_cmd=False)
@@ -134,7 +135,7 @@ def FetchRemoteTarballs(storage_dir, urls):
     if filename == tarball_name or filename.startswith(ignored_prefix):
       continue
 
-    print('Cleaning up old tarball: %s' % (filename,))
+    logging.info('Cleaning up old tarball: %s' % (filename,))
     osutils.SafeUnlink(os.path.join(storage_dir, filename))
 
   return tarball_dest
@@ -149,6 +150,7 @@ def CreateChroot(chroot_path, sdk_tarball, cache_dir, nousepkg=False):
   if nousepkg:
     cmd.append('--nousepkg')
 
+  logging.notice('Creating chroot. This may take a few minutes...')
   try:
     cros_build_lib.RunCommand(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
@@ -160,6 +162,7 @@ def DeleteChroot(chroot_path):
   cmd = MAKE_CHROOT + ['--chroot', chroot_path,
                        '--delete']
   try:
+    logging.notice('Deleting chroot.')
     cros_build_lib.RunCommand(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
     raise SystemExit('Running %r failed!' % cmd)
