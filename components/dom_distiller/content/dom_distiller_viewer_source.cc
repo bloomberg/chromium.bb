@@ -46,6 +46,9 @@ class DomDistillerViewerSource::RequestViewerHandle
       DistilledPagePrefs* distilled_page_prefs);
   ~RequestViewerHandle() override;
 
+  // Flag this request as an error and send the error page template.
+  void flagAsErrorPage();
+
   // ViewRequestDelegate implementation:
   void OnArticleReady(const DistilledArticleProto* article_proto) override;
 
@@ -104,6 +107,9 @@ class DomDistillerViewerSource::RequestViewerHandle
   // Temporary store of pending JavaScript if the page isn't ready to receive
   // data from distillation.
   std::string buffer_;
+
+  // Flag to tell this observer that the web contents are in an error state.
+  bool is_error_page_;
 };
 
 DomDistillerViewerSource::RequestViewerHandle::RequestViewerHandle(
@@ -117,13 +123,22 @@ DomDistillerViewerSource::RequestViewerHandle::RequestViewerHandle(
       callback_(callback),
       page_count_(0),
       distilled_page_prefs_(distilled_page_prefs),
-      waiting_for_page_ready_(true) {
+      waiting_for_page_ready_(true),
+      is_error_page_(false) {
   content::WebContentsObserver::Observe(web_contents);
   distilled_page_prefs_->AddObserver(this);
 }
 
 DomDistillerViewerSource::RequestViewerHandle::~RequestViewerHandle() {
   distilled_page_prefs_->RemoveObserver(this);
+}
+
+void DomDistillerViewerSource::RequestViewerHandle::flagAsErrorPage() {
+  is_error_page_ = true;
+  std::string error_page_html = viewer::GetErrorPageHtml(
+      distilled_page_prefs_->GetTheme(),
+      distilled_page_prefs_->GetFontFamily());
+  callback_.Run(base::RefCountedString::TakeString(&error_page_html));
 }
 
 void DomDistillerViewerSource::RequestViewerHandle::SendJavaScript(
@@ -150,7 +165,6 @@ void DomDistillerViewerSource::RequestViewerHandle::DidNavigateMainFrame(
   }
 
   Cancel();
-
 }
 
 void DomDistillerViewerSource::RequestViewerHandle::RenderProcessGone(
@@ -174,6 +188,13 @@ void DomDistillerViewerSource::RequestViewerHandle::Cancel() {
 void DomDistillerViewerSource::RequestViewerHandle::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
+  if (is_error_page_) {
+    waiting_for_page_ready_ = false;
+    SendJavaScript(viewer::GetErrorPageJs());
+    Cancel(); // This will cause the object to clean itself up.
+    return;
+  }
+
   if (render_frame_host->GetParent()) {
     return;
   }
@@ -187,14 +208,16 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishLoad(
 
 void DomDistillerViewerSource::RequestViewerHandle::OnArticleReady(
     const DistilledArticleProto* article_proto) {
+  // TODO(mdjones): Move this logic to super class so it can be used in both
+  // android and IOS. http://crbug.com/472797
   if (page_count_ == 0) {
-    // This is a single-page article.
-    std::string unsafe_page_html =
-        viewer::GetUnsafeArticleHtml(
-            article_proto,
-            distilled_page_prefs_->GetTheme(),
-            distilled_page_prefs_->GetFontFamily());
+    std::string unsafe_page_html = viewer::GetUnsafeArticleTemplateHtml(
+        &article_proto->pages(0),
+        distilled_page_prefs_->GetTheme(),
+        distilled_page_prefs_->GetFontFamily());
     callback_.Run(base::RefCountedString::TakeString(&unsafe_page_html));
+    // Send first page to client.
+    SendJavaScript(viewer::GetUnsafeArticleContentJs(article_proto));
   } else if (page_count_ == article_proto->pages_size()) {
     // We may still be showing the "Loading" indicator.
     SendJavaScript(viewer::GetToggleLoadingIndicatorJs(true));
@@ -221,15 +244,14 @@ void DomDistillerViewerSource::RequestViewerHandle::OnArticleUpdated(
         article_update.GetDistilledPage(page_count_);
     if (page_count_ == 0) {
       // This is the first page, so send Viewer page scaffolding too.
-      std::string unsafe_page_html = viewer::GetUnsafePartialArticleHtml(
+      std::string unsafe_page_html = viewer::GetUnsafeArticleTemplateHtml(
           &page,
           distilled_page_prefs_->GetTheme(),
           distilled_page_prefs_->GetFontFamily());
       callback_.Run(base::RefCountedString::TakeString(&unsafe_page_html));
-    } else {
-      SendJavaScript(
-          viewer::GetUnsafeIncrementalDistilledPageJs(&page, false));
     }
+    // Send the page content to the client.
+    SendJavaScript(viewer::GetUnsafeIncrementalDistilledPageJs(&page, false));
   }
 }
 
@@ -310,14 +332,7 @@ void DomDistillerViewerSource::StartDataRequest(
     // after receiving the callback.
     request_viewer_handle->TakeViewerHandle(viewer_handle.Pass());
   } else {
-    // The service did not return a |ViewerHandle|, which means the
-    // |RequestViewerHandle| will never be called, so clean up now.
-    delete request_viewer_handle;
-
-    std::string error_page_html = viewer::GetErrorPageHtml(
-        dom_distiller_service_->GetDistilledPagePrefs()->GetTheme(),
-        dom_distiller_service_->GetDistilledPagePrefs()->GetFontFamily());
-    callback.Run(base::RefCountedString::TakeString(&error_page_html));
+    request_viewer_handle->flagAsErrorPage();
   }
 };
 

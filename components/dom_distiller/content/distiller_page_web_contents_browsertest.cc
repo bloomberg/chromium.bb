@@ -413,109 +413,39 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MarkupInfo) {
   EXPECT_EQ(600, markup_image2.height());
 }
 
-IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
-                       TestTitleAndContentAreNeverEmpty) {
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, TestTitleNeverEmpty) {
   const std::string some_title = "some title";
-  const std::string some_content = "some content";
   const std::string no_title =
       l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_TITLE);
-  const std::string no_content =
-      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT);
 
-  {  // Test non-empty title and content for article.
-    scoped_ptr<DistilledArticleProto> article_proto(
-        new DistilledArticleProto());
-    article_proto->set_title(some_title);
-    (*(article_proto->add_pages())).set_html(some_content);
-    std::string html = viewer::GetUnsafeArticleHtml(article_proto.get(),
-        DistilledPagePrefs::LIGHT, DistilledPagePrefs::SERIF);
-    EXPECT_THAT(html, HasSubstr(some_title));
-    EXPECT_THAT(html, HasSubstr(some_content));
-    EXPECT_THAT(html, Not(HasSubstr(no_title)));
-    EXPECT_THAT(html, Not(HasSubstr(no_content)));
-  }
-
-  {  // Test empty title and content for article.
+  {  // Test empty title for article.
     scoped_ptr<DistilledArticleProto> article_proto(
         new DistilledArticleProto());
     article_proto->set_title("");
     (*(article_proto->add_pages())).set_html("");
-    std::string html = viewer::GetUnsafeArticleHtml(article_proto.get(),
-        DistilledPagePrefs::LIGHT, DistilledPagePrefs::SERIF);
+    std::string html = viewer::GetUnsafeArticleTemplateHtml(
+        &article_proto.get()->pages(0), DistilledPagePrefs::LIGHT,
+        DistilledPagePrefs::SERIF);
     EXPECT_THAT(html, HasSubstr(no_title));
-    EXPECT_THAT(html, HasSubstr(no_content));
     EXPECT_THAT(html, Not(HasSubstr(some_title)));
-    EXPECT_THAT(html, Not(HasSubstr(some_content)));
   }
 
-  {  // Test missing title and non-empty content for article.
-    scoped_ptr<DistilledArticleProto> article_proto(
-        new DistilledArticleProto());
-    (*(article_proto->add_pages())).set_html(some_content);
-    std::string html = viewer::GetUnsafeArticleHtml(article_proto.get(),
-        DistilledPagePrefs::LIGHT, DistilledPagePrefs::SERIF);
-    EXPECT_THAT(html, HasSubstr(no_title));
-    EXPECT_THAT(html, HasSubstr(no_content));
-    EXPECT_THAT(html, Not(HasSubstr(some_title)));
-    EXPECT_THAT(html, Not(HasSubstr(some_content)));
-  }
-
-  {  // Test non-empty title and missing content for article.
-    scoped_ptr<DistilledArticleProto> article_proto(
-        new DistilledArticleProto());
-    article_proto->set_title(some_title);
-    std::string html = viewer::GetUnsafeArticleHtml(article_proto.get(),
-        DistilledPagePrefs::LIGHT, DistilledPagePrefs::SERIF);
-    EXPECT_THAT(html, HasSubstr(no_title));
-    EXPECT_THAT(html, HasSubstr(no_content));
-    EXPECT_THAT(html, Not(HasSubstr(some_title)));
-    EXPECT_THAT(html, Not(HasSubstr(some_content)));
-  }
-
-  {  // Test non-empty title and content for page.
-    scoped_ptr<DistilledPageProto> page_proto(new DistilledPageProto());
-    page_proto->set_title(some_title);
-    page_proto->set_html(some_content);
-    std::string html = viewer::GetUnsafePartialArticleHtml(page_proto.get(),
-        DistilledPagePrefs::LIGHT, DistilledPagePrefs::SERIF);
-    EXPECT_THAT(html, HasSubstr(some_title));
-    EXPECT_THAT(html, HasSubstr(some_content));
-    EXPECT_THAT(html, Not(HasSubstr(no_title)));
-    EXPECT_THAT(html, Not(HasSubstr(no_content)));
-  }
-
-  {  // Test empty title and content for page.
+  {  // Test empty title for page.
     scoped_ptr<DistilledPageProto> page_proto(new DistilledPageProto());
     page_proto->set_title("");
     page_proto->set_html("");
-    std::string html = viewer::GetUnsafePartialArticleHtml(page_proto.get(),
-        DistilledPagePrefs::LIGHT, DistilledPagePrefs::SERIF);
+    std::string html = viewer::GetUnsafeArticleTemplateHtml(
+        page_proto.get(), DistilledPagePrefs::LIGHT, DistilledPagePrefs::SERIF);
     EXPECT_THAT(html, HasSubstr(no_title));
-    EXPECT_THAT(html, HasSubstr(no_content));
     EXPECT_THAT(html, Not(HasSubstr(some_title)));
-    EXPECT_THAT(html, Not(HasSubstr(some_content)));
   }
 
-  {  // Test missing title and non-empty content for page.
+  {  // Test missing title for page.
     scoped_ptr<DistilledPageProto> page_proto(new DistilledPageProto());
-    page_proto->set_html(some_content);
-    std::string html = viewer::GetUnsafePartialArticleHtml(page_proto.get(),
-        DistilledPagePrefs::LIGHT, DistilledPagePrefs::SERIF);
+    std::string html = viewer::GetUnsafeArticleTemplateHtml(
+        page_proto.get(), DistilledPagePrefs::LIGHT, DistilledPagePrefs::SERIF);
     EXPECT_THAT(html, HasSubstr(no_title));
-    EXPECT_THAT(html, HasSubstr(some_content));
     EXPECT_THAT(html, Not(HasSubstr(some_title)));
-    EXPECT_THAT(html, Not(HasSubstr(no_content)));
-  }
-
-  {  // Test non-empty title and missing content for page.
-    scoped_ptr<DistilledPageProto> page_proto(new DistilledPageProto());
-    page_proto->set_title(some_title);
-    std::string html = viewer::GetUnsafePartialArticleHtml(page_proto.get(),
-        DistilledPagePrefs::LIGHT, DistilledPagePrefs::SERIF);
-    EXPECT_THAT(html, HasSubstr(some_title));
-    EXPECT_THAT(html, HasSubstr(no_content));
-    EXPECT_THAT(html, Not(HasSubstr(no_title)));
-    EXPECT_THAT(html, Not(HasSubstr(some_content)));
   }
 }
 

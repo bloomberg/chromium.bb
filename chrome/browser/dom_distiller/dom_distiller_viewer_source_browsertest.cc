@@ -32,8 +32,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace dom_distiller {
 
@@ -198,6 +200,29 @@ void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage(
       contents_after_nav->GetRenderViewHost();
   EXPECT_EQ(0, render_view_host->GetEnabledBindings());
   EXPECT_EQ(expected_mime_type, contents_after_nav->GetContentsMimeType());
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
+                       TestBadUrlErrorPage) {
+  GURL url("chrome-distiller://bad");
+
+  // Navigate to a distiller URL.
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Wait for the page load to complete as the first page completes the root
+  // document.
+  content::WaitForLoadStop(contents);
+
+  ASSERT_TRUE(contents != NULL);
+  EXPECT_EQ(url, contents->GetLastCommittedURL());
+
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      contents, kGetContent , &result));
+  EXPECT_THAT(result, HasSubstr(l10n_util::GetStringUTF8(
+      IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT)));
 }
 
 // The DomDistillerViewerSource renders untrusted content, so ensure no bindings

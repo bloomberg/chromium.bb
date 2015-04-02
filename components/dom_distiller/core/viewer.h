@@ -32,16 +32,21 @@ const std::string GetUnsafeArticleHtml(
     const DistilledPagePrefs::Theme theme,
     const DistilledPagePrefs::FontFamily font_family);
 
-// Returns the base Viewer HTML page based on the given |page_proto|. This is
+// Returns an HTML template page based on the given |page_proto| which provides
+// basic information about the page (i.e. title, text direction, etc.). This is
 // supposed to be displayed to the end user. The returned HTML should be
 // considered unsafe, so callers must ensure rendering it does not compromise
-// Chrome. The difference from |GetUnsafeArticleHtml| is that this can be used
-// for displaying an in-flight distillation instead of waiting for the full
-// article.
-const std::string GetUnsafePartialArticleHtml(
+// Chrome.
+const std::string GetUnsafeArticleTemplateHtml(
     const DistilledPageProto* page_proto,
     const DistilledPagePrefs::Theme theme,
     const DistilledPagePrefs::FontFamily font_family);
+
+// Returns the JavaScript to place a full article's HTML on the page. The
+// returned HTML should be considered unsafe, so callers must ensure
+// rendering it does not compromise Chrome.
+const std::string GetUnsafeArticleContentJs(
+    const DistilledArticleProto* article_proto);
 
 // Returns a JavaScript blob for updating a partial view request with additional
 // distilled content. Meant for use when viewing a slow or long multi-page
@@ -50,6 +55,10 @@ const std::string GetUnsafePartialArticleHtml(
 const std::string GetUnsafeIncrementalDistilledPageJs(
     const DistilledPageProto* page_proto,
     const bool is_last_page);
+
+// Returns a JavaScript blob for updating a view request with error page
+// contents.
+const std::string GetErrorPageJs();
 
 // Returns a JavaScript blob for controlling the "in-progress" indicator when
 // viewing a partially-distilled page. |is_last_page| indicates whether this is
