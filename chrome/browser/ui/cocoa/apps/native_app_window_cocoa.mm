@@ -22,7 +22,6 @@
 #include "extensions/common/extension.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#import "ui/gfx/mac/nswindow_frame_controls.h"
 #include "ui/gfx/skia_util.h"
 
 // NOTE: State Before Update.
@@ -50,6 +49,15 @@ using extensions::AppWindow;
 @end
 
 namespace {
+
+void SetFullScreenCollectionBehavior(NSWindow* window, bool allow_fullscreen) {
+  NSWindowCollectionBehavior behavior = [window collectionBehavior];
+  if (allow_fullscreen)
+    behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
+  else
+    behavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
+  [window setCollectionBehavior:behavior];
+}
 
 void SetWorkspacesCollectionBehavior(NSWindow* window, bool always_visible) {
   NSWindowCollectionBehavior behavior = [window collectionBehavior];
@@ -464,7 +472,7 @@ void NativeAppWindowCocoa::SetFullscreen(int fullscreen_types) {
     // is disabled), temporarily enable it. It will be disabled again on leaving
     // fullscreen.
     if (fullscreen && !shows_fullscreen_controls_)
-      gfx::SetNSWindowCanFullscreen(window(), true);
+      SetFullScreenCollectionBehavior(window(), true);
     [window() toggleFullScreen:nil];
     return;
   }
@@ -863,7 +871,7 @@ void NativeAppWindowCocoa::WindowDidEnterFullscreen() {
 void NativeAppWindowCocoa::WindowDidExitFullscreen() {
   is_fullscreen_ = false;
   if (!shows_fullscreen_controls_)
-    gfx::SetNSWindowCanFullscreen(window(), false);
+    SetFullScreenCollectionBehavior(window(), false);
 
   app_window_->Restore();
   app_window_->OnNativeWindowChanged();
@@ -914,15 +922,39 @@ void NativeAppWindowCocoa::SetContentSizeConstraints(
   size_constraints_.set_minimum_size(min_size);
   size_constraints_.set_maximum_size(max_size);
 
+  gfx::Size minimum_size = size_constraints_.GetMinimumSize();
+  [window() setContentMinSize:NSMakeSize(minimum_size.width(),
+                                         minimum_size.height())];
+
+  gfx::Size maximum_size = size_constraints_.GetMaximumSize();
+  const int kUnboundedSize = extensions::SizeConstraints::kUnboundedSize;
+  CGFloat max_width = maximum_size.width() == kUnboundedSize ?
+      CGFLOAT_MAX : maximum_size.width();
+  CGFloat max_height = maximum_size.height() == kUnboundedSize ?
+      CGFLOAT_MAX : maximum_size.height();
+  [window() setContentMaxSize:NSMakeSize(max_width, max_height)];
+
   // Update the window controls.
   shows_resize_controls_ =
       is_resizable_ && !size_constraints_.HasFixedSize();
   shows_fullscreen_controls_ =
       is_resizable_ && !size_constraints_.HasMaximumSize() && has_frame_;
 
-  gfx::ApplyNSWindowSizeConstraints(window(), min_size, max_size,
-                                    shows_resize_controls_,
-                                    shows_fullscreen_controls_);
+  if (!is_fullscreen_) {
+    [window() setStyleMask:GetWindowStyleMask()];
+
+    // Set the window to participate in Lion Fullscreen mode. Setting this flag
+    // has no effect on Snow Leopard or earlier. UI controls for fullscreen are
+    // only shown for apps that have unbounded size.
+    if (base::mac::IsOSLionOrLater())
+      SetFullScreenCollectionBehavior(window(), shows_fullscreen_controls_);
+  }
+
+  if (has_frame_) {
+    [window() setShowsResizeIndicator:shows_resize_controls_];
+    [[window() standardWindowButton:NSWindowZoomButton]
+        setEnabled:shows_fullscreen_controls_];
+  }
 }
 
 void NativeAppWindowCocoa::SetAlwaysOnTop(bool always_on_top) {

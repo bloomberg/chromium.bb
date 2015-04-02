@@ -91,8 +91,6 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
 
   delegate_->OnNativeWidgetCreated(true);
 
-  OnSizeConstraintsChanged();
-
   bridge_->SetFocusManager(GetWidget()->GetFocusManager());
 
   DCHECK(GetWidget()->GetRootView());
@@ -528,7 +526,7 @@ bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
 }
 
 void NativeWidgetMac::OnSizeConstraintsChanged() {
-  bridge_->OnSizeConstraintsChanged();
+  NOTIMPLEMENTED();
 }
 
 void NativeWidgetMac::RepostNativeEvent(gfx::NativeEvent native_event) {

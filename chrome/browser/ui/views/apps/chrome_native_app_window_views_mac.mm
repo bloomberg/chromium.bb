@@ -6,7 +6,6 @@
 
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/ui/views/apps/app_window_native_widget_mac.h"
-#include "chrome/browser/ui/views/apps/native_app_window_frame_view_mac.h"
 
 ChromeNativeAppWindowViewsMac::ChromeNativeAppWindowViewsMac()
     : is_hidden_with_app_(false) {
@@ -23,11 +22,6 @@ void ChromeNativeAppWindowViewsMac::OnBeforeWidgetInit(
   init_params->native_widget = new AppWindowNativeWidgetMac(widget);
   ChromeNativeAppWindowViews::OnBeforeWidgetInit(create_params, init_params,
                                                  widget);
-}
-
-views::NonClientFrameView*
-ChromeNativeAppWindowViewsMac::CreateStandardDesktopAppFrame() {
-  return new NativeAppWindowFrameViewMac(widget());
 }
 
 void ChromeNativeAppWindowViewsMac::Show() {
