@@ -86,7 +86,7 @@ void HTMLImageLoader::notifyFinished(Resource*)
     RefPtrWillBeRawPtr<Element> element = this->element();
     ImageLoader::notifyFinished(cachedImage);
 
-    bool loadError = cachedImage->errorOccurred() || cachedImage->response().httpStatusCode() >= 400;
+    bool loadError = cachedImage->errorOccurred();
     if (isHTMLImageElement(*element)) {
         if (loadError)
             ensureFallbackContent();
@@ -101,7 +101,7 @@ void HTMLImageLoader::notifyFinished(Resource*)
             toHTMLInputElement(element)->ensurePrimaryContent();
     }
 
-    if (loadError && isHTMLObjectElement(*element))
+    if ((loadError || cachedImage->response().httpStatusCode() >= 400) && isHTMLObjectElement(*element))
         toHTMLObjectElement(element)->renderFallbackContent();
 }
 
