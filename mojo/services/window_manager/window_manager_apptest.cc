@@ -184,9 +184,9 @@ struct FocusedAndActiveViewsCallback {
 
 TEST_F(WindowManagerApplicationTest, GetFocusedAndActiveViewsFailsWithoutFC) {
   EmbedApplicationWithURL(application_impl()->url());
-  uint32 capture_view_id = -1;
-  uint32 focused_view_id = -1;
-  uint32 active_view_id = -1;
+  uint32 capture_view_id = static_cast<uint32>(-1);
+  uint32 focused_view_id = static_cast<uint32>(-1);
+  uint32 active_view_id = static_cast<uint32>(-1);
   base::RunLoop run_loop;
 
   WindowManagerObserverPtr observer;

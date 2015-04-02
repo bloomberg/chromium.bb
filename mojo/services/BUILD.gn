@@ -31,7 +31,10 @@ group("services") {
 
     # TODO(GYP): Make this work.
     if (is_mac) {
-      deps -= [ "//mojo/services/html_viewer" ]
+      deps -= [
+        "//mojo/services/html_viewer",
+        "//mojo/services/view_manager",
+      ]
     }
   }
 }
