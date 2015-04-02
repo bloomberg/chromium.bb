@@ -180,6 +180,16 @@ void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, siz
     m_accessor->sendMIDIData(portIndex, data, length, timeStamp);
 }
 
+bool MIDIAccess::hasPendingActivity() const
+{
+    // Force to call onstatechange() just to check if it returns nullptr.
+    // TODO(toyoshim): Stop using const_cast.
+    MIDIAccess* nonConstThis = const_cast<MIDIAccess*>(this);
+
+    // MIDIAccess servives if an onstatechange handler is set.
+    return nonConstThis->onstatechange();
+}
+
 void MIDIAccess::stop()
 {
     m_accessor.clear();

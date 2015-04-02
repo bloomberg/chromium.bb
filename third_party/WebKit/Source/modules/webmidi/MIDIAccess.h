@@ -73,6 +73,7 @@ public:
     ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
 
     // ActiveDOMObject
+    bool hasPendingActivity() const override;
     void stop() override;
 
     // MIDIAccessorClient
