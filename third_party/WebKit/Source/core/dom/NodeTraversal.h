@@ -86,12 +86,13 @@ public:
 
     // These functions are provided for matching with |ComposedTreeTraversal|.
     static bool hasChildren(const Node& parent) { return firstChild(parent); }
+    static bool isDescendantOf(const Node& node, const Node& other) { return node.isDescendantOf(&other); }
     static Node* firstChild(const Node& parent) { return parent.firstChild(); }
     static Node* lastChild(const Node& parent) { return parent.lastChild(); }
     static Node* nextSibling(const Node& node) { return node.nextSibling(); }
     static Node* previousSibling(const Node& node) { return node.previousSibling(); }
-
     static ContainerNode* parent(const Node& node) { return node.parentNode(); }
+    static unsigned index(const Node& node) { return node.nodeIndex(); }
 
     static TraversalRange<TraversalChildrenIterator<NodeTraversal>> childrenOf(const Node&);
     static TraversalRange<TraversalDescendantIterator<NodeTraversal>> descendantsOf(const Node&);
