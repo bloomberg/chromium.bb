@@ -410,6 +410,23 @@ void TextIterator::appendTextToStringBuilder(StringBuilder& builder, unsigned po
     }
 }
 
+static bool hasVisibleTextNode(LayoutText* renderer)
+{
+    if (renderer->style()->visibility() == VISIBLE)
+        return true;
+
+    if (!renderer->isTextFragment())
+        return false;
+
+    LayoutTextFragment* fragment = toLayoutTextFragment(renderer);
+    if (!fragment->isRemainingTextRenderer())
+        return false;
+
+    ASSERT(fragment->firstLetterPseudoElement());
+    LayoutObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->layoutObject();
+    return pseudoElementRenderer && pseudoElementRenderer->style()->visibility() == VISIBLE;
+}
+
 bool TextIterator::handleTextNode()
 {
     if (m_fullyClippedStack.top() && !m_ignoresStyleVisibility)
@@ -673,23 +690,6 @@ bool TextIterator::handleReplacedElement()
     m_lastCharacter = 0;
 
     return true;
-}
-
-bool TextIterator::hasVisibleTextNode(LayoutText* renderer)
-{
-    if (renderer->style()->visibility() == VISIBLE)
-        return true;
-
-    if (!renderer->isTextFragment())
-        return false;
-
-    LayoutTextFragment* fragment = toLayoutTextFragment(renderer);
-    if (!fragment->isRemainingTextRenderer())
-        return false;
-
-    ASSERT(fragment->firstLetterPseudoElement());
-    LayoutObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->layoutObject();
-    return pseudoElementRenderer && pseudoElementRenderer->style()->visibility() == VISIBLE;
 }
 
 bool TextIterator::shouldEmitTabBeforeNode(Node* node)

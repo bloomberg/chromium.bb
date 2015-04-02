@@ -132,7 +132,6 @@ private:
     bool handleNonTextNode();
     void handleTextBox();
     void handleTextNodeFirstLetter(LayoutTextFragment*);
-    bool hasVisibleTextNode(LayoutText*);
     void emitCharacter(UChar, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset);
     void emitText(Node* textNode, LayoutText* renderer, int textStartOffset, int textEndOffset);
 
