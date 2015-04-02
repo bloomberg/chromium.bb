@@ -495,11 +495,30 @@ def has_custom_setter(attribute):
 
 # [ExposeJSAccessors]
 def is_expose_js_accessors(interface, attribute):
-    extended_attributes = attribute.extended_attributes
+    # Default behavior
+    is_accessor = True
+
+    if ('ExposeJSAccessors' in interface.extended_attributes and
+            'DoNotExposeJSAccessors' in interface.extended_attributes):
+        raise Exception('Both of ExposeJSAccessors and DoNotExposeJSAccessors are specified at a time in an interface: ' + interface.name)
+    if 'ExposeJSAccessors' in interface.extended_attributes:
+        is_accessor = True
+    if 'DoNotExposeJSAccessors' in interface.extended_attributes:
+        is_accessor = False
+
+    # Note that ExposeJSAccessors and DoNotExposeJSAccessors are more powerful
+    # than 'static', [Unforgeable] and [OverrideBuiltins].
+    if ('ExposeJSAccessors' in attribute.extended_attributes and
+            'DoNotExposeJSAccessors' in attribute.extended_attributes):
+        raise Exception('Both of ExposeJSAccessors and DoNotExposeJSAccessors are specified at a time on an attribute: ' + attribute.name + ' in an interface: ' + interface.name)
+    if 'ExposeJSAccessors' in attribute.extended_attributes:
+        return True
+    if 'DoNotExposeJSAccessors' in attribute.extended_attributes:
+        return False
 
     # These attributes must not be accessors on prototype chains.
     if (attribute.is_static or
-            'Unforgeable' in extended_attributes or
+            'Unforgeable' in attribute.extended_attributes or
             'OverrideBuiltins' in interface.extended_attributes):
         return False
 
@@ -517,7 +536,7 @@ def is_expose_js_accessors(interface, attribute):
             v8_utilities.named_property_deleter(interface)):
         return False
 
-    return True
+    return is_accessor
 
 
 ################################################################################

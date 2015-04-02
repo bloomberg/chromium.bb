@@ -52,6 +52,7 @@ DeprecateAs=*
 DoNotCheckConstants
 DoNotCheckSecurity=|Setter
 DoNotCheckSignature
+DoNotExposeJSAccessors
 EnforceRange
 EventConstructor
 ExposeJSAccessors
