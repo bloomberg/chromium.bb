@@ -189,9 +189,9 @@ class HttpStreamFactoryImpl::Job {
 
   bool IsHttpsProxyAndHttpUrl() const;
 
-  // Sets several fields of ssl_config for the given origin_server based on the
-  // proxy info and other factors.
-  void InitSSLConfig(const HostPortPair& origin_server,
+  // Sets several fields of |ssl_config| for |server| based on the proxy info
+  // and other factors.
+  void InitSSLConfig(const HostPortPair& server,
                      SSLConfig* ssl_config,
                      bool is_proxy) const;
 
@@ -264,8 +264,9 @@ class HttpStreamFactoryImpl::Job {
   ProxyService::PacRequest* pac_request_;
   SSLInfo ssl_info_;
 
-  // The origin server we're trying to reach.
-  HostPortPair origin_;
+  // The server we are trying to reach, could be that of the origin or of the
+  // alternative service.
+  HostPortPair server_;
 
   // The origin url we're trying to reach. This url may be different from the
   // original request when host mapping rules are set-up.

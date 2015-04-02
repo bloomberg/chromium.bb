@@ -274,11 +274,8 @@ SpdySessionKey HttpStreamFactoryImpl::Job::GetSpdySessionKey() const {
     return SpdySessionKey(proxy_info_.proxy_server().host_port_pair(),
                           ProxyServer::Direct(),
                           privacy_mode);
-  } else {
-    return SpdySessionKey(origin_,
-                          proxy_info_.proxy_server(),
-                          privacy_mode);
   }
+  return SpdySessionKey(server_, proxy_info_.proxy_server(), privacy_mode);
 }
 
 bool HttpStreamFactoryImpl::Job::CanUseExistingSpdySession() const {
@@ -618,9 +615,13 @@ int HttpStreamFactoryImpl::Job::StartInternal() {
 }
 
 int HttpStreamFactoryImpl::Job::DoStart() {
-  origin_ = HostPortPair::FromURL(request_info_.url);
-  origin_url_ = stream_factory_->ApplyHostMappingRules(
-      request_info_.url, &origin_);
+  if (alternative_service_.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
+    server_ = alternative_service_.host_port_pair();
+  } else {
+    server_ = HostPortPair::FromURL(request_info_.url);
+  }
+  origin_url_ =
+      stream_factory_->ApplyHostMappingRules(request_info_.url, &server_);
 
   net_log_.BeginEvent(NetLog::TYPE_HTTP_STREAM_JOB,
                       base::Bind(&NetLogHttpStreamJobCallback,
@@ -628,14 +629,14 @@ int HttpStreamFactoryImpl::Job::DoStart() {
                                  priority_));
 
   // Don't connect to restricted ports.
-  bool is_port_allowed = IsPortAllowedByDefault(origin_.port());
+  bool is_port_allowed = IsPortAllowedByDefault(server_.port());
   if (request_info_.url.SchemeIs("ftp")) {
     // Never share connection with other jobs for FTP requests.
     DCHECK(!waiting_job_);
 
-    is_port_allowed = IsPortAllowedByFtp(origin_.port());
+    is_port_allowed = IsPortAllowedByFtp(server_.port());
   }
-  if (!is_port_allowed && !IsPortAllowedByOverride(origin_.port())) {
+  if (!is_port_allowed && !IsPortAllowedByOverride(server_.port())) {
     if (waiting_job_) {
       waiting_job_->Resume(this);
       waiting_job_ = NULL;
@@ -708,19 +709,19 @@ int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
 bool HttpStreamFactoryImpl::Job::ShouldForceSpdySSL() const {
   bool rv = session_->params().force_spdy_always &&
       session_->params().force_spdy_over_ssl;
-  return rv && !session_->HasSpdyExclusion(origin_);
+  return rv && !session_->HasSpdyExclusion(server_);
 }
 
 bool HttpStreamFactoryImpl::Job::ShouldForceSpdyWithoutSSL() const {
   bool rv = session_->params().force_spdy_always &&
       !session_->params().force_spdy_over_ssl;
-  return rv && !session_->HasSpdyExclusion(origin_);
+  return rv && !session_->HasSpdyExclusion(server_);
 }
 
 bool HttpStreamFactoryImpl::Job::ShouldForceQuic() const {
   return session_->params().enable_quic &&
-    session_->params().origin_to_force_quic_on.Equals(origin_) &&
-    proxy_info_.is_direct();
+         session_->params().origin_to_force_quic_on.Equals(server_) &&
+         proxy_info_.is_direct();
 }
 
 int HttpStreamFactoryImpl::Job::DoWaitForJob() {
@@ -766,8 +767,9 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
       // TODO(rch): support QUIC proxies for HTTPS urls.
       return ERR_NOT_IMPLEMENTED;
     }
-    HostPortPair destination = proxy_info_.is_quic() ?
-        proxy_info_.proxy_server().host_port_pair() : origin_;
+    HostPortPair destination = proxy_info_.is_quic()
+                                   ? proxy_info_.proxy_server().host_port_pair()
+                                   : server_;
     next_state_ = STATE_INIT_CONNECTION_COMPLETE;
     bool secure_quic = using_ssl_ || proxy_info_.is_quic();
     int rv = quic_request_.Request(
@@ -829,14 +831,13 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     proxy_ssl_config_.rev_checking_enabled = false;
   }
   if (using_ssl_) {
-    InitSSLConfig(origin_, &server_ssl_config_,
-                  false /* not a proxy server */);
+    InitSSLConfig(server_, &server_ssl_config_, false /* not a proxy server */);
   }
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session_->http_server_properties();
   if (http_server_properties) {
-    http_server_properties->MaybeForceHTTP11(origin_, &server_ssl_config_);
+    http_server_properties->MaybeForceHTTP11(server_, &server_ssl_config_);
     if (proxy_info_.is_http() || proxy_info_.is_https()) {
       http_server_properties->MaybeForceHTTP11(
           proxy_info_.proxy_server().host_port_pair(), &proxy_ssl_config_);
@@ -1122,7 +1123,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     return set_result;
   }
 
-  SpdySessionKey spdy_session_key(origin_, proxy_server, privacy_mode);
+  SpdySessionKey spdy_session_key(server_, proxy_server, privacy_mode);
   if (IsHttpsProxyAndHttpUrl()) {
     // If we don't have a direct SPDY session, and we're using an HTTPS
     // proxy, then we might have a SPDY session to the proxy.
@@ -1236,12 +1237,9 @@ bool HttpStreamFactoryImpl::Job::IsHttpsProxyAndHttpUrl() const {
   return request_info_.url.SchemeIs("http");
 }
 
-// Sets several fields of ssl_config for the given origin_server based on the
-// proxy info and other factors.
-void HttpStreamFactoryImpl::Job::InitSSLConfig(
-    const HostPortPair& origin_server,
-    SSLConfig* ssl_config,
-    bool is_proxy) const {
+void HttpStreamFactoryImpl::Job::InitSSLConfig(const HostPortPair& server,
+                                               SSLConfig* ssl_config,
+                                               bool is_proxy) const {
   if (proxy_info_.is_https() && ssl_config->send_client_cert) {
     // When connecting through an HTTPS proxy, disable TLS False Start so
     // that client authentication errors can be distinguished between those
@@ -1283,7 +1281,7 @@ void HttpStreamFactoryImpl::Job::InitSSLConfig(
   // we know implements TLS up to 1.2. Ideally there would be no fallback here
   // but high numbers of SSLv3 would suggest that SSLv3 fallback is being
   // caused by network middleware rather than buggy HTTPS servers.
-  const std::string& host = origin_server.host();
+  const std::string& host = server.host();
   if (!is_proxy &&
       host.size() >= 10 &&
       host.compare(host.size() - 10, 10, "google.com") == 0 &&
