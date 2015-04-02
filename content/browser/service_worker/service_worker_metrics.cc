@@ -59,8 +59,8 @@ void ServiceWorkerMetrics::CountWriteDatabaseResult(
 
 void ServiceWorkerMetrics::RecordDestroyDatabaseResult(
     ServiceWorkerDatabase::Status status) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.DestroyDatabase", status,
-                            ServiceWorkerDatabase::STATUS_ERROR_MAX);
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.Database.DestroyDatabaseResult",
+                            status, ServiceWorkerDatabase::STATUS_ERROR_MAX);
 }
 
 void ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
