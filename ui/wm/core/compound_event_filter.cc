@@ -11,7 +11,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_tracker.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/wm/public/activation_client.h"
@@ -203,8 +202,6 @@ void CompoundEventFilter::OnKeyEvent(ui::KeyEvent* event) {
 
 void CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   aura::Window* window = static_cast<aura::Window*>(event->target());
-  aura::WindowTracker window_tracker;
-  window_tracker.Add(window);
 
   // We must always update the cursor, otherwise the cursor can get stuck if an
   // event filter registered with us consumes the event.
