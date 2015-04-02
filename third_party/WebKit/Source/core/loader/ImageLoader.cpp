@@ -267,8 +267,10 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         // request) for ImageDocument loads. In this case, the image contents have already
         // been requested as a main resource and ImageDocumentParser will take care of
         // funneling the main resource bytes into the ImageResource.
-        if (m_loadingImageDocument)
+        if (m_loadingImageDocument) {
             request.setDefer(FetchRequest::DeferredByClient);
+            request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
+        }
 
         newImage = document.fetcher()->fetchImage(request);
         if (m_loadingImageDocument && newImage)
