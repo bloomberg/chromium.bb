@@ -2228,6 +2228,7 @@ _paladin_important_boards = frozenset([
   'beaglebone',
   'butterfly',
   'daisy',
+  'daisy_skate',
   'daisy_spring',
   'falco',
   'gizmo',
@@ -2282,7 +2283,7 @@ _paladin_default_vmtest_boards = frozenset([
 ])
 
 _paladin_hwtest_boards = frozenset([
-  'daisy',
+  'daisy_skate',
   'link',
   'lumpy',
   'peach_pit',
@@ -2417,7 +2418,7 @@ def ShardHWTestsBetweenBuilders(*args):
 # bvt-cq takes longer, so it usually makes sense to give it the faster board.
 ShardHWTestsBetweenBuilders('x86-zgb-paladin', 'x86-alex-paladin')
 ShardHWTestsBetweenBuilders('wolf-paladin', 'peppy-paladin')
-ShardHWTestsBetweenBuilders('daisy-paladin', 'peach_pit-paladin')
+ShardHWTestsBetweenBuilders('daisy_skate-paladin', 'peach_pit-paladin')
 ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
 
 # Add a pre-cq config for every board.
@@ -3347,7 +3348,6 @@ _waterfall_config_map = {
     constants.WATERFALL_INTERNAL: frozenset([
       # Experimental Paladins
       'daisy_freon-paladin',
-      'daisy_skate-paladin',
       'nyan_freon-paladin',
       'tricky-paladin',
       'whirlwind-paladin',
