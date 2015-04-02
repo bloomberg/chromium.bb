@@ -303,8 +303,12 @@ pnacl-trybot-x8632() {
   run-tests SetupPnaclTranslator1ThreadX8632Opt "${TRYBOT_TESTS}" 1 1
   build-tests SetupPnaclTranslatorFastX8632Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslatorFastX8632Opt "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorFastX8632OptSz "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorFastX8632OptSz "${TRYBOT_TESTS}" 1 1
   build-tests SetupPnaclTranslatorFast1ThreadX8632Opt "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslatorFast1ThreadX8632Opt "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorFast1ThreadX8632OptSz "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorFast1ThreadX8632OptSz "${TRYBOT_TESTS}" 1 1
   build-validator x86-32
   download-validator-test-nexes x86-32
   measure-validator-speed x86-32
@@ -398,8 +402,10 @@ pnacl-x8632() {
                 SetupPnaclX8632OptSz \
                 SetupPnaclTranslatorX8632Opt \
                 SetupPnaclTranslator1ThreadX8632Opt \
+                SetupPnaclTranslatorFastX8632OptSz \
                 SetupPnaclTranslatorFastX8632Opt \
-                SetupPnaclTranslatorFast1ThreadX8632Opt"
+                SetupPnaclTranslatorFast1ThreadX8632Opt \
+                SetupPnaclTranslatorFast1ThreadX8632OptSz"
   build-tests "${setups}" all 1 3
   run-tests "${setups}" all 1 3
   build-validator x86-32

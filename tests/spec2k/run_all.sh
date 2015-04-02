@@ -390,19 +390,19 @@ SetupPnaclTranslatorX8632Opt() {
 }
 
 #@
-#@ SetupPnaclTranslatorX8632OptSz
-#@    use pnacl x8632 Subzero translator (with lto)
-SetupPnaclTranslatorX8632OptSz() {
-  SetupPnaclX8632Common
-  SUFFIX=pnacl_translator.opt.sz.x8632
-}
-
-#@
 #@ SetupPnaclTranslatorFastX8632Opt
 #@    use pnacl x8632 translator fast mode (with lto)
 SetupPnaclTranslatorFastX8632Opt() {
   SetupPnaclX8632Common
   SUFFIX=pnacl_translator_fast.opt.x8632
+}
+
+#@
+#@ SetupPnaclTranslatorFastX8632OptSz
+#@    use pnacl x8632 Subzero translator (with lto)
+SetupPnaclTranslatorFastX8632OptSz() {
+  SetupPnaclX8632Common
+  SUFFIX=pnacl_translator_fast.opt.sz.x8632
 }
 
 #@
@@ -419,6 +419,14 @@ SetupPnaclTranslator1ThreadX8632Opt() {
 SetupPnaclTranslatorFast1ThreadX8632Opt() {
   SetupPnaclX8632Common
   SUFFIX=pnacl_translator_fast_1thread.opt.x8632
+}
+
+#@
+#@ SetupPnaclTranslatorFast1ThreadX8632OptSz
+#@    use pnacl x8632 Subzero translator (with lto). Compile w/ 1 thread.
+SetupPnaclTranslatorFast1ThreadX8632OptSz() {
+  SetupPnaclX8632Common
+  SUFFIX=pnacl_translator_fast_1thread.opt.sz.x8632
 }
 
 #@

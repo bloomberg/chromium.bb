@@ -380,12 +380,12 @@ $(IT).pnacl_translator_fast.opt.hw.arm:
 
 $(IT).pnacl_translator_1thread.opt.hw.arm:
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(IT).opt.stripped.pexe \
-	 -o $@ -arch arm -split-module=1
+	 -o $@ -arch arm -threads=seq
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
 $(IT).pnacl_translator_fast_1thread.opt.hw.arm:
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(IT).opt.stripped.pexe \
-	 $(PNACL_TRANSLATOR_FLAGS_FAST) -o $@ -arch arm -split-module=1
+	 $(PNACL_TRANSLATOR_FLAGS_FAST) -o $@ -arch arm -threads=seq
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
 
@@ -419,24 +419,29 @@ $(IT).pnacl_translator.opt.x8632: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-32	
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
-$(IT).pnacl_translator.opt.sz.x8632: $(IT).opt.stripped.pexe
-	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(PNACL_SZ_FLAGS) $^ \
-	-o $@ -arch x86-32
-	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
-
 $(IT).pnacl_translator_fast.opt.x8632: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(PNACL_TRANSLATOR_FLAGS_FAST) \
 	  $^ -o $@ -arch x86-32
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
+$(IT).pnacl_translator_fast.opt.sz.x8632: $(IT).opt.stripped.pexe
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(PNACL_TRANSLATOR_FLAGS_FAST) \
+	  $(PNACL_SZ_FLAGS) $^ -o $@ -arch x86-32
+	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
 $(IT).pnacl_translator_1thread.opt.x8632: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-32 \
-	  -split-module=1
+	  -threads=seq
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
 $(IT).pnacl_translator_fast_1thread.opt.x8632: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(PNACL_TRANSLATOR_FLAGS_FAST) \
-	  $^ -o $@ -arch x86-32 -split-module=1
+	  $^ -o $@ -arch x86-32 -threads=seq
+	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
+$(IT).pnacl_translator_fast_1thread.opt.sz.x8632: $(IT).opt.stripped.pexe
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(PNACL_SZ_FLAGS) \
+	  $^ -o $@ -arch x86-32 -threads=seq
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
 
@@ -466,10 +471,10 @@ $(IT).pnacl_translator_fast.opt.x8664: $(IT).opt.stripped.pexe
 
 $(IT).pnacl_translator_1thread.opt.x8664: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $^ -o $@ -arch x86-64 \
-	  -split-module=1
+	  -threads=seq
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
 $(IT).pnacl_translator_fast_1thread.opt.x8664: $(IT).opt.stripped.pexe
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(PNACL_TRANSLATOR_FLAGS_FAST) \
-	  $^ -o $@ -arch x86-64 -split-module=1
+	  $^ -o $@ -arch x86-64 -threads=seq
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
