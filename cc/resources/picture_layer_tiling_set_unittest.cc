@@ -337,8 +337,8 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
 
   // Update to a new source frame with a new tile size.
   pending_client.SetTileSize(tile_size2);
-  pending_set->UpdateTilingsToCurrentRasterSource(pile.get(), nullptr, Region(),
-                                                  1.f, 1.f);
+  pending_set->UpdateTilingsToCurrentRasterSourceForCommit(pile.get(), Region(),
+                                                           1.f, 1.f);
   // The tiling should get the correct tile size.
   EXPECT_EQ(tile_size2, pending_set->tiling_at(0)->tile_size());
 
@@ -355,8 +355,8 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
 
   // Clone from the pending to the active tree.
   active_client.SetTileSize(tile_size2);
-  active_set->UpdateTilingsToCurrentRasterSource(pile.get(), pending_set.get(),
-                                                 Region(), 1.f, 1.f);
+  active_set->UpdateTilingsToCurrentRasterSourceForActivation(
+      pile.get(), pending_set.get(), Region(), 1.f, 1.f);
   // The active tiling should get the right tile size.
   EXPECT_EQ(tile_size2, active_set->tiling_at(0)->tile_size());
 
@@ -369,8 +369,8 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
 
   // A new source frame with a new tile size.
   pending_client.SetTileSize(tile_size3);
-  pending_set->UpdateTilingsToCurrentRasterSource(pile.get(), nullptr, Region(),
-                                                  1.f, 1.f);
+  pending_set->UpdateTilingsToCurrentRasterSourceForCommit(pile.get(), Region(),
+                                                           1.f, 1.f);
   // The tiling gets the new size correctly.
   EXPECT_EQ(tile_size3, pending_set->tiling_at(0)->tile_size());
 
@@ -387,8 +387,8 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
 
   // Now we activate with a different tile size for the active tiling.
   active_client.SetTileSize(tile_size3);
-  active_set->UpdateTilingsToCurrentRasterSource(pile.get(), pending_set.get(),
-                                                 Region(), 1.f, 1.f);
+  active_set->UpdateTilingsToCurrentRasterSourceForActivation(
+      pile.get(), pending_set.get(), Region(), 1.f, 1.f);
   // The active tiling changes its tile size.
   EXPECT_EQ(tile_size3, active_set->tiling_at(0)->tile_size());
 
@@ -423,13 +423,14 @@ TEST(PictureLayerTilingSetTest, MaxContentScale) {
   // Update to a new source frame with a max content scale that is larger than
   // everything.
   float max_content_scale = 3.f;
-  pending_set->UpdateTilingsToCurrentRasterSource(pile.get(), nullptr, Region(),
-                                                  1.f, max_content_scale);
+  pending_set->UpdateTilingsToCurrentRasterSourceForCommit(
+      pile.get(), Region(), 1.f, max_content_scale);
+
   // All the tilings are there still.
   EXPECT_EQ(3u, pending_set->num_tilings());
 
   // Clone from the pending to the active tree with the same max content size.
-  active_set->UpdateTilingsToCurrentRasterSource(
+  active_set->UpdateTilingsToCurrentRasterSourceForActivation(
       pile.get(), pending_set.get(), Region(), 1.f, max_content_scale);
   // All the tilings are on the active tree.
   EXPECT_EQ(3u, active_set->num_tilings());
@@ -437,15 +438,15 @@ TEST(PictureLayerTilingSetTest, MaxContentScale) {
   // Update to a new source frame with a max content scale that will drop one
   // tiling.
   max_content_scale = 2.9f;
-  pending_set->UpdateTilingsToCurrentRasterSource(pile.get(), nullptr, Region(),
-                                                  1.f, max_content_scale);
+  pending_set->UpdateTilingsToCurrentRasterSourceForCommit(
+      pile.get(), Region(), 1.f, max_content_scale);
   // All the tilings are there still.
   EXPECT_EQ(2u, pending_set->num_tilings());
 
   pending_set->tiling_at(0)->set_resolution(HIGH_RESOLUTION);
 
   // Clone from the pending to the active tree with the same max content size.
-  active_set->UpdateTilingsToCurrentRasterSource(
+  active_set->UpdateTilingsToCurrentRasterSourceForActivation(
       pile.get(), pending_set.get(), Region(), 1.f, max_content_scale);
   // All the tilings are on the active tree.
   EXPECT_EQ(2u, active_set->num_tilings());

@@ -541,9 +541,15 @@ void PictureLayerImpl::UpdateRasterSource(
   // We could do this after doing UpdateTiles, which would avoid doing this for
   // tilings that are going to disappear on the pending tree (if scale changed).
   // But that would also be more complicated, so we just do it here for now.
-  tilings_->UpdateTilingsToCurrentRasterSource(
-      raster_source_, pending_set, invalidation_, MinimumContentsScale(),
-      MaximumContentsScale());
+  if (pending_set) {
+    tilings_->UpdateTilingsToCurrentRasterSourceForActivation(
+        raster_source_, pending_set, invalidation_, MinimumContentsScale(),
+        MaximumContentsScale());
+  } else {
+    tilings_->UpdateTilingsToCurrentRasterSourceForCommit(
+        raster_source_, invalidation_, MinimumContentsScale(),
+        MaximumContentsScale());
+  }
 }
 
 void PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
@@ -562,10 +568,12 @@ void PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
   // a new one must be created and all tiles recreated.
   scoped_refptr<RasterSource> new_raster_source =
       raster_source_->CreateCloneWithoutLCDText();
+  raster_source_.swap(new_raster_source);
+
   // Synthetically invalidate everything.
   gfx::Rect bounds_rect(bounds());
-  Region invalidation(bounds_rect);
-  UpdateRasterSource(new_raster_source, &invalidation, nullptr);
+  invalidation_ = Region(bounds_rect);
+  tilings_->UpdateRasterSourceDueToLCDChange(raster_source_, invalidation_);
   SetUpdateRect(bounds_rect);
 
   DCHECK(!RasterSourceUsesLCDText());

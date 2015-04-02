@@ -55,18 +55,25 @@ class CC_EXPORT PictureLayerTilingSet {
                       PictureLayerTilingSet* recycled_twin_set);
   void RemoveNonIdealTilings();
 
-  // This function can be called on both the active and pending tree.
-  // |pending_twin_set| represents the current pending twin. In situations where
-  // this is called on the active tree in two trees situations,
-  // |pending_twin_set| represents the tiling set from the pending twin layer.
-  // In situations where this is called on the sync tree (whether it's pending
-  // or active in cases of one tree), |pending_twin_set| should be nullptr.
-  void UpdateTilingsToCurrentRasterSource(
+  // This function is called on the active tree during activation.
+  void UpdateTilingsToCurrentRasterSourceForActivation(
       scoped_refptr<RasterSource> raster_source,
       const PictureLayerTilingSet* pending_twin_set,
       const Region& layer_invalidation,
       float minimum_contents_scale,
       float maximum_contents_scale);
+
+  // This function is called on the sync tree during commit.
+  void UpdateTilingsToCurrentRasterSourceForCommit(
+      scoped_refptr<RasterSource> raster_source,
+      const Region& layer_invalidation,
+      float minimum_contents_scale,
+      float maximum_contents_scale);
+
+  // This function is called on the sync tree right after commit.
+  void UpdateRasterSourceDueToLCDChange(
+      const scoped_refptr<RasterSource>& raster_source,
+      const Region& layer_invalidation);
 
   PictureLayerTiling* AddTiling(float contents_scale,
                                 scoped_refptr<RasterSource> raster_source);
@@ -170,12 +177,13 @@ class CC_EXPORT PictureLayerTilingSet {
       float skewport_target_time_in_seconds,
       int skewport_extrapolation_limit_in_content_pixels);
 
-  void CopyTilingsFromPendingTwin(
+  void CopyTilingsAndPropertiesFromPendingTwin(
       const PictureLayerTilingSet* pending_twin_set,
       const scoped_refptr<RasterSource>& raster_source);
 
   // Remove one tiling.
   void Remove(PictureLayerTiling* tiling);
+  void VerifyTilings(const PictureLayerTilingSet* pending_twin_set) const;
 
   ScopedPtrVector<PictureLayerTiling> tilings_;
 

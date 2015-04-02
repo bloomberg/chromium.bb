@@ -852,6 +852,13 @@ void PictureLayerTiling::UpdateRequiredStateForTile(Tile* tile,
   tile->set_is_occluded(tree, false);
 }
 
+void PictureLayerTiling::VerifyAllTilesHaveCurrentRasterSource() const {
+#if DCHECK_IS_ON()
+  for (const auto& tile_pair : tiles_)
+    DCHECK_EQ(raster_source_.get(), tile_pair.second->raster_source());
+#endif
+}
+
 TilePriority PictureLayerTiling::ComputePriorityForTile(
     const Tile* tile) const {
   // TODO(vmpstr): See if this can be moved to iterators.

@@ -53,7 +53,7 @@ PictureLayerTilingSet::PictureLayerTilingSet(
 PictureLayerTilingSet::~PictureLayerTilingSet() {
 }
 
-void PictureLayerTilingSet::CopyTilingsFromPendingTwin(
+void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
     const PictureLayerTilingSet* pending_twin_set,
     const scoped_refptr<RasterSource>& raster_source) {
   if (pending_twin_set->tilings_.empty()) {
@@ -61,8 +61,10 @@ void PictureLayerTilingSet::CopyTilingsFromPendingTwin(
     // current frame. So we drop tilings from our set as well, instead of
     // leaving behind unshared tilings that are all non-ideal.
     RemoveAllTilings();
+    return;
   }
 
+  bool tiling_sort_required = false;
   for (PictureLayerTiling* pending_twin_tiling : pending_twin_set->tilings_) {
     float contents_scale = pending_twin_tiling->contents_scale();
     PictureLayerTiling* this_tiling = FindTilingWithScale(contents_scale);
@@ -73,12 +75,16 @@ void PictureLayerTilingSet::CopyTilingsFromPendingTwin(
           skewport_extrapolation_limit_in_content_pixels_);
       tilings_.push_back(new_tiling.Pass());
       this_tiling = tilings_.back();
+      tiling_sort_required = true;
     }
     this_tiling->CloneTilesAndPropertiesFrom(*pending_twin_tiling);
   }
+
+  if (tiling_sort_required)
+    tilings_.sort(LargestToSmallestScaleFunctor());
 }
 
-void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
+void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
     scoped_refptr<RasterSource> raster_source,
     const PictureLayerTilingSet* pending_twin_set,
     const Region& layer_invalidation,
@@ -87,19 +93,15 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
   RemoveTilingsBelowScale(minimum_contents_scale);
   RemoveTilingsAboveScale(maximum_contents_scale);
 
-  // Copy over tilings that are shared with the |pending_twin_set| tiling set
-  // (if it exists).
-  if (pending_twin_set)
-    CopyTilingsFromPendingTwin(pending_twin_set, raster_source);
+  // Copy over tilings that are shared with the |pending_twin_set| tiling set.
+  // Also, copy all of the properties from twin tilings.
+  CopyTilingsAndPropertiesFromPendingTwin(pending_twin_set, raster_source);
 
-  // If the tiling is not shared (FindTilingWithScale returns nullptr) or if
-  // |this| is the sync set (pending_twin_set is nullptr), then invalidate
-  // tiles and update them to the new raster source.
+  // If the tiling is not shared (FindTilingWithScale returns nullptr), then
+  // invalidate tiles and update them to the new raster source.
   for (PictureLayerTiling* tiling : tilings_) {
-    if (pending_twin_set &&
-        pending_twin_set->FindTilingWithScale(tiling->contents_scale())) {
+    if (pending_twin_set->FindTilingWithScale(tiling->contents_scale()))
       continue;
-    }
 
     tiling->SetRasterSourceAndResize(raster_source);
     tiling->Invalidate(layer_invalidation);
@@ -109,14 +111,47 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSource(
     // raster source.
     tiling->CreateMissingTilesInLiveTilesRect();
 
-    // If |pending_twin_set| is present, then |this| is active and |tiling| is
-    // not in the pending set, which means it is now NON_IDEAL_RESOLUTION.
-    if (pending_twin_set)
-      tiling->set_resolution(NON_IDEAL_RESOLUTION);
+    // |this| is active set and |tiling| is not in the pending set, which means
+    // it is now NON_IDEAL_RESOLUTION.
+    tiling->set_resolution(NON_IDEAL_RESOLUTION);
   }
 
-  tilings_.sort(LargestToSmallestScaleFunctor());
+  VerifyTilings(pending_twin_set);
+}
 
+void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForCommit(
+    scoped_refptr<RasterSource> raster_source,
+    const Region& layer_invalidation,
+    float minimum_contents_scale,
+    float maximum_contents_scale) {
+  RemoveTilingsBelowScale(minimum_contents_scale);
+  RemoveTilingsAboveScale(maximum_contents_scale);
+
+  // Invalidate tiles and update them to the new raster source.
+  for (PictureLayerTiling* tiling : tilings_) {
+    tiling->SetRasterSourceAndResize(raster_source);
+    tiling->Invalidate(layer_invalidation);
+    tiling->SetRasterSourceOnTiles();
+    // This is needed for cases where the live tiles rect didn't change but
+    // recordings exist in the raster source that did not exist on the last
+    // raster source.
+    tiling->CreateMissingTilesInLiveTilesRect();
+  }
+  VerifyTilings(nullptr /* pending_twin_set */);
+}
+
+void PictureLayerTilingSet::UpdateRasterSourceDueToLCDChange(
+    const scoped_refptr<RasterSource>& raster_source,
+    const Region& layer_invalidation) {
+  for (PictureLayerTiling* tiling : tilings_) {
+    tiling->SetRasterSourceAndResize(raster_source);
+    tiling->Invalidate(layer_invalidation);
+    tiling->VerifyAllTilesHaveCurrentRasterSource();
+  }
+}
+
+void PictureLayerTilingSet::VerifyTilings(
+    const PictureLayerTilingSet* pending_twin_set) const {
 #if DCHECK_IS_ON()
   for (PictureLayerTiling* tiling : tilings_) {
     DCHECK(tiling->tile_size() ==

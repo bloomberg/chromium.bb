@@ -161,6 +161,7 @@ class CC_EXPORT PictureLayerTiling {
   const gfx::Rect& current_eventually_rect() const {
     return current_eventually_rect_;
   }
+  void VerifyAllTilesHaveCurrentRasterSource() const;
 
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
   // (i.e. no valid resource) this tiling should still iterate over them.
