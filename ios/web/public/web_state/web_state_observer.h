@@ -6,11 +6,13 @@
 #define IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_OBSERVER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 
 namespace web {
 
+struct FaviconURL;
 struct LoadCommittedDetails;
 class WebState;
 class WebStateImpl;
@@ -61,6 +63,9 @@ class WebStateObserver {
                                       const std::string& value,
                                       int key_code,
                                       bool error) {}
+
+  // Invoked when new FaviconURL candidates are received.
+  virtual void FaviconURLUpdated(const std::vector<FaviconURL>& candidates) {}
 
   // Invoked when the WebState is being destroyed. Gives subclasses a chance
   // to cleanup.

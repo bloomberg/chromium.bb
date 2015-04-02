@@ -134,6 +134,9 @@ typedef void (^SSLErrorCallback)(BOOL);
 // document change.
 - (void)webDidUpdateHistoryStateWithPageURL:(const GURL&)pageUrl;
 // Called when the page updates its icons.
+// TODO(sdefresne): this method will be removed once WebFaviconDriver is
+// introduced. Do not add anything there, instead use a WebStateObvserver.
+// http://crbug.com/472117
 - (void)onUpdateFavicons:(const std::vector<web::FaviconURL>&)icons;
 // Called when a placeholder image should be displayed instead of the WebView.
 - (void)webController:(CRWWebController*)webController
