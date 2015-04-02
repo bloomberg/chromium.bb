@@ -1567,10 +1567,6 @@ void Browser::SetFocusToLocationBar(bool select_all) {
   window_->SetFocusToLocationBar(select_all);
 }
 
-int Browser::GetExtraRenderViewHeight() const {
-  return window_->GetExtraRenderViewHeight();
-}
-
 void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {
   DCHECK(source);
   chrome::ViewSource(this, source);

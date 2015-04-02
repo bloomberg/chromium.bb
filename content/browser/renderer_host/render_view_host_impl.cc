@@ -1202,36 +1202,9 @@ gfx::Rect RenderViewHostImpl::GetRootWindowResizerRect() const {
 
 void RenderViewHostImpl::ForwardMouseEvent(
     const blink::WebMouseEvent& mouse_event) {
-
-  // We make a copy of the mouse event because
-  // RenderWidgetHost::ForwardMouseEvent will delete |mouse_event|.
-  blink::WebMouseEvent event_copy(mouse_event);
-  RenderWidgetHostImpl::ForwardMouseEvent(event_copy);
-
-  switch (event_copy.type) {
-    case WebInputEvent::MouseMove:
-      delegate_->HandleMouseMove();
-      break;
-    case WebInputEvent::MouseLeave:
-      delegate_->HandleMouseLeave();
-      break;
-    case WebInputEvent::MouseDown:
-      delegate_->HandleMouseDown();
-      break;
-    case WebInputEvent::MouseWheel:
-      if (ignore_input_events())
-        delegate_->OnIgnoredUIEvent();
-      break;
-    case WebInputEvent::MouseUp:
-      delegate_->HandleMouseUp();
-    default:
-      // For now, we don't care about the rest.
-      break;
-  }
-}
-
-void RenderViewHostImpl::OnPointerEventActivate() {
-  delegate_->HandlePointerActivate();
+  RenderWidgetHostImpl::ForwardMouseEvent(mouse_event);
+  if (mouse_event.type == WebInputEvent::MouseWheel && ignore_input_events())
+    delegate_->OnIgnoredUIEvent();
 }
 
 void RenderViewHostImpl::ForwardKeyboardEvent(

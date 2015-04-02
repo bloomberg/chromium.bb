@@ -56,8 +56,6 @@ class Size;
 
 namespace blink {
 class WebGestureEvent;
-class WebLayer;
-struct WebWindowFeatures;
 }
 
 namespace content {
@@ -235,11 +233,6 @@ class CONTENT_EXPORT WebContentsDelegate {
                            const std::string& request_method,
                            const base::Callback<void(bool)>& callback);
 
-  // Return much extra vertical space should be allotted to the
-  // render view widget during various animations (e.g. infobar closing).
-  // This is used to make painting look smoother.
-  virtual int GetExtraRenderViewHeight() const;
-
   // Returns true if the context menu operation was handled by the delegate.
   virtual bool HandleContextMenu(const content::ContextMenuParams& params);
 
@@ -265,13 +258,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void HandleKeyboardEvent(WebContents* source,
                                    const NativeWebKeyboardEvent& event) {}
 
-  virtual void HandleMouseDown() {}
-  virtual void HandleMouseUp() {}
-
-  // Handles activation resulting from a pointer event (e.g. when mouse is
-  // pressed, or a touch-gesture begins).
-  virtual void HandlePointerActivate() {}
-
   // Allows delegates to handle gesture events before sending to the renderer.
   // Returns true if the |event| was handled and thus shouldn't be processed
   // by the renderer's event handler. Note that the touch events that create
@@ -281,18 +267,12 @@ class CONTENT_EXPORT WebContentsDelegate {
       WebContents* source,
       const blink::WebGestureEvent& event);
 
-  virtual void HandleGestureBegin() {}
-  virtual void HandleGestureEnd() {}
-
   // Called when an external drag event enters the web contents window. Return
   // true to allow dragging and dropping on the web contents window or false to
   // cancel the operation. This method is used by Chromium Embedded Framework.
   virtual bool CanDragEnter(WebContents* source,
                             const DropData& data,
                             blink::WebDragOperationsMask operations_allowed);
-
-  // Render view drag n drop ended.
-  virtual void DragEnded() {}
 
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(WebContents* source) {}

@@ -683,11 +683,6 @@ void BrowserWindowCocoa::UserChangedTheme() {
   [controller_ userChangedTheme];
 }
 
-int BrowserWindowCocoa::GetExtraRenderViewHeight() const {
-  // Currently this is only used on linux.
-  return 0;
-}
-
 void BrowserWindowCocoa::WebContentsFocused(WebContents* contents) {
   NOTIMPLEMENTED();
 }
