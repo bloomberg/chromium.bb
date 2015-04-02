@@ -16,11 +16,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -91,14 +91,13 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);
 #endif
 
-  scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>
-      statistics_prefs = make_scoped_ptr(
-          new data_reduction_proxy::DataReductionProxyStatisticsPrefs(
+  scoped_ptr<data_reduction_proxy::DataReductionProxyCompressionStats>
+      compression_stats = make_scoped_ptr(
+          new data_reduction_proxy::DataReductionProxyCompressionStats(
               profile_prefs, ui_task_runner, commit_delay));
-  scoped_ptr<data_reduction_proxy::DataReductionProxyService>
-      service = make_scoped_ptr(
-          new data_reduction_proxy::DataReductionProxyService(
-              statistics_prefs.Pass(), this, request_context_getter));
+  scoped_ptr<data_reduction_proxy::DataReductionProxyService> service =
+      make_scoped_ptr(new data_reduction_proxy::DataReductionProxyService(
+          compression_stats.Pass(), this, request_context_getter));
   data_reduction_proxy::DataReductionProxySettings::
       InitDataReductionProxySettings(profile_prefs, io_data, service.Pass());
   io_data->SetDataReductionProxyService(

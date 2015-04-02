@@ -32,8 +32,7 @@ typedef base::Callback<void(const std::string&, const net::URLRequestStatus&)>
     FetcherResponseCallback;
 
 class DataReductionProxySettings;
-class DataReductionProxyStatisticsPrefs;
-
+class DataReductionProxyCompressionStats;
 
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the UI thread.
@@ -42,11 +41,11 @@ class DataReductionProxyService : public base::NonThreadSafe,
  public:
   // The caller must ensure that |settings| and |request_context| remain alive
   // for the lifetime of the |DataReductionProxyService| instance. This instance
-  // will take ownership of |statistics_prefs|.
+  // will take ownership of |compression_stats|.
   // TODO(jeremyim): DataReductionProxyService should own
   // DataReductionProxySettings and not vice versa.
   DataReductionProxyService(
-      scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
+      scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
       DataReductionProxySettings* settings,
       net::URLRequestContextGetter* request_context_getter);
 
@@ -60,15 +59,15 @@ class DataReductionProxyService : public base::NonThreadSafe,
   virtual void SecureProxyCheck(const GURL& secure_proxy_check_url,
                                 FetcherResponseCallback fetcher_callback);
 
-  // Constructs statistics prefs. This should not be called if a valid
-  // statistics prefs is passed into the constructor.
+  // Constructs compression stats. This should not be called if a valid
+  // compression stats is passed into the constructor.
   void EnableCompressionStatisticsLogging(
       PrefService* prefs,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       const base::TimeDelta& commit_delay);
 
-  DataReductionProxyStatisticsPrefs* statistics_prefs() const {
-    return statistics_prefs_.get();
+  DataReductionProxyCompressionStats* compression_stats() const {
+    return compression_stats_.get();
   }
 
   DataReductionProxySettings* settings() const {
@@ -94,7 +93,7 @@ class DataReductionProxyService : public base::NonThreadSafe,
   FetcherResponseCallback fetcher_callback_;
 
   // Tracks compression statistics to be displayed to the user.
-  scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
+  scoped_ptr<DataReductionProxyCompressionStats> compression_stats_;
 
   DataReductionProxySettings* settings_;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -19,7 +19,7 @@
 
 namespace data_reduction_proxy {
 
-DataReductionProxyStatisticsPrefs::DataReductionProxyStatisticsPrefs(
+DataReductionProxyCompressionStats::DataReductionProxyCompressionStats(
     PrefService* prefs,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const base::TimeDelta& delay)
@@ -34,14 +34,14 @@ DataReductionProxyStatisticsPrefs::DataReductionProxyStatisticsPrefs(
   Init();
 }
 
-DataReductionProxyStatisticsPrefs::~DataReductionProxyStatisticsPrefs() {
+DataReductionProxyCompressionStats::~DataReductionProxyCompressionStats() {
   DCHECK(thread_checker_.CalledOnValidThread());
   WritePrefs();
   pref_change_registrar_->RemoveAll();
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void DataReductionProxyStatisticsPrefs::Init() {
+void DataReductionProxyCompressionStats::Init() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (delay_ == base::TimeDelta())
     return;
@@ -73,17 +73,18 @@ void DataReductionProxyStatisticsPrefs::Init() {
                kDailyOriginalContentLengthWithDataReductionProxyEnabled);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      data_reduction_proxy::switches::kClearDataReductionProxyDataSavings)) {
+          data_reduction_proxy::switches::
+              kClearDataReductionProxyDataSavings)) {
     ClearDataSavingStatistics();
   }
 
   pref_change_registrar_->Init(pref_service_);
   pref_change_registrar_->Add(prefs::kUpdateDailyReceivedContentLengths,
-      base::Bind(&DataReductionProxyStatisticsPrefs::OnUpdateContentLengths,
+      base::Bind(&DataReductionProxyCompressionStats::OnUpdateContentLengths,
                  GetWeakPtr()));
 }
 
-void DataReductionProxyStatisticsPrefs::OnUpdateContentLengths() {
+void DataReductionProxyCompressionStats::OnUpdateContentLengths() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!pref_service_->GetBoolean(prefs::kUpdateDailyReceivedContentLengths))
     return;
@@ -92,18 +93,18 @@ void DataReductionProxyStatisticsPrefs::OnUpdateContentLengths() {
   pref_service_->SetBoolean(prefs::kUpdateDailyReceivedContentLengths, false);
 }
 
-void DataReductionProxyStatisticsPrefs::InitInt64Pref(const char* pref) {
+void DataReductionProxyCompressionStats::InitInt64Pref(const char* pref) {
   int64 pref_value = pref_service_->GetInt64(pref);
   pref_map_[pref] = pref_value;
 }
 
-void DataReductionProxyStatisticsPrefs::InitListPref(const char* pref) {
+void DataReductionProxyCompressionStats::InitListPref(const char* pref) {
   scoped_ptr<base::ListValue> pref_value = scoped_ptr<base::ListValue>(
       pref_service_->GetList(pref)->DeepCopy());
   list_pref_map_.add(pref, pref_value.Pass());
 }
 
-int64 DataReductionProxyStatisticsPrefs::GetInt64(const char* pref_path) {
+int64 DataReductionProxyCompressionStats::GetInt64(const char* pref_path) {
   if (delay_ == base::TimeDelta())
     return pref_service_->GetInt64(pref_path);
 
@@ -111,8 +112,8 @@ int64 DataReductionProxyStatisticsPrefs::GetInt64(const char* pref_path) {
   return iter->second;
 }
 
-void DataReductionProxyStatisticsPrefs::SetInt64(const char* pref_path,
-                                                 int64 pref_value) {
+void DataReductionProxyCompressionStats::SetInt64(const char* pref_path,
+                                                  int64 pref_value) {
   if (delay_ == base::TimeDelta()) {
     pref_service_->SetInt64(pref_path, pref_value);
     return;
@@ -122,7 +123,7 @@ void DataReductionProxyStatisticsPrefs::SetInt64(const char* pref_path,
   pref_map_[pref_path] = pref_value;
 }
 
-base::ListValue* DataReductionProxyStatisticsPrefs::GetList(
+base::ListValue* DataReductionProxyCompressionStats::GetList(
     const char* pref_path) {
   if (delay_ == base::TimeDelta())
     return ListPrefUpdate(pref_service_, pref_path).Get();
@@ -131,10 +132,10 @@ base::ListValue* DataReductionProxyStatisticsPrefs::GetList(
   return list_pref_map_.get(pref_path);
 }
 
-void DataReductionProxyStatisticsPrefs::WritePrefs() {
+void DataReductionProxyCompressionStats::WritePrefs() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (delay_ == base::TimeDelta())
-      return;
+    return;
 
   for (DataReductionProxyPrefMap::iterator iter = pref_map_.begin();
        iter != pref_map_.end(); ++iter) {
@@ -151,7 +152,7 @@ void DataReductionProxyStatisticsPrefs::WritePrefs() {
 }
 
 base::Value*
-DataReductionProxyStatisticsPrefs::HistoricNetworkStatsInfoToValue() {
+DataReductionProxyCompressionStats::HistoricNetworkStatsInfoToValue() {
   DCHECK(thread_checker_.CalledOnValidThread());
   int64 total_received = GetInt64(
       data_reduction_proxy::prefs::kHttpReceivedContentLength);
@@ -167,21 +168,20 @@ DataReductionProxyStatisticsPrefs::HistoricNetworkStatsInfoToValue() {
   return dict;
 }
 
-void DataReductionProxyStatisticsPrefs::DelayedWritePrefs() {
+void DataReductionProxyCompressionStats::DelayedWritePrefs() {
   // Only write after the first time posting the task.
   if (delayed_task_posted_)
     return;
 
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&DataReductionProxyStatisticsPrefs::WritePrefs,
-                 GetWeakPtr()),
-                 delay_);
+      base::Bind(&DataReductionProxyCompressionStats::WritePrefs, GetWeakPtr()),
+      delay_);
 
   delayed_task_posted_ = true;
 }
 
-void DataReductionProxyStatisticsPrefs::TransferList(
+void DataReductionProxyCompressionStats::TransferList(
     const base::ListValue& from_list,
     base::ListValue* to_list) {
   to_list->Clear();
@@ -191,7 +191,7 @@ void DataReductionProxyStatisticsPrefs::TransferList(
   }
 }
 
-int64 DataReductionProxyStatisticsPrefs::GetListPrefInt64Value(
+int64 DataReductionProxyCompressionStats::GetListPrefInt64Value(
     const base::ListValue& list,
     size_t index) {
   std::string string_value;
@@ -206,7 +206,7 @@ int64 DataReductionProxyStatisticsPrefs::GetListPrefInt64Value(
   return value;
 }
 
-void DataReductionProxyStatisticsPrefs::ClearDataSavingStatistics() {
+void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
   list_pref_map_.get(data_reduction_proxy::prefs::
       kDailyContentLengthHttpsWithDataReductionProxyEnabled)->Clear();
   list_pref_map_.get(data_reduction_proxy::prefs::
@@ -232,8 +232,8 @@ void DataReductionProxyStatisticsPrefs::ClearDataSavingStatistics() {
   WritePrefs();
 }
 
-base::WeakPtr<DataReductionProxyStatisticsPrefs>
-DataReductionProxyStatisticsPrefs::GetWeakPtr() {
+base::WeakPtr<DataReductionProxyCompressionStats>
+DataReductionProxyCompressionStats::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 

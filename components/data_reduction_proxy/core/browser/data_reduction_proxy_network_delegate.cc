@@ -12,12 +12,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -238,18 +238,18 @@ void DataReductionProxyNetworkDelegate::UpdateContentLengthPrefs(
     DataReductionProxyRequestType request_type) {
   if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->service()) {
-    DataReductionProxyStatisticsPrefs* data_reduction_proxy_statistics_prefs =
-        data_reduction_proxy_io_data_->service()->statistics_prefs();
-    int64 total_received = data_reduction_proxy_statistics_prefs->GetInt64(
+    DataReductionProxyCompressionStats* data_reduction_proxy_compression_stats =
+        data_reduction_proxy_io_data_->service()->compression_stats();
+    int64 total_received = data_reduction_proxy_compression_stats->GetInt64(
         data_reduction_proxy::prefs::kHttpReceivedContentLength);
-    int64 total_original = data_reduction_proxy_statistics_prefs->GetInt64(
+    int64 total_original = data_reduction_proxy_compression_stats->GetInt64(
         data_reduction_proxy::prefs::kHttpOriginalContentLength);
     total_received += received_content_length;
     total_original += original_content_length;
-    data_reduction_proxy_statistics_prefs->SetInt64(
+    data_reduction_proxy_compression_stats->SetInt64(
         data_reduction_proxy::prefs::kHttpReceivedContentLength,
         total_received);
-    data_reduction_proxy_statistics_prefs->SetInt64(
+    data_reduction_proxy_compression_stats->SetInt64(
         data_reduction_proxy::prefs::kHttpOriginalContentLength,
         total_original);
 
@@ -259,7 +259,7 @@ void DataReductionProxyNetworkDelegate::UpdateContentLengthPrefs(
         data_reduction_proxy_enabled,
         request_type,
         base::Time::Now(),
-        data_reduction_proxy_statistics_prefs);
+        data_reduction_proxy_compression_stats);
   }
 }
 

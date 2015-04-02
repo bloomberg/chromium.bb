@@ -8,9 +8,9 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "net/base/host_port_pair.h"
@@ -197,9 +197,8 @@ void MaintainContentLengthPrefsWindow(base::ListValue* list, size_t length) {
 class DailyContentLengthUpdate {
  public:
   DailyContentLengthUpdate(const char* pref,
-                           DataReductionProxyStatisticsPrefs* pref_service)
-      : update_(pref_service->GetList(pref)) {
-  }
+                           DataReductionProxyCompressionStats* pref_service)
+      : update_(pref_service->GetList(pref)) {}
 
   void UpdateForDataChange(int days_since_last_update) {
     // New empty lists may have been created. Maintain the invariant that
@@ -266,10 +265,9 @@ class DailyDataSavingUpdate {
  public:
   DailyDataSavingUpdate(const char* pref_original,
                         const char* pref_received,
-                        DataReductionProxyStatisticsPrefs* prefs)
-      : original_(pref_original, prefs),
-        received_(pref_received, prefs) {
-  }
+                        DataReductionProxyCompressionStats* compression_stats)
+      : original_(pref_original, compression_stats),
+        received_(pref_received, compression_stats) {}
 
   void UpdateForDataChange(int days_since_last_update) {
     original_.UpdateForDataChange(days_since_last_update);
@@ -358,7 +356,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     bool with_data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
     base::Time now,
-    DataReductionProxyStatisticsPrefs* prefs) {
+    DataReductionProxyCompressionStats* compression_stats) {
   // TODO(bengr): Remove this check once the underlying cause of
   // http://crbug.com/287821 is fixed. For now, only continue if the current
   // year is reported as being between 1972 and 2970.
@@ -371,7 +369,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
   }
 
   // Determine how many days it has been since the last update.
-  int64 then_internal = prefs->GetInt64(
+  int64 then_internal = compression_stats->GetInt64(
       data_reduction_proxy::prefs::kDailyHttpContentLengthLastUpdateDate);
 
   // Local midnight could have been shifted due to time zone change.
@@ -393,7 +391,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
   DailyDataSavingUpdate total(
       data_reduction_proxy::prefs::kDailyHttpOriginalContentLength,
       data_reduction_proxy::prefs::kDailyHttpReceivedContentLength,
-      prefs);
+      compression_stats);
   total.UpdateForDataChange(days_since_last_update);
 
   DailyDataSavingUpdate proxy_enabled(
@@ -401,7 +399,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
           kDailyOriginalContentLengthWithDataReductionProxyEnabled,
       data_reduction_proxy::prefs::
           kDailyContentLengthWithDataReductionProxyEnabled,
-      prefs);
+      compression_stats);
   proxy_enabled.UpdateForDataChange(days_since_last_update);
 
   DailyDataSavingUpdate via_proxy(
@@ -409,31 +407,31 @@ void UpdateContentLengthPrefsForDataReductionProxy(
           kDailyOriginalContentLengthViaDataReductionProxy,
       data_reduction_proxy::prefs::
           kDailyContentLengthViaDataReductionProxy,
-      prefs);
+      compression_stats);
   via_proxy.UpdateForDataChange(days_since_last_update);
 
   DailyContentLengthUpdate https(
       data_reduction_proxy::prefs::
           kDailyContentLengthHttpsWithDataReductionProxyEnabled,
-      prefs);
+      compression_stats);
   https.UpdateForDataChange(days_since_last_update);
 
   DailyContentLengthUpdate short_bypass(
       data_reduction_proxy::prefs::
           kDailyContentLengthShortBypassWithDataReductionProxyEnabled,
-      prefs);
+      compression_stats);
   short_bypass.UpdateForDataChange(days_since_last_update);
 
   DailyContentLengthUpdate long_bypass(
       data_reduction_proxy::prefs::
           kDailyContentLengthLongBypassWithDataReductionProxyEnabled,
-      prefs);
+      compression_stats);
   long_bypass.UpdateForDataChange(days_since_last_update);
 
   DailyContentLengthUpdate unknown(
       data_reduction_proxy::prefs::
           kDailyContentLengthUnknownWithDataReductionProxyEnabled,
-      prefs);
+      compression_stats);
   unknown.UpdateForDataChange(days_since_last_update);
 
   total.Add(original_content_length, received_content_length);
@@ -462,7 +460,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
 
   if (days_since_last_update) {
     // Record the last update time in microseconds in UTC.
-    prefs->SetInt64(
+    compression_stats->SetInt64(
         data_reduction_proxy::prefs::kDailyHttpContentLengthLastUpdateDate,
         midnight.ToInternalValue());
 

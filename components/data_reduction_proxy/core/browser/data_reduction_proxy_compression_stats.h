@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_STATISTICS_PREFS_H_
-#define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_STATISTICS_PREFS_H_
+#ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_COMPRESSION_STATS_H_
+#define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_COMPRESSION_STATS_H_
 
 #include <map>
 
@@ -31,19 +31,18 @@ namespace data_reduction_proxy {
 // |delay| amount of time. If |delay| is zero, the delayed pref service writes
 // directly to the PrefService and does not store the prefs in memory. All
 // prefs must be stored and read on the UI thread.
-// TODO(bengr): Rename as DataReductionProxyCompressionStats.
-class DataReductionProxyStatisticsPrefs {
-public:
+class DataReductionProxyCompressionStats {
+ public:
   // Constructs a data reduction proxy delayed pref service object using
   // |pref_service|. Writes prefs to |pref_service| after |delay|
   // and stores them in |pref_map_| and |list_pref_map| between writes.
   // If |delay| is zero, writes directly to the PrefService and does not store
   // in the maps.
-  DataReductionProxyStatisticsPrefs(
+  DataReductionProxyCompressionStats(
       PrefService* pref_service,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       const base::TimeDelta& delay);
-  ~DataReductionProxyStatisticsPrefs();
+  ~DataReductionProxyCompressionStats();
 
   // Loads all data_reduction_proxy::prefs into the |pref_map_| and
   // |list_pref_map_|.
@@ -70,9 +69,9 @@ public:
   // Must be called on the UI thread.
   base::Value* HistoricNetworkStatsInfoToValue();
 
-  base::WeakPtr<DataReductionProxyStatisticsPrefs> GetWeakPtr();
+  base::WeakPtr<DataReductionProxyCompressionStats> GetWeakPtr();
 
-private:
+ private:
   typedef std::map<const char*, int64> DataReductionProxyPrefMap;
   typedef base::ScopedPtrHashMap<const char*, base::ListValue>
       DataReductionProxyListPrefMap;
@@ -110,11 +109,11 @@ private:
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   base::ThreadChecker thread_checker_;
 
-  base::WeakPtrFactory<DataReductionProxyStatisticsPrefs> weak_factory_;
+  base::WeakPtrFactory<DataReductionProxyCompressionStats> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyStatisticsPrefs);
+  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyCompressionStats);
 };
 
 }  // namespace data_reduction_proxy
 
-#endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_STATISTICS_PREFS_H_
+#endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_COMPRESSION_STATS_H_

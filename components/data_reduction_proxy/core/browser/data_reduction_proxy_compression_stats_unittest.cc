@@ -10,8 +10,8 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,9 +36,9 @@ int64 GetListPrefInt64Value(
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyStatisticsPrefsTest : public testing::Test {
+class DataReductionProxyCompressionStatsTest : public testing::Test {
  protected:
-  DataReductionProxyStatisticsPrefsTest()
+  DataReductionProxyCompressionStatsTest()
       : task_runner_(scoped_refptr<base::TestSimpleTaskRunner>(
             new base::TestSimpleTaskRunner())) {}
 
@@ -51,15 +51,15 @@ class DataReductionProxyStatisticsPrefsTest : public testing::Test {
     const int64 kOriginalLength = 150;
     const int64 kReceivedLength = 100;
 
-    statistics_prefs_->SetInt64(
+    compression_stats_->SetInt64(
         prefs::kHttpOriginalContentLength, kOriginalLength);
-    statistics_prefs_->SetInt64(
+    compression_stats_->SetInt64(
         prefs::kHttpReceivedContentLength, kReceivedLength);
 
     base::ListValue* original_daily_content_length_list =
-        statistics_prefs_->GetList(prefs::kDailyHttpOriginalContentLength);
+        compression_stats_->GetList(prefs::kDailyHttpOriginalContentLength);
     base::ListValue* received_daily_content_length_list =
-        statistics_prefs_->GetList(prefs::kDailyHttpReceivedContentLength);
+        compression_stats_->GetList(prefs::kDailyHttpReceivedContentLength);
 
     for (size_t i = 0; i < kNumDaysInHistory; ++i) {
       original_daily_content_length_list->Set(
@@ -67,7 +67,7 @@ class DataReductionProxyStatisticsPrefsTest : public testing::Test {
     }
 
     received_daily_content_length_list->Clear();
-    for (size_t i = 0; i < kNumDaysInHistory/2; ++i) {
+    for (size_t i = 0; i < kNumDaysInHistory / 2; ++i) {
       received_daily_content_length_list->Set(
           i, new base::StringValue(base::Int64ToString(i)));
     }
@@ -75,7 +75,7 @@ class DataReductionProxyStatisticsPrefsTest : public testing::Test {
 
   // Create daily pref list of |kNumDaysInHistory| zero values.
   void CreatePrefList(const char* pref) {
-    base::ListValue* update = statistics_prefs_->GetList(pref);
+    base::ListValue* update = compression_stats_->GetList(pref);
     update->Clear();
     for (size_t i = 0; i < kNumDaysInHistory; ++i) {
       update->Insert(0, new base::StringValue(base::Int64ToString(0)));
@@ -85,7 +85,7 @@ class DataReductionProxyStatisticsPrefsTest : public testing::Test {
   // Verify the pref list values in |pref_service_| are equal to those in
   // |simple_pref_service| for |pref|.
   void VerifyPrefListWasWritten(const char* pref) {
-    const base::ListValue* delayed_list = statistics_prefs_->GetList(pref);
+    const base::ListValue* delayed_list = compression_stats_->GetList(pref);
     const base::ListValue* written_list = simple_pref_service_.GetList(pref);
     ASSERT_EQ(delayed_list->GetSize(), written_list->GetSize());
     size_t count = delayed_list->GetSize();
@@ -99,12 +99,12 @@ class DataReductionProxyStatisticsPrefsTest : public testing::Test {
   // Verify the pref value in |pref_service_| are equal to that in
   // |simple_pref_service|.
   void VerifyPrefWasWritten(const char* pref) {
-    int64 delayed_pref = statistics_prefs_->GetInt64(pref);
+    int64 delayed_pref = compression_stats_->GetInt64(pref);
     int64 written_pref = simple_pref_service_.GetInt64(pref);
     EXPECT_EQ(delayed_pref, written_pref);
   }
 
-  // Verify the pref values in |dict| are equal to that in |statistics_prefs_|.
+  // Verify the pref values in |dict| are equal to that in |compression_stats_|.
   void VerifyPrefs(base::DictionaryValue* dict) {
     base::string16 dict_pref_string;
     int64 dict_pref;
@@ -112,24 +112,24 @@ class DataReductionProxyStatisticsPrefsTest : public testing::Test {
 
     dict->GetString("historic_original_content_length", &dict_pref_string);
     base::StringToInt64(dict_pref_string, &dict_pref);
-    service_pref = statistics_prefs_->GetInt64(
-        prefs::kHttpOriginalContentLength);
+    service_pref =
+        compression_stats_->GetInt64(prefs::kHttpOriginalContentLength);
     EXPECT_EQ(service_pref, dict_pref);
 
     dict->GetString("historic_received_content_length", &dict_pref_string);
     base::StringToInt64(dict_pref_string, &dict_pref);
-    service_pref = statistics_prefs_->GetInt64(
-        prefs::kHttpReceivedContentLength);
+    service_pref =
+        compression_stats_->GetInt64(prefs::kHttpReceivedContentLength);
     EXPECT_EQ(service_pref, dict_pref);
   }
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   TestingPrefServiceSimple simple_pref_service_;
-  scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
+  scoped_ptr<DataReductionProxyCompressionStats> compression_stats_;
 };
 
-TEST_F(DataReductionProxyStatisticsPrefsTest, WritePrefsDirect) {
-  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+TEST_F(DataReductionProxyCompressionStatsTest, WritePrefsDirect) {
+  compression_stats_.reset(new DataReductionProxyCompressionStats(
       &simple_pref_service_,
       task_runner_,
       base::TimeDelta()));
@@ -141,8 +141,8 @@ TEST_F(DataReductionProxyStatisticsPrefsTest, WritePrefsDirect) {
   VerifyPrefListWasWritten(prefs::kDailyHttpReceivedContentLength);
 }
 
-TEST_F(DataReductionProxyStatisticsPrefsTest, WritePrefsDelayed) {
-  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+TEST_F(DataReductionProxyCompressionStatsTest, WritePrefsDelayed) {
+  compression_stats_.reset(new DataReductionProxyCompressionStats(
       &simple_pref_service_,
       task_runner_,
       base::TimeDelta::FromMinutes(kWriteDelayMinutes)));
@@ -156,9 +156,9 @@ TEST_F(DataReductionProxyStatisticsPrefsTest, WritePrefsDelayed) {
   VerifyPrefListWasWritten(prefs::kDailyHttpReceivedContentLength);
 }
 
-TEST_F(DataReductionProxyStatisticsPrefsTest,
+TEST_F(DataReductionProxyCompressionStatsTest,
        WritePrefsOnUpdateDailyReceivedContentLengths) {
-  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+  compression_stats_.reset(new DataReductionProxyCompressionStats(
       &simple_pref_service_,
       task_runner_,
       base::TimeDelta::FromMinutes(kWriteDelayMinutes)));
@@ -173,57 +173,57 @@ TEST_F(DataReductionProxyStatisticsPrefsTest,
   VerifyPrefListWasWritten(prefs::kDailyHttpReceivedContentLength);
 }
 
-TEST_F(DataReductionProxyStatisticsPrefsTest,
+TEST_F(DataReductionProxyCompressionStatsTest,
        HistoricNetworkStatsInfoToValue) {
   const int64 kOriginalLength = 150;
   const int64 kReceivedLength = 100;
-  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+  compression_stats_.reset(new DataReductionProxyCompressionStats(
       &simple_pref_service_,
       task_runner_,
       base::TimeDelta::FromMinutes(kWriteDelayMinutes)));
 
   base::DictionaryValue* dict = nullptr;
   scoped_ptr<base::Value> stats_value(
-      statistics_prefs_->HistoricNetworkStatsInfoToValue());
+      compression_stats_->HistoricNetworkStatsInfoToValue());
   EXPECT_TRUE(stats_value->GetAsDictionary(&dict));
   VerifyPrefs(dict);
 
-  statistics_prefs_->SetInt64(prefs::kHttpOriginalContentLength,
-                              kOriginalLength);
-  statistics_prefs_->SetInt64(prefs::kHttpReceivedContentLength,
-                              kReceivedLength);
+  compression_stats_->SetInt64(prefs::kHttpOriginalContentLength,
+                               kOriginalLength);
+  compression_stats_->SetInt64(prefs::kHttpReceivedContentLength,
+                               kReceivedLength);
 
-  stats_value.reset(statistics_prefs_->HistoricNetworkStatsInfoToValue());
+  stats_value.reset(compression_stats_->HistoricNetworkStatsInfoToValue());
   EXPECT_TRUE(stats_value->GetAsDictionary(&dict));
   VerifyPrefs(dict);
 }
 
-TEST_F(DataReductionProxyStatisticsPrefsTest,
+TEST_F(DataReductionProxyCompressionStatsTest,
        HistoricNetworkStatsInfoToValueDirect) {
   const int64 kOriginalLength = 150;
   const int64 kReceivedLength = 100;
-  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+  compression_stats_.reset(new DataReductionProxyCompressionStats(
       &simple_pref_service_,
       task_runner_,
       base::TimeDelta()));
 
   base::DictionaryValue* dict = nullptr;
   scoped_ptr<base::Value> stats_value(
-      statistics_prefs_->HistoricNetworkStatsInfoToValue());
+      compression_stats_->HistoricNetworkStatsInfoToValue());
   EXPECT_TRUE(stats_value->GetAsDictionary(&dict));
   VerifyPrefs(dict);
 
-  statistics_prefs_->SetInt64(prefs::kHttpOriginalContentLength,
-                              kOriginalLength);
-  statistics_prefs_->SetInt64(prefs::kHttpReceivedContentLength,
-                              kReceivedLength);
+  compression_stats_->SetInt64(prefs::kHttpOriginalContentLength,
+                               kOriginalLength);
+  compression_stats_->SetInt64(prefs::kHttpReceivedContentLength,
+                               kReceivedLength);
 
-  stats_value.reset(statistics_prefs_->HistoricNetworkStatsInfoToValue());
+  stats_value.reset(compression_stats_->HistoricNetworkStatsInfoToValue());
   EXPECT_TRUE(stats_value->GetAsDictionary(&dict));
   VerifyPrefs(dict);
 }
 
-TEST_F(DataReductionProxyStatisticsPrefsTest,
+TEST_F(DataReductionProxyCompressionStatsTest,
        ClearPrefsOnRestartEnabled) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(
@@ -233,7 +233,7 @@ TEST_F(DataReductionProxyStatisticsPrefsTest,
   list_value.Insert(0, new base::StringValue(base::Int64ToString(1234)));
   simple_pref_service_.Set(prefs::kDailyHttpOriginalContentLength, list_value);
 
-  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+  compression_stats_.reset(new DataReductionProxyCompressionStats(
       &simple_pref_service_,
       task_runner_,
       base::TimeDelta::FromMinutes(kWriteDelayMinutes)));
@@ -243,13 +243,13 @@ TEST_F(DataReductionProxyStatisticsPrefsTest,
   EXPECT_EQ(0u, value->GetSize());
 }
 
-TEST_F(DataReductionProxyStatisticsPrefsTest,
+TEST_F(DataReductionProxyCompressionStatsTest,
        ClearPrefsOnRestartDisabled) {
   base::ListValue list_value;
   list_value.Insert(0, new base::StringValue(base::Int64ToString(1234)));
   simple_pref_service_.Set(prefs::kDailyHttpOriginalContentLength, list_value);
 
-  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+  compression_stats_.reset(new DataReductionProxyCompressionStats(
       &simple_pref_service_,
       task_runner_,
       base::TimeDelta::FromMinutes(kWriteDelayMinutes)));

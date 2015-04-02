@@ -45,9 +45,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/onc/onc_constants.h"
 #include "components/url_fixer/url_fixer.h"
@@ -622,10 +622,12 @@ void NetInternalsMessageHandler::OnGetHistoricNetworkStats(
   DataReductionProxyChromeSettings* data_reduction_proxy_settings =
         DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile);
   if (data_reduction_proxy_settings) {
-    data_reduction_proxy::DataReductionProxyStatisticsPrefs* statistics_prefs =
-        data_reduction_proxy_settings->data_reduction_proxy_service()->
-        statistics_prefs();
-    historic_network_info = statistics_prefs->HistoricNetworkStatsInfoToValue();
+    data_reduction_proxy::DataReductionProxyCompressionStats*
+        compression_stats =
+            data_reduction_proxy_settings->data_reduction_proxy_service()
+                ->compression_stats();
+    historic_network_info =
+        compression_stats->HistoricNetworkStatsInfoToValue();
   }
   SendJavascriptCommand("receivedHistoricNetworkStats", historic_network_info);
 }

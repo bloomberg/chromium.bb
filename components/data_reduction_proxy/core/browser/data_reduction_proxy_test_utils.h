@@ -43,7 +43,7 @@ class DataReductionProxyEventStore;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
 class DataReductionProxySettings;
-class DataReductionProxyStatisticsPrefs;
+class DataReductionProxyCompressionStats;
 class MockDataReductionProxyConfig;
 class TestDataReductionProxyConfig;
 class TestDataReductionProxyConfigurator;
@@ -155,7 +155,7 @@ class TestDataReductionProxyConfigServiceClient
 class MockDataReductionProxyService : public DataReductionProxyService {
  public:
   MockDataReductionProxyService(
-      scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
+      scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
       DataReductionProxySettings* settings,
       net::URLRequestContextGetter* request_context);
   ~MockDataReductionProxyService() override;

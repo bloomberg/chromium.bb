@@ -17,7 +17,7 @@ class PrefService;
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfig;
-class DataReductionProxyStatisticsPrefs;
+class DataReductionProxyCompressionStats;
 
 enum DataReductionProxyRequestType {
   VIA_DATA_REDUCTION_PROXY,  // A request served by the data reduction proxy.
@@ -53,7 +53,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
     bool with_data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
     base::Time now,
-    DataReductionProxyStatisticsPrefs* prefs);
+    DataReductionProxyCompressionStats* compression_stats);
 
 }  // namespace data_reduction_proxy
 

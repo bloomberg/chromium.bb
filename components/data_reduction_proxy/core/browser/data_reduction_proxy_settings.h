@@ -25,7 +25,7 @@ class DataReductionProxyConfig;
 class DataReductionProxyEventStore;
 class DataReductionProxyIOData;
 class DataReductionProxyService;
-class DataReductionProxyStatisticsPrefs;
+class DataReductionProxyCompressionStats;
 
 // The number of days of bandwidth usage statistics that are tracked.
 const unsigned int kNumDaysInHistory = 60;
@@ -74,7 +74,7 @@ class DataReductionProxySettings {
       DataReductionProxyIOData* io_data,
       scoped_ptr<DataReductionProxyService> data_reduction_proxy_service);
 
-  base::WeakPtr<DataReductionProxyStatisticsPrefs> statistics_prefs();
+  base::WeakPtr<DataReductionProxyCompressionStats> compression_stats();
 
   // Sets the |register_synthetic_field_trial_| callback and runs to register
   // the DataReductionProxyEnabled and the DataReductionProxyLoFiEnabled

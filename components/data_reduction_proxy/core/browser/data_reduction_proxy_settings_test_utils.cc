@@ -11,9 +11,9 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -75,7 +75,7 @@ void DataReductionProxySettingsTestBase::SetUp() {
     received_update->Insert(0, new base::StringValue(base::Int64ToString(i)));
   }
   last_update_time_ = base::Time::Now().LocalMidnight();
-  settings_->data_reduction_proxy_service()->statistics_prefs()->SetInt64(
+  settings_->data_reduction_proxy_service()->compression_stats()->SetInt64(
       prefs::kDailyHttpContentLengthLastUpdateDate,
       last_update_time_.ToInternalValue());
 }

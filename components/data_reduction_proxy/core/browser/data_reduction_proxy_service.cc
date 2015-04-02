@@ -5,7 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 
 #include "base/sequenced_task_runner.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -13,14 +13,14 @@
 namespace data_reduction_proxy {
 
 DataReductionProxyService::DataReductionProxyService(
-    scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
+    scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
     DataReductionProxySettings* settings,
     net::URLRequestContextGetter* request_context_getter)
     : url_request_context_getter_(request_context_getter),
       settings_(settings),
       weak_factory_(this) {
   DCHECK(settings);
-  statistics_prefs_ = statistics_prefs.Pass();
+  compression_stats_ = compression_stats.Pass();
 }
 
 DataReductionProxyService::~DataReductionProxyService() {
@@ -35,8 +35,8 @@ void DataReductionProxyService::EnableCompressionStatisticsLogging(
     PrefService* prefs,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     const base::TimeDelta& commit_delay) {
-  DCHECK(!statistics_prefs_);
-  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+  DCHECK(!compression_stats_);
+  compression_stats_.reset(new DataReductionProxyCompressionStats(
       prefs, ui_task_runner, commit_delay));
 }
 

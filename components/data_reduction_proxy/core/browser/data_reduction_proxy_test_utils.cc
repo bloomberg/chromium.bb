@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
@@ -14,7 +15,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
@@ -160,11 +160,11 @@ TestDataReductionProxyConfigServiceClient::TestBackoffEntry::ImplGetTimeNow()
 }
 
 MockDataReductionProxyService::MockDataReductionProxyService(
-    scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs,
+    scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
     DataReductionProxySettings* settings,
     net::URLRequestContextGetter* request_context)
     : DataReductionProxyService(
-        statistics_prefs.Pass(), settings, request_context) {
+        compression_stats.Pass(), settings, request_context) {
 }
 
 MockDataReductionProxyService::~MockDataReductionProxyService() {
@@ -450,17 +450,17 @@ DataReductionProxyTestContext::CreateDataReductionProxyService() {
 
 scoped_ptr<DataReductionProxyService>
 DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal() {
-  scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs =
-      make_scoped_ptr(new DataReductionProxyStatisticsPrefs(
+  scoped_ptr<DataReductionProxyCompressionStats> compression_stats =
+      make_scoped_ptr(new DataReductionProxyCompressionStats(
           simple_pref_service_.get(), task_runner_, base::TimeDelta()));
 
   if (test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_SERVICE) {
     return make_scoped_ptr(new MockDataReductionProxyService(
-        statistics_prefs.Pass(), settings_.get(),
+        compression_stats.Pass(), settings_.get(),
         request_context_getter_.get()));
   } else {
     return make_scoped_ptr(
-        new DataReductionProxyService(statistics_prefs.Pass(), settings_.get(),
+        new DataReductionProxyService(compression_stats.Pass(), settings_.get(),
                                       request_context_getter_.get()));
   }
 }

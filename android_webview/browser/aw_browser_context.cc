@@ -19,11 +19,11 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
@@ -166,7 +166,8 @@ void AwBrowserContext::PreMainMessageLoopRun() {
       new data_reduction_proxy::DataReductionProxySettings());
   data_reduction_proxy_service_.reset(
       new data_reduction_proxy::DataReductionProxyService(
-          scoped_ptr<data_reduction_proxy::DataReductionProxyStatisticsPrefs>(),
+          scoped_ptr<
+              data_reduction_proxy::DataReductionProxyCompressionStats>(),
           data_reduction_proxy_settings_.get(), GetAwURLRequestContext()));
   data_reduction_proxy_io_data_->SetDataReductionProxyService(
       data_reduction_proxy_service_->GetWeakPtr());
@@ -373,7 +374,7 @@ void AwBrowserContext::CreateDataReductionProxyStatisticsIfNecessary() {
       data_reduction_proxy_service =
           GetDataReductionProxySettings()->data_reduction_proxy_service();
   DCHECK(data_reduction_proxy_service);
-  if (data_reduction_proxy_service->statistics_prefs())
+  if (data_reduction_proxy_service->compression_stats())
     return;
   // We don't care about commit_delay for now. It is just a dummy value.
   base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);

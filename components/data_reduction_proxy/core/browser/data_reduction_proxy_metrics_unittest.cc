@@ -14,8 +14,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -52,7 +52,7 @@ class ChromeNetworkDataSavingMetricsTest : public testing::Test {
   ChromeNetworkDataSavingMetricsTest() {}
 
   void SetUp() override {
-    statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+    compression_stats_.reset(new DataReductionProxyCompressionStats(
         &pref_service_,
         scoped_refptr<base::TestSimpleTaskRunner>(
             new base::TestSimpleTaskRunner()),
@@ -99,7 +99,7 @@ class ChromeNetworkDataSavingMetricsTest : public testing::Test {
   }
 
   TestingPrefServiceSimple pref_service_;
-  scoped_ptr<DataReductionProxyStatisticsPrefs> statistics_prefs_;
+  scoped_ptr<DataReductionProxyCompressionStats> compression_stats_;
 };
 
 // The initial last update time used in test. There is no leap second a few
@@ -139,7 +139,7 @@ class ChromeNetworkDailyDataSavingMetricsTest
 
   // Create daily pref list of |kNumDaysInHistory| zero values.
   void CreatePrefList(const char* pref) {
-    base::ListValue* update = statistics_prefs_->GetList(pref);
+    base::ListValue* update = compression_stats_->GetList(pref);
     update->Clear();
     for (size_t i = 0; i < kNumDaysInHistory; ++i) {
       update->Insert(0, new base::StringValue(base::Int64ToString(0)));
@@ -151,7 +151,7 @@ class ChromeNetworkDailyDataSavingMetricsTest
   // at the beginning.
   void VerifyPrefList(const char* pref, const int64* values, size_t count) {
     ASSERT_GE(kNumDaysInHistory, count);
-    base::ListValue* update = statistics_prefs_->GetList(pref);
+    base::ListValue* update = compression_stats_->GetList(pref);
     ASSERT_EQ(kNumDaysInHistory, update->GetSize()) << "Pref: " << pref;
 
     for (size_t i = 0; i < count; ++i) {
@@ -269,7 +269,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, OneResponse) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   VerifyDailyDataSavingContentLengthPrefLists(
       original, 1, received, 1,
       original, 1, received, 1,
@@ -284,7 +284,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, MultipleResponses) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       false, UNKNOWN_TYPE,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   VerifyDailyDataSavingContentLengthPrefLists(
       original, 1, received, 1,
       NULL, 0, NULL, 0, NULL, 0, NULL, 0);
@@ -292,7 +292,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, MultipleResponses) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, UNKNOWN_TYPE,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   original[0] += kOriginalLength;
   received[0] += kReceivedLength;
   int64 original_proxy_enabled[] = {kOriginalLength};
@@ -305,7 +305,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, MultipleResponses) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   original[0] += kOriginalLength;
   received[0] += kReceivedLength;
   original_proxy_enabled[0] += kOriginalLength;
@@ -319,7 +319,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, MultipleResponses) {
 
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, UNKNOWN_TYPE, FakeNow(), statistics_prefs_.get());
+      true, UNKNOWN_TYPE, FakeNow(), compression_stats_.get());
   original[0] += kOriginalLength;
   received[0] += kReceivedLength;
   original_proxy_enabled[0] += kOriginalLength;
@@ -331,7 +331,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, MultipleResponses) {
 
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      false, UNKNOWN_TYPE, FakeNow(), statistics_prefs_.get());
+      false, UNKNOWN_TYPE, FakeNow(), compression_stats_.get());
   original[0] += kOriginalLength;
   received[0] += kReceivedLength;
   VerifyDailyDataSavingContentLengthPrefLists(
@@ -350,7 +350,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
       true, HTTPS,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   total_received[0] += kContentLength;
   proxy_enabled_received[0] += kContentLength;
   https_received[0] += kContentLength;
@@ -366,7 +366,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
       false, HTTPS,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   total_received[0] += kContentLength;
   VerifyDailyRequestTypeContentLengthPrefLists(
       total_received, 1, total_received, 1,
@@ -379,7 +379,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
       true, HTTPS,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   total_received[0] += kContentLength;
   proxy_enabled_received[0] += kContentLength;
   https_received[0] += kContentLength;
@@ -394,7 +394,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
       true, SHORT_BYPASS,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   total_received[0] += kContentLength;
   proxy_enabled_received[0] += kContentLength;
   received[0] += kContentLength;
@@ -409,7 +409,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
       true, LONG_BYPASS,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   total_received[0] += kContentLength;
   proxy_enabled_received[0] += kContentLength;
   VerifyDailyRequestTypeContentLengthPrefLists(
@@ -423,7 +423,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, RequestType) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kContentLength, kContentLength,
       true, UNKNOWN_TYPE,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   total_received[0] += kContentLength;
   proxy_enabled_received[0] += kContentLength;
   VerifyDailyRequestTypeContentLengthPrefLists(
@@ -442,7 +442,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardOneDay) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
 
   // Forward one day.
   SetFakeTimeDeltaInHours(24);
@@ -450,7 +450,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardOneDay) {
   // Proxy not enabled. Not via proxy.
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      false, UNKNOWN_TYPE, FakeNow(), statistics_prefs_.get());
+      false, UNKNOWN_TYPE, FakeNow(), compression_stats_.get());
 
   int64 original[] = {kOriginalLength, kOriginalLength};
   int64 received[] = {kReceivedLength, kReceivedLength};
@@ -469,7 +469,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardOneDay) {
   // Proxy enabled. Not via proxy.
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
-      true, UNKNOWN_TYPE, FakeNow(), statistics_prefs_.get());
+      true, UNKNOWN_TYPE, FakeNow(), compression_stats_.get());
   original[1] += kOriginalLength;
   received[1] += kReceivedLength;
   original_with_data_reduction_proxy_enabled[1] += kOriginalLength;
@@ -486,7 +486,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardOneDay) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   original[1] += kOriginalLength;
   received[1] += kReceivedLength;
   original_with_data_reduction_proxy_enabled[1] += kOriginalLength;
@@ -511,7 +511,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, PartialDayTimeChange) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   VerifyDailyDataSavingContentLengthPrefLists(
       original, 2, received, 2,
       original, 2, received, 2,
@@ -523,7 +523,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, PartialDayTimeChange) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   original[1] += kOriginalLength;
   received[1] += kReceivedLength;
   VerifyDailyDataSavingContentLengthPrefLists(
@@ -536,7 +536,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, PartialDayTimeChange) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   int64 original2[] = {kOriginalLength * 2, kOriginalLength};
   int64 received2[] = {kReceivedLength * 2, kReceivedLength};
   VerifyDailyDataSavingContentLengthPrefLists(
@@ -551,7 +551,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardMultipleDays) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
 
   // Forward three days.
   SetFakeTimeDeltaInHours(3 * 24);
@@ -559,7 +559,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardMultipleDays) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
 
   int64 original[] = {kOriginalLength, 0, 0, kOriginalLength};
   int64 received[] = {kReceivedLength, 0, 0, kReceivedLength};
@@ -573,7 +573,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardMultipleDays) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   int64 original2[] = {
     kOriginalLength, 0, 0, kOriginalLength, 0, 0, 0, kOriginalLength,
   };
@@ -590,7 +590,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardMultipleDays) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   int64 original3[] = {kOriginalLength};
   int64 received3[] = {kReceivedLength};
   VerifyDailyDataSavingContentLengthPrefLists(
@@ -603,7 +603,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, ForwardMultipleDays) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   VerifyDailyDataSavingContentLengthPrefLists(
       original3, 1, received3, 1,
       original3, 1, received3, 1,
@@ -619,14 +619,14 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, BackwardAndForwardOneDay) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
 
   // Backward one day.
   SetFakeTimeDeltaInHours(-24);
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   original[0] += kOriginalLength;
   received[0] += kReceivedLength;
   VerifyDailyDataSavingContentLengthPrefLists(
@@ -639,7 +639,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, BackwardAndForwardOneDay) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   int64 original2[] = {kOriginalLength * 2, kOriginalLength};
   int64 received2[] = {kReceivedLength * 2, kReceivedLength};
   VerifyDailyDataSavingContentLengthPrefLists(
@@ -657,13 +657,13 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest, BackwardTwoDays) {
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   // Backward two days.
   SetFakeTimeDeltaInHours(-2 * 24);
   UpdateContentLengthPrefsForDataReductionProxy(
       kReceivedLength, kOriginalLength,
       true, VIA_DATA_REDUCTION_PROXY,
-      FakeNow(), statistics_prefs_.get());
+      FakeNow(), compression_stats_.get());
   VerifyDailyDataSavingContentLengthPrefLists(
       original, 1, received, 1,
       original, 1, received, 1,

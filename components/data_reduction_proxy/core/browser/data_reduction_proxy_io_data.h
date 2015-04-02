@@ -25,7 +25,6 @@ class DataReductionProxyConfigServiceClient;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventStore;
 class DataReductionProxyService;
-class DataReductionProxyStatisticsPrefs;
 class DataReductionProxyBypassStats;
 
 // Contains and initializes all Data Reduction Proxy objects that operate on
