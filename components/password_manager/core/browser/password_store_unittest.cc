@@ -416,8 +416,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
       continue;
     result->original_signon_realm = result->signon_realm;
     result->signon_realm = observed_form.signon_realm;
-    if (!result->origin.is_empty())
-      result->origin = observed_form.origin;
+    result->origin = observed_form.origin;
   }
 
   std::vector<std::string> affiliated_android_realms;

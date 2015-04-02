@@ -78,6 +78,7 @@ AffiliatedMatchHelper::TransformAffiliatedAndroidCredentials(
     ScopedVector<autofill::PasswordForm> android_credentials) {
   for (autofill::PasswordForm* form : android_credentials) {
     DCHECK_EQ(form->scheme, autofill::PasswordForm::SCHEME_HTML);
+    form->origin = observed_form.origin;
     form->original_signon_realm = form->signon_realm;
     form->signon_realm = observed_form.signon_realm;
   }

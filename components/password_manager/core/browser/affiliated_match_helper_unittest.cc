@@ -81,6 +81,7 @@ const char kTestAndroidFacetURIBeta2[] =
 const char kTestAndroidFacetURIBeta3[] =
     "android://hash@com.yetanother.beta.android";
 const char kTestWebRealmBeta1[] = "https://one.beta.example.com/";
+const char kTestWebOriginBeta1[] = "https://one.beta.example.com/login";
 const char kTestAndroidRealmBeta2[] =
     "android://hash@com.example.beta.android/";
 const char kTestAndroidRealmBeta3[] =
@@ -126,10 +127,13 @@ autofill::PasswordForm GetTestAndroidCredentials(const char* signon_realm) {
   return form;
 }
 
-autofill::PasswordForm GetTestObservedWebForm(const char* signon_realm) {
+autofill::PasswordForm GetTestObservedWebForm(const char* signon_realm,
+                                              const char* origin) {
   autofill::PasswordForm form;
   form.scheme = autofill::PasswordForm::SCHEME_HTML;
   form.signon_realm = signon_realm;
+  if (origin)
+    form.origin = GURL(origin);
   form.ssl_valid = true;
   return form;
 }
@@ -286,7 +290,7 @@ TEST_F(AffiliatedMatchHelperTest, GetAffiliatedAndroidRealmsYieldsResults) {
       FacetURI::FromCanonicalSpec(kTestWebFacetURIBeta1),
       StrategyOnCacheMiss::FAIL, GetTestEquivalenceClassBeta());
   autofill::PasswordForm web_observed_form(
-      GetTestObservedWebForm(kTestWebRealmBeta1));
+      GetTestObservedWebForm(kTestWebRealmBeta1, nullptr));
   EXPECT_THAT(GetAffiliatedAndroidRealms(web_observed_form),
               testing::UnorderedElementsAre(kTestAndroidRealmBeta2,
                                             kTestAndroidRealmBeta3));
@@ -298,7 +302,7 @@ TEST_F(AffiliatedMatchHelperTest,
       FacetURI::FromCanonicalSpec(kTestWebFacetURIAlpha1),
       StrategyOnCacheMiss::FAIL, GetTestEquivalenceClassAlpha());
   autofill::PasswordForm web_observed_form(
-      GetTestObservedWebForm(kTestWebRealmAlpha1));
+      GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr));
   // This verifies that |kTestWebRealmAlpha2| is not returned.
   EXPECT_THAT(GetAffiliatedAndroidRealms(web_observed_form),
               testing::UnorderedElementsAre(kTestAndroidRealmAlpha3));
@@ -307,7 +311,7 @@ TEST_F(AffiliatedMatchHelperTest,
 TEST_F(AffiliatedMatchHelperTest,
        GetAffiliatedAndroidRealmsYieldsEmptyResultsForInsecureForms) {
   autofill::PasswordForm insecure_observed_form(
-      GetTestObservedWebForm(kTestWebRealmAlpha1));
+      GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr));
   insecure_observed_form.ssl_valid = false;
   EXPECT_THAT(GetAffiliatedAndroidRealms(insecure_observed_form),
               testing::IsEmpty());
@@ -316,7 +320,7 @@ TEST_F(AffiliatedMatchHelperTest,
 TEST_F(AffiliatedMatchHelperTest,
        GetAffiliatedAndroidRealmsYieldsEmptyResultsForHTTPBasicAuthForms) {
   autofill::PasswordForm http_auth_observed_form(
-      GetTestObservedWebForm(kTestWebRealmAlpha1));
+      GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr));
   http_auth_observed_form.scheme = autofill::PasswordForm::SCHEME_BASIC;
   EXPECT_THAT(GetAffiliatedAndroidRealms(http_auth_observed_form),
               testing::IsEmpty());
@@ -325,7 +329,7 @@ TEST_F(AffiliatedMatchHelperTest,
 TEST_F(AffiliatedMatchHelperTest,
        GetAffiliatedAndroidRealmsYieldsEmptyResultsForHTTPDigestAuthForms) {
   autofill::PasswordForm http_auth_observed_form(
-      GetTestObservedWebForm(kTestWebRealmAlpha1));
+      GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr));
   http_auth_observed_form.scheme = autofill::PasswordForm::SCHEME_DIGEST;
   EXPECT_THAT(GetAffiliatedAndroidRealms(http_auth_observed_form),
               testing::IsEmpty());
@@ -345,7 +349,7 @@ TEST_F(AffiliatedMatchHelperTest,
       FacetURI::FromCanonicalSpec(kTestWebFacetURIAlpha1),
       StrategyOnCacheMiss::FAIL);
   autofill::PasswordForm web_observed_form(
-      GetTestObservedWebForm(kTestWebRealmAlpha1));
+      GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr));
   EXPECT_THAT(GetAffiliatedAndroidRealms(web_observed_form),
               testing::IsEmpty());
 }
@@ -453,7 +457,7 @@ TEST_F(AffiliatedMatchHelperTest, TransformAffiliatedAndroidCredentials) {
   const char kTestPassword2[] = "secret2";
 
   autofill::PasswordForm observed_form(
-      GetTestObservedWebForm(kTestWebRealmBeta1));
+      GetTestObservedWebForm(kTestWebRealmBeta1, kTestWebOriginBeta1));
 
   ScopedVector<autofill::PasswordForm> matched_forms;
   matched_forms.push_back(make_scoped_ptr(new autofill::PasswordForm(
@@ -473,6 +477,7 @@ TEST_F(AffiliatedMatchHelperTest, TransformAffiliatedAndroidCredentials) {
             transformed_forms[0]->username_value);
   EXPECT_EQ(base::ASCIIToUTF16(kTestPassword),
             transformed_forms[0]->password_value);
+  EXPECT_EQ(GURL(kTestWebOriginBeta1), transformed_forms[0]->origin);
   EXPECT_EQ(kTestWebRealmBeta1, transformed_forms[0]->signon_realm);
   EXPECT_EQ(kTestAndroidRealmBeta2,
             transformed_forms[0]->original_signon_realm);
@@ -481,6 +486,7 @@ TEST_F(AffiliatedMatchHelperTest, TransformAffiliatedAndroidCredentials) {
             transformed_forms[1]->username_value);
   EXPECT_EQ(base::ASCIIToUTF16(kTestPassword2),
             transformed_forms[1]->password_value);
+  EXPECT_EQ(GURL(kTestWebOriginBeta1), transformed_forms[1]->origin);
   EXPECT_EQ(kTestWebRealmBeta1, transformed_forms[1]->signon_realm);
   EXPECT_EQ(kTestAndroidRealmBeta3,
             transformed_forms[1]->original_signon_realm);
