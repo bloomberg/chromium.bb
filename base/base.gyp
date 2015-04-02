@@ -447,16 +447,6 @@
       ],
     },
     {
-      'target_name': 'malloc_wrapper',
-      'type': 'shared_library',
-      'dependencies': [
-        'base',
-      ],
-      'sources': [
-        'test/malloc_wrapper.cc',
-      ],
-    },
-    {
       'target_name': 'base_unittests',
       'type': '<(gtest_target_type)',
       'sources': [
@@ -768,17 +758,11 @@
             'message_loop/message_pump_glib_unittest.cc',
           ]
         }],
-        ['OS == "linux"', {
-          'dependencies': [
-            'malloc_wrapper',
-          ],
-          'conditions': [
-            ['use_allocator!="none"', {
-              'dependencies': [
-                'allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ]},
+        ['OS == "linux" and use_allocator!="none"', {
+            'dependencies': [
+              'allocator/allocator.gyp:allocator',
+            ],
+          },
         ],
         ['OS == "win"', {
           'sources!': [
