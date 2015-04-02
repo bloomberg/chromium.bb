@@ -18,7 +18,7 @@ scoped_ptr<::media::BrowserCdm> CastBrowserCdmFactory::CreateBrowserCdm(
     bool use_secure_surface,
     const ::media::SessionMessageCB& session_message_cb,
     const ::media::SessionClosedCB& session_closed_cb,
-    const ::media::SessionErrorCB& session_error_cb,
+    const ::media::LegacySessionErrorCB& legacy_session_error_cb,
     const ::media::SessionKeysChangeCB& session_keys_change_cb,
     const ::media::SessionExpirationUpdateCB& session_expiration_update_cb) {
   DCHECK(!use_secure_surface) << "Chromecast does not use |use_secure_surface|";
@@ -36,12 +36,9 @@ scoped_ptr<::media::BrowserCdm> CastBrowserCdmFactory::CreateBrowserCdm(
     CmaMessageLoop::GetMessageLoopProxy()->PostTask(
         FROM_HERE,
         base::Bind(&BrowserCdmCast::Initialize,
-                   base::Unretained(browser_cdm.get()),
-                   session_message_cb,
-                   session_closed_cb,
-                   session_error_cb,
-                   session_keys_change_cb,
-                   session_expiration_update_cb));
+                   base::Unretained(browser_cdm.get()), session_message_cb,
+                   session_closed_cb, legacy_session_error_cb,
+                   session_keys_change_cb, session_expiration_update_cb));
     return make_scoped_ptr(
         new BrowserCdmCastUi(browser_cdm.Pass(),
                              CmaMessageLoop::GetMessageLoopProxy()));

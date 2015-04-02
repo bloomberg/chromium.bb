@@ -353,7 +353,7 @@ void ContentDecryptor_Private::SessionClosed(const std::string& session_id) {
   }
 }
 
-void ContentDecryptor_Private::SessionError(
+void ContentDecryptor_Private::LegacySessionError(
     const std::string& session_id,
     PP_CdmExceptionCode exception_code,
     uint32_t system_code,
@@ -361,7 +361,7 @@ void ContentDecryptor_Private::SessionError(
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     pp::Var session_id_var(session_id);
     pp::Var error_description_var(error_description);
-    get_interface<PPB_ContentDecryptor_Private>()->SessionError(
+    get_interface<PPB_ContentDecryptor_Private>()->LegacySessionError(
         associated_instance_.pp_instance(), session_id_var.pp_var(),
         exception_code, system_code, error_description_var.pp_var());
   }

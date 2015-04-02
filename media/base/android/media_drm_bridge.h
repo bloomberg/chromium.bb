@@ -65,7 +65,7 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
       const std::string& key_system,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
-      const SessionErrorCB& session_error_cb,
+      const LegacySessionErrorCB& legacy_session_error_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
       const SessionExpirationUpdateCB& session_expiration_update_cb);
 
@@ -184,7 +184,7 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   MediaDrmBridge(const std::vector<uint8>& scheme_uuid,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
-                 const SessionErrorCB& session_error_cb,
+                 const LegacySessionErrorCB& legacy_session_error_cb,
                  const SessionKeysChangeCB& session_keys_change_cb);
 
   static bool IsSecureDecoderRequired(SecurityLevel security_level);
@@ -201,7 +201,7 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;
   SessionClosedCB session_closed_cb_;
-  SessionErrorCB session_error_cb_;
+  LegacySessionErrorCB legacy_session_error_cb_;
   SessionKeysChangeCB session_keys_change_cb_;
 
   base::Closure media_crypto_ready_cb_;

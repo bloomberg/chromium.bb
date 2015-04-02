@@ -180,11 +180,11 @@ class PPB_Instance_API {
                                        PP_Var session_id_var,
                                        PP_Time new_expiry_time) = 0;
   virtual void SessionClosed(PP_Instance instance, PP_Var session_id_var) = 0;
-  virtual void SessionError(PP_Instance instance,
-                            PP_Var session_id_var,
-                            PP_CdmExceptionCode exception_code,
-                            uint32 system_code,
-                            PP_Var error_description_var) = 0;
+  virtual void LegacySessionError(PP_Instance instance,
+                                  PP_Var session_id_var,
+                                  PP_CdmExceptionCode exception_code,
+                                  uint32 system_code,
+                                  PP_Var error_description_var) = 0;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) = 0;

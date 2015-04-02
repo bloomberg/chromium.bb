@@ -143,13 +143,13 @@ void MojoCdmService::OnSessionClosed(const std::string& session_id) {
   client_->OnSessionClosed(session_id);
 }
 
-void MojoCdmService::OnSessionError(const std::string& session_id,
-                                    MediaKeys::Exception exception,
-                                    uint32_t system_code,
-                                    const std::string& error_message) {
-  client_->OnSessionError(session_id,
-                          static_cast<mojo::CdmException>(exception),
-                          system_code, error_message);
+void MojoCdmService::OnLegacySessionError(const std::string& session_id,
+                                          MediaKeys::Exception exception,
+                                          uint32_t system_code,
+                                          const std::string& error_message) {
+  client_->OnLegacySessionError(session_id,
+                                static_cast<mojo::CdmException>(exception),
+                                system_code, error_message);
 }
 
 }  // namespace media

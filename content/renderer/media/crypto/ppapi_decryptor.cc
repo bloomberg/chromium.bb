@@ -30,7 +30,7 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const CreatePepperCdmCB& create_pepper_cdm_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::SessionErrorCB& session_error_cb,
+    const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb) {
   std::string plugin_type = media::GetPepperType(key_system);
@@ -42,16 +42,11 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     return scoped_ptr<PpapiDecryptor>();
   }
 
-  return scoped_ptr<PpapiDecryptor>(
-      new PpapiDecryptor(key_system,
-                         allow_distinctive_identifier,
-                         allow_persistent_state,
-                         pepper_cdm_wrapper.Pass(),
-                         session_message_cb,
-                         session_closed_cb,
-                         session_error_cb,
-                         session_keys_change_cb,
-                         session_expiration_update_cb));
+  return scoped_ptr<PpapiDecryptor>(new PpapiDecryptor(
+      key_system, allow_distinctive_identifier, allow_persistent_state,
+      pepper_cdm_wrapper.Pass(), session_message_cb, session_closed_cb,
+      legacy_session_error_cb, session_keys_change_cb,
+      session_expiration_update_cb));
 }
 
 PpapiDecryptor::PpapiDecryptor(
@@ -61,13 +56,13 @@ PpapiDecryptor::PpapiDecryptor(
     scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::SessionErrorCB& session_error_cb,
+    const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb)
     : pepper_cdm_wrapper_(pepper_cdm_wrapper.Pass()),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
-      session_error_cb_(session_error_cb),
+      legacy_session_error_cb_(legacy_session_error_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb),
       render_loop_proxy_(base::MessageLoopProxy::current()),
@@ -75,18 +70,16 @@ PpapiDecryptor::PpapiDecryptor(
   DCHECK(pepper_cdm_wrapper_.get());
   DCHECK(!session_message_cb_.is_null());
   DCHECK(!session_closed_cb_.is_null());
-  DCHECK(!session_error_cb_.is_null());
+  DCHECK(!legacy_session_error_cb_.is_null());
   DCHECK(!session_keys_change_cb.is_null());
   DCHECK(!session_expiration_update_cb.is_null());
 
   base::WeakPtr<PpapiDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
   CdmDelegate()->Initialize(
-      key_system,
-      allow_distinctive_identifier,
-      allow_persistent_state,
+      key_system, allow_distinctive_identifier, allow_persistent_state,
       base::Bind(&PpapiDecryptor::OnSessionMessage, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionClosed, weak_this),
-      base::Bind(&PpapiDecryptor::OnSessionError, weak_this),
+      base::Bind(&PpapiDecryptor::OnLegacySessionError, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionKeysChange, weak_this),
       base::Bind(&PpapiDecryptor::OnSessionExpirationUpdate, weak_this),
       base::Bind(&PpapiDecryptor::OnFatalPluginError, weak_this));
@@ -433,13 +426,14 @@ void PpapiDecryptor::OnSessionClosed(const std::string& session_id) {
   session_closed_cb_.Run(session_id);
 }
 
-void PpapiDecryptor::OnSessionError(const std::string& session_id,
-                                    MediaKeys::Exception exception_code,
-                                    uint32 system_code,
-                                    const std::string& error_description) {
+void PpapiDecryptor::OnLegacySessionError(
+    const std::string& session_id,
+    MediaKeys::Exception exception_code,
+    uint32 system_code,
+    const std::string& error_description) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-  session_error_cb_.Run(session_id, exception_code, system_code,
-                        error_description);
+  legacy_session_error_cb_.Run(session_id, exception_code, system_code,
+                               error_description);
 }
 
 void PpapiDecryptor::AttemptToResumePlayback() {

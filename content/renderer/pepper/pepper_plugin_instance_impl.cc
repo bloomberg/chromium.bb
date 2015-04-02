@@ -2493,12 +2493,13 @@ void PepperPluginInstanceImpl::SessionClosed(PP_Instance instance,
   content_decryptor_delegate_->OnSessionClosed(session_id_var);
 }
 
-void PepperPluginInstanceImpl::SessionError(PP_Instance instance,
-                                            PP_Var session_id_var,
-                                            PP_CdmExceptionCode exception_code,
-                                            uint32 system_code,
-                                            PP_Var error_description_var) {
-  content_decryptor_delegate_->OnSessionError(
+void PepperPluginInstanceImpl::LegacySessionError(
+    PP_Instance instance,
+    PP_Var session_id_var,
+    PP_CdmExceptionCode exception_code,
+    uint32 system_code,
+    PP_Var error_description_var) {
+  content_decryptor_delegate_->OnLegacySessionError(
       session_id_var, exception_code, system_code, error_description_var);
 }
 

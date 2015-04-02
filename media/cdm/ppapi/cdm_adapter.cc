@@ -862,7 +862,7 @@ void CdmAdapter::SendSessionErrorInternal(int32_t result,
                                           const std::string& session_id,
                                           const SessionError& error) {
   PP_DCHECK(result == PP_OK);
-  pp::ContentDecryptor_Private::SessionError(
+  pp::ContentDecryptor_Private::LegacySessionError(
       session_id, CdmExceptionTypeToPpCdmExceptionType(error.error),
       error.system_code, error.error_description);
 }

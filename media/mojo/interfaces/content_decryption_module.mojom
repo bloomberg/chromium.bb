@@ -132,8 +132,8 @@ interface ContentDecryptionModuleClient {
 
   OnSessionClosed(string session_id);
 
-  OnSessionError(string session_id, CdmException exception,
-                 uint32 system_code, string error_message);
+  OnLegacySessionError(string session_id, CdmException exception,
+                       uint32 system_code, string error_message);
 
   OnSessionKeysChange(string session_id, bool has_additional_usable_key,
                       array<CdmKeyInformation> key_information);

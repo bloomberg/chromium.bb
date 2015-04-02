@@ -348,12 +348,12 @@ MediaDrmBridge::MediaDrmBridge(
     const std::vector<uint8>& scheme_uuid,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
-    const SessionErrorCB& session_error_cb,
+    const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb)
     : scheme_uuid_(scheme_uuid),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
-      session_error_cb_(session_error_cb),
+      legacy_session_error_cb_(legacy_session_error_cb),
       session_keys_change_cb_(session_keys_change_cb) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
@@ -377,7 +377,7 @@ scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
     const std::string& key_system,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
-    const SessionErrorCB& session_error_cb,
+    const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& /* session_expiration_update_cb */) {
   scoped_ptr<MediaDrmBridge> media_drm_bridge;
@@ -388,9 +388,9 @@ scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
   if (scheme_uuid.empty())
     return media_drm_bridge.Pass();
 
-  media_drm_bridge.reset(new MediaDrmBridge(scheme_uuid, session_message_cb,
-                                            session_closed_cb, session_error_cb,
-                                            session_keys_change_cb));
+  media_drm_bridge.reset(
+      new MediaDrmBridge(scheme_uuid, session_message_cb, session_closed_cb,
+                         legacy_session_error_cb, session_keys_change_cb));
 
   if (media_drm_bridge->j_media_drm_.is_null())
     media_drm_bridge.reset();
@@ -402,7 +402,7 @@ scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
 scoped_ptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
     const std::string& key_system) {
   return MediaDrmBridge::Create(
-      key_system, SessionMessageCB(), SessionClosedCB(), SessionErrorCB(),
+      key_system, SessionMessageCB(), SessionClosedCB(), LegacySessionErrorCB(),
       SessionKeysChangeCB(), SessionExpirationUpdateCB());
 }
 
@@ -625,8 +625,8 @@ void MediaDrmBridge::OnLegacySessionError(JNIEnv* env,
                                           jbyteArray j_session_id,
                                           jstring j_error_message) {
   std::string error_message = ConvertJavaStringToUTF8(env, j_error_message);
-  session_error_cb_.Run(GetSessionId(env, j_session_id),
-                        MediaKeys::UNKNOWN_ERROR, 0, error_message);
+  legacy_session_error_cb_.Run(GetSessionId(env, j_session_id),
+                               MediaKeys::UNKNOWN_ERROR, 0, error_message);
 }
 
 ScopedJavaLocalRef<jobject> MediaDrmBridge::GetMediaCrypto() {

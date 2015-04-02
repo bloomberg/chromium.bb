@@ -491,11 +491,11 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                PP_Var session_id_var,
                                PP_Time new_expiry_time) override;
   void SessionClosed(PP_Instance instance, PP_Var session_id_var) override;
-  void SessionError(PP_Instance instance,
-                    PP_Var session_id_var,
-                    PP_CdmExceptionCode exception_code,
-                    uint32 system_code,
-                    PP_Var error_description_var) override;
+  void LegacySessionError(PP_Instance instance,
+                          PP_Var session_id_var,
+                          PP_CdmExceptionCode exception_code,
+                          uint32 system_code,
+                          PP_Var error_description_var) override;
   void DeliverBlock(PP_Instance instance,
                     PP_Resource decrypted_block,
                     const PP_DecryptedBlockInfo* block_info) override;

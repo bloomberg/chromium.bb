@@ -83,10 +83,10 @@ class MEDIA_EXPORT ProxyDecryptor {
                                  const base::Time& new_expiry_time);
   void GenerateKeyAdded(const std::string& session_id);
   void OnSessionClosed(const std::string& session_id);
-  void OnSessionError(const std::string& session_id,
-                      MediaKeys::Exception exception_code,
-                      uint32 system_code,
-                      const std::string& error_message);
+  void OnLegacySessionError(const std::string& session_id,
+                            MediaKeys::Exception exception_code,
+                            uint32 system_code,
+                            const std::string& error_message);
 
   // Callback for permission request.
   void OnPermissionStatus(MediaKeys::SessionType session_type,

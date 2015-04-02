@@ -158,10 +158,10 @@ class FakeEncryptedMedia {
                                      CdmKeysInfo keys_info) = 0;
 
     // Errors are not expected unless overridden.
-    virtual void OnSessionError(const std::string& session_id,
-                                const std::string& error_name,
-                                uint32 system_code,
-                                const std::string& error_message) {
+    virtual void OnLegacySessionError(const std::string& session_id,
+                                      const std::string& error_name,
+                                      uint32 system_code,
+                                      const std::string& error_message) {
       FAIL() << "Unexpected Key Error";
     }
 
@@ -202,11 +202,12 @@ class FakeEncryptedMedia {
                               keys_info.Pass());
   }
 
-  void OnSessionError(const std::string& session_id,
-                      const std::string& error_name,
-                      uint32 system_code,
-                      const std::string& error_message) {
-    app_->OnSessionError(session_id, error_name, system_code, error_message);
+  void OnLegacySessionError(const std::string& session_id,
+                            const std::string& error_name,
+                            uint32 system_code,
+                            const std::string& error_message) {
+    app_->OnLegacySessionError(session_id, error_name, system_code,
+                               error_message);
   }
 
   void OnEncryptedMediaInitData(const std::string& init_data_type,

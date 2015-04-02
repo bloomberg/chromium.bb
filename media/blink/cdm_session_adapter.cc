@@ -41,7 +41,7 @@ bool CdmSessionAdapter::Initialize(CdmFactory* cdm_factory,
       security_origin,
       base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
-      base::Bind(&CdmSessionAdapter::OnSessionError, weak_this),
+      base::Bind(&CdmSessionAdapter::OnLegacySessionError, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionKeysChange, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionExpirationUpdate, weak_this));
   return media_keys_.get() != nullptr;
@@ -163,10 +163,11 @@ void CdmSessionAdapter::OnSessionClosed(const std::string& session_id) {
     session->OnSessionClosed();
 }
 
-void CdmSessionAdapter::OnSessionError(const std::string& session_id,
-                                       MediaKeys::Exception exception_code,
-                                       uint32 system_code,
-                                       const std::string& error_message) {
+void CdmSessionAdapter::OnLegacySessionError(
+    const std::string& session_id,
+    MediaKeys::Exception exception_code,
+    uint32 system_code,
+    const std::string& error_message) {
   // Error events not used by unprefixed EME.
   // TODO(jrummell): Remove when prefixed EME removed.
 }

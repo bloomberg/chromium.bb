@@ -22,12 +22,12 @@ scoped_ptr<ProxyMediaKeys> ProxyMediaKeys::Create(
     RendererCdmManager* manager,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::SessionErrorCB& session_error_cb,
+    const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb) {
   DCHECK(manager);
   scoped_ptr<ProxyMediaKeys> proxy_media_keys(new ProxyMediaKeys(
-      manager, session_message_cb, session_closed_cb, session_error_cb,
+      manager, session_message_cb, session_closed_cb, legacy_session_error_cb,
       session_keys_change_cb, session_expiration_update_cb));
   proxy_media_keys->InitializeCdm(key_system, security_origin);
   return proxy_media_keys.Pass();
@@ -151,7 +151,8 @@ void ProxyMediaKeys::OnLegacySessionError(const std::string& session_id,
                                           media::MediaKeys::Exception exception,
                                           uint32 system_code,
                                           const std::string& error_message) {
-  session_error_cb_.Run(session_id, exception, system_code, error_message);
+  legacy_session_error_cb_.Run(session_id, exception, system_code,
+                               error_message);
 }
 
 void ProxyMediaKeys::OnSessionKeysChange(const std::string& session_id,
@@ -189,13 +190,13 @@ ProxyMediaKeys::ProxyMediaKeys(
     RendererCdmManager* manager,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::SessionErrorCB& session_error_cb,
+    const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb)
     : manager_(manager),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
-      session_error_cb_(session_error_cb),
+      legacy_session_error_cb_(legacy_session_error_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb) {
   cdm_id_ = manager->RegisterMediaKeys(this);

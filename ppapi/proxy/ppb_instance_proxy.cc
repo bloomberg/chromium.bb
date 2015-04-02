@@ -193,8 +193,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgSessionExpirationChange)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SessionClosed,
                         OnHostMsgSessionClosed)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SessionError,
-                        OnHostMsgSessionError)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_LegacySessionError,
+                        OnHostMsgLegacySessionError)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DeliverBlock,
                         OnHostMsgDeliverBlock)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DecoderInitializeDone,
@@ -650,12 +650,12 @@ void PPB_Instance_Proxy::SessionClosed(PP_Instance instance,
       SerializedVarSendInput(dispatcher(), session_id_var)));
 }
 
-void PPB_Instance_Proxy::SessionError(PP_Instance instance,
-                                      PP_Var session_id_var,
-                                      PP_CdmExceptionCode exception_code,
-                                      uint32 system_code,
-                                      PP_Var error_description_var) {
-  dispatcher()->Send(new PpapiHostMsg_PPBInstance_SessionError(
+void PPB_Instance_Proxy::LegacySessionError(PP_Instance instance,
+                                            PP_Var session_id_var,
+                                            PP_CdmExceptionCode exception_code,
+                                            uint32 system_code,
+                                            PP_Var error_description_var) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_LegacySessionError(
       API_ID_PPB_INSTANCE, instance,
       SerializedVarSendInput(dispatcher(), session_id_var), exception_code,
       system_code,
@@ -1311,7 +1311,7 @@ void PPB_Instance_Proxy::OnHostMsgSessionClosed(
   }
 }
 
-void PPB_Instance_Proxy::OnHostMsgSessionError(
+void PPB_Instance_Proxy::OnHostMsgLegacySessionError(
     PP_Instance instance,
     SerializedVarReceiveInput session_id,
     PP_CdmExceptionCode exception_code,
@@ -1321,9 +1321,9 @@ void PPB_Instance_Proxy::OnHostMsgSessionError(
     return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
-    enter.functions()->SessionError(instance, session_id.Get(dispatcher()),
-                                    exception_code, system_code,
-                                    error_description.Get(dispatcher()));
+    enter.functions()->LegacySessionError(
+        instance, session_id.Get(dispatcher()), exception_code, system_code,
+        error_description.Get(dispatcher()));
   }
 }
 

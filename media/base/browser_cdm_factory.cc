@@ -26,7 +26,7 @@ scoped_ptr<BrowserCdm> CreateBrowserCdm(
     bool use_secure_surface,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
-    const SessionErrorCB& session_error_cb,
+    const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb) {
   if (!g_cdm_factory) {
@@ -40,7 +40,8 @@ scoped_ptr<BrowserCdm> CreateBrowserCdm(
 
   return g_cdm_factory->CreateBrowserCdm(
       key_system, use_secure_surface, session_message_cb, session_closed_cb,
-      session_error_cb, session_keys_change_cb, session_expiration_update_cb);
+      legacy_session_error_cb, session_keys_change_cb,
+      session_expiration_update_cb);
 }
 
 }  // namespace media

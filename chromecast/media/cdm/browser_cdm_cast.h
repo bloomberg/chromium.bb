@@ -44,7 +44,7 @@ class BrowserCdmCast : public ::media::BrowserCdm {
   void Initialize(
       const ::media::SessionMessageCB& session_message_cb,
       const ::media::SessionClosedCB& session_closed_cb,
-      const ::media::SessionErrorCB& session_error_cb,
+      const ::media::LegacySessionErrorCB& legacy_session_error_cb,
       const ::media::SessionKeysChangeCB& session_keys_change_cb,
       const ::media::SessionExpirationUpdateCB& session_expiration_update_cb);
 
@@ -91,7 +91,7 @@ class BrowserCdmCast : public ::media::BrowserCdm {
 
   ::media::SessionMessageCB session_message_cb_;
   ::media::SessionClosedCB session_closed_cb_;
-  ::media::SessionErrorCB session_error_cb_;
+  ::media::LegacySessionErrorCB legacy_session_error_cb_;
   ::media::SessionKeysChangeCB session_keys_change_cb_;
   ::media::SessionExpirationUpdateCB session_expiration_update_cb_;
 

@@ -62,10 +62,10 @@ class MojoCdmService
   void OnSessionExpirationUpdate(const std::string& session_id,
                                  const base::Time& new_expiry_time);
   void OnSessionClosed(const std::string& session_id);
-  void OnSessionError(const std::string& session_id,
-                      MediaKeys::Exception exception,
-                      uint32_t system_code,
-                      const std::string& error_message);
+  void OnLegacySessionError(const std::string& session_id,
+                            MediaKeys::Exception exception,
+                            uint32_t system_code,
+                            const std::string& error_message);
 
   scoped_ptr<MediaKeys> cdm_;
 

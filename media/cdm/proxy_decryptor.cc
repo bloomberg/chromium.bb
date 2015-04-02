@@ -99,14 +99,12 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
     StripHeader(init_data_vector, strlen(kPrefixedApiPersistentSessionHeader));
   }
 
-  scoped_ptr<NewSessionCdmPromise> promise(
-      new CdmCallbackPromise<std::string>(
-          base::Bind(&ProxyDecryptor::SetSessionId,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     session_creation_type),
-          base::Bind(&ProxyDecryptor::OnSessionError,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::string())));  // No session id until created.
+  scoped_ptr<NewSessionCdmPromise> promise(new CdmCallbackPromise<std::string>(
+      base::Bind(&ProxyDecryptor::SetSessionId, weak_ptr_factory_.GetWeakPtr(),
+                 session_creation_type),
+      base::Bind(&ProxyDecryptor::OnLegacySessionError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 std::string())));  // No session id until created.
 
   if (session_creation_type == LoadSession) {
     media_keys_->LoadSession(
@@ -178,10 +176,8 @@ void ProxyDecryptor::AddKey(const uint8* key,
       base::hash_map<std::string, bool>::iterator it = active_sessions_.begin();
       new_session_id = it->first;
     } else {
-      OnSessionError(std::string(),
-                     MediaKeys::NOT_SUPPORTED_ERROR,
-                     0,
-                     "SessionId not specified.");
+      OnLegacySessionError(std::string(), MediaKeys::NOT_SUPPORTED_ERROR, 0,
+                           "SessionId not specified.");
       return;
     }
   }
@@ -189,7 +185,7 @@ void ProxyDecryptor::AddKey(const uint8* key,
   scoped_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
       base::Bind(&ProxyDecryptor::GenerateKeyAdded,
                  weak_ptr_factory_.GetWeakPtr(), session_id),
-      base::Bind(&ProxyDecryptor::OnSessionError,
+      base::Bind(&ProxyDecryptor::OnLegacySessionError,
                  weak_ptr_factory_.GetWeakPtr(), session_id)));
 
   // EME WD spec only supports a single array passed to the CDM. For
@@ -223,7 +219,7 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
   scoped_ptr<SimpleCdmPromise> promise(new CdmCallbackPromise<>(
       base::Bind(&ProxyDecryptor::OnSessionClosed,
                  weak_ptr_factory_.GetWeakPtr(), session_id),
-      base::Bind(&ProxyDecryptor::OnSessionError,
+      base::Bind(&ProxyDecryptor::OnLegacySessionError,
                  weak_ptr_factory_.GetWeakPtr(), session_id)));
   media_keys_->RemoveSession(session_id, promise.Pass());
 }
@@ -239,13 +235,10 @@ scoped_ptr<MediaKeys> ProxyDecryptor::CreateMediaKeys(
   bool allow_persistent_state = true;
   base::WeakPtr<ProxyDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
   return cdm_factory->Create(
-      key_system,
-      allow_distinctive_identifier,
-      allow_persistent_state,
-      security_origin,
-      base::Bind(&ProxyDecryptor::OnSessionMessage, weak_this),
+      key_system, allow_distinctive_identifier, allow_persistent_state,
+      security_origin, base::Bind(&ProxyDecryptor::OnSessionMessage, weak_this),
       base::Bind(&ProxyDecryptor::OnSessionClosed, weak_this),
-      base::Bind(&ProxyDecryptor::OnSessionError, weak_this),
+      base::Bind(&ProxyDecryptor::OnLegacySessionError, weak_this),
       base::Bind(&ProxyDecryptor::OnSessionKeysChange, weak_this),
       base::Bind(&ProxyDecryptor::OnSessionExpirationUpdate, weak_this));
 }
@@ -303,17 +296,17 @@ void ProxyDecryptor::OnSessionClosed(const std::string& session_id) {
     return;
 
   if (it->second) {
-    OnSessionError(session_id, MediaKeys::NOT_SUPPORTED_ERROR,
-                   kSessionClosedSystemCode,
-                   "Do not close persistent sessions.");
+    OnLegacySessionError(session_id, MediaKeys::NOT_SUPPORTED_ERROR,
+                         kSessionClosedSystemCode,
+                         "Do not close persistent sessions.");
   }
   active_sessions_.erase(it);
 }
 
-void ProxyDecryptor::OnSessionError(const std::string& session_id,
-                                    MediaKeys::Exception exception_code,
-                                    uint32 system_code,
-                                    const std::string& error_message) {
+void ProxyDecryptor::OnLegacySessionError(const std::string& session_id,
+                                          MediaKeys::Exception exception_code,
+                                          uint32 system_code,
+                                          const std::string& error_message) {
   // Convert |error_name| back to MediaKeys::KeyError if possible. Prefixed
   // EME has different error message, so all the specific error events will
   // get lost.

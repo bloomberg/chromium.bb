@@ -27,7 +27,7 @@ BrowserCdmCast::~BrowserCdmCast() {
 void BrowserCdmCast::Initialize(
     const ::media::SessionMessageCB& session_message_cb,
     const ::media::SessionClosedCB& session_closed_cb,
-    const ::media::SessionErrorCB& session_error_cb,
+    const ::media::LegacySessionErrorCB& legacy_session_error_cb,
     const ::media::SessionKeysChangeCB& session_keys_change_cb,
     const ::media::SessionExpirationUpdateCB& session_expiration_update_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -36,7 +36,7 @@ void BrowserCdmCast::Initialize(
 
   session_message_cb_ = session_message_cb;
   session_closed_cb_ = session_closed_cb;
-  session_error_cb_ = session_error_cb;
+  legacy_session_error_cb_ = legacy_session_error_cb;
   session_keys_change_cb_ = session_keys_change_cb;
   session_expiration_update_cb_ = session_expiration_update_cb;
 }
@@ -57,10 +57,9 @@ void BrowserCdmCast::LoadSession(
     const std::string& session_id,
     scoped_ptr<::media::NewSessionCdmPromise> promise) {
   NOTREACHED() << "LoadSession not supported";
-  session_error_cb_.Run(session_id,
-                        ::media::MediaKeys::Exception::NOT_SUPPORTED_ERROR,
-                        0,
-                        std::string());
+  legacy_session_error_cb_.Run(
+      session_id, ::media::MediaKeys::Exception::NOT_SUPPORTED_ERROR, 0,
+      std::string());
 }
 
 ::media::CdmContext* BrowserCdmCast::GetCdmContext() {

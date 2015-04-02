@@ -24,7 +24,7 @@ class MEDIA_EXPORT BrowserCdmFactory {
       bool use_secure_surface,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
-      const SessionErrorCB& session_error_cb,
+      const LegacySessionErrorCB& legacy_session_error_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
       const SessionExpirationUpdateCB& session_expiration_update_cb) = 0;
 
@@ -46,7 +46,7 @@ CreateBrowserCdm(const std::string& key_system,
                  bool use_secure_surface,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
-                 const SessionErrorCB& session_error_cb,
+                 const LegacySessionErrorCB& legacy_session_error_cb,
                  const SessionKeysChangeCB& session_keys_change_cb,
                  const SessionExpirationUpdateCB& session_expiration_update_cb);
 

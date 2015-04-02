@@ -18,7 +18,7 @@ scoped_ptr<BrowserCdm> BrowserCdmFactoryAndroid::CreateBrowserCdm(
     bool use_secure_surface,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
-    const SessionErrorCB& session_error_cb,
+    const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb) {
   if (!MediaDrmBridge::IsKeySystemSupported(key_system)) {
@@ -26,9 +26,10 @@ scoped_ptr<BrowserCdm> BrowserCdmFactoryAndroid::CreateBrowserCdm(
     return scoped_ptr<BrowserCdm>();
   }
 
-  scoped_ptr<MediaDrmBridge> cdm(MediaDrmBridge::Create(
-      key_system, session_message_cb, session_closed_cb, session_error_cb,
-      session_keys_change_cb, session_expiration_update_cb));
+  scoped_ptr<MediaDrmBridge> cdm(
+      MediaDrmBridge::Create(key_system, session_message_cb, session_closed_cb,
+                             legacy_session_error_cb, session_keys_change_cb,
+                             session_expiration_update_cb));
   if (!cdm) {
     NOTREACHED() << "MediaDrmBridge cannot be created for " << key_system;
     return scoped_ptr<BrowserCdm>();

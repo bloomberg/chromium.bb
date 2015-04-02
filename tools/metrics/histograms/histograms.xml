@@ -57298,6 +57298,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1360443600" label="PPB_OpenGLES2FramebufferMultisample;1.0"/>
   <int value="1374404330" label="PPB_BrokerTrusted;0.3"/>
   <int value="1374976378" label="PPB_OpenGLES2Query;1.0"/>
+  <int value="1423820530" label="PPB_ContentDecryptor_Private;0.14"/>
   <int value="1437724812" label="PPB_AudioConfig;1.0"/>
   <int value="1443771913" label="PPB_NetAddress;1.0"/>
   <int value="1502481774" label="PPB_OpenGLES2ChromiumMapSub(Dev);1.0"/>

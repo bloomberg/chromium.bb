@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_content_decryptor_private.idl modified Mon Jan 12 17:33:29
+// From private/ppb_content_decryptor_private.idl modified Mon Mar 30 22:35:33
 // 2015.
 
 #include "ppapi/c/pp_errors.h"
@@ -94,17 +94,17 @@ void SessionClosed(PP_Instance instance, struct PP_Var session_id) {
   enter.functions()->SessionClosed(instance, session_id);
 }
 
-void SessionError(PP_Instance instance,
-                  struct PP_Var session_id,
-                  PP_CdmExceptionCode exception_code,
-                  uint32_t system_code,
-                  struct PP_Var error_description) {
-  VLOG(4) << "PPB_ContentDecryptor_Private::SessionError()";
+void LegacySessionError(PP_Instance instance,
+                        struct PP_Var session_id,
+                        PP_CdmExceptionCode exception_code,
+                        uint32_t system_code,
+                        struct PP_Var error_description) {
+  VLOG(4) << "PPB_ContentDecryptor_Private::LegacySessionError()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SessionError(instance, session_id, exception_code,
-                                  system_code, error_description);
+  enter.functions()->LegacySessionError(instance, session_id, exception_code,
+                                        system_code, error_description);
 }
 
 void DeliverBlock(PP_Instance instance,
@@ -174,15 +174,15 @@ void DeliverSamples(
                                     decrypted_sample_info);
 }
 
-const PPB_ContentDecryptor_Private_0_13
-    g_ppb_contentdecryptor_private_thunk_0_13 = {&PromiseResolved,
+const PPB_ContentDecryptor_Private_0_14
+    g_ppb_contentdecryptor_private_thunk_0_14 = {&PromiseResolved,
                                                  &PromiseResolvedWithSession,
                                                  &PromiseRejected,
                                                  &SessionMessage,
                                                  &SessionKeysChange,
                                                  &SessionExpirationChange,
                                                  &SessionClosed,
-                                                 &SessionError,
+                                                 &LegacySessionError,
                                                  &DeliverBlock,
                                                  &DecoderInitializeDone,
                                                  &DecoderDeinitializeDone,
@@ -192,9 +192,9 @@ const PPB_ContentDecryptor_Private_0_13
 
 }  // namespace
 
-PPAPI_THUNK_EXPORT const PPB_ContentDecryptor_Private_0_13*
-GetPPB_ContentDecryptor_Private_0_13_Thunk() {
-  return &g_ppb_contentdecryptor_private_thunk_0_13;
+PPAPI_THUNK_EXPORT const PPB_ContentDecryptor_Private_0_14*
+GetPPB_ContentDecryptor_Private_0_14_Thunk() {
+  return &g_ppb_contentdecryptor_private_thunk_0_14;
 }
 
 }  // namespace thunk

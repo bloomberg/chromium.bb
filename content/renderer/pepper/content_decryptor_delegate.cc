@@ -378,7 +378,7 @@ void ContentDecryptorDelegate::Initialize(
     bool allow_persistent_state,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::SessionErrorCB& session_error_cb,
+    const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb,
     const base::Closure& fatal_plugin_error_cb) {
@@ -388,7 +388,7 @@ void ContentDecryptorDelegate::Initialize(
 
   session_message_cb_ = session_message_cb;
   session_closed_cb_ = session_closed_cb;
-  session_error_cb_ = session_error_cb;
+  legacy_session_error_cb_ = legacy_session_error_cb;
   session_keys_change_cb_ = session_keys_change_cb;
   session_expiration_update_cb_ = session_expiration_update_cb;
   fatal_plugin_error_cb_ = fatal_plugin_error_cb;
@@ -846,14 +846,14 @@ void ContentDecryptorDelegate::OnSessionClosed(PP_Var session_id) {
   session_closed_cb_.Run(session_id_string->value());
 }
 
-void ContentDecryptorDelegate::OnSessionError(
+void ContentDecryptorDelegate::OnLegacySessionError(
     PP_Var session_id,
     PP_CdmExceptionCode exception_code,
     uint32 system_code,
     PP_Var error_description) {
   ReportSystemCodeUMA(key_system_, system_code);
 
-  if (session_error_cb_.is_null())
+  if (legacy_session_error_cb_.is_null())
     return;
 
   StringVar* session_id_string = StringVar::FromPPVar(session_id);
@@ -862,9 +862,9 @@ void ContentDecryptorDelegate::OnSessionError(
   StringVar* error_description_string = StringVar::FromPPVar(error_description);
   DCHECK(error_description_string);
 
-  session_error_cb_.Run(session_id_string->value(),
-                        PpExceptionTypeToMediaException(exception_code),
-                        system_code, error_description_string->value());
+  legacy_session_error_cb_.Run(session_id_string->value(),
+                               PpExceptionTypeToMediaException(exception_code),
+                               system_code, error_description_string->value());
 }
 
 void ContentDecryptorDelegate::DecoderInitializeDone(

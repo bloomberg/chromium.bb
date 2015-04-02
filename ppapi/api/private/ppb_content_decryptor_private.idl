@@ -12,7 +12,7 @@
 [generate_thunk]
 
 label Chrome {
-  M41 = 0.13
+  M44 = 0.14
 };
 
 /**
@@ -170,7 +170,7 @@ interface PPB_ContentDecryptor_Private {
    * @param[in] error_description A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the error description.
    */
-  void SessionError(
+  void LegacySessionError(
       [in] PP_Instance instance,
       [in] PP_Var session_id,
       [in] PP_CdmExceptionCode exception_code,

@@ -1165,7 +1165,7 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_SessionExpirationChange,
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_SessionClosed,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* session_id, String */)
-IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_SessionError,
+IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_LegacySessionError,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* session_id, String */,
                     PP_CdmExceptionCode /* exception_code */,

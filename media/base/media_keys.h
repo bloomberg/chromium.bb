@@ -164,7 +164,8 @@ typedef base::Callback<void(const std::string& session_id)> SessionClosedCB;
 typedef base::Callback<void(const std::string& session_id,
                             MediaKeys::Exception exception,
                             uint32 system_code,
-                            const std::string& error_message)> SessionErrorCB;
+                            const std::string& error_message)>
+    LegacySessionErrorCB;
 
 typedef base::Callback<void(const std::string& session_id,
                             bool has_additional_usable_key,
