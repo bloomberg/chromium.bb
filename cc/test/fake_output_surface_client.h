@@ -46,7 +46,6 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
       bool resourceless_software_draw) override {}
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
   void SetTreeActivationCallback(const base::Closure&) override {}
-  void OnDraw() override {}
 
   int swap_count() { return swap_count_; }
 

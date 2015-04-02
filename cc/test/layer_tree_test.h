@@ -99,7 +99,6 @@ class TestHooks : public AnimationDelegate {
   virtual void ScheduledActionCommit() {}
   virtual void ScheduledActionBeginOutputSurfaceCreation() {}
   virtual void ScheduledActionPrepareTiles() {}
-  virtual void ScheduledActionInvalidateOutputSurface() {}
 
   // Implementation of AnimationDelegate:
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,

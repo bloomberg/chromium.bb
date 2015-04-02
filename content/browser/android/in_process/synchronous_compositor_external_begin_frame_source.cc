@@ -30,10 +30,11 @@ SynchronousCompositorExternalBeginFrameSource::
   DCHECK(!compositor_);
 }
 
-void SynchronousCompositorExternalBeginFrameSource::BeginFrame(
-    const cc::BeginFrameArgs& args) {
+void SynchronousCompositorExternalBeginFrameSource::BeginFrame() {
   DCHECK(CalledOnValidThread());
-  CallOnBeginFrame(args);
+  CallOnBeginFrame(cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, gfx::FrameTime::Now(), base::TimeTicks(),
+      cc::BeginFrameArgs::DefaultInterval(), cc::BeginFrameArgs::SYNCHRONOUS));
 }
 
 void SynchronousCompositorExternalBeginFrameSource::SetCompositor(
@@ -45,8 +46,9 @@ void SynchronousCompositorExternalBeginFrameSource::SetCompositor(
 void SynchronousCompositorExternalBeginFrameSource::OnNeedsBeginFramesChange(
     bool needs_begin_frames) {
   DCHECK(CalledOnValidThread());
+
   if (compositor_)
-    compositor_->OnNeedsBeginFramesChange(needs_begin_frames);
+    compositor_->NeedsBeginFramesChanged();
 }
 
 void SynchronousCompositorExternalBeginFrameSource::SetClientReady() {

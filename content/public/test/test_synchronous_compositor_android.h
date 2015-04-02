@@ -31,7 +31,6 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
   bool DemandDrawSw(SkCanvas* canvas) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
   void DidChangeRootLayerScrollOffset() override {}
-  void SetIsActive(bool is_active) override {}
 
  private:
   SynchronousCompositorClient* client_;

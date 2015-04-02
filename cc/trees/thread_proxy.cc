@@ -1114,12 +1114,6 @@ DrawResult ThreadProxy::ScheduledActionDrawAndSwapForced() {
   return DrawSwapInternal(forced_draw);
 }
 
-void ThreadProxy::ScheduledActionInvalidateOutputSurface() {
-  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionInvalidateOutputSurface");
-  DCHECK(impl().layer_tree_host_impl->output_surface());
-  impl().layer_tree_host_impl->output_surface()->Invalidate();
-}
-
 void ThreadProxy::DidAnticipatedDrawTimeChange(base::TimeTicks time) {
   if (impl().current_resource_update_controller)
     impl().current_resource_update_controller->PerformMoreUpdates(time);
@@ -1379,11 +1373,6 @@ void ThreadProxy::DidCompletePageScaleAnimationOnImplThread() {
   Proxy::MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ThreadProxy::DidCompletePageScaleAnimation,
                             main_thread_weak_ptr_));
-}
-
-void ThreadProxy::OnDrawForOutputSurface() {
-  DCHECK(IsImplThread());
-  impl().scheduler->OnDrawForOutputSurface();
 }
 
 }  // namespace cc

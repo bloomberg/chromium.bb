@@ -96,7 +96,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
       content::SynchronousCompositor* compositor) override;
   void DidDestroyCompositor(
       content::SynchronousCompositor* compositor) override;
-  void PostInvalidate() override;
+  void SetContinuousInvalidate(bool invalidate) override;
   void DidUpdateContent() override;
   gfx::Vector2dF GetTotalRootLayerScrollOffset() override;
   void UpdateRootLayerState(const gfx::Vector2dF& total_scroll_offset_dip,
@@ -116,13 +116,12 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
  private:
   void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value_dip);
   bool CanOnDraw();
-  // Posts an invalidate with fallback tick. All invalidates posted while an
-  // invalidate is pending will be posted as a single invalidate after the
-  // pending invalidate is done.
-  void PostInvalidateWithFallback();
-  void CancelFallbackTick();
-  void UpdateCompositorIsActive();
+  // Checks the continuous invalidate and block invalidate state, and schedule
+  // invalidates appropriately. If |force_invalidate| is true, then send a view
+  // invalidate regardless of compositor expectation.
+  void EnsureContinuousInvalidation(bool force_invalidate);
   bool CompositeSW(SkCanvas* canvas);
+  void DidComposite();
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
   RootLayerStateAsValue(const gfx::Vector2dF& total_scroll_offset_dip,
                         const gfx::SizeF& scrollable_size_dip);
@@ -146,7 +145,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   gfx::Vector2d max_scroll_offset() const;
 
   size_t CalculateDesiredMemoryPolicy();
-
   // For debug tracing or logging. Return the string representation of this
   // view renderer's state.
   std::string ToString() const;
@@ -172,6 +170,14 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   gfx::Vector2d last_on_draw_scroll_offset_;
   gfx::Rect last_on_draw_global_visible_rect_;
 
+  // When true, we should continuously invalidate and keep drawing, for example
+  // to drive animation. This value is set by the compositor and should always
+  // reflect the expectation of the compositor and not be reused for other
+  // states.
+  bool compositor_needs_continuous_invalidate_;
+
+  // Used to block additional invalidates while one is already pending.
+  bool block_invalidates_;
 
   base::CancelableClosure post_fallback_tick_;
   base::CancelableClosure fallback_tick_fired_;
