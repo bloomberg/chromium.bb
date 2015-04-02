@@ -461,8 +461,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         // Ignore if url is redirected, transition type is IncomingIntent and a new intent doesn't
         // have any new resolver.
         redirectHandler.updateIntent(ytIntent);
-        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, 0, 0);
-        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, 0, 0);
+        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0);
         check("http://m.youtube.com/",
                 null, /* referrer */
                 false, /* incognito */
@@ -475,8 +475,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 IGNORE);
         // Do not ignore if a new intent has any new resolver.
         redirectHandler.updateIntent(fooIntent);
-        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, 0, 0);
-        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, 0, 0);
+        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0);
         check("http://m.youtube.com/",
                 null, /* referrer */
                 false, /* incognito */
@@ -606,20 +606,20 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     public void testFallback_UseFallbackUrlForRedirectionFromTypedInUrl() {
         TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
 
-        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0);
         check("http://goo.gl/abcdefg", null, /* referrer */
                 false, /* incognito */
                 PageTransition.TYPED, NO_REDIRECT, true, false, redirectHandler,
                 OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
-        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, true, 0, 0);
+        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, true, false, 0, 0);
         check(INTENT_URL_WITH_FALLBACK_URL_WITHOUT_PACKAGE_NAME, null, /* referrer */
                 false, /* incognito */
                 PageTransition.TYPED, REDIRECT, true, false, redirectHandler,
                 OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
 
         // Now the user opens a link.
-        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, 0, 1);
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 1);
         check("http://m.youtube.com/", null, /* referrer */
                 false, /* incognito */
                 PageTransition.LINK, NO_REDIRECT, true, false, redirectHandler,
@@ -633,7 +633,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
         TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
 
-        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0);
         check(INTENT_URL_WITH_CHAIN_FALLBACK_URL,
                 null, /* referrer */
                 false, /* incognito */
@@ -649,7 +649,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         // The fall-back URL was HTTP-schemed, but it was effectively redirected to a new intent
         // URL using javascript. However, we do not allow chained fallback intent, so we do NOT
         // override URL loading here.
-        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 0);
         check(INTENT_URL_WITH_FALLBACK_URL,
                 null, /* referrer */
                 false, /* incognito */
@@ -668,7 +668,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         // systemclock or pass the new time as parameter.
         long lastUserInteractionTimeInMillis = SystemClock.elapsedRealtime() + 2 * 1000L;
         redirectHandler.updateNewUrlLoading(
-                PageTransition.LINK, false, lastUserInteractionTimeInMillis, 1);
+                PageTransition.LINK, false, true, lastUserInteractionTimeInMillis, 1);
         check(INTENT_URL_WITH_FALLBACK_URL,
                 null, /* referrer */
                 false, /* incognito */
@@ -685,7 +685,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     public void testIgnoreEffectiveRedirectFromUserTyping() {
         TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
 
-        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0);
         check("http://m.youtube.com/",
                 null, /* referrer */
                 false, /* incognito */
@@ -697,7 +697,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 OverrideUrlLoadingResult.NO_OVERRIDE,
                 IGNORE);
 
-        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, true, 0, 0);
+        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, true, false, 0, 0);
         check("http://m.youtube.com/",
                 null, /* referrer */
                 false, /* incognito */
@@ -709,7 +709,48 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 OverrideUrlLoadingResult.NO_OVERRIDE,
                 IGNORE);
 
-        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, 0, 1);
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1);
+        check("http://m.youtube.com/",
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.LINK,
+                NO_REDIRECT,
+                true,
+                false,
+                redirectHandler,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+    }
+
+    @SmallTest
+    public void testNavigationFromLinkWithoutUserGesture() {
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(null);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 1, 0);
+        check("http://m.youtube.com/",
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.LINK,
+                NO_REDIRECT,
+                true,
+                false,
+                redirectHandler,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, true, false, 1, 0);
+        check("http://m.youtube.com/",
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.LINK,
+                REDIRECT,
+                true,
+                false,
+                redirectHandler,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 1, 1);
         check("http://m.youtube.com/",
                 null, /* referrer */
                 false, /* incognito */
