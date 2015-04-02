@@ -11,6 +11,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/sessions/session_restore_delegate.h"
 #include "chrome/browser/sessions/tab_loader_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -36,10 +37,33 @@ class TabLoader : public content::NotificationObserver,
                   public base::RefCounted<TabLoader>,
                   public TabLoaderCallback {
  public:
-  // Retrieves a pointer to the TabLoader instance shared between profiles, or
-  // creates a new TabLoader if it doesn't exist. If a TabLoader is created, its
-  // starting timestamp is set to |restore_started|.
-  static TabLoader* GetTabLoader(base::TimeTicks restore_started);
+  using RestoredTab = SessionRestoreDelegate::RestoredTab;
+
+  // NotificationObserver method. Removes the specified tab and loads the next
+  // tab.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
+  // TabLoaderCallback:
+  void SetTabLoadingEnabled(bool enable_tab_loading) override;
+
+  // Called to start restoring tabs.
+  static void RestoreTabs(const std::vector<RestoredTab>& tabs_,
+                          const base::TimeTicks& restore_started);
+
+ private:
+  friend class base::RefCounted<TabLoader>;
+
+  using TabsLoading = std::set<content::NavigationController*>;
+  using TabsToLoad = std::list<content::NavigationController*>;
+  using RenderWidgetHostSet = std::set<content::RenderWidgetHost*>;
+
+  explicit TabLoader(base::TimeTicks restore_started);
+  ~TabLoader() override;
+
+  // This is invoked once by RestoreTabs to start loading.
+  void StartLoading(const std::vector<RestoredTab>& tabs);
 
   // Schedules a tab for loading.
   void ScheduleLoad(content::NavigationController* controller);
@@ -48,24 +72,6 @@ class TabLoader : public content::NotificationObserver,
   // some other mechanism.
   void TabIsLoading(content::NavigationController* controller);
 
-  // Invokes |LoadNextTab| to load a tab.
-  //
-  // This must be invoked once to start loading.
-  void StartLoading();
-
-  // TabLoaderCallback:
-  void SetTabLoadingEnabled(bool enable_tab_loading) override;
-
- private:
-  friend class base::RefCounted<TabLoader>;
-
-  typedef std::set<content::NavigationController*> TabsLoading;
-  typedef std::list<content::NavigationController*> TabsToLoad;
-  typedef std::set<content::RenderWidgetHost*> RenderWidgetHostSet;
-
-  explicit TabLoader(base::TimeTicks restore_started);
-  ~TabLoader() override;
-
   // Loads the next tab. If there are no more tabs to load this deletes itself,
   // otherwise |force_load_timer_| is restarted.
   void LoadNextTab();
@@ -73,12 +79,6 @@ class TabLoader : public content::NotificationObserver,
   // Starts a timer to load load the next tab once expired before the current
   // tab loading is finished.
   void StartTimer();
-
-  // NotificationObserver method. Removes the specified tab and loads the next
-  // tab.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // Removes the listeners from the specified tab and removes the tab from
   // the set of tabs to load and list of tabs we're waiting to get a load

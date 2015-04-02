@@ -2553,6 +2553,8 @@
       'browser/sessions/persistent_tab_restore_service.h',
       'browser/sessions/session_restore.cc',
       'browser/sessions/session_restore.h',
+      'browser/sessions/session_restore_delegate.cc',
+      'browser/sessions/session_restore_delegate.h',
       'browser/sessions/session_service.cc',
       'browser/sessions/session_service.h',
       'browser/sessions/session_service_factory.cc',

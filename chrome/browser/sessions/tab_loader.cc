@@ -23,125 +23,6 @@ using content::NavigationController;
 using content::RenderWidgetHost;
 using content::WebContents;
 
-// static
-TabLoader* TabLoader::GetTabLoader(base::TimeTicks restore_started) {
-  if (!shared_tab_loader_)
-    shared_tab_loader_ = new TabLoader(restore_started);
-  return shared_tab_loader_;
-}
-
-void TabLoader::ScheduleLoad(NavigationController* controller) {
-  CheckNotObserving(controller);
-  DCHECK(controller);
-  DCHECK(find(tabs_to_load_.begin(), tabs_to_load_.end(), controller) ==
-         tabs_to_load_.end());
-  tabs_to_load_.push_back(controller);
-  RegisterForNotifications(controller);
-}
-
-void TabLoader::TabIsLoading(NavigationController* controller) {
-  CheckNotObserving(controller);
-  DCHECK(controller);
-  DCHECK(find(tabs_loading_.begin(), tabs_loading_.end(), controller) ==
-         tabs_loading_.end());
-  tabs_loading_.insert(controller);
-  RenderWidgetHost* render_widget_host = GetRenderWidgetHost(controller);
-  DCHECK(render_widget_host);
-  render_widget_hosts_loading_.insert(render_widget_host);
-  RegisterForNotifications(controller);
-}
-
-void TabLoader::StartLoading() {
-  // When multiple profiles are using the same TabLoader, another profile might
-  // already have started loading. In that case, the tabs scheduled for loading
-  // by this profile are already in the loading queue, and they will get loaded
-  // eventually.
-  if (delegate_)
-    return;
-
-  registrar_.Add(
-      this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-      content::NotificationService::AllSources());
-  this_retainer_ = this;
-  // Create a TabLoaderDelegate which will allow OS specific behavior for tab
-  // loading.
-  if (!delegate_) {
-    delegate_ = TabLoaderDelegate::Create(this);
-    // There is already at least one tab loading (the active tab). As such we
-    // only have to start the timeout timer here.
-    StartTimer();
-  }
-}
-
-void TabLoader::SetTabLoadingEnabled(bool enable_tab_loading) {
-  if (enable_tab_loading == loading_enabled_)
-    return;
-  loading_enabled_ = enable_tab_loading;
-  if (loading_enabled_)
-    LoadNextTab();
-  else
-    force_load_timer_.Stop();
-}
-
-TabLoader::TabLoader(base::TimeTicks restore_started)
-    : memory_pressure_listener_(
-          base::Bind(&TabLoader::OnMemoryPressure, base::Unretained(this))),
-      force_load_delay_multiplier_(1),
-      loading_enabled_(true),
-      got_first_foreground_load_(false),
-      got_first_paint_(false),
-      tab_count_(0),
-      restore_started_(restore_started),
-      max_parallel_tab_loads_(0) {
-}
-
-TabLoader::~TabLoader() {
-  DCHECK((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
-         tabs_loading_.empty() && tabs_to_load_.empty());
-  shared_tab_loader_ = nullptr;
-}
-
-void TabLoader::LoadNextTab() {
-  // LoadNextTab should only get called after we have started the tab
-  // loading.
-  CHECK(delegate_);
-  if (!tabs_to_load_.empty()) {
-    NavigationController* tab = tabs_to_load_.front();
-    DCHECK(tab);
-    tabs_loading_.insert(tab);
-    if (tabs_loading_.size() > max_parallel_tab_loads_)
-      max_parallel_tab_loads_ = tabs_loading_.size();
-    tabs_to_load_.pop_front();
-    tab->LoadIfNecessary();
-    content::WebContents* contents = tab->GetWebContents();
-    if (contents) {
-      Browser* browser = chrome::FindBrowserWithWebContents(contents);
-      if (browser &&
-          browser->tab_strip_model()->GetActiveWebContents() != contents) {
-        // By default tabs are marked as visible. As only the active tab is
-        // visible we need to explicitly tell non-active tabs they are hidden.
-        // Without this call non-active tabs are not marked as backgrounded.
-        //
-        // NOTE: We need to do this here rather than when the tab is added to
-        // the Browser as at that time not everything has been created, so that
-        // the call would do nothing.
-        contents->WasHidden();
-      }
-    }
-  }
-
-  if (!tabs_to_load_.empty())
-    StartTimer();
-}
-
-void TabLoader::StartTimer() {
-  force_load_timer_.Stop();
-  force_load_timer_.Start(FROM_HERE,
-                          delegate_->GetTimeoutBeforeLoadingNextTab() *
-                              force_load_delay_multiplier_,
-                          this, &TabLoader::ForceLoadTimerFired);
-}
-
 void TabLoader::Observe(int type,
                         const content::NotificationSource& source,
                         const content::NotificationDetails& details) {
@@ -258,6 +139,136 @@ void TabLoader::Observe(int type,
   if ((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
       tabs_loading_.empty() && tabs_to_load_.empty())
     this_retainer_ = nullptr;
+}
+
+void TabLoader::SetTabLoadingEnabled(bool enable_tab_loading) {
+  if (enable_tab_loading == loading_enabled_)
+    return;
+  loading_enabled_ = enable_tab_loading;
+  if (loading_enabled_)
+    LoadNextTab();
+  else
+    force_load_timer_.Stop();
+}
+
+// static
+void TabLoader::RestoreTabs(const std::vector<RestoredTab>& tabs,
+                            const base::TimeTicks& restore_started) {
+  if (!shared_tab_loader_)
+    shared_tab_loader_ = new TabLoader(restore_started);
+
+  shared_tab_loader_->StartLoading(tabs);
+}
+
+TabLoader::TabLoader(base::TimeTicks restore_started)
+    : memory_pressure_listener_(
+          base::Bind(&TabLoader::OnMemoryPressure, base::Unretained(this))),
+      force_load_delay_multiplier_(1),
+      loading_enabled_(true),
+      got_first_foreground_load_(false),
+      got_first_paint_(false),
+      tab_count_(0),
+      restore_started_(restore_started),
+      max_parallel_tab_loads_(0) {
+}
+
+TabLoader::~TabLoader() {
+  DCHECK((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
+         tabs_loading_.empty() && tabs_to_load_.empty());
+  shared_tab_loader_ = nullptr;
+}
+
+void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
+  // Add the tabs to the list of tabs loading/to load and register them for
+  // notifications.
+  for (auto& restored_tab : tabs) {
+    if (!restored_tab.is_active)
+      tabs_to_load_.push_back(&restored_tab.contents->GetController());
+    else
+      tabs_loading_.insert(&restored_tab.contents->GetController());
+    RegisterForNotifications(&restored_tab.contents->GetController());
+  }
+  // When multiple profiles are using the same TabLoader, another profile might
+  // already have started loading. In that case, the tabs scheduled for loading
+  // by this profile are already in the loading queue, and they will get loaded
+  // eventually.
+  if (delegate_)
+    return;
+
+  registrar_.Add(
+      this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+      content::NotificationService::AllSources());
+  this_retainer_ = this;
+  // Create a TabLoaderDelegate which will allow OS specific behavior for tab
+  // loading.
+  if (!delegate_) {
+    delegate_ = TabLoaderDelegate::Create(this);
+    // There is already at least one tab loading (the active tab). As such we
+    // only have to start the timeout timer here.
+    StartTimer();
+  }
+}
+
+void TabLoader::ScheduleLoad(NavigationController* controller) {
+  CheckNotObserving(controller);
+  DCHECK(controller);
+  DCHECK(find(tabs_to_load_.begin(), tabs_to_load_.end(), controller) ==
+         tabs_to_load_.end());
+  tabs_to_load_.push_back(controller);
+  RegisterForNotifications(controller);
+}
+
+void TabLoader::TabIsLoading(NavigationController* controller) {
+  CheckNotObserving(controller);
+  DCHECK(controller);
+  DCHECK(find(tabs_loading_.begin(), tabs_loading_.end(), controller) ==
+         tabs_loading_.end());
+  tabs_loading_.insert(controller);
+  RenderWidgetHost* render_widget_host = GetRenderWidgetHost(controller);
+  DCHECK(render_widget_host);
+  render_widget_hosts_loading_.insert(render_widget_host);
+  RegisterForNotifications(controller);
+}
+
+void TabLoader::LoadNextTab() {
+  // LoadNextTab should only get called after we have started the tab
+  // loading.
+  CHECK(delegate_);
+  if (!tabs_to_load_.empty()) {
+    NavigationController* tab = tabs_to_load_.front();
+    DCHECK(tab);
+    tabs_loading_.insert(tab);
+    if (tabs_loading_.size() > max_parallel_tab_loads_)
+      max_parallel_tab_loads_ = tabs_loading_.size();
+    tabs_to_load_.pop_front();
+    tab->LoadIfNecessary();
+    content::WebContents* contents = tab->GetWebContents();
+    if (contents) {
+      Browser* browser = chrome::FindBrowserWithWebContents(contents);
+      if (browser &&
+          browser->tab_strip_model()->GetActiveWebContents() != contents) {
+        // By default tabs are marked as visible. As only the active tab is
+        // visible we need to explicitly tell non-active tabs they are hidden.
+        // Without this call non-active tabs are not marked as backgrounded.
+        //
+        // NOTE: We need to do this here rather than when the tab is added to
+        // the Browser as at that time not everything has been created, so that
+        // the call would do nothing.
+        contents->WasHidden();
+      }
+    }
+  }
+
+  if (!tabs_to_load_.empty())
+    StartTimer();
+}
+
+void TabLoader::StartTimer() {
+  force_load_timer_.Stop();
+  force_load_timer_.Start(FROM_HERE,
+                          delegate_->GetTimeoutBeforeLoadingNextTab() *
+                              force_load_delay_multiplier_,
+                          this, &TabLoader::ForceLoadTimerFired);
 }
 
 void TabLoader::RemoveTab(NavigationController* tab) {

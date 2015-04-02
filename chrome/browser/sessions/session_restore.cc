@@ -24,6 +24,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/sessions/session_restore_delegate.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_utils.h"
@@ -60,6 +61,7 @@
 using content::NavigationController;
 using content::RenderWidgetHost;
 using content::WebContents;
+using RestoredTab = SessionRestoreDelegate::RestoredTab;
 
 namespace {
 
@@ -155,9 +157,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
   std::vector<Browser*> RestoreForeignSession(
       std::vector<const sessions::SessionWindow*>::const_iterator begin,
       std::vector<const sessions::SessionWindow*>::const_iterator end) {
-    StartTabCreation();
     std::vector<Browser*> browsers;
-    std::vector<WebContents*> created_contents;
+    std::vector<RestoredTab> created_contents;
     // Create a browser instance to put the restored tabs in.
     for (std::vector<const sessions::SessionWindow*>::const_iterator i = begin;
          i != end; ++i) {
@@ -177,7 +178,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     }
 
     // Always create in a new window.
-    FinishedTabCreation(true, true);
+    FinishedTabCreation(true, true, created_contents);
 
     on_session_restored_callbacks_->Notify(
         static_cast<int>(created_contents.size()));
@@ -269,11 +270,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
   Profile* profile() { return profile_; }
 
  private:
-  // Invoked when beginning to create new tabs. Resets the |tab_loader_|.
-  void StartTabCreation() {
-    tab_loader_ = TabLoader::GetTabLoader(restore_started_);
-  }
-
   // Invoked when done with creating all the tabs/browsers.
   //
   // |created_tabbed_browser| indicates whether a tabbed browser was created,
@@ -283,7 +279,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
   // have been loaded.
   //
   // Returns the Browser that was created, if any.
-  Browser* FinishedTabCreation(bool succeeded, bool created_tabbed_browser) {
+  Browser* FinishedTabCreation(
+      bool succeeded,
+      bool created_tabbed_browser,
+      const std::vector<RestoredTab>& contents_created) {
     Browser* browser = nullptr;
     if (!created_tabbed_browser && always_create_tabbed_browser_) {
       browser =
@@ -298,10 +297,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
     }
 
     if (succeeded) {
-      DCHECK(tab_loader_.get());
-      // TabLoader deletes itself when done loading.
-      tab_loader_->StartLoading();
-      tab_loader_ = nullptr;
+      // Start Loading tabs.
+      SessionRestoreDelegate::RestoreTabs(contents_created, restore_started_);
     }
 
     if (!synchronous_) {
@@ -346,7 +343,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   Browser* ProcessSessionWindowsAndNotify(
       std::vector<sessions::SessionWindow*>* windows,
       SessionID::id_type active_window_id) {
-    std::vector<WebContents*> contents;
+    std::vector<RestoredTab> contents;
     Browser* result =
         ProcessSessionWindows(windows, active_window_id, &contents);
     on_session_restored_callbacks_->Notify(static_cast<int>(contents.size()));
@@ -355,7 +352,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   Browser* ProcessSessionWindows(std::vector<sessions::SessionWindow*>* windows,
                                  SessionID::id_type active_window_id,
-                                 std::vector<WebContents*>* created_contents) {
+                                 std::vector<RestoredTab>* created_contents) {
     DVLOG(1) << "ProcessSessionWindows " << windows->size();
 
     if (windows->empty()) {
@@ -364,14 +361,13 @@ class SessionRestoreImpl : public content::NotificationObserver {
       content::BrowserContext::GetDefaultStoragePartition(profile_)
           ->GetDOMStorageContext()
           ->StartScavengingUnusedSessionStorage();
-      return FinishedTabCreation(false, false);
+      return FinishedTabCreation(false, false, *created_contents);
     }
 
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
         "SessionRestore-CreatingTabs-Start", false);
 #endif
-    StartTabCreation();
 
     // After the for loop this contains the last TABBED_BROWSER. Is null if no
     // tabbed browsers exist.
@@ -464,7 +460,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // If last_browser is NULL and urls_to_open_ is non-empty,
     // FinishedTabCreation will create a new TabbedBrowser and add the urls to
     // it.
-    Browser* finished_browser = FinishedTabCreation(true, has_tabbed_browser);
+    Browser* finished_browser =
+        FinishedTabCreation(true, has_tabbed_browser, *created_contents);
     if (finished_browser)
       last_browser = finished_browser;
 
@@ -504,7 +501,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
                             Browser* browser,
                             int initial_tab_count,
                             int selected_tab_index,
-                            std::vector<WebContents*>* created_contents) {
+                            std::vector<RestoredTab>* created_contents) {
     DVLOG(1) << "RestoreTabsToBrowser " << window.tabs.size();
     DCHECK(!window.tabs.empty());
     if (initial_tab_count == 0) {
@@ -514,13 +511,15 @@ class SessionRestoreImpl : public content::NotificationObserver {
         // Loads are scheduled for each restored tab unless the tab is going to
         // be selected as ShowBrowser() will load the selected tab.
         bool is_selected_tab = (i == selected_tab_index);
-        WebContents* restored_tab =
-            RestoreTab(tab, i, browser, is_selected_tab);
+        WebContents* contents = RestoreTab(tab, i, browser, is_selected_tab);
 
         // RestoreTab can return nullptr if |tab| doesn't have valid data.
-        if (!restored_tab)
+        if (!contents)
           continue;
 
+        RestoredTab restored_tab;
+        restored_tab.contents = contents;
+        restored_tab.is_active = is_selected_tab;
         created_contents->push_back(restored_tab);
 
         // If this isn't the selected tab, there's nothing else to do.
@@ -528,13 +527,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
           continue;
 
         ShowBrowser(browser, browser->tab_strip_model()->GetIndexOfWebContents(
-                                 restored_tab));
+                                 contents));
         // TODO(sky): remove. For debugging 368236.
-        CHECK_EQ(browser->tab_strip_model()->GetActiveWebContents(),
-                 restored_tab);
-        tab_loader_->TabIsLoading(&browser->tab_strip_model()
-                                       ->GetActiveWebContents()
-                                       ->GetController());
+        CHECK_EQ(browser->tab_strip_model()->GetActiveWebContents(), contents);
       }
     } else {
       // If the browser already has tabs, we want to restore the new ones after
@@ -546,8 +541,12 @@ class SessionRestoreImpl : public content::NotificationObserver {
         // Always schedule loads as we will not be calling ShowBrowser().
         WebContents* contents =
             RestoreTab(tab, tab_index_offset + i, browser, false);
-        if (contents)
-          created_contents->push_back(contents);
+        if (contents) {
+          RestoredTab restored_tab;
+          restored_tab.contents = contents;
+          restored_tab.is_active = false;
+          created_contents->push_back(restored_tab);
+        }
       }
     }
   }
@@ -591,8 +590,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // focused tab will be loaded by Browser, and TabLoader will load the rest.
     DCHECK(web_contents->GetController().NeedsReload());
 
-    if (!is_selected_tab)
-      tab_loader_->ScheduleLoad(&web_contents->GetController());
     return web_contents;
   }
 
