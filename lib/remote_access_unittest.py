@@ -264,6 +264,38 @@ class TestGetUSBConnectedDevices(USBDeviceTestCase):
       self.assertEqual(devices[index].alias, services[index].text['alias'])
 
 
+class TestGetDefaultDevice(USBDeviceTestCase):
+  """Tests GetDefaultDevice() function."""
+
+  DEVICE_1 = remote_access.ChromiumOSDevice('1.1.1.1', alias='toaster1',
+                                            connect=False, ping=False)
+
+  DEVICE_2 = remote_access.ChromiumOSDevice('1.1.1.2', alias='toaster2',
+                                            connect=False, ping=False)
+
+  def _SetDevices(self, devices):
+    """Sets the devices that are available."""
+    self.PatchObject(
+        remote_access, 'GetUSBConnectedDevices').return_value = devices
+
+  def testNoDevices(self):
+    """Tests when no devices are found."""
+    self._SetDevices([])
+    with self.assertRaises(remote_access.DefaultDeviceError):
+      remote_access.GetDefaultDevice()
+
+  def testOneDevice(self):
+    """Tests when one device is found."""
+    self._SetDevices([self.DEVICE_1])
+    self.assertEqual(self.DEVICE_1, remote_access.GetDefaultDevice())
+
+  def testMultipleDevices(self):
+    """Tests when multiple devices are found."""
+    self._SetDevices([self.DEVICE_1, self.DEVICE_2])
+    with self.assertRaises(remote_access.DefaultDeviceError):
+      remote_access.GetDefaultDevice()
+
+
 class TestUSBDeviceIP(USBDeviceTestCase):
   """Tests of the GetUSBDeviceIP() function."""
 

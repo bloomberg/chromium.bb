@@ -74,6 +74,10 @@ class DeviceNotPingableError(RemoteAccessException):
   """Raised when device is not pingable."""
 
 
+class DefaultDeviceError(RemoteAccessException):
+  """Raised when a default ChromiumOSDevice can't be found."""
+
+
 def NormalizePort(port, str_ok=True):
   """Checks if |port| is a valid port number and returns the number.
 
@@ -967,7 +971,29 @@ def GetUSBConnectedDevices():
   services = mdns.FindServices(source_ip, BRILLO_DEBUG_LINK_SERVICE_NAME)
   return [ChromiumOSDevice(service.ip,
                            alias=service.text[BRILLO_DEVICE_PROPERTY_ALIAS],
-                           connect=False) for service in services]
+                           connect=False, ping=False) for service in services]
+
+
+def GetDefaultDevice():
+  """Returns the default device if one exists.
+
+  If there is exactly one device connected over USB it will be
+  returned. Otherwise DefaultDeviceError will be raised.
+
+  Returns:
+    A ChromiumOSDevice object.
+
+  Raises:
+    DefaultDeviceError: no default device was found.
+  """
+  devices = GetUSBConnectedDevices()
+  if not devices:
+    raise DefaultDeviceError('No default device could be found.')
+  elif len(devices) > 1:
+    raise DefaultDeviceError(
+        'More than one device was found, please specify a device from: %s.' %
+        ', '.join(device.alias for device in devices))
+  return devices[0]
 
 
 def GetUSBDeviceIP(alias):
