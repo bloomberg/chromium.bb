@@ -31,6 +31,7 @@ import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 
 import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -65,6 +66,8 @@ public class ChildProcessService extends Service {
     private boolean mLibraryInitialized = false;
     // Becomes true once the service is bound. Access must synchronize around mMainThread.
     private boolean mIsBound = false;
+
+    private final Semaphore mActivitySemaphore = new Semaphore(1);
 
     // Binder object used by clients for this service.
     private final IChildProcessService.Stub mBinder = new IChildProcessService.Stub() {
@@ -213,8 +216,10 @@ public class ChildProcessService extends Service {
                     nativeInitChildProcess(sContext.get().getApplicationContext(),
                             ChildProcessService.this, fileIds, fileFds,
                             mCpuCount, mCpuFeatures);
-                    ContentMain.start();
-                    nativeExitChildProcess();
+                    if (mActivitySemaphore.tryAcquire()) {
+                        ContentMain.start();
+                        nativeExitChildProcess();
+                    }
                 } catch (InterruptedException e) {
                     Log.w(TAG, MAIN_THREAD_NAME + " startup failed: " + e);
                 } catch (ProcessInitException e) {
@@ -226,11 +231,16 @@ public class ChildProcessService extends Service {
     }
 
     @Override
+    @SuppressFBWarnings("DM_EXIT")
     public void onDestroy() {
         Log.i(TAG, "Destroying ChildProcessService pid=" + Process.myPid());
         super.onDestroy();
-        if (mCommandLineParams == null) {
-            // This process was destroyed before it even started. Nothing more to do.
+        if (mActivitySemaphore.tryAcquire()) {
+            // TODO(crbug.com/457406): This is a bit hacky, but there is no known better solution
+            // as this service will get reused (at least if not sandboxed).
+            // In fact, we might really want to always exit() from onDestroy(), not just from
+            // the early return here.
+            System.exit(0);
             return;
         }
         synchronized (mMainThread) {
