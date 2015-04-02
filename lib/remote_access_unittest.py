@@ -376,3 +376,29 @@ class TestChromiumOSDeviceHostnameResolution(USBDeviceTestCase):
     device = remote_access.ChromiumOSDevice(hostname, connect=False)
     # Hostname should be left alone if it's not resolvable.
     self.assertEqual(device.hostname, hostname)
+
+class TestChromiumOSDeviceSetAlias(USBDeviceTestCase):
+  """Tests setting alias name in ChromiumOSDevice."""
+
+  def setUp(self):
+    """Set up test objects."""
+    self.device = remote_access.ChromiumOSDevice('1.1.1.1', connect=False)
+
+  def testAliasTooLong(self):
+    """Tests that error is raised when alias is too long."""
+    alias_too_long = 'a' * (remote_access.BRILLO_DEVICE_PROPERTY_MAX_LEN + 1)
+    with self.assertRaises(remote_access.InvalidDevicePropertyError):
+      self.device.SetAlias(alias_too_long)
+
+  def testAliasWithBadChars(self):
+    """Tests that error is raised when alias has bad chars."""
+    alias_bad_chars = 'bad*'
+    with self.assertRaises(remote_access.InvalidDevicePropertyError):
+      self.device.SetAlias(alias_bad_chars)
+
+  def testGoodAlias(self):
+    """Tests that command runs when good alias is provided."""
+    good_alias = 'good'
+    run_mock = self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand')
+    self.device.SetAlias(good_alias)
+    self.assertTrue(run_mock.called)

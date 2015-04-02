@@ -10,6 +10,7 @@ from chromite.cli import command_unittest
 from chromite.cli.cros import cros_devices
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import remote_access
 
 
 class MockDevicesCommand(command_unittest.MockCommand):
@@ -17,16 +18,13 @@ class MockDevicesCommand(command_unittest.MockCommand):
   TARGET = 'chromite.cli.cros.cros_devices.DevicesCommand'
   TARGET_CLASS = cros_devices.DevicesCommand
   COMMAND = 'devices'
-  ATTRS = ('_ListDevices', '_SetAlias', '_FullReset')
+  ATTRS = ('_ListDevices', '_FullReset')
 
   def __init__(self, *arg, **kwargs):
     command_unittest.MockCommand.__init__(self, *arg, **kwargs)
 
   def _ListDevices(self, _inst, *_args, **_kwargs):
     """Mock out _ListDevices."""
-
-  def _SetAlias(self, _inst, *_args, **_kwargs):
-    """Mock out _SetAlias."""
 
   def _FullReset(self, _inst, *_args, **_kwargs):
     """Mock out _FullReset."""
@@ -49,6 +47,7 @@ class DevicesRunThroughTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     """Patches objects."""
     self.cmd_mock = None
+    self.device_mock = None
 
   def testListDevices(self):
     """Test that listing devices works correctly."""
@@ -69,8 +68,10 @@ class DevicesRunThroughTest(cros_test_lib.MockTempDirTestCase):
   def testSetAlias(self):
     """Test that setting alias works correctly."""
     self.SetupCommandMock(['alias', self.ALIAS_NAME])
+    self.device_mock = self.PatchObject(remote_access,
+                                        'ChromiumOSDevice').return_value
     self.cmd_mock.inst.Run()
-    self.assertTrue(self.cmd_mock.patched['_SetAlias'].called)
+    self.assertTrue(self.device_mock.SetAlias.called)
 
   def testFullReset(self):
     """Test that full reset works correctly."""

@@ -11,6 +11,7 @@ import os
 import shutil
 import socket
 import stat
+import string
 import tempfile
 import time
 
@@ -46,6 +47,8 @@ DEV_BIN_PATHS = '/usr/local/bin:/usr/local/sbin'
 
 # Brillo device.
 BRILLO_DEBUG_LINK_SERVICE_NAME = '_brdebug._tcp.local'
+BRILLO_DEVICE_PROPERTY_DIR = '/var/lib/brillo-device'
+BRILLO_DEVICE_PROPERTY_MAX_LEN = 128
 BRILLO_DEVICE_PROPERTY_ALIAS = 'alias'
 
 
@@ -80,6 +83,10 @@ class DefaultDeviceError(RemoteAccessException):
 
 class RunningPidsError(RemoteAccessException):
   """Raised when unable to get running pids on the device."""
+
+
+class InvalidDevicePropertyError(RemoteAccessException):
+  """Raised when Brillo device property is invalid."""
 
 
 def NormalizePort(port, str_ok=True):
@@ -895,6 +902,36 @@ class ChromiumOSDevice(RemoteDevice):
 
     return self._alias
 
+  def SetAlias(self, alias_name):
+    """Assign to the device a user-friendly alias name.
+
+    Args:
+      alias_name: The alias name to set. It must be no more than 128 in length
+        containing only alphanumeric characters and/or underscores.
+
+    Raises:
+      InvalidDevicePropertyError if |alias_name| is invalid.
+    """
+    if len(alias_name) > BRILLO_DEVICE_PROPERTY_MAX_LEN:
+      raise InvalidDevicePropertyError(
+          'The alias name cannot be more than %d characters.' %
+          BRILLO_DEVICE_PROPERTY_MAX_LEN)
+    valid_alias_chars = string.ascii_letters + string.digits + '_'
+    if not all(c in valid_alias_chars for c in alias_name):
+      raise InvalidDevicePropertyError(
+          'The alias name can only contain alphanumeric characters and/or '
+          'underscores.')
+
+    self.RunCommand(['mkdir', '-p', BRILLO_DEVICE_PROPERTY_DIR],
+                    remote_sudo=True)
+    alias_file_path = os.path.join(BRILLO_DEVICE_PROPERTY_DIR,
+                                   BRILLO_DEVICE_PROPERTY_ALIAS)
+    self.RunCommand(['echo', alias_name, '>', alias_file_path],
+                    remote_sudo=True)
+    self._alias = alias_name
+
+    logging.info('Successfully set alias to "%s".', alias_name)
+
   def _ResolveHostname(self, hostname):
     """Resolve |hostname| into a network hostname.
 
@@ -920,11 +957,6 @@ class ChromiumOSDevice(RemoteDevice):
       # |hostname| is not resolvable but may still be valid (eg. ssh hostname).
       # Leave the hostname be.
       return hostname
-
-  def SetAlias(self, alias_name):
-    """Assign to the device a user-friendly alias name."""
-    # TODO(thieule): Set the alias name to the remote device.
-    self._alias = alias_name
 
   def _RemountRootfsAsWritable(self):
     """Attempts to Remount the root partition."""
@@ -1014,8 +1046,12 @@ def _DiscoverServices():
   # bootstrapping should not depend on third_party packages. mdns pulls in
   # dpkt which is a third_party package.
   from chromite.lib import mdns
-  source_ip = debug_link.InitializeDebugLink()
-  return mdns.FindServices(source_ip, BRILLO_DEBUG_LINK_SERVICE_NAME)
+  try:
+    source_ip = debug_link.InitializeDebugLink()
+    return mdns.FindServices(source_ip, BRILLO_DEBUG_LINK_SERVICE_NAME)
+  except debug_link.DebugLinkException as e:
+    logging.debug('Failed to initialize debug link: %s', e)
+    return []
 
 
 def _GetDefaultService():

@@ -22,18 +22,18 @@ class DevicesCommand(command.CliCommand):
 
   When multiple Brillo devices are connected over USB, "--device" flag can be
   used to specify which device is targeted.
-
-  Examples:
-
-    $ cros devices
-    List information of USB-connected Brillo devices.
-
-    $ cros devices alias toaster1
-    Set the device's alias to "toaster1".
-
-    $ cros devices full-reset
-    Reset the device to a fresh image for the current SDK version.
   """
+
+  EPILOG = """
+To list information of USB-connected devices:
+  cros devices
+
+To set the device's alias to "toaster1":
+  cros devices alias toaster1
+
+To reset the device to a fresh image for the current SDK version:
+  cros devices full-reset
+"""
 
   # Override base class property to enable stats upload.
   upload_stats = True
@@ -47,6 +47,11 @@ class DevicesCommand(command.CliCommand):
     self.cmd = None
     self.alias_name = None
     self.device = None
+    # SSH connection settings.
+    self.ssh_hostname = None
+    self.ssh_port = None
+    self.ssh_username = None
+    self.ssh_private_key = None
 
   @classmethod
   def AddParser(cls, parser):
@@ -54,6 +59,9 @@ class DevicesCommand(command.CliCommand):
     super(cls, DevicesCommand).AddParser(parser)
     # Device argument is always optional for the `devices` tool.
     cls.AddDeviceArgument(parser, optional=True)
+    parser.add_argument(
+        '--private-key', type='path', default=None,
+        help='SSH identify file (private key).')
     parser.add_argument(
         'subcommand', nargs='?',
         help='Optional subcommand ("alias" or "full-reset").')
@@ -74,22 +82,11 @@ class DevicesCommand(command.CliCommand):
     if self.cmd == self.ALIAS_CMD and not self.alias_name:
       cros_build_lib.Die('Missing alias argument')
 
-    self.device = self._FindDevice(self.options.device)
-
-  def _FindDevice(self, device):
-    """Find the Brillo device based on the IP address or the alias name.
-
-    Args:
-      device: A string which can be the device's IP address or alias name.
-
-    Returns:
-      A BrilloDevice object of the device associated with the IP address or
-      alias name. None if |device| is None or cannot find the device.
-    """
-    if not device:
-      return None
-    # TODO(yimingc): Find the USB-connected device.
-    return None
+    if self.options.device:
+      self.ssh_hostname = self.options.device.hostname
+      self.ssh_username = self.options.device.username
+      self.ssh_port = self.options.device.port
+    self.ssh_private_key = self.options.private_key
 
   def _PrintDeviceInfo(self, devices):
     """Print out information about devices."""
@@ -110,11 +107,6 @@ class DevicesCommand(command.CliCommand):
     else:
       print('No USB-connected Brillo devices are found.')
 
-  def _SetAlias(self):
-    """Set a user-friendly alias name to the Brillo device."""
-    # TODO(yimingc): Set the device alias to self.arg (if not None).
-    logging.info('Device 1.1.1.1 now has alias "%s"', self.alias_name)
-
   def _FullReset(self):
     """Perform a full reset for the device."""
     logging.info('Ready to full reset the device.')
@@ -125,9 +117,18 @@ class DevicesCommand(command.CliCommand):
     self.options.Freeze()
     self._ReadOptions()
 
-    if self.cmd == self.ALIAS_CMD:
-      self._SetAlias()
-    elif self.cmd == self.FULL_RESET_CMD:
-      self._FullReset()
-    else:
-      self._ListDevices()
+    try:
+      if self.cmd == self.ALIAS_CMD:
+        try:
+          with remote_access.ChromiumOSDeviceHandler(
+              self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
+              private_key=self.ssh_private_key) as device:
+            device.SetAlias(self.alias_name)
+        except remote_access.InvalidDevicePropertyError as e:
+          cros_build_lib.Die('The alias provided is invalid: %s', e)
+      elif self.cmd == self.FULL_RESET_CMD:
+        self._FullReset()
+      else:
+        self._ListDevices()
+    except (Exception, KeyboardInterrupt) as e:
+      cros_build_lib.Die('Command failed: %s', e)
