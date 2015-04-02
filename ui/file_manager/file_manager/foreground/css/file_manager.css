@@ -1071,7 +1071,8 @@ body[type='full-page'] .detail-name .detail-icon {
       url(../images/files/ui/2x/thumbnail_checked.png) 2x);
 }
 
-body.selecting .thumbnail-grid .checkmark.inactive {
+body.selecting .thumbnail-grid .checkmark.inactive,
+.thumbnail-grid .thumbnail-item:hover .checkmark.inactive {
   opacity: 0.6;
 }
 
@@ -1118,6 +1119,11 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 
 .thumbnail-grid .thumbnail-item[selected] .thumbnail-bottom {
   background-color: rgb(221, 242, 253);
+}
+
+body:not(.check-select) .thumbnail-grid.image-dominant
+    .thumbnail-loaded:not([selected]) .thumbnail-bottom {
+  display: none;
 }
 
 .badge {

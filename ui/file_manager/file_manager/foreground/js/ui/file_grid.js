@@ -17,7 +17,29 @@ function FileGrid() {
 /**
  * Inherits from cr.ui.Grid.
  */
-FileGrid.prototype.__proto__ = cr.ui.Grid.prototype;
+FileGrid.prototype = {
+  __proto__: cr.ui.Grid.prototype,
+
+  get dataModel() {
+    if (!this.dataModelDescriptor_) {
+      // We get the property descriptor for dataModel from cr.ui.List, because
+      // cr.ui.Grid doesn't have its own descriptor.
+      this.dataModelDescriptor_ =
+          Object.getOwnPropertyDescriptor(cr.ui.List.prototype, 'dataModel');
+    }
+    return this.dataModelDescriptor_.get.call(this);
+  },
+
+  set dataModel(model) {
+    // The setter for dataModel is overridden to remove/add the 'splice'
+    // listener for the current data model.
+    if (this.dataModel)
+      this.dataModel.removeEventListener('splice', this.onSplice_.bind(this));
+    this.dataModelDescriptor_.set.call(this, model);
+    if (this.dataModel)
+      this.dataModel.addEventListener('splice', this.onSplice_.bind(this));
+  }
+};
 
 /**
  * Decorates an HTML element to be a FileGrid.
@@ -126,6 +148,7 @@ FileGrid.prototype.onThumbnailLoaded_ = function(event) {
           event.height,
           /* should animate */ true);
     }
+    listItem.classList.toggle('thumbnail-loaded', true);
   }
 };
 
@@ -391,7 +414,7 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
     if (!entry || urls.indexOf(entry.toURL()) === -1)
       continue;
 
-    this.decorateThumbnailBox_(assertInstanceof(box, HTMLDivElement), entry);
+    this.decorateThumbnailBox_(assert(listItem), entry);
     this.updateSharedStatus_(assert(listItem), entry);
   }
 };
@@ -431,10 +454,10 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
   li.appendChild(frame);
 
   var box = li.ownerDocument.createElement('div');
-  if (entry) {
-    this.decorateThumbnailBox_(assertInstanceof(box, HTMLDivElement), entry);
-  }
+  box.className = 'img-container';
   frame.appendChild(box);
+  if (entry)
+    this.decorateThumbnailBox_(assertInstanceof(li, HTMLLIElement), entry);
 
   var isDirectory = entry && entry.isDirectory;
   if (!isDirectory) {
@@ -467,13 +490,13 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
 /**
  * Decorates the box containing a centered thumbnail image.
  *
- * @param {!HTMLDivElement} box Box to decorate.
+ * @param {!HTMLLIElement} li List item which contains the box to be decorated.
  * @param {Entry} entry Entry which thumbnail is generating for.
  * @private
  */
-FileGrid.prototype.decorateThumbnailBox_ = function(box, entry) {
-  box.className = 'img-container';
-
+FileGrid.prototype.decorateThumbnailBox_ = function(li, entry) {
+  var box = assertInstanceof(li.querySelector('.img-container'),
+                             HTMLDivElement);
   if (this.importStatusVisible_ &&
       importer.isEligibleType(entry)) {
     this.historyLoader_.getHistory().then(
@@ -499,9 +522,11 @@ FileGrid.prototype.decorateThumbnailBox_ = function(box, entry) {
         thumbnailData.width,
         thumbnailData.height,
         /* should not animate */ false);
+    li.classList.toggle('thumbnail-loaded', true);
   } else {
     var mediaType = FileType.getMediaType(entry);
     box.setAttribute('generic-thumbnail', mediaType);
+    li.classList.toggle('thumbnail-loaded', false);
   }
 };
 
@@ -530,6 +555,15 @@ FileGrid.prototype.updateSharedStatus_ = function(li, entry) {
  */
 FileGrid.prototype.setImportStatusVisible = function(visible) {
   this.importStatusVisible_ = visible;
+};
+
+/**
+ * Handles the splice event of the data model to change the view based on
+ * whether image files is dominant or not in the directory.
+ * @private
+ */
+FileGrid.prototype.onSplice_ = function() {
+  this.classList.toggle('image-dominant', this.dataModel.isImageDominant());
 };
 
 /**

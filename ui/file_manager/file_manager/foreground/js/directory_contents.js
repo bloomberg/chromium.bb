@@ -434,6 +434,12 @@ function FileListModel(metadataModel) {
    * @private {number}
    */
   this.numFiles_ = 0;
+
+  /**
+   * The number of image files in the list.
+   * @private {number}
+   */
+  this.numImageFiles_ = 0;
 }
 
 /**
@@ -488,18 +494,11 @@ FileListModel.prototype.prepareSort = function(field, callback) {
  */
 FileListModel.prototype.splice = function(index, deleteCount, var_args) {
   for (var i = index; i < index + deleteCount; i++) {
-    if (i >= 0 && i < this.length) {
-      if (this.item(i).isDirectory)
-        this.numFolders_--;
-      else
-        this.numFiles_--;
-    }
+    if (i >= 0 && i < this.length)
+      this.onRemoveEntryFromList_(/** @type {!Entry} */ (this.item(i)));
   }
   for (var i = 2; i < arguments.length; i++) {
-    if (arguments[i].isDirectory)
-      this.numFolders_++;
-    else
-      this.numFiles_++;
+    this.onAddEntryToList_(arguments[i]);
   }
 
   cr.ui.ArrayDataModel.prototype.splice.apply(this, arguments);
@@ -509,17 +508,18 @@ FileListModel.prototype.splice = function(index, deleteCount, var_args) {
  * @override
  */
 FileListModel.prototype.replaceItem = function(oldItem, newItem) {
-  if (oldItem.isDirectory)
-    this.numFolders_--;
-  else
-    this.numFiles_--;
-
-  if (newItem.isDirectory)
-    this.numFolders_++;
-  else
-    this.numFiles_++;
+  this.onRemoveEntryFromList_(oldItem);
+  this.onAddEntryToList_(newItem);
 
   cr.ui.ArrayDataModel.prototype.replaceItem.apply(this, arguments);
+};
+
+/**
+ * Returns the number of files in this file list.
+ * @return {number} The number of files.
+ */
+FileListModel.prototype.getFileCount = function() {
+  return this.numFiles_;
 };
 
 /**
@@ -531,11 +531,42 @@ FileListModel.prototype.getFolderCount = function() {
 };
 
 /**
- * Returns the number of files in this file list.
- * @return {number} The number of files.
+ * Returns true if image files are dominant in this file list.
+ * @return {boolean}
  */
-FileListModel.prototype.getFileCount = function() {
-  return this.numFiles_;
+FileListModel.prototype.isImageDominant = function() {
+  return this.numFiles_ >= 0 &&
+      this.numImageFiles_ / this.numFiles_ >= 0.8;
+};
+
+/**
+ * Updates the statistics about contents when new entry is about to be added.
+ * @param {Entry} entry Entry of the new item.
+ * @private
+ */
+FileListModel.prototype.onAddEntryToList_ = function(entry) {
+  if (entry.isDirectory)
+    this.numFolders_++;
+  else
+    this.numFiles_++;
+
+  if (FileType.isImage(entry) || FileType.isRaw(entry))
+    this.numImageFiles_++;
+};
+
+/**
+ * Updates the statistics about contents when an entry is about to be removed.
+ * @param {Entry} entry Entry of the item to be removed.
+ * @private
+ */
+FileListModel.prototype.onRemoveEntryFromList_ = function(entry) {
+  if (entry.isDirectory)
+    this.numFolders_--;
+  else
+    this.numFiles_--;
+
+  if (FileType.isImage(entry) || FileType.isRaw(entry))
+    this.numImageFiles_--;
 };
 
 /**
