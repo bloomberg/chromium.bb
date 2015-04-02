@@ -15,8 +15,6 @@ const char* BeginFrameArgs::TypeToString(BeginFrameArgsType type) {
       return "INVALID";
     case BeginFrameArgs::NORMAL:
       return "NORMAL";
-    case BeginFrameArgs::SYNCHRONOUS:
-      return "SYNCHRONOUS";
     case BeginFrameArgs::MISSED:
       return "MISSED";
     case BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX:

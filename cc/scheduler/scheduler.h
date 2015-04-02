@@ -41,10 +41,12 @@ class SchedulerClient {
   virtual void ScheduledActionActivateSyncTree() = 0;
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
   virtual void ScheduledActionPrepareTiles() = 0;
+  virtual void ScheduledActionInvalidateOutputSurface() = 0;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) = 0;
   virtual base::TimeDelta DrawDurationEstimate() = 0;
   virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() = 0;
   virtual base::TimeDelta CommitToActivateDurationEstimate() = 0;
+  // TODO(sunnyps): Rename DidBeginImplFrameDeadline to DidFinishImplFrame.
   virtual void DidBeginImplFrameDeadline() = 0;
   virtual void SendBeginFramesToChildren(const BeginFrameArgs& args) = 0;
   virtual void SendBeginMainFrameNotExpectedSoon() = 0;
@@ -94,6 +96,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
 
   // BeginFrameObserverMixin
   bool OnBeginFrameMixInDelegate(const BeginFrameArgs& args) override;
+
+  void OnDrawForOutputSurface();
 
   const SchedulerSettings& settings() const { return settings_; }
 
@@ -212,11 +216,9 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
 
   base::Closure begin_retro_frame_closure_;
   base::Closure begin_impl_frame_deadline_closure_;
-  base::Closure poll_for_draw_triggers_closure_;
   base::Closure advance_commit_state_closure_;
   base::CancelableClosure begin_retro_frame_task_;
   base::CancelableClosure begin_impl_frame_deadline_task_;
-  base::CancelableClosure poll_for_draw_triggers_task_;
   base::CancelableClosure advance_commit_state_task_;
 
   SchedulerStateMachine state_machine_;
@@ -225,7 +227,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
 
  private:
   void ScheduleBeginImplFrameDeadline();
-  void RescheduleBeginImplFrameDeadlineIfNeeded();
+  void ScheduleBeginImplFrameDeadlineIfNeeded();
   void SetupNextBeginFrameIfNeeded();
   void PostBeginRetroFrameIfNeeded();
   void SetupPollingMechanisms();
@@ -235,9 +237,11 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
   void AdvanceCommitStateIfPossible();
   bool IsBeginMainFrameSentOrStarted() const;
   void BeginRetroFrame();
+  void BeginImplFrameWithDeadline(const BeginFrameArgs& args);
+  void BeginImplFrameSynchronous(const BeginFrameArgs& args);
   void BeginImplFrame(const BeginFrameArgs& args);
+  void FinishImplFrame();
   void OnBeginImplFrameDeadline();
-  void PollForAnticipatedDrawTriggers();
   void PollToAdvanceCommitState();
   void UpdateActiveFrameSource();
 

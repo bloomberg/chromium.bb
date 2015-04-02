@@ -121,6 +121,9 @@ class LayerTreeHostImplClient {
   // Called when page scale animation has completed on the impl thread.
   virtual void DidCompletePageScaleAnimationOnImplThread() = 0;
 
+  // Called when output surface asks for a draw.
+  virtual void OnDrawForOutputSurface() = 0;
+
  protected:
   virtual ~LayerTreeHostImplClient() {}
 };
@@ -295,6 +298,7 @@ class CC_EXPORT LayerTreeHostImpl
   void ReclaimResources(const CompositorFrameAck* ack) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
   void SetTreeActivationCallback(const base::Closure& callback) override;
+  void OnDraw() override;
 
   // Called from LayerTreeImpl.
   void OnCanDrawStateChangedForTree();

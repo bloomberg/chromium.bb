@@ -162,6 +162,7 @@ class LayerTreeHostImplTest : public testing::Test,
   void DidCompletePageScaleAnimationOnImplThread() override {
     did_complete_page_scale_animation_ = true;
   }
+  void OnDrawForOutputSurface() override {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;

@@ -22,6 +22,7 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.ContentViewCore;
@@ -404,8 +405,12 @@ public class VisualStateTest extends AwTestBase {
         assertTrue(testFinishedSignal.await(AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    /*
     @Feature({"AndroidWebView"})
     @SmallTest
+    http://crbug.com/472922
+    */
+    @DisabledTest
     public void testVisualStateCallbackFromJavaDuringFullscreenTransitions() throws Throwable {
         // This test checks that VisualStateCallbacks are delivered correctly during
         // fullscreen transitions. It loads a page, clicks a button to enter fullscreen,

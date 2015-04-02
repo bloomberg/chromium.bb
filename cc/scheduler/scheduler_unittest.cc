@@ -141,6 +141,10 @@ class FakeSchedulerClient : public SchedulerClient {
   void ScheduledActionPrepareTiles() override {
     PushAction("ScheduledActionPrepareTiles");
   }
+  void ScheduledActionInvalidateOutputSurface() override {
+    actions_.push_back("ScheduledActionInvalidateOutputSurface");
+    states_.push_back(scheduler_->AsValue());
+  }
   void DidAnticipatedDrawTimeChange(base::TimeTicks) override {
     if (log_anticipated_draw_time_change_)
       PushAction("DidAnticipatedDrawTimeChange");
@@ -306,12 +310,18 @@ class SchedulerTest : public testing::Test {
       scheduler_->NotifyBeginMainFrameStarted();
       scheduler_->NotifyReadyToCommitThenActivateIfNeeded();
 
-      // Run the posted deadline task.
-      EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
-      task_runner_->RunTasksWhile(client_->ImplFrameDeadlinePending(true));
-      EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-
       EXPECT_FALSE(scheduler_->CommitPending());
+
+      if (scheduler_settings_.using_synchronous_renderer_compositor) {
+        scheduler_->SetNeedsRedraw();
+        scheduler_->OnDrawForOutputSurface();
+      } else {
+        // Run the posted deadline task.
+        EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+        task_runner_->RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+      }
+
+      EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
     }
 
     client_->Reset();
@@ -321,9 +331,12 @@ class SchedulerTest : public testing::Test {
           "Run second frame so Scheduler calls SetNeedsBeginFrame(false).");
       AdvanceFrame();
 
-      // Run the posted deadline task.
-      EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
-      task_runner_->RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+      if (!scheduler_settings_.using_synchronous_renderer_compositor) {
+        // Run the posted deadline task.
+        EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+        task_runner_->RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+      }
+
       EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
     }
 
@@ -348,13 +361,14 @@ class SchedulerTest : public testing::Test {
     if (scheduler_->settings().use_external_begin_frame_source &&
         scheduler_->FrameProductionThrottled()) {
       SendNextBeginFrame();
-      EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
     }
 
-    // Then run tasks until new deadline is scheduled.
-    EXPECT_TRUE(
-        task_runner_->RunTasksWhile(client_->ImplFrameDeadlinePending(false)));
-    EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+    if (!scheduler_->settings().using_synchronous_renderer_compositor) {
+      // Then run tasks until new deadline is scheduled.
+      EXPECT_TRUE(task_runner_->RunTasksWhile(
+          client_->ImplFrameDeadlinePending(false)));
+      EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+    }
   }
 
   void SendNextBeginFrame() {
@@ -2352,6 +2366,132 @@ TEST_F(SchedulerTest, SendBeginMainFrameNotExpectedSoon) {
   task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 0, 2);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
+  client_->Reset();
+}
+
+TEST_F(SchedulerTest, UsingSynchronousCompositor) {
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.impl_side_painting = true;
+  SetUpScheduler(true);
+
+  // Compositor thread initiated input/animation.
+  // --------------------------------------------
+  scheduler_->SetNeedsAnimate();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+  client_->Reset();
+
+  // Next vsync.
+  AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 2, 3);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // Continue with animation.
+  scheduler_->SetNeedsAnimate();
+  EXPECT_NO_ACTION(client_);
+
+  // Android onDraw.
+  scheduler_->SetNeedsRedraw();
+  scheduler_->OnDrawForOutputSurface();
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // Next vsync.
+  AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 2, 3);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // Android onDraw.
+  scheduler_->SetNeedsRedraw();
+  scheduler_->OnDrawForOutputSurface();
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // Idle on next vsync.
+  AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // Android onDraw after idle.
+  // --------------------------
+  scheduler_->SetNeedsRedraw();
+  scheduler_->OnDrawForOutputSurface();
+  EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 2, 3);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // Idle on next vsync.
+  AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // Main thread initiated activity.
+  // -------------------------------
+  scheduler_->SetNeedsCommit();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+  client_->Reset();
+
+  // Next vsync.
+  AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  scheduler_->NotifyBeginMainFrameStarted();
+  EXPECT_NO_ACTION(client_);
+
+  // Next vsync.
+  AdvanceFrame();
+  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client_);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
+  client_->Reset();
+
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
+  client_->Reset();
+
+  // Next vsync.
+  AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 2, 3);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // Android onDraw.
+  scheduler_->SetNeedsRedraw();
+  scheduler_->OnDrawForOutputSurface();
+  EXPECT_SINGLE_ACTION("ScheduledActionDrawAndSwapIfPossible", client_);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  // Idle on next vsync.
+  AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
 }
 

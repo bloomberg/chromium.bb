@@ -196,6 +196,10 @@ void Display::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
   client_->SetMemoryPolicy(policy);
 }
 
+void Display::OnDraw() {
+  NOTREACHED();
+}
+
 void Display::OnSurfaceDamaged(SurfaceId surface_id, bool* changed) {
   if (aggregator_ &&
       aggregator_->previous_contained_surfaces().count(surface_id)) {
