@@ -131,12 +131,11 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // Bypass cache when downloading favicons for this page URL.
   GURL bypass_cache_page_url_;
 
+  // FaviconHandlers used to download the different kind of favicons. Both
+  // |touch_icon_handler_| and |large_icon_handler_| may be null depending
+  // on the platform or variations.
   scoped_ptr<favicon::FaviconHandler> favicon_handler_;
-
-  // Handles downloading touchicons. It is null if
-  // browser_defaults::kEnableTouchIcon is false.
   scoped_ptr<favicon::FaviconHandler> touch_icon_handler_;
-
   scoped_ptr<favicon::FaviconHandler> large_icon_handler_;
 
   ObserverList<favicon::FaviconDriverObserver> observer_list_;

@@ -199,12 +199,6 @@ const base::FilePath::CharType kPepperFlashPluginFilename[] =
 // directory names
 const wchar_t kUserDataDirname[] = L"User Data";
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-const bool kEnableTouchIcon = true;
-#else
-const bool kEnableTouchIcon = false;
-#endif
-
 const float kMaxShareOfExtensionProcesses = 0.30f;
 
 #if defined(OS_LINUX)

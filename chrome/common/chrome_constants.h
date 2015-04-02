@@ -104,9 +104,6 @@ extern const base::FilePath::CharType kPepperFlashPluginFilename[];
 // directory names
 extern const wchar_t kUserDataDirname[];
 
-// Are touch icons enabled? False by default.
-extern const bool kEnableTouchIcon;
-
 // Fraction of the total number of processes to be used for hosting
 // extensions. If we have more extensions than this percentage, we will start
 // combining extensions in existing processes. This allows web pages to have

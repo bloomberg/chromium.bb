@@ -52,8 +52,10 @@ bool IsIconNTPEnabled() {
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 const bool kDownloadLargestIcon = true;
+const bool kEnableTouchIcon = true;
 #else
 const bool kDownloadLargestIcon = false;
+const bool kEnableTouchIcon = false;
 #endif
 
 }  // namespace
@@ -65,7 +67,7 @@ FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   favicon_handler_.reset(new favicon::FaviconHandler(
       service, this, favicon::FaviconHandler::FAVICON, kDownloadLargestIcon));
-  if (chrome::kEnableTouchIcon) {
+  if (kEnableTouchIcon) {
     touch_icon_handler_.reset(new favicon::FaviconHandler(
         service, this, favicon::FaviconHandler::TOUCH, kDownloadLargestIcon));
   }
