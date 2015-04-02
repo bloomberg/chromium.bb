@@ -61,5 +61,25 @@
         },
       ],
     }],
+    ['OS=="ios"', {
+      'targets': [
+        {
+          'target_name': 'favicon_ios',
+          'type': 'static_library',
+          'dependencies': [
+            '../ios/web/ios_web.gyp:ios_web',
+            'favicon_base',
+            'favicon_core',
+          ],
+          'sources': [
+            'favicon/ios/favicon_url_util.h',
+            'favicon/ios/favicon_url_util.cc',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+        },
+      ],
+    }],
   ],
 }
