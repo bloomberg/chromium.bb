@@ -41,6 +41,11 @@ class TestWebState : public WebState {
   WebInterstitial* GetWebInterstitial() const override;
   void AddObserver(WebStateObserver* observer) override {}
   void RemoveObserver(WebStateObserver* observer) override {}
+  int DownloadImage(const GURL& url,
+                    bool is_favicon,
+                    uint32_t max_bitmap_size,
+                    bool bypass_cache,
+                    const ImageDownloadCallback& callback) override;
 
   // Setters for test data.
   void SetContentIsHTML(bool content_is_html);
