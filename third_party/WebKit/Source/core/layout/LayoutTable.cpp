@@ -410,6 +410,8 @@ void LayoutTable::simplifiedNormalFlowLayout()
         section->layoutRows();
         section->computeOverflowFromCells();
     }
+
+    recalcCollapsedBordersIfNeeded();
 }
 
 void LayoutTable::layout()
@@ -583,14 +585,24 @@ void LayoutTable::layout()
     if (view()->layoutState()->pageLogicalHeight())
         setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(*this, logicalTop()));
 
+    recalcCollapsedBordersIfNeeded();
+
     m_columnLogicalWidthChanged = false;
     clearNeedsLayout();
 }
 
-// Collect all the unique border values that we want to paint in a sorted list.
-void LayoutTable::recalcCollapsedBorders()
+void LayoutTable::invalidateCollapsedBorders()
 {
-    if (m_collapsedBordersValid)
+    m_collapsedBordersValid = false;
+    m_collapsedBorders.clear();
+
+    setNeedsSimplifiedNormalFlowLayout();
+}
+
+// Collect all the unique border values that we want to paint in a sorted list.
+void LayoutTable::recalcCollapsedBordersIfNeeded()
+{
+    if (m_collapsedBordersValid || !collapseBorders())
         return;
     m_collapsedBordersValid = true;
     m_collapsedBorders.clear();

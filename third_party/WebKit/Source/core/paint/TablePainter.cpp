@@ -49,7 +49,6 @@ void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     }
 
     if (m_layoutTable.collapseBorders() && paintPhase == PaintPhaseChildBlockBackground && m_layoutTable.style()->visibility() == VISIBLE) {
-        m_layoutTable.recalcCollapsedBorders();
         // Using our cached sorted styles, we then do individual passes,
         // painting each style of border from lowest precedence to highest precedence.
         info.phase = PaintPhaseCollapsedTableBorders;

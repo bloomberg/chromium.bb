@@ -660,6 +660,15 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
     return true;
 }
 
+void LayoutObject::setNeedsSimplifiedNormalFlowLayout()
+{
+    ASSERT(!isSetNeedsLayoutForbidden());
+    if (selfNeedsLayout() || normalChildNeedsLayout() || needsSimplifiedNormalFlowLayout())
+        return;
+    setNeedsSimplifiedNormalFlowLayout(true);
+    markContainerChainForLayout();
+}
+
 void LayoutObject::markContainerChainForLayout(bool scheduleRelayout, LayoutObject* newRoot, SubtreeLayoutScope* layouter)
 {
     ASSERT(!scheduleRelayout || !newRoot);

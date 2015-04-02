@@ -239,11 +239,7 @@ public:
     LayoutTableCell* cellAfter(const LayoutTableCell*) const;
 
     typedef Vector<CollapsedBorderValue> CollapsedBorderValues;
-    void invalidateCollapsedBorders()
-    {
-        m_collapsedBordersValid = false;
-        m_collapsedBorders.clear();
-    }
+    void invalidateCollapsedBorders();
 
     // FIXME: This method should be moved into TablePainter.
     const CollapsedBorderValue* currentBorderValue() const { return m_currentBorder; }
@@ -275,9 +271,13 @@ public:
 
     virtual void paintMask(const PaintInfo&, const LayoutPoint&) override final;
 
-    const CollapsedBorderValues& collapsedBorders() { return m_collapsedBorders; }
+    const CollapsedBorderValues& collapsedBorders()
+    {
+        ASSERT(m_collapsedBordersValid);
+        return m_collapsedBorders;
+    }
+
     void subtractCaptionRect(LayoutRect&) const;
-    void recalcCollapsedBorders();
 
     virtual const char* name() const override { return "LayoutTable"; }
 
@@ -316,6 +316,8 @@ private:
     void layoutCaption(LayoutTableCaption&);
 
     void distributeExtraLogicalHeight(int extraLogicalHeight);
+
+    void recalcCollapsedBordersIfNeeded();
 
     mutable Vector<int> m_columnPos;
     mutable Vector<ColumnStruct> m_columns;

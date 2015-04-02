@@ -122,7 +122,7 @@ public:
     virtual int borderBefore() const override;
     virtual int borderAfter() const override;
 
-    void collectBorderValues(LayoutTable::CollapsedBorderValues&) const;
+    void collectBorderValues(LayoutTable::CollapsedBorderValues&);
     static void sortBorderValues(LayoutTable::CollapsedBorderValues&);
 
     virtual void layout() override;
@@ -256,11 +256,6 @@ private:
 
     bool hasStartBorderAdjoiningTable() const;
     bool hasEndBorderAdjoiningTable() const;
-
-    CollapsedBorderValue collapsedStartBorder(IncludeBorderColorOrNot = IncludeBorderColor) const;
-    CollapsedBorderValue collapsedEndBorder(IncludeBorderColorOrNot = IncludeBorderColor) const;
-    CollapsedBorderValue collapsedBeforeBorder(IncludeBorderColorOrNot = IncludeBorderColor) const;
-    CollapsedBorderValue collapsedAfterBorder(IncludeBorderColorOrNot = IncludeBorderColor) const;
 
     CollapsedBorderValue computeCollapsedStartBorder(IncludeBorderColorOrNot = IncludeBorderColor) const;
     CollapsedBorderValue computeCollapsedEndBorder(IncludeBorderColorOrNot = IncludeBorderColor) const;

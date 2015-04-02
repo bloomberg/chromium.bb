@@ -8,10 +8,13 @@
       "repaintRects": [
         [68, 8, 55, 54],
         [67, 8, 56, 54],
-        [63, 8, 60, 54]
+        [63, 8, 60, 54],
+        [8, 8, 61, 54],
+        [8, 8, 60, 54]
       ],
       "paintInvalidationClients": [
         "LayoutTable TABLE",
+        "LayoutTableCell TD",
         "LayoutTableCell TD"
       ]
     }

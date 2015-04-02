@@ -63,6 +63,11 @@ public:
         return width() == o.width() && style() == o.style() && precedence() == o.precedence();
     }
 
+    bool equals(const CollapsedBorderValue& o) const
+    {
+        return color() == o.color() && isTransparent() == o.isTransparent() && isSameIgnoringColor(o);
+    }
+
 private:
     Color m_color;
     unsigned m_colorIsCurrentColor : 1;

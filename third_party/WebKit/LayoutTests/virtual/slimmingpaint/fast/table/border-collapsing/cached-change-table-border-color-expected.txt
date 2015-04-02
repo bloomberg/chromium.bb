@@ -6,10 +6,12 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [8, 8, 60, 54],
         [8, 8, 60, 54]
       ],
       "paintInvalidationClients": [
-        "LayoutTable TABLE id='tbl'"
+        "LayoutTable TABLE id='tbl'",
+        "LayoutTableCell TD"
       ]
     }
   ]

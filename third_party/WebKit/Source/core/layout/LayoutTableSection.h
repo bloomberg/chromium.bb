@@ -208,8 +208,8 @@ public:
     void rowLogicalHeightChanged(LayoutTableRow*);
 
     void removeCachedCollapsedBorders(const LayoutTableCell*);
-    void setCachedCollapsedBorder(const LayoutTableCell*, CollapsedBorderSide, CollapsedBorderValue);
-    CollapsedBorderValue& cachedCollapsedBorder(const LayoutTableCell*, CollapsedBorderSide);
+    bool setCachedCollapsedBorder(const LayoutTableCell*, CollapsedBorderSide, const CollapsedBorderValue&);
+    const CollapsedBorderValue& cachedCollapsedBorder(const LayoutTableCell*, CollapsedBorderSide) const;
 
     // distributeExtraLogicalHeightToRows methods return the *consumed* extra logical height.
     // FIXME: We may want to introduce a structure holding the in-flux layout information.
@@ -312,7 +312,8 @@ private:
 
     // This map holds the collapsed border values for cells with collapsed borders.
     // It is held at LayoutTableSection level to spare memory consumption by table cells.
-    HashMap<pair<const LayoutTableCell*, int>, CollapsedBorderValue> m_cellsCollapsedBorders;
+    using CellsCollapsedBordersMap = HashMap<pair<const LayoutTableCell*, int>, CollapsedBorderValue>;
+    CellsCollapsedBordersMap m_cellsCollapsedBorders;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableSection, isTableSection());

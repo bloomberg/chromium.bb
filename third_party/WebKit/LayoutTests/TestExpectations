@@ -1850,6 +1850,18 @@ crbug.com/453781 fast/hidpi/image-srcset-src-selection-1x.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-src-selection-1x-both.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-src-selection-2x.html [ Pass Failure ]
 
+crbug.com/471001 virtual/slimmingpaint/fast/repaint/table-cell-collapsed-border.html [ NeedsRebaseline ]
+crbug.com/471001 virtual/slimmingpaint/fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
+crbug.com/471001 virtual/slimmingpaint/fast/table/border-collapsing/cached-cell-append.html [ NeedsRebaseline ]
+crbug.com/471001 virtual/slimmingpaint/fast/table/border-collapsing/cached-cell-remove.html [ NeedsRebaseline ]
+crbug.com/471001 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-cell-border-color.html [ NeedsRebaseline ]
+crbug.com/471001 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-cell-sl-border-color.html [ NeedsRebaseline ]
+crbug.com/471001 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-col-border-color.html [ NeedsRebaseline ]
+crbug.com/471001 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-colgroup-border-color.html [ NeedsRebaseline ]
+crbug.com/471001 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-colgroup-border-width.html [ NeedsRebaseline ]
+crbug.com/471001 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-table-border-color.html [ NeedsRebaseline ]
+crbug.com/471001 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-tbody-border-color.html [ NeedsRebaseline ]
+
 crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
 
 # Minor failure only on Mac 10.6 Debug.

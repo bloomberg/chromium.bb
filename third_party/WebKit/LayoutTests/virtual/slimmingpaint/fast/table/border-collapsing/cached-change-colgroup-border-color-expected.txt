@@ -6,10 +6,22 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 8, 166, 102]
+        [117, 59, 57, 52],
+        [117, 7, 57, 52],
+        [64, 59, 57, 52],
+        [63, 7, 58, 53],
+        [8, 8, 166, 102],
+        [7, 58, 58, 53],
+        [7, 7, 58, 53]
       ],
       "paintInvalidationClients": [
-        "LayoutTableCol COLGROUP id='colgroup'"
+        "LayoutTableCol COLGROUP id='colgroup'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD"
       ]
     }
   ]

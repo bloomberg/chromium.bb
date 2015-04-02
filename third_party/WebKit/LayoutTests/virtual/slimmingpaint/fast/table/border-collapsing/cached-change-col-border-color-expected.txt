@@ -6,10 +6,18 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 8, 113, 104]
+        [64, 59, 57, 53],
+        [64, 8, 57, 53],
+        [8, 59, 60, 53],
+        [8, 8, 113, 104],
+        [8, 8, 60, 53]
       ],
       "paintInvalidationClients": [
-        "LayoutTableCol COL id='col'"
+        "LayoutTableCol COL id='col'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD"
       ]
     }
   ]

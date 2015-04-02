@@ -488,14 +488,6 @@ bool LayoutTableCell::hasEndBorderAdjoiningTable() const
     return (isStartColumn && !hasSameDirectionAsTable) || (isEndColumn && hasSameDirectionAsTable);
 }
 
-CollapsedBorderValue LayoutTableCell::collapsedStartBorder(IncludeBorderColorOrNot includeColor) const
-{
-    CollapsedBorderValue result = computeCollapsedStartBorder(includeColor);
-    if (includeColor)
-        section()->setCachedCollapsedBorder(this, CBSStart, result);
-    return result;
-}
-
 CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderColorOrNot includeColor) const
 {
     LayoutTable* table = this->table();
@@ -585,14 +577,6 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedStartBorder(IncludeBorderC
             return result;
     }
 
-    return result;
-}
-
-CollapsedBorderValue LayoutTableCell::collapsedEndBorder(IncludeBorderColorOrNot includeColor) const
-{
-    CollapsedBorderValue result = computeCollapsedEndBorder(includeColor);
-    if (includeColor)
-        section()->setCachedCollapsedBorder(this, CBSEnd, result);
     return result;
 }
 
@@ -690,14 +674,6 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedEndBorder(IncludeBorderCol
     return result;
 }
 
-CollapsedBorderValue LayoutTableCell::collapsedBeforeBorder(IncludeBorderColorOrNot includeColor) const
-{
-    CollapsedBorderValue result = computeCollapsedBeforeBorder(includeColor);
-    if (includeColor)
-        section()->setCachedCollapsedBorder(this, CBSBefore, result);
-    return result;
-}
-
 CollapsedBorderValue LayoutTableCell::computeCollapsedBeforeBorder(IncludeBorderColorOrNot includeColor) const
 {
     LayoutTable* table = this->table();
@@ -773,14 +749,6 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedBeforeBorder(IncludeBorder
             return result;
     }
 
-    return result;
-}
-
-CollapsedBorderValue LayoutTableCell::collapsedAfterBorder(IncludeBorderColorOrNot includeColor) const
-{
-    CollapsedBorderValue result = computeCollapsedAfterBorder(includeColor);
-    if (includeColor)
-        section()->setCachedCollapsedBorder(this, CBSAfter, result);
     return result;
 }
 
@@ -930,7 +898,7 @@ int LayoutTableCell::borderHalfBottom(bool outer) const
 
 int LayoutTableCell::borderHalfStart(bool outer) const
 {
-    CollapsedBorderValue border = collapsedStartBorder(DoNotIncludeBorderColor);
+    CollapsedBorderValue border = computeCollapsedStartBorder(DoNotIncludeBorderColor);
     if (border.exists())
         return (border.width() + ((styleForCellFlow().isLeftToRightDirection() ^ outer) ? 1 : 0)) / 2; // Give the extra pixel to top and left.
     return 0;
@@ -938,7 +906,7 @@ int LayoutTableCell::borderHalfStart(bool outer) const
 
 int LayoutTableCell::borderHalfEnd(bool outer) const
 {
-    CollapsedBorderValue border = collapsedEndBorder(DoNotIncludeBorderColor);
+    CollapsedBorderValue border = computeCollapsedEndBorder(DoNotIncludeBorderColor);
     if (border.exists())
         return (border.width() + ((styleForCellFlow().isLeftToRightDirection() ^ outer) ? 0 : 1)) / 2;
     return 0;
@@ -946,7 +914,7 @@ int LayoutTableCell::borderHalfEnd(bool outer) const
 
 int LayoutTableCell::borderHalfBefore(bool outer) const
 {
-    CollapsedBorderValue border = collapsedBeforeBorder(DoNotIncludeBorderColor);
+    CollapsedBorderValue border = computeCollapsedBeforeBorder(DoNotIncludeBorderColor);
     if (border.exists())
         return (border.width() + ((styleForCellFlow().isFlippedBlocksWritingMode() ^ outer) ? 0 : 1)) / 2; // Give the extra pixel to top and left.
     return 0;
@@ -954,7 +922,7 @@ int LayoutTableCell::borderHalfBefore(bool outer) const
 
 int LayoutTableCell::borderHalfAfter(bool outer) const
 {
-    CollapsedBorderValue border = collapsedAfterBorder(DoNotIncludeBorderColor);
+    CollapsedBorderValue border = computeCollapsedAfterBorder(DoNotIncludeBorderColor);
     if (border.exists())
         return (border.width() + ((styleForCellFlow().isFlippedBlocksWritingMode() ^ outer) ? 1 : 0)) / 2;
     return 0;
@@ -978,12 +946,27 @@ static void addBorderStyle(LayoutTable::CollapsedBorderValues& borderValues,
     borderValues.append(borderValue);
 }
 
-void LayoutTableCell::collectBorderValues(LayoutTable::CollapsedBorderValues& borderValues) const
+void LayoutTableCell::collectBorderValues(LayoutTable::CollapsedBorderValues& borderValues)
 {
-    addBorderStyle(borderValues, collapsedStartBorder());
-    addBorderStyle(borderValues, collapsedEndBorder());
-    addBorderStyle(borderValues, collapsedBeforeBorder());
-    addBorderStyle(borderValues, collapsedAfterBorder());
+    CollapsedBorderValue startBorder = computeCollapsedStartBorder();
+    CollapsedBorderValue endBorder = computeCollapsedEndBorder();
+    CollapsedBorderValue beforeBorder = computeCollapsedBeforeBorder();
+    CollapsedBorderValue afterBorder = computeCollapsedAfterBorder();
+    LayoutTableSection* section = this->section();
+    bool changed = section->setCachedCollapsedBorder(this, CBSStart, startBorder);
+    changed |= section->setCachedCollapsedBorder(this, CBSEnd, endBorder);
+    changed |= section->setCachedCollapsedBorder(this, CBSBefore, beforeBorder);
+    changed |= section->setCachedCollapsedBorder(this, CBSAfter, afterBorder);
+
+    // In slimming paint mode, we need to invalidate all cells with collapsed border changed.
+    // FIXME: Need a way to invalidate/repaint the borders only. crbug.com/451090#c5.
+    if (changed && RuntimeEnabledFeatures::slimmingPaintEnabled())
+        setShouldDoFullPaintInvalidation();
+
+    addBorderStyle(borderValues, startBorder);
+    addBorderStyle(borderValues, endBorder);
+    addBorderStyle(borderValues, beforeBorder);
+    addBorderStyle(borderValues, afterBorder);
 }
 
 static int compareBorderValuesForQSort(const void* pa, const void* pb)

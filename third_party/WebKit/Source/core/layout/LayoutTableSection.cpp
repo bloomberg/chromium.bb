@@ -1577,16 +1577,25 @@ void LayoutTableSection::removeCachedCollapsedBorders(const LayoutTableCell* cel
         m_cellsCollapsedBorders.remove(std::make_pair(cell, side));
 }
 
-void LayoutTableSection::setCachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side, CollapsedBorderValue border)
+bool LayoutTableSection::setCachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side, const CollapsedBorderValue& border)
 {
     ASSERT(table()->collapseBorders());
-    m_cellsCollapsedBorders.set(std::make_pair(cell, side), border);
+    CellsCollapsedBordersMap::iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
+    if (it == m_cellsCollapsedBorders.end()) {
+        m_cellsCollapsedBorders.add(std::make_pair(cell, side), border);
+        return true;
+    }
+    if (!it->value.equals(border)) {
+        it->value = border;
+        return true;
+    }
+    return false;
 }
 
-CollapsedBorderValue& LayoutTableSection::cachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side)
+const CollapsedBorderValue& LayoutTableSection::cachedCollapsedBorder(const LayoutTableCell* cell, CollapsedBorderSide side) const
 {
     ASSERT(table()->collapseBorders());
-    HashMap<pair<const LayoutTableCell*, int>, CollapsedBorderValue>::iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
+    CellsCollapsedBordersMap::const_iterator it = m_cellsCollapsedBorders.find(std::make_pair(cell, side));
     ASSERT_WITH_SECURITY_IMPLICATION(it != m_cellsCollapsedBorders.end());
     return it->value;
 }

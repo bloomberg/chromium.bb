@@ -6,10 +6,22 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [10, 10, 110, 100]
+        [65, 108, 57, 53],
+        [65, 60, 57, 52],
+        [64, 8, 58, 53],
+        [10, 10, 110, 100],
+        [8, 108, 57, 53],
+        [8, 59, 58, 53],
+        [8, 8, 58, 53]
       ],
       "paintInvalidationClients": [
-        "LayoutTableSection TBODY id='tbody'"
+        "LayoutTableSection TBODY id='tbody'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD"
       ]
     }
   ]
