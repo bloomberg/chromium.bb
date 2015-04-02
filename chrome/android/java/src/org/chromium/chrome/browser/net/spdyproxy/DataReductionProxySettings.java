@@ -9,7 +9,6 @@ import android.preference.PreferenceManager;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -50,7 +49,8 @@ public class DataReductionProxySettings {
 
     private static final String ENABLED_PREFERENCE_TAG = "BANDWIDTH_REDUCTION_PROXY_ENABLED";
 
-    /** Returns whether the data reduction proxy is enabled.
+    /**
+     * Returns whether the data reduction proxy is enabled.
      *
      * The knowledge of the data reduction proxy status is needed before the
      * native library is loaded.
@@ -71,29 +71,35 @@ public class DataReductionProxySettings {
             ENABLED_PREFERENCE_TAG, false);
     }
 
-    /** Initializes DataReductionProxySettings.
+    /**
+     * Reconciles the Java-side data reduction proxy state with the native one.
      *
-     * This method must be called before getInstance().
+     * The data reduction proxy state needs to be accessible before the native
+     * library has been loaded, from Java. This is possible through
+     * isEnabledBeforeNativeLoad(). Once the native library has been loaded, the
+     * Java preference has to be updated.
+     * This method must be called early at startup, but once the native library
+     * has been loaded.
      *
      * @param context The application context.
      */
-    @SuppressFBWarnings("LI_LAZY_INIT")
-    public static void initialize(Context context) {
+    public static void reconcileDataReductionProxyEnabledState(Context context) {
         ThreadUtils.assertOnUiThread();
-        if (sSettings == null) {
-            sSettings = new DataReductionProxySettings();
-            boolean enabled = sSettings.isDataReductionProxyEnabled();
-            PreferenceManager.getDefaultSharedPreferences(context).edit()
+        boolean enabled = getInstance().isDataReductionProxyEnabled();
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putBoolean(ENABLED_PREFERENCE_TAG, enabled).apply();
-        }
     }
 
     /**
      * Returns a singleton instance of the settings object.
+     *
+     * Needs the native library to be loaded, otherwise it will crash.
      */
     public static DataReductionProxySettings getInstance() {
         ThreadUtils.assertOnUiThread();
-        assert sSettings != null : "initialize() must be called first.";
+        if (sSettings == null) {
+            sSettings = new DataReductionProxySettings();
+        }
         return sSettings;
     }
 

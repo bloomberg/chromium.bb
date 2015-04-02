@@ -123,7 +123,7 @@ public abstract class ChromiumApplication extends ContentApplication {
      * that really, really have to be set up early.  Avoid putting any long tasks here.
      */
     public void initializeProcess() {
-        DataReductionProxySettings.initialize(getApplicationContext());
+        DataReductionProxySettings.reconcileDataReductionProxyEnabledState(getApplicationContext());
     }
 
     @Override
