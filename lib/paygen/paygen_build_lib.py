@@ -29,7 +29,6 @@ from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import gs
 from chromite.lib import parallel
 from chromite.lib import retry_util
 from chromite.lib.paygen import download_cache
@@ -383,14 +382,15 @@ class _PaygenBuild(object):
     archive_board = archive_board_candidates.pop()
 
     # Find something in the respective chromeos-image-archive build directory.
-    ctx = gs.GSContext()
-    latest_build_uri = gspaths.ChromeosImageArchive.LatestBuildUri(
-        archive_board, version)
-    milestone_version = ctx.Cat(latest_build_uri)
-    board_uri = gspaths.ChromeosImageArchive.BoardUri(archive_board)
-    archive_build_uri = os.path.join(board_uri, milestone_version, '')
+    archive_build_search_uri = gspaths.ChromeosImageArchive.BuildUri(
+        archive_board, '*', version)
+    archive_build_file_uri_list = urilib.ListFiles(archive_build_search_uri)
+    if not archive_build_file_uri_list:
+      raise ArchiveError('cannot find archive build directory for %s' %
+                         archive_build_search_uri)
 
-    uri_parts = urlparse.urlsplit(archive_build_uri)
+    # Use the first search result.
+    uri_parts = urlparse.urlsplit(archive_build_file_uri_list[0])
     archive_build_path = os.path.dirname(uri_parts.path)
     archive_build = archive_build_path.strip('/')
     archive_build_uri = urlparse.urlunsplit((uri_parts.scheme,
