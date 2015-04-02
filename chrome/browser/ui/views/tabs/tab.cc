@@ -266,7 +266,7 @@ class Tab::TabCloseButton : public views::ImageButton,
     bool handled = ImageButton::OnMousePressed(event);
     // Explicitly mark midle-mouse clicks as non-handled to ensure the tab
     // sees them.
-    return event.IsOnlyMiddleMouseButton() ? false : handled;
+    return !event.IsMiddleMouseButton() && handled;
   }
 
   void OnMouseMoved(const ui::MouseEvent& event) override {

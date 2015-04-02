@@ -46,6 +46,7 @@ class MediaIndicatorButton : public views::ImageButton,
   // views::View:
   const char* GetClassName() const override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
 

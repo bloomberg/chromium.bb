@@ -116,6 +116,13 @@ views::View* MediaIndicatorButton::GetTooltipHandlerForPoint(
   return NULL;  // Tab (the parent View) provides the tooltip.
 }
 
+bool MediaIndicatorButton::OnMousePressed(const ui::MouseEvent& event) {
+  const bool handled = ImageButton::OnMousePressed(event);
+  // Explicitly mark midle-mouse clicks as non-handled to ensure the tab sees
+  // them.
+  return !event.IsMiddleMouseButton() && handled;
+}
+
 bool MediaIndicatorButton::OnMouseDragged(const ui::MouseEvent& event) {
   const ButtonState previous_state = state();
   const bool ret = ImageButton::OnMouseDragged(event);
