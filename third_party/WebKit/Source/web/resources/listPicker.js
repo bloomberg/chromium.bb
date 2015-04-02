@@ -46,7 +46,6 @@ function ListPicker(element, config) {
     this._element.appendChild(this._selectElement);
     this._layout();
     this._selectElement.focus();
-    this._selectElement.addEventListener("mouseover", this._handleMouseOver.bind(this), false);
     this._selectElement.addEventListener("mouseup", this._handleMouseUp.bind(this), false);
     this._selectElement.addEventListener("touchstart", this._handleTouchStart.bind(this), false);
     this._selectElement.addEventListener("keydown", this._handleKeyDown.bind(this), false);
@@ -57,6 +56,7 @@ function ListPicker(element, config) {
     window.addEventListener("touchend", this._handleWindowTouchEnd.bind(this), false);
     this.lastMousePositionX = Infinity;
     this.lastMousePositionY = Infinity;
+    this._selectionSetByMouseHover = false;
 
     this._trackingTouchId = null;
 
@@ -84,10 +84,8 @@ ListPicker.prototype._handleWindowMessage = function(event) {
 ListPicker.prototype._handleWindowMouseMove = function (event) {
     this.lastMousePositionX = event.clientX;
     this.lastMousePositionY = event.clientY;
-};
-
-ListPicker.prototype._handleMouseOver = function(event) {
-    this._highlightOption(event.toElement);
+    this._highlightOption(event.target);
+    this._selectionSetByMouseHover = true;
 };
 
 ListPicker.prototype._handleMouseUp = function(event) {
@@ -102,6 +100,7 @@ ListPicker.prototype._handleTouchStart = function(event) {
     var touch = event.touches[0];
     this._trackingTouchId = touch.identifier;
     this._highlightOption(touch.target);
+    this._selectionSetByMouseHover = false;
 };
 
 ListPicker.prototype._handleWindowTouchMove = function(event) {
@@ -111,6 +110,7 @@ ListPicker.prototype._handleWindowTouchMove = function(event) {
     if (!touch)
         return;
     this._highlightOption(document.elementFromPoint(touch.clientX, touch.clientY));
+    this._selectionSetByMouseHover = false;
 };
 
 ListPicker.prototype._handleWindowTouchEnd = function(event) {
@@ -143,6 +143,7 @@ ListPicker.prototype._highlightOption = function(target) {
 
 ListPicker.prototype._handleChange = function(event) {
     window.pagePopupController.setValue(this._selectElement.value);
+    this._selectionSetByMouseHover = false;
 };
 
 ListPicker.prototype._handleKeyDown = function(event) {
@@ -221,8 +222,11 @@ ListPicker.prototype._update = function() {
     var oldValue = this._selectElement.value;
     this._layout();
     this._selectElement.scrollTop = scrollPosition;
-    var elementUnderMouse = document.elementFromPoint(this.lastMousePositionX, this.lastMousePositionY);
-    var optionUnderMouse = elementUnderMouse && elementUnderMouse.closest("option");
+    var optionUnderMouse = null;
+    if (this._selectionSetByMouseHover) {
+        var elementUnderMouse = document.elementFromPoint(this.lastMousePositionX, this.lastMousePositionY);
+        optionUnderMouse = elementUnderMouse && elementUnderMouse.closest("option");
+    }
     if (optionUnderMouse)
         optionUnderMouse.selected = true;
     else

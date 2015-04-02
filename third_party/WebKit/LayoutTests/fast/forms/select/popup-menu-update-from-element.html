@@ -39,15 +39,37 @@ function test1() {
 }
 
 function test2() {
-    menuElement.innerHTML = '<option>FOO</option><optgroup label="BAR"><option selected>BAZ</option></optgroup>';
+    hoverOverElement(picker._selectElement.children[0]);
+    shouldBeEqualToString('picker._selectElement.value', '0');
+    eventSender.keyDown('downArrow');
+    shouldBeEqualToString('picker._selectElement.value', '1');
+
+    picker.on("didUpdate", onUpdate);
+    menuElement.innerHTML = '<option>FOO</option><option>BAR</option><optgroup label="BAZ"></optgroup>';
+
+    function onUpdate() {
+        setTimeout(function() {
+            shouldBeEqualToString('picker._selectElement.value', '1');
+            shouldBe('picker._selectElement.options.length', '2');
+            shouldBeEqualToString('picker._selectElement.children[0].label', 'FOO');
+            shouldBeEqualToString('picker._selectElement.children[1].label', 'BAR');
+            shouldBeEqualToString('picker._selectElement.children[2].tagName', 'OPTGROUP');
+            shouldBeEqualToString('picker._selectElement.children[2].label', 'BAZ');
+            picker.removeListener("didUpdate", onUpdate);
+            test3();
+        }, 0);
+    };
+}
+
+function test3() {
+    hoverOverElement(picker._selectElement.children[2]);
+    shouldBeEqualToString('picker._selectElement.value', '1');
+
+    menuElement.innerHTML = '<option>FOO</option><option>BAR</option><option selected>QUX</option>';
 
     picker.on("didUpdate", function () {
         setTimeout(function () {
-            shouldBe('picker._selectElement.options.length', '2');
-            shouldBeEqualToString('picker._selectElement.children[0].label', 'FOO');
-            shouldBeEqualToString('picker._selectElement.children[1].tagName', 'OPTGROUP');
-            shouldBeEqualToString('picker._selectElement.children[1].label', 'BAR');
-            shouldBeEqualToString('picker._selectElement.children[1].children[0].label', 'BAZ');
+            shouldBeEqualToString('picker._selectElement.value', '2');
             finishJSTest();
         }, 0);
     });
