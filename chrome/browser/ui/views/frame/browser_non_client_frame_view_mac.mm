@@ -113,7 +113,7 @@ void BrowserNonClientFrameViewMac::OnPaint(gfx::Canvas* canvas) {
 }
 
 // BrowserNonClientFrameView:
-void BrowserNonClientFrameViewMac::UpdateNewStyleAvatar() {
+void BrowserNonClientFrameViewMac::UpdateNewAvatarButtonImpl() {
   NOTIMPLEMENTED();
 }
 
