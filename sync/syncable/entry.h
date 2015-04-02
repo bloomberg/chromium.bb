@@ -215,10 +215,8 @@ class SYNC_EXPORT Entry {
     return kernel_->ref(SERVER_ATTACHMENT_METADATA);
   }
 
-  bool GetSyncing() const {
-    DCHECK(kernel_);
-    return kernel_->ref(SYNCING);
-  }
+  bool GetSyncing() const;
+  bool GetDirtySync() const ;
 
   ModelType GetServerModelType() const;
   ModelType GetModelType() const;

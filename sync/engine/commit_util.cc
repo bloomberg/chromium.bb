@@ -353,7 +353,7 @@ void ProcessSuccessfulCommitResponse(
     const sync_pb::CommitResponse_EntryResponse& entry_response,
     const syncable::Id& pre_commit_id,
     syncable::ModelNeutralMutableEntry* local_entry,
-    bool syncing_was_set, set<syncable::Id>* deleted_folders) {
+    bool dirty_sync_was_set, set<syncable::Id>* deleted_folders) {
   DCHECK(local_entry->GetIsUnsynced());
 
   // Update SERVER_VERSION and BASE_VERSION.
@@ -376,7 +376,7 @@ void ProcessSuccessfulCommitResponse(
   // If the item doesn't need to be committed again (an item might need to be
   // committed again if it changed locally during the commit), we can remove
   // it from the unsynced list.
-  if (syncing_was_set) {
+  if (!dirty_sync_was_set) {
     local_entry->PutIsUnsynced(false);
   }
 
@@ -404,7 +404,8 @@ ProcessSingleCommitResponse(
       syncable::GET_BY_HANDLE,
       metahandle);
   CHECK(local_entry.good());
-  bool syncing_was_set = local_entry.GetSyncing();
+  bool dirty_sync_was_set = local_entry.GetDirtySync();
+  local_entry.PutDirtySync(false);
   local_entry.PutSyncing(false);
 
   sync_pb::CommitResponse::ResponseType response = server_entry.response_type();
@@ -462,7 +463,7 @@ ProcessSingleCommitResponse(
   }
 
   ProcessSuccessfulCommitResponse(commit_request_entry, server_entry,
-      local_entry.GetId(), &local_entry, syncing_was_set, deleted_folders);
+      local_entry.GetId(), &local_entry, dirty_sync_was_set, deleted_folders);
   return response;
 }
 

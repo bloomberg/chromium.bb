@@ -205,6 +205,7 @@ TEST_F(DirectoryCommitContributionTest, PrepareCommit) {
       syncable::Entry entry(&trans, syncable::GET_BY_ID, *it);
       ASSERT_TRUE(entry.good());
       EXPECT_TRUE(entry.GetSyncing());
+      EXPECT_FALSE(entry.GetDirtySync());
     }
   }
 
@@ -404,16 +405,19 @@ TEST_F(DirectoryCommitContributionTest, ProcessCommitResponse) {
     syncable::Entry p1(&trans, syncable::GET_BY_HANDLE, pref1_handle);
     EXPECT_TRUE(p1.GetId().ServerKnows());
     EXPECT_FALSE(p1.GetSyncing());
+    EXPECT_FALSE(p1.GetDirtySync());
     EXPECT_LT(0, p1.GetServerVersion());
 
     syncable::Entry p2(&trans, syncable::GET_BY_HANDLE, pref2_handle);
     EXPECT_TRUE(p2.GetId().ServerKnows());
     EXPECT_FALSE(p2.GetSyncing());
+    EXPECT_FALSE(p2.GetDirtySync());
     EXPECT_LT(0, p2.GetServerVersion());
 
     syncable::Entry e1(&trans, syncable::GET_BY_HANDLE, ext1_handle);
     EXPECT_TRUE(e1.GetId().ServerKnows());
     EXPECT_FALSE(e1.GetSyncing());
+    EXPECT_FALSE(e1.GetDirtySync());
     EXPECT_LT(0, e1.GetServerVersion());
   }
 
@@ -485,16 +489,19 @@ TEST_F(DirectoryCommitContributionTest, ProcessCommitResponseWithAttachments) {
     syncable::Entry a1(&trans, syncable::GET_BY_HANDLE, art1_handle);
     EXPECT_TRUE(a1.GetId().ServerKnows());
     EXPECT_FALSE(a1.GetSyncing());
+    EXPECT_FALSE(a1.GetDirtySync());
     EXPECT_LT(0, a1.GetServerVersion());
 
     syncable::Entry a2(&trans, syncable::GET_BY_HANDLE, art2_handle);
     EXPECT_FALSE(a2.GetId().ServerKnows());
     EXPECT_FALSE(a2.GetSyncing());
+    EXPECT_FALSE(a2.GetDirtySync());
     EXPECT_EQ(0, a2.GetServerVersion());
 
     syncable::Entry a3(&trans, syncable::GET_BY_HANDLE, art3_handle);
     EXPECT_FALSE(a3.GetId().ServerKnows());
     EXPECT_FALSE(a3.GetSyncing());
+    EXPECT_FALSE(a3.GetDirtySync());
     EXPECT_EQ(0, a3.GetServerVersion());
   }
 

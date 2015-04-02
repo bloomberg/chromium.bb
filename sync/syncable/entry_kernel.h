@@ -178,9 +178,13 @@ enum {
 };
 
 enum BitTemp {
-  // Not to be confused with IS_UNSYNCED, this bit is used to detect local
-  // changes to items that happen during the server Commit operation.
+  // Whether a server commit operation was started and has not yet completed
+  // for this entity.
   SYNCING = BIT_TEMPS_BEGIN,
+  // Whether a local change was made to an entity that had SYNCING set to true,
+  // and was therefore in the middle of a commit operation.
+  // Note: must only be set if SYNCING is true.
+  DIRTY_SYNC,
   BIT_TEMPS_END,
 };
 

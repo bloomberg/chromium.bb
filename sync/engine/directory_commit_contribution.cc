@@ -184,6 +184,11 @@ void DirectoryCommitContribution::UnsetSyncingBits() {
   for (std::vector<int64>::const_iterator it = metahandles_.begin();
        it != metahandles_.end(); ++it) {
     syncable::ModelNeutralMutableEntry entry(&trans, GET_BY_HANDLE, *it);
+    // TODO(sync): this seems like it could be harmful if a sync cycle doesn't
+    // complete but the Cleanup method is called anyways. It appears these are
+    // unset on the assumption that the sync cycle must have finished properly,
+    // although that's actually up to the commit response handling logic.
+    entry.PutDirtySync(false);
     entry.PutSyncing(false);
   }
   syncing_bits_set_ = false;

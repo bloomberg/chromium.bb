@@ -405,6 +405,11 @@ void ModelNeutralMutableEntry::PutSyncing(bool value) {
   kernel_->put(SYNCING, value);
 }
 
+void ModelNeutralMutableEntry::PutDirtySync(bool value) {
+  DCHECK(!value || GetSyncing());
+  kernel_->put(DIRTY_SYNC, value);
+}
+
 void ModelNeutralMutableEntry::PutParentIdPropertyOnly(const Id& parent_id) {
   base_write_transaction_->TrackChangesTo(kernel_);
   dir()->ReindexParentId(base_write_transaction(), kernel_, parent_id);

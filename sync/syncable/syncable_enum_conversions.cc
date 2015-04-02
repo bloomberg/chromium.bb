@@ -176,10 +176,11 @@ const char* GetAttachmentMetadataFieldString(
 }
 
 const char* GetBitTempString(BitTemp bit_temp) {
-  ASSERT_ENUM_BOUNDS(SYNCING, SYNCING,
+  ASSERT_ENUM_BOUNDS(SYNCING, DIRTY_SYNC,
                      BIT_TEMPS_BEGIN, BIT_TEMPS_END - 1);
   switch (bit_temp) {
     ENUM_CASE(SYNCING);
+    ENUM_CASE(DIRTY_SYNC);
     case BIT_TEMPS_END: break;
   }
   NOTREACHED();

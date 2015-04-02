@@ -62,6 +62,16 @@ base::DictionaryValue* Entry::ToValue(Cryptographer* cryptographer) const {
   return entry_info;
 }
 
+bool Entry::GetSyncing() const {
+    DCHECK(kernel_);
+    return kernel_->ref(SYNCING);
+}
+
+bool Entry::GetDirtySync() const {
+    DCHECK(kernel_);
+    return kernel_->ref(DIRTY_SYNC);
+}
+
 ModelType Entry::GetServerModelType() const {
   ModelType specifics_type = kernel_->GetServerModelType();
   if (specifics_type != UNSPECIFIED)

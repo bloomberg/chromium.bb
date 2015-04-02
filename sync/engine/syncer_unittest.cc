@@ -4666,13 +4666,23 @@ class SyncerBookmarksTest : public SyncerTest {
     MutableEntry bookmark(
         &trans, CREATE, BOOKMARKS, ids_.root(), "clientname");
     ASSERT_TRUE(bookmark.good());
-    bookmark.PutIsUnsynced(true);
-    bookmark.PutSyncing(false);
     bookmark.PutSpecifics(DefaultBookmarkSpecifics());
     EXPECT_FALSE(bookmark.GetIsUnappliedUpdate());
     EXPECT_FALSE(bookmark.GetId().ServerKnows());
     metahandle_ = bookmark.GetMetahandle();
     local_id_ = bookmark.GetId();
+    bookmark.PutIsUnsynced(true);
+  }
+
+  void Update() {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry bookmark(&trans, GET_BY_ID, local_id_);
+    ASSERT_TRUE(bookmark.good());
+    bookmark.PutSpecifics(DefaultBookmarkSpecifics());
+    EXPECT_FALSE(bookmark.GetIsUnappliedUpdate());
+    bookmark.PutIsUnsynced(true);
+    if (bookmark.GetSyncing())
+      bookmark.PutDirtySync(true);
   }
 
   void Delete() {
@@ -4683,8 +4693,14 @@ class SyncerBookmarksTest : public SyncerTest {
     // The order of setting IS_UNSYNCED vs IS_DEL matters. See
     // WriteNode::Tombstone().
     entry.PutIsUnsynced(true);
+    if (entry.GetSyncing())
+      entry.PutDirtySync(true);
     entry.PutIsDel(true);
-    entry.PutSyncing(false);
+  }
+
+  void UpdateAndDelete() {
+    Update();
+    Delete();
   }
 
   void Undelete() {
@@ -4695,7 +4711,8 @@ class SyncerBookmarksTest : public SyncerTest {
     EXPECT_TRUE(entry.GetIsDel());
     entry.PutIsDel(false);
     entry.PutIsUnsynced(true);
-    entry.PutSyncing(false);
+    if (entry.GetSyncing())
+      entry.PutDirtySync(true);
   }
 
   int64 GetMetahandleOfTag() {
@@ -4864,6 +4881,20 @@ TEST_F(SyncerBookmarksTest, CreateThenDeleteDuringCommit) {
   ExpectSyncedAndDeleted();
 }
 
+TEST_F(SyncerBookmarksTest, CreateThenUpdateAndDeleteDuringCommit) {
+  Create();
+  ExpectUnsyncedCreation();
+
+  // In the middle of the initial creation commit, perform an updated followed
+  // by a deletion. This should trigger performing two consecutive commit
+  // cycles, resulting in the bookmark being both deleted and synced.
+  mock_server_->SetMidCommitCallback(base::Bind(
+      &SyncerBookmarksTest::UpdateAndDelete, base::Unretained(this)));
+
+  SyncShareNudge();
+  ExpectSyncedAndDeleted();
+}
+
 // Test what happens if a client deletes, then recreates, an object very
 // quickly.  It is possible that the deletion gets sent as a commit, and
 // the undelete happens during the commit request.  The principle here
@@ -4897,7 +4928,8 @@ class SyncerUndeletionTest : public SyncerTest {
     ASSERT_TRUE(perm_folder.good());
     perm_folder.PutUniqueClientTag(client_tag_);
     perm_folder.PutIsUnsynced(true);
-    perm_folder.PutSyncing(false);
+    if (perm_folder.GetSyncing())
+      perm_folder.PutDirtySync(true);
     perm_folder.PutSpecifics(DefaultPreferencesSpecifics());
     EXPECT_FALSE(perm_folder.GetIsUnappliedUpdate());
     EXPECT_FALSE(perm_folder.GetId().ServerKnows());
@@ -4913,8 +4945,9 @@ class SyncerUndeletionTest : public SyncerTest {
     // The order of setting IS_UNSYNCED vs IS_DEL matters. See
     // WriteNode::Tombstone().
     entry.PutIsUnsynced(true);
+    if (entry.GetSyncing())
+      entry.PutDirtySync(true);
     entry.PutIsDel(true);
-    entry.PutSyncing(false);
   }
 
   void Undelete() {
@@ -4925,7 +4958,8 @@ class SyncerUndeletionTest : public SyncerTest {
     EXPECT_TRUE(entry.GetIsDel());
     entry.PutIsDel(false);
     entry.PutIsUnsynced(true);
-    entry.PutSyncing(false);
+    if (entry.GetSyncing())
+      entry.PutDirtySync(true);
   }
 
   int64 GetMetahandleOfTag() {

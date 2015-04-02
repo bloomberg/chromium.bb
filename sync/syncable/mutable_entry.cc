@@ -187,8 +187,8 @@ void MutableEntry::PutIsDel(bool value) {
     // - Let us delete this entry permanently when we next restart sync - see
     //   DirectoryBackingStore::SafeToPurgeOnLoading.
     //   This will avoid crbug.com/125381.
-    // Note: do not unset IsUnsynced if the syncer is in the middle of
-    // attempting to commit this entity.
+    // Note: do not unset IsUnsynced if the syncer has started but not yet
+    // finished committing this entity.
     if (!GetId().ServerKnows() && !GetSyncing()) {
       PutIsUnsynced(false);
     }
@@ -293,7 +293,8 @@ bool MarkForSyncing(MutableEntry* e) {
   DCHECK(!e->IsRoot()) << "We shouldn't mark a permanent object for syncing.";
   if (!(e->PutIsUnsynced(true)))
     return false;
-  e->PutSyncing(false);
+  if (e->GetSyncing())
+    e->PutDirtySync(true);
   return true;
 }
 
