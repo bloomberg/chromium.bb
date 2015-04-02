@@ -22,10 +22,6 @@ int64 SysInfo::AmountOfPhysicalMemory() {
   return static_cast<int64>(pages) * page_size;
 }
 
-bool SysInfo::HasSeekPenalty(const FilePath& path, bool* has_seek_penalty) {
-  return false;
-}
-
 // static
 size_t SysInfo::MaxSharedMemorySize() {
   size_t limit;

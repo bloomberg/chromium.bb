@@ -6,11 +6,16 @@
 #define CHROME_BROWSER_METRICS_DRIVE_METRICS_PROVIDER_H_
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/proto/system_profile.pb.h"
+
+namespace base {
+class FilePath;
+}
 
 // Provides metrics about the local drives on a user's computer. Currently only
 // checks to see if they incur a seek-time penalty (e.g. if they're SSDs).
@@ -30,6 +35,8 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
   void GetDriveMetrics(const base::Closure& done);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DriveMetricsProviderTest, HasSeekPenalty);
+
   // A response to querying a drive as to whether it incurs a seek penalty.
   // |has_seek_penalty| is set if |success| is true.
   struct SeekPenaltyResponse {
@@ -42,6 +49,11 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
     SeekPenaltyResponse app_drive;
     SeekPenaltyResponse user_data_drive;
   };
+
+  // Determine whether the device that services |path| has a seek penalty.
+  // Returns false if it couldn't be determined (e.g., |path| doesn't exist).
+  static bool HasSeekPenalty(const base::FilePath& path,
+                             bool* has_seek_penalty);
 
   // Gather metrics about various drives on the FILE thread.
   static DriveMetrics GetDriveMetricsOnFileThread();

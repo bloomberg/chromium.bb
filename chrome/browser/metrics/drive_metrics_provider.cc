@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,6 +40,15 @@ void DriveMetricsProvider::GetDriveMetrics(const base::Closure& done) {
 DriveMetricsProvider::SeekPenaltyResponse::SeekPenaltyResponse()
     : success(false) {}
 
+#if !(defined(OS_WIN) || defined(OS_ANDROID) || defined(OS_IOS))
+// static
+bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
+                                          bool* has_seek_penalty) {
+  // TODO(dbeam): implement on more platforms.
+  return false;
+}
+#endif
+
 // static
 DriveMetricsProvider::DriveMetrics
 DriveMetricsProvider::GetDriveMetricsOnFileThread() {
@@ -64,8 +72,7 @@ void DriveMetricsProvider::QuerySeekPenalty(
 
   base::TimeTicks start = base::TimeTicks::Now();
 
-  response->success =
-      base::SysInfo::HasSeekPenalty(path, &response->has_seek_penalty);
+  response->success = HasSeekPenalty(path, &response->has_seek_penalty);
 
   UMA_HISTOGRAM_TIMES("Hardware.Drive.HasSeekPenalty_Time",
                       base::TimeTicks::Now() - start);

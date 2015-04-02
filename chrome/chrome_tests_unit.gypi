@@ -137,6 +137,7 @@
       'browser/media/native_desktop_media_list_unittest.cc',
       'browser/metrics/chrome_metrics_service_accessor_unittest.cc',
       'browser/metrics/cloned_install_detector_unittest.cc',
+      'browser/metrics/drive_metrics_provider_unittest.cc',
       'browser/metrics/metrics_services_manager_unittest.cc',
       'browser/metrics/signin_status_metrics_provider_chromeos_unittest.cc',
       'browser/metrics/signin_status_metrics_provider_unittest.cc',
