@@ -22,6 +22,8 @@
          disable_arb_sync)                                   \
   GPU_OP(DISABLE_ASYNC_READPIXELS,                           \
          disable_async_readpixels)                           \
+  GPU_OP(DISABLE_CHROMIUM_FRAMEBUFFER_MULTISAMPLE,           \
+         disable_chromium_framebuffer_multisample)           \
   GPU_OP(DISABLE_D3D11,                                      \
          disable_d3d11)                                      \
   GPU_OP(DISABLE_DEPTH_TEXTURE,                              \
@@ -40,8 +42,8 @@
          disable_fbo_invalidations)                          \
   GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
          disable_multimonitor_multisampling)                 \
-  GPU_OP(DISABLE_MULTISAMPLING,                              \
-         disable_multisampling)                              \
+  GPU_OP(DISABLE_MULTISAMPLED_RENDER_TO_TEXTURE,             \
+         disable_multisampled_render_to_texture)             \
   GPU_OP(DISABLE_OES_STANDARD_DERIVATIVES,                   \
          disable_oes_standard_derivatives)                   \
   GPU_OP(DISABLE_POST_SUB_BUFFERS_FOR_ONSCREEN_SURFACES,     \

@@ -717,9 +717,15 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
     prefs->flash_stage3d_baseline_enabled = false;
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS))
     prefs->accelerated_2d_canvas_enabled = false;
-  if (IsDriverBugWorkaroundActive(gpu::DISABLE_MULTISAMPLING) ||
+  // TODO(senorblanco): The renderer shouldn't have an extra setting
+  // for this, but should rely on extension availability.
+  // Note that |gl_multisampling_enabled| only affects the decoder's
+  // default framebuffer allocation, which does not support
+  // multisampled_render_to_texture, only msaa with explicit resolve.
+  if (IsDriverBugWorkaroundActive(
+          gpu::DISABLE_CHROMIUM_FRAMEBUFFER_MULTISAMPLE) ||
       (IsDriverBugWorkaroundActive(gpu::DISABLE_MULTIMONITOR_MULTISAMPLING) &&
-          display_count_ > 1))
+       display_count_ > 1))
     prefs->gl_multisampling_enabled = false;
 
 #if defined(USE_AURA)

@@ -118,8 +118,14 @@ class ValidatorBase(page_test.PageTest):
       self.device_string = device.device_string
     else:
       raise Exception('GPU device information was incomplete')
+    # TODO(senorblanco): This should probably be checking
+    # for the presence of the extensions in system_info.gpu_aux_attributes
+    # in order to check for MSAA, rather than sniffing the blacklist.
     self.msaa = not (
-        'disable_multisampling' in system_info.gpu.driver_bug_workarounds)
+        ('disable_chromium_framebuffer_multisample' in
+          system_info.gpu.driver_bug_workarounds) or
+        ('disable_multisample_render_to_texture' in
+          system_info.gpu.driver_bug_workarounds))
 
   def _FormatGpuInfo(self, tab):
     self._ComputeGpuInfo(tab)

@@ -125,8 +125,8 @@ TEST_F(GpuDriverBugListTest, GpuSwitching) {
 
 TEST_F(GpuDriverBugListTest, AppendSingleWorkaround) {
   base::CommandLine command_line(0, NULL);
-  command_line.AppendSwitch(
-      GpuDriverBugWorkaroundTypeToString(DISABLE_MULTISAMPLING));
+  command_line.AppendSwitch(GpuDriverBugWorkaroundTypeToString(
+      DISABLE_CHROMIUM_FRAMEBUFFER_MULTISAMPLE));
   std::set<int> workarounds;
   workarounds.insert(EXIT_ON_CONTEXT_LOST);
   workarounds.insert(INIT_VERTEX_ATTRIBUTES);
@@ -134,7 +134,7 @@ TEST_F(GpuDriverBugListTest, AppendSingleWorkaround) {
   GpuDriverBugList::AppendWorkaroundsFromCommandLine(
       &workarounds, command_line);
   EXPECT_EQ(3u, workarounds.size());
-  EXPECT_EQ(1u, workarounds.count(DISABLE_MULTISAMPLING));
+  EXPECT_EQ(1u, workarounds.count(DISABLE_CHROMIUM_FRAMEBUFFER_MULTISAMPLE));
 }
 
 TEST_F(GpuDriverBugListTest, AppendForceGPUWorkaround) {

@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.17",
+  "version": "7.18",
   "entries": [
     {
       "id": 1,
@@ -607,7 +607,8 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "gl_vendor": "Qualcomm.*",
       "features": [
-        "disable_multisampling"
+        "disable_chromium_framebuffer_multisample",
+        "disable_multisampled_render_to_texture"
       ]
     },
     {
@@ -677,7 +678,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "vendor_id": "0x1002",
       "features": [
-        "disable_multisampling"
+        "disable_chromium_framebuffer_multisample"
       ]
     },
     {
@@ -690,7 +691,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "device_id": ["0x0152", "0x0156", "0x015a", "0x0162", "0x0166"],
       "features": [
-        "disable_multisampling"
+        "disable_chromium_framebuffer_multisample"
       ]
     },
     {
@@ -705,7 +706,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         }
       },
       "features": [
-        "disable_multisampling"
+        "disable_chromium_framebuffer_multisample"
       ]
     },
     {
@@ -865,7 +866,7 @@ LONG_STRING_CONST(
       "gl_vendor": "ARM.*",
       "gl_renderer": ".*Mali-400.*",
       "features": [
-        "disable_multisampling"
+        "disable_multisampled_render_to_texture"
       ]
     },
     {
@@ -1103,7 +1104,7 @@ LONG_STRING_CONST(
       "gl_vendor": "Intel",
       "gl_renderer": "Intel.*BayTrail",
       "features": [
-        "disable_multisampling"
+        "disable_chromium_framebuffer_multisample"
       ]
     },
     {
