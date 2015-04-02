@@ -1824,7 +1824,7 @@ const Experiment kExperiments[] = {
     "disable-threaded-scrolling",
     IDS_FLAGS_DISABLE_THREADED_SCROLLING_NAME,
     IDS_FLAGS_DISABLE_THREADED_SCROLLING_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
+    kOsWin | kOsLinux | kOsCrOS | kOsAndroid | kOsMac,
     SINGLE_VALUE_TYPE(switches::kDisableThreadedScrolling)
   },
   {
