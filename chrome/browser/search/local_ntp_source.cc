@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search/local_ntp_source.h"
 
+#include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
@@ -20,12 +21,12 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/variations/variations_associated_data.h"
 #include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -81,9 +82,19 @@ bool DefaultSearchProviderIsGoogle(Profile* profile) {
        SEARCH_ENGINE_GOOGLE);
 }
 
-// Returns whether icon NTP is enabled.
+// Returns whether icon NTP is enabled by experiment.
+// TODO(huangs): Remove all 3 copies of this routine once Icon NTP launches.
 bool IsIconNTPEnabled() {
-  return variations::GetVariationParamValue("IconNTP", "state") == "enabled";
+  // Note: It's important to query the field trial state first, to ensure that
+  // UMA reports the correct group.
+  const std::string group_name = base::FieldTrialList::FindFullName("IconNTP");
+  using base::CommandLine;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableIconNtp))
+    return false;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableIconNtp))
+    return true;
+
+  return StartsWithASCII(group_name, "Enabled", true);
 }
 
 // Returns whether we are in the Fast NTP experiment or not.

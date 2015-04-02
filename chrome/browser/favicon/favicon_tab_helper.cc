@@ -4,6 +4,8 @@
 
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 
+#include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -20,7 +22,6 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -31,6 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/favicon_url.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -45,9 +47,19 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(FaviconTabHelper);
 
 namespace {
 
-// Returns whether icon NTP is enabled.
+// Returns whether icon NTP is enabled by experiment.
+// TODO(huangs): Remove all 3 copies of this routine once Icon NTP launches.
 bool IsIconNTPEnabled() {
-  return variations::GetVariationParamValue("IconNTP", "state") == "enabled";
+  // Note: It's important to query the field trial state first, to ensure that
+  // UMA reports the correct group.
+  const std::string group_name = base::FieldTrialList::FindFullName("IconNTP");
+  using base::CommandLine;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableIconNtp))
+    return false;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableIconNtp))
+    return true;
+
+  return StartsWithASCII(group_name, "Enabled", true);
 }
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
