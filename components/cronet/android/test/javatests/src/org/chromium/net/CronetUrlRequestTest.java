@@ -859,6 +859,31 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals("hello there!", listener.mResponseAsString);
     }
 
+    // Test where an upload fails without ever initializing the
+    // UploadDataStream, because it can't connect to the server.
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testUploadFailsWithoutInitializingStream() throws Exception {
+        TestUrlRequestListener listener = new TestUrlRequestListener();
+        UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
+                NativeTestServer.getEchoBodyURL(), listener, listener.getExecutor());
+        // Shut down the test server, so connecting to it fails.  Note that
+        // calling shutdown again during teardown is safe.
+        NativeTestServer.shutdownNativeTestServer();
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, listener.getExecutor());
+        dataProvider.addRead("test".getBytes());
+        urlRequest.setUploadDataProvider(dataProvider, listener.getExecutor());
+        urlRequest.addHeader("Content-Type", "useless/string");
+        urlRequest.start();
+        listener.blockForDone();
+
+        assertNull(listener.mResponseInfo);
+        assertEquals("Exception in CronetUrlRequest: net::ERR_CONNECTION_REFUSED",
+                listener.mError.getMessage());
+    }
+
     private void throwOrCancel(FailureType failureType, ResponseStep failureStep,
             boolean expectResponseInfo, boolean expectError) {
         TestUrlRequestListener listener = new TestUrlRequestListener();

@@ -64,8 +64,10 @@ void CronetUploadDataStreamDelegate::Rewind() {
 }
 
 void CronetUploadDataStreamDelegate::OnAdapterDestroyed() {
-  DCHECK(adapter_);
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  // If the CronetUploadDataStreamAdapter was never initialized, |adapter_|
+  // and |network_task_runner_| will be NULL.
+  DCHECK(!network_task_runner_ ||
+         network_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_CronetUploadDataStream_onAdapterDestroyed(env,
