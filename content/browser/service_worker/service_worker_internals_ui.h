@@ -25,7 +25,6 @@ namespace content {
 
 class StoragePartition;
 class ServiceWorkerContextWrapper;
-class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
 
 class ServiceWorkerInternalsUI

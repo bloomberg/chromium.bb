@@ -56,6 +56,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void DeleteAndStartOver();
 
   // The core context is only for use on the IO thread.
+  // Can be null before/during init, during/after shutdown, and after
+  // DeleteAndStartOver fails.
   ServiceWorkerContextCore* context();
 
   // The StoragePartition should only be used on the UI thread.
