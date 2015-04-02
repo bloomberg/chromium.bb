@@ -413,7 +413,7 @@ body.check-select #gear-button {
 }
 
 #cloud-import-details-button {
-  margin-left: -15px;
+  -webkit-margin-start: -15px;
 }
 
 #cloud-import-details {
@@ -421,11 +421,18 @@ body.check-select #gear-button {
   border-radius: 2px;
   line-height: 1.5em;
   position: absolute;
-  right: 13px;  /* Positioned in relation to the cloud-import toolbar button */
   top: 38px;  /* Positioned just overlapping the top of the toolbar */
   transition: all 0.2s ease;
   width: 270px;
   z-index: 5;
+}
+
+html[dir='ltr'] #cloud-import-details {
+  right: 13px;  /* Positioned in relation to the cloud-import toolbar button */
+}
+
+html[dir='rtl'] #cloud-import-details {
+  left: 13px;  /* Positioned in relation to the cloud-import toolbar button */
 }
 
 #cloud-import-details.hidden {
@@ -466,9 +473,9 @@ body.check-select #gear-button {
 }
 
 #cloud-import-details .status .content {
+  -webkit-padding-start: 10px;
   flex: 1;
   color: #646464;
-  padding-left: 10px;
 }
 
 #cloud-import-details .status .content::first-line {
@@ -1140,7 +1147,7 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 
 .imported .filename-label,
 .copied .filename-label {
-  margin-right: 14px;
+  -webkit-margin-end: 14px;
 }
 
 /* Padding counterweights negative margins of items, thus eliminating scroll
