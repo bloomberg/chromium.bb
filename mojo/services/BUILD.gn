@@ -34,6 +34,7 @@ group("services") {
       deps -= [
         "//mojo/services/html_viewer",
         "//mojo/services/kiosk_wm",
+        "//mojo/services/native_viewport",
         "//mojo/services/view_manager",
       ]
     }
