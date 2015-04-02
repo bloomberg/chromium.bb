@@ -15,6 +15,7 @@ from chromite.cli import command_unittest
 from chromite.cli.brillo import brillo_sdk
 from chromite.lib import bootstrap_lib
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
@@ -248,6 +249,10 @@ class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase):
 
     # Workspace is supposed to exist in advance.
     self.sdk_path = os.path.join(self.tempdir, 'sdk')
+
+    # Pretend we are outside the chroot, since this command only runs there.
+    self.mock_inside = self.PatchObject(cros_build_lib, 'IsInsideChroot',
+                                        return_value=False)
 
     # Fake it out, so the SDK appears to be a repo, but bootstrap doesn't.
     self.PatchObject(

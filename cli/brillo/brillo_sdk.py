@@ -183,6 +183,9 @@ class SdkCommand(command.CliCommand):
     """Run brillo sdk."""
     self.options.Freeze()
 
+    # Must run outside the chroot.
+    cros_build_lib.AssertOutsideChroot()
+
     workspace_path = workspace_lib.WorkspacePath()
     sdk_dir = self.options.sdk_dir
 
