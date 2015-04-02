@@ -418,7 +418,9 @@ IN_PROC_BROWSER_TEST_F(WebViewDPIAPITest, TestAutosizeRemoveAttributes) {
   RunTest("testAutosizeRemoveAttributes", "web_view/apitest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestAutosizeWithPartialAttributes) {
+// http://crbug.com/473177
+IN_PROC_BROWSER_TEST_F(WebViewAPITest,
+                       DISABLED_TestAutosizeWithPartialAttributes) {
   RunTest("testAutosizeWithPartialAttributes", "web_view/apitest");
 }
 
