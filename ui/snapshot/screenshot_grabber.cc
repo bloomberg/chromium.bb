@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"

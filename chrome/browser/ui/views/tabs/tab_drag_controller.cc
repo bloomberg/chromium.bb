@@ -587,9 +587,12 @@ TabDragController::DragBrowserToNewTabStrip(
     return DRAG_BROWSER_RESULT_STOP;
   }
 
+#if defined(USE_AURA)
+  // Only Aura windows are gesture consumers.
   ui::GestureRecognizer::Get()->TransferEventsTo(
       GetAttachedBrowserWidget()->GetNativeView(),
       target_tabstrip->GetWidget()->GetNativeView());
+#endif
 
   if (is_dragging_window_) {
     // ReleaseCapture() is going to result in calling back to us (because it
@@ -1026,11 +1029,14 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   BrowserView* dragged_browser_view =
       BrowserView::GetBrowserViewForBrowser(browser);
   views::Widget* dragged_widget = dragged_browser_view->GetWidget();
+
+#if defined(USE_AURA)
+  // Only Aura windows are gesture consumers.
   gfx::NativeView attached_native_view =
       attached_tabstrip_->GetWidget()->GetNativeView();
-
   ui::GestureRecognizer::Get()->TransferEventsTo(
       attached_native_view, dragged_widget->GetNativeView());
+#endif
 
   Detach(can_release_capture_ ? RELEASE_CAPTURE : DONT_RELEASE_CAPTURE);
 

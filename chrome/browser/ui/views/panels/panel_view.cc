@@ -20,8 +20,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/content_accelerators/accelerator_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
@@ -43,6 +41,7 @@
 #include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/ui/views/panels/x11_panel_resizer.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "ui/aura/window.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #endif
 

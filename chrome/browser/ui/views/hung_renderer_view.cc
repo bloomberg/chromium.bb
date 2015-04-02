@@ -23,7 +23,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "grit/theme_resources.h"
-#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -41,6 +40,10 @@
 #include "chrome/browser/shell_integration.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
+#endif
+
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
 #endif
 
 using content::WebContents;
