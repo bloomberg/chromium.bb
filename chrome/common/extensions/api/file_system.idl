@@ -170,7 +170,8 @@ namespace fileSystem {
     // then the file system will be writable. Otherwise, it will be read-only.
     // The <code>writable</code> option requires the <code>
     // "fileSystem": {"write"}</code> permission in the manifest. Available to
-    // kiosk apps running in kiosk session only.
+    // kiosk apps running in kiosk session only. For manual-launch kiosk mode, a
+    // confirmation dialog will be shown on top of the active app window.
     [nodoc] static void requestFileSystem(RequestFileSystemOptions options,
                                           RequestFileSystemCallback callback);
 

@@ -632,4 +632,13 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiRestoreDirectoryEntry) {
       << message_;
 }
 
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest, RequestFileSystem_NotChromeOS) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags(
+      "api_test/file_system/request_file_system_not_chromeos",
+      kFlagIgnoreManifestWarnings))
+      << message_;
+}
+#endif
+
 }  // namespace extensions

@@ -58,11 +58,14 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "base/prefs/testing_pref_service.h"
+#include "base/strings/string16.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/extensions/api/file_system/request_file_system_dialog_view.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
@@ -93,6 +96,8 @@ const char kNotSupportedOnNonKioskSessionError[] =
     "Operation only supported for kiosk apps running in a kiosk session.";
 const char kVolumeNotFoundError[] = "Volume not found.";
 const char kSecurityError[] = "Security error.";
+const char kConsentImpossible[] =
+    "Impossible to ask for user consent as there is no app window visible.";
 
 // List of whitelisted component apps and extensions by their ids for
 // chrome.fileSystem.requestFileSystem.
@@ -102,6 +107,7 @@ const char* const kRequestFileSystemComponentWhitelist[] = {
     file_manager::kGalleryAppId,
     file_manager::kAudioPlayerAppId,
     file_manager::kImageLoaderExtensionId,
+    // TODO(mtomasz): Remove this extension id, and add it only for tests.
     "pkplfbidichfdicaijlchgnapepdginl"  // Testing extensions.
 };
 #endif
@@ -117,6 +123,10 @@ base::FilePath* g_path_to_be_picked_for_test;
 std::vector<base::FilePath>* g_paths_to_be_picked_for_test;
 bool g_skip_directory_confirmation_for_test = false;
 bool g_allow_directory_access_for_test = false;
+
+#if defined(OS_CHROMEOS)
+ui::DialogButton g_auto_dialog_button_for_test = ui::DIALOG_BUTTON_NONE;
+#endif
 
 // Expand the mime-types and extensions provided in an AcceptOption, returning
 // them within the passed extension vector. Returns false if no valid types
@@ -209,6 +219,33 @@ void PassFileInfoToUIThread(const FileInfoOptCallback& callback,
       base::Bind(callback, base::Passed(&file_info)));
 }
 
+// Gets a WebContents instance handle for a platform app hosted in
+// |render_view_host|. If not found, then returns NULL.
+content::WebContents* GetWebContentsForRenderViewHost(
+    Profile* profile,
+    content::RenderViewHost* render_view_host) {
+  extensions::AppWindowRegistry* const registry =
+      extensions::AppWindowRegistry::Get(profile);
+  DCHECK(registry);
+  extensions::AppWindow* const app_window =
+      registry->GetAppWindowForRenderViewHost(render_view_host);
+  return app_window ? app_window->web_contents() : nullptr;
+}
+
+#if defined(OS_CHROMEOS)
+// Gets a WebContents instance handle for a current window of a platform app
+// with |app_id|. If not found, then returns NULL.
+content::WebContents* GetWebContentsForAppId(Profile* profile,
+                                             const std::string& app_id) {
+  extensions::AppWindowRegistry* const registry =
+      extensions::AppWindowRegistry::Get(profile);
+  DCHECK(registry);
+  extensions::AppWindow* const app_window =
+      registry->GetCurrentAppWindowForApp(app_id);
+  return app_window ? app_window->web_contents() : nullptr;
+}
+#endif
+
 }  // namespace
 
 namespace extensions {
@@ -245,7 +282,81 @@ std::vector<base::FilePath> GetGrayListedDirectories() {
   return graylisted_directories;
 }
 
+#if defined(OS_CHROMEOS)
+ConsentProvider::ConsentProvider(DelegateInterface* delegate)
+    : delegate_(delegate) {
+  DCHECK(delegate_);
+}
+
+ConsentProvider::~ConsentProvider() {
+}
+
+void ConsentProvider::RequestConsent(const extensions::Extension& extension,
+                                     base::WeakPtr<file_manager::Volume> volume,
+                                     bool writable,
+                                     const ConsentCallback& callback) {
+  DCHECK(IsGrantable(extension));
+
+  // If auto-launched kiosk app, then no need to ask user.
+  if (delegate_->IsAutoLaunched(extension)) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, CONSENT_GRANTED));
+    return;
+  }
+
+  // If a whitelisted component, then no need to ask user, either.
+  if (extension.location() == Manifest::COMPONENT &&
+      delegate_->IsWhitelistedComponent(extension)) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, CONSENT_GRANTED));
+    return;
+  }
+
+  // If it's a kiosk app running in manual-launch kiosk session, then show
+  // the confirmation dialog.
+  if (KioskModeInfo::IsKioskOnly(&extension) &&
+      user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
+    delegate_->ShowDialog(extension, volume, writable,
+                          base::Bind(&ConsentProvider::DialogResultToConsent,
+                                     base::Unretained(this), callback));
+    return;
+  }
+
+  NOTREACHED() << "Cannot request consent for non-grantable extensions.";
+}
+
+bool ConsentProvider::IsGrantable(const Extension& extension) {
+  const bool is_whitelisted_component =
+      delegate_->IsWhitelistedComponent(extension);
+
+  const bool is_running_in_kiosk_session =
+      KioskModeInfo::IsKioskOnly(&extension) &&
+      user_manager::UserManager::Get()->IsLoggedInAsKioskApp();
+
+  return is_whitelisted_component || is_running_in_kiosk_session;
+}
+
+void ConsentProvider::DialogResultToConsent(const ConsentCallback& callback,
+                                            ui::DialogButton button) {
+  switch (button) {
+    case ui::DIALOG_BUTTON_NONE:
+      callback.Run(CONSENT_IMPOSSIBLE);
+      break;
+    case ui::DIALOG_BUTTON_OK:
+      callback.Run(CONSENT_GRANTED);
+      break;
+    case ui::DIALOG_BUTTON_CANCEL:
+      callback.Run(CONSENT_REJECTED);
+      break;
+  }
+}
+#endif
+
 }  // namespace file_system_api
+
+#if defined(OS_CHROMEOS)
+using file_system_api::ConsentProvider;
+#endif
 
 bool FileSystemGetDisplayPathFunction::RunSync() {
   std::string filesystem_name;
@@ -534,21 +645,16 @@ void FileSystemChooseEntryFunction::ShowPicker(
   // chrome.fileBrowserHandler.selectFile is ChromeOS-only. Eventually we'd
   // like a better solution and likely this code will go back to being
   // platform-app only.
-  content::WebContents* web_contents = NULL;
-  if (extension_->is_platform_app()) {
-    AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
-    DCHECK(registry);
-    AppWindow* app_window =
-        registry->GetAppWindowForRenderViewHost(render_view_host());
-    if (!app_window) {
-      error_ = kInvalidCallingPage;
-      SendResponse(false);
-      return;
-    }
-    web_contents = app_window->web_contents();
-  } else {
-    web_contents = GetAssociatedWebContents();
+  content::WebContents* const web_contents =
+      extension_->is_platform_app()
+          ? GetWebContentsForRenderViewHost(GetProfile(), render_view_host())
+          : GetAssociatedWebContents();
+  if (!web_contents) {
+    error_ = kInvalidCallingPage;
+    SendResponse(false);
+    return;
   }
+
   // The file picker will hold a reference to this function instance, preventing
   // its destruction (and subsequent sending of the function response) until the
   // user has selected a file or cancelled the picker. At that point, the picker
@@ -656,16 +762,13 @@ void FileSystemChooseEntryFunction::FilesSelected(
   if (is_directory_) {
     // Get the WebContents for the app window to be the parent window of the
     // confirmation dialog if necessary.
-    AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
-    DCHECK(registry);
-    AppWindow* app_window =
-        registry->GetAppWindowForRenderViewHost(render_view_host());
-    if (!app_window) {
+    content::WebContents* const web_contents =
+        GetWebContentsForRenderViewHost(GetProfile(), render_view_host());
+    if (!web_contents) {
       error_ = kInvalidCallingPage;
       SendResponse(false);
       return;
     }
-    content::WebContents* web_contents = app_window->web_contents();
 
     DCHECK_EQ(paths.size(), 1u);
     bool non_native_path = false;
@@ -1022,8 +1125,19 @@ bool FileSystemGetObservedEntriesFunction::RunSync() {
   return false;
 }
 
+#if !defined(OS_CHROMEOS)
+ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
+  using extensions::api::file_system::RequestFileSystem::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  NOTIMPLEMENTED();
+  return RespondNow(Error(kNotSupportedOnCurrentPlatformError));
+}
+
+#else
 FileSystemRequestFileSystemFunction::FileSystemRequestFileSystemFunction()
-    : chrome_details_(this) {
+    : chrome_details_(this), consent_provider_(this) {
 }
 
 FileSystemRequestFileSystemFunction::~FileSystemRequestFileSystemFunction() {
@@ -1034,27 +1148,10 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-#if !defined(OS_CHROMEOS)
-  NOTIMPLEMENTED();
-  return RespondNow(Error(kNotSupportedOnCurrentPlatformError));
-
-#else
   // Only kiosk apps in kiosk sessions can use this API.
   // Additionally whitelisted component extensions and apps.
-  bool is_whitelisted_component = false;
-  if (extension()->location() == Manifest::COMPONENT) {
-    for (const auto& whitelisted_id : kRequestFileSystemComponentWhitelist) {
-      if (extension_id().compare(whitelisted_id) == 0) {
-        is_whitelisted_component = true;
-        break;
-      }
-    }
-  }
-  if ((!user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
-       !KioskModeInfo::IsKioskEnabled(extension())) &&
-      !is_whitelisted_component) {
+  if (!consent_provider_.IsGrantable(*extension()))
     return RespondNow(Error(kNotSupportedOnNonKioskSessionError));
-  }
 
   using file_manager::VolumeManager;
   using file_manager::Volume;
@@ -1069,8 +1166,9 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
     return RespondNow(Error(kRequiresFileSystemWriteError));
   }
 
-  volume_ = volume_manager->FindVolumeById(params->options.volume_id);
-  if (!volume_.get())
+  base::WeakPtr<file_manager::Volume> volume =
+      volume_manager->FindVolumeById(params->options.volume_id);
+  if (!volume.get())
     return RespondNow(Error(kVolumeNotFoundError));
 
   const GURL site = extensions::util::GetSiteForExtensionId(
@@ -1083,64 +1181,97 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   DCHECK(backend);
 
   base::FilePath virtual_path;
-  if (!backend->GetVirtualPath(volume_->mount_path(), &virtual_path))
+  if (!backend->GetVirtualPath(volume->mount_path(), &virtual_path))
     return RespondNow(Error(kSecurityError));
 
-  if (writable && (volume_->is_read_only()))
+  if (writable && (volume->is_read_only()))
     return RespondNow(Error(kSecurityError));
 
-  chromeos::KioskAppManager::App app_info;
-  const bool is_auto_launched =
-      chromeos::KioskAppManager::Get()->GetApp(extension_id(), &app_info) &&
-      app_info.was_auto_launched_with_zero_delay;
-  const bool requires_consent = !is_auto_launched && !is_whitelisted_component;
-
-  if (!requires_consent) {
-    // Grant the permission without showing the dialog.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&FileSystemRequestFileSystemFunction::OnConsentReceived,
-                   this, volume_->volume_id(), writable, true /* granted */));
-  } else {
-    // TODO(mtomasz): Create a better display name, which is the most meaningful
-    // to the user.
-    const std::string display_name = !volume_->volume_label().empty()
-                                         ? volume_->volume_label()
-                                         : volume_->volume_id();
-    RequestConsent(
-        display_name, writable,
-        base::Bind(&FileSystemRequestFileSystemFunction::OnConsentReceived,
-                   this, volume_->volume_id(), writable));
-  }
-
+  consent_provider_.RequestConsent(
+      *extension(), volume, writable,
+      base::Bind(&FileSystemRequestFileSystemFunction::OnConsentReceived, this,
+                 volume, writable));
   return RespondLater();
-#endif
 }
 
-#if defined(OS_CHROMEOS)
-void FileSystemRequestFileSystemFunction::RequestConsent(
-    const std::string& display_name,
-    bool writable,
-    const base::Callback<void(bool)>& callback) {
-  // TODO(mtomasz): Implement the consent dialog.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, false));
+// static
+void FileSystemRequestFileSystemFunction::SetAutoDialogButtonForTest(
+    ui::DialogButton button) {
+  g_auto_dialog_button_for_test = button;
 }
 
-void FileSystemRequestFileSystemFunction::OnConsentReceived(
-    const std::string& volume_id,
+void FileSystemRequestFileSystemFunction::ShowDialog(
+    const extensions::Extension& extension,
+    base::WeakPtr<file_manager::Volume> volume,
     bool writable,
-    bool granted) {
-  using file_manager::VolumeManager;
-  using file_manager::Volume;
-
-  if (!granted) {
-    SetError(kSecurityError);
-    SendResponse(false);
+    const file_system_api::ConsentProvider::ShowDialogCallback& callback) {
+  content::WebContents* const foreground_contents =
+      GetWebContentsForRenderViewHost(chrome_details_.GetProfile(),
+                                      render_view_host());
+  // If there is no web contents handle, then the method is most probably
+  // executed from a background page. Find an app window to host the dialog.
+  content::WebContents* const web_contents =
+      foreground_contents ? foreground_contents
+                          : GetWebContentsForAppId(chrome_details_.GetProfile(),
+                                                   extension_id());
+  if (!web_contents) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, ui::DIALOG_BUTTON_NONE));
     return;
   }
 
-  if (!volume_.get()) {
+  // Short circuit the user consent dialog for tests. This is far from a pretty
+  // code design.
+  if (g_auto_dialog_button_for_test != ui::DIALOG_BUTTON_NONE) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, g_auto_dialog_button_for_test /* result */));
+    return;
+  }
+
+  RequestFileSystemDialogView::ShowDialog(web_contents, extension, volume,
+                                          writable, base::Bind(callback));
+}
+
+bool FileSystemRequestFileSystemFunction::IsAutoLaunched(
+    const extensions::Extension& extension) {
+  chromeos::KioskAppManager::App app_info;
+  return chromeos::KioskAppManager::Get()->GetApp(extension.id(), &app_info) &&
+         app_info.was_auto_launched_with_zero_delay;
+}
+
+bool FileSystemRequestFileSystemFunction::IsWhitelistedComponent(
+    const extensions::Extension& extension) {
+  for (const auto& whitelisted_id : kRequestFileSystemComponentWhitelist) {
+    if (extension.id().compare(whitelisted_id) == 0)
+      return true;
+  }
+  return false;
+}
+
+void FileSystemRequestFileSystemFunction::OnConsentReceived(
+    base::WeakPtr<file_manager::Volume> volume,
+    bool writable,
+    ConsentProvider::Consent result) {
+  using file_manager::VolumeManager;
+  using file_manager::Volume;
+
+  switch (result) {
+    case ConsentProvider::CONSENT_REJECTED:
+      SetError(kSecurityError);
+      SendResponse(false);
+      return;
+
+    case ConsentProvider::CONSENT_IMPOSSIBLE:
+      SetError(kConsentImpossible);
+      SendResponse(false);
+      return;
+
+    case ConsentProvider::CONSENT_GRANTED:
+      break;
+  }
+
+  if (!volume.get()) {
     SetError(kVolumeNotFoundError);
     SendResponse(false);
     return;
@@ -1156,7 +1287,7 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
   DCHECK(backend);
 
   base::FilePath virtual_path;
-  if (!backend->GetVirtualPath(volume_->mount_path(), &virtual_path)) {
+  if (!backend->GetVirtualPath(volume->mount_path(), &virtual_path)) {
     SetError(kSecurityError);
     SendResponse(false);
     return;
@@ -1195,16 +1326,16 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
 
   // Read-only permisisons.
   policy->GrantReadFile(render_view_host()->GetProcess()->GetID(),
-                        volume_->mount_path());
+                        volume->mount_path());
   policy->GrantReadFileSystem(render_view_host()->GetProcess()->GetID(),
                               file_system_id);
 
   // Additional write permissions.
   if (writable) {
     policy->GrantCreateReadWriteFile(render_view_host()->GetProcess()->GetID(),
-                                     volume_->mount_path());
+                                     volume->mount_path());
     policy->GrantCopyInto(render_view_host()->GetProcess()->GetID(),
-                          volume_->mount_path());
+                          volume->mount_path());
     policy->GrantWriteFileSystem(render_view_host()->GetProcess()->GetID(),
                                  file_system_id);
     policy->GrantDeleteFromFileSystem(render_view_host()->GetProcess()->GetID(),

@@ -21,8 +21,6 @@
 #include "storage/browser/fileapi/watcher_manager.h"
 #include "url/gurl.h"
 
-class EventRouter;
-
 namespace base {
 class Time;
 }  // namespace base

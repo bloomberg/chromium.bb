@@ -2,17 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/file_system/file_system_api.h"
+
+#include <vector>
+
 #include "base/files/file_path.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+
+#if defined(OS_CHROMEOS)
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/prefs/testing_pref_service.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/manifest.h"
+#include "extensions/common/test_util.h"
+#include "extensions/common/value_builder.h"
+#endif
 
 using extensions::FileSystemChooseEntryFunction;
 using extensions::api::file_system::AcceptOption;
 
+#if defined(OS_CHROMEOS)
+using extensions::file_system_api::ConsentProvider;
+using file_manager::Volume;
+#endif
+
+namespace extensions {
 namespace {
 
 void CheckExtensions(const std::vector<base::FilePath::StringType>& expected,
@@ -53,12 +79,100 @@ AcceptOption* BuildAcceptOption(const std::string& description,
 #define ToStringType
 #endif
 
-}  // namespace
+#if defined(OS_CHROMEOS)
+class TestingConsentProviderDelegate
+    : public ConsentProvider::DelegateInterface {
+ public:
+  TestingConsentProviderDelegate()
+      : show_dialog_counter_(0),
+        dialog_button_(ui::DIALOG_BUTTON_NONE),
+        is_auto_launched_(false) {}
 
-class FileSystemApiUnitTest : public testing::Test {
+  ~TestingConsentProviderDelegate() {}
+
+  // Sets a fake dialog response.
+  void SetDialogButton(ui::DialogButton button) { dialog_button_ = button; }
+
+  // Sets a fake result of detection the auto launch kiosk mode.
+  void SetIsAutoLaunched(bool is_auto_launched) {
+    is_auto_launched_ = is_auto_launched;
+  }
+
+  // Sets a whitelisted components list with a single id.
+  void SetComponentWhitelist(const std::string& extension_id) {
+    whitelisted_component_id_ = extension_id;
+  }
+
+  int show_dialog_counter() const { return show_dialog_counter_; }
+
+ private:
+  // ConsentProvider::DelegateInterface overrides:
+  void ShowDialog(
+      const extensions::Extension& extension,
+      base::WeakPtr<Volume> volume,
+      bool writable,
+      const ConsentProvider::ShowDialogCallback& callback) override {
+    ++show_dialog_counter_;
+    callback.Run(dialog_button_);
+  }
+
+  bool IsAutoLaunched(const extensions::Extension& extension) override {
+    return is_auto_launched_;
+  }
+
+  bool IsWhitelistedComponent(const extensions::Extension& extension) override {
+    return whitelisted_component_id_.compare(extension.id()) == 0;
+  }
+
+  int show_dialog_counter_;
+  ui::DialogButton dialog_button_;
+  bool is_auto_launched_;
+  std::string whitelisted_component_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingConsentProviderDelegate);
 };
 
-TEST_F(FileSystemApiUnitTest, FileSystemChooseEntryFunctionFileTypeInfoTest) {
+// Rewrites result of a consent request from |result| to |log|.
+void OnConsentReceived(ConsentProvider::Consent* log,
+                       const ConsentProvider::Consent result) {
+  *log = result;
+}
+#endif
+
+}  // namespace
+
+#if defined(OS_CHROMEOS)
+class FileSystemApiConsentProviderTest : public testing::Test {
+ public:
+  FileSystemApiConsentProviderTest() {}
+
+  void SetUp() override {
+    testing_pref_service_.reset(new TestingPrefServiceSimple);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(
+        testing_pref_service_.get());
+    user_manager_ = new chromeos::FakeChromeUserManager;
+    scoped_user_manager_enabler_.reset(
+        new chromeos::ScopedUserManagerEnabler(user_manager_));
+  }
+
+  void TearDown() override {
+    scoped_user_manager_enabler_.reset();
+    user_manager_ = nullptr;
+    testing_pref_service_.reset();
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
+  }
+
+ protected:
+  base::WeakPtr<Volume> volume_;
+  scoped_ptr<TestingPrefServiceSimple> testing_pref_service_;
+  chromeos::FakeChromeUserManager*
+      user_manager_;  // Owned by the scope enabler.
+  scoped_ptr<chromeos::ScopedUserManagerEnabler> scoped_user_manager_enabler_;
+  content::TestBrowserThreadBundle thread_bundle_;
+};
+#endif
+
+TEST(FileSystemApiUnitTest, FileSystemChooseEntryFunctionFileTypeInfoTest) {
   // AcceptsAllTypes is ignored when no other extensions are available.
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   bool acceptsAllTypes = false;
@@ -154,7 +268,7 @@ TEST_F(FileSystemApiUnitTest, FileSystemChooseEntryFunctionFileTypeInfoTest) {
       base::UTF8ToUTF16("File Types 101"));
 }
 
-TEST_F(FileSystemApiUnitTest, FileSystemChooseEntryFunctionSuggestionTest) {
+TEST(FileSystemApiUnitTest, FileSystemChooseEntryFunctionSuggestionTest) {
   std::string opt_name;
   base::FilePath suggested_name;
   base::FilePath::StringType suggested_extension;
@@ -185,3 +299,122 @@ TEST_F(FileSystemApiUnitTest, FileSystemChooseEntryFunctionSuggestionTest) {
   EXPECT_TRUE(suggested_extension.empty());
 #endif
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(FileSystemApiConsentProviderTest, ForNonKioskApps) {
+  // Component apps are not granted unless they are whitelisted.
+  {
+    scoped_refptr<Extension> component_extension(
+        test_util::BuildApp(ExtensionBuilder().SetLocation(Manifest::COMPONENT))
+            .Build());
+    TestingConsentProviderDelegate delegate;
+    ConsentProvider provider(&delegate);
+    EXPECT_FALSE(provider.IsGrantable(*component_extension));
+  }
+
+  // Whitelitsed component apps are instantly granted access without asking
+  // user.
+  {
+    scoped_refptr<Extension> whitelisted_component_extension(
+        test_util::BuildApp(ExtensionBuilder().SetLocation(Manifest::COMPONENT))
+            .Build());
+    TestingConsentProviderDelegate delegate;
+    delegate.SetComponentWhitelist(whitelisted_component_extension->id());
+    ConsentProvider provider(&delegate);
+    EXPECT_TRUE(provider.IsGrantable(*whitelisted_component_extension));
+
+    ConsentProvider::Consent result = ConsentProvider::CONSENT_IMPOSSIBLE;
+    provider.RequestConsent(*whitelisted_component_extension.get(), volume_,
+                            true /* writable */,
+                            base::Bind(&OnConsentReceived, &result));
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(0, delegate.show_dialog_counter());
+    EXPECT_EQ(ConsentProvider::CONSENT_GRANTED, result);
+  }
+
+  // Non-component apps in non-kiosk mode will be rejected instantly, without
+  // asking for user consent.
+  {
+    scoped_refptr<Extension> non_component_extension(
+        test_util::CreateEmptyExtension());
+    TestingConsentProviderDelegate delegate;
+    ConsentProvider provider(&delegate);
+    EXPECT_FALSE(provider.IsGrantable(*non_component_extension));
+  }
+}
+
+TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
+  // Non-component apps in auto-launch kiosk mode will be granted access
+  // instantly without asking for user consent.
+  {
+    scoped_refptr<Extension> auto_launch_kiosk_app(
+        test_util::BuildApp(ExtensionBuilder().Pass())
+            .MergeManifest(DictionaryBuilder()
+                               .SetBoolean("kiosk_enabled", true)
+                               .SetBoolean("kiosk_only", true))
+            .Build());
+    user_manager_->AddKioskAppUser(auto_launch_kiosk_app->id());
+    user_manager_->LoginUser(auto_launch_kiosk_app->id());
+
+    TestingConsentProviderDelegate delegate;
+    delegate.SetIsAutoLaunched(true);
+    ConsentProvider provider(&delegate);
+    EXPECT_TRUE(provider.IsGrantable(*auto_launch_kiosk_app));
+
+    ConsentProvider::Consent result = ConsentProvider::CONSENT_IMPOSSIBLE;
+    provider.RequestConsent(*auto_launch_kiosk_app.get(), volume_,
+                            true /* writable */,
+                            base::Bind(&OnConsentReceived, &result));
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(0, delegate.show_dialog_counter());
+    EXPECT_EQ(ConsentProvider::CONSENT_GRANTED, result);
+  }
+
+  // Non-component apps in manual-launch kiosk mode will be granted access after
+  // receiving approval from the user.
+  scoped_refptr<Extension> manual_launch_kiosk_app(
+      test_util::BuildApp(ExtensionBuilder().Pass())
+          .MergeManifest(DictionaryBuilder()
+                             .SetBoolean("kiosk_enabled", true)
+                             .SetBoolean("kiosk_only", true))
+          .Build());
+  user_manager_->KioskAppLoggedIn(manual_launch_kiosk_app->id());
+  {
+    TestingConsentProviderDelegate delegate;
+    delegate.SetDialogButton(ui::DIALOG_BUTTON_OK);
+    ConsentProvider provider(&delegate);
+    EXPECT_TRUE(provider.IsGrantable(*manual_launch_kiosk_app));
+
+    ConsentProvider::Consent result = ConsentProvider::CONSENT_IMPOSSIBLE;
+    provider.RequestConsent(*manual_launch_kiosk_app.get(), volume_,
+                            true /* writable */,
+                            base::Bind(&OnConsentReceived, &result));
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(1, delegate.show_dialog_counter());
+    EXPECT_EQ(ConsentProvider::CONSENT_GRANTED, result);
+  }
+
+  // Non-component apps in manual-launch kiosk mode will be rejected access
+  // after rejecting by a user.
+  {
+    TestingConsentProviderDelegate delegate;
+    ConsentProvider provider(&delegate);
+    delegate.SetDialogButton(ui::DIALOG_BUTTON_CANCEL);
+    EXPECT_TRUE(provider.IsGrantable(*manual_launch_kiosk_app));
+
+    ConsentProvider::Consent result = ConsentProvider::CONSENT_IMPOSSIBLE;
+    provider.RequestConsent(*manual_launch_kiosk_app.get(), volume_,
+                            true /* writable */,
+                            base::Bind(&OnConsentReceived, &result));
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(1, delegate.show_dialog_counter());
+    EXPECT_EQ(ConsentProvider::CONSENT_REJECTED, result);
+  }
+}
+#endif
+
+}  // namespace extensions

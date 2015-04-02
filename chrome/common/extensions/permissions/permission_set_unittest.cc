@@ -762,6 +762,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kHid);
   skip.insert(APIPermission::kFileSystem);
   skip.insert(APIPermission::kFileSystemProvider);
+  skip.insert(APIPermission::kFileSystemRequestFileSystem);
   skip.insert(APIPermission::kFileSystemRetainEntries);
   skip.insert(APIPermission::kFileSystemWrite);
   skip.insert(APIPermission::kSocket);

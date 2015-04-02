@@ -112,6 +112,7 @@ class APIPermission {
     kFileSystem,
     kFileSystemDirectory,
     kFileSystemProvider,
+    kFileSystemRequestFileSystem,
     kFileSystemRetainEntries,
     kFileSystemWrite,
     kFileSystemWriteDirectory,
