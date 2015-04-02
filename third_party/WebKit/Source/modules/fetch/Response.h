@@ -40,6 +40,8 @@ public:
 
     static Response* createClone(const Response&);
 
+    static Response* error(ExecutionContext*);
+
     const FetchResponseData* response() const { return m_response; }
 
     // From Response.idl:

@@ -384,4 +384,20 @@ promise_test(function(t) {
         });
   }, 'Extract a MIME type (3)');
 
+promise_test(function() {
+    var response = Response.error();
+    return response.text().then(function(text) {
+        assert_equals(response.type, 'error');
+        assert_equals(response.url, '', 'url must be the empty string');
+        assert_equals(response.status, 0, 'status is always 0');
+        assert_false(response.ok);
+        assert_equals(response.statusText, '',
+                      'status message is always the empty byte sequence');
+        assert_equals(size(response.headers), 0,
+                      'header list is always empty.');
+        assert_equals(text, '',
+                      'body is always null');
+      });
+  }, 'Response.error()');
+
 done();

@@ -233,6 +233,15 @@ Response* Response::create(ExecutionContext* context, const WebServiceWorkerResp
     return r;
 }
 
+Response* Response::error(ExecutionContext* context)
+{
+    FetchResponseData* responseData = FetchResponseData::createNetworkErrorResponse();
+    Response* r = new Response(context, responseData);
+    r->m_headers->setGuard(Headers::ImmutableGuard);
+    r->suspendIfNeeded();
+    return r;
+}
+
 String Response::type() const
 {
     // "The type attribute's getter must return response's type."

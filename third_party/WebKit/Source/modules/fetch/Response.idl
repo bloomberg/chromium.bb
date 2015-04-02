@@ -18,7 +18,7 @@ typedef (Blob or ArrayBuffer or ArrayBufferView or FormData or USVString) BodyIn
     GarbageCollected,
     TypeChecking=Interface,
 ] interface Response {
-    // FIXME: Implement error();
+    [CallWith=ExecutionContext] static Response error();
     // FIXME: Implement redirect().
     readonly attribute ResponseType type;
     readonly attribute USVString url;

@@ -365,7 +365,10 @@ test(function() {
 promise_test(function(t) {
   return fetch('../resources/doctype.html')
     .then(function(res) {
-        [res.headers, res.clone().headers].forEach(function(headers) {
+        [res.headers,
+         res.clone().headers,
+         Response.error().headers,
+         Response.error().clone().headers].forEach(function(headers) {
             testInvalidNamesAndValues(headers);
 
             // Test that TypeError is thrown for all header names.
