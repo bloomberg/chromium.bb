@@ -8,12 +8,15 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/sys_info.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -21,6 +24,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proximity_auth/cryptauth/cryptauth_account_token_fetcher.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
+#include "components/proximity_auth/cryptauth/cryptauth_client_factory.h"
 #include "components/proximity_auth/switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -45,6 +49,31 @@ const char kKeyPermitAccess[] = "permitAccess";
 
 // Key name of the remote device list in kEasyUnlockPairing.
 const char kKeyDevices[] = "devices";
+
+// Constructs the DeviceClassifier message that is sent to CryptAuth for all API
+// requests.
+cryptauth::DeviceClassifier GetDeviceClassifier() {
+  cryptauth::DeviceClassifier device_classifier;
+
+#if defined(OS_CHROMEOS)
+  int32 major_version, minor_version, bugfix_version;
+  // TODO(tengs): base::OperatingSystemVersionNumbers only works for ChromeOS.
+  // We need to get different numbers for other platforms.
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                               &bugfix_version);
+  device_classifier.set_device_os_version_code(major_version);
+  device_classifier.set_device_type(cryptauth::CHROME);
+#endif
+
+  chrome::VersionInfo version_info;
+  const std::vector<uint32_t>& version_components =
+      base::Version(version_info.Version()).components();
+  if (version_components.size() > 0)
+    device_classifier.set_device_software_version_code(version_components[0]);
+
+  device_classifier.set_device_software_package(version_info.Name());
+  return device_classifier;
+}
 
 }  // namespace
 
@@ -193,14 +222,13 @@ void EasyUnlockServiceRegular::RunTurnOffFlow() {
   DCHECK(!cryptauth_client_);
 
   SetTurnOffFlowStatus(PENDING);
-  scoped_ptr<proximity_auth::CryptAuthAccessTokenFetcher> access_token_fetcher(
-      new proximity_auth::CryptAuthAccountTokenFetcher(
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
-          SigninManagerFactory::GetForProfile(profile())
-              ->GetAuthenticatedAccountId()));
 
-  cryptauth_client_.reset(new proximity_auth::CryptAuthClient(
-      access_token_fetcher.Pass(), profile()->GetRequestContext()));
+  proximity_auth::CryptAuthClientFactory factory(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
+      SigninManagerFactory::GetForProfile(profile())
+          ->GetAuthenticatedAccountId(),
+      profile()->GetRequestContext(), GetDeviceClassifier());
+  cryptauth_client_ = factory.CreateInstance();
 
   cryptauth::ToggleEasyUnlockRequest request;
   request.set_enable(false);

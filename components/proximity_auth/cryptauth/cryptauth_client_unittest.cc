@@ -8,8 +8,10 @@
 #include "base/test/null_task_runner.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "components/proximity_auth/cryptauth/cryptauth_api_call_flow.h"
+#include "components/proximity_auth/cryptauth/cryptauth_client_factory.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/switches.h"
+#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -31,6 +33,12 @@ const char kPublicKey1[] = "public_key1";
 const char kPublicKey2[] = "public_key2";
 const char kBluetoothAddress1[] = "AA:AA:AA:AA:AA:AA";
 const char kBluetoothAddress2[] = "BB:BB:BB:BB:BB:BB";
+
+// Values for the DeviceClassifier field.
+const int kDeviceOsVersionCode = 100;
+const int kDeviceSoftwareVersionCode = 200;
+const char kDeviceSoftwarePackage[] = "cryptauth_client_unittest";
+const cryptauth::DeviceType kDeviceType = cryptauth::CHROME;
 
 // CryptAuthAccessTokenFetcher implementation simply returning a predetermined
 // access token.
@@ -75,9 +83,11 @@ class MockCryptAuthClient : public CryptAuthClient {
   // scoped_ptr.
   MockCryptAuthClient(
       CryptAuthAccessTokenFetcher* access_token_fetcher,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context)
+      scoped_refptr<net::URLRequestContextGetter> url_request_context,
+      const cryptauth::DeviceClassifier& device_classifier)
       : CryptAuthClient(make_scoped_ptr(access_token_fetcher),
-                        url_request_context) {}
+                        url_request_context,
+                        device_classifier) {}
   virtual ~MockCryptAuthClient() {}
 
   MOCK_METHOD1(CreateFlowProxy, CryptAuthApiCallFlow*(const GURL& request_url));
@@ -117,8 +127,15 @@ class ProximityAuthCryptAuthClientTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kCryptAuthHTTPHost, kTestGoogleApisUrl);
 
-    client_.reset(new StrictMock<MockCryptAuthClient>(access_token_fetcher_,
-                                                      url_request_context_));
+    cryptauth::DeviceClassifier device_classifier;
+    device_classifier.set_device_os_version_code(kDeviceOsVersionCode);
+    device_classifier.set_device_software_version_code(
+        kDeviceSoftwareVersionCode);
+    device_classifier.set_device_software_package(kDeviceSoftwarePackage);
+    device_classifier.set_device_type(kDeviceType);
+
+    client_.reset(new StrictMock<MockCryptAuthClient>(
+        access_token_fetcher_, url_request_context_, device_classifier));
   }
 
   // Sets up an expectation and captures a CryptAuth API request to
@@ -522,6 +539,31 @@ TEST_F(ProximityAuthCryptAuthClientTest,
     EXPECT_EQ("Client has been used for another request. Do not reuse.",
               error_message);
   }
+}
+
+TEST_F(ProximityAuthCryptAuthClientTest, DeviceClassifierIsSet) {
+  ExpectRequest(
+      "https://www.testgoogleapis.com/cryptauth/v1/deviceSync/"
+      "getmydevices?alt=proto");
+
+  cryptauth::GetMyDevicesResponse result_proto;
+  cryptauth::GetMyDevicesRequest request_proto;
+  request_proto.set_allow_stale_read(true);
+  client_->GetMyDevices(
+      request_proto,
+      base::Bind(&SaveResult<cryptauth::GetMyDevicesResponse>, &result_proto),
+      base::Bind(&NotCalled<std::string>));
+  cryptauth::GetMyDevicesRequest expected_request;
+  EXPECT_TRUE(expected_request.ParseFromString(serialized_request_));
+
+  const cryptauth::DeviceClassifier& device_classifier =
+      expected_request.device_classifier();
+  EXPECT_EQ(kDeviceOsVersionCode, device_classifier.device_os_version_code());
+  EXPECT_EQ(kDeviceSoftwareVersionCode,
+            device_classifier.device_software_version_code());
+  EXPECT_EQ(kDeviceSoftwarePackage,
+            device_classifier.device_software_package());
+  EXPECT_EQ(kDeviceType, device_classifier.device_type());
 }
 
 }  // namespace proximity_auth

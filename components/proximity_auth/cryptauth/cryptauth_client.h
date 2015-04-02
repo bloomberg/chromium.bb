@@ -13,8 +13,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
-class OAuth2TokenService;
-
 namespace proximity_auth {
 
 class CryptAuthAccessTokenFetcher;
@@ -26,6 +24,8 @@ class CryptAuthApiCallFlow;
 // request you make. DO NOT REUSE.
 // For documentation on each API call, see
 // components/proximity_auth/cryptauth/proto/cryptauth_api.proto
+// Note: There is no need to set the |device_classifier| field in request
+// messages. CryptAuthClient will fill this field for all requests.
 class CryptAuthClient {
  public:
   typedef base::Callback<void(const std::string&)> ErrorCallback;
@@ -33,9 +33,12 @@ class CryptAuthClient {
   // Creates the client using |url_request_context| to make the HTTP request.
   // CryptAuthClient takes ownership of |access_token_fetcher|, which provides
   // the access token authorizing CryptAuth requests.
+  // The |device_classifier| argument contains basic device information of the
+  // caller (e.g. version and device type).
   CryptAuthClient(
       scoped_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context);
+      scoped_refptr<net::URLRequestContextGetter> url_request_context,
+      const cryptauth::DeviceClassifier& device_classifier);
   virtual ~CryptAuthClient();
 
   // GetMyDevices
@@ -120,6 +123,10 @@ class CryptAuthClient {
 
   // Fetches the access token authorizing the API calls.
   scoped_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher_;
+
+  // Contains basic device info of the client making the request that is sent to
+  // CryptAuth with each API call.
+  const cryptauth::DeviceClassifier device_classifier_;
 
   // Handles the current API call.
   scoped_ptr<CryptAuthApiCallFlow> flow_;

@@ -49,9 +49,11 @@ GURL CreateRequestUrl(const std::string& request_path) {
 
 CryptAuthClient::CryptAuthClient(
     scoped_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context)
+    scoped_refptr<net::URLRequestContextGetter> url_request_context,
+    const cryptauth::DeviceClassifier& device_classifier)
     : url_request_context_(url_request_context),
       access_token_fetcher_(access_token_fetcher.Pass()),
+      device_classifier_(device_classifier),
       weak_ptr_factory_(this) {
 }
 
@@ -118,8 +120,12 @@ void CryptAuthClient::MakeApiCall(
     return;
   }
 
+  // The |device_classifier| field must be present for all CryptAuth requests.
+  RequestProto request_copy(request_proto);
+  request_copy.mutable_device_classifier()->CopyFrom(device_classifier_);
+
   std::string serialized_request;
-  if (!request_proto.SerializeToString(&serialized_request)) {
+  if (!request_copy.SerializeToString(&serialized_request)) {
     error_callback.Run(std::string("Failed to serialize ") +
                        request_proto.GetTypeName() + " proto.");
     return;
