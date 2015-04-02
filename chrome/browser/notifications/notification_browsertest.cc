@@ -644,16 +644,9 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestExitBrowserWithInfobar) {
   ASSERT_TRUE(RequestPermissionAndWait(browser()));
 }
 
-// Times out on Windows and Linux. http://crbug.com/168976
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_TestCrashTabWithPermissionInfobar \
-    DISABLED_TestCrashTabWithPermissionInfobar
-#else
-#define MAYBE_TestCrashTabWithPermissionInfobar \
-    TestCrashTabWithPermissionInfobar
-#endif
+// Times out. http://crbug.com/168976
 IN_PROC_BROWSER_TEST_F(NotificationsTest,
-                       MAYBE_TestCrashTabWithPermissionInfobar) {
+                       DISABLED_TestCrashTabWithPermissionInfobar) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Test crashing the tab with permission infobar doesn't crash Chrome.
