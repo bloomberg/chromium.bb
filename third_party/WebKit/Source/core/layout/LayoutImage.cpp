@@ -157,7 +157,7 @@ void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded()
     bool containingBlockNeedsToRecomputePreferredSize = style()->logicalWidth().isPercent() || style()->logicalMaxWidth().isPercent()  || style()->logicalMinWidth().isPercent();
 
     if (imageSourceHasChangedSize && (!imageSizeIsConstrained || containingBlockNeedsToRecomputePreferredSize)) {
-        setNeedsLayoutAndFullPaintInvalidation();
+        setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
         return;
     }
 

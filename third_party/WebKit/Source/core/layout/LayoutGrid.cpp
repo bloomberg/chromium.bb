@@ -614,7 +614,7 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, Vector<GridTrack>
     LayoutUnit oldOverrideContainingBlockContentLogicalWidth = child.hasOverrideContainingBlockLogicalWidth() ? child.overrideContainingBlockContentLogicalWidth() : LayoutUnit();
     LayoutUnit overrideContainingBlockContentLogicalWidth = gridAreaBreadthForChild(child, ForColumns, columnTracks);
     if (child.hasRelativeLogicalHeight() || oldOverrideContainingBlockContentLogicalWidth != overrideContainingBlockContentLogicalWidth) {
-        layoutScope.setNeedsLayout(&child);
+        layoutScope.setNeedsLayout(&child, LayoutInvalidationReason::GridChanged);
         // We need to clear the stretched height to properly compute logical height during layout.
         child.clearOverrideLogicalContentHeight();
     }
@@ -1108,7 +1108,7 @@ void LayoutGrid::dirtyGrid()
     // is still ongoing.
     // Forcing a new layout for the Grid render would cancel any ongoing painting and ensure
     // the grid and its children are correctly laid out according to the new style rules.
-    setNeedsLayout();
+    setNeedsLayout(LayoutInvalidationReason::GridChanged);
 
     m_grid.resize(0);
     m_gridItemCoordinate.clear();
@@ -1152,7 +1152,7 @@ void LayoutGrid::layoutGridItems()
 
         SubtreeLayoutScope layoutScope(*child);
         if (oldOverrideContainingBlockContentLogicalWidth != overrideContainingBlockContentLogicalWidth || (oldOverrideContainingBlockContentLogicalHeight != overrideContainingBlockContentLogicalHeight && child->hasRelativeLogicalHeight()))
-            layoutScope.setNeedsLayout(child);
+            layoutScope.setNeedsLayout(child, LayoutInvalidationReason::GridChanged);
 
         child->setOverrideContainingBlockContentLogicalWidth(overrideContainingBlockContentLogicalWidth);
         child->setOverrideContainingBlockContentLogicalHeight(overrideContainingBlockContentLogicalHeight);
@@ -1561,7 +1561,7 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child, LayoutUn
                 child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
             if (childNeedsRelayout) {
                 child.setLogicalHeight(0);
-                child.setNeedsLayout();
+                child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
             }
         }
     }

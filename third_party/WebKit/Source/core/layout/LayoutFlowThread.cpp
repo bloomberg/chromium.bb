@@ -58,7 +58,7 @@ void LayoutFlowThread::invalidateRegions()
         return;
     }
 
-    setNeedsLayoutAndFullPaintInvalidation();
+    setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
 
     m_regionsInvalidated = true;
 }

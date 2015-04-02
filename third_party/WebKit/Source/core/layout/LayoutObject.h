@@ -441,7 +441,7 @@ public:
     {
         m_bitfields.setAncestorLineBoxDirty(value);
         if (value)
-            setNeedsLayoutAndFullPaintInvalidation();
+            setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::LineBoxesChanged);
     }
 
     enum FlowThreadState {
@@ -660,8 +660,8 @@ public:
     Element* offsetParent() const;
 
     void markContainerChainForLayout(bool scheduleRelayout = true, LayoutObject* newRoot = 0, SubtreeLayoutScope* = 0);
-    void setNeedsLayout(MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = 0);
-    void setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = 0);
+    void setNeedsLayout(LayoutInvalidationReasonForTracing, MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = 0);
+    void setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReasonForTracing, MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = 0);
     void clearNeedsLayout();
     void setChildNeedsLayout(MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = 0);
     void setNeedsSimplifiedNormalFlowLayout();
@@ -670,14 +670,14 @@ public:
     void clearPreferredLogicalWidthsDirty();
     void invalidateContainerPreferredLogicalWidths();
 
-    void setNeedsLayoutAndPrefWidthsRecalc()
+    void setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReasonForTracing reason)
     {
-        setNeedsLayout();
+        setNeedsLayout(reason);
         setPreferredLogicalWidthsDirty();
     }
-    void setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation()
+    void setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReasonForTracing reason)
     {
-        setNeedsLayoutAndFullPaintInvalidation();
+        setNeedsLayoutAndFullPaintInvalidation(reason);
         setPreferredLogicalWidthsDirty();
     }
 
@@ -1501,25 +1501,25 @@ inline bool LayoutObject::isBeforeOrAfterContent() const
 
 // setNeedsLayout() won't cause full paint invalidations as
 // setNeedsLayoutAndFullPaintInvalidation() does. Otherwise the two methods are identical.
-inline void LayoutObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
+inline void LayoutObject::setNeedsLayout(LayoutInvalidationReasonForTracing reason, MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
-    TRACE_EVENT_INSTANT1(
-        TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
-        "LayoutInvalidationTracking",
-        "data",
-        InspectorLayoutInvalidationTrackingEvent::data(this));
     ASSERT(!isSetNeedsLayoutForbidden());
     bool alreadyNeededLayout = m_bitfields.selfNeedsLayout();
     setSelfNeedsLayout(true);
     if (!alreadyNeededLayout) {
+        TRACE_EVENT_INSTANT1(
+            TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
+            "LayoutInvalidationTracking",
+            "data",
+            InspectorLayoutInvalidationTrackingEvent::data(this, reason));
         if (markParents == MarkContainerChain && (!layouter || layouter->root() != this))
             markContainerChainForLayout(true, 0, layouter);
     }
 }
 
-inline void LayoutObject::setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
+inline void LayoutObject::setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReasonForTracing reason, MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
-    setNeedsLayout(markParents, layouter);
+    setNeedsLayout(reason, markParents, layouter);
     setShouldDoFullPaintInvalidation();
 }
 

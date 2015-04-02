@@ -419,7 +419,7 @@ void LayoutCounter::invalidate()
     ASSERT(!m_counterNode);
     if (documentBeingDestroyed())
         return;
-    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::CountersChanged);
 }
 
 static void destroyCounterNodeWithoutMapRemoval(const AtomicString& identifier, CounterNode* node)

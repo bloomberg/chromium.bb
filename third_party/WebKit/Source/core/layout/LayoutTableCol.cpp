@@ -81,7 +81,7 @@ void LayoutTableCol::updateFromElement()
         m_span = !(style() && style()->display() == TABLE_COLUMN_GROUP);
     }
     if (m_span != oldSpan && style() && parent())
-        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AttributeChanged);
 }
 
 void LayoutTableCol::insertedIntoTree()

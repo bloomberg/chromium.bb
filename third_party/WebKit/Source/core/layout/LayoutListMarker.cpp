@@ -1079,7 +1079,7 @@ LayoutListMarker* LayoutListMarker::createAnonymous(LayoutListItem* item)
 void LayoutListMarker::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
     if (style() && (newStyle.listStylePosition() != style()->listStylePosition() || newStyle.listStyleType() != style()->listStyleType()))
-        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::StyleChange);
 
     LayoutBox::styleWillChange(diff, newStyle);
 }
@@ -1160,7 +1160,7 @@ void LayoutListMarker::imageChanged(WrappedImagePtr o, const IntRect*)
         return;
 
     if (size() != m_image->imageSize(this, style()->effectiveZoom()) || m_image->errorOccurred())
-        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ImageChanged);
     else
         setShouldDoFullPaintInvalidation();
 }

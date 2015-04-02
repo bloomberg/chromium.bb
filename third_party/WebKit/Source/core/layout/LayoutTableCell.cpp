@@ -102,7 +102,7 @@ void LayoutTableCell::colSpanOrRowSpanChanged()
 
     updateColAndRowSpanFlags();
 
-    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AttributeChanged);
     if (parent() && section())
         section()->setNeedsCellRecalc();
 }
@@ -210,7 +210,7 @@ void LayoutTableCell::computeIntrinsicPadding(int rowHeight, SubtreeLayoutScope&
     // FIXME: Changing an intrinsic padding shouldn't trigger a relayout as it only shifts the cell inside the row but
     // doesn't change the logical height.
     if (intrinsicPaddingBefore != oldIntrinsicPaddingBefore || intrinsicPaddingAfter != oldIntrinsicPaddingAfter)
-        layouter.setNeedsLayout(this);
+        layouter.setNeedsLayout(this, LayoutInvalidationReason::PaddingChanged);
 }
 
 void LayoutTableCell::updateLogicalWidth()
@@ -222,7 +222,7 @@ void LayoutTableCell::setCellLogicalWidth(int tableLayoutLogicalWidth, SubtreeLa
     if (tableLayoutLogicalWidth == logicalWidth())
         return;
 
-    layouter.setNeedsLayout(this);
+    layouter.setNeedsLayout(this, LayoutInvalidationReason::SizeChanged);
 
     setLogicalWidth(tableLayoutLogicalWidth);
     setCellWidthChanged(true);
@@ -244,7 +244,7 @@ void LayoutTableCell::layout()
         int newIntrinsicPaddingBefore = std::max<LayoutUnit>(0, intrinsicPaddingBefore() - std::max<LayoutUnit>(0, cellBaselinePosition() - oldCellBaseline));
         setIntrinsicPaddingBefore(newIntrinsicPaddingBefore);
         SubtreeLayoutScope layouter(*this);
-        layouter.setNeedsLayout(this);
+        layouter.setNeedsLayout(this, LayoutInvalidationReason::TableChanged);
         layoutBlock(cellWidthChanged());
     }
 

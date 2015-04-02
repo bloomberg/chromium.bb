@@ -58,7 +58,7 @@ public:
         // and we need that layout to know of the new size otherwise
         // the layout may be incorrectly using the old size.
         if (m_containerSize != containerSize)
-            setNeedsLayoutAndFullPaintInvalidation();
+            setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
         m_containerSize = containerSize;
     }
 

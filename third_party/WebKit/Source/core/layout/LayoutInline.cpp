@@ -215,7 +215,7 @@ void LayoutInline::styleDidChange(StyleDifference diff, const ComputedStyle* old
         bool alwaysCreateLineBoxesNew = hasSelfPaintingLayer() || hasBoxDecorationBackground() || newStyle.hasPadding() || newStyle.hasMargin() || newStyle.hasOutline();
         if (oldStyle && alwaysCreateLineBoxesNew) {
             dirtyLineBoxes(false);
-            setNeedsLayoutAndFullPaintInvalidation();
+            setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::StyleChange);
         }
         setAlwaysCreateLineBoxes(alwaysCreateLineBoxesNew);
     }
@@ -353,7 +353,7 @@ void LayoutInline::addChildIgnoringContinuation(LayoutObject* newChild, LayoutOb
 
     LayoutBoxModelObject::addChild(newChild, beforeChild);
 
-    newChild->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    newChild->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ChildChanged);
 }
 
 LayoutInline* LayoutInline::clone() const
@@ -493,7 +493,7 @@ void LayoutInline::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox
             LayoutObject* no = o;
             o = no->nextSibling();
             pre->children()->appendChildNode(pre, block->children()->removeChildNode(block, no));
-            no->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            no->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
         }
     }
 
@@ -508,9 +508,9 @@ void LayoutInline::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox
     // Always just do a full layout in order to ensure that line boxes (especially wrappers for images)
     // get deleted properly.  Because objects moves from the pre block into the post block, we want to
     // make new line boxes instead of leaving the old line boxes around.
-    pre->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-    block->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-    post->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    pre->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
+    block->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
+    post->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
 }
 
 void LayoutInline::addChildToContinuation(LayoutObject* newChild, LayoutObject* beforeChild)

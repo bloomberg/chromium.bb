@@ -76,7 +76,7 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name, const Atomic
                 LayoutTableCol* col = toLayoutTableCol(layoutObject());
                 int newWidth = width().toInt();
                 if (newWidth != col->size().width())
-                    col->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+                    col->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AttributeChanged);
             }
         }
     } else

@@ -102,7 +102,7 @@ void LayoutReplaced::intrinsicSizeChanged()
     int scaledWidth = static_cast<int>(defaultWidth * style()->effectiveZoom());
     int scaledHeight = static_cast<int>(defaultHeight * style()->effectiveZoom());
     m_intrinsicSize = LayoutSize(scaledWidth, scaledHeight);
-    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
 }
 
 void LayoutReplaced::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

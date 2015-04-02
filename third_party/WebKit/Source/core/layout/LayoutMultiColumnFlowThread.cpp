@@ -484,7 +484,7 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(LayoutObject* 
                         // a new spanner placeholder between them.
                         setToSplit = findSetRendering(previousRenderer);
                         ASSERT(setToSplit == findSetRendering(nextRenderer));
-                        setToSplit->setNeedsLayoutAndFullPaintInvalidation();
+                        setToSplit->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
                         insertBefore = setToSplit->nextSiblingMultiColumnBox();
                         // We've found out which set that needs to be split. Now proceed to
                         // inserting the spanner placeholder, and then insert a second column set.
@@ -543,7 +543,7 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(LayoutObject
                 && previousColumnBox && previousColumnBox->isLayoutMultiColumnSet()) {
                 // Need to merge two column sets.
                 nextColumnBox->destroy();
-                previousColumnBox->setNeedsLayout();
+                previousColumnBox->setNeedsLayout(LayoutInvalidationReason::ColumnsChanged);
                 invalidateRegions();
             }
         }

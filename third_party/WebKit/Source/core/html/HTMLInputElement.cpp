@@ -732,7 +732,7 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (!value.isEmpty() && parseHTMLInteger(value, valueAsInteger) && valueAsInteger > 0)
             m_size = valueAsInteger;
         if (m_size != oldSize && layoutObject())
-            layoutObject()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            layoutObject()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AttributeChanged);
     } else if (name == altAttr)
         m_inputTypeView->altAttributeChanged();
     else if (name == srcAttr)

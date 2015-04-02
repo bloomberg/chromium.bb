@@ -143,11 +143,11 @@ LayoutObject* LayoutFullScreen::wrapRenderer(LayoutObject* object, LayoutObject*
             // Always just do a full layout to ensure that line boxes get deleted properly.
             // Because objects moved from |parent| to |fullscreenRenderer|, we want to
             // make new line boxes instead of leaving the old ones around.
-            parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-            containingBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
+            containingBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
         }
         fullscreenRenderer->addChild(object);
-        fullscreenRenderer->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        fullscreenRenderer->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
     }
 
     ASSERT(document);
@@ -170,7 +170,7 @@ void LayoutFullScreen::unwrapRenderer()
                 toLayoutBox(child)->clearOverrideSize();
             child->remove();
             parent()->addChild(child, this);
-            parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
         }
     }
     if (placeholder())
@@ -196,7 +196,7 @@ void LayoutFullScreen::createPlaceholder(PassRefPtr<ComputedStyle> style, const 
         m_placeholder->setStyle(style);
         if (parent()) {
             parent()->addChild(m_placeholder, this);
-            parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            parent()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
         }
     } else {
         m_placeholder->setStyle(style);

@@ -64,7 +64,7 @@ void SVGClipPathElement::childrenChanged(const ChildrenChange& change)
         return;
 
     if (LayoutObject* object = layoutObject())
-        object->setNeedsLayoutAndFullPaintInvalidation();
+        object->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ChildChanged);
 }
 
 LayoutObject* SVGClipPathElement::createLayoutObject(const ComputedStyle&)

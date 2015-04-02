@@ -78,7 +78,7 @@ void SliderThumbElement::setPositionFromValue()
     // path, we don't actually update the value here. Instead, we poke at the
     // renderer directly to trigger layout.
     if (layoutObject())
-        layoutObject()->setNeedsLayoutAndFullPaintInvalidation();
+        layoutObject()->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SliderValueChanged);
 }
 
 LayoutObject* SliderThumbElement::createLayoutObject(const ComputedStyle&)
@@ -168,7 +168,7 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
     // FIXME: This is no longer being set from renderer. Consider updating the method name.
     input->setValueFromRenderer(valueString);
     if (layoutObject())
-        layoutObject()->setNeedsLayoutAndFullPaintInvalidation();
+        layoutObject()->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SliderValueChanged);
 }
 
 void SliderThumbElement::startDragging()
@@ -188,7 +188,7 @@ void SliderThumbElement::stopDragging()
         frame->eventHandler().setCapturingMouseEventsNode(nullptr);
     m_inDragMode = false;
     if (layoutObject())
-        layoutObject()->setNeedsLayoutAndFullPaintInvalidation();
+        layoutObject()->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SliderValueChanged);
     if (hostInput())
         hostInput()->dispatchFormControlChangeEvent();
 }

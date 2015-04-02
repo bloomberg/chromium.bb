@@ -720,9 +720,9 @@ void LayoutBlock::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox,
     // Always just do a full layout in order to ensure that line boxes (especially wrappers for images)
     // get deleted properly.  Because objects moves from the pre block into the post block, we want to
     // make new line boxes instead of leaving the old line boxes around.
-    pre->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-    block->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-    post->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    pre->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
+    block->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
+    post->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
 }
 
 void LayoutBlock::makeChildrenAnonymousColumnBlocks(LayoutObject* beforeChild, LayoutBlockFlow* newBlockBox, LayoutObject* newChild)
@@ -770,10 +770,10 @@ void LayoutBlock::makeChildrenAnonymousColumnBlocks(LayoutObject* beforeChild, L
     // get deleted properly.  Because objects moved from the pre block into the post block, we want to
     // make new line boxes instead of leaving the old line boxes around.
     if (pre)
-        pre->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
-    block->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        pre->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
+    block->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
     if (post)
-        post->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        post->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
 }
 
 LayoutBlockFlow* LayoutBlock::columnsBlockForSpanningElement(LayoutObject* newChild)
@@ -1124,7 +1124,7 @@ void LayoutBlock::collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* 
     // destroyed. See crbug.com/282088
     if (child->beingDestroyed())
         return;
-    parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ChildAnonymousBlockChanged);
     parent->setChildrenInline(child->childrenInline());
     LayoutObject* nextSibling = child->nextSibling();
 
@@ -1164,7 +1164,7 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
     LayoutObject* next = oldChild->nextSibling();
     bool canMergeAnonymousBlocks = canMergeContiguousAnonymousBlocks(oldChild, prev, next);
     if (canMergeAnonymousBlocks && prev && next) {
-        prev->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        prev->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
         LayoutBlockFlow* nextBlock = toLayoutBlockFlow(next);
         LayoutBlockFlow* prevBlock = toLayoutBlockFlow(prev);
 
@@ -1186,7 +1186,7 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
             // Now just put the inlineChildrenBlock inside the blockChildrenBlock.
             blockChildrenBlock->children()->insertChildNode(blockChildrenBlock, inlineChildrenBlock, prev == inlineChildrenBlock ? blockChildrenBlock->firstChild() : 0,
                 inlineChildrenBlockHasLayer || blockChildrenBlock->hasLayer());
-            next->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            next->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
 
             // inlineChildrenBlock got reparented to blockChildrenBlock, so it is no longer a child
             // of "this". we null out prev or next so that is not used later in the function.
@@ -1738,7 +1738,7 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
         // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout() here instead of a full layout. Need
         // to investigate why it does not trigger the correct invalidations in that case. crbug.com/350756
         if (info == ForcedLayoutAfterContainingBlockMoved)
-            r->setNeedsLayout(MarkOnlyThis);
+            r->setNeedsLayout(LayoutInvalidationReason::AncestorMoved, MarkOnlyThis);
 
         r->layoutIfNeeded();
 

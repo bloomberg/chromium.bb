@@ -67,7 +67,7 @@ LayoutObject* LayoutFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
     LayoutBox* legend = findLegend();
     if (legend) {
         if (relayoutChildren)
-            legend->setNeedsLayoutAndFullPaintInvalidation();
+            legend->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::FieldsetChanged);
         legend->layoutIfNeeded();
 
         LayoutUnit logicalLeft;

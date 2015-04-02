@@ -267,7 +267,7 @@ void SVGLayoutSupport::layoutChildren(LayoutObject* start, bool selfNeedsLayout)
         // their invalidation directly from SVGSVGElement::svgAttributeChange() or at a higher
         // SubtreeLayoutScope (in LayoutView::layout()).
         if (forceLayout && !child->isSVGResourceContainer())
-            layoutScope.setNeedsLayout(child);
+            layoutScope.setNeedsLayout(child, LayoutInvalidationReason::SvgChanged);
 
         // Lay out any referenced resources before the child.
         layoutResourcesIfNeeded(child);

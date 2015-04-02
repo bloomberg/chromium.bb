@@ -195,7 +195,7 @@ void LayoutSVGResourceContainer::invalidateCacheAndMarkForLayout(SubtreeLayoutSc
     if (selfNeedsLayout())
         return;
 
-    setNeedsLayoutAndFullPaintInvalidation(MarkContainerChain, layoutScope);
+    setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SvgResourceInvalidated, MarkContainerChain, layoutScope);
 
     if (everHadLayout())
         removeAllClientsFromCache();
@@ -226,7 +226,7 @@ void LayoutSVGResourceContainer::registerResource()
         StyleDifference diff;
         diff.setNeedsFullLayout();
         SVGResourcesCache::clientStyleChanged(layoutObject, diff, layoutObject->styleRef());
-        layoutObject->setNeedsLayoutAndFullPaintInvalidation();
+        layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SvgResourceInvalidated);
     }
 }
 
@@ -277,7 +277,7 @@ void LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(Layo
     ASSERT(object->node());
 
     if (needsLayout && !object->documentBeingDestroyed())
-        object->setNeedsLayoutAndFullPaintInvalidation();
+        object->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SvgResourceInvalidated);
 
     removeFromCacheAndInvalidateDependencies(object, needsLayout);
 

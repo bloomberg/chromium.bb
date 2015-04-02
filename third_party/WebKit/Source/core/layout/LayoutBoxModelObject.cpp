@@ -184,7 +184,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
         if (s_wasFloating && isFloating())
             setChildNeedsLayout();
         if (hadTransform)
-            setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::StyleChange);
     }
 
     if (layer()) {

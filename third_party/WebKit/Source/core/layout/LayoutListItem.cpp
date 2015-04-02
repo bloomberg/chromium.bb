@@ -253,7 +253,7 @@ void LayoutListItem::updateValue()
     if (!m_hasExplicitValue) {
         m_isValueUpToDate = false;
         if (m_marker)
-            m_marker->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            m_marker->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ListValueChange);
     }
 }
 
@@ -457,7 +457,7 @@ const String& LayoutListItem::markerText() const
 void LayoutListItem::explicitValueChanged()
 {
     if (m_marker)
-        m_marker->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        m_marker->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ListValueChange);
     Node* listNode = enclosingList(this);
     for (LayoutListItem* item = this; item; item = nextListItem(listNode, item))
         item->updateValue();

@@ -205,7 +205,7 @@ void SVGSVGElement::setCurrentTranslate(const FloatPoint& point)
 void SVGSVGElement::updateCurrentTranslate()
 {
     if (LayoutObject* object = layoutObject())
-        object->setNeedsLayoutAndFullPaintInvalidation();
+        object->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
 }
 
 bool SVGSVGElement::zoomAndPanEnabled() const

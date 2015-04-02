@@ -788,7 +788,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     RefPtrWillBeRawPtr<FrameView> frameView = ownerLayoutObject->frame()->view();
 
     // Mark the owner renderer as needing layout.
-    ownerLayoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    ownerLayoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
 
     // Synchronously enter layout, to layout the view containing the host object/embed/iframe.
     ASSERT(frameView);
@@ -1314,13 +1314,13 @@ void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, 
             if (style.width().isFixed() && (style.left().isAuto() || style.right().isAuto()))
                 renderer->setNeedsPositionedMovementLayout();
             else
-                renderer->setNeedsLayoutAndFullPaintInvalidation();
+                renderer->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
         }
         if (heightChanged) {
             if (style.height().isFixed() && (style.top().isAuto() || style.bottom().isAuto()))
                 renderer->setNeedsPositionedMovementLayout();
             else
-                renderer->setNeedsLayoutAndFullPaintInvalidation();
+                renderer->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
         }
     }
 }
@@ -1882,7 +1882,7 @@ void FrameView::setNeedsLayout()
     RELEASE_ASSERT(!m_frame->document() || m_frame->document()->lifecycle().stateAllowsLayoutInvalidation() || (box && box->isSVGRoot()));
 
     if (LayoutView* layoutView = this->layoutView())
-        layoutView->setNeedsLayout();
+        layoutView->setNeedsLayout(LayoutInvalidationReason::Unknown);
 }
 
 bool FrameView::isTransparent() const
@@ -2694,7 +2694,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
         LayoutUnit flooredPageLogicalHeight = static_cast<LayoutUnit>(pageLogicalHeight);
         layoutView->setLogicalWidth(flooredPageLogicalWidth);
         layoutView->setPageLogicalHeight(flooredPageLogicalHeight);
-        layoutView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        layoutView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::PrintingChanged);
         layout();
 
         // If we don't fit in the given page width, we'll lay out again. If we don't fit in the
@@ -2714,7 +2714,7 @@ void FrameView::forceLayoutForPagination(const FloatSize& pageSize, const FloatS
             flooredPageLogicalHeight = static_cast<LayoutUnit>(pageLogicalHeight);
             layoutView->setLogicalWidth(flooredPageLogicalWidth);
             layoutView->setPageLogicalHeight(flooredPageLogicalHeight);
-            layoutView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            layoutView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::PrintingChanged);
             layout();
 
             const LayoutRect& updatedDocumentRect = LayoutRect(layoutView->documentRect());

@@ -321,12 +321,48 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutEvent::endData(L
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutInvalidationTrackingEvent::data(const LayoutObject* renderer)
+namespace LayoutInvalidationReason {
+const char Unknown[] = "Unknown";
+const char SizeChanged[] = "Size changed";
+const char AncestorMoved[] = "Ancestor moved";
+const char StyleChange[] = "Style changed";
+const char DomChanged[] = "DOM changed";
+const char TextChanged[] = "Text changed";
+const char PrintingChanged[] = "Printing changed";
+const char AttributeChanged[] = "Attribute changed";
+const char ColumnsChanged[] = "Attribute changed";
+const char ChildAnonymousBlockChanged[] = "Child anonymous block changed";
+const char AnonymousBlockChange[] = "Anonymous block change";
+const char Fullscreen[] = "Fullscreen change";
+const char ChildChanged[] = "Child changed";
+const char ListValueChange[] = "List value change";
+const char ImageChanged[] = "Image changed";
+const char LineBoxesChanged[] = "Line boxes changed";
+const char SliderValueChanged[] = "Slider value changed";
+const char AncestorMarginCollapsing[] = "Ancestor margin collapsing";
+const char FieldsetChanged[] = "Fieldset changed";
+const char TextAutosizing[] = "Text autosizing (font boosting)";
+const char SvgResourceInvalidated[] = "SVG resource invalidated";
+const char FloatDescendantChanged[] = "Floating descendant changed";
+const char CountersChanged[] = "Counters changed";
+const char GridChanged[] = "Grid changed";
+const char MenuWidthChanged[] = "Menu width changed";
+const char RemovedFromLayout[] = "Removed from layout";
+const char AddedToLayout[] = "Added to layout";
+const char TableChanged[] = "Table changed";
+const char PaddingChanged[] = "Padding changed";
+const char TextControlChanged[] = "Text control changed";
+const char SvgChanged[] = "SVG changed";
+const char ScrollbarChanged[] = "Scrollbar changed";
+} // namespace LayoutInvalidationReason
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutInvalidationTrackingEvent::data(const LayoutObject* renderer, LayoutInvalidationReasonForTracing reason)
 {
     ASSERT(renderer);
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(renderer->frame()));
     setGeneratingNodeInfo(value.get(), renderer, "nodeId", "nodeName");
+    value->setString("reason", reason);
     if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxInvalidationTrackingCallstackSize, true))
         stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();

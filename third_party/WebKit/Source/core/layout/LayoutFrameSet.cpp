@@ -421,7 +421,7 @@ void LayoutFrameSet::positionFrames()
             // has to be resized and itself resize its contents
             if (size != child->size()) {
                 child->setSize(size);
-                child->setNeedsLayoutAndFullPaintInvalidation();
+                child->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
                 child->layout();
             }
 
@@ -461,7 +461,7 @@ void LayoutFrameSet::continueResizing(GridAxis& axis, int position)
         return;
     axis.m_deltas[axis.m_splitBeingResized - 1] += delta;
     axis.m_deltas[axis.m_splitBeingResized] -= delta;
-    setNeedsLayoutAndFullPaintInvalidation();
+    setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
 }
 
 bool LayoutFrameSet::userResize(MouseEvent* evt)

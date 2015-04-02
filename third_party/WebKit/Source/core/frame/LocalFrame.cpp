@@ -461,7 +461,7 @@ void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const Flo
         view()->forceLayoutForPagination(pageSize, originalPageSize, maximumShrinkRatio);
     } else {
         if (LayoutView* layoutView = view()->layoutView())
-            layoutView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            layoutView->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::PrintingChanged);
         view()->layout();
         view()->adjustViewSize();
     }

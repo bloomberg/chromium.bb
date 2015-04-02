@@ -695,7 +695,7 @@ void DeprecatedPaintLayerScrollableArea::updateAfterLayout()
                 // Our proprietary overflow: overlay value doesn't trigger a layout.
                 m_inOverflowRelayout = true;
                 SubtreeLayoutScope layoutScope(box());
-                layoutScope.setNeedsLayout(&box());
+                layoutScope.setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
                 if (box().isLayoutBlock()) {
                     LayoutBlock& block = toLayoutBlock(box());
                     block.scrollbarsChanged(autoHorizontalScrollBarChanged, autoVerticalScrollBarChanged);
@@ -841,7 +841,7 @@ void DeprecatedPaintLayerScrollableArea::updateAfterOverflowRecalc()
     bool autoHorizontalScrollBarChanged = box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow);
     bool autoVerticalScrollBarChanged = box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow);
     if (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)
-        box().setNeedsLayoutAndFullPaintInvalidation();
+        box().setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
 }
 
 DoubleSize DeprecatedPaintLayerScrollableArea::clampScrollOffset(const DoubleSize& scrollOffset) const

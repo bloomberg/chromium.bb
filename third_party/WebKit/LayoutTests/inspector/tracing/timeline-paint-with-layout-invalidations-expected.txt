@@ -28,7 +28,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Layout forced, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations.html:12}
+        cause : {reason: Style changed, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations.html:12}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -54,7 +54,7 @@ second paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Layout forced, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations.html:22}
+        cause : {reason: Style changed, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations.html:22}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -65,7 +65,7 @@ second paint invalidations[
         type : "LayoutInvalidationTracking"
     }
     {
-        cause : {reason: Layout forced, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations.html:22}
+        cause : {reason: Unknown, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations.html:22}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined

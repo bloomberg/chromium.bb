@@ -1699,7 +1699,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
     if (layoutState.isFullLayout()) {
         // If we encountered a new float and have inline children, mark ourself to force us to issue paint invalidations.
         if (layoutState.hasInlineChild() && !selfNeedsLayout()) {
-            setNeedsLayoutAndFullPaintInvalidation(MarkOnlyThis);
+            setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::FloatDescendantChanged, MarkOnlyThis);
             setShouldDoFullPaintInvalidation();
         }
 

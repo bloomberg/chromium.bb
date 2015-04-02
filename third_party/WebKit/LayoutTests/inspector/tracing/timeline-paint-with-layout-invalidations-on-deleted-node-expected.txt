@@ -27,7 +27,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Layout forced, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations-on-deleted-node.html:13}
+        cause : {reason: Style changed, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations-on-deleted-node.html:13}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -38,7 +38,7 @@ paint invalidations[
         type : "LayoutInvalidationTracking"
     }
     {
-        cause : {reason: Layout forced, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations-on-deleted-node.html:14}
+        cause : {reason: Removed from layout, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations-on-deleted-node.html:14}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -49,7 +49,7 @@ paint invalidations[
         type : "LayoutInvalidationTracking"
     }
     {
-        cause : {reason: Layout forced, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations-on-deleted-node.html:14}
+        cause : {reason: Removed from layout, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations-on-deleted-node.html:14}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -75,7 +75,7 @@ second paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Layout forced, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations-on-deleted-node.html:25}
+        cause : {reason: Style changed, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations-on-deleted-node.html:25}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -86,7 +86,7 @@ second paint invalidations[
         type : "LayoutInvalidationTracking"
     }
     {
-        cause : {reason: Layout forced, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations-on-deleted-node.html:26}
+        cause : {reason: Removed from layout, stackTrace: .../inspector/tracing/timeline-paint-with-layout-invalidations-on-deleted-node.html:26}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined

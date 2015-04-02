@@ -448,7 +448,7 @@ void LayoutTable::layout()
 
         if (logicalWidth() != oldLogicalWidth) {
             for (unsigned i = 0; i < m_captions.size(); i++)
-                layouter.setNeedsLayout(m_captions[i]);
+                layouter.setNeedsLayout(m_captions[i], LayoutInvalidationReason::TableChanged);
         }
         // FIXME: The optimisation below doesn't work since the internal table
         // layout could have changed. We need to add a flag to the table

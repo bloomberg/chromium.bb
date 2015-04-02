@@ -119,7 +119,7 @@ void LayoutMenuList::adjustInnerStyle()
 
     if (m_optionStyle) {
         if ((m_optionStyle->direction() != innerStyle.direction() || m_optionStyle->unicodeBidi() != innerStyle.unicodeBidi()))
-            m_innerBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+            m_innerBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::StyleChange);
         innerStyle.setTextAlign(style()->isLeftToRightDirection() ? LEFT : RIGHT);
         innerStyle.setDirection(m_optionStyle->direction());
         innerStyle.setUnicodeBidi(m_optionStyle->unicodeBidi());
@@ -197,7 +197,7 @@ void LayoutMenuList::updateOptionsWidth()
 
     m_optionsWidth = width;
     if (parent())
-        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::MenuWidthChanged);
 }
 
 void LayoutMenuList::updateFromElement()

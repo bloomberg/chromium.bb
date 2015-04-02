@@ -97,7 +97,7 @@ void SVGGradientElement::childrenChanged(const ChildrenChange& change)
         return;
 
     if (LayoutObject* object = layoutObject())
-        object->setNeedsLayoutAndFullPaintInvalidation();
+        object->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ChildChanged);
 }
 
 Vector<Gradient::ColorStop> SVGGradientElement::buildStops()

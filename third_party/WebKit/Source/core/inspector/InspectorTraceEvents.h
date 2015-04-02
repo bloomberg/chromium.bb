@@ -108,9 +108,52 @@ private:
         "data", \
         InspectorStyleInvalidatorInvalidateEvent::selectorPart((element), (InspectorStyleInvalidatorInvalidateEvent::reason), (invalidationSet), (singleSelectorPart)))
 
+// From a web developer's perspective: what caused this layout? This is strictly
+// for tracing. Blink logic must not depend on these.
+namespace LayoutInvalidationReason {
+extern const char Unknown[];
+extern const char SizeChanged[];
+extern const char AncestorMoved[];
+extern const char StyleChange[];
+extern const char DomChanged[];
+extern const char TextChanged[];
+extern const char PrintingChanged[];
+extern const char AttributeChanged[];
+extern const char ColumnsChanged[];
+extern const char ChildAnonymousBlockChanged[];
+extern const char AnonymousBlockChange[];
+extern const char Fullscreen[];
+extern const char ChildChanged[];
+extern const char ListValueChange[];
+extern const char ImageChanged[];
+extern const char LineBoxesChanged[];
+extern const char SliderValueChanged[];
+extern const char AncestorMarginCollapsing[];
+extern const char FieldsetChanged[];
+extern const char TextAutosizing[];
+extern const char SvgResourceInvalidated[];
+extern const char FloatDescendantChanged[];
+extern const char CountersChanged[];
+extern const char GridChanged[];
+extern const char MenuWidthChanged[];
+extern const char RemovedFromLayout[];
+extern const char AddedToLayout[];
+extern const char TableChanged[];
+extern const char PaddingChanged[];
+extern const char TextControlChanged[];
+// FIXME: This is too generic, we should be able to split out transform and
+// size related invalidations.
+extern const char SvgChanged[];
+extern const char ScrollbarChanged[];
+}
+
+// LayoutInvalidationReasonForTracing is strictly for tracing. Blink logic must
+// not depend on this value.
+typedef const char LayoutInvalidationReasonForTracing[];
+
 class InspectorLayoutInvalidationTrackingEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, LayoutInvalidationReasonForTracing);
 };
 
 class InspectorPaintInvalidationTrackingEvent {

@@ -1405,7 +1405,7 @@ void LayoutTableSection::recalcCells()
     }
 
     m_grid.shrinkToFit();
-    setNeedsLayoutAndFullPaintInvalidation();
+    setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
 }
 
 // FIXME: This function could be made O(1) in certain cases (like for the non-most-constrainive cells' case).

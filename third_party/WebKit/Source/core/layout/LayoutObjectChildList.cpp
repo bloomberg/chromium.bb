@@ -65,7 +65,7 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
         // that a positioned child got yanked). We also issue paint invalidations, so that the area exposed when the child
         // disappears gets paint invalidated properly.
         if (!owner->documentBeingDestroyed() && notifyRenderer && oldChild->everHadLayout()) {
-            oldChild->setNeedsLayoutAndPrefWidthsRecalc();
+            oldChild->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::RemovedFromLayout);
             invalidatePaintOnRemoval(*oldChild);
         }
     }
@@ -156,7 +156,7 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner, LayoutObject* n
         LayoutCounter::rendererSubtreeAttached(newChild);
     }
 
-    newChild->setNeedsLayoutAndPrefWidthsRecalc();
+    newChild->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::AddedToLayout);
     newChild->setShouldDoFullPaintInvalidation(PaintInvalidationRendererInsertion);
     if (!owner->normalChildNeedsLayout())
         owner->setChildNeedsLayout(); // We may supply the static position for an absolute positioned child.

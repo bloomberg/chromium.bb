@@ -74,7 +74,7 @@ void LayoutVideo::updateIntrinsicSize()
 
     setIntrinsicSize(size);
     setPreferredLogicalWidthsDirty();
-    setNeedsLayoutAndFullPaintInvalidation();
+    setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SizeChanged);
 }
 
 LayoutSize LayoutVideo::calculateIntrinsicSize()

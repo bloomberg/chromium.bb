@@ -190,7 +190,7 @@ void LayoutText::styleDidChange(StyleDifference diff, const ComputedStyle* oldSt
     // We do have to schedule layouts, though, since a style change can force us to
     // need to relayout.
     if (diff.needsFullLayout()) {
-        setNeedsLayoutAndPrefWidthsRecalc();
+        setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
         m_knownToHaveNoOverflowAndNoFallbackFonts = false;
     }
 
@@ -1436,7 +1436,7 @@ void LayoutText::setText(PassRefPtr<StringImpl> text, bool force)
     // insertChildNode() fails to set true to owner. To avoid that, we call
     // setNeedsLayoutAndPrefWidthsRecalc() only if this LayoutText has parent.
     if (parent())
-        setNeedsLayoutAndPrefWidthsRecalc();
+        setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::TextChanged);
     m_knownToHaveNoOverflowAndNoFallbackFonts = false;
 
     if (AXObjectCache* cache = document().existingAXObjectCache())

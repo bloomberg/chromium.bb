@@ -1739,7 +1739,7 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
 
     if (!diff.needsFullLayout()) {
         if (updatedDiff.needsFullLayout())
-            setNeedsLayoutAndPrefWidthsRecalc();
+            setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
         else if (updatedDiff.needsPositionedMovementLayout())
             setNeedsPositionedMovementLayout();
     }
@@ -1887,7 +1887,7 @@ void LayoutObject::styleDidChange(StyleDifference diff, const ComputedStyle* old
             markContainingBlocksForOverflowRecalc();
 
         if (diff.needsFullLayout())
-            setNeedsLayoutAndPrefWidthsRecalc();
+            setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
     } else if (diff.needsPositionedMovementLayout()) {
         setNeedsPositionedMovementLayout();
     }

@@ -31,6 +31,7 @@
 #ifndef SubtreeLayoutScope_h
 #define SubtreeLayoutScope_h
 
+#include "core/inspector/InspectorTraceEvents.h"
 #include "wtf/HashSet.h"
 
 // This is the way to mark a subtree as needing layout during layout,
@@ -51,7 +52,7 @@ public:
     SubtreeLayoutScope(LayoutObject& root);
     ~SubtreeLayoutScope();
 
-    void setNeedsLayout(LayoutObject* descendant);
+    void setNeedsLayout(LayoutObject* descendant, LayoutInvalidationReasonForTracing);
     void setChildNeedsLayout(LayoutObject* descendant);
 
     LayoutObject& root() { return m_root; }

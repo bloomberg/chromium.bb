@@ -582,7 +582,7 @@ void TextAutosizer::setAllTextNeedsLayout()
     LayoutObject* renderer = m_document->layoutView();
     while (renderer) {
         if (renderer->isText())
-            renderer->setNeedsLayoutAndFullPaintInvalidation();
+            renderer->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing);
         renderer = renderer->nextInPreOrder();
     }
 }
@@ -983,7 +983,7 @@ void TextAutosizer::applyMultiplier(LayoutObject* renderer, float multiplier, Re
         m_stylesRetainedDuringLayout.append(&currentStyle);
 
         renderer->setStyleInternal(style.release());
-        renderer->setNeedsLayoutAndFullPaintInvalidation();
+        renderer->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing);
         break;
 
     case LayoutNeeded:

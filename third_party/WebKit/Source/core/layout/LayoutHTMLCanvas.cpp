@@ -78,7 +78,7 @@ void LayoutHTMLCanvas::canvasSizeChanged()
         return;
 
     if (!selfNeedsLayout())
-        setNeedsLayout();
+        setNeedsLayout(LayoutInvalidationReason::SizeChanged);
 }
 
 PaintInvalidationReason LayoutHTMLCanvas::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)

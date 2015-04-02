@@ -4538,7 +4538,7 @@ static void markBoxForRelayoutAfterSplit(LayoutBox* box)
         toLayoutTableSection(box)->setNeedsCellRecalc();
     }
 
-    box->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
+    box->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
 }
 
 LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(LayoutObject* beforeChild)
