@@ -838,9 +838,9 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
     return false;
 
-  // If we've lost the output surface, end the current BeginImplFrame ASAP
-  // so we can start creating the next output surface.
-  if (output_surface_state_ == OUTPUT_SURFACE_LOST)
+  // If things are being aborted, end the current BeginImplFrame ASAP so we can
+  // unblock creating the next output surface.
+  if (PendingDrawsShouldBeAborted())
     return true;
 
   // SwapAck throttle the deadline since we wont draw and swap anyway.
