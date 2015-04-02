@@ -19,7 +19,11 @@ TEST(MidiMessageFilterTest, CastMidiPortState) {
       MidiMessageFilter::ToBlinkState(media::MIDI_PORT_DISCONNECTED));
   EXPECT_EQ(BlinkState::MIDIPortStateConnected,
       MidiMessageFilter::ToBlinkState(media::MIDI_PORT_CONNECTED));
-  EXPECT_EQ(BlinkState::MIDIPortStateOpened,
+  // Web MIDI API manages DeviceState and ConnectionState separately.
+  // "open", "pending", or "closed" are managed separately for ConnectionState
+  // by Blink per MIDIAccess instance. So, MIDI_PORT_OPENED in content can be
+  // converted to MIDIPortStateConnected.
+  EXPECT_EQ(BlinkState::MIDIPortStateConnected,
       MidiMessageFilter::ToBlinkState(media::MIDI_PORT_OPENED));
 
   // Check if we do not have any unknown MidiPortState that is added later.

@@ -46,6 +46,9 @@ class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
 
   static blink::WebMIDIAccessorClient::MIDIPortState ToBlinkState(
       media::MidiPortState state) {
+    // "open" status is separately managed by blink per MIDIAccess instance.
+    if (state == media::MIDI_PORT_OPENED)
+      state = media::MIDI_PORT_CONNECTED;
     return static_cast<blink::WebMIDIAccessorClient::MIDIPortState>(state);
   }
 
