@@ -33,6 +33,7 @@ group("services") {
     if (is_mac) {
       deps -= [
         "//mojo/services/html_viewer",
+        "//mojo/services/kiosk_wm",
         "//mojo/services/view_manager",
       ]
     }
