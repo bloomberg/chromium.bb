@@ -33,13 +33,23 @@
   "file_handlers": {
     "open": {
       "extensions": [
+        // Image
         "bmp",
         "gif",
         "ico",
         "jpg",
         "jpeg",
         "png",
-        "webp"
+        "webp",
+        // Raw: Sync with the raw type list in file_type.js.
+        "arw",
+        "cr2",
+        "dng",
+        "nef",
+        "nrw",
+        "orf",
+        "raf",
+        "rw2"
       ]
     }
   },

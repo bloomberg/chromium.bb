@@ -480,6 +480,7 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
   this.entry_ = entry;
   this.callback_ = callback;
 
+  var targetImage = this.image_;
   // The transform fetcher is not cancellable so we need a generation counter.
   var generation = ++this.generation_;
 
@@ -499,8 +500,8 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
    * @param {string=} opt_error Error.
    */
   var onError = function(opt_error) {
-    this.image_.onerror = null;
-    this.image_.onload = null;
+    targetImage.onerror = null;
+    targetImage.onload = null;
     var tmpCallback = this.callback_;
     this.callback_ = null;
     var emptyCanvas = assertInstanceof(this.document_.createElement('canvas'),
@@ -511,67 +512,62 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
   };
   onError = onError.bind(this);
 
-  var loadImage = function() {
+  var loadImage = function(url) {
+    if (generation !== this.generation_)
+      return;
+
     ImageUtil.metrics.startInterval(ImageUtil.getMetricName('LoadTime'));
     this.timeout_ = 0;
 
-    this.image_.onload = function() {
-      this.image_.onerror = null;
-      this.image_.onload = null;
+    targetImage.onload = function() {
+      targetImage.onerror = null;
+      targetImage.onload = null;
       this.metadataModel_.get([entry], ['contentImageTransform']).then(
           function(metadataItems) {
-            onTransform(this.image_, metadataItems[0].contentImageTransform);
+            onTransform(targetImage, metadataItems[0].contentImageTransform);
           }.bind(this));
     }.bind(this);
 
     // The error callback has an optional error argument, which in case of a
     // general error should not be specified
-    this.image_.onerror = onError.bind(this, 'GALLERY_IMAGE_ERROR');
+    targetImage.onerror = onError.bind(null, 'GALLERY_IMAGE_ERROR');
 
-    // Load the image directly. The query parameter is workaround for
-    // crbug.com/379678, which force to update the contents of the image.
-    this.image_.src = entry.toURL() + '?nocache=' + Date.now();
+    targetImage.src = url;
   }.bind(this);
 
   // Loads the image. If already loaded, then forces a reload.
-  var startLoad = this.resetImage_.bind(this, function() {
-    loadImage();
-  }.bind(this), onError);
+  var startLoad = function() {
+    if (generation !== this.generation_)
+      return;
+
+    // Target current image.
+    targetImage = this.image_;
+
+    // Obtain target URL.
+    if (FileType.isRaw(entry)) {
+      ImageLoaderClient.getInstance().load(entry.toURL(), function(result) {
+        if (result.status === 'success')
+          loadImage(result.data);
+        else
+          onError('GALLERY_IMAGE_ERROR');
+      }, {
+        cache: true,
+        timestamp: item.getMetadataItem().modificationTime &&
+            item.getMetadataItem().modificationTime.getTime(),
+        priority: 0  // Use highest priority to show main image.
+      });
+      return;
+    }
+
+    // Load the image directly. The query parameter is workaround for
+    // crbug.com/379678, which force to update the contents of the image.
+    loadImage(entry.toURL() + '?nocache=' + Date.now());
+  }.bind(this);
 
   if (opt_delay) {
     this.timeout_ = setTimeout(startLoad, opt_delay);
   } else {
     startLoad();
-  }
-};
-
-/**
- * Resets the image by forcing the garbage collection and clearing the src
- * attribute.
- *
- * @param {function()} onSuccess Success callback.
- * @param {function(string=)} onError Failure callback with an optional error
- *     identifier.
- * @private
- */
-ImageUtil.ImageLoader.prototype.resetImage_ = function(onSuccess, onError) {
-  var clearSrc = function() {
-    this.image_.onload = onSuccess;
-    this.image_.onerror = onSuccess;
-    this.image_.src = '';
-  }.bind(this);
-
-  var emptyImage = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAA' +
-      'AAABAAEAAAICTAEAOw==';
-
-  if (this.image_.src !== emptyImage) {
-    // Load an empty image, then clear src.
-    this.image_.onload = clearSrc;
-    this.image_.onerror = onError.bind(this, 'GALLERY_IMAGE_ERROR');
-    this.image_.src = emptyImage;
-  } else {
-    // Empty image already loaded, so clear src immediately.
-    clearSrc();
   }
 };
 
@@ -602,7 +598,8 @@ ImageUtil.ImageLoader.prototype.setCallback = function(callback) {
  * Stops loading image.
  */
 ImageUtil.ImageLoader.prototype.cancel = function() {
-  if (!this.callback_) return;
+  if (!this.callback_)
+    return;
   this.callback_ = null;
   if (this.timeout_) {
     clearTimeout(this.timeout_);
@@ -611,7 +608,10 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
   if (this.image_) {
     this.image_.onload = function() {};
     this.image_.onerror = function() {};
-    this.image_.src = '';
+    // Force to free internal image by assigning empty image.
+    this.image_.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAA' +
+        'AAABAAEAAAICTAEAOw==';
+    this.image_ = document.createElement('img');
   }
   this.generation_++;  // Silence the transform fetcher if it is in progress.
 };

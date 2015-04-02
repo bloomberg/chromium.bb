@@ -190,3 +190,55 @@ function testSaveToFileGetBlobFailCase(callback) {
             assertFalse(writeOperationRun);
           }), callback);
 }
+
+function testSaveToFileRaw(callback) {
+  var fileSystem = new MockFileSystem('volumeId');
+  fileSystem.populate(['/test.arw']);
+  fileSystem.entries['/'].getFile = function(name, options, success, error) {
+    if (options.create) {
+      assertEquals('test - Edited.jpg', name);
+      fileSystem.populate(['/test - Edited.jpg']);
+      var entry = fileSystem.entries['/test - Edited.jpg'];
+      entry.createWriter = function(callback) {
+        callback({
+          write: function() {
+            Promise.resolve().then(function() {
+              this.onwriteend();
+            }.bind(this));
+          },
+          truncate: function() {
+            this.write();
+          }
+        });
+      };
+    }
+    MockDirectoryEntry.prototype.getFile.apply(this, arguments);
+  };
+  var entryChanged = false;
+  var metadataModel = getMockMetadataModel();
+  metadataModel.notifyEntriesChanged = function() {
+    entryChanged = true;
+  };
+
+  var item = new Gallery.Item(
+      fileSystem.entries['/test.arw'],
+      {isReadOnly: false},
+      {size: 100},
+      {},
+      /* original */ true);
+  assertEquals(100, item.getMetadataItem().size);
+  assertFalse(entryChanged);
+  reportPromise(
+      new Promise(item.saveToFile.bind(
+          item,
+          {getLocationInfo: function() { return {}; }},
+          metadataModel,
+          /* fallbackDir */ null,
+          /* overwrite is true but ignored */ true,
+          document.createElement('canvas'))).then(function(success) {
+            assertTrue(success);
+            assertEquals(200, item.getMetadataItem().size);
+            assertTrue(entryChanged);
+            assertFalse(item.isOriginal());
+          }), callback);
+}

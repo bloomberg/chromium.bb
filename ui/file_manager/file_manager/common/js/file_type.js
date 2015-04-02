@@ -45,35 +45,35 @@ FileType.types = [
   // Raw
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'ARW',
-    pattern: /\.arw?$/i, icon: 'image'
+    pattern: /\.arw$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'CR2',
-    pattern: /\.cr2?$/i, icon: 'image'
+    pattern: /\.cr2$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'DNG',
-    pattern: /\.dng?$/i, icon: 'image'
+    pattern: /\.dng$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'NEF',
-    pattern: /\.nef?$/i, icon: 'image'
+    pattern: /\.nef$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'NRW',
-    pattern: /\.nrw?$/i, icon: 'image'
+    pattern: /\.nrw$/i, icon: 'image'
   },
   {
-    type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'ORW',
-    pattern: /\.orf?$/i, icon: 'image'
+    type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'ORF',
+    pattern: /\.orf$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'RAF',
-    pattern: /\.raf?$/i, icon: 'image'
+    pattern: /\.raf$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'RW2',
-    pattern: /\.rw2?$/i, icon: 'image'
+    pattern: /\.rw2$/i, icon: 'image'
   },
 
   // Video

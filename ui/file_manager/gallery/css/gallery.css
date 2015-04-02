@@ -383,12 +383,12 @@ input[type='checkbox']:checked {
   pointer-events: auto;
 }
 
-.gallery[editing] .options[saved] .overwrite-original {
+.gallery[editing] .overwrite-original[disabled] {
   opacity: 0.5;
 }
 
-.gallery[editing] .options[saved] .overwrite-original,
-.gallery[editing] .options[saved] .overwrite-original > * {
+.gallery[editing] .overwrite-original[disabled],
+.gallery[editing] .overwrite-original[disabled] > * {
   cursor: default;
   pointer-events: none;
 }

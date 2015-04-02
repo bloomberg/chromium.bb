@@ -155,10 +155,12 @@ Gallery.Item.REGEXP_COPY_N =
  * Creates a name for an edited copy of the file.
  *
  * @param {!DirectoryEntry} dirEntry Entry.
+ * @param {string} newMimeType Mime type of new image.
  * @param {function(string)} callback Callback.
  * @private
  */
-Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
+Gallery.Item.prototype.createCopyName_ = function(
+    dirEntry, newMimeType, callback) {
   var name = this.getFileName();
 
   // If the item represents a file created during the current Gallery session
@@ -168,42 +170,33 @@ Gallery.Item.prototype.createCopyName_ = function(dirEntry, callback) {
     return;
   }
 
-  var ext = '';
-  var index = name.lastIndexOf('.');
-  if (index != -1) {
-    ext = name.substr(index);
-    name = name.substr(0, index);
-  }
-
-  if (!ext.match(/jpe?g/i)) {
-    // Chrome can natively encode only two formats: JPEG and PNG.
-    // All non-JPEG images are saved in PNG, hence forcing the file extension.
-    ext = '.png';
-  }
+  var baseName = name.replace(/\.[^\.\/]+$/, '');
+  var ext = newMimeType === 'image/jpeg' ? '.jpg' : '.png';
 
   function tryNext(tries) {
     // All the names are used. Let's overwrite the last one.
     if (tries == 0) {
-      setTimeout(callback, 0, name + ext);
+      setTimeout(callback, 0, baseName + ext);
       return;
     }
 
     // If the file name contains the copy signature add/advance the sequential
     // number.
-    var matchN = Gallery.Item.REGEXP_COPY_N.exec(name);
-    var match0 = Gallery.Item.REGEXP_COPY_0.exec(name);
+    var matchN = Gallery.Item.REGEXP_COPY_N.exec(baseName);
+    var match0 = Gallery.Item.REGEXP_COPY_0.exec(baseName);
     if (matchN && matchN[1] && matchN[2]) {
       var copyNumber = parseInt(matchN[2], 10) + 1;
-      name = matchN[1] + Gallery.Item.COPY_SIGNATURE + ' (' + copyNumber + ')';
+      baseName = matchN[1] + Gallery.Item.COPY_SIGNATURE +
+          ' (' + copyNumber + ')';
     } else if (match0 && match0[1]) {
-      name = match0[1] + Gallery.Item.COPY_SIGNATURE + ' (1)';
+      baseName = match0[1] + Gallery.Item.COPY_SIGNATURE + ' (1)';
     } else {
-      name += Gallery.Item.COPY_SIGNATURE;
+      baseName += Gallery.Item.COPY_SIGNATURE;
     }
 
-    dirEntry.getFile(name + ext, {create: false, exclusive: false},
+    dirEntry.getFile(baseName + ext, {create: false, exclusive: false},
         tryNext.bind(null, tries - 1),
-        callback.bind(null, name + ext));
+        callback.bind(null, baseName + ext));
   }
 
   tryNext(10);
@@ -225,6 +218,8 @@ Gallery.Item.prototype.saveToFile = function(
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
 
   var name = this.getFileName();
+  var newMimeType = name.match(/\.jpe?g$/i) || FileType.isRaw(this.entry_) ?
+      'image/jpeg' : 'image/png';
 
   var onSuccess = function(entry) {
     var locationInfo = volumeManager.getLocationInfo(entry);
@@ -270,6 +265,7 @@ Gallery.Item.prototype.saveToFile = function(
       // Create the blob of new image.
       var metadataItem = metadataItems[0];
       metadataItem.modificationTime = new Date();
+      metadataItem.mediaMimeType = newMimeType;
       var metadataEncoder = ImageEncoder.encodeMetadata(
           metadataItem, canvas, /* quality for thumbnail*/ 0.8);
       // Contrary to what one might think 1.0 is not a good default. Opening
@@ -278,7 +274,7 @@ Gallery.Item.prototype.saveToFile = function(
       // It shrinks some photos a bit, keeps others about the same size, but
       // does not visibly lower the quality.
       blob = ImageEncoder.getBlob(canvas, metadataEncoder, 0.9);
-    }).then(function() {
+    }.bind(this)).then(function() {
       // Create writer.
       return new Promise(function(fullfill, reject) {
         fileEntry.createWriter(fullfill, reject);
@@ -328,10 +324,12 @@ Gallery.Item.prototype.saveToFile = function(
   };
 
   var saveToDir = function(dir) {
-    if (overwrite && !this.locationInfo_.isReadOnly) {
+    if (overwrite &&
+        !this.locationInfo_.isReadOnly &&
+        !FileType.isRaw(this.entry_)) {
       checkExistence(dir);
     } else {
-      this.createCopyName_(dir, function(copyName) {
+      this.createCopyName_(dir, newMimeType, function(copyName) {
         this.original_ = false;
         name = copyName;
         checkExistence(dir);

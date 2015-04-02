@@ -232,9 +232,10 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
 
   /**
    * @type {!HTMLElement}
+   * @private
    * @const
    */
-  var overwriteOriginalBox = util.createChild(
+  this.overwriteOriginalBox_ = util.createChild(
       this.options_, 'overwrite-original');
 
   /**
@@ -243,7 +244,7 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    * @const
    */
   this.overwriteOriginal_ = util.createChild(
-      overwriteOriginalBox, '', 'input');
+      this.overwriteOriginalBox_, '', 'input');
   this.overwriteOriginal_.type = 'checkbox';
   this.overwriteOriginal_.id = 'overwrite-checkbox';
   chrome.storage.local.get(SlideMode.OVERWRITE_KEY, function(values) {
@@ -259,7 +260,8 @@ function SlideMode(container, content, toolbar, prompt, errorBanner, dataModel,
    * @type {!HTMLElement}
    * @const
    */
-  var overwriteLabel = util.createChild(overwriteOriginalBox, '', 'label');
+  var overwriteLabel = util.createChild(
+      this.overwriteOriginalBox_, '', 'label');
   overwriteLabel.textContent =
       this.displayStringFunction_('GALLERY_OVERWRITE_ORIGINAL');
   overwriteLabel.setAttribute('for', 'overwrite-checkbox');
@@ -1035,12 +1037,15 @@ SlideMode.prototype.itemLoaded_ = function(
   }
 
   // For once edited image, disallow the 'overwrite' setting change.
-  ImageUtil.setAttribute(this.options_, 'saved',
-      !this.getSelectedItem().isOriginal());
+  ImageUtil.setAttribute(this.overwriteOriginalBox_, 'disabled',
+      !this.getSelectedItem().isOriginal() || FileType.isRaw(item.getEntry()));
 
-  chrome.storage.local.get(SlideMode.OVERWRITE_BUBBLE_KEY,
+  var keys = {};
+  keys[SlideMode.OVERWRITE_BUBBLE_KEY] = 0;
+  keys[SlideMode.OVERWRITE_KEY] = true;
+  chrome.storage.local.get(keys,
       function(values) {
-        var times = values[SlideMode.OVERWRITE_BUBBLE_KEY] || 0;
+        var times = values[SlideMode.OVERWRITE_BUBBLE_KEY];
         if (times < SlideMode.OVERWRITE_BUBBLE_MAX_TIMES) {
           this.bubble_.hidden = false;
           if (this.isEditing()) {
@@ -1049,6 +1054,10 @@ SlideMode.prototype.itemLoaded_ = function(
             chrome.storage.local.set(items);
           }
         }
+        if (FileType.isRaw(item.getEntry()))
+          this.overwriteOriginal_.checked = false;
+        else
+          this.overwriteOriginal_.checked = values[SlideMode.OVERWRITE_KEY];
       }.bind(this));
 
   loadCallback(loadType, delay);
@@ -1273,8 +1282,10 @@ SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
     // Allow changing the 'Overwrite original' setting only if the user
     // used Undo to restore the original image AND it is not a copy.
     // Otherwise lock the setting in its current state.
-    var mayChangeOverwrite = !this.editor_.canUndo() && item.isOriginal();
-    ImageUtil.setAttribute(this.options_, 'saved', !mayChangeOverwrite);
+    var mayChangeOverwrite = !this.editor_.canUndo() && item.isOriginal() &&
+        !FileType.isRaw(item.getEntry());
+    ImageUtil.setAttribute(
+        this.overwriteOriginalBox_, 'disabled', !mayChangeOverwrite);
 
     // Record UMA for the first edit.
     if (this.imageView_.getContentRevision() === 1)

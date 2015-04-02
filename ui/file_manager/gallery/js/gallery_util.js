@@ -44,7 +44,9 @@ GalleryUtil.createEntrySet = function(originalEntries) {
   }
 
   return entriesPromise.then(function(entries) {
-    return entries.filter(FileType.isImage).sort(function(a, b) {
+    return entries.filter(function(entry) {
+      return FileType.isImage(entry) || FileType.isRaw(entry);
+    }).sort(function(a, b) {
       return a.name.localeCompare(b.name);
     });
   });
