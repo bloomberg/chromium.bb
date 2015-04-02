@@ -849,8 +849,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-// Disabled under MSAN as well. http://crbug.com/468980.
-#if !defined(NDEBUG) || defined(OFFICIAL_BUILD) || defined(MEMORY_SANITIZER)
+// Disabled under MSAN, ASAN, and LSAN as well. http://crbug.com/468980.
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD) ||             \
+    defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+    defined(LEAK_SANITIZER)
 #define MAYBE_OpenAudioFiles DISABLED_OpenAudioFiles
 #else
 #define MAYBE_OpenAudioFiles OpenAudioFiles
@@ -870,8 +872,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-// Disabled under MSAN as well. http://crbug.com/468980.
-#if !defined(NDEBUG) || defined(OFFICIAL_BUILD) || defined(MEMORY_SANITIZER)
+// Disabled under MSAN, ASAN, and LSAN as well. http://crbug.com/468980.
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD) ||             \
+    defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+    defined(LEAK_SANITIZER)
 #define MAYBE_OpenImageFiles DISABLED_OpenImageFiles
 #else
 #define MAYBE_OpenImageFiles OpenImageFiles
@@ -932,8 +936,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-// Disabled under MSAN as well. http://crbug.com/468980.
-#if !defined(NDEBUG) || defined(OFFICIAL_BUILD) || defined(MEMORY_SANITIZER)
+// Disabled under MSAN, ASAN, and LSAN as well. http://crbug.com/468980.
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD) ||             \
+    defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+    defined(LEAK_SANITIZER)
 #define MAYBE_DriveSpecific DISABLED_DriveSpecific
 #else
 #define MAYBE_DriveSpecific DriveSpecific
@@ -952,8 +958,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-// Disabled under MSAN as well. http://crbug.com/468980.
-#if !defined(NDEBUG) || defined(OFFICIAL_BUILD) || defined(MEMORY_SANITIZER)
+// Disabled under MSAN, ASAN, and LSAN as well. http://crbug.com/468980.
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD) ||             \
+    defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
+    defined(LEAK_SANITIZER)
 #define MAYBE_Transfer DISABLED_Transfer
 #else
 #define MAYBE_Transfer Transfer
@@ -988,8 +996,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "restoreCurrentView")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-// Disabled under MSAN as well. http://crbug.com/468980.
-#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+// Disabled under MSAN, ASAN, and LSAN as well. http://crbug.com/468980.
+#if !defined(NDEBUG) || defined(MEMORY_SANITIZER) || \
+    defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
 #define MAYBE_ShareDialog DISABLED_ShareDialog
 #else
 #define MAYBE_ShareDialog ShareDialog
