@@ -15,10 +15,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/common/chrome_version_info.h"
-#endif
-
 using content::BrowserContext;
 using content::BrowserThread;
 
@@ -48,13 +44,8 @@ bool HotwordServiceFactory::IsHotwordAllowed(BrowserContext* context) {
 // static
 bool HotwordServiceFactory::IsAlwaysOnAvailable() {
 #if defined(OS_CHROMEOS)
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if ((channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-       channel == chrome::VersionInfo::CHANNEL_CANARY ||
-       channel == chrome::VersionInfo::CHANNEL_DEV) &&
-      HotwordService::IsHotwordHardwareAvailable()) {
+  if (HotwordService::IsHotwordHardwareAvailable())
     return true;
-  }
 #endif
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kEnableExperimentalHotwordHardware);
