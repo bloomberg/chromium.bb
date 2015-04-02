@@ -20,7 +20,8 @@ class SynchronousCompositorExternalBeginFrameSource
   explicit SynchronousCompositorExternalBeginFrameSource(int routing_id);
   ~SynchronousCompositorExternalBeginFrameSource() override;
 
-  void BeginFrame(const cc::BeginFrameArgs& args);
+  void BeginFrame();
+
   void SetCompositor(SynchronousCompositorImpl* compositor);
 
   // cc::BeginFrameSourceMixIn implementation.

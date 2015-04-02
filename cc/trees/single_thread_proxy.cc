@@ -560,10 +560,6 @@ void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
   layer_tree_host_->DidCompleteSwapBuffers();
 }
 
-void SingleThreadProxy::OnDrawForOutputSurface() {
-  NOTREACHED() << "Implemented by ThreadProxy for synchronous compositor.";
-}
-
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc,benchmark", "SingleThreadProxy::CompositeImmediately");
   DCHECK(Proxy::IsMainThread());
@@ -580,7 +576,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   {
     BeginFrameArgs begin_frame_args(BeginFrameArgs::Create(
         BEGINFRAME_FROM_HERE, frame_begin_time, base::TimeTicks(),
-        BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL));
+        BeginFrameArgs::DefaultInterval(), BeginFrameArgs::SYNCHRONOUS));
     DoBeginMainFrame(begin_frame_args);
     DoCommit();
 
@@ -912,10 +908,6 @@ void SingleThreadProxy::ScheduledActionPrepareTiles() {
   DCHECK(layer_tree_host_impl_->settings().impl_side_painting);
   DebugScopedSetImplThread impl(this);
   layer_tree_host_impl_->PrepareTiles();
-}
-
-void SingleThreadProxy::ScheduledActionInvalidateOutputSurface() {
-  NOTREACHED();
 }
 
 void SingleThreadProxy::DidAnticipatedDrawTimeChange(base::TimeTicks time) {

@@ -9,7 +9,13 @@
 namespace android_webview {
 
 class SmokeTest : public RenderingTest {
-  void StartTest() override { browser_view_renderer_->PostInvalidate(); }
+  void StartTest() override {
+    browser_view_renderer_->SetContinuousInvalidate(true);
+  }
+
+  void WillOnDraw() override {
+    browser_view_renderer_->SetContinuousInvalidate(false);
+  }
 
   void DidDrawOnRT(SharedRendererState* functor) override {
     EndTest();
@@ -20,20 +26,25 @@ RENDERING_TEST_F(SmokeTest);
 
 class ClearViewTest : public RenderingTest {
  public:
-  ClearViewTest() : on_draw_count_(0) {}
+  ClearViewTest() : on_draw_count_(0u) {}
 
   void StartTest() override {
-    browser_view_renderer_->PostInvalidate();
+    browser_view_renderer_->SetContinuousInvalidate(true);
     browser_view_renderer_->ClearView();
   }
 
-  void DidOnDraw(bool success) override {
+  void WillOnDraw() override {
     on_draw_count_++;
-    if (on_draw_count_ == 1) {
+    if (on_draw_count_ == 2u) {
+      browser_view_renderer_->SetContinuousInvalidate(false);
+    }
+  }
+
+  void DidOnDraw(bool success) override {
+    if (on_draw_count_ == 1u) {
       // First OnDraw should be skipped due to ClearView.
       EXPECT_FALSE(success);
       browser_view_renderer_->DidUpdateContent();  // Unset ClearView.
-      browser_view_renderer_->PostInvalidate();
     } else {
       // Following OnDraws should succeed.
       EXPECT_TRUE(success);
@@ -44,23 +55,25 @@ class ClearViewTest : public RenderingTest {
     EndTest();
   }
  private:
-  int on_draw_count_;
+  size_t on_draw_count_;
 };
 
 RENDERING_TEST_F(ClearViewTest);
 
 class TestAnimateInAndOutOfScreen : public RenderingTest {
  public:
-  TestAnimateInAndOutOfScreen() : on_draw_count_(0), draw_gl_count_on_rt_(0) {}
+  TestAnimateInAndOutOfScreen()
+      : on_draw_count_(0u), draw_gl_count_on_rt_(0u) {}
 
   void StartTest() override {
     new_constraints_ = ParentCompositorDrawConstraints(
         false, gfx::Transform(), gfx::Rect(window_->surface_size()));
     new_constraints_.transform.Scale(2.0, 2.0);
-    browser_view_renderer_->PostInvalidate();
+    browser_view_renderer_->SetContinuousInvalidate(true);
   }
 
   void WillOnDraw() override {
+    browser_view_renderer_->SetContinuousInvalidate(false);
     // Step 0: A single onDraw on screen. The parent draw constraints
     // of the BVR will updated to be the initial constraints.
     // Step 1: A single onDrraw off screen. The parent draw constraints of the
@@ -68,7 +81,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
     // Step 2: This onDraw is to introduce the DrawGL that animates the
     // webview onto the screen on render thread. End the test when the parent
     // draw constraints of BVR is updated to initial constraints.
-    if (on_draw_count_ == 1 || on_draw_count_ == 2)
+    if (on_draw_count_ == 1u || on_draw_count_ == 2u)
       browser_view_renderer_->PrepareToDraw(gfx::Vector2d(), gfx::Rect());
   }
 
@@ -79,7 +92,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
 
   bool WillDrawOnRT(SharedRendererState* functor,
                     AwDrawGLInfo* draw_info) override {
-    if (draw_gl_count_on_rt_ == 1) {
+    if (draw_gl_count_on_rt_ == 1u) {
       draw_gl_count_on_rt_++;
       ui_proxy_->PostTask(FROM_HERE, base::Bind(&RenderingTest::PostInvalidate,
                                                 base::Unretained(this)));
@@ -91,7 +104,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
     draw_info->is_layer = false;
 
     gfx::Transform transform;
-    if (draw_gl_count_on_rt_ == 0)
+    if (draw_gl_count_on_rt_ == 0u)
       transform = new_constraints_.transform;
 
     transform.matrix().asColMajorf(draw_info->transform);
@@ -132,8 +145,8 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
   }
 
  private:
-  int on_draw_count_;
-  int draw_gl_count_on_rt_;
+  size_t on_draw_count_;
+  size_t draw_gl_count_on_rt_;
   ParentCompositorDrawConstraints initial_constraints_;
   ParentCompositorDrawConstraints new_constraints_;
 };

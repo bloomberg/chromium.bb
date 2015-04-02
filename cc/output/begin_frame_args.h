@@ -40,6 +40,7 @@ struct CC_EXPORT BeginFrameArgs {
   enum BeginFrameArgsType {
     INVALID,
     NORMAL,
+    SYNCHRONOUS,
     MISSED,
     // Not a real type, but used by the IPC system. Should always remain the
     // *last* value in this enum.

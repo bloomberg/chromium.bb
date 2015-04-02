@@ -71,7 +71,9 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       registered_(false),
       current_sw_canvas_(nullptr),
       memory_policy_(0),
-      frame_swap_message_queue_(frame_swap_message_queue) {
+      output_surface_client_(nullptr),
+      frame_swap_message_queue_(frame_swap_message_queue),
+      begin_frame_source_(nullptr) {
   capabilities_.deferred_gl_initialization = true;
   capabilities_.draw_and_swap_full_viewport_every_frame = true;
   capabilities_.adjust_deadline_for_parent = false;
@@ -87,6 +89,7 @@ SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {
     SynchronousCompositorRegistry::GetInstance()->UnregisterOutputSurface(
         routing_id_, this);
   }
+  DCHECK(!begin_frame_source_);
 }
 
 bool SynchronousCompositorOutputSurface::BindToClient(
@@ -95,19 +98,14 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   if (!cc::OutputSurface::BindToClient(surface_client))
     return false;
 
-  client_->SetMemoryPolicy(memory_policy_);
+  output_surface_client_ = surface_client;
+  output_surface_client_->SetMemoryPolicy(memory_policy_);
 
   SynchronousCompositorRegistry::GetInstance()->RegisterOutputSurface(
       routing_id_, this);
   registered_ = true;
 
   return true;
-}
-
-void SynchronousCompositorOutputSurface::SetCompositor(
-    SynchronousCompositorImpl* compositor) {
-  DCHECK(CalledOnValidThread());
-  compositor_ = compositor;
 }
 
 void SynchronousCompositorOutputSurface::Reshape(
@@ -125,9 +123,9 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
   client_->DidSwapBuffers();
 }
 
-void SynchronousCompositorOutputSurface::Invalidate() {
-  DCHECK(CalledOnValidThread());
-  compositor_->PostInvalidate();
+void SynchronousCompositorOutputSurface::SetBeginFrameSource(
+    SynchronousCompositorExternalBeginFrameSource* begin_frame_source) {
+  begin_frame_source_ = begin_frame_source;
 }
 
 namespace {
@@ -181,7 +179,6 @@ SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(canvas);
   DCHECK(!current_sw_canvas_);
-
   base::AutoReset<SkCanvas*> canvas_resetter(&current_sw_canvas_, canvas);
 
   SkIRect canvas_clip;
@@ -215,6 +212,7 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
     gfx::Transform transform_for_tile_priority,
     bool hardware_draw) {
   DCHECK(!frame_holder_.get());
+  DCHECK(begin_frame_source_);
 
   gfx::Transform adjusted_transform = transform;
   AdjustTransform(&adjusted_transform, viewport);
@@ -226,7 +224,7 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
                              !hardware_draw);
   SetNeedsRedrawRect(gfx::Rect(viewport.size()));
 
-  client_->OnDraw();
+  begin_frame_source_->BeginFrame();
 
   // After software draws (which might move the viewport arbitrarily), restore
   // the previous hardware viewport to allow CC's tile manager to prioritize
@@ -262,8 +260,8 @@ void SynchronousCompositorOutputSurface::SetMemoryPolicy(size_t bytes_limit) {
   memory_policy_.bytes_limit_when_visible = bytes_limit;
   memory_policy_.num_resources_limit = kNumResourcesLimit;
 
-  if (client_)
-    client_->SetMemoryPolicy(memory_policy_);
+  if (output_surface_client_)
+    output_surface_client_->SetMemoryPolicy(memory_policy_);
 }
 
 void SynchronousCompositorOutputSurface::SetTreeActivationCallback(

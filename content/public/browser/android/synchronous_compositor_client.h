@@ -39,7 +39,10 @@ class SynchronousCompositorClient {
                              gfx::Vector2dF latest_overscroll_delta,
                              gfx::Vector2dF current_fling_velocity) = 0;
 
-  virtual void PostInvalidate() = 0;
+  // When true, should periodically call
+  // SynchronousCompositorOutputSurface::DemandDrawHw. Note that this value
+  // can change inside DemandDrawHw call.
+  virtual void SetContinuousInvalidate(bool invalidate) = 0;
 
   virtual void DidUpdateContent() = 0;
 
