@@ -47,6 +47,7 @@
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "extensions/shell/browser/shell_audio_controller_chromeos.h"
 #include "extensions/shell/browser/shell_network_controller_chromeos.h"
@@ -106,6 +107,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
   // helper classes so those classes' tests can initialize stub versions of the
   // D-Bus objects.
   chromeos::DBusThreadManager::Initialize();
+  chromeos::disks::DiskMountManager::Initialize();
 
   chromeos::NetworkHandler::Initialize();
   network_controller_.reset(new ShellNetworkController(
@@ -275,6 +277,7 @@ void ShellBrowserMainParts::PostDestroyThreads() {
 #if defined(OS_CHROMEOS)
   network_controller_.reset();
   chromeos::NetworkHandler::Shutdown();
+  chromeos::disks::DiskMountManager::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 #endif
 }
