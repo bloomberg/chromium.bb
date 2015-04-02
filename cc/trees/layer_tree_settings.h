@@ -84,6 +84,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_display_lists;
   bool verify_property_trees;
   bool gather_pixel_refs;
+  bool use_compositor_animation_timelines;
 
   LayerTreeDebugState initial_debug_state;
 

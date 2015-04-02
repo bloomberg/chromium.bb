@@ -17,6 +17,9 @@ const char kEnablePixelOutputInTests[] = "enable-pixel-output-in-tests";
 
 const char kUIDisableThreadedCompositing[] = "ui-disable-threaded-compositing";
 
+const char kUIEnableCompositorAnimationTimelines[] =
+    "ui-enable-compositor-animation-timelines";
+
 const char kUIEnableImplSidePainting[] = "ui-enable-impl-side-painting";
 
 const char kUIEnableZeroCopy[] = "ui-enable-zero-copy";

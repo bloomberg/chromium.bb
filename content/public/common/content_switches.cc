@@ -286,6 +286,10 @@ const char kDisableAcceleratedJpegDecoding[] =
 const char kEnableBleedingEdgeRenderingFastPaths[] =
     "enable-bleeding-edge-rendering-fast-paths";
 
+// Enables new cc/animation system (Project Heaviside). crbug.com/394772
+const char kEnableCompositorAnimationTimelines[] =
+    "enable-compositor-animation-timelines";
+
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
 

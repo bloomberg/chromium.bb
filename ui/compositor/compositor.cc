@@ -138,6 +138,9 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   // raster threads.
   settings.gather_pixel_refs = false;
 
+  settings.use_compositor_animation_timelines =
+      command_line->HasSwitch(switches::kUIEnableCompositorAnimationTimelines);
+
   base::TimeTicks before_create = base::TimeTicks::Now();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(
       this, this, context_factory_->GetSharedBitmapManager(),

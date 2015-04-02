@@ -71,7 +71,8 @@ LayerTreeSettings::LayerTreeSettings()
       record_full_layer(false),
       use_display_lists(false),
       verify_property_trees(false),
-      gather_pixel_refs(false) {
+      gather_pixel_refs(false),
+      use_compositor_animation_timelines(false) {
 }
 
 LayerTreeSettings::~LayerTreeSettings() {}
