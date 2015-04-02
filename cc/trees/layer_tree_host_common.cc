@@ -2455,11 +2455,12 @@ void LayerTreeHostCommon::UpdateRenderSurfaces(
 }
 
 static bool ApproximatelyEqual(const gfx::Rect& r1, const gfx::Rect& r2) {
-  static const int tolerance = 1;
+  // TODO(vollick): This tolerance should be lower: crbug.com/471786
+  static const int tolerance = 2;
   return std::abs(r1.x() - r2.x()) <= tolerance &&
          std::abs(r1.y() - r2.y()) <= tolerance &&
-         std::abs(r1.width() - r2.width()) <= tolerance &&
-         std::abs(r1.height() - r2.height()) <= tolerance;
+         std::abs(r1.right() - r2.right()) <= tolerance &&
+         std::abs(r1.bottom() - r2.bottom()) <= tolerance;
 }
 
 static bool ApproximatelyEqual(const gfx::Transform& a,
@@ -2527,7 +2528,10 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       const bool visible_rects_match =
           ApproximatelyEqual(current_layer->visible_content_rect(),
                              current_layer->visible_rect_from_property_trees());
-      CHECK(visible_rects_match);
+      CHECK(visible_rects_match)
+          << "expected: " << current_layer->visible_content_rect().ToString()
+          << " actual: "
+          << current_layer->visible_rect_from_property_trees().ToString();
 
       const bool draw_transforms_match = ApproximatelyEqual(
           current_layer->draw_transform(),
