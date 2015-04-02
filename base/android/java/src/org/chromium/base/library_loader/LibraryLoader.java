@@ -14,6 +14,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.VisibleForTesting;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -127,6 +128,7 @@ public class LibraryLoader {
      *
      * @throws ProcessInitException
      */
+    @VisibleForTesting
     public void ensureInitialized() throws ProcessInitException {
         ensureInitialized(null, false);
     }
