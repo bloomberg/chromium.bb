@@ -32,6 +32,7 @@
 #define MIDIPort_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIAccessor.h"
@@ -41,9 +42,10 @@ namespace blink {
 
 class MIDIAccess;
 
-class MIDIPort : public RefCountedGarbageCollectedEventTargetWithInlineData<MIDIPort> {
+class MIDIPort : public RefCountedGarbageCollectedEventTargetWithInlineData<MIDIPort>, public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MIDIPort>);
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIPort);
 public:
     enum ConnectionState {
         ConnectionStateOpen,
@@ -79,8 +81,12 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override { return EventTargetNames::MIDIPort; }
-    virtual ExecutionContext* executionContext() const override final;
+    const AtomicString& interfaceName() const override { return EventTargetNames::MIDIPort; }
+    ExecutionContext* executionContext() const override final;
+
+    // ActiveDOMObject
+    bool hasPendingActivity() const override;
+    void stop() override;
 
 protected:
     MIDIPort(MIDIAccess*, const String& id, const String& manufacturer, const String& name, TypeCode, const String& version, MIDIAccessor::MIDIPortState);

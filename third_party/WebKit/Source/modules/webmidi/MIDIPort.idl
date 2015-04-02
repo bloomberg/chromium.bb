@@ -44,9 +44,8 @@ enum MIDIPortType {
     "output"
 };
 
-// TODO(toyoshim): Inherit ActiveDOMObject to protect the wrapper for event
-// listeners.
 [
+    ActiveDOMObject,
     GarbageCollected,
     RuntimeEnabled=WebMIDI,
 ] interface MIDIPort : EventTarget {

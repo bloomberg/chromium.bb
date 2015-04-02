@@ -41,7 +41,8 @@ namespace blink {
 using PortState = MIDIAccessor::MIDIPortState;
 
 MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, TypeCode type, const String& version, PortState state)
-    : m_id(id)
+    : ActiveDOMObject(access->executionContext())
+    , m_id(id)
     , m_manufacturer(manufacturer)
     , m_name(name)
     , m_type(type)
@@ -123,10 +124,24 @@ ExecutionContext* MIDIPort::executionContext() const
     return m_access->executionContext();
 }
 
+bool MIDIPort::hasPendingActivity() const
+{
+    // MIDIPort should survive if ConnectionState is "open" or can be "open" via
+    // a MIDIConnectionEvent even if there are no references from JavaScript.
+    return m_connection != ConnectionStateClosed;
+}
+
+void MIDIPort::stop()
+{
+    // Should be "closed" to assume there are no pending activities.
+    m_connection = ConnectionStateClosed;
+}
+
 DEFINE_TRACE(MIDIPort)
 {
     visitor->trace(m_access);
     RefCountedGarbageCollectedEventTargetWithInlineData<MIDIPort>::trace(visitor);
+    ActiveDOMObject::trace(visitor);
 }
 
 void MIDIPort::open()

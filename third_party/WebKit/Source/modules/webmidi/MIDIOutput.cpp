@@ -179,7 +179,9 @@ private:
 MIDIOutput* MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
     ASSERT(access);
-    return new MIDIOutput(access, portIndex, id, manufacturer, name, version, state);
+    MIDIOutput* output = new MIDIOutput(access, portIndex, id, manufacturer, name, version, state);
+    output->suspendIfNeeded();
+    return output;
 }
 
 MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)

@@ -42,7 +42,9 @@ using PortState = MIDIAccessor::MIDIPortState;
 MIDIInput* MIDIInput::create(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
 {
     ASSERT(access);
-    return new MIDIInput(access, id, manufacturer, name, version, state);
+    MIDIInput* input = new MIDIInput(access, id, manufacturer, name, version, state);
+    input->suspendIfNeeded();
+    return input;
 }
 
 MIDIInput::MIDIInput(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version, PortState state)
