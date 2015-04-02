@@ -118,6 +118,28 @@ define i32 @_start() {
           ['StreamInitWithSplit i\\(4\\) h\\(objfile\\) '
            'h\\(objfile.*\\) h\\(objfile.*\\) h\\(objfile.*\\) h\\(invalid\\)'
            '.*h\\(invalid\\)'])
+      # Check that -split-module=auto does something sensible (1, 2, 3, or 4).
+      self.checkCompileTranslateFlags(
+          pexe,
+          self.platform,
+          ['--pnacl-sb', '-split-module=auto'],
+          ['StreamInitWithSplit i\\([1234]\\) h\\(objfile\\) '
+           'h\\(objfile.*\\) h\\(objfile.*\\) h\\(objfile.*\\) h\\(invalid\\)'
+           '.*h\\(invalid\\)'])
+      # Check that omitting -split-module is the same as auto.
+      self.checkCompileTranslateFlags(
+          pexe,
+          self.platform,
+          ['--pnacl-sb'],
+          ['StreamInitWithSplit i\\([1234]\\) h\\(objfile\\) '
+           'h\\(objfile.*\\) h\\(objfile.*\\) h\\(objfile.*\\) h\\(invalid\\)'
+           '.*h\\(invalid\\)'])
+      # Check that -split-module=seq is the same as -split-module=1.
+      self.checkCompileTranslateFlags(
+          pexe,
+          self.platform,
+          ['--pnacl-sb', '-split-module=seq'],
+          ['StreamInitWithSplit i\\(1\\) h\\(objfile\\) h\\(invalid\\)'])
 
   def test_subzero_flags(self):
     # Subzero only supports x86-32 for now.
@@ -125,20 +147,27 @@ define i32 @_start() {
       return
     if driver_test_utils.CanRunHost():
       pexe = self.getFakePexe()
-      # Test Subzero's default args. Assume default is threads=0.
-      # In that case # of modules still == 1, and the only special param
+      # Test Subzero's default args. Assume default is -split-module=auto.
+      # In that case # of modules is 1..4, and the only special param
       # is the optimization level.
       self.checkCompileTranslateFlags(
           pexe,
           self.platform,
           ['--pnacl-sb', '--use-sz'],
-          ['StreamInitWithSplit i\\(0\\) h\\(objfile\\) '
+          ['StreamInitWithSplit i\\([1234]\\) h\\(objfile\\) '
            'h\\(invalid\\).*C\\(4,-O2\\\\'])
-      # Similar, but with explicitly set split-module=0.
+      # Similar, but with explicitly set -split-module=auto.
       self.checkCompileTranslateFlags(
           pexe,
           self.platform,
-          ['--pnacl-sb', '--use-sz', '-split-module=0'],
+          ['--pnacl-sb', '--use-sz', '-split-module=auto'],
+          ['StreamInitWithSplit i\\([1234]\\) h\\(objfile\\) '
+           'h\\(invalid\\).*C\\(4,-O2\\\\'])
+      # Similar, but with explicitly set split-module=seq.
+      self.checkCompileTranslateFlags(
+          pexe,
+          self.platform,
+          ['--pnacl-sb', '--use-sz', '-split-module=seq'],
           ['StreamInitWithSplit i\\(0\\) h\\(objfile\\) '
            'h\\(invalid\\).*C\\(4,-O2\\\\'])
       # Test that we can bump the thread count up (e.g., up to 4).

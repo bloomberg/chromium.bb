@@ -138,10 +138,10 @@ EXTRA_ENV = {
   # Rate in bits/sec to stream the bitcode from sel_universal over SRPC
   # for testing. Defaults to 1Gbps (effectively unlimited).
   'BITCODE_STREAM_RATE' : '1000000000',
-  # Default to 0, which means unset by the user. In this cases the driver will
-  # use up to 4 modules if there are enough cores. If the user overrides,
-  # use as many modules as specified (which could be only 1).
-  'SPLIT_MODULE' : '0',
+  # Default to 'auto', which means unset by the user. In this case the driver
+  # will use up to 4 modules if there are enough cores. If the user overrides,
+  # use the number of modules as specified (which must be at least 1).
+  'SPLIT_MODULE' : 'auto',
   # Module split scheduling. 'dynamic' will produce non-deterministic results
   # with faster compilation, whereas 'static' will still use multiple cores but
   # will be deterministic and slightly slower.
@@ -222,8 +222,7 @@ TranslatorPatterns = [
 
   ( '(--build-id)',    "env.append('LD_FLAGS', $0)"),
   ( '-bitcode-stream-rate=([0-9]+)', "env.set('BITCODE_STREAM_RATE', $0)"),
-  ( '-split-module=([0-9]+)', "env.set('SPLIT_MODULE', $0)\n"
-                              "env.set('SZ_THREADS', $0)"),
+  ( '-(split-module|threads)=([0-9]+|auto|seq)', "env.set('SPLIT_MODULE', $1)"),
   ( '-split-module-sched=(.*)', "env.set('SPLIT_MODULE_SCHED', $0)"),
   ( '-no-stream-bitcode', "env.set('STREAM_BITCODE', '0')"),
 
@@ -374,13 +373,6 @@ def main(argv):
   else:
     bcfile = None
 
-  if not env.getbool('SPLIT_MODULE'):
-    try:
-      env.set('SPLIT_MODULE', str(min(4, multiprocessing.cpu_count())))
-    except NotImplementedError:
-      env.set('SPLIT_MODULE', '2')
-  elif int(env.getone('SPLIT_MODULE')) < 1:
-    Log.Fatal('Value given for -split-module must be > 0')
   if (env.getbool('ALLOW_LLVM_BITCODE_INPUT') or
       env.getone('TARGET_OS') != 'nacl' or
       env.getbool('USE_EMULATOR')):
@@ -394,12 +386,30 @@ def main(argv):
     #
     # The x86->arm emulator is very flaky when threading is used, so don't
     # do module splitting when using it.
-    env.set('SPLIT_MODULE', '1')
+    env.set('SPLIT_MODULE', 'seq')
   else:
     # Do not set -streaming-bitcode for sandboxed mode, because it is already
     # in the default command line.
     if not env.getbool('SANDBOXED') and env.getbool('STREAM_BITCODE'):
       env.append('LLC_FLAGS_EXTRA', '-streaming-bitcode')
+
+  if env.getone('SPLIT_MODULE') == 'seq':
+    env.set('SPLIT_MODULE', '1')
+    env.set('SZ_THREADS', '0')
+  elif env.getone('SPLIT_MODULE') == 'auto':
+    try:
+      num_modules = min(4, multiprocessing.cpu_count())
+    except NotImplementedError:
+      num_modules = 2
+    env.set('SPLIT_MODULE', str(num_modules))
+    env.set('SZ_THREADS', str(num_modules))
+  else:
+    num_modules = int(env.getone('SPLIT_MODULE'))
+    if num_modules < 1:
+      Log.Fatal('Value given for -split-module must be > 0')
+    env.set('SPLIT_MODULE', str(num_modules))
+    env.set('SZ_THREADS', str(num_modules))
+
   modules = env.getone('SPLIT_MODULE')
   module_sched = env.getone('SPLIT_MODULE_SCHED')
   sz_threads = env.getone('SZ_THREADS')
@@ -619,4 +629,7 @@ ADVANCED OPTIONS:
   --pnacl-sb              Use the translator which runs inside the NaCl sandbox.
                           Applies to both pnacl-llc and pnacl-sz translators.
   -O[0-3]                 Change translation-time optimization level.
+  -threads=<num>          Use <num> parallel threads for translation.
+  -threads=auto           Automatically determine number of translation threads.
+  -threads=seq            Use the minimal number of threads for translation.
 """
