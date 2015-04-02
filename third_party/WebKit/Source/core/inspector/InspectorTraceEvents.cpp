@@ -378,6 +378,19 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintInvalidationTrack
     return value.release();
 }
 
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScrollInvalidationTrackingEvent::data(const LayoutObject& layoutObject)
+{
+    static const char ScrollInvalidationReason[] = "Scroll with viewport-constrained element";
+
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("frame", toHexString(layoutObject.frame()));
+    value->setString("reason", ScrollInvalidationReason);
+    setGeneratingNodeInfo(value.get(), &layoutObject, "nodeId", "nodeName");
+    if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxInvalidationTrackingCallstackSize, true))
+        stackTrace->toTracedValue(value.get(), "stackTrace");
+    return value.release();
+}
+
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorSendRequestEvent::data(unsigned long identifier, LocalFrame* frame, const ResourceRequest& request)
 {
     String requestId = IdentifiersFactory::requestId(identifier);

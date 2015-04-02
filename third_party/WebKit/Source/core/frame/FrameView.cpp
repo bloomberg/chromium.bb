@@ -1386,6 +1386,12 @@ bool FrameView::invalidateViewportConstrainedObjects()
         if (layer->hasAncestorWithFilterOutsets())
             return false;
 
+        TRACE_EVENT_INSTANT1(
+            TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
+            "ScrollInvalidationTracking",
+            "data",
+            InspectorScrollInvalidationTrackingEvent::data(*renderer));
+
         setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(layer);
     }
     return true;

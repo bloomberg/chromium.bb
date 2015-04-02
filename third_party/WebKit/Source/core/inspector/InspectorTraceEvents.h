@@ -161,6 +161,11 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject* renderer, const LayoutObject* paintContainer);
 };
 
+class InspectorScrollInvalidationTrackingEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject&);
+};
+
 class InspectorSendRequestEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(unsigned long identifier, LocalFrame*, const ResourceRequest&);
