@@ -107,6 +107,41 @@ class CommandVMTest(object):
     except vm.VMStopError as e:
       logging.warning('Failed to stop the VM: %s', e)
 
+  @TestCommandDecorator('shell')
+  def TestShell(self):
+    """Tests the shell command."""
+    # The path and content of a temporary file for testing shell command.
+    path = '/tmp/shell-test'
+    content = 'shell command test file'
+
+    cmd = self.BuildCommand('shell', device=self.vm.device_addr,
+                            opt_args=['--no-known-hosts'])
+
+    logging.info('Test to use shell command to write a file to the VM device.')
+    write_cmd = cmd + ['--', 'echo "%s" > %s' % (content, path)]
+    result = cros_build_lib.RunCommand(write_cmd, capture_output=True,
+                                       error_code_ok=True)
+    if result.returncode:
+      logging.error('Error code: %d', result.returncode)
+      logging.error('Failed to write the file to the VM device.')
+      raise CommandError(result.error)
+
+    logging.info('Test to use shell command to read a file on the VM device.')
+    read_cmd = cmd + ['--', 'cat %s' % path]
+    result = cros_build_lib.RunCommand(read_cmd, capture_output=True,
+                                       error_code_ok=True)
+    if result.returncode or result.output.rstrip() != content:
+      logging.error('Failed to read the file on the VM device.')
+      raise CommandError(result.error)
+
+    logging.info('Test to use shell command to remove a file on the VM device.')
+    remove_cmd = cmd + ['--', 'rm %s' % path]
+    result = cros_build_lib.RunCommand(remove_cmd, capture_output=True,
+                                       error_code_ok=True)
+    if result.returncode:
+      logging.error('Failed to remove the file on the VM device.')
+      raise CommandError(result.error)
+
   @TestCommandDecorator('flash')
   def TestFlash(self):
     """Tests the flash command."""
@@ -163,6 +198,7 @@ class CommandVMTest(object):
 
   def RunTests(self):
     """Calls the test functions."""
+    self.TestShell()
     self.TestFlash()
     self.TestDeploy()
 
