@@ -162,15 +162,35 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(workspace_lib, 'GetActiveSdkVersion',
                      return_value=workspace_version)
 
+    # Check that a non-existent directory doesn't have a version.
+    self.assertEqual(
+        None,
+        brillo_sdk._FindVersion(None, self.sdk_path))
+
+    osutils.SafeMakedirs(self.sdk_path)
+
+    # Check that a empty directory doesn't have a version.
+    self.assertEqual(
+        None,
+        brillo_sdk._FindVersion(None, self.sdk_path))
+
+    osutils.SafeMakedirs(os.path.join(self.sdk_path, 'chromite'))
+    osutils.SafeMakedirs(os.path.join(self.sdk_path, 'src'))
+
+    # If it sorta looks like an SDK, ensure treated as unofficial.
+    self.assertEqual(
+        'Unofficial SDK',
+        brillo_sdk._FindVersion(None, self.sdk_path))
+
     # Fake out the SDK version.
     sdk_version = 'sdk version'
-    osutils.SafeMakedirs(self.sdk_path)
     sdk_version_file = project_sdk.VersionFile(self.sdk_path)
     osutils.WriteFile(sdk_version_file, sdk_version)
 
     # If we only know the workspace, use the workspace version.
     self.assertEqual(
-        workspace_version, brillo_sdk._FindVersion(self.workspace_path, None))
+        workspace_version,
+        brillo_sdk._FindVersion(self.workspace_path, None))
 
     # If we have an explicit sdk path, use it's version.
     self.assertEqual(

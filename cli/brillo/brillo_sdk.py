@@ -127,8 +127,18 @@ def _FindVersion(workspace_path, sdk_dir):
     sdk_dir: Directory in which to create a repo (or None).
   """
   if sdk_dir:
-    sdk_root = project_sdk.FindRepoRoot(sdk_dir)
-    return project_sdk.FindVersion(sdk_root) if sdk_root else None
+    # This will find a version, if it's an official release manifest checkout.
+    version = project_sdk.FindVersion(sdk_dir)
+
+    if version is None:
+      # If it's not official, use a heuristic to see if it's an SDK at all.
+      sdk_root = project_sdk.FindRepoRoot(sdk_dir)
+      expected = ('chromite', 'src')
+      if (sdk_root and
+          all([os.path.exists(os.path.join(sdk_root, d)) for d in expected])):
+        version = 'Unofficial SDK'
+
+    return version
 
   if workspace_path:
     return workspace_lib.GetActiveSdkVersion(workspace_path)
