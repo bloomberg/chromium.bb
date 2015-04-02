@@ -84,11 +84,6 @@
 
 }
 
-#oobe.account-picker.flying-pods #inner-container {
-  -webkit-transition: width 180ms ease,
-                      height 180ms ease;
-}
-
 /* Only play this animation when 'down' class is removed. */
 .oobe-display #inner-container:not(.down) {
   -webkit-transition: -webkit-transform 200ms ease-in-out;

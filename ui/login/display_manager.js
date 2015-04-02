@@ -707,7 +707,7 @@ cr.define('cr.ui.login', function() {
       screen.style.width = '';
       screen.style.height = '';
 
-     $('outer-container').classList.toggle(
+      $('outer-container').classList.toggle(
         'fullscreen', screen.classList.contains('fullscreen'));
 
       var width = screen.getPreferredSize().width;
