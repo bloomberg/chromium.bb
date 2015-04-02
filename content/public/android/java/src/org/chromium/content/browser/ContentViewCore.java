@@ -986,6 +986,10 @@ public class ContentViewCore
      * called after the ContentView has been removed from the view system. No
      * other methods may be called on this ContentView after this method has
      * been called.
+     * Warning: destroy() is not guranteed to be called in Android WebView.
+     * Any object that relies solely on destroy() being called to be cleaned up
+     * will leak in Android WebView. If appropriate, consider clean up in
+     * onDetachedFromWindow() which is guaranteed to be called in Android WebView.
      */
     public void destroy() {
         if (mNativeContentViewCore != 0) {
@@ -1010,6 +1014,8 @@ public class ContentViewCore
         ScreenOrientationListener.getInstance().removeObserver(this);
         mPositionObserver.clearListener();
         mContainerViewObservers.clear();
+
+        // See warning in javadoc before adding more clean up code here.
     }
 
     private void unregisterAccessibilityContentObserver() {
