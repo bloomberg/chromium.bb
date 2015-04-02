@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/alias.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -17,8 +18,14 @@ namespace media {
 namespace {
 AudioManager* g_last_created = NULL;
 
+// Maximum number of failed pings to the audio thread allowed. A crash will be
+// issued once this count is reached.  We require at least two pings before
+// crashing to ensure unobservable power events aren't mistakenly caught (e.g.,
+// the system suspends before a OnSuspend() event can be fired.).
+const int kMaxHangFailureCount = 2;
+
 // Helper class for managing global AudioManager data and hang timers. If the
-// audio thread is unresponsive for more than a minute we want to crash the
+// audio thread is unresponsive for more than two minutes we want to crash the
 // process so we can catch offenders quickly in the field.
 class AudioManagerHelper : public base::PowerObserver {
  public:
@@ -32,6 +39,7 @@ class AudioManagerHelper : public base::PowerObserver {
     CHECK(!monitor_task_runner_);
     monitor_task_runner_ = monitor_task_runner;
     base::PowerMonitor::Get()->AddObserver(this);
+    hang_failures_ = 0;
     UpdateLastAudioThreadTimeTick();
     CrashOnAudioThreadHang();
   }
@@ -40,6 +48,7 @@ class AudioManagerHelper : public base::PowerObserver {
   void OnSuspend() override {
     base::AutoLock lock(hang_lock_);
     hang_detection_enabled_ = false;
+    hang_failures_ = 0;
   }
 
   // Reenable hang detection once the system comes out of the suspend state.
@@ -47,19 +56,33 @@ class AudioManagerHelper : public base::PowerObserver {
     base::AutoLock lock(hang_lock_);
     hang_detection_enabled_ = true;
     last_audio_thread_timer_tick_ = base::TimeTicks::Now();
+    hang_failures_ = 0;
   }
 
   // Runs on |monitor_task_runner| typically, but may be started on any thread.
   void CrashOnAudioThreadHang() {
-    base::AutoLock lock(hang_lock_);
+    {
+      base::AutoLock lock(hang_lock_);
 
-    // Don't attempt to verify the tick time if the system is in the process of
-    // suspending or resuming.
-    if (hang_detection_enabled_) {
-      CHECK(base::TimeTicks::Now() - last_audio_thread_timer_tick_ <=
-            max_hung_task_time_);
+      // Don't attempt to verify the tick time if the system is in the process
+      // of suspending or resuming.
+      if (hang_detection_enabled_) {
+        const base::TimeTicks now = base::TimeTicks::Now();
+        const base::TimeDelta tick_delta = now - last_audio_thread_timer_tick_;
+        if (tick_delta > max_hung_task_time_) {
+          if (++hang_failures_ >= kMaxHangFailureCount) {
+            base::debug::Alias(&now);
+            base::debug::Alias(&tick_delta);
+            base::debug::Alias(&last_audio_thread_timer_tick_);
+            CHECK(false);
+          }
+        } else {
+          hang_failures_ = 0;
+        }
+      }
     }
 
+    // Don't hold the lock while posting the next task.
     monitor_task_runner_->PostDelayedTask(
         FROM_HERE, base::Bind(&AudioManagerHelper::CrashOnAudioThreadHang,
                               base::Unretained(this)),
@@ -68,8 +91,13 @@ class AudioManagerHelper : public base::PowerObserver {
 
   // Runs on the audio thread typically, but may be started on any thread.
   void UpdateLastAudioThreadTimeTick() {
-    base::AutoLock lock(hang_lock_);
-    last_audio_thread_timer_tick_ = base::TimeTicks::Now();
+    {
+      base::AutoLock lock(hang_lock_);
+      last_audio_thread_timer_tick_ = base::TimeTicks::Now();
+      hang_failures_ = 0;
+    }
+
+    // Don't hold the lock while posting the next task.
     g_last_created->GetTaskRunner()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&AudioManagerHelper::UpdateLastAudioThreadTimeTick,
@@ -88,6 +116,7 @@ class AudioManagerHelper : public base::PowerObserver {
   base::Lock hang_lock_;
   bool hang_detection_enabled_;
   base::TimeTicks last_audio_thread_timer_tick_;
+  int hang_failures_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerHelper);
 };
