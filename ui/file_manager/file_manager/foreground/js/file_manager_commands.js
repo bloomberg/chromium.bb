@@ -1239,18 +1239,3 @@ CommandHandler.COMMANDS_['inspect-background'] = /** @type {Command} */ ({
   },
   canExecute: CommandUtil.canExecuteAlways
 });
-
-/**
- * Shows a suggest dialog with new services to be added to the left nav.
- * @type {Command}
- */
-CommandHandler.COMMANDS_['add-new-services'] = /** @type {Command} */ ({
-  /**
-   * @param {!Event} event Command event.
-   * @param {!FileManager} fileManager FileManager to use.
-   */
-  execute: function(event, fileManager) {
-    fileManager.ui.suggestAppsDialog.showProviders(function() {});
-  },
-  canExecute: CommandUtil.canExecuteAlways
-});

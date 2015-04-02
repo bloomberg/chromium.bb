@@ -4,21 +4,26 @@
 
 /**
  * @param {WebView} webView Web View tag.
+ * @param {?string} ext File extension.
+ * @param {?string} mime File mime type.
+ * @param {?string} searchQuery Search query.
  * @param {number} width Width of the CWS widget.
  * @param {number} height Height of the CWS widget.
  * @param {string} url Share Url for an entry.
  * @param {string} target Target (scheme + host + port) of the widget.
- * @param {Object<string, *>} options Options to be sent to the dialog host.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function CWSContainerClient(webView, width, height, url, target, options) {
+function CWSContainerClient(
+    webView, ext, mime, searchQuery, width, height, url, target) {
   this.webView_ = webView;
+  this.ext_ = (ext && ext[0] == '.') ? ext.substr(1) : ext;
+  this.mime_ = mime;
+  this.searchQuery_ = searchQuery;
   this.width_ = width;
   this.height_ = height;
   this.url_ = url;
   this.target_ = target;
-  this.options_ = options;
 
   this.loaded_ = false;
   this.loading_ = false;
@@ -185,10 +190,11 @@ CWSContainerClient.prototype.postInitializeMessage_ = function() {
     v: 1
   };
 
-  if (this.options_) {
-    Object.keys(this.options_).forEach(function(key) {
-      message[key] = this.options_[key];
-    }.bind(this));
+  if (this.searchQuery_) {
+    message['search_query'] = this.searchQuery_;
+  } else {
+    message['file_extension'] = this.ext_;
+    message['mime_type'] = this.mime_;
   }
 
   this.postMessage_(message);

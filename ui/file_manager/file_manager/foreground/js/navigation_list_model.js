@@ -11,14 +11,24 @@ function NavigationModelItem(label) {
   this.label_ = label;
 }
 
-NavigationModelItem.Type = {
-  SHORTCUT: 'shortcut',
-  VOLUME: 'volume',
-  COMMAND: 'command'
-};
-
 NavigationModelItem.prototype = {
   get label() { return this.label_; }
+};
+
+/**
+ * Check whether given two model items are same.
+ * @param {NavigationModelItem} item1 The first item to be compared.
+ * @param {NavigationModelItem} item2 The second item to be compared.
+ * @return {boolean} True if given two model items are same.
+ */
+NavigationModelItem.isSame = function(item1, item2) {
+  if (item1.isVolume != item2.isVolume)
+    return false;
+
+  if (item1.isVolume)
+    return item1.volumeInfo === item2.volumeInfo;
+  else
+    return util.isSameEntry(item1.entry, item2.entry);
 };
 
 /**
@@ -28,17 +38,18 @@ NavigationModelItem.prototype = {
  * @param {!DirectoryEntry} entry Entry. Cannot be null.
  * @constructor
  * @extends {NavigationModelItem}
- * @struct
  */
 function NavigationModelShortcutItem(label, entry) {
   NavigationModelItem.call(this, label);
   this.entry_ = entry;
+  Object.freeze(this);
 }
 
 NavigationModelShortcutItem.prototype = {
   __proto__: NavigationModelItem.prototype,
   get entry() { return this.entry_; },
-  get type() { return NavigationModelItem.Type.SHORTCUT; }
+  get isVolume() { return false; },
+  get isShortcut() { return true; }
 };
 
 /**
@@ -48,7 +59,6 @@ NavigationModelShortcutItem.prototype = {
  * @param {!VolumeInfo} volumeInfo Volume info for the volume. Cannot be null.
  * @constructor
  * @extends {NavigationModelItem}
- * @struct
  */
 function NavigationModelVolumeItem(label, volumeInfo) {
   NavigationModelItem.call(this, label);
@@ -57,49 +67,29 @@ function NavigationModelVolumeItem(label, volumeInfo) {
   // for determining executability of commands.
   this.volumeInfo_.resolveDisplayRoot(
       function() {}, function() {});
+  Object.freeze(this);
 }
 
 NavigationModelVolumeItem.prototype = {
   __proto__: NavigationModelItem.prototype,
   get volumeInfo() { return this.volumeInfo_; },
-  get type() { return NavigationModelItem.Type.VOLUME; }
+  get isVolume() { return true; },
+  get isShortcut() { return false; }
 };
 
 /**
- * Item of NavigationListModel for commands.
- *
- * @param {cr.ui.Command} command
- * @constructor
- * @extends {NavigationModelItem}
- * @struct
- */
-function NavigationModelCommandItem(command) {
-  NavigationModelItem.call(this, command.label);
-  this.command_ = command;
-}
-
-NavigationModelCommandItem.prototype = {
-  __proto__: NavigationModelItem.prototype,
-  get command() { return this.command_; },
-  get type() { return NavigationModelItem.Type.COMMAND; }
-};
-
-/**
- * A navigation list model. This model combines multiple models.
+ * A navigation list model. This model combines the 2 lists.
  * @param {VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
  * @param {(cr.ui.ArrayDataModel|FolderShortcutsDataModel)} shortcutListModel
  *     The list of folder shortcut.
- * @param {NavigationModelCommandItem} commandModel, Command button at the
- *     end of the list.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function NavigationListModel(volumeManager, shortcutListModel, commandModel) {
+function NavigationListModel(volumeManager, shortcutListModel) {
   cr.EventTarget.call(this);
 
   this.volumeManager_ = volumeManager;
   this.shortcutListModel_ = shortcutListModel;
-  this.commandModel_ = commandModel;
 
   var volumeInfoToModelItem = function(volumeInfo) {
     return new NavigationModelVolumeItem(
@@ -252,12 +242,10 @@ NavigationListModel.prototype = {
  * @return {NavigationModelItem} The item at the given index.
  */
 NavigationListModel.prototype.item = function(index) {
-  if (index < this.volumeList_.length)
+  var offset = this.volumeList_.length;
+  if (index < offset)
     return this.volumeList_[index];
-  if (index < this.volumeList_.length + this.shortcutList_.length)
-    return this.shortcutList_[index - this.volumeList_.length];
-  if (index === this.length_() - 1)
-    return this.commandModel_;
+  return this.shortcutList_[index - offset];
 };
 
 /**
@@ -266,8 +254,7 @@ NavigationListModel.prototype.item = function(index) {
  * @private
  */
 NavigationListModel.prototype.length_ = function() {
-  return this.volumeList_.length + this.shortcutList_.length +
-      (this.commandModel_ ? 1 : 0);
+  return this.volumeList_.length + this.shortcutList_.length;
 };
 
 /**
@@ -290,6 +277,12 @@ NavigationListModel.prototype.indexOf = function(modelItem, opt_fromIndex) {
  * @param {NavigationModelItem} modelItem The entry which is not found.
  */
 NavigationListModel.prototype.onItemNotFoundError = function(modelItem) {
-  if (modelItem.type ===  NavigationModelItem.Type.SHORTCUT)
+  if (modelItem.isVolume) {
+    // TODO(mtomasz, yoshiki): Implement when needed.
+    return;
+  }
+  if (modelItem.isShortcut) {
+    // For shortcuts, lets the shortcut model handle this situation.
     this.shortcutListModel_.onItemNotFoundError(modelItem.entry);
+  }
 };

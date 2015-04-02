@@ -58,7 +58,7 @@ function copyBetweenWindows(windowId1, windowId2, file) {
 };
 
 var REMOVABLE_VOLUME_QUERY = '#directory-tree > .tree-item > .tree-row ' +
-    '.item-icon[volume-type-icon="removable"]';
+    '.volume-icon[volume-type-icon="removable"]';
 
 testcase.copyBetweenWindowsDriveToLocal = function() {
   var windowId1;

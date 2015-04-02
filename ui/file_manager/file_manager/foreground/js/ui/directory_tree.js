@@ -347,7 +347,7 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
 
   // Sets up icons of the item.
   var icon = item.querySelector('.icon');
-  icon.classList.add('item-icon');
+  icon.classList.add('volume-icon');
   var location = tree.volumeManager.getLocationInfo(item.entry);
   if (location && location.rootType && location.isRootEntry) {
     icon.setAttribute('volume-type-icon', location.rootType);
@@ -505,7 +505,7 @@ VolumeItem.prototype.isRemovable_ = function() {
  * @private
  */
 VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
-  icon.classList.add('item-icon');
+  icon.classList.add('volume-icon');
   if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED) {
     var backgroundImage = '-webkit-image-set(' +
         'url(chrome://extension-icon/' + volumeInfo.extensionId +
@@ -689,7 +689,7 @@ function ShortcutItem(modelItem, tree) {
   item.innerHTML = TREE_ITEM_INNTER_HTML;
 
   var icon = item.querySelector('.icon');
-  icon.classList.add('item-icon');
+  icon.classList.add('volume-icon');
   icon.setAttribute('volume-type-icon', VolumeManagerCommon.VolumeType.DRIVE);
 
   if (tree.contextMenuForRootItems)
@@ -780,77 +780,6 @@ ShortcutItem.prototype.activate = function() {
         this.parentTree_.dataModel.onItemNotFoundError(this.modelItem);
       }.bind(this));
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// CommandItem
-
-/**
- * A TreeItem which represents a command button.
- * Command items are displayed as top-level children of DirectoryTree.
- *
- * @param {NavigationModelCommandItem} modelItem
- * @param {DirectoryTree} tree Current tree, which contains this item.
- * @extends {cr.ui.TreeItem}
- * @constructor
- */
-function CommandItem(modelItem, tree) {
-  var item = new cr.ui.TreeItem();
-  item.__proto__ = CommandItem.prototype;
-
-  item.parentTree_ = tree;
-  item.modelItem_ = modelItem;
-
-  item.innerHTML = TREE_ITEM_INNTER_HTML;
-
-  var icon = item.querySelector('.icon');
-  icon.classList.add('item-icon');
-  icon.setAttribute('command-icon', modelItem.command.id);
-
-  item.label = modelItem.label;
-  return item;
-}
-
-CommandItem.prototype = {
-  __proto__: cr.ui.TreeItem.prototype,
-  get entry() {
-    return null;
-  },
-  get modelItem() {
-    return this.modelItem_;
-  },
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
-  }
-};
-
-/**
- * @param {!DirectoryEntry|!FakeEntry} entry
- * @return {boolean} True if the parent item is found.
- */
-CommandItem.prototype.searchAndSelectByEntry = function(entry) {
-  return false;
-};
-
-/**
- * @override
- */
-CommandItem.prototype.handleClick = function(e) {
-  this.activate();
-};
-
-/**
- * @param {!DirectoryEntry} entry
- */
-CommandItem.prototype.selectByEntry = function(entry) {
-};
-
-/**
- * Executes the command.
- */
-CommandItem.prototype.activate = function() {
-  this.modelItem_.command.execute();
-};
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryTree
@@ -958,9 +887,8 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
   for (var i = 0; i < this.items.length;) {
     var found = false;
     for (var j = 0; j < this.dataModel.length; j++) {
-      // Comparison by references, which is safe here, as model items are long
-      // living.
-      if (this.items[i].modelItem === this.dataModel.item(j)) {
+      if (NavigationModelItem.isSame(this.items[i].modelItem,
+                                     this.dataModel.item(j))) {
         found = true;
         break;
       }
@@ -979,26 +907,21 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
   var itemIndex = 0;
   while (modelIndex < this.dataModel.length) {
     if (itemIndex < this.items.length &&
-        this.items[itemIndex].modelItem === this.dataModel.item(modelIndex)) {
+        NavigationModelItem.isSame(this.items[itemIndex].modelItem,
+                                   this.dataModel.item(modelIndex))) {
       if (recursive && this.items[itemIndex] instanceof VolumeItem)
         this.items[itemIndex].updateSubDirectories(true);
     } else {
       var modelItem = this.dataModel.item(modelIndex);
-      switch (modelItem.type) {
-        case NavigationModelItem.Type.VOLUME:
-          if (modelItem.volumeInfo.volumeType ===
-              VolumeManagerCommon.VolumeType.DRIVE) {
-            this.addAt(new DriveVolumeItem(modelItem, this), itemIndex);
-          } else {
-            this.addAt(new VolumeItem(modelItem, this), itemIndex);
-          }
-          break;
-        case NavigationModelItem.Type.SHORTCUT:
-          this.addAt(new ShortcutItem(modelItem, this), itemIndex);
-          break;
-        case NavigationModelItem.Type.COMMAND:
-          this.addAt(new CommandItem(modelItem, this), itemIndex);
-          break;
+      if (modelItem.isVolume) {
+        if (modelItem.volumeInfo.volumeType ===
+            VolumeManagerCommon.VolumeType.DRIVE) {
+          this.addAt(new DriveVolumeItem(modelItem, this), itemIndex);
+        } else {
+          this.addAt(new VolumeItem(modelItem, this), itemIndex);
+        }
+      } else {
+        this.addAt(new ShortcutItem(modelItem, this), itemIndex);
       }
     }
     itemIndex++;
