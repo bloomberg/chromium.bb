@@ -441,7 +441,9 @@ void PermissionBubbleViewViews::Show(
           requests, values);
 
   // Set |parent_window| because some valid anchors can become hidden.
-  bubble_delegate_->set_parent_window(browser_->window()->GetNativeWindow());
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
+      browser_->window()->GetNativeWindow());
+  bubble_delegate_->set_parent_window(widget->GetNativeView());
 
   views::BubbleDelegateView::CreateBubble(bubble_delegate_)->Show();
   bubble_delegate_->SizeToContents();
