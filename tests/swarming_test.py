@@ -133,8 +133,8 @@ def gen_result_response(**kwargs):
     "bot_id": "swarm6",
     "completed_ts": "2014-09-24 13:49:16",
     "created_ts": "2014-09-24 13:49:03",
-    "durations": [0.9636809825897217, 0.8754310607910156],
-    "exit_codes": [0, 0],
+    "durations": [0.9636809825897217],
+    "exit_codes": [0],
     "failure": False,
     "id": "10100",
     "internal_failure": False,
@@ -595,32 +595,40 @@ class TestSwarmingCollection(NetTestCase):
     data = gen_result_response(outputs=['Foo'])
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(0, collect('https://localhost:1', 'name', ['10100']))
-    self._check_output(
-        '+----------------------------------------------------------+\n'
-        '| Shard 0  https://localhost:1/user/task/10100             |\n'
-        '+----------------------------------------------------------+\n'
-        'Foo\n'
-        '+----------------------------------------------------------+\n'
-        '| End of shard 0  Duration: 1.8s  Bot: swarm6  Exit code 0 |\n'
-        '+----------------------------------------------------------+\n'
-        'Total duration: 1.8s\n',
-        '')
+    expected = '\n'.join((
+      '+---------------------------------------------------------------------+',
+      '| Shard 0  https://localhost:1/user/task/10100                        |',
+      '+---------------------------------------------------------------------+',
+      'Foo',
+      '+---------------------------------------------------------------------+',
+      '| End of shard 0  Pending: 6.0s  Duration: 1.0s  Bot: swarm6  Exit: 0 |',
+      '+---------------------------------------------------------------------+',
+      'Total duration: 1.0s',
+      ''))
+    self._check_output(expected, '')
 
   def test_collect_fail(self):
     data = gen_result_response(outputs=['Foo'], exit_codes=[-9])
     data['outputs'] = ['Foo']
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(-9, collect('https://localhost:1', 'name', ['10100']))
-    self._check_output(
-        '+-----------------------------------------------------------+\n'
-        '| Shard 0  https://localhost:1/user/task/10100              |\n'
-        '+-----------------------------------------------------------+\n'
-        'Foo\n'
-        '+-----------------------------------------------------------+\n'
-        '| End of shard 0  Duration: 1.8s  Bot: swarm6  Exit code -9 |\n'
-        '+-----------------------------------------------------------+\n'
-        'Total duration: 1.8s\n',
-        '')
+    expected = '\n'.join((
+      '+----------------------------------------------------------------------'
+        '+',
+      '| Shard 0  https://localhost:1/user/task/10100                         '
+        '|',
+      '+----------------------------------------------------------------------'
+        '+',
+      'Foo',
+      '+----------------------------------------------------------------------'
+        '+',
+      '| End of shard 0  Pending: 6.0s  Duration: 1.0s  Bot: swarm6  Exit: -9 '
+        '|',
+      '+----------------------------------------------------------------------'
+        '+',
+      'Total duration: 1.0s',
+      ''))
+    self._check_output(expected, '')
 
   def test_collect_one_missing(self):
     data = gen_result_response(outputs=['Foo'])
@@ -628,17 +636,18 @@ class TestSwarmingCollection(NetTestCase):
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(
         1, collect('https://localhost:1', 'name', ['10100', '10200']))
-    self._check_output(
-        '+----------------------------------------------------------+\n'
-        '| Shard 0  https://localhost:1/user/task/10100             |\n'
-        '+----------------------------------------------------------+\n'
-        'Foo\n'
-        '+----------------------------------------------------------+\n'
-        '| End of shard 0  Duration: 1.8s  Bot: swarm6  Exit code 0 |\n'
-        '+----------------------------------------------------------+\n'
-        '\n'
-        'Total duration: 1.8s\n',
-        'Results from some shards are missing: 1\n')
+    expected = '\n'.join((
+      '+---------------------------------------------------------------------+',
+      '| Shard 0  https://localhost:1/user/task/10100                        |',
+      '+---------------------------------------------------------------------+',
+      'Foo',
+      '+---------------------------------------------------------------------+',
+      '| End of shard 0  Pending: 6.0s  Duration: 1.0s  Bot: swarm6  Exit: 0 |',
+      '+---------------------------------------------------------------------+',
+      '',
+      'Total duration: 1.0s',
+      ''))
+    self._check_output(expected, 'Results from some shards are missing: 1\n')
 
   def test_collect_multi(self):
     actual_calls = []

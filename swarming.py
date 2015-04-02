@@ -5,9 +5,10 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.6.2'
+__version__ = '0.6.3'
 
 import collections
+import datetime
 import json
 import logging
 import os
@@ -711,13 +712,33 @@ def yield_results(
       should_stop.set()
 
 
-def decorate_shard_output(
-    swarming, shard_index, result, shard_exit_code, shard_duration):
+def decorate_shard_output(swarming, shard_index, metadata):
   """Returns wrapped output for swarming task shard."""
-  url = '%s/user/task/%s' % (swarming, result['id'])
+  def t(d):
+    return datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S')
+  if metadata.get('started_ts'):
+    pending = '%.1fs' % (
+      t(metadata['started_ts']) - t(metadata['created_ts'])).total_seconds()
+  else:
+    pending = 'N/A'
+
+  if metadata.get('durations'):
+    duration = '%.1fs' % metadata['durations'][0]
+  else:
+    duration = 'N/A'
+
+  if metadata.get('exit_codes'):
+    exit_code = '%d' % metadata['exit_codes'][0]
+  else:
+    exit_code = 'N/A'
+
+  bot_id = metadata.get('bot_id') or 'N/A'
+
+  url = '%s/user/task/%s' % (swarming, metadata['id'])
   tag_header = 'Shard %d  %s' % (shard_index, url)
-  tag_footer = 'End of shard %d  Duration: %.1fs  Bot: %s  Exit code %s' % (
-      shard_index, shard_duration, result['bot_id'], shard_exit_code)
+  tag_footer = (
+      'End of shard %d  Pending: %s  Duration: %s  Bot: %s  Exit: %s' % (
+      shard_index, pending, duration, bot_id, exit_code))
 
   tag_len = max(len(tag_header), len(tag_footer))
   dash_pad = '+-%s-+\n' % ('-' * tag_len)
@@ -726,7 +747,7 @@ def decorate_shard_output(
 
   header = dash_pad + tag_header + dash_pad
   footer = dash_pad + tag_footer + dash_pad[:-1]
-  output = '\n'.join(o for o in result['outputs'] if o).rstrip() + '\n'
+  output = '\n'.join(o for o in metadata['outputs'] if o).rstrip() + '\n'
   return header + output + footer
 
 
@@ -742,30 +763,32 @@ def collect(
   exit_code = 0
   total_duration = 0
   try:
-    for index, output in yield_results(
+    for index, metadata in yield_results(
         swarming, task_ids, timeout, None, print_status_updates,
         output_collector):
       seen_shards.add(index)
 
-      # Grab first non-zero exit code as an overall shard exit code. Default to
-      # failure if there was no process that even started.
+      # Default to failure if there was no process that even started.
       shard_exit_code = 1
-      shard_exit_codes = sorted(output['exit_codes'], key=lambda x: not x)
-      if shard_exit_codes:
-        shard_exit_code = shard_exit_codes[0]
+      if metadata.get('exit_codes'):
+        shard_exit_code = metadata['exit_codes'][0]
       if shard_exit_code:
         exit_code = shard_exit_code
+      if metadata.get('durations'):
+        total_duration += metadata['durations'][0]
 
-      shard_duration = sum(i for i in output['durations'] if i)
-      total_duration += shard_duration
       if decorate:
-        print(decorate_shard_output(
-            swarming, index, output, shard_exit_code, shard_duration))
+        print(decorate_shard_output(swarming, index, metadata))
         if len(seen_shards) < len(task_ids):
           print('')
       else:
-        print('%s: %s %d' % (output['bot_id'], output['id'], shard_exit_code))
-        for output in output['outputs']:
+        if metadata.get('exit_codes'):
+          exit_code = metadata['exit_codes'][0]
+        else:
+          exit_code = 'N/A'
+        print('%s: %s %d' %
+            (metadata.get('bot_id') or 'N/A', metadata['id'], exit_code))
+        for output in metadata['outputs']:
           if not output:
             continue
           output = output.rstrip()
