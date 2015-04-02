@@ -134,64 +134,50 @@ bool SVGTextQuery::executeQuery(Data* queryData, ProcessTextFragmentCallback fra
 
 bool SVGTextQuery::mapStartEndPositionsIntoFragmentCoordinates(Data* queryData, const SVGTextFragment& fragment, int& startPosition, int& endPosition) const
 {
-    // Reuse the same logic used for text selection & painting, to map our query start/length into start/endPositions of the current text fragment.
+    // Make <startPosition, endPosition> offsets relative to the current text box.
     startPosition -= queryData->processedCharacters;
     endPosition -= queryData->processedCharacters;
 
-    // <startPosition, endPosition> is now a tuple of offsets relative to the current text box.
-    // Compute the offsets of the fragment in the same offset space.
-    int fragmentStartInBox = fragment.characterOffset - queryData->textBox->start();
-    int fragmentEndInBox = fragmentStartInBox + fragment.length;
-
-    // Check if the ranges intersect.
-    startPosition = std::max(startPosition, fragmentStartInBox);
-    endPosition = std::min(endPosition, fragmentEndInBox);
-
-    if (startPosition >= endPosition)
-        return false;
-
-    modifyStartEndPositionsRespectingLigatures(queryData, fragment, startPosition, endPosition);
+    // Reuse the same logic used for text selection & painting, to map our
+    // query start/length into start/endPositions of the current text fragment.
     if (!queryData->textBox->mapStartEndPositionsIntoFragmentCoordinates(fragment, startPosition, endPosition))
         return false;
 
+    modifyStartEndPositionsRespectingLigatures(queryData, fragment, startPosition, endPosition);
     ASSERT(startPosition < endPosition);
     return true;
 }
 
 void SVGTextQuery::modifyStartEndPositionsRespectingLigatures(Data* queryData, const SVGTextFragment& fragment, int& startPosition, int& endPosition) const
 {
-    SVGTextLayoutAttributes* layoutAttributes = queryData->textLayoutObject->layoutAttributes();
-    Vector<SVGTextMetrics>& textMetricsValues = layoutAttributes->textMetricsValues();
+    const Vector<SVGTextMetrics>& textMetricsValues = queryData->textLayoutObject->layoutAttributes()->textMetricsValues();
 
     unsigned textMetricsOffset = fragment.metricsListOffset;
-
-    // Compute the offset of the fragment within the box, since that's the
-    // space <startPosition, endPosition> is in (and that's what we need).
-    int fragmentOffsetInBox = fragment.characterOffset - queryData->textBox->start();
-    int fragmentEndInBox = fragmentOffsetInBox + fragment.length;
+    int fragmentOffset = 0;
+    int fragmentEnd = static_cast<int>(fragment.length);
 
     // Find the text metrics cell that start at or contain the character startPosition.
-    while (fragmentOffsetInBox < fragmentEndInBox) {
-        SVGTextMetrics& metrics = textMetricsValues[textMetricsOffset];
-        int glyphEnd = fragmentOffsetInBox + metrics.length();
+    while (fragmentOffset < fragmentEnd) {
+        const SVGTextMetrics& metrics = textMetricsValues[textMetricsOffset];
+        int glyphEnd = fragmentOffset + metrics.length();
         if (startPosition < glyphEnd)
             break;
-        fragmentOffsetInBox = glyphEnd;
+        fragmentOffset = glyphEnd;
         textMetricsOffset++;
     }
 
-    startPosition = fragmentOffsetInBox;
+    startPosition = fragmentOffset;
 
     // Find the text metrics cell that contain or ends at the character endPosition.
-    while (fragmentOffsetInBox < fragmentEndInBox) {
-        SVGTextMetrics& metrics = textMetricsValues[textMetricsOffset];
-        fragmentOffsetInBox += metrics.length();
-        if (fragmentOffsetInBox >= endPosition)
+    while (fragmentOffset < fragmentEnd) {
+        const SVGTextMetrics& metrics = textMetricsValues[textMetricsOffset];
+        fragmentOffset += metrics.length();
+        if (fragmentOffset >= endPosition)
             break;
         textMetricsOffset++;
     }
 
-    endPosition = fragmentOffsetInBox;
+    endPosition = fragmentOffset;
 }
 
 // numberOfCharacters() implementation

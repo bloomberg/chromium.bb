@@ -202,29 +202,17 @@ TextRun SVGInlineTextBox::constructTextRun(const ComputedStyle& style, const SVG
 
 bool SVGInlineTextBox::mapStartEndPositionsIntoFragmentCoordinates(const SVGTextFragment& fragment, int& startPosition, int& endPosition) const
 {
-    if (startPosition >= endPosition)
-        return false;
+    int fragmentOffsetInBox = static_cast<int>(fragment.characterOffset) - start();
 
-    int offset = static_cast<int>(fragment.characterOffset) - start();
-    int length = static_cast<int>(fragment.length);
+    // Compute positions relative to the fragment.
+    startPosition -= fragmentOffsetInBox;
+    endPosition -= fragmentOffsetInBox;
 
-    if (startPosition >= offset + length || endPosition <= offset)
-        return false;
+    // Intersect with the fragment range.
+    startPosition = std::max(startPosition, 0);
+    endPosition = std::min(endPosition, static_cast<int>(fragment.length));
 
-    if (startPosition < offset)
-        startPosition = 0;
-    else
-        startPosition -= offset;
-
-    if (endPosition > offset + length) {
-        endPosition = length;
-    } else {
-        ASSERT(endPosition >= offset);
-        endPosition -= offset;
-    }
-
-    ASSERT(startPosition < endPosition);
-    return true;
+    return startPosition < endPosition;
 }
 
 void SVGInlineTextBox::paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint&, DocumentMarker*, const ComputedStyle&, const Font&, bool)
