@@ -482,6 +482,7 @@ void ObjectManager::RemoveInterface(const ObjectPath& object_path,
     interface->ObjectRemoved(object_path, interface_name);
   }
 
+  delete piter->second;
   object->properties_map.erase(piter);
 
   if (object->properties_map.empty()) {
