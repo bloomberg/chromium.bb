@@ -4192,6 +4192,8 @@ KURL Document::completeURL(const String& url) const
 
 KURL Document::completeURLWithOverride(const String& url, const KURL& baseURLOverride) const
 {
+    ASSERT(baseURLOverride.isEmpty() || baseURLOverride.isValid());
+
     // Always return a null URL when passed a null string.
     // FIXME: Should we change the KURL constructor to have this behavior?
     // See also [CSS]StyleSheet::completeURL(const String&)
