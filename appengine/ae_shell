@@ -48,65 +48,79 @@ enter_ae_shell() {
 export PYTHONPATH="${PYTHONPATH_PREFIX}:\${PYTHONPATH}"
 export PATH="${PATH_PREFIX}:\${PATH}"
 export PS1="${PS1_PREFIX} \${PS1}"
+
+# Clear BASH_ENV so that if a subshell is launched, we don't
+# get sourced twice. (This file is going to dissapear after the first time it's
+# sourced.)
+unset BASH_ENV
 rm -f "${rcfile}"
 EOF
 
   info "Entering ae_shell for ${appname}..."
-
-  # Enter a shell that will survive successful completion of this script, and
-  # will have the new environment setup for the user.
-  exec bash --rcfile "${rcfile}" -i
+  if [[ $# -eq 0 ]]; then
+    # Enter a shell that will survive successful completion of this script, and
+    # will have the new environment setup for the user.
+    exec bash --rcfile "${rcfile}" -i
+  else
+    # A command was given, run that command in the new shell.
+    # bash will ignore BASH_ENV if it detects that it's launched by sshd.
+    # Trick it!
+    unset SSH_CLIENT
+    unset SSH_CONNECTION
+    unset SSH_TTY
+    BASH_ENV=${rcfile} exec bash -c '"$@"' "$@"
+  fi
 }
 
 prepare_sdk() {
-  local -r toplvl="$1"
-  local -r appengine_dir="$2"
+  local -r appengine_dir="$1"
+  local -r ae_sdk_dir="$2"
   local -r appname="$3"
 
-  if [[ ! -d "${appengine_dir}" ]]; then
-    local temp_appengine_dir="temp_appengine_dir"
+  if [[ ! -d "${ae_sdk_dir}" ]]; then
+    local temp_ae_sdk_dir="temp_ae_sdk_dir"
 
     info "Using appegine SDK mirror ${DEFAULT_SDK_MIRROR}"
 
-    rm -rf "${temp_appengine_dir}"
-    mkdir -p "${temp_appengine_dir}"
+    rm -rf "${temp_ae_sdk_dir}"
+    mkdir -p "${temp_ae_sdk_dir}"
     info "Downloading appengine SDK"
-    local sdk_zip="${temp_appengine_dir}/sdk.zip"
+    local sdk_zip="${temp_ae_sdk_dir}/sdk.zip"
     wget -c "${DEFAULT_SDK_MIRROR}" -O "${sdk_zip}"
     if [[ $? -ne 0 ]]; then
       error "Failed to download SDK from ${DEFAULT_SDK_MIRROR}"
-      rm -rf "${temp_appengine_dir}"
+      rm -rf "${temp_ae_sdk_dir}"
       return ${E_GENERAL}
     fi
 
     info "Unpacking..."
-    unzip -q "${sdk_zip}" -d "${temp_appengine_dir}"
+    unzip -q "${sdk_zip}" -d "${temp_ae_sdk_dir}"
     if [[ $? -ne 0 ]]; then
       error "Failed to unzip ${sdk_zip}."
-      rm -rf "${temp_appengine_dir}"
+      rm -rf "${temp_ae_sdk_dir}"
       return ${E_GENERAL}
     fi
 
-    mv "${temp_appengine_dir}/google_appengine" "${appengine_dir}"
-    rm -rf "${temp_appengine_dir}"
+    mv "${temp_ae_sdk_dir}/google_appengine" "${ae_sdk_dir}"
+    rm -rf "${temp_ae_sdk_dir}"
 
     if [[ -f "${appname}/${APPENGINE_SDK_MOD_FILE}" ]]; then
       info "Running appengine sdk mod script from " \
-               "${appname}/${APPENGINE_SDK_MOD_FILE}"
+          "${appname}/${APPENGINE_SDK_MOD_FILE}"
       if ! "./${appname}/${APPENGINE_SDK_MOD_FILE}" \
-             "${toplvl}/${appengine_dir}"; then
+          "${appengine_dir}/${ae_sdk_dir}"; then
         return ${E_GENERAL}
       fi
     fi
   fi
 
-  info "Using appengine SDK at ${appengine_dir}"
+  info "Using appengine SDK at ${ae_sdk_dir}"
   return 0
 }
 
 setup_django_path() {
-  local -r toplvl="$1"
-  local -r appengine_dir="$2"
+  local -r appengine_dir="$1"
+  local -r ae_sdk_dir="$2"
   local -r appname="$3"
 
   if [[ ! -f "${appname}/${APP_YAML}" ]]; then
@@ -121,20 +135,43 @@ setup_django_path() {
   fi
 
   info "Setting django version to ${django_version}"
-  django_dir="${appengine_dir}/lib/django-${django_version}"
-  PYTHONPATH_PREFIX="${toplvl}/${django_dir}:${PYTHONPATH_PREFIX}"
-  PATH_PREFIX="${toplvl}/${django_dir}/django/bin:${PATH_PREFIX}"
+  django_dir="${ae_sdk_dir}/lib/django-${django_version}"
+  PYTHONPATH_PREFIX="${appengine_dir}/${django_dir}:${PYTHONPATH_PREFIX}"
+  PATH_PREFIX="${appengine_dir}/${django_dir}/django/bin:${PATH_PREFIX}"
+}
+
+# This sets up the chromite path so that chromite is available inside ae_shell.
+# Note that this is different from using chromite/scripts/wrapper.py because the
+# appengine apps that launched / deployed inside the ae_shell run in an
+# environment controlled by the AE SDK's dev_appserver.py
+# This ensures that chromite is available inside that environment as well.
+setup_chromite_path() {
+  local -r appengine_dir="$1"
+  # Must go deeper.
+  local basedir
+  base_dir="$(dirname "$(dirname "${appengine_dir}")")"
+  PYTHONPATH_PREFIX="${base_dir}:${PYTHONPATH_PREFIX}"
 }
 
 main() {
-  local -r toplvl="$(readlink -e "$(dirname "${BASH_SOURCE}")")"
+  local -r appengine_dir="$(readlink -e "$(dirname "${BASH_SOURCE}")")"
+  source "${appengine_dir}/common.sh"
+
+  # Argument parsing.
   local -r appdir="$1"
+  shift
+
+  if [[ $# -gt 0 && "$1" != "--" ]]; then
+    error "Unexpected argument: $1"
+    usage
+    exit ${E_GENERAL}
+  fi
+  # End argument parsing.
+
   local -r appname="$(basename "${appdir}")"
-  local -r appengine_dir="google_appengine_${appname}"
+  local -r ae_sdk_dir="google_appengine_${appname}"
 
   local appname_shell="$(echo "${appname}" | tr '[:lower:]' '[:upper:]')"
-
-  source "${toplvl}/common.sh"
 
   if [[ ! -d "${appdir}" ]]; then
     error "'${appdir}' is not an appengine app source directory!"
@@ -142,23 +179,24 @@ main() {
     exit ${E_GENERAL}
   fi
 
-  info "Found appengine directory ${toplvl}"
+  info "Found appengine directory ${appengine_dir}"
   info "Found appengine app ${appname} at ${appdir}"
 
-  pushd "${toplvl}" >/dev/null
+  pushd "${appengine_dir}" >/dev/null
 
-  if ! prepare_sdk "${toplvl}" "${appengine_dir}" "${appname}"; then
+  if ! prepare_sdk "${appengine_dir}" "${ae_sdk_dir}" "${appname}"; then
     exit ${E_GENERAL}
   fi
 
-  setup_django_path "${toplvl}" "${appengine_dir}" "${appname}"
-  PYTHONPATH_PREFIX="${toplvl}/${appengine_dir}:${PYTHONPATH_PREFIX}"
-  PYTHONPATH="${toplvl}/${appname}:${PYTHONPATH}"
-  PATH_PREFIX="${toplvl}/${appengine_dir}:${PATH_PREFIX}"
+  setup_django_path "${appengine_dir}" "${ae_sdk_dir}" "${appname}"
+  setup_chromite_path "${appengine_dir}"
+  PYTHONPATH_PREFIX="${appengine_dir}/${ae_sdk_dir}:${PYTHONPATH_PREFIX}"
+  PYTHONPATH="${appengine_dir}/${appname}:${PYTHONPATH}"
+  PATH_PREFIX="${appengine_dir}/${ae_sdk_dir}:${appengine_dir}:${PATH_PREFIX}"
   PS1_PREFIX="AE:${appname_shell}${PS1_PREFIX}"
 
   popd >/dev/null
-  enter_ae_shell
+  enter_ae_shell "$@"
 }
 
 main "$@"

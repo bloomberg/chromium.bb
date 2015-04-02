@@ -17,3 +17,5 @@ To clear DB before starting:
 
 To update on chromiumos-build-stats.appspot.com (WHEN READY):
 %> ./google_appengine/appcfg.py update chromiumos-build-stats/
+
+See cq_stats/README to learn about how to work with that zapping good app!

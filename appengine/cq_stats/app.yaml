@@ -1,4 +1,4 @@
-application: google.com:chromiumos-build-annotator
+application: google.com:chromiumos-build-annotator-dbg
 version: 1
 runtime: python27
 api_version: 1
