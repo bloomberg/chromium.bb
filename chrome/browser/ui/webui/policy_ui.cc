@@ -342,7 +342,8 @@ class DeviceLocalAccountPolicyStatusProvider
 // The JavaScript message handler for the chrome://policy page.
 class PolicyUIHandler : public content::NotificationObserver,
                         public content::WebUIMessageHandler,
-                        public policy::PolicyService::Observer {
+                        public policy::PolicyService::Observer,
+                        public policy::SchemaRegistry::Observer {
  public:
   PolicyUIHandler();
   ~PolicyUIHandler() override;
@@ -359,6 +360,10 @@ class PolicyUIHandler : public content::NotificationObserver,
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
                        const policy::PolicyMap& previous,
                        const policy::PolicyMap& current) override;
+
+  // policy::SchemaRegistry::Observer implementation.
+  void OnSchemaRegistryReady() override;
+  void OnSchemaRegistryUpdated(bool has_new_schemas) override;
 
  private:
   // Send a dictionary containing the names of all known policies to the UI.
@@ -528,6 +533,10 @@ PolicyUIHandler::PolicyUIHandler()
 PolicyUIHandler::~PolicyUIHandler() {
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
+  policy::SchemaRegistry* registry =
+      policy::SchemaRegistryServiceFactory::GetForContext(
+          Profile::FromWebUI(web_ui())->GetOriginalProfile())->registry();
+  registry->RemoveObserver(this);
 }
 
 void PolicyUIHandler::RegisterMessages() {
@@ -586,6 +595,10 @@ void PolicyUIHandler::RegisterMessages() {
                  extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::NotificationService::AllSources());
 #endif
+  policy::SchemaRegistry* registry =
+      policy::SchemaRegistryServiceFactory::GetForContext(
+          Profile::FromWebUI(web_ui())->GetOriginalProfile())->registry();
+  registry->AddObserver(this);
 
   web_ui()->RegisterMessageCallback(
       "initialized",
@@ -605,6 +618,18 @@ void PolicyUIHandler::Observe(int type,
   SendPolicyNames();
   SendPolicyValues();
 #endif
+}
+
+// TODO(limasdf): Add default implementation and remove this override.
+void PolicyUIHandler::OnSchemaRegistryReady() {
+}
+
+void PolicyUIHandler::OnSchemaRegistryUpdated(bool has_new_schemas) {
+  // Update UI when new schema is added.
+  if (has_new_schemas) {
+    SendPolicyNames();
+    SendPolicyValues();
+  }
 }
 
 void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,

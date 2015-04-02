@@ -5,11 +5,16 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -20,6 +25,7 @@
 #include "components/policy/core/common/schema.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/extension_builder.h"
 #include "grit/components_strings.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -92,9 +98,10 @@ class PolicyUITest : public InProcessBrowserTest {
 
   void VerifyPolicies(const std::vector<std::vector<std::string> >& expected);
 
- private:
+ protected:
   policy::MockConfigurationPolicyProvider provider_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PolicyUITest);
 };
 
@@ -265,5 +272,58 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
 
   // Retrieve the contents of the policy table from the UI and verify that it
   // matches the expectation.
+  VerifyPolicies(expected_policies);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyUITest, ExtensionLoadAndSendPolicy) {
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIPolicyURL));
+  base::ScopedTempDir temp_dir_;
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+  const std::string newly_added_policy_name = "new_policy";
+  std::string json_data = "{\"type\": \"object\",\"properties\": {\"" +
+                          newly_added_policy_name +
+                          "\": { \"type\": \"string\"}}}";
+
+  const std::string schema_file = "schema.json";
+  base::FilePath schema_path = temp_dir_.path().AppendASCII(schema_file);
+  base::WriteFile(schema_path, json_data.data(), json_data.size());
+
+  // Build extension that contains the policy schema.
+  extensions::DictionaryBuilder storage;
+  storage.Set("managed_schema", schema_file);
+
+  extensions::DictionaryBuilder manifest;
+  manifest.Set("name", "test")
+      .Set("version", "1")
+      .Set("manifest_version", 2)
+      .Set("storage", storage);
+
+  extensions::ExtensionBuilder builder;
+  builder.SetPath(temp_dir_.path());
+  builder.SetManifest(manifest);
+
+  // Install extension.
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+                                  browser()->profile())->extension_service();
+  EXPECT_CALL(provider_, RefreshPolicies());
+  service->OnExtensionInstalled(builder.Build().get(), syncer::StringOrdinal(),
+                                0);
+
+  std::vector<std::vector<std::string>> expected_policies;
+  policy::Schema chrome_schema =
+      policy::Schema::Wrap(policy::GetChromeSchemaData());
+  ASSERT_TRUE(chrome_schema.valid());
+
+  for (policy::Schema::Iterator it = chrome_schema.GetPropertiesIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    expected_policies.push_back(
+        PopulateExpectedPolicy(it.key(), std::string(), NULL, false));
+  }
+  // Add newly added policy to expected policy list.
+  expected_policies.push_back(PopulateExpectedPolicy(
+      newly_added_policy_name, std::string(), NULL, false));
+
+  // Verify if policy UI includes policy that extension have.
   VerifyPolicies(expected_policies);
 }
