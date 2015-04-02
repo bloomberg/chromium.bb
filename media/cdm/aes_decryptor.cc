@@ -248,7 +248,7 @@ void AesDecryptor::SetServerCertificate(const uint8* certificate_data,
 
 void AesDecryptor::CreateSessionAndGenerateRequest(
     SessionType session_type,
-    const std::string& init_data_type,
+    EmeInitDataType init_data_type,
     const uint8* init_data,
     int init_data_length,
     scoped_ptr<NewSessionCdmPromise> promise) {
@@ -263,27 +263,35 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
   // when prefixed EME is removed (http://crbug.com/249976).
   if (init_data && init_data_length) {
     std::vector<std::vector<uint8>> keys;
-    if (init_data_type == "webm") {
-      // |init_data| is simply the key needed.
-      keys.push_back(
-          std::vector<uint8>(init_data, init_data + init_data_length));
-    } else if (init_data_type == "cenc") {
-      // |init_data| is a set of 0 or more concatenated 'pssh' boxes.
-      if (!GetKeyIdsForCommonSystemId(init_data, init_data_length, &keys)) {
-        promise->reject(NOT_SUPPORTED_ERROR, 0, "No supported PSSH box found.");
-        return;
+    switch (init_data_type) {
+      case EmeInitDataType::WEBM:
+        // |init_data| is simply the key needed.
+        keys.push_back(
+            std::vector<uint8>(init_data, init_data + init_data_length));
+        break;
+      case EmeInitDataType::CENC:
+        // |init_data| is a set of 0 or more concatenated 'pssh' boxes.
+        if (!GetKeyIdsForCommonSystemId(init_data, init_data_length, &keys)) {
+          promise->reject(NOT_SUPPORTED_ERROR, 0,
+                          "No supported PSSH box found.");
+          return;
+        }
+        break;
+      case EmeInitDataType::KEYIDS: {
+        std::string init_data_string(init_data, init_data + init_data_length);
+        std::string error_message;
+        if (!ExtractKeyIdsFromKeyIdsInitData(init_data_string, &keys,
+                                             &error_message)) {
+          promise->reject(NOT_SUPPORTED_ERROR, 0, error_message);
+          return;
+        }
+        break;
       }
-    } else if (init_data_type == "keyids") {
-      std::string init_data_string(init_data, init_data + init_data_length);
-      std::string error_message;
-      if (!ExtractKeyIdsFromKeyIdsInitData(init_data_string, &keys,
-                                           &error_message)) {
-        promise->reject(NOT_SUPPORTED_ERROR, 0, error_message);
+      default:
+        NOTREACHED();
+        promise->reject(NOT_SUPPORTED_ERROR, 0,
+                        "init_data_type not supported.");
         return;
-      }
-    } else {
-      promise->reject(NOT_SUPPORTED_ERROR, 0, "init_data_type not supported.");
-      return;
     }
     CreateLicenseRequest(keys, session_type, &message);
   }

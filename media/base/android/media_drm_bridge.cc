@@ -170,6 +170,22 @@ bool GetPsshData(const uint8* data,
   return false;
 }
 
+// Convert |init_data_type| to a string supported by MediaDRM.
+// "audio"/"video" does not matter, so use "video".
+std::string ConvertInitDataType(media::EmeInitDataType init_data_type) {
+  // TODO(jrummell): API level >=20 supports "webm" and "cenc", so switch
+  // to those strings.
+  switch (init_data_type) {
+    case media::EmeInitDataType::WEBM:
+      return "video/webm";
+    case media::EmeInitDataType::CENC:
+      return "video/mp4";
+    default:
+      NOTREACHED();
+      return "video/unknown";
+  }
+}
+
 class KeySystemUuidManager {
  public:
   KeySystemUuidManager();
@@ -420,7 +436,7 @@ void MediaDrmBridge::SetServerCertificate(
 
 void MediaDrmBridge::CreateSessionAndGenerateRequest(
     SessionType session_type,
-    const std::string& init_data_type,
+    media::EmeInitDataType init_data_type,
     const uint8* init_data,
     int init_data_length,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
@@ -434,13 +450,11 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_init_data;
-  // Caller should always use "video/*" content types.
-  DCHECK_EQ(0u, init_data_type.find("video/"));
 
   // Widevine MediaDrm plugin only accepts the "data" part of the PSSH box as
   // the init data when using MP4 container.
   if (std::equal(scheme_uuid_.begin(), scheme_uuid_.end(), kWidevineUuid) &&
-      init_data_type == "video/mp4") {
+      init_data_type == media::EmeInitDataType::CENC) {
     std::vector<uint8> pssh_data;
     if (!GetPsshData(init_data, init_data_length, scheme_uuid_, &pssh_data)) {
       promise->reject(INVALID_ACCESS_ERROR, 0, "Invalid PSSH data.");
@@ -454,7 +468,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
   }
 
   ScopedJavaLocalRef<jstring> j_mime =
-      ConvertUTF8ToJavaString(env, init_data_type);
+      ConvertUTF8ToJavaString(env, ConvertInitDataType(init_data_type));
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   Java_MediaDrmBridge_createSession(env, j_media_drm_.obj(), j_init_data.obj(),
                                     j_mime.obj(), promise_id);

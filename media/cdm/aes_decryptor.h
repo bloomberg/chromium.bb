@@ -41,7 +41,7 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
                             scoped_ptr<SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
-      const std::string& init_data_type,
+      EmeInitDataType init_data_type,
       const uint8* init_data,
       int init_data_length,
       scoped_ptr<NewSessionCdmPromise> promise) override;

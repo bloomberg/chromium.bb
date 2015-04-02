@@ -110,7 +110,7 @@ void BrowserCdmCast::SetServerCertificateHelper(
 
 void BrowserCdmCast::CreateSessionAndGenerateRequestHelper(
     ::media::MediaKeys::SessionType session_type,
-    const std::string& init_data_type,
+    ::media::EmeInitDataType init_data_type,
     const std::vector<uint8>& init_data,
     scoped_ptr<::media::NewSessionCdmPromise> promise) {
   CreateSessionAndGenerateRequest(
@@ -174,7 +174,7 @@ void BrowserCdmCastUi::SetServerCertificate(
 
 void BrowserCdmCastUi::CreateSessionAndGenerateRequest(
     ::media::MediaKeys::SessionType session_type,
-    const std::string& init_data_type,
+    ::media::EmeInitDataType init_data_type,
     const uint8* init_data,
     int init_data_length,
     scoped_ptr<::media::NewSessionCdmPromise> promise) {

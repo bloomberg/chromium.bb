@@ -67,8 +67,8 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] session_type A <code>PP_SessionType</code> that indicates the
    * type of session to be created.
    *
-   * @param[in] init_data_type A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the MIME type for init_data.
+   * @param[in] init_data_type A <code>PP_InitDataType</code> that indicates
+   * the Initialization Data Type for init_data.
    *
    * @param[in] init_data A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
@@ -78,7 +78,7 @@ interface PPP_ContentDecryptor_Private {
       [in] PP_Instance instance,
       [in] uint32_t promise_id,
       [in] PP_SessionType session_type,
-      [in] PP_Var init_data_type,
+      [in] PP_InitDataType init_data_type,
       [in] PP_Var init_data);
 
   /**

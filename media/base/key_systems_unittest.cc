@@ -380,11 +380,14 @@ TEST_F(KeySystemsTest, ClearKey) {
 
 TEST_F(KeySystemsTest, ClearKeyWithInitDataType) {
   EXPECT_TRUE(IsSupportedKeySystem(kClearKey));
-  EXPECT_TRUE(IsSupportedKeySystemWithInitDataType(kClearKey, "webm"));
-  EXPECT_TRUE(IsSupportedKeySystemWithInitDataType(kClearKey, "keyids"));
+  EXPECT_TRUE(
+      IsSupportedKeySystemWithInitDataType(kClearKey, EmeInitDataType::WEBM));
+  EXPECT_TRUE(
+      IsSupportedKeySystemWithInitDataType(kClearKey, EmeInitDataType::KEYIDS));
 
   // All other InitDataTypes are not supported.
-  EXPECT_FALSE(IsSupportedKeySystemWithInitDataType(kClearKey, "unknown"));
+  EXPECT_FALSE(IsSupportedKeySystemWithInitDataType(kClearKey,
+                                                    EmeInitDataType::UNKNOWN));
 }
 
 // The key system is not registered and therefore is unrecognized.

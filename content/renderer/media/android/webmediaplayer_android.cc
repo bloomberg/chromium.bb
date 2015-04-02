@@ -123,18 +123,6 @@ bool AllocateSkBitmapTexture(GrContext* gr,
   return true;
 }
 
-static blink::WebEncryptedMediaInitDataType ConvertInitDataType(
-    const std::string& init_data_type) {
-  if (init_data_type == "cenc")
-    return blink::WebEncryptedMediaInitDataType::Cenc;
-  if (init_data_type == "keyids")
-    return blink::WebEncryptedMediaInitDataType::Keyids;
-  if (init_data_type == "webm")
-    return blink::WebEncryptedMediaInitDataType::Webm;
-  NOTREACHED() << "unexpected " << init_data_type;
-  return blink::WebEncryptedMediaInitDataType::Unknown;
-}
-
 class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
  public:
   explicit SyncPointClientImpl(
@@ -1772,8 +1760,9 @@ void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
   if (init_data_type_.empty())
     init_data_type_ = init_data_type;
 
-  client_->encrypted(ConvertInitDataType(init_data_type),
-                     vector_as_array(&init_data), init_data.size());
+  client_->encrypted(
+      ConvertToWebInitDataType(media::GetInitDataTypeForName(init_data_type)),
+      vector_as_array(&init_data), init_data.size());
 }
 
 void WebMediaPlayerAndroid::OnWaitingForDecryptionKey() {

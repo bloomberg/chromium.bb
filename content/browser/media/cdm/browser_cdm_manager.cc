@@ -562,27 +562,10 @@ void BrowserCdmManager::CreateSessionAndGenerateRequestIfPermitted(
     return;
   }
 
-  // TODO(ddorwin): Move this conversion to MediaDrmBridge when fixing
-  // crbug.com/417440.
-  // "audio"/"video" does not matter, so use "video".
-  std::string init_data_type_string;
-  switch (init_data_type) {
-    case media::EmeInitDataType::WEBM:
-      init_data_type_string = "video/webm";
-      break;
-#if defined(USE_PROPRIETARY_CODECS)
-    case media::EmeInitDataType::CENC:
-      init_data_type_string = "video/mp4";
-      break;
-#endif
-    default:
-      NOTREACHED();
-  }
-
   // Only the temporary session type is supported in browser CDM path.
   // TODO(xhwang): Add SessionType support if needed.
   cdm->CreateSessionAndGenerateRequest(media::MediaKeys::TEMPORARY_SESSION,
-                                       init_data_type_string, &init_data[0],
+                                       init_data_type, &init_data[0],
                                        init_data.size(), promise.Pass());
 }
 

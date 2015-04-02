@@ -29,6 +29,11 @@ class MEDIA_EXPORT KeySystems {
   // Returns whether |key_system| is a supported key system.
   virtual bool IsSupportedKeySystem(const std::string& key_system) const = 0;
 
+  // Returns whether |init_data_type| is supported by |key_system|.
+  virtual bool IsSupportedInitDataType(
+      const std::string& key_system,
+      EmeInitDataType init_data_type) const = 0;
+
   // Returns whether the list of codecs are supported together by |key_system|.
   // TODO(sandersd): Return a rule instead of a bool so that codec selection can
   // affect other configuration options (namely robustness).
@@ -84,9 +89,10 @@ MEDIA_EXPORT std::string GetPrefixedKeySystemName(
 // Note: Shouldn't be used for prefixed API as the original
 MEDIA_EXPORT bool IsSupportedKeySystem(const std::string& key_system);
 
+// Use for prefixed EME only!
 MEDIA_EXPORT bool IsSupportedKeySystemWithInitDataType(
     const std::string& key_system,
-    const std::string& init_data_type);
+    EmeInitDataType init_data_type);
 
 // Use for prefixed EME only!
 // Returns whether |key_system| is a real supported key system that can be
@@ -115,6 +121,10 @@ MEDIA_EXPORT bool CanUseAesDecryptor(const std::string& concrete_key_system);
 MEDIA_EXPORT std::string GetPepperType(
     const std::string& concrete_key_system);
 #endif
+
+// Gets the Initialization Data Type for |init_data_type|.
+MEDIA_EXPORT EmeInitDataType
+GetInitDataTypeForName(const std::string& init_data_type);
 
 #if defined(UNIT_TEST)
 // Helper functions to add container/codec types for testing purposes.

@@ -76,7 +76,7 @@ void CdmSessionAdapter::UnregisterSession(const std::string& session_id) {
 }
 
 void CdmSessionAdapter::InitializeNewSession(
-    const std::string& init_data_type,
+    EmeInitDataType init_data_type,
     const uint8* init_data,
     int init_data_length,
     MediaKeys::SessionType session_type,

@@ -13,6 +13,7 @@
 #include "media/base/media_permission.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
+#include "media/blink/webmediaplayer_util.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaRequest.h"
 #include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
@@ -290,25 +291,8 @@ static ConfigurationSupport GetSupportedConfiguration(
       //        supported.
       if (init_data_type == blink::WebEncryptedMediaInitDataType::Unknown)
         continue;
-      // TODO(jrummell): |init_data_type| should be an enum all the way through
-      // Chromium. http://crbug.com/417440
-      std::string init_data_type_as_ascii = "unknown";
-      switch (init_data_type) {
-        case blink::WebEncryptedMediaInitDataType::Cenc:
-          init_data_type_as_ascii = "cenc";
-          break;
-        case blink::WebEncryptedMediaInitDataType::Keyids:
-          init_data_type_as_ascii = "keyids";
-          break;
-        case blink::WebEncryptedMediaInitDataType::Webm:
-          init_data_type_as_ascii = "webm";
-          break;
-        case blink::WebEncryptedMediaInitDataType::Unknown:
-          NOTREACHED();
-          break;
-      }
-      if (IsSupportedKeySystemWithInitDataType(key_system,
-                                               init_data_type_as_ascii)) {
+      if (key_systems.IsSupportedInitDataType(
+              key_system, ConvertToEmeInitDataType(init_data_type))) {
         supported_types.push_back(init_data_type);
       }
     }

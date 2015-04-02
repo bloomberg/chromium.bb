@@ -109,12 +109,11 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
                      std::string())));  // No session id until created.
 
   if (session_creation_type == LoadSession) {
-    uint8* init_data_vector_data =
-        (init_data_vector.size() > 0) ? &init_data_vector[0] : nullptr;
     media_keys_->LoadSession(
         MediaKeys::PERSISTENT_LICENSE_SESSION,
-        std::string(reinterpret_cast<const char*>(init_data_vector_data),
-                    init_data_vector.size()),
+        std::string(
+            reinterpret_cast<const char*>(vector_as_array(&init_data_vector)),
+            init_data_vector.size()),
         promise.Pass());
     return true;
   }
@@ -159,12 +158,9 @@ void ProxyDecryptor::OnPermissionStatus(
   // on Android) and the permission status will be evaluated then.
   DVLOG_IF(1, !granted) << "Permission request rejected.";
 
-  const uint8* init_data_vector_data =
-      (init_data.size() > 0) ? &init_data[0] : nullptr;
-
   media_keys_->CreateSessionAndGenerateRequest(
-      session_type, init_data_type, init_data_vector_data, init_data.size(),
-      promise.Pass());
+      session_type, GetInitDataTypeForName(init_data_type),
+      vector_as_array(&init_data), init_data.size(), promise.Pass());
 }
 
 void ProxyDecryptor::AddKey(const uint8* key,

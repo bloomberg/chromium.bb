@@ -411,6 +411,16 @@ enum PP_SessionType {
 };
 
 /**
+ * <code>PP_InitDataType</code> contains Initialization Data Type constants.
+ */
+[assert_size(4)]
+enum PP_InitDataType {
+  PP_INITDATATYPE_CENC = 0,
+  PP_INITDATATYPE_KEYIDS = 1,
+  PP_INITDATATYPE_WEBM = 2
+};
+
+/**
  * <code>PP_CdmExceptionCode</code> contains exception code constants.
  */
 [assert_size(4)]

@@ -58,7 +58,7 @@ class CdmAdapter : public pp::Instance,
                             pp::VarArrayBuffer server_certificate) override;
   void CreateSessionAndGenerateRequest(uint32_t promise_id,
                                        PP_SessionType session_type,
-                                       const std::string& init_data_type,
+                                       PP_InitDataType init_data_type,
                                        pp::VarArrayBuffer init_data) override;
   void LoadSession(uint32_t promise_id,
                    PP_SessionType session_type,

@@ -4455,11 +4455,11 @@ static void Pnacl_M43_PPP_ContentDecryptor_Private_SetServerCertificate(PP_Insta
   temp_fp(instance, promise_id, &server_certificate);
 }
 
-static void Pnacl_M43_PPP_ContentDecryptor_Private_CreateSessionAndGenerateRequest(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, struct PP_Var init_data_type, struct PP_Var init_data) {
+static void Pnacl_M43_PPP_ContentDecryptor_Private_CreateSessionAndGenerateRequest(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, PP_InitDataType init_data_type, struct PP_Var init_data) {
   const struct PPP_ContentDecryptor_Private_0_14 *iface = Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_14.real_iface;
-  void (*temp_fp)(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, struct PP_Var* init_data_type, struct PP_Var* init_data) =
-    ((void (*)(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, struct PP_Var* init_data_type, struct PP_Var* init_data))iface->CreateSessionAndGenerateRequest);
-  temp_fp(instance, promise_id, session_type, &init_data_type, &init_data);
+  void (*temp_fp)(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, PP_InitDataType init_data_type, struct PP_Var* init_data) =
+    ((void (*)(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, PP_InitDataType init_data_type, struct PP_Var* init_data))iface->CreateSessionAndGenerateRequest);
+  temp_fp(instance, promise_id, session_type, init_data_type, &init_data);
 }
 
 static void Pnacl_M43_PPP_ContentDecryptor_Private_LoadSession(PP_Instance instance, uint32_t promise_id, PP_SessionType session_type, struct PP_Var session_id) {

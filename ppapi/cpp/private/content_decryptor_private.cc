@@ -63,15 +63,11 @@ void SetServerCertificate(PP_Instance instance,
 void CreateSessionAndGenerateRequest(PP_Instance instance,
                                      uint32_t promise_id,
                                      PP_SessionType session_type,
-                                     PP_Var init_data_type_arg,
+                                     PP_InitDataType init_data_type,
                                      PP_Var init_data_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
-    return;
-
-  pp::Var init_data_type_var(pp::PASS_REF, init_data_type_arg);
-  if (!init_data_type_var.is_string())
     return;
 
   pp::Var init_data_var(pp::PASS_REF, init_data_arg);
@@ -81,8 +77,7 @@ void CreateSessionAndGenerateRequest(PP_Instance instance,
 
   static_cast<ContentDecryptor_Private*>(object)
       ->CreateSessionAndGenerateRequest(promise_id, session_type,
-                                        init_data_type_var.AsString(),
-                                        init_data_array_buffer);
+                                        init_data_type, init_data_array_buffer);
 }
 
 void LoadSession(PP_Instance instance,

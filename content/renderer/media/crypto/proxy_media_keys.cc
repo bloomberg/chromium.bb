@@ -52,7 +52,7 @@ void ProxyMediaKeys::SetServerCertificate(
 
 void ProxyMediaKeys::CreateSessionAndGenerateRequest(
     SessionType session_type,
-    const std::string& init_data_type,
+    media::EmeInitDataType init_data_type,
     const uint8* init_data,
     int init_data_length,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
@@ -64,19 +64,21 @@ void ProxyMediaKeys::CreateSessionAndGenerateRequest(
 
   // TODO(xhwang): Move these checks up to blink and DCHECK here.
   // See http://crbug.com/342510
-  CdmHostMsg_CreateSession_InitDataType create_session_init_data_type;
-  if (init_data_type == "cenc") {
-    create_session_init_data_type = INIT_DATA_TYPE_CENC;
-  } else if (init_data_type == "webm") {
-    create_session_init_data_type = INIT_DATA_TYPE_WEBM;
-  } else {
-    DLOG(ERROR) << "Unsupported EME CreateSession content type of "
-                << init_data_type;
-    promise->reject(
-        NOT_SUPPORTED_ERROR,
-        0,
-        "Unsupported EME CreateSession init data type of " + init_data_type);
-    return;
+  CdmHostMsg_CreateSession_InitDataType create_session_init_data_type =
+      INIT_DATA_TYPE_WEBM;
+  switch (init_data_type) {
+    case media::EmeInitDataType::CENC:
+      create_session_init_data_type = INIT_DATA_TYPE_CENC;
+      break;
+    case media::EmeInitDataType::WEBM:
+      create_session_init_data_type = INIT_DATA_TYPE_WEBM;
+      break;
+    case media::EmeInitDataType::KEYIDS:
+    case media::EmeInitDataType::UNKNOWN:
+      DLOG(ERROR) << "Unsupported EME CreateSession init data type";
+      promise->reject(NOT_SUPPORTED_ERROR, 0,
+                      "Unsupported EME CreateSession init data type");
+      return;
   }
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());

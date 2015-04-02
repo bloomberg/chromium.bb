@@ -205,10 +205,6 @@ class KeySystemsImpl : public KeySystems {
 
   bool IsConcreteSupportedKeySystem(const std::string& key_system) const;
 
-  bool IsSupportedKeySystemWithInitDataType(
-      const std::string& key_system,
-      const std::string& init_data_type) const;
-
   bool PrefixedIsSupportedKeySystemWithMediaMimeType(
       const std::string& mime_type,
       const std::vector<std::string>& codecs,
@@ -230,6 +226,9 @@ class KeySystemsImpl : public KeySystems {
 
   // Implementation of KeySystems interface.
   bool IsSupportedKeySystem(const std::string& key_system) const override;
+
+  bool IsSupportedInitDataType(const std::string& key_system,
+                               EmeInitDataType init_data_type) const override;
 
   bool IsSupportedCodecCombination(
       const std::string& key_system,
@@ -256,6 +255,9 @@ class KeySystemsImpl : public KeySystems {
       const std::string& key_system,
       EmeFeatureRequirement requirement) const override;
 
+  EmeInitDataType GetInitDataTypeForName(
+      const std::string& init_data_type) const;
+
  private:
   void InitializeUMAInfo();
 
@@ -276,8 +278,6 @@ class KeySystemsImpl : public KeySystems {
   KeySystemsImpl();
   ~KeySystemsImpl() {}
 
-  EmeInitDataType GetInitDataTypeForName(
-      const std::string& init_data_type) const;
   // TODO(sandersd): Separate container enum from codec mask value.
   // http://crbug.com/417440
   SupportedCodecs GetCodecMaskForContainer(
@@ -561,21 +561,23 @@ bool KeySystemsImpl::IsSupportedContainerAndCodecs(
   return true;
 }
 
-bool KeySystemsImpl::IsSupportedKeySystemWithInitDataType(
+bool KeySystemsImpl::IsSupportedInitDataType(
     const std::string& key_system,
-    const std::string& init_data_type) const {
+    EmeInitDataType init_data_type) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Locate |key_system|. Only concrete key systems are supported in unprefixed.
   KeySystemInfoMap::const_iterator key_system_iter =
       concrete_key_system_map_.find(key_system);
-  if (key_system_iter == concrete_key_system_map_.end())
+  if (key_system_iter == concrete_key_system_map_.end()) {
+    NOTREACHED();
     return false;
+  }
 
   // Check |init_data_type|.
   InitDataTypeMask available_init_data_types =
       key_system_iter->second.supported_init_data_types;
-  switch (GetInitDataTypeForName(init_data_type)) {
+  switch (init_data_type) {
     case EmeInitDataType::UNKNOWN:
       return false;
     case EmeInitDataType::WEBM:
@@ -979,11 +981,10 @@ bool IsSupportedKeySystem(const std::string& key_system) {
   return true;
 }
 
-bool IsSupportedKeySystemWithInitDataType(
-    const std::string& key_system,
-    const std::string& init_data_type) {
-  return KeySystemsImpl::GetInstance().IsSupportedKeySystemWithInitDataType(
-      key_system, init_data_type);
+bool IsSupportedKeySystemWithInitDataType(const std::string& key_system,
+                                          EmeInitDataType init_data_type) {
+  return KeySystemsImpl::GetInstance().IsSupportedInitDataType(key_system,
+                                                               init_data_type);
 }
 
 bool PrefixedIsSupportedKeySystemWithMediaMimeType(
@@ -1008,6 +1009,10 @@ std::string GetPepperType(const std::string& concrete_key_system) {
   return KeySystemsImpl::GetInstance().GetPepperType(concrete_key_system);
 }
 #endif
+
+EmeInitDataType GetInitDataTypeForName(const std::string& init_data_type) {
+  return KeySystemsImpl::GetInstance().GetInitDataTypeForName(init_data_type);
+}
 
 // These two functions are for testing purpose only. The declaration in the
 // header file is guarded by "#if defined(UNIT_TEST)" so that they can be used

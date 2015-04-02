@@ -167,7 +167,7 @@ void SetServerCertificate(PP_Instance instance,
 void CreateSessionAndGenerateRequest(PP_Instance instance,
                                      uint32_t promise_id,
                                      PP_SessionType session_type,
-                                     PP_Var init_data_type,
+                                     PP_InitDataType init_data_type,
                                      PP_Var init_data) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
@@ -178,7 +178,7 @@ void CreateSessionAndGenerateRequest(PP_Instance instance,
   dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_CreateSessionAndGenerateRequest(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE, instance, promise_id,
-          session_type, SerializedVarSendInput(dispatcher, init_data_type),
+          session_type, init_data_type,
           SerializedVarSendInput(dispatcher, init_data)));
 }
 
@@ -566,14 +566,12 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgCreateSessionAndGenerateRequest(
     PP_Instance instance,
     uint32_t promise_id,
     PP_SessionType session_type,
-    SerializedVarReceiveInput init_data_type,
+    PP_InitDataType init_data_type,
     SerializedVarReceiveInput init_data) {
   if (ppp_decryptor_impl_) {
-    CallWhileUnlocked(
-        ppp_decryptor_impl_->CreateSessionAndGenerateRequest, instance,
-        promise_id, session_type,
-        ExtractReceivedVarAndAddRef(dispatcher(), &init_data_type),
-        ExtractReceivedVarAndAddRef(dispatcher(), &init_data));
+    CallWhileUnlocked(ppp_decryptor_impl_->CreateSessionAndGenerateRequest,
+                      instance, promise_id, session_type, init_data_type,
+                      ExtractReceivedVarAndAddRef(dispatcher(), &init_data));
   }
 }
 

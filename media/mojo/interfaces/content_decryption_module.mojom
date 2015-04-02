@@ -67,6 +67,14 @@ interface ContentDecryptionModule {
     PERSISTENT_RELEASE_MESSAGE_SESSION
   };
 
+  // See media::EmeInitDataType.
+  enum InitDataType {
+    UNKNOWN,
+    WEBM,
+    CENC,
+    KEYIDS
+  };
+
   // Sets ContentDecryptionModuleClient. Must be called before any other calls.
   SetClient(ContentDecryptionModuleClient client);
 
@@ -79,7 +87,7 @@ interface ContentDecryptionModule {
   // provided. If |result.success| is false, the output |session_id| will be
   // null.
   CreateSessionAndGenerateRequest(SessionType session_type,
-                                  string init_data_type,
+                                  InitDataType init_data_type,
                                   array<uint8> init_data)
       => (CdmPromiseResult result, string? session_id);
 

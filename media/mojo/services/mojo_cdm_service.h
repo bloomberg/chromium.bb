@@ -29,7 +29,7 @@ class MojoCdmService
       const mojo::Callback<void(mojo::CdmPromiseResultPtr)>& callback) final;
   void CreateSessionAndGenerateRequest(
       mojo::ContentDecryptionModule::SessionType session_type,
-      const mojo::String& init_data_type,
+      mojo::ContentDecryptionModule::InitDataType init_data_type,
       mojo::Array<uint8_t> init_data,
       const mojo::Callback<void(mojo::CdmPromiseResultPtr, mojo::String)>&
           callback) final;

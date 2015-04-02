@@ -19,6 +19,7 @@
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/key_systems.h"
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/ppapi/cdm_file_io_test.h"
 #include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
@@ -78,7 +79,6 @@ const char kExternalClearKeyCrashKeySystem[] =
 // These constants need to be in sync with
 // chrome/test/data/media/encrypted_media_utils.js
 const char kLoadableSessionId[] = "LoadableSession";
-const char kLoadableSessionContentType[] = "video/webm";
 const uint8 kLoadableSessionKeyId[] = "0123456789012345";
 const uint8 kLoadableSessionKey[] =
     {0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
@@ -170,19 +170,18 @@ static media::MediaKeys::SessionType ConvertSessionType(
   return media::MediaKeys::TEMPORARY_SESSION;
 }
 
-// TODO(jrummell): |init_data_type| should be an enum all the way through
-// Chromium. http://crbug.com/469228
-static std::string ConvertInitDataType(cdm::InitDataType init_data_type) {
+static media::EmeInitDataType ConvertInitDataType(
+    cdm::InitDataType init_data_type) {
   switch (init_data_type) {
     case cdm::kCenc:
-      return "cenc";
+      return media::EmeInitDataType::CENC;
     case cdm::kKeyIds:
-      return "keyids";
+      return media::EmeInitDataType::KEYIDS;
     case cdm::kWebM:
-      return "webm";
+      return media::EmeInitDataType::WEBM;
   }
   NOTREACHED();
-  return "keyids";
+  return media::EmeInitDataType::UNKNOWN;
 }
 
 cdm::KeyStatus ConvertKeyStatus(media::CdmKeyInformation::KeyStatus status) {
@@ -357,9 +356,9 @@ void ClearKeyCdm::LoadSession(uint32 promise_id,
           base::Bind(&ClearKeyCdm::OnPromiseFailed,
                      base::Unretained(this),
                      promise_id)));
-  decryptor_.CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, std::string(kLoadableSessionContentType),
-      NULL, 0, promise.Pass());
+  decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
+                                             EmeInitDataType::WEBM, NULL, 0,
+                                             promise.Pass());
 }
 
 void ClearKeyCdm::UpdateSession(uint32 promise_id,

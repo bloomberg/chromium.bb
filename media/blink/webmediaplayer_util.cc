@@ -117,4 +117,38 @@ void ReportMediaSchemeUma(const GURL& url) {
                             kMaxURLScheme + 1);
 }
 
+EmeInitDataType ConvertToEmeInitDataType(
+    blink::WebEncryptedMediaInitDataType init_data_type) {
+  switch (init_data_type) {
+    case blink::WebEncryptedMediaInitDataType::Webm:
+      return EmeInitDataType::WEBM;
+    case blink::WebEncryptedMediaInitDataType::Cenc:
+      return EmeInitDataType::CENC;
+    case blink::WebEncryptedMediaInitDataType::Keyids:
+      return EmeInitDataType::KEYIDS;
+    case blink::WebEncryptedMediaInitDataType::Unknown:
+      return EmeInitDataType::UNKNOWN;
+  }
+
+  NOTREACHED();
+  return EmeInitDataType::UNKNOWN;
+}
+
+blink::WebEncryptedMediaInitDataType ConvertToWebInitDataType(
+    EmeInitDataType init_data_type) {
+  switch (init_data_type) {
+    case EmeInitDataType::WEBM:
+      return blink::WebEncryptedMediaInitDataType::Webm;
+    case EmeInitDataType::CENC:
+      return blink::WebEncryptedMediaInitDataType::Cenc;
+    case EmeInitDataType::KEYIDS:
+      return blink::WebEncryptedMediaInitDataType::Keyids;
+    case EmeInitDataType::UNKNOWN:
+      return blink::WebEncryptedMediaInitDataType::Unknown;
+  }
+
+  NOTREACHED();
+  return blink::WebEncryptedMediaInitDataType::Unknown;
+}
+
 }  // namespace media

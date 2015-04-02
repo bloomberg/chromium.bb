@@ -42,7 +42,7 @@ class ContentDecryptor_Private {
   virtual void CreateSessionAndGenerateRequest(
       uint32_t promise_id,
       PP_SessionType session_type,
-      const std::string& init_data_type,
+      PP_InitDataType init_data_type,
       pp::VarArrayBuffer init_data) = 0;
   virtual void LoadSession(uint32_t promise_id,
                            PP_SessionType session_type,

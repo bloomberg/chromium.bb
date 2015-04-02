@@ -60,7 +60,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   // Initializes a session with the |init_data_type|, |init_data| and
   // |session_type| provided.
-  void InitializeNewSession(const std::string& init_data_type,
+  void InitializeNewSession(EmeInitDataType init_data_type,
                             const uint8* init_data,
                             int init_data_length,
                             MediaKeys::SessionType session_type,

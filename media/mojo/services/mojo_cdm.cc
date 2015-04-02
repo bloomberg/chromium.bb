@@ -73,13 +73,14 @@ void MojoCdm::SetServerCertificate(const uint8_t* certificate_data,
 
 void MojoCdm::CreateSessionAndGenerateRequest(
     SessionType session_type,
-    const std::string& init_data_type,
+    EmeInitDataType init_data_type,
     const uint8_t* init_data,
     int init_data_length,
     scoped_ptr<NewSessionCdmPromise> promise) {
   remote_cdm_->CreateSessionAndGenerateRequest(
       static_cast<mojo::ContentDecryptionModule::SessionType>(session_type),
-      init_data_type, CreateMojoArray(init_data, init_data_length),
+      static_cast<mojo::ContentDecryptionModule::InitDataType>(init_data_type),
+      CreateMojoArray(init_data, init_data_length),
       base::Bind(&MojoCdm::OnPromiseResult<std::string>,
                  weak_factory_.GetWeakPtr(), base::Passed(&promise)));
 }

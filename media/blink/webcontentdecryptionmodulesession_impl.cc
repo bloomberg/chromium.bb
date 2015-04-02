@@ -17,6 +17,7 @@
 #include "media/blink/cdm_result_promise.h"
 #include "media/blink/cdm_session_adapter.h"
 #include "media/blink/new_session_cdm_result_promise.h"
+#include "media/blink/webmediaplayer_util.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaKeyInformation.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -73,6 +74,23 @@ static blink::WebEncryptedMediaKeyInformation::KeyStatus convertStatus(
   return blink::WebEncryptedMediaKeyInformation::KeyStatus::InternalError;
 }
 
+static MediaKeys::SessionType convertSessionType(
+    blink::WebEncryptedMediaSessionType session_type) {
+  switch (session_type) {
+    case blink::WebEncryptedMediaSessionType::Temporary:
+      return MediaKeys::TEMPORARY_SESSION;
+    case blink::WebEncryptedMediaSessionType::PersistentLicense:
+      return MediaKeys::PERSISTENT_LICENSE_SESSION;
+    case blink::WebEncryptedMediaSessionType::PersistentReleaseMessage:
+      return MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION;
+    case blink::WebEncryptedMediaSessionType::Unknown:
+      break;
+  }
+
+  NOTREACHED();
+  return MediaKeys::TEMPORARY_SESSION;
+}
+
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     const scoped_refptr<CdmSessionAdapter>& adapter)
     : adapter_(adapter), is_closed_(false), weak_ptr_factory_(this) {
@@ -100,59 +118,26 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(session_id_.empty());
 
-  // TODO(jrummell): |init_data_type| should be an enum all the way through
-  // Chromium. http://crbug.com/417440
-  std::string init_data_type_as_ascii = "unknown";
-  switch (init_data_type) {
-    case blink::WebEncryptedMediaInitDataType::Cenc:
-      init_data_type_as_ascii = "cenc";
-      break;
-    case blink::WebEncryptedMediaInitDataType::Keyids:
-      init_data_type_as_ascii = "keyids";
-      break;
-    case blink::WebEncryptedMediaInitDataType::Webm:
-      init_data_type_as_ascii = "webm";
-      break;
-    case blink::WebEncryptedMediaInitDataType::Unknown:
-      NOTREACHED() << "unexpected init_data_type";
-      break;
-  }
-
   // Step 5 from https://w3c.github.io/encrypted-media/#generateRequest.
   // 5. If the Key System implementation represented by this object's cdm
   //    implementation value does not support initDataType as an Initialization
   //    Data Type, return a promise rejected with a new DOMException whose name
   //    is NotSupportedError. String comparison is case-sensitive.
+  EmeInitDataType eme_init_data_type = ConvertToEmeInitDataType(init_data_type);
   if (!IsSupportedKeySystemWithInitDataType(adapter_->GetKeySystem(),
-                                            init_data_type_as_ascii)) {
-    std::string message = "The initialization data type " +
-                          init_data_type_as_ascii +
-                          " is not supported by the key system.";
+                                            eme_init_data_type)) {
+    std::string message =
+        "The initialization data type is not supported by the key system.";
     result.completeWithError(
         blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
         blink::WebString::fromUTF8(message));
     return;
   }
 
-  MediaKeys::SessionType session_type_enum = MediaKeys::TEMPORARY_SESSION;
-  switch (session_type) {
-    case blink::WebEncryptedMediaSessionType::Temporary:
-      session_type_enum = MediaKeys::TEMPORARY_SESSION;
-      break;
-    case blink::WebEncryptedMediaSessionType::PersistentLicense:
-      session_type_enum = MediaKeys::PERSISTENT_LICENSE_SESSION;
-      break;
-    case blink::WebEncryptedMediaSessionType::PersistentReleaseMessage:
-      session_type_enum = MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION;
-      break;
-    case blink::WebEncryptedMediaSessionType::Unknown:
-      NOTREACHED() << "unexpected session_type";
-      break;
-  }
-
   adapter_->InitializeNewSession(
-      init_data_type_as_ascii, init_data,
-      base::saturated_cast<int>(init_data_length), session_type_enum,
+      eme_init_data_type, init_data,
+      base::saturated_cast<int>(init_data_length),
+      convertSessionType(session_type),
       scoped_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
           result, adapter_->GetKeySystemUMAPrefix() + kGenerateRequestUMAName,
           base::Bind(

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Fri Mar 13 14:53:18 2015. */
+/* From private/pp_content_decryptor.idl modified Thu Mar 19 16:04:42 2015. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -459,6 +459,16 @@ typedef enum {
   PP_SESSIONTYPE_PERSISTENT_RELEASE = 2
 } PP_SessionType;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_SessionType, 4);
+
+/**
+ * <code>PP_InitDataType</code> contains Initialization Data Type constants.
+ */
+typedef enum {
+  PP_INITDATATYPE_CENC = 0,
+  PP_INITDATATYPE_KEYIDS = 1,
+  PP_INITDATATYPE_WEBM = 2
+} PP_InitDataType;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InitDataType, 4);
 
 /**
  * <code>PP_CdmExceptionCode</code> contains exception code constants.

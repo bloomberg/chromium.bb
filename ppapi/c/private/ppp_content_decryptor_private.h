@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Fri Mar  6 14:26:54 2015.
+ *   modified Thu Mar 19 16:02:53 2015.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -86,8 +86,8 @@ struct PPP_ContentDecryptor_Private_0_14 {
    * @param[in] session_type A <code>PP_SessionType</code> that indicates the
    * type of session to be created.
    *
-   * @param[in] init_data_type A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the MIME type for init_data.
+   * @param[in] init_data_type A <code>PP_InitDataType</code> that indicates
+   * the Initialization Data Type for init_data.
    *
    * @param[in] init_data A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
@@ -96,7 +96,7 @@ struct PPP_ContentDecryptor_Private_0_14 {
   void (*CreateSessionAndGenerateRequest)(PP_Instance instance,
                                           uint32_t promise_id,
                                           PP_SessionType session_type,
-                                          struct PP_Var init_data_type,
+                                          PP_InitDataType init_data_type,
                                           struct PP_Var init_data);
   /**
    * Loads a session whose session ID is <code>session_id</code>.

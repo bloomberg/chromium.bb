@@ -44,7 +44,7 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
       scoped_ptr<media::SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
-      const std::string& init_data_type,
+      media::EmeInitDataType init_data_type,
       const uint8* init_data,
       int init_data_length,
       scoped_ptr<media::NewSessionCdmPromise> promise) override;

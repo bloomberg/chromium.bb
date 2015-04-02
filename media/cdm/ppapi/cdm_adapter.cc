@@ -232,14 +232,16 @@ cdm::SessionType PpSessionTypeToCdmSessionType(PP_SessionType session_type) {
   return cdm::kTemporary;
 }
 
-cdm::InitDataType InitDataTypeToCdmInitDataType(
-    const std::string& init_data_type) {
-  if (init_data_type == "cenc")
-    return cdm::kCenc;
-  if (init_data_type == "webm")
-    return cdm::kWebM;
-  if (init_data_type == "keyids")
-    return cdm::kKeyIds;
+cdm::InitDataType PpInitDataTypeToCdmInitDataType(
+    PP_InitDataType init_data_type) {
+  switch (init_data_type) {
+    case PP_INITDATATYPE_CENC:
+      return cdm::kCenc;
+    case PP_INITDATATYPE_KEYIDS:
+      return cdm::kKeyIds;
+    case PP_INITDATATYPE_WEBM:
+      return cdm::kWebM;
+  }
 
   PP_NOTREACHED();
   return cdm::kKeyIds;
@@ -419,13 +421,10 @@ void CdmAdapter::SetServerCertificate(uint32_t promise_id,
       promise_id, server_certificate_ptr, server_certificate_size);
 }
 
-// TODO(jrummell): |init_data_type| should be an enum all the way through
-// Chromium. http://crbug.com/469228
-void CdmAdapter::CreateSessionAndGenerateRequest(
-    uint32_t promise_id,
-    PP_SessionType session_type,
-    const std::string& init_data_type,
-    pp::VarArrayBuffer init_data) {
+void CdmAdapter::CreateSessionAndGenerateRequest(uint32_t promise_id,
+                                                 PP_SessionType session_type,
+                                                 PP_InitDataType init_data_type,
+                                                 pp::VarArrayBuffer init_data) {
   // Initialize() doesn't report an error, so CreateSession() can be called
   // even if Initialize() failed.
   // TODO(jrummell): Remove this code when prefixed EME gets removed.
@@ -441,7 +440,7 @@ void CdmAdapter::CreateSessionAndGenerateRequest(
 
   cdm_->CreateSessionAndGenerateRequest(
       promise_id, PpSessionTypeToCdmSessionType(session_type),
-      InitDataTypeToCdmInitDataType(init_data_type),
+      PpInitDataTypeToCdmInitDataType(init_data_type),
       static_cast<const uint8_t*>(init_data.Map()), init_data.ByteLength());
 }
 

@@ -268,6 +268,22 @@ PP_SessionType MediaSessionTypeToPpSessionType(
   }
 }
 
+PP_InitDataType MediaInitDataTypeToPpInitDataType(
+    media::EmeInitDataType init_data_type) {
+  switch (init_data_type) {
+    case media::EmeInitDataType::CENC:
+      return PP_INITDATATYPE_CENC;
+    case media::EmeInitDataType::KEYIDS:
+      return PP_INITDATATYPE_KEYIDS;
+    case media::EmeInitDataType::WEBM:
+      return PP_INITDATATYPE_WEBM;
+    case media::EmeInitDataType::UNKNOWN:
+      break;
+  }
+  NOTREACHED();
+  return PP_INITDATATYPE_KEYIDS;
+}
+
 MediaKeys::Exception PpExceptionTypeToMediaException(
     PP_CdmExceptionCode exception_code) {
   switch (exception_code) {
@@ -410,7 +426,7 @@ void ContentDecryptorDelegate::SetServerCertificate(
 
 void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
     MediaKeys::SessionType session_type,
-    const std::string& init_data_type,
+    media::EmeInitDataType init_data_type,
     const uint8* init_data,
     int init_data_length,
     scoped_ptr<NewSessionCdmPromise> promise) {
@@ -420,7 +436,7 @@ void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
           init_data_length, init_data);
   plugin_decryption_interface_->CreateSessionAndGenerateRequest(
       pp_instance_, promise_id, MediaSessionTypeToPpSessionType(session_type),
-      StringVar::StringToPPVar(init_data_type), init_data_array);
+      MediaInitDataTypeToPpInitDataType(init_data_type), init_data_array);
 }
 
 void ContentDecryptorDelegate::LoadSession(

@@ -11,6 +11,7 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/key_systems.h"
 #include "media/base/media.h"
 #include "media/base/media_keys.h"
 #include "media/base/media_switches.h"
@@ -312,11 +313,12 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
         // key ID as the init_data.
         // http://crbug.com/460308
         decryptor->CreateSessionAndGenerateRequest(
-            MediaKeys::TEMPORARY_SESSION, "webm", kKeyId, arraysize(kKeyId),
-            CreateSessionPromise(RESOLVED));
+            MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, kKeyId,
+            arraysize(kKeyId), CreateSessionPromise(RESOLVED));
       } else {
         decryptor->CreateSessionAndGenerateRequest(
-            MediaKeys::TEMPORARY_SESSION, init_data_type,
+            MediaKeys::TEMPORARY_SESSION,
+            media::GetInitDataTypeForName(init_data_type),
             vector_as_array(&init_data), init_data.size(),
             CreateSessionPromise(RESOLVED));
       }
@@ -326,7 +328,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     // Clear Key really needs the key ID from |init_data|. For WebM, they are
     // the same, but this is not the case for ISO CENC (key ID embedded in a
     // 'pssh' box). Therefore, provide the correct key ID.
-    const uint8* key_id = init_data.empty() ? NULL : &init_data[0];
+    const uint8* key_id = vector_as_array(&init_data);
     size_t key_id_length = init_data.size();
     if (init_data_type == kCencInitDataType) {
       key_id = kKeyId;
@@ -374,11 +376,13 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
       // key ID as the init_data.
       // http://crbug.com/460308
       decryptor->CreateSessionAndGenerateRequest(
-          MediaKeys::TEMPORARY_SESSION, "webm", vector_as_array(&key_id),
-          key_id.size(), CreateSessionPromise(RESOLVED));
+          MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+          vector_as_array(&key_id), key_id.size(),
+          CreateSessionPromise(RESOLVED));
     } else {
       decryptor->CreateSessionAndGenerateRequest(
-          MediaKeys::TEMPORARY_SESSION, init_data_type,
+          MediaKeys::TEMPORARY_SESSION,
+          media::GetInitDataTypeForName(init_data_type),
           vector_as_array(&init_data), init_data.size(),
           CreateSessionPromise(RESOLVED));
     }

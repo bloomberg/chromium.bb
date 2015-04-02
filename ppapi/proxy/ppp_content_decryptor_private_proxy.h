@@ -42,7 +42,7 @@ class PPP_ContentDecryptor_Private_Proxy : public InterfaceProxy {
       PP_Instance instance,
       uint32_t promise_id,
       PP_SessionType session_type,
-      SerializedVarReceiveInput init_data_type,
+      PP_InitDataType init_data_type,
       SerializedVarReceiveInput init_data);
   void OnMsgLoadSession(PP_Instance instance,
                         uint32_t promise_id,

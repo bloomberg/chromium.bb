@@ -38,7 +38,7 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
                             scoped_ptr<SimpleCdmPromise> promise) final;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
-      const std::string& init_data_type,
+      EmeInitDataType init_data_type,
       const uint8_t* init_data,
       int init_data_length,
       scoped_ptr<NewSessionCdmPromise> promise) final;

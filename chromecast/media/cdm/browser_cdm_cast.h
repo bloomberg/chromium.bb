@@ -82,7 +82,7 @@ class BrowserCdmCast : public ::media::BrowserCdm {
       scoped_ptr<::media::SimpleCdmPromise> promise);
   void CreateSessionAndGenerateRequestHelper(
       ::media::MediaKeys::SessionType session_type,
-      const std::string& init_data_type,
+      ::media::EmeInitDataType init_data_type,
       const std::vector<uint8>& init_data,
       scoped_ptr<::media::NewSessionCdmPromise> promise);
   void UpdateSessionHelper(const std::string& session_id,
@@ -127,7 +127,7 @@ class BrowserCdmCastUi : public ::media::BrowserCdm {
       scoped_ptr<::media::SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       ::media::MediaKeys::SessionType session_type,
-      const std::string& init_data_type,
+      ::media::EmeInitDataType init_data_type,
       const uint8* init_data,
       int init_data_length,
       scoped_ptr<::media::NewSessionCdmPromise> promise) override;

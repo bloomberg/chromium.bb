@@ -238,6 +238,17 @@ ASSERT_CDM_SESSION_TYPE(TEMPORARY_SESSION);
 ASSERT_CDM_SESSION_TYPE(PERSISTENT_LICENSE_SESSION);
 ASSERT_CDM_SESSION_TYPE(PERSISTENT_RELEASE_MESSAGE_SESSION);
 
+// CDM InitDataType
+#define ASSERT_CDM_INIT_DATA_TYPE(value)                                  \
+  static_assert(media::EmeInitDataType::value ==                          \
+                    static_cast<media::EmeInitDataType>(                  \
+                        ContentDecryptionModule::INIT_DATA_TYPE_##value), \
+                "Mismatched CDM Init Data Type")
+ASSERT_CDM_INIT_DATA_TYPE(UNKNOWN);
+ASSERT_CDM_INIT_DATA_TYPE(WEBM);
+ASSERT_CDM_INIT_DATA_TYPE(CENC);
+ASSERT_CDM_INIT_DATA_TYPE(KEYIDS);
+
 // CDM Key Status
 #define ASSERT_CDM_KEY_STATUS(value)                                  \
   static_assert(media::CdmKeyInformation::value ==                    \
