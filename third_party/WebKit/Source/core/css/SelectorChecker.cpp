@@ -37,6 +37,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
+#include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
@@ -1008,7 +1009,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, co
     for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
         subContext.treatShadowHostAsNormalScope = true;
         subContext.scope = context.scope;
-        // Use NodeRenderingTraversal to traverse a composed ancestor list of a given element.
+        // Use ComposedTreeTraversal to traverse a composed ancestor list of a given element.
         Element* nextElement = &element;
         SelectorCheckingContext hostContext(subContext);
         do {
@@ -1028,7 +1029,7 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, co
                 break;
 
             hostContext.elementStyle = 0;
-            nextElement = NodeRenderingTraversal::parentElement(*nextElement);
+            nextElement = ComposedTreeTraversal::parentElement(*nextElement);
         } while (nextElement);
     }
     if (matched) {
