@@ -633,8 +633,7 @@ void RenderViewContextMenu::AppendPrintPreviewItems() {
 
 const Extension* RenderViewContextMenu::GetExtension() const {
   return extensions::ProcessManager::Get(browser_context_)
-      ->GetExtensionForRenderViewHost(
-          source_web_contents_->GetRenderViewHost());
+      ->GetExtensionForWebContents(source_web_contents_);
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {

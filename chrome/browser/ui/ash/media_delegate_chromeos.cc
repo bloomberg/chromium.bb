@@ -76,15 +76,11 @@ void GetExtensionMediaCaptureState(
     const MediaStreamCaptureIndicator* indicator,
     content::BrowserContext* context,
     int* media_state_out) {
-  const extensions::ProcessManager::ViewSet view_set =
-      extensions::ProcessManager::Get(context)->GetAllViews();
-  for (extensions::ProcessManager::ViewSet::const_iterator iter =
-           view_set.begin();
-       iter != view_set.end();
-       ++iter) {
+  for (content::RenderFrameHost* host :
+           extensions::ProcessManager::Get(context)->GetAllFrames()) {
     content::WebContents* web_contents =
-        content::WebContents::FromRenderViewHost(*iter);
-    // RVH may not have web contents.
+        content::WebContents::FromRenderFrameHost(host);
+    // RFH may not have web contents.
     if (!web_contents)
       continue;
     GetMediaCaptureState(indicator, web_contents, media_state_out);

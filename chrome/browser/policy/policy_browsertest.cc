@@ -1802,23 +1802,23 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   // have been loaded.
   extensions::ProcessManager* manager =
       extensions::ProcessManager::Get(browser()->profile());
-  extensions::ProcessManager::ViewSet all_views = manager->GetAllViews();
-  for (extensions::ProcessManager::ViewSet::const_iterator iter =
-           all_views.begin();
-       iter != all_views.end();) {
-    if (!(*iter)->IsLoading()) {
+  extensions::ProcessManager::FrameSet all_frames = manager->GetAllFrames();
+  for (extensions::ProcessManager::FrameSet::const_iterator iter =
+           all_frames.begin();
+       iter != all_frames.end();) {
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderFrameHost(*iter);
+    ASSERT_TRUE(web_contents);
+    if (!web_contents->IsLoading()) {
       ++iter;
     } else {
-      content::WebContents* web_contents =
-          content::WebContents::FromRenderViewHost(*iter);
-      ASSERT_TRUE(web_contents);
       WebContentsLoadedOrDestroyedWatcher(web_contents).Wait();
 
       // Test activity may have modified the set of extension processes during
       // message processing, so re-start the iteration to catch added/removed
       // processes.
-      all_views = manager->GetAllViews();
-      iter = all_views.begin();
+      all_frames = manager->GetAllFrames();
+      iter = all_frames.begin();
     }
   }
 
