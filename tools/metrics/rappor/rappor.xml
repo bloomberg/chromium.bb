@@ -339,6 +339,13 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="SoftwareReporter.FoundUwS" type="COARSE_RAPPOR_TYPE">
+  <owner>mad@chromium.org</owner>
+  <summary>
+    The IDs of unwanted software found by the software reporter tool.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="interstitial.harmful.domain" type="COARSE_RAPPOR_TYPE">
   <owner>nparker@chromium.org</owner>
   <summary>

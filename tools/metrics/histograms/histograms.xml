@@ -38023,6 +38023,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The build version of the software reporter cleaner tool.</summary>
 </histogram>
 
+<histogram name="SoftwareReporter.FoundUwSReadError" enum="BooleanError">
+  <owner>mad@chromium.org</owner>
+  <summary>
+    Whether there was an error reading the registry key containing UwS found by
+    the Software Removal Tool.
+  </summary>
+</histogram>
+
 <histogram name="SoftwareReporter.LastUploadResult" enum="BooleanSuccess">
   <owner>mad@chromium.org</owner>
   <summary>The result of the most recent SRT log upload.</summary>
@@ -45911,6 +45919,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanEnabled" type="int">
   <int value="0" label="Disabled"/>
   <int value="1" label="Enabled"/>
+</enum>
+
+<enum name="BooleanError" type="int">
+  <int value="0" label="No Error"/>
+  <int value="1" label="Error"/>
 </enum>
 
 <enum name="BooleanExpired" type="int">

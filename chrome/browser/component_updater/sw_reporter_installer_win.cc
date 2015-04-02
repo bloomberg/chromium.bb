@@ -25,7 +25,9 @@
 #include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
@@ -45,6 +47,7 @@
 #include "components/component_updater/default_component_installer.h"
 #include "components/component_updater/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/rappor/rappor_service.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -91,11 +94,16 @@ const base::FilePath::CharType kSwReporterExeName[] =
 const wchar_t kSoftwareRemovalToolRegistryKey[] =
     L"Software\\Google\\Software Removal Tool";
 const wchar_t kCleanerSuffixRegistryKey[] = L"Cleaner";
-const wchar_t kEndTimeRegistryValueName[] = L"EndTime";
-const wchar_t kExitCodeRegistryValueName[] = L"ExitCode";
-const wchar_t kStartTimeRegistryValueName[] = L"StartTime";
+const wchar_t kEndTimeValueName[] = L"EndTime";
+const wchar_t kExitCodeValueName[] = L"ExitCode";
+const wchar_t kFoundUwsValueName[] = L"FoundUws";
+const wchar_t kStartTimeValueName[] = L"StartTime";
 const wchar_t kUploadResultsValueName[] = L"UploadResults";
-const wchar_t kVersionRegistryValueName[] = L"Version";
+const wchar_t kVersionValueName[] = L"Version";
+
+const char kFoundUwsMetricName[] = "SoftwareReporter.FoundUwS";
+const char kFoundUwsReadErrorMetricName[] =
+    "SoftwareReporter.FoundUwSReadError";
 
 // Exit codes that identify that a cleanup is needed.
 const int kCleanupNeeded = 0;
@@ -180,7 +188,7 @@ void ReportAndClearExitCode(int exit_code, const std::string& version) {
 
   base::win::RegKey srt_key(HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey,
                             KEY_SET_VALUE);
-  srt_key.DeleteValue(kExitCodeRegistryValueName);
+  srt_key.DeleteValue(kExitCodeValueName);
 
   if ((exit_code != kPostRebootCleanupNeeded && exit_code != kCleanupNeeded) ||
       !IsInSRTPromptFieldTrialGroups()) {
@@ -244,6 +252,40 @@ void LaunchAndWaitForExit(const base::FilePath& exe_path,
       base::Bind(&ReportAndClearExitCode, exit_code, version));
 }
 
+// Reports UwS found by the software reporter tool via UMA and RAPPOR.
+void ReportFoundUwS() {
+  base::win::RegKey reporter_key(HKEY_CURRENT_USER,
+                                 kSoftwareRemovalToolRegistryKey,
+                                 KEY_QUERY_VALUE | KEY_SET_VALUE);
+  std::vector<base::string16> found_uws_strings;
+  if (reporter_key.Valid() &&
+      reporter_key.ReadValues(kFoundUwsValueName, &found_uws_strings) ==
+          ERROR_SUCCESS) {
+    rappor::RapporService* rappor_service = g_browser_process->rappor_service();
+
+    bool parse_error = false;
+    for (const base::string16& uws_string : found_uws_strings) {
+      // All UwS ids are expected to be integers.
+      uint32_t uws_id = 0;
+      if (base::StringToUint(uws_string, &uws_id)) {
+        UMA_HISTOGRAM_SPARSE_SLOWLY(kFoundUwsMetricName, uws_id);
+        if (rappor_service) {
+          rappor_service->RecordSample(kFoundUwsMetricName,
+                                       rappor::COARSE_RAPPOR_TYPE,
+                                       base::UTF16ToUTF8(uws_string));
+        }
+      } else {
+        parse_error = true;
+      }
+    }
+
+    // Clean up the old value.
+    reporter_key.DeleteValue(kFoundUwsValueName);
+
+    UMA_HISTOGRAM_BOOLEAN(kFoundUwsReadErrorMetricName, parse_error);
+  }
+}
+
 class SwReporterInstallerTraits : public ComponentInstallerTraits {
  public:
   explicit SwReporterInstallerTraits(PrefService* prefs) : prefs_(prefs) {}
@@ -280,8 +322,7 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
         HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey, KEY_READ);
     DWORD exit_code;
     if (srt_key.Valid() &&
-        srt_key.ReadValueDW(kExitCodeRegistryValueName, &exit_code) ==
-            ERROR_SUCCESS) {
+        srt_key.ReadValueDW(kExitCodeValueName, &exit_code) == ERROR_SUCCESS) {
       ReportUmaStep(SW_REPORTER_REGISTRY_EXIT_CODE);
       ReportAndClearExitCode(exit_code, version_string);
     }
@@ -363,26 +404,25 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
   base::win::RegKey cleaner_key(
       HKEY_CURRENT_USER, cleaner_key_name.c_str(), KEY_ALL_ACCESS);
   // Cleaner is assumed to have run if we have a start time.
-  if (cleaner_key.Valid() &&
-      cleaner_key.HasValue(kStartTimeRegistryValueName)) {
+  if (cleaner_key.Valid() && cleaner_key.HasValue(kStartTimeValueName)) {
     // Get version number.
-    if (cleaner_key.HasValue(kVersionRegistryValueName)) {
+    if (cleaner_key.HasValue(kVersionValueName)) {
       DWORD version;
-      cleaner_key.ReadValueDW(kVersionRegistryValueName, &version);
+      cleaner_key.ReadValueDW(kVersionValueName, &version);
       UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.Version", version);
-      cleaner_key.DeleteValue(kVersionRegistryValueName);
+      cleaner_key.DeleteValue(kVersionValueName);
     }
     // Get start & end time. If we don't have an end time, we can assume the
     // cleaner has not completed.
     int64 start_time_value;
-    cleaner_key.ReadInt64(kStartTimeRegistryValueName, &start_time_value);
+    cleaner_key.ReadInt64(kStartTimeValueName, &start_time_value);
 
-    bool completed = cleaner_key.HasValue(kEndTimeRegistryValueName);
+    bool completed = cleaner_key.HasValue(kEndTimeValueName);
     UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.Cleaner.HasCompleted", completed);
     if (completed) {
       int64 end_time_value;
-      cleaner_key.ReadInt64(kEndTimeRegistryValueName, &end_time_value);
-      cleaner_key.DeleteValue(kEndTimeRegistryValueName);
+      cleaner_key.ReadInt64(kEndTimeValueName, &end_time_value);
+      cleaner_key.DeleteValue(kEndTimeValueName);
       base::TimeDelta run_time(base::Time::FromInternalValue(end_time_value) -
           base::Time::FromInternalValue(start_time_value));
       UMA_HISTOGRAM_LONG_TIMES("SoftwareReporter.Cleaner.RunningTime",
@@ -390,13 +430,13 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
     }
     // Get exit code. Assume nothing was found if we can't read the exit code.
     DWORD exit_code = kNothingFound;
-    if (cleaner_key.HasValue(kExitCodeRegistryValueName)) {
-      cleaner_key.ReadValueDW(kExitCodeRegistryValueName, &exit_code);
+    if (cleaner_key.HasValue(kExitCodeValueName)) {
+      cleaner_key.ReadValueDW(kExitCodeValueName, &exit_code);
       UMA_HISTOGRAM_SPARSE_SLOWLY("SoftwareReporter.Cleaner.ExitCode",
           exit_code);
-      cleaner_key.DeleteValue(kExitCodeRegistryValueName);
+      cleaner_key.DeleteValue(kExitCodeValueName);
     }
-    cleaner_key.DeleteValue(kStartTimeRegistryValueName);
+    cleaner_key.DeleteValue(kStartTimeValueName);
 
     if (exit_code == kPostRebootCleanupNeeded ||
         exit_code == kDelayedPostRebootCleanupNeeded) {
@@ -415,6 +455,8 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus,
       ReportUploadsWithUma(upload_results);
     }
   }
+
+  ReportFoundUwS();
 
   // Install the component.
   scoped_ptr<ComponentInstallerTraits> traits(
