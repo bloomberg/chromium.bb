@@ -17,7 +17,6 @@ var ACCESS_CODE_LENGTH = SUPPORT_ID_LENGTH + HOST_SECRET_LENGTH;
 /**
  * @param {remoting.SessionConnector} sessionConnector
  * @constructor
- * @private
  */
 remoting.It2MeConnectFlow = function(sessionConnector) {
   /** @private */
@@ -26,31 +25,24 @@ remoting.It2MeConnectFlow = function(sessionConnector) {
   this.hostId_ = '';
   /** @private */
   this.passCode_ = '';
+
+  var form = document.getElementById('access-code-form');
+  /** @private */
+  this.accessCodeDialog_ = new remoting.InputDialog(
+    remoting.AppMode.CLIENT_UNCONNECTED,
+    form,
+    form.querySelector('#access-code-entry'),
+    form.querySelector('#cancel-access-code-button'));
 };
 
-/**
- * Initiates an IT2Me connection.
- *
- * @param {remoting.SessionConnector} connector
- * @param {string} accessCode
- * @return {Promise} Promise that resolves when the connection is initiated.
- *     Rejects with remoting.Error on failure.
- */
-remoting.It2MeConnectFlow.start = function(connector, accessCode) {
-  var instance = new remoting.It2MeConnectFlow(connector);
-  return instance.connect_(accessCode);
-};
 
-/**
- * @param {string} accessCode The access code as entered by the user.
- * @return {Promise} Promise that resolves when the connection is initiated.
- *     Rejects with remoting.Error on failure.
- * @private
- */
-remoting.It2MeConnectFlow.prototype.connect_ = function(accessCode) {
+remoting.It2MeConnectFlow.prototype.start = function() {
   var that = this;
 
-  return this.verifyAccessCode_(accessCode).then(function() {
+  this.accessCodeDialog_.show().then(function(/** string */ accessCode) {
+    remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+    return that.verifyAccessCode_(accessCode);
+  }).then(function() {
     return remoting.identity.getToken();
   }).then(function(/** string */ token) {
     return that.getHostInfo_(token);
@@ -61,8 +53,14 @@ remoting.It2MeConnectFlow.prototype.connect_ = function(accessCode) {
         remoting.Application.Mode.IT2ME,
         host,
         new remoting.CredentialsProvider({ accessCode: that.passCode_ }));
-  }).catch(function(error) {
-    return Promise.reject(/** remoting.Error */ error);
+  }).catch(function(/** remoting.Error */ error) {
+    if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
+      remoting.setMode(remoting.AppMode.HOME);
+    } else {
+      var errorDiv = document.getElementById('connect-error-message');
+      l10n.localizeElementFromTag(errorDiv, error.getTag());
+      remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
+    }
   });
 };
 

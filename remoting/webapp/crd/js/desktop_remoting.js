@@ -92,6 +92,8 @@ remoting.DesktopRemoting.prototype.initApplication_ = function() {
   }
 
   remoting.initHostlist_(this.connectMe2Me_.bind(this));
+  document.getElementById('access-mode-button').addEventListener(
+      'click', this.connectIt2Me_.bind(this), false);
 
   var homeFeedback = new remoting.MenuButton(
       document.getElementById('help-feedback-main'));
@@ -366,5 +368,15 @@ remoting.DesktopRemoting.prototype.getConnectedViewForTesting = function() {
 remoting.DesktopRemoting.prototype.connectMe2Me_ = function(hostId) {
   var host = remoting.hostList.getHostForId(hostId);
   var flow = new remoting.Me2MeConnectFlow(this.sessionConnector_, host);
+  flow.start();
+};
+
+/**
+ * Entry-point for It2Me connections.
+ *
+ * @private
+ */
+remoting.DesktopRemoting.prototype.connectIt2Me_ = function() {
+  var flow = new remoting.It2MeConnectFlow(this.sessionConnector_);
   flow.start();
 };

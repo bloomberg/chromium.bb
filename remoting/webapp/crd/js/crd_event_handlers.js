@@ -11,16 +11,6 @@ remoting.initElementEventHandlers = function() {
   var goHome = function() {
     remoting.setMode(remoting.AppMode.HOME);
   };
-  var goEnterAccessCode = function() {
-    // We don't need a token until we authenticate, but asking for one here
-    // handles the token-expired case earlier, avoiding asking the user for
-    // the access code both before and after re-authentication.
-    remoting.identity.getToken().
-        then(function(token) {
-          remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
-        }).
-        catch(remoting.Error.handler(remoting.showErrorMessage));
-  };
   var goFinishedIT2Me = function() {
     if (remoting.currentMode == remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME) {
       remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
@@ -28,24 +18,12 @@ remoting.initElementEventHandlers = function() {
       goHome();
     }
   };
-  /** @param {Event} event The event. */
-  var sendAccessCode = function(event) {
-    remoting.connectIT2Me();
-    event.preventDefault();
-  };
   var reconnect = function() {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
     remoting.app.getSessionConnector().reconnect();
   };
-  var cancelAccessCode = function() {
-    remoting.setMode(remoting.AppMode.HOME);
-    document.getElementById('access-code-entry').value = '';
-  };
   /** @type {Array<{event: string, id: string, fn: function(Event):void}>} */
   var it2me_actions = [
-      { event: 'click', id: 'access-mode-button', fn: goEnterAccessCode },
-      { event: 'submit', id: 'access-code-form', fn: sendAccessCode },
-      { event: 'click', id: 'cancel-access-code-button', fn: cancelAccessCode},
       { event: 'click', id: 'cancel-share-button', fn: remoting.cancelShare },
       { event: 'click', id: 'client-finished-it2me-button', fn: goHome },
       { event: 'click', id: 'get-started-it2me',
