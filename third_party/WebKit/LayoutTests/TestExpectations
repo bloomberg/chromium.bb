@@ -60,7 +60,7 @@ crbug.com/469454 [ Mac ] virtual/slimmingpaint/fast/repaint/fixed-element-repain
 
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ Pass ImageOnlyFailure ]
 
-#crbug.com/456357 [ Debug ] virtual/slimmingpaint/fast/overflow/line-clamp.html [ Crash ]
+crbug.com/456357 [ Debug ] virtual/slimmingpaint/fast/overflow/line-clamp.html [ Crash ]
 crbug.com/450725 virtual/slimmingpaint/svg/text/remove-tspan-from-text.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/450725 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ Crash NeedsManualRebaseline ]
 crbug.com/450725 virtual/slimmingpaint/svg/text/text-text-05-t.svg [ ImageOnlyFailure NeedsManualRebaseline ]
@@ -79,10 +79,6 @@ crbug.com/471100 virtual/slimmingpaint/printing/iframe-print.html [ NeedsRebasel
 crbug.com/454866 virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ ImageOnlyFailure ]
 crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer-second-column.html [ ImageOnlyFailure ]
 crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer.html [ ImageOnlyFailure ]
-
-crbug.com/460198 svg/custom/massive-coordinates.svg [ NeedsManualRebaseline ]
-crbug.com/460198 transforms/2d/hindi-rotated.html [ NeedsManualRebaseline ]
-crbug.com/460198 virtual/slimmingpaint/fast/overflow/line-clamp.html [ Crash NeedsManualRebaseline ]
 
 crbug.com/464039 [ Mac ] fast/block/float/float-mark-descendants-for-layout-crash.html [ Pass Crash ]
 
@@ -1917,11 +1913,11 @@ crbug.com/463358 [ Debug ] fast/transforms/transformed-caret.html [ Pass ImageOn
 crbug.com/463358 [ Debug ] fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/as-background-image/svg-as-background-4.html [ Pass ImageOnlyFailure ]
-#crbug.com/463358 [ Debug ] svg/custom/massive-coordinates.svg [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] svg/custom/massive-coordinates.svg [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
-#crbug.com/463358 [ Debug ] transforms/2d/hindi-rotated.html [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] transforms/2d/hindi-rotated.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Mac Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure ]
 
 crbug.com/467450 http/tests/misc/client-hints-invalid-accept.php [ Failure ]
