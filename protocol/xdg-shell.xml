@@ -267,9 +267,7 @@
     <enum name="resize_edge">
       <description summary="edge values for resizing">
 	These values are used to indicate which edge of a surface
-	is being dragged in a resize operation. The server may
-	use this information to adapt its behavior, e.g. choose
-	an appropriate cursor image.
+	is being dragged in a resize operation.
       </description>
       <entry name="none" value="0"/>
       <entry name="top" value="1"/>
@@ -287,10 +285,33 @@
 	Start a user-driven, interactive resize of the surface.
 
 	This request must be used in response to some sort of user action
-	like a button press, key press, or touch down event.
+	like a button press, key press, or touch down event. The passed
+	serial is used to determine the type of interactive resize (touch,
+	pointer, etc).
 
 	The server may ignore resize requests depending on the state of
 	the surface (e.g. fullscreen or maximized).
+
+	If triggered, the client will receive configure events with the
+	"resize" state enum value and the expected sizes. See the "resize"
+	enum value for more details about what is required. The client
+	must also acknowledge configure events using "ack_configure". After
+	the resize is completed, the client will receive another "configure"
+	event without the resize state.
+
+	If triggered, the surface also will lose the focus of the device
+	(wl_pointer, wl_touch, etc) used for the resize. It is up to the
+	compositor to visually indicate that the resize is taking place,
+	such as updating a pointer cursor, during the resize. There is no
+	guarantee that the device focus will return when the resize is
+	completed.
+
+	The edges parameter specifies how the surface should be resized,
+	and is one of the values of the resize_edge enum. The compositor
+	may use this information to update the surface position for
+	example when dragging the top left corner. The compositor may also
+	use this information to adapt its behavior, e.g. choose an
+	appropriate cursor image.
       </description>
       <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat of the user event"/>
       <arg name="serial" type="uint" summary="the serial of the user event"/>
