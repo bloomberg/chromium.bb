@@ -731,28 +731,33 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
   }
 }
 
-void View::Paint(const PaintContext& context) {
+void View::Paint(const PaintContext& parent_context) {
   if (!visible_)
     return;
 
-#if DCHECK_IS_ON()
-  context.Visited(this);
-#endif
+  gfx::Vector2d offset_to_parent;
+  if (!layer()) {
+    // If the View has a layer() then it is a paint root. Otherwise, we need to
+    // add the offset from the parent into the total offset from the paint root.
+    DCHECK_IMPLIES(!parent(), bounds().origin() == gfx::Point());
+    offset_to_parent = GetMirroredPosition().OffsetFromOrigin();
+  }
+  PaintContext context = parent_context.CloneWithPaintOffset(offset_to_parent);
 
   if (context.CanCheckInvalidated()) {
-    // This computes the bounds of the current view in the space of the view's
-    // paint root (ie the ancestor View at which this Paint() walk started), in
-    // order to tell if the View needs to be painted.
-    gfx::Rect bounds_in_paint_root = GetLocalBounds();
+#if DCHECK_IS_ON()
+    gfx::Vector2d offset;
+    context.Visited(this);
     View* view = this;
-    // TODO(danakj): This is O(n^2) we can do better by storing an offset in the
-    // PaintContext.
     while (view->parent() && !view->layer()) {
       DCHECK(view->GetTransform().IsIdentity());
-      bounds_in_paint_root += view->GetMirroredPosition().OffsetFromOrigin();
+      offset += view->GetMirroredPosition().OffsetFromOrigin();
       view = view->parent();
     }
-#if DCHECK_IS_ON()
+    // The offset in the PaintContext should be the offset up to the paint root,
+    // which we compute and verify here.
+    DCHECK_EQ(context.PaintOffset().x(), offset.x());
+    DCHECK_EQ(context.PaintOffset().y(), offset.y());
     // The above loop will stop when |view| is the paint root, which should be
     // the root of the current paint walk, as verified by storing the root in
     // the PaintContext.
@@ -761,7 +766,7 @@ void View::Paint(const PaintContext& context) {
 
     // If the View wasn't invalidated, don't waste time painting it, the output
     // would be culled.
-    if (!context.IsRectInvalidated(bounds_in_paint_root))
+    if (!context.IsRectInvalidated(GetLocalBounds()))
       return;
   }
 

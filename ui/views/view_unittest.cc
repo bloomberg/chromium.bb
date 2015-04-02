@@ -715,6 +715,147 @@ TEST_F(ViewTest, PaintIntersectsNoChildrenInRTL) {
   EXPECT_FALSE(v2->did_paint_);
 }
 
+TEST_F(ViewTest, PaintIntersectsOneChild) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  root_view->AddChildView(v2);
+
+  gfx::Canvas canvas(root_view->size(), 1.f, true);
+  // Intersects with the second child only.
+  gfx::Rect paint_area(3, 3, 1, 2);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_TRUE(v2->did_paint_);
+
+  // Intersects with the first child only.
+  paint_area = gfx::Rect(20, 10, 1, 2);
+
+  v1->Reset();
+  v2->Reset();
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_TRUE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+}
+
+TEST_F(ViewTest, PaintIntersectsOneChildInRTL) {
+  ScopedRTL rtl;
+
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  root_view->AddChildView(v2);
+
+  // Verify where the layers actually appear.
+  v1->SetPaintToLayer(true);
+  // x: 25 - 10(x) - 12(width) = 3
+  EXPECT_EQ(gfx::Rect(3, 11, 12, 13), v1->layer()->bounds());
+  v1->SetPaintToLayer(false);
+
+  v2->SetPaintToLayer(true);
+  // x: 25 - 3(x) - 6(width) = 16
+  EXPECT_EQ(gfx::Rect(16, 4, 6, 5), v2->layer()->bounds());
+  v2->SetPaintToLayer(false);
+
+  gfx::Canvas canvas(root_view->size(), 1.f, true);
+  // Intersects with the first child only.
+  gfx::Rect paint_area(3, 10, 1, 2);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_TRUE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+
+  // Intersects with the second child only.
+  paint_area = gfx::Rect(21, 3, 1, 2);
+
+  v1->Reset();
+  v2->Reset();
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_TRUE(v2->did_paint_);
+}
+
+TEST_F(ViewTest, PaintInPromotedToLayer) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetPaintToLayer(true);
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  v1->AddChildView(v2);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+
+  {
+    gfx::Canvas canvas(root_view->size(), 1.f, true);
+    gfx::Rect paint_area(25, 26);
+
+    // The promoted views are not painted as they are separate paint roots.
+    root_view->Paint(View::PaintContext(&canvas, paint_area));
+    EXPECT_FALSE(v1->did_paint_);
+    EXPECT_FALSE(v2->did_paint_);
+  }
+
+  {
+    gfx::Canvas canvas(v1->size(), 1.f, true);
+    gfx::Rect paint_area(1, 1);
+
+    // The |v1| view is painted. If it used its offset incorrect, it would think
+    // its at (10,11) instead of at (0,0) since it is the paint root.
+    v1->Paint(View::PaintContext(&canvas, paint_area));
+    EXPECT_TRUE(v1->did_paint_);
+    EXPECT_FALSE(v2->did_paint_);
+  }
+
+  v1->Reset();
+
+  {
+    gfx::Canvas canvas(v1->size(), 1.f, true);
+    gfx::Rect paint_area(3, 3, 1, 2);
+
+    // The |v2| view is painted also. If it used its offset incorrect, it would
+    // think its at (13,15) instead of at (3,4) since |v1| is the paint root.
+    v1->Paint(View::PaintContext(&canvas, paint_area));
+    EXPECT_TRUE(v1->did_paint_);
+    EXPECT_TRUE(v2->did_paint_);
+  }
+}
+
 void TestView::SchedulePaintInRect(const gfx::Rect& rect) {
   scheduled_paint_rects_.push_back(rect);
   View::SchedulePaintInRect(rect);

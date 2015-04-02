@@ -507,11 +507,16 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
     bool CanCheckInvalidated() const { return !invalidation_.IsEmpty(); }
 
-    // When true, the |bounds_in_paint_root| touches an invalidated area, so
-    // should be re-painted. When false, re-painting can be skipped.
-    bool IsRectInvalidated(const gfx::Rect& bounds_in_paint_root) const {
+    // When true, the |bounds| touches an invalidated area, so should be
+    // re-painted. When false, re-painting can be skipped. Bounds should be in
+    // the local space with offsets up to the painting root in the PaintContext.
+    bool IsRectInvalidated(const gfx::Rect& bounds) const {
       DCHECK(CanCheckInvalidated());
-      return bounds_in_paint_root.Intersects(invalidation_);
+      return invalidation_.Intersects(bounds + offset_);
+    }
+
+    PaintContext CloneWithPaintOffset(const gfx::Vector2d& offset) const {
+      return PaintContext(*this, offset);
     }
 
     PaintContext CloneWithoutInvalidation() const {
@@ -524,11 +529,26 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
         root_visited_ = visited;
     }
     void* RootVisited() const { return root_visited_; }
+    const gfx::Vector2d& PaintOffset() const { return offset_; }
 #endif
 
    private:
+    PaintContext(const PaintContext& other, const gfx::Vector2d& offset)
+        : canvas_(other.canvas_),
+          invalidation_(other.invalidation_),
+          offset_(other.offset_ + offset) {
+#if DCHECK_IS_ON()
+      root_visited_ = other.root_visited_;
+#endif
+    }
+
     gfx::Canvas* canvas_;
+    // Invalidation in the space of the paint root (ie the space of the layer
+    // backing the paint taking place).
     gfx::Rect invalidation_;
+    // Offset from the PaintContext to the space of the paint root and the
+    // |invalidation_|.
+    gfx::Vector2d offset_;
 
 #if DCHECK_IS_ON()
     // Used to verify that the |invalidation_| is only used to compare against
@@ -541,7 +561,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // for View coordinates and language direction as required, allows the View
   // to paint itself via the various OnPaint*() event handlers and then paints
   // the hierarchy beneath it.
-  void Paint(const PaintContext& context);
+  void Paint(const PaintContext& parent_context);
 
   // The background object is owned by this object and may be NULL.
   void set_background(Background* b);
