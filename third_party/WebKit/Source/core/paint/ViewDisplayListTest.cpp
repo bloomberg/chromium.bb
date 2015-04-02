@@ -186,7 +186,6 @@ TEST_F(ViewDisplayListTest, UpdateNewItemInMiddle)
         TestDisplayItem(first, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
         TestDisplayItem(second, DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)));
 
-    rootDisplayItemList().invalidate(third.displayItemClient());
     drawRect(context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     drawRect(context, third, PaintPhaseBlockBackground, FloatRect(125, 100, 200, 50));
     drawRect(context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));

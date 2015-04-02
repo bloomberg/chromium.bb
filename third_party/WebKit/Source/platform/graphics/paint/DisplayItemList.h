@@ -52,7 +52,7 @@ public:
 #endif
 
 protected:
-    DisplayItemList() { };
+    DisplayItemList() : m_validlyCachedClientsDirty(false) { }
 
 private:
     friend class LayoutObjectDrawingRecorderTest;
@@ -60,23 +60,35 @@ private:
 
     void updatePaintList();
 
-    void checkCachedDisplayItemIsUnchangedFromPreviousPaintList(const DisplayItem&);
-    void checkNoRemainingCachedDisplayItems();
+    void updateValidlyCachedClientsIfNeeded() const;
 
 #ifndef NDEBUG
     WTF::String paintListAsDebugString(const PaintList&) const;
 #endif
 
     // Indices into PaintList of all DrawingDisplayItems and BeginSubtreeDisplayItems of each client.
-    typedef HashMap<DisplayItemClient, Vector<size_t>> DisplayItemIndicesByClientMap;
+    // Temporarily used during merge to find out-of-order display items.
+    using DisplayItemIndicesByClientMap = HashMap<DisplayItemClient, Vector<size_t>>;
 
-    static size_t findMatchingItem(const DisplayItem&, DisplayItem::Type, const DisplayItemIndicesByClientMap&, const PaintList&);
-    static void appendDisplayItem(PaintList&, DisplayItemIndicesByClientMap&, WTF::PassOwnPtr<DisplayItem>);
-    void copyCachedItems(const DisplayItem&, PaintList&, DisplayItemIndicesByClientMap&);
+    static size_t findMatchingItemFromIndex(const DisplayItem&, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap&, const PaintList&);
+    static void addItemToIndex(const DisplayItem&, size_t index, DisplayItemIndicesByClientMap&);
+    size_t findOutOfOrderCachedItem(size_t& currentPaintListIndex, const DisplayItem&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
+    size_t findOutOfOrderCachedItemForward(size_t& currentPaintListIndex, const DisplayItem&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
+
+    // The following two methods are for checking under-invalidations
+    // (when RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled).
+    void checkCachedDisplayItemIsUnchangedFromPreviousPaintList(const DisplayItem&, DisplayItemIndicesByClientMap&);
+    void checkNoRemainingCachedDisplayItems();
 
     PaintList m_paintList;
-    DisplayItemIndicesByClientMap m_cachedDisplayItemIndicesByClient;
     PaintList m_newPaints;
+
+    // Contains all clients having valid cached paintings if updated.
+    // It's lazily updated in updateValidlyCachedClientsIfNeeded().
+    // FIXME: In the future we can replace this with client-side repaint flags
+    // to avoid the cost of building and querying the hash table.
+    mutable HashSet<DisplayItemClient> m_validlyCachedClients;
+    mutable bool m_validlyCachedClientsDirty;
 
     // Scope ids are allocated per client to ensure that the ids are stable for non-invalidated
     // clients between frames, so that we can use the id to match new display items to cached
