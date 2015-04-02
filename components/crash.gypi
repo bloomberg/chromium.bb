@@ -78,7 +78,7 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
-        ['os_posix == 1 and OS != "mac" and OS != "ios" and android_webview_build != 1', {
+        ['os_posix == 1 and OS != "mac" and OS != "ios"', {
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_client',
           ],
@@ -291,7 +291,7 @@
         },
       ],
     }],
-    ['os_posix == 1 and OS != "mac" and OS != "ios" and android_webview_build != 1', {
+    ['os_posix == 1 and OS != "mac" and OS != "ios"', {
       'targets': [
         {
           # GN version: //components/crash/browser

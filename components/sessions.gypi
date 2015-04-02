@@ -42,6 +42,7 @@
       'defines!': ['SESSIONS_IMPLEMENTATION'],
       'dependencies': [
         '../skia/skia.gyp:skia',
+        '../sync/sync.gyp:sync',
         '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
@@ -53,11 +54,6 @@
         'sessions/serialized_navigation_entry_test_helper.h',
       ],
       'conditions': [
-        ['android_webview_build == 0', {
-          'dependencies': [
-             '../sync/sync.gyp:sync',
-          ]
-        }],
         ['OS!="ios" and OS!="android"', {
          'sources': [
            'sessions/base_session_service_test_helper.cc',
@@ -83,6 +79,7 @@
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../content/content.gyp:content_browser',
             '../skia/skia.gyp:skia',
+            '../sync/sync.gyp:sync',
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx_geometry',
@@ -102,13 +99,6 @@
             'sessions/content/content_serialized_navigation_builder.h',
             'sessions/content/content_serialized_navigation_driver.cc',
             'sessions/content/content_serialized_navigation_driver.h',
-          ],
-          'conditions': [
-            ['android_webview_build == 0', {
-              'dependencies': [
-                 '../sync/sync.gyp:sync',
-              ]
-            }],
           ],
         },
       ],

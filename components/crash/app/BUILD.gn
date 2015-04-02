@@ -61,7 +61,7 @@ source_set("app") {
 
       #'../breakpad/breakpad.gyp:breakpad_sender',  TODO(GYP)
     ]
-  } else if (is_posix && !is_ios && (!is_android || !is_android_webview_build)) {
+  } else if (is_posix && !is_ios) {
     deps += [ "//breakpad:client" ]
   }
 }

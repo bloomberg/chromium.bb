@@ -31,7 +31,7 @@ source_set("browser") {
 
   # This is not in the GYP build but this target includes breakpad client
   # headers, so add the dependency here.
-  if (is_posix && !is_ios && (!is_android || !is_android_webview_build)) {
+  if (is_posix && !is_ios) {
     configs += [ "//breakpad:client_config" ]
     public_configs = [ "//breakpad:client_config" ]
   }

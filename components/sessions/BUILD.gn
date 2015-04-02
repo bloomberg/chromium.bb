@@ -37,15 +37,12 @@ source_set("sessions_core") {
   deps = [
     "//base",
     "//skia",
+    "//sync",
     "//third_party/protobuf:protobuf_lite",
     "//ui/base",
     "//ui/gfx",
     "//url",
   ]
-
-  if (!is_android || !is_android_webview_build) {
-    deps += [ "//sync" ]
-  }
 }
 
 source_set("test_support") {
@@ -58,12 +55,9 @@ source_set("test_support") {
   deps = [
     ":sessions_core",
     "//skia",
+    "//sync",
     "//testing/gtest",
   ]
-
-  if (!is_android || !is_android_webview_build) {
-    deps += [ "//sync" ]
-  }
 
   if (!is_android && !is_ios) {
     sources += [
