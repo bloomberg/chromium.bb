@@ -8,9 +8,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/load_flags.h"
-#include "net/base/net_log.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/log/net_log.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
 #include "net/proxy/mock_proxy_script_fetcher.h"
 #include "net/proxy/proxy_config_service_fixed.h"

@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_objects_extractor.h"
 #include "net/cert/ct_serialization.h"
@@ -18,6 +17,7 @@
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/sct_status_flags.h"
 #include "net/cert/x509_certificate.h"
+#include "net/log/net_log.h"
 
 namespace net {
 

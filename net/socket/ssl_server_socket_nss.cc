@@ -32,11 +32,11 @@
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "crypto/rsa_private_key.h"
 #include "crypto/nss_util_internal.h"
+#include "crypto/rsa_private_key.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/socket/nss_ssl_util.h"
 
 // SSL plaintext fragments are shorter than 16KB. Although the record layer

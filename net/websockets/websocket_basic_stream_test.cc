@@ -15,8 +15,8 @@
 #include "base/basictypes.h"
 #include "base/big_endian.h"
 #include "base/port.h"
-#include "net/base/capturing_net_log.h"
 #include "net/base/test_completion_callback.h"
+#include "net/log/capturing_net_log.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

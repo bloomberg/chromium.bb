@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_log_unittest.h"
+#include "net/log/net_log_unittest.h"
 
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
@@ -124,10 +124,7 @@ void AddEvent(NetLog* net_log) {
 class NetLogTestThread : public base::SimpleThread {
  public:
   NetLogTestThread()
-      : base::SimpleThread("NetLogTest"),
-        net_log_(NULL),
-        start_event_(NULL) {
-  }
+      : base::SimpleThread("NetLogTest"), net_log_(NULL), start_event_(NULL) {}
 
   // We'll wait for |start_event| to be triggered before calling a subclass's
   // subclass's RunTestThread() function.
@@ -205,7 +202,7 @@ class AddRemoveObserverTestThread : public NetLogTestThread {
 
 // Creates |kThreads| threads of type |ThreadType| and then runs them all
 // to completion.
-template<class ThreadType>
+template <class ThreadType>
 void RunTestThreads(NetLog* net_log) {
   ThreadType threads[kThreads];
   base::WaitableEvent start_event(true, false);

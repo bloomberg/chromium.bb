@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "base/rand_util.h"
-#include "net/base/net_log.h"
 #include "net/dns/address_sorter.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_socket_pool.h"
 #include "net/dns/dns_transaction.h"
+#include "net/log/net_log.h"
 #include "net/socket/client_socket_factory.h"
 
 namespace net {

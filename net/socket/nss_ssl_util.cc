@@ -22,8 +22,8 @@
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/base/nss_memio.h"
+#include "net/log/net_log.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

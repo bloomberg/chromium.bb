@@ -5,7 +5,7 @@
 #ifndef NET_UDP_UDP_NET_LOG_PARAMETERS_H_
 #define NET_UDP_UDP_NET_LOG_PARAMETERS_H_
 
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace net {
 

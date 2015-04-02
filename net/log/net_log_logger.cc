@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_log_logger.h"
+#include "net/log/net_log_logger.h"
 
 #include <stdio.h>
 
@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "net/base/net_log_util.h"
+#include "net/log/net_log_util.h"
 #include "net/url_request/url_request_context.h"
 
 namespace net {
@@ -92,9 +92,7 @@ void NetLogLogger::OnAddEntry(const net::NetLog::Entry& entry) {
   scoped_ptr<base::Value> value(entry.ToValue());
   std::string json;
   base::JSONWriter::Write(value.get(), &json);
-  fprintf(file_.get(), "%s%s",
-          (added_events_ ? ",\n" : ""),
-          json.c_str());
+  fprintf(file_.get(), "%s%s", (added_events_ ? ",\n" : ""), json.c_str());
   added_events_ = true;
 }
 

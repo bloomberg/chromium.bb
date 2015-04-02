@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_TRACE_NET_LOG_OBSERVER_H_
-#define NET_BASE_TRACE_NET_LOG_OBSERVER_H_
+#ifndef NET_LOG_TRACE_NET_LOG_OBSERVER_H_
+#define NET_LOG_TRACE_NET_LOG_OBSERVER_H_
 
 #include "base/macros.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace net {
 
@@ -46,4 +46,4 @@ class NET_EXPORT TraceNetLogObserver
 
 }  // namespace net
 
-#endif  // NET_BASE_TRACE_NET_LOG_OBSERVER_H_
+#endif  // NET_LOG_TRACE_NET_LOG_OBSERVER_H_

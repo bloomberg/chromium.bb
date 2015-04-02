@@ -5,7 +5,6 @@
 #include "net/url_request/url_request_context_storage.h"
 
 #include "base/logging.h"
-#include "net/base/net_log.h"
 #include "net/base/network_delegate.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
@@ -15,6 +14,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/log/net_log.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/fraudulent_certificate_reporter.h"

@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/url_request/url_request_throttler_entry_interface.h"
 
 namespace net {

@@ -6,13 +6,13 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "net/base/capturing_net_log.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_mock.h"
 #include "net/http/http_request_info.h"
+#include "net/log/capturing_net_log.h"
+#include "net/log/net_log_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

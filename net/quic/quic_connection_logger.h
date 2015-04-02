@@ -8,8 +8,8 @@
 #include <bitset>
 
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_log.h"
 #include "net/base/network_change_notifier.h"
+#include "net/log/net_log.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"

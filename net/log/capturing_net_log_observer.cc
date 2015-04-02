@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/capturing_net_log_observer.h"
+#include "net/log/capturing_net_log_observer.h"
 
 #include "base/values.h"
 
 namespace net {
 
-CapturingNetLogObserver::CapturingNetLogObserver() {}
+CapturingNetLogObserver::CapturingNetLogObserver() {
+}
 
-CapturingNetLogObserver::~CapturingNetLogObserver() {}
+CapturingNetLogObserver::~CapturingNetLogObserver() {
+}
 
 void CapturingNetLogObserver::GetEntries(
     CapturedNetLogEntry::List* entry_list) const {
@@ -51,12 +53,9 @@ void CapturingNetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
 
   // Only need to acquire the lock when accessing class variables.
   base::AutoLock lock(lock_);
-  captured_entries_.push_back(
-      CapturedNetLogEntry(entry.type(),
-                          base::TimeTicks::Now(),
-                          entry.source(),
-                          entry.phase(),
-                          scoped_ptr<base::DictionaryValue>(param_dict)));
+  captured_entries_.push_back(CapturedNetLogEntry(
+      entry.type(), base::TimeTicks::Now(), entry.source(), entry.phase(),
+      scoped_ptr<base::DictionaryValue>(param_dict)));
 }
 
 }  // namespace net

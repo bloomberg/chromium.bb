@@ -11,7 +11,7 @@
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_socket.h"
 

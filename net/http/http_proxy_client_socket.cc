@@ -11,7 +11,6 @@
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
-#include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/base/proxy_delegate.h"
 #include "net/http/http_basic_stream.h"
@@ -20,6 +19,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_stream_parser.h"
 #include "net/http/proxy_connect_redirect_http_stream.h"
+#include "net/log/net_log.h"
 #include "net/socket/client_socket_handle.h"
 #include "url/gurl.h"
 

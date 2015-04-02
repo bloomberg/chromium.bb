@@ -10,11 +10,11 @@
 
 #include "base/sys_byteorder.h"
 #include "net/base/address_list.h"
-#include "net/base/net_log.h"
-#include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/log/net_log.h"
+#include "net/log/net_log_unittest.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"

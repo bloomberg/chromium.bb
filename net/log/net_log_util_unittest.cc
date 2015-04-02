@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_log_util.h"
+#include "net/log/net_log_util.h"
 
 #include <set>
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "net/base/capturing_net_log_observer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction.h"
+#include "net/log/capturing_net_log_observer.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,10 +42,8 @@ TEST(NetLogUtil, GetNetInfo) {
 
   // Fore creation of a cache backend, and get NetInfo again.
   disk_cache::Backend* backend = NULL;
-  EXPECT_EQ(
-      OK,
-      context.http_transaction_factory()->GetCache()->GetBackend(
-          &backend, TestCompletionCallback().callback()));
+  EXPECT_EQ(OK, context.http_transaction_factory()->GetCache()->GetBackend(
+                    &backend, TestCompletionCallback().callback()));
   EXPECT_TRUE(http_cache->GetCurrentBackend());
   scoped_ptr<base::DictionaryValue> net_info_with_cache(
       GetNetInfo(&context, NET_INFO_ALL_SOURCES));

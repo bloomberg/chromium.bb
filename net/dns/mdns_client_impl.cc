@@ -16,10 +16,10 @@
 #include "base/timer/timer.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/base/rand_callback.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/record_rdata.h"
+#include "net/log/net_log.h"
 #include "net/udp/datagram_socket.h"
 
 // TODO(gene): Remove this temporary method of disabling NSEC support once it

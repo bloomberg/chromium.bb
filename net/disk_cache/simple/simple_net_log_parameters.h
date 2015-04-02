@@ -5,7 +5,7 @@
 #ifndef NET_DISK_CACHE_SIMPLE_NET_LOG_PARAMETERS_H_
 #define NET_DISK_CACHE_SIMPLE_NET_LOG_PARAMETERS_H_
 
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 // This file augments the functions in net/disk_cache/net_log_parameters.h to
 // include ones that deal with specifics of the Simple Cache backend.

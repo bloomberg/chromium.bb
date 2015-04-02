@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "net/base/net_log.h"
 #include "net/base/sdch_manager.h"
 #include "net/filter/filter.h"
+#include "net/log/net_log.h"
 #include "url/gurl.h"
 
 namespace net {

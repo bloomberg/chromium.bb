@@ -22,13 +22,13 @@
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_impl.h"
+#include "net/log/net_log.h"
 #include "net/tools/gdig/file_net_log.h"
 
 #if defined(OS_MACOSX)

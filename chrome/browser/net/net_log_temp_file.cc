@@ -10,7 +10,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/net_log_logger.h"
+#include "net/log/net_log_logger.h"
 
 using content::BrowserThread;
 

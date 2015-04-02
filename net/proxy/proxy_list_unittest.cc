@@ -5,7 +5,7 @@
 #include "net/proxy/proxy_list.h"
 
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -5,8 +5,8 @@
 #ifndef NET_SOCKET_UDP_CLIENT_SOCKET_H_
 #define NET_SOCKET_UDP_CLIENT_SOCKET_H_
 
-#include "net/base/net_log.h"
 #include "net/base/rand_callback.h"
+#include "net/log/net_log.h"
 #include "net/udp/datagram_client_socket.h"
 #include "net/udp/udp_socket.h"
 

@@ -15,12 +15,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "net/base/net_log.h"
 #include "net/cert/ct_ev_whitelist.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_certificate_net_log_param.h"
+#include "net/log/net_log.h"
 
 namespace net {
 

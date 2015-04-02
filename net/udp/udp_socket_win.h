@@ -15,11 +15,11 @@
 #include "base/win/scoped_handle.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_callback.h"
+#include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/rand_callback.h"
-#include "net/base/ip_endpoint.h"
-#include "net/base/io_buffer.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/udp/datagram_socket.h"
 
 namespace net {

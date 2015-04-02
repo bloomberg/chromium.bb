@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_log_logger.h"
+#include "net/log/net_log_logger.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -11,8 +11,8 @@
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "net/base/net_log.h"
-#include "net/base/net_log_util.h"
+#include "net/log/net_log.h"
+#include "net/log/net_log_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
@@ -87,10 +87,8 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithOneEvent) {
 
   const int kDummyId = 1;
   NetLog::Source source(NetLog::SOURCE_HTTP2_SESSION, kDummyId);
-  NetLog::EntryData entry_data(NetLog::TYPE_PROXY_SERVICE,
-                               source,
-                               NetLog::PHASE_BEGIN,
-                               base::TimeTicks::Now(),
+  NetLog::EntryData entry_data(NetLog::TYPE_PROXY_SERVICE, source,
+                               NetLog::PHASE_BEGIN, base::TimeTicks::Now(),
                                NULL);
   NetLog::Entry entry(&entry_data, NetLog::LOG_ALL);
   logger->OnAddEntry(entry);
@@ -119,10 +117,8 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithMultipleEvents) {
 
   const int kDummyId = 1;
   NetLog::Source source(NetLog::SOURCE_HTTP2_SESSION, kDummyId);
-  NetLog::EntryData entry_data(NetLog::TYPE_PROXY_SERVICE,
-                               source,
-                               NetLog::PHASE_BEGIN,
-                               base::TimeTicks::Now(),
+  NetLog::EntryData entry_data(NetLog::TYPE_PROXY_SERVICE, source,
+                               NetLog::PHASE_BEGIN, base::TimeTicks::Now(),
                                NULL);
   NetLog::Entry entry(&entry_data, NetLog::LOG_ALL);
 

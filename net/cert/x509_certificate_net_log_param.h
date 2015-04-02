@@ -5,7 +5,7 @@
 #ifndef NET_BASE_X509_CERT_NET_LOG_PARAM_H_
 #define NET_BASE_X509_CERT_NET_LOG_PARAM_H_
 
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace net {
 

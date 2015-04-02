@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_log_util.h"
+#include "net/log/net_log_util.h"
 
 #include <algorithm>
 #include <string>
@@ -19,7 +19,6 @@
 #include "net/base/address_family.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/base/sdch_manager.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_cache.h"
@@ -28,6 +27,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/log/net_log.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_service.h"
@@ -51,19 +51,25 @@ struct StringToConstant {
 };
 
 const StringToConstant kCertStatusFlags[] = {
-#define CERT_STATUS_FLAG(label, value) { #label, value },
+#define CERT_STATUS_FLAG(label, value) \
+  { #label, value }                    \
+  ,
 #include "net/cert/cert_status_flags_list.h"
 #undef CERT_STATUS_FLAG
 };
 
 const StringToConstant kLoadFlags[] = {
-#define LOAD_FLAG(label, value) { #label, value },
+#define LOAD_FLAG(label, value) \
+  { #label, value }             \
+  ,
 #include "net/base/load_flags_list.h"
 #undef LOAD_FLAG
 };
 
 const StringToConstant kLoadStateTable[] = {
-#define LOAD_STATE(label) { # label, net::LOAD_STATE_ ## label },
+#define LOAD_STATE(label)             \
+  { #label, net::LOAD_STATE_##label } \
+  ,
 #include "net/base/load_states_list.h"
 #undef LOAD_STATE
 };
@@ -84,11 +90,11 @@ const StringToConstant kSdchProblems[] = {
 
 const char* NetInfoSourceToString(NetInfoSource source) {
   switch (source) {
-    #define NET_INFO_SOURCE(label, string, value) \
-    case NET_INFO_ ## label: \
-      return string;
+#define NET_INFO_SOURCE(label, string, value) \
+  case NET_INFO_##label:                      \
+    return string;
 #include "net/base/net_info_source_list.h"
-    #undef NET_INFO_SOURCE
+#undef NET_INFO_SOURCE
     case NET_INFO_ALL_SOURCES:
       return "All";
   }
@@ -174,10 +180,10 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
 
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
-    #define NET_INFO_SOURCE(label, string, value) \
-        dict->SetInteger(string, NET_INFO_ ## label);
+#define NET_INFO_SOURCE(label, string, value) \
+  dict->SetInteger(string, NET_INFO_##label);
 #include "net/base/net_info_source_list.h"
-    #undef NET_INFO_SOURCE
+#undef NET_INFO_SOURCE
     constants_dict->Set("netInfoSources", dict);
   }
 
@@ -269,10 +275,8 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
 
     dict->SetInteger("ADDRESS_FAMILY_UNSPECIFIED",
                      net::ADDRESS_FAMILY_UNSPECIFIED);
-    dict->SetInteger("ADDRESS_FAMILY_IPV4",
-                     net::ADDRESS_FAMILY_IPV4);
-    dict->SetInteger("ADDRESS_FAMILY_IPV6",
-                     net::ADDRESS_FAMILY_IPV6);
+    dict->SetInteger("ADDRESS_FAMILY_IPV4", net::ADDRESS_FAMILY_IPV4);
+    dict->SetInteger("ADDRESS_FAMILY_IPV6", net::ADDRESS_FAMILY_IPV6);
 
     constants_dict->Set("addressFamily", dict);
   }
@@ -313,8 +317,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
     for (base::FieldTrial::ActiveGroups::const_iterator it =
              active_groups.begin();
          it != active_groups.end(); ++it) {
-      field_trial_groups->AppendString(it->trial_name + ":" +
-                                       it->group_name);
+      field_trial_groups->AppendString(it->trial_name + ":" + it->group_name);
     }
     constants_dict->Set("activeFieldTrialGroups", field_trial_groups);
   }
@@ -323,7 +326,8 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
 }
 
 NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
-    URLRequestContext* context, int info_sources) {
+    URLRequestContext* context,
+    int info_sources) {
   // May only be called on the context's thread.
   DCHECK(context->CalledOnValidThread());
 
@@ -381,9 +385,8 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
 
       base::DictionaryValue* cache_info_dict = new base::DictionaryValue();
 
-      cache_info_dict->SetInteger(
-          "capacity",
-          static_cast<int>(cache->max_entries()));
+      cache_info_dict->SetInteger("capacity",
+                                  static_cast<int>(cache->max_entries()));
 
       base::ListValue* entry_list = new base::ListValue();
 
@@ -396,7 +399,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
 
         entry_dict->SetString("hostname", key.hostname);
         entry_dict->SetInteger("address_family",
-            static_cast<int>(key.address_family));
+                               static_cast<int>(key.address_family));
         entry_dict->SetString("expiration",
                               net::NetLog::TickCountToString(it.expiration()));
 
@@ -425,12 +428,12 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
 
   if (info_sources & NET_INFO_SOCKET_POOL) {
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_SOCKET_POOL),
-                        http_network_session->SocketPoolInfoToValue());
+                       http_network_session->SocketPoolInfoToValue());
   }
 
   if (info_sources & NET_INFO_SPDY_SESSIONS) {
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_SPDY_SESSIONS),
-                        http_network_session->SpdySessionPoolInfoToValue());
+                       http_network_session->SpdySessionPoolInfoToValue());
   }
 
   if (info_sources & NET_INFO_SPDY_STATUS) {
@@ -441,12 +444,10 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
     status_dict->SetBoolean(
         "use_alternate_protocols",
         http_network_session->params().use_alternate_protocols);
-    status_dict->SetBoolean(
-        "force_spdy_over_ssl",
-        http_network_session->params().force_spdy_over_ssl);
-    status_dict->SetBoolean(
-        "force_spdy_always",
-        http_network_session->params().force_spdy_always);
+    status_dict->SetBoolean("force_spdy_over_ssl",
+                            http_network_session->params().force_spdy_over_ssl);
+    status_dict->SetBoolean("force_spdy_always",
+                            http_network_session->params().force_spdy_always);
 
     NextProtoVector next_protos;
     http_network_session->GetNextProtos(&next_protos);
@@ -461,7 +462,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
     }
 
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_SPDY_STATUS),
-                        status_dict);
+                       status_dict);
   }
 
   if (info_sources & NET_INFO_SPDY_ALT_PROTO_MAPPINGS) {
@@ -487,7 +488,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
 
   if (info_sources & NET_INFO_QUIC) {
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_QUIC),
-                        http_network_session->QuicInfoToValue());
+                       http_network_session->QuicInfoToValue());
   }
 
   if (info_sources & NET_INFO_HTTP_CACHE) {
@@ -501,14 +502,13 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
       base::StringPairs stats;
       disk_cache->GetStats(&stats);
       for (size_t i = 0; i < stats.size(); ++i) {
-        stats_dict->SetStringWithoutPathExpansion(
-            stats[i].first, stats[i].second);
+        stats_dict->SetStringWithoutPathExpansion(stats[i].first,
+                                                  stats[i].second);
       }
     }
     info_dict->Set("stats", stats_dict);
 
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_HTTP_CACHE),
-                       info_dict);
+    net_info_dict->Set(NetInfoSourceToString(NET_INFO_HTTP_CACHE), info_dict);
   }
 
   if (info_sources & NET_INFO_SDCH) {
@@ -552,11 +552,9 @@ NET_EXPORT void CreateNetLogEntriesForActiveObjects(
     net::NetLog::ParametersCallback callback =
         base::Bind(&GetRequestStateAsValue, base::Unretained(request));
 
-    net::NetLog::EntryData entry_data(net::NetLog::TYPE_REQUEST_ALIVE,
-                                      request->net_log().source(),
-                                      net::NetLog::PHASE_BEGIN,
-                                      request->creation_time(),
-                                      &callback);
+    net::NetLog::EntryData entry_data(
+        net::NetLog::TYPE_REQUEST_ALIVE, request->net_log().source(),
+        net::NetLog::PHASE_BEGIN, request->creation_time(), &callback);
     NetLog::Entry entry(&entry_data, request->net_log().GetLogLevel());
     observer->OnAddEntry(entry);
   }

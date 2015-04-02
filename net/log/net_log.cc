@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 #include "base/bind.h"
 #include "base/debug/alias.h"
@@ -106,8 +106,7 @@ bool NetLog::Source::FromEventParameters(base::Value* event_params,
   base::DictionaryValue* source_dict = NULL;
   int source_id = -1;
   int source_type = NetLog::SOURCE_COUNT;
-  if (!event_params ||
-      !event_params->GetAsDictionary(&dict) ||
+  if (!event_params || !event_params->GetAsDictionary(&dict) ||
       !dict->GetDictionary("source_dependency", &source_dict) ||
       !source_dict->GetInteger("id", &source_id) ||
       !source_dict->GetInteger("type", &source_type)) {
@@ -152,12 +151,11 @@ base::Value* NetLog::Entry::ParametersToValue() const {
   return NULL;
 }
 
-NetLog::EntryData::EntryData(
-    EventType type,
-    Source source,
-    EventPhase phase,
-    base::TimeTicks time,
-    const ParametersCallback* parameters_callback)
+NetLog::EntryData::EntryData(EventType type,
+                             Source source,
+                             EventPhase phase,
+                             base::TimeTicks time,
+                             const ParametersCallback* parameters_callback)
     : type(type),
       source(source),
       phase(phase),
@@ -175,8 +173,8 @@ NetLog::Entry::Entry(const EntryData* data, LogLevel log_level)
 NetLog::Entry::~Entry() {
 }
 
-NetLog::ThreadSafeObserver::ThreadSafeObserver() : log_level_(LOG_NONE),
-                                                   net_log_(NULL) {
+NetLog::ThreadSafeObserver::ThreadSafeObserver()
+    : log_level_(LOG_NONE), net_log_(NULL) {
 }
 
 NetLog::ThreadSafeObserver::~ThreadSafeObserver() {
@@ -206,19 +204,15 @@ NetLog::~NetLog() {
 }
 
 void NetLog::AddGlobalEntry(EventType type) {
-  AddEntry(type,
-           Source(net::NetLog::SOURCE_NONE, NextID()),
-           net::NetLog::PHASE_NONE,
-           NULL);
+  AddEntry(type, Source(net::NetLog::SOURCE_NONE, NextID()),
+           net::NetLog::PHASE_NONE, NULL);
 }
 
 void NetLog::AddGlobalEntry(
     EventType type,
     const NetLog::ParametersCallback& parameters_callback) {
-  AddEntry(type,
-           Source(net::NetLog::SOURCE_NONE, NextID()),
-           net::NetLog::PHASE_NONE,
-           &parameters_callback);
+  AddEntry(type, Source(net::NetLog::SOURCE_NONE, NextID()),
+           net::NetLog::PHASE_NONE, &parameters_callback);
 }
 
 uint32 NetLog::NextID() {
@@ -231,9 +225,8 @@ NetLog::LogLevel NetLog::GetLogLevel() const {
   return static_cast<net::NetLog::LogLevel>(log_level);
 }
 
-void NetLog::AddThreadSafeObserver(
-    net::NetLog::ThreadSafeObserver* observer,
-    LogLevel log_level) {
+void NetLog::AddThreadSafeObserver(net::NetLog::ThreadSafeObserver* observer,
+                                   LogLevel log_level) {
   DCHECK_NE(LOG_NONE, log_level);
   base::AutoLock lock(lock_);
 
@@ -245,9 +238,8 @@ void NetLog::AddThreadSafeObserver(
   UpdateLogLevel();
 }
 
-void NetLog::SetObserverLogLevel(
-    net::NetLog::ThreadSafeObserver* observer,
-    LogLevel log_level) {
+void NetLog::SetObserverLogLevel(net::NetLog::ThreadSafeObserver* observer,
+                                 LogLevel log_level) {
   DCHECK_NE(LOG_NONE, log_level);
   base::AutoLock lock(lock_);
 
@@ -283,8 +275,7 @@ void NetLog::UpdateLogLevel() {
     new_effective_log_level =
         std::min(new_effective_log_level, observer->log_level());
   }
-  base::subtle::NoBarrier_Store(&effective_log_level_,
-                                new_effective_log_level);
+  base::subtle::NoBarrier_Store(&effective_log_level_, new_effective_log_level);
 }
 
 // static
@@ -296,8 +287,10 @@ std::string NetLog::TickCountToString(const base::TimeTicks& time) {
 // static
 const char* NetLog::EventTypeToString(EventType event) {
   switch (event) {
-#define EVENT_TYPE(label) case TYPE_ ## label: return #label;
-#include "net/base/net_log_event_type_list.h"
+#define EVENT_TYPE(label) \
+  case TYPE_##label:      \
+    return #label;
+#include "net/log/net_log_event_type_list.h"
 #undef EVENT_TYPE
     default:
       NOTREACHED();
@@ -317,8 +310,10 @@ base::Value* NetLog::GetEventTypesAsValue() {
 // static
 const char* NetLog::SourceTypeToString(SourceType source) {
   switch (source) {
-#define SOURCE_TYPE(label) case SOURCE_ ## label: return #label;
-#include "net/base/net_log_source_type_list.h"
+#define SOURCE_TYPE(label) \
+  case SOURCE_##label:     \
+    return #label;
+#include "net/log/net_log_source_type_list.h"
 #undef SOURCE_TYPE
     default:
       NOTREACHED();
@@ -496,8 +491,7 @@ bool BoundNetLog::IsLogging() const {
 }
 
 // static
-BoundNetLog BoundNetLog::Make(NetLog* net_log,
-                              NetLog::SourceType source_type) {
+BoundNetLog BoundNetLog::Make(NetLog* net_log, NetLog::SourceType source_type) {
   if (!net_log)
     return BoundNetLog();
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/capturing_net_log.h"
+#include "net/log/capturing_net_log.h"
 
 namespace net {
 
@@ -23,9 +23,8 @@ void CapturingNetLog::GetEntries(
   capturing_net_log_observer_.GetEntries(entry_list);
 }
 
-void CapturingNetLog::GetEntriesForSource(
-    NetLog::Source source,
-    CapturedEntryList* entry_list) const {
+void CapturingNetLog::GetEntriesForSource(NetLog::Source source,
+                                          CapturedEntryList* entry_list) const {
   capturing_net_log_observer_.GetEntriesForSource(source, entry_list);
 }
 
@@ -38,11 +37,12 @@ void CapturingNetLog::Clear() {
 }
 
 CapturingBoundNetLog::CapturingBoundNetLog()
-    : net_log_(BoundNetLog::Make(&capturing_net_log_,
-                                 net::NetLog::SOURCE_NONE)) {
+    : net_log_(
+          BoundNetLog::Make(&capturing_net_log_, net::NetLog::SOURCE_NONE)) {
 }
 
-CapturingBoundNetLog::~CapturingBoundNetLog() {}
+CapturingBoundNetLog::~CapturingBoundNetLog() {
+}
 
 void CapturingBoundNetLog::GetEntries(
     CapturingNetLog::CapturedEntryList* entry_list) const {

@@ -6,11 +6,11 @@
 #define NET_DISK_CACHE_BLOCKFILE_ENTRY_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "net/base/net_log.h"
 #include "net/disk_cache/blockfile/disk_format.h"
 #include "net/disk_cache/blockfile/storage_block-inl.h"
 #include "net/disk_cache/blockfile/storage_block.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/log/net_log.h"
 
 namespace disk_cache {
 

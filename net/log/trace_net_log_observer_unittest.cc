@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/trace_net_log_observer.h"
+#include "net/log/trace_net_log_observer.h"
 
 #include <string>
 #include <vector>
@@ -17,8 +17,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"
-#include "net/base/capturing_net_log.h"
-#include "net/base/net_log.h"
+#include "net/log/capturing_net_log.h"
+#include "net/log/net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::trace_event::TraceLog;
@@ -91,8 +91,7 @@ class TraceNetLogObserverTest : public testing::Test {
   static void EnableTraceLog() {
     TraceLog::GetInstance()->SetEnabled(
         base::trace_event::CategoryFilter(kNetLogTracingCategory),
-        TraceLog::RECORDING_MODE,
-        base::trace_event::TraceOptions());
+        TraceLog::RECORDING_MODE, base::trace_event::TraceOptions());
   }
 
   void EndTraceAndFlush() {
@@ -100,8 +99,7 @@ class TraceNetLogObserverTest : public testing::Test {
     TraceLog::GetInstance()->SetDisabled();
     TraceLog::GetInstance()->Flush(
         base::Bind(&TraceNetLogObserverTest::OnTraceDataCollected,
-                   base::Unretained(this),
-                   base::Unretained(&run_loop)));
+                   base::Unretained(this), base::Unretained(&run_loop)));
     run_loop.Run();
   }
 
@@ -131,13 +129,9 @@ class TraceNetLogObserverTest : public testing::Test {
     return filtered_trace_events.Pass();
   }
 
-  base::ListValue* trace_events() const {
-    return trace_events_.get();
-  }
+  base::ListValue* trace_events() const { return trace_events_.get(); }
 
-  CapturingNetLog* net_log() {
-    return &net_log_;
-  }
+  CapturingNetLog* net_log() { return &net_log_; }
 
   TraceNetLogObserver* trace_net_log_observer() const {
     return trace_net_log_observer_.get();

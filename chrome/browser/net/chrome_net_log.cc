@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
-#include "net/base/net_log_logger.h"
-#include "net/base/trace_net_log_observer.h"
+#include "net/log/net_log_logger.h"
+#include "net/log/trace_net_log_observer.h"
 
 ChromeNetLog::ChromeNetLog()
     : net_log_temp_file_(new NetLogTempFile(this)) {

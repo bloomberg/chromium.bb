@@ -5,7 +5,7 @@
 #ifndef NET_SOCKET_STREAM_SOCKET_H_
 #define NET_SOCKET_STREAM_SOCKET_H_
 
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket.h"
 

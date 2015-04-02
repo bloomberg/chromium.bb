@@ -18,12 +18,12 @@
 #include "base/values.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/cert/cert_trust_anchor_provider.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_certificate_net_log_param.h"
+#include "net/log/net_log.h"
 
 #if defined(USE_NSS) || defined(OS_IOS)
 #include <private/pprthred.h>  // PR_DetachThread

@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
+#include "net/log/net_log.h"
 #include "net/quic/crypto/proof_verifier.h"
 
 namespace net {

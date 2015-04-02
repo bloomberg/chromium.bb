@@ -12,13 +12,13 @@
 
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
-#include "net/base/net_log.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_transaction.h"
+#include "net/log/net_log.h"
 
 namespace net {
 

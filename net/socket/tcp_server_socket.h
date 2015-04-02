@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/socket/server_socket.h"
 #include "net/socket/tcp_socket.h"
 

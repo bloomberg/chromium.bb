@@ -4,7 +4,7 @@
 
 #include "net/base/load_timing_info.h"
 
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace net {
 

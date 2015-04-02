@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/captured_net_log_entry.h"
+#include "net/log/captured_net_log_entry.h"
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -29,7 +29,8 @@ CapturedNetLogEntry::CapturedNetLogEntry(const CapturedNetLogEntry& entry) {
   *this = entry;
 }
 
-CapturedNetLogEntry::~CapturedNetLogEntry() {}
+CapturedNetLogEntry::~CapturedNetLogEntry() {
+}
 
 CapturedNetLogEntry& CapturedNetLogEntry::operator=(
     const CapturedNetLogEntry& entry) {

@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_config.h"

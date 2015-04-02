@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 // This file contains a set of functions to create NetLog::ParametersCallbacks
 // shared by EntryImpls and MemEntryImpls.

@@ -7,7 +7,7 @@
 #include "base/stl_util.h"
 #include "mojo/common/url_type_converters.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/proxy/load_state_change_coalescer.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
 #include "net/proxy/proxy_info.h"

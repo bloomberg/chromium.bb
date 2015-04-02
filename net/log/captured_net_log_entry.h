@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_CAPTURED_NET_LOG_ENTRY_H_
-#define NET_BASE_CAPTURED_NET_LOG_ENTRY_H_
+#ifndef NET_LOG_CAPTURED_NET_LOG_ENTRY_H_
+#define NET_LOG_CAPTURED_NET_LOG_ENTRY_H_
 
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace base {
 class DictionaryValue;
@@ -66,4 +66,4 @@ struct CapturedNetLogEntry {
 
 }  // namespace net
 
-#endif  // NET_BASE_CAPTURED_NET_LOG_ENTRY_H_
+#endif  // NET_LOG_CAPTURED_NET_LOG_ENTRY_H_

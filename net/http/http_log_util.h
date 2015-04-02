@@ -8,7 +8,7 @@
 #include <string>
 
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace net {
 

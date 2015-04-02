@@ -8,8 +8,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/base/net_log.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/log/net_log.h"
 
 namespace disk_cache {
 

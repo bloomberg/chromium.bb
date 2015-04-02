@@ -14,9 +14,9 @@
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
+#include "net/log/net_log.h"
 #include "net/socket/stream_socket.h"
 
 namespace net {

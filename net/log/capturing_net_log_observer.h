@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_CAPTURING_NET_LOG_OBSERVER_H_
-#define NET_BASE_CAPTURING_NET_LOG_OBSERVER_H_
+#ifndef NET_LOG_CAPTURING_NET_LOG_OBSERVER_H_
+#define NET_LOG_CAPTURING_NET_LOG_OBSERVER_H_
 
 #include <string>
 #include <vector>
@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
-#include "net/base/captured_net_log_entry.h"
-#include "net/base/net_log.h"
+#include "net/log/captured_net_log_entry.h"
+#include "net/log/net_log.h"
 
 namespace base {
 class DictionaryValue;
@@ -55,4 +55,4 @@ class CapturingNetLogObserver : public NetLog::ThreadSafeObserver {
 
 }  // namespace net
 
-#endif  // NET_BASE_CAPTURING_NET_LOG_OBSERVER_H_
+#endif  // NET_LOG_CAPTURING_NET_LOG_OBSERVER_H_

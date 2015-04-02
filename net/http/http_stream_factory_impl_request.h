@@ -7,8 +7,8 @@
 
 #include <set>
 #include "base/memory/scoped_ptr.h"
-#include "net/base/net_log.h"
 #include "net/http/http_stream_factory_impl.h"
+#include "net/log/net_log.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session_key.h"
 #include "url/gurl.h"

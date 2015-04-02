@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace net {
 

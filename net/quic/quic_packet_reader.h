@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/quic/quic_protocol.h"
 #include "net/udp/datagram_client_socket.h"
 

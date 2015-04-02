@@ -14,10 +14,10 @@
 #include "base/threading/thread_checker.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_entry_operation.h"
+#include "net/log/net_log.h"
 
 namespace base {
 class TaskRunner;

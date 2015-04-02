@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace net {
 

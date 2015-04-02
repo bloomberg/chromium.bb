@@ -8,8 +8,8 @@
 #include <string>
 
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
 #include "net/base/request_priority.h"
+#include "net/log/net_log.h"
 
 class GURL;
 

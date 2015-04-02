@@ -16,9 +16,9 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_info.h"
+#include "net/log/net_log.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/stream_socket.h"
 

@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
 #include "net/base/net_util.h"
+#include "net/log/net_log.h"
 
 struct addrinfo;
 

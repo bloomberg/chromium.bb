@@ -9,8 +9,8 @@
 
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
-#include "net/base/net_log.h"
 #include "net/http/http_auth.h"
+#include "net/log/net_log.h"
 
 namespace net {
 
