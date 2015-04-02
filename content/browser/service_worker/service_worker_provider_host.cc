@@ -182,8 +182,8 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
   // SetController message should be sent only for controllees.
   DCHECK(IsProviderForClient());
   Send(new ServiceWorkerMsg_SetControllerServiceWorker(
-      render_thread_id_, provider_id(),
-      CreateAndRegisterServiceWorkerHandle(version), notify_controllerchange));
+      render_thread_id_, provider_id(), GetOrCreateServiceWorkerHandle(version),
+      notify_controllerchange));
 }
 
 bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
@@ -337,17 +337,23 @@ ServiceWorkerProviderHost::CreateRequestHandler(
 }
 
 ServiceWorkerObjectInfo
-ServiceWorkerProviderHost::CreateAndRegisterServiceWorkerHandle(
+ServiceWorkerProviderHost::GetOrCreateServiceWorkerHandle(
     ServiceWorkerVersion* version) {
   DCHECK(dispatcher_host_);
-  ServiceWorkerObjectInfo info;
-  if (context_ && version) {
-    scoped_ptr<ServiceWorkerHandle> handle =
-        ServiceWorkerHandle::Create(context_, AsWeakPtr(), version);
-    info = handle->GetObjectInfo();
-    dispatcher_host_->RegisterServiceWorkerHandle(handle.Pass());
+  if (!context_ || !version)
+    return ServiceWorkerObjectInfo();
+  ServiceWorkerHandle* handle = dispatcher_host_->FindServiceWorkerHandle(
+      provider_id(), version->version_id());
+  if (handle) {
+    handle->IncrementRefCount();
+    return handle->GetObjectInfo();
   }
-  return info;
+
+  scoped_ptr<ServiceWorkerHandle> new_handle(
+      ServiceWorkerHandle::Create(context_, AsWeakPtr(), version));
+  handle = new_handle.get();
+  dispatcher_host_->RegisterServiceWorkerHandle(new_handle.Pass());
+  return handle->GetObjectInfo();
 }
 
 bool ServiceWorkerProviderHost::CanAssociateRegistration(
@@ -500,7 +506,7 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
     if (dispatcher_host_ && associated_registration_->active_version()) {
       Send(new ServiceWorkerMsg_SetControllerServiceWorker(
           render_thread_id_, provider_id(),
-          CreateAndRegisterServiceWorkerHandle(
+          GetOrCreateServiceWorkerHandle(
               associated_registration_->active_version()),
           false /* shouldNotifyControllerChange */));
     }
@@ -546,11 +552,11 @@ void ServiceWorkerProviderHost::SendSetVersionAttributesMessage(
 
   ServiceWorkerVersionAttributes attrs;
   if (changed_mask.installing_changed())
-    attrs.installing = CreateAndRegisterServiceWorkerHandle(installing_version);
+    attrs.installing = GetOrCreateServiceWorkerHandle(installing_version);
   if (changed_mask.waiting_changed())
-    attrs.waiting = CreateAndRegisterServiceWorkerHandle(waiting_version);
+    attrs.waiting = GetOrCreateServiceWorkerHandle(waiting_version);
   if (changed_mask.active_changed())
-    attrs.active = CreateAndRegisterServiceWorkerHandle(active_version);
+    attrs.active = GetOrCreateServiceWorkerHandle(active_version);
 
   Send(new ServiceWorkerMsg_SetVersionAttributes(
       render_thread_id_, provider_id_, registration_handle_id,
@@ -593,11 +599,11 @@ void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
           AsWeakPtr(), associated_registration_.get());
 
   ServiceWorkerVersionAttributes attrs;
-  attrs.installing = CreateAndRegisterServiceWorkerHandle(
+  attrs.installing = GetOrCreateServiceWorkerHandle(
       associated_registration_->installing_version());
-  attrs.waiting = CreateAndRegisterServiceWorkerHandle(
+  attrs.waiting = GetOrCreateServiceWorkerHandle(
       associated_registration_->waiting_version());
-  attrs.active = CreateAndRegisterServiceWorkerHandle(
+  attrs.active = GetOrCreateServiceWorkerHandle(
       associated_registration_->active_version());
 
   // Association message should be sent only for controllees.

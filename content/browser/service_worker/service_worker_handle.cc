@@ -53,6 +53,8 @@ ServiceWorkerHandle::ServiceWorkerHandle(
     ServiceWorkerVersion* version)
     : context_(context),
       provider_host_(provider_host),
+      provider_id_(provider_host ? provider_host->provider_id()
+                                 : kInvalidServiceWorkerProviderId),
       handle_id_(context.get() ? context->GetNewServiceWorkerHandleId() : -1),
       ref_count_(1),
       version_(version) {

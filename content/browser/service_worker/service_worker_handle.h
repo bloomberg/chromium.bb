@@ -45,6 +45,7 @@ class CONTENT_EXPORT ServiceWorkerHandle
 
   ServiceWorkerObjectInfo GetObjectInfo();
 
+  int provider_id() const { return provider_id_; }
   int handle_id() const { return handle_id_; }
   ServiceWorkerVersion* version() { return version_.get(); }
 
@@ -55,6 +56,7 @@ class CONTENT_EXPORT ServiceWorkerHandle
  private:
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  const int provider_id_;
   const int handle_id_;
   int ref_count_;  // Created with 1.
   scoped_refptr<ServiceWorkerVersion> version_;

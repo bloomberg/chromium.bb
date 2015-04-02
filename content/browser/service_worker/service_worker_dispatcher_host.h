@@ -60,6 +60,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void RegisterServiceWorkerRegistrationHandle(
       scoped_ptr<ServiceWorkerRegistrationHandle> handle);
 
+  ServiceWorkerHandle* FindServiceWorkerHandle(int provider_id,
+                                               int64 version_id);
+
   // Returns the existing registration handle whose reference count is
   // incremented or newly created one if it doesn't exist.
   ServiceWorkerRegistrationHandle* GetOrCreateRegistrationHandle(

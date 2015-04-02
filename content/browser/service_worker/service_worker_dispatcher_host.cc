@@ -236,6 +236,22 @@ void ServiceWorkerDispatcherHost::RegisterServiceWorkerRegistrationHandle(
   registration_handles_.AddWithID(handle.release(), handle_id);
 }
 
+ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindServiceWorkerHandle(
+    int provider_id,
+    int64 version_id) {
+  for (IDMap<ServiceWorkerHandle, IDMapOwnPointer>::iterator iter(&handles_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    ServiceWorkerHandle* handle = iter.GetCurrentValue();
+    DCHECK(handle);
+    DCHECK(handle->version());
+    if (handle->provider_id() == provider_id &&
+        handle->version()->version_id() == version_id) {
+      return handle;
+    }
+  }
+  return NULL;
+}
+
 ServiceWorkerRegistrationHandle*
 ServiceWorkerDispatcherHost::GetOrCreateRegistrationHandle(
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
@@ -629,7 +645,8 @@ ServiceWorkerDispatcherHost::FindRegistrationHandle(int provider_id,
        iter.Advance()) {
     ServiceWorkerRegistrationHandle* handle = iter.GetCurrentValue();
     DCHECK(handle);
-    if (handle->provider_id() == provider_id && handle->registration() &&
+    DCHECK(handle->registration());
+    if (handle->provider_id() == provider_id &&
         handle->registration()->id() == registration_id) {
       return handle;
     }
@@ -646,15 +663,12 @@ void ServiceWorkerDispatcherHost::GetRegistrationObjectInfoAndVersionAttributes(
     GetOrCreateRegistrationHandle(provider_host, registration);
   *info = handle->GetObjectInfo();
 
-  attrs->installing =
-      provider_host->CreateAndRegisterServiceWorkerHandle(
-          registration->installing_version());
-  attrs->waiting =
-      provider_host->CreateAndRegisterServiceWorkerHandle(
-          registration->waiting_version());
-  attrs->active =
-      provider_host->CreateAndRegisterServiceWorkerHandle(
-          registration->active_version());
+  attrs->installing = provider_host->GetOrCreateServiceWorkerHandle(
+      registration->installing_version());
+  attrs->waiting = provider_host->GetOrCreateServiceWorkerHandle(
+      registration->waiting_version());
+  attrs->active = provider_host->GetOrCreateServiceWorkerHandle(
+      registration->active_version());
 }
 
 void ServiceWorkerDispatcherHost::RegistrationComplete(
