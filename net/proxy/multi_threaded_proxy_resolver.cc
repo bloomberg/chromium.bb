@@ -14,6 +14,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_resolver_factory.h"
 
 // TODO(eroman): Have the MultiThreadedProxyResolver clear its PAC script
 //               data when SetPacScript fails. That will reclaim memory when
@@ -33,7 +34,7 @@ class MultiThreadedProxyResolver::Executor
   // The constructor takes ownership of |resolver|.
   // |thread_number| is an identifier used when naming the worker thread.
   Executor(MultiThreadedProxyResolver* coordinator,
-           ProxyResolver* resolver,
+           scoped_ptr<ProxyResolver> resolver,
            int thread_number);
 
   // Submit a job to this executor.
@@ -284,13 +285,13 @@ class MultiThreadedProxyResolver::GetProxyForURLJob
 
 MultiThreadedProxyResolver::Executor::Executor(
     MultiThreadedProxyResolver* coordinator,
-    ProxyResolver* resolver,
+    scoped_ptr<ProxyResolver> resolver,
     int thread_number)
     : coordinator_(coordinator),
       thread_number_(thread_number),
-      resolver_(resolver) {
+      resolver_(resolver.Pass()) {
   DCHECK(coordinator);
-  DCHECK(resolver);
+  DCHECK(resolver_);
   // Start up the thread.
   thread_.reset(new base::Thread(base::StringPrintf("PAC thread #%d",
                                                     thread_number)));
@@ -518,9 +519,8 @@ MultiThreadedProxyResolver::AddNewExecutor() {
   DCHECK_LT(executors_.size(), max_num_threads_);
   // The "thread number" is used to give the thread a unique name.
   int thread_number = executors_.size();
-  ProxyResolver* resolver = resolver_factory_->CreateProxyResolver();
-  Executor* executor = new Executor(
-      this, resolver, thread_number);
+  scoped_ptr<ProxyResolver> resolver = resolver_factory_->CreateProxyResolver();
+  Executor* executor = new Executor(this, resolver.Pass(), thread_number);
   executors_.push_back(make_scoped_refptr(executor));
   return executor;
 }

@@ -112,4 +112,44 @@ void MockAsyncProxyResolverBase::RemovePendingSetPacScriptRequest(
 MockAsyncProxyResolverBase::MockAsyncProxyResolverBase(bool expects_pac_bytes)
     : ProxyResolver(expects_pac_bytes) {}
 
+ForwardingProxyResolver::ForwardingProxyResolver(ProxyResolver* impl)
+    : ProxyResolver(impl->expects_pac_bytes()), impl_(impl) {
+}
+
+int ForwardingProxyResolver::GetProxyForURL(const GURL& query_url,
+                                            ProxyInfo* results,
+                                            const CompletionCallback& callback,
+                                            RequestHandle* request,
+                                            const BoundNetLog& net_log) {
+  return impl_->GetProxyForURL(query_url, results, callback, request, net_log);
+}
+
+void ForwardingProxyResolver::CancelRequest(RequestHandle request) {
+  impl_->CancelRequest(request);
+}
+
+LoadState ForwardingProxyResolver::GetLoadState(RequestHandle request) const {
+  return impl_->GetLoadState(request);
+}
+
+void ForwardingProxyResolver::CancelSetPacScript() {
+  impl_->CancelSetPacScript();
+}
+
+int ForwardingProxyResolver::SetPacScript(
+    const scoped_refptr<ProxyResolverScriptData>& script_data,
+    const CompletionCallback& callback) {
+  return impl_->SetPacScript(script_data, callback);
+}
+
+ForwardingProxyResolverFactory::ForwardingProxyResolverFactory(
+    ProxyResolver* resolver)
+    : ProxyResolverFactory(resolver->expects_pac_bytes()), resolver_(resolver) {
+}
+
+scoped_ptr<ProxyResolver>
+ForwardingProxyResolverFactory::CreateProxyResolver() {
+  return make_scoped_ptr(new ForwardingProxyResolver(resolver_));
+}
+
 }  // namespace net

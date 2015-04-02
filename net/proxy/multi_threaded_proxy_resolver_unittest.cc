@@ -15,7 +15,9 @@
 #include "net/base/net_log.h"
 #include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
+#include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_resolver_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -148,58 +150,6 @@ class BlockableProxyResolver : public MockProxyResolver {
   base::WaitableEvent blocked_;
 };
 
-// ForwardingProxyResolver forwards all requests to |impl|.
-class ForwardingProxyResolver : public ProxyResolver {
- public:
-  explicit ForwardingProxyResolver(ProxyResolver* impl)
-      : ProxyResolver(impl->expects_pac_bytes()),
-        impl_(impl) {}
-
-  int GetProxyForURL(const GURL& query_url,
-                     ProxyInfo* results,
-                     const CompletionCallback& callback,
-                     RequestHandle* request,
-                     const BoundNetLog& net_log) override {
-    return impl_->GetProxyForURL(
-        query_url, results, callback, request, net_log);
-  }
-
-  void CancelRequest(RequestHandle request) override {
-    impl_->CancelRequest(request);
-  }
-
-  LoadState GetLoadState(RequestHandle request) const override {
-    NOTREACHED();
-    return LOAD_STATE_IDLE;
-  }
-
-  void CancelSetPacScript() override { impl_->CancelSetPacScript(); }
-
-  int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const CompletionCallback& callback) override {
-    return impl_->SetPacScript(script_data, callback);
-  }
-
- private:
-  ProxyResolver* impl_;
-};
-
-// This factory returns ProxyResolvers that forward all requests to
-// |resolver|.
-class ForwardingProxyResolverFactory : public ProxyResolverFactory {
- public:
-  explicit ForwardingProxyResolverFactory(ProxyResolver* resolver)
-      : ProxyResolverFactory(resolver->expects_pac_bytes()),
-        resolver_(resolver) {}
-
-  ProxyResolver* CreateProxyResolver() override {
-    return new ForwardingProxyResolver(resolver_);
-  }
-
- private:
-  ProxyResolver* resolver_;
-};
-
 // This factory returns new instances of BlockableProxyResolver.
 class BlockableProxyResolverFactory : public ProxyResolverFactory {
  public:
@@ -207,10 +157,10 @@ class BlockableProxyResolverFactory : public ProxyResolverFactory {
 
   ~BlockableProxyResolverFactory() override { STLDeleteElements(&resolvers_); }
 
-  ProxyResolver* CreateProxyResolver() override {
+  scoped_ptr<ProxyResolver> CreateProxyResolver() override {
     BlockableProxyResolver* resolver = new BlockableProxyResolver;
     resolvers_.push_back(resolver);
-    return new ForwardingProxyResolver(resolver);
+    return make_scoped_ptr(new ForwardingProxyResolver(resolver));
   }
 
   std::vector<BlockableProxyResolver*> resolvers() {

@@ -731,6 +731,8 @@
       'proxy/proxy_list.h',
       'proxy/proxy_resolver.h',
       'proxy/proxy_resolver_error_observer.h',
+      'proxy/proxy_resolver_factory.cc',
+      'proxy/proxy_resolver_factory.h',
       'proxy/proxy_resolver_mac.cc',
       'proxy/proxy_resolver_mac.h',
       'proxy/proxy_resolver_script.h',

@@ -28,6 +28,17 @@
 using base::ASCIIToUTF16;
 
 namespace net {
+namespace {
+
+class MockProxyResolverFactory : public ProxyResolverFactory {
+ public:
+  MockProxyResolverFactory() : ProxyResolverFactory(false) {}
+  scoped_ptr<ProxyResolver> CreateProxyResolver() override {
+    return make_scoped_ptr(new MockAsyncProxyResolver());
+  }
+};
+
+}  // namespace
 
 class FtpTestURLRequestContext : public TestURLRequestContext {
  public:
@@ -281,11 +292,10 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequest) {
 // Regression test for http://crbug.com/237526 .
 TEST_F(URLRequestFtpJobTest, FtpProxyRequestOrphanJob) {
   // Use a PAC URL so that URLRequestFtpJob's |pac_request_| field is non-NULL.
-  request_context()->set_proxy_service(
-      new ProxyService(
-          new ProxyConfigServiceFixed(
-              ProxyConfig::CreateFromCustomPacURL(GURL("http://foo"))),
-          new MockAsyncProxyResolver, NULL));
+  request_context()->set_proxy_service(new ProxyService(
+      new ProxyConfigServiceFixed(
+          ProxyConfig::CreateFromCustomPacURL(GURL("http://foo"))),
+      make_scoped_ptr(new MockProxyResolverFactory), NULL));
 
   TestDelegate request_delegate;
   scoped_ptr<URLRequest> url_request(request_context()->CreateRequest(

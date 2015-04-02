@@ -20,27 +20,7 @@ class Thread;
 }  // namespace base
 
 namespace net {
-
-// ProxyResolverFactory is an interface for creating ProxyResolver instances.
-class ProxyResolverFactory {
- public:
-  explicit ProxyResolverFactory(bool resolvers_expect_pac_bytes)
-      : resolvers_expect_pac_bytes_(resolvers_expect_pac_bytes) {}
-
-  virtual ~ProxyResolverFactory() {}
-
-  // Creates a new ProxyResolver. The caller is responsible for freeing this
-  // object.
-  virtual ProxyResolver* CreateProxyResolver() = 0;
-
-  bool resolvers_expect_pac_bytes() const {
-    return resolvers_expect_pac_bytes_;
-  }
-
- private:
-  bool resolvers_expect_pac_bytes_;
-  DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactory);
-};
+class ProxyResolverFactory;
 
 // MultiThreadedProxyResolver is a ProxyResolver implementation that runs
 // synchronous ProxyResolver implementations on worker threads.
