@@ -102,10 +102,16 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     blink::WebFormElement::AutocompleteResult,
     blink::WebFormElement::AutocompleteResultErrorInvalid)
 
+// Singly-included section for type definitions.
+#ifndef COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_MESSAGES_H_
+#define COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_MESSAGES_H_
+
 // IPC_MESSAGE macros fail on the std::map, when expanding. We need to define
 // a type to avoid that.
 using FormDataFieldDataMap =
     std::map<autofill::FormData, autofill::FormFieldData>;
+
+#endif  // COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_MESSAGES_H_
 
 // Autofill messages sent from the browser to the renderer.
 
