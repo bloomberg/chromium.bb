@@ -33,6 +33,11 @@ InputDeviceType GetInputDeviceTypeFromPath(const base::FilePath& path) {
   // Check ancestor devices for a known bus attachment.
   for (base::FilePath path = sysfs_path; path != base::FilePath("/");
        path = path.DirName()) {
+    // Bluetooth LE devices are virtual "uhid" devices.
+    if (path ==
+        base::FilePath(FILE_PATH_LITERAL("/sys/devices/virtual/misc/uhid")))
+      return InputDeviceType::INPUT_DEVICE_EXTERNAL;
+
     std::string subsystem_path =
         base::MakeAbsoluteFilePath(path.Append(FILE_PATH_LITERAL("subsystem")))
             .value();
