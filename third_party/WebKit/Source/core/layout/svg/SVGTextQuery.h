@@ -20,20 +20,16 @@
 #ifndef SVGTextQuery_h
 #define SVGTextQuery_h
 
-#include "core/layout/svg/SVGTextFragment.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
-class InlineFlowBox;
 class LayoutObject;
-class SVGInlineTextBox;
 
 class SVGTextQuery {
 public:
-    SVGTextQuery(LayoutObject*);
+    SVGTextQuery(LayoutObject* layoutObject) : m_queryRootLayoutObject(layoutObject) { }
 
     unsigned numberOfCharacters() const;
     float textLength() const;
@@ -44,29 +40,8 @@ public:
     FloatRect extentOfCharacter(unsigned position) const;
     int characterNumberAtPosition(const FloatPoint&) const;
 
-    // Public helper struct. Private classes in SVGTextQuery inherit from it.
-    struct Data;
-
 private:
-    typedef bool (SVGTextQuery::*ProcessTextFragmentCallback)(Data*, const SVGTextFragment&) const;
-    bool executeQuery(Data*, ProcessTextFragmentCallback) const;
-
-    void collectTextBoxesInFlowBox(InlineFlowBox*);
-    bool mapStartEndPositionsIntoFragmentCoordinates(Data*, const SVGTextFragment&, int& startPosition, int& endPosition) const;
-    void modifyStartEndPositionsRespectingLigatures(Data*, const SVGTextFragment&, int& startPosition, int& endPosition) const;
-
-private:
-    bool numberOfCharactersCallback(Data*, const SVGTextFragment&) const;
-    bool textLengthCallback(Data*, const SVGTextFragment&) const;
-    bool subStringLengthCallback(Data*, const SVGTextFragment&) const;
-    bool startPositionOfCharacterCallback(Data*, const SVGTextFragment&) const;
-    bool endPositionOfCharacterCallback(Data*, const SVGTextFragment&) const;
-    bool rotationOfCharacterCallback(Data*, const SVGTextFragment&) const;
-    bool extentOfCharacterCallback(Data*, const SVGTextFragment&) const;
-    bool characterNumberAtPositionCallback(Data*, const SVGTextFragment&) const;
-
-private:
-    Vector<SVGInlineTextBox*> m_textBoxes;
+    LayoutObject* m_queryRootLayoutObject;
 };
 
 }
