@@ -225,6 +225,8 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
       os.environ['CCACHE_CPP2'] = 'yes'
       cc_list = ['ccache', cc]
       cxx_list = ['ccache', cxx]
+      extra_cc_args += ['-Qunused-arguments']
+      extra_cxx_args += ['-Qunused-arguments']
     else:
       cc_list = [cc]
       cxx_list = [cxx]
