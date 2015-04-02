@@ -49,5 +49,7 @@
 # START OVERRIDES HERE
 
 Bug(senorblanco) virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
+Bug(senorblanco) css3/filters/effect-reference-subregion-hw.html [ NeedsManualRebaseline ]
+Bug(senorblanco) virtual/slimmingpaint/css3/filters/effect-reference-subregion-hw.html [ NeedsManualRebaseline ]
 
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
