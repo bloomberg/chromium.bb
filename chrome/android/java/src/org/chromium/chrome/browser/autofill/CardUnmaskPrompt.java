@@ -20,7 +20,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnLongClickListener;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.accessibility.AccessibilityEvent;
@@ -43,7 +43,7 @@ import java.util.Calendar;
  * A prompt that bugs users to enter their CVC when unmasking a Wallet instrument (credit card).
  */
 public class CardUnmaskPrompt
-        implements DialogInterface.OnDismissListener, TextWatcher, OnLongClickListener {
+        implements DialogInterface.OnDismissListener, TextWatcher, OnClickListener {
     private final CardUnmaskPromptDelegate mDelegate;
     private final AlertDialog mDialog;
     private final boolean mShouldRequestExpirationDate;
@@ -108,7 +108,7 @@ public class CardUnmaskPrompt
         mStoreLocallyCheckbox = (CheckBox) v.findViewById(R.id.store_locally_checkbox);
         mStoreLocallyCheckbox.setChecked(defaultToStoringLocally);
         mStoreLocallyTooltipIcon = (ImageView) v.findViewById(R.id.store_locally_tooltip_icon);
-        mStoreLocallyTooltipIcon.setOnLongClickListener(this);
+        mStoreLocallyTooltipIcon.setOnClickListener(this);
         mControlsContainer = (ViewGroup) v.findViewById(R.id.controls_container);
         mVerificationOverlay = v.findViewById(R.id.verification_overlay);
         mVerificationProgressBar = (ProgressBar) v.findViewById(R.id.verification_progress_bar);
@@ -219,38 +219,52 @@ public class CardUnmaskPrompt
     public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
     @Override
-    public boolean onLongClick(View v) {
+    public void onClick(View v) {
         assert v == mStoreLocallyTooltipIcon;
-        if (mStoreLocallyTooltipPopup == null) {
-            mStoreLocallyTooltipPopup = new PopupWindow(mDialog.getContext());
-            TextView text = new TextView(mDialog.getContext());
-            text.setText(R.string.autofill_card_unmask_prompt_storage_tooltip);
-            // Width is the dialog's width less the margins and padding around the checkbox and
-            // icon.
-            text.setWidth(mMainView.getWidth() - ViewCompat.getPaddingStart(mStoreLocallyCheckbox)
-                    - ViewCompat.getPaddingEnd(mStoreLocallyTooltipIcon)
-                    - MarginLayoutParamsCompat.getMarginStart((RelativeLayout.LayoutParams)
-                            mStoreLocallyCheckbox.getLayoutParams())
-                    - MarginLayoutParamsCompat.getMarginEnd((RelativeLayout.LayoutParams)
-                            mStoreLocallyTooltipIcon.getLayoutParams()));
-            text.setTextColor(Color.WHITE);
-            Resources resources = mDialog.getContext().getResources();
-            int hPadding = resources.getDimensionPixelSize(
-                    R.dimen.autofill_card_unmask_tooltip_horizontal_padding);
-            int vPadding = resources.getDimensionPixelSize(
-                    R.dimen.autofill_card_unmask_tooltip_vertical_padding);
-            text.setPadding(hPadding, vPadding, hPadding, vPadding);
+        // Don't show the popup if there's already one showing (or one has been dismissed
+        // recently). This prevents a tap on the (?) from hiding and then immediately re-showing
+        // the popup.
+        if (mStoreLocallyTooltipPopup != null) return;
 
-            mStoreLocallyTooltipPopup.setContentView(text);
-            mStoreLocallyTooltipPopup.setWindowLayoutMode(
-                    LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-            mStoreLocallyTooltipPopup.setOutsideTouchable(true);
-            mStoreLocallyTooltipPopup.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
-                    resources, R.drawable.store_locally_tooltip_background));
-        }
+        mStoreLocallyTooltipPopup = new PopupWindow(mDialog.getContext());
+        TextView text = new TextView(mDialog.getContext());
+        text.setText(R.string.autofill_card_unmask_prompt_storage_tooltip);
+        // Width is the dialog's width less the margins and padding around the checkbox and
+        // icon.
+        text.setWidth(mMainView.getWidth() - ViewCompat.getPaddingStart(mStoreLocallyCheckbox)
+                - ViewCompat.getPaddingEnd(mStoreLocallyTooltipIcon)
+                - MarginLayoutParamsCompat.getMarginStart((RelativeLayout.LayoutParams)
+                        mStoreLocallyCheckbox.getLayoutParams())
+                - MarginLayoutParamsCompat.getMarginEnd((RelativeLayout.LayoutParams)
+                        mStoreLocallyTooltipIcon.getLayoutParams()));
+        text.setTextColor(Color.WHITE);
+        Resources resources = mDialog.getContext().getResources();
+        int hPadding = resources.getDimensionPixelSize(
+                R.dimen.autofill_card_unmask_tooltip_horizontal_padding);
+        int vPadding = resources.getDimensionPixelSize(
+                R.dimen.autofill_card_unmask_tooltip_vertical_padding);
+        text.setPadding(hPadding, vPadding, hPadding, vPadding);
+
+        mStoreLocallyTooltipPopup.setContentView(text);
+        mStoreLocallyTooltipPopup.setWindowLayoutMode(
+                LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        mStoreLocallyTooltipPopup.setOutsideTouchable(true);
+        mStoreLocallyTooltipPopup.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
+                resources, R.drawable.store_locally_tooltip_background));
+        mStoreLocallyTooltipPopup.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                Handler h = new Handler();
+                h.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mStoreLocallyTooltipPopup = null;
+                    }
+                }, 200);
+            }
+        });
         mStoreLocallyTooltipPopup.showAsDropDown(mStoreLocallyCheckbox,
                 ViewCompat.getPaddingStart(mStoreLocallyCheckbox), 0);
-        return true;
     }
 
     private void setInitialFocus() {
