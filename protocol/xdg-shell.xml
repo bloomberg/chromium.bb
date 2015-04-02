@@ -315,7 +315,7 @@
 
 	The width and height arguments specify a hint to the window
 	about how its surface should be resized in window geometry
-	coordinates.
+	coordinates. See set_window_geometry.
 
 	The states listed in the event specify how the width/height
 	arguments should be interpreted, and possibly how it should be
@@ -344,9 +344,9 @@
         must make a ack_configure request before the commit request,
         passing along the serial of the configure event.
 
-        The compositor might use this information to move a surface
-        to the top left only when the client has drawn itself for
-        the maximized or fullscreen state.
+        For instance, the compositor might use this information to move
+        a surface to the top left only when the client has drawn itself
+        for the maximized or fullscreen state.
 
         If the client receives multiple configure events before it
         can respond to one, it only has to ack the last configure event.
@@ -376,6 +376,9 @@
         If responding to a configure event, the window geometry in here
         must respect the sizing negotiations specified by the states in
         the configure event.
+
+        The arguments are given in the surface local coordinate space of
+        the wl_surface associated with this xdg_surface.
 
         The width and height must be greater than zero.
       </description>
@@ -491,8 +494,9 @@
 
     <event name="popup_done">
       <description summary="popup interaction is done">
-	The popup_done event is sent out when a popup is dismissed
-	by the compositor.
+	The popup_done event is sent out when a popup is dismissed by the
+	compositor. The client should destroy the xdg_popup object at this
+	point.
       </description>
     </event>
 
