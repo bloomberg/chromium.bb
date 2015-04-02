@@ -92,6 +92,39 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
 
     self.assertEqual(expected, self.mock_repo.mock_calls)
 
+    # Update a second time, to ensure it does nothing the second time.
+    brillo_sdk._UpdateWorkspaceSdk(
+        gs.GSContext(), self.bootstrap_path, self.workspace_path, '1.2.3')
+
+    self.assertEqual(expected, self.mock_repo.mock_calls)
+
+  def testUpdateWorkspaceTot(self):
+    brillo_sdk._UpdateWorkspaceSdk(
+        gs.GSContext(), self.bootstrap_path, self.workspace_path, 'tot')
+
+    # Given the explicit path and version, sync what we expect, and where.
+    expected = [mock.call(constants.MANIFEST_URL,
+                          os.path.join(self.tempdir,
+                                       'bootstrap/sdk_checkouts/tot'),
+                          groups='project_sdk'),
+                mock.call().Sync()]
+
+    self.assertEqual(expected, self.mock_repo.mock_calls)
+
+    # Update a second time, to ensure it DOES update.
+    brillo_sdk._UpdateWorkspaceSdk(
+        gs.GSContext(), self.bootstrap_path, self.workspace_path, 'tot')
+
+    # Given the explicit path and version, sync what we expect, and where.
+    expected = [mock.call(constants.MANIFEST_URL,
+                          os.path.join(self.tempdir,
+                                       'bootstrap/sdk_checkouts/tot'),
+                          groups='project_sdk'),
+                mock.call().Sync()]
+
+    self.assertEqual(2 * expected, self.mock_repo.mock_calls)
+
+
   def testUpdateSdk(self):
     brillo_sdk._UpdateSdk(gs.GSContext(), self.sdk_path, '1.2.3')
 
@@ -139,7 +172,7 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(constants.MANIFEST_URL,
                           self.sdk_path,
-                          manifest=constants.PROJECT_MANIFEST),
+                          groups='project_sdk'),
                 mock.call().Sync()]
 
     self.assertEqual(expected, self.mock_repo.mock_calls)

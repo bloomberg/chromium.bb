@@ -46,7 +46,7 @@ def _UpdateWorkspaceSdk(gs_ctx, bootstrap_path, workspace_path, version):
   sdk_path = bootstrap_lib.ComputeSdkPath(bootstrap_path, version)
 
   # If this version already exists, no need to reinstall it.
-  if not os.path.exists(sdk_path):
+  if not os.path.exists(sdk_path) or version == 'tot':
     _UpdateSdk(gs_ctx, sdk_path, version)
 
   # Store the new version in the workspace.
@@ -69,7 +69,7 @@ def _UpdateSdk(gs_ctx, sdk_dir, version):
   if version.lower() == 'tot':
     # Init new repo.
     repo = repository.RepoRepository(
-        constants.MANIFEST_URL, sdk_dir, manifest=constants.PROJECT_MANIFEST)
+        constants.MANIFEST_URL, sdk_dir, groups='project_sdk')
     # Sync it.
     repo.Sync()
     return
