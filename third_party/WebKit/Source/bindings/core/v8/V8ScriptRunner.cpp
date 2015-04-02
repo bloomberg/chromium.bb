@@ -212,6 +212,7 @@ void setCacheTimeStamp(CachedMetadataHandler* cacheHandler)
 {
     double now = WTF::currentTime();
     unsigned tag = cacheTag(CacheTagTimeStamp, cacheHandler);
+    cacheHandler->clearCachedMetadata(CachedMetadataHandler::CacheLocally);
     cacheHandler->setCachedMetadata(tag, reinterpret_cast<char*>(&now), sizeof(now), CachedMetadataHandler::SendToPlatform);
 }
 
@@ -296,7 +297,6 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedM
     // The cacheOptions will guide our strategy:
     // FIXME: Clean up code caching options. crbug.com/455187.
     switch (cacheOptions) {
-    case V8CacheOptionsDefault:
     case V8CacheOptionsParseMemory:
         // Use parser-cache; in-memory only.
         return bind(compileAndConsumeOrProduce, cacheHandler, cacheTag(CacheTagParser, cacheHandler), v8::ScriptCompiler::kConsumeParserCache, v8::ScriptCompiler::kProduceParserCache, false, CachedMetadataHandler::CacheLocally);
@@ -319,6 +319,7 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedM
         return bind(compileAndConsumeOrProduce, cacheHandler, cacheTag(CacheTagCodeCompressed, cacheHandler), v8::ScriptCompiler::kConsumeCodeCache, v8::ScriptCompiler::kProduceCodeCache, true, CachedMetadataHandler::SendToPlatform);
         break;
 
+    case V8CacheOptionsDefault:
     case V8CacheOptionsHeuristics:
     case V8CacheOptionsHeuristicsMobile:
     case V8CacheOptionsRecent:
