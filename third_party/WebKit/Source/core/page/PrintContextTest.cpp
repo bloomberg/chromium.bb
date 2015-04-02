@@ -204,7 +204,8 @@ TEST_F(PrintContextFrameTest, WithSubframe)
 {
     MockCanvas canvas;
     document().setBaseURLOverride(KURL(ParsedURLString, "http://a.com/"));
-    setBodyInnerHTML("<iframe id='frame' src='http://b.com/' width='500' height='500'></iframe>");
+    setBodyInnerHTML("<iframe id='frame' src='http://b.com/' width='500' height='500'"
+        " style='border-width: 5px; margin: 5px; position: absolute; top: 90px; left: 90px'></iframe>");
 
     HTMLIFrameElement& iframe = *toHTMLIFrameElement(document().getElementById("frame"));
     OwnPtr<FrameLoaderClient> frameLoaderClient = adoptPtr(new FrameLoaderClientWithParent(document().frame()));
@@ -225,13 +226,13 @@ TEST_F(PrintContextFrameTest, WithSubframe)
     const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
     ASSERT_EQ(2u, operations.size());
 
-    size_t firstIndex = operations[0].rect.x() == 150 ? 0 : 1;
+    size_t firstIndex = operations[0].rect.x() == 250 ? 0 : 1;
     EXPECT_EQ(MockCanvas::DrawRect, operations[firstIndex].type);
-    EXPECT_SKRECT_EQ(150, 160, 170, 180, operations[firstIndex].rect);
+    EXPECT_SKRECT_EQ(250, 260, 170, 180, operations[firstIndex].rect);
 
     size_t secondIndex = firstIndex == 0 ? 1 : 0;
     EXPECT_EQ(MockCanvas::DrawRect, operations[secondIndex].type);
-    EXPECT_SKRECT_EQ(250, 260, 270, 280, operations[secondIndex].rect);
+    EXPECT_SKRECT_EQ(350, 360, 270, 280, operations[secondIndex].rect);
 
     subframe->detach();
     static_cast<SingleChildFrameLoaderClient*>(document().frame()->client())->setChild(nullptr);

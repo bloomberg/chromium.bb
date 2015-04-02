@@ -264,16 +264,17 @@ void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsCont
     }
 
     for (const auto& entry : m_linkDestinations) {
-        LayoutObject* renderer = entry.key->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = entry.key->layoutObject();
+        if (!layoutObject || !layoutObject->frameView())
             continue;
         KURL url = entry.value;
-        IntRect boundingBox = renderer->absoluteFocusRingBoundingBoxRect();
+        IntRect boundingBox = layoutObject->absoluteFocusRingBoundingBoxRect();
+        boundingBox = layoutObject->frameView()->convertToContainingWindow(boundingBox);
         if (!pageRect.intersects(boundingBox))
             continue;
-        if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, renderer->document().baseURL())) {
+        if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, layoutObject->document().baseURL())) {
             String name = url.fragmentIdentifier();
-            ASSERT(renderer->document().findAnchor(name));
+            ASSERT(layoutObject->document().findAnchor(name));
             graphicsContext.setURLFragmentForRect(name, boundingBox);
         } else {
             graphicsContext.setURLForRect(url, boundingBox);
@@ -281,10 +282,11 @@ void PrintContext::outputLinkAndLinkedDestinations(GraphicsContext& graphicsCont
     }
 
     for (const auto& entry : m_linkedDestinations) {
-        LayoutObject* renderer = entry.value->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = entry.value->layoutObject();
+        if (!layoutObject || !layoutObject->frameView())
             continue;
-        IntRect boundingBox = renderer->absoluteBoundingBoxRect();
+        IntRect boundingBox = layoutObject->absoluteBoundingBoxRect();
+        boundingBox = layoutObject->frameView()->convertToContainingWindow(boundingBox);
         if (!pageRect.intersects(boundingBox))
             continue;
         IntPoint point = boundingBox.minXMinYCorner();
