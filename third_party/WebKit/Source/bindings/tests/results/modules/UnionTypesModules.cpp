@@ -55,6 +55,12 @@ BooleanOrString BooleanOrString::fromString(String value)
     return container;
 }
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+BooleanOrString::BooleanOrString(const BooleanOrString&) = default;
+BooleanOrString::~BooleanOrString() = default;
+BooleanOrString& BooleanOrString::operator=(const BooleanOrString&) = default;
+#endif
+
 void V8BooleanOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrString& impl, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())

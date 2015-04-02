@@ -18,7 +18,7 @@ class {{decl}};
 {% endfor %}
 
 {% for container in containers %}
-class {{container.cpp_class}} final {
+class {{exported}}{{container.cpp_class}} final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     {{container.cpp_class}}();
@@ -31,6 +31,14 @@ public:
     static {{container.cpp_class}} from{{member.type_name}}({{member.rvalue_cpp_type}});
 
     {% endfor %}
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    {{container.cpp_class}}(const {{container.cpp_class}}&);
+    ~{{container.cpp_class}}();
+    {{container.cpp_class}}& operator=(const {{container.cpp_class}}&);
+#endif
     {% if container.needs_trace %}
     DECLARE_TRACE();
 
@@ -48,15 +56,15 @@ private:
     {{member.cpp_type}} m_{{member.cpp_name}};
     {% endfor %}
 
-    friend v8::Local<v8::Value> toV8(const {{container.cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
+    friend {{exported}}v8::Local<v8::Value> toV8(const {{container.cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8{{container.cpp_class}} final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, {{container.cpp_class}}&, ExceptionState&);
+    {{exported}}static void toImpl(v8::Isolate*, v8::Local<v8::Value>, {{container.cpp_class}}&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const {{container.cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
+{{exported}}v8::Local<v8::Value> toV8(const {{container.cpp_class}}&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{container.cpp_class}}& impl)

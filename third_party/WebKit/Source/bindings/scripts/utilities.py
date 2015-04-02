@@ -111,6 +111,14 @@ class ComponentInfoProviderCore(ComponentInfoProvider):
     def include_path_for_union_types(self):
         return 'bindings/core/v8/UnionTypesCore.h'
 
+    @property
+    def specifier_for_export(self):
+        return 'CORE_EXPORT '
+
+    @property
+    def include_path_for_export(self):
+        return 'core/CoreExport.h'
+
 
 class ComponentInfoProviderModules(ComponentInfoProvider):
     def __init__(self, interfaces_info, component_info_core,
@@ -149,6 +157,14 @@ class ComponentInfoProviderModules(ComponentInfoProvider):
     @property
     def include_path_for_union_types(self):
         return 'bindings/modules/v8/UnionTypesModules.h'
+
+    @property
+    def specifier_for_export(self):
+        return 'MODULES_EXPORT '
+
+    @property
+    def include_path_for_export(self):
+        return 'modules/ModulesExport.h'
 
 
 def load_interfaces_info_overall_pickle(info_dir):

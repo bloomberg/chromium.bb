@@ -10,6 +10,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -26,7 +27,7 @@ class TestInterfaceGarbageCollected;
 class TestInterfaceImplementation;
 class TestInterfaceWillBeGarbageCollected;
 
-class ArrayBufferOrArrayBufferViewOrDictionary final {
+class CORE_EXPORT ArrayBufferOrArrayBufferViewOrDictionary final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     ArrayBufferOrArrayBufferViewOrDictionary();
@@ -47,6 +48,14 @@ public:
     void setDictionary(Dictionary);
     static ArrayBufferOrArrayBufferViewOrDictionary fromDictionary(Dictionary);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    ArrayBufferOrArrayBufferViewOrDictionary(const ArrayBufferOrArrayBufferViewOrDictionary&);
+    ~ArrayBufferOrArrayBufferViewOrDictionary();
+    ArrayBufferOrArrayBufferViewOrDictionary& operator=(const ArrayBufferOrArrayBufferViewOrDictionary&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -60,15 +69,15 @@ private:
     RefPtr<TestArrayBufferView> m_arrayBufferView;
     Dictionary m_dictionary;
 
-    friend v8::Local<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8ArrayBufferOrArrayBufferViewOrDictionary final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, ArrayBufferOrArrayBufferViewOrDictionary&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, ArrayBufferOrArrayBufferViewOrDictionary&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ArrayBufferOrArrayBufferViewOrDictionary& impl)
@@ -81,7 +90,7 @@ struct NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary> {
     static ArrayBufferOrArrayBufferViewOrDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class BooleanOrStringOrUnrestrictedDouble final {
+class CORE_EXPORT BooleanOrStringOrUnrestrictedDouble final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     BooleanOrStringOrUnrestrictedDouble();
@@ -102,6 +111,14 @@ public:
     void setUnrestrictedDouble(double);
     static BooleanOrStringOrUnrestrictedDouble fromUnrestrictedDouble(double);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    BooleanOrStringOrUnrestrictedDouble(const BooleanOrStringOrUnrestrictedDouble&);
+    ~BooleanOrStringOrUnrestrictedDouble();
+    BooleanOrStringOrUnrestrictedDouble& operator=(const BooleanOrStringOrUnrestrictedDouble&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -115,15 +132,15 @@ private:
     String m_string;
     double m_unrestrictedDouble;
 
-    friend v8::Local<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8BooleanOrStringOrUnrestrictedDouble final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, BooleanOrStringOrUnrestrictedDouble&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, BooleanOrStringOrUnrestrictedDouble&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrStringOrUnrestrictedDouble& impl)
@@ -136,7 +153,7 @@ struct NativeValueTraits<BooleanOrStringOrUnrestrictedDouble> {
     static BooleanOrStringOrUnrestrictedDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class DoubleOrString final {
+class CORE_EXPORT DoubleOrString final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     DoubleOrString();
@@ -152,6 +169,14 @@ public:
     void setString(String);
     static DoubleOrString fromString(String);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    DoubleOrString(const DoubleOrString&);
+    ~DoubleOrString();
+    DoubleOrString& operator=(const DoubleOrString&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -163,15 +188,15 @@ private:
     double m_double;
     String m_string;
 
-    friend v8::Local<v8::Value> toV8(const DoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const DoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8DoubleOrString final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, DoubleOrString&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, DoubleOrString&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const DoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const DoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, DoubleOrString& impl)
@@ -184,7 +209,7 @@ struct NativeValueTraits<DoubleOrString> {
     static DoubleOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class NodeOrNodeList final {
+class CORE_EXPORT NodeOrNodeList final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     NodeOrNodeList();
@@ -200,6 +225,14 @@ public:
     void setNodeList(PassRefPtrWillBeRawPtr<NodeList>);
     static NodeOrNodeList fromNodeList(PassRefPtrWillBeRawPtr<NodeList>);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    NodeOrNodeList(const NodeOrNodeList&);
+    ~NodeOrNodeList();
+    NodeOrNodeList& operator=(const NodeOrNodeList&);
+#endif
     DECLARE_TRACE();
 
 private:
@@ -213,15 +246,15 @@ private:
     RefPtrWillBeMember<Node> m_node;
     RefPtrWillBeMember<NodeList> m_nodeList;
 
-    friend v8::Local<v8::Value> toV8(const NodeOrNodeList&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const NodeOrNodeList&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8NodeOrNodeList final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, NodeOrNodeList&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, NodeOrNodeList&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const NodeOrNodeList&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const NodeOrNodeList&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, NodeOrNodeList& impl)
@@ -234,7 +267,7 @@ struct NativeValueTraits<NodeOrNodeList> {
     static NodeOrNodeList nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class StringOrArrayBufferOrArrayBufferView final {
+class CORE_EXPORT StringOrArrayBufferOrArrayBufferView final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     StringOrArrayBufferOrArrayBufferView();
@@ -255,6 +288,14 @@ public:
     void setArrayBufferView(PassRefPtr<TestArrayBufferView>);
     static StringOrArrayBufferOrArrayBufferView fromArrayBufferView(PassRefPtr<TestArrayBufferView>);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    StringOrArrayBufferOrArrayBufferView(const StringOrArrayBufferOrArrayBufferView&);
+    ~StringOrArrayBufferOrArrayBufferView();
+    StringOrArrayBufferOrArrayBufferView& operator=(const StringOrArrayBufferOrArrayBufferView&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -268,15 +309,15 @@ private:
     RefPtr<TestArrayBuffer> m_arrayBuffer;
     RefPtr<TestArrayBufferView> m_arrayBufferView;
 
-    friend v8::Local<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8StringOrArrayBufferOrArrayBufferView final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrArrayBufferOrArrayBufferView&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrArrayBufferOrArrayBufferView&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrArrayBufferOrArrayBufferView& impl)
@@ -289,7 +330,7 @@ struct NativeValueTraits<StringOrArrayBufferOrArrayBufferView> {
     static StringOrArrayBufferOrArrayBufferView nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class StringOrDouble final {
+class CORE_EXPORT StringOrDouble final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     StringOrDouble();
@@ -305,6 +346,14 @@ public:
     void setDouble(double);
     static StringOrDouble fromDouble(double);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    StringOrDouble(const StringOrDouble&);
+    ~StringOrDouble();
+    StringOrDouble& operator=(const StringOrDouble&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -316,15 +365,15 @@ private:
     String m_string;
     double m_double;
 
-    friend v8::Local<v8::Value> toV8(const StringOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const StringOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8StringOrDouble final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrDouble&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrDouble&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const StringOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const StringOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrDouble& impl)
@@ -337,7 +386,7 @@ struct NativeValueTraits<StringOrDouble> {
     static StringOrDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class StringOrStringSequence final {
+class CORE_EXPORT StringOrStringSequence final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     StringOrStringSequence();
@@ -353,6 +402,14 @@ public:
     void setStringSequence(const Vector<String>&);
     static StringOrStringSequence fromStringSequence(const Vector<String>&);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    StringOrStringSequence(const StringOrStringSequence&);
+    ~StringOrStringSequence();
+    StringOrStringSequence& operator=(const StringOrStringSequence&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -364,15 +421,15 @@ private:
     String m_string;
     Vector<String> m_stringSequence;
 
-    friend v8::Local<v8::Value> toV8(const StringOrStringSequence&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const StringOrStringSequence&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8StringOrStringSequence final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrStringSequence&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, StringOrStringSequence&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const StringOrStringSequence&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const StringOrStringSequence&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrStringSequence& impl)
@@ -385,7 +442,7 @@ struct NativeValueTraits<StringOrStringSequence> {
     static StringOrStringSequence nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class TestEnumOrDouble final {
+class CORE_EXPORT TestEnumOrDouble final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     TestEnumOrDouble();
@@ -401,6 +458,14 @@ public:
     void setDouble(double);
     static TestEnumOrDouble fromDouble(double);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    TestEnumOrDouble(const TestEnumOrDouble&);
+    ~TestEnumOrDouble();
+    TestEnumOrDouble& operator=(const TestEnumOrDouble&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -412,15 +477,15 @@ private:
     String m_testEnum;
     double m_double;
 
-    friend v8::Local<v8::Value> toV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8TestEnumOrDouble final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestEnumOrDouble&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestEnumOrDouble&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const TestEnumOrDouble&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestEnumOrDouble& impl)
@@ -433,7 +498,7 @@ struct NativeValueTraits<TestEnumOrDouble> {
     static TestEnumOrDouble nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class TestInterface2OrUint8Array final {
+class CORE_EXPORT TestInterface2OrUint8Array final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     TestInterface2OrUint8Array();
@@ -449,6 +514,14 @@ public:
     void setUint8Array(PassRefPtr<DOMUint8Array>);
     static TestInterface2OrUint8Array fromUint8Array(PassRefPtr<DOMUint8Array>);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    TestInterface2OrUint8Array(const TestInterface2OrUint8Array&);
+    ~TestInterface2OrUint8Array();
+    TestInterface2OrUint8Array& operator=(const TestInterface2OrUint8Array&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -460,15 +533,15 @@ private:
     RefPtr<TestInterface2> m_testInterface2;
     RefPtr<DOMUint8Array> m_uint8Array;
 
-    friend v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterface2OrUint8Array final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterface2OrUint8Array&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterface2OrUint8Array&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrUint8Array& impl)
@@ -481,7 +554,7 @@ struct NativeValueTraits<TestInterface2OrUint8Array> {
     static TestInterface2OrUint8Array nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class TestInterfaceGarbageCollectedOrString final {
+class CORE_EXPORT TestInterfaceGarbageCollectedOrString final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     TestInterfaceGarbageCollectedOrString();
@@ -497,6 +570,14 @@ public:
     void setString(String);
     static TestInterfaceGarbageCollectedOrString fromString(String);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    TestInterfaceGarbageCollectedOrString(const TestInterfaceGarbageCollectedOrString&);
+    ~TestInterfaceGarbageCollectedOrString();
+    TestInterfaceGarbageCollectedOrString& operator=(const TestInterfaceGarbageCollectedOrString&);
+#endif
     DECLARE_TRACE();
 
 private:
@@ -510,15 +591,15 @@ private:
     Member<TestInterfaceGarbageCollected> m_testInterfaceGarbageCollected;
     String m_string;
 
-    friend v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceGarbageCollectedOrString final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceGarbageCollectedOrString&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceGarbageCollectedOrString&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarbageCollectedOrString& impl)
@@ -531,7 +612,7 @@ struct NativeValueTraits<TestInterfaceGarbageCollectedOrString> {
     static TestInterfaceGarbageCollectedOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class TestInterfaceOrLong final {
+class CORE_EXPORT TestInterfaceOrLong final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     TestInterfaceOrLong();
@@ -547,6 +628,14 @@ public:
     void setLong(int);
     static TestInterfaceOrLong fromLong(int);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    TestInterfaceOrLong(const TestInterfaceOrLong&);
+    ~TestInterfaceOrLong();
+    TestInterfaceOrLong& operator=(const TestInterfaceOrLong&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -558,15 +647,15 @@ private:
     RefPtr<TestInterfaceImplementation> m_testInterface;
     int m_long;
 
-    friend v8::Local<v8::Value> toV8(const TestInterfaceOrLong&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceOrLong&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceOrLong final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceOrLong&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceOrLong&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const TestInterfaceOrLong&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceOrLong&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrLong& impl)
@@ -579,7 +668,7 @@ struct NativeValueTraits<TestInterfaceOrLong> {
     static TestInterfaceOrLong nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class TestInterfaceOrTestInterfaceEmpty final {
+class CORE_EXPORT TestInterfaceOrTestInterfaceEmpty final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     TestInterfaceOrTestInterfaceEmpty();
@@ -595,6 +684,14 @@ public:
     void setTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty>);
     static TestInterfaceOrTestInterfaceEmpty fromTestInterfaceEmpty(PassRefPtr<TestInterfaceEmpty>);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    TestInterfaceOrTestInterfaceEmpty(const TestInterfaceOrTestInterfaceEmpty&);
+    ~TestInterfaceOrTestInterfaceEmpty();
+    TestInterfaceOrTestInterfaceEmpty& operator=(const TestInterfaceOrTestInterfaceEmpty&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -606,15 +703,15 @@ private:
     RefPtr<TestInterfaceImplementation> m_testInterface;
     RefPtr<TestInterfaceEmpty> m_testInterfaceEmpty;
 
-    friend v8::Local<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceOrTestInterfaceEmpty final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceOrTestInterfaceEmpty&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceOrTestInterfaceEmpty&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrTestInterfaceEmpty& impl)
@@ -627,7 +724,7 @@ struct NativeValueTraits<TestInterfaceOrTestInterfaceEmpty> {
     static TestInterfaceOrTestInterfaceEmpty nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
+class CORE_EXPORT TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     TestInterfaceWillBeGarbageCollectedOrTestDictionary();
@@ -643,6 +740,14 @@ public:
     void setTestDictionary(TestDictionary);
     static TestInterfaceWillBeGarbageCollectedOrTestDictionary fromTestDictionary(TestDictionary);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    TestInterfaceWillBeGarbageCollectedOrTestDictionary(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&);
+    ~TestInterfaceWillBeGarbageCollectedOrTestDictionary();
+    TestInterfaceWillBeGarbageCollectedOrTestDictionary& operator=(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&);
+#endif
     DECLARE_TRACE();
 
 private:
@@ -656,15 +761,15 @@ private:
     RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> m_testInterfaceWillBeGarbageCollected;
     TestDictionary m_testDictionary;
 
-    friend v8::Local<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceWillBeGarbageCollectedOrTestDictionary&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceWillBeGarbageCollectedOrTestDictionary&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl)
@@ -677,7 +782,7 @@ struct NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary> {
     static TestInterfaceWillBeGarbageCollectedOrTestDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class UnrestrictedDoubleOrString final {
+class CORE_EXPORT UnrestrictedDoubleOrString final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     UnrestrictedDoubleOrString();
@@ -693,6 +798,14 @@ public:
     void setString(String);
     static UnrestrictedDoubleOrString fromString(String);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    UnrestrictedDoubleOrString(const UnrestrictedDoubleOrString&);
+    ~UnrestrictedDoubleOrString();
+    UnrestrictedDoubleOrString& operator=(const UnrestrictedDoubleOrString&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -704,15 +817,15 @@ private:
     double m_unrestrictedDouble;
     String m_string;
 
-    friend v8::Local<v8::Value> toV8(const UnrestrictedDoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const UnrestrictedDoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8UnrestrictedDoubleOrString final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, UnrestrictedDoubleOrString&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, UnrestrictedDoubleOrString&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const UnrestrictedDoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
+CORE_EXPORT v8::Local<v8::Value> toV8(const UnrestrictedDoubleOrString&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, UnrestrictedDoubleOrString& impl)

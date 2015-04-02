@@ -11,12 +11,13 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 
-class BooleanOrString final {
+class MODULES_EXPORT BooleanOrString final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     BooleanOrString();
@@ -32,6 +33,14 @@ public:
     void setString(String);
     static BooleanOrString fromString(String);
 
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    BooleanOrString(const BooleanOrString&);
+    ~BooleanOrString();
+    BooleanOrString& operator=(const BooleanOrString&);
+#endif
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -43,15 +52,15 @@ private:
     bool m_boolean;
     String m_string;
 
-    friend v8::Local<v8::Value> toV8(const BooleanOrString&, v8::Local<v8::Object>, v8::Isolate*);
+    friend MODULES_EXPORT v8::Local<v8::Value> toV8(const BooleanOrString&, v8::Local<v8::Object>, v8::Isolate*);
 };
 
 class V8BooleanOrString final {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, BooleanOrString&, ExceptionState&);
+    MODULES_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, BooleanOrString&, ExceptionState&);
 };
 
-v8::Local<v8::Value> toV8(const BooleanOrString&, v8::Local<v8::Object>, v8::Isolate*);
+MODULES_EXPORT v8::Local<v8::Value> toV8(const BooleanOrString&, v8::Local<v8::Object>, v8::Isolate*);
 
 template <class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrString& impl)

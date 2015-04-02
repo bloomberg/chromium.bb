@@ -58,6 +58,12 @@ void {{container.cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}}
 }
 
 {% endfor %}
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+{{container.cpp_class}}::{{container.cpp_class}}(const {{container.cpp_class}}&) = default;
+{{container.cpp_class}}::~{{container.cpp_class}}() = default;
+{{container.cpp_class}}& {{container.cpp_class}}::operator=(const {{container.cpp_class}}&) = default;
+#endif
+
 {% if container.needs_trace %}
 DEFINE_TRACE({{container.cpp_class}})
 {

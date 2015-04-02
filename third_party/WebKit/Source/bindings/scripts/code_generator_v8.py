@@ -333,9 +333,11 @@ class CodeGeneratorUnionType(object):
             union_types, self.info_provider.interfaces_info)
         template_context['code_generator'] = module_pyname
         capitalized_component = self.target_component.capitalize()
+        template_context['exported'] = self.info_provider.specifier_for_export
         template_context['header_filename'] = 'bindings/%s/v8/UnionTypes%s.h' % (
             self.target_component, capitalized_component)
         template_context['macro_guard'] = 'UnionType%s_h' % capitalized_component
+        additional_header_includes = [self.info_provider.include_path_for_export]
 
         # Add UnionTypesCore.h as a dependency when we generate modules union types
         # because we only generate union type containers which are used by both
@@ -343,9 +345,11 @@ class CodeGeneratorUnionType(object):
         # FIXME: This is an ad hoc workaround and we need a general way to
         # handle core <-> modules dependency.
         if self.target_component == 'modules':
-            template_context['header_includes'] = sorted(
-                template_context['header_includes'] +
-                ['bindings/core/v8/UnionTypesCore.h'])
+            additional_header_includes.append(
+                'bindings/core/v8/UnionTypesCore.h')
+
+        template_context['header_includes'] = sorted(
+            template_context['header_includes'] + additional_header_includes)
 
         header_text = header_template.render(template_context)
         cpp_text = cpp_template.render(template_context)
