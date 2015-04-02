@@ -21,7 +21,7 @@ var TESTS = [
 
     function testOutOfStackOutOfWaitUntil() {
         synthesizeNotificationClick().then(function() {
-            self.clients.getAll().then(function() {
+            self.clients.matchAll().then(function() {
                 clients.openWindow('/foo.html').catch(function() {
                     self.postMessage('openWindow() in notificationclick outside of waitUntil not in stack failed');
                 }).then(runNextTestOrQuit);
@@ -31,7 +31,7 @@ var TESTS = [
 
     function testInWaitUntilAsyncAndDoubleCall() {
         synthesizeNotificationClick().then(function(e) {
-            e.waitUntil(self.clients.getAll().then(function() {
+            e.waitUntil(self.clients.matchAll().then(function() {
                 return clients.openWindow('/foo.html').then(function() {
                     self.postMessage('openWindow() in notificationclick\'s waitUntil suceeded');
                 }).then(runNextTestOrQuit);
@@ -41,7 +41,7 @@ var TESTS = [
 
     function testDoubleCallInWaitUntilAsync() {
         synthesizeNotificationClick().then(function(e) {
-            e.waitUntil(self.clients.getAll().then(function() {
+            e.waitUntil(self.clients.matchAll().then(function() {
                 return clients.openWindow('/foo.html').then(function() {
                     return clients.openWindow('/foo.html');
                 }).catch(function() {
