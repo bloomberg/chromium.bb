@@ -13,6 +13,7 @@
 #include "content/child/permissions/permission_dispatcher.h"
 #include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/modules/permissions/WebPermissionObserver.h"
 
 using base::LazyInstance;
 using base::ThreadLocalPointer;
@@ -65,6 +66,57 @@ void PermissionDispatcherThreadProxy::queryPermission(
                  origin.string().utf8(),
                  base::Unretained(callback),
                  WorkerTaskRunner::Instance()->CurrentWorkerId()));
+}
+
+void PermissionDispatcherThreadProxy::startListening(
+    blink::WebPermissionType type,
+    const blink::WebURL& origin,
+    blink::WebPermissionObserver* observer) {
+  if (!PermissionDispatcher::IsObservable(type))
+    return;
+
+  RegisterObserver(observer);
+
+  main_thread_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&PermissionDispatcher::StartListeningForWorker,
+          base::Unretained(permission_dispatcher_),
+          type,
+          origin.string().utf8(),
+          WorkerTaskRunner::Instance()->CurrentWorkerId(),
+          base::Bind(&PermissionDispatcherThreadProxy::OnPermissionChanged,
+                     base::Unretained(this),
+                     type,
+                     origin.string().utf8(),
+                     base::Unretained(observer))));
+}
+
+void PermissionDispatcherThreadProxy::stopListening(
+    blink::WebPermissionObserver* observer) {
+  UnregisterObserver(observer);
+}
+
+void PermissionDispatcherThreadProxy::OnPermissionChanged(
+    blink::WebPermissionType type,
+    const std::string& origin,
+    blink::WebPermissionObserver* observer,
+    blink::WebPermissionStatus status) {
+  if (!IsObserverRegistered(observer))
+    return;
+
+  observer->permissionChanged(type, status);
+
+  main_thread_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&PermissionDispatcher::GetNextPermissionChangeForWorker,
+          base::Unretained(permission_dispatcher_),
+          type,
+          origin,
+          status,
+          WorkerTaskRunner::Instance()->CurrentWorkerId(),
+          base::Bind(&PermissionDispatcherThreadProxy::OnPermissionChanged,
+                     base::Unretained(this),
+                     type,
+                     origin,
+                     base::Unretained(observer))));
 }
 
 void PermissionDispatcherThreadProxy::OnWorkerRunLoopStopped() {

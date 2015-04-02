@@ -4,9 +4,13 @@
 
 #include "content/child/permissions/permission_dispatcher.h"
 
+#include "base/callback.h"
 #include "content/child/worker_task_runner.h"
 #include "content/public/common/service_registry.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/modules/permissions/WebPermissionObserver.h"
+
+using blink::WebPermissionObserver;
 
 namespace content {
 
@@ -30,6 +34,20 @@ PermissionName GetPermissionName(blink::WebPermissionType type) {
   }
 }
 
+PermissionStatus GetPermissionStatus(blink::WebPermissionStatus status) {
+  switch (status) {
+    case blink::WebPermissionStatusGranted:
+      return PERMISSION_STATUS_GRANTED;
+    case blink::WebPermissionStatusDenied:
+      return PERMISSION_STATUS_DENIED;
+    case blink::WebPermissionStatusPrompt:
+      return PERMISSION_STATUS_ASK;
+  }
+
+  NOTREACHED();
+  return PERMISSION_STATUS_DENIED;
+}
+
 blink::WebPermissionStatus GetWebPermissionStatus(PermissionStatus status) {
   switch (status) {
     case PERMISSION_STATUS_GRANTED:
@@ -47,6 +65,14 @@ blink::WebPermissionStatus GetWebPermissionStatus(PermissionStatus status) {
 const int kNoWorkerThread = 0;
 
 }  // anonymous namespace
+
+// static
+bool PermissionDispatcher::IsObservable(blink::WebPermissionType type) {
+  return type == blink::WebPermissionTypeGeolocation ||
+         type == blink::WebPermissionTypeNotifications ||
+         type == blink::WebPermissionTypePushNotifications ||
+         type == blink::WebPermissionTypeMidiSysEx;
+}
 
 PermissionDispatcher::CallbackInformation::CallbackInformation(
     blink::WebPermissionQueryCallback* callback,
@@ -87,12 +113,86 @@ void PermissionDispatcher::queryPermission(
       type, origin.string().utf8(), callback, kNoWorkerThread);
 }
 
+void PermissionDispatcher::startListening(
+    blink::WebPermissionType type,
+    const blink::WebURL& origin,
+    WebPermissionObserver* observer) {
+  if (!IsObservable(type))
+    return;
+
+  RegisterObserver(observer);
+
+  GetNextPermissionChange(type,
+                          origin.string().utf8(),
+                          observer,
+                          // We initialize with an arbitrary value because the
+                          // mojo service wants a value. Worst case, the
+                          // observer will get notified about a non-change which
+                          // should be a no-op. After the first notification,
+                          // GetNextPermissionChange will be called with the
+                          // latest known value.
+                          PERMISSION_STATUS_ASK);
+}
+
+void PermissionDispatcher::stopListening(WebPermissionObserver* observer) {
+  UnregisterObserver(observer);
+}
+
 void PermissionDispatcher::QueryPermissionForWorker(
     blink::WebPermissionType type,
     const std::string& origin,
     blink::WebPermissionQueryCallback* callback,
     int worker_thread_id) {
   QueryPermissionInternal(type, origin, callback, worker_thread_id);
+}
+
+void PermissionDispatcher::StartListeningForWorker(
+    blink::WebPermissionType type,
+    const std::string& origin,
+    int worker_thread_id,
+    const base::Callback<void(blink::WebPermissionStatus)>& callback) {
+  GetPermissionServicePtr()->GetNextPermissionChange(
+      GetPermissionName(type),
+      origin,
+      // We initialize with an arbitrary value because the mojo service wants a
+      // value. Worst case, the observer will get notified about a non-change
+      // which should be a no-op. After the first notification,
+      // GetNextPermissionChange will be called with the latest known value.
+      PERMISSION_STATUS_ASK,
+      base::Bind(&PermissionDispatcher::OnPermissionChangedForWorker,
+                 base::Unretained(this),
+                 worker_thread_id,
+                 callback));
+}
+
+void PermissionDispatcher::GetNextPermissionChangeForWorker(
+    blink::WebPermissionType type,
+    const std::string& origin,
+    blink::WebPermissionStatus status,
+    int worker_thread_id,
+    const base::Callback<void(blink::WebPermissionStatus)>& callback) {
+  GetPermissionServicePtr()->GetNextPermissionChange(
+      GetPermissionName(type),
+      origin,
+      GetPermissionStatus(status),
+      base::Bind(&PermissionDispatcher::OnPermissionChangedForWorker,
+                 base::Unretained(this),
+                 worker_thread_id,
+                 callback));
+}
+
+// static
+void PermissionDispatcher::RunCallbackOnWorkerThread(
+    blink::WebPermissionQueryCallback* callback,
+    scoped_ptr<blink::WebPermissionStatus> status) {
+  callback->onSuccess(status.release());
+  delete callback;
+}
+
+PermissionServicePtr& PermissionDispatcher::GetPermissionServicePtr() {
+  if (!permission_service_.get())
+    service_registry_->ConnectToRemoteService(&permission_service_);
+  return permission_service_;
 }
 
 void PermissionDispatcher::QueryPermissionInternal(
@@ -106,9 +206,7 @@ void PermissionDispatcher::QueryPermissionInternal(
   // not be called.
   int request_id = pending_callbacks_.Add(
       new CallbackInformation(callback, worker_thread_id));
-  if (!permission_service_.get())
-    service_registry_->ConnectToRemoteService(&permission_service_);
-  permission_service_->HasPermission(
+  GetPermissionServicePtr()->HasPermission(
       GetPermissionName(type),
       origin,
       base::Bind(&PermissionDispatcher::OnQueryPermission,
@@ -117,7 +215,7 @@ void PermissionDispatcher::QueryPermissionInternal(
 }
 
 void PermissionDispatcher::OnQueryPermission(int request_id,
-                                           PermissionStatus result) {
+                                             PermissionStatus result) {
   CallbackInformation* callback_information =
       pending_callbacks_.Lookup(request_id);
   DCHECK(callback_information && callback_information->callback());
@@ -144,12 +242,43 @@ void PermissionDispatcher::OnQueryPermission(int request_id,
   pending_callbacks_.Remove(request_id);
 }
 
-// static
-void PermissionDispatcher::RunCallbackOnWorkerThread(
-    blink::WebPermissionQueryCallback* callback,
-    scoped_ptr<blink::WebPermissionStatus> status) {
-  callback->onSuccess(status.release());
-  delete callback;
+void PermissionDispatcher::OnPermissionChanged(
+    blink::WebPermissionType type,
+    const std::string& origin,
+    WebPermissionObserver* observer,
+    PermissionStatus status) {
+  if (!IsObserverRegistered(observer))
+    return;
+
+  observer->permissionChanged(type, GetWebPermissionStatus(status));
+
+  GetNextPermissionChange(type, origin, observer, status);
+}
+
+void PermissionDispatcher::OnPermissionChangedForWorker(
+    int worker_thread_id,
+    const base::Callback<void(blink::WebPermissionStatus)>& callback,
+    PermissionStatus status) {
+  DCHECK(worker_thread_id != kNoWorkerThread);
+
+  WorkerTaskRunner::Instance()->PostTask(
+      worker_thread_id, base::Bind(callback, GetWebPermissionStatus(status)));
+}
+
+void PermissionDispatcher::GetNextPermissionChange(
+    blink::WebPermissionType type,
+    const std::string& origin,
+    WebPermissionObserver* observer,
+    PermissionStatus current_status) {
+  GetPermissionServicePtr()->GetNextPermissionChange(
+      GetPermissionName(type),
+      origin,
+      current_status,
+      base::Bind(&PermissionDispatcher::OnPermissionChanged,
+                 base::Unretained(this),
+                 type,
+                 origin,
+                 base::Unretained(observer)));
 }
 
 }  // namespace content

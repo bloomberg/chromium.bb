@@ -167,6 +167,8 @@
       'child/permissions/permission_dispatcher.h',
       'child/permissions/permission_dispatcher_thread_proxy.cc',
       'child/permissions/permission_dispatcher_thread_proxy.h',
+      'child/permissions/permission_observers_registry.cc',
+      'child/permissions/permission_observers_registry.h',
       'child/plugin_message_generator.cc',
       'child/plugin_message_generator.h',
       'child/plugin_messages.h',

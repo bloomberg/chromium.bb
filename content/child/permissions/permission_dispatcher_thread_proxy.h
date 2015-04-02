@@ -5,10 +5,10 @@
 #ifndef CONTENT_CHILD_PERMISSIONS_PERMISSION_DISPATCHER_THREAD_PROXY_H_
 #define CONTENT_CHILD_PERMISSIONS_PERMISSION_DISPATCHER_THREAD_PROXY_H_
 
-#include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/child/permissions/permission_observers_registry.h"
 #include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/modules/permissions/WebPermissionClient.h"
 
@@ -20,8 +20,12 @@ namespace content {
 
 class PermissionDispatcher;
 
+// PermissionDispatcherThreadProxy is a a proxy to the PermissionDispatcher for
+// callers running on a different thread than the main thread. There is one
+// instance of that class per thread.
 class PermissionDispatcherThreadProxy :
     public blink::WebPermissionClient,
+    public PermissionObserversRegistry,
     public WorkerTaskRunner::Observer {
  public:
   static PermissionDispatcherThreadProxy* GetThreadInstance(
@@ -32,6 +36,10 @@ class PermissionDispatcherThreadProxy :
   virtual void queryPermission(blink::WebPermissionType type,
                                const blink::WebURL& origin,
                                blink::WebPermissionQueryCallback* callback);
+  virtual void startListening(blink::WebPermissionType type,
+                              const blink::WebURL& origin,
+                              blink::WebPermissionObserver* observer);
+  virtual void stopListening(blink::WebPermissionObserver* observer);
 
   // WorkerTaskRunner::Observer implementation.
   void OnWorkerRunLoopStopped() override;
@@ -40,6 +48,12 @@ class PermissionDispatcherThreadProxy :
   PermissionDispatcherThreadProxy(
       base::SingleThreadTaskRunner* main_thread_task_runner,
       PermissionDispatcher* permissions_dispatcher);
+
+  // Callback when an observed permission changes.
+  void OnPermissionChanged(blink::WebPermissionType type,
+                           const std::string& origin,
+                           blink::WebPermissionObserver* observer,
+                           blink::WebPermissionStatus status);
 
   virtual ~PermissionDispatcherThreadProxy();
 
