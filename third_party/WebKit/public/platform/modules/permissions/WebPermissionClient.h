@@ -13,6 +13,7 @@ namespace blink {
 
 using WebPermissionQueryCallback = WebCallbacks<WebPermissionStatus, void>;
 
+class WebPermissionObserver;
 class WebURL;
 
 // This client is expected to do general permission handling. From simple
@@ -20,7 +21,17 @@ class WebURL;
 class WebPermissionClient {
 public:
     // Query the permission status of a given origin for a specific permission.
-    virtual void queryPermission(WebPermissionType, const WebURL&, WebPermissionQueryCallback*) = 0;
+    virtual void queryPermission(WebPermissionType, const WebURL&, WebPermissionQueryCallback*) { }
+
+    // Listen for permission changes for a given origin and inform the observer
+    // when they happen. The observer is not owned by the WebPermissionClient.
+    // The client should expect stopListening() to be called when the observer
+    // will be destroyed.
+    virtual void startListening(WebPermissionType, const WebURL&, WebPermissionObserver*) { }
+
+    // Stop listening to all the permission changes associated with the given
+    // observer.
+    virtual void stopListening(WebPermissionObserver*) { }
 
 protected:
     virtual ~WebPermissionClient() { }

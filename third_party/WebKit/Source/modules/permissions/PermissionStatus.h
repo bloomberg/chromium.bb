@@ -5,9 +5,10 @@
 #ifndef PermissionStatus_h
 #define PermissionStatus_h
 
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/permissions/WebPermissionObserver.h"
 #include "public/platform/modules/permissions/WebPermissionStatus.h"
 #include "public/platform/modules/permissions/WebPermissionType.h"
 #include "wtf/text/AtomicString.h"
@@ -22,7 +23,8 @@ class ScriptPromiseResolver;
 // ExecutionContext.
 class PermissionStatus final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PermissionStatus>
-    , public ContextLifecycleObserver {
+    , public ActiveDOMObject
+    , public WebPermissionObserver {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<PermissionStatus>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
     DEFINE_WRAPPERTYPEINFO();
@@ -30,21 +32,37 @@ public:
     static PermissionStatus* take(ScriptPromiseResolver*, WebPermissionStatus*, WebPermissionType);
     static void dispose(WebPermissionStatus*);
 
-    PermissionStatus(ExecutionContext*, WebPermissionStatus);
+    static PermissionStatus* create(ExecutionContext*, WebPermissionStatus, WebPermissionType);
     ~PermissionStatus() override;
 
     // EventTarget implementation.
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const override;
 
-    DECLARE_VIRTUAL_TRACE();
+    // WebPermissionObserver implementation.
+    void permissionChanged(WebPermissionType, WebPermissionStatus) override;
+
+    // ActiveDOMObject implementation.
+    bool hasPendingActivity() const override;
+    void suspend() override;
+    void resume() override;
+    void stop() override;
 
     String status() const;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
+    PermissionStatus(ExecutionContext*, WebPermissionStatus, WebPermissionType);
+
+    void startListening();
+    void stopListening();
+
     WebPermissionStatus m_status;
+    WebPermissionType m_type;
+    bool m_listening;
 };
 
 } // namespace blink

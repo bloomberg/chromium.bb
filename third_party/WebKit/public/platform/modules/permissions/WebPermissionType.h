@@ -10,7 +10,9 @@ namespace blink {
 enum WebPermissionType {
     WebPermissionTypeGeolocation,
     WebPermissionTypeNotifications,
+    WebPermissionTypePush,
     WebPermissionTypePushNotifications,
+    WebPermissionTypeMidi,
     WebPermissionTypeMidiSysEx,
 };
 

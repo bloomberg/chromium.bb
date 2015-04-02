@@ -64,9 +64,9 @@ ScriptPromise Permissions::query(ScriptState* scriptState, const ScriptValue& ra
         type = WebPermissionTypeNotifications;
     } else if (name == "push") {
         PushPermissionDescriptor pushPermission = NativeValueTraits<PushPermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
-        // The only "userVisible" push is supported for now.
+        // Only "userVisible" push is supported for now.
         if (!pushPermission.userVisible()) {
-            resolver->resolve(new PermissionStatus(scriptState->executionContext(), WebPermissionStatusDenied));
+            resolver->resolve(PermissionStatus::create(scriptState->executionContext(), WebPermissionStatusDenied, WebPermissionTypePush));
             return promise;
         }
         type = WebPermissionTypePushNotifications;
@@ -74,7 +74,7 @@ ScriptPromise Permissions::query(ScriptState* scriptState, const ScriptValue& ra
         MidiPermissionDescriptor midiPermission = NativeValueTraits<MidiPermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
         // Only sysex usage requires a permission for now.
         if (!midiPermission.sysex()) {
-            resolver->resolve(new PermissionStatus(scriptState->executionContext(), WebPermissionStatusGranted));
+            resolver->resolve(PermissionStatus::create(scriptState->executionContext(), WebPermissionStatusGranted, WebPermissionTypeMidi));
             return promise;
         }
         type = WebPermissionTypeMidiSysEx;
