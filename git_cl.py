@@ -1569,6 +1569,7 @@ def CMDcomments(parser, args):
 
 def CMDdescription(parser, args):
   """Brings up the editor for the current CL's description."""
+  parser.parse_args(args)
   cl = Changelist()
   if not cl.GetIssue():
     DieWithError('This branch has no associated changelist.')
@@ -2897,6 +2898,7 @@ def CMDset_close(parser, args):
 
 def CMDdiff(parser, args):
   """shows differences between local tree and last upload."""
+  parser.parse_args(args)
   cl = Changelist()
   issue = cl.GetIssue()
   branch = cl.GetBranch()
