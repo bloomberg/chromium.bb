@@ -86,6 +86,9 @@ Background.prototype = {
     for (var eventType in this.listeners_)
       desktop.addEventListener(eventType, this.listeners_[eventType], true);
 
+    // Register a tree change observer.
+    desktop.addTreeChangeObserver(this.onTreeChange);
+
     // The focused state gets set on the containing webView node.
     var webView = desktop.find({role: chrome.automation.RoleType.webView,
                                 state: {focused: true}});
@@ -314,6 +317,45 @@ Background.prototype = {
     new Output().withBraille(
             this.currentRange_, null, evt.type)
         .go();
+  },
+
+  /**
+   * Called when the automation tree is changed.
+   * @param {chrome.automation.TreeChange} treeChange
+   */
+  onTreeChange: function(treeChange) {
+    var node = treeChange.target;
+    if (!node.containerLiveStatus)
+      return;
+
+    if (node.containerLiveRelevant.indexOf('additions') >= 0 &&
+        treeChange.type == 'nodeCreated')
+      this.outputLiveRegionChange_(node, null);
+    if (node.containerLiveRelevant.indexOf('text') >= 0 &&
+        treeChange.type == 'nodeChanged')
+      this.outputLiveRegionChange_(node, null);
+    if (node.containerLiveRelevant.indexOf('removals') >= 0 &&
+        treeChange.type == 'nodeRemoved')
+      this.outputLiveRegionChange_(node, '@live_regions_removed');
+  },
+
+  /**
+   * Given a node that needs to be spoken as part of a live region
+   * change and an additional optional format string, output the
+   * live region description.
+   * @param {!chrome.automation.AutomationNode} node The changed node.
+   * @param {?string} opt_prependFormatStr If set, a format string for
+   *     cvox2.Output to prepend to the output.
+   * @private
+   **/
+  outputLiveRegionChange_: function(node, opt_prependFormatStr) {
+    var range = cursors.Range.fromNode(node);
+    var output = new Output();
+    if (opt_prependFormatStr) {
+      output.format(opt_prependFormatStr);
+    }
+    output.withSpeech(range, null, Output.EventType.NAVIGATE);
+    output.go();
   },
 
   /**

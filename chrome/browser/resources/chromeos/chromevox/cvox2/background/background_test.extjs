@@ -161,3 +161,43 @@ TEST_F('BackgroundTest', 'MANUAL_ContinuousRead', function() {
     cvox.ChromeVox.tts.finishExpectations(this.newCallback());
   });
 });
+
+TEST_F('BackgroundTest', 'LiveRegionAddElement', function() {
+  this.runWithLoadedTree(
+    function() {/*!
+      <h1>Document with live region</h1>
+      <p id="live" aria-live="polite"></p>
+      <button id="go">Go</button>
+      <script>
+        document.getElementById('go').addEventListener('click', function() {
+          document.getElementById('live').innerHTML = 'Hello, world';
+        }, false);
+      </script>
+    */},
+    function(rootNode) {
+      var go = rootNode.find({ role: chrome.automation.RoleType.button });
+      go.doDefault();
+      cvox.ChromeVox.tts.expectSpeech('Hello, world', testDone);
+      cvox.ChromeVox.tts.finishExpectations();
+    }.bind(this));
+});
+
+TEST_F('BackgroundTest', 'LiveRegionRemoveElement', function() {
+  this.runWithLoadedTree(
+    function() {/*!
+      <h1>Document with live region</h1>
+      <p id="live" aria-live="polite" aria-relevant="removals">Hello, world</p>
+      <button id="go">Go</button>
+      <script>
+        document.getElementById('go').addEventListener('click', function() {
+          document.getElementById('live').innerHTML = '';
+        }, false);
+      </script>
+    */},
+    function(rootNode) {
+      var go = rootNode.find({ role: chrome.automation.RoleType.button });
+      go.doDefault();
+      cvox.ChromeVox.tts.expectSpeech('removed: Hello, world', testDone);
+      cvox.ChromeVox.tts.finishExpectations();
+    }.bind(this));
+});

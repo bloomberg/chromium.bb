@@ -75,6 +75,10 @@ void AutomationInternalCustomBindings::GetSchemaAdditions(
       v8::String::NewFromUtf8(GetIsolate(), "StateType"),
       ToEnumObject(GetIsolate(), ui::AX_STATE_NONE, ui::AX_STATE_LAST));
 
+  additions->Set(
+      v8::String::NewFromUtf8(GetIsolate(), "TreeChangeType"),
+      ToEnumObject(GetIsolate(), ui::AX_MUTATION_NONE, ui::AX_MUTATION_LAST));
+
   args.GetReturnValue().Set(additions);
 }
 

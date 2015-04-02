@@ -212,6 +212,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_Mixins) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, TreeChange) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "tree_change.html"))
+      << message_;
+}
+
 
 static const int kPid = 1;
 static const int kTab0Rid = 1;

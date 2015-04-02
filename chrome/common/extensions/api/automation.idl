@@ -208,6 +208,38 @@
     visited
   };
 
+  // Possible changes to the automation tree. For any given atomic change
+  // to the tree, each node that's added, removed, or changed, will appear
+  // in exactly one TreeChange, with one of these types.
+  //
+  //
+  // nodeCreated means that this node was added to the tree and its parent is
+  // new as well, so it's just one node in a new subtree that was added.
+  enum TreeChangeType {
+    /**
+     * This node was added to the tree and its parent is new as well,
+     * so it's just one node in a new subtree that was added.
+     */
+    nodeCreated,
+
+    /**
+     * This node was added to the tree but its parent was already in the
+     * tree, so it's possibly the root of a new subtree - it does not mean
+     * that it necessarily has children.
+     */
+    subtreeCreated,
+
+    /**
+     * This node changed.
+     */
+    nodeChanged,
+
+    /**
+     * This node was removed.
+     */
+    nodeRemoved
+  };
+
   dictionary Rect {
     long left;
     long top;
@@ -260,6 +292,18 @@
 
   // A listener for events on an <code>AutomationNode</code>.
   callback AutomationListener = void(AutomationEvent event);
+
+  // A change to the Automation tree.
+  [nocompile, noinline_doc] dictionary TreeChange {
+    // The $(ref:automation.AutomationNode) that changed.
+    AutomationNode target;
+
+    // The type of change.
+    TreeChangeType type;
+  };
+
+  // A listener for changes on the <code>AutomationNode</code> tree.
+  callback TreeChangeObserver = void(TreeChange treeChange);
 
   // A single node in an Automation tree.
   [nocompile, noinline_doc] dictionary AutomationNode {
@@ -490,5 +534,14 @@
     // Get the automation tree for the whole desktop which consists of all on
     // screen views. Note this API is currently only supported on Chrome OS.
     [nocompile] static void getDesktop(RootCallback callback);
+
+    // Add a tree change observer. Tree change observers are static/global, they
+    // listen to changes across all trees.
+    [nocompile] static void addTreeChangeObserver(
+        TreeChangeObserver observer);
+
+    // Remove a tree change observer.
+    [nocompile] static void removeTreeChangeObserver(
+        TreeChangeObserver observer);
   };
 };

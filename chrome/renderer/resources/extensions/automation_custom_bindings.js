@@ -43,6 +43,12 @@ automationUtil.storeTreeCallback = function(id, callback) {
   }
 };
 
+/**
+ * Global list of tree change observers.
+ * @type {Array<TreeChangeObserver>}
+ */
+automationUtil.treeChangeObservers = [];
+
 automation.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
@@ -88,6 +94,26 @@ automation.registerCustomHook(function(bindingsAPI) {
       callback(desktopTree);
     }
   });
+
+  function removeTreeChangeObserver(observer) {
+    var observers = automationUtil.treeChangeObservers;
+    for (var i = 0; i < observers.length; i++) {
+      if (observer == observers[i])
+        observers.splice(i, 1);
+    }
+  }
+  apiFunctions.setHandleRequest('removeTreeChangeObserver', function(observer) {
+    removeTreeChangeObserver(observer);
+  });
+
+  function addTreeChangeObserver(observer) {
+    removeTreeChangeObserver(observer);
+    automationUtil.treeChangeObservers.push(observer);
+  }
+  apiFunctions.setHandleRequest('addTreeChangeObserver', function(observer) {
+    addTreeChangeObserver(observer);
+  });
+
 });
 
 // Listen to the automationInternal.onAccessibilityEvent event, which is

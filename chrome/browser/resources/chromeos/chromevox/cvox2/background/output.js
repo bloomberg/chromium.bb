@@ -326,6 +326,22 @@ Output.prototype = {
   },
 
   /**
+   * Apply a format string directly to the output buffer. This lets you
+   * output a message directly to the buffer using the format syntax.
+   * @param {string} formatStr
+   * @return {!Output}
+   */
+  format: function(formatStr) {
+    this.formatOptions_ = {speech: true, braille: false, location: true};
+    this.format_(null, formatStr, this.buffer_);
+
+    this.formatOptions_ = {speech: false, braille: true, location: false};
+    this.format_(null, formatStr, this.brailleBuffer_);
+
+    return this;
+  },
+
+  /**
    * Triggers callback for a speech event.
    * @param {function()} callback
    */
@@ -416,9 +432,10 @@ Output.prototype = {
 
   /**
    * Format the node given the format specifier.
-   * @param {!chrome.automation.AutomationNode} node
+   * @param {chrome.automation.AutomationNode} node
    * @param {string|!Object} format The output format either specified as an
    * output template string or a parsed output format tree.
+   * @param {!cvox.Spannable} buff Buffer to receive rendered output.
    * @param {!Object=} opt_exclude A set of attributes to exclude.
    * @private
    */

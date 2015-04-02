@@ -220,6 +220,14 @@
     visited
   };
 
+  // A change to the accessibility tree.
+  enum AXMutation {
+    node_created,
+    subtree_created,
+    node_changed,
+    node_removed
+  };
+
   [cpp_enum_prefix_override="ax_attr"] enum AXStringAttribute {
     // Document attributes.
     doc_url,

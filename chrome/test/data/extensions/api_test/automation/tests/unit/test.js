@@ -9,6 +9,7 @@ chrome.test.runWithModuleSystem(function(moduleSystem) {
   // Unused.
   window.automationUtil = function() {};
   window.automationUtil.storeTreeCallback = function() {};
+  window.automationUtil.treeChangeObservers = [];
 });
 
 var assertEq = chrome.test.assertEq;

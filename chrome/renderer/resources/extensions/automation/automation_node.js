@@ -485,6 +485,13 @@ var TableCellMixinAttributes = {
   tableCellRowSpan: defaultIntAttribute(1)
 };
 
+var LiveRegionMixinAttributes = {
+  containerLiveAtomic: defaultBoolAttribute(),
+  containerLiveBusy: defaultBoolAttribute(),
+  containerLiveRelevant: defaultStringAttribute(),
+  containerLiveStatus: defaultStringAttribute(),
+};
+
 /**
  * AutomationRootNode.
  *
@@ -569,6 +576,28 @@ AutomationRootNodeImpl.prototype = {
                     chrome);
       return false;
     }
+
+    // Notify tree change observers of new nodes.
+    // TODO(dmazzoni): Notify tree change observers of changed nodes,
+    // and handle subtreeCreated and nodeCreated properly.
+    var observers = automationUtil.treeChangeObservers;
+    if (observers.length > 0) {
+      for (var nodeId in updateState.newNodes) {
+        var node = updateState.newNodes[nodeId];
+        var treeChange =
+            {target: node, type: schema.TreeChangeType.nodeCreated};
+        for (var i = 0; i < observers.length; i++) {
+          try {
+            observers[i](treeChange);
+          } catch (e) {
+            console.error('Error in tree change observer for ' +
+                treeChange.type + ': ' + e.message +
+                '\nStack trace: ' + e.stack);
+          }
+        }
+      }
+    }
+
     return true;
   },
 
@@ -618,6 +647,21 @@ AutomationRootNodeImpl.prototype = {
   invalidate_: function(node) {
     if (!node)
       return;
+
+    // Notify tree change observers of the removed node.
+    var observers = automationUtil.treeChangeObservers;
+    if (observers.length > 0) {
+      var treeChange = {target: node, type: schema.TreeChangeType.nodeRemoved};
+      for (var i = 0; i < observers.length; i++) {
+        try {
+          observers[i](treeChange);
+        } catch (e) {
+          console.error('Error in tree change observer for ' + treeChange.type +
+              ': ' + e.message + '\nStack trace: ' + e.stack);
+        }
+      }
+    }
+
     var children = node.children;
 
     for (var i = 0, child; child = children[i]; i++) {
@@ -767,6 +811,13 @@ AutomationRootNodeImpl.prototype = {
         this.mixinAttributes_(nodeImpl, ScrollableMixinAttributes, nodeData);
         break;
       }
+    }
+
+    // If this is inside a live region, set live region mixins.
+    var attr = 'containerLiveStatus';
+    var spec = LiveRegionMixinAttributes[attr];
+    if (this.findAttribute_(attr, spec, nodeData) !== undefined) {
+      this.mixinAttributes_(nodeImpl, LiveRegionMixinAttributes, nodeData);
     }
 
     // If this is a link, set link attributes
@@ -970,8 +1021,10 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'setSelection',
                                                 'addEventListener',
                                                 'removeEventListener',
+                                                'addTreeChangeObserver',
+                                                'removeTreeChangeObserver',
                                                 'domQuerySelector',
-                                                'toJSON' ],
+                                                'toString' ],
                                     readonly: ['parent',
                                                'firstChild',
                                                'lastChild',
