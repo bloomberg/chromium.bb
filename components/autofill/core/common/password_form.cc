@@ -33,6 +33,8 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("password_value", form.password_value);
   target->SetString("new_password_element", form.new_password_element);
   target->SetString("new_password_value", form.new_password_value);
+  target->SetBoolean("new_password_marked_by_site",
+                     form.new_password_marked_by_site);
   target->SetString("other_possible_usernames",
                     JoinString(form.other_possible_usernames, '|'));
   target->SetBoolean("autocomplete_set", form.password_autocomplete_set);
@@ -65,6 +67,7 @@ PasswordForm::PasswordForm()
     : scheme(SCHEME_HTML),
       username_marked_by_site(false),
       password_autocomplete_set(true),
+      new_password_marked_by_site(false),
       ssl_valid(false),
       preferred(false),
       blacklisted_by_user(false),
@@ -98,6 +101,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
       password_value == form.password_value &&
       password_autocomplete_set == form.password_autocomplete_set &&
       new_password_element == form.new_password_element &&
+      new_password_marked_by_site == form.new_password_marked_by_site &&
       new_password_value == form.new_password_value &&
       ssl_valid == form.ssl_valid &&
       preferred == form.preferred &&

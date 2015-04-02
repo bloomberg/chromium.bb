@@ -58,6 +58,10 @@ enum PasswordGenerationEvent {
   // User focused the password field containing the generated password.
   EDITING_POPUP_SHOWN,
 
+  // Generation enabled because autocomplete attributes for username and
+  // new-password are set.
+  AUTOCOMPLETE_ATTRIBUTES_ENABLED_GENERATION,
+
   // Number of enum entries, used for UMA histogram reporting macros.
   EVENT_ENUM_COUNT
 };

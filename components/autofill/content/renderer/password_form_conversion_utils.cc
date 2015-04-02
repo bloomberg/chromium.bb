@@ -401,6 +401,8 @@ void GetPasswordForm(
   if (!new_password.isNull()) {
     password_form->new_password_element = new_password.nameForAutofill();
     password_form->new_password_value = new_password.value();
+    if (HasAutocompleteAttributeValue(new_password, "new-password"))
+      password_form->new_password_marked_by_site = true;
   }
 
   password_form->scheme = PasswordForm::SCHEME_HTML;

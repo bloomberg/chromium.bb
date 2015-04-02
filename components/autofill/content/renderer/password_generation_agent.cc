@@ -91,6 +91,10 @@ void CopyElementValueToOtherInputElements(
   }
 }
 
+bool AutocompleteAttributesSetForGeneration(const PasswordForm& form) {
+  return form.username_marked_by_site && form.new_password_marked_by_site;
+}
+
 }  // namespace
 
 PasswordGenerationAgent::AccountCreationFormData::AccountCreationFormData(
@@ -281,6 +285,8 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
     return;
   }
 
+  // Note that no messages will be sent if this feature is disabled
+  // (e.g. password saving is disabled).
   for (auto& possible_form_data : possible_account_creation_forms_) {
     PasswordForm* possible_password_form = possible_form_data.form.get();
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -293,11 +299,16 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
       continue;
     } else if (!ContainsForm(generation_enabled_forms_,
                              *possible_password_form)) {
-      // Note that this message will never be sent if this feature is disabled
-      // (e.g. Password saving is disabled).
-      VLOG(2) << "Have not received confirmation from Autofill that form is "
-               << "used for account creation";
-      continue;
+      if (AutocompleteAttributesSetForGeneration(*possible_password_form)) {
+        VLOG(2) << "Ignoring lack of Autofill signal due to Autocomplete "
+                << "attributes";
+        password_generation::LogPasswordGenerationEvent(
+            password_generation::AUTOCOMPLETE_ATTRIBUTES_ENABLED_GENERATION);
+      } else {
+        VLOG(2) << "Have not received confirmation from Autofill that form is "
+                << "used for account creation";
+        continue;
+      }
     }
 
     VLOG(2) << "Password generation eligible form found";

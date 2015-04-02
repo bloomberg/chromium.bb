@@ -56,6 +56,8 @@ void ContentPasswordManagerDriver::FillPasswordForm(
 
 void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(
     const autofill::PasswordForm& form) {
+  if (!GetPasswordGenerationManager()->IsGenerationEnabled())
+    return;
   content::RenderFrameHost* host = render_frame_host_;
   host->Send(new AutofillMsg_FormNotBlacklisted(host->GetRoutingID(), form));
 }

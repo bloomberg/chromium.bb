@@ -163,6 +163,35 @@ const char kMultipleAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
+const char kBothAutocompleteAttributesFormHTML[] =
+    "<FORM name = 'blah' action = 'http://www.random.com/'> "
+    "  <INPUT type = 'text' autocomplete='username' id = 'username'/> "
+    "  <INPUT type = 'password' id = 'first_password' "
+    "         autocomplete = 'new-password' size = 5/>"
+    "  <INPUT type = 'password' id = 'second_password' size = 5/> "
+    "  <INPUT type = 'button' id = 'dummy'/> "
+    "  <INPUT type = 'submit' value = 'LOGIN' />"
+    "</FORM>";
+
+const char kUsernameAutocompleteAttributeFormHTML[] =
+    "<FORM name = 'blah' action = 'http://www.random.com/'> "
+    "  <INPUT type = 'text' autocomplete='username' id = 'username'/> "
+    "  <INPUT type = 'password' id = 'first_password' size = 5/>"
+    "  <INPUT type = 'password' id = 'second_password' size = 5/> "
+    "  <INPUT type = 'button' id = 'dummy'/> "
+    "  <INPUT type = 'submit' value = 'LOGIN' />"
+    "</FORM>";
+
+const char kNewPasswordAutocompleteAttributeFormHTML[] =
+    "<FORM name = 'blah' action = 'http://www.random.com/'> "
+    "  <INPUT type = 'text' id = 'username'/> "
+    "  <INPUT type = 'password' id = 'first_password' "
+    "         autocomplete='new-password' size = 5/>"
+    "  <INPUT type = 'password' id = 'second_password' size = 5/> "
+    "  <INPUT type = 'button' id = 'dummy'/> "
+    "  <INPUT type = 'submit' value = 'LOGIN' />"
+    "</FORM>";
+
 const char ChangeDetectionScript[] =
     "<script>"
     "  firstOnChangeCalled = false;"
@@ -514,6 +543,26 @@ TEST_F(PasswordGenerationAgentTest, BlurTest) {
   // generation popup should not show up.
   EXPECT_TRUE(SimulateElementClick("disabled"));
   EXPECT_EQ(0u, password_generation_->messages().size());
+}
+
+TEST_F(PasswordGenerationAgentTest, AutocompleteAttributesTest) {
+  // Verify that autocomplete attributes can override Autofill to enable
+  // generation
+  LoadHTMLWithUserGesture(kBothAutocompleteAttributesFormHTML);
+  SetNotBlacklistedMessage(kBothAutocompleteAttributesFormHTML);
+
+  ExpectPasswordGenerationAvailable("first_password", true);
+
+  // Only setting one of the two attributes doesn't trigger generation.
+  LoadHTMLWithUserGesture(kUsernameAutocompleteAttributeFormHTML);
+  SetNotBlacklistedMessage(kUsernameAutocompleteAttributeFormHTML);
+
+  ExpectPasswordGenerationAvailable("first_password", false);
+
+  LoadHTMLWithUserGesture(kNewPasswordAutocompleteAttributeFormHTML);
+  SetNotBlacklistedMessage(kNewPasswordAutocompleteAttributeFormHTML);
+
+  ExpectPasswordGenerationAvailable("first_password", false);
 }
 
 }  // namespace autofill

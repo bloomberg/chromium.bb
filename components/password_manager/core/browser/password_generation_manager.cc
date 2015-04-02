@@ -25,6 +25,9 @@ PasswordGenerationManager::~PasswordGenerationManager() {
 
 void PasswordGenerationManager::DetectAccountCreationForms(
     const std::vector<autofill::FormStructure*>& forms) {
+  if (!IsGenerationEnabled())
+    return;
+
   std::vector<autofill::FormData> account_creation_forms;
   for (std::vector<autofill::FormStructure*>::const_iterator form_it =
            forms.begin();
@@ -40,7 +43,7 @@ void PasswordGenerationManager::DetectAccountCreationForms(
       }
     }
   }
-  if (!account_creation_forms.empty() && IsGenerationEnabled())
+  if (!account_creation_forms.empty())
     driver_->AccountCreationFormsFound(account_creation_forms);
 }
 

@@ -173,6 +173,10 @@ struct PasswordForm {
   // The new password. Optional, and not persisted.
   base::string16 new_password_value;
 
+  // Whether the |new_password_element| has an autocomplete=new-password
+  // attribute. This is only used in parsed HTML forms.
+  bool new_password_marked_by_site;
+
   // Whether or not this login was saved under an HTTPS session with a valid
   // SSL cert. We will never match or autofill a PasswordForm where
   // ssl_valid == true with a PasswordForm where ssl_valid == false. This means
