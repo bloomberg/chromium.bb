@@ -137,7 +137,7 @@ function testScanFiles(callback) {
               function(files) {
                 return scanner.scanFiles(files).whenFinal();
               })
-          .then(assertResults.bind(null, expectedFiles)),
+          .then(assertFilesFound.bind(null, expectedFiles)),
       callback);
 }
 
@@ -160,7 +160,7 @@ function testEmptyScanResults(callback) {
               function(root) {
                 return scanner.scanDirectory(root).whenFinal();
               })
-          .then(assertResults.bind(null, [])),
+          .then(assertFilesFound.bind(null, [])),
       callback);
 }
 
@@ -192,7 +192,7 @@ function testSingleLevel(callback) {
               function(root) {
                 return scanner.scanDirectory(root).whenFinal();
               })
-          .then(assertResults.bind(null, expectedFiles)),
+          .then(assertFilesFound.bind(null, expectedFiles)),
       callback);
 }
 
@@ -228,19 +228,68 @@ function testIgnoresPreviousImports(callback) {
     '/testIgnoresPreviousImports/bar.gif',
     '/testIgnoresPreviousImports/baz.avi'
   ];
-  reportPromise(
-      makeTestFileSystemRoot('testIgnoresPreviousImports')
-          .then(populateDir.bind(null, filenames))
-          .then(
-              /**
-               * Scans the directory.
-               * @param {!DirectoryEntry} root
-               */
-              function(root) {
-                return scanner.scanDirectory(root).whenFinal();
-              })
-          .then(assertResults.bind(null, expectedFiles)),
-      callback);
+
+  var promise = makeTestFileSystemRoot('testIgnoresPreviousImports')
+      .then(populateDir.bind(null, filenames))
+      .then(
+          /**
+           * Scans the directory.
+           * @param {!DirectoryEntry} root
+           */
+          function(root) {
+            return scanner.scanDirectory(root).whenFinal();
+          })
+      .then(assertFilesFound.bind(null, expectedFiles))
+
+  reportPromise(promise, callback);
+}
+
+function testTracksDuplicates(callback) {
+  importHistory.importedPaths[
+      '/testTracksDuplicates/oldimage1234.jpg'] =
+          [importer.Destination.GOOGLE_DRIVE];
+  var filenames = [
+    'oldimage1234.jpg',    // a history duplicate
+    'driveimage1234.jpg',  // a content duplicate
+    'driveimage9999.jpg',  // a content duplicate
+    'bar.gif',
+    'baz.avi'
+  ];
+
+  // Replace the default dispositionChecker with a function
+  // that treats our dupes accordingly.
+  dispositionChecker = function(entry, destination) {
+    if (entry.name === filenames[0]) {
+      return Promise.resolve(importer.Disposition.HISTORY_DUPLICATE);
+    }
+    if (entry.name === filenames[1]) {
+      return Promise.resolve(importer.Disposition.CONTENT_DUPLICATE);
+    }
+    if (entry.name === filenames[2]) {
+      return Promise.resolve(importer.Disposition.CONTENT_DUPLICATE);
+    }
+    return Promise.resolve(importer.Disposition.ORIGINAL);
+  };
+
+  var expectedDuplicates = [
+    '/testTracksDuplicates/driveimage1234.jpg',
+    '/testTracksDuplicates/driveimage9999.jpg'
+  ];
+
+
+  var promise = makeTestFileSystemRoot('testTracksDuplicates')
+      .then(populateDir.bind(null, filenames))
+      .then(
+          /**
+           * Scans the directory.
+           * @param {!DirectoryEntry} root
+           */
+          function(root) {
+            return scanner.scanDirectory(root).whenFinal();
+          })
+      .then(assertDuplicatesFound.bind(null, expectedDuplicates));
+
+  reportPromise(promise, callback);
 }
 
 function testMultiLevel(callback) {
@@ -278,7 +327,7 @@ function testMultiLevel(callback) {
               function(root) {
                 return scanner.scanDirectory(root).whenFinal();
               })
-          .then(assertResults.bind(null, expectedFiles)),
+          .then(assertFilesFound.bind(null, expectedFiles)),
       callback);
 }
 
@@ -318,7 +367,7 @@ function testDedupesFilesInScanResult(callback) {
               function(root) {
                 return scanner.scanDirectory(root).whenFinal();
               })
-          .then(assertResults.bind(null, expectedFiles)),
+          .then(assertFilesFound.bind(null, expectedFiles)),
       callback);
 }
 
@@ -347,8 +396,18 @@ function testInvalidation(callback) {
  * @param {!Array.<string>} expected
  * @param {!importer.ScanResults} results
  */
-function assertResults(expected, results) {
+function assertFilesFound(expected, results) {
   assertFileEntryPathsEqual(expected, results.getFileEntries());
+  // TODO(smckay): Add coverage for getScanDurationMs && getTotalBytes.
+}
+
+/**
+ * Verifies the results of the media scan are as expected.
+ * @param {!Array.<string>} expected
+ * @param {!importer.ScanResults} results
+ */
+function assertDuplicatesFound(expected, results) {
+  assertFileEntryPathsEqual(expected, results.getDuplicateFileEntries());
   // TODO(smckay): Add coverage for getScanDurationMs && getTotalBytes.
 }
 

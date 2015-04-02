@@ -363,6 +363,21 @@ importer.ScanResult.prototype.canceled;
 importer.ScanResult.prototype.getFileEntries;
 
 /**
+ * Returns all files entry duplicates discovered so far.
+ * The list will be
+ * complete only after scanning has completed and {@code isFinal}
+ * returns {@code true}.
+ *
+ * Duplicates are files that were found during scanning,
+ * where not found in import history, and were matched to
+ * an existing entry either in the import destination, or
+ * to another entry within the scan itself.
+ *
+ * @return {!Array<!FileEntry>}
+ */
+importer.ScanResult.prototype.getDuplicateFileEntries;
+
+/**
  * Returns a promise that fires when scanning is finished
  * normally or has been canceled.
  *
@@ -416,6 +431,15 @@ importer.DefaultScanResult = function(hashGenerator) {
   this.fileEntries_ = [];
 
   /**
+   * List of duplicate file entries found while scanning.
+   * This is exclusive of entries already known by
+   * import history.
+   *
+   * @private {!Array<!FileEntry>}
+   */
+  this.duplicateFileEntries_ = [];
+
+  /**
    * Hashcodes of all files included captured by this result object so-far.
    * Used to dedupe newly discovered files against other files withing
    * the ScanResult.
@@ -427,7 +451,7 @@ importer.DefaultScanResult = function(hashGenerator) {
   this.totalBytes_ = 0;
 
   /** @private {!Object<!importer.Disposition, number>} */
-  this.duplicates_ = {};
+  this.duplicateStats_ = {};
 
   /**
    * The point in time when the scan was started.
@@ -470,6 +494,12 @@ importer.DefaultScanResult.prototype.isFinal = function() {
 /** @override */
 importer.DefaultScanResult.prototype.getFileEntries = function() {
   return this.fileEntries_;
+};
+
+/** @override */
+importer.DefaultScanResult.prototype.getDuplicateFileEntries =
+    function() {
+  return this.duplicateFileEntries_;
 };
 
 /** @override */
@@ -538,10 +568,17 @@ importer.DefaultScanResult.prototype.addFileEntry = function(entry) {
  */
 importer.DefaultScanResult.prototype.addDuplicateEntry =
     function(entry, disposition) {
-  if (!(disposition in this.duplicates_)) {
-    this.duplicates_[disposition] = 0;
+
+  switch (disposition) {
+    case importer.Disposition.SCAN_DUPLICATE:
+    case importer.Disposition.CONTENT_DUPLICATE:
+      this.duplicateFileEntries_.push(entry);
   }
-  this.duplicates_[disposition]++;
+
+  if (!(disposition in this.duplicateStats_)) {
+    this.duplicateStats_[disposition] = 0;
+  }
+  this.duplicateStats_[disposition]++;
 };
 
 /** @override */
@@ -550,7 +587,7 @@ importer.DefaultScanResult.prototype.getStatistics = function() {
     scanDuration:
         this.lastScanActivity_.getTime() - this.scanStarted_.getTime(),
     newFileCount: this.fileEntries_.length,
-    duplicates: this.duplicates_,
+    duplicates: this.duplicateStats_,
     sizeBytes: this.totalBytes_
   };
 };

@@ -275,14 +275,21 @@ function testKeepAwakeDuringImport(callback) {
 function testUpdatesHistoryAfterImport(callback) {
   var entries = setupFileSystem([
     '/DCIM/photos0/IMG00001.jpg',
-    '/DCIM/photos1/IMG00003.jpg'
+    '/DCIM/photos1/IMG00003.jpg',
+    '/DCIM/photos0/DRIVEDUPE00001.jpg',
+    '/DCIM/photos1/DRIVEDUPE99999.jpg'
   ]);
 
-  var scanResult = new TestScanResult(entries);
+  var newFiles = entries.slice(0, 2);
+  var dupeFiles = entries.slice(2);
+
+  var scanResult = new TestScanResult(entries.slice(0, 2));
+  scanResult.duplicateFileEntries = dupeFiles;
   var importTask = mediaImporter.importFromScanResult(
       scanResult,
       importer.Destination.GOOGLE_DRIVE,
       destinationFactory);
+
   var whenImportDone = new Promise(
       function(resolve, reject) {
         importTask.addObserver(
@@ -302,19 +309,24 @@ function testUpdatesHistoryAfterImport(callback) {
             });
       });
 
-  reportPromise(
-      whenImportDone.then(
-        function() {
-          mockCopier.copiedFiles.forEach(
-              /** @param {!MockCopyTo.CopyInfo} copy */
-              function(copy) {
-                importHistory.assertCopied(
-                    copy.source, importer.Destination.GOOGLE_DRIVE);
-              });
-        }),
-      callback);
+  var promise = whenImportDone.then(
+      function() {
+        mockCopier.copiedFiles.forEach(
+            /** @param {!MockCopyTo.CopyInfo} copy */
+            function(copy) {
+              importHistory.assertCopied(
+                  copy.source, importer.Destination.GOOGLE_DRIVE);
+            });
+        dupeFiles.forEach(
+            /** @param {!FileEntry} entry */
+            function(entry) {
+              importHistory.assertImported(
+                  entry, importer.Destination.GOOGLE_DRIVE);
+            });
+      });
 
   scanResult.finalize();
+  reportPromise(promise, callback);
 }
 
 function testTagsEntriesAfterImport(callback) {

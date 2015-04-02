@@ -283,6 +283,8 @@ importer.MediaImportHandler.ImportTask.prototype.run = function() {
   this.scanResult_.whenFinal()
       .then(this.initialize_.bind(this))
       .then(this.importScanEntries_.bind(this))
+      .then(this.markDuplicatesImported_.bind(this))
+      .then(this.onSuccess_.bind(this))
       .catch(importer.getLogger().catcher('import-task-run'));
 };
 
@@ -319,14 +321,42 @@ importer.MediaImportHandler.ImportTask.prototype.initialize_ = function() {
  */
 importer.MediaImportHandler.ImportTask.prototype.importScanEntries_ =
     function() {
+  var resolver = new importer.Resolver();
   this.directoryPromise_.then(
       /** @this {importer.MediaImportHandler.ImportTask} */
       function(destinationDirectory) {
         AsyncUtil.forEach(
             this.scanResult_.getFileEntries(),
             this.importOne_.bind(this, destinationDirectory),
-            this.onSuccess_.bind(this));
+            resolver.resolve,
+            resolver);
       }.bind(this));
+  return resolver.promise;
+};
+
+/**
+ * Marks all duplicate entries as imported.
+ *
+ * @private
+ */
+importer.MediaImportHandler.ImportTask.prototype.markDuplicatesImported_ =
+    function() {
+  this.historyLoader_.getHistory().then(
+      /**
+       * @param {!importer.ImportHistory} history
+       * @this {importer.MediaImportHandler.ImportTask}
+       */
+      function(history) {
+        this.scanResult_.getDuplicateFileEntries().forEach(
+            /**
+             * @param {!FileEntry} entry
+             * @this {importer.MediaImportHandler.ImportTask}
+             */
+            function(entry) {
+              history.markImported(entry, this.destination_);
+            }.bind(this));
+      }.bind(this))
+      .catch(importer.getLogger().catcher('import-task-mark-dupes-imported'));
 };
 
 /**

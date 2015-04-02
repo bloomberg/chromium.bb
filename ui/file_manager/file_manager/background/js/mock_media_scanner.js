@@ -20,6 +20,12 @@ function TestMediaScanner() {
    */
   this.fileEntries = [];
 
+  /**
+   * List of file entries found while scanning.
+   * @type {!Array.<!FileEntry>}
+   */
+  this.duplicateFileEntries = [];
+
   /** @type {number} */
   this.totalBytes = 100;
 
@@ -130,6 +136,12 @@ function TestScanResult(fileEntries) {
    */
   this.fileEntries = fileEntries.slice();
 
+  /**
+   * List of file entries found while scanning.
+   * @type {!Array.<!FileEntry>}
+   */
+  this.duplicateFileEntries = [];
+
   /** @type {number} */
   this.totalBytes = 100;
 
@@ -174,6 +186,11 @@ TestScanResult.prototype = {
 /** @override */
 TestScanResult.prototype.getFileEntries = function() {
   return this.fileEntries;
+};
+
+/** @override */
+TestScanResult.prototype.getDuplicateFileEntries = function() {
+  return this.duplicateFileEntries;
 };
 
 /** @override */

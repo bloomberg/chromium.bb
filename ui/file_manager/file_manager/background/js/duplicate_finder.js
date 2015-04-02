@@ -67,6 +67,8 @@ importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
               // A one second, CPU intensive operation, is pretty long.
               if (elapsedTime >=
                   importer.DriveDuplicateFinder.HASH_EVENT_THRESHOLD_) {
+                console.info(
+                    'Content hash computation took ' + elapsedTime + ' ms.');
                 this.tracker_.sendTiming(
                    metrics.Categories.ACQUISITION,
                    metrics.timing.Variables.COMPUTE_HASH,
