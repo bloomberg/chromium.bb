@@ -99,22 +99,7 @@ String MIDIPort::type() const
 
 ScriptPromise MIDIPort::open(ScriptState* scriptState)
 {
-    if (m_connection == ConnectionStateClosed) {
-        switch (m_state) {
-        case PortState::MIDIPortStateDisconnected:
-            setStates(m_state, ConnectionStatePending);
-            break;
-        case PortState::MIDIPortStateConnected:
-            // TODO(toyoshim): Add blink API to perform a real open and close
-            // operation.
-            setStates(m_state, ConnectionStateOpen);
-            break;
-        case PortState::MIDIPortStateOpened:
-            // TODO(toyoshim): Remove PortState::MIDIPortStateOpened.
-            ASSERT_NOT_REACHED();
-            break;
-        }
-    }
+    open();
     return accept(scriptState);
 }
 
@@ -142,6 +127,26 @@ DEFINE_TRACE(MIDIPort)
 {
     visitor->trace(m_access);
     RefCountedGarbageCollectedEventTargetWithInlineData<MIDIPort>::trace(visitor);
+}
+
+void MIDIPort::open()
+{
+    if (m_connection == ConnectionStateClosed) {
+        switch (m_state) {
+        case PortState::MIDIPortStateDisconnected:
+            setStates(m_state, ConnectionStatePending);
+            break;
+        case PortState::MIDIPortStateConnected:
+            // TODO(toyoshim): Add blink API to perform a real open and close
+            // operation.
+            setStates(m_state, ConnectionStateOpen);
+            break;
+        case PortState::MIDIPortStateOpened:
+            // TODO(toyoshim): Remove PortState::MIDIPortStateOpened.
+            ASSERT_NOT_REACHED();
+            break;
+        }
+    }
 }
 
 ScriptPromise MIDIPort::accept(ScriptState* scriptState)

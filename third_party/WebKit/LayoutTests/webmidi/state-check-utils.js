@@ -1,12 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-<script src="../resources/js-test.js"></script>
-</head>
-<body>
-<script>
-description("Tests MIDIPort.open and MIDIPort.close.");
-
 function checkStateTransition(options) {
     debug("Check state transition for " + options.method + " on " +
           options.initialconnection + " state.");
@@ -30,6 +21,20 @@ function checkStateTransition(options) {
         debug("- check access handler.");
         checkHandler(e);
     };
+    if (options.method == "send") {
+        port.send([]);
+    }
+    if (options.method == "setonmidimessage") {
+        port.onmidimessage = function() {};
+    }
+    if (options.method == "send" || options.method == "setonmidimessage") {
+        // Following tests expect an implicit open finishes synchronously.
+        // But it will be asynchronous in the future.
+        debug("- check final state.");
+        shouldBeEqualToString("port.connection", options.finalconnection);
+        return Promise.resolve();
+    }
+    // |method| is expected to be "open" or "close".
     return port[options.method]().then(function(p) {
         window.callbackport = p;
         debug("- check callback arguments.");
@@ -44,48 +49,4 @@ function checkStateTransition(options) {
     });
 }
 
-function runTests(port) {
-    return Promise.resolve().then(checkStateTransition.bind(undefined, {
-        port: port,
-        method: "close",
-        initialconnection: "closed",
-        finalconnection: "closed",
-    })).then(checkStateTransition.bind(undefined, {
-        port: port,
-        method: "open",
-        initialconnection: "closed",
-        finalconnection: "open",
-    })).then(checkStateTransition.bind(undefined, {
-        port: port,
-        method: "open",
-        initialconnection: "open",
-        finalconnection: "open",
-    })).then(checkStateTransition.bind(undefined, {
-        port: port,
-        method: "close",
-        initialconnection: "open",
-        finalconnection: "closed",
-    }));
-}
 
-function successAccessCallback(a) {
-    window.access = a;
-    testPassed("requestMIDIAccess() succeeded with access " + access + ".");
-
-    runTests(access.inputs.values().next().value)
-            .then(finishJSTest, finishJSTest);
-}
-
-function errorAccessCallback(error) {
-    testFailed("requestMIDIAccess() error callback should not be called when requesting basic access.");
-    finishJSTest();
-}
-
-window.jsTestIsAsync = true;
-
-// Test MIDIPort state transition by open() and close().
-navigator.requestMIDIAccess().then(successAccessCallback, errorAccessCallback);
-
-</script>
-</body>
-</html>

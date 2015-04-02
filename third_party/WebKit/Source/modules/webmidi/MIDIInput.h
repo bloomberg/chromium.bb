@@ -45,7 +45,8 @@ public:
     static MIDIInput* create(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version, MIDIAccessor::MIDIPortState);
     virtual ~MIDIInput() { }
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(midimessage);
+    EventListener* onmidimessage();
+    void setOnmidimessage(PassRefPtr<EventListener>);
 
     // EventTarget
     virtual const AtomicString& interfaceName() const override { return EventTargetNames::MIDIInput; }

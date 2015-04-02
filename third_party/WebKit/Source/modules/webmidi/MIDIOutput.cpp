@@ -197,6 +197,10 @@ void MIDIOutput::send(DOMUint8Array* array, double timestamp, ExceptionState& ex
     if (timestamp == 0.0)
         timestamp = now(executionContext());
 
+    // Implicit open. It does nothing if the port is already opened.
+    // This should be performed even if |array| is invalid.
+    open();
+
     if (!array)
         return;
 

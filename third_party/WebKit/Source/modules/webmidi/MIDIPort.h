@@ -45,6 +45,12 @@ class MIDIPort : public RefCountedGarbageCollectedEventTargetWithInlineData<MIDI
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MIDIPort>);
     DEFINE_WRAPPERTYPEINFO();
 public:
+    enum ConnectionState {
+        ConnectionStateOpen,
+        ConnectionStateClosed,
+        ConnectionStatePending
+    };
+
     enum TypeCode {
         TypeInput,
         TypeOutput
@@ -66,6 +72,7 @@ public:
     MIDIAccess* midiAccess() const { return m_access; }
     MIDIAccessor::MIDIPortState getState() const { return m_state; }
     void setState(MIDIAccessor::MIDIPortState);
+    ConnectionState getConnection() const { return m_connection; }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -78,13 +85,9 @@ public:
 protected:
     MIDIPort(MIDIAccess*, const String& id, const String& manufacturer, const String& name, TypeCode, const String& version, MIDIAccessor::MIDIPortState);
 
-private:
-    enum ConnectionState {
-        ConnectionStateOpen,
-        ConnectionStateClosed,
-        ConnectionStatePending
-    };
+    void open();
 
+private:
     ScriptPromise accept(ScriptState*);
     ScriptPromise reject(ScriptState*, ExceptionCode, const String& message);
 

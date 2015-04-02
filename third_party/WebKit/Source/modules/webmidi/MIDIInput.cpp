@@ -50,11 +50,28 @@ MIDIInput::MIDIInput(MIDIAccess* access, const String& id, const String& manufac
 {
 }
 
+EventListener* MIDIInput::onmidimessage()
+{
+    return getAttributeEventListener(EventTypeNames::midimessage);
+}
+
+void MIDIInput::setOnmidimessage(PassRefPtr<EventListener> listener)
+{
+    // Implicit open. It does nothing if the port is already opened.
+    // See http://www.w3.org/TR/webmidi/#widl-MIDIPort-open-Promise-MIDIPort
+    open();
+
+    setAttributeEventListener(EventTypeNames::midimessage, listener);
+}
+
 void MIDIInput::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
 {
     ASSERT(isMainThread());
 
     if (!length)
+        return;
+
+    if (getConnection() != ConnectionStateOpen)
         return;
 
     // Drop sysex message here when the client does not request it. Note that this is not a security check but an
