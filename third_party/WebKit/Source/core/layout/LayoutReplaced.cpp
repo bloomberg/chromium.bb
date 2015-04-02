@@ -226,6 +226,10 @@ LayoutRect LayoutReplaced::replacedContentRect(const LayoutSize* overriddenIntri
         return contentRect;
     }
 
+    // TODO(davve): intrinsicSize doubles as both intrinsic size and intrinsic ratio. In the case of
+    // SVG images this isn't correct since they can have intrinsic ratio but no intrinsic size. In
+    // order to maintain aspect ratio, the intrinsic size for SVG might be faked from the aspect
+    // ratio, see SVGImage::containerSize().
     LayoutSize intrinsicSize = overriddenIntrinsicSize ? *overriddenIntrinsicSize : this->intrinsicSize();
     if (!intrinsicSize.width() || !intrinsicSize.height())
         return contentRect;

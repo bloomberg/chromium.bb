@@ -178,6 +178,13 @@ IntSize SVGImage::containerSize() const
             intrinsicSize.setHeight(intrinsicSize.width() / intrinsicRatio);
     }
 
+    // TODO(davve): In order to maintain aspect ratio the intrinsic
+    // size is faked from the viewBox as a last resort. This may cause
+    // unwanted side effects. Preferably we should be able to signal
+    // the intrinsic ratio in another way.
+    if (intrinsicSize.isEmpty())
+        intrinsicSize = rootElement->currentViewBoxRect().size();
+
     if (!intrinsicSize.isEmpty())
         return expandedIntSize(intrinsicSize);
 
