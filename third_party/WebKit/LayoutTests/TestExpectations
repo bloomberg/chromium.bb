@@ -1958,3 +1958,5 @@ crbug.com/471678 [ Release ] http/tests/inspector/elements/styles/selector-line.
 
 crbug.com/467386 http/tests/security/window-named-proto.html [ NeedsManualRebaseline ]
 crbug.com/467386 http/tests/security/xss-exception.html [ NeedsManualRebaseline ]
+
+crbug.com/472902 virtual/slimmingpaint/paint/invalidation/animated-gif.html [ Pass Failure ]
