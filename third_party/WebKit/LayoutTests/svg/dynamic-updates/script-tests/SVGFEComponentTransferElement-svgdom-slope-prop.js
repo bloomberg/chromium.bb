@@ -20,11 +20,11 @@ var feAFunc = createSVGElement("feFuncA");
 feAFunc.setAttribute("type", "linear");
 feAFunc.setAttribute("slope", "1");
 
-var feCompnentTransferElement = createSVGElement("feComponentTransfer");
-feCompnentTransferElement.appendChild(feRFunc);
-feCompnentTransferElement.appendChild(feGFunc);
-feCompnentTransferElement.appendChild(feBFunc);
-feCompnentTransferElement.appendChild(feAFunc);
+var feComponentTransferElement = createSVGElement("feComponentTransfer");
+feComponentTransferElement.appendChild(feRFunc);
+feComponentTransferElement.appendChild(feGFunc);
+feComponentTransferElement.appendChild(feBFunc);
+feComponentTransferElement.appendChild(feAFunc);
 
 var compTranFilter = createSVGElement("filter");
 compTranFilter.setAttribute("id", "compTranFilter");
@@ -33,7 +33,7 @@ compTranFilter.setAttribute("x", "0%");
 compTranFilter.setAttribute("y", "0%");
 compTranFilter.setAttribute("width", "100%");
 compTranFilter.setAttribute("height", "100%");
-compTranFilter.appendChild(feCompnentTransferElement);
+compTranFilter.appendChild(feComponentTransferElement);
 
 var defsElement = createSVGElement("defs");
 defsElement.appendChild(compTranFilter);
