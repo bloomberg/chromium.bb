@@ -34,6 +34,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -80,6 +81,10 @@ std::string GetOutErrorMessage(MMRESULT result) {
     return std::string();
   }
   return base::WideToUTF8(text);
+}
+
+std::string MmversionToString(MMVERSION version) {
+  return base::StringPrintf("%d.%d", HIBYTE(version), LOBYTE(version));
 }
 
 class MIDIHDRDeleter {
@@ -665,7 +670,7 @@ class MidiServiceWinImpl : public MidiServiceWin {
           // TODO(toyoshim): Retrieve the manifacturer name.
           "",
           base::WideToUTF8(product_name),
-          base::IntToString(static_cast<int>(driver_version)),
+          MmversionToString(driver_version),
           MIDI_PORT_OPENED);
       task_thread_.message_loop()->PostTask(
           FROM_HERE, base::Bind(&MidiServiceWinImpl::AddInputPortOnTaskThread,
@@ -845,7 +850,7 @@ class MidiServiceWinImpl : public MidiServiceWin {
           // TODO(toyoshim): Retrieve the manifacturer name.
           "",
           base::WideToUTF8(product_name),
-          base::IntToString(static_cast<int>(driver_version)),
+          MmversionToString(driver_version),
           MIDI_PORT_OPENED);
       task_thread_.message_loop()->PostTask(
           FROM_HERE, base::Bind(&MidiServiceWinImpl::AddOutputPortOnTaskThread,
