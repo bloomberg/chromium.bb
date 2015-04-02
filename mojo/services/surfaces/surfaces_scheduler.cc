@@ -85,6 +85,9 @@ void SurfacesScheduler::ScheduledActionBeginOutputSurfaceCreation() {
 void SurfacesScheduler::ScheduledActionPrepareTiles() {
 }
 
+void SurfacesScheduler::ScheduledActionInvalidateOutputSurface() {
+}
+
 void SurfacesScheduler::DidAnticipatedDrawTimeChange(base::TimeTicks time) {
 }
 
