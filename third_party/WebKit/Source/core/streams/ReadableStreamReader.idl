@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=ExperimentalStream,
     GarbageCollected,
     ActiveDOMObject,
     Exposed=(Window,Worker),

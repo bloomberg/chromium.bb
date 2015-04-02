@@ -3364,6 +3364,20 @@ interface RangeError
     getter stack
     method constructor
     setter stack
+interface ReadableByteStream
+    method cancel
+    method constructor
+    method getReader
+interface ReadableStream
+    method cancel
+    method constructor
+    method getReader
+interface ReadableStreamReader
+    getter closed
+    method cancel
+    method constructor
+    method read
+    method releaseLock
 interface ReferenceError
     attribute name
     getter stack
@@ -3395,6 +3409,7 @@ interface Request
     method json
     method text
 interface Response
+    getter body
     getter bodyUsed
     getter headers
     getter ok

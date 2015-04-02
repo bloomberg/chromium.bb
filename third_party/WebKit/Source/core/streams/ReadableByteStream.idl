@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=ExperimentalStream,
     GarbageCollected,
     Exposed=(Window,Worker),
 ] interface ReadableByteStream {

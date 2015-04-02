@@ -29,9 +29,7 @@ typedef (Blob or ArrayBuffer or ArrayBufferView or FormData or USVString) BodyIn
 
     [RaisesException] Response clone();
 
-    // FIXME: Move this attribute into Body when the extended-attribute
-    // is removed.
-    [RuntimeEnabled=ExperimentalStream] readonly attribute ReadableByteStream body;
+    readonly attribute ReadableByteStream body;
 };
 
 Response implements Body;
