@@ -31,6 +31,14 @@ class NavigationManager {
   // the current entry to the user. It ignores certain pending entries, to
   // prevent spoofing attacks using slow-loading navigations.
   virtual NavigationItem* GetVisibleItem() const = 0;
+
+  // Returns the last committed NavigationItem, which may be null if there
+  // are no committed entries.
+  virtual NavigationItem* GetLastCommittedItem() const = 0;
+
+  // Returns the pending entry corresponding to the navigation that is
+  // currently in progress, or null if there is none.
+  virtual NavigationItem* GetPendingItem() const = 0;
 };
 
 }  // namespace web

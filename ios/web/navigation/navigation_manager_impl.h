@@ -26,7 +26,7 @@ class NavigationManagerFacadeDelegate;
 
 // Implementation of NavigationManager.
 // Generally mirrors upstream's NavigationController.
-class NavigationManagerImpl : public web::NavigationManager {
+class NavigationManagerImpl : public NavigationManager {
  public:
   NavigationManagerImpl(NavigationManagerDelegate* delegate,
                         BrowserState* browser_state);
@@ -55,7 +55,7 @@ class NavigationManagerImpl : public web::NavigationManager {
   // Replace the session history with a new one, where |items| is the
   // complete set of navigation items in the new history, and |current_index|
   // is the index of the currently active item.
-  void ReplaceSessionHistory(ScopedVector<web::NavigationItem> items,
+  void ReplaceSessionHistory(ScopedVector<NavigationItem> items,
                              int current_index);
 
   // Sets the delegate used to drive the navigation controller facade.
@@ -68,18 +68,10 @@ class NavigationManagerImpl : public web::NavigationManager {
   void OnNavigationItemChanged();
   void OnNavigationItemCommitted();
 
-  // Returns the pending entry corresponding to the navigation that is
-  // currently in progress, or nullptr if there is none.
-  NavigationItem* GetPendingItem() const;
-
   // Returns the transient item if any. This is an item which is removed and
   // discarded if any navigation occurs. Note that the returned item is owned
   // by the navigation manager and may be deleted at any time.
   NavigationItem* GetTransientItem() const;
-
-  // Returns the last committed NavigationItem, which may be NULL if there
-  // are no committed entries.
-  NavigationItem* GetLastCommittedItem() const;
 
   // Returns the committed NavigationItem at |index|.
   NavigationItem* GetItemAtIndex(size_t index) const;
@@ -95,7 +87,7 @@ class NavigationManagerImpl : public web::NavigationManager {
   void DiscardNonCommittedEntries();
   int GetPendingEntryIndex() const;
   void LoadURL(const GURL& url,
-               const web::Referrer& referrer,
+               const Referrer& referrer,
                ui::PageTransition type);
   bool CanGoBack() const;
   bool CanGoForward() const;
@@ -118,7 +110,9 @@ class NavigationManagerImpl : public web::NavigationManager {
   // NavigationManager:
   BrowserState* GetBrowserState() const override;
   WebState* GetWebState() const override;
-  web::NavigationItem* GetVisibleItem() const override;
+  NavigationItem* GetVisibleItem() const override;
+  NavigationItem* GetLastCommittedItem() const override;
+  NavigationItem* GetPendingItem() const override;
 
   // Copy state from |navigation_manager|, including a copy of that object's
   // CRWSessionController.
