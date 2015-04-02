@@ -480,4 +480,22 @@ remoting.DesktopViewport.prototype.resetScroll_ = function() {
   this.pluginContainer_.style.marginLeft = '0px';
 };
 
+/**
+ * Sets and stores the scale factor to apply to host sizing requests.
+ * The desktopScale applies to the dimensions reported to the host, not
+ * to the client DPI reported to it.
+ *
+ * @param {number} desktopScale Scale factor to apply.
+ */
+remoting.DesktopViewport.prototype.setDesktopScale = function(desktopScale) {
+  this.hostOptions_.desktopScale = desktopScale;
+
+  // onResize() will update the plugin size and scrollbars for the new
+  // scaled plugin dimensions, and send a client resolution notification.
+  this.onResize();
+
+  // Save the new desktop scale setting.
+  this.hostOptions_.save();
+};
+
 }());

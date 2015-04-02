@@ -277,6 +277,7 @@
       'webapp/crd/js/crd_auth_dialog.js',
       'webapp/crd/js/crd_connect.js',
       'webapp/crd/js/crd_event_handlers.js',
+      'webapp/crd/js/crd_experimental.js',
       'webapp/crd/js/crd_main.js',
       'webapp/crd/js/desktop_remoting.js',
       'webapp/crd/js/it2me_connect_flow.js',
