@@ -69,7 +69,6 @@ PopupMenuImpl::PopupMenuImpl(ChromeClientImpl* chromeClient, PopupMenuClient* cl
     : m_chromeClient(chromeClient)
     , m_client(client)
     , m_popup(nullptr)
-    , m_indexToSetOnClose(-1)
     , m_needsUpdate(false)
 {
 }
@@ -240,8 +239,8 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
     ASSERT(success);
     m_client->selectionChanged(listIndex);
     m_client->valueChanged(listIndex);
-    m_indexToSetOnClose = -1;
-    closePopup();
+    if (m_popup)
+        m_chromeClient->closePagePopup(m_popup);
 }
 
 void PopupMenuImpl::setValue(const String& value)
@@ -250,8 +249,7 @@ void PopupMenuImpl::setValue(const String& value)
     bool success;
     int listIndex = value.toInt(&success);
     ASSERT(success);
-    m_client->setTextFromItem(listIndex);
-    m_indexToSetOnClose = listIndex;
+    m_client->provisionalSelectionChanged(listIndex);
 }
 
 void PopupMenuImpl::didClosePopup()
@@ -259,11 +257,6 @@ void PopupMenuImpl::didClosePopup()
     // Clearing m_popup first to prevent from trying to close the popup again.
     m_popup = nullptr;
     RefPtrWillBeRawPtr<PopupMenuImpl> protector(this);
-    if (m_client && m_indexToSetOnClose >= 0) {
-        // valueChanged() will dispatch a 'change' event.
-        m_client->valueChanged(m_indexToSetOnClose);
-    }
-    m_indexToSetOnClose = -1;
     if (m_client)
         m_client->popupDidHide();
 }
@@ -282,11 +275,14 @@ void PopupMenuImpl::closePopup()
 {
     if (m_popup)
         m_chromeClient->closePagePopup(m_popup);
+    if (m_client)
+        m_client->popupDidCancel();
 }
 
 void PopupMenuImpl::dispose()
 {
-    closePopup();
+    if (m_popup)
+        m_chromeClient->closePagePopup(m_popup);
 }
 
 void PopupMenuImpl::show(const FloatQuad& /*controlPosition*/, const IntSize& /*controlSize*/, int /*index*/)

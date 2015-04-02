@@ -55,10 +55,6 @@ private:
     ChromeClientImpl* m_chromeClient;
     PopupMenuClient* m_client;
     PagePopup* m_popup;
-    // If >= 0, this is the index we should accept when the popup closes.
-    // This is used for keyboard navigation, where we want the
-    // text to change immediately but set the value on close.
-    int m_indexToSetOnClose;
     bool m_needsUpdate;
 };
 

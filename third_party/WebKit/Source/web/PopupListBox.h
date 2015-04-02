@@ -133,17 +133,17 @@ public:
     bool handleTouchEvent(const PlatformTouchEvent&);
     bool handleGestureEvent(const PlatformGestureEvent&);
 
-    // Closes the popup
-    void abandon();
+    // Closes the popup without accepting a selection.
+    void cancel();
 
     // Updates our internal list to match the client.
     void updateFromElement();
 
-    // Sets the index of the option that is displayed in the <select> widget in the page
-    void setOriginalIndex(int);
+    // Sets the index of the option that is displayed in the popup.
+    void setSelectedIndex(int index) { m_selectedIndex = index; }
 
     // Gets the index of the item that the user is currently moused over or has
-    // selected with the keyboard. This is not the same as the original index,
+    // selected with the keyboard. This is not the same as the element value,
     // since the user has not yet accepted this input.
     int selectedIndex() const { return m_selectedIndex; }
 
@@ -192,7 +192,7 @@ private:
     PopupListBox(PopupMenuClient*, bool deviceSupportsTouch, PopupContainer*);
     virtual ~PopupListBox();
 
-    // Hides the popup. Other classes should not call this. Use abandon instead.
+    // Hides the popup. Other classes should not call this. Use cancel instead.
     void hidePopup();
 
     // Returns true if the selection can be changed to index.
@@ -255,20 +255,10 @@ private:
     // to make it easier to unambiguously touch them.
     bool m_deviceSupportsTouch;
 
-    // This is the index of the item marked as "selected" - i.e. displayed in
-    // the widget on the page.
-    int m_originalIndex;
-
     // This is the index of the item that the user is hovered over or has
     // selected using the keyboard in the list. They have not confirmed this
     // selection by clicking or pressing enter yet however.
     int m_selectedIndex;
-
-    // If >= 0, this is the index we should accept if the popup is "abandoned".
-    // This is used for keyboard navigation, where we want the
-    // selection to change immediately, and is only used if the settings
-    // acceptOnAbandon field is true.
-    int m_acceptedIndexOnAbandon;
 
     // This is the number of rows visible in the popup. The maximum number
     // visible at a time is defined as being kMaxVisibleRows. For a scrolled

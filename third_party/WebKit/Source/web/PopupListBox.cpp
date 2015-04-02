@@ -73,9 +73,7 @@ static const TimeStamp typeAheadTimeoutMs = 1000;
 
 PopupListBox::PopupListBox(PopupMenuClient* client, bool deviceSupportsTouch, PopupContainer* container)
     : m_deviceSupportsTouch(deviceSupportsTouch)
-    , m_originalIndex(0)
     , m_selectedIndex(0)
-    , m_acceptedIndexOnAbandon(-1)
     , m_visibleRows(0)
     , m_baseWidth(0)
     , m_maxHeight(defaultMaxHeight)
@@ -117,7 +115,7 @@ bool PopupListBox::handleMouseDownEvent(const PlatformMouseEvent& event)
     }
 
     if (!isPointInBounds(event.position()))
-        abandon();
+        cancel();
 
     return true;
 }
@@ -175,7 +173,7 @@ bool PopupListBox::handleMouseReleaseEvent(const PlatformMouseEvent& event)
 bool PopupListBox::handleWheelEvent(const PlatformWheelEvent& event)
 {
     if (!isPointInBounds(event.position())) {
-        abandon();
+        cancel();
         return true;
     }
 
@@ -212,7 +210,7 @@ bool PopupListBox::handleKeyEvent(const PlatformKeyboardEvent& event)
 
     switch (event.windowsVirtualKeyCode()) {
     case VKEY_ESCAPE:
-        abandon(); // may delete this
+        cancel(); // may delete this
         return true;
     case VKEY_RETURN:
         if (m_selectedIndex == -1)  {
@@ -253,16 +251,7 @@ bool PopupListBox::handleKeyEvent(const PlatformKeyboardEvent& event)
         return true;
     }
 
-    if (m_originalIndex != m_selectedIndex) {
-        // Keyboard events should update the selection immediately (but we don't
-        // want to fire the onchange event until the popup is closed, to match
-        // IE). We change the original index so we revert to that when the
-        // popup is closed.
-        m_acceptedIndexOnAbandon = m_selectedIndex;
-
-        setOriginalIndex(m_selectedIndex);
-        m_popupClient->setTextFromItem(m_selectedIndex);
-    }
+    m_popupClient->provisionalSelectionChanged(m_selectedIndex);
     if (event.windowsVirtualKeyCode() == VKEY_TAB) {
         // TAB is a special case as it should select the current item if any and
         // advance focus.
@@ -271,8 +260,7 @@ bool PopupListBox::handleKeyEvent(const PlatformKeyboardEvent& event)
             // Return false so the TAB key event is propagated to the page.
             return false;
         }
-        // Call abandon() so we honor m_acceptedIndexOnAbandon if set.
-        abandon();
+        cancel();
         // Return false so the TAB key event is propagated to the page.
         return false;
     }
@@ -498,19 +486,14 @@ Font PopupListBox::getRowFont(int rowIndex) const
     return itemFont;
 }
 
-void PopupListBox::abandon()
+void PopupListBox::cancel()
 {
     RefPtrWillBeRawPtr<PopupListBox> protect(this);
 
-    m_selectedIndex = m_originalIndex;
-
     hidePopup();
 
-    if (m_acceptedIndexOnAbandon >= 0) {
-        if (m_popupClient)
-            m_popupClient->valueChanged(m_acceptedIndexOnAbandon);
-        m_acceptedIndexOnAbandon = -1;
-    }
+    if (m_popupClient)
+        m_popupClient->popupDidCancel();
 }
 
 int PopupListBox::pointToRowIndex(const IntPoint& point)
@@ -532,10 +515,6 @@ int PopupListBox::pointToRowIndex(const IntPoint& point)
 
 bool PopupListBox::acceptIndex(int index)
 {
-    // Clear m_acceptedIndexOnAbandon once user accepts the selected index.
-    if (m_acceptedIndexOnAbandon >= 0)
-        m_acceptedIndexOnAbandon = -1;
-
     if (index >= numItems())
         return false;
 
@@ -577,11 +556,6 @@ void PopupListBox::selectIndex(int index)
         m_popupClient->selectionChanged(m_selectedIndex);
     } else if (!isSelectable)
         clearSelection();
-}
-
-void PopupListBox::setOriginalIndex(int index)
-{
-    m_originalIndex = m_selectedIndex = index;
 }
 
 int PopupListBox::getRowHeight(int index) const
@@ -733,8 +707,8 @@ void PopupListBox::updateFromElement()
         m_items[i]->displayNone = style.isDisplayNone();
     }
 
-    if (m_originalIndex != m_popupClient->selectedIndex() || m_selectedIndex >= static_cast<int>(m_items.size()))
-        setOriginalIndex(m_popupClient->selectedIndex());
+    if (m_selectedIndex >= static_cast<int>(m_items.size()))
+        m_selectedIndex = m_popupClient->selectedIndex();
 
     layout();
 }

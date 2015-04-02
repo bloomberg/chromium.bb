@@ -79,7 +79,7 @@ namespace {
 class TestPopupMenuClient : public PopupMenuClient {
 public:
     // Item at index 0 is selected by default.
-    TestPopupMenuClient() : m_selectIndex(0), m_node(0), m_listSize(10) { }
+    TestPopupMenuClient() : m_selectIndex(0), m_node(0), m_listSize(10), m_indexToSelectOnCancel(-1) { }
     virtual ~TestPopupMenuClient() { }
     virtual void valueChanged(unsigned listIndex, bool fireEvents = true)
     {
@@ -117,10 +117,15 @@ public:
     virtual int listSize() const { return m_listSize; }
     virtual int selectedIndex() const { return m_selectIndex; }
     virtual void popupDidHide() { }
+    virtual void popupDidCancel()
+    {
+        if (m_indexToSelectOnCancel >= 0)
+            m_selectIndex = m_indexToSelectOnCancel;
+    }
     virtual bool itemIsSeparator(unsigned listIndex) const { return false; }
     virtual bool itemIsLabel(unsigned listIndex) const { return false; }
     virtual bool itemIsSelected(unsigned listIndex) const { return listIndex == m_selectIndex; }
-    virtual void setTextFromItem(unsigned listIndex) { }
+    virtual void provisionalSelectionChanged(unsigned listIndex) { m_indexToSelectOnCancel = listIndex; }
     virtual IntRect elementRectRelativeToViewport() const override { return IntRect(); }
     virtual Element& ownerElement() const override { return *toElement(m_node); }
     virtual ComputedStyle* computedStyleForItem(Element& element) const override { return nullptr; }
@@ -139,6 +144,7 @@ private:
     std::set<unsigned> m_disabledIndexSet;
     Node* m_node;
     int m_listSize;
+    int m_indexToSelectOnCancel;
 };
 
 class TestWebWidgetClient : public WebWidgetClient {

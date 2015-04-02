@@ -240,7 +240,7 @@ void PopupContainer::showPopup(FrameView* view)
 
 void PopupContainer::hidePopup()
 {
-    m_listBox->abandon();
+    m_listBox->cancel();
 }
 
 void PopupContainer::notifyPopupHidden()
@@ -353,7 +353,7 @@ bool PopupContainer::handleKeyEvent(const PlatformKeyboardEvent& event)
 
 void PopupContainer::hide()
 {
-    m_listBox->abandon();
+    m_listBox->cancel();
 }
 
 void PopupContainer::paint(GraphicsContext* gc, const IntRect& paintRect)
@@ -395,7 +395,7 @@ void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize&
     // we need. Subtract border size so that usually the container will be
     // displayed exactly the same width as the select box.
     m_listBox->setBaseWidth(std::max(controlSize.width() - borderSize * 2, 0));
-    m_listBox->setOriginalIndex(m_listBox->m_popupClient->selectedIndex());
+    m_listBox->setSelectedIndex(m_listBox->m_popupClient->selectedIndex());
     m_listBox->updateFromElement();
 
     // We set the selected item in updateFromElement(), and disregard the

@@ -58,10 +58,11 @@ public:
     virtual int listSize() const override { return m_listSize; }
     virtual int selectedIndex() const override { return 0; }
     virtual void popupDidHide() override { }
+    virtual void popupDidCancel() override { }
     virtual bool itemIsSeparator(unsigned listIndex) const override { return false;}
     virtual bool itemIsLabel(unsigned listIndex) const override { return false; }
     virtual bool itemIsSelected(unsigned listIndex) const override { return listIndex == 0;}
-    virtual void setTextFromItem(unsigned listIndex) override { }
+    virtual void provisionalSelectionChanged(unsigned listIndex) override { }
     virtual bool multiple() const override { return false; }
     virtual IntRect elementRectRelativeToViewport() const override { return IntRect(); }
     virtual Element& ownerElement() const override { return *m_ownerElement; }

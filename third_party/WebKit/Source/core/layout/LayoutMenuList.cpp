@@ -59,6 +59,7 @@ LayoutMenuList::LayoutMenuList(Element* element)
     , m_optionsWidth(0)
     , m_lastActiveIndex(-1)
     , m_popupIsVisible(false)
+    , m_indexToSelectOnCancel(-1)
 {
     ASSERT(isHTMLSelectElement(element));
 }
@@ -210,7 +211,9 @@ void LayoutMenuList::updateFromElement()
     if (m_popupIsVisible)
         m_popup->updateFromElement();
 
-    if (selectElement()->suggestedIndex() >= 0)
+    if (m_indexToSelectOnCancel >= 0)
+        setTextFromOption(selectElement()->listToOptionIndex(m_indexToSelectOnCancel));
+    else if (selectElement()->suggestedIndex() >= 0)
         setTextFromOption(selectElement()->suggestedIndex());
     else
         setTextFromOption(selectElement()->selectedIndex());
@@ -579,6 +582,14 @@ void LayoutMenuList::popupDidHide()
         cache->didHideMenuListPopup(this);
 }
 
+void LayoutMenuList::popupDidCancel()
+{
+    if (m_indexToSelectOnCancel >= 0) {
+        valueChanged(m_indexToSelectOnCancel);
+        m_indexToSelectOnCancel = -1;
+    }
+}
+
 bool LayoutMenuList::itemIsSeparator(unsigned listIndex) const
 {
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
@@ -600,9 +611,10 @@ bool LayoutMenuList::itemIsSelected(unsigned listIndex) const
     return isHTMLOptionElement(*element) && toHTMLOptionElement(*element).selected();
 }
 
-void LayoutMenuList::setTextFromItem(unsigned listIndex)
+void LayoutMenuList::provisionalSelectionChanged(unsigned listIndex)
 {
-    setTextFromOption(selectElement()->listToOptionIndex(listIndex));
+    m_indexToSelectOnCancel = listIndex;
+    setTextFromOption(selectElement()->listToOptionIndex(m_indexToSelectOnCancel));
 }
 
 } // namespace blink

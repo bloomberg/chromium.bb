@@ -48,6 +48,8 @@ crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu.html [ Failure ]
 crbug.com/435662 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu-position.html [ Failure ]
 
+crbug.com/466004 fast/forms/select/menulist-popup-type-ahead-style-change.html [ NeedsRebaseline ]
+
 crbug.com/461283 [ Mac ] fast/workers/worker-multi-startup.html [ Pass Crash ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]

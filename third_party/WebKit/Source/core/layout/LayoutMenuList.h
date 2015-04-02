@@ -90,10 +90,11 @@ private:
     virtual int listSize() const override;
     virtual int selectedIndex() const override;
     virtual void popupDidHide() override;
+    virtual void popupDidCancel() override;
     virtual bool itemIsSeparator(unsigned listIndex) const override;
     virtual bool itemIsLabel(unsigned listIndex) const override;
     virtual bool itemIsSelected(unsigned listIndex) const override;
-    virtual void setTextFromItem(unsigned listIndex) override;
+    virtual void provisionalSelectionChanged(unsigned) override;
     virtual void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true) override;
     virtual bool multiple() const override;
     virtual IntRect elementRectRelativeToViewport() const override;
@@ -133,6 +134,7 @@ private:
 
     RefPtrWillBePersistent<PopupMenu> m_popup;
     bool m_popupIsVisible;
+    int m_indexToSelectOnCancel;
 
     // TODO(tkent): Use FRIEND_TEST macro provided by gtest_prod.h
     friend class LayoutMenuListTest_ElementRectRelativeToViewport_Test;

@@ -51,10 +51,13 @@ public:
     virtual int listSize() const = 0;
     virtual int selectedIndex() const = 0;
     virtual void popupDidHide() = 0;
+    // A popup is canceled when the popup was hidden without selecting an item.
+    virtual void popupDidCancel() = 0;
     virtual bool itemIsSeparator(unsigned listIndex) const = 0;
     virtual bool itemIsLabel(unsigned listIndex) const = 0;
     virtual bool itemIsSelected(unsigned listIndex) const = 0;
-    virtual void setTextFromItem(unsigned listIndex) = 0;
+    // Provisional selection is a selection made using arrow keys or type ahead.
+    virtual void provisionalSelectionChanged(unsigned) = 0;
     virtual IntRect elementRectRelativeToViewport() const = 0;
     virtual Element& ownerElement() const = 0;
     virtual const ComputedStyle* computedStyleForItem(Element&) const = 0;
