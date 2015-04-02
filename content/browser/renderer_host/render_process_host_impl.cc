@@ -1354,7 +1354,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_ANDROID)
     switches::kDisableGestureRequirementForMediaPlayback,
     switches::kDisableWebRTC,
-    switches::kMediaDrmEnableNonCompositing,
     switches::kDisableWebAudio,
     switches::kRendererWaitForJavaDebugger,
 #endif

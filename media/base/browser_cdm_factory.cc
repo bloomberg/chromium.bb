@@ -23,6 +23,7 @@ void SetBrowserCdmFactory(BrowserCdmFactory* factory) {
 
 scoped_ptr<BrowserCdm> CreateBrowserCdm(
     const std::string& key_system,
+    bool use_secure_surface,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionErrorCB& session_error_cb,
@@ -38,8 +39,8 @@ scoped_ptr<BrowserCdm> CreateBrowserCdm(
   }
 
   return g_cdm_factory->CreateBrowserCdm(
-      key_system, session_message_cb, session_closed_cb, session_error_cb,
-      session_keys_change_cb, session_expiration_update_cb);
+      key_system, use_secure_surface, session_message_cb, session_closed_cb,
+      session_error_cb, session_keys_change_cb, session_expiration_update_cb);
 }
 
 }  // namespace media

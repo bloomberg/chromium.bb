@@ -223,6 +223,10 @@ void AddChromeKeySystems(std::vector<KeySystemInfo>* key_systems_info) {
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(OS_ANDROID)
-  cdm::AddAndroidWidevine(key_systems_info);
+  // TODO(sandersd): Non-compositing support depends on the
+  // use_video_overlay_for_embedded_encrypted_video pref, which may differ per
+  // WebContents. For now, Chromium does not support them.
+  // http://crbug.com/467779
+  cdm::AddAndroidWidevine(key_systems_info, false);
 #endif  // defined(OS_ANDROID)
 }

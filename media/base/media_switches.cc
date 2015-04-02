@@ -21,10 +21,6 @@ const char kIgnoreResolutionLimitsForAcceleratedVideoDecode[] =
 // Disables the infobar popup for accessing protected media identifier.
 const char kDisableInfobarForProtectedMediaIdentifier[] =
     "disable-infobar-for-protected-media-identifier";
-
-// Enables use of non-compositing MediaDrm decoding by default for Encrypted
-// Media Extensions implementation.
-const char kMediaDrmEnableNonCompositing[] = "mediadrm-enable-non-compositing";
 #endif
 
 #if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_SOLARIS)

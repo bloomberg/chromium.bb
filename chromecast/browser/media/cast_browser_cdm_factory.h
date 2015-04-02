@@ -20,14 +20,15 @@ class CastBrowserCdmFactory : public ::media::BrowserCdmFactory {
   ~CastBrowserCdmFactory() override {};
 
   // ::media::BrowserCdmFactory implementation:
-  scoped_ptr< ::media::BrowserCdm> CreateBrowserCdm(
+  scoped_ptr<::media::BrowserCdm> CreateBrowserCdm(
       const std::string& key_system,
+      bool use_secure_surface,
       const ::media::SessionMessageCB& session_message_cb,
       const ::media::SessionClosedCB& session_closed_cb,
       const ::media::SessionErrorCB& session_error_cb,
       const ::media::SessionKeysChangeCB& session_keys_change_cb,
-      const ::media::SessionExpirationUpdateCB&
-          session_expiration_update_cb) override;
+      const ::media::SessionExpirationUpdateCB& session_expiration_update_cb)
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastBrowserCdmFactory);

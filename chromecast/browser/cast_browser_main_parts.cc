@@ -22,7 +22,6 @@
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
-#include "chromecast/browser/media/cast_browser_cdm_factory.h"
 #include "chromecast/browser/metrics/cast_metrics_prefs.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/browser/pref_service_helper.h"
@@ -40,6 +39,8 @@
 #include "chromecast/crash/android/crash_handler.h"
 #include "components/crash/browser/crash_dump_manager_android.h"
 #include "net/android/network_change_notifier_factory_android.h"
+#else
+#include "chromecast/browser/media/cast_browser_cdm_factory.h"
 #endif
 
 #if defined(USE_AURA)
@@ -146,14 +147,11 @@ struct DefaultCommandLineSwitch {
 };
 
 DefaultCommandLineSwitch g_default_switches[] = {
-  // TODO(ddorwin): Develop a permanent solution. See http://crbug.com/394926.
-  // For now, disable unprefixed EME because the video behavior not be
-  // consistent with other clients.
+  // TODO(gunsch): Enable unprefixed EME. See http://crbug.com/471936.
   { switches::kDisableEncryptedMedia, ""},
 #if defined(OS_ANDROID)
   // Disables Chromecast-specific WiFi-related features on ATV for now.
   { switches::kNoWifi, "" },
-  { switches::kMediaDrmEnableNonCompositing, ""},
   { switches::kEnableOverlayFullscreenVideo, ""},
   { switches::kDisableInfobarForProtectedMediaIdentifier, ""},
   { switches::kDisableGestureRequirementForMediaPlayback, ""},

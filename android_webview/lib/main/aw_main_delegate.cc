@@ -77,11 +77,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Web Notification API and the Push API are not supported (crbug.com/434712)
   cl->AppendSwitch(switches::kDisableNotifications);
 
-#if defined(VIDEO_HOLE)
-  // Support EME with hole-punching. For example, Widevine L1.
-  cl->AppendSwitch(switches::kMediaDrmEnableNonCompositing);
+  // TODO(ddorwin): Enable unprefixed EME. See http://crbug.com/394931.
   cl->AppendSwitch(switches::kDisableEncryptedMedia);
-#endif
 
   // WebRTC hardware decoding is not supported, internal bug 15075307
   cl->AppendSwitch(switches::kDisableWebRtcHWDecoding);

@@ -280,7 +280,6 @@
             'browser/cast_content_browser_client_simple.cc',
             'browser/cast_network_delegate_simple.cc',
             'browser/devtools/remote_debugging_server_simple.cc',
-            'browser/media/cast_browser_cdm_factory_simple.cc',
             'browser/metrics/platform_metrics_providers_simple.cc',
             'browser/pref_service_helper_simple.cc',
             'common/platform_client_auth_simple.cc',
@@ -295,6 +294,7 @@
               ],
             }, {
               'sources': [
+                'browser/media/cast_browser_cdm_factory_simple.cc',
                 'browser/service/cast_service_simple.cc',
                 'browser/service/cast_service_simple.h',
               ],

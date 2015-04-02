@@ -728,13 +728,6 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kDisableInfobarForProtectedMediaIdentifier)
   },
-  {
-    "mediadrm-enable-non-compositing",
-    IDS_FLAGS_MEDIADRM_ENABLE_NON_COMPOSITING_NAME,
-    IDS_FLAGS_MEDIADRM_ENABLE_NON_COMPOSITING_DESCRIPTION,
-    kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kMediaDrmEnableNonCompositing)
-  },
 #endif  // defined(OS_ANDROID)
   {
     "disable-javascript-harmony-shipping",

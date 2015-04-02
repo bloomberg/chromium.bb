@@ -39,21 +39,22 @@ static SupportedKeySystemResponse QueryKeySystemSupport(
   return response;
 }
 
-void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems) {
+void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems,
+                        bool is_non_compositing_supported) {
   SupportedKeySystemResponse response = QueryKeySystemSupport(
       kWidevineKeySystem);
 
   // When creating the WIDEVINE key system, BrowserCdmFactoryAndroid configures
-  // the CDM's security level based on the --mediadrm-enable-non-compositing
-  // flag (L1 if the flag is enabled, L3 otherwise). Therefore the supported
-  // codec/robustenss combinations depend on that flag.
+  // the CDM's security level based on a pref. Therefore the supported
+  // codec/robustenss combinations depend on that pref, represented by
+  // |bool is_non_compositing_supported|.
   // TODO(sandersd): For unprefixed, set the security level based on the
   // requested robustness instead of the flag. http://crbug.com/467779
+  // We should also stop using the term "non_compositing."
   SupportedCodecs codecs = response.compositing_codecs;
   EmeRobustness max_audio_robustness = EmeRobustness::SW_SECURE_CRYPTO;
   EmeRobustness max_video_robustness = EmeRobustness::SW_SECURE_CRYPTO;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMediaDrmEnableNonCompositing)) {
+  if (is_non_compositing_supported) {
     codecs = response.non_compositing_codecs;
     max_audio_robustness = EmeRobustness::HW_SECURE_CRYPTO;
     max_video_robustness = EmeRobustness::HW_SECURE_ALL;
