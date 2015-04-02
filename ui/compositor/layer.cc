@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -77,7 +78,8 @@ Layer::Layer()
       delegate_(NULL),
       owner_(NULL),
       cc_layer_(NULL),
-      device_scale_factor_(1.0f) {
+      device_scale_factor_(1.0f),
+      inside_paint_(false) {
   CreateCcLayer();
 }
 
@@ -101,7 +103,8 @@ Layer::Layer(LayerType type)
       delegate_(NULL),
       owner_(NULL),
       cc_layer_(NULL),
-      device_scale_factor_(1.0f) {
+      device_scale_factor_(1.0f),
+      inside_paint_(false) {
   CreateCcLayer();
 }
 
@@ -745,8 +748,11 @@ void Layer::PaintContents(
   TRACE_EVENT1("ui", "Layer::PaintContents", "name", name_);
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
       sk_canvas, device_scale_factor_));
-  if (delegate_)
+  if (delegate_) {
+    base::AutoReset<bool> inside_paint(&inside_paint_, true);
+    paint_rect_ = clip;
     delegate_->OnPaintLayer(canvas.get());
+  }
 }
 
 scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
@@ -775,6 +781,11 @@ void Layer::SetForceRenderSurface(bool force) {
 
   force_render_surface_ = force;
   cc_layer_->SetForceRenderSurface(force_render_surface_);
+}
+
+gfx::Rect Layer::PaintRect() const {
+  DCHECK(inside_paint_);
+  return paint_rect_;
 }
 
 class LayerDebugInfo : public base::trace_event::ConvertableToTraceFormat {

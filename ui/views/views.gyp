@@ -198,8 +198,6 @@
       'controls/tree/tree_view.h',
       'controls/tree/tree_view_controller.cc',
       'controls/tree/tree_view_controller.h',
-      'cull_set.cc',
-      'cull_set.h',
       'debug_utils.cc',
       'debug_utils.h',
       'drag_controller.h',

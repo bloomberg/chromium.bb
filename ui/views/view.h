@@ -27,11 +27,9 @@
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/r_tree.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/cull_set.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
 
@@ -495,21 +493,48 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   class PaintContext {
    public:
-    PaintContext(gfx::Canvas* canvas, const CullSet& cull_set)
-        : canvas_(canvas), cull_set_(cull_set) {}
+    explicit PaintContext(gfx::Canvas* canvas)
+        : PaintContext(canvas, gfx::Rect()) {}
+    PaintContext(gfx::Canvas* canvas, const gfx::Rect& invalidation)
+        : canvas_(canvas), invalidation_(invalidation) {
+#if DCHECK_IS_ON()
+      root_visited_ = nullptr;
+#endif
+    }
 
     // TODO(danakj): Remove this once everything is painting to display lists.
     gfx::Canvas* canvas() const { return canvas_; }
 
-    const CullSet& cull_set() const { return cull_set_; }
+    bool CanCheckInvalidated() const { return !invalidation_.IsEmpty(); }
 
-    PaintContext CloneWithNewCullSet(const CullSet& new_cull_set) const {
-      return PaintContext(canvas_, new_cull_set);
+    // When true, the |bounds_in_paint_root| touches an invalidated area, so
+    // should be re-painted. When false, re-painting can be skipped.
+    bool IsRectInvalidated(const gfx::Rect& bounds_in_paint_root) const {
+      DCHECK(CanCheckInvalidated());
+      return bounds_in_paint_root.Intersects(invalidation_);
     }
+
+    PaintContext CloneWithoutInvalidation() const {
+      return PaintContext(canvas_, gfx::Rect());
+    }
+
+#if DCHECK_IS_ON()
+    void Visited(void* visited) const {
+      if (!root_visited_)
+        root_visited_ = visited;
+    }
+    void* RootVisited() const { return root_visited_; }
+#endif
 
    private:
     gfx::Canvas* canvas_;
-    const CullSet& cull_set_;
+    gfx::Rect invalidation_;
+
+#if DCHECK_IS_ON()
+    // Used to verify that the |invalidation_| is only used to compare against
+    // rects in the same space.
+    mutable void* root_visited_;
+#endif
   };
 
   // Called by the framework to paint a View. Performs translation and clipping
@@ -1107,11 +1132,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Override to paint a border not specified by SetBorder().
   virtual void OnPaintBorder(gfx::Canvas* canvas);
 
-  // Returns true if this View is the root for paint events, and should
-  // therefore maintain a |bounds_tree_| member and use it for paint damage rect
-  // calculations.
-  virtual bool IsPaintRoot();
-
   // Accelerated painting ------------------------------------------------------
 
   // Returns the offset from this view to the nearest ancestor with a layer. If
@@ -1247,8 +1267,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   friend class FocusManager;
   friend class Widget;
 
-  typedef gfx::RTree<intptr_t> BoundsTree;
-
   // Painting  -----------------------------------------------------------------
 
   enum SchedulePaintType {
@@ -1329,25 +1347,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Sets the layer's bounds given in DIP coordinates.
   void SetLayerBounds(const gfx::Rect& bounds_in_dip);
-
-  // Sets the bit indicating that the cached bounds for this object within the
-  // root view bounds tree are no longer valid. If |origin_changed| is true sets
-  // the same bit for all of our children as well.
-  void SetRootBoundsDirty(bool origin_changed);
-
-  // If needed, updates the bounds rectangle in paint root coordinate space
-  // in the supplied RTree. Recurses to children for recomputation as well.
-  void UpdateRootBounds(BoundsTree* bounds_tree, const gfx::Vector2d& offset);
-
-  // Remove self and all children from the supplied bounds tree. This is used,
-  // for example, when a view gets a layer and therefore becomes paint root. It
-  // needs to remove all references to itself and its children from any previous
-  // paint root that may have been tracking it.
-  void RemoveRootBounds(BoundsTree* bounds_tree);
-
-  // Traverse up the View hierarchy to the first ancestor that is a paint root
-  // and return a pointer to its |bounds_tree_| or NULL if no tree is found.
-  BoundsTree* GetBoundsTreeFromPaintRoot();
 
   // Transformations -----------------------------------------------------------
 
@@ -1528,15 +1527,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // List of descendants wanting notification when their visible bounds change.
   scoped_ptr<Views> descendants_to_notify_;
-
-  // True if the bounds on this object have changed since the last time the
-  // paint root view constructed the spatial database.
-  bool root_bounds_dirty_;
-
-  // If this View IsPaintRoot() then this will be a pointer to a spatial data
-  // structure where we will keep the bounding boxes of all our children, for
-  // efficient paint damage rectangle intersection.
-  scoped_ptr<BoundsTree> bounds_tree_;
 
   // Transformations -----------------------------------------------------------
 

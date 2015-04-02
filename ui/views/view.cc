@@ -99,7 +99,6 @@ View::View()
       enabled_(true),
       notify_enter_exit_on_child_(false),
       registered_for_visible_bounds_notification_(false),
-      root_bounds_dirty_(true),
       clip_insets_(0, 0, 0, 0),
       needs_layout_(true),
       snap_layer_to_pixel_boundary_(false),
@@ -174,9 +173,6 @@ void View::AddChildViewAt(View* view, int index) {
   // Let's insert the view.
   view->parent_ = this;
   children_.insert(children_.begin() + index, view);
-
-  // Instruct the view to recompute its root bounds on next Paint().
-  view->SetRootBoundsDirty(true);
 
   views::Widget* widget = GetWidget();
   if (widget) {
@@ -413,14 +409,8 @@ void View::SetVisible(bool visible) {
     UpdateLayerVisibility();
 
     // If we are newly visible, schedule paint.
-    if (visible_) {
+    if (visible_)
       SchedulePaint();
-    } else {
-      // We're never painted when hidden, so no need to be in the BoundsTree.
-      BoundsTree* bounds_tree = GetBoundsTreeFromPaintRoot();
-      if (bounds_tree)
-        RemoveRootBounds(bounds_tree);
-    }
   }
 }
 
@@ -466,28 +456,6 @@ void View::SetTransform(const gfx::Transform& transform) {
 void View::SetPaintToLayer(bool paint_to_layer) {
   if (paint_to_layer_ == paint_to_layer)
     return;
-
-  // If this is a change in state we will also need to update bounds trees.
-  if (paint_to_layer) {
-    // Gaining a layer means becoming a paint root. We must remove ourselves
-    // from our old paint root, if we had one. Traverse up view tree to find old
-    // paint root.
-    View* old_paint_root = parent_;
-    while (old_paint_root && !old_paint_root->IsPaintRoot())
-      old_paint_root = old_paint_root->parent_;
-
-    // Remove our and our children's bounds from the old tree. This will also
-    // mark all of our bounds as dirty.
-    if (old_paint_root && old_paint_root->bounds_tree_)
-      RemoveRootBounds(old_paint_root->bounds_tree_.get());
-
-  } else {
-    // Losing a layer means we are no longer a paint root, so delete our
-    // bounds tree and mark ourselves as dirty for future insertion into our
-    // new paint root's bounds tree.
-    bounds_tree_.reset();
-    SetRootBoundsDirty(true);
-  }
 
   paint_to_layer_ = paint_to_layer;
   if (paint_to_layer_ && !layer()) {
@@ -766,10 +734,36 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
 void View::Paint(const PaintContext& context) {
   if (!visible_)
     return;
-  // The cull_set may allow us to skip painting without canvas construction or
-  // even canvas rect intersection.
-  if (!context.cull_set().ShouldPaint(this))
-    return;
+
+#if DCHECK_IS_ON()
+  context.Visited(this);
+#endif
+
+  if (context.CanCheckInvalidated()) {
+    // This computes the bounds of the current view in the space of the view's
+    // paint root (ie the ancestor View at which this Paint() walk started), in
+    // order to tell if the View needs to be painted.
+    gfx::Rect bounds_in_paint_root = GetLocalBounds();
+    View* view = this;
+    // TODO(danakj): This is O(n^2) we can do better by storing an offset in the
+    // PaintContext.
+    while (view->parent() && !view->layer()) {
+      DCHECK(view->GetTransform().IsIdentity());
+      bounds_in_paint_root += view->GetMirroredPosition().OffsetFromOrigin();
+      view = view->parent();
+    }
+#if DCHECK_IS_ON()
+    // The above loop will stop when |view| is the paint root, which should be
+    // the root of the current paint walk, as verified by storing the root in
+    // the PaintContext.
+    DCHECK_EQ(context.RootVisited(), view);
+#endif
+
+    // If the View wasn't invalidated, don't waste time painting it, the output
+    // would be culled.
+    if (!context.IsRectInvalidated(bounds_in_paint_root))
+      return;
+  }
 
   TRACE_EVENT1("views", "View::Paint", "class", GetClassName());
 
@@ -815,36 +809,7 @@ void View::Paint(const PaintContext& context) {
     OnPaint(canvas);
   }
 
-  // If the view is not a paint root, it should come with a CullSet already
-  // constructed for use.
-  // TODO(danakj): However, if it is a paint root but is also backed by a
-  // layer(), we are unable to construct a CullSet because the bounds() do not
-  // match the position we will be painting at and UpdateRootBounds() does the
-  // wrong thing.
-  if (!IsPaintRoot() || layer()) {
-    PaintChildren(context);
-    return;
-  }
-
-  // We are a paint root, so we construct our own CullSet object for propagation
-  // to our children.
-  if (!bounds_tree_)
-    bounds_tree_.reset(new BoundsTree(2, 5));
-
-  // Recompute our bounds tree as needed.
-  UpdateRootBounds(bounds_tree_.get(), gfx::Vector2d());
-
-  // Grab the clip rect from the supplied canvas to use as the query rect.
-  gfx::Rect canvas_bounds;
-  bool got_clip = canvas->GetClipBounds(&canvas_bounds);
-  DCHECK(got_clip) << "Failed to get clip bounds from the canvas!";
-
-  // Now query our bounds_tree_ for a set of damaged views that intersect
-  // our canvas bounds.
-  scoped_ptr<base::hash_set<intptr_t>> damaged_views(
-      new base::hash_set<intptr_t>);
-  bounds_tree_->AppendIntersectingRecords(canvas_bounds, damaged_views.get());
-  PaintChildren(context.CloneWithNewCullSet(CullSet(damaged_views.Pass())));
+  PaintChildren(context);
 }
 
 void View::set_background(Background* b) {
@@ -1400,10 +1365,6 @@ void View::OnPaintBorder(gfx::Canvas* canvas) {
   }
 }
 
-bool View::IsPaintRoot() {
-  return paint_to_layer_ || !parent_;
-}
-
 // Accelerated Painting --------------------------------------------------------
 
 void View::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
@@ -1488,7 +1449,7 @@ void View::OnPaintLayer(gfx::Canvas* canvas) {
     canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
   if (!visible_)
     return;
-  Paint(PaintContext(canvas, CullSet()));
+  Paint(PaintContext(canvas, layer()->PaintRect()));
 }
 
 void View::OnDelegatedFrameDamage(
@@ -1800,12 +1761,6 @@ void View::DoRemoveChildView(View* view,
       GetWidget()->NotifyWillRemoveView(view);
     }
 
-    // Remove the bounds of this child and any of its descendants from our
-    // paint root bounds tree.
-    BoundsTree* bounds_tree = GetBoundsTreeFromPaintRoot();
-    if (bounds_tree)
-      view->RemoveRootBounds(bounds_tree);
-
     view->PropagateRemoveNotifications(this, new_parent);
     view->parent_ = NULL;
     view->UpdateLayerVisibility();
@@ -1897,12 +1852,6 @@ void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
 }
 
 void View::BoundsChanged(const gfx::Rect& previous_bounds) {
-  // Mark our bounds as dirty for the paint root, also see if we need to
-  // recompute our children's bounds due to origin change.
-  bool origin_changed =
-      previous_bounds.OffsetFromOrigin() != bounds_.OffsetFromOrigin();
-  SetRootBoundsDirty(origin_changed);
-
   if (visible_) {
     // Paint the new bounds.
     SchedulePaintBoundsChanged(
@@ -2009,77 +1958,6 @@ void View::RemoveDescendantToNotify(View* view) {
 void View::SetLayerBounds(const gfx::Rect& bounds) {
   layer()->SetBounds(bounds);
   SnapLayerToPixelBoundary();
-}
-
-void View::SetRootBoundsDirty(bool origin_changed) {
-  root_bounds_dirty_ = true;
-
-  if (origin_changed) {
-    // Inform our children that their root bounds are dirty, as their relative
-    // coordinates in paint root space have changed since ours have changed.
-    for (Views::const_iterator i(children_.begin()); i != children_.end();
-         ++i) {
-      if (!(*i)->IsPaintRoot())
-        (*i)->SetRootBoundsDirty(origin_changed);
-    }
-  }
-}
-
-void View::UpdateRootBounds(BoundsTree* tree, const gfx::Vector2d& offset) {
-  // If we're not visible no need to update BoundsTree. When we are made visible
-  // the BoundsTree will be updated appropriately.
-  if (!visible_)
-    return;
-
-  if (!root_bounds_dirty_ && children_.empty())
-    return;
-
-  // No need to recompute bounds if we haven't flagged ours as dirty.
-  TRACE_EVENT1("views", "View::UpdateRootBounds", "class", GetClassName());
-
-  // Add our own offset to the provided offset, for our own bounds update and
-  // for propagation to our children if needed.
-  gfx::Vector2d view_offset = offset + GetMirroredBounds().OffsetFromOrigin();
-
-  // If our bounds have changed we must re-insert our new bounds to the tree.
-  if (root_bounds_dirty_) {
-    root_bounds_dirty_ = false;
-    gfx::Rect bounds(
-        view_offset.x(), view_offset.y(), bounds_.width(), bounds_.height());
-    tree->Insert(bounds, reinterpret_cast<intptr_t>(this));
-  }
-
-  // Update our children's bounds if needed.
-  for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i) {
-    // We don't descend in to layer views for bounds recomputation, as they
-    // manage their own RTree as paint roots.
-    if (!(*i)->IsPaintRoot())
-      (*i)->UpdateRootBounds(tree, view_offset);
-  }
-}
-
-void View::RemoveRootBounds(BoundsTree* tree) {
-  tree->Remove(reinterpret_cast<intptr_t>(this));
-
-  root_bounds_dirty_ = true;
-
-  for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i) {
-    if (!(*i)->IsPaintRoot())
-      (*i)->RemoveRootBounds(tree);
-  }
-}
-
-View::BoundsTree* View::GetBoundsTreeFromPaintRoot() {
-  BoundsTree* bounds_tree = bounds_tree_.get();
-  View* paint_root = this;
-  while (!bounds_tree && !paint_root->IsPaintRoot()) {
-    // Assumption is that if IsPaintRoot() is false then parent_ is valid.
-    DCHECK(paint_root);
-    paint_root = paint_root->parent_;
-    bounds_tree = paint_root->bounds_tree_.get();
-  }
-
-  return bounds_tree;
 }
 
 // Transformations -------------------------------------------------------------

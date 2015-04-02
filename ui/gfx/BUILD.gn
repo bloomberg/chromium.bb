@@ -432,7 +432,6 @@ test("gfx_unittests") {
       "geometry/point3_unittest.cc",
       "geometry/point_unittest.cc",
       "geometry/quad_unittest.cc",
-      "geometry/r_tree_unittest.cc",
       "geometry/rect_unittest.cc",
       "geometry/safe_integer_conversions_unittest.cc",
       "geometry/scroll_offset_unittest.cc",

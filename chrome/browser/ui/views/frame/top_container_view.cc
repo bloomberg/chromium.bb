@@ -25,9 +25,10 @@ void TopContainerView::PaintChildren(const PaintContext& context) {
     // window controls) being painted underneath them. Clip rect has already
     // been set to the bounds of this view, so just paint the frame.
     views::View* frame = browser_view_->frame()->GetFrameView();
-    // Use an empty CullSet as we're painting something outside of the normal
-    // parent-child relationship that the CullSet would understand.
-    frame->Paint(context.CloneWithNewCullSet(views::CullSet()));
+    // Use a clone without invalidation info, as we're painting something
+    // outside of the normal parent-child relationship, so invalidations are
+    // no longer in the correct space to compare.
+    frame->Paint(context.CloneWithoutInvalidation());
   }
   View::PaintChildren(context);
 }

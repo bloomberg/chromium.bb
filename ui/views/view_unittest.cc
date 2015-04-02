@@ -177,15 +177,17 @@ void ScrambleTree(views::View* view) {
     view->SetVisible(!view->visible());
 }
 
-void PaintWidgetInRect(views::Widget* widget, const gfx::Rect& rect) {
-  const float image_scale = 1.f;
-  const bool is_opaque = true;
-  gfx::Canvas canvas(widget->GetRootView()->bounds().size(), image_scale,
-                     is_opaque);
-  canvas.ClipRect(rect);
-  widget->GetRootView()->Paint(
-      views::View::PaintContext(&canvas, views::CullSet()));
-}
+class ScopedRTL {
+ public:
+  ScopedRTL() {
+    locale_ = l10n_util::GetApplicationLocale(std::string());
+    base::i18n::SetICUDefaultLocale("he");
+  }
+  ~ScopedRTL() { base::i18n::SetICUDefaultLocale(locale_); }
+
+ private:
+  std::string locale_;
+};
 
 }  // namespace
 
@@ -199,6 +201,7 @@ class TestView : public View {
   TestView()
       : View(),
         delete_on_pressed_(false),
+        did_paint_(false),
         native_theme_(NULL),
         can_process_events_within_subtree_(true) {}
   ~TestView() override {}
@@ -210,7 +213,7 @@ class TestView : public View {
     location_.SetPoint(0, 0);
     received_mouse_enter_ = false;
     received_mouse_exit_ = false;
-    last_clip_.setEmpty();
+    did_paint_ = false;
     accelerator_count_map_.clear();
     can_process_events_within_subtree_ = true;
   }
@@ -260,9 +263,7 @@ class TestView : public View {
 
   // Painting.
   std::vector<gfx::Rect> scheduled_paint_rects_;
-
-  // Painting.
-  SkRect last_clip_;
+  bool did_paint_;
 
   // Accelerators.
   std::map<ui::Accelerator, int> accelerator_count_map_;
@@ -425,19 +426,298 @@ TEST_F(ViewTest, DeleteOnPressed) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void TestView::OnPaint(gfx::Canvas* canvas) {
-  canvas->sk_canvas()->getClipBounds(&last_clip_);
+  did_paint_ = true;
+}
+
+TEST_F(ViewTest, PaintWithUnknownInvalidation) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  v1->AddChildView(v2);
+
+  gfx::Canvas canvas(root_view->size(), 1.f, true);
+  gfx::Rect paint_area(1, 1);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas));
+  EXPECT_TRUE(v1->did_paint_);
+  EXPECT_TRUE(v2->did_paint_);
+
+  v1->Reset();
+  v2->Reset();
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(
+      View::PaintContext(&canvas, paint_area).CloneWithoutInvalidation());
+  EXPECT_TRUE(v1->did_paint_);
+  EXPECT_TRUE(v2->did_paint_);
+}
+
+TEST_F(ViewTest, PaintContainsChildren) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  v1->AddChildView(v2);
+
+  gfx::Canvas canvas(root_view->size(), 1.f, true);
+  gfx::Rect paint_area(25, 26);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_TRUE(v1->did_paint_);
+  EXPECT_TRUE(v2->did_paint_);
+}
+
+TEST_F(ViewTest, PaintContainsChildrenInRTL) {
+  ScopedRTL rtl;
+
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  v1->AddChildView(v2);
+
+  // Verify where the layers actually appear.
+  v1->SetPaintToLayer(true);
+  // x: 25 - 10(x) - 12(width) = 3
+  EXPECT_EQ(gfx::Rect(3, 11, 12, 13), v1->layer()->bounds());
+  v1->SetPaintToLayer(false);
+
+  v2->SetPaintToLayer(true);
+  // x: 25 - 10(parent x) - 3(x) - 6(width) = 6
+  EXPECT_EQ(gfx::Rect(6, 15, 6, 5), v2->layer()->bounds());
+  v2->SetPaintToLayer(false);
+
+  gfx::Canvas canvas(root_view->size(), 1.f, true);
+  gfx::Rect paint_area(25, 26);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_TRUE(v1->did_paint_);
+  EXPECT_TRUE(v2->did_paint_);
+}
+
+TEST_F(ViewTest, PaintIntersectsChildren) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  v1->AddChildView(v2);
+
+  gfx::Canvas canvas(root_view->size(), 1.f, true);
+  gfx::Rect paint_area(9, 10, 5, 6);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_TRUE(v1->did_paint_);
+  EXPECT_TRUE(v2->did_paint_);
+}
+
+TEST_F(ViewTest, PaintIntersectsChildrenInRTL) {
+  ScopedRTL rtl;
+
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  v1->AddChildView(v2);
+
+  // Verify where the layers actually appear.
+  v1->SetPaintToLayer(true);
+  // x: 25 - 10(x) - 12(width) = 3
+  EXPECT_EQ(gfx::Rect(3, 11, 12, 13), v1->layer()->bounds());
+  v1->SetPaintToLayer(false);
+
+  v2->SetPaintToLayer(true);
+  // x: 25 - 10(parent x) - 3(x) - 6(width) = 6
+  EXPECT_EQ(gfx::Rect(6, 15, 6, 5), v2->layer()->bounds());
+  v2->SetPaintToLayer(false);
+
+  gfx::Canvas canvas(root_view->size(), 1.f, true);
+  gfx::Rect paint_area(2, 10, 5, 6);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_TRUE(v1->did_paint_);
+  EXPECT_TRUE(v2->did_paint_);
+}
+
+TEST_F(ViewTest, PaintIntersectsChildButNotGrandChild) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  v1->AddChildView(v2);
+
+  gfx::Canvas canvas(root_view->size(), 1.f, true);
+  gfx::Rect paint_area(9, 10, 2, 3);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_TRUE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+}
+
+TEST_F(ViewTest, PaintIntersectsChildButNotGrandChildInRTL) {
+  ScopedRTL rtl;
+
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  v1->AddChildView(v2);
+
+  // Verify where the layers actually appear.
+  v1->SetPaintToLayer(true);
+  // x: 25 - 10(x) - 12(width) = 3
+  EXPECT_EQ(gfx::Rect(3, 11, 12, 13), v1->layer()->bounds());
+  v1->SetPaintToLayer(false);
+
+  v2->SetPaintToLayer(true);
+  // x: 25 - 10(parent x) - 3(x) - 6(width) = 6
+  EXPECT_EQ(gfx::Rect(6, 15, 6, 5), v2->layer()->bounds());
+  v2->SetPaintToLayer(false);
+
+  gfx::Canvas canvas(root_view->size(), 1.f, true);
+  gfx::Rect paint_area(2, 10, 2, 3);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_TRUE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+}
+
+TEST_F(ViewTest, PaintIntersectsNoChildren) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  v1->AddChildView(v2);
+
+  gfx::Canvas canvas(root_view->size(), 1.f, true);
+  gfx::Rect paint_area(9, 10, 2, 1);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+}
+
+TEST_F(ViewTest, PaintIntersectsNoChildrenInRTL) {
+  ScopedRTL rtl;
+
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 12, 13);
+  root_view->AddChildView(v1);
+
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  v1->AddChildView(v2);
+
+  // Verify where the layers actually appear.
+  v1->SetPaintToLayer(true);
+  // x: 25 - 10(x) - 12(width) = 3
+  EXPECT_EQ(gfx::Rect(3, 11, 12, 13), v1->layer()->bounds());
+  v1->SetPaintToLayer(false);
+
+  v2->SetPaintToLayer(true);
+  // x: 25 - 10(parent x) - 3(x) - 6(width) = 6
+  EXPECT_EQ(gfx::Rect(6, 15, 6, 5), v2->layer()->bounds());
+  v2->SetPaintToLayer(false);
+
+  gfx::Canvas canvas(root_view->size(), 1.f, true);
+  gfx::Rect paint_area(2, 10, 2, 1);
+
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
 }
 
 void TestView::SchedulePaintInRect(const gfx::Rect& rect) {
   scheduled_paint_rects_.push_back(rect);
   View::SchedulePaintInRect(rect);
-}
-
-void CheckRect(const SkRect& check_rect, const SkRect& target_rect) {
-  EXPECT_EQ(target_rect.fLeft, check_rect.fLeft);
-  EXPECT_EQ(target_rect.fRight, check_rect.fRight);
-  EXPECT_EQ(target_rect.fTop, check_rect.fTop);
-  EXPECT_EQ(target_rect.fBottom, check_rect.fBottom);
 }
 
 TEST_F(ViewTest, RemoveNotification) {
@@ -2912,8 +3192,7 @@ TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
 
 // Make sure layers are positioned correctly in RTL.
 TEST_F(ViewLayerTest, BoundInRTL) {
-  std::string locale = l10n_util::GetApplicationLocale(std::string());
-  base::i18n::SetICUDefaultLocale("he");
+  ScopedRTL rtl;
 
   View* view = new View;
   widget()->SetContentsView(view);
@@ -2964,15 +3243,11 @@ TEST_F(ViewLayerTest, BoundInRTL) {
   v2->SetBounds(v2->x() + 5, v2->y(), v2->width(), v2->height());
   l2bounds.set_x(l2bounds.x() - 5);
   EXPECT_EQ(l2bounds, v2->layer()->bounds());
-
-  // Reset locale.
-  base::i18n::SetICUDefaultLocale(locale);
 }
 
 // Make sure that resizing a parent in RTL correctly repositions its children.
 TEST_F(ViewLayerTest, ResizeParentInRTL) {
-  std::string locale = l10n_util::GetApplicationLocale(std::string());
-  base::i18n::SetICUDefaultLocale("he");
+  ScopedRTL rtl;
 
   View* view = new View;
   widget()->SetContentsView(view);
@@ -3027,9 +3302,6 @@ TEST_F(ViewLayerTest, ResizeParentInRTL) {
   v3->SetBounds(2, 1, 12, 8);
   EXPECT_EQ(gfx::Rect(20, 5, 6, 4),
             v4->layer()->bounds());
-
-  // Reset locale.
-  base::i18n::SetICUDefaultLocale(locale);
 }
 
 // Makes sure a transform persists after toggling the visibility.
@@ -3373,258 +3645,6 @@ TEST_F(ViewLayerTest, RecreateLayerMovesNonViewChildren) {
   ASSERT_EQ(2u, v.layer()->children().size());
   EXPECT_EQ(v.layer()->children()[0], &layer);
   EXPECT_EQ(v.layer()->children()[1], child.layer());
-}
-
-class BoundsTreeTestView : public View {
- public:
-  BoundsTreeTestView() {}
-
-  void PaintChildren(const PaintContext& context) override {
-    // Save out a copy of the cull_set before calling the base implementation.
-    last_cull_set_.clear();
-    if (context.cull_set().cull_set_) {
-      for (base::hash_set<intptr_t>::iterator it =
-               context.cull_set().cull_set_->begin();
-           it != context.cull_set().cull_set_->end(); ++it) {
-        last_cull_set_.insert(reinterpret_cast<View*>(*it));
-      }
-    }
-    View::PaintChildren(context);
-  }
-
-  std::set<View*> last_cull_set_;
-};
-
-TEST_F(ViewLayerTest, BoundsTreePaintUpdatesCullSet) {
-  BoundsTreeTestView* test_view = new BoundsTreeTestView;
-  widget()->SetContentsView(test_view);
-
-  View* v1 = new View();
-  v1->SetBoundsRect(gfx::Rect(10, 15, 150, 151));
-  test_view->AddChildView(v1);
-
-  View* v2 = new View();
-  v2->SetBoundsRect(gfx::Rect(20, 33, 40, 50));
-  v1->AddChildView(v2);
-
-  // Schedule a full-view paint to get everyone's rectangles updated.
-  PaintWidgetInRect(widget(), test_view->bounds());
-
-  // Now we have test_view - v1 - v2. Damage to only test_view should only
-  // return root_view and test_view.
-  PaintWidgetInRect(widget(), gfx::Rect(0, 0, 1, 1));
-  EXPECT_EQ(2U, test_view->last_cull_set_.size());
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
-
-  // Damage to v1 only should only return root_view, test_view, and v1.
-  PaintWidgetInRect(widget(), gfx::Rect(11, 16, 1, 1));
-  EXPECT_EQ(3U, test_view->last_cull_set_.size());
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(v1));
-
-  // A Damage rect inside v2 should get all 3 views back in the |last_cull_set_|
-  // on call to TestView::Paint(), along with the widget root view.
-  PaintWidgetInRect(widget(), gfx::Rect(31, 49, 1, 1));
-  EXPECT_EQ(4U, test_view->last_cull_set_.size());
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(v1));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(v2));
-}
-
-TEST_F(ViewLayerTest, BoundsTreeWithRTL) {
-  std::string locale = l10n_util::GetApplicationLocale(std::string());
-  base::i18n::SetICUDefaultLocale("ar");
-
-  BoundsTreeTestView* test_view = new BoundsTreeTestView;
-  widget()->SetContentsView(test_view);
-
-  // Add child views, which should be in RTL coordinate space of parent view.
-  View* v1 = new View;
-  v1->SetBoundsRect(gfx::Rect(10, 12, 25, 26));
-  test_view->AddChildView(v1);
-
-  View* v2 = new View;
-  v2->SetBoundsRect(gfx::Rect(5, 6, 7, 8));
-  v1->AddChildView(v2);
-
-  // Schedule a full-view paint to get everyone's rectangles updated.
-  PaintWidgetInRect(widget(), test_view->bounds());
-
-  // Damage to the right side of the parent view should touch both child views.
-  gfx::Rect rtl_damage(test_view->bounds().width() - 16, 18, 1, 1);
-  PaintWidgetInRect(widget(), rtl_damage);
-  EXPECT_EQ(4U, test_view->last_cull_set_.size());
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(v1));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(v2));
-
-  // Damage to the left side of the parent view should only touch the
-  // container views.
-  gfx::Rect ltr_damage(16, 18, 1, 1);
-  PaintWidgetInRect(widget(), ltr_damage);
-  EXPECT_EQ(2U, test_view->last_cull_set_.size());
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
-
-  // Reset locale.
-  base::i18n::SetICUDefaultLocale(locale);
-}
-
-TEST_F(ViewLayerTest, BoundsTreeSetBoundsChangesCullSet) {
-  BoundsTreeTestView* test_view = new BoundsTreeTestView;
-  widget()->SetContentsView(test_view);
-
-  View* v1 = new View;
-  v1->SetBoundsRect(gfx::Rect(5, 6, 100, 101));
-  test_view->AddChildView(v1);
-
-  View* v2 = new View;
-  v2->SetBoundsRect(gfx::Rect(20, 33, 40, 50));
-  v1->AddChildView(v2);
-
-  // Schedule a full-view paint to get everyone's rectangles updated.
-  PaintWidgetInRect(widget(), test_view->bounds());
-
-  // Move v1 to a new origin out of the way of our next query.
-  v1->SetBoundsRect(gfx::Rect(50, 60, 100, 101));
-  // The move will force a repaint.
-  PaintWidgetInRect(widget(), test_view->bounds());
-
-  // Schedule a paint with damage rect where v1 used to be.
-  PaintWidgetInRect(widget(), gfx::Rect(5, 6, 10, 11));
-
-  // Should only have picked up root_view and test_view.
-  EXPECT_EQ(2U, test_view->last_cull_set_.size());
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
-}
-
-TEST_F(ViewLayerTest, BoundsTreeLayerChangeMakesNewTree) {
-  BoundsTreeTestView* test_view = new BoundsTreeTestView;
-  widget()->SetContentsView(test_view);
-
-  View* v1 = new View;
-  v1->SetBoundsRect(gfx::Rect(5, 10, 15, 20));
-  test_view->AddChildView(v1);
-
-  View* v2 = new View;
-  v2->SetBoundsRect(gfx::Rect(1, 2, 3, 4));
-  v1->AddChildView(v2);
-
-  // Schedule a full-view paint to get everyone's rectangles updated.
-  PaintWidgetInRect(widget(), test_view->bounds());
-
-  // Set v1 to paint to its own layer, it should remove itself from the
-  // test_view heiarchy and no longer intersect with damage rects in that cull
-  // set.
-  v1->SetPaintToLayer(true);
-
-  // Schedule another full-view paint.
-  PaintWidgetInRect(widget(), test_view->bounds());
-  // v1 and v2 should no longer be present in the test_view cull_set.
-  EXPECT_EQ(2U, test_view->last_cull_set_.size());
-  EXPECT_EQ(0U, test_view->last_cull_set_.count(v1));
-  EXPECT_EQ(0U, test_view->last_cull_set_.count(v2));
-
-  // Now set v1 back to not painting to a layer.
-  v1->SetPaintToLayer(false);
-  // Schedule another full-view paint.
-  PaintWidgetInRect(widget(), test_view->bounds());
-  // We should be back to the full cull set including v1 and v2.
-  EXPECT_EQ(4U, test_view->last_cull_set_.size());
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(v1));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(v2));
-}
-
-TEST_F(ViewLayerTest, BoundsTreeRemoveChildRemovesBounds) {
-  BoundsTreeTestView* test_view = new BoundsTreeTestView;
-  widget()->SetContentsView(test_view);
-
-  View* v1 = new View;
-  v1->SetBoundsRect(gfx::Rect(5, 10, 15, 20));
-  test_view->AddChildView(v1);
-
-  View* v2 = new View;
-  v2->SetBoundsRect(gfx::Rect(1, 2, 3, 4));
-  v1->AddChildView(v2);
-
-  // Schedule a full-view paint to get everyone's rectangles updated.
-  PaintWidgetInRect(widget(), test_view->bounds());
-
-  // Now remove v1 from the root view.
-  test_view->RemoveChildView(v1);
-
-  // Schedule another full-view paint.
-  PaintWidgetInRect(widget(), test_view->bounds());
-  // v1 and v2 should no longer be present in the test_view cull_set.
-  EXPECT_EQ(2U, test_view->last_cull_set_.size());
-  EXPECT_EQ(0U, test_view->last_cull_set_.count(v1));
-  EXPECT_EQ(0U, test_view->last_cull_set_.count(v2));
-
-  // View v1 and v2 are no longer part of view hierarchy and therefore won't be
-  // deleted with that hierarchy.
-  delete v1;
-}
-
-TEST_F(ViewLayerTest, BoundsTreeMoveViewMovesBounds) {
-  BoundsTreeTestView* test_view = new BoundsTreeTestView;
-  widget()->SetContentsView(test_view);
-
-  // Build hierarchy v1 - v2 - v3.
-  View* v1 = new View;
-  v1->SetBoundsRect(gfx::Rect(20, 30, 150, 160));
-  test_view->AddChildView(v1);
-
-  View* v2 = new View;
-  v2->SetBoundsRect(gfx::Rect(5, 10, 40, 50));
-  v1->AddChildView(v2);
-
-  View* v3 = new View;
-  v3->SetBoundsRect(gfx::Rect(1, 2, 3, 4));
-  v2->AddChildView(v3);
-
-  // Schedule a full-view paint and ensure all views are present in the cull.
-  PaintWidgetInRect(widget(), test_view->bounds());
-  EXPECT_EQ(5U, test_view->last_cull_set_.size());
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(v1));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(v2));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(v3));
-
-  // Build an unrelated view hierarchy and move v2 in to it.
-  scoped_ptr<Widget> test_widget(new Widget);
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.bounds = gfx::Rect(10, 10, 500, 500);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  test_widget->Init(params);
-  test_widget->Show();
-  BoundsTreeTestView* widget_view = new BoundsTreeTestView;
-  test_widget->SetContentsView(widget_view);
-  widget_view->AddChildView(v2);
-
-  // Now schedule full-view paints in both widgets.
-  PaintWidgetInRect(widget(), test_view->bounds());
-  PaintWidgetInRect(test_widget.get(), widget_view->bounds());
-
-  // Only v1 should be present in the first cull set.
-  EXPECT_EQ(3U, test_view->last_cull_set_.size());
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(widget()->GetRootView()));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(test_view));
-  EXPECT_EQ(1U, test_view->last_cull_set_.count(v1));
-
-  // We should find v2 and v3 in the widget_view cull_set.
-  EXPECT_EQ(4U, widget_view->last_cull_set_.size());
-  EXPECT_EQ(1U, widget_view->last_cull_set_.count(test_widget->GetRootView()));
-  EXPECT_EQ(1U, widget_view->last_cull_set_.count(widget_view));
-  EXPECT_EQ(1U, widget_view->last_cull_set_.count(v2));
-  EXPECT_EQ(1U, widget_view->last_cull_set_.count(v3));
 }
 
 namespace {
