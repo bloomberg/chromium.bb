@@ -1,0 +1,7 @@
+include_rules = [
+  "+gpu",
+  "+mojo/converters",
+  "+third_party/mojo_services/src/geometry",
+  "+third_party/mojo_services/src/gpu",
+  "+ui",
+]

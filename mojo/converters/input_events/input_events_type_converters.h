@@ -12,14 +12,11 @@
 
 namespace mojo {
 
+// NOTE: the mojo input events do not necessarily provide a 1-1 mapping with
+// ui::Event types. Be careful in using them!
 template <>
 struct MOJO_INPUT_EVENTS_EXPORT TypeConverter<EventType, ui::EventType> {
   static EventType Convert(ui::EventType type);
-};
-
-template <>
-struct MOJO_INPUT_EVENTS_EXPORT TypeConverter<ui::EventType, EventType> {
-  static ui::EventType Convert(EventType type);
 };
 
 template <>
@@ -30,6 +27,11 @@ struct MOJO_INPUT_EVENTS_EXPORT TypeConverter<EventPtr, ui::Event> {
 template <>
 struct MOJO_INPUT_EVENTS_EXPORT TypeConverter<EventPtr, ui::KeyEvent> {
   static EventPtr Convert(const ui::KeyEvent& input);
+};
+
+template <>
+struct MOJO_INPUT_EVENTS_EXPORT TypeConverter<EventPtr, ui::GestureEvent> {
+  static EventPtr Convert(const ui::GestureEvent& input);
 };
 
 template <>

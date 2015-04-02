@@ -1,0 +1,61 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+
+mojom("bindings") {
+  sources = [
+    "test_request_tracker.mojom",
+    "test_service.mojom",
+  ]
+}
+
+mojo_native_application("test_app") {
+  sources = [
+    "test_service_application.cc",
+    "test_service_application.h",
+    "test_service_impl.cc",
+    "test_service_impl.h",
+    "test_time_service_impl.cc",
+    "test_time_service_impl.h",
+    "tracked_service.cc",
+    "tracked_service.h",
+  ]
+
+  deps = [
+    ":bindings",
+    "//base",
+    "//base:i18n",
+    "//third_party/mojo/src/mojo/public/cpp/application",
+    "//third_party/mojo/src/mojo/public/cpp/application:standalone",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//third_party/mojo/src/mojo/public/cpp/utility",
+  ]
+}
+
+mojo_native_application("test_request_tracker_app") {
+  sources = [
+    "test_request_tracker_application.cc",
+    "test_request_tracker_application.h",
+    "test_request_tracker_impl.cc",
+    "test_request_tracker_impl.h",
+    "test_time_service_impl.cc",
+    "test_time_service_impl.h",
+    "tracked_service.cc",
+    "tracked_service.h",
+  ]
+
+  deps = [
+    ":bindings",
+    "//base",
+    "//base:i18n",
+    "//third_party/mojo/src/mojo/public/cpp/application",
+    "//third_party/mojo/src/mojo/public/cpp/application:standalone",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//third_party/mojo/src/mojo/public/cpp/utility",
+  ]
+}

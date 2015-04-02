@@ -1,0 +1,6 @@
+include_rules = [
+  "+mojo/application",
+  "+mojo/services/window_manager",
+  "+third_party/mojo_services",
+  "+ui",
+]

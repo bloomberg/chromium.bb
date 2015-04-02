@@ -17,6 +17,10 @@ group("mojo") {
   if (is_android) {
     deps += [ "//mojo/android" ]
   }
+
+  if (!is_component_build) {
+    deps += [ "//mojo/shell" ]
+  }
 }
 
 group("tests") {

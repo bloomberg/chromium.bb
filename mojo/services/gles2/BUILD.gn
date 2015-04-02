@@ -1,0 +1,59 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+
+source_set("gles2") {
+  visibility = [
+    "//mojo/shell:lib",  # For android
+    "//mojo/services/native_viewport:*",
+  ]
+
+  sources = [
+    "command_buffer_driver.cc",
+    "command_buffer_driver.h",
+    "command_buffer_impl.cc",
+    "command_buffer_impl.h",
+    "gpu_state.cc",
+    "gpu_state.h",
+    "gpu_impl.cc",
+    "gpu_impl.h",
+  ]
+
+  public_deps = [
+    ":lib",
+  ]
+  deps = [
+    "//base",
+    "//gpu/command_buffer/service",
+    "//mojo/converters/geometry",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo_services/src/geometry/public/interfaces",
+    "//third_party/mojo_services/src/gpu/public/interfaces",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  include_dirs = [ "../.." ]
+}
+
+source_set("lib") {
+  sources = [
+    "command_buffer_type_conversions.cc",
+    "command_buffer_type_conversions.h",
+    "mojo_buffer_backing.cc",
+    "mojo_buffer_backing.h",
+  ]
+
+  deps = [
+    "//base",
+    "//gpu/command_buffer/common",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//third_party/mojo_services/src/gpu/public/interfaces",
+  ]
+
+  include_dirs = [ "../.." ]
+}

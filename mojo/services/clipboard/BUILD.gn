@@ -1,0 +1,44 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+
+mojo_native_application("clipboard") {
+  sources = [
+    "clipboard_standalone_impl.cc",
+    "clipboard_standalone_impl.h",
+    "main.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/application",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
+    "//third_party/mojo_services/src/clipboard/public/interfaces",
+  ]
+}
+
+mojo_native_application("apptests") {
+  output_name = "clipboard_apptests"
+
+  testonly = true
+
+  sources = [
+    "clipboard_apptest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/application",
+    "//mojo/application:test_support",
+    "//mojo/common",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo_services/src/clipboard/public/interfaces",
+  ]
+
+  data_deps = [ ":clipboard($default_toolchain)" ]
+}

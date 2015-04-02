@@ -1,0 +1,47 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+
+mojo_native_application("surfaces") {
+  output_name = "surfaces_service"
+  sources = [
+    "context_provider_mojo.cc",
+    "context_provider_mojo.h",
+    "display_factory_impl.cc",
+    "display_factory_impl.h",
+    "display_impl.cc",
+    "display_impl.h",
+    "surfaces_impl.cc",
+    "surfaces_impl.h",
+    "surfaces_output_surface.cc",
+    "surfaces_output_surface.h",
+    "surfaces_scheduler.cc",
+    "surfaces_scheduler.h",
+    "surfaces_service_application.cc",
+    "surfaces_service_application.h",
+  ]
+
+  deps = [
+    "//base",
+    "//cc",
+    "//cc/surfaces",
+    "//cc/surfaces:surface_id",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//mojo/application",
+    "//mojo/common",
+    "//mojo/common:tracing_impl",
+    "//mojo/converters/geometry",
+    "//mojo/converters/surfaces",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/public/c/gles2",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/environment",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+    "//third_party/mojo_services/src/geometry/public/interfaces",
+    "//third_party/mojo_services/src/gpu/public/interfaces",
+    "//third_party/mojo_services/src/surfaces/public/interfaces",
+    "//ui/gfx/geometry",
+  ]
+}

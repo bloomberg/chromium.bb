@@ -19,8 +19,14 @@ group("services") {
 
   if (!is_component_build) {
     deps += [
+      "//mojo/services/clipboard",
       "//mojo/services/html_viewer",
+      "//mojo/services/kiosk_wm",
+      "//mojo/services/native_viewport",
       "//mojo/services/network",
+      "//mojo/services/surfaces",
+      "//mojo/services/tracing",
+      "//mojo/services/view_manager",
     ]
 
     # TODO(GYP): Make this work.

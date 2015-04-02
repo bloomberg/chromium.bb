@@ -18,6 +18,7 @@ component("common_base") {
   sources = [
     "common_type_converters.cc",
     "common_type_converters.h",
+    "data_pipe_file_utils.cc",
     "data_pipe_utils.cc",
     "data_pipe_utils.h",
     "handle_watcher.cc",
@@ -27,6 +28,8 @@ component("common_base") {
     "message_pump_mojo_handler.h",
     "time_helper.cc",
     "time_helper.h",
+    "weak_binding_set.h",
+    "weak_interface_ptr_set.h",
   ]
 
   defines = [ "MOJO_COMMON_IMPLEMENTATION" ]
@@ -75,4 +78,22 @@ test("mojo_common_unittests") {
     "handle_watcher_unittest.cc",
     "message_pump_mojo_unittest.cc",
   ]
+}
+
+if (!is_component_build) {
+  source_set("tracing_impl") {
+    sources = [
+      "trace_controller_impl.cc",
+      "trace_controller_impl.h",
+      "tracing_impl.cc",
+      "tracing_impl.h",
+    ]
+
+    deps = [
+      "//base",
+      "//third_party/mojo/src/mojo/public/cpp/application",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
+      "//mojo/services/tracing:bindings",
+    ]
+  }
 }

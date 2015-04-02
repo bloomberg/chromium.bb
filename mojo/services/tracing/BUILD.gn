@@ -1,0 +1,29 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+
+mojo_native_application("tracing") {
+  sources = [
+    "main.cc",
+    "trace_data_sink.cc",
+    "trace_data_sink.h",
+  ]
+
+  deps = [
+    ":bindings",
+    "//base",
+    "//mojo/application",
+    "//mojo/common",
+    "//third_party/mojo/src/mojo/public/cpp/application",
+    "//third_party/mojo/src/mojo/public/cpp/system",
+  ]
+}
+
+mojom("bindings") {
+  sources = [
+    "tracing.mojom",
+  ]
+}

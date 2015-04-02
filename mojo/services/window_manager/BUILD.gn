@@ -1,0 +1,129 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+import("//testing/test.gni")
+
+mojo_native_application("window_manager") {
+  sources = [
+    "main.cc",
+  ]
+
+  public_deps = [
+    ":lib",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/application",
+    "//mojo/common:tracing_impl",
+    "//third_party/mojo_services/src/view_manager/public/cpp",
+  ]
+}
+
+source_set("lib") {
+  sources = [
+    "basic_focus_rules.cc",
+    "basic_focus_rules.h",
+    "capture_controller.cc",
+    "capture_controller.h",
+    "capture_controller_observer.h",
+    "focus_controller.cc",
+    "focus_controller.h",
+    "focus_controller_observer.h",
+    "focus_rules.h",
+    "native_viewport_event_dispatcher_impl.cc",
+    "native_viewport_event_dispatcher_impl.h",
+    "view_event_dispatcher.cc",
+    "view_event_dispatcher.h",
+    "view_target.cc",
+    "view_target.h",
+    "view_targeter.cc",
+    "view_targeter.h",
+    "window_manager_app.cc",
+    "window_manager_app.h",
+    "window_manager_app_android.cc",
+    "window_manager_app_linux.cc",
+    "window_manager_app_win.cc",
+    "window_manager_delegate.h",
+    "window_manager_impl.cc",
+    "window_manager_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//ui/base",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//mojo/application",
+    "//mojo/common",
+    "//mojo/converters/geometry",
+    "//mojo/converters/input_events",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
+    "//third_party/mojo/src/mojo/public/interfaces/application",
+    "//third_party/mojo_services/src/native_viewport/public/interfaces",
+    "//third_party/mojo_services/src/view_manager/public/cpp",
+    "//third_party/mojo_services/src/window_manager/public/interfaces",
+  ]
+}
+
+test("window_manager_unittests") {
+  sources = [
+    "focus_controller_unittest.cc",
+    "run_all_unittests.cc",
+    "view_target_unittest.cc",
+    "view_targeter_unittest.cc",
+    "window_manager_api_unittest.cc",
+    "window_manager_test_util.cc",
+    "window_manager_test_util.h",
+  ]
+
+  public_deps = [
+    ":lib",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//mojo/converters/geometry",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/public/cpp/application",
+    "//third_party/mojo_services/src/view_manager/public/cpp",
+    "//third_party/mojo_services/src/view_manager/public/interfaces",
+    "//third_party/mojo_services/src/window_manager/public/interfaces",
+    "//mojo/shell/application_manager",
+    "//mojo/shell:test_support",
+    "//testing/gtest",
+    "//ui/events:test_support",
+    "//ui/gfx",
+    "//ui/gfx:test_support",
+    "//ui/gl",
+  ]
+
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
+  }
+}
+
+mojo_native_application("window_manager_apptests") {
+  testonly = true
+
+  sources = [
+    "window_manager_apptest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/application",
+    "//mojo/application:test_support",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/public/cpp/system:system",
+    "//third_party/mojo_services/src/view_manager/public/cpp",
+    "//third_party/mojo_services/src/window_manager/public/interfaces",
+  ]
+
+  data_deps = [ ":window_manager($default_toolchain)" ]
+}

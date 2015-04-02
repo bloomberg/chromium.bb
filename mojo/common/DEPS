@@ -4,3 +4,12 @@ include_rules = [
   "+mojo/common",
   "+third_party/mojo/src/mojo/public",
 ]
+
+specific_include_rules = {
+  "trace_controller_impl\.h": [
+    "+mojo/services/tracing/tracing.mojom.h"
+  ],
+  "tracing_impl\.h": [
+    "+mojo/services/tracing/tracing.mojom.h"
+  ],
+}

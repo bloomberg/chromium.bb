@@ -1,0 +1,473 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+import("//third_party/mojo/src/mojo/public/mojo.gni")
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+import("//testing/test.gni")
+
+# We don't support building in the component build since mojo apps are
+# inherently components.
+assert(!is_component_build)
+
+group("shell") {
+  testonly = true
+
+  deps = [
+    ":mojo_shell",
+    ":tests",
+  ]
+
+  if (!is_win) {
+    deps += [ ":mojo_launcher" ]
+  }
+
+  if (is_android) {
+    deps += [
+      ":mojo_shell_apk",
+      ":mojo_shell_tests_apk",
+    ]
+  }
+}
+
+group("tests") {
+  testonly = true
+  deps = [
+    ":mojo_shell_tests",
+    "//mojo/shell/application_manager:mojo_application_manager_unittests",
+  ]
+}
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
+executable("mojo_shell") {
+  sources = []
+
+  deps = [
+    ":init",
+    ":lib",
+    "//base",
+    "//build/config/sanitizers:deps",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+  ]
+
+  if (!is_android) {
+    sources += [ "desktop/main.cc" ]
+  } else {
+    sources += [
+      "android/library_loader.cc",
+      "android/main.cc",
+      "android/main.h",
+    ]
+
+    # On android, the executable is also the native library used by the apk.
+    # It means dynamic symbols must be preserved and exported.
+    ldflags = [ "-Wl,--export-dynamic" ]
+
+    deps += [
+      ":jni_headers",
+      "//mojo/services/native_viewport:lib",
+      "//mojo/shell/application_manager",
+      "//ui/gl",
+    ]
+  }
+}
+
+executable("mojo_launcher") {
+  sources = [
+    "launcher_main.cc",
+  ]
+
+  deps = [
+    ":init",
+    ":in_process_native_runner",
+    "//base",
+    "//build/config/sanitizers:deps",
+    "//mojo/common",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//mojo/environment:chromium",
+    "//url",
+  ]
+}
+
+source_set("init") {
+  sources = [
+    "init.cc",
+    "init.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("in_process_native_runner") {
+  sources = [
+    "in_process_native_runner.cc",
+    "in_process_native_runner.h",
+  ]
+
+  public_deps = [
+    ":native_application_support",
+    "//mojo/shell/application_manager",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("lib") {
+  sources = [
+    "app_child_process.cc",
+    "app_child_process.h",
+    "app_child_process_host.cc",
+    "app_child_process_host.h",
+    "child_process.cc",
+    "child_process.h",
+    "child_process_host.cc",
+    "child_process_host.h",
+    "command_line_util.cc",
+    "command_line_util.h",
+    "context.cc",
+    "context.h",
+    "filename_util.cc",
+    "filename_util.h",
+    "out_of_process_native_runner.cc",
+    "out_of_process_native_runner.h",
+    "task_runners.cc",
+    "task_runners.h",
+    "url_resolver.cc",
+    "url_resolver.h",
+  ]
+
+  deps = [
+    ":app_child_process_bindings",
+    ":init",
+    ":in_process_native_runner",
+    ":native_application_support",
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//base:base_static",
+    "//mojo/application",
+    "//mojo/common",
+    "//mojo/common:tracing_impl",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/interfaces/application",
+    "//mojo/services/network/public/interfaces",
+    "//mojo/shell/application_manager",
+    "//mojo/services/tracing:bindings",
+    "//url",
+  ]
+
+  public_deps = [
+    ":switches",
+  ]
+
+  if (is_android) {
+    sources += [
+      "android/android_handler.cc",
+      "android/android_handler.h",
+      "android/android_handler_loader.cc",
+      "android/android_handler_loader.h",
+      "android/background_application_loader.cc",
+      "android/background_application_loader.h",
+      "android/keyboard_impl.cc",
+      "android/keyboard_impl.h",
+      "android/native_viewport_application_loader.cc",
+      "android/native_viewport_application_loader.h",
+      "android/ui_application_loader_android.cc",
+      "android/ui_application_loader_android.h",
+    ]
+
+    deps += [
+      ":jni_headers",
+      ":run_android_application_function",
+      "//mojo/application:content_handler",
+      "//mojo/services/keyboard/public/interfaces",
+      "//mojo/services/gles2",
+      "//mojo/services/native_viewport:lib",
+    ]
+  }
+
+  # This target includes some files behind #ifdef OS... guards. Since gn is not
+  # smart enough to understand preprocess includes, it does complains about
+  # these includes when not using the build files for that OS. Suppress checking
+  # so we can enable checking for the rest of the targets in this file.
+  # TODO: Might be better to split the files with OS-specific includes out to a
+  # separate source_set so we can leave checking on for the rest of the target.
+  check_includes = false
+}
+
+source_set("native_application_support") {
+  sources = [
+    "native_application_support.cc",
+    "native_application_support.h",
+  ]
+
+  public_deps = [
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/gles2",
+  ]
+
+  # This target has to include the public thunk headers, which generally
+  # shouldn't be included without picking an implementation. We are providing
+  # the implementation but the thunk header target cannot declare that we are
+  # permitted to include it since it's in the public SDK and we are not.
+  # Suppress include checking so we can still check the rest of the targets in
+  # this file.
+  check_includes = false
+}
+
+source_set("switches") {
+  sources = [
+    "switches.cc",
+    "switches.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+if (is_android) {
+  generate_jni("jni_headers") {
+    sources = [
+      "android/apk/src/org/chromium/mojo/shell/AndroidHandler.java",
+      "android/apk/src/org/chromium/mojo/shell/Bootstrap.java",
+      "android/apk/src/org/chromium/mojo/shell/Keyboard.java",
+      "android/apk/src/org/chromium/mojo/shell/ShellMain.java",
+      "android/tests/src/org/chromium/mojo/shell/ShellTestBase.java",
+    ]
+    jni_package = "mojo/shell"
+  }
+
+  android_library("bootstrap_java") {
+    java_files = [ "android/apk/src/org/chromium/mojo/shell/Bootstrap.java" ]
+
+    deps = [
+      "//base:base_java",
+    ]
+
+    dex_path = "$target_out_dir/bootstrap_java.dex.jar"
+  }
+
+  shared_library("bootstrap") {
+    sources = [
+      "android/bootstrap.cc",
+    ]
+    deps = [
+      ":jni_headers",
+      ":lib",
+      ":run_android_application_function",
+      "//base",
+    ]
+  }
+
+  # Shared header between the bootstrap and the main shell .so.
+  source_set("run_android_application_function") {
+    sources = [
+      "android/run_android_application_function.h",
+    ]
+
+    deps = [
+      "//base",
+    ]
+  }
+
+  android_library("java") {
+    java_files = [
+      "android/apk/src/org/chromium/mojo/shell/AndroidHandler.java",
+      "android/apk/src/org/chromium/mojo/shell/FileHelper.java",
+      "android/apk/src/org/chromium/mojo/shell/Keyboard.java",
+      "android/apk/src/org/chromium/mojo/shell/MojoShellActivity.java",
+      "android/apk/src/org/chromium/mojo/shell/MojoShellApplication.java",
+      "android/apk/src/org/chromium/mojo/shell/ShellMain.java",
+    ]
+
+    deps = [
+      "//base:base_java",
+    ]
+  }
+
+  android_resources("resources") {
+    resource_dirs = [ "android/apk/res" ]
+    custom_package = "org.chromium.mojo.shell"
+  }
+
+  mojo_shell_assets_dir = "$root_build_dir/mojo_shell_assets"
+  mojo_shell_test_assets_dir = "$root_build_dir/mojo_shell_test_assets"
+
+  copy_ex("copy_mojo_shell_assets") {
+    clear_dir = true
+    dest = mojo_shell_assets_dir
+    sources = [
+      "$root_out_dir/lib.stripped/libbootstrap.so",
+      "$root_out_dir/network_service.mojo",
+      "$root_out_dir/obj/mojo/shell/bootstrap_java.dex.jar",
+    ]
+  }
+
+  copy("copy_mojo_shell") {
+    sources = [
+      "$root_out_dir/exe.stripped/mojo_shell",
+    ]
+    outputs = [
+      "$root_out_dir/lib.stripped/libmojo_shell.so",
+    ]
+  }
+
+  copy_ex("copy_mojo_shell_test_assets") {
+    clear_dir = true
+    dest = mojo_shell_test_assets_dir
+    sources = [
+      "$root_out_dir/test_app.mojo",
+      "$root_out_dir/test_request_tracker_app.mojo",
+    ]
+  }
+
+  android_apk("mojo_shell_apk") {
+    apk_name = "MojoShell"
+
+    android_manifest = "android/apk/AndroidManifest.xml"
+
+    native_libs = [ "libmojo_shell.so" ]
+
+    asset_location = mojo_shell_assets_dir
+
+    deps = [
+      ":copy_mojo_shell",
+      ":copy_mojo_shell_assets",
+      ":java",
+      ":resources",
+      "//base:base_java",
+      "//mojo/services/native_viewport:native_viewport_java",
+      "//third_party/android_tools:google_play_services_default_resources",
+    ]
+  }
+
+  android_library("mojo_shell_tests_java") {
+    java_files =
+        [ "android/tests/src/org/chromium/mojo/shell/ShellTestBase.java" ]
+
+    deps = [
+      ":java",
+      "//base:base_java",
+    ]
+  }
+}
+
+mojom("app_child_process_bindings") {
+  sources = [
+    "app_child_process.mojom",
+  ]
+
+  deps = [
+    "//third_party/mojo/src/mojo/public/interfaces/application",
+  ]
+}
+
+# GYP version: mojo/mojo.gyp:mojo_shell_tests
+test("mojo_shell_tests") {
+  sources = [
+    "app_child_process_host_unittest.cc",
+    "command_line_util_unittest.cc",
+    "data_pipe_peek_unittest.cc",
+    "in_process_native_runner_unittest.cc",
+    "native_runner_unittest.cc",
+    "shell_test_base.cc",
+    "shell_test_base.h",
+    "shell_test_base_android.cc",
+    "shell_test_base_unittest.cc",
+    "shell_test_main.cc",
+    "url_resolver_unittest.cc",
+  ]
+
+  deps = [
+    ":in_process_native_runner",
+    ":lib",
+    "//base",
+    "//base:i18n",
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//url",
+    "//mojo/common",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//mojo/services/test_service:bindings",
+    "//mojo/shell/application_manager",
+  ]
+
+  datadeps = [
+    "//mojo/services/test_service:test_app",
+    "//mojo/services/test_service:test_request_tracker_app",
+  ]
+
+  if (is_android) {
+    sources += [ "android/background_application_loader_unittest.cc" ]
+
+    deps += [ ":jni_headers" ]
+
+    apk_deps = [
+      ":copy_mojo_shell_test_assets",
+      ":mojo_shell_tests_java",
+    ]
+
+    apk_asset_location = mojo_shell_test_assets_dir
+  }
+}
+
+# GYP version: mojo/mojo.gyp:mojo_shell_test_support
+source_set("test_support") {
+  sources = [
+    "shell_test_helper.cc",
+    "shell_test_helper.h",
+  ]
+
+  deps = [
+    ":init",
+    ":lib",
+    "//base",
+    "//third_party/mojo/src/mojo/edk/system",
+    "//mojo/shell/application_manager",
+  ]
+}
+
+mojo_native_application("apptests") {
+  output_name = "shell_apptests"
+
+  testonly = true
+
+  sources = [
+    # TODO(jam): needs http_server service.
+    #"shell_apptest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/application",
+    "//mojo/application:test_support",
+    "//mojo/common:common",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
+    "//third_party/mojo/src/mojo/public/cpp/environment",
+    "//third_party/mojo/src/mojo/public/cpp/system:system",
+  #  "//mojo/services/http_server/public/cpp",
+   # "//mojo/services/http_server/public/interfaces",
+    "//mojo/services/network/public/interfaces",
+    "//mojo/shell/test:bindings",
+  ]
+
+  #data_deps = [ "//services/http_server:http_server($default_toolchain)" ]
+}

@@ -1,0 +1,4 @@
+include_rules = [
+  "+mojo/application",
+  "+third_party/mojo_services/src/clipboard",
+]

@@ -71,6 +71,37 @@ bool BlockingCopyToString(ScopedDataPipeConsumerHandle source,
       source.Pass(), base::Bind(&CopyToStringHelper, result));
 }
 
+bool MOJO_COMMON_EXPORT BlockingCopyFromString(
+    const std::string& source,
+    const ScopedDataPipeProducerHandle& destination) {
+  auto it = source.begin();
+  for (;;) {
+    void* buffer = nullptr;
+    uint32_t buffer_num_bytes = 0;
+    MojoResult result =
+        BeginWriteDataRaw(destination.get(), &buffer, &buffer_num_bytes,
+                          MOJO_WRITE_DATA_FLAG_NONE);
+    if (result == MOJO_RESULT_OK) {
+      char* char_buffer = static_cast<char*>(buffer);
+      uint32_t byte_index = 0;
+      while (it != source.end() && byte_index < buffer_num_bytes) {
+        char_buffer[byte_index++] = *it++;
+      }
+      EndWriteDataRaw(destination.get(), byte_index);
+    } else if (result == MOJO_RESULT_SHOULD_WAIT) {
+      result = Wait(destination.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+                    MOJO_DEADLINE_INDEFINITE, nullptr);
+      if (result != MOJO_RESULT_OK) {
+        // If the consumer handle was closed, then treat as EOF.
+        return result == MOJO_RESULT_FAILED_PRECONDITION;
+      }
+    } else {
+      // If the consumer handle was closed, then treat as EOF.
+      return result == MOJO_RESULT_FAILED_PRECONDITION;
+    }
+  }
+}
+
 bool BlockingCopyToFile(ScopedDataPipeConsumerHandle source,
                         const base::FilePath& destination) {
   base::ScopedFILE fp(base::OpenFile(destination, "wb"));

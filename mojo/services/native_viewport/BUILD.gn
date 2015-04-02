@@ -1,0 +1,110 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+
+  group("native_viewport") {
+    deps = [
+      ":lib",
+      ":native_viewport_java",
+      ":jni_headers",
+    ]
+  }
+
+  android_library("native_viewport_java") {
+    java_files =
+        [ "android/src/org/chromium/mojo/PlatformViewportAndroid.java" ]
+
+    deps = [
+      "//base:base_java",
+    ]
+  }
+
+  generate_jni("jni_headers") {
+    sources = [
+      "android/src/org/chromium/mojo/PlatformViewportAndroid.java",
+    ]
+
+    jni_package = "mojo"
+  }
+} else {
+  mojo_native_application("native_viewport") {
+    output_name = "native_viewport_service"
+    sources = [
+      "main.cc",
+    ]
+    deps = [
+      ":lib",
+      "//base",
+      "//mojo/application",
+      "//mojo/common:tracing_impl",
+      "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
+      "//third_party/mojo_services/src/native_viewport/public/interfaces",
+      "//third_party/mojo_services/src/native_viewport/public/cpp:args",
+      "//mojo/services/gles2",
+      "//ui/events",
+      "//ui/events/platform",
+      "//ui/gl",
+    ]
+  }
+}
+
+source_set("lib") {
+  sources = [
+    "native_viewport_impl.cc",
+    "native_viewport_impl.h",
+    "onscreen_context_provider.cc",
+    "onscreen_context_provider.h",
+    "platform_viewport.h",
+    "platform_viewport_android.cc",
+    "platform_viewport_android.h",
+    "platform_viewport_headless.cc",
+    "platform_viewport_headless.h",
+    "platform_viewport_stub.cc",
+    "platform_viewport_win.cc",
+    "platform_viewport_x11.cc",
+  ]
+
+  if (!is_ios) {
+    sources -= [ "platform_viewport_stub.cc" ]
+  }
+
+  deps = [
+    "//base",
+    "//gpu/command_buffer/service",
+    "//mojo/application",
+    "//mojo/common",
+    "//mojo/converters/geometry",
+    "//mojo/converters/input_events",
+    "//mojo/environment:chromium",
+    "//mojo/services/gles2",
+    "//third_party/mojo_services/src/geometry/public/interfaces",
+    "//third_party/mojo_services/src/native_viewport/public/interfaces",
+    "//ui/events",
+    "//ui/events/platform",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/platform_window",
+  ]
+
+  if (is_android) {
+    deps += [ ":jni_headers" ]
+  }
+
+  if (use_x11) {
+    deps += [ "//ui/platform_window/x11" ]
+  } else {
+    sources -= [ "platform_viewport_x11.cc" ]
+  }
+
+  if (is_win) {
+    deps += [ "//ui/platform_window/win:win_window" ]
+  }
+}

@@ -1,0 +1,7 @@
+include_rules = [
+  "+cc",
+  "+mojo/application",
+  "+mojo/converters",
+  "+third_party/mojo_services",
+  "+ui",
+]

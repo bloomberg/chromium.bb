@@ -1,0 +1,17 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo.shell;
+
+import "mojo/public/interfaces/application/application.mojom";
+
+interface AppChildController {
+  // Starts the app at the given path (deleting it if |clean_app_path| is true).
+  StartApp(string app_path,
+           bool clean_app_path,
+           mojo.Application& application_request) => (int32 result);
+
+  // Exits the child process now (with no cleanup), with the given exit code.
+  ExitNow(int32 exit_code);
+};

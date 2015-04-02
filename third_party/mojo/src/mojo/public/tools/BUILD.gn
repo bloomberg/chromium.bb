@@ -5,29 +5,6 @@
 import("//build/module_args/mojo.gni")
 import("../mojo.gni")
 
-if (mojo_use_prebuilt_mojo_shell) {
-  copy("copy_mojo_shell") {
-    filename = "mojo_shell"
-    if (is_android) {
-      filename = "MojoShell.apk"
-      sources = [
-        "prebuilt/shell/android-arm/$filename",
-      ]
-      outputs = [
-        "$root_out_dir/apks/$filename",
-      ]
-    } else {
-      assert(is_linux)
-      sources = [
-        "prebuilt/shell/linux-x64/$filename",
-      ]
-      outputs = [
-        "$root_out_dir/$filename",
-      ]
-    }
-  }
-}
-
 if (mojo_use_prebuilt_network_service) {
   copy("copy_network_service") {
     filename = "network_service.mojo"
