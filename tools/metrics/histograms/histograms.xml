@@ -20054,6 +20054,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.TooManyOpenStreams" enum="BooleanTooMany">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    True if more than 100 streams are open when a new stream is activated.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.TruncatedAcksReceived">
   <owner>rch@chromium.org</owner>
   <summary>The number of truncated ACK frames received.</summary>
@@ -46137,6 +46144,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanTimedOut" type="int">
   <int value="0" label="Did not time out"/>
   <int value="1" label="Timed out"/>
+</enum>
+
+<enum name="BooleanTooMany" type="int">
+  <int value="0" label="Correct"/>
+  <int value="1" label="Too many"/>
 </enum>
 
 <enum name="BooleanUnknown" type="int">
