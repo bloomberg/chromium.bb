@@ -250,6 +250,11 @@ Response ServiceWorkerHandler::Enable() {
 
   ServiceWorkerDevToolsManager::GetInstance()->AddObserver(this);
 
+  client_->DebugOnStartUpdated(
+      DebugOnStartUpdatedParams::Create()->set_debug_on_start(
+          ServiceWorkerDevToolsManager::GetInstance()
+              ->debug_service_worker_on_start()));
+
   context_watcher_ = new ServiceWorkerContextWatcher(
       context_, base::Bind(&ServiceWorkerHandler::OnWorkerRegistrationUpdated,
                            weak_factory_.GetWeakPtr()),
@@ -346,7 +351,8 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
 }
 
 Response ServiceWorkerHandler::SetDebugOnStart(bool debug_on_start) {
-  // TODO(horo): implement this.
+  ServiceWorkerDevToolsManager::GetInstance()
+      ->set_debug_service_worker_on_start(debug_on_start);
   return Response::OK();
 }
 
@@ -428,12 +434,23 @@ void ServiceWorkerHandler::WorkerCreated(
 
 void ServiceWorkerHandler::WorkerReadyForInspection(
     ServiceWorkerDevToolsAgentHost* host) {
+  if (ServiceWorkerDevToolsManager::GetInstance()
+          ->debug_service_worker_on_start()) {
+    // When debug_service_worker_on_start is true, a new DevTools window will
+    // be opend in ServiceWorkerDevToolsManager::WorkerReadyForInspection.
+    return;
+  }
   UpdateHosts();
 }
 
 void ServiceWorkerHandler::WorkerDestroyed(
     ServiceWorkerDevToolsAgentHost* host) {
   UpdateHosts();
+}
+
+void ServiceWorkerHandler::DebugOnStartUpdated(bool debug_on_start) {
+  client_->DebugOnStartUpdated(
+      DebugOnStartUpdatedParams::Create()->set_debug_on_start(debug_on_start));
 }
 
 void ServiceWorkerHandler::ReportWorkerCreated(

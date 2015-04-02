@@ -32,6 +32,7 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
     virtual void WorkerReadyForInspection(
         ServiceWorkerDevToolsAgentHost* host) {}
     virtual void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) {}
+    virtual void DebugOnStartUpdated(bool debug_on_start) {}
 
    protected:
     virtual ~Observer() {}
@@ -85,9 +86,7 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  void set_debug_service_worker_on_start(bool debug_on_start) {
-    debug_service_worker_on_start_ = debug_on_start;
-  }
+  void set_debug_service_worker_on_start(bool debug_on_start);
   bool debug_service_worker_on_start() const {
     return debug_service_worker_on_start_;
   }

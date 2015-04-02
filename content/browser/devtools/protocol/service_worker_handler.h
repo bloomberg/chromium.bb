@@ -59,6 +59,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) override;
   void WorkerReadyForInspection(ServiceWorkerDevToolsAgentHost* host) override;
   void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override;
+  void DebugOnStartUpdated(bool debug_on_start) override;
 
  private:
   // DevToolsAgentHostClient overrides.
