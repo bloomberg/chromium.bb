@@ -247,7 +247,7 @@ if (window.internals && internals.dictionaryTest) {
     debug('');
 
     debug('Test for derived dictionary');
-    dictionaryTest.setDerived({});
+    dictionaryTest.setDerived({ requiredBooleanMember: true });
     derived = dictionaryTest.getDerived();
     shouldBeUndefined('derived.longMember');
     shouldBe('derived.longMemberWithDefault', '42');
@@ -268,6 +268,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeNull('derived.objectOrNullMemberWithDefault');
     shouldBeUndefined('derived.derivedStringMember');
     shouldBeEqualToString('derived.derivedStringMemberWithDefault', 'derivedDefaultStringValue');
+    shouldBeTrue('derived.requiredBooleanMember');
     debug('');
 
     dictionaryTest.setDerived({
@@ -276,6 +277,7 @@ if (window.internals && internals.dictionaryTest) {
         derivedStringMember: 'modifiedString2',
         derivedStringMemberWithDefault: 'modifiedString3',
         invalidMember: 'shouldNotBeSet',
+        requiredBooleanMember: false,
     });
     derived = dictionaryTest.getDerived();
     shouldBe('derived.longMember', '1');
@@ -283,8 +285,11 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeEqualToString('derived.derivedStringMember', 'modifiedString2');
     shouldBeEqualToString('derived.derivedStringMemberWithDefault', 'modifiedString3');
     shouldBeUndefined('derived.invalidMember');
-
+    shouldBeFalse('derived.requiredBooleanMember');
     debug('');
-    shouldThrow("dictionaryTest.setDerived({objectMember: 42})");
+
+    debug('Test for passing invalid values as derived dictionary');
+    shouldThrow("dictionaryTest.setDerived({objectMember: 42, requiredBooleanMember: false })");
+    shouldThrow("dictionaryTest.setDerived({})"); // Missing required member.
 }
 </script>

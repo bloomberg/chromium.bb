@@ -7,4 +7,5 @@
 ] dictionary TestDictionaryDerived : TestDictionary {
     DOMString derivedStringMember;
     DOMString derivedStringMemberWithDefault = "default string value";
+    required long requiredLongMember;
 };

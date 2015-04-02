@@ -222,6 +222,7 @@ class IdlDictionaryMember(TypedObject):
         self.extended_attributes = {}
         self.idl_type = None
         self.idl_name = idl_name
+        self.is_required = bool(node.GetProperty('REQUIRED'))
         self.name = node.GetName()
         for child in node.GetChildren():
             child_class = child.GetClass()

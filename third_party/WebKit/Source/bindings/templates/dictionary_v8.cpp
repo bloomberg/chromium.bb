@@ -47,7 +47,12 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
         return;
     }
     if ({{member.name}}Value.IsEmpty() || {{member.name}}Value->IsUndefined()) {
+        {% if member.is_required %}
+        exceptionState.throwTypeError("required member {{member.name}} is undefined.");
+        return;
+        {% else %}
         // Do nothing.
+        {% endif %}
     {% if member.is_nullable %}
     } else if ({{member.name}}Value->IsNull()) {
         impl.{{member.null_setter_name}}();
@@ -100,6 +105,9 @@ void toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictiona
     {% if member.v8_default_value %}
     } else {
         dictionary->Set(v8String(isolate, "{{member.name}}"), {{member.v8_default_value}});
+    {% elif member.is_required %}
+    } else {
+        ASSERT_NOT_REACHED();
     {% endif %}
     }
 

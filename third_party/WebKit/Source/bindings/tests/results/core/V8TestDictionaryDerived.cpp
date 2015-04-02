@@ -55,6 +55,21 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
         impl.setDerivedStringMemberWithDefault(derivedStringMemberWithDefault);
     }
 
+    v8::Local<v8::Value> requiredLongMemberValue = v8Object->Get(v8String(isolate, "requiredLongMember"));
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if (requiredLongMemberValue.IsEmpty() || requiredLongMemberValue->IsUndefined()) {
+        exceptionState.throwTypeError("required member requiredLongMember is undefined.");
+        return;
+    } else {
+        int requiredLongMember = toInt32(isolate, requiredLongMemberValue, NormalConversion, exceptionState);
+        if (exceptionState.hadException())
+            return;
+        impl.setRequiredLongMember(requiredLongMember);
+    }
+
 }
 
 v8::Local<v8::Value> toV8(const TestDictionaryDerivedImplementedAs& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
@@ -75,6 +90,12 @@ void toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
         dictionary->Set(v8String(isolate, "derivedStringMemberWithDefault"), v8String(isolate, impl.derivedStringMemberWithDefault()));
     } else {
         dictionary->Set(v8String(isolate, "derivedStringMemberWithDefault"), v8String(isolate, String("default string value")));
+    }
+
+    if (impl.hasRequiredLongMember()) {
+        dictionary->Set(v8String(isolate, "requiredLongMember"), v8::Integer::New(isolate, impl.requiredLongMember()));
+    } else {
+        ASSERT_NOT_REACHED();
     }
 
 }

@@ -7,6 +7,7 @@
 #ifndef TestDictionaryDerivedImplementedAs_h
 #define TestDictionaryDerivedImplementedAs_h
 
+#include "bindings/core/v8/Nullable.h"
 #include "bindings/tests/idls/core/TestDictionary.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -26,11 +27,16 @@ public:
     String derivedStringMemberWithDefault() const { return m_derivedStringMemberWithDefault; }
     void setDerivedStringMemberWithDefault(String value) { m_derivedStringMemberWithDefault = value; }
 
+    bool hasRequiredLongMember() const { return !m_requiredLongMember.isNull(); }
+    int requiredLongMember() const { return m_requiredLongMember.get(); }
+    void setRequiredLongMember(int value) { m_requiredLongMember = value; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
     String m_derivedStringMember;
     String m_derivedStringMemberWithDefault;
+    Nullable<int> m_requiredLongMember;
 
     friend class V8TestDictionaryDerivedImplementedAs;
 };

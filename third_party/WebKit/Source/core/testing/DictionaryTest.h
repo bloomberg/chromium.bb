@@ -74,6 +74,7 @@ private:
     RefPtrWillBeMember<EventTarget> m_eventTargetOrNullMember;
     String m_derivedStringMember;
     String m_derivedStringMemberWithDefault;
+    bool m_requiredBooleanMember;
 };
 
 } // namespace blink

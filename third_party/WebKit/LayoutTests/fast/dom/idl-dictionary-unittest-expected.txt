@@ -156,14 +156,18 @@ PASS derived.objectMember is undefined.
 PASS derived.objectOrNullMemberWithDefault is null
 PASS derived.derivedStringMember is undefined.
 PASS derived.derivedStringMemberWithDefault is "derivedDefaultStringValue"
+PASS derived.requiredBooleanMember is true
 
 PASS derived.longMember is 1
 PASS derived.stringMemberWithDefault is "modifiedString"
 PASS derived.derivedStringMember is "modifiedString2"
 PASS derived.derivedStringMemberWithDefault is "modifiedString3"
 PASS derived.invalidMember is undefined.
+PASS derived.requiredBooleanMember is false
 
-PASS dictionaryTest.setDerived({objectMember: 42}) threw exception TypeError: Failed to execute 'setDerived' on 'DictionaryTest': member objectMember is not an object..
+Test for passing invalid values as derived dictionary
+PASS dictionaryTest.setDerived({objectMember: 42, requiredBooleanMember: false }) threw exception TypeError: Failed to execute 'setDerived' on 'DictionaryTest': member objectMember is not an object..
+PASS dictionaryTest.setDerived({}) threw exception TypeError: Failed to execute 'setDerived' on 'DictionaryTest': required member requiredBooleanMember is undefined..
 PASS successfullyParsed is true
 
 TEST COMPLETE

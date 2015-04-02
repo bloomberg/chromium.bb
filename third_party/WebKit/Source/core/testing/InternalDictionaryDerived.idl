@@ -5,4 +5,5 @@
 dictionary InternalDictionaryDerived : InternalDictionary {
     DOMString derivedStringMember;
     DOMString derivedStringMemberWithDefault = "derivedDefaultStringValue";
+    required boolean requiredBooleanMember;
 };

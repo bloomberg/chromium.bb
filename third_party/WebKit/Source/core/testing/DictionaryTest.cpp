@@ -11,6 +11,7 @@
 namespace blink {
 
 DictionaryTest::DictionaryTest()
+    : m_requiredBooleanMember(false)
 {
 }
 
@@ -109,10 +110,12 @@ void DictionaryTest::get(InternalDictionary& result)
 
 void DictionaryTest::setDerived(const InternalDictionaryDerived& derived)
 {
+    ASSERT(derived.hasRequiredBooleanMember());
     set(derived);
     if (derived.hasDerivedStringMember())
         m_derivedStringMember = derived.derivedStringMember();
     m_derivedStringMemberWithDefault = derived.derivedStringMemberWithDefault();
+    m_requiredBooleanMember = derived.requiredBooleanMember();
 }
 
 void DictionaryTest::getDerived(InternalDictionaryDerived& result)
@@ -120,6 +123,7 @@ void DictionaryTest::getDerived(InternalDictionaryDerived& result)
     get(result);
     result.setDerivedStringMember(m_derivedStringMember);
     result.setDerivedStringMemberWithDefault(m_derivedStringMemberWithDefault);
+    result.setRequiredBooleanMember(m_requiredBooleanMember);
 }
 
 void DictionaryTest::reset()
@@ -149,6 +153,7 @@ void DictionaryTest::reset()
     m_eventTargetOrNullMember = nullptr;
     m_derivedStringMember = String();
     m_derivedStringMemberWithDefault = String();
+    m_requiredBooleanMember = false;
 }
 
 DEFINE_TRACE(DictionaryTest)
