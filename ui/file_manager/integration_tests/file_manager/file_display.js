@@ -55,7 +55,7 @@ testcase.fileDisplayDrive = function() {
 testcase.fileDisplayMtp = function() {
   var appId;
   var MTP_VOLUME_QUERY = '#directory-tree > .tree-item > .tree-row > ' +
-    '.volume-icon[volume-type-icon="mtp"]';
+    '.item-icon[volume-type-icon="mtp"]';
 
   StepsRunner.run([
     function() {
