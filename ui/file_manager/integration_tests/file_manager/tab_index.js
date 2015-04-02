@@ -97,6 +97,50 @@ testcase.tabindexFocus = function() {
 };
 
 /**
+ * Tests the tab focus behavior of Files.app when no file is selected in
+ * Downloads directory.
+ */
+testcase.tabindexFocusDownloads = function() {
+  var appId;
+  StepsRunner.run([
+    // Set up File Manager.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Check that the file list has the focus on launch.
+    function(inAppId) {
+      appId = inAppId;
+      remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
+    },
+    // Press the Tab key.
+    function(element) {
+      remoteCall.callRemoteTestUtil('getActiveElement',
+                                    appId,
+                                    [],
+                                    this.next);
+    }, function(element) {
+      chrome.test.assertEq('list', element.attributes['class']);
+      remoteCall.checkNextTabFocus(appId, 'search-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'view-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'gear-button').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'directory-tree').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.checkNextTabFocus(appId, 'file-list').then(this.next);
+    }, function(result) {
+      chrome.test.assertTrue(result);
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
  * Tests the tab focus behavior of Files.app when a directory is selected.
  */
 testcase.tabindexFocusDirectorySelected = function() {

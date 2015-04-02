@@ -1121,6 +1121,13 @@ INSTANTIATE_TEST_CASE_P(TabindexFocus,
                                                         "tabindexFocus")));
 
 INSTANTIATE_TEST_CASE_P(
+    TabindexFocusDownloads,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                    "tabindexFocusDownloads"),
+                      TestParameter(IN_GUEST_MODE, "tabindexFocusDownloads")));
+
+INSTANTIATE_TEST_CASE_P(
     TabindexFocusDirectorySelected,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
