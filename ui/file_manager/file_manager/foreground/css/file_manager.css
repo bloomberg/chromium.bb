@@ -208,7 +208,7 @@ div.splitter {
 }
 
 #directory-tree .tree-row > paper-ripple {
-  color: rgb(27, 168, 243);
+  color: rgb(33, 150, 243);
 }
 
 #directory-tree .tree-item.accepts > .tree-row,
@@ -216,7 +216,7 @@ div.splitter {
 #directory-tree .tree-row[lead],
 #directory-tree .tree-row[selected],
 #directory-tree .tree-row[anchor] {
-  color: rgb(27, 168, 243);
+  color: rgb(33, 150, 243);
 }
 
 #directory-tree .tree-row > .root-eject {
@@ -245,7 +245,7 @@ div.splitter {
 /* Breadcrumbs and things under the title but above the list view. */
 .dialog-header {
   align-items: center;
-  background: rgba(27, 168, 243, 1.0);
+  background: rgba(33, 150, 243, 1.0);
   border-bottom: 1px solid rgb(56, 179, 244);
   color: white;
   display: flex;
@@ -707,13 +707,13 @@ html[dir='rtl'] #search-box .clear {
 
 .dialog-footer .primary,
 .dialog-footer .primary:hover {
-  background-color: rgb(27, 168, 243);
+  background-color: rgb(33, 150, 243);
   color: white;
 }
 
 .dialog-footer .secondary,
 .dialog-footer .secondary:hover {
-  color: rgb(27, 168, 243);
+  color: rgb(33, 150, 243);
 }
 
 .dialog-footer input {
@@ -732,7 +732,7 @@ html[dir='rtl'] #search-box .clear {
 }
 
 .dialog-footer paper-input-decorator /deep/ .focused-underline {
-  background-color: rgb(27, 168, 243);
+  background-color: rgb(33, 150, 243);
 }
 
 .dialog-footer select {
@@ -759,7 +759,7 @@ html[dir='rtl'] #search-box .clear {
 .dialog-footer .primary:focus,
 .dialog-footer .secondary:focus,
 .dialog-footer select:focus {
-  box-shadow: 0 0 0 2px rgba(27, 168, 243, 0.5);
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.5);
 }
 
 .progressable:not([progress]) .progress-bar,

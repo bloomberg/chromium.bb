@@ -193,7 +193,7 @@ cr-menu.chrome-menu > cr-menu-item[disabled] {
 
 cr-menu.chrome-menu > cr-menu-item:not([disabled])[selected],
 cr-menu.chrome-menu > cr-menu-item:not([disabled]):active {
-  background-color: rgb(27, 168, 243);
+  background-color: rgb(33, 150, 243);
   color: white;
 }
 

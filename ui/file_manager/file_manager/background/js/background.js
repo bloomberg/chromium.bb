@@ -311,7 +311,7 @@ var FILE_MANAGER_WINDOW_CREATE_OPTIONS = {
     height: Math.round(window.screen.availHeight * 0.8)
   },
   frame: {
-    color: '#1687d0'
+    color: '#1976d2'
   },
   minWidth: 480,
   minHeight: 300,
