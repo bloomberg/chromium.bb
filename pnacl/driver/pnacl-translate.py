@@ -274,9 +274,10 @@ def SetUpArch():
   env.set('LLC_MCPU', '-mcpu=%s' % cpu_map[base_arch])
 
   llc_flags_map = {
-      'ARM': ['-float-abi=hard', '-mattr=+neon'],
       # Once PNaCl's build of compiler-rt (libgcc.a) defines __aeabi_*
       # functions, we can drop '-arm-enable-aeabi-functions=0' option.
+      'ARM': ['-float-abi=hard', '-mattr=+neon',
+              '-arm-enable-aeabi-functions=0'],
       'ARM_NONSFI': ['-float-abi=hard', '-arm-enable-aeabi-functions=0',
                      '-arm-enable-dwarf-eh=1'],
       # To translate x86-32 binary, we set -malign-double option so that the

@@ -969,7 +969,7 @@ def GetUploadPackageTargets():
   for arch in TRANSLATOR_ARCHES:
     legal_arch = pynacl.gsd_storage.LegalizeName(arch)
     common_raw_packages.append('libs_support_translator_%s' % legal_arch)
-    common_raw_packages.append('compiler_rt_%s' % legal_arch)
+    common_raw_packages.append('compiler_rt_translator_%s' % legal_arch)
     if not 'nonsfi' in arch:
       common_raw_packages.append('libgcc_eh_%s' % legal_arch)
 

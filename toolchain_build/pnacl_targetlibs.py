@@ -531,10 +531,9 @@ def TargetLibs(bias_arch, is_canonical):
       }
     })
   else:
-    # For now most of the D2N support libs currently come from our native
-    # translator libs (libgcc_eh, compiler_rt, crtbegin/end). crti/crtn and crt1
-    # come from libnacl, built by scons/gyp.  TODO(dschuff): Do proper support
-    # libs for D2N which also don't use .init/.fini
+    # For now some of the D2N support libs currently come from our native
+    # translator libs (libgcc_eh). crti/crtn and crt1
+    # come from libnacl, built by scons/gyp.  TODO(dschuff): Do D2N libgcc_eh.
 
     # Translate from bias_arch's triple-style (i686) names to the translator's
     # style (x86-32). We don't change the translator's naming scheme to avoid
@@ -546,15 +545,24 @@ def TargetLibs(bias_arch, is_canonical):
     libs.update({
       T('libs_support'): {
           'type': TargetLibBuildType(is_canonical),
-          'dependencies': [ GSDJoin('newlib', MultilibArch(bias_arch)),
-                            TL('compiler_rt'), TL('libgcc_eh'),
+          'dependencies': [ 'compiler_rt_src',
+                            GSDJoin('newlib', MultilibArch(bias_arch)),
+                            TL('libgcc_eh'),
                             'target_lib_compiler'],
           'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'support')},
           'commands': [
+              command.Command(MakeCommand() + [
+                  '-C', '%(abs_compiler_rt_src)s', 'ProjObjRoot=%(cwd)s',
+                  'VERBOSE=1',
+                  'CC=' + PnaclTool('clang', arch=bias_arch), 'clang_nacl',
+                  'EXTRA_CFLAGS=' + NewlibIsystemCflags(bias_arch)]),
               command.Mkdir(clang_libdir, parents=True),
-              command.Copy(
-                  TranslatorFile('compiler_rt', 'libgcc.a'),
-                  os.path.join('%(output)s', clang_libdir, 'libgcc.a')),
+              command.Copy(os.path.join(
+                'clang_nacl',
+                'full-' + bias_arch.replace('i686', 'i386'),
+                'libcompiler_rt.a'),
+                 os.path.join('%(output)s', clang_libdir,
+                              'libgcc.a')),
               command.Copy(
                   TranslatorFile('libgcc_eh', 'libgcc_eh.a'),
                   os.path.join('%(output)s', clang_libdir, 'libgcc_eh.a')),
@@ -689,7 +697,7 @@ def TranslatorLibs(arch, is_canonical):
                                'dummy_shim_entry.o']),
           ],
       },
-      GSDJoin('compiler_rt', arch): {
+      GSDJoin('compiler_rt_translator', arch): {
           'type': TargetLibBuildType(is_canonical),
           'output_subdir': translator_lib_dir,
           'dependencies': ['compiler_rt_src', 'target_lib_compiler',

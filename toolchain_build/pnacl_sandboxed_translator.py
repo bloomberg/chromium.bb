@@ -27,7 +27,7 @@ def SandboxedTranslators(arches):
                    'core_sdk_libs_le32', 'metadata', 'compiler_rt_bc_le32']
   private_libs = ['libnacl_sys_private', 'libpthread_private', 'libplatform',
                   'libimc', 'libimc_syscalls', 'libsrpc', 'libgio']
-  arch_packages = ['libs_support_translator', 'compiler_rt']
+  arch_packages = ['libs_support_translator', 'compiler_rt_translator']
   arch_deps = [GSDJoin(p, arch)
                    for p in arch_packages for arch in arches]
 
