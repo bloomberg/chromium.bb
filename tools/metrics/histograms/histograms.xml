@@ -29662,6 +29662,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Length of time to setup profile.</summary>
 </histogram>
 
+<histogram name="Profile.CreateBrowserContextServicesTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during the CreateBrowserContextServices call
+    within OnPrefsLoaded.
+  </summary>
+</histogram>
+
 <histogram name="Profile.CreateProfileHelperTime" units="milliseconds">
   <owner>rkaplow@chromium.org</owner>
   <summary>
@@ -29829,6 +29837,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Profile.NotifyProfileCreatedTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during the Notify() of
+    NOTIFICATION_PROFILE_CREATED during ProfileImpl::DoFinalInit().
+  </summary>
+</histogram>
+
 <histogram name="Profile.NumberOfAccountsPerProfile">
   <owner>mlerman@chromium.org</owner>
   <summary>
@@ -29979,6 +29995,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     The error with the current user profile that caused an error dialog to be
     shown. This dialog is shown usually when there is some sort of corruption in
     the user's profile data.
+  </summary>
+</histogram>
+
+<histogram name="Profile.ProfileImplDoFinalInit" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during the ProfileImpl::DoFinalInit().
   </summary>
 </histogram>
 

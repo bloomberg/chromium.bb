@@ -528,6 +528,8 @@ ProfileImpl::ProfileImpl(
 
 void ProfileImpl::DoFinalInit() {
   TRACE_EVENT0("browser", "ProfileImpl::DoFinalInit")
+  SCOPED_UMA_HISTOGRAM_TIMER("Profile.ProfileImplDoFinalInit");
+
   PrefService* prefs = GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
@@ -678,11 +680,13 @@ void ProfileImpl::DoFinalInit() {
     delegate_->OnProfileCreated(this, true, IsNewProfile());
   }
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_CREATED,
-      content::Source<Profile>(this),
-      content::NotificationService::NoDetails());
-
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("Profile.NotifyProfileCreatedTime");
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_PROFILE_CREATED,
+        content::Source<Profile>(this),
+        content::NotificationService::NoDetails());
+  }
 #if !defined(OS_CHROMEOS)
   // Listen for bookmark model load, to bootstrap the sync service.
   // On CrOS sync service will be initialized after sign in.
@@ -882,8 +886,11 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
 
   g_browser_process->profile_manager()->InitProfileUserPrefs(this);
 
-  BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
-      this);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("Profile.CreateBrowserContextServicesTime");
+    BrowserContextDependencyManager::GetInstance()->
+      CreateBrowserContextServices(this);
+  }
 
   DCHECK(!net_pref_observer_);
   {
