@@ -34,6 +34,6 @@
     [CallWith=ExecutionContext] void go([Default=Undefined] optional long distance);
 
     // FIXME: the title arguments below should simply be 'DOMString title'.
-    [Custom=CallEpilogue, RaisesException] void pushState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null);
-    [Custom=CallEpilogue, RaisesException] void replaceState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null);
+    [RaisesException] void pushState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null);
+    [RaisesException] void replaceState(SerializedScriptValue data, [TreatUndefinedAs=NullString] DOMString? title, optional DOMString? url = null);
 };

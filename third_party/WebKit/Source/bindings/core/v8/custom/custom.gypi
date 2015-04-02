@@ -21,7 +21,6 @@
             'V8HTMLDocumentCustom.cpp',
             'V8HTMLOptionsCollectionCustom.cpp',
             'V8HTMLPlugInElementCustom.cpp',
-            'V8HistoryCustom.cpp',
             'V8InjectedScriptHostCustom.cpp',
             'V8InjectedScriptManager.cpp',
             'V8JavaScriptCallFrameCustom.cpp',
