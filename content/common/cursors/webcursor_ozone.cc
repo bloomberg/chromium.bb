@@ -21,8 +21,9 @@ ui::PlatformCursor WebCursor::GetPlatformCursor() {
   ui::ScaleAndRotateCursorBitmapAndHotpoint(
       device_scale_factor_ / custom_scale_, rotation_, &bitmap, &hotspot);
 
-  return ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(bitmap,
-                                                                  hotspot);
+  platform_cursor_ =
+      ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(bitmap, hotspot);
+  return platform_cursor_;
 }
 
 void WebCursor::SetDisplayInfo(const gfx::Display& display) {
