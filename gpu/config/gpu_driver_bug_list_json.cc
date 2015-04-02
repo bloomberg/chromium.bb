@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.18",
+  "version": "7.19",
   "entries": [
     {
       "id": 1,
@@ -607,8 +607,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "gl_vendor": "Qualcomm.*",
       "features": [
-        "disable_chromium_framebuffer_multisample",
-        "disable_multisampled_render_to_texture"
+        "disable_chromium_framebuffer_multisample"
       ]
     },
     {
