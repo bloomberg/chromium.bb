@@ -37,7 +37,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
-#include "chrome/browser/chromeos/login/signin/token_handler_util.h"
+#include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/ui/keyboard_driven_oobe_key_handler.h"
@@ -634,12 +634,12 @@ void LoginDisplayHostImpl::StartSignInScreen(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableOAuthTokenHandlers)) {
-    token_handler_util_.reset(
-        new TokenHandlerUtil(user_manager::UserManager::Get()));
+    token_handle_util_.reset(
+        new TokenHandleUtil(user_manager::UserManager::Get()));
     for (auto* user : users) {
       auto user_id = user->GetUserID();
-      if (token_handler_util_->HasToken(user_id)) {
-        token_handler_util_->CheckToken(
+      if (token_handle_util_->HasToken(user_id)) {
+        token_handle_util_->CheckToken(
             user_id, base::Bind(&LoginDisplayHostImpl::OnTokenHandlerChecked,
                                 pointer_factory_.GetWeakPtr()));
       }
@@ -674,11 +674,11 @@ void LoginDisplayHostImpl::StartSignInScreen(
 
 void LoginDisplayHostImpl::OnTokenHandlerChecked(
     const user_manager::UserID& user_id,
-    TokenHandlerUtil::TokenHandleStatus token_status) {
-  if (token_status == TokenHandlerUtil::INVALID) {
+    TokenHandleUtil::TokenHandleStatus token_status) {
+  if (token_status == TokenHandleUtil::INVALID) {
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
         user_id, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
-    token_handler_util_->DeleteToken(user_id);
+    token_handle_util_->DeleteToken(user_id);
   }
 }
 
