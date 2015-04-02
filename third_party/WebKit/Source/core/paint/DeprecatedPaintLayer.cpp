@@ -2779,6 +2779,12 @@ bool DeprecatedPaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, 
     if (diff.opacityChanged() && m_renderer->style()->hasOpacity() != oldStyle->hasOpacity())
         return false;
 
+    // Changes in pointer-events affect hit test visibility of the scrollable
+    // area and its |m_scrollsOverflow| value which determines if the layer
+    // requires composited scrolling or not.
+    if (m_scrollableArea && m_renderer->style()->pointerEvents() != oldStyle->pointerEvents())
+        return false;
+
     updateTransform(oldStyle, layoutObject()->styleRef());
 
     // FIXME: Consider introducing a smaller graphics layer update scope
