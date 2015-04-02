@@ -14,19 +14,32 @@ import collections
 import glob
 import json
 import os
+import subprocess
 import sys
 
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(
-    0, os.path.join(THIS_DIR, '..', '..', 'third_party', 'colorama', 'src'))
+SRC_DIR = os.path.dirname(os.path.dirname(THIS_DIR))
+sys.path.insert(0, os.path.join(SRC_DIR, 'third_party', 'colorama', 'src'))
 
 import colorama
 
-# These are not 'builders'.
+
 SKIP = {
+  # These are not 'builders'.
   'compile_targets', 'gtest_tests', 'filter_compile_builders',
   'non_filter_builders', 'non_filter_tests_builders',
+
+  # These are not supported on Swarming yet.
+  # http://crbug.com/472205
+  'Chromium Mac 10.10',
+  # http://crbug.com/441429
+  'Linux Trusty (32)', 'Linux Trusty (dbg)(32)',
+
+  # One off builders. Note that Swarming does support ARM.
+  'Linux ARM Cross-Compile',
+  'Site Isolation Linux',
+  'Site Isolation Win',
 }
 
 
@@ -36,6 +49,12 @@ def upgrade_test(test):
     return {'test': test}
   assert isinstance(test, dict)
   return test
+
+
+def get_isolates():
+  """Returns the list of all isolate files."""
+  files = subprocess.check_output(['git', 'ls-files'], cwd=SRC_DIR).splitlines()
+  return [os.path.basename(f) for f in files if f.endswith('.isolate')]
 
 
 def main():
@@ -58,8 +77,14 @@ def main():
            'with --remaining')
   args = parser.parse_args()
 
-  if args.convert and not args.test_name:
-    parser.error('A test name is required with --convert')
+  if args.convert or args.remaining:
+    isolates = get_isolates()
+
+  if args.convert:
+    if not args.test_name:
+      parser.error('A test name is required with --convert')
+    if args.test_name + '.isolate' not in isolates:
+      parser.error('Create %s.isolate first' % args.test_name)
 
   # Stats when running in --remaining mode;
   tests_location = collections.defaultdict(
@@ -100,8 +125,10 @@ def main():
           for test in data['gtest_tests']:
             if test['test'] != args.test_name:
               continue
-            test.setdefault('swarming', {})['can_use_on_swarming_builders'] = (
-                True)
+            test.setdefault('swarming', {})
+            if not test['swarming'].get('can_use_on_swarming_builders'):
+              print('- %s: %s' % (filename, builder))
+              test['swarming']['can_use_on_swarming_builders'] = True
 
     expected = json.dumps(
         config, sort_keys=True, indent=2, separators=(',', ': ')) + '\n'
@@ -110,7 +137,8 @@ def main():
       if args.write or args.convert:
         with open(filepath, 'wb') as f:
           f.write(expected)
-        print('Updated %s' % filename)
+        if args.write:
+          print('Updated %s' % filename)
       else:
         print('%s is not in canonical format' % filename)
 
@@ -126,8 +154,9 @@ def main():
           print('  %s' % builder)
     else:
       l = max(map(len, tests_location))
-      print('%-*s%sLocal       %sSwarming' %
-          (l, 'Test', colorama.Fore.RED, colorama.Fore.GREEN))
+      print('%-*s%sLocal       %sSwarming  %sMissing isolate' %
+          (l, 'Test', colorama.Fore.RED, colorama.Fore.GREEN,
+            colorama.Fore.MAGENTA))
       total_local = 0
       total_swarming = 0
       for name, location in sorted(tests_location.iteritems()):
@@ -139,9 +168,13 @@ def main():
           c = colorama.Fore.GREEN
         total_local += location['count_run_local']
         total_swarming += location['count_run_on_swarming']
-        print('%s%-*s %4d           %4d' %
+        missing_isolate = ''
+        if name + '.isolate' not in isolates:
+          missing_isolate = colorama.Fore.MAGENTA + '*'
+        print('%s%-*s %4d           %4d    %s' %
             (c, l, name, location['count_run_local'],
-              location['count_run_on_swarming']))
+              location['count_run_on_swarming'], missing_isolate))
+
       total = total_local + total_swarming
       p_local = 100. * total_local / total
       p_swarming = 100. * total_swarming / total
