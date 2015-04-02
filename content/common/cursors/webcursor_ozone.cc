@@ -9,6 +9,11 @@
 #include "ui/base/cursor/cursor_util.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 
+namespace {
+const float kMaxCursorWidth = 64.f;
+const float kMaxCursorHeight = 64.f;
+}
+
 namespace content {
 
 ui::PlatformCursor WebCursor::GetPlatformCursor() {
@@ -18,8 +23,14 @@ ui::PlatformCursor WebCursor::GetPlatformCursor() {
   SkBitmap bitmap;
   ImageFromCustomData(&bitmap);
   gfx::Point hotspot = hotspot_;
-  ui::ScaleAndRotateCursorBitmapAndHotpoint(
-      device_scale_factor_ / custom_scale_, rotation_, &bitmap, &hotspot);
+
+  // TODO(spang): Consider allowing larger cursors if the hardware supports it.
+  float scale = device_scale_factor_ / custom_scale_;
+  scale = std::min(scale, kMaxCursorWidth / bitmap.width());
+  scale = std::min(scale, kMaxCursorHeight / bitmap.height());
+
+  ui::ScaleAndRotateCursorBitmapAndHotpoint(scale, rotation_, &bitmap,
+                                            &hotspot);
 
   platform_cursor_ =
       ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(bitmap, hotspot);
