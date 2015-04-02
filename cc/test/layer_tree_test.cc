@@ -120,6 +120,11 @@ class ThreadProxyForTest : public ThreadProxy {
     test_hooks_->ScheduledActionPrepareTiles();
   }
 
+  void ScheduledActionInvalidateOutputSurface() override {
+    ThreadProxy::ScheduledActionInvalidateOutputSurface();
+    test_hooks_->ScheduledActionInvalidateOutputSurface();
+  }
+
   ThreadProxyForTest(
       TestHooks* test_hooks,
       LayerTreeHost* host,

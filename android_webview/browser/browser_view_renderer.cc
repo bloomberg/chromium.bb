@@ -98,8 +98,6 @@ BrowserViewRenderer::BrowserViewRenderer(
       on_new_picture_enable_(false),
       clear_view_(false),
       offscreen_pre_raster_(false),
-      compositor_needs_continuous_invalidate_(false),
-      block_invalidates_(false),
       fallback_tick_pending_(false) {
 }
 
@@ -198,6 +196,7 @@ bool BrowserViewRenderer::CanOnDraw() {
 
 bool BrowserViewRenderer::OnDrawHardware() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
+
   shared_renderer_state_.InitializeHardwareDrawIfNeededOnUI();
 
   if (!CanOnDraw()) {
@@ -220,6 +219,8 @@ bool BrowserViewRenderer::OnDrawHardware() {
 }
 
 bool BrowserViewRenderer::CompositeHw() {
+  CancelFallbackTick();
+
   ReturnResourceFromParent();
   compositor_->SetMemoryPolicy(CalculateDesiredMemoryPolicy());
 
@@ -263,7 +264,6 @@ bool BrowserViewRenderer::CompositeHw() {
                      transform_for_tile_priority, offscreen_pre_raster_,
                      parent_draw_constraints.is_layer));
 
-  DidComposite();
   // Uncommitted frame can happen with consecutive fallback ticks.
   ReturnUnusedResource(shared_renderer_state_.PassUncommittedFrameOnUI());
   shared_renderer_state_.SetCompositorFrameOnUI(child_frame.Pass());
@@ -271,7 +271,7 @@ bool BrowserViewRenderer::CompositeHw() {
 }
 
 void BrowserViewRenderer::UpdateParentDrawConstraints() {
-  EnsureContinuousInvalidation(true);
+  PostInvalidateWithFallback();
   ParentCompositorDrawConstraints parent_draw_constraints =
       shared_renderer_state_.GetParentDrawConstraintsOnUI();
   client_->ParentDrawConstraintsUpdated(parent_draw_constraints);
@@ -342,7 +342,7 @@ void BrowserViewRenderer::ClearView() {
 
   clear_view_ = true;
   // Always invalidate ignoring the compositor to actually clear the webview.
-  EnsureContinuousInvalidation(true);
+  PostInvalidateWithFallback();
 }
 
 void BrowserViewRenderer::SetOffscreenPreRaster(bool enable) {
@@ -357,7 +357,7 @@ void BrowserViewRenderer::SetIsPaused(bool paused) {
                        "paused",
                        paused);
   is_paused_ = paused;
-  EnsureContinuousInvalidation(false);
+  UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::SetViewVisibility(bool view_visible) {
@@ -376,7 +376,7 @@ void BrowserViewRenderer::SetWindowVisibility(bool window_visible) {
                        "window_visible",
                        window_visible);
   window_visible_ = window_visible;
-  EnsureContinuousInvalidation(false);
+  UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::OnSizeChanged(int width, int height) {
@@ -399,6 +399,7 @@ void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
                height);
   attached_to_window_ = true;
   size_.SetSize(width, height);
+  UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::OnDetachedFromWindow() {
@@ -406,6 +407,7 @@ void BrowserViewRenderer::OnDetachedFromWindow() {
   shared_renderer_state_.ReleaseHardwareDrawIfNeededOnUI();
   attached_to_window_ = false;
   DCHECK(!hardware_enabled_);
+  UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::ReleaseHardware() {
@@ -437,6 +439,7 @@ void BrowserViewRenderer::DidInitializeCompositor(
   DCHECK(compositor);
   DCHECK(!compositor_);
   compositor_ = compositor;
+  UpdateCompositorIsActive();
 }
 
 void BrowserViewRenderer::DidDestroyCompositor(
@@ -444,20 +447,6 @@ void BrowserViewRenderer::DidDestroyCompositor(
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::DidDestroyCompositor");
   DCHECK(compositor_);
   compositor_ = NULL;
-}
-
-void BrowserViewRenderer::SetContinuousInvalidate(bool invalidate) {
-  if (compositor_needs_continuous_invalidate_ == invalidate)
-    return;
-
-  TRACE_EVENT_INSTANT1("android_webview",
-                       "BrowserViewRenderer::SetContinuousInvalidate",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "invalidate",
-                       invalidate);
-  compositor_needs_continuous_invalidate_ = invalidate;
-
-  EnsureContinuousInvalidation(false);
 }
 
 void BrowserViewRenderer::SetDipScale(float dip_scale) {
@@ -627,13 +616,13 @@ void BrowserViewRenderer::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
   client_->DidOverscroll(rounded_overscroll_delta);
 }
 
-void BrowserViewRenderer::EnsureContinuousInvalidation(bool force_invalidate) {
-  // This method should be called again when any of these conditions change.
-  bool need_invalidate =
-      compositor_needs_continuous_invalidate_ || force_invalidate;
-  if (!need_invalidate || block_invalidates_)
-    return;
+void BrowserViewRenderer::PostInvalidate() {
+  TRACE_EVENT_INSTANT0("android_webview", "BrowserViewRenderer::PostInvalidate",
+                       TRACE_EVENT_SCOPE_THREAD);
+  PostInvalidateWithFallback();
+}
 
+void BrowserViewRenderer::PostInvalidateWithFallback() {
   // Always call view invalidate. We rely the Android framework to ignore the
   // invalidate when it's not needed such as when view is not visible.
   client_->PostInvalidate();
@@ -646,63 +635,49 @@ void BrowserViewRenderer::EnsureContinuousInvalidation(bool force_invalidate) {
   // "on-screen" but that updates are not needed when in the background.
   bool throttle_fallback_tick =
       (is_paused_ && !clear_view_) || (attached_to_window_ && !window_visible_);
-  if (throttle_fallback_tick)
+
+  if (throttle_fallback_tick || fallback_tick_pending_)
     return;
 
-  block_invalidates_ = compositor_needs_continuous_invalidate_;
-  if (fallback_tick_pending_)
-    return;
+  DCHECK(post_fallback_tick_.IsCancelled());
+  DCHECK(fallback_tick_fired_.IsCancelled());
 
-  // Unretained here is safe because the callbacks are cancelled when
-  // they are destroyed.
   post_fallback_tick_.Reset(base::Bind(&BrowserViewRenderer::PostFallbackTick,
                                        base::Unretained(this)));
+  ui_task_runner_->PostTask(FROM_HERE, post_fallback_tick_.callback());
+  fallback_tick_pending_ = true;
+}
+
+void BrowserViewRenderer::CancelFallbackTick() {
+  post_fallback_tick_.Cancel();
   fallback_tick_fired_.Cancel();
   fallback_tick_pending_ = false;
-
-  // No need to reschedule fallback tick if compositor does not need to be
-  // ticked. This can happen if this is reached because force_invalidate is
-  // true.
-  if (compositor_needs_continuous_invalidate_) {
-    fallback_tick_pending_ = true;
-    ui_task_runner_->PostTask(FROM_HERE, post_fallback_tick_.callback());
-  }
 }
 
 void BrowserViewRenderer::PostFallbackTick() {
   DCHECK(fallback_tick_fired_.IsCancelled());
+  TRACE_EVENT0("android_webview", "BrowserViewRenderer::PostFallbackTick");
+  post_fallback_tick_.Cancel();
   fallback_tick_fired_.Reset(base::Bind(&BrowserViewRenderer::FallbackTickFired,
                                         base::Unretained(this)));
-  if (compositor_needs_continuous_invalidate_) {
-    ui_task_runner_->PostDelayedTask(
-        FROM_HERE,
-        fallback_tick_fired_.callback(),
-        base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
-  } else {
-    // Pretend we just composited to unblock further invalidates.
-    DidComposite();
-  }
+  ui_task_runner_->PostDelayedTask(
+      FROM_HERE, fallback_tick_fired_.callback(),
+      base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
 }
 
 void BrowserViewRenderer::FallbackTickFired() {
-  TRACE_EVENT1("android_webview",
-               "BrowserViewRenderer::FallbackTickFired",
-               "compositor_needs_continuous_invalidate_",
-               compositor_needs_continuous_invalidate_);
-
+  TRACE_EVENT0("android_webview", "BrowserViewRenderer::FallbackTickFired");
   // This should only be called if OnDraw or DrawGL did not come in time, which
-  // means block_invalidates_ must still be true.
-  DCHECK(block_invalidates_);
+  // means fallback_tick_pending_ must still be true.
+  DCHECK(fallback_tick_pending_);
+  fallback_tick_fired_.Cancel();
   fallback_tick_pending_ = false;
-  if (compositor_needs_continuous_invalidate_ && compositor_) {
+  if (compositor_) {
     if (hardware_enabled_) {
       CompositeHw();
     } else {
       ForceFakeCompositeSW();
     }
-  } else {
-    // Pretend we just composited to unblock further invalidates.
-    DidComposite();
   }
 }
 
@@ -717,18 +692,15 @@ void BrowserViewRenderer::ForceFakeCompositeSW() {
 
 bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
   DCHECK(compositor_);
+  CancelFallbackTick();
   ReturnResourceFromParent();
-  bool result = compositor_->DemandDrawSw(canvas);
-  DidComposite();
-  return result;
+  return compositor_->DemandDrawSw(canvas);
 }
 
-void BrowserViewRenderer::DidComposite() {
-  block_invalidates_ = false;
-  post_fallback_tick_.Cancel();
-  fallback_tick_fired_.Cancel();
-  fallback_tick_pending_ = false;
-  EnsureContinuousInvalidation(false);
+void BrowserViewRenderer::UpdateCompositorIsActive() {
+  if (compositor_)
+    compositor_->SetIsActive(!is_paused_ &&
+                             (!attached_to_window_ || window_visible_));
 }
 
 std::string BrowserViewRenderer::ToString() const {
@@ -738,10 +710,8 @@ std::string BrowserViewRenderer::ToString() const {
   base::StringAppendF(&str, "window_visible: %d ", window_visible_);
   base::StringAppendF(&str, "dip_scale: %f ", dip_scale_);
   base::StringAppendF(&str, "page_scale_factor: %f ", page_scale_factor_);
-  base::StringAppendF(&str,
-                      "compositor_needs_continuous_invalidate: %d ",
-                      compositor_needs_continuous_invalidate_);
-  base::StringAppendF(&str, "block_invalidates: %d ", block_invalidates_);
+  base::StringAppendF(&str, "fallback_tick_pending: %d ",
+                      fallback_tick_pending_);
   base::StringAppendF(&str, "view size: %s ", size_.ToString().c_str());
   base::StringAppendF(&str, "attached_to_window: %d ", attached_to_window_);
   base::StringAppendF(&str,

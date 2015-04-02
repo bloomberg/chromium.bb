@@ -84,6 +84,7 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
       bool resourceless_software_draw) override {}
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
   void SetTreeActivationCallback(const base::Closure& callback) override {}
+  void OnDraw() override;
 
   // RendererClient implementation.
   void SetFullRootLayerDamage() override {}

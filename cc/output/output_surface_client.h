@@ -49,6 +49,8 @@ class CC_EXPORT OutputSurfaceClient {
   // valid for the lifetime of the OutputSurfaceClient or until unregisted --
   // use SetTreeActivationCallback(base::Closure()) to unregister it.
   virtual void SetTreeActivationCallback(const base::Closure& callback) = 0;
+  // This allows the output surface to ask it's client for a draw.
+  virtual void OnDraw() = 0;
 
  protected:
   virtual ~OutputSurfaceClient() {}

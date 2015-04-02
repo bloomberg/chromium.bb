@@ -18,7 +18,7 @@
 #include "ipc/ipc_message.h"
 
 namespace cc {
-class BeginFrameSource;
+struct BeginFrameArgs;
 class InputHandler;
 }
 
@@ -56,7 +56,13 @@ class SynchronousCompositorImpl
   void DidDestroyRendererObjects();
 
   // Called by SynchronousCompositorExternalBeginFrameSource.
-  void NeedsBeginFramesChanged() const;
+  void OnNeedsBeginFramesChange(bool needs_begin_frames);
+
+  // Called by SynchronousCompositorOutputSurface.
+  void PostInvalidate();
+
+  // Called by RenderWidgetHostViewAndroid.
+  void BeginFrame(const cc::BeginFrameArgs& args);
 
   // SynchronousCompositor
   bool InitializeHwDraw() override;
@@ -72,6 +78,7 @@ class SynchronousCompositorImpl
   void ReturnResources(const cc::CompositorFrameAck& frame_ack) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
   void DidChangeRootLayerScrollOffset() override;
+  void SetIsActive(bool is_active) override;
 
   // LayerScrollOffsetDelegate
   gfx::ScrollOffset GetTotalScrollOffset() override;
@@ -99,6 +106,7 @@ class SynchronousCompositorImpl
   void DidActivatePendingTree();
   void DeliverMessages();
   bool CalledOnValidThread() const;
+  void UpdateNeedsBeginFrames();
 
   SynchronousCompositorClient* compositor_client_;
   SynchronousCompositorOutputSurface* output_surface_;
@@ -106,7 +114,8 @@ class SynchronousCompositorImpl
   WebContents* contents_;
   const int routing_id_;
   cc::InputHandler* input_handler_;
-  bool invoking_composite_;
+  bool is_active_;
+  bool renderer_needs_begin_frames_;
 
   base::WeakPtrFactory<SynchronousCompositorImpl> weak_ptr_factory_;
 

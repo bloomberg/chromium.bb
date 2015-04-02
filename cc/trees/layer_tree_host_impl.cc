@@ -1435,6 +1435,10 @@ void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
   }
 }
 
+void LayerTreeHostImpl::OnDraw() {
+  client_->OnDrawForOutputSurface();
+}
+
 void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {
   client_->OnCanDrawStateChanged(CanDraw());
 }

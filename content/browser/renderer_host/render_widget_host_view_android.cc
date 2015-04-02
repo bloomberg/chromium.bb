@@ -778,7 +778,6 @@ void RenderWidgetHostViewAndroid::OnDidChangeBodyBackgroundColor(
 }
 
 void RenderWidgetHostViewAndroid::OnSetNeedsBeginFrames(bool enabled) {
-  DCHECK(using_browser_compositor_);
   TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::OnSetNeedsBeginFrames",
                "enabled", enabled);
   if (enabled)
@@ -1531,10 +1530,6 @@ void RenderWidgetHostViewAndroid::RemoveLayers() {
 }
 
 void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32 requests) {
-  // The synchronous compositor does not requre BeginFrame messages.
-  if (!using_browser_compositor_)
-    requests &= FLUSH_INPUT;
-
   bool should_request_vsync = !outstanding_vsync_requests_ && requests;
   outstanding_vsync_requests_ |= requests;
 
@@ -1582,15 +1577,28 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
                                                  base::TimeDelta vsync_period) {
   TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::SendBeginFrame",
                "frame_time_us", frame_time.ToInternalValue());
-  base::TimeTicks display_time = frame_time + vsync_period;
 
-  base::TimeTicks deadline =
-      display_time - host_->GetEstimatedBrowserCompositeTime();
+  if (using_browser_compositor_) {
+    base::TimeTicks display_time = frame_time + vsync_period;
 
-  host_->Send(new ViewMsg_BeginFrame(
-      host_->GetRoutingID(),
-      cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
-                                 vsync_period, cc::BeginFrameArgs::NORMAL)));
+    base::TimeTicks deadline =
+        display_time - host_->GetEstimatedBrowserCompositeTime();
+
+    host_->Send(new ViewMsg_BeginFrame(
+        host_->GetRoutingID(),
+        cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
+                                   vsync_period, cc::BeginFrameArgs::NORMAL)));
+  } else {
+    SynchronousCompositorImpl* compositor = SynchronousCompositorImpl::FromID(
+        host_->GetProcess()->GetID(), host_->GetRoutingID());
+    if (compositor) {
+      // The synchronous compositor synchronously does it's work in this call.
+      // It does not use a deadline.
+      compositor->BeginFrame(cc::BeginFrameArgs::Create(
+          BEGINFRAME_FROM_HERE, frame_time, base::TimeTicks(), vsync_period,
+          cc::BeginFrameArgs::NORMAL));
+    }
+  }
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
@@ -1925,19 +1933,22 @@ void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,
   if (!host_ || host_->is_hidden())
     return;
 
-  const uint32 current_vsync_requests = outstanding_vsync_requests_;
-  outstanding_vsync_requests_ = 0;
-
-  if (current_vsync_requests & FLUSH_INPUT)
+  if (outstanding_vsync_requests_ & FLUSH_INPUT) {
+    outstanding_vsync_requests_ &= ~FLUSH_INPUT;
     host_->FlushInput();
+  }
 
-  if (current_vsync_requests & BEGIN_FRAME ||
-      current_vsync_requests & PERSISTENT_BEGIN_FRAME) {
+  if (outstanding_vsync_requests_ & BEGIN_FRAME ||
+      outstanding_vsync_requests_ & PERSISTENT_BEGIN_FRAME) {
+    outstanding_vsync_requests_ &= ~BEGIN_FRAME;
     SendBeginFrame(frame_time, vsync_period);
   }
 
-  if (current_vsync_requests & PERSISTENT_BEGIN_FRAME)
-    RequestVSyncUpdate(PERSISTENT_BEGIN_FRAME);
+  // This allows for SendBeginFrame and FlushInput to modify
+  // outstanding_vsync_requests.
+  uint32 outstanding_vsync_requests = outstanding_vsync_requests_;
+  outstanding_vsync_requests_ = 0;
+  RequestVSyncUpdate(outstanding_vsync_requests);
 }
 
 void RenderWidgetHostViewAndroid::OnAnimate(base::TimeTicks begin_frame_time) {
