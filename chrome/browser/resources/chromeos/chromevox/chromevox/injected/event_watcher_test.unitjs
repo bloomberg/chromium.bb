@@ -724,7 +724,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'ToggleOnKeyUp', function() {
 /**
  * Exiting dialog message should not interrupt a live region.
  */
-TEST_F('CvoxEventWatcherUnitTest', 'ExitDialogWithLiveRegion', function() {
+TEST_F('CvoxEventWatcherUnitTest', 'DISABLED_ExitDialogWithLiveRegion', function() {
   this.loadHtml(
       '<div role="dialog" aria-label="MyAlert">' +
       '  <h1>Heading</h1>' +
