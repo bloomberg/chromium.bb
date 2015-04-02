@@ -2,16 +2,6 @@ if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
 }
 
-function arrayBufferToString(buffer) {
-  return new Promise(function(resolve) {
-      var reader = new FileReader();
-      reader.onload = function() {
-        resolve(reader.result);
-      };
-      reader.readAsText(new Blob([buffer]));
-  });
-}
-
 function readStream(reader, values) {
   reader.read().then(function(r) {
       if (!r.done) {
@@ -35,18 +25,21 @@ sequential_promise_test(function(test) {
     }, 'FetchTextAfterAccessingStreamTest');
 
 sequential_promise_test(function(test) {
-    var values = [];
+    var chunks = [];
+    var actual = '';
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           r = response;
-          return readStream(response.body.getReader(), values);
+          return readStream(response.body.getReader(), chunks);
         })
       .then(function() {
-          return Promise.all(values.map(arrayBufferToString));
-        })
-      .then(function(strings) {
-          var string = String.prototype.concat.apply('', strings);
-          assert_equals(string, '<!DOCTYPE html>\n');
+          var decoder = new TextDecoder();
+          for (var chunk of chunks) {
+            actual += decoder.decode(chunk, {stream: true});
+          }
+          // Put an empty buffer without the stream option to end decoding.
+          actual += decoder.decode(new Uint8Array(0));
+          assert_equals(actual, '<!DOCTYPE html>\n');
         })
     }, 'FetchStreamTest');
 
@@ -122,31 +115,23 @@ sequential_promise_test(function(test) {
     }, 'TextTest');
 
 sequential_promise_test(function(test) {
-    var expectedText = '';
+    var expected = '';
     for (var i = 0; i < 100; ++i)
-        expectedText += i;
+        expected += i;
 
-    var values = [];
-    function partialReadResponse(reader, read_count) {
-      return Promise.resolve().then(function() {
-          var promise = Promise.resolve();
-          for (var i = 0; i < read_count; ++i) {
-              promise = reader.read().then(function(r) {
-                  if (!r.done) {
-                    values.push(r.value);
-                  }
-                });
-          }
-          return promise;
-        });
-    }
+    var decoder = new TextDecoder();
+    var actual = '';
     var response;
     var reader;
     return fetch('/fetch/resources/progressive.php')
       .then(function(res) {
           response = res;
           reader = response.body.getReader();
-          return partialReadResponse(reader, 10);
+          return reader.read();
+        })
+      .then(function(r) {
+          assert_false(r.done);
+          actual += decoder.decode(r.value, {stream: true});
         })
       .then(function() {
           return response.text().then(unreached_fulfillment(test), function() {
@@ -155,14 +140,13 @@ sequential_promise_test(function(test) {
         })
       .then(function() {
           reader.releaseLock();
-          return Promise.all(
-              values.map(arrayBufferToString).concat(response.text()));
+          return response.arrayBuffer();
         })
-      .then(function(strings) {
-          var string = String.prototype.concat.apply('', strings);
-          assert_equals(string, expectedText);
+      .then(function(buffer) {
+          actual += decoder.decode(buffer);
+          assert_equals(actual, expected);
         })
-    }, 'PartiallyReadFromStreamAndReadTextTest');
+    }, 'PartiallyReadFromStreamAndReadArrayBufferTest');
 
 sequential_promise_test_done();
 done();
