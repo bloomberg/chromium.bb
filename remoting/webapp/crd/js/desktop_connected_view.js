@@ -70,12 +70,6 @@ remoting.DesktopConnectedView.prototype.dispose = function() {
   this.viewport_ = null;
 };
 
-// Keys for per-host settings.
-remoting.DesktopConnectedView.KEY_REMAP_KEYS = 'remapKeys';
-remoting.DesktopConnectedView.KEY_RESIZE_TO_CLIENT = 'resizeToClient';
-remoting.DesktopConnectedView.KEY_SHRINK_TO_FIT = 'shrinkToFit';
-remoting.DesktopConnectedView.KEY_DESKTOP_SCALE = 'desktopScale';
-
 /**
  * Get host display name.
  *
