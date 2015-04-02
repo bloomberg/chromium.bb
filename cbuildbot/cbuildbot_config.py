@@ -1464,7 +1464,6 @@ _x86_internal_release_boards = frozenset([
   'candy',
   'candy_freon',
   'cid',
-  'cranky',
   'clapper',
   'clapper_freon',
   'enguarde',
@@ -2957,8 +2956,7 @@ _AddGroupConfig('rambi-c', 'squawks', (
     'candy',
 ))
 
-_AddGroupConfig('rambi-d', 'cranky', (
-    'banjo',
+_AddGroupConfig('rambi-d', 'banjo', (
     'sumo',
     'ninja',
 ),
