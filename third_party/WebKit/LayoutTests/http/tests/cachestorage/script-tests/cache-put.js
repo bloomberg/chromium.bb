@@ -312,15 +312,12 @@ cache_test(function(cache) {
     assert_false(response.bodyUsed,
                  '[https://fetch.spec.whatwg.org/#dom-body-bodyused] ' +
                  'Response.bodyUsed should be initially false.');
-    response.text().then(function() {
-      assert_true(
+    return response.text().then(function() {
+      assert_false(
         response.bodyUsed,
         '[https://fetch.spec.whatwg.org/#concept-body-consume-body] ' +
-          'The text() method should consume the body of the response.');
-      return assert_promise_rejects(
-        cache.put(new Request(test_url), response),
-        new TypeError(),
-        'Cache.put should throw a TypeError for a response with used body.');
+          'The text() method should not set "body passed" flag.');
+      return cache.put(new Request(test_url), response);
     });
   }, 'Cache.put with a used response body');
 

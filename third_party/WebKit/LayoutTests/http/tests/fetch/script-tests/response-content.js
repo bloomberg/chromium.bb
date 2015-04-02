@@ -119,35 +119,39 @@ promise_test(function() {
     headers.set('Content-Language', 'ja');
     var response = new Response(
       'test string', {method: 'GET', headers: headers});
-    assert_false(response.bodyUsed,
-                 'bodyUsed is not set until Response is consumed.');
+    assert_false(response.bodyUsed);
     var response2 = response.clone();
+    assert_false(response.bodyUsed, 'bodyUsed is not set by clone().');
+    assert_false(response2.bodyUsed, 'bodyUsed is not set by clone().');
     response.headers.set('Content-Language', 'en');
     var response3;
-    assert_false(response2.bodyUsed,
-                 'bodyUsed should be false in clone of non-consumed Response.');
     assert_equals(
       response2.headers.get('Content-Language'), 'ja', 'Headers of cloned ' +
       'response should not change when original response headers are changed.');
 
-    return response.text()
-      .then(function(text) {
-          assert_true(
-            response.bodyUsed,
-            'bodyUsed should be true after a response is consumed.');
-          assert_false(
-            response2.bodyUsed, 'bodyUsed should be false in Response cloned ' +
-            'before the original response was consumed.');
-          assert_throws(
-            {name: 'TypeError'},
-            function() { response3 = response.clone(); },
-            'Response.clone() should throw if the body was used.');
-          return response2.text();
-        })
-      .then(function(text) {
-          assert_equals(text, 'test string',
-                        'Response clone response body text should match.');
-        });
+    var p = response.text();
+    assert_true(response.bodyUsed, 'bodyUsed should be true when locked.');
+    assert_false(response2.bodyUsed,
+                 'Cloned bodies should not share bodyUsed.');
+    assert_throws({name: 'TypeError'},
+                  function() { response3 = response.clone(); },
+                  'Response.clone() should throw if the body was used.');
+    return p.then(function(text) {
+        assert_false(response.bodyUsed,
+                     'bodyUsed becomes false when text() is done.');
+        assert_false(response2.bodyUsed);
+        response3 = response.clone();
+        return response2.text();
+      }).then(function(text) {
+        assert_equals(text, 'test string',
+                      'Response clone response body text should match.');
+        return Promise.all([response.text(), response2.text(),
+                            response3.text()]);
+      }).then(function(texts) {
+        assert_equals(texts[0], '', 'Cloned after consumed.');
+        assert_equals(texts[1], '', 'Already consumed.');
+        assert_equals(texts[2], '', 'Cloned after consumed.');
+      });
   }, 'Behavior of bodyUsed in Response and clone behavior.');
 
 promise_test(function() {

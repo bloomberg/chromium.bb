@@ -322,14 +322,16 @@ promise_test(function() {
                   'Headers of cloned request should not change when ' +
                   'original request headers are changed.');
 
-    return req.text()
-      .then(function(text) {
-          assert_equals(text, 'Test Blob', 'Body of request should match.');
-          return req2.text();
-        })
-      .then(function(text) {
-          assert_equals(text, 'Test Blob', 'Cloned request body should match.');
-        });
+    return req.text().then(function(text) {
+        assert_equals(text, 'Test Blob', 'Body of request should match.');
+        return req2.text();
+      }).then(function(text) {
+        assert_equals(text, 'Test Blob', 'Cloned request body should match.');
+        return Promise.all([req.text(), req2.text()]);
+      }).then(function(texts) {
+        assert_equals(texts[0], '', 'The body is consumed.');
+        assert_equals(texts[1], '', 'The body is consumed.');
+      });
   }, 'Test clone behavior with loading content from Request.');
 
 async_test(function(t) {

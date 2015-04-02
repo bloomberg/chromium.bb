@@ -304,7 +304,7 @@ Response* Response::clone(ExceptionState& exceptionState)
         exceptionState.throwTypeError("Response body is already used");
         return nullptr;
     }
-    if (streamAccessed()) {
+    if (isBodyConsumed()) {
         BodyStreamBuffer* drainingStream = createDrainingStream();
         m_response->replaceBodyStreamBuffer(drainingStream);
     }

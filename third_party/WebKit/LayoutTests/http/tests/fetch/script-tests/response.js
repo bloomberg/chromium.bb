@@ -400,4 +400,19 @@ promise_test(function() {
       });
   }, 'Response.error()');
 
+promise_test(function(t) {
+    var res = new Response('hello');
+    return res.text().then(function(text) {
+        assert_equals(text, 'hello');
+        return Promise.all([res.text(), res.text()]);
+      }).then(function(texts) {
+        assert_equals(texts[0], '');
+        assert_equals(texts[1], '');
+        return res.body.getReader().read();
+      }).then(function(r) {
+        assert_true(r.done);
+        assert_equals(r.value, undefined);
+      });
+  }, 'Read after text()');
+
 done();

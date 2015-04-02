@@ -56,7 +56,8 @@ public:
     bool bodyUsed() const;
     void lockBody(LockBodyOption = LockBodyOptionNone);
 
-    bool streamAccessed() const;
+    // Returns true if the body stream is (possibly partially) consumed.
+    bool isBodyConsumed() const;
     void refreshBody();
 
     // Creates a new BodyStreamBuffer to drain the data from the ReadableStream.

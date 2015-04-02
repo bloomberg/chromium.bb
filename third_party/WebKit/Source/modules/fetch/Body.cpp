@@ -110,6 +110,27 @@ public:
         UnderlyingSource::trace(visitor);
     }
 
+    void close()
+    {
+        if (m_state == Closed) {
+            // It is possible to call |close| from the source side (such
+            // as blob loading finish) and from the consumer side (such as
+            // calling |cancel|). Thus we should ignore it here.
+            return;
+        }
+        m_state = Closed;
+        if (m_drainingStreamBuffer)
+            m_drainingStreamBuffer->close();
+        m_stream->close();
+    }
+    void error()
+    {
+        m_state = Errored;
+        if (m_drainingStreamBuffer)
+            m_drainingStreamBuffer->error(exception());
+        m_stream->error(exception());
+    }
+
 private:
     class Canceller : public BodyStreamBuffer::Canceller {
     public:
@@ -207,20 +228,6 @@ private:
             m_stream->enqueue(DOMUint8Array::create(buf, 0, size));
         }
     }
-    void close()
-    {
-        m_state = Closed;
-        if (m_drainingStreamBuffer)
-            m_drainingStreamBuffer->close();
-        m_stream->close();
-    }
-    void error()
-    {
-        m_state = Errored;
-        if (m_drainingStreamBuffer)
-            m_drainingStreamBuffer->error(exception());
-        m_stream->error(exception());
-    }
     void cancel()
     {
         if (m_bodyStreamBuffer) {
@@ -273,14 +280,47 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
     if (!executionContext)
         return ScriptPromise();
 
-    lockBody(PassBody);
+    lockBody();
     m_responseType = type;
 
     ASSERT(!m_resolver);
     m_resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = m_resolver->promise();
 
-    if (streamAccessed()) {
+    if (m_stream->stateInternal() == ReadableStream::Closed) {
+        // We resolve the resolver manually in order not to use member
+        // variables.
+        switch (m_responseType) {
+        case ResponseAsArrayBuffer:
+            m_resolver->resolve(DOMArrayBuffer::create(nullptr, 0));
+            break;
+        case ResponseAsBlob: {
+            OwnPtr<BlobData> blobData = BlobData::create();
+            blobData->setContentType(mimeType());
+            m_resolver->resolve(Blob::create(BlobDataHandle::create(blobData.release(), 0)));
+            break;
+        }
+        case ResponseAsText:
+            m_resolver->resolve(String());
+            break;
+        case ResponseAsFormData:
+            // TODO(yhirano): Implement this.
+            ASSERT_NOT_REACHED();
+            break;
+        case ResponseAsJSON: {
+            ScriptState::Scope scope(m_resolver->scriptState());
+            m_resolver->reject(V8ThrowException::createSyntaxError(m_resolver->scriptState()->isolate(), "Unexpected end of input"));
+            break;
+        }
+        case ResponseUnknown:
+            ASSERT_NOT_REACHED();
+            break;
+        }
+        m_resolver.clear();
+    } else if (m_stream->stateInternal() == ReadableStream::Errored) {
+        m_resolver->reject(m_stream->storedException());
+        m_resolver.clear();
+    } else if (isBodyConsumed()) {
         m_streamSource->createDrainingStream()->readAllAndCreateBlobHandle(mimeType(), new BlobHandleReceiver(this));
     } else if (buffer()) {
         buffer()->readAllAndCreateBlobHandle(mimeType(), new BlobHandleReceiver(this));
@@ -384,9 +424,22 @@ void Body::lockBody(LockBodyOption option)
     ASSERT(!exceptionState.hadException());
 }
 
-bool Body::streamAccessed() const
+bool Body::isBodyConsumed() const
 {
-    return m_streamSource->state() != m_streamSource->Initial;
+    if (m_streamSource->state() != m_streamSource->Initial) {
+        // Some data is pulled from the source.
+        return true;
+    }
+    if (m_stream->stateInternal() == ReadableStream::Closed) {
+        // Return true if the blob handle is originally not empty.
+        RefPtr<BlobDataHandle> handle = blobDataHandle();
+        return handle && handle->size();
+    }
+    if (m_stream->stateInternal() == ReadableStream::Errored) {
+        // The stream is errored. That means an effort to read data was made.
+        return true;
+    }
+    return false;
 }
 
 void Body::refreshBody()
@@ -485,7 +538,7 @@ void Body::didFinishLoading()
     default:
         ASSERT_NOT_REACHED();
     }
-    m_stream->close();
+    m_streamSource->close();
     m_resolver.clear();
 }
 
@@ -494,7 +547,7 @@ void Body::didFail(FileError::ErrorCode code)
     if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
-    m_stream->error(DOMException::create(NetworkError, "network error"));
+    m_streamSource->error();
     if (m_resolver) {
         // FIXME: We should reject the promise.
         m_resolver->resolve("");
@@ -506,7 +559,7 @@ void Body::didBlobHandleReceiveError(PassRefPtrWillBeRawPtr<DOMException> except
 {
     if (!m_resolver)
         return;
-    m_stream->error(DOMException::create(NetworkError, "network error"));
+    m_streamSource->error();
     m_resolver->reject(exception);
     m_resolver.clear();
 }

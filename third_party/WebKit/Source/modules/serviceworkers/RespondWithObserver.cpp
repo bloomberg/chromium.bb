@@ -203,7 +203,7 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
     }
     response->lockBody(Body::PassBody);
     if (BodyStreamBuffer* buffer = response->internalBuffer()) {
-        if (buffer == response->buffer() && response->streamAccessed())
+        if (buffer == response->buffer() && response->isBodyConsumed())
             buffer = response->createDrainingStream();
         WebServiceWorkerResponse webResponse;
         response->populateWebServiceWorkerResponse(webResponse);
