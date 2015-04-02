@@ -362,6 +362,14 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
   // Look for a 2-digit year first.
   // We allow <select> fields, because they're used e.g. on qvc.com.
   scanner->RewindTo(month_year_saved_cursor);
+
+  static int kMinimum2YearCcExpLength = strlen("12/14");
+  int current_field_max_length = scanner->Cursor()->max_length;
+  if (current_field_max_length > 0 &&
+      current_field_max_length < kMinimum2YearCcExpLength) {
+    return false;
+  }
+
   if (ParseFieldSpecifics(scanner,
                           base::UTF8ToUTF16(kExpirationDate2DigitYearRe),
                           kMatchTelAndSelect,
@@ -375,6 +383,11 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
                           base::UTF8ToUTF16(kExpirationDateRe),
                           kMatchTelAndSelect,
                           &expiration_date_)) {
+    static int kMinimum4YearCcExpLength = strlen("12/2014");
+    if (current_field_max_length > 0 &&
+        current_field_max_length < kMinimum4YearCcExpLength) {
+      exp_year_type_ = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
+    }
     expiration_month_ = nullptr;
     return true;
   }

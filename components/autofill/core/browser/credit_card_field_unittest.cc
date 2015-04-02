@@ -307,6 +307,38 @@ TEST_F(CreditCardFieldTest, ParseExpField2DigitYear) {
             field_type_map_[ASCIIToUTF16("exp3")]);
 }
 
+TEST_F(CreditCardFieldTest, ParseExpField2DigitYearDueToMaxLength) {
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Name on Card");
+  field.name = ASCIIToUTF16("name_on_card");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("name1")));
+
+  field.label = ASCIIToUTF16("Card Number");
+  field.name = ASCIIToUTF16("card_number");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("number2")));
+
+  field.label = ASCIIToUTF16("Expiration Date");
+  field.name = ASCIIToUTF16("cc_exp");
+  field.max_length = 6;  // Cannot fit YYYY-MM.
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("exp3")));
+
+  Parse();
+  ASSERT_NE(nullptr, field_.get());
+  EXPECT_TRUE(ClassifyField());
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME, field_type_map_[ASCIIToUTF16("name1")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("number2")) != field_type_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number2")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("exp3")) != field_type_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
+            field_type_map_[ASCIIToUTF16("exp3")]);
+}
+
 TEST_F(CreditCardFieldTest, ParseCreditCardHolderNameWithCCFullName) {
   FormFieldData field;
   field.form_control_type = "text";
