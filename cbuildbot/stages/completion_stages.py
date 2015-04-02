@@ -278,7 +278,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
                   if status.Failed())
     inflight = set(builder for builder, status in statuses.iteritems()
                    if status.Inflight())
-    all_slaves = self._GetSlaveConfigs()
+    all_slaves = set(statuses.keys())
 
     # If all the failing or inflight builders were sanity checkers
     # then ignore the failure.
@@ -529,7 +529,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         self, failing, inflight, no_stat, all_slaves)
 
     if self._run.config.master:
-      assert self._run.config.name not in all_slaves
       build_id, db = self._run.GetCIDBHandle()
       assert db, 'No database connection to use.'
       slave_stages = db.GetSlaveStages(build_id)
