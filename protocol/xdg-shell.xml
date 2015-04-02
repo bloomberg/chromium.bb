@@ -187,11 +187,10 @@
 
 	The app ID identifies the general class of applications to which
 	the surface belongs. The compositor can use this to group multiple
-	applications together, or to determine how to launch a new
-	application.
+	surfaces together, or to determine how to launch a new application.
 
 	See the desktop-entry specification [0] for more details on
-	application identifiers and how they relate to well-known DBus
+	application identifiers and how they relate to well-known D-Bus
 	names and .desktop files.
 
 	[0] http://standards.freedesktop.org/desktop-entry-spec/
