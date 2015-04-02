@@ -767,6 +767,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kSocket);
   skip.insert(APIPermission::kUsb);
   skip.insert(APIPermission::kUsbDevice);
+  skip.insert(APIPermission::kLauncherSearchProvider);
 
   // We already have a generic message for declaring externally_connectable.
   skip.insert(APIPermission::kExternallyConnectableAllUrls);

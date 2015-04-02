@@ -2293,6 +2293,17 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableInvalidCertCollection)
   },
+// Since kEnableLauncherSearchProviderApi is not available when app list is
+// disabled, flag guard enable-launcher-search-provider-api.
+#if defined(ENABLE_APP_LIST)
+  {
+    "enable-launcher-search-provider-api",
+    IDS_FLAGS_ENABLE_LAUNCHER_SEARCH_PROVIDER_API,
+    IDS_FLAGS_ENABLE_LAUNCHER_SEARCH_PROVIDER_API_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(app_list::switches::kEnableLauncherSearchProviderApi)
+  },
+#endif  // defined(ENABLE_APP_LIST)
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

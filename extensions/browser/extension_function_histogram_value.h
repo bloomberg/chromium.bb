@@ -1053,6 +1053,7 @@ enum HistogramValue {
   EASYUNLOCKPRIVATE_HIDEERRORBUBBLE,
   WEBVIEWINTERNAL_SETZOOMMODE,
   WEBVIEWINTERNAL_GETZOOMMODE,
+  LAUNCHERSEARCHPROVIDER_SETSEARCHRESULTS,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

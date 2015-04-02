@@ -35,6 +35,10 @@ const char kDisableExperimentalAppList[] = "disable-experimental-app-list";
 // Enables syncing of the app list independent of extensions.
 const char kEnableSyncAppList[] = "enable-sync-app-list";
 
+// Enables launcher search provider api.
+const char kEnableLauncherSearchProviderApi[] =
+    "enable-launcher-search-provider-api";
+
 #if defined(OS_MACOSX)
 // Enables use of the toolkit-views app list on Mac.
 const char kEnableMacViewsAppList[] = "enable-mac-views-app-list";
@@ -98,6 +102,15 @@ bool IsDriveAppsInAppListEnabled() {
 #if defined(OS_CHROMEOS)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableDriveAppsInAppList);
+#else
+  return false;
+#endif
+}
+
+bool IsLauncherSearchProviderApiEnabled() {
+#if defined(OS_CHROMEOS)
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableLauncherSearchProviderApi);
 #else
   return false;
 #endif

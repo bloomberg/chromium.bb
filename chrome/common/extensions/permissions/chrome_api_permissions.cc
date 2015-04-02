@@ -413,6 +413,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_INTERCEPT_ALL_KEYS,
        PermissionMessage::kInterceptAllKeys},
+      {APIPermission::kLauncherSearchProvider, "launcherSearchProvider"},
 
       // Settings override permissions.
       {APIPermission::kHomepage,

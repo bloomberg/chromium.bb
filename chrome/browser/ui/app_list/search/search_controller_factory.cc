@@ -17,8 +17,13 @@
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search/mixer.h"
 #include "ui/app_list/search_controller.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
+#endif
 
 namespace app_list {
 
@@ -66,6 +71,16 @@ scoped_ptr<SearchController> CreateSearchController(
         scoped_ptr<SearchProvider>(
             new SuggestionsSearchProvider(profile, list_controller)));
   }
+
+  // LauncherSearchProvider is added only when flag is enabled and running on
+  // Chrome OS.
+#if defined(OS_CHROMEOS)
+  if (app_list::switches::IsLauncherSearchProviderApiEnabled()) {
+    controller->AddProvider(
+        Mixer::LAUNCHER_SEARCH_API_GROUP,
+        scoped_ptr<SearchProvider>(new LauncherSearchProvider(profile)));
+  }
+#endif
 
   return controller.Pass();
 }

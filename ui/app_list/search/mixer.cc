@@ -23,6 +23,7 @@ const size_t kMaxMainGroupResults = 4;
 const size_t kMaxWebstoreResults = 2;
 const size_t kMaxPeopleResults = 2;
 const size_t kMaxSuggestionsResults = 6;
+const size_t kMaxLauncherSearchResults = 2;
 
 // A value to indicate no max number of results limit.
 const size_t kNoMaxResultsLimit = 0;
@@ -131,6 +132,8 @@ void Mixer::Init() {
   groups_[WEBSTORE_GROUP].reset(new Group(kMaxWebstoreResults, 1.0));
   groups_[PEOPLE_GROUP].reset(new Group(kMaxPeopleResults, 0.0));
   groups_[SUGGESTIONS_GROUP].reset(new Group(kMaxSuggestionsResults, 3.0));
+  groups_[LAUNCHER_SEARCH_API_GROUP].reset(
+      new Group(kMaxLauncherSearchResults, 0.0));
 }
 
 void Mixer::AddProviderToGroup(GroupId group, SearchProvider* provider) {

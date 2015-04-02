@@ -109,6 +109,7 @@
       'file_system_provider_internal.idl',
       'first_run_private.json',
       'input_ime.json',
+      'launcher_search_provider.idl',
       'log_private.idl',
       'platform_keys.idl',
       'platform_keys_internal.idl',

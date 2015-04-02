@@ -135,6 +135,7 @@ class APIPermission {
     kInput,
     kInputMethodPrivate,
     kInterceptAllKeys,
+    kLauncherSearchProvider,
     kLocation,
     kLogPrivate,
     kManagement,

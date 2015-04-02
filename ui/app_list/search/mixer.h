@@ -39,6 +39,7 @@ class APP_LIST_EXPORT Mixer {
     WEBSTORE_GROUP = 2,
     PEOPLE_GROUP = 3,
     SUGGESTIONS_GROUP = 4,
+    LAUNCHER_SEARCH_API_GROUP = 5
   };
 
   explicit Mixer(AppListModel::SearchResults* ui_results);
