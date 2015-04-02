@@ -18,37 +18,10 @@
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/private/ppb_uma_private.h"
 
 namespace plugin {
 
 namespace {
-
-const int32_t kSizeKBMin = 1;
-const int32_t kSizeKBMax = 512*1024;       // very large .pexe / .nexe.
-const uint32_t kSizeKBBuckets = 100;
-
-const int32_t kRatioMin = 10;
-const int32_t kRatioMax = 10*100;          // max of 10x difference.
-const uint32_t kRatioBuckets = 100;
-
-void HistogramSizeKB(pp::UMAPrivate& uma,
-                     const std::string& name, int32_t kb) {
-  if (kb < 0) return;
-  uma.HistogramCustomCounts(name,
-                            kb,
-                            kSizeKBMin, kSizeKBMax,
-                            kSizeKBBuckets);
-}
-
-void HistogramRatio(pp::UMAPrivate& uma,
-                    const std::string& name, int64_t a, int64_t b) {
-  if (a < 0 || b <= 0) return;
-  uma.HistogramCustomCounts(name,
-                            static_cast<int32_t>(100 * a / b),
-                            kRatioMin, kRatioMax,
-                            kRatioBuckets);
-}
 
 std::string GetArchitectureAttributes(Plugin* plugin) {
   pp::Var attrs_var(pp::PASS_REF,
@@ -150,7 +123,7 @@ PnaclCoordinator::~PnaclCoordinator() {
   if (!translation_finished_reported_) {
     plugin_->nacl_interface()->ReportTranslationFinished(
         plugin_->pp_instance(), PP_FALSE, pnacl_options_.opt_level,
-        pnacl_options_.use_subzero, 0, 0);
+        pnacl_options_.use_subzero, 0, 0, 0);
   }
   // Force deleting the translate_thread now. It must be deleted
   // before any scoped_* fields hanging off of PnaclCoordinator
@@ -199,7 +172,7 @@ void PnaclCoordinator::ExitWithError() {
     translation_finished_reported_ = true;
     plugin_->nacl_interface()->ReportTranslationFinished(
         plugin_->pp_instance(), PP_FALSE, pnacl_options_.opt_level,
-        pnacl_options_.use_subzero, 0, 0);
+        pnacl_options_.use_subzero, 0, 0, 0);
     translate_notify_callback_.Run(PP_ERROR_FAILED);
   }
 }
@@ -227,16 +200,12 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
                                       pexe_bytes_compiled_,
                                       expected_pexe_size_);
   }
+  nacl_abi_off_t nexe_size = 0;
   struct nacl_abi_stat stbuf;
   struct NaClDesc* desc = temp_nexe_file_->read_wrapper()->desc();
   if (0 == (*((struct NaClDescVtbl const *)desc->base.vtbl)->Fstat)(desc,
                                                                     &stbuf)) {
-    nacl_abi_off_t nexe_size = stbuf.nacl_abi_st_size;
-    HistogramSizeKB(plugin_->uma_interface(),
-                    "NaCl.Perf.Size.PNaClTranslatedNexe",
-                    static_cast<int32_t>(nexe_size / 1024));
-    HistogramRatio(plugin_->uma_interface(),
-                   "NaCl.Perf.Size.PexeNexeSizePct", pexe_size_, nexe_size);
+    nexe_size = stbuf.nacl_abi_st_size;
   }
   // The nexe is written to the temp_nexe_file_.  We must Reset() the file
   // pointer to be able to read it again from the beginning.
@@ -247,7 +216,7 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   translation_finished_reported_ = true;
   plugin_->nacl_interface()->ReportTranslationFinished(
       plugin_->pp_instance(), PP_TRUE, pnacl_options_.opt_level,
-      pnacl_options_.use_subzero, pexe_size_,
+      pnacl_options_.use_subzero, nexe_size, pexe_size_,
       translate_thread_->GetCompileTime());
 
   NexeReadDidOpen(PP_OK);
@@ -397,9 +366,8 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
       TranslateFinished(pp_error);
   } else {
     // Compare download completion pct (100% now), to compile completion pct.
-    HistogramRatio(plugin_->uma_interface(),
-                   "NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded",
-                   pexe_bytes_compiled_, pexe_size_);
+    GetNaClInterface()->LogBytesCompiledVsDownloaded(pexe_bytes_compiled_,
+                                                     pexe_size_);
     translate_thread_->EndStream();
   }
 }

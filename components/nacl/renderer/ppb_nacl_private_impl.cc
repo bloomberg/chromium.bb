@@ -708,6 +708,7 @@ void ReportTranslationFinished(PP_Instance instance,
                                PP_Bool success,
                                int32_t opt_level,
                                PP_Bool use_subzero,
+                               int64_t nexe_size,
                                int64_t pexe_size,
                                int64_t compile_time_us) {
   // TODO(jvoung): Log use_subzero stat in UMA.
@@ -722,7 +723,10 @@ void ReportTranslationFinished(PP_Instance instance,
     HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.CompileKBPerSec",
                       pexe_size / 1024,
                       compile_time_us);
+    HistogramSizeKB("NaCl.Perf.Size.PNaClTranslatedNexe",
+                    nexe_size / 1024);
     HistogramSizeKB("NaCl.Perf.Size.Pexe", pexe_size / 1024);
+    HistogramRatio("NaCl.Perf.Size.PexeNexeSizePct", pexe_size, nexe_size);
 
     NexeLoadManager* load_manager = GetNexeLoadManager(instance);
     if (load_manager) {
@@ -1505,6 +1509,12 @@ void LogTranslateTime(const char* histogram_name,
                  time_in_us / 1000));
 }
 
+void LogBytesCompiledVsDowloaded(int64_t pexe_bytes_compiled,
+                                 int64_t pexe_bytes_downloaded) {
+  HistogramRatio("NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded",
+                 pexe_bytes_compiled, pexe_bytes_downloaded);
+}
+
 void SetPNaClStartTime(PP_Instance instance) {
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
@@ -1700,6 +1710,7 @@ const PPB_NaCl_Private nacl_interface = {
   &DownloadNexe,
   &ReportSelLdrStatus,
   &LogTranslateTime,
+  &LogBytesCompiledVsDowloaded,
   &SetPNaClStartTime,
   &StreamPexe
 };

@@ -99,7 +99,6 @@ class Plugin : public pp::Instance {
   nacl::DescWrapperFactory* wrapper_factory() const { return wrapper_factory_; }
 
   const PPB_NaCl_Private* nacl_interface() const { return nacl_interface_; }
-  pp::UMAPrivate& uma_interface() { return uma_interface_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);

@@ -204,4 +204,17 @@ void HistogramKBPerSec(const std::string& name, int64_t kb, int64_t us) {
                         100);
 }
 
+void HistogramRatio(const std::string& name,
+                    int64_t numerator,
+                    int64_t denominator) {
+  static const int32_t kRatioMin = 10;
+  static const int32_t kRatioMax = 10 * 100;  // max of 10x difference.
+  static const uint32_t kRatioBuckets = 100;
+  if (numerator < 0 || denominator <= 0)
+    return;
+  HistogramCustomCounts(name,
+                        static_cast<int32_t>(100 * numerator / denominator),
+                        kRatioMin, kRatioMax, kRatioBuckets);
+}
+
 }  // namespace nacl

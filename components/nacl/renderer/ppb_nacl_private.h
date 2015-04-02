@@ -253,7 +253,7 @@ struct PPB_NaCl_Private {
   /* Report to the browser that translation of the pexe for |instance|
    * has finished, or aborted with an error. If |success| is true, the
    * browser may then store the translation in the cache. The renderer
-   * must first have called GetNexeFd for the same instance. (The browser is
+   * must first have called StreamPexe for the same instance. (The browser is
    * not guaranteed to store the nexe even if |success| is true; if there is
    * an error on the browser side, or the file is too big for the cache, or
    * the browser is in incognito mode, no notification will be delivered to
@@ -263,6 +263,7 @@ struct PPB_NaCl_Private {
                                     PP_Bool success,
                                     int32_t opt_level,
                                     PP_Bool use_subzero,
+                                    int64_t nexe_size,
                                     int64_t pexe_size,
                                     int64_t compile_time_us);
   /* Dispatch a progress event on the DOM element where the given instance is
@@ -336,17 +337,20 @@ struct PPB_NaCl_Private {
    * This function is safe to call on any thread.
    */
   void (*LogTranslateTime)(const char* histogram_name, int64_t time_us);
+  /* Logs amount of pexe bytes compiled when download is complete. */
+  void (*LogBytesCompiledVsDownloaded)(int64_t pexe_bytes_compiled,
+                                       int64_t pexe_bytes_downloaded);
   /* Sets the start time for PNaCl downloading and translation to the current
    * time.
    */
   void (*SetPNaClStartTime)(PP_Instance instance);
   /* Downloads and streams a pexe file for PNaCl translation.
    * Fetches the content at |pexe_url| for the given instance and opt_level.
-   * If a translated cached nexe is already available, |cache_hit_handle|
-   * is set and |cache_hit_callback| is called.
-   * Otherwise, |stream_callback| is called repeatedly with blocks of data
-   * as they are received. |stream_finished_callback| is called after all
-   * data has been received and dispatched to |stream_callback|.
+   * If a translated cached nexe is already available,
+   * the |stream_handler|'s |DidCacheHit| is called. Otherwise, |DidCacheMiss|
+   * is called and |DidStreamData| is called repeatedly with blocks of data
+   * as they are received. |DidFinishStream| is called after all
+   * data has been received and dispatched to |DidStreamData|.
    */
   void (*StreamPexe)(PP_Instance instance,
                      const char* pexe_url,
@@ -359,5 +363,5 @@ struct PPB_NaCl_Private {
  * @}
  */
 
-#endif  /* PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_ */
+#endif  /* COMPONENTS_NACL_RENDERER_PPB_NACL_PRIVATE_H_ */
 
