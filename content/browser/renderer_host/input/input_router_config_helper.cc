@@ -70,6 +70,12 @@ GestureEventQueue::Config GetGestureEventQueueConfig() {
       base::TimeDelta::FromMilliseconds(
           gfx::ViewConfiguration::GetLongPressTimeoutInMs());
 
+  // Android WebView may handle root layer flings itself, which prevents
+  // accurate fling cancel filtering (see |RenderWidgetCompositor::Initialize|).
+  // TODO(jdduke): Remove this exception when the WebView fling architecture
+  // is unified with the rest of Chrome, crbug.com/378984.
+  config.enable_fling_cancel_filtering = false;
+
   return config;
 }
 

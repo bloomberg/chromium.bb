@@ -1231,6 +1231,10 @@ public class ContentViewCore
                 || eventAction == MotionEvent.ACTION_POINTER_UP;
     }
 
+    /**
+     * @return Whether there are any active, content-targeted scroll or fling gestures.
+     */
+    @CalledByNative
     public boolean isScrollInProgress() {
         return mTouchScrollInProgress
                 || mPotentiallyActiveFlingCount > 0

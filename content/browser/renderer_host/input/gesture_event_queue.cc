@@ -54,7 +54,7 @@ gfx::Transform GetTransformForEvent(
 
 }  // namespace
 
-GestureEventQueue::Config::Config() {
+GestureEventQueue::Config::Config() : enable_fling_cancel_filtering(true) {
 }
 
 GestureEventQueue::GestureEventQueue(
@@ -62,6 +62,7 @@ GestureEventQueue::GestureEventQueue(
     TouchpadTapSuppressionControllerClient* touchpad_client,
     const Config& config)
     : client_(client),
+      enable_fling_cancel_filtering_(config.enable_fling_cancel_filtering),
       active_fling_count_(0),
       scrolling_in_progress_(false),
       ignore_next_ack_(false),
@@ -92,6 +93,9 @@ void GestureEventQueue::QueueEvent(
 
 bool GestureEventQueue::ShouldDiscardFlingCancelEvent(
     const GestureEventWithLatencyInfo& gesture_event) const {
+  if (!enable_fling_cancel_filtering_)
+    return false;
+
   GestureQueue::const_reverse_iterator it =
       coalesced_gesture_events_.rbegin();
   while (it != coalesced_gesture_events_.rend()) {

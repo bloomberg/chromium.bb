@@ -556,13 +556,22 @@ bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
   if (event.type != WebInputEvent::GestureTap &&
       event.type != WebInputEvent::GestureDoubleTap &&
       event.type != WebInputEvent::GestureLongTap &&
-      event.type != WebInputEvent::GestureLongPress)
+      event.type != WebInputEvent::GestureLongPress &&
+      event.type != WebInputEvent::GestureFlingCancel)
     return false;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return false;
+
+  if (event.type == WebInputEvent::GestureFlingCancel) {
+    // If no fling is active, either in the compositor or externally-driven,
+    // there's no need to explicitly cancel the fling.
+    bool may_need_fling_cancel =
+        Java_ContentViewCore_isScrollInProgress(env, j_obj.obj());
+    return !may_need_fling_cancel;
+  }
 
   const blink::WebGestureEvent& gesture =
       static_cast<const blink::WebGestureEvent&>(event);

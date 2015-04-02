@@ -73,6 +73,12 @@ class GestureEventQueueTest : public testing::Test,
     return GestureEventQueue::Config();
   }
 
+  void SetUpForGFCFilteringDisabled() {
+    GestureEventQueue::Config config;
+    config.enable_fling_cancel_filtering = false;
+    queue_.reset(new GestureEventQueue(this, this, config));
+  }
+
   void SetUpForDebounce(int interval_ms) {
     queue()->set_debounce_interval_time_ms_for_testing(interval_ms);
   }
@@ -1065,6 +1071,18 @@ INSTANTIATE_TEST_CASE_P(AllSources,
                         testing::Values(blink::WebGestureDeviceTouchscreen,
                                         blink::WebGestureDeviceTouchpad));
 #endif  // GTEST_HAS_PARAM_TEST
+
+TEST_F(GestureEventQueueTest, GestureFlingCancelFilteringDisabled) {
+  SetUpForGFCFilteringDisabled();
+
+  // If so configured, GFC events should never be filtered, even if there are
+  // no active flings.
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel,
+                       blink::WebGestureDeviceTouchscreen);
+  EXPECT_EQ(0, ActiveFlingCount());
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GestureEventQueueSize());
+}
 
 // Test that a GestureScrollEnd | GestureFlingStart are deferred during the
 // debounce interval, that Scrolls are not and that the deferred events are

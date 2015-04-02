@@ -73,6 +73,12 @@ class CONTENT_EXPORT GestureEventQueue {
     // active scroll sequence, suppressing brief scroll interruptions.
     // Zero by default (disabled).
     base::TimeDelta debounce_interval;
+
+    // Whether to filter unnecessary GestureFlingCancel events. Filtering should
+    // be disabled if there may be content-targetting fling curves about which
+    // the renderer is unaware (e.g., with Android WebView).
+    // True by default.
+    bool enable_fling_cancel_filtering;
   };
 
   // Both |client| and |touchpad_client| must outlive the GestureEventQueue.
@@ -158,6 +164,9 @@ class CONTENT_EXPORT GestureEventQueue {
 
   // The receiver of all forwarded gesture events.
   GestureEventQueueClient* client_;
+
+  // Whether to filter unnecessary GestureFlingCancel events.
+  bool enable_fling_cancel_filtering_;
 
   // Whether there are any active flings in the renderer. As the fling
   // end notification is asynchronous, we use a count rather than a boolean
