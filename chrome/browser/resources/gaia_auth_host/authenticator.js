@@ -149,9 +149,6 @@ cr.define('cr.login', function() {
         this.onHeadersReceived_.bind(this),
         {urls: ['<all_urls>'], types: ['main_frame', 'xmlhttprequest']},
         ['responseHeaders']);
-    this.webview_.contextMenus.onShow.addListener(function(e) {
-      e.preventDefault();
-    });
     window.addEventListener(
         'message', this.onMessageFromWebview_.bind(this), false);
     window.addEventListener(
@@ -202,6 +199,12 @@ cr.define('cr.login', function() {
     this.samlHandler_.blockInsecureContent = authMode != AuthMode.DESKTOP &&
         this.idpOrigin_.indexOf('https://') == 0;
     this.needPassword = !('needPassword' in data) || data.needPassword;
+
+    if (this.isNewGaiaFlowChromeOS) {
+      this.webview_.contextMenus.onShow.addListener(function(e) {
+        e.preventDefault();
+      });
+    }
 
     this.webview_.src = this.reloadUrl_;
   };
