@@ -380,6 +380,7 @@ public:
     virtual bool isNonNativeTextControl() const { return false; } // contenteditable or role=textbox
     virtual bool isPasswordField() const { return false; }
     virtual bool isPasswordFieldAndShouldHideValue() const;
+    bool isPresentational() const { return roleValue() == NoneRole || roleValue() == PresentationalRole; }
     virtual bool isProgressIndicator() const { return false; }
     bool isRadioButton() const { return roleValue() == RadioButtonRole; }
     bool isScrollbar() const { return roleValue() == ScrollBarRole; }
@@ -623,6 +624,8 @@ public:
     static const AtomicString& roleName(AccessibilityRole);
     static bool isInsideFocusableElementOrARIAWidget(const Node&);
 
+    bool hasInheritedPresentationalRole() const { return m_cachedHasInheritedPresentationalRole; }
+
 protected:
     AXID m_id;
     AccessibilityChildrenVector m_children;
@@ -632,6 +635,7 @@ protected:
     LayoutRect m_explicitElementRect;
 
     virtual bool computeAccessibilityIsIgnored() const { return true; }
+    virtual bool computeHasInheritedPresentationalRole() const { return false; }
 
     // If this object itself scrolls, return its ScrollableArea.
     virtual ScrollableArea* getScrollableAreaIfScrollable() const { return 0; }
@@ -653,6 +657,7 @@ protected:
     mutable bool m_cachedIsInertOrAriaHidden : 1;
     mutable bool m_cachedIsDescendantOfBarrenParent : 1;
     mutable bool m_cachedIsDescendantOfDisabledNode : 1;
+    mutable bool m_cachedHasInheritedPresentationalRole : 1;
     mutable const AXObject* m_cachedLiveRegionRoot;
 
     AXObjectCacheImpl* m_axObjectCache;

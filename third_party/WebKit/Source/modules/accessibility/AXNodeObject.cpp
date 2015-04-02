@@ -42,6 +42,10 @@
 #include "core/html/HTMLMeterElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/html/HTMLTableCellElement.h"
+#include "core/html/HTMLTableElement.h"
+#include "core/html/HTMLTableRowElement.h"
+#include "core/html/HTMLTableSectionElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MediaControlElements.h"
@@ -181,6 +185,90 @@ bool AXNodeObject::computeAccessibilityIsIgnored() const
         return true;
 
     return m_role == UnknownRole;
+}
+
+static bool isListElement(Node* node)
+{
+    return isHTMLUListElement(*node) || isHTMLOListElement(*node) || isHTMLDListElement(*node);
+}
+
+static bool isPresentationRoleInTable(AXObject* parent, Node* child)
+{
+    Node* parentNode = parent->node();
+    if (!parentNode || !parentNode->isElementNode())
+        return false;
+
+    // AXTable determines the role as checking isTableXXX.
+    // If Table has explicit role including presentation, AXTable doesn't assign implicit Role
+    // to a whole Table. That's why we should check it based on node.
+    // Normal Table Tree is that
+    // cell(its role)-> tr(tr role)-> tfoot, tbody, thead(ignored role) -> table(table role).
+    // If table has presentation role, it will be like
+    // cell(group)-> tr(unknown) -> tfoot, tbody, thead(ignored) -> table(presentation).
+    if (isHTMLTableCellElement(child) && isHTMLTableRowElement(*parentNode))
+        return parent->hasInheritedPresentationalRole();
+
+    if (isHTMLTableRowElement(child) && isHTMLTableSectionElement(*parentNode)) {
+        // Because TableSections have ignored role, presentation should be checked with its parent node
+        AXObject* tableObject = parent->parentObject();
+        Node* tableNode = tableObject->node();
+        return isHTMLTableElement(tableNode) && tableObject->hasInheritedPresentationalRole();
+    }
+    return false;
+}
+
+static bool isRequiredOwnedElement(AXObject* parent, AccessibilityRole childRole, Node* childNode)
+{
+    Node* parentNode = parent->node();
+    if (!parentNode || !parentNode->isElementNode())
+        return false;
+
+    if (childRole == ListItemRole)
+        return isListElement(parentNode);
+    if (childRole == ListMarkerRole)
+        return isHTMLLIElement(*parentNode);
+    if (childRole == MenuItemCheckBoxRole || childRole ==  MenuItemRole || childRole ==  MenuItemRadioRole)
+        return isHTMLMenuElement(*parentNode);
+
+    if (isHTMLTableCellElement(childNode))
+        return isHTMLTableRowElement(*parentNode);
+    if (isHTMLTableRowElement(childNode))
+        return isHTMLTableSectionElement(*parentNode);
+
+    // In case of ListboxRole and it's child, ListBoxOptionRole,
+    // Inheritance of presentation role is handled in AXListBoxOption
+    // Because ListBoxOption Role doesn't have any child.
+    // If it's just ignored because of presentation, we can't see any AX tree related to ListBoxOption.
+    return false;
+}
+
+bool AXNodeObject::computeHasInheritedPresentationalRole() const
+{
+    // ARIA states if an item can get focus, it should not be presentational.
+    if (canSetFocusAttribute())
+        return false;
+
+    if (isPresentational())
+        return true;
+
+    // http://www.w3.org/TR/wai-aria/complete#presentation
+    // ARIA spec says that the user agent MUST apply an inherited role of presentation
+    // to any owned elements that do not have an explicit role defined.
+    if (ariaRoleAttribute() != UnknownRole)
+        return false;
+
+    AXObject* parent = parentObject();
+    if (!parent)
+        return false;
+
+    Node* curNode = node();
+    if (!parent->hasInheritedPresentationalRole()
+        && !isPresentationRoleInTable(parent, curNode))
+        return false;
+
+    // ARIA spec says that when a parent object is presentational and this object
+    // is a required owned element of that parent, then this object is also presentational.
+    return isRequiredOwnedElement(parent, roleValue(), curNode);
 }
 
 AccessibilityRole AXNodeObject::determineAccessibilityRoleUtil()

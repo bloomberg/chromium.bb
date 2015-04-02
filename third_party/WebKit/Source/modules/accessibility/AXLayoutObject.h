@@ -216,7 +216,6 @@ private:
 
     void ariaSelectedRows(AccessibilityChildrenVector&);
     bool elementAttributeValue(const QualifiedName&) const;
-    bool inheritsPresentationalRole() const;
     LayoutRect computeElementRect() const;
     VisibleSelection selection() const;
     int indexForVisiblePosition(const VisiblePosition&) const;

@@ -1,0 +1,106 @@
+These lists have a static text role because they have a presentation role.
+Presentation Item 1
+Presentation Item 2
+The first list item has a listitem role even if ul has a presentation role because it has an explicit role.
+Explicit Item 1
+Implicit Item 2
+These two tables have static text roles because they have presentation roles.
+Presentation th
+Presentation th
+Presentation th
+The "Presentation th" has a static text role because it has a presentation role.
+Presentation th
+Normal td
+The row for "Explicit th" has a row role even if table has a presentation role because it has an explicit role.
+Explicit th
+Implicit td
+The menu items except button have a static text role because it has a presentation role and is disabled.
+Button has a button role because it has an explicit role.
+ I have a bike   Male  Female
+The option A has a static text role because it has a presentation role and is disabled.
+The option B has option role because it has an explicit role.
+
+End of test
+
+This test make sure that presentation role is inherited to required owned elements.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+AXRole: AXWebArea AXValue: 
+    AXRole: AXDiv AXValue: 
+        AXRole: AXStaticText AXValue: These lists have a static text role because they have a presentation role.
+            AXRole: AXInlineTextBox AXValue: These lists have a static text role because they have a presentation role.
+    AXRole: AXStaticText AXValue: Presentation Item 1
+        AXRole: AXInlineTextBox AXValue: Presentation Item 1
+    AXRole: AXStaticText AXValue: Presentation Item 2
+        AXRole: AXInlineTextBox AXValue: Presentation Item 2
+    AXRole: AXDiv AXValue: 
+        AXRole: AXStaticText AXValue: The first list item has a listitem role even if ul has a presentation role because it has an explicit role.
+            AXRole: AXInlineTextBox AXValue: The first list item has a listitem role even if ul has a presentation role because it has an explicit role.
+    AXRole: AXListItem AXValue: 
+        AXRole: AXListMarker AXValue: •
+        AXRole: AXStaticText AXValue: Explicit Item 1
+            AXRole: AXInlineTextBox AXValue: Explicit Item 1
+    AXRole: AXStaticText AXValue: Implicit Item 2
+        AXRole: AXInlineTextBox AXValue: Implicit Item 2
+    AXRole: AXDiv AXValue: 
+        AXRole: AXStaticText AXValue: These two tables have static text roles because they have presentation roles.
+            AXRole: AXInlineTextBox AXValue: These two tables have static text roles because they have presentation roles.
+    AXRole: AXStaticText AXValue: Presentation th
+        AXRole: AXInlineTextBox AXValue: Presentation th
+    AXRole: AXStaticText AXValue: Presentation th
+        AXRole: AXInlineTextBox AXValue: Presentation th
+    AXRole: AXStaticText AXValue: Presentation th
+        AXRole: AXInlineTextBox AXValue: Presentation th
+    AXRole: AXDiv AXValue: 
+        AXRole: AXStaticText AXValue: The "Presentation th" has a static text role because it has a presentation role.
+            AXRole: AXInlineTextBox AXValue: The "Presentation th" has a static text role because it has a presentation role.
+    AXRole: AXStaticText AXValue: Presentation th
+        AXRole: AXInlineTextBox AXValue: Presentation th
+    AXRole: AXGroup AXValue: 
+        AXRole: AXStaticText AXValue: Normal td
+            AXRole: AXInlineTextBox AXValue: Normal td
+    AXRole: AXDiv AXValue: 
+        AXRole: AXStaticText AXValue: The row for "Explicit th" has a row role even if table has a presentation role because it has an explicit role.
+            AXRole: AXInlineTextBox AXValue: The row for "Explicit th" has a row role even if table has a presentation role because it has an explicit role.
+    AXRole: AXRow AXValue: 
+        AXRole: AXGroup AXValue: 
+            AXRole: AXStaticText AXValue: Explicit th
+                AXRole: AXInlineTextBox AXValue: Explicit th
+    AXRole: AXStaticText AXValue: Implicit td
+        AXRole: AXInlineTextBox AXValue: Implicit td
+    AXRole: AXDiv AXValue: 
+        AXRole: AXStaticText AXValue: The menu items except button have a static text role because it has a presentation role and is disabled.
+            AXRole: AXInlineTextBox AXValue: The menu items except button have a static text role because it has a presentation role and is disabled.
+        AXRole: AXUnknown AXValue: 
+
+            AXRole: AXInlineTextBox AXValue: 
+
+        AXRole: AXStaticText AXValue: Button has a button role because it has an explicit role.
+            AXRole: AXInlineTextBox AXValue: Button has a button role because it has an explicit role.
+    AXRole: AXStaticText AXValue:  I have a bike 
+        AXRole: AXInlineTextBox AXValue:  I have a bike 
+    AXRole: AXButton AXValue: Click me
+    AXRole: AXStaticText AXValue:  Male 
+        AXRole: AXInlineTextBox AXValue:  Male 
+    AXRole: AXStaticText AXValue:  Female
+        AXRole: AXInlineTextBox AXValue:  Female
+    AXRole: AXDiv AXValue: 
+        AXRole: AXStaticText AXValue: The option A has a static text role because it has a presentation role and is disabled.
+            AXRole: AXInlineTextBox AXValue: The option A has a static text role because it has a presentation role and is disabled.
+        AXRole: AXUnknown AXValue: 
+
+            AXRole: AXInlineTextBox AXValue: 
+
+        AXRole: AXStaticText AXValue: The option B has option role because it has an explicit role.
+            AXRole: AXInlineTextBox AXValue: The option B has option role because it has an explicit role.
+    AXRole: AXGroup AXValue: 
+        AXRole: AXStaticText AXValue: A
+        AXRole: AXListBoxOption AXValue: B
+    AXRole: AXParagraph AXValue: 
+        AXRole: AXStaticText AXValue: End of test
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

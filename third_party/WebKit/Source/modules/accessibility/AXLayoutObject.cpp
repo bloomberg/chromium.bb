@@ -563,7 +563,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored() const
     if (roleValue() == IgnoredRole)
         return true;
 
-    if ((roleValue() == NoneRole || roleValue() == PresentationalRole) || inheritsPresentationalRole())
+    if (hasInheritedPresentationalRole())
         return true;
 
     // An ARIA tree can only have tree items and static text as children.
@@ -2290,36 +2290,6 @@ bool AXLayoutObject::elementAttributeValue(const QualifiedName& attributeName) c
         return false;
 
     return equalIgnoringCase(getAttribute(attributeName), "true");
-}
-
-bool AXLayoutObject::inheritsPresentationalRole() const
-{
-    // ARIA states if an item can get focus, it should not be presentational.
-    if (canSetFocusAttribute())
-        return false;
-
-    // ARIA spec says that when a parent object is presentational, and it has required child elements,
-    // those child elements are also presentational. For example, <li> becomes presentational from <ul>.
-    // http://www.w3.org/WAI/PF/aria/complete#presentation
-    if (roleValue() != ListItemRole && roleValue() != ListMarkerRole)
-        return false;
-
-    AXObject* parent = parentObject();
-    if (!parent->isAXLayoutObject())
-        return false;
-
-    Node* elementNode = toAXLayoutObject(parent)->node();
-    if (!elementNode || !elementNode->isElementNode())
-        return false;
-
-    QualifiedName tagName = toElement(elementNode)->tagQName();
-    if (tagName != ulTag && tagName != olTag && tagName != dlTag)
-        return false;
-
-    if (parent->roleValue() == NoneRole || parent->roleValue() == PresentationalRole)
-        return ariaRoleAttribute() == UnknownRole;
-
-    return false;
 }
 
 LayoutRect AXLayoutObject::computeElementRect() const

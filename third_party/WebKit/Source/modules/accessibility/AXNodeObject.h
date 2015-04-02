@@ -57,6 +57,7 @@ protected:
 #endif
 
     virtual bool computeAccessibilityIsIgnored() const override;
+    virtual bool computeHasInheritedPresentationalRole() const override;
     virtual AccessibilityRole determineAccessibilityRole();
     AccessibilityRole determineAccessibilityRoleUtil();
     String accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element>> &elements) const;

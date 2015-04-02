@@ -24,13 +24,10 @@ AXRole: AXWebArea AXValue:
         AXRole: AXListMarker AXValue: •
         AXRole: AXStaticText AXValue: Item 3
             AXRole: AXInlineTextBox AXValue: Item 3
-    AXRole: AXListMarker AXValue: •
     AXRole: AXStaticText AXValue: Plain Text 1
         AXRole: AXInlineTextBox AXValue: Plain Text 1
-    AXRole: AXListMarker AXValue: •
     AXRole: AXStaticText AXValue: Plain Text 2
         AXRole: AXInlineTextBox AXValue: Plain Text 2
-    AXRole: AXListMarker AXValue: •
     AXRole: AXStaticText AXValue: Plain Text 3
         AXRole: AXInlineTextBox AXValue: Plain Text 3
     AXRole: AXParagraph AXValue: 

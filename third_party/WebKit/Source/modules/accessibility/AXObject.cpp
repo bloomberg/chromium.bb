@@ -236,6 +236,7 @@ AXObject::AXObject(AXObjectCacheImpl* axObjectCache)
     , m_cachedIsInertOrAriaHidden(false)
     , m_cachedIsDescendantOfBarrenParent(false)
     , m_cachedIsDescendantOfDisabledNode(false)
+    , m_cachedHasInheritedPresentationalRole(false)
     , m_cachedLiveRegionRoot(0)
     , m_axObjectCache(axObjectCache)
 {
@@ -370,6 +371,7 @@ void AXObject::updateCachedAttributeValuesIfNeeded() const
     m_cachedIsInertOrAriaHidden = computeIsInertOrAriaHidden();
     m_cachedIsDescendantOfBarrenParent = computeIsDescendantOfBarrenParent();
     m_cachedIsDescendantOfDisabledNode = computeIsDescendantOfDisabledNode();
+    m_cachedHasInheritedPresentationalRole = computeHasInheritedPresentationalRole();
     m_cachedIsIgnored = computeAccessibilityIsIgnored();
     m_cachedLiveRegionRoot = isLiveRegion() ?
         this :

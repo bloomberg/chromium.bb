@@ -64,6 +64,7 @@ private:
     HTMLSelectElement* listBoxOptionParentNode() const;
     int listBoxOptionIndex() const;
     AXObject* listBoxOptionAXObject(HTMLElement*) const;
+    bool isParentPresentationalRole() const;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXListBoxOption, isAXListBoxOption());

@@ -58,7 +58,31 @@ AccessibilityRole AXListBoxOption::roleValue() const
     AccessibilityRole ariaRole = ariaRoleAttribute();
     if (ariaRole != UnknownRole)
         return ariaRole;
+
+    // http://www.w3.org/TR/wai-aria/complete#presentation
+    // ARIA spec says that the presentation role causes a given element to be treated
+    // as having no role or to be removed from the accessibility tree, but does not cause the
+    // content contained within the element to be removed from the accessibility tree.
+    if (isParentPresentationalRole())
+        return StaticTextRole;
+
     return ListBoxOptionRole;
+}
+
+bool AXListBoxOption::isParentPresentationalRole() const
+{
+    AXObject* parent = parentObject();
+    if (!parent)
+        return false;
+
+    LayoutObject* layoutObject = parent->layoutObject();
+    if (!layoutObject)
+        return false;
+
+    if (layoutObject->isListBox() && parent->hasInheritedPresentationalRole())
+        return true;
+
+    return false;
 }
 
 bool AXListBoxOption::isEnabled() const
