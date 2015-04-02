@@ -58,13 +58,23 @@ class DeviceStatusCollector {
     std::vector<enterprise_management::VolumeInfo>(
         const std::vector<std::string>& mount_points)>;
 
-  // Constructor. Callers can inject their own VolumeInfoFetcher, or if a null
-  // callback is passed, the default implementation will be used.
+  // Reads the first CPU line from /proc/stat. Returns an empty string if
+  // the cpu data could not be read. Broken out into a callback to enable
+  // mocking for tests.
+  //
+  // The format of this line from /proc/stat is:
+  //   cpu  user_time nice_time system_time idle_time
+  using CPUStatisticsFetcher = base::Callback<std::string(void)>;
+
+  // Constructor. Callers can inject their own VolumeInfoFetcher and
+  // CPUStatisticsFetcher. A null callback can be passed for either parameter,
+  // to use the default implementation.
   DeviceStatusCollector(
       PrefService* local_state,
       chromeos::system::StatisticsProvider* provider,
       const LocationUpdateRequester& location_update_requester,
-      const VolumeInfoFetcher& volume_info_fetcher);
+      const VolumeInfoFetcher& volume_info_fetcher,
+      const CPUStatisticsFetcher& cpu_statistics_fetcher);
   virtual ~DeviceStatusCollector();
 
   // Fills in the passed proto with device status information. Will return
@@ -107,15 +117,12 @@ class DeviceStatusCollector {
   // Virtual to allow mocking.
   virtual scoped_ptr<DeviceLocalAccount> GetAutoLaunchedKioskSessionInfo();
 
-  // Samples the current CPU and RAM usage and updates our cache of samples.
-  void SampleResourceUsage();
-
-  // Returns the percentage of total CPU that each process uses. Virtual so it
-  // can be mocked.
-  virtual std::vector<double> GetPerProcessCPUUsage();
-
   // Gets the version of the passed app. Virtual to allow mocking.
   virtual std::string GetAppVersion(const std::string& app_id);
+
+  // Samples the current hardware status to be sent up with the next device
+  // status update.
+  void SampleHardwareStatus();
 
   // The number of days in the past to store device activity.
   // This is kept in case device status uploads fail for a number of days.
@@ -139,10 +146,6 @@ class DeviceStatusCollector {
                                  int64 max_day_key);
 
   void AddActivePeriod(base::Time start, base::Time end);
-
-  // Samples the current hardware status to be sent up with the next device
-  // status update.
-  void SampleHardwareStatus();
 
   // Clears the cached hardware status.
   void ClearCachedHardwareStatus();
@@ -179,6 +182,9 @@ class DeviceStatusCollector {
   void ReceiveVolumeInfo(
       const std::vector<enterprise_management::VolumeInfo>& info);
 
+  // Callback invoked to update our cpu usage information.
+  void ReceiveCPUStatistics(const std::string& statistics);
+
   PrefService* local_state_;
 
   // The last time an idle state check was performed.
@@ -207,7 +213,7 @@ class DeviceStatusCollector {
   std::vector<enterprise_management::VolumeInfo> volume_info_;
 
   struct ResourceUsage {
-    // Sample of percentage-of-CPU-used across all processes (0-100)
+    // Sample of percentage-of-CPU-used.
     int cpu_usage_percent;
 
     // Amount of free RAM (measures raw memory used by processes, not internal
@@ -222,9 +228,16 @@ class DeviceStatusCollector {
   // Callback invoked to fetch information about the mounted disk volumes.
   VolumeInfoFetcher volume_info_fetcher_;
 
+  // Callback invoked to fetch information about cpu usage.
+  CPUStatisticsFetcher cpu_statistics_fetcher_;
+
   chromeos::system::StatisticsProvider* statistics_provider_;
 
   chromeos::CrosSettings* cros_settings_;
+
+  // The most recent CPU readings.
+  uint64 last_cpu_active_;
+  uint64 last_cpu_idle_;
 
   // TODO(bartfab): Remove this once crbug.com/125931 is addressed and a proper
   // way to mock geolocation exists.

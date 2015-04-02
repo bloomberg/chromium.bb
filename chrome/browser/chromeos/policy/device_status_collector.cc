@@ -5,11 +5,15 @@
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 
 #include <stdint.h>
+#include <cstdio>
 #include <limits>
+#include <sstream>
 #include <sys/statvfs.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_util.h"
+#include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,9 +21,6 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "base/process/process.h"
-#include "base/process/process_iterator.h"
-#include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
@@ -81,6 +82,9 @@ const char kHeading[] = "heading";
 const char kSpeed[] = "speed";
 const char kTimestamp[] = "timestamp";
 
+// The location we read our CPU statistics from.
+const char kProcStat[] = "/proc/stat";
+
 // Determine the day key (milliseconds since epoch for corresponding day in UTC)
 // for a given |timestamp|.
 int64 TimestampToDayKey(Time timestamp) {
@@ -109,6 +113,30 @@ std::vector<em::VolumeInfo> GetVolumeInfo(
     }
   }
   return result;
+}
+
+// Reads the first CPU line from /proc/stat. Returns an empty string if
+// the cpu data could not be read.
+// The format of this line from /proc/stat is:
+//
+//   cpu  user_time nice_time system_time idle_time
+//
+// where user_time, nice_time, system_time, and idle_time are all integer
+// values measured in jiffies from system startup.
+std::string ReadCPUStatistics() {
+  std::string contents;
+  if (base::ReadFileToString(base::FilePath(kProcStat), &contents)) {
+    size_t eol = contents.find("\n");
+    if (eol != std::string::npos) {
+      std::string line = contents.substr(0, eol);
+      if (line.compare(0, 4, "cpu ") == 0)
+        return line;
+    }
+    // First line should always start with "cpu ".
+    NOTREACHED() << "Could not parse /proc/stat contents: " << contents;
+  }
+  LOG(WARNING) << "Unable to read CPU statistics from " << kProcStat;
+  return std::string();
 }
 
 // Returns the DeviceLocalAccount associated with the current kiosk session.
@@ -143,7 +171,8 @@ DeviceStatusCollector::DeviceStatusCollector(
     PrefService* local_state,
     chromeos::system::StatisticsProvider* provider,
     const LocationUpdateRequester& location_update_requester,
-    const VolumeInfoFetcher& volume_info_fetcher)
+    const VolumeInfoFetcher& volume_info_fetcher,
+    const CPUStatisticsFetcher& cpu_statistics_fetcher)
     : max_stored_past_activity_days_(kMaxStoredPastActivityDays),
       max_stored_future_activity_days_(kMaxStoredFutureActivityDays),
       local_state_(local_state),
@@ -152,7 +181,10 @@ DeviceStatusCollector::DeviceStatusCollector(
       duration_for_last_reported_day_(0),
       geolocation_update_in_progress_(false),
       volume_info_fetcher_(volume_info_fetcher),
+      cpu_statistics_fetcher_(cpu_statistics_fetcher),
       statistics_provider_(provider),
+      last_cpu_active_(0),
+      last_cpu_idle_(0),
       location_update_requester_(location_update_requester),
       report_version_info_(false),
       report_activity_times_(false),
@@ -165,6 +197,9 @@ DeviceStatusCollector::DeviceStatusCollector(
       weak_factory_(this) {
   if (volume_info_fetcher_.is_null())
     volume_info_fetcher_ = base::Bind(&GetVolumeInfo);
+
+  if (cpu_statistics_fetcher_.is_null())
+    cpu_statistics_fetcher_ = base::Bind(&ReadCPUStatistics);
 
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds),
@@ -392,6 +427,8 @@ void DeviceStatusCollector::AddActivePeriod(Time start, Time end) {
 void DeviceStatusCollector::ClearCachedHardwareStatus() {
   volume_info_.clear();
   resource_usage_.clear();
+  last_cpu_active_ = 0;
+  last_cpu_idle_ = 0;
 }
 
 void DeviceStatusCollector::IdleStateCallback(ui::IdleState state) {
@@ -455,7 +492,7 @@ void DeviceStatusCollector::SampleHardwareStatus() {
     mount_points.push_back(mount_info.first);
   }
 
-  // Call out to the blocking pool to measure disk usage.
+  // Call out to the blocking pool to measure disk and CPU usage.
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
@@ -463,19 +500,57 @@ void DeviceStatusCollector::SampleHardwareStatus() {
       base::Bind(&DeviceStatusCollector::ReceiveVolumeInfo,
                  weak_factory_.GetWeakPtr()));
 
-  SampleResourceUsage();
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(), FROM_HERE,
+      cpu_statistics_fetcher_,
+      base::Bind(&DeviceStatusCollector::ReceiveCPUStatistics,
+                 weak_factory_.GetWeakPtr()));
 }
 
-void DeviceStatusCollector::SampleResourceUsage() {
-  // Walk the process list and measure CPU utilization.
-  double total_usage = 0;
-  std::vector<double> per_process_usage = GetPerProcessCPUUsage();
-  for (double cpu_usage : per_process_usage) {
-    total_usage += cpu_usage;
+void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
+  int cpu_usage_percent = 0;
+  if (stats.empty()) {
+    DLOG(WARNING) << "Unable to read CPU statistics";
+  } else {
+    // Parse the data from /proc/stat, whose format is defined at
+    // https://www.kernel.org/doc/Documentation/filesystems/proc.txt.
+    //
+    // The CPU usage values in /proc/stat are measured in the imprecise unit
+    // "jiffies", but we just care about the relative magnitude of "active" vs
+    // "idle" so the exact value of a jiffy is irrelevant.
+    //
+    // An example value for this line:
+    //
+    // cpu 123 456 789 012 345 678
+    //
+    // We only care about the first four numbers: user_time, nice_time,
+    // sys_time, and idle_time.
+    uint64 user = 0, nice = 0, system = 0, idle = 0;
+    int vals = sscanf(stats.c_str(),
+                      "cpu %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64, &user,
+                      &nice, &system, &idle);
+    DCHECK_EQ(4, vals);
+
+    // The values returned from /proc/stat are cumulative totals, so calculate
+    // the difference between the last sample and this one.
+    uint64 active = user + nice + system;
+    uint64 total = active + idle;
+    uint64 last_total = last_cpu_active_ + last_cpu_idle_;
+    DCHECK_GE(active, last_cpu_active_);
+    DCHECK_GE(idle, last_cpu_idle_);
+    DCHECK_GE(total, last_total);
+
+    if ((total - last_total) > 0) {
+      cpu_usage_percent =
+          (100 * (active - last_cpu_active_)) / (total - last_total);
+    }
+    last_cpu_active_ = active;
+    last_cpu_idle_ = idle;
   }
 
-  ResourceUsage usage = { total_usage,
-                          base::SysInfo::AmountOfAvailablePhysicalMemory() };
+  DCHECK_LE(cpu_usage_percent, 100);
+  ResourceUsage usage = {cpu_usage_percent,
+                         base::SysInfo::AmountOfAvailablePhysicalMemory()};
 
   resource_usage_.push_back(usage);
 
@@ -483,32 +558,6 @@ void DeviceStatusCollector::SampleResourceUsage() {
   // sample.
   if (resource_usage_.size() > kMaxResourceUsageSamples)
     resource_usage_.pop_front();
-}
-
-std::vector<double> DeviceStatusCollector::GetPerProcessCPUUsage() {
-  std::vector<double> cpu_usage;
-  base::ProcessIterator process_iter(nullptr);
-
-  const int num_processors = base::SysInfo::NumberOfProcessors();
-  while (const base::ProcessEntry* process_entry =
-         process_iter.NextProcessEntry()) {
-    base::Process process = base::Process::Open(process_entry->pid());
-    if (!process.IsValid()) {
-      LOG(ERROR) << "Could not create process handle for process "
-                  << process_entry->pid();
-      continue;
-    }
-    scoped_ptr<base::ProcessMetrics> metrics(
-        base::ProcessMetrics::CreateProcessMetrics(process.Handle()));
-    const double usage = metrics->GetPlatformIndependentCPUUsage();
-    DCHECK_LE(0, usage);
-    if (usage > 0) {
-      // Convert CPU usage from "percentage of a single core" to "percentage of
-      // all CPU available".
-      cpu_usage.push_back(usage / num_processors);
-    }
-  }
-  return cpu_usage;
 }
 
 void DeviceStatusCollector::GetActivityTimes(

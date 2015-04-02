@@ -328,15 +328,14 @@ void DeviceCloudPolicyManagerChromeOS::NotifyDisconnected() {
 }
 
 void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
-  status_uploader_.reset(
-      new StatusUploader(
-          client(),
-          make_scoped_ptr(new DeviceStatusCollector(
-              local_state_,
-              chromeos::system::StatisticsProvider::GetInstance(),
-              DeviceStatusCollector::LocationUpdateRequester(),
-              DeviceStatusCollector::VolumeInfoFetcher())),
-          task_runner_));
+  status_uploader_.reset(new StatusUploader(
+      client(),
+      make_scoped_ptr(new DeviceStatusCollector(
+          local_state_, chromeos::system::StatisticsProvider::GetInstance(),
+          DeviceStatusCollector::LocationUpdateRequester(),
+          DeviceStatusCollector::VolumeInfoFetcher(),
+          DeviceStatusCollector::CPUStatisticsFetcher())),
+      task_runner_));
 }
 
 }  // namespace policy
