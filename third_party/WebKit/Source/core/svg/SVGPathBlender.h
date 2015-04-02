@@ -20,9 +20,9 @@
 #ifndef SVGPathBlender_h
 #define SVGPathBlender_h
 
-#include "core/svg/SVGPathConsumer.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -32,6 +32,7 @@ enum FloatBlendMode {
 };
 
 struct PathSegmentData;
+class SVGPathConsumer;
 class SVGPathSource;
 
 class SVGPathBlender : public NoBaseWillBeGarbageCollectedFinalized<SVGPathBlender> {
@@ -67,11 +68,14 @@ private:
     FloatPoint m_fromCurrentPoint;
     FloatPoint m_toCurrentPoint;
 
-    PathCoordinateMode m_fromMode;
-    PathCoordinateMode m_toMode;
     float m_progress;
     unsigned m_addTypesCount;
     bool m_isInFirstHalfOfAnimation;
+    // This is per-segment blend state corresponding to the 'from' and 'to'
+    // segments currently being blended, and only used within blendSegments().
+    bool m_typesAreEqual;
+    bool m_fromIsAbsolute;
+    bool m_toIsAbsolute;
 };
 
 } // namespace blink

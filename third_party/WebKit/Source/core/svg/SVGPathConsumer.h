@@ -30,11 +30,6 @@
 
 namespace blink {
 
-enum PathCoordinateMode {
-    AbsoluteCoordinates,
-    RelativeCoordinates
-};
-
 struct PathSegmentData;
 
 class SVGPathConsumer : public NoBaseWillBeGarbageCollectedFinalized<SVGPathConsumer> {
