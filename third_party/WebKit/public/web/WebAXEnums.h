@@ -205,6 +205,7 @@ enum WebAXState {
     WebAXStateIndeterminate,
     WebAXStateInvisible,
     WebAXStateLinked,
+    WebAXStateMultiline,
     WebAXStateMultiselectable,
     WebAXStateOffscreen,
     WebAXStatePressed,

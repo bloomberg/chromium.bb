@@ -197,6 +197,7 @@ enum AccessibilityState {
     AXIndeterminateState,
     AXInvisibleState,
     AXLinkedState,
+    AXMultilineState,
     AXMultiselectableState,
     AXOffscreenState,
     AXPressedState,
@@ -485,7 +486,7 @@ public:
     virtual void ariaLabelledbyElements(AccessibilityChildrenVector& labelledby) const { };
     virtual void ariaOwnsElements(AccessibilityChildrenVector& owns) const { };
     virtual bool ariaHasPopup() const { return false; }
-    bool ariaIsMultiline() const;
+    bool isMultiline() const;
     virtual String ariaLabeledByAttribute() const { return String(); }
     bool ariaPressedIsPresent() const;
     virtual AccessibilityRole ariaRoleAttribute() const { return UnknownRole; }

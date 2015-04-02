@@ -306,6 +306,7 @@ STATIC_ASSERT_MATCHING_ENUM(WebAXStateHovered, AXHoveredState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateIndeterminate, AXIndeterminateState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateInvisible, AXInvisibleState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateLinked, AXLinkedState);
+STATIC_ASSERT_MATCHING_ENUM(WebAXStateMultiline, AXMultilineState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateMultiselectable, AXMultiselectableState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStateOffscreen, AXOffscreenState);
 STATIC_ASSERT_MATCHING_ENUM(WebAXStatePressed, AXPressedState);
