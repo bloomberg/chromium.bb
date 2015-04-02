@@ -172,7 +172,9 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
         taintedResponse = responseData->createOpaqueFilteredResponse();
         break;
     }
-    m_resolver->resolve(Response::create(m_resolver->executionContext(), taintedResponse));
+    Response* r = Response::create(m_resolver->executionContext(), taintedResponse);
+    r->headers()->setGuard(Headers::ImmutableGuard);
+    m_resolver->resolve(r);
     m_resolver.clear();
 }
 

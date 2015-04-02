@@ -362,4 +362,41 @@ test(function() {
         });
   }, 'Headers guard = response: ResponseInit.headers');
 
+promise_test(function(t) {
+  return fetch('../resources/doctype.html')
+    .then(function(res) {
+        [res.headers, res.clone().headers].forEach(function(headers) {
+            testInvalidNamesAndValues(headers);
+
+            // Test that TypeError is thrown for all header names.
+            FORBIDDEN_HEADER_NAMES
+              .concat(FORBIDDEN_RESPONSE_HEADER_NAMES)
+              .concat(SIMPLE_HEADER_NAMES)
+              .concat([CONTENT_TYPE])
+              .concat(NON_SIMPLE_HEADER_NAMES)
+              .forEach(function(header) {
+                  var value = headers.get(header);
+
+                  assert_throws({name: 'TypeError'},
+                                function() { headers.append(header, 'test'); },
+                                'Headers.append(' + header + ') must throw');
+                  assert_equals(headers.get(header), value,
+                    'header ' + header + ' must be unchanged by append()');
+
+                  assert_throws({name: 'TypeError'},
+                                function() { headers.set(header, 'test'); },
+                                    'Headers.set(' + header + ') must throw');
+                  assert_equals(headers.get(header), value,
+                    'header ' + header + ' must be unchanged by set()');
+
+                  assert_throws({name: 'TypeError'},
+                                function() { headers.delete(header); },
+                                'Headers.delete(' + header + ') must throw');
+                  assert_equals(headers.get(header), value,
+                    'header ' + header + ' must be unchanged by delete()');
+                });
+          });
+      });
+  }, 'Headers guard = immutable: set/append/delete');
+
 done();
