@@ -388,7 +388,7 @@ void PushMessagingServiceImpl::DidGetNotificationsShown(
     return;
   }
   if (needed_but_not_shown) {
-    if (missed_notifications.count() <= 1) {
+    if (missed_notifications.count() <= 1) {  // apply grace
       RecordUserVisibleStatus(
         content::PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
       return;
@@ -396,6 +396,10 @@ void PushMessagingServiceImpl::DidGetNotificationsShown(
     RecordUserVisibleStatus(
         content::
             PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED);
+    rappor::SampleDomainAndRegistryFromGURL(
+        g_browser_process->rappor_service(),
+        "PushMessaging.GenericNotificationShown.Origin",
+        requesting_origin);
     // The site failed to show a notification when one was needed, and they have
     // already failed once in the previous 10 push messages, so we will show a
     // generic notification. See https://crbug.com/437277.

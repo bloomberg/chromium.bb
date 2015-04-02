@@ -291,6 +291,16 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="PushMessaging.GenericNotificationShown.Origin"
+    type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    Number of times the generic (forced) notification was shown per origin.
+    This happens if the site uses the push api but does not generate a
+    notification of their own.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="PushMessaging.MessageReceived.Origin" type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
