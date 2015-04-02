@@ -63,12 +63,6 @@ static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeat
     case v8::Isolate::kBreakIterator:
         UseCounter::count(callingExecutionContext(isolate), UseCounter::BreakIterator);
         break;
-    case v8::Isolate::kLegacyConst:
-        UseCounter::count(callingExecutionContext(isolate), UseCounter::LegacyConst);
-        break;
-    case v8::Isolate::kObjectObserve:
-        UseCounter::count(callingExecutionContext(isolate), UseCounter::ObjectObserve);
-        break;
     default:
         // This can happen if V8 has added counters that this version of Blink
         // does not know about. It's harmless.
