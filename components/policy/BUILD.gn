@@ -161,6 +161,19 @@ if (enable_configuration_policy) {
     ]
   }
 
+  # The dependencies here are kind of messed up.
+  #
+  # //components/policy/core/browser and .../common depend on this target,
+  # and require it to be compiled with POLICY_COMPONENT_IMPLEMENTATION to
+  # export the necessary symbols in a component build. But other targets like
+  # //chrome/browser also depend on this target, which in component build
+  # ends up in another shared library, but with the IMPLEMENTATION flag set
+  # incorrectly.
+  #
+  # This only reason this works is that this target is a shared library and
+  # the compilation units that this depends on in policy/core/common happen to
+  # not be brought in in the "bad" case. This needs serious untangling, maybe
+  # these files can just be put into policy/core/common?
   static_library("policy") {
     sources = [
       constants_header_path,
@@ -182,6 +195,7 @@ if (enable_configuration_policy) {
     deps = [
       ":chrome_settings_proto_generated_compile",
       ":policy",
+      "//components/policy/core/common",
     ]
   }
 

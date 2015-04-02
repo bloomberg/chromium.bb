@@ -141,6 +141,9 @@ source_set("common") {
       "//url",
     ]
 
+    if (is_win) {
+      libs = [ "netapi32.lib" ]
+    }
     if (is_android) {
       sources += [ "cloud/component_cloud_policy_service_stub.cc" ]
       sources -= [

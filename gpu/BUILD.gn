@@ -27,9 +27,7 @@
 #  gpu.gyp:disk_cache_proto => //gpu/command_buffer/service:disk_cache_proto
 #
 #  command_buffer/command_buffer.gyp:gles2_utils =>
-#     //gpu/command_buffer/common
-#     (Merged in to here because the separate file exists in GYP only to break
-#     a .gyp file dependency cycle which GN doesn't have.)
+#     //gpu/command_buffer/common:gles2_utils
 #
 # gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings => //gpu/skia_bindings
 

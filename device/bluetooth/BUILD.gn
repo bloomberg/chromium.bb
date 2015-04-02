@@ -118,7 +118,9 @@ component("bluetooth") {
     "//ui/base",
   ]
 
-  if (is_chromeos) {
+  if (is_win) {
+    libs = [ "setupapi.lib" ]
+  } else if (is_chromeos) {
     deps += [
       "//chromeos",
       "//dbus",

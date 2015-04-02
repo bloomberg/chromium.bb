@@ -13,6 +13,18 @@ config("base_implementation") {
   defines = [ "BASE_IMPLEMENTATION" ]
 }
 
+if (is_win) {
+  # This is in a separate config so the flags can be applied to dependents.
+  # ldflags in GN aren't automatically inherited.
+  config("base_win_linker_flags") {
+    ldflags = [
+      "/DELAYLOAD:cfgmgr32.dll",
+      "/DELAYLOAD:powrprof.dll",
+      "/DELAYLOAD:setupapi.dll",
+    ]
+  }
+}
+
 source_set("base_paths") {
   sources = [
     "base_paths.cc",
@@ -732,11 +744,7 @@ component("base") {
       "powrprof.lib",
       "setupapi.lib",
     ]
-    ldflags = [
-      "/DELAYLOAD:cfgmgr32.dll",
-      "/DELAYLOAD:powrprof.dll",
-      "/DELAYLOAD:setupapi.dll",
-    ]
+    all_dependent_configs = [ ":base_win_linker_flags" ]
   } else if (!is_nacl) {
     # Non-Windows.
     deps += [ "//third_party/libevent" ]
@@ -939,7 +947,7 @@ if (is_linux && !is_chromeos) {
   }
 }
 
-source_set("prefs") {
+component("prefs") {
   sources = [
     "prefs/base_prefs_export.h",
     "prefs/default_pref_store.cc",

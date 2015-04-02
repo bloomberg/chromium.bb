@@ -9,12 +9,10 @@
   'targets': [{
     # GN version: //ui/platform_window
     'target_name': 'platform_window',
-    'type': '<(component)',
-    'defines': [ 'PLATFORM_WINDOW_IMPLEMENTATION' ],
+    'type': 'none',
     'sources': [
       'platform_window.h',
       'platform_window_delegate.h',
-      'platform_window_export.h',
     ],
   }],
 }

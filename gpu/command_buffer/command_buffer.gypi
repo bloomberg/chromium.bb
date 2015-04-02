@@ -8,7 +8,6 @@
       'gles2_utils_target': 0,
     },
     'target_conditions': [
-      # This part is shared between the targets defined below.
       ['gles2_utils_target==1', {
         'defines': [
           'GLES2_UTILS_IMPLEMENTATION',
