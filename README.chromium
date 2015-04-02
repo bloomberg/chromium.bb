@@ -136,19 +136,20 @@ This directory contains the source code of ICU 54.1 for C/C++.
       d. Include currency display names for a smaller subset of currencies.
       e. Minimize the locale data for 9 locales to which Chrome on Android
          is not localized.
+      f. Also apply android/brkitr.patch
 
 6. Timezone data update
   - Grab the latest version of the following timezone data files and
-    put them in source/data/misc.
+    put them in source/data/misc using scripts/update_tz.sh
 
      metaZones.txt
      timezoneTypes.txt
      windowsZones.txt
      zoneinfo64.txt
 
-   As of January 2015, the latest version is 2015a and the above files
+   As of April 1 2015, the latest version is 2015b and the above files
    are available at
-   http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2015a/44/
+   http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2015b/44/
 
 7. Transliterator customization
 
@@ -186,16 +187,24 @@ This directory contains the source code of ICU 54.1 for C/C++.
 9. Pre-built data files are checked in with the following steps on Linux:
 
     a. Make a icu data build directory outside the Chromium source tree
-       and cd to that directory.
+       and cd to that directory, $ICUBUILDIR.
     b. Run
 
       ${CHROME_ICU_TREE_TOP}/source/runConfigureICU Linux --disable-layout
 
     c. Run 'make'
-    d. 'make' will fail  when pkgdata looks for css3transform.res. Edit
-      data/out/tmp/icudata.lst to replace 'css3transform.res' with 'root.res'.
-    (see http://bugs.icu-project.org/trac/ticket/10570 ) and run 'make' again.
+    d. 'make' will fail  when pkgdata looks for css3transform.res.
+       See http://bugs.icu-project.org/trac/ticket/10570
+    e. run
 
+         ${CHROME_ICU_TREE_TOP}/scripts/make_n_copy_data.sh
+
+       This will make and copy icudtl.dat and icudtl_dat.S for Linux and
+       Mac as listed below. Renaming the data/assembly files to drop
+       the ICU major version number as well as running make_mac_assembly.sh
+       is done by this script.
+
+       This script can be run again whenever you update the data.
 
     - source/data/in/icudtl.dat : Built on Linux with all the patches
       above applied. icudt54l.dat is generated in
@@ -210,10 +219,9 @@ This directory contains the source code of ICU 54.1 for C/C++.
 
       mac/icudtl_dat.S is identical to linux/icudtl_dat.S except for
       the header portion. With "linux/icudtl_dat.S" in its place,
-      run scripts/make_mac_assembly.sh to generate it.
 
     - android/icudtl_dat.S : Built on Linux with all the patches above and
-      android/brkitr.patch applied and android/patch_locale.sh executed.
+      android/patch_locale.sh executed.
       '54' is dropped from the name generated in the build tree.
 
     - android/icudtl.dat : Generated as icudt54l.dat in

@@ -15,7 +15,12 @@ do
 done
 KEEPLIST="(${KEEPLIST})"
 
-cd $(dirname $0)/../source/data
+cd "$(dirname "$0")/.."
+
+echo "Applying brkitr.patch"
+patch -p1 < android/brkitr.patch || { echo "failed to patch"; exit 1; }
+
+cd source/data
 
 for i in curr/*.txt
 do
