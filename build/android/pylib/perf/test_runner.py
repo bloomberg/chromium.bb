@@ -170,7 +170,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       tests: a dict mapping test_name to command.
       flaky_tests: a list of flaky test_name.
     """
-    super(TestRunner, self).__init__(device, None, 'Release')
+    super(TestRunner, self).__init__(device, None)
     self._options = test_options
     self._shard_index = shard_index
     self._max_shard = max_shard
@@ -235,7 +235,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     try:
       logging.warning('Unmapping device ports')
       forwarder.Forwarder.UnmapAllDevicePorts(self.device)
-      self.device.old_interface.RestartAdbdOnDevice()
+      self.device.RestartAdbd()
     except Exception as e:
       logging.error('Exception when tearing down device %s', e)
 

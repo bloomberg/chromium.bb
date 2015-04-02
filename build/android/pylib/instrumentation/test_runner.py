@@ -48,8 +48,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       test_pkg: A TestPackage object.
       additional_flags: A list of additional flags to add to the command line.
     """
-    super(TestRunner, self).__init__(device, test_options.tool,
-                                     test_options.cleanup_test_files)
+    super(TestRunner, self).__init__(device, test_options.tool)
     self._lighttp_port = constants.LIGHTTPD_RANDOM_PORT_FIRST + shard_index
     self._logcat_monitor = None
 

@@ -175,9 +175,6 @@ def AddRemoteDeviceOptions(parser):
 def AddDeviceOptions(parser):
   """Adds device options to |parser|."""
   group = parser.add_argument_group(title='Device Options')
-  group.add_argument('-c', dest='cleanup_test_files',
-                     help='Cleanup test files on the device after run',
-                     action='store_true')
   group.add_argument('--tool',
                      dest='tool',
                      help=('Run the test under a tool '
@@ -372,7 +369,6 @@ def ProcessInstrumentationOptions(args):
   # TODO(jbudorick): Get rid of InstrumentationOptions.
   return instrumentation_test_options.InstrumentationOptions(
       args.tool,
-      args.cleanup_test_files,
       args.annotations,
       args.exclude_annotations,
       args.test_filter,
@@ -437,7 +433,6 @@ def ProcessUIAutomatorOptions(args):
 
   return uiautomator_test_options.UIAutomatorOptions(
       args.tool,
-      args.cleanup_test_files,
       args.annotations,
       args.exclude_annotations,
       args.test_filter,
@@ -636,7 +631,6 @@ def _RunGTests(args, devices):
     # into the gtest code.
     gtest_options = gtest_test_options.GTestOptions(
         args.tool,
-        args.cleanup_test_files,
         args.test_filter,
         args.run_disabled,
         args.test_arguments,

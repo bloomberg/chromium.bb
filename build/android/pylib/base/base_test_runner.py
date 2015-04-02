@@ -26,12 +26,11 @@ NET_TEST_SERVER_PORT_INFO_FILE = 'net-test-server-ports'
 class BaseTestRunner(object):
   """Base class for running tests on a single device."""
 
-  def __init__(self, device_serial, tool, cleanup_test_files=False):
+  def __init__(self, device_serial, tool):
     """
       Args:
         device: Tests will run on the device of this ID.
         tool: Name of the Valgrind tool.
-        cleanup_test_files: Whether or not to cleanup test files on device.
     """
     self.device_serial = device_serial
     self.device = device_utils.DeviceUtils(device_serial)
@@ -45,7 +44,6 @@ class BaseTestRunner(object):
     # starting it in TestServerThread.
     self.test_server_spawner_port = 0
     self.test_server_port = 0
-    self._cleanup_test_files = cleanup_test_files
 
   def _PushTestServerPortInfoToDevice(self):
     """Pushes the latest port information to device."""
@@ -77,8 +75,6 @@ class BaseTestRunner(object):
   def TearDown(self):
     """Run once after all tests are run."""
     self.ShutdownHelperToolsForTestSuite()
-    if self._cleanup_test_files:
-      self.device.old_interface.RemovePushedFiles()
 
   def LaunchTestHttpServer(self, document_root, port=None,
                            extra_config_contents=None):
