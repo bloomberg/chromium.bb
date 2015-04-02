@@ -242,7 +242,9 @@ static void constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>& inf
         v8SetReturnValue(info, v8::String::Empty(info.GetIsolate()));
         return;
     }
-    v8SetReturnValue(info, V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), info.This(), 0, 0, info.GetIsolate()));
+    v8::Local<v8::Value> result;
+    if (V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), info.This(), 0, 0, info.GetIsolate()).ToLocal(&result))
+        v8SetReturnValue(info, result);
 }
 
 v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()

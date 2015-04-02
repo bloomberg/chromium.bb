@@ -109,7 +109,9 @@ ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSour
 
     v8::Local<v8::Object> windowGlobal = inspectedScriptState->context()->Global();
     v8::Local<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(inspectedScriptState->isolate(), id) };
-    v8::Local<v8::Value> injectedScriptValue = V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info, inspectedScriptState->isolate());
+    v8::Local<v8::Value> injectedScriptValue;
+    if (!V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), windowGlobal, WTF_ARRAY_LENGTH(info), info, inspectedScriptState->isolate()).ToLocal(&injectedScriptValue))
+        return ScriptValue();
     return ScriptValue(inspectedScriptState, injectedScriptValue);
 }
 

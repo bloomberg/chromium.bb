@@ -479,12 +479,12 @@ v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Local<v8::Function> functi
     return result;
 }
 
-v8::Local<v8::Value> V8ScriptRunner::callInternalFunction(v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> args[], v8::Isolate* isolate)
+v8::MaybeLocal<v8::Value> V8ScriptRunner::callInternalFunction(v8::Local<v8::Function> function, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> args[], v8::Isolate* isolate)
 {
     TRACE_EVENT0("v8", "v8.callFunction");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
-    v8::Local<v8::Value> result = function->Call(receiver, argc, args);
+    v8::MaybeLocal<v8::Value> result = function->Call(receiver, argc, args);
     crashIfV8IsDead();
     return result;
 }

@@ -188,8 +188,8 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
         return;
 
     // FIXME: Remove this code when we stop doing the 'with' hack above.
-    v8::Local<v8::Value> innerValue = V8ScriptRunner::callInternalFunction(intermediateFunction, thisObject, 0, 0, isolate());
-    if (innerValue.IsEmpty() || !innerValue->IsFunction())
+    v8::Local<v8::Value> innerValue;
+    if (!V8ScriptRunner::callInternalFunction(intermediateFunction, thisObject, 0, 0, isolate()).ToLocal(&innerValue) || !innerValue->IsFunction())
         return;
 
     v8::Local<v8::Function> wrappedFunction = innerValue.As<v8::Function>();

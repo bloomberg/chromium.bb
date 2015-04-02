@@ -80,9 +80,8 @@ int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) c
     if (!regex->Get(context, v8AtomicString(isolate, "exec")).ToLocal(&exec))
         return -1;
     v8::Local<v8::Value> argv[] = { v8String(isolate, string.substring(startFrom)) };
-    v8::Local<v8::Value> returnValue = V8ScriptRunner::callInternalFunction(exec.As<v8::Function>(), regex, WTF_ARRAY_LENGTH(argv), argv, isolate);
-
-    if (tryCatch.HasCaught())
+    v8::Local<v8::Value> returnValue;
+    if (!V8ScriptRunner::callInternalFunction(exec.As<v8::Function>(), regex, WTF_ARRAY_LENGTH(argv), argv, isolate).ToLocal(&returnValue))
         return -1;
 
     // RegExp#exec returns null if there's no match, otherwise it returns an

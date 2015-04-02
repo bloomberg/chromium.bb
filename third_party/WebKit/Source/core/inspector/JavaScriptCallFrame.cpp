@@ -68,10 +68,10 @@ int JavaScriptCallFrame::callV8FunctionReturnInt(const char* name) const
     v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
     v8::Local<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, name)));
-    v8::Local<v8::Value> result = V8ScriptRunner::callInternalFunction(func, callFrame, 0, 0, m_isolate);
-    if (result.IsEmpty() || !result->IsInt32())
+    v8::Local<v8::Value> result;
+    if (!V8ScriptRunner::callInternalFunction(func, callFrame, 0, 0, m_isolate).ToLocal(&result) || !result->IsInt32())
         return 0;
-    return result->Int32Value();
+    return result.As<v8::Int32>()->Value();
 }
 
 String JavaScriptCallFrame::callV8FunctionReturnString(const char* name) const
@@ -80,7 +80,9 @@ String JavaScriptCallFrame::callV8FunctionReturnString(const char* name) const
     v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
     v8::Local<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, name)));
-    v8::Local<v8::Value> result = V8ScriptRunner::callInternalFunction(func, callFrame, 0, 0, m_isolate);
+    v8::Local<v8::Value> result;
+    if (!V8ScriptRunner::callInternalFunction(func, callFrame, 0, 0, m_isolate).ToLocal(&result))
+        return String();
     return toCoreStringWithUndefinedOrNullCheck(result);
 }
 
@@ -123,7 +125,7 @@ v8::Local<v8::Value> JavaScriptCallFrame::scopeChain() const
 {
     v8::Local<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "scopeChain")));
-    v8::Local<v8::Array> scopeChain = v8::Local<v8::Array>::Cast(V8ScriptRunner::callInternalFunction(func, callFrame, 0, 0, m_isolate));
+    v8::Local<v8::Array> scopeChain = v8::Local<v8::Array>::Cast(V8ScriptRunner::callInternalFunction(func, callFrame, 0, 0, m_isolate).ToLocalChecked());
     v8::Local<v8::Array> result = v8::Array::New(m_isolate, scopeChain->Length());
     for (uint32_t i = 0; i < scopeChain->Length(); i++)
         result->Set(i, scopeChain->Get(i));
@@ -134,7 +136,7 @@ int JavaScriptCallFrame::scopeType(int scopeIndex) const
 {
     v8::Local<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "scopeType")));
-    v8::Local<v8::Array> scopeType = v8::Local<v8::Array>::Cast(V8ScriptRunner::callInternalFunction(func, callFrame, 0, 0, m_isolate));
+    v8::Local<v8::Array> scopeType = v8::Local<v8::Array>::Cast(V8ScriptRunner::callInternalFunction(func, callFrame, 0, 0, m_isolate).ToLocalChecked());
     return scopeType->Get(scopeIndex)->Int32Value();
 }
 
@@ -172,30 +174,29 @@ v8::Local<v8::Value> JavaScriptCallFrame::evaluateWithExceptionDetails(v8::Local
         scopeExtension
     };
     v8::TryCatch tryCatch;
-    v8::Local<v8::Value> result = V8ScriptRunner::callInternalFunction(evalFunction, callFrame, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
-
     v8::Local<v8::Object> wrappedResult = v8::Object::New(m_isolate);
-    if (tryCatch.HasCaught()) {
-        wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "result"), tryCatch.Exception());
-        wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "exceptionDetails"), createExceptionDetails(m_isolate, tryCatch.Message()));
-    } else {
+    v8::Local<v8::Value> result;
+    if (V8ScriptRunner::callInternalFunction(evalFunction, callFrame, WTF_ARRAY_LENGTH(argv), argv, m_isolate).ToLocal(&result)) {
         wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "result"), result);
         wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "exceptionDetails"), v8::Undefined(m_isolate));
+    } else {
+        wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "result"), tryCatch.Exception());
+        wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "exceptionDetails"), createExceptionDetails(m_isolate, tryCatch.Message()));
     }
     return wrappedResult;
 }
 
-v8::Local<v8::Value> JavaScriptCallFrame::restart()
+v8::MaybeLocal<v8::Value> JavaScriptCallFrame::restart()
 {
     v8::Local<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Local<v8::Function> restartFunction = v8::Local<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "restart")));
     v8::Debug::SetLiveEditEnabled(m_isolate, true);
-    v8::Local<v8::Value> result = V8ScriptRunner::callInternalFunction(restartFunction, callFrame, 0, 0, m_isolate);
+    v8::MaybeLocal<v8::Value> result = V8ScriptRunner::callInternalFunction(restartFunction, callFrame, 0, 0, m_isolate);
     v8::Debug::SetLiveEditEnabled(m_isolate, false);
     return result;
 }
 
-v8::Local<v8::Value> JavaScriptCallFrame::setVariableValue(int scopeNumber, v8::Local<v8::Value> variableName, v8::Local<v8::Value> newValue)
+v8::MaybeLocal<v8::Value> JavaScriptCallFrame::setVariableValue(int scopeNumber, v8::Local<v8::Value> variableName, v8::Local<v8::Value> newValue)
 {
     v8::Local<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Local<v8::Function> setVariableValueFunction = v8::Local<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "setVariableValue")));

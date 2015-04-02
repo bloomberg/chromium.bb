@@ -81,7 +81,7 @@ v8::Local<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* functionN
     v8::Local<v8::Object> debuggerScript = debuggerScriptLocal();
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8InternalizedString(functionName)));
     ASSERT(m_isolate->InContext());
-    return V8ScriptRunner::callInternalFunction(function, debuggerScript, argc, argv, m_isolate);
+    return V8ScriptRunner::callInternalFunction(function, debuggerScript, argc, argv, m_isolate).ToLocalChecked();
 }
 
 ScriptDebugServer::ScriptDebugServer(v8::Isolate* isolate)
@@ -140,8 +140,8 @@ void ScriptDebugServer::reportCompiledScripts(const String& contextDebugDataSubs
     ASSERT(!debuggerScript->IsUndefined());
     v8::Local<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8InternalizedString("getScripts")));
     v8::Local<v8::Value> argv[] = { v8String(m_isolate, contextDebugDataSubstring) };
-    v8::Local<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
-    if (value.IsEmpty())
+    v8::Local<v8::Value> value;
+    if (!V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate).ToLocal(&value))
         return;
     ASSERT(value->IsArray());
     v8::Local<v8::Array> scriptsArray = v8::Local<v8::Array>::Cast(value);
@@ -580,7 +580,7 @@ v8::Local<v8::Value> ScriptDebugServer::callInternalGetterFunction(v8::Local<v8:
 {
     v8::Local<v8::Value> getterValue = object->Get(v8InternalizedString(functionName));
     ASSERT(!getterValue.IsEmpty() && getterValue->IsFunction());
-    return V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(getterValue), object, 0, 0, m_isolate);
+    return V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(getterValue), object, 0, 0, m_isolate).ToLocalChecked();
 }
 
 void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails)

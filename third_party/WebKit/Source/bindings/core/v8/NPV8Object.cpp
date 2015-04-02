@@ -561,8 +561,8 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
         ASSERT(result->IsFunction());
         v8::Local<v8::Function> enumerator = v8::Local<v8::Function>::Cast(result);
         v8::Local<v8::Value> argv[] = { obj };
-        v8::Local<v8::Value> propsObj = V8ScriptRunner::callInternalFunction(enumerator, v8::Local<v8::Object>::Cast(result), WTF_ARRAY_LENGTH(argv), argv, isolate);
-        if (propsObj.IsEmpty())
+        v8::Local<v8::Value> propsObj;
+        if (!V8ScriptRunner::callInternalFunction(enumerator, v8::Local<v8::Object>::Cast(result), WTF_ARRAY_LENGTH(argv), argv, isolate).ToLocal(&propsObj))
             return false;
 
         // Convert the results into an array of NPIdentifiers.
