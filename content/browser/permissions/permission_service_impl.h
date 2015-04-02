@@ -55,6 +55,8 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
                         const PermissionStatusCallback& callback);
     ~PendingSubscription();
 
+    // Subscription ID received from the PermissionManager.
+    int id;
     PermissionType permission;
     GURL origin;
     PermissionStatusCallback callback;
@@ -89,7 +91,7 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
                                                const GURL& origin);
   void ResetPermissionStatus(PermissionType type, const GURL& origin);
 
-  void OnPermissionStatusChanged(const int* subscription_id,
+  void OnPermissionStatusChanged(int pending_subscription_id,
                                  PermissionStatus status);
 
   RequestsMap pending_requests_;

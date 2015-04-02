@@ -43,22 +43,23 @@ PermissionServiceImpl::PendingRequest::PendingRequest(
 }
 
 PermissionServiceImpl::PendingRequest::~PendingRequest() {
-  if (!callback.is_null()) {
+  if (!callback.is_null())
     callback.Run(PERMISSION_STATUS_ASK);
-  }
 }
 
 PermissionServiceImpl::PendingSubscription::PendingSubscription(
     PermissionType permission,
     const GURL& origin,
     const PermissionStatusCallback& callback)
-    : permission(permission),
+    : id(-1),
+      permission(permission),
       origin(origin),
       callback(callback) {
 }
 
 PermissionServiceImpl::PendingSubscription::~PendingSubscription() {
-  DCHECK(callback.is_null());
+  if (!callback.is_null())
+    callback.Run(PERMISSION_STATUS_ASK);
 }
 
 PermissionServiceImpl::PermissionServiceImpl(PermissionServiceContext* context)
@@ -68,7 +69,6 @@ PermissionServiceImpl::PermissionServiceImpl(PermissionServiceContext* context)
 
 PermissionServiceImpl::~PermissionServiceImpl() {
   DCHECK(pending_requests_.IsEmpty());
-  DCHECK(pending_subscriptions_.IsEmpty());
 }
 
 void PermissionServiceImpl::OnConnectionError() {
@@ -153,7 +153,8 @@ void PermissionServiceImpl::CancelPendingOperations() {
     it.GetCurrentValue()->callback.Run(GetPermissionStatusFromType(
         it.GetCurrentValue()->permission, it.GetCurrentValue()->origin));
     it.GetCurrentValue()->callback.reset();
-    permission_manager->UnsubscribePermissionStatusChange(it.GetCurrentKey());
+    permission_manager->UnsubscribePermissionStatusChange(
+        it.GetCurrentValue()->id);
   }
   pending_subscriptions_.Clear();
 }
@@ -206,11 +207,17 @@ void PermissionServiceImpl::GetNextPermissionChange(
     return;
   }
 
-  int* subscription_id = new int();
   PermissionType permission_type = PermissionNameToPermissionType(permission);
 
+  // We need to pass the id of PendingSubscription in pending_subscriptions_
+  // to the callback but SubscribePermissionStatusChange() will also return an
+  // id which is different.
+  PendingSubscription* subscription =
+      new PendingSubscription(permission_type, origin, callback);
+  int pending_subscription_id = pending_subscriptions_.Add(subscription);
+
   GURL embedding_origin = context_->GetEmbeddingOrigin();
-  *subscription_id =
+  subscription->id =
       browser_context->GetPermissionManager()->SubscribePermissionStatusChange(
           permission_type,
           origin,
@@ -218,11 +225,7 @@ void PermissionServiceImpl::GetNextPermissionChange(
           embedding_origin.is_empty() ? origin : embedding_origin,
           base::Bind(&PermissionServiceImpl::OnPermissionStatusChanged,
                      weak_factory_.GetWeakPtr(),
-                     base::Owned(subscription_id)));
-
-  pending_subscriptions_.AddWithID(
-      new PendingSubscription(permission_type, origin, callback),
-                              *subscription_id);
+                     pending_subscription_id));
 }
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatusFromName(
@@ -258,22 +261,24 @@ void PermissionServiceImpl::ResetPermissionStatus(PermissionType type,
 }
 
 void PermissionServiceImpl::OnPermissionStatusChanged(
-    const int* subscription_id,
+    int pending_subscription_id,
     PermissionStatus status) {
   PendingSubscription* subscription =
-      pending_subscriptions_.Lookup(*subscription_id);
-
-  subscription->callback.Run(status);
+      pending_subscriptions_.Lookup(pending_subscription_id);
 
   BrowserContext* browser_context = context_->GetBrowserContext();
   DCHECK(browser_context);
-  if (!browser_context->GetPermissionManager())
-    return;
-  browser_context->GetPermissionManager()->UnsubscribePermissionStatusChange(
-      *subscription_id);
+  if (browser_context->GetPermissionManager()) {
+    browser_context->GetPermissionManager()->UnsubscribePermissionStatusChange(
+        subscription->id);
+  }
+
+  PermissionStatusCallback callback = subscription->callback;
 
   subscription->callback.reset();
-  pending_subscriptions_.Remove(*subscription_id);
+  pending_subscriptions_.Remove(pending_subscription_id);
+
+  callback.Run(status);
 }
 
 }  // namespace content
