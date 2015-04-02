@@ -29,6 +29,8 @@ import unittest
 import urllib
 
 from chromite.cbuildbot import constants
+from chromite.lib import blueprint_lib
+from chromite.lib import brick_lib
 from chromite.lib import cidb
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
@@ -37,6 +39,7 @@ from chromite.lib import graphite
 from chromite.lib import parallel
 from chromite.lib import remote_access
 from chromite.lib import retry_util
+from chromite.lib import workspace_lib
 import cros_build_lib
 import gob_util
 import osutils
@@ -1633,6 +1636,45 @@ class MockOutputTestCase(MockTestCase, OutputTestCase):
 
 class MockLoggingTestCase(MockTestCase, LoggingTestCase):
   """Convenience class mixing Logging and Mock."""
+
+
+class BrickTestCase(TempDirTestCase):
+  """Test case that adds utilities for using bricks."""
+
+  def CreateBrick(self, name='thebrickfoo', main_package='category/bar'):
+    """Creates a new brick."""
+    # Creates the brick in a subdirectory of tempdir so that we can create other
+    # bricks without interfering with it.
+    brick_path = os.path.join(self.tempdir, name)
+    brick = brick_lib.Brick(brick_path,
+                            initial_config={'name': name,
+                                            'main_package': main_package})
+    return (brick, brick_path)
+
+
+class BlueprintTestCase(TempDirTestCase):
+  """Test case that adds utilities for using blueprints."""
+
+  def CreateBlueprint(self, blueprint_name='foo.json', bricks=None, bsp=None,
+                      main_package=None):
+    path = os.path.join(self.tempdir, blueprint_name)
+
+    config = {}
+    if bricks:
+      config['bricks'] = bricks
+    if bsp:
+      config['bsp'] = bsp
+    if main_package:
+      config['main_package'] = main_package
+
+    return blueprint_lib.Blueprint(path, initial_config=config)
+
+
+class WorkspaceTestCase(TempDirTestCase):
+  """Test case that adds utilities for using workspaces."""
+
+  def SetupFakeWorkspace(self):
+    self.PatchObject(workspace_lib, 'WorkspacePath', return_value=self.tempdir)
 
 
 @contextlib.contextmanager

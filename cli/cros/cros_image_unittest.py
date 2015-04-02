@@ -11,13 +11,10 @@ import os
 from chromite.cbuildbot import constants
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_image
-from chromite.lib import blueprint_lib
-from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
-from chromite.lib import workspace_lib
 
 
 class MockImageCommand(command_unittest.MockCommand):
@@ -33,41 +30,17 @@ class MockImageCommand(command_unittest.MockCommand):
     return super(MockImageCommand, self).Run(inst)
 
 
-class ImageCommandTest(cros_test_lib.MockTempDirTestCase):
+class ImageCommandTest(cros_test_lib.MockTempDirTestCase,
+                       cros_test_lib.BrickTestCase,
+                       cros_test_lib.BlueprintTestCase,
+                       cros_test_lib.WorkspaceTestCase):
   """Test class for our ImageCommand class."""
 
   def SetupCommandMock(self, cmd_args):
     """Sets up the `cros image` command mock."""
     self.cmd_mock = MockImageCommand(cmd_args)
 
-  def SetupFakeWorkspace(self):
-    self.PatchObject(workspace_lib, 'WorkspacePath', return_value=self.tempdir)
-
-  def SetupBrick(self, name='thebrickfoo', main_package='app-misc/bar'):
-    """Creates a new brick."""
-    # Creates the brick in a subdirectory of tempdir so that we can create other
-    # bricks without interfering with it.
-    brick_path = os.path.join(self.tempdir, name)
-    return brick_lib.Brick(brick_path,
-                           initial_config={'name': name,
-                                           'main_package': main_package})
-
-  def SetupBlueprint(self, blueprint_name='foo.json', bricks=None, bsp=None,
-                     main_package=None):
-    path = os.path.join(self.tempdir, blueprint_name)
-
-    config = {}
-    if bricks:
-      config['bricks'] = bricks
-    if bsp:
-      config['bsp'] = bsp
-    if main_package:
-      config['main_package'] = main_package
-
-    self.blueprint = blueprint_lib.Blueprint(path, initial_config=config)
-
   def setUp(self):
-    self.blueprint = None
     self.cmd_mock = None
     self.SetupFakeWorkspace()
 
@@ -81,12 +54,12 @@ class ImageCommandTest(cros_test_lib.MockTempDirTestCase):
 
   def testBlueprint(self):
     """Tests running the full image command with a blueprint."""
-    self.SetupBrick(name='brick1', main_package='brick/foo')
-    self.SetupBrick(name='brick2', main_package='brick/bar')
-    self.SetupBrick(name='bsp1', main_package='bsp/baz')
-    self.SetupBlueprint(blueprint_name='foo.json', bricks=['//brick1',
-                                                           '//brick2'],
-                        bsp='//bsp1', main_package='virtual/target-os-test')
+    self.CreateBrick(name='brick1', main_package='brick/foo')
+    self.CreateBrick(name='brick2', main_package='brick/bar')
+    self.CreateBrick(name='bsp1', main_package='bsp/baz')
+    self.CreateBlueprint(blueprint_name='foo.json',
+                         bricks=['//brick1', '//brick2'], bsp='//bsp1',
+                         main_package='virtual/target-os-test')
 
     args = ['--blueprint=//foo.json']
     self.SetupCommandMock(args)

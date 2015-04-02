@@ -16,7 +16,9 @@ from chromite.lib import osutils
 from chromite.lib import workspace_lib
 
 
-class BrickLibTest(cros_test_lib.MockTempDirTestCase):
+class BrickLibTest(cros_test_lib.MockTempDirTestCase,
+                   cros_test_lib.BrickTestCase,
+                   cros_test_lib.WorkspaceTestCase):
   """Unittest for brick.py"""
 
   # pylint: disable=protected-access
@@ -26,14 +28,6 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
     self.brick_path = None
     self.SetupFakeWorkspace()
 
-  def CreateNewBrick(self):
-    """Creates a new brick."""
-    # Creates the brick in a subdirectory of tempdir so that we can create other
-    # bricks without interfering with it.
-    self.brick_path = os.path.join(self.tempdir, 'thebrickfoo')
-    self.brick = brick_lib.Brick(self.brick_path,
-                                 initial_config={'name': 'thebrickfoo'})
-
   def SetupLegacyBrick(self, brick_dir=None, brick_name='foo'):
     """Sets up a legacy brick layout."""
     if brick_dir is None:
@@ -42,12 +36,9 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
     osutils.WriteFile(os.path.join(brick_dir, 'metadata', 'layout.conf'),
                       layout_conf, makedirs=True)
 
-  def SetupFakeWorkspace(self):
-    self.PatchObject(workspace_lib, 'WorkspacePath', return_value=self.tempdir)
-
   def testLayoutFormat(self):
     """Test that layout.conf is correctly formatted."""
-    self.CreateNewBrick()
+    (self.brick, self.brick_path) = self.CreateBrick()
     content = {'repo-name': 'hello',
                'bar': 'foo'}
     self.brick._WriteLayoutConf(content)
@@ -63,7 +54,7 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
 
   def testWriteParents(self):
     """Test that the parent file is correctly formatted."""
-    self.CreateNewBrick()
+    (self.brick, self.brick_path) = self.CreateBrick()
     parents = ['hello:bonjour',
                'foo:bar']
 
@@ -75,7 +66,7 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
 
   def testConfigurationGenerated(self):
     """Test that portage's files are generated when brick.json changes."""
-    self.CreateNewBrick()
+    (self.brick, self.brick_path) = self.CreateBrick()
     sample_config = {'name': 'hello',
                      'dependencies': []}
 
@@ -87,7 +78,7 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
 
   def testFindBrickInPath(self):
     """Test that we can infer the current brick from the current directory."""
-    self.CreateNewBrick()
+    (self.brick, self.brick_path) = self.CreateBrick()
     os.remove(os.path.join(self.brick_path, 'config.json'))
     brick_dir = os.path.join(self.tempdir, 'foo', 'bar', 'project')
     expected_name = 'hello'
@@ -147,7 +138,7 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
 
   def testBrickCreation(self):
     """Test that brick initialization throws the right errors."""
-    self.CreateNewBrick()
+    (self.brick, self.brick_path) = self.CreateBrick()
     with self.assertRaises(brick_lib.BrickCreationFailed):
       brick_lib.Brick(self.brick_path, initial_config={})
 
@@ -161,7 +152,7 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
 
   def testLoadExistingNormalBrickSucceeds(self):
     """Tests that loading an existing brick works."""
-    self.CreateNewBrick()
+    (self.brick, self.brick_path) = self.CreateBrick()
     self.brick = brick_lib.Brick(self.brick_path, allow_legacy=False)
     self.assertEquals('thebrickfoo', self.brick.config.get('name'))
 
@@ -210,7 +201,7 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
 
   def testOverlayDir(self):
     """Tests that overlay directory is returned correctly."""
-    self.CreateNewBrick()
+    (self.brick, self.brick_path) = self.CreateBrick()
     self.assertExists(os.path.join(self.brick.OverlayDir(), 'profiles'))
 
   def testOpenUsingLocator(self):
