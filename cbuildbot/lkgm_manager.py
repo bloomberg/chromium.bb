@@ -450,9 +450,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         return
       except cros_build_lib.RunCommandError as e:
         last_error = 'Failed to promote manifest. error: %s' % e
-        logging.error(last_error)
-        logging.error('Retrying to promote manifest:  Retry %d/%d', attempt + 1,
-                      retries)
+        logging.info(last_error)
+        logging.info('Retrying to promote manifest:  Retry %d/%d', attempt + 1,
+                     retries)
 
     raise PromoteCandidateException(last_error)
 
