@@ -87,10 +87,7 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSou
     static const unsigned longestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
     ASSERT(longestSignatureLength == 14);
 
-    if (!Platform::current()) // Ignore off-main-thread decode requests during platform shutdown.
-        return nullptr;
-
-    static size_t maxDecodedBytes = Platform::current()->maxDecodedImageBytes();
+    size_t maxDecodedBytes = Platform::current()->maxDecodedImageBytes();
 
     char contents[longestSignatureLength];
     if (copyFromSharedBuffer(contents, longestSignatureLength, data, 0) < longestSignatureLength)
