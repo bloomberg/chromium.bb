@@ -23,21 +23,27 @@
 #define XMLHttpRequest_h
 
 #include "bindings/core/v8/ScriptString.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DocumentParserClient.h"
-#include "core/events/EventListener.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/streams/ReadableStreamImpl.h"
 #include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
 #include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/FormData.h"
+#include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/text/AtomicStringHash.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -50,13 +56,14 @@ class DOMFormData;
 class Document;
 class DocumentParser;
 class ExceptionState;
+class ExecutionContext;
 class ReadableStream;
 class ScriptState;
-class SecurityOrigin;
 class SharedBuffer;
 class Stream;
 class TextResourceDecoder;
 class ThreadableLoader;
+class WebDataConsumerHandle;
 class XMLHttpRequestUpload;
 
 typedef int ExceptionCode;

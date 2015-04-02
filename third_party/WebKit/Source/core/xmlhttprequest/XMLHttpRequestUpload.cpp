@@ -26,7 +26,10 @@
 #include "config.h"
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 
+#include "core/EventTypeNames.h"
 #include "core/xmlhttprequest/XMLHttpRequestProgressEvent.h"
+#include "wtf/Assertions.h"
+#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

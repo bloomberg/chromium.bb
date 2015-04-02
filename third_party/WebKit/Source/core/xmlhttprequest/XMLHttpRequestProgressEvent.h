@@ -27,7 +27,11 @@
 #ifndef XMLHttpRequestProgressEvent_h
 #define XMLHttpRequestProgressEvent_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/events/ProgressEvent.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
