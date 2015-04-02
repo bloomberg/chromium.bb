@@ -36,13 +36,13 @@ namespace blink {
 class AudioBus;
 class AudioContext;
 
-class AudioDestinationNode : public AudioNode, public AudioIOCallback {
+class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    AudioDestinationNode(AudioContext*, float sampleRate);
-    virtual ~AudioDestinationNode();
+    AudioDestinationHandler(AudioContext*, float sampleRate);
+    virtual ~AudioDestinationHandler();
 
-    // AudioNode
+    // AudioHandler
     virtual void dispose() override;
     virtual void process(size_t) override final { } // we're pulled by hardware so this is never called
 
@@ -92,6 +92,9 @@ protected:
 
     LocalAudioInputProvider m_localAudioInputProvider;
 };
+
+// TODO(tkent): Introduce an actual class to wrap a handler.
+using AudioDestinationNode = AudioDestinationHandler;
 
 } // namespace blink
 

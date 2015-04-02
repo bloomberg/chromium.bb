@@ -32,8 +32,8 @@
 
 namespace blink {
 
-AudioBasicInspectorNode::AudioBasicInspectorNode(NodeType nodeType, AudioContext* context, float sampleRate, unsigned outputChannelCount)
-    : AudioNode(nodeType, context, sampleRate)
+AudioBasicInspectorHandler::AudioBasicInspectorHandler(NodeType nodeType, AudioContext* context, float sampleRate, unsigned outputChannelCount)
+    : AudioHandler(nodeType, context, sampleRate)
     , m_needAutomaticPull(false)
 {
     addInput();
@@ -43,33 +43,33 @@ AudioBasicInspectorNode::AudioBasicInspectorNode(NodeType nodeType, AudioContext
 // We override pullInputs() as an optimization allowing this node to take advantage of in-place processing,
 // where the input is simply passed through unprocessed to the output.
 // Note: this only applies if the input and output channel counts match.
-void AudioBasicInspectorNode::pullInputs(size_t framesToProcess)
+void AudioBasicInspectorHandler::pullInputs(size_t framesToProcess)
 {
     // Render input stream - try to render directly into output bus for pass-through processing where process() doesn't need to do anything...
     input(0)->pull(output(0)->bus(), framesToProcess);
 }
 
-void AudioBasicInspectorNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
+void AudioBasicInspectorHandler::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
     AudioContext::AutoLocker locker(context());
 
-    AudioNode::connect(destination, outputIndex, inputIndex, exceptionState);
+    AudioHandler::connect(destination, outputIndex, inputIndex, exceptionState);
     updatePullStatus();
 }
 
-void AudioBasicInspectorNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
+void AudioBasicInspectorHandler::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
     AudioContext::AutoLocker locker(context());
 
-    AudioNode::disconnect(outputIndex, exceptionState);
+    AudioHandler::disconnect(outputIndex, exceptionState);
     updatePullStatus();
 }
 
-void AudioBasicInspectorNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
+void AudioBasicInspectorHandler::checkNumberOfChannelsForInput(AudioNodeInput* input)
 {
     ASSERT(context()->isAudioThread());
     ASSERT(context()->isGraphOwner());
@@ -85,12 +85,12 @@ void AudioBasicInspectorNode::checkNumberOfChannelsForInput(AudioNodeInput* inpu
         output(0)->setNumberOfChannels(numberOfChannels);
     }
 
-    AudioNode::checkNumberOfChannelsForInput(input);
+    AudioHandler::checkNumberOfChannelsForInput(input);
 
     updatePullStatus();
 }
 
-void AudioBasicInspectorNode::updatePullStatus()
+void AudioBasicInspectorHandler::updatePullStatus()
 {
     ASSERT(context()->isGraphOwner());
 

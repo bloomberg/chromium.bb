@@ -56,14 +56,14 @@ DEFINE_TRACE(AudioListener)
     visitor->trace(m_panners);
 }
 
-void AudioListener::addPanner(PannerNode* panner)
+void AudioListener::addPanner(PannerHandler* panner)
 {
     ASSERT(isMainThread());
     if (panner)
         m_panners.append(panner);
 }
 
-void AudioListener::removePanner(PannerNode* panner)
+void AudioListener::removePanner(PannerHandler* panner)
 {
     ASSERT(isMainThread());
     for (unsigned i = 0; i < m_panners.size(); ++i) {

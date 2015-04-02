@@ -36,8 +36,8 @@ static const unsigned defaultNumberOfOutputChannels = 2;
 
 namespace blink {
 
-DynamicsCompressorNode::DynamicsCompressorNode(AudioContext* context, float sampleRate)
-    : AudioNode(NodeTypeDynamicsCompressor, context, sampleRate)
+DynamicsCompressorHandler::DynamicsCompressorHandler(AudioContext* context, float sampleRate)
+    : AudioHandler(NodeTypeDynamicsCompressor, context, sampleRate)
 {
     addInput();
     addOutput(defaultNumberOfOutputChannels);
@@ -52,18 +52,18 @@ DynamicsCompressorNode::DynamicsCompressorNode(AudioContext* context, float samp
     initialize();
 }
 
-DynamicsCompressorNode::~DynamicsCompressorNode()
+DynamicsCompressorHandler::~DynamicsCompressorHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void DynamicsCompressorNode::dispose()
+void DynamicsCompressorHandler::dispose()
 {
     uninitialize();
-    AudioNode::dispose();
+    AudioHandler::dispose();
 }
 
-void DynamicsCompressorNode::process(size_t framesToProcess)
+void DynamicsCompressorHandler::process(size_t framesToProcess)
 {
     AudioBus* outputBus = output(0)->bus();
     ASSERT(outputBus);
@@ -86,40 +86,40 @@ void DynamicsCompressorNode::process(size_t framesToProcess)
     m_reduction->setValue(reduction);
 }
 
-void DynamicsCompressorNode::initialize()
+void DynamicsCompressorHandler::initialize()
 {
     if (isInitialized())
         return;
 
-    AudioNode::initialize();
+    AudioHandler::initialize();
     m_dynamicsCompressor = adoptPtr(new DynamicsCompressor(sampleRate(), defaultNumberOfOutputChannels));
 }
 
-void DynamicsCompressorNode::uninitialize()
+void DynamicsCompressorHandler::uninitialize()
 {
     if (!isInitialized())
         return;
 
     m_dynamicsCompressor.clear();
-    AudioNode::uninitialize();
+    AudioHandler::uninitialize();
 }
 
-void DynamicsCompressorNode::clearInternalStateWhenDisabled()
+void DynamicsCompressorHandler::clearInternalStateWhenDisabled()
 {
     m_reduction->setValue(0);
 }
 
-double DynamicsCompressorNode::tailTime() const
+double DynamicsCompressorHandler::tailTime() const
 {
     return m_dynamicsCompressor->tailTime();
 }
 
-double DynamicsCompressorNode::latencyTime() const
+double DynamicsCompressorHandler::latencyTime() const
 {
     return m_dynamicsCompressor->latencyTime();
 }
 
-DEFINE_TRACE(DynamicsCompressorNode)
+DEFINE_TRACE(DynamicsCompressorHandler)
 {
     visitor->trace(m_threshold);
     visitor->trace(m_knee);
@@ -127,7 +127,7 @@ DEFINE_TRACE(DynamicsCompressorNode)
     visitor->trace(m_reduction);
     visitor->trace(m_attack);
     visitor->trace(m_release);
-    AudioNode::trace(visitor);
+    AudioHandler::trace(visitor);
 }
 
 } // namespace blink

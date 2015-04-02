@@ -37,15 +37,15 @@ class AudioContext;
 // GainNode is an AudioNode with one input and one output which applies a gain (volume) change to the audio signal.
 // De-zippering (smoothing) is applied when the gain value is changed dynamically.
 
-class GainNode final : public AudioNode {
+class GainHandler final : public AudioHandler {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static GainNode* create(AudioContext* context, float sampleRate)
+    static GainHandler* create(AudioContext* context, float sampleRate)
     {
-        return new GainNode(context, sampleRate);
+        return new GainHandler(context, sampleRate);
     }
 
-    // AudioNode
+    // AudioHandler
     virtual void process(size_t framesToProcess) override;
 
     // Called in the main thread when the number of channels for the input may have changed.
@@ -57,13 +57,16 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    GainNode(AudioContext*, float sampleRate);
+    GainHandler(AudioContext*, float sampleRate);
 
     float m_lastGain; // for de-zippering
     Member<AudioParam> m_gain;
 
     AudioFloatArray m_sampleAccurateGainValues;
 };
+
+// TODO(tkent): Introduce an actual class to wrap a handler.
+using GainNode = GainHandler;
 
 } // namespace blink
 

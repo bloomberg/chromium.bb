@@ -34,8 +34,8 @@
 
 namespace blink {
 
-DefaultAudioDestinationNode::DefaultAudioDestinationNode(AudioContext* context)
-    : AudioDestinationNode(context, AudioDestination::hardwareSampleRate())
+DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(AudioContext* context)
+    : AudioDestinationHandler(context, AudioDestination::hardwareSampleRate())
     , m_numberOfInputChannels(0)
 {
     // Node-specific default mixing rules.
@@ -44,28 +44,28 @@ DefaultAudioDestinationNode::DefaultAudioDestinationNode(AudioContext* context)
     m_channelInterpretation = AudioBus::Speakers;
 }
 
-DefaultAudioDestinationNode::~DefaultAudioDestinationNode()
+DefaultAudioDestinationHandler::~DefaultAudioDestinationHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void DefaultAudioDestinationNode::dispose()
+void DefaultAudioDestinationHandler::dispose()
 {
     uninitialize();
-    AudioDestinationNode::dispose();
+    AudioDestinationHandler::dispose();
 }
 
-void DefaultAudioDestinationNode::initialize()
+void DefaultAudioDestinationHandler::initialize()
 {
     ASSERT(isMainThread());
     if (isInitialized())
         return;
 
     createDestination();
-    AudioNode::initialize();
+    AudioHandler::initialize();
 }
 
-void DefaultAudioDestinationNode::uninitialize()
+void DefaultAudioDestinationHandler::uninitialize()
 {
     ASSERT(isMainThread());
     if (!isInitialized())
@@ -74,10 +74,10 @@ void DefaultAudioDestinationNode::uninitialize()
     m_destination->stop();
     m_numberOfInputChannels = 0;
 
-    AudioNode::uninitialize();
+    AudioHandler::uninitialize();
 }
 
-void DefaultAudioDestinationNode::createDestination()
+void DefaultAudioDestinationHandler::createDestination()
 {
     float hardwareSampleRate = AudioDestination::hardwareSampleRate();
     WTF_LOG(WebAudio, ">>>> hardwareSampleRate = %f\n", hardwareSampleRate);
@@ -85,7 +85,7 @@ void DefaultAudioDestinationNode::createDestination()
     m_destination = AudioDestination::create(*this, m_inputDeviceId, m_numberOfInputChannels, channelCount(), hardwareSampleRate);
 }
 
-void DefaultAudioDestinationNode::startRendering()
+void DefaultAudioDestinationHandler::startRendering()
 {
     ASSERT(isInitialized());
     if (isInitialized()) {
@@ -94,7 +94,7 @@ void DefaultAudioDestinationNode::startRendering()
     }
 }
 
-void DefaultAudioDestinationNode::stopRendering()
+void DefaultAudioDestinationHandler::stopRendering()
 {
     ASSERT(isInitialized());
     if (isInitialized()) {
@@ -103,12 +103,12 @@ void DefaultAudioDestinationNode::stopRendering()
     }
 }
 
-unsigned long DefaultAudioDestinationNode::maxChannelCount() const
+unsigned long DefaultAudioDestinationHandler::maxChannelCount() const
 {
     return AudioDestination::maxChannelCount();
 }
 
-void DefaultAudioDestinationNode::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
+void DefaultAudioDestinationHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
     // The channelCount for the input to this node controls the actual number of channels we
     // send to the audio hardware. It can only be set depending on the maximum number of
@@ -124,7 +124,7 @@ void DefaultAudioDestinationNode::setChannelCount(unsigned long channelCount, Ex
     }
 
     unsigned long oldChannelCount = this->channelCount();
-    AudioNode::setChannelCount(channelCount, exceptionState);
+    AudioHandler::setChannelCount(channelCount, exceptionState);
 
     if (!exceptionState.hadException() && this->channelCount() != oldChannelCount && isInitialized()) {
         // Re-create destination.

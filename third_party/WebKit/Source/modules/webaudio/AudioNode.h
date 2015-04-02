@@ -49,8 +49,8 @@ class ExceptionState;
 // An AudioDestinationNode has one input and no outputs and represents the final destination to the audio hardware.
 // Most processing nodes such as filters will have one input and one output, although multiple inputs and outputs are possible.
 
-class AudioNode : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode> {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioNode>);
+class AudioHandler : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioHandler> {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioHandler>);
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum { ProcessingSizeInFrames = 128 };
@@ -78,8 +78,8 @@ public:
         NodeTypeEnd
     };
 
-    AudioNode(NodeType, AudioContext*, float sampleRate);
-    virtual ~AudioNode();
+    AudioHandler(NodeType, AudioContext*, float sampleRate);
+    virtual ~AudioHandler();
     // dispose() is called just before the destructor. This must be called in
     // the main thread, and while the graph lock is held.
     virtual void dispose();
@@ -136,14 +136,14 @@ public:
     AudioNodeOutput* output(unsigned);
 
     // Called from main thread by corresponding JavaScript methods.
-    virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
+    virtual void connect(AudioHandler*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
     void connect(AudioParam*, unsigned outputIndex, ExceptionState&);
 
     virtual void disconnect();
     virtual void disconnect(unsigned outputIndex, ExceptionState&);
-    virtual void disconnect(AudioNode*, ExceptionState&);
-    virtual void disconnect(AudioNode*, unsigned outputIndex, ExceptionState&);
-    virtual void disconnect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
+    virtual void disconnect(AudioHandler*, ExceptionState&);
+    virtual void disconnect(AudioHandler*, unsigned outputIndex, ExceptionState&);
+    virtual void disconnect(AudioHandler*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
     virtual void disconnect(AudioParam*, ExceptionState&);
     virtual void disconnect(AudioParam*, unsigned outputIndex, ExceptionState&);
 
@@ -235,7 +235,7 @@ private:
     // Represents audio node graph with Oilpan references. N-th HeapHashSet
     // represents a set of AudioNode objects connected to this AudioNode's N-th
     // output.
-    HeapVector<Member<HeapHashSet<Member<AudioNode>>>> m_connectedNodes;
+    HeapVector<Member<HeapHashSet<Member<AudioHandler>>>> m_connectedNodes;
     // Represents audio node graph with Oilpan references. N-th HeapHashSet
     // represents a set of AudioParam objects connected to this AudioNode's N-th
     // output.
@@ -262,6 +262,9 @@ protected:
     // rendering phase.
     ChannelCountMode m_newChannelCountMode;
 };
+
+// TODO(tkent): Introduce an actual class to wrap a handler.
+using AudioNode = AudioHandler;
 
 } // namespace blink
 

@@ -42,14 +42,14 @@ class AudioContext;
 // AudioBufferSourceNode is an AudioNode representing an audio source from an in-memory audio asset represented by an AudioBuffer.
 // It generally will be used for short sounds which require a high degree of scheduling flexibility (can playback in rhythmically perfect ways).
 
-class AudioBufferSourceNode final : public AudioScheduledSourceNode {
+class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AudioBufferSourceNode* create(AudioContext*, float sampleRate);
+    static AudioBufferSourceHandler* create(AudioContext*, float sampleRate);
 
-    virtual ~AudioBufferSourceNode();
+    virtual ~AudioBufferSourceHandler();
 
-    // AudioNode
+    // AudioHandler
     virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
 
@@ -96,7 +96,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    AudioBufferSourceNode(AudioContext*, float sampleRate);
+    AudioBufferSourceHandler(AudioContext*, float sampleRate);
 
     void startSource(double when, double grainOffset, double grainDuration, bool isDurationGiven, ExceptionState&);
 
@@ -153,6 +153,9 @@ private:
     // This synchronizes process() with setBuffer() which can cause dynamic channel count changes.
     mutable Mutex m_processLock;
 };
+
+// TODO(tkent): Introduce an actual class to wrap a handler.
+using AudioBufferSourceNode = AudioBufferSourceHandler;
 
 } // namespace blink
 

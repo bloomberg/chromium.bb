@@ -34,24 +34,24 @@
 
 namespace blink {
 
-AnalyserNode::AnalyserNode(AudioContext* context, float sampleRate)
-    : AudioBasicInspectorNode(NodeTypeAnalyser, context, sampleRate, 2)
+AnalyserHandler::AnalyserHandler(AudioContext* context, float sampleRate)
+    : AudioBasicInspectorHandler(NodeTypeAnalyser, context, sampleRate, 2)
 {
     initialize();
 }
 
-AnalyserNode::~AnalyserNode()
+AnalyserHandler::~AnalyserHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void AnalyserNode::dispose()
+void AnalyserHandler::dispose()
 {
     uninitialize();
-    AudioBasicInspectorNode::dispose();
+    AudioBasicInspectorHandler::dispose();
 }
 
-void AnalyserNode::process(size_t framesToProcess)
+void AnalyserHandler::process(size_t framesToProcess)
 {
     AudioBus* outputBus = output(0)->bus();
 
@@ -71,7 +71,7 @@ void AnalyserNode::process(size_t framesToProcess)
         outputBus->copyFrom(*inputBus);
 }
 
-void AnalyserNode::setFftSize(unsigned size, ExceptionState& exceptionState)
+void AnalyserHandler::setFftSize(unsigned size, ExceptionState& exceptionState)
 {
     if (!m_analyser.setFftSize(size)) {
         exceptionState.throwDOMException(
@@ -82,7 +82,7 @@ void AnalyserNode::setFftSize(unsigned size, ExceptionState& exceptionState)
     }
 }
 
-void AnalyserNode::setMinDecibels(double k, ExceptionState& exceptionState)
+void AnalyserHandler::setMinDecibels(double k, ExceptionState& exceptionState)
 {
     if (k < maxDecibels()) {
         m_analyser.setMinDecibels(k);
@@ -93,7 +93,7 @@ void AnalyserNode::setMinDecibels(double k, ExceptionState& exceptionState)
     }
 }
 
-void AnalyserNode::setMaxDecibels(double k, ExceptionState& exceptionState)
+void AnalyserHandler::setMaxDecibels(double k, ExceptionState& exceptionState)
 {
     if (k > minDecibels()) {
         m_analyser.setMaxDecibels(k);
@@ -104,7 +104,7 @@ void AnalyserNode::setMaxDecibels(double k, ExceptionState& exceptionState)
     }
 }
 
-void AnalyserNode::setSmoothingTimeConstant(double k, ExceptionState& exceptionState)
+void AnalyserHandler::setSmoothingTimeConstant(double k, ExceptionState& exceptionState)
 {
     if (k >= 0 && k <= 1) {
         m_analyser.setSmoothingTimeConstant(k);

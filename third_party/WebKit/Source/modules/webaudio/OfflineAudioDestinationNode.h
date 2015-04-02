@@ -36,21 +36,21 @@ namespace blink {
 class AudioBus;
 class AudioContext;
 
-class OfflineAudioDestinationNode final : public AudioDestinationNode {
+class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
 public:
-    static OfflineAudioDestinationNode* create(AudioContext* context, AudioBuffer* renderTarget)
+    static OfflineAudioDestinationHandler* create(AudioContext* context, AudioBuffer* renderTarget)
     {
-        return new OfflineAudioDestinationNode(context, renderTarget);
+        return new OfflineAudioDestinationHandler(context, renderTarget);
     }
 
-    virtual ~OfflineAudioDestinationNode();
+    virtual ~OfflineAudioDestinationHandler();
 
-    // AudioNode
+    // AudioHandler
     virtual void dispose() override;
     virtual void initialize() override;
     virtual void uninitialize() override;
 
-    // AudioDestinationNode
+    // AudioDestinationHandler
     virtual void startRendering() override;
     virtual void stopRendering() override;
 
@@ -59,7 +59,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    OfflineAudioDestinationNode(AudioContext*, AudioBuffer* renderTarget);
+    OfflineAudioDestinationHandler(AudioContext*, AudioBuffer* renderTarget);
 
     void offlineRender();
     void offlineRenderInternal();
@@ -76,6 +76,9 @@ private:
     OwnPtr<WebThread> m_renderThread;
     bool m_startedRendering;
 };
+
+// TODO(tkent): Introduce an actual class to wrap a handler.
+using OfflineAudioDestinationNode = OfflineAudioDestinationHandler;
 
 } // namespace blink
 

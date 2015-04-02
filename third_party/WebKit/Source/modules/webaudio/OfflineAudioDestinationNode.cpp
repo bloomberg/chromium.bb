@@ -38,34 +38,34 @@ namespace blink {
 
 const size_t renderQuantumSize = 128;
 
-OfflineAudioDestinationNode::OfflineAudioDestinationNode(AudioContext* context, AudioBuffer* renderTarget)
-    : AudioDestinationNode(context, renderTarget->sampleRate())
+OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(AudioContext* context, AudioBuffer* renderTarget)
+    : AudioDestinationHandler(context, renderTarget->sampleRate())
     , m_renderTarget(renderTarget)
     , m_startedRendering(false)
 {
     m_renderBus = AudioBus::create(renderTarget->numberOfChannels(), renderQuantumSize);
 }
 
-OfflineAudioDestinationNode::~OfflineAudioDestinationNode()
+OfflineAudioDestinationHandler::~OfflineAudioDestinationHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void OfflineAudioDestinationNode::dispose()
+void OfflineAudioDestinationHandler::dispose()
 {
     uninitialize();
-    AudioDestinationNode::dispose();
+    AudioDestinationHandler::dispose();
 }
 
-void OfflineAudioDestinationNode::initialize()
+void OfflineAudioDestinationHandler::initialize()
 {
     if (isInitialized())
         return;
 
-    AudioNode::initialize();
+    AudioHandler::initialize();
 }
 
-void OfflineAudioDestinationNode::uninitialize()
+void OfflineAudioDestinationHandler::uninitialize()
 {
     if (!isInitialized())
         return;
@@ -73,10 +73,10 @@ void OfflineAudioDestinationNode::uninitialize()
     if (m_renderThread)
         m_renderThread.clear();
 
-    AudioNode::uninitialize();
+    AudioHandler::uninitialize();
 }
 
-void OfflineAudioDestinationNode::startRendering()
+void OfflineAudioDestinationHandler::startRendering()
 {
     ASSERT(isMainThread());
     ASSERT(m_renderTarget);
@@ -87,23 +87,23 @@ void OfflineAudioDestinationNode::startRendering()
         m_startedRendering = true;
         context()->notifyNodeStartedProcessing(this);
         m_renderThread = adoptPtr(blink::Platform::current()->createThread("Offline Audio Renderer"));
-        m_renderThread->postTask(FROM_HERE, new Task(bind(&OfflineAudioDestinationNode::offlineRender, this)));
+        m_renderThread->postTask(FROM_HERE, new Task(bind(&OfflineAudioDestinationHandler::offlineRender, this)));
     }
 }
 
-void OfflineAudioDestinationNode::stopRendering()
+void OfflineAudioDestinationHandler::stopRendering()
 {
     ASSERT_NOT_REACHED();
 }
 
-void OfflineAudioDestinationNode::offlineRender()
+void OfflineAudioDestinationHandler::offlineRender()
 {
     offlineRenderInternal();
     context()->notifyNodeFinishedProcessing(this);
     context()->handlePostRenderTasks();
 }
 
-void OfflineAudioDestinationNode::offlineRenderInternal()
+void OfflineAudioDestinationHandler::offlineRenderInternal()
 {
     ASSERT(!isMainThread());
     ASSERT(m_renderBus);
@@ -149,18 +149,18 @@ void OfflineAudioDestinationNode::offlineRenderInternal()
 
     // Our work is done. Let the AudioContext know.
     if (context()->executionContext())
-        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&OfflineAudioDestinationNode::notifyComplete, this));
+        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, this));
 }
 
-void OfflineAudioDestinationNode::notifyComplete()
+void OfflineAudioDestinationHandler::notifyComplete()
 {
     context()->fireCompletionEvent();
 }
 
-DEFINE_TRACE(OfflineAudioDestinationNode)
+DEFINE_TRACE(OfflineAudioDestinationHandler)
 {
     visitor->trace(m_renderTarget);
-    AudioDestinationNode::trace(visitor);
+    AudioDestinationHandler::trace(visitor);
 }
 
 } // namespace blink

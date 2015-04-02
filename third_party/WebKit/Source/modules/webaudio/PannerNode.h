@@ -43,7 +43,7 @@ namespace blink {
 // A cone effect will attenuate the gain as the orientation moves away from the listener.
 // All of these effects follow the OpenAL specification very closely.
 
-class PannerNode final : public AudioNode {
+class PannerHandler final : public AudioHandler {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // These enums are used to distinguish what cached values of panner are dirty.
@@ -53,14 +53,14 @@ public:
         DopplerRateDirty = 0x4,
     };
 
-    static PannerNode* create(AudioContext* context, float sampleRate)
+    static PannerHandler* create(AudioContext* context, float sampleRate)
     {
-        return new PannerNode(context, sampleRate);
+        return new PannerHandler(context, sampleRate);
     }
 
-    virtual ~PannerNode();
+    virtual ~PannerHandler();
 
-    // AudioNode
+    // AudioHandler
     virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
     virtual void initialize() override;
@@ -110,7 +110,7 @@ public:
     virtual void setChannelCountMode(const String&, ExceptionState&) final;
 
 private:
-    PannerNode(AudioContext*, float sampleRate);
+    PannerHandler(AudioContext*, float sampleRate);
 
     // AudioContext's listener
     AudioListener* listener();
@@ -156,6 +156,9 @@ private:
     // Synchronize process() with setting of the panning model, source's location information, listener, distance parameters and sound cones.
     mutable Mutex m_processLock;
 };
+
+// TODO(tkent): Introduce an actual class to wrap a handler.
+using PannerNode = PannerHandler;
 
 } // namespace blink
 

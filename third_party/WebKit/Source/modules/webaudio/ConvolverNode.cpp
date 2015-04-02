@@ -45,8 +45,8 @@ const size_t MaxFFTSize = 32768;
 
 namespace blink {
 
-ConvolverNode::ConvolverNode(AudioContext* context, float sampleRate)
-    : AudioNode(NodeTypeConvolver, context, sampleRate)
+ConvolverHandler::ConvolverHandler(AudioContext* context, float sampleRate)
+    : AudioHandler(NodeTypeConvolver, context, sampleRate)
     , m_normalize(true)
 {
     addInput();
@@ -60,18 +60,18 @@ ConvolverNode::ConvolverNode(AudioContext* context, float sampleRate)
     initialize();
 }
 
-ConvolverNode::~ConvolverNode()
+ConvolverHandler::~ConvolverHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void ConvolverNode::dispose()
+void ConvolverHandler::dispose()
 {
     uninitialize();
-    AudioNode::dispose();
+    AudioHandler::dispose();
 }
 
-void ConvolverNode::process(size_t framesToProcess)
+void ConvolverHandler::process(size_t framesToProcess)
 {
     AudioBus* outputBus = output(0)->bus();
     ASSERT(outputBus);
@@ -94,24 +94,24 @@ void ConvolverNode::process(size_t framesToProcess)
     }
 }
 
-void ConvolverNode::initialize()
+void ConvolverHandler::initialize()
 {
     if (isInitialized())
         return;
 
-    AudioNode::initialize();
+    AudioHandler::initialize();
 }
 
-void ConvolverNode::uninitialize()
+void ConvolverHandler::uninitialize()
 {
     if (!isInitialized())
         return;
 
     m_reverb.clear();
-    AudioNode::uninitialize();
+    AudioHandler::uninitialize();
 }
 
-void ConvolverNode::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionState)
+void ConvolverHandler::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -155,13 +155,13 @@ void ConvolverNode::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionStat
     }
 }
 
-AudioBuffer* ConvolverNode::buffer()
+AudioBuffer* ConvolverHandler::buffer()
 {
     ASSERT(isMainThread());
     return m_buffer.get();
 }
 
-double ConvolverNode::tailTime() const
+double ConvolverHandler::tailTime() const
 {
     MutexTryLocker tryLocker(m_processLock);
     if (tryLocker.locked())
@@ -171,7 +171,7 @@ double ConvolverNode::tailTime() const
     return std::numeric_limits<double>::infinity();
 }
 
-double ConvolverNode::latencyTime() const
+double ConvolverHandler::latencyTime() const
 {
     MutexTryLocker tryLocker(m_processLock);
     if (tryLocker.locked())
@@ -181,10 +181,10 @@ double ConvolverNode::latencyTime() const
     return std::numeric_limits<double>::infinity();
 }
 
-DEFINE_TRACE(ConvolverNode)
+DEFINE_TRACE(ConvolverHandler)
 {
     visitor->trace(m_buffer);
-    AudioNode::trace(visitor);
+    AudioHandler::trace(visitor);
 }
 
 } // namespace blink

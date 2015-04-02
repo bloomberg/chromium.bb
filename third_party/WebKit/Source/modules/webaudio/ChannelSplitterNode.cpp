@@ -32,16 +32,16 @@
 
 namespace blink {
 
-ChannelSplitterNode* ChannelSplitterNode::create(AudioContext* context, float sampleRate, unsigned numberOfOutputs)
+ChannelSplitterHandler* ChannelSplitterHandler::create(AudioContext* context, float sampleRate, unsigned numberOfOutputs)
 {
     if (!numberOfOutputs || numberOfOutputs > AudioContext::maxNumberOfChannels())
         return nullptr;
 
-    return new ChannelSplitterNode(context, sampleRate, numberOfOutputs);
+    return new ChannelSplitterHandler(context, sampleRate, numberOfOutputs);
 }
 
-ChannelSplitterNode::ChannelSplitterNode(AudioContext* context, float sampleRate, unsigned numberOfOutputs)
-    : AudioNode(NodeTypeChannelSplitter, context, sampleRate)
+ChannelSplitterHandler::ChannelSplitterHandler(AudioContext* context, float sampleRate, unsigned numberOfOutputs)
+    : AudioHandler(NodeTypeChannelSplitter, context, sampleRate)
 {
     addInput();
 
@@ -52,7 +52,7 @@ ChannelSplitterNode::ChannelSplitterNode(AudioContext* context, float sampleRate
     initialize();
 }
 
-void ChannelSplitterNode::process(size_t framesToProcess)
+void ChannelSplitterHandler::process(size_t framesToProcess)
 {
     AudioBus* source = input(0)->bus();
     ASSERT(source);

@@ -43,18 +43,18 @@ class AudioContext;
 // The "onaudioprocess" attribute is an event listener which will get called periodically with an AudioProcessingEvent which has
 // AudioBuffers for each input and output.
 
-class ScriptProcessorNode final : public AudioNode {
+class ScriptProcessorHandler final : public AudioHandler {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // bufferSize must be one of the following values: 256, 512, 1024, 2048, 4096, 8192, 16384.
     // This value controls how frequently the onaudioprocess event handler is called and how many sample-frames need to be processed each call.
     // Lower numbers for bufferSize will result in a lower (better) latency. Higher numbers will be necessary to avoid audio breakup and glitches.
     // The value chosen must carefully balance between latency and audio quality.
-    static ScriptProcessorNode* create(AudioContext*, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
+    static ScriptProcessorHandler* create(AudioContext*, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
 
-    virtual ~ScriptProcessorNode();
+    virtual ~ScriptProcessorHandler();
 
-    // AudioNode
+    // AudioHandler
     virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
     virtual void initialize() override;
@@ -73,7 +73,7 @@ private:
     virtual double tailTime() const override;
     virtual double latencyTime() const override;
 
-    ScriptProcessorNode(AudioContext*, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
+    ScriptProcessorHandler(AudioContext*, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
 
     void fireProcessEvent();
 
@@ -95,6 +95,9 @@ private:
     // Synchronize process() with fireProcessEvent().
     mutable Mutex m_processEventLock;
 };
+
+// TODO(tkent): Introduce an actual class to wrap a handler.
+using ScriptProcessorNode = ScriptProcessorHandler;
 
 } // namespace blink
 

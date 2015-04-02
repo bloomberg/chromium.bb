@@ -42,12 +42,13 @@ class AudioNodeOutput final {
 public:
     // It's OK to pass 0 for numberOfChannels in which case
     // setNumberOfChannels() must be called later on.
-    static PassOwnPtr<AudioNodeOutput> create(AudioNode*, unsigned numberOfChannels);
+    static PassOwnPtr<AudioNodeOutput> create(AudioHandler*, unsigned numberOfChannels);
     void dispose();
 
     // Can be called from any thread.
-    AudioNode* node() const { return &m_node; }
-    AudioContext* context() { return m_node.context(); }
+    // TODO(tkent): Rename it.
+    AudioHandler* node() const { return &m_handler; }
+    AudioContext* context() { return m_handler.context(); }
 
     // Causes our AudioNode to process if it hasn't already for this render quantum.
     // It returns the bus containing the processed audio for this output, returning inPlaceBus if in-place processing was possible.
@@ -90,12 +91,11 @@ public:
     void updateRenderingState();
 
 private:
-    AudioNodeOutput(AudioNode*, unsigned numberOfChannels);
+    AudioNodeOutput(AudioHandler*, unsigned numberOfChannels);
 
     // This reference to an Oilpan object is safe because the AudioNode owns
     // this AudioNodeOutput object.
-    // TODO(tkent): Replace this to AudioNodeHandler.
-    AudioNode& m_node;
+    AudioHandler& m_handler;
 
     friend class AudioNodeInput;
     friend class AudioParamHandler;

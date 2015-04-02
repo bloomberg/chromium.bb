@@ -925,7 +925,7 @@ bool DeferredTaskHandler::isGraphOwner()
 }
 #endif
 
-void DeferredTaskHandler::addDeferredBreakConnection(AudioNode& node)
+void DeferredTaskHandler::addDeferredBreakConnection(AudioHandler& node)
 {
     ASSERT(isAudioThread());
     m_deferredBreakConnectionList.append(&node);
@@ -1011,7 +1011,7 @@ AudioContext::AudioNodeDisposer::~AudioNodeDisposer()
     m_node.dispose();
 }
 
-void DeferredTaskHandler::disposeOutputs(AudioNode& node)
+void DeferredTaskHandler::disposeOutputs(AudioHandler& node)
 {
     ASSERT(isGraphOwner());
     ASSERT(isMainThread());
@@ -1064,7 +1064,7 @@ void DeferredTaskHandler::handleDirtyAudioNodeOutputs()
     m_dirtyAudioNodeOutputs.clear();
 }
 
-void DeferredTaskHandler::addAutomaticPullNode(AudioNode* node)
+void DeferredTaskHandler::addAutomaticPullNode(AudioHandler* node)
 {
     ASSERT(isGraphOwner());
 
@@ -1074,7 +1074,7 @@ void DeferredTaskHandler::addAutomaticPullNode(AudioNode* node)
     }
 }
 
-void DeferredTaskHandler::removeAutomaticPullNode(AudioNode* node)
+void DeferredTaskHandler::removeAutomaticPullNode(AudioHandler* node)
 {
     ASSERT(isGraphOwner());
 
@@ -1266,14 +1266,14 @@ DEFINE_TRACE(AudioContext)
     ActiveDOMObject::trace(visitor);
 }
 
-void DeferredTaskHandler::addChangedChannelCountMode(AudioNode* node)
+void DeferredTaskHandler::addChangedChannelCountMode(AudioHandler* node)
 {
     ASSERT(isGraphOwner());
     ASSERT(isMainThread());
     m_deferredCountModeChange.add(node);
 }
 
-void DeferredTaskHandler::removeChangedChannelCountMode(AudioNode* node)
+void DeferredTaskHandler::removeChangedChannelCountMode(AudioHandler* node)
 {
     ASSERT(isGraphOwner());
 

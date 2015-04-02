@@ -36,18 +36,21 @@ namespace blink {
 
 class AudioContext;
 
-class ChannelMergerNode final : public AudioNode {
+class ChannelMergerHandler final : public AudioHandler {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static ChannelMergerNode* create(AudioContext*, float sampleRate, unsigned numberOfInputs);
+    static ChannelMergerHandler* create(AudioContext*, float sampleRate, unsigned numberOfInputs);
     virtual void process(size_t framesToProcess) override;
     virtual void setChannelCount(unsigned long, ExceptionState&) final;
     virtual void setChannelCountMode(const String&, ExceptionState&) final;
 
 private:
-    ChannelMergerNode(AudioContext*, float sampleRate, unsigned numberOfInputs);
+    ChannelMergerHandler(AudioContext*, float sampleRate, unsigned numberOfInputs);
 };
+
+// TODO(tkent): Introduce an actual class to wrap a handler.
+using ChannelMergerNode = ChannelMergerHandler;
 
 } // namespace blink
 

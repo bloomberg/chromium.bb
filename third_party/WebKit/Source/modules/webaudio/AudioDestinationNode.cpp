@@ -34,25 +34,25 @@
 
 namespace blink {
 
-AudioDestinationNode::AudioDestinationNode(AudioContext* context, float sampleRate)
-    : AudioNode(NodeTypeDestination, context, sampleRate)
+AudioDestinationHandler::AudioDestinationHandler(AudioContext* context, float sampleRate)
+    : AudioHandler(NodeTypeDestination, context, sampleRate)
     , m_currentSampleFrame(0)
 {
     addInput();
 }
 
-AudioDestinationNode::~AudioDestinationNode()
+AudioDestinationHandler::~AudioDestinationHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void AudioDestinationNode::dispose()
+void AudioDestinationHandler::dispose()
 {
     uninitialize();
-    AudioNode::dispose();
+    AudioHandler::dispose();
 }
 
-void AudioDestinationNode::render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames)
+void AudioDestinationHandler::render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames)
 {
     // We don't want denormals slowing down any of the audio processing
     // since they can very seriously hurt performance.

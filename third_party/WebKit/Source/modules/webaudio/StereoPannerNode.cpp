@@ -18,8 +18,8 @@
 
 namespace blink {
 
-StereoPannerNode::StereoPannerNode(AudioContext* context, float sampleRate)
-    : AudioNode(NodeTypeStereoPanner, context, sampleRate)
+StereoPannerHandler::StereoPannerHandler(AudioContext* context, float sampleRate)
+    : AudioHandler(NodeTypeStereoPanner, context, sampleRate)
     , m_sampleAccuratePanValues(AudioNode::ProcessingSizeInFrames)
 {
     m_pan = AudioParam::create(context, 0);
@@ -36,18 +36,18 @@ StereoPannerNode::StereoPannerNode(AudioContext* context, float sampleRate)
     initialize();
 }
 
-StereoPannerNode::~StereoPannerNode()
+StereoPannerHandler::~StereoPannerHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void StereoPannerNode::dispose()
+void StereoPannerHandler::dispose()
 {
     uninitialize();
-    AudioNode::dispose();
+    AudioHandler::dispose();
 }
 
-void StereoPannerNode::process(size_t framesToProcess)
+void StereoPannerHandler::process(size_t framesToProcess)
 {
     AudioBus* outputBus = output(0)->bus();
 
@@ -75,27 +75,27 @@ void StereoPannerNode::process(size_t framesToProcess)
     }
 }
 
-void StereoPannerNode::initialize()
+void StereoPannerHandler::initialize()
 {
     if (isInitialized())
         return;
 
     m_stereoPanner = Spatializer::create(Spatializer::PanningModelEqualPower, sampleRate());
 
-    AudioNode::initialize();
+    AudioHandler::initialize();
 }
 
-void StereoPannerNode::uninitialize()
+void StereoPannerHandler::uninitialize()
 {
     if (!isInitialized())
         return;
 
     m_stereoPanner.clear();
 
-    AudioNode::uninitialize();
+    AudioHandler::uninitialize();
 }
 
-void StereoPannerNode::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
+void StereoPannerHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -120,7 +120,7 @@ void StereoPannerNode::setChannelCount(unsigned long channelCount, ExceptionStat
     }
 }
 
-void StereoPannerNode::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
+void StereoPannerHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -150,10 +150,10 @@ void StereoPannerNode::setChannelCountMode(const String& mode, ExceptionState& e
         context()->handler().addChangedChannelCountMode(this);
 }
 
-DEFINE_TRACE(StereoPannerNode)
+DEFINE_TRACE(StereoPannerHandler)
 {
     visitor->trace(m_pan);
-    AudioNode::trace(visitor);
+    AudioHandler::trace(visitor);
 }
 
 } // namespace blink

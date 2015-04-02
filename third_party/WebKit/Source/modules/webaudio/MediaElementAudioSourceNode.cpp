@@ -37,12 +37,12 @@
 
 namespace blink {
 
-MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AudioContext* context, HTMLMediaElement* mediaElement)
+MediaElementAudioSourceHandler* MediaElementAudioSourceHandler::create(AudioContext* context, HTMLMediaElement* mediaElement)
 {
-    return new MediaElementAudioSourceNode(context, mediaElement);
+    return new MediaElementAudioSourceHandler(context, mediaElement);
 }
 
-MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext* context, HTMLMediaElement* mediaElement)
+MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(AudioContext* context, HTMLMediaElement* mediaElement)
     : AudioSourceNode(NodeTypeMediaElementAudioSource, context, context->sampleRate())
     , m_mediaElement(mediaElement)
     , m_sourceNumberOfChannels(0)
@@ -55,19 +55,19 @@ MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext* context, 
     initialize();
 }
 
-MediaElementAudioSourceNode::~MediaElementAudioSourceNode()
+MediaElementAudioSourceHandler::~MediaElementAudioSourceHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void MediaElementAudioSourceNode::dispose()
+void MediaElementAudioSourceHandler::dispose()
 {
     m_mediaElement->setAudioSourceNode(nullptr);
     uninitialize();
     AudioSourceNode::dispose();
 }
 
-void MediaElementAudioSourceNode::setFormat(size_t numberOfChannels, float sourceSampleRate)
+void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels, float sourceSampleRate)
 {
     if (numberOfChannels != m_sourceNumberOfChannels || sourceSampleRate != m_sourceSampleRate) {
         if (!numberOfChannels || numberOfChannels > AudioContext::maxNumberOfChannels() || !AudioUtilities::isValidAudioBufferSampleRate(sourceSampleRate)) {
@@ -102,7 +102,7 @@ void MediaElementAudioSourceNode::setFormat(size_t numberOfChannels, float sourc
     }
 }
 
-bool MediaElementAudioSourceNode::passesCORSAccessCheck()
+bool MediaElementAudioSourceHandler::passesCORSAccessCheck()
 {
     ASSERT(mediaElement());
 
@@ -110,7 +110,7 @@ bool MediaElementAudioSourceNode::passesCORSAccessCheck()
         || (context()->securityOrigin() && context()->securityOrigin()->canRequest(mediaElement()->currentSrc()));
 }
 
-void MediaElementAudioSourceNode::process(size_t numberOfFrames)
+void MediaElementAudioSourceHandler::process(size_t numberOfFrames)
 {
     AudioBus* outputBus = output(0)->bus();
 
@@ -150,17 +150,17 @@ void MediaElementAudioSourceNode::process(size_t numberOfFrames)
     }
 }
 
-void MediaElementAudioSourceNode::lock()
+void MediaElementAudioSourceHandler::lock()
 {
     m_processLock.lock();
 }
 
-void MediaElementAudioSourceNode::unlock()
+void MediaElementAudioSourceHandler::unlock()
 {
     m_processLock.unlock();
 }
 
-DEFINE_TRACE(MediaElementAudioSourceNode)
+DEFINE_TRACE(MediaElementAudioSourceHandler)
 {
     visitor->trace(m_mediaElement);
     AudioSourceNode::trace(visitor);

@@ -39,13 +39,13 @@ namespace blink {
 
 using namespace VectorMath;
 
-OscillatorNode* OscillatorNode::create(AudioContext* context, float sampleRate)
+OscillatorHandler* OscillatorHandler::create(AudioContext* context, float sampleRate)
 {
-    return new OscillatorNode(context, sampleRate);
+    return new OscillatorHandler(context, sampleRate);
 }
 
-OscillatorNode::OscillatorNode(AudioContext* context, float sampleRate)
-    : AudioScheduledSourceNode(NodeTypeOscillator, context, sampleRate)
+OscillatorHandler::OscillatorHandler(AudioContext* context, float sampleRate)
+    : AudioScheduledSourceHandler(NodeTypeOscillator, context, sampleRate)
     , m_type(SINE)
     , m_firstRender(true)
     , m_virtualReadIndex(0)
@@ -66,18 +66,18 @@ OscillatorNode::OscillatorNode(AudioContext* context, float sampleRate)
     initialize();
 }
 
-OscillatorNode::~OscillatorNode()
+OscillatorHandler::~OscillatorHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void OscillatorNode::dispose()
+void OscillatorHandler::dispose()
 {
     uninitialize();
-    AudioScheduledSourceNode::dispose();
+    AudioScheduledSourceHandler::dispose();
 }
 
-String OscillatorNode::type() const
+String OscillatorHandler::type() const
 {
     switch (m_type) {
     case SINE:
@@ -96,7 +96,7 @@ String OscillatorNode::type() const
     }
 }
 
-void OscillatorNode::setType(const String& type)
+void OscillatorHandler::setType(const String& type)
 {
     if (type == "sine")
         setType(SINE);
@@ -108,7 +108,7 @@ void OscillatorNode::setType(const String& type)
         setType(TRIANGLE);
 }
 
-bool OscillatorNode::setType(unsigned type)
+bool OscillatorHandler::setType(unsigned type)
 {
     PeriodicWave* periodicWave = nullptr;
     float sampleRate = this->sampleRate();
@@ -146,7 +146,7 @@ bool OscillatorNode::setType(unsigned type)
     return true;
 }
 
-bool OscillatorNode::calculateSampleAccuratePhaseIncrements(size_t framesToProcess)
+bool OscillatorHandler::calculateSampleAccuratePhaseIncrements(size_t framesToProcess)
 {
     bool isGood = framesToProcess <= m_phaseIncrements.size() && framesToProcess <= m_detuneValues.size();
     ASSERT(isGood);
@@ -212,7 +212,7 @@ bool OscillatorNode::calculateSampleAccuratePhaseIncrements(size_t framesToProce
     return hasSampleAccurateValues;
 }
 
-void OscillatorNode::process(size_t framesToProcess)
+void OscillatorHandler::process(size_t framesToProcess)
 {
     AudioBus* outputBus = output(0)->bus();
 
@@ -325,7 +325,7 @@ void OscillatorNode::process(size_t framesToProcess)
     outputBus->clearSilentFlag();
 }
 
-void OscillatorNode::setPeriodicWave(PeriodicWave* periodicWave)
+void OscillatorHandler::setPeriodicWave(PeriodicWave* periodicWave)
 {
     ASSERT(isMainThread());
 
@@ -335,17 +335,17 @@ void OscillatorNode::setPeriodicWave(PeriodicWave* periodicWave)
     m_type = CUSTOM;
 }
 
-bool OscillatorNode::propagatesSilence() const
+bool OscillatorHandler::propagatesSilence() const
 {
     return !isPlayingOrScheduled() || hasFinished() || !m_periodicWave.get();
 }
 
-DEFINE_TRACE(OscillatorNode)
+DEFINE_TRACE(OscillatorHandler)
 {
     visitor->trace(m_frequency);
     visitor->trace(m_detune);
     visitor->trace(m_periodicWave);
-    AudioScheduledSourceNode::trace(visitor);
+    AudioScheduledSourceHandler::trace(visitor);
 }
 
 } // namespace blink

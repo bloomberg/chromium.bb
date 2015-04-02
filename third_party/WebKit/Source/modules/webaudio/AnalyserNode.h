@@ -33,17 +33,17 @@ namespace blink {
 
 class ExceptionState;
 
-class AnalyserNode final : public AudioBasicInspectorNode {
+class AnalyserHandler final : public AudioBasicInspectorHandler {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AnalyserNode* create(AudioContext* context, float sampleRate)
+    static AnalyserHandler* create(AudioContext* context, float sampleRate)
     {
-        return new AnalyserNode(context, sampleRate);
+        return new AnalyserHandler(context, sampleRate);
     }
 
-    virtual ~AnalyserNode();
+    virtual ~AnalyserHandler();
 
-    // AudioNode
+    // AudioHandler
     virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
 
@@ -68,10 +68,13 @@ public:
     void getByteTimeDomainData(DOMUint8Array* array) { m_analyser.getByteTimeDomainData(array); }
 
 private:
-    AnalyserNode(AudioContext*, float sampleRate);
+    AnalyserHandler(AudioContext*, float sampleRate);
 
     RealtimeAnalyser m_analyser;
 };
+
+// TODO(tkent): Introduce an actual class to wrap a handler.
+using AnalyserNode = AnalyserHandler;
 
 } // namespace blink
 

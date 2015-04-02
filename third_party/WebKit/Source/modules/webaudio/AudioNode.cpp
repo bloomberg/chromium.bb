@@ -41,9 +41,9 @@
 
 namespace blink {
 
-unsigned AudioNode::s_instanceCount = 0;
+unsigned AudioHandler::s_instanceCount = 0;
 
-AudioNode::AudioNode(NodeType nodeType, AudioContext* context, float sampleRate)
+AudioHandler::AudioHandler(NodeType nodeType, AudioContext* context, float sampleRate)
     : m_isInitialized(false)
     , m_nodeType(NodeTypeUnknown)
     , m_context(context)
@@ -63,13 +63,13 @@ AudioNode::AudioNode(NodeType nodeType, AudioContext* context, float sampleRate)
 #if DEBUG_AUDIONODE_REFERENCES
     if (!s_isNodeCountInitialized) {
         s_isNodeCountInitialized = true;
-        atexit(AudioNode::printNodeCounts);
+        atexit(AudioHandler::printNodeCounts);
     }
 #endif
     ++s_instanceCount;
 }
 
-AudioNode::~AudioNode()
+AudioHandler::~AudioHandler()
 {
     --s_instanceCount;
 #if DEBUG_AUDIONODE_REFERENCES
@@ -79,21 +79,21 @@ AudioNode::~AudioNode()
 #endif
 }
 
-void AudioNode::initialize()
+void AudioHandler::initialize()
 {
     m_isInitialized = true;
 }
 
-void AudioNode::uninitialize()
+void AudioHandler::uninitialize()
 {
     m_isInitialized = false;
 }
 
-void AudioNode::clearInternalStateWhenDisabled()
+void AudioHandler::clearInternalStateWhenDisabled()
 {
 }
 
-void AudioNode::dispose()
+void AudioHandler::dispose()
 {
     ASSERT(isMainThread());
     ASSERT(context()->isGraphOwner());
@@ -103,7 +103,7 @@ void AudioNode::dispose()
     context()->handler().disposeOutputs(*this);
 }
 
-String AudioNode::nodeTypeName() const
+String AudioHandler::nodeTypeName() const
 {
     switch (m_nodeType) {
     case NodeTypeDestination:
@@ -150,7 +150,7 @@ String AudioNode::nodeTypeName() const
     }
 }
 
-void AudioNode::setNodeType(NodeType type)
+void AudioHandler::setNodeType(NodeType type)
 {
     // Don't allow the node type to be changed to a different node type, after it's already been
     // set!  And the new type can't be unknown or end!
@@ -166,12 +166,12 @@ void AudioNode::setNodeType(NodeType type)
 #endif
 }
 
-void AudioNode::addInput()
+void AudioHandler::addInput()
 {
     m_inputs.append(AudioNodeInput::create(*this));
 }
 
-void AudioNode::addOutput(unsigned numberOfChannels)
+void AudioHandler::addOutput(unsigned numberOfChannels)
 {
     m_outputs.append(AudioNodeOutput::create(this, numberOfChannels));
     m_connectedNodes.append(nullptr);
@@ -180,21 +180,21 @@ void AudioNode::addOutput(unsigned numberOfChannels)
     ASSERT(numberOfOutputs() == m_connectedParams.size());
 }
 
-AudioNodeInput* AudioNode::input(unsigned i)
+AudioNodeInput* AudioHandler::input(unsigned i)
 {
     if (i < m_inputs.size())
         return m_inputs[i].get();
     return nullptr;
 }
 
-AudioNodeOutput* AudioNode::output(unsigned i)
+AudioNodeOutput* AudioHandler::output(unsigned i)
 {
     if (i < m_outputs.size())
         return m_outputs[i].get();
     return nullptr;
 }
 
-void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
+void AudioHandler::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -244,7 +244,7 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
     context()->incrementConnectionCount();
 }
 
-void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionState& exceptionState)
+void AudioHandler::connect(AudioParam* param, unsigned outputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -283,7 +283,7 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionState&
     m_connectedParams[outputIndex]->add(param);
 }
 
-void AudioNode::disconnect()
+void AudioHandler::disconnect()
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -296,7 +296,7 @@ void AudioNode::disconnect()
     }
 }
 
-void AudioNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
+void AudioHandler::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -321,7 +321,7 @@ void AudioNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
     m_connectedParams[outputIndex] = nullptr;
 }
 
-void AudioNode::disconnect(AudioNode* destination, ExceptionState& exceptionState)
+void AudioHandler::disconnect(AudioNode* destination, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -351,7 +351,7 @@ void AudioNode::disconnect(AudioNode* destination, ExceptionState& exceptionStat
     }
 }
 
-void AudioNode::disconnect(AudioNode* destination, unsigned outputIndex, ExceptionState& exceptionState)
+void AudioHandler::disconnect(AudioNode* destination, unsigned outputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -397,7 +397,7 @@ void AudioNode::disconnect(AudioNode* destination, unsigned outputIndex, Excepti
     }
 }
 
-void AudioNode::disconnect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
+void AudioHandler::disconnect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -450,7 +450,7 @@ void AudioNode::disconnect(AudioNode* destination, unsigned outputIndex, unsigne
     }
 }
 
-void AudioNode::disconnect(AudioParam* destinationParam, ExceptionState& exceptionState)
+void AudioHandler::disconnect(AudioParam* destinationParam, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -478,7 +478,7 @@ void AudioNode::disconnect(AudioParam* destinationParam, ExceptionState& excepti
     }
 }
 
-void AudioNode::disconnect(AudioParam* destinationParam, unsigned outputIndex, ExceptionState& exceptionState)
+void AudioHandler::disconnect(AudioParam* destinationParam, unsigned outputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -515,7 +515,7 @@ void AudioNode::disconnect(AudioParam* destinationParam, unsigned outputIndex, E
     }
 }
 
-void AudioNode::disconnectWithoutException(unsigned outputIndex)
+void AudioHandler::disconnectWithoutException(unsigned outputIndex)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -528,12 +528,12 @@ void AudioNode::disconnectWithoutException(unsigned outputIndex)
     m_connectedParams[outputIndex] = nullptr;
 }
 
-unsigned long AudioNode::channelCount()
+unsigned long AudioHandler::channelCount()
 {
     return m_channelCount;
 }
 
-void AudioNode::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
+void AudioHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -551,7 +551,7 @@ void AudioNode::setChannelCount(unsigned long channelCount, ExceptionState& exce
     }
 }
 
-String AudioNode::channelCountMode()
+String AudioHandler::channelCountMode()
 {
     switch (m_channelCountMode) {
     case Max:
@@ -565,7 +565,7 @@ String AudioNode::channelCountMode()
     return "";
 }
 
-void AudioNode::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
+void AudioHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -586,7 +586,7 @@ void AudioNode::setChannelCountMode(const String& mode, ExceptionState& exceptio
         context()->handler().addChangedChannelCountMode(this);
 }
 
-String AudioNode::channelInterpretation()
+String AudioHandler::channelInterpretation()
 {
     switch (m_channelInterpretation) {
     case AudioBus::Speakers:
@@ -598,7 +598,7 @@ String AudioNode::channelInterpretation()
     return "";
 }
 
-void AudioNode::setChannelInterpretation(const String& interpretation, ExceptionState& exceptionState)
+void AudioHandler::setChannelInterpretation(const String& interpretation, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -612,23 +612,23 @@ void AudioNode::setChannelInterpretation(const String& interpretation, Exception
     }
 }
 
-void AudioNode::updateChannelsForInputs()
+void AudioHandler::updateChannelsForInputs()
 {
     for (unsigned i = 0; i < m_inputs.size(); ++i)
         input(i)->changedOutputs();
 }
 
-const AtomicString& AudioNode::interfaceName() const
+const AtomicString& AudioHandler::interfaceName() const
 {
     return EventTargetNames::AudioNode;
 }
 
-ExecutionContext* AudioNode::executionContext() const
+ExecutionContext* AudioHandler::executionContext() const
 {
     return const_cast<AudioNode*>(this)->context()->executionContext();
 }
 
-void AudioNode::processIfNecessary(size_t framesToProcess)
+void AudioHandler::processIfNecessary(size_t framesToProcess)
 {
     ASSERT(context()->isAudioThread());
 
@@ -658,7 +658,7 @@ void AudioNode::processIfNecessary(size_t framesToProcess)
     }
 }
 
-void AudioNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
+void AudioHandler::checkNumberOfChannelsForInput(AudioNodeInput* input)
 {
     ASSERT(context()->isAudioThread());
     ASSERT(context()->isGraphOwner());
@@ -670,22 +670,22 @@ void AudioNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
     input->updateInternalBus();
 }
 
-double AudioNode::tailTime() const
+double AudioHandler::tailTime() const
 {
     return 0;
 }
 
-double AudioNode::latencyTime() const
+double AudioHandler::latencyTime() const
 {
     return 0;
 }
 
-bool AudioNode::propagatesSilence() const
+bool AudioHandler::propagatesSilence() const
 {
     return m_lastNonSilentTime + latencyTime() + tailTime() < context()->currentTime();
 }
 
-void AudioNode::pullInputs(size_t framesToProcess)
+void AudioHandler::pullInputs(size_t framesToProcess)
 {
     ASSERT(context()->isAudioThread());
 
@@ -694,7 +694,7 @@ void AudioNode::pullInputs(size_t framesToProcess)
         input(i)->pull(0, framesToProcess);
 }
 
-bool AudioNode::inputsAreSilent()
+bool AudioHandler::inputsAreSilent()
 {
     for (unsigned i = 0; i < m_inputs.size(); ++i) {
         if (!input(i)->bus()->isSilent())
@@ -703,19 +703,19 @@ bool AudioNode::inputsAreSilent()
     return true;
 }
 
-void AudioNode::silenceOutputs()
+void AudioHandler::silenceOutputs()
 {
     for (unsigned i = 0; i < m_outputs.size(); ++i)
         output(i)->bus()->zero();
 }
 
-void AudioNode::unsilenceOutputs()
+void AudioHandler::unsilenceOutputs()
 {
     for (unsigned i = 0; i < m_outputs.size(); ++i)
         output(i)->bus()->clearSilentFlag();
 }
 
-void AudioNode::enableOutputsIfNecessary()
+void AudioHandler::enableOutputsIfNecessary()
 {
     if (m_isDisabled && m_connectionRefCount > 0) {
         ASSERT(isMainThread());
@@ -727,7 +727,7 @@ void AudioNode::enableOutputsIfNecessary()
     }
 }
 
-void AudioNode::disableOutputsIfNecessary()
+void AudioHandler::disableOutputsIfNecessary()
 {
     // Disable outputs if appropriate. We do this if the number of connections is 0 or 1. The case
     // of 0 is from deref() where there are no connections left. The case of 1 is from
@@ -754,7 +754,7 @@ void AudioNode::disableOutputsIfNecessary()
     }
 }
 
-void AudioNode::makeConnection()
+void AudioHandler::makeConnection()
 {
     atomicIncrement(&m_connectionRefCount);
 
@@ -768,7 +768,7 @@ void AudioNode::makeConnection()
     enableOutputsIfNecessary();
 }
 
-void AudioNode::breakConnection()
+void AudioHandler::breakConnection()
 {
     // The actual work for deref happens completely within the audio context's
     // graph lock. In the case of the audio thread, we must use a tryLock to
@@ -793,7 +793,7 @@ void AudioNode::breakConnection()
     }
 }
 
-void AudioNode::breakConnectionWithLock()
+void AudioHandler::breakConnectionWithLock()
 {
     atomicDecrement(&m_connectionRefCount);
 
@@ -808,10 +808,10 @@ void AudioNode::breakConnectionWithLock()
 
 #if DEBUG_AUDIONODE_REFERENCES
 
-bool AudioNode::s_isNodeCountInitialized = false;
-int AudioNode::s_nodeCount[NodeTypeEnd];
+bool AudioHandler::s_isNodeCountInitialized = false;
+int AudioHandler::s_nodeCount[NodeTypeEnd];
 
-void AudioNode::printNodeCounts()
+void AudioHandler::printNodeCounts()
 {
     fprintf(stderr, "\n\n");
     fprintf(stderr, "===========================\n");
@@ -826,7 +826,7 @@ void AudioNode::printNodeCounts()
 
 #endif // DEBUG_AUDIONODE_REFERENCES
 
-DEFINE_TRACE(AudioNode)
+DEFINE_TRACE(AudioHandler)
 {
     visitor->trace(m_context);
     // TODO(tkent): Oilpan: renderingOutputs should not be strong references.
@@ -844,7 +844,7 @@ DEFINE_TRACE(AudioNode)
     RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode>::trace(visitor);
 }
 
-void AudioNode::updateChannelCountMode()
+void AudioHandler::updateChannelCountMode()
 {
     m_channelCountMode = m_newChannelCountMode;
     updateChannelsForInputs();

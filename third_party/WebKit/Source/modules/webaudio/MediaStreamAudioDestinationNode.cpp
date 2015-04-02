@@ -35,13 +35,13 @@
 
 namespace blink {
 
-MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::create(AudioContext* context, size_t numberOfChannels)
+MediaStreamAudioDestinationHandler* MediaStreamAudioDestinationHandler::create(AudioContext* context, size_t numberOfChannels)
 {
-    return new MediaStreamAudioDestinationNode(context, numberOfChannels);
+    return new MediaStreamAudioDestinationHandler(context, numberOfChannels);
 }
 
-MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext* context, size_t numberOfChannels)
-    : AudioBasicInspectorNode(NodeTypeMediaStreamAudioDestination, context, context->sampleRate(), numberOfChannels)
+MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(AudioContext* context, size_t numberOfChannels)
+    : AudioBasicInspectorHandler(NodeTypeMediaStreamAudioDestination, context, context->sampleRate(), numberOfChannels)
     , m_mixBus(AudioBus::create(numberOfChannels, ProcessingSizeInFrames))
 {
     m_source = MediaStreamSource::create("WebAudio-" + createCanonicalUUIDString(), MediaStreamSource::TypeAudio, "MediaStreamAudioDestinationNode", false, true, MediaStreamSource::ReadyStateLive, true);
@@ -56,24 +56,24 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext* c
     initialize();
 }
 
-MediaStreamAudioDestinationNode::~MediaStreamAudioDestinationNode()
+MediaStreamAudioDestinationHandler::~MediaStreamAudioDestinationHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void MediaStreamAudioDestinationNode::dispose()
+void MediaStreamAudioDestinationHandler::dispose()
 {
     uninitialize();
-    AudioBasicInspectorNode::dispose();
+    AudioBasicInspectorHandler::dispose();
 }
 
-DEFINE_TRACE(MediaStreamAudioDestinationNode)
+DEFINE_TRACE(MediaStreamAudioDestinationHandler)
 {
     visitor->trace(m_stream);
-    AudioBasicInspectorNode::trace(visitor);
+    AudioBasicInspectorHandler::trace(visitor);
 }
 
-void MediaStreamAudioDestinationNode::process(size_t numberOfFrames)
+void MediaStreamAudioDestinationHandler::process(size_t numberOfFrames)
 {
     m_mixBus->copyFrom(*input(0)->bus());
     m_source->consumeAudio(m_mixBus.get(), numberOfFrames);

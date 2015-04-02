@@ -37,9 +37,9 @@
 
 namespace blink {
 
-const double AudioScheduledSourceNode::UnknownTime = -1;
+const double AudioScheduledSourceHandler::UnknownTime = -1;
 
-AudioScheduledSourceNode::AudioScheduledSourceNode(NodeType nodeType, AudioContext* context, float sampleRate)
+AudioScheduledSourceHandler::AudioScheduledSourceHandler(NodeType nodeType, AudioContext* context, float sampleRate)
     : AudioSourceNode(nodeType, context, sampleRate)
     , m_playbackState(UNSCHEDULED_STATE)
     , m_startTime(0)
@@ -48,7 +48,7 @@ AudioScheduledSourceNode::AudioScheduledSourceNode(NodeType nodeType, AudioConte
 {
 }
 
-void AudioScheduledSourceNode::updateSchedulingInfo(
+void AudioScheduledSourceHandler::updateSchedulingInfo(
     size_t quantumFrameSize, AudioBus* outputBus, size_t& quantumFrameOffset, size_t& nonSilentFramesToProcess)
 {
     ASSERT(outputBus);
@@ -130,7 +130,7 @@ void AudioScheduledSourceNode::updateSchedulingInfo(
     return;
 }
 
-void AudioScheduledSourceNode::start(double when, ExceptionState& exceptionState)
+void AudioScheduledSourceHandler::start(double when, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -160,7 +160,7 @@ void AudioScheduledSourceNode::start(double when, ExceptionState& exceptionState
     m_playbackState = SCHEDULED_STATE;
 }
 
-void AudioScheduledSourceNode::stop(double when, ExceptionState& exceptionState)
+void AudioScheduledSourceHandler::stop(double when, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -185,13 +185,13 @@ void AudioScheduledSourceNode::stop(double when, ExceptionState& exceptionState)
     m_endTime = when;
 }
 
-void AudioScheduledSourceNode::setOnended(PassRefPtr<EventListener> listener)
+void AudioScheduledSourceHandler::setOnended(PassRefPtr<EventListener> listener)
 {
     m_hasEndedListener = listener;
     setAttributeEventListener(EventTypeNames::ended, listener);
 }
 
-void AudioScheduledSourceNode::finishWithoutOnEnded()
+void AudioScheduledSourceHandler::finishWithoutOnEnded()
 {
     if (m_playbackState != FINISHED_STATE) {
         // Let the context dereference this AudioNode.
@@ -199,16 +199,16 @@ void AudioScheduledSourceNode::finishWithoutOnEnded()
         m_playbackState = FINISHED_STATE;
     }
 }
-void AudioScheduledSourceNode::finish()
+void AudioScheduledSourceHandler::finish()
 {
     finishWithoutOnEnded();
 
     if (m_hasEndedListener && context()->executionContext()) {
-        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&AudioScheduledSourceNode::notifyEnded, this));
+        context()->executionContext()->postTask(FROM_HERE, createCrossThreadTask(&AudioScheduledSourceHandler::notifyEnded, this));
     }
 }
 
-void AudioScheduledSourceNode::notifyEnded()
+void AudioScheduledSourceHandler::notifyEnded()
 {
     dispatchEvent(Event::create(EventTypeNames::ended));
 }

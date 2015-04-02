@@ -35,7 +35,7 @@ namespace blink {
 
 class AudioBus;
 
-class AudioScheduledSourceNode : public AudioSourceNode {
+class AudioScheduledSourceHandler : public AudioSourceNode {
 public:
     // These are the possible states an AudioScheduledSourceNode can be in:
     //
@@ -54,7 +54,7 @@ public:
         FINISHED_STATE = 3
     };
 
-    AudioScheduledSourceNode(NodeType, AudioContext*, float sampleRate);
+    AudioScheduledSourceHandler(NodeType, AudioContext*, float sampleRate);
 
     // Scheduling.
     void start(ExceptionState& exceptionState) { start(0.0, exceptionState); }

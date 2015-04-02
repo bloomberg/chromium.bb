@@ -32,7 +32,6 @@
 
 namespace blink {
 
-class AudioNode;
 class AudioNodeOutput;
 
 // An AudioNodeInput represents an input to an AudioNode and can be connected from one or more AudioNodeOutputs.
@@ -41,13 +40,14 @@ class AudioNodeOutput;
 
 class AudioNodeInput final : public AudioSummingJunction {
 public:
-    static PassOwnPtr<AudioNodeInput> create(AudioNode&);
+    static PassOwnPtr<AudioNodeInput> create(AudioHandler&);
 
     // AudioSummingJunction
     virtual void didUpdate() override;
 
     // Can be called from any thread.
-    AudioNode& node() const { return m_node; }
+    // TODO(tkent): Rename to m_handler.
+    AudioHandler& node() const { return m_handler; }
 
     // Must be called with the context's graph lock.
     void connect(AudioNodeOutput&);
@@ -78,12 +78,11 @@ public:
     unsigned numberOfChannels() const;
 
 private:
-    explicit AudioNodeInput(AudioNode&);
+    explicit AudioNodeInput(AudioHandler&);
 
     // This reference to an Oilpan object is safe because the AudioNode owns
     // this AudioNodeInput object.
-    // TODO(tkent): Replace this to AudioNodeHandler.
-    AudioNode& m_node;
+    AudioHandler& m_handler;
 
     // m_disabledOutputs contains the AudioNodeOutputs which are disabled (will
     // not be processed) by the audio graph rendering.  But, from JavaScript's

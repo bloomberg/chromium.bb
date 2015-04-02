@@ -41,16 +41,16 @@
 
 namespace blink {
 
-ChannelMergerNode* ChannelMergerNode::create(AudioContext* context, float sampleRate, unsigned numberOfInputs)
+ChannelMergerHandler* ChannelMergerHandler::create(AudioContext* context, float sampleRate, unsigned numberOfInputs)
 {
     if (!numberOfInputs || numberOfInputs > AudioContext::maxNumberOfChannels())
         return nullptr;
 
-    return new ChannelMergerNode(context, sampleRate, numberOfInputs);
+    return new ChannelMergerHandler(context, sampleRate, numberOfInputs);
 }
 
-ChannelMergerNode::ChannelMergerNode(AudioContext* context, float sampleRate, unsigned numberOfInputs)
-    : AudioNode(NodeTypeChannelMerger, context, sampleRate)
+ChannelMergerHandler::ChannelMergerHandler(AudioContext* context, float sampleRate, unsigned numberOfInputs)
+    : AudioHandler(NodeTypeChannelMerger, context, sampleRate)
 {
     // These properties are fixed for the node and cannot be changed by user.
     m_channelCount = 1;
@@ -66,7 +66,7 @@ ChannelMergerNode::ChannelMergerNode(AudioContext* context, float sampleRate, un
     initialize();
 }
 
-void ChannelMergerNode::process(size_t framesToProcess)
+void ChannelMergerHandler::process(size_t framesToProcess)
 {
     AudioNodeOutput* output = this->output(0);
     ASSERT(output);
@@ -98,7 +98,7 @@ void ChannelMergerNode::process(size_t framesToProcess)
     }
 }
 
-void ChannelMergerNode::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
+void ChannelMergerHandler::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -114,7 +114,7 @@ void ChannelMergerNode::setChannelCount(unsigned long channelCount, ExceptionSta
     }
 }
 
-void ChannelMergerNode::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
+void ChannelMergerHandler::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());

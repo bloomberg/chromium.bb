@@ -47,33 +47,33 @@
 
 namespace blink {
 
-class AnalyserNode;
+class AnalyserHandler;
 class AudioBuffer;
 class AudioBufferCallback;
-class AudioBufferSourceNode;
+class AudioBufferSourceHandler;
 class AudioListener;
 class AudioSummingJunction;
 class BiquadFilterNode;
-class ChannelMergerNode;
-class ChannelSplitterNode;
-class ConvolverNode;
+class ChannelMergerHandler;
+class ChannelSplitterHandler;
+class ConvolverHandler;
 class DelayNode;
 class Document;
-class DynamicsCompressorNode;
+class DynamicsCompressorHandler;
 class ExceptionState;
-class GainNode;
+class GainHandler;
 class HTMLMediaElement;
-class MediaElementAudioSourceNode;
-class MediaStreamAudioDestinationNode;
-class MediaStreamAudioSourceNode;
-class OscillatorNode;
-class PannerNode;
+class MediaElementAudioSourceHandler;
+class MediaStreamAudioDestinationHandler;
+class MediaStreamAudioSourceHandler;
+class OscillatorHandler;
+class PannerHandler;
 class PeriodicWave;
-class ScriptProcessorNode;
+class ScriptProcessorHandler;
 class ScriptPromiseResolver;
 class ScriptState;
 class SecurityOrigin;
-class StereoPannerNode;
+class StereoPannerHandler;
 class WaveShaperNode;
 
 // DeferredTaskHandler manages the major part of pre- and post- rendering tasks,
@@ -91,16 +91,16 @@ public:
     // they are not connected to any downstream nodes.  These two methods are
     // called by the nodes who want to add/remove themselves into/from the
     // automatic pull lists.
-    void addAutomaticPullNode(AudioNode*);
-    void removeAutomaticPullNode(AudioNode*);
+    void addAutomaticPullNode(AudioHandler*);
+    void removeAutomaticPullNode(AudioHandler*);
     // Called right before handlePostRenderTasks() to handle nodes which need to
     // be pulled even when they are not connected to anything.
     void processAutomaticPullNodes(size_t framesToProcess);
 
     // Keep track of AudioNode's that have their channel count mode changed. We
     // process the changes in the post rendering phase.
-    void addChangedChannelCountMode(AudioNode*);
-    void removeChangedChannelCountMode(AudioNode*);
+    void addChangedChannelCountMode(AudioHandler*);
+    void removeChangedChannelCountMode(AudioHandler*);
 
     // Only accessed when the graph lock is held.
     void markSummingJunctionDirty(AudioSummingJunction*);
@@ -109,11 +109,11 @@ public:
 
     void markAudioNodeOutputDirty(AudioNodeOutput*);
     void removeMarkedAudioNodeOutput(AudioNodeOutput*);
-    void disposeOutputs(AudioNode&);
+    void disposeOutputs(AudioHandler&);
 
     // In AudioNode::breakConnection() and deref(), a tryLock() is used for
     // calling actual processing, but if it fails keep track here.
-    void addDeferredBreakConnection(AudioNode&);
+    void addDeferredBreakConnection(AudioHandler&);
     void breakConnections();
 
     //
@@ -161,9 +161,9 @@ private:
     // Oilpan: Since items are added to the vector/hash set by the audio thread
     // (not registered to Oilpan), we cannot use a HeapVector/HeapHashSet.
     GC_PLUGIN_IGNORE("http://crbug.com/404527")
-    HashSet<AudioNode*> m_automaticPullNodes;
+    HashSet<AudioHandler*> m_automaticPullNodes;
     GC_PLUGIN_IGNORE("http://crbug.com/404527")
-    Vector<AudioNode*> m_renderingAutomaticPullNodes;
+    Vector<AudioHandler*> m_renderingAutomaticPullNodes;
     // m_automaticPullNodesNeedUpdating keeps track if m_automaticPullNodes is modified.
     bool m_automaticPullNodesNeedUpdating;
 
@@ -171,7 +171,7 @@ private:
     // channel count mode to change in the pre- or post-rendering phase so as
     // not to disturb the running audio thread.
     GC_PLUGIN_IGNORE("http://crbug.com/404527")
-    HashSet<AudioNode*> m_deferredCountModeChange;
+    HashSet<AudioHandler*> m_deferredCountModeChange;
 
     // These two HashSet must be accessed only when the graph lock is held.
     // Oilpan: These HashSet should be HeapHashSet<WeakMember<AudioNodeOutput>>
@@ -187,7 +187,7 @@ private:
     // Oilpan: Since items are added to these vectors by the audio thread (not
     // registered to Oilpan), we cannot use HeapVectors.
     GC_PLUGIN_IGNORE("http://crbug.com/404527")
-    Vector<AudioNode*> m_deferredBreakConnectionList;
+    Vector<AudioHandler*> m_deferredBreakConnectionList;
 
     // Graph locking.
     RecursiveMutex m_contextGraphMutex;
@@ -248,29 +248,29 @@ public:
     AudioListener* listener() { return m_listener.get(); }
 
     // The AudioNode create methods are called on the main thread (from JavaScript).
-    AudioBufferSourceNode* createBufferSource(ExceptionState&);
-    MediaElementAudioSourceNode* createMediaElementSource(HTMLMediaElement*, ExceptionState&);
-    MediaStreamAudioSourceNode* createMediaStreamSource(MediaStream*, ExceptionState&);
-    MediaStreamAudioDestinationNode* createMediaStreamDestination(ExceptionState&);
-    GainNode* createGain(ExceptionState&);
+    AudioBufferSourceHandler* createBufferSource(ExceptionState&);
+    MediaElementAudioSourceHandler* createMediaElementSource(HTMLMediaElement*, ExceptionState&);
+    MediaStreamAudioSourceHandler* createMediaStreamSource(MediaStream*, ExceptionState&);
+    MediaStreamAudioDestinationHandler* createMediaStreamDestination(ExceptionState&);
+    GainHandler* createGain(ExceptionState&);
     BiquadFilterNode* createBiquadFilter(ExceptionState&);
     WaveShaperNode* createWaveShaper(ExceptionState&);
     DelayNode* createDelay(ExceptionState&);
     DelayNode* createDelay(double maxDelayTime, ExceptionState&);
-    PannerNode* createPanner(ExceptionState&);
-    ConvolverNode* createConvolver(ExceptionState&);
-    DynamicsCompressorNode* createDynamicsCompressor(ExceptionState&);
-    AnalyserNode* createAnalyser(ExceptionState&);
-    ScriptProcessorNode* createScriptProcessor(ExceptionState&);
-    ScriptProcessorNode* createScriptProcessor(size_t bufferSize, ExceptionState&);
-    ScriptProcessorNode* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState&);
-    ScriptProcessorNode* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState&);
-    StereoPannerNode* createStereoPanner(ExceptionState&);
-    ChannelSplitterNode* createChannelSplitter(ExceptionState&);
-    ChannelSplitterNode* createChannelSplitter(size_t numberOfOutputs, ExceptionState&);
-    ChannelMergerNode* createChannelMerger(ExceptionState&);
-    ChannelMergerNode* createChannelMerger(size_t numberOfInputs, ExceptionState&);
-    OscillatorNode* createOscillator(ExceptionState&);
+    PannerHandler* createPanner(ExceptionState&);
+    ConvolverHandler* createConvolver(ExceptionState&);
+    DynamicsCompressorHandler* createDynamicsCompressor(ExceptionState&);
+    AnalyserHandler* createAnalyser(ExceptionState&);
+    ScriptProcessorHandler* createScriptProcessor(ExceptionState&);
+    ScriptProcessorHandler* createScriptProcessor(size_t bufferSize, ExceptionState&);
+    ScriptProcessorHandler* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState&);
+    ScriptProcessorHandler* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState&);
+    StereoPannerHandler* createStereoPanner(ExceptionState&);
+    ChannelSplitterHandler* createChannelSplitter(ExceptionState&);
+    ChannelSplitterHandler* createChannelSplitter(size_t numberOfOutputs, ExceptionState&);
+    ChannelMergerHandler* createChannelMerger(ExceptionState&);
+    ChannelMergerHandler* createChannelMerger(size_t numberOfInputs, ExceptionState&);
+    OscillatorHandler* createOscillator(ExceptionState&);
     PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState&);
 
     // Close

@@ -47,13 +47,13 @@ const double DefaultGrainDuration = 0.020; // 20ms
 // to minimize linear interpolation aliasing.
 const double MaxRate = 1024;
 
-AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext* context, float sampleRate)
+AudioBufferSourceHandler* AudioBufferSourceHandler::create(AudioContext* context, float sampleRate)
 {
-    return new AudioBufferSourceNode(context, sampleRate);
+    return new AudioBufferSourceHandler(context, sampleRate);
 }
 
-AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sampleRate)
-    : AudioScheduledSourceNode(NodeTypeAudioBufferSource, context, sampleRate)
+AudioBufferSourceHandler::AudioBufferSourceHandler(AudioContext* context, float sampleRate)
+    : AudioScheduledSourceHandler(NodeTypeAudioBufferSource, context, sampleRate)
     , m_buffer(nullptr)
     , m_isLooping(false)
     , m_loopStart(0)
@@ -72,19 +72,19 @@ AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sample
     initialize();
 }
 
-AudioBufferSourceNode::~AudioBufferSourceNode()
+AudioBufferSourceHandler::~AudioBufferSourceHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void AudioBufferSourceNode::dispose()
+void AudioBufferSourceHandler::dispose()
 {
     clearPannerNode();
     uninitialize();
-    AudioScheduledSourceNode::dispose();
+    AudioScheduledSourceHandler::dispose();
 }
 
-void AudioBufferSourceNode::process(size_t framesToProcess)
+void AudioBufferSourceHandler::process(size_t framesToProcess)
 {
     AudioBus* outputBus = output(0)->bus();
 
@@ -136,7 +136,7 @@ void AudioBufferSourceNode::process(size_t framesToProcess)
 }
 
 // Returns true if we're finished.
-bool AudioBufferSourceNode::renderSilenceAndFinishIfNotLooping(AudioBus*, unsigned index, size_t framesToProcess)
+bool AudioBufferSourceHandler::renderSilenceAndFinishIfNotLooping(AudioBus*, unsigned index, size_t framesToProcess)
 {
     if (!loop()) {
         // If we're not looping, then stop playing when we get to the end.
@@ -154,7 +154,7 @@ bool AudioBufferSourceNode::renderSilenceAndFinishIfNotLooping(AudioBus*, unsign
     return false;
 }
 
-bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destinationFrameOffset, size_t numberOfFrames)
+bool AudioBufferSourceHandler::renderFromBuffer(AudioBus* bus, unsigned destinationFrameOffset, size_t numberOfFrames)
 {
     ASSERT(context()->isAudioThread());
 
@@ -334,7 +334,7 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
 }
 
 
-void AudioBufferSourceNode::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionState)
+void AudioBufferSourceHandler::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -387,12 +387,12 @@ void AudioBufferSourceNode::setBuffer(AudioBuffer* buffer, ExceptionState& excep
     m_buffer = buffer;
 }
 
-unsigned AudioBufferSourceNode::numberOfChannels()
+unsigned AudioBufferSourceHandler::numberOfChannels()
 {
     return output(0)->numberOfChannels();
 }
 
-void AudioBufferSourceNode::clampGrainParameters(const AudioBuffer* buffer)
+void AudioBufferSourceHandler::clampGrainParameters(const AudioBuffer* buffer)
 {
     ASSERT(buffer);
 
@@ -424,22 +424,22 @@ void AudioBufferSourceNode::clampGrainParameters(const AudioBuffer* buffer)
     m_virtualReadIndex = AudioUtilities::timeToSampleFrame(m_grainOffset, buffer->sampleRate());
 }
 
-void AudioBufferSourceNode::start(double when, ExceptionState& exceptionState)
+void AudioBufferSourceHandler::start(double when, ExceptionState& exceptionState)
 {
-    AudioScheduledSourceNode::start(when, exceptionState);
+    AudioScheduledSourceHandler::start(when, exceptionState);
 }
 
-void AudioBufferSourceNode::start(double when, double grainOffset, ExceptionState& exceptionState)
+void AudioBufferSourceHandler::start(double when, double grainOffset, ExceptionState& exceptionState)
 {
     startSource(when, grainOffset, buffer() ? buffer()->duration() : 0, false, exceptionState);
 }
 
-void AudioBufferSourceNode::start(double when, double grainOffset, double grainDuration, ExceptionState& exceptionState)
+void AudioBufferSourceHandler::start(double when, double grainOffset, double grainDuration, ExceptionState& exceptionState)
 {
     startSource(when, grainOffset, grainDuration, true, exceptionState);
 }
 
-void AudioBufferSourceNode::startSource(double when, double grainOffset, double grainDuration, bool isDurationGiven, ExceptionState& exceptionState)
+void AudioBufferSourceHandler::startSource(double when, double grainOffset, double grainDuration, bool isDurationGiven, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
@@ -486,7 +486,7 @@ void AudioBufferSourceNode::startSource(double when, double grainOffset, double 
     m_playbackState = SCHEDULED_STATE;
 }
 
-double AudioBufferSourceNode::totalPitchRate()
+double AudioBufferSourceHandler::totalPitchRate()
 {
     double dopplerRate = 1.0;
     if (m_pannerNode)
@@ -516,12 +516,12 @@ double AudioBufferSourceNode::totalPitchRate()
     return totalRate;
 }
 
-bool AudioBufferSourceNode::propagatesSilence() const
+bool AudioBufferSourceHandler::propagatesSilence() const
 {
     return !isPlayingOrScheduled() || hasFinished() || !m_buffer;
 }
 
-void AudioBufferSourceNode::setPannerNode(PannerNode* pannerNode)
+void AudioBufferSourceHandler::setPannerNode(PannerNode* pannerNode)
 {
     if (m_pannerNode != pannerNode && !hasFinished()) {
         PannerNode* oldPannerNode(m_pannerNode.release());
@@ -533,7 +533,7 @@ void AudioBufferSourceNode::setPannerNode(PannerNode* pannerNode)
     }
 }
 
-void AudioBufferSourceNode::clearPannerNode()
+void AudioBufferSourceHandler::clearPannerNode()
 {
     if (m_pannerNode) {
         m_pannerNode->breakConnection();
@@ -541,7 +541,7 @@ void AudioBufferSourceNode::clearPannerNode()
     }
 }
 
-void AudioBufferSourceNode::handleStoppableSourceNode()
+void AudioBufferSourceHandler::handleStoppableSourceNode()
 {
     // If the source node is not looping, and we have a buffer, we can determine when the
     // source would stop playing.
@@ -556,19 +556,19 @@ void AudioBufferSourceNode::handleStoppableSourceNode()
     }
 }
 
-void AudioBufferSourceNode::finish()
+void AudioBufferSourceHandler::finish()
 {
     clearPannerNode();
     ASSERT(!m_pannerNode);
-    AudioScheduledSourceNode::finish();
+    AudioScheduledSourceHandler::finish();
 }
 
-DEFINE_TRACE(AudioBufferSourceNode)
+DEFINE_TRACE(AudioBufferSourceHandler)
 {
     visitor->trace(m_buffer);
     visitor->trace(m_playbackRate);
     visitor->trace(m_pannerNode);
-    AudioScheduledSourceNode::trace(visitor);
+    AudioScheduledSourceHandler::trace(visitor);
 }
 
 } // namespace blink

@@ -33,12 +33,12 @@
 
 namespace blink {
 
-MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AudioContext* context, MediaStream* mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+MediaStreamAudioSourceHandler* MediaStreamAudioSourceHandler::create(AudioContext* context, MediaStream* mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
 {
-    return new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, audioSourceProvider);
+    return new MediaStreamAudioSourceHandler(context, mediaStream, audioTrack, audioSourceProvider);
 }
 
-MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AudioContext* context, MediaStream* mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(AudioContext* context, MediaStream* mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
     : AudioSourceNode(NodeTypeMediaStreamAudioSource, context, context->sampleRate())
     , m_mediaStream(mediaStream)
     , m_audioTrack(audioTrack)
@@ -52,18 +52,18 @@ MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AudioContext* context, Me
     initialize();
 }
 
-MediaStreamAudioSourceNode::~MediaStreamAudioSourceNode()
+MediaStreamAudioSourceHandler::~MediaStreamAudioSourceHandler()
 {
     ASSERT(!isInitialized());
 }
 
-void MediaStreamAudioSourceNode::dispose()
+void MediaStreamAudioSourceHandler::dispose()
 {
     uninitialize();
     AudioSourceNode::dispose();
 }
 
-void MediaStreamAudioSourceNode::setFormat(size_t numberOfChannels, float sourceSampleRate)
+void MediaStreamAudioSourceHandler::setFormat(size_t numberOfChannels, float sourceSampleRate)
 {
     if (numberOfChannels != m_sourceNumberOfChannels || sourceSampleRate != sampleRate()) {
         // The sample-rate must be equal to the context's sample-rate.
@@ -89,7 +89,7 @@ void MediaStreamAudioSourceNode::setFormat(size_t numberOfChannels, float source
     }
 }
 
-void MediaStreamAudioSourceNode::process(size_t numberOfFrames)
+void MediaStreamAudioSourceHandler::process(size_t numberOfFrames)
 {
     AudioBus* outputBus = output(0)->bus();
 
@@ -115,7 +115,7 @@ void MediaStreamAudioSourceNode::process(size_t numberOfFrames)
     }
 }
 
-DEFINE_TRACE(MediaStreamAudioSourceNode)
+DEFINE_TRACE(MediaStreamAudioSourceHandler)
 {
     visitor->trace(m_mediaStream);
     visitor->trace(m_audioTrack);

@@ -40,7 +40,7 @@ class PeriodicWave;
 
 // OscillatorNode is an audio generator of periodic waveforms.
 
-class OscillatorNode final : public AudioScheduledSourceNode {
+class OscillatorHandler final : public AudioScheduledSourceHandler {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // The waveform type.
@@ -53,11 +53,11 @@ public:
         CUSTOM = 4
     };
 
-    static OscillatorNode* create(AudioContext*, float sampleRate);
+    static OscillatorHandler* create(AudioContext*, float sampleRate);
 
-    virtual ~OscillatorNode();
+    virtual ~OscillatorHandler();
 
-    // AudioNode
+    // AudioHandler
     virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
 
@@ -73,7 +73,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    OscillatorNode(AudioContext*, float sampleRate);
+    OscillatorHandler(AudioContext*, float sampleRate);
 
     bool setType(unsigned); // Returns true on success.
 
@@ -106,6 +106,9 @@ private:
 
     Member<PeriodicWave> m_periodicWave;
 };
+
+// TODO(tkent): Introduce an actual class to wrap a handler.
+using OscillatorNode = OscillatorHandler;
 
 } // namespace blink
 

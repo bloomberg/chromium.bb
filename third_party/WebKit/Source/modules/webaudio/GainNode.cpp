@@ -32,8 +32,8 @@
 
 namespace blink {
 
-GainNode::GainNode(AudioContext* context, float sampleRate)
-    : AudioNode(NodeTypeGain, context, sampleRate)
+GainHandler::GainHandler(AudioContext* context, float sampleRate)
+    : AudioHandler(NodeTypeGain, context, sampleRate)
     , m_lastGain(1.0)
     , m_sampleAccurateGainValues(AudioNode::ProcessingSizeInFrames) // FIXME: can probably share temp buffer in context
 {
@@ -45,7 +45,7 @@ GainNode::GainNode(AudioContext* context, float sampleRate)
     initialize();
 }
 
-void GainNode::process(size_t framesToProcess)
+void GainHandler::process(size_t framesToProcess)
 {
     // FIXME: for some cases there is a nice optimization to avoid processing here, and let the gain change
     // happen in the summing junction input of the AudioNode we're connected to.
@@ -79,7 +79,7 @@ void GainNode::process(size_t framesToProcess)
 // As soon as we know the channel count of our input, we can lazily initialize.
 // Sometimes this may be called more than once with different channel counts, in which case we must safely
 // uninitialize and then re-initialize with the new channel count.
-void GainNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
+void GainHandler::checkNumberOfChannelsForInput(AudioNodeInput* input)
 {
     ASSERT(context()->isAudioThread());
     ASSERT(context()->isGraphOwner());
@@ -102,13 +102,13 @@ void GainNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
         initialize();
     }
 
-    AudioNode::checkNumberOfChannelsForInput(input);
+    AudioHandler::checkNumberOfChannelsForInput(input);
 }
 
-DEFINE_TRACE(GainNode)
+DEFINE_TRACE(GainHandler)
 {
     visitor->trace(m_gain);
-    AudioNode::trace(visitor);
+    AudioHandler::trace(visitor);
 }
 
 } // namespace blink

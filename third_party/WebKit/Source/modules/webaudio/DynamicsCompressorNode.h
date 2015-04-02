@@ -33,17 +33,17 @@ namespace blink {
 
 class DynamicsCompressor;
 
-class DynamicsCompressorNode final : public AudioNode {
+class DynamicsCompressorHandler final : public AudioHandler {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static DynamicsCompressorNode* create(AudioContext* context, float sampleRate)
+    static DynamicsCompressorHandler* create(AudioContext* context, float sampleRate)
     {
-        return new DynamicsCompressorNode(context, sampleRate);
+        return new DynamicsCompressorHandler(context, sampleRate);
     }
 
-    virtual ~DynamicsCompressorNode();
+    virtual ~DynamicsCompressorHandler();
 
-    // AudioNode
+    // AudioHandler
     virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
     virtual void initialize() override;
@@ -66,7 +66,7 @@ private:
     virtual double tailTime() const override;
     virtual double latencyTime() const override;
 
-    DynamicsCompressorNode(AudioContext*, float sampleRate);
+    DynamicsCompressorHandler(AudioContext*, float sampleRate);
 
     OwnPtr<DynamicsCompressor> m_dynamicsCompressor;
     Member<AudioParam> m_threshold;
@@ -76,6 +76,9 @@ private:
     Member<AudioParam> m_attack;
     Member<AudioParam> m_release;
 };
+
+// TODO(tkent): Introduce an actual class to wrap a handler.
+using DynamicsCompressorNode = DynamicsCompressorHandler;
 
 } // namespace blink
 
