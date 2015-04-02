@@ -17,7 +17,8 @@ chrome.settingsPrivate = {};
  *   key: string,
  *   type: chrome.settingsPrivate.PrefType,
  *   value: *,
- *   source: chrome.settingsPrivate.PrefSource
+ *   policySource: (chrome.settingsPrivate.PolicySource|undefined),
+ *   policyEnforcement: (chrome.settingsPrivate.PolicyEnforcement|undefined),
  * }}
  */
 chrome.settingsPrivate.PrefObject;
@@ -38,36 +39,14 @@ chrome.settingsPrivate.GetAllPrefsCallback;
 chrome.settingsPrivate.GetPrefCallback;
 
 /**
- * Sets a boolean settings value.
+ * Sets a settings value.
  * @param {string} name
- * @param {boolean} value
+ * @param {*} value
+ * @param {string} pageId
  * @param {chrome.settingsPrivate.OnPrefSetCallback} callback
  */
-chrome.settingsPrivate.setBooleanPref = function(name, value, callback) {};
-
-/**
- * Sets a number settings value.
- * @param {string} name
- * @param {number} value
- * @param {chrome.settingsPrivate.OnPrefSetCallback} callback
- */
-chrome.settingsPrivate.setNumericPref = function(name, value, callback) {};
-
-/**
- * Sets a string settings value.
- * @param {string} name
- * @param {string} value
- * @param {chrome.settingsPrivate.OnPrefSetCallback} callback
- */
-chrome.settingsPrivate.setStringPref = function(name, value, callback) {};
-
-/**
- * Sets a URL settings value.
- * @param {string} name
- * @param {string} value
- * @param {chrome.settingsPrivate.OnPrefSetCallback} callback
- */
-chrome.settingsPrivate.setURLPref = function(name, value, callback) {};
+chrome.settingsPrivate.setPref =
+    function(name, value, pageId, callback) {};
 
 /**
  * Gets all the prefs.

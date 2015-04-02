@@ -1,0 +1,9 @@
+{
+  "name": "settingsPrivate API interface test",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Test of chrome.settingsPrivate interface",
+  "permissions": [
+    "settingsPrivate"
+  ]
+}

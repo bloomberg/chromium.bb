@@ -5,96 +5,52 @@
 #include "chrome/browser/extensions/api/settings_private/settings_private_api.h"
 
 #include "base/values.h"
+#include "chrome/browser/extensions/api/settings_private/settings_private_delegate.h"
+#include "chrome/browser/extensions/api/settings_private/settings_private_delegate_factory.h"
+#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "extensions/browser/extension_function_registry.h"
 
 namespace extensions {
 
 ////////////////////////////////////////////////////////////////////////////////
-// SettingsPrivateSetBooleanPrefFunction
-
-SettingsPrivateSetBooleanPrefFunction::
-    ~SettingsPrivateSetBooleanPrefFunction() {
-}
-
-ExtensionFunction::ResponseAction SettingsPrivateSetBooleanPrefFunction::Run() {
-  scoped_ptr<api::settings_private::SetBooleanPref::Params> parameters =
-      api::settings_private::SetBooleanPref::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
-  VLOG(1) << "chrome.settingsPrivate.setBooleanPref(" << parameters->name
-      << ", " << (!!parameters->value ? "true" : "false") << ")";
-
-  // TODO(orenb): Implement with a real check and not just true.
-  return RespondNow(OneArgument(new base::FundamentalValue(true)));
-}
-
+// SettingsPrivateSetPrefFunction
 ////////////////////////////////////////////////////////////////////////////////
-// SettingsPrivateSetNumericPrefFunction
 
-SettingsPrivateSetNumericPrefFunction::
-    ~SettingsPrivateSetNumericPrefFunction() {
+SettingsPrivateSetPrefFunction::~SettingsPrivateSetPrefFunction() {
 }
 
-ExtensionFunction::ResponseAction SettingsPrivateSetNumericPrefFunction::Run() {
-  scoped_ptr<api::settings_private::SetNumericPref::Params> parameters =
-      api::settings_private::SetNumericPref::Params::Create(*args_);
+ExtensionFunction::ResponseAction SettingsPrivateSetPrefFunction::Run() {
+  scoped_ptr<api::settings_private::SetPref::Params> parameters =
+      api::settings_private::SetPref::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
-  VLOG(1) << "chrome.settingsPrivate.setNumericPref(" << parameters->name
-      << ", " << parameters->value << ")";
 
-  // TODO(orenb): Implement with a real check and not just true.
-  return RespondNow(OneArgument(new base::FundamentalValue(true)));
+  SettingsPrivateDelegate* delegate =
+      SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+
+  return RespondNow(OneArgument(new base::FundamentalValue(
+      delegate->SetPref(parameters->name, parameters->value.get()))));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// SettingsPrivateSetStringPrefFunction
-
-SettingsPrivateSetStringPrefFunction::
-    ~SettingsPrivateSetStringPrefFunction() {
-}
-
-ExtensionFunction::ResponseAction SettingsPrivateSetStringPrefFunction::Run() {
-  scoped_ptr<api::settings_private::SetStringPref::Params> parameters =
-      api::settings_private::SetStringPref::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
-  VLOG(1) << "chrome.settingsPrivate.setStringPref(" << parameters->name
-      << ", " << parameters->value << ")";
-
-  // TODO(orenb): Implement with a real check and not just true.
-  return RespondNow(OneArgument(new base::FundamentalValue(true)));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SettingsPrivateSetURLPrefFunction
-
-SettingsPrivateSetURLPrefFunction::
-    ~SettingsPrivateSetURLPrefFunction() {
-}
-
-ExtensionFunction::ResponseAction SettingsPrivateSetURLPrefFunction::Run() {
-  scoped_ptr<api::settings_private::SetURLPref::Params> parameters =
-      api::settings_private::SetURLPref::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
-  VLOG(1) << "chrome.settingsPrivate.setURLPref(" << parameters->name
-      << ", " << parameters->value << ")";
-
-  // TODO(orenb): Implement with a real check and not just true.
-  return RespondNow(OneArgument(new base::FundamentalValue(true)));
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // SettingsPrivateGetAllPrefsFunction
+////////////////////////////////////////////////////////////////////////////////
 
 SettingsPrivateGetAllPrefsFunction::~SettingsPrivateGetAllPrefsFunction() {
 }
 
 ExtensionFunction::ResponseAction SettingsPrivateGetAllPrefsFunction::Run() {
-  // TODO(orenb): Implement with real prefs.
-  return RespondNow(OneArgument(new base::FundamentalValue(true)));
+  SettingsPrivateDelegate* delegate =
+      SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
+
+  return RespondNow(OneArgument(delegate->GetAllPrefs().release()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // SettingsPrivateGetPrefFunction
+////////////////////////////////////////////////////////////////////////////////
 
 SettingsPrivateGetPrefFunction::~SettingsPrivateGetPrefFunction() {
 }
@@ -103,17 +59,11 @@ ExtensionFunction::ResponseAction SettingsPrivateGetPrefFunction::Run() {
   scoped_ptr<api::settings_private::GetPref::Params> parameters =
       api::settings_private::GetPref::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
-  VLOG(1) << "chrome.settingsPrivate.getPref(" << parameters->name << ")";
 
-  // TODO(orenb): Implement with real pref.
-  api::settings_private::PrefObject* prefObject =
-      new api::settings_private::PrefObject();
+  SettingsPrivateDelegate* delegate =
+      SettingsPrivateDelegateFactory::GetForBrowserContext(browser_context());
 
-  prefObject->type = api::settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  prefObject->value.reset(new base::FundamentalValue(true));
-  prefObject->source = api::settings_private::PrefSource::PREF_SOURCE_USER;
-
-  return RespondNow(OneArgument(prefObject->ToValue().release()));
+  return RespondNow(OneArgument(delegate->GetPref(parameters->name).release()));
 }
 
 }  // namespace extensions

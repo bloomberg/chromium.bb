@@ -193,6 +193,7 @@
       'browser/extensions/api/screenlock_private/screenlock_private_apitest.cc',
       'browser/extensions/api/sessions/sessions_apitest.cc',
       'browser/extensions/api/settings_overrides/settings_overrides_browsertest.cc',
+      'browser/extensions/api/settings_private/settings_private_apitest.cc',
       'browser/extensions/api/socket/socket_apitest.cc',
       'browser/extensions/api/storage/settings_apitest.cc',
       'browser/extensions/api/streams_private/streams_private_apitest.cc',

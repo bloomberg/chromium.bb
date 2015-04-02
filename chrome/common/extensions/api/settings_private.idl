@@ -1,4 +1,4 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,13 @@
 // from the settings UI.
 namespace settingsPrivate {
   // Type of a pref.
-  enum PrefType { BOOLEAN, NUMBER, STRING, URL };
+  enum PrefType { BOOLEAN, NUMBER, STRING, URL, LIST };
 
-  // Source of a pref (device, user).
-  enum PrefSource { DEVICE, USER };
+  // Policy source of a pref.
+  enum PolicySource { DEVICE, USER };
+
+  // Policy enforcement of a pref.
+  enum PolicyEnforcement { ENFORCED, RECOMMENDED };
 
   dictionary PrefObject {
     // The key for the pref.
@@ -21,8 +24,13 @@ namespace settingsPrivate {
     // The current value of the pref.
     any value;
 
-    // The source of the pref (e.g., device, user).
-    PrefSource source;
+    // The policy source of the pref; an undefined value means there is no
+    // policy.
+    PolicySource? policySource;
+
+    // The policy enforcement of the pref; must be specified if policySource is
+    // also present.
+    PolicyEnforcement? policyEnforcement;
   };
 
   callback OnPrefSetCallback = void (boolean success);
@@ -30,29 +38,13 @@ namespace settingsPrivate {
   callback GetPrefCallback = void (PrefObject pref);
 
   interface Functions {
-    // Sets a boolean settings value.
+    // Sets a settings value.
     // |name|: The name of the pref.
     // |value|: The new value of the pref.
-    static void setBooleanPref(DOMString name, boolean value,
-        optional OnPrefSetCallback callback);
-
-    // Sets a number settings value.
-    // |name|: The name of the pref.
-    // |value|: The new value of the pref.
-    static void setNumericPref(DOMString name, double value,
-        optional OnPrefSetCallback callback);
-
-    // Sets a string settings value.
-    // |name|: The name of the pref.
-    // |value|: The new value of the pref.
-    static void setStringPref(DOMString name, DOMString value,
-        optional OnPrefSetCallback callback);
-
-    // Sets a URL settings value.
-    // |name|: The name of the pref.
-    // |value|: The new value of the pref.
-    static void setURLPref(DOMString name, DOMString value,
-        optional OnPrefSetCallback callback);
+    // |pageId|: The user metrics identifier or null.
+    // |callback|: The callback for whether the pref was set or not.
+    static void setPref(DOMString name, any value,
+        DOMString pageId, OnPrefSetCallback callback);
 
     // Gets an array of all the prefs.
     static void getAllPrefs(GetAllPrefsCallback callback);

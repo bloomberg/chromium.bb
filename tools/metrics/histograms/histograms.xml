@@ -49943,10 +49943,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="982" label="DEVELOPERPRIVATE_DELETEEXTENSIONERRORS"/>
   <int value="983" label="FILEMANAGERPRIVATE_ISPIEXLOADERENABLED"/>
   <int value="984" label="HOTWORDPRIVATE_SPEAKERMODELEXISTSRESULT"/>
-  <int value="985" label="SETTINGSPRIVATE_SETBOOLEANPREF"/>
-  <int value="986" label="SETTINGSPRIVATE_SETNUMERICPREF"/>
-  <int value="987" label="SETTINGSPRIVATE_SETSTRINGPREF"/>
-  <int value="988" label="SETTINGSPRIVATE_SETURLPREF"/>
+  <int value="985" label="SETTINGSPRIVATE_SETPREF"/>
+  <int value="986" label="DELETED_SETTINGSPRIVATE_SETNUMERICPREF"/>
+  <int value="987" label="DELETED_SETTINGSPRIVATE_SETSTRINGPREF"/>
+  <int value="988" label="DELETED_SETTINGSPRIVATE_SETURLPREF"/>
   <int value="989" label="SETTINGSPRIVATE_GETALLPREFS"/>
   <int value="990" label="SETTINGSPRIVATE_GETPREF"/>
   <int value="991" label="NETWORKINGPRIVATE_FORGETNETWORK"/>
