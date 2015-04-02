@@ -138,6 +138,7 @@
       'dom_distiller/core/dom_distiller_model_unittest.cc',
       'dom_distiller/core/dom_distiller_service_unittest.cc',
       'dom_distiller/core/dom_distiller_store_unittest.cc',
+      'dom_distiller/core/page_features_unittest.cc',
       'dom_distiller/core/task_tracker_unittest.cc',
       'dom_distiller/core/url_utils_unittest.cc',
       'dom_distiller/core/viewer_unittest.cc',

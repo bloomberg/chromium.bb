@@ -8,6 +8,7 @@ include_rules = [
   "+sync/internal_api/public/attachments", # Needed for tests.
   "+sync/protocol",
   "+third_party/dom_distiller_js",
+  "+third_party/re2",
   "+net/base",
   "+net/http",
   "+net/url_request",
