@@ -47,6 +47,7 @@ public:
     static PassRefPtr<AXListBoxOption> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AXListBoxOption();
 
+    virtual bool isAXListBoxOption() const override { return true; }
     virtual AccessibilityRole roleValue() const override;
     virtual bool isSelected() const override;
     virtual bool isEnabled() const override;
@@ -57,7 +58,6 @@ public:
     virtual String title(TextUnderElementMode) const override { return String(); }
 
 private:
-    virtual bool isListBoxOption() const override { return true; }
     virtual bool canHaveChildren() const override { return false; }
     virtual bool computeAccessibilityIsIgnored() const override;
 
@@ -66,7 +66,7 @@ private:
     AXObject* listBoxOptionAXObject(HTMLElement*) const;
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXListBoxOption, isListBoxOption());
+DEFINE_AX_OBJECT_TYPE_CASTS(AXListBoxOption, isAXListBoxOption());
 
 } // namespace blink
 

@@ -67,7 +67,9 @@ public:
     virtual void childrenChanged(Node*) override;
     virtual void childrenChanged(LayoutObject*) override;
     virtual void checkedStateChanged(Node*) override;
-    virtual void selectedChildrenChanged(Node*) override;
+    virtual void listboxOptionStateChanged(HTMLOptionElement*);
+    virtual void listboxSelectedChildrenChanged(HTMLSelectElement*);
+    virtual void listboxActiveIndexChanged(HTMLSelectElement*);
 
     virtual void remove(LayoutObject*) override;
     virtual void remove(Node*) override;
@@ -135,12 +137,11 @@ public:
     void remove(AbstractInlineTextBox*);
 
     void childrenChanged(AXObject*);
-    void selectedChildrenChanged(LayoutObject*);
-    void selectedChildrenChanged(AXObject*);
 
     void handleActiveDescendantChanged(Node*);
     void handleAriaRoleChanged(Node*);
     void handleAriaExpandedChange(Node*);
+    void handleAriaSelectedChanged(Node*);
 
     void recomputeIsIgnored(LayoutObject*);
 

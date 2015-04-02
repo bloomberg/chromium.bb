@@ -730,7 +730,7 @@ void HTMLSelectElement::scrollToSelection()
         return;
     scrollToIndex(activeSelectionEndListIndex());
     if (AXObjectCache* cache = document().existingAXObjectCache())
-        cache->selectedChildrenChanged(this);
+        cache->listboxActiveIndexChanged(this);
 }
 
 void HTMLSelectElement::setOptionsChangedOnRenderer()
@@ -970,9 +970,6 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
         if (LayoutObject* renderer = this->layoutObject()) {
             if (usesMenuList()) {
                 toLayoutMenuList(renderer)->didSetSelectedIndex(listIndex);
-            } else if (renderer->isListBox()) {
-                if (AXObjectCache* cache = document().existingAXObjectCache())
-                    cache->selectedChildrenChanged(this);
             }
         }
     }

@@ -39,6 +39,8 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
+#include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/layout/LayoutListBox.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutProgress.h"
@@ -747,21 +749,23 @@ void AXObjectCacheImpl::checkedStateChanged(Node* node)
     postNotification(node, AXObjectCacheImpl::AXCheckedStateChanged);
 }
 
-void AXObjectCacheImpl::selectedChildrenChanged(Node* node)
+void AXObjectCacheImpl::listboxOptionStateChanged(HTMLOptionElement* option)
 {
-    selectedChildrenChanged(get(node));
+    postNotification(option, AXCheckedStateChanged);
 }
 
-void AXObjectCacheImpl::selectedChildrenChanged(LayoutObject* layoutObject)
+void AXObjectCacheImpl::listboxSelectedChildrenChanged(HTMLSelectElement* select)
 {
-    selectedChildrenChanged(get(layoutObject));
+    postNotification(select, AXSelectedChildrenChanged);
 }
 
-void AXObjectCacheImpl::selectedChildrenChanged(AXObject* obj)
+void AXObjectCacheImpl::listboxActiveIndexChanged(HTMLSelectElement* select)
 {
-    while (obj && obj->roleValue() != ListBoxRole)
-        obj = obj->parentObject();
-    postNotification(obj, AXSelectedChildrenChanged);
+    AXObject* obj = get(select);
+    if (!obj || !obj->isAXListBox())
+        return;
+
+    static_cast<AXListBox*>(obj)->activeIndexChanged();
 }
 
 void AXObjectCacheImpl::handleScrollbarUpdate(FrameView* view)
@@ -794,6 +798,19 @@ void AXObjectCacheImpl::handleAriaExpandedChange(Node* node)
 {
     if (AXObject* obj = getOrCreate(node))
         obj->handleAriaExpandedChanged();
+}
+
+void AXObjectCacheImpl::handleAriaSelectedChanged(Node* node)
+{
+    AXObject* obj = get(node);
+    if (!obj)
+        return;
+
+    postNotification(obj, AXCheckedStateChanged);
+
+    AXObject* listbox = obj->parentObjectUnignored();
+    if (listbox->roleValue() == ListBoxRole)
+        postNotification(listbox, AXSelectedChildrenChanged);
 }
 
 void AXObjectCacheImpl::handleActiveDescendantChanged(Node* node)
@@ -832,7 +849,7 @@ void AXObjectCacheImpl::handleAttributeChanged(const QualifiedName& attrName, El
     else if (attrName == aria_checkedAttr)
         checkedStateChanged(element);
     else if (attrName == aria_selectedAttr)
-        selectedChildrenChanged(element);
+        handleAriaSelectedChanged(element);
     else if (attrName == aria_expandedAttr)
         handleAriaExpandedChange(element);
     else if (attrName == aria_hiddenAttr)

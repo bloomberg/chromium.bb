@@ -27,6 +27,7 @@ PASS accessibleThree.isSelected is true
 PASS accessibleThree.isSelectedOptionActive is true
 List notification: SelectedChildrenChanged
 List notification: SelectedChildrenChanged
+List notification: SelectedChildrenChanged
 
 TEST COMPLETE
 

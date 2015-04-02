@@ -335,6 +335,8 @@ public:
     // Determine subclass type.
     virtual bool isAXNodeObject() const { return false; }
     virtual bool isAXLayoutObject() const { return false; }
+    virtual bool isAXListBox() const { return false; }
+    virtual bool isAXListBoxOption() const { return false; }
     virtual bool isAXScrollbar() const { return false; }
     virtual bool isAXScrollView() const { return false; }
     virtual bool isAXSVGRoot() const { return false; }
@@ -364,7 +366,6 @@ public:
     virtual bool isLink() const { return false; }
     virtual bool isList() const { return false; }
     bool isListItem() const { return roleValue() == ListItemRole; }
-    virtual bool isListBoxOption() const { return false; }
     virtual bool isMenu() const { return false; }
     virtual bool isMenuButton() const { return false; }
     virtual bool isMenuList() const { return false; }

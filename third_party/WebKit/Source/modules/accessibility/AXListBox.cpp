@@ -29,6 +29,8 @@
 #include "config.h"
 #include "modules/accessibility/AXListBox.h"
 
+#include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/layout/LayoutListBox.h"
 #include "modules/accessibility/AXListBoxOption.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
@@ -39,7 +41,9 @@ using namespace HTMLNames;
 
 AXListBox::AXListBox(LayoutObject* layoutObject, AXObjectCacheImpl* axObjectCache)
     : AXLayoutObject(layoutObject, axObjectCache)
+    , m_activeIndex(-1)
 {
+    activeIndexChanged();
 }
 
 AXListBox::~AXListBox()
@@ -57,6 +61,43 @@ AccessibilityRole AXListBox::roleValue() const
     if (ariaRole != UnknownRole)
         return ariaRole;
     return ListBoxRole;
+}
+
+AXObject* AXListBox::activeDescendant() const
+{
+    if (!isHTMLSelectElement(node()))
+        return nullptr;
+
+    HTMLSelectElement* select = toHTMLSelectElement(node());
+    int activeIndex = select->activeSelectionEndListIndex();
+    if (activeIndex >= 0 && activeIndex < static_cast<int>(select->length())) {
+        HTMLOptionElement* option = select->item(m_activeIndex);
+        return axObjectCache()->get(option);
+    }
+
+    return nullptr;
+}
+
+void AXListBox::activeIndexChanged()
+{
+    if (!isHTMLSelectElement(node()))
+        return;
+
+    HTMLSelectElement* select = toHTMLSelectElement(node());
+    int activeIndex = select->activeSelectionEndListIndex();
+    if (activeIndex == m_activeIndex)
+        return;
+
+    m_activeIndex = activeIndex;
+    if (!select->focused())
+        return;
+
+    if (m_activeIndex >= 0 && m_activeIndex < static_cast<int>(select->length())) {
+        HTMLOptionElement* option = select->item(m_activeIndex);
+        axObjectCache()->postNotification(option, AXObjectCacheImpl::AXFocusedUIElementChanged);
+    } else {
+        axObjectCache()->postNotification(this, AXObjectCacheImpl::AXFocusedUIElementChanged);
+    }
 }
 
 } // namespace blink

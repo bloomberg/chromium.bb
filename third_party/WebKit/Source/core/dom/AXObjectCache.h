@@ -34,6 +34,8 @@ typedef unsigned AXID;
 namespace blink {
 class AXObject;
 class FrameView;
+class HTMLOptionElement;
+class HTMLSelectElement;
 class LayoutMenuList;
 class Page;
 class Widget;
@@ -83,7 +85,9 @@ public:
     virtual void childrenChanged(Node*) = 0;
     virtual void childrenChanged(LayoutObject*) = 0;
     virtual void checkedStateChanged(Node*) = 0;
-    virtual void selectedChildrenChanged(Node*) = 0;
+    virtual void listboxOptionStateChanged(HTMLOptionElement*) = 0;
+    virtual void listboxSelectedChildrenChanged(HTMLSelectElement*) = 0;
+    virtual void listboxActiveIndexChanged(HTMLSelectElement*) = 0;
 
     virtual void remove(LayoutObject*) = 0;
     virtual void remove(Node*) = 0;

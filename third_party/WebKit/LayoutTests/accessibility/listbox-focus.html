@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<select id="listbox" size="3">
+  <option id="item0">Alicia</option>
+  <option id="item1">Peter</option>
+  <option id="item2">Kalinda</option>
+</select>
+<script>
+async_test(function(t)
+{
+    var listbox = document.getElementById("listbox");
+    listbox.selectedIndex = 0;
+    listbox.focus();
+
+    accessibilityController.accessibleElementById('dummy');
+
+    var gotCheckedStateChanged = false;
+    var gotSelectedChildrenChanged = false;
+    var gotFocus = false;
+
+    window.setTimeout(function() {
+        var result = "";
+        accessibilityController.addNotificationListener(t.step_func(function listener(element, notification) {
+            if (notification == "CheckedStateChanged") {
+                assert_equals(element.role, "AXRole: AXListBoxOption");
+                gotCheckedStateChanged = true;
+            }
+            if (notification == "SelectedChildrenChanged") {
+                assert_equals(element.role, "AXRole: AXListBox");
+                gotSelectedChildrenChanged = true;
+            }
+            if (notification == "Focus") {
+                assert_equals(element.role, "AXRole: AXListBoxOption");
+                gotFocus = true;
+            }
+            if (gotCheckedStateChanged && gotSelectedChildrenChanged && gotFocus) {
+                t.done();
+            }
+        }));
+
+        listbox.selectedIndex = 1;
+    }, 0);
+}, "menu list fires focus event on close");
+</script>

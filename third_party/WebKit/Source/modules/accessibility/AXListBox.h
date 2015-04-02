@@ -45,6 +45,14 @@ public:
     virtual ~AXListBox();
 
     virtual AccessibilityRole roleValue() const override;
+    virtual bool isAXListBox() const override { return true; }
+    virtual bool shouldFocusActiveDescendant() const override { return true; }
+    virtual AXObject* activeDescendant() const override;
+
+    void activeIndexChanged();
+
+private:
+    int m_activeIndex;
 };
 
 } // namespace blink
