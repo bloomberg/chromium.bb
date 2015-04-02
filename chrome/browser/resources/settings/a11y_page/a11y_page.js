@@ -42,9 +42,8 @@ Polymer('cr-settings-a11y-page', {
      *
      * @attribute pageTitle
      * @type string
-     * @default 'Accessibility'
      */
-    pageTitle: 'Accessibility',
+    pageTitle: loadTimeData.getString('a11yPageTitle'),
 
     /**
      * Name of the 'core-icon' to show.

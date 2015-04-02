@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
+#include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
@@ -45,6 +46,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                                  kSettingsResources[i].value);
   }
 
+  settings::AddLocalizedStrings(html_source);
   html_source->AddResourcePath("md_settings.css", IDR_MD_SETTINGS_UI_CSS);
   html_source->SetDefaultResource(IDR_MD_SETTINGS_UI_HTML);
 

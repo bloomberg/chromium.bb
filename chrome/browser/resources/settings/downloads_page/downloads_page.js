@@ -43,9 +43,8 @@ Polymer('cr-settings-downloads-page', {
      *
      * @attribute pageTitle
      * @type string
-     * @default 'Downloads'
      */
-    pageTitle: 'Downloads',
+    pageTitle: loadTimeData.getString('downloadsPageTitle'),
 
     /**
      * Name of the 'core-icon' to show.

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings-specific strings (included from generated_resources.grd). -->
+<grit-part>
+  <message name="IDS_MD_SETTINGS_ACCESSIBILITY_PAGE_TITLE" desc="Name of the settings page which displays accessibility preferences.">
+    Accessibility
+  </message>
+  <message name="IDS_MD_SETTINGS_DOWNLOADS_PAGE_TITLE" desc="Name of the settings page which displays download preferences.">
+    Downloads
+  </message>
+</grit-part>
