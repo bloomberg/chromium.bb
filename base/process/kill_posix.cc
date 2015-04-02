@@ -15,7 +15,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_iterator.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {
@@ -69,61 +68,6 @@ TerminationStatus GetTerminationStatusImpl(ProcessHandle handle,
 }  // namespace
 
 #if !defined(OS_NACL_NONSFI)
-// Attempts to kill the process identified by the given process
-// entry structure.  Ignores specified exit_code; posix can't force that.
-// Returns true if this is successful, false otherwise.
-bool KillProcess(ProcessHandle process_id, int exit_code, bool wait) {
-  DCHECK_GT(process_id, 1) << " tried to kill invalid process_id";
-  if (process_id <= 1)
-    return false;
-  bool result = kill(process_id, SIGTERM) == 0;
-  if (result && wait) {
-    int tries = 60;
-
-    if (RunningOnValgrind()) {
-      // Wait for some extra time when running under Valgrind since the child
-      // processes may take some time doing leak checking.
-      tries *= 2;
-    }
-
-    unsigned sleep_ms = 4;
-
-    // The process may not end immediately due to pending I/O
-    bool exited = false;
-    while (tries-- > 0) {
-      pid_t pid = HANDLE_EINTR(waitpid(process_id, NULL, WNOHANG));
-      if (pid == process_id) {
-        exited = true;
-        break;
-      }
-      if (pid == -1) {
-        if (errno == ECHILD) {
-          // The wait may fail with ECHILD if another process also waited for
-          // the same pid, causing the process state to get cleaned up.
-          exited = true;
-          break;
-        }
-        DPLOG(ERROR) << "Error waiting for process " << process_id;
-      }
-
-      usleep(sleep_ms * 1000);
-      const unsigned kMaxSleepMs = 1000;
-      if (sleep_ms < kMaxSleepMs)
-        sleep_ms *= 2;
-    }
-
-    // If we're waiting and the child hasn't died by now, force it
-    // with a SIGKILL.
-    if (!exited)
-      result = kill(process_id, SIGKILL) == 0;
-  }
-
-  if (!result)
-    DPLOG(ERROR) << "Unable to terminate process " << process_id;
-
-  return result;
-}
-
 bool KillProcessGroup(ProcessHandle process_group_id) {
   bool result = kill(-1 * process_group_id, SIGKILL) == 0;
   if (!result)

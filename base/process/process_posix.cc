@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/kill.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 
 #if defined(OS_MACOSX)
 #include <sys/event.h>
@@ -287,14 +288,59 @@ void Process::Close() {
   // end up w/ a zombie when it does finally exit.
 }
 
-bool Process::Terminate(int result_code, bool wait) const {
+#if !defined(OS_NACL_NONSFI)
+bool Process::Terminate(int exit_code, bool wait) const {
   // result_code isn't supportable.
   DCHECK(IsValid());
-  // We don't wait here. It's the responsibility of other code to reap the
-  // child.
-  // TODO(rvargas) crbug/417532: Move the implementation here.
-  return KillProcess(process_, result_code, wait);
+  DCHECK_GT(process_, 1);
+  bool result = kill(process_, SIGTERM) == 0;
+  if (result && wait) {
+    int tries = 60;
+
+    if (RunningOnValgrind()) {
+      // Wait for some extra time when running under Valgrind since the child
+      // processes may take some time doing leak checking.
+      tries *= 2;
+    }
+
+    unsigned sleep_ms = 4;
+
+    // The process may not end immediately due to pending I/O
+    bool exited = false;
+    while (tries-- > 0) {
+      pid_t pid = HANDLE_EINTR(waitpid(process_, NULL, WNOHANG));
+      if (pid == process_) {
+        exited = true;
+        break;
+      }
+      if (pid == -1) {
+        if (errno == ECHILD) {
+          // The wait may fail with ECHILD if another process also waited for
+          // the same pid, causing the process state to get cleaned up.
+          exited = true;
+          break;
+        }
+        DPLOG(ERROR) << "Error waiting for process " << process_;
+      }
+
+      usleep(sleep_ms * 1000);
+      const unsigned kMaxSleepMs = 1000;
+      if (sleep_ms < kMaxSleepMs)
+        sleep_ms *= 2;
+    }
+
+    // If we're waiting and the child hasn't died by now, force it
+    // with a SIGKILL.
+    if (!exited)
+      result = kill(process_, SIGKILL) == 0;
+  }
+
+  if (!result)
+    DPLOG(ERROR) << "Unable to terminate process " << process_;
+
+  return result;
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 bool Process::WaitForExit(int* exit_code) {
   return WaitForExitWithTimeout(TimeDelta::Max(), exit_code);

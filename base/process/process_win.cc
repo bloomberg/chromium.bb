@@ -123,10 +123,17 @@ void Process::Close() {
   process_.Close();
 }
 
-bool Process::Terminate(int result_code, bool wait) const {
+bool Process::Terminate(int exit_code, bool wait) const {
   DCHECK(IsValid());
-  // TODO(rvargas) crbug/417532: Move the implementation here.
-  return KillProcess(Handle(), result_code, wait);
+  bool result = (::TerminateProcess(Handle(), exit_code) != FALSE);
+  if (result && wait) {
+    // The process may not end immediately due to pending I/O
+    if (::WaitForSingleObject(Handle(), 60 * 1000) != WAIT_OBJECT_0)
+      DPLOG(ERROR) << "Error waiting for process exit";
+  } else if (!result) {
+    DPLOG(ERROR) << "Unable to terminate process";
+  }
+  return result;
 }
 
 bool Process::WaitForExit(int* exit_code) {

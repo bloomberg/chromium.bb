@@ -45,12 +45,6 @@ BASE_EXPORT bool KillProcesses(const FilePath::StringType& executable_name,
                                int exit_code,
                                const ProcessFilter* filter);
 
-// Attempts to kill the process identified by the given process
-// entry structure, giving it the specified exit code. If |wait| is true, wait
-// for the process to be actually terminated before returning.
-// Returns true if this is successful, false otherwise.
-BASE_EXPORT bool KillProcess(ProcessHandle process, int exit_code, bool wait);
-
 #if defined(OS_POSIX)
 // Attempts to kill the process group identified by |process_group_id|. Returns
 // true on success.

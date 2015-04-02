@@ -89,18 +89,6 @@ void TimerExpiredTask::KillProcess() {
 
 }  // namespace
 
-bool KillProcess(ProcessHandle process, int exit_code, bool wait) {
-  bool result = (TerminateProcess(process, exit_code) != FALSE);
-  if (result && wait) {
-    // The process may not end immediately due to pending I/O
-    if (WAIT_OBJECT_0 != WaitForSingleObject(process, 60 * 1000))
-      DPLOG(ERROR) << "Error waiting for process exit";
-  } else if (!result) {
-    DPLOG(ERROR) << "Unable to terminate process";
-  }
-  return result;
-}
-
 TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   DWORD tmp_exit_code = 0;
 
