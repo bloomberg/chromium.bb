@@ -196,6 +196,9 @@ public:
     // Returns the space available for the given origin
     virtual long long databaseGetSpaceAvailableForOrigin(const WebString& originIdentifier) { return 0; }
 
+    // Set the size of the given database file
+    virtual bool databaseSetFileSize(const WebString& vfsFileName, long long size) { return false; }
+
 
     // DOM Storage --------------------------------------------------
 
