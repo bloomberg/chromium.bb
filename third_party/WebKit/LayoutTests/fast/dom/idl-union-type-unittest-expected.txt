@@ -25,10 +25,10 @@ PASS unionTypesTest.doubleOrStringArg() threw exception TypeError: Failed to exe
 
 PASS unionTypesTest.doubleOrInternalEnumArg(3.14) is "double is passed: 3.14"
 PASS unionTypesTest.doubleOrInternalEnumArg("foo") is "InternalEnum is passed: foo"
-PASS unionTypesTest.doubleOrInternalEnumArg("invalid") threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': 'invalid' is not a valid enum value..
-PASS unionTypesTest.doubleOrInternalEnumArg(null) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': 'null' is not a valid enum value..
-PASS unionTypesTest.doubleOrInternalEnumArg({}) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': '[object Object]' is not a valid enum value..
-PASS unionTypesTest.doubleOrInternalEnumArg([]) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': '' is not a valid enum value..
+PASS unionTypesTest.doubleOrInternalEnumArg("invalid") threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': The provided value 'invalid' is not a valid enum value..
+PASS unionTypesTest.doubleOrInternalEnumArg(null) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': The provided value 'null' is not a valid enum value..
+PASS unionTypesTest.doubleOrInternalEnumArg({}) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': The provided value '[object Object]' is not a valid enum value..
+PASS unionTypesTest.doubleOrInternalEnumArg([]) threw exception TypeError: Failed to execute 'doubleOrInternalEnumArg' on 'UnionTypesTest': The provided value '' is not a valid enum value..
 
 PASS unionTypesTest.doubleOrStringArrayArg([]) is ""
 PASS unionTypesTest.doubleOrStringArrayArg([3.14, "foo"]) is "double: 3.14, string: foo"

@@ -65,6 +65,7 @@ private:
     String m_enumMember;
     String m_enumMemberWithDefault;
     String m_enumOrNullMember;
+    Nullable<Vector<String>> m_enumArrayMember;
     RefPtrWillBeMember<Element> m_elementMember;
     RefPtrWillBeMember<Element> m_elementOrNullMember;
     ScriptValue m_objectMember;

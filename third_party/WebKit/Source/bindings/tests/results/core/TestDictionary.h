@@ -55,6 +55,10 @@ public:
     String enumMember() const { return m_enumMember; }
     void setEnumMember(String value) { m_enumMember = value; }
 
+    bool hasEnumSequenceMember() const { return !m_enumSequenceMember.isNull(); }
+    const Vector<String>& enumSequenceMember() const { return m_enumSequenceMember.get(); }
+    void setEnumSequenceMember(const Vector<String>& value) { m_enumSequenceMember = value; }
+
     bool hasEventTargetMember() const { return m_eventTargetMember; }
     PassRefPtrWillBeRawPtr<EventTarget> eventTargetMember() const { return m_eventTargetMember; }
     void setEventTargetMember(PassRefPtrWillBeRawPtr<EventTarget> value) { m_eventTargetMember = value; }
@@ -149,6 +153,7 @@ private:
     DoubleOrString m_doubleOrStringMember;
     RefPtrWillBeMember<Element> m_elementOrNullMember;
     String m_enumMember;
+    Nullable<Vector<String>> m_enumSequenceMember;
     RefPtrWillBeMember<EventTarget> m_eventTargetMember;
     Nullable<Vector<InternalDictionary>> m_internalDictionarySequenceMember;
     Nullable<int> m_longMember;

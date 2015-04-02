@@ -1,4 +1,4 @@
-{% from 'conversions.cpp' import v8_value_to_local_cpp_value %}
+{% from 'conversions.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
 
 
 {##############################################################################}
@@ -330,12 +330,15 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
         exceptionState.throwIfNeeded();
         return;
     }
-    {% elif attribute.enum_validation_expression %}
+    {% elif attribute.enum_values %}
     {# Setter ignores invalid enum values:
        http://www.w3.org/TR/WebIDL/#idl-enums #}
-    String string = cppValue;
-    if (!({{attribute.enum_validation_expression}})) {
-        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "The provided value '" + string + "' is not a valid value of type '{{attribute.idl_type}}'."));
+    {% if not attribute.has_setter_exception_state %}
+    NonThrowableExceptionState exceptionState;
+    {% endif %}
+    {{declare_enum_validation_variable(attribute.enum_values) | indent}}
+    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
+        currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, exceptionState.message()));
         return;
     }
     {% endif %}

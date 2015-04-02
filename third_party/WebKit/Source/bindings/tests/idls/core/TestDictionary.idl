@@ -19,6 +19,7 @@ dictionary TestDictionary {
     DOMString[] stringArrayMember;
     sequence<DOMString> stringSequenceMember;
     TestEnum enumMember = "foo";
+    sequence<TestEnum> enumSequenceMember;
     Element? elementOrNullMember;
     object objectMember;
     object? objectOrNullMember;

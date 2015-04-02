@@ -223,7 +223,7 @@ def argument_context(interface, method, argument, index):
         'cpp_value': this_cpp_value,
         # FIXME: check that the default value's type is compatible with the argument's
         'set_default_value': set_default_value,
-        'enum_validation_expression': idl_type.enum_validation_expression,
+        'enum_values': idl_type.enum_values,
         'handle': '%sHandle' % argument.name,
         # FIXME: remove once [Default] removed and just use argument.default_value
         'has_default': 'Default' in extended_attributes or set_default_value,
@@ -457,5 +457,4 @@ def argument_conversion_needs_exception_state(method, argument):
     idl_type = argument.idl_type
     return (idl_type.v8_conversion_needs_exception_state or
             argument.is_variadic or
-            (method.returns_promise and (idl_type.is_string_type or
-                                         idl_type.is_enum)))
+            (method.returns_promise and idl_type.is_string_type))

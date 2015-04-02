@@ -1,3 +1,4 @@
+{% from 'conversions.cpp' import declare_enum_validation_variable %}
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -37,9 +38,10 @@ namespace blink {
 void {{container.cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}} value)
 {
     ASSERT(isNull());
-    {% if member.enum_validation_expression %}
-    String string = value;
-    if (!({{member.enum_validation_expression}})) {
+    {% if member.enum_values %}
+    NonThrowableExceptionState exceptionState;
+    {{declare_enum_validation_variable(member.enum_values) | indent}}
+    if (!isValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
         ASSERT_NOT_REACHED();
         return;
     }
@@ -136,12 +138,10 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value
     {# 16. String #}
     {
         {{v8_value_to_local_cpp_value(container.string_type) | indent(8)}}
-        {% if container.string_type.enum_validation_expression %}
-        String string = cppValue;
-        if (!({{container.string_type.enum_validation_expression}})) {
-            exceptionState.throwTypeError("'" + string + "' is not a valid enum value.");
+        {% if container.string_type.enum_values %}
+        {{declare_enum_validation_variable(container.string_type.enum_values) | indent(8)}}
+        if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState))
             return;
-        }
         {% endif %}
         impl.set{{container.string_type.type_name}}(cppValue);
         return;

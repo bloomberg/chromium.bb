@@ -50,7 +50,7 @@ def attribute_context(interface, attribute):
     extended_attributes = attribute.extended_attributes
 
     idl_type.add_includes_for_type()
-    if idl_type.enum_validation_expression:
+    if idl_type.enum_values:
         includes.add('core/inspector/ConsoleMessage.h')
 
     # [CheckSecurity]
@@ -106,7 +106,7 @@ def attribute_context(interface, attribute):
         'cpp_type': idl_type.cpp_type,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
         'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
-        'enum_validation_expression': idl_type.enum_validation_expression,
+        'enum_values': idl_type.enum_values,
         'exposed_test': v8_utilities.exposed(attribute, interface),  # [Exposed]
         'has_custom_getter': has_custom_getter(attribute),
         'has_custom_setter': has_custom_setter(attribute),

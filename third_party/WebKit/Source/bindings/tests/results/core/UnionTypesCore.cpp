@@ -758,8 +758,14 @@ String TestEnumOrDouble::getAsTestEnum() const
 void TestEnumOrDouble::setTestEnum(String value)
 {
     ASSERT(isNull());
-    String string = value;
-    if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
+    NonThrowableExceptionState exceptionState;
+    static const char* validValues[] = {
+        "",
+        "EnumValue1",
+        "EnumValue2",
+        "EnumValue3",
+    };
+    if (!isValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
         ASSERT_NOT_REACHED();
         return;
     }
@@ -811,11 +817,14 @@ void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
         V8StringResource<> cppValue = v8Value;
         if (!cppValue.prepare(exceptionState))
             return;
-        String string = cppValue;
-        if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
-            exceptionState.throwTypeError("'" + string + "' is not a valid enum value.");
+        static const char* validValues[] = {
+            "",
+            "EnumValue1",
+            "EnumValue2",
+            "EnumValue3",
+        };
+        if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState))
             return;
-        }
         impl.setTestEnum(cppValue);
         return;
     }

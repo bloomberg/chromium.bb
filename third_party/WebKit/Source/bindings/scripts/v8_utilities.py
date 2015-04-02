@@ -28,8 +28,6 @@
 
 """Functions shared by various parts of the code generator.
 
-Extends IdlTypeBase type with |enum_validation_expression| property.
-
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
@@ -118,15 +116,6 @@ def uncapitalize(name):
 ################################################################################
 # C++
 ################################################################################
-
-def enum_validation_expression(idl_type):
-    # FIXME: Add IdlEnumType, move property to derived type, and remove this check
-    if not idl_type.is_enum:
-        return None
-    return ' || '.join(['string == "%s"' % enum_value
-                        for enum_value in idl_type.enum_values])
-IdlTypeBase.enum_validation_expression = property(enum_validation_expression)
-
 
 def scoped_name(interface, definition, base_name):
     if 'ImplementedInPrivateScript' in definition.extended_attributes:

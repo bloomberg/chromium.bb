@@ -499,6 +499,7 @@ V8_VALUE_TO_CPP_VALUE = {
 
 def v8_conversion_needs_exception_state(idl_type):
     return (idl_type.is_numeric_type or
+            idl_type.is_enum or
             idl_type.is_dictionary or
             idl_type.name in ('ByteString', 'Dictionary', 'USVString', 'SerializedScriptValue'))
 

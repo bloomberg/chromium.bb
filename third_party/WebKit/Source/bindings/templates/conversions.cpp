@@ -29,3 +29,12 @@ if ({{item.check_expression}})
 {% endif %}{# item.check_expression #}
 {% endif %}{# item.error_message #}
 {% endmacro %}
+
+
+{% macro declare_enum_validation_variable(enum_values) %}
+static const char* validValues[] = {
+{% for enum_value in enum_values %}
+    "{{enum_value}}",
+{% endfor %}
+};
+{%-endmacro %}

@@ -222,8 +222,10 @@ static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "partialVoidTestEnumModulesArgMethod", "TestInterface", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "partialVoidTestEnumModulesArgMethod", "TestInterface", 1, info.Length()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -232,9 +234,12 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
         arg = info[0];
         if (!arg.prepare())
             return;
-        String string = arg;
-        if (!(string == "EnumModulesValue1" || string == "EnumModulesValue2")) {
-            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partialVoidTestEnumModulesArgMethod", "TestInterface", "parameter 1 ('" + string + "') is not a valid enum value."));
+        static const char* validValues[] = {
+            "EnumModulesValue1",
+            "EnumModulesValue2",
+        };
+        if (!isValidEnum(arg, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
+            exceptionState.throwIfNeeded();
             return;
         }
     }

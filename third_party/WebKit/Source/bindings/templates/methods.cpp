@@ -1,4 +1,4 @@
-{% from 'conversions.cpp' import v8_value_to_local_cpp_value %}
+{% from 'conversions.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
 
 
 {##############################################################################}
@@ -196,13 +196,12 @@ if (!{{argument.name}}{% if argument.is_nullable %} && !isUndefinedOrNull(info[{
     {{throw_type_error(method, '"parameter %s is not of type \'%s\'."' %
                                (argument.index + 1, argument.idl_type)) | indent}}
 }
-{% elif argument.enum_validation_expression %}
+{% elif argument.enum_values %}
 {# Invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
-String string = {{argument.name}};
-if (!({{argument.enum_validation_expression}})) {
-    {{throw_type_error(method,
-          '"parameter %s (\'" + string + "\') is not a valid enum value."' %
-              (argument.index + 1)) | indent}}
+{{declare_enum_validation_variable(argument.enum_values)}}
+if (!isValidEnum({{argument.name}}, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
+    exceptionState.throwIfNeeded();
+    return;
 }
 {% elif argument.idl_type == 'Promise' %}
 {# We require this for our implementation of promises, though not in spec:

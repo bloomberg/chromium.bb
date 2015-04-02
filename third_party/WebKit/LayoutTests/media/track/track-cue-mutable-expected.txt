@@ -1,5 +1,5 @@
-CONSOLE WARNING: The provided value 'RL' is not a valid value of type 'DirectionSetting'.
-CONSOLE WARNING: The provided value 'End' is not a valid value of type 'AlignSetting'.
+CONSOLE WARNING: The provided value 'RL' is not a valid enum value.
+CONSOLE WARNING: The provided value 'End' is not a valid enum value.
 Tests modifying attributes of a VTTCue
 
 ** Test initial values.
@@ -37,7 +37,7 @@ EXPECTED (textCue.snapToLines == 'false') OK
 On setting, the text track cue line position must be set to the new value; if the new value is the string 'auto', then it must be interpreted as the special value auto.
 http://dev.w3.org/html5/webvtt/#dfn-vttcue-line
 EXPECTED (textCue.line == 'auto') OK
-TEST(textCue.line = 'gazonk') THROWS("TypeError: Failed to set the 'line' property on 'VTTCue': 'gazonk' is not a valid enum value.") OK
+TEST(textCue.line = 'gazonk') THROWS("TypeError: Failed to set the 'line' property on 'VTTCue': 'gazonk' is not a valid enum value.") FAIL
 EXPECTED (textCue.line == 'auto') OK
 RUN(textCue.line = 42)
 EXPECTED (textCue.line == '42') OK

@@ -180,7 +180,7 @@ class IdlType(IdlTypeBase):
 
     @property
     def enum_values(self):
-        return IdlType.enums[self.name]
+        return IdlType.enums.get(self.name)
 
     @property
     def is_integer_type(self):
@@ -344,6 +344,10 @@ class IdlArrayOrSequenceType(IdlTypeBase):
     @property
     def is_array_or_sequence_type(self):
         return True
+
+    @property
+    def enum_values(self):
+        return self.element_type.enum_values
 
 
 class IdlArrayType(IdlArrayOrSequenceType):

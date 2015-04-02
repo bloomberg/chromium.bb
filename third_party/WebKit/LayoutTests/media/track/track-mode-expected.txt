@@ -1,5 +1,5 @@
-CONSOLE WARNING: The provided value 'bogus' is not a valid value of type 'TextTrackMode'.
-CONSOLE WARNING: The provided value '2' is not a valid value of type 'TextTrackMode'.
+CONSOLE WARNING: The provided value 'bogus' is not a valid enum value.
+CONSOLE WARNING: The provided value '2' is not a valid enum value.
 Tests that the TextTrack mode attribute is appropriately set.
 
 

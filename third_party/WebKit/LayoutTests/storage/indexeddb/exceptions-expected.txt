@@ -106,7 +106,7 @@ Exception message: Failed to execute 'transaction' on 'IDBDatabase': One of the 
 The value for the mode parameter is invalid.
 Expecting TypeError exception from db.transaction('store', 'invalid-mode')
 PASS Exception was thrown.
-PASS db.transaction('store', 'invalid-mode') threw TypeError: Failed to execute 'transaction' on 'IDBDatabase': parameter 2 ('invalid-mode') is not a valid enum value.
+PASS db.transaction('store', 'invalid-mode') threw TypeError: Failed to execute 'transaction' on 'IDBDatabase': The provided value 'invalid-mode' is not a valid enum value.
 The 'versionchange' value for the mode parameter can only be set internally during upgradeneeded.
 Expecting TypeError exception from db.transaction('store', 'versionchange')
 PASS Exception was thrown.
@@ -276,7 +276,7 @@ Exception message: Failed to execute 'openKeyCursor' on 'IDBObjectStore': The tr
 The value for the direction parameter is invalid.
 Expecting TypeError exception from store.openKeyCursor(0, 'invalid-direction')
 PASS Exception was thrown.
-PASS store.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBObjectStore': parameter 2 ('invalid-direction') is not a valid enum value.
+PASS store.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBObjectStore': The provided value 'invalid-direction' is not a valid enum value.
 
 IDBObjectStore.put()
 This method throws a DOMException of type ReadOnlyError if the transaction which this IDBObjectStore belongs to is has its mode set to "readonly".
@@ -413,7 +413,7 @@ Exception message: Failed to execute 'openCursor' on 'IDBIndex': The transaction
 The value for the direction parameter is invalid.
 Expecting TypeError exception from index.openCursor(0, 'invalid-direction')
 PASS Exception was thrown.
-PASS index.openCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openCursor' on 'IDBIndex': parameter 2 ('invalid-direction') is not a valid enum value.
+PASS index.openCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openCursor' on 'IDBIndex': The provided value 'invalid-direction' is not a valid enum value.
 
 IDBIndex.openKeyCursor()
 If the range parameter is specified but is not a valid key or a key range, this method throws a DOMException of type DataError.
@@ -431,7 +431,7 @@ Exception message: Failed to execute 'openKeyCursor' on 'IDBIndex': The transact
 The value for the direction parameter is invalid.
 Expecting TypeError exception from index.openKeyCursor(0, 'invalid-direction')
 PASS Exception was thrown.
-PASS index.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBIndex': parameter 2 ('invalid-direction') is not a valid enum value.
+PASS index.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBIndex': The provided value 'invalid-direction' is not a valid enum value.
 
 3.2.7 Cursor
 transaction = db.transaction(['store', 'inlineKeyStore'], 'readwrite')

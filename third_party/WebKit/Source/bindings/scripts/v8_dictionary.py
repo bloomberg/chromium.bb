@@ -104,7 +104,7 @@ def member_context(dictionary, member):
             creation_context='creationContext',
             extended_attributes=member.extended_attributes),
         'deprecate_as': v8_utilities.deprecate_as(member),
-        'enum_validation_expression': unwrapped_idl_type.enum_validation_expression,
+        'enum_values': unwrapped_idl_type.enum_values,
         'has_method_name': has_method_name_for_dictionary_member(member),
         'idl_type': idl_type.base_type,
         'is_interface_type': idl_type.is_interface_type and not idl_type.is_dictionary,

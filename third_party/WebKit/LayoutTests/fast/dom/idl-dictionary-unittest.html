@@ -28,6 +28,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.elementMember');
     shouldBeUndefined('dict.elementOrNullMember');
     shouldBeUndefined('dict.enumMember');
+    shouldBeUndefined('dict.enumArrayMember');
     shouldBeEqualToString('dict.enumMemberWithDefault', 'foo');
     shouldBeUndefined('dict.enumOrNullMember');
     shouldBeUndefined('dict.objectMember');
@@ -81,6 +82,7 @@ if (window.internals && internals.dictionaryTest) {
         enumMember: 'foo',
         enumMemberWithDefault: 'bar',
         enumOrNullMember: 'baz',
+        enumArrayMember: ['foo', 'bar', 'baz'],
         objectMember: testObject1,
         objectOrNullMemberWithDefault: testObject2,
         doubleOrStringMember: 3.14,
@@ -106,6 +108,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeEqualToString('dict.enumMember', 'foo');
     shouldBeEqualToString('dict.enumMemberWithDefault', 'bar');
     shouldBeEqualToString('dict.enumOrNullMember', 'baz');
+    shouldBe('dict.enumArrayMember', '["foo", "bar", "baz"]');
     shouldBe('dict.objectMember', 'testObject1');
     shouldBe('dict.objectOrNullMemberWithDefault', 'testObject2');
     shouldBe('dict.doubleOrStringMember', '3.14');
@@ -182,6 +185,7 @@ if (window.internals && internals.dictionaryTest) {
 
     debug('Test for setting invalid enum value');
     shouldThrow("dictionaryTest.set({enumMember: 'invalid'})");
+    shouldThrow("dictionaryTest.set({enumArrayMember: ['foo', 'invalid', 'baz']})");
     debug('');
 
     debug('Test for setting invalid object value');

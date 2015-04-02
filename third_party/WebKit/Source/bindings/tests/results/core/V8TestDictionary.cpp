@@ -130,12 +130,37 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         V8StringResource<> enumMember = enumMemberValue;
         if (!enumMember.prepare(exceptionState))
             return;
-        String string = enumMember;
-        if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3")) {
-            exceptionState.throwTypeError("member enumMember ('" + string + "') is not a valid enum value.");
+        static const char* validValues[] = {
+            "",
+            "EnumValue1",
+            "EnumValue2",
+            "EnumValue3",
+        };
+        if (!isValidEnum(enumMember, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState))
             return;
-        }
         impl.setEnumMember(enumMember);
+    }
+
+    v8::Local<v8::Value> enumSequenceMemberValue = v8Object->Get(v8String(isolate, "enumSequenceMember"));
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if (enumSequenceMemberValue.IsEmpty() || enumSequenceMemberValue->IsUndefined()) {
+        // Do nothing.
+    } else {
+        Vector<String> enumSequenceMember = toImplArray<String>(enumSequenceMemberValue, 0, isolate, exceptionState);
+        if (exceptionState.hadException())
+            return;
+        static const char* validValues[] = {
+            "",
+            "EnumValue1",
+            "EnumValue2",
+            "EnumValue3",
+        };
+        if (!isValidEnum(enumSequenceMember, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState))
+            return;
+        impl.setEnumSequenceMember(enumSequenceMember);
     }
 
     v8::Local<v8::Value> eventTargetMemberValue = v8Object->Get(v8String(isolate, "eventTargetMember"));
@@ -493,6 +518,10 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
         dictionary->Set(v8String(isolate, "enumMember"), v8String(isolate, impl.enumMember()));
     } else {
         dictionary->Set(v8String(isolate, "enumMember"), v8String(isolate, String("foo")));
+    }
+
+    if (impl.hasEnumSequenceMember()) {
+        dictionary->Set(v8String(isolate, "enumSequenceMember"), toV8(impl.enumSequenceMember(), creationContext, isolate));
     }
 
     if (impl.hasEventTargetMember()) {

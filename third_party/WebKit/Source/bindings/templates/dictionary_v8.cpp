@@ -1,3 +1,4 @@
+{% from 'conversions.cpp' import declare_enum_validation_variable %}
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -62,12 +63,10 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
             return;
         }
         {% endif %}
-        {% if member.enum_validation_expression %}
-        String string = {{member.name}};
-        if (!({{member.enum_validation_expression}})) {
-            exceptionState.throwTypeError("member {{member.name}} ('" + string + "') is not a valid enum value.");
+        {% if member.enum_values %}
+        {{declare_enum_validation_variable(member.enum_values) | indent(8)}}
+        if (!isValidEnum({{member.name}}, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState))
             return;
-        }
         {% elif member.is_object %}
         if (!{{member.name}}.isObject()) {
             exceptionState.throwTypeError("member {{member.name}} is not an object.");
