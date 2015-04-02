@@ -2356,6 +2356,8 @@
       'browser/ui/views/apps/chrome_app_window_client_views_mac.mm',
       'browser/ui/views/apps/chrome_native_app_window_views_mac.h',
       'browser/ui/views/apps/chrome_native_app_window_views_mac.mm',
+      'browser/ui/views/apps/native_app_window_frame_view_mac.h',
+      'browser/ui/views/apps/native_app_window_frame_view_mac.mm',
     ],
     # Windows-only. Assume ash/aura/views.
     'chrome_browser_ui_win_sources': [
