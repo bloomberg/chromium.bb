@@ -1963,3 +1963,5 @@ crbug.com/472902 virtual/slimmingpaint/paint/invalidation/animated-gif.html [ Pa
 crbug.com/472902 virtual/slimmingpaint/paint/invalidation/animated-gif-offscreen.html [ Pass Failure ]
 
 crbug.com/472904 virtual/deferred/inspector/tracing/worker-events.html [ Pass Crash ]
+
+crbug.com/472905 inspector/elements/styles/page-reload-update-sidebar.html [ Pass Failure ]
