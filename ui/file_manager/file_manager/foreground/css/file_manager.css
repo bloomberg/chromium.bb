@@ -2004,8 +2004,8 @@ list.autocomplete-suggestions > [lead] {
   -webkit-margin-end: 12px;
   -webkit-margin-start: auto;
   background: -webkit-image-set(
-      url(../images/files/ui/expand_less_active.png) 1x,
-      url(../images/files/ui/2x/expand_less_active.png) 2x)
+      url(../images/files/ui/expand_more_active.png) 1x,
+      url(../images/files/ui/2x/expand_more_active.png) 2x)
       no-repeat;
   display: block;
   margin-bottom: 20px;
@@ -2013,8 +2013,8 @@ list.autocomplete-suggestions > [lead] {
 
 #progress-center button.open {
   background: -webkit-image-set(
-      url(../images/files/ui/expand_more.png) 1x,
-      url(../images/files/ui/2x/expand_more.png) 2x)
+      url(../images/files/ui/expand_less.png) 1x,
+      url(../images/files/ui/2x/expand_less.png) 2x)
       no-repeat;
   /* If progress bar exists, show open button at slighly higher position. */
   margin-bottom: 14px;
