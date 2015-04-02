@@ -112,6 +112,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
 TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   url_loader_factory_.reset();
   mock_clipboard_.reset();
+  if (renderer_scheduler_)
+    renderer_scheduler_->Shutdown();
   blink::shutdown();
 }
 
