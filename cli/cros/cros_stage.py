@@ -29,7 +29,8 @@ MOBLAB_TMP_DIR = os.path.join(MOBLAB_STATIC_DIR, 'tmp')
 BOARD_BUILD_DIR = 'usr/local/build'
 DEVSERVER_STAGE_URL = ('http://%(moblab)s:8080/stage?local_path=%(staged_dir)s'
                        '&artifacts=full_payload,stateful,test_suites,'
-                       'control_files,autotest_packages')
+                       'control_files,autotest_packages,'
+                       'autotest_server_package')
 CUSTOM_BUILD_NAME = '%(board)s-custom/%(build)s'
 
 
@@ -206,7 +207,8 @@ NOTES:
     cwd = os.path.join(build_root, BOARD_BUILD_DIR)
     tarball_funcs = [commands.BuildAutotestControlFilesTarball,
                      commands.BuildAutotestPackagesTarball,
-                     commands.BuildAutotestTestSuitesTarball]
+                     commands.BuildAutotestTestSuitesTarball,
+                     commands.BuildAutotestServerPackageTarball]
     for tarball_func in tarball_funcs:
       tarball_func(build_root, cwd, tempdir)
 
