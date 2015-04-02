@@ -14,6 +14,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
@@ -314,8 +315,12 @@ public class NotificationUIManagerTest extends ChromeShellTestBase {
      * Verifies that multiple notifications without a tag can be opened and closed without
      * affecting eachother.
      */
+    /*
     @MediumTest
     @Feature({"Browser", "Notifications"})
+    crbug.com/472926
+    */
+    @DisabledTest
     public void testShowAndCloseMultipleNotifications() throws Exception {
         setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
 
