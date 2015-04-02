@@ -53,7 +53,7 @@ void VREyeParameters::setRenderRect(double x, double y, double width, double hei
     m_renderRect->setHeight(height);
 }
 
-void VREyeParameters::trace(Visitor* visitor)
+DEFINE_TRACE(VREyeParameters)
 {
     visitor->trace(m_minimumFieldOfView);
     visitor->trace(m_maximumFieldOfView);

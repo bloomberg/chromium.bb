@@ -30,7 +30,7 @@ public:
     VREyeParameters* getEyeParameters(const String&);
     void setFieldOfView(VRFieldOfView* leftFov = 0, VRFieldOfView* rightFov = 0);
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     static VREye StringToVREye(const String&);

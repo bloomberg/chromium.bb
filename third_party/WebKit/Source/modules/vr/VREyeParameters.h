@@ -34,7 +34,7 @@ public:
     void setCurrentFieldOfView(const blink::VRFieldOfView*);
     void setRenderRect(double x, double y, double width, double height);
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE()
 
 private:
     VREyeParameters();

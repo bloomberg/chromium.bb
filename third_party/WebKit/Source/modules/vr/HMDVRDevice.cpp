@@ -86,7 +86,7 @@ void HMDVRDevice::setFieldOfView(VRFieldOfView* leftFov, VRFieldOfView* rightFov
     }
 }
 
-void HMDVRDevice::trace(Visitor* visitor)
+DEFINE_TRACE(HMDVRDevice)
 {
     visitor->trace(m_eyeParametersLeft);
     visitor->trace(m_eyeParametersRight);

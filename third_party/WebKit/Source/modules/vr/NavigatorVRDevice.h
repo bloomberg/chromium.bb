@@ -26,7 +26,7 @@ public:
     static ScriptPromise getVRDevices(ScriptState*, Navigator&);
     ScriptPromise getVRDevices(ScriptState*);
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     friend VRHardwareUnit;

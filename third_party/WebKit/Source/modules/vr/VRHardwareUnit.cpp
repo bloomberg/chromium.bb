@@ -93,7 +93,7 @@ VRFieldOfView* VRHardwareUnit::getCurrentEyeFieldOfView(VREye eye) const
     }
 }
 
-void VRHardwareUnit::trace(Visitor* visitor)
+DEFINE_TRACE(VRHardwareUnit)
 {
     visitor->trace(m_positionState);
     visitor->trace(m_currentFOVLeft);

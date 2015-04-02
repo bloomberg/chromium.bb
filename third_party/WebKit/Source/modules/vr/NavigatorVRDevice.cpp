@@ -87,7 +87,7 @@ VRHardwareUnit* NavigatorVRDevice::getHardwareUnitForIndex(unsigned index)
     return 0;
 }
 
-void NavigatorVRDevice::trace(Visitor* visitor)
+DEFINE_TRACE(NavigatorVRDevice)
 {
     visitor->trace(m_hardwareUnits);
 

@@ -30,7 +30,7 @@ void PositionSensorVRDevice::resetSensor()
     blink::Platform::current()->resetVRSensor(index());
 }
 
-void PositionSensorVRDevice::trace(Visitor* visitor)
+DEFINE_TRACE(PositionSensorVRDevice)
 {
     VRDevice::trace(visitor);
 }

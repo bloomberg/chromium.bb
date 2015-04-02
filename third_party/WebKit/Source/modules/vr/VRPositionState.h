@@ -32,7 +32,7 @@ public:
 
     void setState(const blink::WebHMDSensorState&);
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     VRPositionState();

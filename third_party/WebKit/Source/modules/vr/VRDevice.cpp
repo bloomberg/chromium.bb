@@ -18,7 +18,7 @@ void VRDevice::updateFromWebVRDevice(const WebVRDevice& device)
     m_deviceName = device.deviceName;
 }
 
-void VRDevice::trace(Visitor* visitor)
+DEFINE_TRACE(VRDevice)
 {
     visitor->trace(m_hardwareUnit);
 }

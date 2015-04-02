@@ -24,7 +24,7 @@ public:
     VRPositionState* getImmediateState();
     void resetSensor();
 
-    virtual void trace(Visitor*) override;
+    DECLARE_VIRTUAL_TRACE();
 };
 
 } // namespace blink

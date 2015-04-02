@@ -45,7 +45,7 @@ public:
     HMDVRDevice* hmd() const { return m_hmd; }
     PositionSensorVRDevice* positionSensor() const { return m_positionSensor; }
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     unsigned m_index;

@@ -40,7 +40,7 @@ void VRPositionState::setState(const blink::WebHMDSensorState &state)
     m_linearAcceleration =  VecToDomPoint(state.linearAcceleration, state.flags & WebVRSensorStateLinearAcceleration);
 }
 
-void VRPositionState::trace(Visitor* visitor)
+DEFINE_TRACE(VRPositionState)
 {
     visitor->trace(m_orientation);
     visitor->trace(m_position);

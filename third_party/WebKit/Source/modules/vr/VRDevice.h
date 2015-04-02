@@ -26,7 +26,7 @@ public:
 
     virtual void updateFromWebVRDevice(const WebVRDevice&);
 
-    virtual void trace(Visitor*);
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
     explicit VRDevice(VRHardwareUnit*);
