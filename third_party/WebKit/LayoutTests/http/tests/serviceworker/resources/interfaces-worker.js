@@ -25,7 +25,7 @@ test(function() {
                      self.clients,
                      {
                        claim: 'function',
-                       matchAll: 'function'
+                       getAll: 'function'
                      });
   }, 'Clients');
 

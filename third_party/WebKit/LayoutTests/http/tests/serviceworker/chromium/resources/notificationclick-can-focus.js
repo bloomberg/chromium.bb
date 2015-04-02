@@ -21,7 +21,7 @@ var TESTS = [
 
     function testOutOfStackOutOfWaitUntil() {
         synthesizeNotificationClick().then(function() {
-            self.clients.matchAll().then(function() {
+            self.clients.getAll().then(function() {
                 client.focus().catch(function() {
                     self.postMessage('focus() in notificationclick outside of waitUntil not in stack failed');
                 }).then(runNextTestOrQuit);
@@ -31,7 +31,7 @@ var TESTS = [
 
     function testInWaitUntilAsync() {
         synthesizeNotificationClick().then(function(e) {
-            e.waitUntil(self.clients.matchAll().then(function() {
+            e.waitUntil(self.clients.getAll().then(function() {
                 return client.focus().then(function() {
                     self.postMessage('focus() in notificationclick\'s waitUntil suceeded');
                 }).then(runNextTestOrQuit);
@@ -41,7 +41,7 @@ var TESTS = [
 
     function testDoubleCallInWaitUntilAsync() {
         synthesizeNotificationClick().then(function(e) {
-            e.waitUntil(self.clients.matchAll().then(function() {
+            e.waitUntil(self.clients.getAll().then(function() {
                 return client.focus().then(function() {
                     return client.focus();
                 }).catch(function() {

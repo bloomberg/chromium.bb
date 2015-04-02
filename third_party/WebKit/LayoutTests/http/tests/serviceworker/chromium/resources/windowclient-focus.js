@@ -9,7 +9,7 @@ var nestedClients = [];
 
 // Override self.initialize() from sw-test-helpers.js
 self.initialize = function() {
-    return self.clients.matchAll().then(function(clients) {
+    return self.clients.getAll().then(function(clients) {
         clients.forEach(function(c) {
             // All clients are iframes but one of them embeds the other ones. We
             // want to use that one as the main |client|.
@@ -23,7 +23,7 @@ self.initialize = function() {
 };
 
 function getNumberOfFocusedClients() {
-  return self.clients.matchAll().then(function(clients) {
+  return self.clients.getAll().then(function(clients) {
     var focusedClients = 0;
     clients.forEach(function(c) {
       if (c.focused)

@@ -859,6 +859,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case ServiceWorkerClientPostMessage:
         return "'Client.postMessage()' is an experimental API and may change. See https://github.com/slightlyoff/ServiceWorker/issues/609.";
 
+    case ServiceWorkerClientsGetAll:
+        return "'Clients.getAll()' is deprecated and will be removed soon. Please use 'Clients.matchAll()' instead.";
+
     case AttrChildAccess:
     case AttrChildChange:
         return "Attr child nodes are deprecated and will be removed in M45, around August 2015. Please use 'Attr.value' instead.";

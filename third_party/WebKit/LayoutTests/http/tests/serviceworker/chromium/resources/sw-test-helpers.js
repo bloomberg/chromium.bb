@@ -26,7 +26,7 @@ var client = null;
 var currentTest = -1;
 
 self.initialize = function() {
-    return self.clients.matchAll().then(function(clients) {
+    return self.clients.getAll().then(function(clients) {
         client = clients[0];
     });
 }
