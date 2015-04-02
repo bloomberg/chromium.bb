@@ -112,15 +112,17 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner {
   virtual void OnAfterTaskRun();
 
  private:
+  struct TestOrderedPendingTask;
+
   // Predicate that defines a strict weak temporal ordering of tasks.
   class TemporalOrder {
    public:
-    bool operator()(const TestPendingTask& first_task,
-                    const TestPendingTask& second_task) const;
+    bool operator()(const TestOrderedPendingTask& first_task,
+                    const TestOrderedPendingTask& second_task) const;
   };
 
-  typedef std::priority_queue<TestPendingTask,
-                              std::vector<TestPendingTask>,
+  typedef std::priority_queue<TestOrderedPendingTask,
+                              std::vector<TestOrderedPendingTask>,
                               TemporalOrder> TaskPriorityQueue;
 
   // Core of the implementation for all flavors of fast-forward methods. Given a
@@ -148,6 +150,11 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner {
   // Temporally ordered heap of pending tasks. Must only be accessed while the
   // |tasks_lock_| is held.
   TaskPriorityQueue tasks_;
+
+  // The ordinal to use for the next task. Must only be accessed while the
+  // |tasks_lock_| is held.
+  size_t next_task_ordinal_;
+
   Lock tasks_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMockTimeTaskRunner);
