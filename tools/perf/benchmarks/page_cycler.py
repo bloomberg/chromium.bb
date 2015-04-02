@@ -130,7 +130,9 @@ class PageCyclerMoz(_PageCycler):
     return 'page_cycler.moz'
 
 
-@benchmark.Disabled('linux', 'win', 'mac')  # crbug.com/353260
+# Win, mac, linux: crbug.com/353260
+# Android: crbug.com/473161
+@benchmark.Disabled('linux', 'win', 'mac', 'android')
 class PageCyclerNetsimTop10(_PageCycler):
   """Measures load time of the top 10 sites under simulated cable network.
 
