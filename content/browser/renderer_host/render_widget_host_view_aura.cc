@@ -323,6 +323,19 @@ void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
       RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
 }
 
+bool PointerEventActivates(const ui::Event& event) {
+  if (event.type() == ui::ET_MOUSE_PRESSED)
+    return true;
+
+  if (event.type() == ui::ET_GESTURE_BEGIN) {
+    const ui::GestureEvent& gesture =
+        static_cast<const ui::GestureEvent&>(event);
+    return gesture.details().touch_points() == 1;
+  }
+
+  return false;
+}
+
 bool IsFractionalScaleFactor(float scale_factor) {
   return (scale_factor - static_cast<int>(scale_factor)) > 0;
 }
@@ -448,6 +461,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
   window_observer_.reset(new WindowObserver(this));
   aura::client::SetTooltipText(window_, &tooltip_);
   aura::client::SetActivationDelegate(window_, this);
+  aura::client::SetActivationChangeObserver(window_, this);
   aura::client::SetFocusChangeObserver(window_, this);
   window_->set_layer_owner_delegate(delegated_frame_host_.get());
   gfx::Screen::GetScreenFor(window_)->AddObserver(this);
@@ -2123,6 +2137,11 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
   if (host_->IsRenderView())
     delegate = RenderViewHost::From(host_)->GetDelegate();
 
+  if (delegate && event->type() == ui::ET_GESTURE_BEGIN &&
+      event->details().touch_points() == 1) {
+    delegate->HandleGestureBegin();
+  }
+
   blink::WebGestureEvent gesture = MakeWebGestureEvent(*event);
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     // Webkit does not stop a fling-scroll on tap-down. So explicitly send an
@@ -2145,6 +2164,11 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     }
   }
 
+  if (delegate && event->type() == ui::ET_GESTURE_END &&
+      event->details().touch_points() == 1) {
+    delegate->HandleGestureEnd();
+  }
+
   // If a gesture is not processed by the webpage, then WebKit processes it
   // (e.g. generates synthetic mouse events).
   event->SetHandled();
@@ -2161,6 +2185,20 @@ bool RenderWidgetHostViewAura::ShouldActivate() const {
   if (!event)
     return true;
   return is_fullscreen_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura,
+//     aura::client::ActivationChangeObserver implementation:
+
+void RenderWidgetHostViewAura::OnWindowActivated(aura::Window* gained_active,
+                                                 aura::Window* lost_active) {
+  DCHECK(window_ == gained_active || window_ == lost_active);
+  if (window_ == gained_active) {
+    const ui::Event* event = window_->GetHost()->dispatcher()->current_event();
+    if (event && PointerEventActivates(*event))
+      host_->OnPointerEventActivate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

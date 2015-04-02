@@ -205,6 +205,10 @@ DownloadShelf* TestBrowserWindow::GetDownloadShelf() {
   return &download_shelf_;
 }
 
+int TestBrowserWindow::GetExtraRenderViewHeight() const {
+  return 0;
+}
+
 WindowOpenDisposition TestBrowserWindow::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
   return NEW_POPUP;

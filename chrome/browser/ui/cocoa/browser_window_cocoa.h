@@ -134,6 +134,7 @@ class BrowserWindowCocoa
       bool app_modal,
       const base::Callback<void(bool)>& callback) override;
   void UserChangedTheme() override;
+  int GetExtraRenderViewHeight() const override;
   void WebContentsFocused(content::WebContents* contents) override;
   void ShowWebsiteSettings(Profile* profile,
                            content::WebContents* web_contents,

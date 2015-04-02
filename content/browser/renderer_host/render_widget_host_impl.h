@@ -311,6 +311,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void CancelUpdateTextDirection();
 
+  // Called when a mouse click/gesture tap activates the renderer.
+  virtual void OnPointerEventActivate();
+
   // Notifies the renderer whether or not the input method attached to this
   // process is activated.
   // When the input method is activated, a renderer process sends IPC messages

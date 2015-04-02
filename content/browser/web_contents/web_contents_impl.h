@@ -459,6 +459,11 @@ class CONTENT_EXPORT WebContentsImpl
   void Activate() override;
   void Deactivate() override;
   void LostCapture() override;
+  void HandleMouseDown() override;
+  void HandleMouseUp() override;
+  void HandlePointerActivate() override;
+  void HandleGestureBegin() override;
+  void HandleGestureEnd() override;
   void RunFileChooser(RenderViewHost* render_view_host,
                       const FileChooserParams& params) override;
   bool IsFullscreenForCurrentTab() const override;

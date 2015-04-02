@@ -1436,6 +1436,31 @@ bool WebContentsImpl::PreHandleGestureEvent(
   return delegate_ && delegate_->PreHandleGestureEvent(this, event);
 }
 
+void WebContentsImpl::HandleMouseDown() {
+  if (delegate_)
+    delegate_->HandleMouseDown();
+}
+
+void WebContentsImpl::HandleMouseUp() {
+  if (delegate_)
+    delegate_->HandleMouseUp();
+}
+
+void WebContentsImpl::HandlePointerActivate() {
+  if (delegate_)
+    delegate_->HandlePointerActivate();
+}
+
+void WebContentsImpl::HandleGestureBegin() {
+  if (delegate_)
+    delegate_->HandleGestureBegin();
+}
+
+void WebContentsImpl::HandleGestureEnd() {
+  if (delegate_)
+    delegate_->HandleGestureEnd();
+}
+
 void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {
   // This method is being called to enter renderer-initiated fullscreen mode.
   // Make sure any existing fullscreen widget is shut down first.
@@ -2380,6 +2405,8 @@ void WebContentsImpl::DidGetRedirectForResourceRequest(
 void WebContentsImpl::SystemDragEnded() {
   if (GetRenderViewHost())
     GetRenderViewHostImpl()->DragSourceSystemDragEnded();
+  if (delegate_)
+    delegate_->DragEnded();
   if (browser_plugin_embedder_.get())
     browser_plugin_embedder_->SystemDragEnded();
 }

@@ -173,6 +173,16 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // Notification that the view has lost capture.
   virtual void LostCapture() {}
 
+  // Notifications about mouse events in this view.  This is useful for
+  // implementing global 'on hover' features external to the view.
+  virtual void HandleMouseMove() {}
+  virtual void HandleMouseDown() {}
+  virtual void HandleMouseLeave() {}
+  virtual void HandleMouseUp() {}
+  virtual void HandlePointerActivate() {}
+  virtual void HandleGestureBegin() {}
+  virtual void HandleGestureEnd() {}
+
   // Called when a file selection is to be done.
   virtual void RunFileChooser(
       RenderViewHost* render_view_host,

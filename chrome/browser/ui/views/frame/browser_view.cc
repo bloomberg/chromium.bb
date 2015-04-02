@@ -1354,6 +1354,11 @@ void BrowserView::UserChangedTheme() {
   frame_->FrameTypeChanged();
 }
 
+int BrowserView::GetExtraRenderViewHeight() const {
+  // Currently this is only used on linux.
+  return 0;
+}
+
 void BrowserView::WebContentsFocused(WebContents* contents) {
   if (contents_web_view_->GetWebContents() == contents)
     contents_web_view_->OnWebContentsFocused(contents);

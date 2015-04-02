@@ -67,6 +67,10 @@ bool WebContentsDelegate::TakeFocus(WebContents* source, bool reverse) {
   return false;
 }
 
+int WebContentsDelegate::GetExtraRenderViewHeight() const {
+  return 0;
+}
+
 void WebContentsDelegate::CanDownload(
     RenderViewHost* render_view_host,
     const GURL& url,
