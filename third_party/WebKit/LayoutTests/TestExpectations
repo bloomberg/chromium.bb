@@ -1960,3 +1960,4 @@ crbug.com/467386 http/tests/security/window-named-proto.html [ NeedsManualRebase
 crbug.com/467386 http/tests/security/xss-exception.html [ NeedsManualRebaseline ]
 
 crbug.com/472902 virtual/slimmingpaint/paint/invalidation/animated-gif.html [ Pass Failure ]
+crbug.com/472902 virtual/slimmingpaint/paint/invalidation/animated-gif-offscreen.html [ Pass Failure ]
