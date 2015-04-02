@@ -101,7 +101,7 @@
             '../sync/sync.gyp:*',
           ],
         }],
-        ['OS!="ios" and OS!="android"', {
+        ['OS!="ios" and OS!="android" and chromecast==0', {
           'dependencies': [
             '../third_party/re2/re2.gyp:re2',
             '../chrome/chrome.gyp:*',
@@ -174,7 +174,6 @@
         ['OS=="linux"', {
           'dependencies': [
             '../courgette/courgette.gyp:*',
-            '../dbus/dbus.gyp:*',
             '../sandbox/sandbox.gyp:*',
           ],
           'conditions': [
@@ -186,6 +185,11 @@
             ['enable_ipc_fuzzer==1', {
               'dependencies': [
                 '../tools/ipc_fuzzer/ipc_fuzzer.gyp:*',
+              ],
+            }],
+            ['use_dbus==1', {
+              'dependencies': [
+                '../dbus/dbus.gyp:*',
               ],
             }],
           ],
@@ -267,7 +271,7 @@
             '../google_apis/gcm/gcm.gyp:*',
           ],
         }],
-        ['chromeos==1 or OS=="linux" or OS=="win" or OS=="mac"', {
+        ['(chromeos==1 or OS=="linux" or OS=="win" or OS=="mac") and chromecast==0', {
           'dependencies': [
             '../extensions/shell/app_shell.gyp:*',
           ],
@@ -414,8 +418,12 @@
         }],
         ['OS=="linux"', {
           'dependencies': [
-            '../dbus/dbus.gyp:dbus_unittests',
             '../sandbox/sandbox.gyp:sandbox_linux_unittests',
+          ],
+        }],
+        ['OS=="linux" and use_dbus==1', {
+          'dependencies': [
+            '../dbus/dbus.gyp:dbus_unittests',
           ],
         }],
         ['OS=="mac"', {
@@ -531,7 +539,7 @@
         }, # target_name: blink_tests
       ],
     }], # OS!=ios
-    ['OS!="ios" and OS!="android"', {
+    ['OS!="ios" and OS!="android" and chromecast==0', {
       'targets': [
         {
           'target_name': 'chromium_builder_nacl_win_integration',
@@ -1236,10 +1244,6 @@
           'dependencies': [
             '../cc/blink/cc_blink_tests.gyp:cc_blink_unittests',
             '../cc/cc_tests.gyp:cc_unittests',
-            '../chrome/chrome.gyp:browser_tests',
-            '../chrome/chrome.gyp:chrome',
-            '../chrome/chrome.gyp:interactive_ui_tests',
-            '../chrome/chrome.gyp:unit_tests',
             '../components/components_tests.gyp:components_unittests',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_unittests',
@@ -1257,12 +1261,8 @@
             '../ui/events/events.gyp:*',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
             '../ui/keyboard/keyboard.gyp:*',
-            '../ui/message_center/message_center.gyp:*',
             '../ui/snapshot/snapshot.gyp:snapshot_unittests',
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
-            '../ui/views/examples/examples.gyp:views_examples_with_content_exe',
-            '../ui/views/views.gyp:views',
-            '../ui/views/views.gyp:views_unittests',
             '../ui/wm/wm.gyp:*',
             'blink_tests',
           ],
@@ -1302,6 +1302,18 @@
               'dependencies': [
                 '../ui/ozone/ozone.gyp:*',
                 '../ui/ozone/demo/ozone_demos.gyp:*',
+              ],
+            }],
+            ['chromecast==0', {
+              'dependencies': [
+                '../chrome/chrome.gyp:browser_tests',
+                '../chrome/chrome.gyp:chrome',
+                '../chrome/chrome.gyp:interactive_ui_tests',
+                '../chrome/chrome.gyp:unit_tests',
+                '../ui/message_center/message_center.gyp:*',
+                '../ui/views/examples/examples.gyp:views_examples_with_content_exe',
+                '../ui/views/views.gyp:views',
+                '../ui/views/views.gyp:views_unittests',
               ],
             }],
           ],
