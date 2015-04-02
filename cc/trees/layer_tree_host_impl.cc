@@ -316,10 +316,18 @@ void LayerTreeHostImpl::CommitComplete() {
     bool update_lcd_text = true;
     sync_tree()->UpdateDrawProperties(update_lcd_text);
     // Start working on newly created tiles immediately if needed.
-    if (tile_manager_ && tile_priorities_dirty_)
+    if (tile_manager_ && tile_priorities_dirty_) {
       PrepareTiles();
-    else
+    } else {
       NotifyReadyToActivate();
+
+      // Ensure we get ReadyToDraw signal even when PrepareTiles not run. This
+      // is important for SingleThreadProxy and impl-side painting case. For
+      // STP, we commit to active tree and RequiresHighResToDraw, and set
+      // Scheduler to wait for ReadyToDraw signal to avoid Checkerboard.
+      if (proxy_->CommitToActiveTree())
+        NotifyReadyToDraw();
+    }
   } else {
     // If we're not in impl-side painting, the tree is immediately considered
     // active.
@@ -862,17 +870,10 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   if (have_missing_animated_tiles)
     draw_result = DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
 
-  // When we have a copy request for a layer, we need to draw even if there
-  // would be animating checkerboards, because failing under those conditions
-  // triggers a new main frame, which may cause the copy request layer to be
-  // destroyed.
-  // TODO(danakj): Leaking scheduler internals into LayerTreeHostImpl here.
-  if (have_copy_request)
-    draw_result = DRAW_SUCCESS;
-
   // When we require high res to draw, abort the draw (almost) always. This does
   // not cause the scheduler to do a main frame, instead it will continue to try
   // drawing until we finally complete, so the copy request will not be lost.
+  // TODO(weiliangc): Remove RequiresHighResToDraw. crbug.com/469175
   if (num_incomplete_tiles || num_missing_tiles) {
     if (RequiresHighResToDraw())
       draw_result = DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
@@ -936,6 +937,15 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   TRACE_EVENT_END2("cc", "LayerTreeHostImpl::CalculateRenderPasses",
                    "draw_result", draw_result, "missing tiles",
                    num_missing_tiles);
+
+  // Draw has to be successful to not drop the copy request layer.
+  // When we have a copy request for a layer, we need to draw even if there
+  // would be animating checkerboards, because failing under those conditions
+  // triggers a new main frame, which may cause the copy request layer to be
+  // destroyed.
+  // TODO(weiliangc): Test copy request w/ output surface recreation. Would
+  // trigger this DCHECK.
+  DCHECK_IMPLIES(have_copy_request, draw_result == DRAW_SUCCESS);
 
   return draw_result;
 }

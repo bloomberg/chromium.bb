@@ -117,6 +117,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
 
   void SetNeedsPrepareTiles();
 
+  void SetWaitForReadyToDraw();
+
   void SetMaxSwapsPending(int max);
   void DidSwapBuffers();
   void DidSwapBuffersComplete();

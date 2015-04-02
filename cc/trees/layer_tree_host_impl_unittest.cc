@@ -2226,72 +2226,39 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
       PrepareToDrawSuccessTestCase(DRAW_ABORTED_CHECKERBOARD_ANIMATIONS));
   cases.back().layer_between.has_missing_tile = true;
   cases.back().layer_between.is_animating = true;
-  // 11. Animation with missing tile and copy request after. Must succeed
-  // because the animation checkerboard means we'll get a new frame and the copy
-  // request's layer may be destroyed.
-  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
-  cases.back().layer_between.has_missing_tile = true;
-  cases.back().layer_between.is_animating = true;
-  cases.back().layer_after.has_copy_request = true;
-  // 12. Animation with missing tile and copy request before. Must succeed
-  // because the animation checkerboard means we'll get a new frame and the copy
-  // request's layer may be destroyed.
-  cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
-  cases.back().layer_between.has_missing_tile = true;
-  cases.back().layer_between.is_animating = true;
-  cases.back().layer_before.has_copy_request = true;
-  // 13. Animation with incomplete tile.
+  // 11. Animation with incomplete tile.
   cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
   cases.back().layer_between.has_incomplete_tile = true;
   cases.back().layer_between.is_animating = true;
 
-  // 14. High res required.
+  // 12. High res required.
   cases.push_back(PrepareToDrawSuccessTestCase(DRAW_SUCCESS));
   cases.back().high_res_required = true;
-  // 15. High res required with incomplete tile.
+  // 13. High res required with incomplete tile.
   cases.push_back(
       PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
   cases.back().high_res_required = true;
   cases.back().layer_between.has_incomplete_tile = true;
-  // 16. High res required with missing tile.
+  // 14. High res required with missing tile.
   cases.push_back(
       PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
   cases.back().high_res_required = true;
   cases.back().layer_between.has_missing_tile = true;
 
-  // 17. High res required is higher priority than animating missing tiles.
+  // 15. High res required is higher priority than animating missing tiles.
   cases.push_back(
       PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
   cases.back().high_res_required = true;
   cases.back().layer_between.has_missing_tile = true;
   cases.back().layer_after.has_missing_tile = true;
   cases.back().layer_after.is_animating = true;
-  // 18. High res required is higher priority than animating missing tiles.
+  // 16. High res required is higher priority than animating missing tiles.
   cases.push_back(
       PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
   cases.back().high_res_required = true;
   cases.back().layer_between.has_missing_tile = true;
   cases.back().layer_before.has_missing_tile = true;
   cases.back().layer_before.is_animating = true;
-
-  // 19. High res required is higher priority than copy requests.
-  cases.push_back(
-      PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
-  cases.back().high_res_required = true;
-  cases.back().layer_between.has_missing_tile = true;
-  cases.back().layer_after.has_copy_request = true;
-  // 20. High res required is higher priority than copy requests.
-  cases.push_back(
-      PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
-  cases.back().high_res_required = true;
-  cases.back().layer_between.has_missing_tile = true;
-  cases.back().layer_before.has_copy_request = true;
-  // 21. High res required is higher priority than copy requests.
-  cases.push_back(
-      PrepareToDrawSuccessTestCase(DRAW_ABORTED_MISSING_HIGH_RES_CONTENT));
-  cases.back().high_res_required = true;
-  cases.back().layer_between.has_missing_tile = true;
-  cases.back().layer_between.has_copy_request = true;
 
   host_impl_->active_tree()->SetRootLayer(
       DidDrawCheckLayer::Create(host_impl_->active_tree(), 1));

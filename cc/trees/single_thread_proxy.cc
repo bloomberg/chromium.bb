@@ -422,6 +422,10 @@ void SingleThreadProxy::NotifyReadyToActivate() {
 }
 
 void SingleThreadProxy::NotifyReadyToDraw() {
+  TRACE_EVENT0("cc", "SingleThreadProxy::NotifyReadyToDraw");
+  DebugScopedSetImplThread impl(this);
+  if (scheduler_on_impl_thread_)
+    scheduler_on_impl_thread_->NotifyReadyToDraw();
 }
 
 void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
@@ -488,7 +492,8 @@ void SingleThreadProxy::DidActivateSyncTree() {
   if (layer_tree_host_impl_->settings().impl_side_painting) {
     // This is required because NotifyReadyToActivate gets called immediately
     // after commit since single thread commits directly to the active tree.
-    layer_tree_host_impl_->SetRequiresHighResToDraw();
+    if (scheduler_on_impl_thread_)
+      scheduler_on_impl_thread_->SetWaitForReadyToDraw();
 
     // Synchronously call to CommitComplete. Resetting
     // |commit_blocking_task_runner| would make sure all tasks posted during

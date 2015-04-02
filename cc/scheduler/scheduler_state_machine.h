@@ -66,6 +66,7 @@ class CC_EXPORT SchedulerStateMachine {
     BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE,
     BEGIN_IMPL_FRAME_DEADLINE_MODE_REGULAR,
     BEGIN_IMPL_FRAME_DEADLINE_MODE_LATE,
+    BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW,
   };
   static const char* BeginImplFrameDeadlineModeToString(
       BeginImplFrameDeadlineMode mode);
@@ -170,6 +171,9 @@ class CC_EXPORT SchedulerStateMachine {
   // PrepareTiles will occur shortly (even if no redraw is required).
   void SetNeedsPrepareTiles();
 
+  // Make deadline wait for ReadyToDraw signal.
+  void SetWaitForReadyToDraw();
+
   // Sets how many swaps can be pending to the OutputSurface.
   void SetMaxSwapsPending(int max);
 
@@ -226,6 +230,9 @@ class CC_EXPORT SchedulerStateMachine {
 
   // Indicates that the pending tree is ready for activation.
   void NotifyReadyToActivate();
+
+  // Indicates the active tree's visible tiles are ready to be drawn.
+  void NotifyReadyToDraw();
 
   bool has_pending_tree() const { return has_pending_tree_; }
   bool active_tree_needs_first_draw() const {
@@ -333,6 +340,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool children_need_begin_frames_;
   bool defer_commits_;
   bool last_commit_had_no_updates_;
+  bool wait_for_active_tree_ready_to_draw_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

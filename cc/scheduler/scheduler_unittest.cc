@@ -1124,6 +1124,92 @@ TEST_F(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
   EXPECT_EQ(base::TimeTicks(), client->posted_begin_impl_frame_deadline());
 }
 
+TEST_F(SchedulerTest, WaitForReadyToDrawDoNotPostDeadline) {
+  SchedulerClientNeedsPrepareTilesInDraw* client =
+      new SchedulerClientNeedsPrepareTilesInDraw;
+  scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.impl_side_painting = true;
+  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+
+  // SetNeedsCommit should begin the frame on the next BeginImplFrame.
+  scheduler_->SetNeedsCommit();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+  client_->Reset();
+
+  // Begin new frame.
+  EXPECT_SCOPED(AdvanceFrame());
+  scheduler_->NotifyBeginMainFrameStarted();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
+
+  client_->Reset();
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
+
+  client_->Reset();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
+
+  // Set scheduler to wait for ready to draw. Schedule won't post deadline in
+  // the mode.
+  scheduler_->SetWaitForReadyToDraw();
+  client_->Reset();
+  task_runner().RunPendingTasks();  // Try to run posted deadline.
+  // There is no posted deadline.
+  EXPECT_NO_ACTION(client_);
+
+  // Scheduler received ready to draw signal, and posted deadline.
+  scheduler_->NotifyReadyToDraw();
+  client_->Reset();
+  task_runner().RunPendingTasks();  // Run posted deadline.
+  EXPECT_EQ(1, client_->num_draws());
+  EXPECT_TRUE(client_->HasAction("ScheduledActionDrawAndSwapIfPossible"));
+}
+
+TEST_F(SchedulerTest, WaitForReadyToDrawCancelledWhenLostOutputSurface) {
+  SchedulerClientNeedsPrepareTilesInDraw* client =
+      new SchedulerClientNeedsPrepareTilesInDraw;
+  scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.impl_side_painting = true;
+  SetUpScheduler(make_scoped_ptr(client).Pass(), true);
+
+  // SetNeedsCommit should begin the frame on the next BeginImplFrame.
+  scheduler_->SetNeedsCommit();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+  client_->Reset();
+
+  // Begin new frame.
+  EXPECT_SCOPED(AdvanceFrame());
+  scheduler_->NotifyBeginMainFrameStarted();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
+
+  client_->Reset();
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
+
+  client_->Reset();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
+
+  // Set scheduler to wait for ready to draw. Schedule won't post deadline in
+  // the mode.
+  scheduler_->SetWaitForReadyToDraw();
+  client_->Reset();
+  task_runner().RunPendingTasks();  // Try to run posted deadline.
+  // There is no posted deadline.
+  EXPECT_NO_ACTION(client_);
+
+  // Scheduler loses output surface, and stops waiting for ready to draw signal.
+  client_->Reset();
+  scheduler_->DidLoseOutputSurface();
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+  task_runner().RunPendingTasks();  // Run posted deadline.
+  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
+}
+
 class SchedulerClientWithFixedEstimates : public FakeSchedulerClient {
  public:
   SchedulerClientWithFixedEstimates(

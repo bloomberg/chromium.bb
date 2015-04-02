@@ -202,8 +202,9 @@ void Scheduler::NotifyReadyToActivate() {
 }
 
 void Scheduler::NotifyReadyToDraw() {
-  // Empty for now, until we take action based on the notification as part of
-  // crbugs 352894, 383157, 421923.
+  // Future work might still needed for crbug.com/352894.
+  state_machine_.NotifyReadyToDraw();
+  ProcessScheduledActions();
 }
 
 void Scheduler::SetThrottleFrameProduction(bool throttle) {
@@ -229,6 +230,11 @@ void Scheduler::SetNeedsAnimate() {
 void Scheduler::SetNeedsPrepareTiles() {
   DCHECK(!IsInsideAction(SchedulerStateMachine::ACTION_PREPARE_TILES));
   state_machine_.SetNeedsPrepareTiles();
+  ProcessScheduledActions();
+}
+
+void Scheduler::SetWaitForReadyToDraw() {
+  state_machine_.SetWaitForReadyToDraw();
   ProcessScheduledActions();
 }
 
@@ -595,6 +601,13 @@ void Scheduler::ScheduleBeginImplFrameDeadline() {
       deadline =
           begin_impl_frame_args_.frame_time + begin_impl_frame_args_.interval;
       break;
+    case SchedulerStateMachine::
+        BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW:
+      // We are blocked because we are waiting for ReadyToDraw signal. We would
+      // post deadline after we received ReadyToDraw singal.
+      TRACE_EVENT1("cc", "Scheduler::ScheduleBeginImplFrameDeadline",
+                   "deadline_mode", "blocked_on_ready_to_draw");
+      return;
   }
 
   TRACE_EVENT1(
