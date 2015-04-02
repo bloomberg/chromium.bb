@@ -22,8 +22,11 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api_test_utils.h"
@@ -666,6 +669,10 @@ class ExtensionTabsZoomTest : public ExtensionTabsTest {
                                               std::string* mode,
                                               std::string* scope);
 
+  // Runs chrome.tabs.getZoomSettings() and returns default zoom.
+  testing::AssertionResult RunGetDefaultZoom(int tab_id,
+                                             double* default_zoom_factor);
+
   // Runs chrome.tabs.setZoom(), expecting an error.
   std::string RunSetZoomExpectError(int tab_id,
                                     double zoom_factor);
@@ -694,8 +701,7 @@ bool ExtensionTabsZoomTest::RunSetZoom(int tab_id, double zoom_factor) {
 
   return utils::RunFunction(
       set_zoom_function.get(),
-      base::StringPrintf("[%u, %lf]", tab_id, zoom_factor),
-      browser(),
+      base::StringPrintf("[%u, %lf]", tab_id, zoom_factor), browser(),
       extension_function_test_utils::NONE);
 }
 
@@ -764,6 +770,33 @@ testing::AssertionResult ExtensionTabsZoomTest::RunGetZoomSettings(
 
   *mode = api_test_utils::GetString(get_zoom_settings_result.get(), "mode");
   *scope = api_test_utils::GetString(get_zoom_settings_result.get(), "scope");
+
+  return testing::AssertionSuccess();
+}
+
+testing::AssertionResult ExtensionTabsZoomTest::RunGetDefaultZoom(
+    int tab_id,
+    double* default_zoom_factor) {
+  DCHECK(default_zoom_factor);
+  scoped_refptr<TabsGetZoomSettingsFunction> get_zoom_settings_function(
+      new TabsGetZoomSettingsFunction());
+  get_zoom_settings_function->set_extension(extension_.get());
+  get_zoom_settings_function->set_has_callback(true);
+
+  scoped_ptr<base::DictionaryValue> get_zoom_settings_result(
+      utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+          get_zoom_settings_function.get(),
+          base::StringPrintf("[%u]", tab_id),
+          browser())));
+
+  if (!get_zoom_settings_result)
+    return testing::AssertionFailure() << "no result";
+
+  if (!get_zoom_settings_result->GetDouble("default_zoom_factor",
+                                           default_zoom_factor)) {
+    return testing::AssertionFailure()
+           << "default zoom factor not found in result";
+  }
 
   return testing::AssertionSuccess();
 }
@@ -845,6 +878,64 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, SetAndGetZoom) {
   zoom_factor = -1;
   EXPECT_TRUE(RunGetZoom(tab_id, &zoom_factor));
   EXPECT_EQ(kZoomLevel, zoom_factor);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, GetDefaultZoom) {
+  content::OpenURLParams params(GetOpenParams(url::kAboutBlankURL));
+  content::WebContents* web_contents = OpenUrlAndWaitForLoad(params.url);
+  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
+
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents);
+  double default_zoom_factor = -1.0;
+  EXPECT_TRUE(RunGetDefaultZoom(tab_id, &default_zoom_factor));
+  EXPECT_TRUE(content::ZoomValuesEqual(
+      zoom_controller->GetDefaultZoomLevel(),
+      content::ZoomFactorToZoomLevel(default_zoom_factor)));
+
+  // Change the default zoom level and verify GetDefaultZoom returns the
+  // correct value.
+  content::StoragePartition* partition =
+      content::BrowserContext::GetStoragePartition(
+          web_contents->GetBrowserContext(), web_contents->GetSiteInstance());
+  chrome::ChromeZoomLevelPrefs* zoom_prefs =
+      static_cast<chrome::ChromeZoomLevelPrefs*>(
+          partition->GetZoomLevelDelegate());
+
+  double default_zoom_level = zoom_controller->GetDefaultZoomLevel();
+  zoom_prefs->SetDefaultZoomLevelPref(default_zoom_level + 0.5);
+  default_zoom_factor = -1.0;
+  EXPECT_TRUE(RunGetDefaultZoom(tab_id, &default_zoom_factor));
+  EXPECT_TRUE(content::ZoomValuesEqual(
+      default_zoom_level + 0.5,
+      content::ZoomFactorToZoomLevel(default_zoom_factor)));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, SetToDefaultZoom) {
+  content::OpenURLParams params(GetOpenParams(url::kAboutBlankURL));
+  content::WebContents* web_contents = OpenUrlAndWaitForLoad(params.url);
+  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
+
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents);
+  double default_zoom_level = zoom_controller->GetDefaultZoomLevel();
+  double new_default_zoom_level = default_zoom_level + 0.42;
+
+  content::StoragePartition* partition =
+      content::BrowserContext::GetStoragePartition(
+          web_contents->GetBrowserContext(), web_contents->GetSiteInstance());
+  chrome::ChromeZoomLevelPrefs* zoom_prefs =
+      static_cast<chrome::ChromeZoomLevelPrefs*>(
+          partition->GetZoomLevelDelegate());
+
+  zoom_prefs->SetDefaultZoomLevelPref(new_default_zoom_level);
+
+  double observed_zoom_factor = -1.0;
+  EXPECT_TRUE(RunSetZoom(tab_id, 0.0));
+  EXPECT_TRUE(RunGetZoom(tab_id, &observed_zoom_factor));
+  EXPECT_TRUE(content::ZoomValuesEqual(
+      new_default_zoom_level,
+      content::ZoomFactorToZoomLevel(observed_zoom_factor)));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, ZoomSettings) {

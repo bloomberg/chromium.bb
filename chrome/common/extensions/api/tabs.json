@@ -68,6 +68,12 @@
                 "description": "Zoom changes only take effect in this tab, and zoom changes in other tabs will not affect the zooming of this tab. Also, <code>per-tab</code> zoom changes are reset on navigation; navigating a tab will always load pages with their <code>per-origin</code> zoom factors."
               }
             ]
+          },
+          "default_zoom_factor": {
+            "type": "number",
+            "name": "defaultZoomFactor",
+            "optional": true,
+            "description": "Used to return the default zoom level for the current tab in calls to tabs.getZoomSettings."
           }
         }
       }

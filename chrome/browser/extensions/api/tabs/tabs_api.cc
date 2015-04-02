@@ -1854,7 +1854,9 @@ bool TabsSetZoomFunction::RunAsync() {
 
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(web_contents);
-  double zoom_level = content::ZoomFactorToZoomLevel(params->zoom_factor);
+  double zoom_level = params->zoom_factor > 0
+                          ? content::ZoomFactorToZoomLevel(params->zoom_factor)
+                          : zoom_controller->GetDefaultZoomLevel();
 
   scoped_refptr<ExtensionZoomRequestClient> client(
       new ExtensionZoomRequestClient(extension()));
@@ -1953,6 +1955,8 @@ bool TabsGetZoomSettingsFunction::RunAsync() {
   ZoomController::ZoomMode zoom_mode = zoom_controller->zoom_mode();
   api::tabs::ZoomSettings zoom_settings;
   ZoomModeToZoomSettings(zoom_mode, &zoom_settings);
+  zoom_settings.default_zoom_factor.reset(new double(
+      content::ZoomLevelToZoomFactor(zoom_controller->GetDefaultZoomLevel())));
 
   results_ = api::tabs::GetZoomSettings::Results::Create(zoom_settings);
   SendResponse(true);
