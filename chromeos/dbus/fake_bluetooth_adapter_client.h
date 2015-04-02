@@ -54,6 +54,10 @@ class CHROMEOS_EXPORT FakeBluetoothAdapterClient
                     const dbus::ObjectPath& device_path,
                     const base::Closure& callback,
                     const ErrorCallback& error_callback) override;
+  void SetDiscoveryFilter(const dbus::ObjectPath& object_path,
+                          const DiscoveryFilter& discovery_filter,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) override;
 
   // Sets the current simulation timeout interval.
   void SetSimulationIntervalMs(int interval_ms);

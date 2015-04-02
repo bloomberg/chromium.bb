@@ -22,6 +22,16 @@ namespace chromeos {
 // local Bluetooth Adapters.
 class CHROMEOS_EXPORT BluetoothAdapterClient : public DBusClient {
  public:
+  struct DiscoveryFilter {
+    DiscoveryFilter();
+    ~DiscoveryFilter();
+
+    scoped_ptr<std::vector<std::string>> uuids;
+    scoped_ptr<int16_t> rssi;
+    scoped_ptr<uint16_t> pathloss;
+    scoped_ptr<std::string> transport;
+  };
+
   // Structure of properties associated with bluetooth adapters.
   struct Properties : public dbus::PropertySet {
     // The Bluetooth device address of the adapter. Read-only.
@@ -136,6 +146,17 @@ class CHROMEOS_EXPORT BluetoothAdapterClient : public DBusClient {
                             const dbus::ObjectPath& device_path,
                             const base::Closure& callback,
                             const ErrorCallback& error_callback) = 0;
+
+  // Sets the device discovery filter on the adapter with object path
+  // |object_path|. When this method is called with no filter parameter, filter
+  // is removed.
+  // SetDiscoveryFilter can be called before StartDiscovery. It is useful when
+  // client will create first discovery session, to ensure that proper scan
+  // will be started right after call to StartDiscovery.
+  virtual void SetDiscoveryFilter(const dbus::ObjectPath& object_path,
+                                  const DiscoveryFilter& discovery_filter,
+                                  const base::Closure& callback,
+                                  const ErrorCallback& error_callback) = 0;
 
   // Creates the instance.
   static BluetoothAdapterClient* Create();

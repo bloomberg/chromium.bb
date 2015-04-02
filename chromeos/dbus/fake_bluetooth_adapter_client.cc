@@ -205,6 +205,20 @@ void FakeBluetoothAdapterClient::RemoveDevice(
   device_client->RemoveDevice(dbus::ObjectPath(kAdapterPath), device_path);
 }
 
+void FakeBluetoothAdapterClient::SetDiscoveryFilter(
+    const dbus::ObjectPath& object_path,
+    const DiscoveryFilter& discovery_filter,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  if (object_path != dbus::ObjectPath(kAdapterPath)) {
+    PostDelayedTask(base::Bind(error_callback, kNoResponseError, ""));
+    return;
+  }
+
+  VLOG(1) << "SetDiscoveryFilter: " << object_path.value();
+  PostDelayedTask(callback);
+}
+
 void FakeBluetoothAdapterClient::SetSimulationIntervalMs(int interval_ms) {
   simulation_interval_ms_ = interval_ms;
 }

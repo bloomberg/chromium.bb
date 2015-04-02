@@ -14,6 +14,12 @@
 
 namespace chromeos {
 
+BluetoothAdapterClient::DiscoveryFilter::DiscoveryFilter() {
+}
+
+BluetoothAdapterClient::DiscoveryFilter::~DiscoveryFilter() {
+}
+
 const char BluetoothAdapterClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
 const char BluetoothAdapterClient::kUnknownAdapterError[] =
@@ -167,6 +173,85 @@ class BluetoothAdapterClientImpl
     object_proxy->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothAdapterClientImpl::OnSuccess,
+                   weak_ptr_factory_.GetWeakPtr(), callback),
+        base::Bind(&BluetoothAdapterClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+  }
+
+  // BluetoothAdapterClient override.
+  void SetDiscoveryFilter(const dbus::ObjectPath& object_path,
+                          const DiscoveryFilter& discovery_filter,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(bluetooth_adapter::kBluetoothAdapterInterface,
+                                 bluetooth_adapter::kSetDiscoveryFilter);
+
+    dbus::MessageWriter writer(&method_call);
+    dbus::MessageWriter dict_writer(nullptr);
+
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(object_path);
+    if (!object_proxy) {
+      error_callback.Run(kUnknownAdapterError, "");
+      return;
+    }
+
+    writer.OpenArray("{sv}", &dict_writer);
+
+    if (discovery_filter.uuids.get()) {
+      std::vector<std::string>* uuids = discovery_filter.uuids.get();
+      dbus::MessageWriter uuids_entry_writer(nullptr);
+      dict_writer.OpenDictEntry(&uuids_entry_writer);
+      uuids_entry_writer.AppendString(
+          bluetooth_adapter::kDiscoveryFilterParameterUUIDs);
+
+      dbus::MessageWriter uuids_array_variant(nullptr);
+      uuids_entry_writer.OpenVariant("as", &uuids_array_variant);
+      dbus::MessageWriter uuids_array(nullptr);
+      uuids_array_variant.OpenArray("s", &uuids_array);
+
+      for (auto& it : *uuids)
+        uuids_array.AppendString(it);
+
+      uuids_array_variant.CloseContainer(&uuids_array);
+      uuids_entry_writer.CloseContainer(&uuids_array_variant);
+      dict_writer.CloseContainer(&uuids_entry_writer);
+    }
+
+    if (discovery_filter.rssi.get()) {
+      dbus::MessageWriter rssi_entry_writer(nullptr);
+      dict_writer.OpenDictEntry(&rssi_entry_writer);
+      rssi_entry_writer.AppendString(
+          bluetooth_adapter::kDiscoveryFilterParameterRSSI);
+      rssi_entry_writer.AppendVariantOfInt16(*discovery_filter.rssi.get());
+      dict_writer.CloseContainer(&rssi_entry_writer);
+    }
+
+    if (discovery_filter.pathloss.get()) {
+      dbus::MessageWriter pathloss_entry_writer(nullptr);
+      dict_writer.OpenDictEntry(&pathloss_entry_writer);
+      pathloss_entry_writer.AppendString(
+          bluetooth_adapter::kDiscoveryFilterParameterPathloss);
+      pathloss_entry_writer.AppendVariantOfUint16(
+          *discovery_filter.pathloss.get());
+      dict_writer.CloseContainer(&pathloss_entry_writer);
+    }
+
+    if (discovery_filter.transport.get()) {
+      dbus::MessageWriter transport_entry_writer(nullptr);
+      dict_writer.OpenDictEntry(&transport_entry_writer);
+      transport_entry_writer.AppendString(
+          bluetooth_adapter::kDiscoveryFilterParameterTransport);
+      transport_entry_writer.AppendVariantOfString(
+          *discovery_filter.transport.get());
+      dict_writer.CloseContainer(&transport_entry_writer);
+    }
+
+    writer.CloseContainer(&dict_writer);
+
+    object_proxy->CallMethodWithErrorCallback(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&BluetoothAdapterClientImpl::OnSuccess,
                    weak_ptr_factory_.GetWeakPtr(), callback),
         base::Bind(&BluetoothAdapterClientImpl::OnError,
