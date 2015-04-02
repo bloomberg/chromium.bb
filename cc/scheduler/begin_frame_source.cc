@@ -311,11 +311,8 @@ void BeginFrameSourceMultiplexer::SetMinimumInterval(
 }
 
 void BeginFrameSourceMultiplexer::AddSource(BeginFrameSource* new_source) {
-  DEBUG_FRAMES("BeginFrameSourceMultiplexer::AddSource",
-               "current active",
-               active_source_,
-               "source to remove",
-               new_source);
+  DEBUG_FRAMES("BeginFrameSourceMultiplexer::AddSource", "current active",
+               active_source_, "source to be added", new_source);
   DCHECK(new_source);
   DCHECK(!HasSource(new_source));
 
@@ -328,11 +325,8 @@ void BeginFrameSourceMultiplexer::AddSource(BeginFrameSource* new_source) {
 
 void BeginFrameSourceMultiplexer::RemoveSource(
     BeginFrameSource* existing_source) {
-  DEBUG_FRAMES("BeginFrameSourceMultiplexer::RemoveSource",
-               "current active",
-               active_source_,
-               "source to remove",
-               existing_source);
+  DEBUG_FRAMES("BeginFrameSourceMultiplexer::RemoveSource", "current active",
+               active_source_, "source to be removed", existing_source);
   DCHECK(existing_source);
   DCHECK(HasSource(existing_source));
   DCHECK_NE(existing_source, active_source_);
