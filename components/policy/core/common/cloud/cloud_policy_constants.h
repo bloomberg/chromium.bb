@@ -42,6 +42,8 @@ POLICY_EXPORT extern const char kValueRequestUploadStatus[];
 POLICY_EXPORT extern const char kValueRequestRemoteCommands[];
 POLICY_EXPORT extern const char kValueUserAffiliationManaged[];
 POLICY_EXPORT extern const char kValueUserAffiliationNone[];
+POLICY_EXPORT extern const char kValueRequestDeviceAttributeUpdatePermission[];
+POLICY_EXPORT extern const char kValueRequestDeviceAttributeUpdate[];
 
 // Policy type strings for the policy_type field in PolicyFetchRequest.
 POLICY_EXPORT extern const char kChromeDevicePolicyType[];

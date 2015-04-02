@@ -157,6 +157,22 @@ class POLICY_EXPORT CloudPolicyClient {
           command_results,
       const RemoteCommandCallback& callback);
 
+  // Sends a device attribute update permission request to the server, uses
+  // OAuth2 token |auth_token| to identify user who requests a permission to
+  // name a device, calls a |callback| from the enrollment screen to indicate
+  // whether the device naming prompt should be shown.
+  void GetDeviceAttributeUpdatePermission(const std::string& auth_token,
+                                          const StatusCallback& callback);
+
+  // Sends a device naming information (Asset Id and Location) to the
+  // device management server, uses OAuth2 token |auth_token| to identify user
+  // who names a device, the |callback| will be called when the operation
+  // completes.
+  void UpdateDeviceAttributes(const std::string& auth_token,
+                              const std::string& asset_id,
+                              const std::string& location,
+                              const StatusCallback& callback);
+
   // Adds an observer to be called back upon policy and state changes.
   void AddObserver(Observer* observer);
 
@@ -290,6 +306,22 @@ class POLICY_EXPORT CloudPolicyClient {
   void OnRemoteCommandsFetched(
       const DeviceManagementRequestJob* job,
       const RemoteCommandCallback& callback,
+      DeviceManagementStatus status,
+      int net_error,
+      const enterprise_management::DeviceManagementResponse& response);
+
+  // Callback for device attribute update permission requests.
+  void OnDeviceAttributeUpdatePermissionCompleted(
+      const DeviceManagementRequestJob* job,
+      const StatusCallback& callback,
+      DeviceManagementStatus status,
+      int net_error,
+      const enterprise_management::DeviceManagementResponse& response);
+
+  // Callback for device attribute update requests.
+  void OnDeviceAttributeUpdated(
+      const DeviceManagementRequestJob* job,
+      const StatusCallback& callback,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);

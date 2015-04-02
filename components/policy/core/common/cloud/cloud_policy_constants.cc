@@ -41,6 +41,9 @@ const char kValueRequestUploadStatus[] = "status_upload";
 const char kValueRequestRemoteCommands[] = "remote_commands";
 const char kValueUserAffiliationManaged[] = "managed";
 const char kValueUserAffiliationNone[] = "none";
+const char kValueRequestDeviceAttributeUpdatePermission[] =
+    "attribute_update_permission";
+const char kValueRequestDeviceAttributeUpdate[] = "attribute_update";
 
 const char kChromeDevicePolicyType[] = "google/chromeos/device";
 #if defined(OS_CHROMEOS)

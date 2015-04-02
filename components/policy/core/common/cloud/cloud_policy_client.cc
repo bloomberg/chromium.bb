@@ -325,6 +325,61 @@ void CloudPolicyClient::FetchRemoteCommands(
   request_jobs_.back()->Start(job_callback);
 }
 
+void CloudPolicyClient::GetDeviceAttributeUpdatePermission(
+    const std::string &auth_token,
+    const CloudPolicyClient::StatusCallback& callback) {
+  CHECK(is_registered());
+  DCHECK(!auth_token.empty());
+
+  scoped_ptr<DeviceManagementRequestJob> request_job(
+      service_->CreateJob(
+          DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE_PERMISSION,
+                          GetRequestContext()));
+
+  request_job->SetOAuthToken(auth_token);
+  request_job->SetClientID(client_id_);
+
+  request_job->GetRequest()->
+      mutable_device_attribute_update_permission_request();
+
+  const DeviceManagementRequestJob::Callback job_callback =
+      base::Bind(&CloudPolicyClient::OnDeviceAttributeUpdatePermissionCompleted,
+      base::Unretained(this), request_job.get(), callback);
+
+  request_jobs_.push_back(request_job.Pass());
+  request_jobs_.back()->Start(job_callback);
+}
+
+void CloudPolicyClient::UpdateDeviceAttributes(
+    const std::string& auth_token,
+    const std::string& asset_id,
+    const std::string& location,
+    const CloudPolicyClient::StatusCallback& callback) {
+  CHECK(is_registered());
+  DCHECK(!auth_token.empty());
+
+  scoped_ptr<DeviceManagementRequestJob> request_job(
+      service_->CreateJob(
+          DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE,
+          GetRequestContext()));
+
+  request_job->SetOAuthToken(auth_token);
+  request_job->SetClientID(client_id_);
+
+  em::DeviceAttributeUpdateRequest* request =
+      request_job->GetRequest()->mutable_device_attribute_update_request();
+
+  request->set_asset_id(asset_id);
+  request->set_location(location);
+
+  const DeviceManagementRequestJob::Callback job_callback =
+      base::Bind(&CloudPolicyClient::OnDeviceAttributeUpdated,
+      base::Unretained(this), request_job.get(), callback);
+
+  request_jobs_.push_back(request_job.Pass());
+  request_jobs_.back()->Start(job_callback);
+}
+
 void CloudPolicyClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -512,6 +567,58 @@ void CloudPolicyClient::OnCertificateUploadCompleted(
   }
   callback.Run(success);
   // Must call RemoveJob() last, because it frees |callback|.
+  RemoveJob(job);
+}
+
+void CloudPolicyClient::OnDeviceAttributeUpdatePermissionCompleted(
+    const DeviceManagementRequestJob* job,
+    const CloudPolicyClient::StatusCallback& callback,
+    DeviceManagementStatus status,
+    int net_error,
+    const em::DeviceManagementResponse& response) {
+  bool success = false;
+
+  if (status == DM_STATUS_SUCCESS &&
+      !response.has_device_attribute_update_permission_response()) {
+    LOG(WARNING) << "Invalid device attribute update permission response.";
+    status = DM_STATUS_RESPONSE_DECODING_ERROR;
+  }
+
+  status_ = status;
+  if (status == DM_STATUS_SUCCESS &&
+      response.device_attribute_update_permission_response().has_result() &&
+      response.device_attribute_update_permission_response().result() ==
+      em::DeviceAttributeUpdatePermissionResponse::ATTRIBUTE_UPDATE_ALLOWED) {
+    success = true;
+  }
+
+  callback.Run(success);
+  RemoveJob(job);
+}
+
+void CloudPolicyClient::OnDeviceAttributeUpdated(
+    const DeviceManagementRequestJob* job,
+    const CloudPolicyClient::StatusCallback& callback,
+    DeviceManagementStatus status,
+    int net_error,
+    const em::DeviceManagementResponse& response) {
+  bool success = false;
+
+  if (status == DM_STATUS_SUCCESS &&
+      !response.has_device_attribute_update_response()) {
+    LOG(WARNING) << "Invalid device attribute update response.";
+    status = DM_STATUS_RESPONSE_DECODING_ERROR;
+  }
+
+  status_ = status;
+  if (status == DM_STATUS_SUCCESS &&
+      response.device_attribute_update_response().has_result() &&
+      response.device_attribute_update_response().result() ==
+      em::DeviceAttributeUpdateResponse::ATTRIBUTE_UPDATE_SUCCESS) {
+    success = true;
+  }
+
+  callback.Run(success);
   RemoveJob(job);
 }
 
