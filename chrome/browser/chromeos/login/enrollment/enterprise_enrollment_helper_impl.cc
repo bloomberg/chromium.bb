@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -140,12 +141,11 @@ void EnterpriseEnrollmentHelperImpl::ClearAuth(const base::Closure& callback) {
   }
   oauth_fetchers_.clear();
 
-  // TODO(dzhioev): clear partition storage of <webview>, if <webview> was used
-  // for authentication.
   if (!profile_) {
-    callback.Run();
+    chromeos::ProfileHelper::Get()->ClearSigninProfile(callback);
     return;
   }
+
   auth_clear_callbacks_.push_back(callback);
   if (browsing_data_remover_)
     return;

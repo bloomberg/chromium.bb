@@ -11,19 +11,15 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "components/user_manager/user_manager.h"
 
 class Profile;
-class User;
 
 namespace base {
 class FilePath;
-}
-
-namespace content {
-class WebContents;
 }
 
 namespace extensions {
@@ -104,10 +100,7 @@ class ProfileHelper
 
   // Clears site data (cookies, history, etc) for signin profile.
   // Callback can be empty. Not thread-safe.
-  // |webview_contents| is an optional parameter (may be nullptr) that points to
-  // the host of a webview whose storage needs to be cleared as well.
-  void ClearSigninProfile(const base::Closure& on_clear_callback,
-                          content::WebContents* webview_contents);
+  void ClearSigninProfile(const base::Closure& on_clear_callback);
 
   // Returns profile of the |user| if it is created and fully initialized.
   // Otherwise, returns NULL.
@@ -146,6 +139,9 @@ class ProfileHelper
   friend class SessionStateDelegateChromeOSTest;
   friend class SystemTrayDelegateChromeOSTest;
 
+  // Called when signin profile is cleared.
+  void OnSigninProfileCleared();
+
   // BrowsingDataRemover::Observer implementation:
   void OnBrowsingDataRemoverDone() override;
 
@@ -177,11 +173,14 @@ class ProfileHelper
   // Identifies path to active user profile on Chrome OS.
   std::string active_user_id_hash_;
 
-  // True if signin profile clearing now.
-  bool signin_profile_clear_requested_;
-
   // List of callbacks called after signin profile clearance.
   std::vector<base::Closure> on_clear_callbacks_;
+
+  // Called when a single stage of profile clearing is finished.
+  base::Closure on_clear_profile_stage_finished_;
+
+  // A currently running browsing data remover.
+  BrowsingDataRemover* browsing_data_remover_;
 
   // Used for testing by unit tests and FakeUserManager/MockUserManager.
   std::map<const user_manager::User*, Profile*> user_to_profile_for_testing_;
@@ -198,6 +197,8 @@ class ProfileHelper
   // If true and enable_profile_to_user_testing is true then primary user will
   // always be returned by GetUserByProfile().
   static bool always_return_primary_user_for_testing;
+
+  base::WeakPtrFactory<ProfileHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileHelper);
 };

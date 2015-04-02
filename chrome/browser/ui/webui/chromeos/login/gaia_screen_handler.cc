@@ -653,9 +653,7 @@ void GaiaScreenHandler::StartClearingCookies(
              profile_helper->GetSigninProfile());
   profile_helper->ClearSigninProfile(
       base::Bind(&GaiaScreenHandler::OnCookiesCleared,
-                 weak_factory_.GetWeakPtr(), on_clear_callback),
-      StartupUtils::IsWebviewSigninEnabled() ? web_ui()->GetWebContents()
-                                             : nullptr);
+                 weak_factory_.GetWeakPtr(), on_clear_callback));
 }
 
 void GaiaScreenHandler::OnCookiesCleared(

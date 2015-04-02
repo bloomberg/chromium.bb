@@ -143,9 +143,13 @@ bool NetworkStateHelper::IsConnecting() const {
 }
 
 content::StoragePartition* GetSigninPartition() {
+  content::WebContents* embedder = GetLoginWebContents();
+  if (!embedder)
+    return nullptr;
+
   // Note the partition name must match the sign-in webview used. For now,
   // this is the default unnamed, shared, in-memory partition.
-  return GetPartition(GetLoginWebContents(), std::string());
+  return GetPartition(embedder, std::string());
 }
 
 net::URLRequestContextGetter* GetSigninContext() {
