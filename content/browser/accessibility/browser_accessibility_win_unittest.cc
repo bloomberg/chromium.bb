@@ -714,7 +714,6 @@ TEST_F(BrowserAccessibilityTest, EmptyDocHasUniqueIdWin) {
 }
 
 TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
-  ui::AXNodeData button;
   ui::AXNodeData checkbox;
   checkbox.id = 2;
   checkbox.SetName("Checkbox");
@@ -725,7 +724,7 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
   root.id = 1;
   root.SetName("Document");
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 0;
+  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
   root.child_ids.push_back(2);
 
   CountedBrowserAccessibility::reset();
@@ -750,6 +749,99 @@ TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
   EXPECT_NE(nullptr, static_cast<BSTR>(attributes));
   std::wstring attributes_str(attributes, attributes.Length());
   EXPECT_EQ(L"checkable:true;", attributes_str);
+
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
+}
+
+/**
+ * Ensures that ui::AX_ATTR_TEXT_SEL_START/END attributes are correctly used to
+ * determine caret position and text selection in various types of editable
+ * elements.
+ */
+TEST_F(BrowserAccessibilityTest, TestCaretAndTextSelection) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+
+  ui::AXNodeData combo_box;
+  combo_box.id = 2;
+  combo_box.role = ui::AX_ROLE_COMBO_BOX;
+  combo_box.state = (1 << ui::AX_STATE_FOCUSABLE) | (1 << ui::AX_STATE_FOCUSED);
+  combo_box.SetValue("Test1");
+  // Place the caret between 't' and 'e'.
+  combo_box.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, 1);
+  combo_box.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, 1);
+
+  ui::AXNodeData text_field;
+  text_field.id = 3;
+  text_field.role = ui::AX_ROLE_TEXT_FIELD;
+  text_field.state = 1 << ui::AX_STATE_FOCUSABLE;
+  text_field.SetValue("Test2");
+  // Select the letter 'e'.
+  text_field.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, 1);
+  text_field.AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, 2);
+
+  root.child_ids.push_back(2);
+  root.child_ids.push_back(3);
+
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, combo_box, text_field),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+  ASSERT_EQ(3, CountedBrowserAccessibility::num_instances());
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityWin* root_accessible =
+      manager->GetRoot()->ToBrowserAccessibilityWin();
+      ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(2, root_accessible->PlatformChildCount());
+
+  BrowserAccessibilityWin* combo_box_accessible =
+      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, combo_box_accessible);
+  BrowserAccessibilityWin* text_field_accessible =
+      root_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, text_field_accessible);
+
+  // -2 is never a valid offset.
+  LONG caret_offset = -2;
+  LONG n_selections = -2;
+  LONG selection_start = -2;
+  LONG selection_end = -2;
+
+  // Test get_caretOffset.
+  HRESULT hr = combo_box_accessible->get_caretOffset(&caret_offset);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, caret_offset);
+  // The caret should be at the start of the selection.
+  // TODO(nektar): caret_offset should be -1 when the object is not focused.
+  hr = text_field_accessible->get_caretOffset(&caret_offset);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, caret_offset);
+
+  // Test get_nSelections.
+  hr = combo_box_accessible->get_nSelections(&n_selections);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0L, n_selections);
+  hr = text_field_accessible->get_nSelections(&n_selections);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, n_selections);
+
+  // Test get_selection.
+  hr = combo_box_accessible->get_selection(
+      0L /* selection_index */, &selection_start, &selection_end);;
+  EXPECT_EQ(E_INVALIDARG, hr); // No selections available.
+  // Invalid in_args should not modify out_args.
+  EXPECT_EQ(-2L, selection_start);
+  EXPECT_EQ(-2L, selection_end);
+  hr = text_field_accessible->get_selection(
+      0L /* selection_index */, &selection_start, &selection_end);;
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1L, selection_start);
+  EXPECT_EQ(2L, selection_end);
 
   manager.reset();
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());

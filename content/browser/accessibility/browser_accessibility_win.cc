@@ -1936,6 +1936,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nCharacters(LONG* n_characters) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
+  // TODO(nektar): Spec says that caret_offset == -1 when state != focused.
   if (!instance_active())
     return E_FAIL;
 
@@ -1943,8 +1944,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
     return E_INVALIDARG;
 
   *offset = 0;
-  if (GetRole() == ui::AX_ROLE_TEXT_FIELD ||
-      GetRole() == ui::AX_ROLE_TEXT_AREA) {
+  if (IsEditableText()) {
     int sel_start = 0;
     if (GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START,
                         &sel_start))
@@ -1999,8 +1999,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nSelections(LONG* n_selections) {
     return E_INVALIDARG;
 
   *n_selections = 0;
-  if (GetRole() == ui::AX_ROLE_TEXT_FIELD ||
-      GetRole() == ui::AX_ROLE_TEXT_AREA) {
+  if (IsEditableText()) {
     int sel_start = 0;
     int sel_end = 0;
     if (GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START,
@@ -2022,10 +2021,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
   if (!start_offset || !end_offset || selection_index != 0)
     return E_INVALIDARG;
 
+  LONG n_selections = 0;
+  if (FAILED(get_nSelections(&n_selections)) || n_selections < 1)
+    return E_INVALIDARG;
+
   *start_offset = 0;
   *end_offset = 0;
-  if (GetRole() == ui::AX_ROLE_TEXT_FIELD ||
-      GetRole() == ui::AX_ROLE_TEXT_AREA) {
+  if (IsEditableText()) {
     int sel_start = 0;
     int sel_end = 0;
     if (GetIntAttribute(
