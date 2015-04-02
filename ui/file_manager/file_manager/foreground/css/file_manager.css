@@ -122,7 +122,7 @@ a:focus {
 
 /* Directory tree at the left. */
 .dialog-navigation-list {
-  -webkit-border-end: 1px solid rgb(210, 210, 210);
+  box-shadow: 1px 0 rgba(0, 0, 0, 0.15);
   background-color: rgb(250, 250, 250);
   display: flex;
   flex: none;
@@ -132,6 +132,10 @@ a:focus {
   overflow: hidden;
   position: relative;
   width: 240px;
+}
+
+html[dir='rtl'] .dialog-navigation-list {
+  box-shadow: -1px 0 rgba(0, 0, 0, 0.15);
 }
 
 .dialog-navigation-list-contents {
@@ -974,11 +978,11 @@ html[dir='rtl'] .breadcrumbs .separator {
   /* On the right side, we have less margin to pack items as long as they are
      fully visible. */
   -webkit-padding-end: 2px;
-  -webkit-padding-start: 4px;
+  -webkit-padding-start: 12px;
   box-sizing: border-box;
   overflow-y: auto;
   padding-bottom: 16px;
-  padding-top: 4px;
+  padding-top: 12px;
   width: 100%;
 }
 
@@ -1017,25 +1021,19 @@ body[type='full-page'] .detail-name .detail-icon {
 /* Styles specific for the grid view. */
 
 .thumbnail-grid .thumbnail-item {
-  -webkit-margin-start: 12px;
+  -webkit-margin-start: 4px;
   background-color: rgb(245, 245, 245);
-  border-radius: 2px;
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
   height: 180px;
-  margin-top: 12px;
+  margin-top: 4px;
   overflow: hidden;
   position: relative;
-  transition: box-shadow 220ms ease;
   vertical-align: top;  /* Prevent vertical spacing for wrapped inline box. */
   width: 180px;
 }
 
 .thumbnail-grid .thumbnail-item.directory {
+  box-shadow: 0 1px rgba(0, 0, 0, 0.15);
   height: 40px;
-}
-
-.thumbnail-grid .thumbnail-item .thumbnail {
-  border-radius: 2px;
 }
 
 .thumbnail-grid .thumbnail-frame {
@@ -1046,7 +1044,6 @@ body[type='full-page'] .detail-name .detail-icon {
 .thumbnail-grid .thumbnail-item[selected],
 .thumbnail-grid .thumbnail-item.accepts {
   background-color: rgb(221, 242, 253);
-  box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.3);
 }
 
 .thumbnail-grid .checkmark {
@@ -1110,15 +1107,36 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
   -webkit-animation: fadeIn 250ms linear;
 }
 
+.thumbnail-grid .shield {
+  background-color: rgba(27, 168, 243, 0.5);
+  bottom: 0;
+  display: none;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.thumbnail-grid .thumbnail-item[selected] .shield {
+  display: block;
+}
+
 .thumbnail-grid .thumbnail-bottom {
-  background-color: white;
-  border-radius: 0 0 2px 2px;
+  background-color: rgba(255, 255, 255, 0.85);
   color: rgb(51, 51, 51);
   height: 40px;
 }
 
-.thumbnail-grid .thumbnail-item[selected] .thumbnail-bottom {
-  background-color: rgb(221, 242, 253);
+.thumbnail-grid .thumbnail-item.directory .thumbnail-bottom {
+  background-color: rgb(255, 255, 255);
+}
+
+.thumbnail-grid .thumbnail-item[selected].directory .thumbnail-bottom {
+  background-color: rgb(232, 246, 253);
+}
+
+.thumbnail-grid > .spacer.folder-spacer {
+  height: 5px;
 }
 
 body:not(.check-select) .thumbnail-grid.image-dominant

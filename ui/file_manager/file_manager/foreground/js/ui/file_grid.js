@@ -178,13 +178,16 @@ FileGrid.prototype.mergeItems = function(beginIndex, endIndex) {
         (nextIndex < this.dataModel.getFolderCount()
             ? nextIndex % columns == 0
             : (nextIndex - this.dataModel.getFolderCount()) % columns == 0)) {
+      var isFolderSpacer = nextIndex === this.dataModel.getFolderCount();
       if (isSpacer(next)) {
         // Leave the spacer on its place.
+        next.classList.toggle('folder-spacer', isFolderSpacer);
         item = next.nextSibling;
       } else {
         // Insert spacer.
         var spacer = this.ownerDocument.createElement('div');
         spacer.className = 'spacer';
+        spacer.classList.toggle('folder-spacer', isFolderSpacer);
         this.insertBefore(spacer, next);
         item = next;
       }
@@ -226,6 +229,7 @@ FileGrid.prototype.getItemTop = function(index) {
   var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
   var indexInFiles = index - this.dataModel.getFolderCount();
   return folderRows * this.getFolderItemHeight_() +
+      (folderRows > 0 ? this.getSeparatorHeight_() : 0) +
       Math.floor(indexInFiles / this.columns) * this.getFileItemHeight_();
 };
 
@@ -354,8 +358,11 @@ FileGrid.prototype.getAfterFillerHeight = function(lastIndex) {
   var fileRows =  Math.ceil(this.dataModel.getFileCount() / this.columns);
   var row = this.getItemRow(lastIndex - 1);
   if (row < folderRows) {
-    return (folderRows - 1 - row) * this.getFolderItemHeight_() +
-        fileRows * this.getFileItemHeight_();
+    var fillerHeight = (folderRows - 1 - row) * this.getFolderItemHeight_() +
+                       fileRows * this.getFileItemHeight_();
+    if (fileRows > 0)
+      fillerHeight += this.getSeparatorHeight_();
+    return fillerHeight;
   }
   var rowInFiles = row - folderRows;
   return (fileRows - 1 - rowInFiles) * this.getFileItemHeight_();
@@ -366,7 +373,7 @@ FileGrid.prototype.getAfterFillerHeight = function(lastIndex) {
  * @return {number} The height of folder items.
  */
 FileGrid.prototype.getFolderItemHeight_ = function() {
-  return 48;  // TODO(fukino): Read from DOM and cache it.
+  return 44;  // TODO(fukino): Read from DOM and cache it.
 };
 
 /**
@@ -374,7 +381,15 @@ FileGrid.prototype.getFolderItemHeight_ = function() {
  * @return {number} The height of file items.
  */
 FileGrid.prototype.getFileItemHeight_ = function() {
-  return 188;  // TODO(fukino): Read from DOM and cache it.
+  return 184;  // TODO(fukino): Read from DOM and cache it.
+};
+
+/**
+ * Returns the height of the separator which separates folders and files.
+ * @return {number} The height of the separator.
+ */
+FileGrid.prototype.getSeparatorHeight_ = function() {
+  return 5;  // TODO(fukino): Read from DOM and cache it.
 };
 
 /**
@@ -384,11 +399,14 @@ FileGrid.prototype.getFileItemHeight_ = function() {
  * @private
  */
 FileGrid.prototype.getRowForListOffset_ = function(offset) {
+  var innerOffset = Math.max(0, offset - this.paddingTop_);
   var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
-  if (offset < folderRows * this.getFolderItemHeight_())
-    return Math.floor(offset / this.getFolderItemHeight_());
+  if (innerOffset < folderRows * this.getFolderItemHeight_())
+    return Math.floor(innerOffset / this.getFolderItemHeight_());
 
-  var offsetInFiles = offset - folderRows * this.getFolderItemHeight_();
+  var offsetInFiles = innerOffset - folderRows * this.getFolderItemHeight_();
+  if (folderRows > 0)
+    offsetInFiles = Math.max(0, offsetInFiles - this.getSeparatorHeight_());
   return folderRows + Math.floor(offsetInFiles / this.getFileItemHeight_());
 };
 
@@ -458,6 +476,10 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
   frame.appendChild(box);
   if (entry)
     this.decorateThumbnailBox_(assertInstanceof(li, HTMLLIElement), entry);
+
+  var shield = li.ownerDocument.createElement('div');
+  shield.className = 'shield';
+  frame.appendChild(shield);
 
   var isDirectory = entry && entry.isDirectory;
   if (!isDirectory) {
