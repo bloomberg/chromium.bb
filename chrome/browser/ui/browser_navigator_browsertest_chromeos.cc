@@ -68,15 +68,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
 // on the same desktop as the browser is shown on.
 //
 // Flakily hits assert: http://crbug.com/469717
-#if !defined(NDEBUG)
-#define MAYBE_Browser_Gets_Created_On_Visiting_Desktop \
-  DISABLED_Browser_Gets_Created_On_Visiting_Desktop
-#else
-#define MAYBE_Browser_Gets_Created_On_Visiting_Desktop \
-  Browser_Gets_Created_On_Visiting_Desktop
-#endif
 IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
-                       MAYBE_Browser_Gets_Created_On_Visiting_Desktop) {
+                       DISABLED_Browser_Gets_Created_On_Visiting_Desktop) {
   // Test 1: Test that a browser created from a visiting browser will be on the
   // same visiting desktop.
   {
