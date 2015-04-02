@@ -96,7 +96,7 @@
   top: 14px;
 }
 
-.new-gaia-flow #user-image {
+.image-loading.user-image .new-gaia-flow #user-image {
   padding: 0 0 0;
   width: 522px;
 }
