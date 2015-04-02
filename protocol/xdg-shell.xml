@@ -469,11 +469,14 @@
       A parent surface must be mapped before the new popup is mapped.
 
       When compositors choose to dismiss a popup, they will likely
-      dismiss every nested popup as well.
+      dismiss every nested popup as well. When a compositor dismisses
+      popups, it will follow the same dismissing order as required
+      from the client.
 
-      The x and y arguments specify where the top left of the popup
-      should be placed, relative to the local surface coordinates of the
-      parent surface.
+      The x and y arguments passed when creating the popup object specify
+      where the top left of the popup should be placed, relative to the
+      local surface coordinates of the parent surface. See
+      xdg_shell.get_xdg_popup.
 
       The client must call wl_surface.commit on the corresponding wl_surface
       for the xdg_popup state to take effect.
