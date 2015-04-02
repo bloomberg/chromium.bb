@@ -49,6 +49,9 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/120808
 "race:base/threading/watchdog.cc\n"
 
+// http://crbug.com/157586
+"race:third_party/libvpx/source/libvpx/vp8/decoder/threading.c\n"
+
 // http://crbug.com/158718
 "race:third_party/ffmpeg/libavcodec/pthread.c\n"
 "race:third_party/ffmpeg/libavcodec/pthread_frame.c\n"
