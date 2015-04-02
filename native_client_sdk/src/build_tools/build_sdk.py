@@ -260,23 +260,11 @@ NACL_HEADER_MAP = {
   'newlib': [
       ('native_client/src/include/nacl/nacl_exception.h', 'nacl/'),
       ('native_client/src/include/nacl/nacl_minidump.h', 'nacl/'),
-      ('native_client/src/untrusted/irt/irt.h', ''),
-      ('native_client/src/untrusted/irt/irt_dev.h', ''),
-      ('native_client/src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
-      ('native_client/src/untrusted/nacl/nacl_startup.h', 'nacl/'),
-      ('native_client/src/untrusted/pthread/pthread.h', ''),
-      ('native_client/src/untrusted/pthread/semaphore.h', ''),
-      ('native_client/src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
       ('ppapi/nacl_irt/public/irt_ppapi.h', ''),
   ],
   'glibc': [
       ('native_client/src/include/nacl/nacl_exception.h', 'nacl/'),
       ('native_client/src/include/nacl/nacl_minidump.h', 'nacl/'),
-      ('native_client/src/untrusted/irt/irt.h', ''),
-      ('native_client/src/untrusted/irt/irt_dev.h', ''),
-      ('native_client/src/untrusted/nacl/nacl_dyncode.h', 'nacl/'),
-      ('native_client/src/untrusted/nacl/nacl_startup.h', 'nacl/'),
-      ('native_client/src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
       ('ppapi/nacl_irt/public/irt_ppapi.h', ''),
   ],
   'bionic': [
@@ -342,51 +330,22 @@ def MakeNinjaRelPath(path):
   return os.path.join(os.path.relpath(OUT_DIR, SRC_DIR), path)
 
 
-# TODO(ncbray): stop building and copying libraries into the SDK that are
-# already provided by the toolchain.
 TOOLCHAIN_LIBS = {
   'bionic' : [
-    'libminidump_generator.a',
-    'libnacl_dyncode.a',
-    'libnacl_exception.a',
-    'libnacl_list_mappings.a',
     'libppapi.a',
   ],
   'newlib' : [
-    'libminidump_generator.a',
-    'libnacl.a',
-    'libnacl_dyncode.a',
-    'libnacl_exception.a',
-    'libnacl_list_mappings.a',
-    'libnosys.a',
     'libppapi.a',
     'libppapi_stub.a',
-    'libpthread.a',
   ],
   'glibc': [
-    'libminidump_generator.a',
-    'libminidump_generator.so',
-    'libnacl.a',
-    'libnacl_dyncode.a',
-    'libnacl_dyncode.so',
-    'libnacl_exception.a',
-    'libnacl_exception.so',
-    'libnacl_list_mappings.a',
-    'libnacl_list_mappings.so',
     'libppapi.a',
     'libppapi.so',
     'libppapi_stub.a',
   ],
   'pnacl': [
-    'libminidump_generator.a',
-    'libnacl.a',
-    'libnacl_dyncode.a',
-    'libnacl_exception.a',
-    'libnacl_list_mappings.a',
-    'libnosys.a',
     'libppapi.a',
     'libppapi_stub.a',
-    'libpthread.a',
   ]
 }
 
