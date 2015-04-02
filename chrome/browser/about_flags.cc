@@ -396,15 +396,16 @@ const Experiment::Choice kFillOnAccountSelectChoices[] = {
 
 #if defined(USE_ASH)
 const Experiment::Choice kAshScreenRotationAnimationChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    ash::switches::kAshEnableScreenRotationAnimation,
+    "none" },
   { IDS_ASH_SCREEN_ROTATION_ANIMATION_PARTIAL_ROTATION,
-    ash::switches::kAshEnableScreenRotationAnimation, "partial-rotation" },
-  { IDS_ASH_SCREEN_ROTATION_ANIMATION_PARTIAL_ROTATION_SLOW,
-    ash::switches::kAshEnableScreenRotationAnimation, "partial-rotation-slow" },
+    ash::switches::kAshEnableScreenRotationAnimation,
+    "partial-rotation" },
   { IDS_ASH_SCREEN_ROTATION_ANIMATION_FULL_ROTATION,
-    ash::switches::kAshEnableScreenRotationAnimation, "full-rotation" },
-  { IDS_ASH_SCREEN_ROTATION_ANIMATION_FULL_ROTATION_SLOW,
-    ash::switches::kAshEnableScreenRotationAnimation, "full-rotation-slow" }
+    ash::switches::kAshEnableScreenRotationAnimation,
+    "full-rotation" }
 };
 #endif
 

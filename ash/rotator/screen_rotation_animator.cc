@@ -35,36 +35,31 @@ namespace ash {
 
 namespace {
 
+// Switch value for the default animation.
+const char kRotationAnimation_Default[] = "";
+
+// Switch value for no animation.
+const char kRotationAnimation_None[] = "none";
+
 // Switch value for an animation that will rotate the initial orientation's
 // layer towards the new orientation and the new orientation's layer in to
 // position from the initial orientation through an arc of
 // |kPartialRotationDegrees| degrees. The initial orientation's layer will be
 // faded out as well.
-const char kPartialRotation[] = "partial-rotation";
-
-// Switch value for the same animation as |kPartialRotation| but with a much
-// longer duration.
-const char kPartialRotationSlow[] = "partial-rotation-slow";
+const char kRotationAnimation_Partial[] = "partial-rotation";
 
 // Switch value for an animation that will rotate both the initial and target
 // orientation's layers from the initial orientation into the target
 // orientation. The initial orientation's layer will be faded out as well and an
 // interpolated scaling factor is applied to the animation so that the initial
 // and target layers are both the same size throughout the animation.
-const char kFullRotation[] = "full-rotation";
-
-// Switch value for the same animation as |kFullRotation| but with a much longer
-// duration.
-const char kFullRotationSlow[] = "full-rotation-slow";
+const char kRotationAnimation_Full[] = "full-rotation";
 
 // The number of degrees the partial rotation animations animate through.
 const int kPartialRotationDegrees = 20;
 
-// The time it takes for the normal speed rotation animations to run.
+// The time it takes for the rotation animations to run.
 const int kRotationDurationInMs = 250;
-
-// The time it takes for the slow speed rotation animations to run.
-const int kRotationDurationSlowInMs = 2500;
 
 // Gets the current display rotation for the display with the specified
 // |display_id|.
@@ -283,36 +278,26 @@ void ScreenRotationAnimator::Rotate(gfx::Display::Rotation new_rotation) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kAshEnableScreenRotationAnimation);
 
-  if (switch_value.empty()) {
+  if (switch_value == kRotationAnimation_None) {
     Shell::GetInstance()->display_manager()->SetDisplayRotation(display_id_,
                                                                 new_rotation);
-    return;
-  }
-
-  if (kPartialRotation == switch_value ||
-      kPartialRotationSlow == switch_value) {
-    const int durationInMs = (kPartialRotation == switch_value)
-                                 ? kRotationDurationInMs
-                                 : kRotationDurationSlowInMs;
+  } else if (kRotationAnimation_Default == switch_value ||
+             kRotationAnimation_Partial == switch_value) {
     const int rotation_degree_offset =
         Is180DegreeFlip(current_rotation, new_rotation)
             ? 180 - kPartialRotationDegrees
             : 90 - kPartialRotationDegrees;
 
     RotateScreen(display_id_, new_rotation,
-                 base::TimeDelta::FromMilliseconds(durationInMs),
+                 base::TimeDelta::FromMilliseconds(kRotationDurationInMs),
                  kPartialRotationDegrees, rotation_degree_offset,
                  gfx::Tween::FAST_OUT_LINEAR_IN, false /* should_scale */);
-  } else if (kFullRotation == switch_value ||
-             kFullRotationSlow == switch_value) {
-    const int durationInMs = (kFullRotation == switch_value)
-                                 ? kRotationDurationInMs
-                                 : kRotationDurationSlowInMs;
+  } else if (kRotationAnimation_Full == switch_value) {
     const int rotation_degrees =
         Is180DegreeFlip(current_rotation, new_rotation) ? 180 : 90;
 
     RotateScreen(display_id_, new_rotation,
-                 base::TimeDelta::FromMilliseconds(durationInMs),
+                 base::TimeDelta::FromMilliseconds(kRotationDurationInMs),
                  rotation_degrees, 0 /* rotation_degree_offset */,
                  gfx::Tween::FAST_OUT_LINEAR_IN, true /* should_scale */);
   } else {

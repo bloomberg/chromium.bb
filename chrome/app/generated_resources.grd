@@ -6175,14 +6175,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_ASH_SCREEN_ROTATION_ANIMATION_PARTIAL_ROTATION" desc="Screen rotation animation option.">
           Partial Rotation
         </message>
-        <message name="IDS_ASH_SCREEN_ROTATION_ANIMATION_PARTIAL_ROTATION_SLOW" desc="Screen rotation animation option.">
-          Partial Rotation - Slow
-        </message>
         <message name="IDS_ASH_SCREEN_ROTATION_ANIMATION_FULL_ROTATION" desc="Screen rotation animation option.">
           Full Rotation
-        </message>
-        <message name="IDS_ASH_SCREEN_ROTATION_ANIMATION_FULL_ROTATION_SLOW" desc="Screen rotation animation option.">
-          Full Rotation - Slow
         </message>
         <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_NAME" desc="Title for the flag which can be used to test the TouchView maximizing mode.">
           Enable TouchView maximizing UI for testing
