@@ -5,13 +5,13 @@
 
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 
-#include "chrome/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "components/web_cache/browser/web_cache_manager.h"
@@ -59,7 +59,7 @@ void ChromeWebViewGuestDelegate::ClearCache(
   // StoragePartitionHttpCacheDataRemover removes itself when it is done.
   // TODO(lazyboy): Once StoragePartitionHttpCacheDataRemover moves to
   // components/, move |ClearCache| to WebViewGuest: http//crbug.com/471287.
-  StoragePartitionHttpCacheDataRemover::CreateForRange(
+  browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
       partition, remove_since, base::Time::Now())->Remove(done_callback);
 }
 

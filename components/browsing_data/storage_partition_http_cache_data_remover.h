@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_DATA_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
-#define CHROME_BROWSER_BROWSING_DATA_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
+#ifndef COMPONENTS_BROWSING_DATA_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
+#define COMPONENTS_BROWSING_DATA_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
 
 #include "base/callback.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -20,6 +20,8 @@ class Backend;
 namespace net {
 class URLRequestContextGetter;
 }
+
+namespace browsing_data {
 
 // Helper to remove http cache data from a StoragePartition.
 class StoragePartitionHttpCacheDataRemover {
@@ -75,4 +77,6 @@ class StoragePartitionHttpCacheDataRemover {
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionHttpCacheDataRemover);
 };
 
-#endif  // CHROME_BROWSER_BROWSING_DATA_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_
+}  // namespace browsing_data
+
+#endif  // COMPONENTS_BROWSING_DATA_STORAGE_PARTITION_HTTP_CACHE_DATA_REMOVER_H_

@@ -70,6 +70,7 @@
     ['OS != "ios"', {
       'includes': [
         'app_modal.gypi',
+        'browsing_data.gypi',
         'cdm.gypi',
         'navigation_interception.gypi',
         'plugins.gypi',

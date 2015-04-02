@@ -212,7 +212,10 @@ group("all_components") {
   }
 
   if (!is_ios) {
-    deps += [ "//components/app_modal" ]
+    deps += [
+      "//components/app_modal",
+      "//components/browsing_data",
+    ]
   }
 
   if (toolkit_views) {

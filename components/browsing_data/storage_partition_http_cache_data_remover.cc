@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browsing_data/storage_partition_http_cache_data_remover.h"
+#include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -12,6 +12,8 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
+
+namespace browsing_data {
 
 StoragePartitionHttpCacheDataRemover::StoragePartitionHttpCacheDataRemover(
     base::Time delete_begin,
@@ -154,3 +156,5 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
     }
   }
 }
+
+}  // namespace browsing_data

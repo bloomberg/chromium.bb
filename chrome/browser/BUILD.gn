@@ -235,6 +235,7 @@ static_library("browser") {
       "//chrome/installer/util",
       "//components/app_modal",
       "//components/autofill/content/browser",
+      "//components/browsing_data",
       "//components/data_reduction_proxy/content/browser",
       "//components/dom_distiller/content",
       "//components/favicon/content",

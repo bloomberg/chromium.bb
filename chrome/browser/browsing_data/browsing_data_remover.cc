@@ -16,7 +16,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -44,6 +43,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/domain_reliability/service.h"
 #include "components/history/core/browser/history_service.h"
@@ -609,7 +609,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
     waiting_for_clear_cache_ = true;
     // StoragePartitionHttpCacheDataRemover deletes itself when it is done.
-    StoragePartitionHttpCacheDataRemover::CreateForRange(
+    browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
         BrowserContext::GetDefaultStoragePartition(profile_), delete_begin_,
         delete_end_)
         ->Remove(base::Bind(&BrowsingDataRemover::ClearedCache,
