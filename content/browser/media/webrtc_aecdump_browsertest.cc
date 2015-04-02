@@ -157,19 +157,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest,
   base::DeleteFile(dump_file, false);
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
-#define MAYBE_TwoCallsWithAecDump DISABLED_TwoCallsWithAecDump
-#elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-#define MAYBE_TwoCallsWithAecDump DISABLED_TwoCallsWithAecDump
-#else
-#define MAYBE_TwoCallsWithAecDump TwoCallsWithAecDump
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_TwoCallsWithAecDump) {
+// Flaky on XP and Mac: http://crbug.com/425034.
+IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, DISABLED_TwoCallsWithAecDump) {
   if (OnWinXp()) {
-    // http://crbug.com/425034.
     LOG(INFO) << "Disabled on Win XP: skipping test...";
     return;
   }
