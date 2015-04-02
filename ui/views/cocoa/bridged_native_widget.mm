@@ -16,6 +16,7 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
+#import "ui/gfx/mac/nswindow_frame_controls.h"
 #include "ui/gfx/screen.h"
 #import "ui/views/cocoa/cocoa_mouse_capture.h"
 #import "ui/views/cocoa/bridged_content_view.h"
@@ -27,6 +28,7 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_aura_utils.h"
+#include "ui/views/widget/widget_delegate.h"
 
 // The NSView that hosts the composited CALayer drawing the UI. It fills the
 // window but is not hittable so that accessibility hit tests always go to the
@@ -486,6 +488,22 @@ void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
       widget->GetFocusManager()->StoreFocusedView(true);
     }
   }
+}
+
+void BridgedNativeWidget::OnSizeConstraintsChanged() {
+  NSWindow* window = ns_window();
+  Widget* widget = native_widget_mac()->GetWidget();
+  gfx::Size min_size = widget->GetMinimumSize();
+  gfx::Size max_size = widget->GetMaximumSize();
+  bool is_resizable = widget->widget_delegate()->CanResize();
+  bool shows_resize_controls =
+      is_resizable && (min_size.IsEmpty() || min_size != max_size);
+  bool shows_fullscreen_controls =
+      is_resizable && widget->widget_delegate()->CanMaximize();
+
+  gfx::ApplyNSWindowSizeConstraints(window, min_size, max_size,
+                                    shows_resize_controls,
+                                    shows_fullscreen_controls);
 }
 
 InputMethod* BridgedNativeWidget::CreateInputMethod() {

@@ -125,6 +125,9 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   // Called by the NSWindowDelegate when the window becomes or resigns key.
   void OnWindowKeyStatusChangedTo(bool is_key);
 
+  // Called by NativeWidgetMac when the window size constraints change.
+  void OnSizeConstraintsChanged();
+
   // See widget.h for documentation.
   InputMethod* CreateInputMethod();
   ui::InputMethod* GetHostInputMethod();

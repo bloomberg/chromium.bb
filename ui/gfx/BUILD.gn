@@ -139,6 +139,8 @@ component("gfx") {
     "linux_font_delegate.h",
     "mac/coordinate_conversion.h",
     "mac/coordinate_conversion.mm",
+    "mac/nswindow_frame_controls.h",
+    "mac/nswindow_frame_controls.mm",
     "mac/scoped_ns_disable_screen_updates.h",
     "native_widget_types.h",
     "nine_image_painter.cc",
