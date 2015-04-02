@@ -23,9 +23,9 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/dom/NodeRenderingTraversal.h"
+#include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDetailsElement.h"
 #include "core/html/shadow/DetailsMarkerControl.h"
@@ -63,7 +63,7 @@ void HTMLSummaryElement::didAddClosedShadowRoot(ShadowRoot& root)
 
 HTMLDetailsElement* HTMLSummaryElement::detailsElement() const
 {
-    Node* parent = NodeRenderingTraversal::parent(*this);
+    Node* parent = ComposedTreeTraversal::parent(*this);
     if (isHTMLDetailsElement(parent))
         return toHTMLDetailsElement(parent);
     return nullptr;
