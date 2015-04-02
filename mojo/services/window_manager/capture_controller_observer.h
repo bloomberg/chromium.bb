@@ -5,6 +5,10 @@
 #ifndef SERVICES_WINDOW_MANAGER_CAPTURE_CONTROLLER_OBSERVER_H_
 #define SERVICES_WINDOW_MANAGER_CAPTURE_CONTROLLER_OBSERVER_H_
 
+namespace mojo {
+class View;
+}
+
 namespace window_manager {
 
 class CaptureControllerObserver {
