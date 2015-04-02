@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "net/base/net_log_logger.h"
+#include "net/log/net_log_logger.h"
 
 namespace content {
 

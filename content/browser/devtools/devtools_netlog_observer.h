@@ -8,7 +8,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/common/resource_devtools_info.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace net {
 class URLRequest;

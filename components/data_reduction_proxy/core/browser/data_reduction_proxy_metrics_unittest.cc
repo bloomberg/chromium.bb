@@ -20,7 +20,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "net/base/load_flags.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"

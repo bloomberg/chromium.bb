@@ -14,7 +14,7 @@
 #include "extensions/common/api/dns.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 using content::BrowserThread;
 using extensions::core_api::dns::ResolveCallbackResolveInfo;

@@ -19,8 +19,8 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "net/base/net_log.h"
-#include "net/base/net_log_logger.h"
+#include "net/log/net_log.h"
+#include "net/log/net_log_logger.h"
 
 class IOThread;
 

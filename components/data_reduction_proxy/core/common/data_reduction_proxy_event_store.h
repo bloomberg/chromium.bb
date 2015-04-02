@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 class GURL;
 

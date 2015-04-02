@@ -24,10 +24,10 @@
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/warning_set.h"
 #include "extensions/common/extension_messages.h"
-#include "net/base/net_log.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/http/http_util.h"
+#include "net/log/net_log.h"
 #include "net/url_request/url_request.h"
 #include "url/url_constants.h"
 

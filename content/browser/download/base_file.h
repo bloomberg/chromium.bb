@@ -18,7 +18,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "url/gurl.h"
 
 namespace crypto {

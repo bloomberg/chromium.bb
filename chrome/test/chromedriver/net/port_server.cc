@@ -13,9 +13,9 @@
 #include "base/sync_socket.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
+#include "net/log/net_log.h"
 #include "net/socket/tcp_server_socket.h"
 
 #if defined(OS_LINUX)

@@ -23,7 +23,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace data_reduction_proxy {
 

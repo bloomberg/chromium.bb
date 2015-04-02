@@ -21,9 +21,9 @@
 #include "extensions/common/test_util.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
-#include "net/base/capturing_net_log.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
+#include "net/log/capturing_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 

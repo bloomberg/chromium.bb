@@ -24,7 +24,7 @@
 #include "google_apis/gcm/engine/unregistration_request.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/url_request/url_request_context_getter.h"
 
 class GURL;

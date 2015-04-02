@@ -16,7 +16,7 @@
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/rate_estimator.h"
 #include "content/public/browser/download_save_info.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace content {
 class ByteStreamReader;

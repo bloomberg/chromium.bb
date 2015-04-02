@@ -20,7 +20,7 @@
 #include "content/public/browser/download_destination_observer.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "url/gurl.h"
 
 namespace content {

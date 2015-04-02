@@ -23,7 +23,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace net {
 class AddressList;

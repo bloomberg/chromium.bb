@@ -10,7 +10,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
-#include "net/base/capturing_net_log.h"
+#include "net/log/capturing_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

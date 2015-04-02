@@ -7,8 +7,8 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/browser/extensions/api/dial/dial_service.h"
-#include "net/base/capturing_net_log.h"
 #include "net/base/ip_endpoint.h"
+#include "net/log/capturing_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

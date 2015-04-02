@@ -8,10 +8,10 @@
 #include "base/sys_byteorder.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/mdns_client.h"
+#include "net/log/net_log.h"
 #include "net/udp/datagram_server_socket.h"
 #include "net/udp/udp_server_socket.h"
 

@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/socket/stream_socket.h"
 #include "third_party/webrtc/p2p/base/pseudotcp.h"
 

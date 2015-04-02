@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/log/net_log.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_retry_info.h"
 

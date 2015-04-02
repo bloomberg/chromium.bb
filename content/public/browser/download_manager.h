@@ -40,7 +40,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 class GURL;
 

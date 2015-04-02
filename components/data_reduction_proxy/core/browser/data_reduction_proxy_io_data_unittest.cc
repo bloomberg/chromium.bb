@@ -14,7 +14,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

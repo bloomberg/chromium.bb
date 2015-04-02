@@ -11,8 +11,8 @@
 #include "base/files/scoped_file.h"
 #include "base/values.h"
 #include "content/public/common/content_switches.h"
-#include "net/base/net_log_logger.h"
-#include "net/base/net_log_util.h"
+#include "net/log/net_log_logger.h"
+#include "net/log/net_log_util.h"
 
 namespace content {
 

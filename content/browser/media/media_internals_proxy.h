@@ -11,7 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace base {
 class ListValue;

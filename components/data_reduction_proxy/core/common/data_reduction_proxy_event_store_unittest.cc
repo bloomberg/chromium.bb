@@ -10,8 +10,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
-#include "net/base/capturing_net_log.h"
-#include "net/base/net_log.h"
+#include "net/log/capturing_net_log.h"
+#include "net/log/net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace data_reduction_proxy {

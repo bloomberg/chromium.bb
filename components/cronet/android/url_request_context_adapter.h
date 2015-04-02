@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 

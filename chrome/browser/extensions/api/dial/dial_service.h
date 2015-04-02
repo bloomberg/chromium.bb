@@ -14,7 +14,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 #include "net/udp/udp_socket.h"
 
 namespace net {

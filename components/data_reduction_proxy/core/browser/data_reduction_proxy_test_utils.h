@@ -19,7 +19,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "net/base/backoff_entry.h"
-#include "net/base/capturing_net_log.h"
+#include "net/log/capturing_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class TestingPrefServiceSimple;

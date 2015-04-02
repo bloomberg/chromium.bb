@@ -18,7 +18,7 @@
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
+#include "net/log/net_log.h"
 
 namespace {
 
