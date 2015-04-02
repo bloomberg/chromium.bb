@@ -17,7 +17,11 @@ sig_files = [ "chromium/ffmpegsumo.sigs" ]
 
 # TODO(ajwong): Should be in ffmpeg_generate_stubs if we could grab the
 # outputs of an action via a function.
-stubs_filename_root = "ffmpeg_stubs"
+if (is_win) {
+  stubs_filename_root = "ffmpegsumo"
+} else {
+  stubs_filename_root = "ffmpeg_stubs"
+}
 
 if ((current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm") {
   import("//third_party/yasm/yasm_assemble.gni")
