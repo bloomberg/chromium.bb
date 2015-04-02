@@ -28,8 +28,6 @@ component("mojo") {
     "ipc_mojo_handle_attachment.h",
     "ipc_mojo_message_helper.cc",
     "ipc_mojo_message_helper.h",
-    "ipc_mojo_param_traits.cc",
-    "ipc_mojo_param_traits.h",
     "scoped_ipc_support.cc",
     "scoped_ipc_support.h",
   ]
