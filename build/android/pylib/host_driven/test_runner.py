@@ -47,26 +47,22 @@ class HostDrivenTestRunner(base_test_runner.BaseTestRunner):
   result, rather than being re-raised on the main thread.
   """
 
-  # TODO(jbudorick): Remove cleanup_test_files once it's no longer used.
-  # pylint: disable=unused-argument
   #override
-  def __init__(self, device, shard_index, tool, cleanup_test_files=None):
+  def __init__(self, device, shard_index, tool, cleanup_test_files):
     """Creates a new HostDrivenTestRunner.
 
     Args:
       device: Attached android device.
       shard_index: Shard index.
       tool: Name of the Valgrind tool.
-      cleanup_test_files: Deprecated.
+      cleanup_test_files: Whether or not to cleanup test files on device.
     """
 
-    super(HostDrivenTestRunner, self).__init__(device, tool)
+    super(HostDrivenTestRunner, self).__init__(device, tool, cleanup_test_files)
 
     # The shard index affords the ability to create unique port numbers (e.g.
     # DEFAULT_PORT + shard_index) if the test so wishes.
     self.shard_index = shard_index
-
-  # pylint: enable=unused-argument
 
   #override
   def RunTest(self, test):
@@ -86,7 +82,7 @@ class HostDrivenTestRunner(base_test_runner.BaseTestRunner):
     exception_raised = False
 
     try:
-      test.SetUp(str(self.device), self.shard_index)
+      test.SetUp(str(self.device), self.shard_index, self._cleanup_test_files)
     except Exception:
       logging.exception(
           'Caught exception while trying to run SetUp() for test: ' +

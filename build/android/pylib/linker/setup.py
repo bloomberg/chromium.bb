@@ -40,6 +40,7 @@ def Setup(args, _devices):
                  if t.qualified_name in filtered_test_names]
 
   def TestRunnerFactory(device, _shard_index):
-    return test_runner.LinkerTestRunner(device, args.tool)
+    return test_runner.LinkerTestRunner(
+        device, args.tool, args.cleanup_test_files)
 
   return (TestRunnerFactory, all_tests)
