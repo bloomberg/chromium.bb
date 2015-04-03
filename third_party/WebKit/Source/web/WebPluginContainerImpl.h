@@ -84,7 +84,6 @@ public:
     virtual void layoutWidgetIfPossible() override;
     virtual void paint(GraphicsContext*, const IntRect&) override;
     virtual void invalidateRect(const IntRect&) override;
-    virtual void issuePaintInvalidations() override final;
     virtual void setFocus(bool, WebFocusType) override;
     virtual void show() override;
     virtual void hide() override;
@@ -202,8 +201,6 @@ private:
     Vector<WebPluginLoadObserver*> m_pluginLoadObservers;
 
     WebLayer* m_webLayer;
-
-    IntRect m_pendingInvalidationRect;
 
     // The associated scrollbar group object, created lazily. Used for Pepper
     // scrollbars.

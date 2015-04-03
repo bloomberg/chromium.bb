@@ -150,7 +150,7 @@ public:
     // true. This function is used only if ExternalDateTimeChooser is used.
     virtual bool openDateTimeChooser(const WebDateTimeChooserParams&, WebDateTimeChooserCompletion*) { return false; }
 
-    // Show a notification popup for the specified form validation messages
+    // Show a notification popup for the specified form vaidation messages
     // besides the anchor rectangle. An implementation of this function should
     // not hide the popup until hideValidationMessage call.
     // FIXME: Clarify anchor coordinates in variable name on Chromium-side.
