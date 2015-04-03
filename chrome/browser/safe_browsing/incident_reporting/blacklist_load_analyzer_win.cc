@@ -92,10 +92,11 @@ void VerifyBlacklistLoadState(scoped_ptr<IncidentReceiver> incident_receiver) {
                           base::TimeTicks::Now() - start_time);
 
       // Image headers.
-      if (!binary_feature_extractor->ExtractImageHeaders(
+      if (!binary_feature_extractor->ExtractImageFeatures(
               module_path,
               BinaryFeatureExtractor::kDefaultOptions,
-              blacklist_load->mutable_image_headers())) {
+              blacklist_load->mutable_image_headers(),
+              nullptr /* signed_data */)) {
         blacklist_load->clear_image_headers();
       }
 

@@ -71,11 +71,16 @@ void AnalyzeContainedFile(
     writer.ComputeDigest(&digest[0], arraysize(digest));
     archived_binary->mutable_digests()->set_sha256(&digest[0],
                                                    arraysize(digest));
-    if (!binary_feature_extractor->ExtractImageHeadersFromFile(
+    if (!binary_feature_extractor->ExtractImageFeaturesFromFile(
             temp_file->Duplicate(),
             BinaryFeatureExtractor::kDefaultOptions,
-            archived_binary->mutable_image_headers())) {
+            archived_binary->mutable_image_headers(),
+            archived_binary->mutable_signature()->mutable_signed_data())) {
       archived_binary->clear_image_headers();
+      archived_binary->clear_signature();
+    } else if (!archived_binary->signature().signed_data_size()) {
+      // No SignedData blobs were extracted, so clear the signature field.
+      archived_binary->clear_signature();
     }
   }
 }

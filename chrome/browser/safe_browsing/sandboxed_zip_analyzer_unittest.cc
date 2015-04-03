@@ -28,6 +28,7 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
     ClientDownloadRequest_DownloadType download_type;
     const uint8_t* sha256_digest;
     int64_t length;
+    bool is_signed;
   };
 
   // A helper that provides a SandboxedZipAnalyzer::ResultCallback that will
@@ -96,8 +97,12 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
     EXPECT_FALSE(binary.digests().has_md5());
     ASSERT_TRUE(binary.has_length());
     EXPECT_EQ(data.length, binary.length());
-    EXPECT_FALSE(binary.has_signature());
-#if defined(OS_WIN)  // ExtractImageHeaders is only implemented for Win.
+#if defined(OS_WIN)  // ExtractImageFeatures is only implemented for Win.
+    ASSERT_EQ(data.is_signed, binary.has_signature());
+    if (data.is_signed) {
+      ASSERT_LT(0, binary.signature().signed_data_size());
+      ASSERT_NE(0U, binary.signature().signed_data(0).size());
+    }
     ASSERT_TRUE(binary.has_image_headers());
     ASSERT_TRUE(binary.image_headers().has_pe_headers());
     EXPECT_TRUE(binary.image_headers().pe_headers().has_dos_header());
@@ -105,6 +110,7 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
     EXPECT_TRUE(binary.image_headers().pe_headers().has_optional_headers32());
     EXPECT_FALSE(binary.image_headers().pe_headers().has_optional_headers64());
 #else  // OS_WIN
+    ASSERT_FALSE(binary.has_signature());
     ASSERT_FALSE(binary.has_image_headers());
 #endif  // !OS_WIN
   }
@@ -136,6 +142,7 @@ const SandboxedZipAnalyzerTest::BinaryData
   ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
   &kUnsignedDigest[0],
   36864,
+  false,  // !is_signed
 };
 const SandboxedZipAnalyzerTest::BinaryData
     SandboxedZipAnalyzerTest::kSignedExe = {
@@ -143,6 +150,7 @@ const SandboxedZipAnalyzerTest::BinaryData
   ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
   &kSignedDigest[0],
   37768,
+  true,  // is_signed
 };
 
 TEST_F(SandboxedZipAnalyzerTest, NoBinaries) {

@@ -188,13 +188,20 @@ message ClientDownloadRequest {
   }
 
   message SignatureInfo {
-    // All of the certificate chains for the binary's signing certificate.
-    // If no chains are present, the binary is not signed.  Multiple chains
-    // may be present if any certificate has multiple signers.
+    // All certificate chains for each of the binary's signers.  Multiple chains
+    // may be present if the binary or any certificate has multiple signers.
+    // Absence of certificate chains does not imply that the binary is not
+    // signed (in that case, SignedData blobs extracted from the binary may be
+    // preset), but does mean that trust has not been verified.
     repeated CertificateChain certificate_chain = 1;
 
     // True if the signature was trusted on the client.
     optional bool trusted = 2;
+
+    // PKCS#7 SignedData blobs extracted from a portable executable image's
+    // attribute certificate table. The presence of these does not imply that
+    // the signatures were deemed trusted by the client.
+    repeated bytes signed_data = 3;
   }
 
   // This field will only be set if the binary is signed.

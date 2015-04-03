@@ -17,17 +17,19 @@ void BinaryFeatureExtractor::CheckSignature(
     const base::FilePath& file_path,
     ClientDownloadRequest_SignatureInfo* signature_info) {}
 
-bool BinaryFeatureExtractor::ExtractImageHeaders(
+bool BinaryFeatureExtractor::ExtractImageFeatures(
     const base::FilePath& file_path,
     ExtractHeadersOption options,
-    ClientDownloadRequest_ImageHeaders* image_headers) {
+    ClientDownloadRequest_ImageHeaders* image_headers,
+    google::protobuf::RepeatedPtrField<std::string>* signed_data) {
   return false;
 }
 
-bool BinaryFeatureExtractor::ExtractImageHeadersFromFile(
+bool BinaryFeatureExtractor::ExtractImageFeaturesFromFile(
     base::File file,
     ExtractHeadersOption options,
-    ClientDownloadRequest_ImageHeaders* image_headers) {
+    ClientDownloadRequest_ImageHeaders* image_headers,
+    google::protobuf::RepeatedPtrField<std::string>* signed_data) {
   return false;
 }
 

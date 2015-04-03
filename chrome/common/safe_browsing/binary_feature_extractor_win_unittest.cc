@@ -104,33 +104,33 @@ TEST_F(BinaryFeatureExtractorWinTest, NonExistentBinary) {
   EXPECT_FALSE(signature_info.has_trusted());
 }
 
-TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeadersNoFile) {
+TEST_F(BinaryFeatureExtractorWinTest, ExtractImageFeaturesNoFile) {
   // Test extracting headers from a file that doesn't exist.
   ClientDownloadRequest_ImageHeaders image_headers;
-  ASSERT_FALSE(binary_feature_extractor_->ExtractImageHeaders(
+  ASSERT_FALSE(binary_feature_extractor_->ExtractImageFeatures(
       testdata_path_.AppendASCII("this_file_does_not_exist"),
-      BinaryFeatureExtractor::kDefaultOptions,
-      &image_headers));
+      BinaryFeatureExtractor::kDefaultOptions, &image_headers,
+      nullptr /* signed_data */));
   EXPECT_FALSE(image_headers.has_pe_headers());
 }
 
-TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeadersNonImage) {
+TEST_F(BinaryFeatureExtractorWinTest, ExtractImageFeaturesNonImage) {
   // Test extracting headers from something that is not a PE image.
   ClientDownloadRequest_ImageHeaders image_headers;
-  ASSERT_FALSE(binary_feature_extractor_->ExtractImageHeaders(
+  ASSERT_FALSE(binary_feature_extractor_->ExtractImageFeatures(
       testdata_path_.AppendASCII("simple_exe.cc"),
-      BinaryFeatureExtractor::kDefaultOptions,
-      &image_headers));
+      BinaryFeatureExtractor::kDefaultOptions, &image_headers,
+      nullptr /* signed_data */));
   EXPECT_FALSE(image_headers.has_pe_headers());
 }
 
-TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeaders) {
-  // Test extracting headers from something that is a PE image.
+TEST_F(BinaryFeatureExtractorWinTest, ExtractImageFeatures) {
+  // Test extracting features from something that is a PE image.
   ClientDownloadRequest_ImageHeaders image_headers;
-  ASSERT_TRUE(binary_feature_extractor_->ExtractImageHeaders(
+  google::protobuf::RepeatedPtrField<std::string> signed_data;
+  ASSERT_TRUE(binary_feature_extractor_->ExtractImageFeatures(
       testdata_path_.AppendASCII("unsigned.exe"),
-      BinaryFeatureExtractor::kDefaultOptions,
-      &image_headers));
+      BinaryFeatureExtractor::kDefaultOptions, &image_headers, &signed_data));
   EXPECT_TRUE(image_headers.has_pe_headers());
   const ClientDownloadRequest_PEImageHeaders& pe_headers =
       image_headers.pe_headers();
@@ -141,15 +141,16 @@ TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeaders) {
   EXPECT_NE(0, pe_headers.section_header_size());
   EXPECT_FALSE(pe_headers.has_export_section_data());
   EXPECT_EQ(0, pe_headers.debug_data_size());
+  EXPECT_EQ(0, signed_data.size());
 }
 
-TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeadersWithDebugData) {
+TEST_F(BinaryFeatureExtractorWinTest, ExtractImageFeaturesWithDebugData) {
   // Test extracting headers from something that is a PE image with debug data.
   ClientDownloadRequest_ImageHeaders image_headers;
-  ASSERT_TRUE(binary_feature_extractor_->ExtractImageHeaders(
+  ASSERT_TRUE(binary_feature_extractor_->ExtractImageFeatures(
       testdata_path_.DirName().AppendASCII("module_with_exports_x86.dll"),
-      BinaryFeatureExtractor::kDefaultOptions,
-      &image_headers));
+      BinaryFeatureExtractor::kDefaultOptions, &image_headers,
+      nullptr /* signed_data */));
   EXPECT_TRUE(image_headers.has_pe_headers());
   const ClientDownloadRequest_PEImageHeaders& pe_headers =
       image_headers.pe_headers();
@@ -162,13 +163,13 @@ TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeadersWithDebugData) {
   EXPECT_EQ(1U, pe_headers.debug_data_size());
 }
 
-TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeadersWithoutExports) {
+TEST_F(BinaryFeatureExtractorWinTest, ExtractImageFeaturesWithoutExports) {
   // Test extracting headers from something that is a PE image with debug data.
   ClientDownloadRequest_ImageHeaders image_headers;
-  ASSERT_TRUE(binary_feature_extractor_->ExtractImageHeaders(
+  ASSERT_TRUE(binary_feature_extractor_->ExtractImageFeatures(
       testdata_path_.DirName().AppendASCII("module_with_exports_x86.dll"),
-      BinaryFeatureExtractor::kOmitExports,
-      &image_headers));
+      BinaryFeatureExtractor::kOmitExports, &image_headers,
+      nullptr /* signed_data */));
   EXPECT_TRUE(image_headers.has_pe_headers());
   const ClientDownloadRequest_PEImageHeaders& pe_headers =
       image_headers.pe_headers();
@@ -179,6 +180,28 @@ TEST_F(BinaryFeatureExtractorWinTest, ExtractImageHeadersWithoutExports) {
   EXPECT_NE(0, pe_headers.section_header_size());
   EXPECT_FALSE(pe_headers.has_export_section_data());
   EXPECT_EQ(1U, pe_headers.debug_data_size());
+}
+
+TEST_F(BinaryFeatureExtractorWinTest, ExtractImageFeaturesUntrustedSigned) {
+  // Test extracting features from a signed PE image.
+  ClientDownloadRequest_ImageHeaders image_headers;
+  google::protobuf::RepeatedPtrField<std::string> signed_data;
+  ASSERT_TRUE(binary_feature_extractor_->ExtractImageFeatures(
+      testdata_path_.AppendASCII("signed.exe"),
+      BinaryFeatureExtractor::kDefaultOptions, &image_headers, &signed_data));
+  ASSERT_EQ(1, signed_data.size());
+  ASSERT_LT(0U, signed_data.Get(0).size());
+}
+
+TEST_F(BinaryFeatureExtractorWinTest, ExtractImageFeaturesTrustedSigned) {
+  // Test extracting features from a signed PE image from a trusted root.
+  ClientDownloadRequest_ImageHeaders image_headers;
+  google::protobuf::RepeatedPtrField<std::string> signed_data;
+  ASSERT_TRUE(binary_feature_extractor_->ExtractImageFeatures(
+      testdata_path_.AppendASCII("wow_helper.exe"),
+      BinaryFeatureExtractor::kDefaultOptions, &image_headers, &signed_data));
+  ASSERT_EQ(1, signed_data.size());
+  ASSERT_LT(0U, signed_data.Get(0).size());
 }
 
 }  // namespace safe_browsing

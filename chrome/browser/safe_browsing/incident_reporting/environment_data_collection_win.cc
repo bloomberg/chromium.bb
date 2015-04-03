@@ -79,10 +79,11 @@ bool CollectDlls(ClientIncidentReport_EnvironmentData_Process* process) {
     dll->set_base_address(module.base_address);
     dll->set_length(module.size);
     // TODO(grt): Consider skipping this for valid system modules.
-    if (!feature_extractor->ExtractImageHeaders(
+    if (!feature_extractor->ExtractImageFeatures(
             dll_path,
             BinaryFeatureExtractor::kOmitExports,
-            dll->mutable_image_headers())) {
+            dll->mutable_image_headers(),
+            nullptr /* signed_data */)) {
       dll->clear_image_headers();
     }
   }

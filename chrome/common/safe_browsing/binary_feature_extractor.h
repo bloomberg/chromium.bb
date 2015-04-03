@@ -8,9 +8,12 @@
 #ifndef CHROME_COMMON_SAFE_BROWSING_BINARY_FEATURE_EXTRACTOR_H_
 #define CHROME_COMMON_SAFE_BROWSING_BINARY_FEATURE_EXTRACTOR_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
+#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 namespace base {
 class FilePath;
@@ -38,20 +41,24 @@ class BinaryFeatureExtractor
       const base::FilePath& file_path,
       ClientDownloadRequest_SignatureInfo* signature_info);
 
-  // Populates |image_headers| with the PE image headers of |file_path|.
-  // |options| is a bitfield controlling aspects of extraction. Returns true if
-  // |image_headers| is populated with any information.
-  virtual bool ExtractImageHeaders(
+  // Populates |image_headers| with the PE image headers of |file_path| and, if
+  // non-null, |signed_data| with any PKCS#7 SignedData blobs found in the
+  // image's attribute certificate table. |options| is a bitfield controlling
+  // aspects of extraction. Returns true if |image_headers| is populated with
+  // any information.
+  virtual bool ExtractImageFeatures(
       const base::FilePath& file_path,
       ExtractHeadersOption options,
-      ClientDownloadRequest_ImageHeaders* image_headers);
+      ClientDownloadRequest_ImageHeaders* image_headers,
+      google::protobuf::RepeatedPtrField<std::string>* signed_data);
 
   // As above, but works with an already-opened file. BinaryFeatureExtractor
   // takes ownership of |file| and closes it when done.
-  virtual bool ExtractImageHeadersFromFile(
+  virtual bool ExtractImageFeaturesFromFile(
       base::File file,
       ExtractHeadersOption options,
-      ClientDownloadRequest_ImageHeaders* image_headers);
+      ClientDownloadRequest_ImageHeaders* image_headers,
+      google::protobuf::RepeatedPtrField<std::string>* signed_data);
 
   // Populates |digests.sha256| with the SHA256 digest of |file_path|.
   virtual void ExtractDigest(const base::FilePath& file_path,

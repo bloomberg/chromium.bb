@@ -20,10 +20,29 @@ namespace safe_browsing {
 
 namespace {
 
-bool ExtractImageHeadersImpl(
+// An EnumCertificatesCallback that collects each SignedData blob.
+bool OnCertificateEntry(uint16_t revision,
+                        uint16_t certificate_type,
+                        const uint8_t* certificate_data,
+                        size_t certificate_data_size,
+                        void* context) {
+  google::protobuf::RepeatedPtrField<std::string>* signed_data =
+      reinterpret_cast<google::protobuf::RepeatedPtrField<std::string>*>(
+          context);
+
+  if (revision == WIN_CERT_REVISION_2_0 &&
+      certificate_type == WIN_CERT_TYPE_PKCS_SIGNED_DATA) {
+    signed_data->Add()->assign(certificate_data,
+                               certificate_data + certificate_data_size);
+  }
+  return true;
+}
+
+bool ExtractImageFeaturesImpl(
     const base::MemoryMappedFile& file,
     BinaryFeatureExtractor::ExtractHeadersOption options,
-    ClientDownloadRequest_ImageHeaders* image_headers) {
+    ClientDownloadRequest_ImageHeaders* image_headers,
+    google::protobuf::RepeatedPtrField<std::string>* signed_data) {
   PeImageReader pe_image;
   if (!pe_image.Initialize(file.data(), file.length()))
     return false;
@@ -70,6 +89,9 @@ bool ExtractImageHeadersImpl(
         debug_data->set_raw_data(raw_data, raw_data_size);
     }
   }
+
+  if (signed_data)
+    pe_image.EnumCertificates(&OnCertificateEntry, signed_data);
 
   return true;
 }
@@ -148,24 +170,28 @@ void BinaryFeatureExtractor::CheckSignature(
   }
 }
 
-bool BinaryFeatureExtractor::ExtractImageHeaders(
+bool BinaryFeatureExtractor::ExtractImageFeatures(
     const base::FilePath& file_path,
     ExtractHeadersOption options,
-    ClientDownloadRequest_ImageHeaders* image_headers) {
+    ClientDownloadRequest_ImageHeaders* image_headers,
+    google::protobuf::RepeatedPtrField<std::string>* signed_data) {
   base::MemoryMappedFile mapped_file;
   if (!mapped_file.Initialize(file_path))
     return false;
-  return ExtractImageHeadersImpl(mapped_file, options, image_headers);
+  return ExtractImageFeaturesImpl(mapped_file, options, image_headers,
+                                  signed_data);
 }
 
-bool BinaryFeatureExtractor::ExtractImageHeadersFromFile(
+bool BinaryFeatureExtractor::ExtractImageFeaturesFromFile(
     base::File file,
     ExtractHeadersOption options,
-    ClientDownloadRequest_ImageHeaders* image_headers) {
+    ClientDownloadRequest_ImageHeaders* image_headers,
+    google::protobuf::RepeatedPtrField<std::string>* signed_data) {
   base::MemoryMappedFile mapped_file;
   if (!mapped_file.Initialize(file.Pass()))
     return false;
-  return ExtractImageHeadersImpl(mapped_file, options, image_headers);
+  return ExtractImageFeaturesImpl(mapped_file, options, image_headers,
+                                  signed_data);
 }
 
 }  // namespace safe_browsing

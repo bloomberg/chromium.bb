@@ -556,10 +556,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
     start_time = base::TimeTicks::Now();
     image_headers_.reset(new ClientDownloadRequest_ImageHeaders());
-    if (!binary_feature_extractor_->ExtractImageHeaders(
+    if (!binary_feature_extractor_->ExtractImageFeatures(
             file_path,
             BinaryFeatureExtractor::kDefaultOptions,
-            image_headers_.get())) {
+            image_headers_.get(),
+            nullptr /* signed_data */)) {
       image_headers_.reset();
     }
     UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractImageHeadersTime",
