@@ -354,7 +354,7 @@ void HttpStreamFactoryImpl::Request::OnJobSucceeded(Job* job) {
   }
   if (!bound_job_.get()) {
     if (jobs_.size() > 1)
-      job->ReportJobSuccededForRequest();
+      job->ReportJobSucceededForRequest();
     // Notify all the other jobs that this one succeeded.
     for (std::set<Job*>::iterator it = jobs_.begin(); it != jobs_.end(); ++it) {
       if (*it != job) {

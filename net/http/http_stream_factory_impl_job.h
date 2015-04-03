@@ -93,7 +93,7 @@ class HttpStreamFactoryImpl::Job {
 
   // Called to indicate that this job succeeded, and some other jobs
   // will be orphaned.
-  void ReportJobSuccededForRequest();
+  void ReportJobSucceededForRequest();
 
   // Marks that the other |job| has completed.
   void MarkOtherJobComplete(const Job& job);
@@ -188,6 +188,9 @@ class HttpStreamFactoryImpl::Job {
   void SetSocketMotivation();
 
   bool IsHttpsProxyAndHttpUrl() const;
+  // Returns true iff this Job is an alternate, that is, iff MarkAsAlternate has
+  // been called.
+  bool IsAlternate() const;
 
   // Sets several fields of |ssl_config| for |server| based on the proxy info
   // and other factors.
@@ -233,7 +236,7 @@ class HttpStreamFactoryImpl::Job {
   // Should we force QUIC for this stream request.
   bool ShouldForceQuic() const;
 
-  void MaybeMarkAlternateProtocolBroken();
+  void MaybeMarkAlternativeServiceBroken();
 
   // Record histograms of latency until Connect() completes.
   static void LogHttpConnectedMetrics(const ClientSocketHandle& handle);
@@ -272,9 +275,8 @@ class HttpStreamFactoryImpl::Job {
   // original request when host mapping rules are set-up.
   GURL origin_url_;
 
-  // If this is a Job for an "Alternate-Protocol", then this will be non-NULL
-  // and will specify the original URL.
-  scoped_ptr<GURL> original_url_;
+  // The original URL if the Job is for an alternative service.
+  GURL original_url_;
 
   // AlternateProtocol for this job if this is an alternate job.
   AlternativeService alternative_service_;

@@ -169,8 +169,8 @@ LoadState HttpStreamFactoryImpl::Job::GetLoadState() const {
 void HttpStreamFactoryImpl::Job::MarkAsAlternate(
     const GURL& original_url,
     AlternativeService alternative_service) {
-  DCHECK(!original_url_.get());
-  original_url_.reset(new GURL(original_url));
+  DCHECK(!IsAlternate());
+  original_url_ = original_url;
   alternative_service_ = alternative_service;
   if (alternative_service.protocol == QUIC) {
     DCHECK(session_->params().enable_quic);
@@ -513,7 +513,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
 
     case OK:
       job_status_ = STATUS_SUCCEEDED;
-      MaybeMarkAlternateProtocolBroken();
+      MaybeMarkAlternativeServiceBroken();
       next_state_ = STATE_DONE;
       if (new_spdy_session_.get()) {
         base::MessageLoop::current()->PostTask(
@@ -538,7 +538,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
       if (job_status_ != STATUS_BROKEN) {
         DCHECK_EQ(STATUS_RUNNING, job_status_);
         job_status_ = STATUS_FAILED;
-        MaybeMarkAlternateProtocolBroken();
+        MaybeMarkAlternativeServiceBroken();
       }
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
@@ -615,7 +615,7 @@ int HttpStreamFactoryImpl::Job::StartInternal() {
 }
 
 int HttpStreamFactoryImpl::Job::DoStart() {
-  if (alternative_service_.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
+  if (IsAlternate()) {
     server_ = alternative_service_.host_port_pair();
   } else {
     server_ = HostPortPair::FromURL(request_info_.url);
@@ -820,7 +820,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   if (proxy_info_.is_http() || proxy_info_.is_https())
     establishing_tunnel_ = using_ssl_;
 
-  bool want_spdy_over_npn = original_url_ != NULL;
+  // TODO(bnc): s/want_spdy_over_npn/expect_spdy_over_npn/
+  bool want_spdy_over_npn = IsAlternate();
 
   if (proxy_info_.is_https()) {
     InitSSLConfig(proxy_info_.proxy_server().host_port_pair(),
@@ -993,16 +994,16 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     return result;
   }
 
-  if (!ssl_started && result < 0 && original_url_.get()) {
+  if (!ssl_started && result < 0 && IsAlternate()) {
     job_status_ = STATUS_BROKEN;
-    MaybeMarkAlternateProtocolBroken();
+    MaybeMarkAlternativeServiceBroken();
     return result;
   }
 
   if (using_quic_) {
     if (result < 0) {
       job_status_ = STATUS_BROKEN;
-      MaybeMarkAlternateProtocolBroken();
+      MaybeMarkAlternativeServiceBroken();
       return result;
     }
     stream_ = quic_request_.ReleaseStream();
@@ -1026,8 +1027,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   if (using_ssl_) {
     DCHECK(ssl_started);
     if (IsCertificateError(result)) {
-      if (using_spdy_ && original_url_.get() &&
-          original_url_->SchemeIs("http")) {
+      if (using_spdy_ && IsAlternate() && original_url_.SchemeIs("http")) {
         // We ignore certificate errors for http over spdy.
         spdy_certificate_error_ = result;
         result = OK;
@@ -1228,13 +1228,17 @@ void HttpStreamFactoryImpl::Job::SetSocketMotivation() {
 bool HttpStreamFactoryImpl::Job::IsHttpsProxyAndHttpUrl() const {
   if (!proxy_info_.is_https())
     return false;
-  if (original_url_.get()) {
+  if (IsAlternate()) {
     // We currently only support Alternate-Protocol where the original scheme
     // is http.
-    DCHECK(original_url_->SchemeIs("http"));
-    return original_url_->SchemeIs("http");
+    DCHECK(original_url_.SchemeIs("http"));
+    return original_url_.SchemeIs("http");
   }
   return request_info_.url.SchemeIs("http");
+}
+
+bool HttpStreamFactoryImpl::Job::IsAlternate() const {
+  return alternative_service_.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL;
 }
 
 void HttpStreamFactoryImpl::Job::InitSSLConfig(const HostPortPair& server,
@@ -1426,12 +1430,12 @@ bool HttpStreamFactoryImpl::Job::IsOrphaned() const {
   return !IsPreconnecting() && !request_;
 }
 
-void HttpStreamFactoryImpl::Job::ReportJobSuccededForRequest() {
+void HttpStreamFactoryImpl::Job::ReportJobSucceededForRequest() {
   if (using_existing_quic_session_) {
     // If an existing session was used, then no TCP connection was
     // started.
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_NO_RACE);
-  } else if (original_url_) {
+  } else if (IsAlternate()) {
     // This job was the alternate protocol job, and hence won the race.
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_WON_RACE);
   } else {
@@ -1445,15 +1449,14 @@ void HttpStreamFactoryImpl::Job::MarkOtherJobComplete(const Job& job) {
   DCHECK_EQ(STATUS_RUNNING, other_job_status_);
   other_job_status_ = job.job_status_;
   other_job_alternative_service_ = job.alternative_service_;
-  MaybeMarkAlternateProtocolBroken();
+  MaybeMarkAlternativeServiceBroken();
 }
 
-void HttpStreamFactoryImpl::Job::MaybeMarkAlternateProtocolBroken() {
+void HttpStreamFactoryImpl::Job::MaybeMarkAlternativeServiceBroken() {
   if (job_status_ == STATUS_RUNNING || other_job_status_ == STATUS_RUNNING)
     return;
 
-  bool is_alternate_protocol_job = original_url_.get() != NULL;
-  if (is_alternate_protocol_job) {
+  if (IsAlternate()) {
     if (job_status_ == STATUS_BROKEN && other_job_status_ == STATUS_SUCCEEDED) {
       HistogramBrokenAlternateProtocolLocation(
           BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_ALT);
