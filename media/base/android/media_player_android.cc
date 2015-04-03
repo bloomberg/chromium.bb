@@ -39,7 +39,7 @@ GURL MediaPlayerAndroid::GetFirstPartyForCookies() {
 
 void MediaPlayerAndroid::SetCdm(BrowserCdm* /* cdm */) {
   // Players that support EME should override this.
-  NOTREACHED() << "EME not supported on base MediaPlayerAndroid class.";
+  LOG(ERROR) << "EME not supported on base MediaPlayerAndroid class.";
   return;
 }
 

@@ -59,6 +59,11 @@ void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems,
     max_audio_robustness = EmeRobustness::HW_SECURE_CRYPTO;
     max_video_robustness = EmeRobustness::HW_SECURE_ALL;
   }
+
+  // We are using MediaDrm API on Android and we cannot guarantee that API
+  // doesn't use persistent storage on the device. Therefore always set
+  // persistent state to EME_FEATURE_ALWAYS_ENABLED to err on the safe side.
+
   if (codecs != media::EME_CODEC_NONE) {
     AddWidevineWithCodecs(
         WIDEVINE,
@@ -67,7 +72,7 @@ void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems,
         max_video_robustness,
         media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-license.
         media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-release-message.
-        media::EME_FEATURE_NOT_SUPPORTED,       // Persistent state.
+        media::EME_FEATURE_ALWAYS_ENABLED,      // Persistent state.
         media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
         concrete_key_systems);
   }
@@ -85,7 +90,7 @@ void AddAndroidWidevine(std::vector<KeySystemInfo>* concrete_key_systems,
         EmeRobustness::HW_SECURE_ALL,           // Max video robustness.
         media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-license.
         media::EME_SESSION_TYPE_NOT_SUPPORTED,  // persistent-release-message.
-        media::EME_FEATURE_NOT_SUPPORTED,       // Persistent state.
+        media::EME_FEATURE_ALWAYS_ENABLED,      // Persistent state.
         media::EME_FEATURE_ALWAYS_ENABLED,      // Distinctive identifier.
         concrete_key_systems);
   }
