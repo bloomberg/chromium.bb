@@ -21,6 +21,7 @@ class SkPixelRef;
 namespace cc {
 
 class Picture;
+class DisplayItemList;
 
 typedef std::pair<int, int> PixelRefMapKey;
 typedef std::vector<SkPixelRef*> PixelRefs;
@@ -46,6 +47,7 @@ class CC_EXPORT PixelRefMap {
     // Iterator.
     Iterator();
     Iterator(const gfx::Rect& layer_rect, const Picture* picture);
+    Iterator(const gfx::Rect& layer_rect, const DisplayItemList* picture);
     ~Iterator();
 
     SkPixelRef* operator->() const {
@@ -64,12 +66,14 @@ class CC_EXPORT PixelRefMap {
     }
 
    private:
+    void PointToFirstPixelRef(const gfx::Rect& query_rect);
+
     static base::LazyInstance<PixelRefs> empty_pixel_refs_;
     const PixelRefMap* target_pixel_ref_map_;
     const PixelRefs* current_pixel_refs_;
     unsigned current_index_;
 
-    gfx::Rect layer_rect_;
+    gfx::Rect map_layer_rect_;
 
     gfx::Point min_point_;
     gfx::Point max_point_;

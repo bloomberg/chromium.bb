@@ -6,11 +6,27 @@
 
 #include "cc/resources/clip_display_item.h"
 #include "cc/resources/drawing_display_item.h"
+#include "cc/resources/transform_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
+
+FakeContentLayerClient::BitmapData::BitmapData(const SkBitmap& bitmap,
+                                               const gfx::Point& point,
+                                               const SkPaint& paint)
+    : bitmap(bitmap), point(point), paint(paint) {
+}
+
+FakeContentLayerClient::BitmapData::BitmapData(const SkBitmap& bitmap,
+                                               const gfx::Transform& transform,
+                                               const SkPaint& paint)
+    : bitmap(bitmap), transform(transform), paint(paint) {
+}
+
+FakeContentLayerClient::BitmapData::~BitmapData() {
+}
 
 FakeContentLayerClient::FakeContentLayerClient()
     : fill_with_nonsolid_color_(false), last_canvas_(NULL) {
@@ -79,11 +95,17 @@ FakeContentLayerClient::PaintContentsToDisplayList(
 
   for (BitmapVector::const_iterator it = draw_bitmaps_.begin();
        it != draw_bitmaps_.end(); ++it) {
+    if (!it->transform.IsIdentity()) {
+      list->AppendItem(TransformDisplayItem::Create(it->transform));
+    }
     canvas = skia::SharePtr(
         recorder.beginRecording(it->bitmap.width(), it->bitmap.height()));
     canvas->drawBitmap(it->bitmap, it->point.x(), it->point.y(), &it->paint);
     picture = skia::AdoptRef(recorder.endRecording());
     list->AppendItem(DrawingDisplayItem::Create(picture));
+    if (!it->transform.IsIdentity()) {
+      list->AppendItem(EndTransformDisplayItem::Create());
+    }
   }
 
   if (fill_with_nonsolid_color_) {

@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "cc/base/util.h"
+#include "cc/resources/display_item_list.h"
 #include "cc/resources/picture.h"
 #include "skia/ext/pixel_ref_utils.h"
 
@@ -75,44 +76,17 @@ PixelRefMap::Iterator::Iterator(const gfx::Rect& rect, const Picture* picture)
     : target_pixel_ref_map_(&(picture->pixel_refs_)),
       current_pixel_refs_(empty_pixel_refs_.Pointer()),
       current_index_(0) {
-  gfx::Rect layer_rect = picture->layer_rect_;
-  gfx::Size cell_size = target_pixel_ref_map_->cell_size_;
-  DCHECK(!cell_size.IsEmpty());
-  gfx::Rect query_rect(rect);
-  // Early out if the query rect doesn't intersect this picture.
-  if (!query_rect.Intersects(layer_rect)) {
-    min_point_ = gfx::Point(0, 0);
-    max_point_ = gfx::Point(0, 0);
-    current_x_ = 1;
-    current_y_ = 1;
-    return;
-  }
+  map_layer_rect_ = picture->layer_rect_;
+  PointToFirstPixelRef(rect);
+}
 
-  // First, subtract the layer origin as cells are stored in layer space.
-  query_rect.Offset(-layer_rect.OffsetFromOrigin());
-
-  // We have to find a cell_size aligned point that corresponds to
-  // query_rect. Point is a multiple of cell_size.
-  min_point_ = gfx::Point(RoundDown(query_rect.x(), cell_size.width()),
-                          RoundDown(query_rect.y(), cell_size.height()));
-  max_point_ =
-      gfx::Point(RoundDown(query_rect.right() - 1, cell_size.width()),
-                 RoundDown(query_rect.bottom() - 1, cell_size.height()));
-
-  // Limit the points to known pixel ref boundaries.
-  min_point_ = gfx::Point(
-      std::max(min_point_.x(), target_pixel_ref_map_->min_pixel_cell_.x()),
-      std::max(min_point_.y(), target_pixel_ref_map_->min_pixel_cell_.y()));
-  max_point_ = gfx::Point(
-      std::min(max_point_.x(), target_pixel_ref_map_->max_pixel_cell_.x()),
-      std::min(max_point_.y(), target_pixel_ref_map_->max_pixel_cell_.y()));
-
-  // Make the current x be cell_size.width() less than min point, so that
-  // the first increment will point at min_point_.
-  current_x_ = min_point_.x() - cell_size.width();
-  current_y_ = min_point_.y();
-  if (current_y_ <= max_point_.y())
-    ++(*this);
+PixelRefMap::Iterator::Iterator(const gfx::Rect& rect,
+                                const DisplayItemList* display_list)
+    : target_pixel_ref_map_(display_list->pixel_refs_.get()),
+      current_pixel_refs_(empty_pixel_refs_.Pointer()),
+      current_index_(0) {
+  map_layer_rect_ = display_list->layer_rect_;
+  PointToFirstPixelRef(rect);
 }
 
 PixelRefMap::Iterator::~Iterator() {
@@ -153,6 +127,46 @@ PixelRefMap::Iterator& PixelRefMap::Iterator::operator++() {
     break;
   }
   return *this;
+}
+
+void PixelRefMap::Iterator::PointToFirstPixelRef(const gfx::Rect& rect) {
+  gfx::Rect query_rect(rect);
+  // Early out if the query rect doesn't intersect this picture.
+  if (!query_rect.Intersects(map_layer_rect_) || !target_pixel_ref_map_) {
+    min_point_ = gfx::Point(0, 0);
+    max_point_ = gfx::Point(0, 0);
+    current_x_ = 1;
+    current_y_ = 1;
+    return;
+  }
+
+  // First, subtract the layer origin as cells are stored in layer space.
+  query_rect.Offset(-map_layer_rect_.OffsetFromOrigin());
+
+  DCHECK(!target_pixel_ref_map_->cell_size_.IsEmpty());
+  gfx::Size cell_size(target_pixel_ref_map_->cell_size_);
+  // We have to find a cell_size aligned point that corresponds to
+  // query_rect. Point is a multiple of cell_size.
+  min_point_ = gfx::Point(RoundDown(query_rect.x(), cell_size.width()),
+                          RoundDown(query_rect.y(), cell_size.height()));
+  max_point_ =
+      gfx::Point(RoundDown(query_rect.right() - 1, cell_size.width()),
+                 RoundDown(query_rect.bottom() - 1, cell_size.height()));
+
+  // Limit the points to known pixel ref boundaries.
+  min_point_ = gfx::Point(
+      std::max(min_point_.x(), target_pixel_ref_map_->min_pixel_cell_.x()),
+      std::max(min_point_.y(), target_pixel_ref_map_->min_pixel_cell_.y()));
+  max_point_ = gfx::Point(
+      std::min(max_point_.x(), target_pixel_ref_map_->max_pixel_cell_.x()),
+      std::min(max_point_.y(), target_pixel_ref_map_->max_pixel_cell_.y()));
+
+  // Make the current x be cell_size.width() less than min point, so that
+  // the first increment will point at min_point_.
+  current_x_ = min_point_.x() - cell_size.width();
+  current_y_ = min_point_.y();
+  if (current_y_ <= max_point_.y())
+    ++(*this);
 }
 
 }  // namespace cc

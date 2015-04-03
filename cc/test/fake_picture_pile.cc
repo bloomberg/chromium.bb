@@ -66,7 +66,7 @@ void FakePicturePile::AddRecordingAt(int x, int y) {
   bounds.Inset(-buffer_pixels(), -buffer_pixels());
 
   scoped_refptr<Picture> picture(
-      Picture::Create(bounds, &client_, tile_grid_size_, true,
+      Picture::Create(bounds, &client_, tile_grid_size_, gather_pixel_refs_,
                       RecordingSource::RECORD_NORMALLY));
   picture_map_[std::pair<int, int>(x, y)].SetPicture(picture);
   EXPECT_TRUE(HasRecordingAt(x, y));
@@ -93,7 +93,7 @@ bool FakePicturePile::HasRecordingAt(int x, int y) const {
   return !!found->second.GetPicture();
 }
 
-void FakePicturePile::RerecordPile() {
+void FakePicturePile::Rerecord() {
   for (int y = 0; y < num_tiles_y(); ++y) {
     for (int x = 0; x < num_tiles_x(); ++x) {
       RemoveRecordingAt(x, y);
