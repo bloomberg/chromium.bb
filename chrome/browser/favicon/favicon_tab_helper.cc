@@ -173,25 +173,28 @@ bool FaviconTabHelper::ShouldDisplayFavicon() {
 }
 
 void FaviconTabHelper::SaveFavicon() {
-  NavigationEntry* entry = web_contents()->GetController().GetActiveEntry();
-  if (!entry || entry->GetURL().is_empty())
+  GURL active_url = GetActiveURL();
+  if (active_url.is_empty())
     return;
 
   // Make sure the page is in history, otherwise adding the favicon does
   // nothing.
   if (!history_service_)
     return;
-  history_service_->AddPageNoVisitForBookmark(entry->GetURL(),
-                                              entry->GetTitle());
+  history_service_->AddPageNoVisitForBookmark(active_url, GetActiveTitle());
 
   if (!favicon_service_)
     return;
-
-  const FaviconStatus& favicon(entry->GetFavicon());
-  if (!favicon.valid || favicon.url.is_empty() || favicon.image.IsEmpty())
+  if (!GetActiveFaviconValidity())
     return;
-  favicon_service_->SetFavicons(entry->GetURL(), favicon.url,
-                                favicon_base::FAVICON, favicon.image);
+  GURL favicon_url = GetActiveFaviconURL();
+  if (favicon_url.is_empty())
+    return;
+  gfx::Image image = GetActiveFaviconImage();
+  if (image.IsEmpty())
+    return;
+  favicon_service_->SetFavicons(active_url, favicon_url, favicon_base::FAVICON,
+                                image);
 }
 
 void FaviconTabHelper::AddObserver(favicon::FaviconDriverObserver* observer) {
@@ -230,6 +233,11 @@ bool FaviconTabHelper::IsBookmarked(const GURL& url) {
 GURL FaviconTabHelper::GetActiveURL() {
   NavigationEntry* entry = web_contents()->GetController().GetActiveEntry();
   return entry ? entry->GetURL() : GURL();
+}
+
+base::string16 FaviconTabHelper::GetActiveTitle() {
+  NavigationEntry* entry = web_contents()->GetController().GetActiveEntry();
+  return entry ? entry->GetTitle() : base::string16();
 }
 
 bool FaviconTabHelper::GetActiveFaviconValidity() {

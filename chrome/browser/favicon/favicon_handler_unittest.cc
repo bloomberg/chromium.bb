@@ -195,6 +195,8 @@ class TestFaviconDriver : public favicon::FaviconDriver {
 
   GURL GetActiveURL() override { return url_; }
 
+  base::string16 GetActiveTitle() override { return base::string16(); }
+
   bool GetActiveFaviconValidity() override { return favicon_validity_; }
 
   void SetActiveFaviconValidity(bool favicon_validity) override {

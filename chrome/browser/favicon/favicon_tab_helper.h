@@ -92,6 +92,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
   bool IsOffTheRecord() override;
   bool IsBookmarked(const GURL& url) override;
   GURL GetActiveURL() override;
+  base::string16 GetActiveTitle() override;
   bool GetActiveFaviconValidity() override;
   void SetActiveFaviconValidity(bool valid) override;
   GURL GetActiveFaviconURL() override;

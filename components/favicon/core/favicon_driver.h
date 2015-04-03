@@ -6,6 +6,7 @@
 #define COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_H_
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 
 class GURL;
 
@@ -36,9 +37,12 @@ class FaviconDriver {
   // Returns whether |url| is bookmarked.
   virtual bool IsBookmarked(const GURL& url) = 0;
 
-  // Returns the URL of the current page, if any. Returns an invalid
-  // URL otherwise.
+  // Returns the URL of the current page, if any. Returns an invalid URL
+  // otherwise.
   virtual GURL GetActiveURL() = 0;
+
+  // Returns the title of the current page. Requires GetActiveURL() to be valid.
+  virtual base::string16 GetActiveTitle() = 0;
 
   // Returns whether the page's favicon is valid (returns false if the default
   // favicon is being used). Requires GetActiveURL() to be valid.
