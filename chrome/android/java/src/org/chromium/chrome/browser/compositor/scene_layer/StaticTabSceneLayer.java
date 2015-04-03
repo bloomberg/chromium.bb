@@ -54,7 +54,8 @@ public class StaticTabSceneLayer extends SceneLayer {
                 false, layoutTab.getBackgroundColor(), layoutTab.getRenderX() * dpToPx,
                 layoutTab.getRenderY() * dpToPx, layoutTab.getScaledContentWidth() * dpToPx,
                 layoutTab.getScaledContentHeight() * dpToPx, contentOffset,
-                layoutTab.getStaticToViewBlend(), layoutTab.getSaturation());
+                layoutTab.getStaticToViewBlend(), layoutTab.getSaturation(),
+                layoutTab.getBrightness());
     }
 
     /**
@@ -87,7 +88,7 @@ public class StaticTabSceneLayer extends SceneLayer {
             TabContentManager tabContentManager, int id, int toolbarResourceId,
             boolean canUseLiveLayer, boolean canUseNtpFallback, int backgroundColor, float x,
             float y, float width, float height, float contentOffsetY, float staticToViewBlend,
-            float saturation);
+            float saturation, float brightness);
     private native void nativeSetContentSceneLayer(
             long nativeStaticTabSceneLayer, SceneLayer sceneLayer);
 }

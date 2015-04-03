@@ -50,7 +50,8 @@ void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
                                          jfloat height,
                                          jfloat content_offset_y,
                                          jfloat static_to_view_blend,
-                                         jfloat saturation) {
+                                         jfloat saturation,
+                                         jfloat brightness) {
   background_color_ = default_background_color;
   gfx::Size content_viewport_size(content_viewport_width,
                                   content_viewport_height);
@@ -74,7 +75,7 @@ void StaticTabSceneLayer::UpdateTabLayer(JNIEnv* env,
   content_layer_->SetProperties(
       id, can_use_live_layer, can_use_ntp_fallback, static_to_view_blend,
       should_override_content_alpha, content_alpha_override, saturation,
-      gfx::Rect(content_viewport_size), content_viewport_size);
+      brightness, gfx::Rect(content_viewport_size), content_viewport_size);
 
   gfx::Size content_bounds(0, 0);
   content_bounds = content_layer_->layer()->bounds();

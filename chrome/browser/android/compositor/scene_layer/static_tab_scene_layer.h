@@ -55,7 +55,8 @@ class StaticTabSceneLayer : public SceneLayer {
                       jfloat height,
                       jfloat content_offset_y,
                       jfloat static_to_view_blend,
-                      jfloat saturation);
+                      jfloat saturation,
+                      jfloat brightness);
 
   // Set the given |jscene_layer| as content of this SceneLayer, along with its
   // own content.

@@ -64,6 +64,7 @@ void ContentLayer::SetProperties(int id,
                                  bool should_override_content_alpha,
                                  float content_alpha_override,
                                  float saturation,
+                                 float brightness,
                                  const gfx::Rect& desired_bounds,
                                  const gfx::Size& content_size) {
   scoped_refptr<cc::Layer> content_layer =
@@ -128,7 +129,7 @@ void ContentLayer::SetProperties(int id,
 
   layer_->SetBounds(content_bounds);
 
-  // Only worry about saturation on the static layer
+  // Only worry about saturation on the static layer.
   if (static_layer.get()) {
     if (saturation != saturation_) {
       saturation_ = saturation;
@@ -136,6 +137,19 @@ void ContentLayer::SetProperties(int id,
       if (saturation_ < 1.0f)
         filters.Append(cc::FilterOperation::CreateSaturateFilter(saturation_));
       static_layer->layer()->SetFilters(filters);
+    }
+  }
+
+  // Only worry about brightness on the content layer.
+  if (content_layer.get()) {
+    if (brightness != brightness_) {
+      brightness_ = brightness;
+      cc::FilterOperations filters;
+      if (brightness_ < 1.f) {
+        filters.Append(
+            cc::FilterOperation::CreateBrightnessFilter(brightness_));
+      }
+      content_layer->SetFilters(filters);
     }
   }
 }
@@ -155,6 +169,7 @@ ContentLayer::ContentLayer(TabContentManager* tab_content_manager)
       content_attached_(false),
       static_attached_(false),
       saturation_(1.0f),
+      brightness_(1.0f),
       tab_content_manager_(tab_content_manager) {
 }
 
