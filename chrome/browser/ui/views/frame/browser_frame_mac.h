@@ -21,6 +21,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   BrowserFrameMac(BrowserFrame* browser_frame, BrowserView* browser_view);
 
   // Overridden from views::NativeWidgetMac:
+  void OnWindowWillClose() override;
   void InitNativeWidget(const views::Widget::InitParams& params) override;
 
   // Overridden from NativeBrowserFrame:
@@ -42,6 +43,8 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   int GetMinimizeButtonOffset() const override;
 
  private:
+  BrowserView* browser_view_;  // Weak. Our ClientView.
+
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameMac);
 };
 
