@@ -60,9 +60,12 @@ env.AddNodeToTestSuite(node,
 
 def AddIntrinsicTest(test_env, src, exit_status,
                      golden_file=None, test_suffix='', is_broken=False,
-                     EXTRA_LIBS=[], EXTRA_CCFLAGS=''):
+                     EXTRA_LIBS=[], EXTRA_CCFLAGS='', add_bias=False):
   name = src.split('.')[0]
   name += test_suffix
+
+  if add_bias and test_env.Bit('bitcode'):
+    test_env.AddBiasForPNaCl()
 
   if EXTRA_CCFLAGS:
     test_env = test_env.Clone()
@@ -101,7 +104,8 @@ if env.Bit('bitcode') or env.Bit('nacl_clang'):
     AddIntrinsicTest(cpp11_envs[lib], 'mutex_cpp11.cc', '0',
                      test_suffix=lib, EXTRA_LIBS=['${PTHREAD_LIBS}'])
     AddIntrinsicTest(cpp11_envs[lib], 'synchronization_cpp11.cc', '0',
-                     test_suffix=lib, EXTRA_LIBS=['${PTHREAD_LIBS}'])
+                     test_suffix=lib, EXTRA_LIBS=['${PTHREAD_LIBS}'],
+                     add_bias=True)
     AddIntrinsicTest(cpp11_envs[lib], 'thread_cpp11.cc', '0',
                      test_suffix=lib, EXTRA_LIBS=['${PTHREAD_LIBS}'])
     if lib != 'libstdc++':

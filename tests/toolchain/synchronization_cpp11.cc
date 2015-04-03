@@ -68,14 +68,32 @@ void test_lock_free_macros() {
   static_assert(ATOMIC_LONG_LOCK_FREE == 2, "should be compile-time 2");
   static_assert(ATOMIC_LLONG_LOCK_FREE == 2, "should be compile-time 2");
   static_assert(ATOMIC_POINTER_LOCK_FREE == 2, "should be compile-time 2");
+#elif defined(__mips__)
+  static_assert(ATOMIC_BOOL_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_CHAR_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_CHAR16_T_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_CHAR32_T_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_WCHAR_T_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_SHORT_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_INT_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_LONG_LOCK_FREE == 2, "should be compile-time 2");
+  static_assert(ATOMIC_LLONG_LOCK_FREE == 1, "should be compile-time 1");
+  static_assert(ATOMIC_POINTER_LOCK_FREE == 2, "should be compile-time 2");
 # else
-  // TODO: Other architechtures, such as mips
+  #error "unknown arch"
 #endif
 }
 
-#define TEST_IS_LOCK_FREE(TYPE) do {                    \
-    CHECK_EQ(std::atomic<TYPE>().is_lock_free(), true,  \
-             "expected lock-free for `" STR(TYPE) "`"); \
+#if defined(__mips__)
+  bool isMips = true;
+#else
+  bool isMips = false;
+#endif
+
+#define TEST_IS_LOCK_FREE(TYPE) do {                              \
+     bool expectLockFree = !((sizeof(TYPE) == 8) && isMips);      \
+     CHECK_EQ(std::atomic<TYPE>().is_lock_free(), expectLockFree, \
+              "expected lock-free for `" STR(TYPE) "`");          \
   } while (0)
 
 void test_is_lock_free() {
