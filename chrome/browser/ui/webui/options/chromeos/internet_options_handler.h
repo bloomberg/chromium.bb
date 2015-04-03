@@ -114,7 +114,6 @@ class InternetOptionsHandler : public ::options::OptionsPageUIHandler,
   void AddNonVPNConnection(const base::ListValue* args);
   void ConfigureNetwork(const base::ListValue* args);
   void ActivateNetwork(const base::ListValue* args);
-  void RemoveNetwork(const base::ListValue* args);
 
   // Requests that a list of VPN providers enabled in the primary user's
   // profile be sent to JavaScript.

@@ -1288,17 +1288,6 @@ cr.define('options.internet', function() {
   };
 
   /**
-   * Method called from Chrome in response to getManagedProperties.
-   * We only use this when we want to call initializeDetailsPage.
-   * TODO(stevenjb): Eliminate when we switch to networkingPrivate
-   * (initializeDetailsPage will be provided as the callback).
-   * @param {Object} oncData Dictionary of ONC properties.
-   */
-  DetailsInternetPage.getManagedPropertiesResult = function(oncData) {
-    DetailsInternetPage.initializeDetailsPage(oncData);
-  };
-
-  /**
    * Initializes the details page with the provided ONC data.
    * @param {Object} oncData Dictionary of ONC properties.
    */

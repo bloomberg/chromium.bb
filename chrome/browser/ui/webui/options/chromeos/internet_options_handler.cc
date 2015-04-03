@@ -102,9 +102,6 @@ const char kStartConnectMessage[] = "startConnect";
 // TODO(stevenjb): Deprecate this once we handle events in the JS.
 const char kSetNetworkGuidMessage[] = "setNetworkGuid";
 
-// TODO(stevenjb): Add these to networkingPrivate.
-const char kRemoveNetworkMessage[] = "removeNetwork";
-
 // TODO(stevenjb): Deprecate these and integrate with settings Web UI.
 const char kAddVPNConnectionMessage[] = "addVPNConnection";
 const char kAddNonVPNConnectionMessage[] = "addNonVPNConnection";
@@ -295,9 +292,6 @@ void InternetOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kAddNonVPNConnectionMessage,
       base::Bind(&InternetOptionsHandler::AddNonVPNConnection,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kRemoveNetworkMessage,
-      base::Bind(&InternetOptionsHandler::RemoveNetwork,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kConfigureNetworkMessage,
       base::Bind(&InternetOptionsHandler::ConfigureNetwork,
@@ -640,21 +634,6 @@ void InternetOptionsHandler::ActivateNetwork(const base::ListValue* args) {
   std::string service_path = ServicePathFromGuid(guid);
   if (!service_path.empty())
     ui::NetworkConnect::Get()->ActivateCellular(service_path);
-}
-
-void InternetOptionsHandler::RemoveNetwork(const base::ListValue* args) {
-  std::string guid;
-  if (args->GetSize() != 1 || !args->GetString(0, &guid)) {
-    NOTREACHED();
-    return;
-  }
-  std::string service_path = ServicePathFromGuid(guid);
-  if (service_path.empty())
-    return;
-  NetworkHandler::Get()
-      ->managed_network_configuration_handler()
-      ->RemoveConfiguration(service_path, base::Bind(&base::DoNothing),
-                            base::Bind(&ShillError, "RemoveNetwork"));
 }
 
 void InternetOptionsHandler::LoadVPNProvidersCallback(

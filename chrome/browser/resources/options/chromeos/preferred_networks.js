@@ -125,11 +125,8 @@ cr.define('options', function() {
     /** @override */
     deleteItemAtIndex: function(index) {
       var item = this.dataModel.item(index);
-      if (item) {
-        // TODO(stevenjb): Add removeNetwork to chrome.networkingPrivate and
-        // use that here.
-        chrome.send('removeNetwork', [item.GUID]);
-      }
+      if (item)
+        chrome.networkingPrivate.forgetNetwork(item.GUID);
       this.dataModel.splice(index, 1);
       // Invalidate the list since it has a stale cache after a splice
       // involving a deletion.

@@ -32,13 +32,6 @@ cr.define('options.network', function() {
    */
   function Constants() {}
 
-  // Cellular activation states:
-  Constants.ACTIVATION_STATE_UNKNOWN = 0;
-  Constants.ACTIVATION_STATE_ACTIVATED = 1;
-  Constants.ACTIVATION_STATE_ACTIVATING = 2;
-  Constants.ACTIVATION_STATE_NOT_ACTIVATED = 3;
-  Constants.ACTIVATION_STATE_PARTIALLY_ACTIVATED = 4;
-
   /**
    * Valid network type names.
    */
