@@ -230,7 +230,6 @@ class Sysroot(object):
     if bsp:
       brick_list.extend(bsp.BrickStack())
 
-    # TODO(bsimonnet): get toolchain from config.json.
     base_brick = bsp or brick
     toolchains = toolchain.GetToolchainsForBrick(base_brick.brick_locator)
     config['CHOST'] = toolchain.FilterToolchains(toolchains, 'default',

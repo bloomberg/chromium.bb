@@ -6,17 +6,14 @@
 
 from __future__ import print_function
 
-import copy
 import cStringIO
-import json
-import os
 
 from chromite.cbuildbot import constants
 from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
-from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.lib import toolchain_list
 
 if cros_build_lib.IsInsideChroot():
   # Only import portage after we've checked that we're inside the chroot.
@@ -31,45 +28,6 @@ def GetHostTuple():
   """Returns compiler tuple for the host system."""
   # pylint: disable=E1101
   return portage.settings['CHOST']
-
-
-def GetTuplesForOverlays(overlays):
-  """Returns a set of tuples for a given set of overlays."""
-  targets = {}
-  default_settings = {
-      'sdk'      : True,
-      'crossdev' : '',
-      'default'  : False,
-  }
-
-  for overlay in overlays:
-    config = os.path.join(overlay, 'toolchain.conf')
-    if os.path.exists(config):
-      first_target = None
-      seen_default = False
-
-      for line in osutils.ReadFile(config).splitlines():
-        # Split by hash sign so that comments are ignored.
-        # Then split the line to get the tuple and its options.
-        line = line.split('#', 1)[0].split()
-
-        if len(line) > 0:
-          target = line[0]
-          if not first_target:
-            first_target = target
-          if target not in targets:
-            targets[target] = copy.copy(default_settings)
-          if len(line) > 1:
-            targets[target].update(json.loads(' '.join(line[1:])))
-            if targets[target]['default']:
-              seen_default = True
-
-      # If the user has not explicitly marked a toolchain as default,
-      # automatically select the first tuple that we saw in the conf.
-      if not seen_default and first_target:
-        targets[first_target]['default'] = True
-
-  return targets
 
 
 # Tree interface functions. They help with retrieving data about the current
@@ -88,7 +46,11 @@ def GetAllTargets():
 
 
 def GetToolchainsForBoard(board, buildroot=constants.SOURCE_ROOT):
-  """Get a list of toolchain tuples for a given board name
+  """Get a dictionary mapping toolchain targets to their options for a board.
+
+  Args:
+    board: board name in question (e.g. 'daisy').
+    buildroot: path to buildroot.
 
   Returns:
     The list of toolchain tuples for the given board
@@ -96,14 +58,15 @@ def GetToolchainsForBoard(board, buildroot=constants.SOURCE_ROOT):
   overlays = portage_util.FindOverlays(
       constants.BOTH_OVERLAYS, None if board in ('all', 'sdk') else board,
       buildroot=buildroot)
-  toolchains = GetTuplesForOverlays(overlays)
+  toolchains = toolchain_list.ToolchainList(overlays=overlays)
+  targets = toolchains.GetMergedToolchainSettings()
   if board == 'sdk':
-    toolchains = FilterToolchains(toolchains, 'sdk', True)
-  return toolchains
+    targets = FilterToolchains(targets, 'sdk', True)
+  return targets
 
 
 def GetToolchainsForBrick(brick_locator):
-  """Get a list of toolchain tuples for a given brick locator.
+  """Get a dictionary mapping toolchain targets to their options for a brick.
 
   Args:
     brick_locator: locator for the brick.
@@ -111,9 +74,9 @@ def GetToolchainsForBrick(brick_locator):
   Returns:
     The list of toolchain tuples for the given brick.
   """
-  brick_stack = brick_lib.Brick(brick_locator).BrickStack()
-  overlays = [b.OverlayDir() for b in brick_stack]
-  return GetTuplesForOverlays(overlays)
+  toolchains = toolchain_list.ToolchainList(
+      brick=brick_lib.Brick(brick_locator))
+  return toolchains.GetMergedToolchainSettings()
 
 
 def FilterToolchains(targets, key, value):
