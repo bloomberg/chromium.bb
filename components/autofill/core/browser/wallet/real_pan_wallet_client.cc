@@ -250,6 +250,7 @@ void RealPanWalletClient::CreateRequest() {
                          net::EscapeUrlEncodedData(json_request, true).c_str(),
                          net::EscapeUrlEncodedData(
                              base::UTF16ToASCII(response_.cvc), true).c_str());
+  VLOG(3) << "getrealpan request body: " << post_body;
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
 }
 

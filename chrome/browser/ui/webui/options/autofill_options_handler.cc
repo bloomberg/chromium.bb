@@ -441,6 +441,7 @@ void AutofillOptionsHandler::RegisterMessages() {
 // PersonalDataManagerObserver implementation:
 void AutofillOptionsHandler::OnPersonalDataChanged() {
   LoadAutofillData();
+  OnStateChanged();
 }
 
 void AutofillOptionsHandler::OnStateChanged() {

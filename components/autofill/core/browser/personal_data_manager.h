@@ -154,6 +154,9 @@ class PersonalDataManager : public KeyedService,
   // Returns all credit cards, server and local.
   virtual const std::vector<CreditCard*>& GetCreditCards() const;
 
+  // Returns true if there is some data synced from Wallet.
+  bool HasServerData() const;
+
   // Loads profiles that can suggest data for |type|. |field_contents| is the
   // part the user has already typed. |field_is_autofilled| is true if the field
   // has already been autofilled. |other_field_types| represents the rest of

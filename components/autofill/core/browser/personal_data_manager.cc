@@ -786,6 +786,10 @@ const std::vector<CreditCard*>& PersonalDataManager::GetCreditCards() const {
   return credit_cards_;
 }
 
+bool PersonalDataManager::HasServerData() const {
+  return !server_credit_cards_.empty() || !server_profiles_.empty();
+}
+
 void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
