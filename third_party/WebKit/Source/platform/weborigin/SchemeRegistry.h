@@ -48,9 +48,9 @@ public:
     static void registerURLSchemeAsRestrictingMixedContent(const String&);
     static bool shouldTreatURLSchemeAsRestrictingMixedContent(const String&);
 
-    // Secure schemes do not trigger mixed content warnings. For example,
-    // https and data are secure schemes because they cannot be corrupted by
-    // active network attackers.
+    // Subresources transported by secure schemes do not trigger mixed content
+    // warnings. For example, https and data are secure schemes because they
+    // cannot be corrupted by active network attackers.
     static void registerURLSchemeAsSecure(const String&);
     static bool shouldTreatURLSchemeAsSecure(const String&);
 

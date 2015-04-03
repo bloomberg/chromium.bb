@@ -65,6 +65,11 @@ void WebSecurityPolicy::registerURLSchemeAsSecure(const WebString& scheme)
     SchemeRegistry::registerURLSchemeAsSecure(scheme);
 }
 
+bool WebSecurityPolicy::shouldTreatURLSchemeAsSecure(const WebString& scheme)
+{
+    return SchemeRegistry::shouldTreatURLSchemeAsSecure(scheme);
+}
+
 void WebSecurityPolicy::registerURLSchemeAsCORSEnabled(const WebString& scheme)
 {
     SchemeRegistry::registerURLSchemeAsCORSEnabled(scheme);
