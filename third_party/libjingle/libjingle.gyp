@@ -15,7 +15,7 @@
     'webrtc_xmpp': "../webrtc/libjingle/xmpp",
   },
   # Most of these settings have been split according to their scope into
-  # :jingle_unexported_configs, :jingle_direct_dependent_configs,
+  # :jingle_unexported_configs, :jingle_public_configs,
   # :jingle_all_dependent_configs in the GN build.
   'target_defaults': {
     'defines': [

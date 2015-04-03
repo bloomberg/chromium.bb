@@ -55,7 +55,7 @@ config("jingle_unexported_configs") {
 }
 
 # From third_party/libjingle/libjingle.gyp's target_defaults.
-config("jingle_direct_dependent_configs") {
+config("jingle_public_configs") {
   include_dirs = [
     "../../third_party/webrtc/overrides",
     "overrides",
@@ -274,7 +274,7 @@ static_library("libjingle") {
   }
 
   configs += [ ":jingle_unexported_configs" ]
-  public_configs = [ ":jingle_direct_dependent_configs" ]
+  public_configs = [ ":jingle_public_configs" ]
   all_dependent_configs = [ ":jingle_all_dependent_configs" ]
 }
 
@@ -297,7 +297,7 @@ static_library("libjingle_p2p_constants") {
     ":jingle_deps",
   ]
   configs += [ ":jingle_unexported_configs" ]
-  public_configs = [ ":jingle_direct_dependent_configs" ]
+  public_configs = [ ":jingle_public_configs" ]
   all_dependent_configs = [ ":jingle_all_dependent_configs" ]
 }
 
@@ -322,7 +322,7 @@ source_set("peerconnnection_server") {
     ":jingle_deps",
   ]
   configs += [ ":jingle_unexported_configs" ]
-  public_configs = [ ":jingle_direct_dependent_configs" ]
+  public_configs = [ ":jingle_public_configs" ]
   all_dependent_configs = [ ":jingle_all_dependent_configs" ]
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -337,7 +337,7 @@ if (enable_webrtc) {
       "overrides/init_webrtc.h",
     ]
     configs += [ ":jingle_unexported_configs" ]
-    public_configs = [ ":jingle_direct_dependent_configs" ]
+    public_configs = [ ":jingle_public_configs" ]
     deps = [
       ":libjingle_webrtc_common",
     ]
@@ -495,7 +495,7 @@ if (enable_webrtc) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
     configs += [ ":jingle_unexported_configs" ]
-    public_configs = [ ":jingle_direct_dependent_configs" ]
+    public_configs = [ ":jingle_public_configs" ]
 
     deps = [
       "//third_party/libsrtp",
@@ -532,7 +532,7 @@ if (enable_webrtc) {
     ]
 
     configs += [ ":jingle_unexported_configs" ]
-    public_configs = [ ":jingle_direct_dependent_configs" ]
+    public_configs = [ ":jingle_public_configs" ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
