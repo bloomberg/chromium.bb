@@ -192,10 +192,8 @@ class DataReductionProxyProtocolTest : public testing::Test {
     std::string response2_via_header = "";
     std::string request2_connection_type = "";
     std::string request2_path = "/";
-    bool idempotent_block_once =
-        m != "POST" && expected_retry && expected_bad_proxy_count == 0u;
 
-    if (expected_bad_proxy_count < 2u && !idempotent_block_once) {
+    if (expected_bad_proxy_count == 1) {
       request2_path = "http://www.google.com/";
       request2_connection_type = "Proxy-";
       response2_via_header = "Via: 1.1 Chrome-Compression-Proxy\r\n";
@@ -696,21 +694,36 @@ TEST_F(DataReductionProxyProtocolTest, BypassLogic) {
       0,
       BYPASS_EVENT_TYPE_CURRENT
     },
-    // Valid data reduction proxy response with a block-once message. It will
-    // not be retried because the request is non-idempotent, and there will be
-    // no proxies on the retry list since block-once only affects the current
-    // request.
+    // Valid Data Reduction Proxy response with a block-once message. It will
+    // be retried because block-once indicates that request did not reach the
+    // origin and client should retry. Only current request is retried direct,
+    // so there should be no proxies on the retry list.
     { "POST",
       "HTTP/1.1 200 OK\r\n"
       "Server: proxy\r\n"
       "Chrome-Proxy: block-once\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-      false,
+      true,
       false,
       0u,
       true,
       0,
       BYPASS_EVENT_TYPE_CURRENT
+    },
+    // Valid Data Reduction Proxy response with a bypass message. It will
+    // not be retried because the request is non-idempotent. Both proxies
+    // should be on the retry list for 1 second.
+    { "POST",
+      "HTTP/1.1 200 OK\r\n"
+      "Server: proxy\r\n"
+      "Chrome-Proxy: block=1\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+      false,
+      false,
+      2u,
+      true,
+      1,
+      BYPASS_EVENT_TYPE_SHORT
     },
     // Valid data reduction proxy response with block and block-once messages.
     // The block message will override the block-once message, so both proxies

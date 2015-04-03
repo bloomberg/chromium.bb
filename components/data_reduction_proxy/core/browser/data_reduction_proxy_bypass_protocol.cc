@@ -187,10 +187,9 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
                           net::LOAD_BYPASS_PROXY);
   }
 
-  // Only retry idempotent methods.
-  if (!IsRequestIdempotent(request))
-    return false;
-  return true;
+  // Retry if block-once was specified or if method is idempotent.
+  return  bypass_type == BYPASS_EVENT_TYPE_CURRENT ||
+      IsRequestIdempotent(request);
 }
 
 // static
