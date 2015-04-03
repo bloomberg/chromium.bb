@@ -6,7 +6,5 @@
 -->
 
 <resources>
-    <color name="list_item_disabled_pressed">#171717</color>
-    <color name="list_item_pressed">#444444</color>
-    <color name="host_offline_text">#636363</color>
+    <color name="host_offline_text">#9E9E9E</color>
 </resources>

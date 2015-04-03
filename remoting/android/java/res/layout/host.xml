@@ -6,7 +6,6 @@
 -->
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:background="@drawable/list_item_selector"
         android:drawablePadding="16sp"
         android:gravity="center_vertical"
         android:id="@+id/host_label"
@@ -16,4 +15,4 @@
         android:paddingStart="16sp"
         android:paddingEnd="16sp"
         android:paddingTop="20sp"
-        style="@android:style/TextAppearance.Holo.Medium"/>
+        style="?android:attr/textAppearanceMedium"/>

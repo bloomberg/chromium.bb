@@ -17,12 +17,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,6 +39,7 @@ import org.chromium.chromoting.jni.JniInterface;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * The user interface for querying and displaying a user's host list from the directory server. It
@@ -176,6 +179,15 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
         // Get ahold of our view widgets.
         mHostListView = (ListView) findViewById(R.id.hostList_chooser);
         mHostListView.setEmptyView(findViewById(R.id.hostList_empty));
+        mHostListView.setOnItemClickListener(
+                new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position,
+                            long id) {
+                        onHostClicked(position);
+                    }
+                });
+
         mProgressView = findViewById(R.id.hostList_progress);
 
         findViewById(R.id.host_setup_link_android).setOnClickListener(this);
@@ -314,7 +326,31 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
     }
 
     /** Called when the user taps on a host entry. */
-    public void connectToHost(HostInfo host) {
+    private void onHostClicked(int index) {
+        HostInfo host = mHosts[index];
+        if (host.isOnline) {
+            connectToHost(host);
+        } else {
+            String tooltip = getHostOfflineTooltip(host.hostOfflineReason);
+            Toast.makeText(this, tooltip, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private String getHostOfflineTooltip(String hostOfflineReason) {
+        if (TextUtils.isEmpty(hostOfflineReason)) {
+            return getString(R.string.host_offline_tooltip);
+        }
+        try {
+            String resourceName = "offline_reason_" + hostOfflineReason.toLowerCase(Locale.ENGLISH);
+            int resourceId = getResources().getIdentifier(resourceName, "string",
+                    getPackageName());
+            return getString(resourceId);
+        } catch (Resources.NotFoundException ignored) {
+            return getString(R.string.offline_reason_unknown, hostOfflineReason);
+        }
+    }
+
+    private void connectToHost(HostInfo host) {
         mProgressIndicator = ProgressDialog.show(
                 this,
                 host.name,
