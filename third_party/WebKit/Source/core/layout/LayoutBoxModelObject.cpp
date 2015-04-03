@@ -178,6 +178,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
             }
         }
     } else if (layer() && layer()->parent()) {
+        DeprecatedPaintLayer* parentLayer = layer()->parent();
         setHasTransformRelatedProperty(false); // Either a transform wasn't specified or the object doesn't support transforms, so just null out the bit.
         setHasReflection(false);
         layer()->removeOnlyThisLayer(); // calls destroyLayer() which clears m_layer
@@ -185,6 +186,10 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
             setChildNeedsLayout();
         if (hadTransform)
             setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::StyleChange);
+        if (!needsLayout()) {
+            // FIXME: We should call a specialized version of this function.
+            parentLayer->updateLayerPositionsAfterLayout();
+        }
     }
 
     if (layer()) {
