@@ -513,6 +513,8 @@ void WebsiteSettings::Init(Profile* profile,
       if ((ssl.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT) &&
           cert->valid_expiry() >
               base::Time::FromInternalValue(kSHA1LastIssuanceDate) &&
+          // NOTE: This use of SHA1IdentityUIWarning needs to be kept in sync
+          // with ToolbarModelImpl::IsDeprecatedSHA1Present().
           base::FieldTrialList::FindFullName("SHA1IdentityUIWarning") ==
               "Enabled") {
         site_identity_status_ =

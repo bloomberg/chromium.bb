@@ -40,6 +40,15 @@ public class ToolbarModel {
     }
 
     /**
+     * @param webContents The web contents to query for deprecated SHA-1 presence.
+     * @return Whether the security level of the page was deprecated due to SHA-1.
+     */
+    public static boolean isDeprecatedSHA1Present(WebContents webContents) {
+        if (webContents == null) return false;
+        return nativeIsDeprecatedSHA1Present(webContents);
+    }
+
+    /**
      * Initialize the native counterpart of this model.
      * @param delegate The delegate that will be used by the model.
      */
@@ -75,6 +84,7 @@ public class ToolbarModel {
     }
 
     private static native int nativeGetSecurityLevelForWebContents(WebContents webContents);
+    private static native boolean nativeIsDeprecatedSHA1Present(WebContents webContents);
 
     private native long nativeInit(ToolbarModelDelegate delegate);
     private native void nativeDestroy(long nativeToolbarModelAndroid);

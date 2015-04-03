@@ -137,6 +137,8 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
         // See http://crbug.com/401365 for details
         static const int64_t kJanuary2017 = INT64_C(13127702400000000);
         static const int64_t kJune2016 = INT64_C(13109213000000000);
+        // kJanuary2016 needs to be kept in sync with
+        // ToolbarModelAndroid::IsDeprecatedSHA1Present().
         static const int64_t kJanuary2016 = INT64_C(13096080000000000);
 
         ToolbarModel::SecurityLevel security_level = NONE;

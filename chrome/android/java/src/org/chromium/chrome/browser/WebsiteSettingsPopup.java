@@ -207,6 +207,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     // The security level of the page (a valid ToolbarModelSecurityLevel).
     private int mSecurityLevel;
 
+    // Whether the security level of the page was deprecated due to SHA-1.
+    private boolean mDeprecatedSHA1Present;
+
     /**
      * Creates the WebsiteSettingsPopup, but does not display it. Also initializes the corresponding
      * C++ object and saves a pointer to it.
@@ -293,6 +296,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             mIsInternalPage = false;
         }
         mSecurityLevel = ToolbarModel.getSecurityLevelForWebContents(mWebContents);
+        mDeprecatedSHA1Present = ToolbarModel.isDeprecatedSHA1Present(mWebContents);
 
         String displayUrl = prepareUrlForDisplay(mFullUrl);
         SpannableStringBuilder urlBuilder = new SpannableStringBuilder(displayUrl);
@@ -399,7 +403,10 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     private Spannable getUrlConnectionMessage() {
         // Display the appropriate connection message.
         SpannableStringBuilder messageBuilder = new SpannableStringBuilder();
-        if (mSecurityLevel != ToolbarModelSecurityLevel.SECURITY_ERROR) {
+        if (mDeprecatedSHA1Present) {
+            messageBuilder.append(
+                    mContext.getResources().getString(R.string.page_info_connection_sha1));
+        } else if (mSecurityLevel != ToolbarModelSecurityLevel.SECURITY_ERROR) {
             messageBuilder.append(mContext.getResources().getString(
                     getConnectionMessageId(mSecurityLevel, mIsInternalPage)));
         } else {
