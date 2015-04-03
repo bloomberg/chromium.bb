@@ -33,18 +33,18 @@ from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import cidb
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
+from chromite.lib import gob_util
 from chromite.lib import graphite
+from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import remote_access
 from chromite.lib import retry_util
+from chromite.lib import terminal
+from chromite.lib import timeout_util
 from chromite.lib import workspace_lib
-import cros_build_lib
-import gob_util
-import osutils
-import terminal
-import timeout_util
 
 
 # Unit tests should never connect to the live prod or debug instances

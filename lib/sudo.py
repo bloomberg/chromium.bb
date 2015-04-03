@@ -12,8 +12,8 @@ import signal
 import subprocess
 import sys
 
-import cros_build_lib
-import cros_logging as logging
+from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 
 
 class SudoKeepAlive(cros_build_lib.MasterPidContextManager):

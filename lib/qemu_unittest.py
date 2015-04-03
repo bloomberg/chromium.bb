@@ -8,12 +8,12 @@ from __future__ import print_function
 
 import glob
 import os
-import unittest
 
-import qemu
+from chromite.lib import cros_test_lib
+from chromite.lib import qemu
 
 
-class QemuTests(unittest.TestCase):
+class QemuTests(cros_test_lib.TestCase):
   """Verify Qemu logic works"""
 
   def testArchDetect(self):
