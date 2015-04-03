@@ -193,7 +193,7 @@
             android:id="@+id/verification_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="?attr/colorAccent"
+            android:textColor="@color/light_active_color"
             android:textSize="20sp" />
     </LinearLayout>
 </RelativeLayout>

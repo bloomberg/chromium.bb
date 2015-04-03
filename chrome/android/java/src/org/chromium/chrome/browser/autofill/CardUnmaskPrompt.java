@@ -116,7 +116,7 @@ public class CardUnmaskPrompt
         mVerificationView = (TextView) v.findViewById(R.id.verification_message);
         ((ImageView) v.findViewById(R.id.cvc_hint_image)).setImageResource(drawableId);
 
-        mDialog = new AlertDialog.Builder(context)
+        mDialog = new AlertDialog.Builder(context, R.style.AlertDialogTheme)
                           .setTitle(title)
                           .setView(v)
                           .setNegativeButton(R.string.cancel, null)
