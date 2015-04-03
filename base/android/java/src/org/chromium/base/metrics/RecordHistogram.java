@@ -35,7 +35,7 @@ public class RecordHistogram {
      * Java equivalent of the UMA_HISTOGRAM_ENUMERATION C++ macro.
      * @param name name of the histogram
      * @param sample sample to be recorded, at least 0 and at most |boundary| - 1
-     * @param boundary upper bound for legal sample values - all sample values has to be strictly
+     * @param boundary upper bound for legal sample values - all sample values have to be strictly
      *        lower than |boundary|
      */
     public static void recordEnumeratedHistogram(String name, int sample, int boundary) {
@@ -43,13 +43,48 @@ public class RecordHistogram {
     }
 
     /**
-     * Records a sample in a count histogram of the given name. This is the Java equivalent of the
+     * Records a sample in a count histogram. This is the Java equivalent of the
      * UMA_HISTOGRAM_COUNTS C++ macro.
      * @param name name of the histogram
      * @param sample sample to be recorded, at least 1 and at most 999999
      */
     public static void recordCountHistogram(String name, int sample) {
-        nativeRecordCountHistogram(name, System.identityHashCode(name), sample);
+        recordCustomCountHistogram(name, sample, 1, 1000000, 50);
+    }
+
+    /**
+     * Records a sample in a count histogram. This is the Java equivalent of the
+     * UMA_HISTOGRAM_COUNTS_100 C++ macro.
+     * @param name name of the histogram
+     * @param sample sample to be recorded, at least 1 and at most 99
+     */
+    public static void recordCount100Histogram(String name, int sample) {
+        recordCustomCountHistogram(name, sample, 1, 100, 50);
+    }
+
+    /**
+     * Records a sample in a count histogram. This is the Java equivalent of the
+     * UMA_HISTOGRAM_CUSTOM_COUNTS C++ macro.
+     * @param name name of the histogram
+     * @param sample sample to be recorded, at least |min| and at most |max| - 1
+     * @param min lower bound for expected sample values
+     * @param max upper bounds for expected sample values
+     * @param numBuckets the number of buckets
+     */
+    public static void recordCustomCountHistogram(
+            String name, int sample, int min, int max, int numBuckets) {
+        nativeRecordCustomCountHistogram(
+                name, System.identityHashCode(name), sample, min, max, numBuckets);
+    }
+
+    /**
+    * Records a sparse histogram. This is the Java equivalent of UMA_HISTOGRAM_SPARSE_SLOWLY.
+    * @param name name of the histogram
+    * @param sample sample to be recorded. All values of |sample| are valid, including negative
+    *        values.
+    */
+    public static void recordSparseSlowlyHistogram(String name, int sample) {
+        nativeRecordSparseHistogram(name, System.identityHashCode(name), sample);
     }
 
     /**
@@ -133,7 +168,9 @@ public class RecordHistogram {
     private static native void nativeRecordBooleanHistogram(String name, int key, boolean sample);
     private static native void nativeRecordEnumeratedHistogram(
             String name, int key, int sample, int boundary);
-    private static native void nativeRecordCountHistogram(String name, int key, int sample);
+    private static native void nativeRecordCustomCountHistogram(
+            String name, int key, int sample, int min, int max, int numBuckets);
+    private static native void nativeRecordSparseHistogram(String name, int key, int sample);
 
     private static native int nativeGetHistogramValueCountForTesting(String name, int sample);
     private static native void nativeInitialize();

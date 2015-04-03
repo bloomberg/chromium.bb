@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -60,28 +61,42 @@ class HistogramCache {
     return InsertLocked(j_histogram_key, histogram);
   }
 
-  HistogramBase* CountHistogram(JNIEnv* env,
-                                jstring j_histogram_name,
-                                jint j_histogram_key) {
-    // These values are based on the hard-coded constants in the
-    // UMA_HISTOGRAM_COUNTS macro from base/metrics/histogram_macros.h.
-    const int histogram_min = 1;
-    const int histogram_max = 1000000;
-    const int histogram_num_buckets = 50;
-
+  HistogramBase* CustomCountHistogram(JNIEnv* env,
+                                      jstring j_histogram_name,
+                                      jint j_histogram_key,
+                                      jint j_min,
+                                      jint j_max,
+                                      jint j_num_buckets) {
     DCHECK(j_histogram_name);
     DCHECK(j_histogram_key);
+    int64 min = static_cast<int64>(j_min);
+    int64 max = static_cast<int64>(j_max);
+    int num_buckets = static_cast<int>(j_num_buckets);
     HistogramBase* histogram = FindLocked(j_histogram_key);
     if (histogram) {
-      DCHECK(histogram->HasConstructionArguments(histogram_min, histogram_max,
-                                                 histogram_num_buckets));
+      DCHECK(histogram->HasConstructionArguments(min, max, num_buckets));
       return histogram;
     }
 
     std::string histogram_name = ConvertJavaStringToUTF8(env, j_histogram_name);
-    histogram = Histogram::FactoryGet(histogram_name, histogram_min,
-                                      histogram_max, histogram_num_buckets,
-                                      HistogramBase::kUmaTargetedHistogramFlag);
+    histogram =
+        Histogram::FactoryGet(histogram_name, min, max, num_buckets,
+                              HistogramBase::kUmaTargetedHistogramFlag);
+    return InsertLocked(j_histogram_key, histogram);
+  }
+
+  HistogramBase* SparseHistogram(JNIEnv* env,
+                                 jstring j_histogram_name,
+                                 jint j_histogram_key) {
+    DCHECK(j_histogram_name);
+    DCHECK(j_histogram_key);
+    HistogramBase* histogram = FindLocked(j_histogram_key);
+    if (histogram)
+      return histogram;
+
+    std::string histogram_name = ConvertJavaStringToUTF8(env, j_histogram_name);
+    histogram = SparseHistogram::FactoryGet(
+        histogram_name, HistogramBase::kUmaTargetedHistogramFlag);
     return InsertLocked(j_histogram_key, histogram);
   }
 
@@ -158,16 +173,31 @@ void RecordEnumeratedHistogram(JNIEnv* env,
       ->Add(sample);
 }
 
-void RecordCountHistogram(JNIEnv* env,
-                          jclass clazz,
-                          jstring j_histogram_name,
-                          jint j_histogram_key,
-                          jint j_sample) {
+void RecordCustomCountHistogram(JNIEnv* env,
+                                jclass clazz,
+                                jstring j_histogram_name,
+                                jint j_histogram_key,
+                                jint j_sample,
+                                jint j_min,
+                                jint j_max,
+                                jint j_num_buckets) {
   int sample = static_cast<int>(j_sample);
 
   g_histograms.Get()
-      .CountHistogram(env, j_histogram_name, j_histogram_key)
+      .CustomCountHistogram(env, j_histogram_name, j_histogram_key, j_min,
+                            j_max, j_num_buckets)
       ->Add(sample);
+}
+
+void RecordSparseHistogram(JNIEnv* env,
+                                 jclass clazz,
+                                 jstring j_histogram_name,
+                                 jint j_histogram_key,
+                                 jint j_sample) {
+    int sample = static_cast<int>(j_sample);
+    g_histograms.Get()
+        .SparseHistogram(env, j_histogram_name, j_histogram_key)
+        ->Add(sample);
 }
 
 void RecordCustomTimesHistogramMilliseconds(JNIEnv* env,
