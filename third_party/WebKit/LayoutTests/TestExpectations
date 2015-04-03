@@ -1616,7 +1616,6 @@ crbug.com/438281 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/internati
 
 crbug.com/471975 [ Debug ] virtual/antialiasedtext/fast/text/descent-clip-in-scaled-page.html [ Crash ]
 crbug.com/471975 [ Debug ] virtual/slimmingpaint/fast/text/aat-morx.html [ Failure ]
-crbug.com/471975 [ Debug ] virtual/slimmingpaint/fast/text/descent-clip-in-scaled-page.html [ Crash ]
 
 crbug.com/417782 [ Win Linux ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Pass ImageOnlyFailure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overflow-hidden.html [ Failure ]

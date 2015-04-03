@@ -614,7 +614,6 @@ Bug(gardener) [ Release Android ] fast/text/chromium-linux-fontconfig-renderstyl
 Bug(gardener) [ Release Mavericks ] fast/text/decorations-transformed.html [ ImageOnlyFailure Pass ]
 crbug.com/378610 [ Release Win7 ] fast/text/decorations-transformed.html [ Failure Pass ]
 Bug(gardener) [ Debug Win7 ] fast/text/decorations-transformed.html [ Failure Pass ]
-Bug(gardener) [ Release Linux ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Release Win7 ] fast/text/ellipsis-stroked.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Debug Win7 ] fast/text/ellipsis-stroked.html [ ImageOnlyFailure Pass ]
 crbug.com/394221 [ Release Mavericks ] fast/text/emphasis-avoid-ruby.html [ ImageOnlyFailure Pass ]
