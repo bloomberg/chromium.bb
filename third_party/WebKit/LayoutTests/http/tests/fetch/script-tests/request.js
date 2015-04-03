@@ -331,6 +331,9 @@ promise_test(function() {
       }).then(function(texts) {
         assert_equals(texts[0], '', 'The body is consumed.');
         assert_equals(texts[1], '', 'The body is consumed.');
+        return req.clone().text();
+      }).then(function(text) {
+        assert_equals(text, '', 'The body was consumed before cloned.');
       });
   }, 'Test clone behavior with loading content from Request.');
 

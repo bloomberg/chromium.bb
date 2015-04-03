@@ -348,6 +348,17 @@ Request* Request::clone(ExceptionState& exceptionState) const
     }
 
     FetchRequestData* request = m_request->clone();
+    if (blobDataHandle() && isBodyConsumed()) {
+        // Currently the only methods that can consume body data without
+        // setting 'body passed' flag consume entire body (e.g. text()). Thus
+        // we can set an empty blob to the new request instead of creating a
+        // draining stream.
+        // TODO(yhirano): Fix this once Request.body is introduced.
+        OwnPtr<BlobData> blobData = BlobData::create();
+        blobData->setContentType(blobDataHandle()->type());
+        request->setBlobDataHandle(BlobDataHandle::create(blobData.release(), 0));
+    }
+
     Headers* headers = Headers::create(request->headerList());
     headers->setGuard(m_headers->guard());
     Request* r = new Request(executionContext(), request, headers);

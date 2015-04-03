@@ -246,6 +246,11 @@ promise_test(function(t) {
     return Promise.all([res.text(), clone.text()]).then(function(r) {
         assert_equals(r[0], 'hello');
         assert_equals(r[1], 'hello');
+        return Promise.all([res.text(), clone.text(), res.clone().text()]);
+      }).then(function(r) {
+        assert_equals(r[0], '');
+        assert_equals(r[1], '');
+        assert_equals(r[2], '');
       });
   }, 'Clone on Response (text)');
 
@@ -262,6 +267,11 @@ promise_test(function(t) {
     return Promise.all([consume(reader1), consume(reader2)]).then(function(r) {
         assert_equals(decode(r[0]), 'hello');
         assert_equals(decode(r[1]), 'hello');
+        return Promise.all([res.text(), clone.text(), res.clone().text()]);
+      }).then(function(r) {
+        assert_equals(r[0], '');
+        assert_equals(r[1], '');
+        assert_equals(r[2], '');
       });
   }, 'Clone on Response (manual read)');
 
