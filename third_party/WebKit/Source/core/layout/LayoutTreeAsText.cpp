@@ -489,7 +489,7 @@ void write(TextStream& ts, const LayoutObject& o, int indent, LayoutAsTextBehavi
             FrameView* view = toFrameView(widget);
             LayoutView* root = view->layoutView();
             if (root) {
-                view->layout();
+                root->document().updateLayout();
                 DeprecatedPaintLayer* layer = root->layer();
                 if (layer)
                     LayoutTreeAsText::writeLayers(ts, layer, layer, layer->rect(), indent + 1, behavior);
