@@ -23,7 +23,7 @@ namespace {
 // Theme colors returned by GetSystemColor().
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
 
-const GdkColor kURLTextColor = GDK_COLOR_RGB(0x00, 0x88, 0x00);
+const GdkColor kURLTextColor = GDK_COLOR_RGB(0x0b, 0x80, 0x43);
 
 GdkColor GdkAlphaBlend(GdkColor foreground,
                        GdkColor background,
@@ -214,6 +214,8 @@ void NativeThemeGtk2::PaintMenuItemBackground(
 }
 
 GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
+  const SkColor kPositiveTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
+  const SkColor kNegativeTextColor = SkColorSetRGB(0xc5, 0x39, 0x29);
   switch (color_id) {
     // Windows
     case kColorId_WindowBackground:
@@ -380,27 +382,27 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
                            win_style->bg[GTK_STATE_SELECTED], 0x34);
     }
     case kColorId_ResultsTablePositiveText: {
-      return GetReadableColor(SK_ColorGREEN,
+      return GetReadableColor(kPositiveTextColor,
                               GetEntryStyle()->base[GTK_STATE_NORMAL]);
     }
     case kColorId_ResultsTablePositiveHoveredText: {
-      return GetReadableColor(SK_ColorGREEN,
+      return GetReadableColor(kPositiveTextColor,
                               GetEntryStyle()->base[GTK_STATE_PRELIGHT]);
     }
     case kColorId_ResultsTablePositiveSelectedText: {
-      return GetReadableColor(SK_ColorGREEN,
+      return GetReadableColor(kPositiveTextColor,
                               GetEntryStyle()->base[GTK_STATE_SELECTED]);
     }
     case kColorId_ResultsTableNegativeText: {
-      return GetReadableColor(SK_ColorRED,
+      return GetReadableColor(kNegativeTextColor,
                               GetEntryStyle()->base[GTK_STATE_NORMAL]);
     }
     case kColorId_ResultsTableNegativeHoveredText: {
-      return GetReadableColor(SK_ColorRED,
+      return GetReadableColor(kNegativeTextColor,
                               GetEntryStyle()->base[GTK_STATE_PRELIGHT]);
     }
     case kColorId_ResultsTableNegativeSelectedText: {
-      return GetReadableColor(SK_ColorRED,
+      return GetReadableColor(kNegativeTextColor,
                               GetEntryStyle()->base[GTK_STATE_SELECTED]);
     }
     case kColorId_NumColors:
