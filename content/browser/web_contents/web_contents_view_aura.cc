@@ -1201,6 +1201,11 @@ void WebContentsViewAura::ShowContextMenu(RenderFrameHost* render_frame_host,
     touch_editable_->EndTouchEditing(false);
   }
   if (delegate_) {
+    RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
+        web_contents_->GetRenderWidgetHostView());
+    if (view)
+      view->OnShowContextMenu();
+
     delegate_->ShowContextMenu(render_frame_host, params);
     // WARNING: we may have been deleted during the call to ShowContextMenu().
   }

@@ -233,58 +233,6 @@ BOOL CALLBACK DismissOwnedPopups(HWND window, LPARAM arg) {
 }
 #endif
 
-bool CanRendererHandleEvent(const ui::MouseEvent* event,
-                            bool mouse_locked,
-                            bool selection_popup) {
-  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
-    return false;
-
-  if ((mouse_locked || selection_popup) &&
-      (event->type() == ui::ET_MOUSE_EXITED))
-    return false;
-
-#if defined(OS_WIN)
-  // Renderer cannot handle WM_XBUTTON or NC events.
-  switch (event->native_event().message) {
-    case WM_XBUTTONDOWN:
-    case WM_XBUTTONUP:
-    case WM_XBUTTONDBLCLK:
-    case WM_NCMOUSELEAVE:
-    case WM_NCMOUSEMOVE:
-    case WM_NCLBUTTONDOWN:
-    case WM_NCLBUTTONUP:
-    case WM_NCLBUTTONDBLCLK:
-    case WM_NCRBUTTONDOWN:
-    case WM_NCRBUTTONUP:
-    case WM_NCRBUTTONDBLCLK:
-    case WM_NCMBUTTONDOWN:
-    case WM_NCMBUTTONUP:
-    case WM_NCMBUTTONDBLCLK:
-    case WM_NCXBUTTONDOWN:
-    case WM_NCXBUTTONUP:
-    case WM_NCXBUTTONDBLCLK:
-      return false;
-    default:
-      break;
-  }
-#elif defined(USE_X11)
-  // Renderer only supports standard mouse buttons, so ignore programmable
-  // buttons.
-  switch (event->type()) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_RELEASED: {
-      const int kAllowedButtons = ui::EF_LEFT_MOUSE_BUTTON |
-                                  ui::EF_MIDDLE_MOUSE_BUTTON |
-                                  ui::EF_RIGHT_MOUSE_BUTTON;
-      return (event->flags() & kAllowedButtons) != 0;
-    }
-    default:
-      break;
-  }
-#endif
-  return true;
-}
-
 // We don't mark these as handled so that they're sent back to the
 // DefWindowProc so it can generate WM_APPCOMMAND as necessary.
 bool IsXButtonUpEvent(const ui::MouseEvent* event) {
@@ -437,6 +385,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
 #if defined(OS_WIN)
       legacy_render_widget_host_HWND_(NULL),
       legacy_window_destroyed_(false),
+      showing_context_menu_(false),
 #endif
       has_snapped_to_boundary_(false),
       touch_editing_client_(NULL),
@@ -718,6 +667,71 @@ RenderFrameHostImpl* RenderWidgetHostViewAura::GetFocusedFrame() {
     return NULL;
 
   return focused_frame->current_frame_host();
+}
+
+bool RenderWidgetHostViewAura::CanRendererHandleEvent(
+    const ui::MouseEvent* event,
+    bool mouse_locked,
+    bool selection_popup) {
+#if defined(OS_WIN)
+  bool showing_context_menu = showing_context_menu_;
+  showing_context_menu_ = false;
+#endif
+
+  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
+    return false;
+
+  if ((mouse_locked || selection_popup) &&
+      (event->type() == ui::ET_MOUSE_EXITED))
+    return false;
+
+#if defined(OS_WIN)
+  // Don't forward the mouse leave message which is received when the context
+  // menu is displayed by the page. This confuses the page and causes state
+  // changes.
+  if (showing_context_menu) {
+    if (event->type() == ui::ET_MOUSE_EXITED)
+      return false;
+  }
+  // Renderer cannot handle WM_XBUTTON or NC events.
+  switch (event->native_event().message) {
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONUP:
+    case WM_XBUTTONDBLCLK:
+    case WM_NCMOUSELEAVE:
+    case WM_NCMOUSEMOVE:
+    case WM_NCLBUTTONDOWN:
+    case WM_NCLBUTTONUP:
+    case WM_NCLBUTTONDBLCLK:
+    case WM_NCRBUTTONDOWN:
+    case WM_NCRBUTTONUP:
+    case WM_NCRBUTTONDBLCLK:
+    case WM_NCMBUTTONDOWN:
+    case WM_NCMBUTTONUP:
+    case WM_NCMBUTTONDBLCLK:
+    case WM_NCXBUTTONDOWN:
+    case WM_NCXBUTTONUP:
+    case WM_NCXBUTTONDBLCLK:
+      return false;
+    default:
+      break;
+  }
+#elif defined(USE_X11)
+  // Renderer only supports standard mouse buttons, so ignore programmable
+  // buttons.
+  switch (event->type()) {
+    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_RELEASED: {
+      const int kAllowedButtons = ui::EF_LEFT_MOUSE_BUTTON |
+                                  ui::EF_MIDDLE_MOUSE_BUTTON |
+                                  ui::EF_RIGHT_MOUSE_BUTTON;
+      return (event->flags() & kAllowedButtons) != 0;
+    }
+    default:
+      break;
+  }
+#endif
+  return true;
 }
 
 void RenderWidgetHostViewAura::MovePluginWindows(
@@ -2438,6 +2452,12 @@ void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
     ui::SnapLayerToPhysicalPixelBoundary(snapped->layer(), window_->layer());
 
   has_snapped_to_boundary_ = true;
+}
+
+void RenderWidgetHostViewAura::OnShowContextMenu() {
+#if defined(OS_WIN)
+  showing_context_menu_ = true;
+#endif
 }
 
 void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {

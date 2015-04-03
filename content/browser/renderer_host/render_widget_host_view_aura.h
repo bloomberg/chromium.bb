@@ -350,6 +350,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
     return overscroll_controller_.get();
   }
 
+  // Called when the context menu is about to be displayed.
+  void OnShowContextMenu();
+
  protected:
   ~RenderWidgetHostViewAura() override;
 
@@ -492,6 +495,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   RenderFrameHostImpl* GetFocusedFrame();
 
+  // Returns true if the |event| passed in can be forwarded to the renderer.
+  bool CanRendererHandleEvent(const ui::MouseEvent* event,
+                              bool mouse_locked,
+                              bool selection_popup);
+
   // The model object.
   RenderWidgetHostImpl* host_;
 
@@ -618,6 +626,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // the LegacyRenderWidgetHostHWND instance again as that would be a futile
   // exercise.
   bool legacy_window_destroyed_;
+
+  // Set to true when a context menu is being displayed. Reset to false when
+  // a mouse leave is received in this context.
+  bool showing_context_menu_;
 #endif
 
   bool has_snapped_to_boundary_;
