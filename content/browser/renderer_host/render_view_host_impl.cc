@@ -200,7 +200,8 @@ RenderViewHostImpl::RenderViewHostImpl(
           static_cast<RenderProcessHostImpl*>(GetProcess())
               ->audio_renderer_host();
       if (arh.get())
-        has_active_audio = arh->RenderViewHasActiveAudio(GetRoutingID());
+        has_active_audio =
+            arh->RenderFrameHasActiveAudio(main_frame_routing_id_);
     }
     BrowserThread::PostTask(
         BrowserThread::IO,

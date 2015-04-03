@@ -29,7 +29,6 @@ class PepperPlatformAudioOutput
   // when the stream is created.
   static PepperPlatformAudioOutput* Create(int sample_rate,
                                            int frames_per_buffer,
-                                           int source_render_view_id,
                                            int source_render_frame_id,
                                            AudioHelper* client);
 
@@ -64,7 +63,6 @@ class PepperPlatformAudioOutput
 
   bool Initialize(int sample_rate,
                   int frames_per_buffer,
-                  int source_render_view_id,
                   int source_render_frame_id,
                   AudioHelper* client);
 

@@ -51,7 +51,6 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   // The |source| is owned by the WebRtcAudioDeviceImpl.
   // Called on the main thread.
   WebRtcLocalAudioRenderer(const blink::WebMediaStreamTrack& audio_track,
-                           int source_render_view_id,
                            int source_render_frame_id,
                            int session_id,
                            int frames_per_buffer);
@@ -109,7 +108,6 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
   blink::WebMediaStreamTrack audio_track_;
 
   // The render view and frame in which the audio is rendered into |sink_|.
-  const int source_render_view_id_;
   const int source_render_frame_id_;
   const int session_id_;
 

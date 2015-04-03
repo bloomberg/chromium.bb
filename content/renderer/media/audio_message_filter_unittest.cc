@@ -11,7 +11,6 @@
 namespace content {
 namespace {
 
-const int kRenderViewId = 1;
 const int kRenderFrameId = 2;
 
 class MockAudioDelegate : public media::AudioOutputIPCDelegate {
@@ -78,7 +77,7 @@ TEST(AudioMessageFilterTest, Basic) {
 
   MockAudioDelegate delegate;
   const scoped_ptr<media::AudioOutputIPC> ipc =
-      filter->CreateAudioOutputIPC(kRenderViewId, kRenderFrameId);
+      filter->CreateAudioOutputIPC(kRenderFrameId);
   static const int kSessionId = 0;
   ipc->CreateStream(&delegate, media::AudioParameters(), kSessionId);
   static const int kStreamId = 1;
@@ -120,9 +119,9 @@ TEST(AudioMessageFilterTest, Delegates) {
   MockAudioDelegate delegate1;
   MockAudioDelegate delegate2;
   const scoped_ptr<media::AudioOutputIPC> ipc1 =
-      filter->CreateAudioOutputIPC(kRenderViewId, kRenderFrameId);
+      filter->CreateAudioOutputIPC(kRenderFrameId);
   const scoped_ptr<media::AudioOutputIPC> ipc2 =
-      filter->CreateAudioOutputIPC(kRenderViewId, kRenderFrameId);
+      filter->CreateAudioOutputIPC(kRenderFrameId);
   static const int kSessionId = 0;
   ipc1->CreateStream(&delegate1, media::AudioParameters(), kSessionId);
   ipc2->CreateStream(&delegate2, media::AudioParameters(), kSessionId);

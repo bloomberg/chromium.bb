@@ -31,7 +31,6 @@ class AudioInputMessageFilter::AudioInputIPCImpl
     : public NON_EXPORTED_BASE(media::AudioInputIPC) {
  public:
   AudioInputIPCImpl(const scoped_refptr<AudioInputMessageFilter>& filter,
-                    int render_view_id,
                     int render_frame_id);
   ~AudioInputIPCImpl() override;
 
@@ -47,7 +46,6 @@ class AudioInputMessageFilter::AudioInputIPCImpl
 
  private:
   const scoped_refptr<AudioInputMessageFilter> filter_;
-  const int render_view_id_;
   const int render_frame_id_;
   int stream_id_;
 };
@@ -173,10 +171,8 @@ void AudioInputMessageFilter::OnStreamStateChanged(
 
 AudioInputMessageFilter::AudioInputIPCImpl::AudioInputIPCImpl(
     const scoped_refptr<AudioInputMessageFilter>& filter,
-    int render_view_id,
     int render_frame_id)
     : filter_(filter),
-      render_view_id_(render_view_id),
       render_frame_id_(render_frame_id),
       stream_id_(kStreamIDNotSet) {
 }
@@ -184,11 +180,10 @@ AudioInputMessageFilter::AudioInputIPCImpl::AudioInputIPCImpl(
 AudioInputMessageFilter::AudioInputIPCImpl::~AudioInputIPCImpl() {}
 
 scoped_ptr<media::AudioInputIPC> AudioInputMessageFilter::CreateAudioInputIPC(
-    int render_view_id,
     int render_frame_id) {
-  DCHECK_GT(render_view_id, 0);
+  DCHECK_GT(render_frame_id, 0);
   return scoped_ptr<media::AudioInputIPC>(
-      new AudioInputIPCImpl(this, render_view_id, render_frame_id));
+      new AudioInputIPCImpl(this, render_frame_id));
 }
 
 void AudioInputMessageFilter::AudioInputIPCImpl::CreateStream(
@@ -209,8 +204,8 @@ void AudioInputMessageFilter::AudioInputIPCImpl::CreateStream(
   config.params = params;
   config.automatic_gain_control = automatic_gain_control;
   config.shared_memory_count = total_segments;
-  filter_->Send(new AudioInputHostMsg_CreateStream(
-      stream_id_, render_view_id_, render_frame_id_, session_id, config));
+  filter_->Send(new AudioInputHostMsg_CreateStream(stream_id_, render_frame_id_,
+                                                   session_id, config));
 }
 
 void AudioInputMessageFilter::AudioInputIPCImpl::RecordStream() {

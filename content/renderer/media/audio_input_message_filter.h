@@ -31,14 +31,12 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
   // Getter for the one AudioInputMessageFilter object.
   static AudioInputMessageFilter* Get();
 
-  // Create an AudioInputIPC to be owned by one delegate.  |render_view_id| and
-  // |render_frame_id| refer to the render view and render frame containing the
-  // entity consuming the audio.
+  // Create an AudioInputIPC to be owned by one delegate.  |render_frame_id|
+  // refers to the RenderFrame containing the entity consuming the audio.
   //
   // The returned object is not thread-safe, and must be used on
   // |io_message_loop|.
-  scoped_ptr<media::AudioInputIPC> CreateAudioInputIPC(int render_view_id,
-                                                       int render_frame_id);
+  scoped_ptr<media::AudioInputIPC> CreateAudioInputIPC(int render_frame_id);
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop() const {
     return io_message_loop_;
@@ -46,7 +44,7 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
 
  private:
   // Implementation of media::AudioInputIPC which augments IPC calls with
-  // stream_id and the destination render_view_id.
+  // stream_id and the destination render_frame_id.
   class AudioInputIPCImpl;
 
   ~AudioInputMessageFilter() override;

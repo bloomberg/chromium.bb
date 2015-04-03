@@ -93,12 +93,10 @@ void WebRtcLocalAudioRenderer::OnSetFormat(
 // WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer implementation.
 WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
     const blink::WebMediaStreamTrack& audio_track,
-    int source_render_view_id,
     int source_render_frame_id,
     int session_id,
     int frames_per_buffer)
     : audio_track_(audio_track),
-      source_render_view_id_(source_render_view_id),
       source_render_frame_id_(source_render_frame_id),
       session_id_(session_id),
       message_loop_(base::MessageLoopProxy::current()),
@@ -123,8 +121,7 @@ void WebRtcLocalAudioRenderer::Start() {
   MediaStreamAudioSink::AddToAudioTrack(this, audio_track_);
   // ...and |sink_| will get audio data from us.
   DCHECK(!sink_.get());
-  sink_ = AudioDeviceFactory::NewOutputDevice(source_render_view_id_,
-                                              source_render_frame_id_);
+  sink_ = AudioDeviceFactory::NewOutputDevice(source_render_frame_id_);
 
   base::AutoLock auto_lock(thread_lock_);
   last_render_time_ = base::TimeTicks::Now();
@@ -307,8 +304,7 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
     sink_started_ = false;
   }
 
-  sink_ = AudioDeviceFactory::NewOutputDevice(source_render_view_id_,
-                                              source_render_frame_id_);
+  sink_ = AudioDeviceFactory::NewOutputDevice(source_render_frame_id_);
   MaybeStartSink();
 }
 

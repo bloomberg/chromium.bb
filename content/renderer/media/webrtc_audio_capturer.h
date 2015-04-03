@@ -43,15 +43,13 @@ class CONTENT_EXPORT WebRtcAudioCapturer
     : public base::RefCountedThreadSafe<WebRtcAudioCapturer>,
       NON_EXPORTED_BASE(public media::AudioCapturerSource::CaptureCallback) {
  public:
-  // Used to construct the audio capturer. |render_view_id| specifies the render
-  // view consuming audio for capture; -1 is used for tests. |render_frame_id|
-  // specifies the render frame consuming audio for capture; -1 is used for
-  // tests. |device_info| contains all the device information that the capturer
-  // is created for. |constraints| contains the settings for audio processing.
+  // Used to construct the audio capturer. |render_frame_id| specifies the
+  // RenderFrame consuming audio for capture; -1 is used for tests.
+  // |device_info| contains all the device information that the capturer is
+  // created for. |constraints| contains the settings for audio processing.
   // TODO(xians): Implement the interface for the audio source and move the
   // |constraints| to ApplyConstraints(). Called on the main render thread.
   static scoped_refptr<WebRtcAudioCapturer> CreateCapturer(
-      int render_view_id,
       int render_frame_id,
       const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,
@@ -119,8 +117,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   class TrackOwner;
   typedef TaggedList<TrackOwner> TrackList;
 
-  WebRtcAudioCapturer(int render_view_id,
-                      int render_frame_id,
+  WebRtcAudioCapturer(int render_frame_id,
                       const StreamDeviceInfo& device_info,
                       const blink::WebMediaConstraints& constraints,
                       WebRtcAudioDeviceImpl* audio_device,
@@ -135,7 +132,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   void OnCaptureError() override;
 
   // Initializes the default audio capturing source using the provided render
-  // view id and device information. Return true if success, otherwise false.
+  // frame id and device information. Return true if success, otherwise false.
   bool Initialize();
 
   // SetCapturerSourceInternal() is called if the client on the source side
@@ -180,7 +177,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   bool running_;
 
-  int render_view_id_;
   int render_frame_id_;
 
   // Cached information of the device used by the capturer.

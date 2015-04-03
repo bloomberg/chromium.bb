@@ -124,7 +124,6 @@ int32_t PPB_Audio_Impl::Open(PP_Resource config,
   audio_ = PepperPlatformAudioOutput::Create(
       static_cast<int>(enter.object()->GetSampleRate()),
       static_cast<int>(enter.object()->GetSampleFrameCount()),
-      instance->GetRenderView()->GetRoutingID(),
       instance->render_frame()->GetRoutingID(),
       this);
   if (!audio_)

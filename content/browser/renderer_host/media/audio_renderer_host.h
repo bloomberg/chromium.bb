@@ -89,9 +89,9 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // be called from any thread.
   bool HasActiveAudio();
 
-  // Returns true if any streams managed by the RenderView identified by
-  // |render_view_id| are actively playing. Can be called from any thread.
-  bool RenderViewHasActiveAudio(int render_view_id) const;
+  // Returns true if any streams managed by the RenderFrame identified by
+  // |render_frame_id| are actively playing. Can be called from any thread.
+  bool RenderFrameHasActiveAudio(int render_frame_id) const;
 
  private:
   friend class AudioRendererHostTest;
@@ -112,14 +112,13 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // Audio related IPC message handlers.
 
   // Creates an audio output stream with the specified format whose data is
-  // produced by an entity in the render view referenced by |render_view_id|.
+  // produced by an entity in the RenderFrame referenced by |render_frame_id|.
   // |session_id| is used for unified IO to find out which input device to be
   // opened for the stream. For clients that do not use unified IO,
   // |session_id| will be ignored.
   // Upon success/failure, the peer is notified via the NotifyStreamCreated
   // message.
   void OnCreateStream(int stream_id,
-                      int render_view_id,
                       int render_frame_id,
                       int session_id,
                       const media::AudioParameters& params);

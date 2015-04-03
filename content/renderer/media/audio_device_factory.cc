@@ -17,36 +17,32 @@ AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 // static
 scoped_refptr<media::AudioOutputDevice> AudioDeviceFactory::NewOutputDevice(
-    int render_view_id,
     int render_frame_id) {
   if (factory_) {
     media::AudioOutputDevice* const device =
-        factory_->CreateOutputDevice(render_view_id, render_frame_id);
+        factory_->CreateOutputDevice(render_frame_id);
     if (device)
       return device;
   }
 
   AudioMessageFilter* const filter = AudioMessageFilter::Get();
   return new media::AudioOutputDevice(
-      filter->CreateAudioOutputIPC(render_view_id, render_frame_id),
-      filter->io_message_loop());
+      filter->CreateAudioOutputIPC(render_frame_id), filter->io_message_loop());
 }
 
 // static
 scoped_refptr<media::AudioInputDevice> AudioDeviceFactory::NewInputDevice(
-    int render_view_id,
     int render_frame_id) {
   if (factory_) {
     media::AudioInputDevice* const device =
-        factory_->CreateInputDevice(render_view_id, render_frame_id);
+        factory_->CreateInputDevice(render_frame_id);
     if (device)
       return device;
   }
 
   AudioInputMessageFilter* const filter = AudioInputMessageFilter::Get();
   return new media::AudioInputDevice(
-      filter->CreateAudioInputIPC(render_view_id, render_frame_id),
-      filter->io_message_loop());
+      filter->CreateAudioInputIPC(render_frame_id), filter->io_message_loop());
 }
 
 AudioDeviceFactory::AudioDeviceFactory() {

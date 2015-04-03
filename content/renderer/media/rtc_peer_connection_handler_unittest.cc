@@ -269,7 +269,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     const blink::WebMediaConstraints constraints =
         constraint_factory.CreateWebMediaConstraints();
     scoped_refptr<WebRtcAudioCapturer> capturer(
-        WebRtcAudioCapturer::CreateCapturer(-1, -1, device_info, constraints,
+        WebRtcAudioCapturer::CreateCapturer(-1, device_info, constraints,
                                             nullptr, nullptr));
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(audio_track_label, nullptr));

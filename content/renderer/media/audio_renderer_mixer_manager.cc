@@ -27,15 +27,12 @@ AudioRendererMixerManager::~AudioRendererMixerManager() {
 }
 
 media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
-    int source_render_view_id, int source_render_frame_id) {
+    int source_render_frame_id) {
   return new media::AudioRendererMixerInput(
-      base::Bind(
-          &AudioRendererMixerManager::GetMixer, base::Unretained(this),
-          source_render_view_id,
-          source_render_frame_id),
-      base::Bind(
-          &AudioRendererMixerManager::RemoveMixer, base::Unretained(this),
-          source_render_view_id));
+      base::Bind(&AudioRendererMixerManager::GetMixer, base::Unretained(this),
+                 source_render_frame_id),
+      base::Bind(&AudioRendererMixerManager::RemoveMixer,
+                 base::Unretained(this), source_render_frame_id));
 }
 
 void AudioRendererMixerManager::SetAudioRendererSinkForTesting(
@@ -44,13 +41,12 @@ void AudioRendererMixerManager::SetAudioRendererSinkForTesting(
 }
 
 media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
-    int source_render_view_id,
     int source_render_frame_id,
     const media::AudioParameters& params) {
   // Effects are not passed through to output creation, so ensure none are set.
   DCHECK_EQ(params.effects(), media::AudioParameters::NO_EFFECTS);
 
-  const MixerKey key(source_render_view_id, params);
+  const MixerKey key(source_render_frame_id, params);
   base::AutoLock auto_lock(mixers_lock_);
 
   AudioRendererMixerMap::iterator it = mixers_.find(key);
@@ -85,8 +81,8 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
         params, output_params, sink_for_testing_);
   } else {
     mixer = new media::AudioRendererMixer(
-        params, output_params, AudioDeviceFactory::NewOutputDevice(
-            source_render_view_id, source_render_frame_id));
+        params, output_params,
+        AudioDeviceFactory::NewOutputDevice(source_render_frame_id));
   }
 
   AudioRendererMixerReference mixer_reference = { mixer, 1 };
@@ -95,9 +91,9 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
 }
 
 void AudioRendererMixerManager::RemoveMixer(
-    int source_render_view_id,
+    int source_render_frame_id,
     const media::AudioParameters& params) {
-  const MixerKey key(source_render_view_id, params);
+  const MixerKey key(source_render_frame_id, params);
   base::AutoLock auto_lock(mixers_lock_);
 
   AudioRendererMixerMap::iterator it = mixers_.find(key);

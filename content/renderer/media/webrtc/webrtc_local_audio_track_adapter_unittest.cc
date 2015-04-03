@@ -38,7 +38,7 @@ class WebRtcLocalAudioTrackAdapterTest : public ::testing::Test {
         adapter_(WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL)) {
     MockMediaConstraintFactory constraint_factory;
     capturer_ = WebRtcAudioCapturer::CreateCapturer(
-        -1, -1, StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "", ""),
+        -1, StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "", ""),
         constraint_factory.CreateWebMediaConstraints(), NULL, NULL);
     track_.reset(new WebRtcLocalAudioTrack(adapter_.get(), capturer_, NULL));
   }

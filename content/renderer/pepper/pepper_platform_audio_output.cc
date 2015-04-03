@@ -22,14 +22,12 @@ namespace content {
 PepperPlatformAudioOutput* PepperPlatformAudioOutput::Create(
     int sample_rate,
     int frames_per_buffer,
-    int source_render_view_id,
     int source_render_frame_id,
     AudioHelper* client) {
   scoped_refptr<PepperPlatformAudioOutput> audio_output(
       new PepperPlatformAudioOutput());
   if (audio_output->Initialize(sample_rate,
                                frames_per_buffer,
-                               source_render_view_id,
                                source_render_frame_id,
                                client)) {
     // Balanced by Release invoked in
@@ -119,7 +117,6 @@ PepperPlatformAudioOutput::PepperPlatformAudioOutput()
 
 bool PepperPlatformAudioOutput::Initialize(int sample_rate,
                                            int frames_per_buffer,
-                                           int source_render_view_id,
                                            int source_render_frame_id,
                                            AudioHelper* client) {
   DCHECK(client);
@@ -127,7 +124,7 @@ bool PepperPlatformAudioOutput::Initialize(int sample_rate,
 
   RenderThreadImpl* const render_thread = RenderThreadImpl::current();
   ipc_ = render_thread->audio_message_filter()->CreateAudioOutputIPC(
-      source_render_view_id, source_render_frame_id);
+      source_render_frame_id);
   CHECK(ipc_);
 
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,

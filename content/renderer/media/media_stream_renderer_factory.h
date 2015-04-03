@@ -30,7 +30,6 @@ class CONTENT_EXPORT MediaStreamRendererFactory {
 
   virtual scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const GURL& url,
-      int render_view_id,
       int render_frame_id);
 
  private:

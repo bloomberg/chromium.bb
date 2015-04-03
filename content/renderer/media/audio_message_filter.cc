@@ -22,7 +22,6 @@ class AudioMessageFilter::AudioOutputIPCImpl
     : public NON_EXPORTED_BASE(media::AudioOutputIPC) {
  public:
   AudioOutputIPCImpl(const scoped_refptr<AudioMessageFilter>& filter,
-                     int render_view_id,
                      int render_frame_id);
   ~AudioOutputIPCImpl() override;
 
@@ -37,7 +36,6 @@ class AudioMessageFilter::AudioOutputIPCImpl
 
  private:
   const scoped_refptr<AudioMessageFilter> filter_;
-  const int render_view_id_;
   const int render_frame_id_;
   int stream_id_;
 };
@@ -64,20 +62,18 @@ AudioMessageFilter* AudioMessageFilter::Get() {
 
 AudioMessageFilter::AudioOutputIPCImpl::AudioOutputIPCImpl(
     const scoped_refptr<AudioMessageFilter>& filter,
-    int render_view_id,
     int render_frame_id)
     : filter_(filter),
-      render_view_id_(render_view_id),
       render_frame_id_(render_frame_id),
       stream_id_(kStreamIDNotSet) {}
 
 AudioMessageFilter::AudioOutputIPCImpl::~AudioOutputIPCImpl() {}
 
 scoped_ptr<media::AudioOutputIPC> AudioMessageFilter::CreateAudioOutputIPC(
-    int render_view_id, int render_frame_id) {
-  DCHECK_GT(render_view_id, 0);
+    int render_frame_id) {
+  DCHECK_GT(render_frame_id, 0);
   return scoped_ptr<media::AudioOutputIPC>(
-      new AudioOutputIPCImpl(this, render_view_id, render_frame_id));
+      new AudioOutputIPCImpl(this, render_frame_id));
 }
 
 void AudioMessageFilter::AudioOutputIPCImpl::CreateStream(
@@ -88,8 +84,8 @@ void AudioMessageFilter::AudioOutputIPCImpl::CreateStream(
   DCHECK(delegate);
   DCHECK_EQ(stream_id_, kStreamIDNotSet);
   stream_id_ = filter_->delegates_.Add(delegate);
-  filter_->Send(new AudioHostMsg_CreateStream(
-      stream_id_, render_view_id_, render_frame_id_, session_id, params));
+  filter_->Send(new AudioHostMsg_CreateStream(stream_id_, render_frame_id_,
+                                              session_id, params));
 }
 
 void AudioMessageFilter::AudioOutputIPCImpl::PlayStream() {

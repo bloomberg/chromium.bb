@@ -202,7 +202,6 @@ PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
 }
 
 bool PeerConnectionDependencyFactory::InitializeMediaStreamAudioSource(
-    int render_view_id,
     int render_frame_id,
     const blink::WebMediaConstraints& audio_constraints,
     MediaStreamAudioSource* source_data) {
@@ -219,9 +218,8 @@ bool PeerConnectionDependencyFactory::InitializeMediaStreamAudioSource(
   HarmonizeConstraintsAndEffects(&constraints,
                                  &device_info.device.input.effects);
 
-  scoped_refptr<WebRtcAudioCapturer> capturer(
-      CreateAudioCapturer(render_view_id, render_frame_id, device_info,
-                          audio_constraints, source_data));
+  scoped_refptr<WebRtcAudioCapturer> capturer(CreateAudioCapturer(
+      render_frame_id, device_info, audio_constraints, source_data));
   if (!capturer.get()) {
     const std::string log_string =
         "PCDF::InitializeMediaStreamAudioSource: fails to create capturer";
@@ -617,21 +615,19 @@ void PeerConnectionDependencyFactory::CleanupPeerConnectionFactory() {
 
 scoped_refptr<WebRtcAudioCapturer>
 PeerConnectionDependencyFactory::CreateAudioCapturer(
-    int render_view_id,
     int render_frame_id,
     const StreamDeviceInfo& device_info,
     const blink::WebMediaConstraints& constraints,
     MediaStreamAudioSource* audio_source) {
   // TODO(xians): Handle the cases when gUM is called without a proper render
   // view, for example, by an extension.
-  DCHECK_GE(render_view_id, 0);
   DCHECK_GE(render_frame_id, 0);
 
   EnsureWebRtcAudioDeviceImpl();
   DCHECK(GetWebRtcAudioDevice());
   return WebRtcAudioCapturer::CreateCapturer(
-      render_view_id, render_frame_id, device_info, constraints,
-      GetWebRtcAudioDevice(), audio_source);
+      render_frame_id, device_info, constraints, GetWebRtcAudioDevice(),
+      audio_source);
 }
 
 scoped_refptr<base::MessageLoopProxy>

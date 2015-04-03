@@ -26,7 +26,6 @@ class TestMediaStreamRendererFactory : public MediaStreamRendererFactory {
 
   scoped_refptr<MediaStreamAudioRenderer> GetAudioRenderer(
       const GURL& url,
-      int render_view_id,
       int render_frame_id) override;
 };
 

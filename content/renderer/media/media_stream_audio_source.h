@@ -49,7 +49,6 @@ class CONTENT_EXPORT MediaStreamAudioSource
   void DoStopSource() override;
 
  private:
-  const int render_view_id_;  // Render view ID that created this source.
   const int render_frame_id_;
   PeerConnectionDependencyFactory* const factory_;
 

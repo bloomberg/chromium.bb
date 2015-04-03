@@ -103,8 +103,8 @@ bool AddAudioTrackToMediaStream(
   blink::WebMediaConstraints constraints;
   constraints.initialize();
   scoped_refptr<WebRtcAudioCapturer> capturer(
-      WebRtcAudioCapturer::CreateCapturer(-1, -1, StreamDeviceInfo(),
-                                          constraints, nullptr, audio_source));
+      WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(), constraints,
+                                          nullptr, audio_source));
   capturer->SetCapturerSource(source, params);
   audio_source->SetAudioCapturer(capturer);
   webkit_source.setExtraData(audio_source);

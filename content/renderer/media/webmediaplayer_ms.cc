@@ -164,7 +164,6 @@ void WebMediaPlayerMS::load(LoadType load_type,
   RenderFrame* frame = RenderFrame::FromWebFrame(frame_);
   audio_renderer_ = renderer_factory_->GetAudioRenderer(
     url,
-    frame->GetRenderView()->GetRoutingID(),
     frame->GetRoutingID());
 
   if (video_frame_provider_.get() || audio_renderer_.get()) {

@@ -76,7 +76,6 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   WebRtcAudioRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
       const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
-      int source_render_view_id,
       int source_render_frame_id,
       int session_id,
       int sample_rate,
@@ -185,8 +184,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
       const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
       PlayingState* state);
 
-  // The render view and frame in which the audio is rendered into |sink_|.
-  const int source_render_view_id_;
+  // The RenderFrame in which the audio is rendered into |sink_|.
   const int source_render_frame_id_;
   const int session_id_;
 

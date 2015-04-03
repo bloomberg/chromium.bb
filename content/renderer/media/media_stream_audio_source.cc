@@ -5,35 +5,21 @@
 #include "content/renderer/media/media_stream_audio_source.h"
 
 #include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_view_impl.h"
 
 namespace content {
-
-namespace {
-// TODO(miu): This is a temporary hack until the Chrome audio vertical is
-// migrated for the Cross-Site Isolation project.  http://crbug.com/392596
-int ToRenderViewId(int render_frame_id) {
-  RenderFrameImpl* const frame =
-      RenderFrameImpl::FromRoutingID(render_frame_id);
-  RenderViewImpl* const view = frame ? frame->render_view() : NULL;
-  return view ? view->GetRoutingID() : -1;
-}
-}  // namespace
 
 MediaStreamAudioSource::MediaStreamAudioSource(
     int render_frame_id,
     const StreamDeviceInfo& device_info,
     const SourceStoppedCallback& stop_callback,
     PeerConnectionDependencyFactory* factory)
-    : render_view_id_(ToRenderViewId(render_frame_id)),
-      render_frame_id_(render_frame_id),
-      factory_(factory) {
+    : render_frame_id_(render_frame_id), factory_(factory) {
   SetDeviceInfo(device_info);
   SetStopCallback(stop_callback);
 }
 
 MediaStreamAudioSource::MediaStreamAudioSource()
-    : render_view_id_(-1), render_frame_id_(-1), factory_(NULL) {
+    : render_frame_id_(-1), factory_(NULL) {
 }
 
 MediaStreamAudioSource::~MediaStreamAudioSource() {}
@@ -49,8 +35,8 @@ void MediaStreamAudioSource::AddTrack(
     const ConstraintsCallback& callback) {
   // TODO(xians): Properly implement for audio sources.
   if (!local_audio_source_.get()) {
-    if (!factory_->InitializeMediaStreamAudioSource(
-            render_view_id_, render_frame_id_, constraints, this)) {
+    if (!factory_->InitializeMediaStreamAudioSource(render_frame_id_,
+                                                    constraints, this)) {
       // The source failed to start.
       // UserMediaClientImpl rely on the |stop_callback| to be triggered when
       // the last track is removed from the source. But in this case, the

@@ -178,13 +178,11 @@ int WebRtcAudioRenderer::GetOptimalBufferSize(int sample_rate,
 WebRtcAudioRenderer::WebRtcAudioRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
     const scoped_refptr<webrtc::MediaStreamInterface>& media_stream,
-    int source_render_view_id,
     int source_render_frame_id,
     int session_id,
     int sample_rate,
     int frames_per_buffer)
     : state_(UNINITIALIZED),
-      source_render_view_id_(source_render_view_id),
       source_render_frame_id_(source_render_frame_id),
       session_id_(session_id),
       signaling_thread_(signaling_thread),
@@ -200,12 +198,9 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
                    GetCurrentDuckingFlag(source_render_frame_id)),
       render_callback_count_(0) {
   WebRtcLogMessage(base::StringPrintf(
-      "WAR::WAR. source_render_view_id=%d"
+      "WAR::WAR. source_render_frame_id=%d"
       ", session_id=%d, sample_rate=%d, frames_per_buffer=%d, effects=%i",
-      source_render_view_id,
-      session_id,
-      sample_rate,
-      frames_per_buffer,
+      source_render_frame_id, session_id, sample_rate, frames_per_buffer,
       sink_params_.effects()));
 }
 
@@ -288,8 +283,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   source_ = source;
 
   // Configure the audio rendering client and start rendering.
-  sink_ = AudioDeviceFactory::NewOutputDevice(
-      source_render_view_id_, source_render_frame_id_);
+  sink_ = AudioDeviceFactory::NewOutputDevice(source_render_frame_id_);
 
   DCHECK_GE(session_id_, 0);
   sink_->InitializeWithSessionId(sink_params_, this, session_id_);

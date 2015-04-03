@@ -30,7 +30,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
     MockMediaConstraintFactory constraint_factory;
     scoped_refptr<WebRtcAudioCapturer> capturer(
         WebRtcAudioCapturer::CreateCapturer(
-            -1, -1, StreamDeviceInfo(),
+            -1, StreamDeviceInfo(),
             constraint_factory.CreateWebMediaConstraints(), NULL, NULL));
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));

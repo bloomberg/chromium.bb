@@ -45,23 +45,20 @@ class CONTENT_EXPORT AudioRendererMixerManager {
 
   // Creates an AudioRendererMixerInput with the proper callbacks necessary to
   // retrieve an AudioRendererMixer instance from AudioRendererMixerManager.
-  // |source_render_view_id| refers to the RenderView containing the entity
-  // rendering the audio.  |source_render_frame_id| refers to the RenderFrame
-  // containing the entity rendering the audio.  Caller must ensure
-  // AudioRendererMixerManager outlives the returned input.
-  media::AudioRendererMixerInput* CreateInput(int source_render_view_id,
-                                              int source_render_frame_id);
+  // |source_render_frame_id| refers to the RenderFrame containing the entity
+  // rendering the audio.  Caller must ensure AudioRendererMixerManager outlives
+  // the returned input.
+  media::AudioRendererMixerInput* CreateInput(int source_render_frame_id);
 
   // Returns a mixer instance based on AudioParameters; an existing one if one
   // with the provided AudioParameters exists or a new one if not.
-  media::AudioRendererMixer* GetMixer(int source_render_view_id,
-                                      int source_render_frame_id,
+  media::AudioRendererMixer* GetMixer(int source_render_frame_id,
                                       const media::AudioParameters& params);
 
   // Remove a mixer instance given a mixer if the only other reference is held
   // by AudioRendererMixerManager.  Every AudioRendererMixer owner must call
   // this method when it's done with a mixer.
-  void RemoveMixer(int source_render_view_id,
+  void RemoveMixer(int source_render_frame_id,
                    const media::AudioParameters& params);
 
  private:

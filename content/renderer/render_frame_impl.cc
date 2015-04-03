@@ -1959,8 +1959,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
                  static_cast<RenderFrame*>(this)),
-      render_thread->GetAudioRendererMixerManager()->CreateInput(
-          render_view_->routing_id_, routing_id_),
+      render_thread->GetAudioRendererMixerManager()->CreateInput(routing_id_),
       media_log, render_thread->GetMediaThreadTaskRunner(),
       render_thread->compositor_message_loop_proxy(),
       base::Bind(&GetSharedMainThreadContext3D), media_permission_dispatcher_,

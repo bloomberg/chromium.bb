@@ -57,8 +57,8 @@ TestMediaStreamRendererFactory::GetVideoFrameProvider(
 }
 
 scoped_refptr<MediaStreamAudioRenderer>
-TestMediaStreamRendererFactory::GetAudioRenderer(
-    const GURL& url, int render_view_id, int render_frame_id) {
+TestMediaStreamRendererFactory::GetAudioRenderer(const GURL& url,
+                                                 int render_frame_id) {
   return NULL;
 }
 

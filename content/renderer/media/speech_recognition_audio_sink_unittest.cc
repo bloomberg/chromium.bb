@@ -273,8 +273,8 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
     const blink::WebMediaConstraints constraints =
         constraint_factory.CreateWebMediaConstraints();
     scoped_refptr<WebRtcAudioCapturer> capturer(
-        WebRtcAudioCapturer::CreateCapturer(-1, -1, device_info, constraints,
-                                            NULL, NULL));
+        WebRtcAudioCapturer::CreateCapturer(-1, device_info, constraints, NULL,
+                                            NULL));
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
     scoped_ptr<WebRtcLocalAudioTrack> native_track(

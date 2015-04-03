@@ -140,18 +140,16 @@ class CONTENT_EXPORT AudioInputRendererHost
   // registers to AudioInputDeviceManager. Then calls DoCreateStream.
   // For non-ChromeOS: Just calls DoCreateStream.
   void OnCreateStream(int stream_id,
-                      int render_view_id,
                       int render_frame_id,
                       int session_id,
                       const AudioInputHostMsg_CreateStream_Config& config);
 
   // Creates an audio input stream with the specified format whose data is
-  // consumed by an entity in the render view referenced by |render_view_id|.
+  // consumed by an entity in the RenderFrame referenced by |render_frame_id|.
   // |session_id| is used to find out which device to be used for the stream.
   // Upon success/failure, the peer is notified via the
   // NotifyStreamCreated message.
   void DoCreateStream(int stream_id,
-                      int render_view_id,
                       int render_frame_id,
                       int session_id,
                       const AudioInputHostMsg_CreateStream_Config& config);

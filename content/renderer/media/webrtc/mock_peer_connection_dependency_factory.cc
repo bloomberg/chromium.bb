@@ -518,7 +518,6 @@ MockPeerConnectionDependencyFactory::CreateIceCandidate(
 
 scoped_refptr<WebRtcAudioCapturer>
 MockPeerConnectionDependencyFactory::CreateAudioCapturer(
-    int render_view_id,
     int render_frame_id,
     const StreamDeviceInfo& device_info,
     const blink::WebMediaConstraints& constraints,
@@ -528,8 +527,8 @@ MockPeerConnectionDependencyFactory::CreateAudioCapturer(
     return NULL;
   }
   DCHECK(audio_source);
-  return WebRtcAudioCapturer::CreateCapturer(-1, -1, device_info, constraints,
-                                             NULL, audio_source);
+  return WebRtcAudioCapturer::CreateCapturer(-1, device_info, constraints, NULL,
+                                             audio_source);
 }
 
 void MockPeerConnectionDependencyFactory::StartLocalAudioTrack(

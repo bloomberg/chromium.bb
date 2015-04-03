@@ -76,9 +76,9 @@ class WebRtcAudioCapturerTest : public testing::Test {
   void VerifyAudioParams(const blink::WebMediaConstraints& constraints,
                          bool need_audio_processing) {
     capturer_ = WebRtcAudioCapturer::CreateCapturer(
-        -1, -1, StreamDeviceInfo(
-                    MEDIA_DEVICE_AUDIO_CAPTURE, "", "", params_.sample_rate(),
-                    params_.channel_layout(), params_.frames_per_buffer()),
+        -1, StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "", "",
+                             params_.sample_rate(), params_.channel_layout(),
+                             params_.frames_per_buffer()),
         constraints, NULL, NULL);
     capturer_source_ = new MockCapturerSource();
     EXPECT_CALL(*capturer_source_.get(), Initialize(_, capturer_.get(), -1));
@@ -137,9 +137,9 @@ TEST_F(WebRtcAudioCapturerTest, FailToCreateCapturerWithWrongConstraints) {
 
   scoped_refptr<WebRtcAudioCapturer> capturer(
       WebRtcAudioCapturer::CreateCapturer(
-          0, 0, StreamDeviceInfo(
-                    MEDIA_DEVICE_AUDIO_CAPTURE, "", "", params_.sample_rate(),
-                    params_.channel_layout(), params_.frames_per_buffer()),
+          0, StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "", "",
+                              params_.sample_rate(), params_.channel_layout(),
+                              params_.frames_per_buffer()),
           constraint_factory.CreateWebMediaConstraints(), NULL, NULL));
   EXPECT_TRUE(capturer.get() == NULL);
 }

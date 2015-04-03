@@ -75,7 +75,6 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // InitializeMediaStreamAudioSource initialize a MediaStream source object
   // for audio input.
   bool InitializeMediaStreamAudioSource(
-      int render_view_id,
       int render_frame_id,
       const blink::WebMediaConstraints& audio_constraints,
       MediaStreamAudioSource* source_data);
@@ -151,11 +150,10 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
       GetPcFactory();
   virtual bool PeerConnectionFactoryCreated();
 
-  // Returns a new capturer or existing capturer based on the |render_view_id|,
-  // |render_frame_id|, and |device_info|; if all are valid, it reuses existing
-  // capture if any -- otherwise it creates a new capturer.
+  // Returns a new capturer or existing capturer based on the |render_frame_id|
+  // and |device_info|; if both are valid, it reuses existing capture if any --
+  // otherwise it creates a new capturer.
   virtual scoped_refptr<WebRtcAudioCapturer> CreateAudioCapturer(
-      int render_view_id,
       int render_frame_id,
       const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints,

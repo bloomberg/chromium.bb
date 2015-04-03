@@ -23,9 +23,7 @@ static const int kSampleRate = 48000;
 static const int kBufferSize = 8192;
 static const media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
 
-static const int kRenderViewId = 123;
 static const int kRenderFrameId = 124;
-static const int kAnotherRenderViewId = 456;
 static const int kAnotherRenderFrameId = 678;
 
 using media::AudioParameters;
@@ -50,14 +48,14 @@ class AudioRendererMixerManagerTest : public testing::Test {
     manager_->SetAudioRendererSinkForTesting(mock_sink_.get());
   }
 
-  media::AudioRendererMixer* GetMixer(int source_render_view_id,
+  media::AudioRendererMixer* GetMixer(int source_render_frame_id,
                                       const media::AudioParameters& params) {
-    return manager_->GetMixer(source_render_view_id, MSG_ROUTING_NONE, params);
+    return manager_->GetMixer(source_render_frame_id, params);
   }
 
-  void RemoveMixer(int source_render_view_id,
+  void RemoveMixer(int source_render_frame_id,
                    const media::AudioParameters& params) {
-    return manager_->RemoveMixer(source_render_view_id, params);
+    return manager_->RemoveMixer(source_render_frame_id, params);
   }
 
   // Number of instantiated mixers.
@@ -88,22 +86,22 @@ TEST_F(AudioRendererMixerManagerTest, GetRemoveMixer) {
       AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
       kBitsPerChannel, kBufferSize);
 
-  media::AudioRendererMixer* mixer1 = GetMixer(kRenderViewId, params1);
+  media::AudioRendererMixer* mixer1 = GetMixer(kRenderFrameId, params1);
   ASSERT_TRUE(mixer1);
   EXPECT_EQ(mixer_count(), 1);
 
   // The same parameters should return the same mixer1.
-  EXPECT_EQ(mixer1, GetMixer(kRenderViewId, params1));
+  EXPECT_EQ(mixer1, GetMixer(kRenderFrameId, params1));
   EXPECT_EQ(mixer_count(), 1);
 
   // Remove the extra mixer we just acquired.
-  RemoveMixer(kRenderViewId, params1);
+  RemoveMixer(kRenderFrameId, params1);
   EXPECT_EQ(mixer_count(), 1);
 
   media::AudioParameters params2(
       AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate * 2,
       kBitsPerChannel, kBufferSize * 2);
-  media::AudioRendererMixer* mixer2 = GetMixer(kRenderViewId, params2);
+  media::AudioRendererMixer* mixer2 = GetMixer(kRenderFrameId, params2);
   ASSERT_TRUE(mixer2);
   EXPECT_EQ(mixer_count(), 2);
 
@@ -111,9 +109,9 @@ TEST_F(AudioRendererMixerManagerTest, GetRemoveMixer) {
   EXPECT_NE(mixer1, mixer2);
 
   // Remove both outstanding mixers.
-  RemoveMixer(kRenderViewId, params1);
+  RemoveMixer(kRenderFrameId, params1);
   EXPECT_EQ(mixer_count(), 1);
-  RemoveMixer(kRenderViewId, params2);
+  RemoveMixer(kRenderFrameId, params2);
   EXPECT_EQ(mixer_count(), 0);
 }
 
@@ -129,7 +127,7 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
                                  kSampleRate,
                                  kBitsPerChannel,
                                  kBufferSize);
-  media::AudioRendererMixer* mixer1 = GetMixer(kRenderViewId, params1);
+  media::AudioRendererMixer* mixer1 = GetMixer(kRenderFrameId, params1);
   ASSERT_TRUE(mixer1);
   EXPECT_EQ(mixer_count(), 1);
 
@@ -141,9 +139,9 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
                                  kBitsPerChannel * 2,
                                  kBufferSize * 2,
                                  AudioParameters::NO_EFFECTS);
-  EXPECT_EQ(mixer1, GetMixer(kRenderViewId, params2));
+  EXPECT_EQ(mixer1, GetMixer(kRenderFrameId, params2));
   EXPECT_EQ(mixer_count(), 1);
-  RemoveMixer(kRenderViewId, params2);
+  RemoveMixer(kRenderFrameId, params2);
   EXPECT_EQ(mixer_count(), 1);
 
   // Modify some parameters that do matter.
@@ -155,13 +153,13 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
                                  AudioParameters::NO_EFFECTS);
   ASSERT_NE(params3.channel_layout(), params1.channel_layout());
 
-  EXPECT_NE(mixer1, GetMixer(kRenderViewId, params3));
+  EXPECT_NE(mixer1, GetMixer(kRenderFrameId, params3));
   EXPECT_EQ(mixer_count(), 2);
-  RemoveMixer(kRenderViewId, params3);
+  RemoveMixer(kRenderFrameId, params3);
   EXPECT_EQ(mixer_count(), 1);
 
   // Remove final mixer.
-  RemoveMixer(kRenderViewId, params1);
+  RemoveMixer(kRenderFrameId, params1);
   EXPECT_EQ(mixer_count(), 0);
 }
 
@@ -183,12 +181,12 @@ TEST_F(AudioRendererMixerManagerTest, CreateInput) {
   EXPECT_EQ(mixer_count(), 0);
   media::FakeAudioRenderCallback callback(0);
   scoped_refptr<media::AudioRendererMixerInput> input(
-      manager_->CreateInput(kRenderViewId, kRenderFrameId));
+      manager_->CreateInput(kRenderFrameId));
   input->Initialize(params, &callback);
   EXPECT_EQ(mixer_count(), 0);
   media::FakeAudioRenderCallback another_callback(1);
   scoped_refptr<media::AudioRendererMixerInput> another_input(
-      manager_->CreateInput(kAnotherRenderViewId, kAnotherRenderFrameId));
+      manager_->CreateInput(kAnotherRenderFrameId));
   another_input->Initialize(params, &another_callback);
   EXPECT_EQ(mixer_count(), 0);
 
