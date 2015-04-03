@@ -28,11 +28,13 @@
 #ifndef WorkerScriptLoaderClient_h
 #define WorkerScriptLoaderClient_h
 
+#include "core/CoreExport.h"
+
 namespace blink {
 
 class ResourceResponse;
 
-class WorkerScriptLoaderClient {
+class CORE_EXPORT WorkerScriptLoaderClient {
 public:
     virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&) { }
 

@@ -31,6 +31,7 @@
 #ifndef WorkerLoaderProxy_h
 #define WorkerLoaderProxy_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -55,7 +56,7 @@ namespace blink {
 // A provider implementation must detach itself when finalizing by calling
 // WorkerLoaderProxy::detachProvider(). This stops the WorkerLoaderProxy from accessing
 // the now-dead object, but it will remain alive while ref-ptrs are still kept to it.
-class WorkerLoaderProxyProvider {
+class CORE_EXPORT WorkerLoaderProxyProvider {
 public:
     virtual ~WorkerLoaderProxyProvider() { }
 

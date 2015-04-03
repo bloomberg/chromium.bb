@@ -31,6 +31,7 @@
 #ifndef WorkerGlobalScopeProxy_h
 #define WorkerGlobalScopeProxy_h
 
+#include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/Forward.h"
@@ -41,7 +42,7 @@ namespace blink {
 class KURL;
 
 // A proxy to talk to the worker global scope.
-class WorkerGlobalScopeProxy {
+class CORE_EXPORT WorkerGlobalScopeProxy {
 public:
     virtual ~WorkerGlobalScopeProxy() { }
 

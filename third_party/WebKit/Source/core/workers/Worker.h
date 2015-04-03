@@ -27,6 +27,7 @@
 #ifndef Worker_h
 #define Worker_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/EventListener.h"
@@ -46,7 +47,7 @@ class ExecutionContext;
 class WorkerGlobalScopeProxy;
 class WorkerScriptLoader;
 
-class Worker : public AbstractWorker, private WorkerScriptLoaderClient {
+class CORE_EXPORT Worker : public AbstractWorker, private WorkerScriptLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Worker> create(ExecutionContext*, const String& url, ExceptionState&);

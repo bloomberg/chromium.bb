@@ -5,6 +5,7 @@
 #ifndef FrameRequestCallbackCollection_h
 #define FrameRequestCallbackCollection_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -12,7 +13,7 @@ namespace blink {
 class ExecutionContext;
 class FrameRequestCallback;
 
-class FrameRequestCallbackCollection final {
+class CORE_EXPORT FrameRequestCallbackCollection final {
     DISALLOW_ALLOCATION();
 public:
     explicit FrameRequestCallbackCollection(ExecutionContext*);

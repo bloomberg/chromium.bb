@@ -31,6 +31,7 @@
 #ifndef WorkerReportingProxy_h
 #define WorkerReportingProxy_h
 
+#include "core/CoreExport.h"
 #include "core/frame/ConsoleTypes.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -41,7 +42,7 @@ class ConsoleMessage;
 class WorkerGlobalScope;
 
 // APIs used by workers to report console and worker activity.
-class WorkerReportingProxy {
+class CORE_EXPORT WorkerReportingProxy {
 public:
     virtual ~WorkerReportingProxy() { }
 

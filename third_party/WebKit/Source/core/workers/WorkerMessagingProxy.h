@@ -27,6 +27,7 @@
 #ifndef WorkerMessagingProxy_h
 #define WorkerMessagingProxy_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "core/workers/WorkerLoaderProxy.h"
@@ -46,7 +47,7 @@ class Worker;
 class WorkerClients;
 class WorkerInspectorProxy;
 
-class WorkerMessagingProxy
+class CORE_EXPORT WorkerMessagingProxy
     : public WorkerGlobalScopeProxy
     , private WorkerLoaderProxyProvider {
     WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy);
