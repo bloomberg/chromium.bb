@@ -24,7 +24,7 @@ function NavigationModelItem(label, type) {
   this.type_ = type;
 }
 
-NavigationModelItem.prototype = /** struct */ {
+NavigationModelItem.prototype = /** @struct */ {
   get label() { return this.label_; },
   get type() { return this.type_; }
 };
@@ -294,9 +294,10 @@ NavigationListModel.prototype.indexOf = function(modelItem, opt_fromIndex) {
 
 /**
  * Called externally when one of the items is not found on the filesystem.
- * @param {NavigationModelItem} modelItem The entry which is not found.
+ * @param {!NavigationModelItem} modelItem The entry which is not found.
  */
 NavigationListModel.prototype.onItemNotFoundError = function(modelItem) {
   if (modelItem.type ===  NavigationModelItemType.SHORTCUT)
-    this.shortcutListModel_.onItemNotFoundError(modelItem.entry);
+    this.shortcutListModel_.onItemNotFoundError(
+        /** @type {!NavigationModelShortcutItem} */(modelItem).entry);
 };

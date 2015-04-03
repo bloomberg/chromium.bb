@@ -410,8 +410,9 @@ SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
  * A TreeItem which represents a volume. Volume items are displayed as
  * top-level children of DirectoryTree.
  *
- * @param {NavigationModelItem} modelItem NavigationModelItem of this volume.
- * @param {DirectoryTree} tree Current tree, which contains this item.
+ * @param {!NavigationModelVolumeItem} modelItem NavigationModelItem of this
+ *     volume.
+ * @param {!DirectoryTree} tree Current tree, which contains this item.
  * @extends {DirectoryItem}
  * @constructor
  */
@@ -562,8 +563,9 @@ VolumeItem.prototype.setupEjectButton_ = function(rowElement) {
  * A TreeItem which represents a Drive volume. Drive volume has fake entries
  * such as Recent, Shared with me, and Offline in it.
  *
- * @param {NavigationModelItem} modelItem NavigationModelItem of this volume.
- * @param {DirectoryTree} tree Current tree, which contains this item.
+ * @param {!NavigationModelVolumeItem} modelItem NavigationModelItem of this
+ *     volume.
+ * @param {!DirectoryTree} tree Current tree, which contains this item.
  * @extends {VolumeItem}
  * @constructor
  */
@@ -673,8 +675,9 @@ DriveVolumeItem.prototype.selectByEntry = function(entry) {
  * A TreeItem which represents a shortcut for Drive folder.
  * Shortcut items are displayed as top-level children of DirectoryTree.
  *
- * @param {NavigationModelItem} modelItem NavigationModelItem of this volume.
- * @param {DirectoryTree} tree Current tree, which contains this item.
+ * @param {!NavigationModelShortcutItem} modelItem NavigationModelItem of this
+ *     volume.
+ * @param {!DirectoryTree} tree Current tree, which contains this item.
  * @extends {cr.ui.TreeItem}
  * @constructor
  */
