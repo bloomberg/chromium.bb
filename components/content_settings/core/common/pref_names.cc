@@ -80,15 +80,72 @@ const char kDefaultProtectedMediaIdentifierSetting[] =
 const char kDefaultAppBannerSetting[] =
     "profile.default_content_setting_values.app_banner";
 
+// Boolean indicating whether the media stream default setting had been
+// migrated into two separate microphone and camera settings.
+const char kMigratedDefaultMediaStreamSetting[] =
+    "profile.migrated_default_media_stream_content_settings";
+
 // Dictionary of content settings that can globally disallow all hosts by
 // default. If a value is set, it means the setting is globally disallowed.
 // If a value is not set, it means the setting is allowed.
 const char kOverrideContentSettings[] = "profile.override_content_settings";
 
-// Boolean indicating whether the media stream default setting had been
-// migrated into two separate microphone and camera settings.
-const char kMigratedDefaultMediaStreamSetting[] =
-    "profile.migrated_default_media_stream_content_settings";
+// Preferences storing the content settings exceptions.
+const char kContentSettingsCookiesPatternPairs[] =
+    "profile.content_settings.exceptions.cookies";
+const char kContentSettingsImagesPatternPairs[] =
+    "profile.content_settings.exceptions.images";
+const char kContentSettingsJavaScriptPatternPairs[] =
+    "profile.content_settings.exceptions.javascript";
+const char kContentSettingsPluginsPatternPairs[] =
+    "profile.content_settings.exceptions.plugins";
+const char kContentSettingsPopupsPatternPairs[] =
+    "profile.content_settings.exceptions.popups";
+const char kContentSettingsGeolocationPatternPairs[] =
+    "profile.content_settings.exceptions.geolocation";
+const char kContentSettingsNotificationsPatternPairs[] =
+    "profile.content_settings.exceptions.notifications";
+const char kContentSettingsAutoSelectCertificatePatternPairs[] =
+    "profile.content_settings.exceptions.auto_select_certificate";
+const char kContentSettingsFullScreenPatternPairs[] =
+    "profile.content_settings.exceptions.fullscreen";
+const char kContentSettingsMouseLockPatternPairs[] =
+    "profile.content_settings.exceptions.mouselock";
+const char kContentSettingsMixedScriptPatternPairs[] =
+    "profile.content_settings.exceptions.mixed_script";
+const char kContentSettingsMediaStreamPatternPairs[] =
+    "profile.content_settings.exceptions.media_stream";
+const char kContentSettingsMediaStreamMicPatternPairs[] =
+    "profile.content_settings.exceptions.media_stream_mic";
+const char kContentSettingsMediaStreamCameraPatternPairs[] =
+    "profile.content_settings.exceptions.media_stream_camera";
+const char kContentSettingsProtocolHandlersPatternPairs[] =
+    "profile.content_settings.exceptions.protocol_handlers";
+const char kContentSettingsPpapiBrokerPatternPairs[] =
+    "profile.content_settings.exceptions.ppapi_broker";
+const char kContentSettingsAutomaticDownloadsPatternPairs[] =
+    "profile.content_settings.exceptions.automatic_downloads";
+const char kContentSettingsMidiSysexPatternPairs[] =
+    "profile.content_settings.exceptions.midi_sysex";
+const char kContentSettingsPushMessagingPatternPairs[] =
+    "profile.content_settings.exceptions.push_messaging";
+const char kContentSettingsSSLCertDecisionsPatternPairs[] =
+    "profile.content_settings.exceptions.ssl_cert_decisions";
+#if defined(OS_WIN)
+const char kContentSettingsMetroSwitchToDesktopPatternPairs[] =
+    "profile.content_settings.exceptions.metro_switch_to_desktop";
+#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
+const char kContentSettingsProtectedMediaIdentifierPatternPairs[] =
+    "profile.content_settings.exceptions.protected_media_identifier";
+#endif
+const char kContentSettingsAppBannerPatternPairs[] =
+    "profile.content_settings.exceptions.app_banner";
+
+// Whether the patern pairs have been migrated from the deprecated aggregate
+// preference |kContentSettingsPatternPairs| to the separate preferences
+// |kContentSettings<type>PatternPairs|.
+const char kMigratedContentSettingsPatternPairs[] =
+    "profile.migrated_content_settings_exceptions";
 
 // Preferences that are exclusively used to store managed values for default
 // content settings.

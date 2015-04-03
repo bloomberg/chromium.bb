@@ -32,10 +32,7 @@ namespace content_settings {
 
 class RuleIterator;
 
-// Represents a single pref for reading/writing content settings.
-// TODO(raymes): Currently all content settings types are stored in a single
-// instance of one of these. But the intention is that there will be one
-// instance of this class per content settings type.
+// Represents a single pref for reading/writing content settings of one type.
 class ContentSettingsPref {
  public:
   typedef base::Callback<void(const ContentSettingsPattern&,
@@ -43,45 +40,46 @@ class ContentSettingsPref {
                               ContentSettingsType,
                               const std::string&)> NotifyObserversCallback;
 
-  ContentSettingsPref(PrefService* prefs,
+  ContentSettingsPref(ContentSettingsType content_type,
+                      PrefService* prefs,
                       PrefChangeRegistrar* registrar,
-                      base::Clock* clock,
+                      const char* pref_name,
                       bool incognito,
+                      bool* updating_old_preferences_flag,
                       NotifyObserversCallback notify_callback);
   ~ContentSettingsPref();
 
-  RuleIterator* GetRuleIterator(ContentSettingsType content_type,
-                                const ResourceIdentifier& resource_identifier,
+  RuleIterator* GetRuleIterator(const ResourceIdentifier& resource_identifier,
                                 bool incognito) const;
 
   bool SetWebsiteSetting(const ContentSettingsPattern& primary_pattern,
                          const ContentSettingsPattern& secondary_pattern,
-                         ContentSettingsType content_type,
                          const ResourceIdentifier& resource_identifier,
                          base::Value* value);
 
-  void ClearAllContentSettingsRules(ContentSettingsType content_type);
+  void ClearAllContentSettingsRules();
 
   void UpdateLastUsage(const ContentSettingsPattern& primary_pattern,
                        const ContentSettingsPattern& secondary_pattern,
-                       ContentSettingsType content_type);
+                       base::Clock* clock);
 
   base::Time GetLastUsage(const ContentSettingsPattern& primary_pattern,
-                          const ContentSettingsPattern& secondary_pattern,
-                          ContentSettingsType content_type);
+                          const ContentSettingsPattern& secondary_pattern);
 
   size_t GetNumExceptions();
 
-  void SetClockForTesting(base::Clock* clock);
  private:
-  friend class DeadlockCheckerThread;  // For testing.
+  // Only to access static method CanonicalizeContentSettingsExceptions,
+  // so that we reduce duplicity between the two.
+  // TODO(msramek): Remove this after the migration is over.
+  friend class PrefProvider;
 
   // Reads all content settings exceptions from the preference and load them
   // into the |value_map_|. The |value_map_| is cleared first.
-  void ReadContentSettingsFromPref();
+  void ReadContentSettingsFromPrefAndWriteToOldPref();
 
   // Callback for changes in the pref with the same name.
-  void OnContentSettingsPatternPairsChanged();
+  void OnPrefChanged();
 
   // Update the preference that stores content settings exceptions and syncs the
   // value to the obsolete preference. When calling this function, |lock_|
@@ -90,7 +88,6 @@ class ContentSettingsPref {
   void UpdatePref(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
-      ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
       const base::Value* value);
 
@@ -102,20 +99,42 @@ class ContentSettingsPref {
   // release it.
   void AssertLockNotHeld() const;
 
+  // Update the old aggregate preference, so that the settings can be synced
+  // to old versions of Chrome.
+  // TODO(msramek): Remove after the migration is over.
+  void UpdateOldPref(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      const ResourceIdentifier& resource_identifier,
+      const base::Value* value);
+
+  // Remove all exceptions of |content_type_| from the old aggregate dictionary
+  // preference.
+  // TODO(msramek): Remove after the migration is over.
+  void ClearOldPreference();
+
+  // The type of content settings stored in this pref.
+  ContentSettingsType content_type_;
+
   // Weak; owned by the Profile and reset in ShutdownOnUIThread.
   PrefService* prefs_;
 
   // Owned by the PrefProvider.
-  base::Clock* clock_;
-
-  // Owned by the PrefProvider.
   PrefChangeRegistrar* registrar_;
+
+  // Name of the dictionary preference managed by this class.
+  const char* pref_name_;
 
   bool is_incognito_;
 
   // Whether we are currently updating preferences, this is used to ignore
   // notifications from the preferences service that we triggered ourself.
   bool updating_preferences_;
+
+  // Whether we are currently updating the old aggregate dictionary preference.
+  // Owned by the parent |PrefProvider| and shared by all its children
+  // |ContentSettingsPref|s.
+  bool* updating_old_preferences_;
 
   OriginIdentifierValueMap value_map_;
 

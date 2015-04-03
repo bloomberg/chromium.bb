@@ -680,7 +680,8 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 
   // Set utf-8 data.
   {
-    DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatternPairs);
+    DictionaryPrefUpdate update(
+        prefs, prefs::kContentSettingsPatternPairs);
     base::DictionaryValue* all_settings_dictionary = update.Get();
     ASSERT_TRUE(NULL != all_settings_dictionary);
 
@@ -689,10 +690,11 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
     all_settings_dictionary->SetWithoutPathExpansion("[*.]\xC4\x87ira.com,*",
                                                      dummy_payload);
   }
+
   profile.GetHostContentSettingsMap();
 
   const base::DictionaryValue* all_settings_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
+      prefs->GetDictionary(prefs::kContentSettingsImagesPatternPairs);
   const base::DictionaryValue* result = NULL;
   EXPECT_FALSE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
       "[*.]\xC4\x87ira.com,*", &result));
@@ -706,22 +708,24 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
   TestingProfile profile;
 
   scoped_ptr<base::Value> value(base::JSONReader::Read(
-      "{\"[*.]\\xC4\\x87ira.com,*\":{\"images\":1}}"));
-  profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *value);
+      "{\"[*.]\\xC4\\x87ira.com,*\":{\"setting\":1}}"));
+  profile.GetPrefs()->Set(prefs::kContentSettingsImagesPatternPairs, *value);
 
   // Set punycode equivalent, with different setting.
   scoped_ptr<base::Value> puny_value(base::JSONReader::Read(
-      "{\"[*.]xn--ira-ppa.com,*\":{\"images\":2}}"));
-  profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *puny_value);
+      "{\"[*.]xn--ira-ppa.com,*\":{\"setting\":2}}"));
+  profile.GetPrefs()->Set(
+      prefs::kContentSettingsImagesPatternPairs, *puny_value);
 
   // Initialize the content map.
   profile.GetHostContentSettingsMap();
 
   const base::DictionaryValue* content_setting_prefs =
-      profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatternPairs);
+      profile.GetPrefs()->GetDictionary(
+          prefs::kContentSettingsImagesPatternPairs);
   std::string prefs_as_json;
   base::JSONWriter::Write(content_setting_prefs, &prefs_as_json);
-  EXPECT_STREQ("{\"[*.]xn--ira-ppa.com,*\":{\"images\":2}}",
+  EXPECT_STREQ("{\"[*.]xn--ira-ppa.com,*\":{\"setting\":2}}",
                prefs_as_json.c_str());
 }
 

@@ -73,6 +73,48 @@ ContentSettingsTypeHistogram ContentSettingTypeToHistogramValue(
   return CONTENT_SETTINGS_TYPE_HISTOGRAM_INVALID;
 }
 
+bool IsContentSettingsTypeSyncable(ContentSettingsType content_setting) {
+  switch (content_setting) {
+    case CONTENT_SETTINGS_TYPE_COOKIES:
+    case CONTENT_SETTINGS_TYPE_IMAGES:
+    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+    case CONTENT_SETTINGS_TYPE_FULLSCREEN:
+    case CONTENT_SETTINGS_TYPE_MOUSELOCK:
+    case CONTENT_SETTINGS_TYPE_MIXEDSCRIPT:
+    case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
+#if defined(OS_WIN)
+    case CONTENT_SETTINGS_TYPE_METRO_SWITCH_TO_DESKTOP:
+#endif
+      return true;
+
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+    case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
+    case CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS:
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+#endif
+    case CONTENT_SETTINGS_TYPE_APP_BANNER:
+      return false;
+
+    case CONTENT_SETTINGS_TYPE_DEFAULT:
+    case CONTENT_SETTINGS_NUM_TYPES:
+      NOTREACHED();
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
 ContentSettingPatternSource::ContentSettingPatternSource(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,

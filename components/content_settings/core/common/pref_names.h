@@ -45,6 +45,36 @@ extern const char kDefaultAppBannerSetting[];
 
 extern const char kMigratedDefaultMediaStreamSetting[];
 
+// Preferences storing the default values for individual content settings.
+extern const char kContentSettingsCookiesPatternPairs[];
+extern const char kContentSettingsImagesPatternPairs[];
+extern const char kContentSettingsJavaScriptPatternPairs[];
+extern const char kContentSettingsPluginsPatternPairs[];
+extern const char kContentSettingsPopupsPatternPairs[];
+extern const char kContentSettingsGeolocationPatternPairs[];
+extern const char kContentSettingsNotificationsPatternPairs[];
+extern const char kContentSettingsAutoSelectCertificatePatternPairs[];
+extern const char kContentSettingsFullScreenPatternPairs[];
+extern const char kContentSettingsMouseLockPatternPairs[];
+extern const char kContentSettingsMixedScriptPatternPairs[];
+extern const char kContentSettingsMediaStreamPatternPairs[];
+extern const char kContentSettingsMediaStreamMicPatternPairs[];
+extern const char kContentSettingsMediaStreamCameraPatternPairs[];
+extern const char kContentSettingsProtocolHandlersPatternPairs[];
+extern const char kContentSettingsPpapiBrokerPatternPairs[];
+extern const char kContentSettingsAutomaticDownloadsPatternPairs[];
+extern const char kContentSettingsMidiSysexPatternPairs[];
+extern const char kContentSettingsPushMessagingPatternPairs[];
+extern const char kContentSettingsSSLCertDecisionsPatternPairs[];
+#if defined(OS_WIN)
+extern const char kContentSettingsMetroSwitchToDesktopPatternPairs[];
+#elif defined(OS_ANDROID) || defined(OS_CHROMEOS)
+extern const char kContentSettingsProtectedMediaIdentifierPatternPairs[];
+#endif
+extern const char kContentSettingsAppBannerPatternPairs[];
+
+extern const char kMigratedContentSettingsPatternPairs[];
+
 extern const char kManagedDefaultCookiesSetting[];
 extern const char kManagedDefaultImagesSetting[];
 extern const char kManagedDefaultJavaScriptSetting[];
