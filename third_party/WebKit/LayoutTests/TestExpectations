@@ -69,9 +69,6 @@ crbug.com/450725 virtual/slimmingpaint/css3/filters/blur-filter-page-scroll.html
 # Slimming Paint printing failures
 crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Crash Pass ]
 crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing.html [ Crash Pass ]
-crbug.com/471100 virtual/slimmingpaint/printing/setPrinting.html [ NeedsRebaseline ]
-crbug.com/471100 virtual/slimmingpaint/printing/width-overflow.html [ NeedsRebaseline ]
-crbug.com/471100 virtual/slimmingpaint/printing/iframe-print.html [ NeedsRebaseline ]
 
 # Some slimming paint reftest fail when the reference is run with slimming paint disabled.
 crbug.com/454866 virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ ImageOnlyFailure ]
