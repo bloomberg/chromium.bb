@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "media/midi/midi_scheduler.h"
 #include "media/midi/usb_midi_descriptor_parser.h"
 #include "media/midi/usb_midi_device.h"
 #include "media/midi/usb_midi_input_stream.h"
@@ -32,6 +33,7 @@ void MidiManagerUsb::StartInitialization() {
 void MidiManagerUsb::Initialize(
     base::Callback<void(MidiResult result)> callback) {
   initialize_callback_ = callback;
+  scheduler_.reset(new MidiScheduler);
   // This is safe because EnumerateDevices cancels the operation on destruction.
   device_factory_->EnumerateDevices(
       this,
@@ -48,8 +50,13 @@ void MidiManagerUsb::DispatchSendMidiData(MidiManagerClient* client,
     // in the valid range.
     return;
   }
-  output_streams_[port_index]->Send(data);
-  client->AccumulateMidiBytesSent(data.size());
+  // output_streams_[port_index] is alive unless MidiManagerUsb is deleted.
+  // The task posted to the MidiScheduler will be disposed safely on deleting
+  // the scheduler.
+  scheduler_->PostSendDataTask(
+      client, data.size(), timestamp,
+      base::Bind(&UsbMidiOutputStream::Send,
+                 base::Unretained(output_streams_[port_index]), data));
 }
 
 void MidiManagerUsb::ReceiveUsbMidiData(UsbMidiDevice* device,

@@ -354,12 +354,18 @@ TEST_F(MidiManagerUsbTest, Send) {
   ASSERT_EQ(2u, manager_->output_streams().size());
 
   manager_->DispatchSendMidiData(&client, 1, ToVector(data), 0);
+  // Since UsbMidiDevice::Send is posted as a task, RunLoop should run to
+  // invoke the task.
+  // TODO(crbug.com/467442): AccumulateMidiBytesSent is recorded before
+  // UsbMidiDevice is invoked for now, but this should be after the invocation.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
   EXPECT_EQ("UsbMidiDevice::GetDescriptor\n"
+            "MidiManagerClient::AccumulateMidiBytesSent size = 7\n"
             "UsbMidiDevice::Send endpoint = 2 data = "
             "0x19 0x90 0x45 0x7f "
             "0x14 0xf0 0x00 0x01 "
-            "0x15 0xf7 0x00 0x00\n"
-            "MidiManagerClient::AccumulateMidiBytesSent size = 7\n",
+            "0x15 0xf7 0x00 0x00\n",
             logger_.TakeLog());
 }
 

@@ -532,6 +532,8 @@
         'midi/midi_message_util.h',
         'midi/midi_port_info.cc',
         'midi/midi_port_info.h',
+        'midi/midi_scheduler.cc',
+        'midi/midi_scheduler.h',
         'midi/usb_midi_descriptor_parser.cc',
         'midi/usb_midi_descriptor_parser.h',
         'midi/usb_midi_device.h',
