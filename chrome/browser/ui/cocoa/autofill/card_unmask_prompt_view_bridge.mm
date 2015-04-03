@@ -36,6 +36,7 @@ const CGFloat kPermanentErrorExteriorPadding = 12.0f;
 const CGFloat kPermanentErrorHorizontalPadding = 16.0f;
 const CGFloat kPermanentErrorVerticalPadding = 12.0f;
 const CGFloat kProgressToInstructionsGap = 24.0f;
+const CGFloat kSeparatorHeight = 1.0f;
 const CGFloat kSpinnerSize = 16.0f;
 const CGFloat kSpinnerToProgressTextGap = 8.0f;
 
@@ -43,6 +44,9 @@ const SkColor kPermanentErrorTextColor = SK_ColorWHITE;
 const SkColor kPermanentErrorBackgroundColor = SkColorSetRGB(0xd3, 0x2f, 0x2f);
 // Material blue. TODO(bondd): share with Views version.
 const SkColor kProgressTextColor = SkColorSetRGB(0x42, 0x85, 0xf4);
+// TODO(bondd): Unify colors with Views version and AutofillMessageView.
+const SkColor kShadingColor = SkColorSetRGB(0xf2, 0xf2, 0xf2);
+const SkColor kSubtleBorderColor = SkColorSetRGB(0xdf, 0xdf, 0xdf);
 
 }  // namespace
 
@@ -170,6 +174,14 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   return popup;
 }
 
++ (base::scoped_nsobject<NSBox>)createPlainBox {
+  base::scoped_nsobject<NSBox> box([[NSBox alloc] initWithFrame:NSZeroRect]);
+  [box setBoxType:NSBoxCustom];
+  [box setBorderType:NSNoBorder];
+  [box setTitlePosition:NSNoTitle];
+  return box;
+}
+
 // Set |view|'s frame to the minimum dimensions required to contain all of its
 // subviews.
 + (void)sizeToFitView:(NSView*)view {
@@ -234,7 +246,8 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [progressOverlaySpinner_ setHidden:!showSpinner];
   [inputRowView_ setHidden:!text.empty()];
   [errorLabel_ setHidden:!text.empty()];
-  [storageView_ setHidden:!text.empty()];
+  [storageCheckbox_ setHidden:!text.empty()];
+  [[storageTooltip_ view] setHidden:!text.empty()];
   [self updateVerifyButtonEnabled];
 }
 
@@ -263,10 +276,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 - (void)setPermanentErrorMessage:(const base::string16&)text {
   if (!text.empty()) {
     if (!permanentErrorBox_) {
-      permanentErrorBox_.reset([[NSBox alloc] initWithFrame:NSZeroRect]);
-      [permanentErrorBox_ setBoxType:NSBoxCustom];
-      [permanentErrorBox_ setBorderType:NSNoBorder];
-      [permanentErrorBox_ setTitlePosition:NSNoTitle];
+      permanentErrorBox_ = [CardUnmaskPromptViewCocoa createPlainBox];
       [permanentErrorBox_ setFillColor:gfx::SkColorToCalibratedNSColor(
                                            kPermanentErrorBackgroundColor)];
       [permanentErrorBox_
@@ -357,6 +367,14 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 - (base::scoped_nsobject<NSView>)createStorageViewWithController:
         (autofill::CardUnmaskPromptController*)controller {
   base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
+  [view setAutoresizingMask:NSViewWidthSizable];
+
+  base::scoped_nsobject<NSBox> box = [CardUnmaskPromptViewCocoa createPlainBox];
+  [box setAutoresizingMask:NSViewWidthSizable];
+  [box setFillColor:gfx::SkColorToCalibratedNSColor(kShadingColor)];
+  [box setContentViewMargins:NSMakeSize(chrome_style::kHorizontalPadding,
+                                        chrome_style::kClientBottomPadding)];
+  [view addSubview:box];
 
   // Add "Store card on this device" checkbox.
   storageCheckbox_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
@@ -368,7 +386,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
       setState:(controller->GetStoreLocallyStartState() ? NSOnState
                                                         : NSOffState)];
   [storageCheckbox_ sizeToFit];
-  [view addSubview:storageCheckbox_];
+  [box addSubview:storageCheckbox_];
 
   // Add "?" icon with tooltip.
   storageTooltip_.reset([[AutofillTooltipController alloc]
@@ -379,12 +397,21 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [storageTooltip_
       setMessage:base::SysUTF16ToNSString(l10n_util::GetStringUTF16(
                      IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP))];
-  [view addSubview:[storageTooltip_ view]];
+  [box addSubview:[storageTooltip_ view]];
   [[storageTooltip_ view] setFrameOrigin:
       NSMakePoint(NSMaxX([storageCheckbox_ frame]) + kButtonGap, 0)];
 
+  // Add horizontal separator.
+  base::scoped_nsobject<NSBox> separator =
+      [CardUnmaskPromptViewCocoa createPlainBox];
+  [separator setAutoresizingMask:NSViewWidthSizable];
+  [separator setFillColor:gfx::SkColorToCalibratedNSColor(kSubtleBorderColor)];
+  [view addSubview:separator];
+
+  [box sizeToFit];
+  [separator setFrame:NSMakeRect(0, NSMaxY([box frame]), NSWidth([box frame]),
+                                 kSeparatorHeight)];
   [CardUnmaskPromptViewCocoa sizeToFitView:view];
-  [CardUnmaskPromptViewCocoa verticallyCenterSubviewsInView:view];
   return view;
 }
 
@@ -403,9 +430,11 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 // |---------------------------------------------------------------------------|
 // |                                                         [Cancel] [Verify] |
 // |---------------------------------------------------------------------------|
-// | storageCheckbox_ storageTooltip_                                          |
-// |     (Both enclosed in storageView_. May be hidden but still taking up     |
-// |         layout space. Will all be nil if !CanStoreLocally()).             |
+// | separator (NSBox.)                                                        |
+// | storageCheckbox_ storageTooltip_ (Both enclosed in another NSBox.         |
+// |                                   Checkbox and tooltip may be hidden.)    |
+// |     (Both NSBoxes are enclosed in storageView_. Will all be nil if        |
+// |          !CanStoreLocally()).                                             |
 // +---------------------------------------------------------------------------+
 //
 // progressOverlayView_:
@@ -419,15 +448,14 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   // Calculate dialog content width.
   CGFloat contentWidth =
       std::max(NSWidth([titleLabel_ frame]), NSWidth([inputRowView_ frame]));
-  contentWidth = std::max(contentWidth, NSWidth([storageView_ frame]));
+  contentWidth = std::max(contentWidth,
+                          NSWidth(NSUnionRect([storageCheckbox_ frame],
+                                              [[storageTooltip_ view] frame])));
   contentWidth = std::max(contentWidth, kDialogContentMinWidth);
 
   CGFloat contentMinX = chrome_style::kHorizontalPadding;
   CGFloat contentMaxX = contentMinX + contentWidth;
   CGFloat dialogWidth = contentMaxX + chrome_style::kHorizontalPadding;
-
-  [storageView_ setFrameOrigin:NSMakePoint(contentMinX,
-                                           chrome_style::kClientBottomPadding)];
 
   CGFloat verifyMinY =
       storageView_ ? NSMaxY([storageView_ frame]) + chrome_style::kRowPadding
