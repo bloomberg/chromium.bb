@@ -68,7 +68,7 @@ function ListContainer(element, table, grid) {
    * @type {!HTMLElement}
    * @const
    */
-  this.spinner = queryRequiredElement(element, '.spinner-layer');
+  this.spinner = queryRequiredElement(element, '.loading-indicator');
 
   /**
    * @type {FileListModel}
@@ -202,6 +202,12 @@ ListContainer.prototype.setCurrentListType = function(listType) {
 
   this.startBatchUpdates();
   this.currentListType = listType;
+
+  this.element.classList.toggle(
+      'list-view', listType === ListContainer.ListType.DETAIL);
+  this.element.classList.toggle(
+      'thumbnail-view', listType === ListContainer.ListType.THUMBNAIL);
+
   // TODO(dzvorygin): style.display and dataModel setting order shouldn't
   // cause any UI bugs. Currently, the only right way is first to set display
   // style and only then set dataModel.

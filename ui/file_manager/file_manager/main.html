@@ -33,6 +33,7 @@
     <link rel="import" href="chrome://resources/polymer/core-input/core-input.html">
     <link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
     <link rel="import" href="chrome://resources/polymer/paper-input/paper-input-decorator.html">
+    <link rel="import" href="chrome://resources/polymer/paper-progress/paper-progress.html">
     <link rel="import" href="chrome://resources/polymer/paper-ripple/paper-ripple.html">
 
     <!-- Don't load main_scripts.js when flattening is disabled. -->
@@ -460,7 +461,7 @@
                 <div class="detail-table" id="detail-table" tabindex="1" autofocus>
                 </div>
                 <grid class="thumbnail-grid" tabindex="2"></grid>
-                <div class="spinner-layer"></div>
+                <paper-progress class="loading-indicator" indeterminate></paper-progress>
                 <div class="drive-welcome page"></div>
                 <div id="no-search-results"></div>
               </div>

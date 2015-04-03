@@ -904,6 +904,26 @@ html[dir='rtl'] .breadcrumbs .separator {
   z-index: 525;
 }
 
+.loading-indicator {
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
+}
+
+.list-view .loading-indicator {
+  top: 40px;
+}
+
+.thumbnail-view .loading-indicator {
+  top: 0;
+}
+
+.loading-indicator::shadow #activeProgress {
+  background-color: rgb(26, 194, 34);
+}
+
 .downloads-warning {
   align-items: center;
   background-color: #f0f0f0;
