@@ -50,6 +50,23 @@ class BlinkTaskRunner : public blink::WebSuspendableTask,
   DISALLOW_COPY_AND_ASSIGN(BlinkTaskRunner);
 };
 
+// This class deletes ScriptContext on run or on contextDestoyed.
+// It allows us to pass ScriptContext as raw pointer to BlinkTaskRunner.
+// In ScriptContextSet::Remove method we mark the context as invalid, but
+// don't delete the object until all scheduled tasks are finished.
+class ScriptContextDeleter : public blink::WebSuspendableTask {
+ public:
+  explicit ScriptContextDeleter(ScriptContext* context) : context_(context) {}
+
+  void run() override { delete context_; }
+  void contextDestroyed() override { delete context_; }
+
+ private:
+  ScriptContext* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptContextDeleter);
+};
+
 }  // namespace
 
 ScriptContextSet::ScriptContextSet(ExtensionSet* extensions,
@@ -88,8 +105,16 @@ ScriptContext* ScriptContextSet::Register(
 
 void ScriptContextSet::Remove(ScriptContext* context) {
   if (contexts_.erase(context)) {
+    content::RenderFrame* context_render_frame = context->GetRenderFrame();
+    blink::WebLocalFrame* web_local_frame =
+        context_render_frame ? context_render_frame->GetWebFrame() : nullptr;
+
     context->Invalidate();
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, context);
+
+    if (!web_local_frame)
+      base::MessageLoop::current()->DeleteSoon(FROM_HERE, context);
+    else
+      web_local_frame->requestRunTask(new ScriptContextDeleter(context));
   }
 }
 
