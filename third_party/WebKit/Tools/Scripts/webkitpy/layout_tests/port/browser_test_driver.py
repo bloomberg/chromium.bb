@@ -82,7 +82,7 @@ class BrowserTestDriver(driver.Driver):
         cmd.append('--run-manual')
         cmd.append('--single_process')
         cmd.extend(per_test_args)
-        cmd.extend(self._port.get_option('additional_drt_flag', []))
+        cmd.extend(self._port.get_option('additional_driver_flag', []))
         return cmd
 
     def stop(self):

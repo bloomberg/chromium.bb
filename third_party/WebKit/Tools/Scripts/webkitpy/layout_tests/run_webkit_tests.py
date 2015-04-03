@@ -115,7 +115,7 @@ def parse_args(args):
     option_group_definitions.append(("Results Options", [
         optparse.make_option("--add-platform-exceptions", action="store_true", default=False,
             help="Save generated results into the *most-specific-platform* directory rather than the *generic-platform* directory"),
-        optparse.make_option("--additional-drt-flag", action="append",
+        optparse.make_option("--additional-driver-flag", "--additional-drt-flag", action="append", dest="additional_driver_flag",
             default=[], help="Additional command line flag to pass to the driver "
                  "Specify multiple times to add multiple flags."),
         optparse.make_option("--additional-expectations", action="append", default=[],

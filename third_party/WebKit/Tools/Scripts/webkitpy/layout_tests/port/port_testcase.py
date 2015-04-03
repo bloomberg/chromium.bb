@@ -163,7 +163,7 @@ class PortTestCase(unittest.TestCase):
         port = self.make_port()
         self.assertTrue(len(port.driver_cmd_line()))
 
-        options = MockOptions(additional_drt_flag=['--foo=bar', '--foo=baz'])
+        options = MockOptions(additional_driver_flag=['--foo=bar', '--foo=baz'])
         port = self.make_port(options=options)
         cmd_line = port.driver_cmd_line()
         self.assertTrue('--foo=bar' in cmd_line)

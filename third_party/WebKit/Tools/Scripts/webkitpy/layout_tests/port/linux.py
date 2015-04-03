@@ -105,8 +105,8 @@ class LinuxPort(base.Port):
         if not self.get_option('disable_breakpad'):
             self._dump_reader = DumpReaderLinux(host, self._build_path())
 
-    def additional_drt_flag(self):
-        flags = super(LinuxPort, self).additional_drt_flag()
+    def additional_driver_flag(self):
+        flags = super(LinuxPort, self).additional_driver_flag()
         if not self.get_option('disable_breakpad'):
             flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self._dump_reader.crash_dumps_directory()]
         return flags

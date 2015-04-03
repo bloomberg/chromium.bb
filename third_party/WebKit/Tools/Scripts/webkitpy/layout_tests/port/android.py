@@ -460,7 +460,7 @@ class AndroidPort(base.Port):
     def path_to_md5sum_host(self):
         return self._build_path(MD5SUM_HOST_FILE_NAME)
 
-    def additional_drt_flag(self):
+    def additional_driver_flag(self):
         return self._driver_details.additional_command_line_flags(use_breakpad=not self.get_option('disable_breakpad'))
 
     def default_timeout_ms(self):

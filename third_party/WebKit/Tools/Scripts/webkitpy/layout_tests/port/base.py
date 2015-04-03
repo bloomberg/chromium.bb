@@ -221,7 +221,7 @@ class Port(object):
     def buildbot_archives_baselines(self):
         return True
 
-    def additional_drt_flag(self):
+    def additional_driver_flag(self):
         if self.driver_name() == self.CONTENT_SHELL_NAME:
             return ['--run-layout-test']
         return []

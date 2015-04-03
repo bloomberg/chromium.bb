@@ -242,7 +242,7 @@ class ChromiumAndroidTwoPortsTest(unittest.TestCase):
         mock_executive = MockExecutive2(run_command_fn=mock_adb.run_command)
 
         port0 = android.AndroidPort(MockSystemHost(executive=mock_executive),
-            'android', options=MockOptions(additional_drt_flag=['--foo=bar']))
+            'android', options=MockOptions(additional_driver_flag=['--foo=bar']))
         port1 = android.AndroidPort(MockSystemHost(executive=mock_executive),
             'android', options=MockOptions(driver_name='content_shell'))
 
