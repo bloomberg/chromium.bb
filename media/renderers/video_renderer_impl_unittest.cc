@@ -498,21 +498,27 @@ TEST_F(VideoRendererImplTest, Underflow) {
     Mock::VerifyAndClearExpectations(&mock_cb_);
   }
 
-  // Advance time slightly. Frames should be dropped and we should NOT signal
-  // having nothing.
-  AdvanceTimeInMs(100);
+  // Advance time slightly, but enough to exceed the duration of the last frame.
+  // Frames should be dropped and we should NOT signal having nothing.
+  {
+    SCOPED_TRACE("Waiting for frame drops");
+    WaitableMessageLoopEvent event;
+    EXPECT_CALL(mock_cb_, Display(HasTimestamp(10))).Times(0);
+    EXPECT_CALL(mock_cb_, Display(HasTimestamp(20))).Times(0);
+    EXPECT_CALL(mock_cb_, Display(HasTimestamp(30)))
+        .WillOnce(RunClosure(event.GetClosure()));
+    AdvanceTimeInMs(31);
+    event.RunAndWait();
+    Mock::VerifyAndClearExpectations(&mock_cb_);
+  }
 
-  // Advance time more. Now we should signal having nothing. And put
-  // the last frame up for display.
+  // Advance time more, such that a new frame should have been displayed by now.
   {
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_NOTHING");
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
         .WillOnce(RunClosure(event.GetClosure()));
-    EXPECT_CALL(mock_cb_, Display(HasTimestamp(10))).Times(0);
-    EXPECT_CALL(mock_cb_, Display(HasTimestamp(20))).Times(0);
-    EXPECT_CALL(mock_cb_, Display(HasTimestamp(30))).Times(1);
-    AdvanceTimeInMs(3000);  // Must match kTimeToDeclareHaveNothing.
+    AdvanceWallclockTimeInMs(9);
     event.RunAndWait();
     Mock::VerifyAndClearExpectations(&mock_cb_);
   }

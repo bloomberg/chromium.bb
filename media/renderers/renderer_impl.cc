@@ -7,17 +7,23 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
+#include "media/base/media_switches.h"
 #include "media/base/time_source.h"
 #include "media/base/video_renderer.h"
 #include "media/base/wall_clock_time_source.h"
 
 namespace media {
+
+// See |video_underflow_threshold_|.
+static const int kDefaultVideoUnderflowThresholdMs = 3000;
 
 RendererImpl::RendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -36,9 +42,22 @@ RendererImpl::RendererImpl(
       cdm_context_(nullptr),
       underflow_disabled_for_testing_(false),
       clockless_video_playback_enabled_for_testing_(false),
+      video_underflow_threshold_(
+          base::TimeDelta::FromMilliseconds(kDefaultVideoUnderflowThresholdMs)),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
   DVLOG(1) << __FUNCTION__;
+
+  // TODO(dalecurtis): Remove once experiments for http://crbug.com/470940 are
+  // complete.
+  int threshold_ms = 0;
+  std::string threshold_ms_str(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kVideoUnderflowThresholdMs));
+  if (base::StringToInt(threshold_ms_str, &threshold_ms) && threshold_ms > 0) {
+    video_underflow_threshold_ =
+        base::TimeDelta::FromMilliseconds(threshold_ms);
+  }
 }
 
 RendererImpl::~RendererImpl() {
@@ -336,7 +355,7 @@ void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
 
   if (audio_renderer_) {
     time_source_ = audio_renderer_->GetTimeSource();
-  } else {
+  } else if (!time_source_) {
     wall_clock_time_source_.reset(new WallClockTimeSource());
     time_source_ = wall_clock_time_source_.get();
   }
@@ -419,11 +438,36 @@ void RendererImpl::OnUpdateStatistics(const PipelineStatistics& stats) {
 
 void RendererImpl::OnBufferingStateChanged(BufferingState* buffering_state,
                                            BufferingState new_buffering_state) {
+  const bool is_audio = buffering_state == &audio_buffering_state_;
   DVLOG(1) << __FUNCTION__ << "(" << *buffering_state << ", "
-           << new_buffering_state << ") "
-           << (buffering_state == &audio_buffering_state_ ? "audio" : "video");
+           << new_buffering_state << ") " << (is_audio ? "audio" : "video");
   DCHECK(task_runner_->BelongsToCurrentThread());
+
   bool was_waiting_for_enough_data = WaitingForEnoughData();
+
+  // When audio is present, defer underflow callbacks for some time to avoid
+  // unnecessary glitches in audio; see http://crbug.com/144683#c53.
+  if (audio_renderer_ && !is_audio && state_ == STATE_PLAYING) {
+    if (video_buffering_state_ == BUFFERING_HAVE_ENOUGH &&
+        new_buffering_state == BUFFERING_HAVE_NOTHING &&
+        deferred_underflow_cb_.IsCancelled()) {
+      deferred_underflow_cb_.Reset(base::Bind(
+          &RendererImpl::OnBufferingStateChanged, weak_factory_.GetWeakPtr(),
+          buffering_state, new_buffering_state));
+      task_runner_->PostDelayedTask(FROM_HERE,
+                                    deferred_underflow_cb_.callback(),
+                                    video_underflow_threshold_);
+      return;
+    }
+
+    deferred_underflow_cb_.Cancel();
+  } else if (!deferred_underflow_cb_.IsCancelled() && is_audio &&
+             new_buffering_state == BUFFERING_HAVE_NOTHING) {
+    // If audio underflows while we have a deferred video underflow in progress
+    // we want to mark video as underflowed immediately and cancel the deferral.
+    deferred_underflow_cb_.Cancel();
+    video_buffering_state_ = BUFFERING_HAVE_NOTHING;
+  }
 
   *buffering_state = new_buffering_state;
 

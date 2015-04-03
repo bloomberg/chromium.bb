@@ -197,9 +197,8 @@ class MEDIA_EXPORT VideoRendererImpl
   // flushing.
   base::TimeTicks last_media_time_;
 
-  // The wallclock time of the last successfully painted frame. Set to null
-  // during flushing.
-  base::TimeTicks last_painted_time_;
+  // Equivalent to |last_media_time_| + the estimated duration of the frame.
+  base::TimeTicks latest_possible_paint_time_;
 
   // Keeps track of the number of frames decoded and dropped since the
   // last call to |statistics_cb_|. These must be accessed under lock.

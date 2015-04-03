@@ -54,6 +54,8 @@ MEDIA_EXPORT extern const char kEnableInbandTextTracks[];
 
 MEDIA_EXPORT extern const char kRequireAudioHardwareForTesting[];
 
+MEDIA_EXPORT extern const char kVideoUnderflowThresholdMs[];
+
 }  // namespace switches
 
 #endif  // MEDIA_BASE_MEDIA_SWITCHES_H_

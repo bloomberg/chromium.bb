@@ -5,6 +5,7 @@
 #ifndef MEDIA_RENDERERS_RENDERER_IMPL_H_
 #define MEDIA_RENDERERS_RENDERER_IMPL_H_
 
+#include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -64,6 +65,12 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // Helper functions for testing purposes. Must be called before Initialize().
   void DisableUnderflowForTesting();
   void EnableClocklessVideoPlaybackForTesting();
+  void set_time_source_for_testing(TimeSource* time_source) {
+    time_source_ = time_source;
+  }
+  void set_video_underflow_threshold_for_testing(base::TimeDelta threshold) {
+    video_underflow_threshold_ = threshold;
+  }
 
  private:
   enum State {
@@ -170,6 +177,13 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
 
   bool underflow_disabled_for_testing_;
   bool clockless_video_playback_enabled_for_testing_;
+
+  // Used to defer underflow for video when audio is present.
+  base::CancelableClosure deferred_underflow_cb_;
+
+  // The amount of time to wait before declaring underflow if the video renderer
+  // runs out of data but the audio renderer still has enough.
+  base::TimeDelta video_underflow_threshold_;
 
   base::WeakPtr<RendererImpl> weak_this_;
   base::WeakPtrFactory<RendererImpl> weak_factory_;

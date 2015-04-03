@@ -106,4 +106,9 @@ const char kEnableInbandTextTracks[] = "enable-inband-text-tracks";
 const char kRequireAudioHardwareForTesting[] =
     "require-audio-hardware-for-testing";
 
+// Allows clients to override the threshold for when the media renderer will
+// declare the underflow state for the video stream when audio is present.
+// TODO(dalecurtis): Remove once experiments for http://crbug.com/470940 finish.
+const char kVideoUnderflowThresholdMs[] = "video-underflow-threshold-ms";
+
 }  // namespace switches

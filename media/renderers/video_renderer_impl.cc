@@ -190,11 +190,6 @@ void VideoRendererImpl::ThreadMain() {
   const base::TimeDelta kIdleTimeDelta =
       base::TimeDelta::FromMilliseconds(10);
 
-  // If we have no frames and haven't painted any frame for certain amount of
-  // time, declare BUFFERING_HAVE_NOTHING.
-  const base::TimeDelta kTimeToDeclareHaveNothing =
-      base::TimeDelta::FromSeconds(3);
-
   for (;;) {
     base::AutoLock auto_lock(lock_);
 
@@ -212,19 +207,23 @@ void VideoRendererImpl::ThreadMain() {
 
     // Remain idle until we have the next frame ready for rendering.
     if (ready_frames_.empty()) {
+      base::TimeDelta wait_time = kIdleTimeDelta;
       if (received_end_of_stream_) {
         if (!rendered_end_of_stream_) {
           rendered_end_of_stream_ = true;
           task_runner_->PostTask(FROM_HERE, ended_cb_);
         }
-      } else if (!last_painted_time_.is_null() &&
-                 now - last_painted_time_ >= kTimeToDeclareHaveNothing) {
+      } else if (now >= latest_possible_paint_time_) {
+        // Declare HAVE_NOTHING if we don't have another frame by the time we
+        // are ready to paint the next one.
         buffering_state_ = BUFFERING_HAVE_NOTHING;
         task_runner_->PostTask(
             FROM_HERE, base::Bind(buffering_state_cb_, BUFFERING_HAVE_NOTHING));
+      } else {
+        wait_time = std::min(kIdleTimeDelta, latest_possible_paint_time_ - now);
       }
 
-      UpdateStatsAndWait_Locked(kIdleTimeDelta);
+      UpdateStatsAndWait_Locked(wait_time);
       continue;
     }
 
@@ -237,8 +236,6 @@ void VideoRendererImpl::ThreadMain() {
       continue;
     }
 
-    base::TimeTicks latest_possible_paint_time;
-
     // Deadline is defined as the duration between this frame and the next
     // frame, using the delta between this frame and the previous frame as the
     // assumption for frame duration.
@@ -246,10 +243,10 @@ void VideoRendererImpl::ThreadMain() {
     // TODO(scherkus): This can be vastly improved. Use a histogram to measure
     // the accuracy of our frame timing code. http://crbug.com/149829
     if (last_media_time_.is_null()) {
-      latest_possible_paint_time = now;
+      latest_possible_paint_time_ = now;
     } else {
       base::TimeDelta duration = target_paint_time - last_media_time_;
-      latest_possible_paint_time = target_paint_time + duration;
+      latest_possible_paint_time_ = target_paint_time + duration;
     }
 
     // Remain idle until we've reached our target paint window.
@@ -259,7 +256,7 @@ void VideoRendererImpl::ThreadMain() {
       continue;
     }
 
-    if (ready_frames_.size() > 1 && now > latest_possible_paint_time &&
+    if (ready_frames_.size() > 1 && now > latest_possible_paint_time_ &&
         drop_frames_) {
       DropNextReadyFrame_Locked();
       continue;
@@ -285,8 +282,7 @@ void VideoRendererImpl::PaintNextReadyFrame_Locked() {
   ready_frames_.pop_front();
   frames_decoded_++;
 
-  last_media_time_ = last_painted_time_ =
-      wall_clock_time_cb_.Run(next_frame->timestamp());
+  last_media_time_ = wall_clock_time_cb_.Run(next_frame->timestamp());
 
   paint_cb_.Run(next_frame);
 
@@ -443,7 +439,7 @@ void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
   state_ = kFlushed;
-  last_media_time_ = last_painted_time_ = base::TimeTicks();
+  latest_possible_paint_time_ = last_media_time_ = base::TimeTicks();
   base::ResetAndReturn(&flush_cb_).Run();
 }
 

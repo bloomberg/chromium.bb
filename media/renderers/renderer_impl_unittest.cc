@@ -110,6 +110,8 @@ class RendererImplTest : public ::testing::Test {
     if (start_status == PIPELINE_OK && audio_stream_) {
       EXPECT_CALL(*audio_renderer_, GetTimeSource())
           .WillOnce(Return(&time_source_));
+    } else {
+      renderer_impl_->set_time_source_for_testing(&time_source_);
     }
 
     renderer_impl_->Initialize(
@@ -174,10 +176,10 @@ class RendererImplTest : public ::testing::Test {
 
     base::TimeDelta start_time(
         base::TimeDelta::FromMilliseconds(kStartPlayingTimeInMs));
+    EXPECT_CALL(time_source_, SetMediaTime(start_time));
+    EXPECT_CALL(time_source_, StartTicking());
 
     if (audio_stream_) {
-      EXPECT_CALL(time_source_, SetMediaTime(start_time));
-      EXPECT_CALL(time_source_, StartTicking());
       EXPECT_CALL(*audio_renderer_, StartPlaying())
           .WillOnce(SetBufferingState(&audio_buffering_state_cb_,
                                       BUFFERING_HAVE_ENOUGH));
@@ -194,9 +196,10 @@ class RendererImplTest : public ::testing::Test {
   }
 
   void Flush(bool underflowed) {
+    if (!underflowed)
+      EXPECT_CALL(time_source_, StopTicking());
+
     if (audio_stream_) {
-      if (!underflowed)
-        EXPECT_CALL(time_source_, StopTicking());
       EXPECT_CALL(*audio_renderer_, Flush(_))
           .WillOnce(DoAll(SetBufferingState(&audio_buffering_state_cb_,
                                             BUFFERING_HAVE_NOTHING),
@@ -367,7 +370,7 @@ TEST_F(RendererImplTest, VideoStreamEnded) {
   InitializeWithVideo();
   Play();
 
-  // Video ended won't affect |time_source_|.
+  EXPECT_CALL(time_source_, StopTicking());
   EXPECT_CALL(callbacks_, OnEnded());
 
   video_ended_cb_.Run();
@@ -444,6 +447,89 @@ TEST_F(RendererImplTest, ErrorDuringInitialize) {
                       RunCallback<1>(PIPELINE_OK)));
 
   InitializeAndExpect(PIPELINE_ERROR_DECODE);
+}
+
+TEST_F(RendererImplTest, AudioUnderflow) {
+  InitializeWithAudio();
+  Play();
+
+  // Underflow should occur immediately with a single audio track.
+  EXPECT_CALL(time_source_, StopTicking());
+  audio_buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+}
+
+TEST_F(RendererImplTest, AudioUnderflowWithVideo) {
+  InitializeWithAudioAndVideo();
+  Play();
+
+  // Underflow should be immediate when both audio and video are present and
+  // audio underflows.
+  EXPECT_CALL(time_source_, StopTicking());
+  audio_buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+}
+
+TEST_F(RendererImplTest, VideoUnderflow) {
+  InitializeWithVideo();
+  Play();
+
+  // Underflow should occur immediately with a single video track.
+  EXPECT_CALL(time_source_, StopTicking());
+  video_buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+}
+
+TEST_F(RendererImplTest, VideoUnderflowWithAudio) {
+  InitializeWithAudioAndVideo();
+  Play();
+
+  // Set a zero threshold such that the underflow will be executed on the next
+  // run of the message loop.
+  renderer_impl_->set_video_underflow_threshold_for_testing(base::TimeDelta());
+
+  // Underflow should be delayed when both audio and video are present and video
+  // underflows.
+  video_buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+  Mock::VerifyAndClearExpectations(&time_source_);
+
+  EXPECT_CALL(time_source_, StopTicking());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(RendererImplTest, VideoUnderflowWithAudioVideoRecovers) {
+  InitializeWithAudioAndVideo();
+  Play();
+
+  // Set a zero threshold such that the underflow will be executed on the next
+  // run of the message loop.
+  renderer_impl_->set_video_underflow_threshold_for_testing(base::TimeDelta());
+
+  // Underflow should be delayed when both audio and video are present and video
+  // underflows.
+  video_buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+  Mock::VerifyAndClearExpectations(&time_source_);
+
+  // If video recovers, the underflow should never occur.
+  video_buffering_state_cb_.Run(BUFFERING_HAVE_ENOUGH);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(RendererImplTest, VideoAndAudioUnderflow) {
+  InitializeWithAudioAndVideo();
+  Play();
+
+  // Set a zero threshold such that the underflow will be executed on the next
+  // run of the message loop.
+  renderer_impl_->set_video_underflow_threshold_for_testing(base::TimeDelta());
+
+  // Underflow should be delayed when both audio and video are present and video
+  // underflows.
+  video_buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+  Mock::VerifyAndClearExpectations(&time_source_);
+
+  EXPECT_CALL(time_source_, StopTicking());
+  audio_buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+
+  // Nothing else should primed on the message loop.
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media
