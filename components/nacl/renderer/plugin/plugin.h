@@ -110,10 +110,6 @@ class Plugin : public pp::Instance {
   // in this order, for the main nacl subprocess.
   void ShutDownSubprocesses();
 
-  // Histogram helper functions, internal to Plugin so they can use
-  // uma_interface_ normally.
-  void HistogramTimeSmall(const std::string& name, int64_t ms);
-
   // Loads and starts a helper (e.g. llc, ld) NaCl module.
   // Only to be used from a background (non-main) thread for the PNaCl
   // translator. This will fully initialize the |subprocess| if the load was

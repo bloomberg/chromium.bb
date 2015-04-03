@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_offset_string_conversions.h"
@@ -678,10 +679,17 @@ void PepperPluginInstanceImpl::Delete() {
   // If this is a NaCl plugin instance, shut down the NaCl plugin by calling
   // its DidDestroy. Don't call DidDestroy on the untrusted plugin instance,
   // since there is little that it can do at this point.
-  if (original_instance_interface_)
+  if (original_instance_interface_) {
+    base::TimeTicks start = base::TimeTicks::Now();
     original_instance_interface_->DidDestroy(pp_instance());
-  else
+    UMA_HISTOGRAM_CUSTOM_TIMES("NaCl.Perf.ShutdownTime.Total",
+                               base::TimeTicks::Now() - start,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromSeconds(20),
+                               100);
+  } else {
     instance_interface_->DidDestroy(pp_instance());
+  }
   // Ensure we don't attempt to call functions on the destroyed instance.
   original_instance_interface_.reset();
   instance_interface_.reset();

@@ -85,8 +85,6 @@ void HistogramEnumerateOsArch(const std::string& sandbox_isa) {
 }
 
 // Records values up to 20 seconds.
-// These constants MUST match those in
-// components/nacl/renderer/plugin/plugin.cc
 void HistogramTimeSmall(const std::string& name, int64_t sample) {
   if (sample < 0)
     sample = 0;
@@ -101,8 +99,6 @@ void HistogramTimeSmall(const std::string& name, int64_t sample) {
 }
 
 // Records values up to 3 minutes, 20 seconds.
-// These constants MUST match those in
-// components/nacl/renderer/plugin/plugin.cc
 void HistogramTimeMedium(const std::string& name, int64_t sample) {
   if (sample < 0)
     sample = 0;
@@ -117,8 +113,6 @@ void HistogramTimeMedium(const std::string& name, int64_t sample) {
 }
 
 // Records values up to 33 minutes.
-// These constants MUST match those in
-// components/nacl/renderer/plugin/plugin.cc
 void HistogramTimeLarge(const std::string& name, int64_t sample) {
   if (sample < 0)
     sample = 0;
