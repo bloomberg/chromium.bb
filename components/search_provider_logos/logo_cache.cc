@@ -21,6 +21,7 @@ const char kOnClickURLKey[] = "on_click_url";
 const char kAltTextKey[] = "alt_text";
 const char kMimeTypeKey[] = "mime_type";
 const char kNumBytesKey[] = "num_bytes";
+const char kAnimatedUrlKey[] = "animated_url";
 
 bool GetTimeValue(const base::DictionaryValue& dict,
                   const std::string& key,
@@ -124,6 +125,7 @@ scoped_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
       !dict->GetString(kFingerprintKey, &metadata->fingerprint) ||
       !dict->GetString(kOnClickURLKey, &metadata->on_click_url) ||
       !dict->GetString(kAltTextKey, &metadata->alt_text) ||
+      !dict->GetString(kAnimatedUrlKey, &metadata->animated_url) ||
       !dict->GetString(kMimeTypeKey, &metadata->mime_type) ||
       !dict->GetBoolean(kCanShowAfterExpirationKey,
                         &metadata->can_show_after_expiration) ||
@@ -144,6 +146,7 @@ void LogoCache::LogoMetadataToString(const LogoMetadata& metadata,
   dict.SetString(kFingerprintKey, metadata.fingerprint);
   dict.SetString(kOnClickURLKey, metadata.on_click_url);
   dict.SetString(kAltTextKey, metadata.alt_text);
+  dict.SetString(kAnimatedUrlKey, metadata.animated_url);
   dict.SetString(kMimeTypeKey, metadata.mime_type);
   dict.SetBoolean(kCanShowAfterExpirationKey,
                   metadata.can_show_after_expiration);

@@ -24,6 +24,7 @@ LogoMetadata GetExampleMetadata() {
                                      &metadata.expiration_time));
   metadata.can_show_after_expiration = true;
   metadata.on_click_url = "https://www.google.com/search?q=chicken";
+  metadata.animated_url = "http://www.google.com/logos/doodle.png";
   metadata.alt_text = "A logo about chickens";
   metadata.mime_type = "image/jpeg";
   return metadata;
@@ -73,6 +74,7 @@ void ExpectMetadataEqual(const LogoMetadata& expected_metadata,
             actual_metadata.can_show_after_expiration);
   EXPECT_EQ(expected_metadata.expiration_time, actual_metadata.expiration_time);
   EXPECT_EQ(expected_metadata.on_click_url, actual_metadata.on_click_url);
+  EXPECT_EQ(expected_metadata.animated_url, actual_metadata.animated_url);
   EXPECT_EQ(expected_metadata.alt_text, actual_metadata.alt_text);
   EXPECT_EQ(expected_metadata.mime_type, actual_metadata.mime_type);
 }

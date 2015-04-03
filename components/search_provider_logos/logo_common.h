@@ -29,6 +29,10 @@ struct LogoMetadata {
   std::string alt_text;
   // The mime type of the logo image.
   std::string mime_type;
+  // The URL for an animated image to display when the call to action logo is
+  // clicked. If |animated_url| is not empty, |encoded_image| refers to a call
+  // to action image.
+  std::string animated_url;
 
   // For use by LogoTracker ---------------------------------------------------
 

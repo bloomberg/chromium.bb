@@ -97,6 +97,7 @@ Logo GetSampleLogo(const GURL& logo_url, base::Time response_time) {
   logo.metadata.source_url = logo_url.spec();
   logo.metadata.on_click_url = "http://www.google.com/search?q=potato";
   logo.metadata.alt_text = "A logo about potatoes";
+  logo.metadata.animated_url = "http://www.google.com/logos/doodle.png";
   logo.metadata.mime_type = "image/png";
   return logo;
 }
@@ -118,6 +119,7 @@ std::string MakeServerResponse(
     const SkBitmap& image,
     const std::string& on_click_url,
     const std::string& alt_text,
+    const std::string& animated_url,
     const std::string& mime_type,
     const std::string& fingerprint,
     base::TimeDelta time_to_live) {
@@ -128,6 +130,9 @@ std::string MakeServerResponse(
 
   dict.SetString("update.logo.target", on_click_url);
   dict.SetString("update.logo.alt", alt_text);
+  if (!animated_url.empty()) {
+    dict.SetString("update.logo.url", animated_url);
+  }
   dict.SetString("update.logo.mime_type", mime_type);
   dict.SetString("update.logo.fingerprint", fingerprint);
   if (time_to_live.ToInternalValue() != 0)
@@ -143,6 +148,7 @@ std::string MakeServerResponse(const Logo& logo, base::TimeDelta time_to_live) {
   return MakeServerResponse(logo.image,
                             logo.metadata.on_click_url,
                             logo.metadata.alt_text,
+                            logo.metadata.animated_url,
                             logo.metadata.mime_type,
                             logo.metadata.fingerprint,
                             time_to_live);
@@ -160,6 +166,12 @@ void ExpectLogosEqual(const Logo* expected_logo,
             actual_logo->metadata.on_click_url);
   EXPECT_EQ(expected_logo->metadata.source_url,
             actual_logo->metadata.source_url);
+  EXPECT_EQ(expected_logo->metadata.animated_url,
+            actual_logo->metadata.animated_url);
+  EXPECT_EQ(expected_logo->metadata.alt_text,
+            actual_logo->metadata.alt_text);
+  EXPECT_EQ(expected_logo->metadata.mime_type,
+            actual_logo->metadata.mime_type);
   EXPECT_EQ(expected_logo->metadata.fingerprint,
             actual_logo->metadata.fingerprint);
   EXPECT_EQ(expected_logo->metadata.can_show_after_expiration,
@@ -424,6 +436,7 @@ TEST_F(LogoTrackerTest, AcceptMinimalLogoResponse) {
   logo.image = MakeBitmap(1, 2);
   logo.metadata.source_url = logo_url_.spec();
   logo.metadata.can_show_after_expiration = true;
+  logo.metadata.mime_type = "image/png";
 
   std::string response = ")]}' {\"update\":{\"logo\":{\"data\":\"" +
                          EncodeBitmapAsPNGBase64(logo.image) +
