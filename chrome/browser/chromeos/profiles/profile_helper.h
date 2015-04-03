@@ -134,6 +134,7 @@ class ProfileHelper
   friend class KioskTest;
   friend class MockUserManager;
   friend class MultiProfileUserControllerTest;
+  friend class PrinterServiceProviderAppSearchEnabledTest;
   friend class ProfileHelperTest;
   friend class ProfileListChromeOSTest;
   friend class SessionStateDelegateChromeOSTest;

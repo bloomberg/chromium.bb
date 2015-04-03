@@ -336,6 +336,12 @@ const char kDisableWebviewSigninFlow[] = "disable-webview-signin-flow";
 // Enable Chrome OS firewall hole-punching for Chrome Apps.
 const char kEnableFirewallHolePunching[] = "enable-firewall-hole-punching";
 
+// Enables searching for an app that supports a plugged in USB printer. When a
+// user plugs in USB printer, they are shown a notification offering to search
+// Chroem Web Store for an app that has printerProvider permission and can
+// handle the plugged in printer.
+const char kEnablePrinterAppSearch[] = "enable-printer-app-search";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }

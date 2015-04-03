@@ -11,6 +11,8 @@
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 
+class NotificationUIManager;
+
 namespace dbus {
 class MethodCall;
 class Response;
@@ -57,6 +59,10 @@ class PrinterServiceProvider
                                   const std::string& product);
 
  private:
+  friend class PrinterServiceProviderAppSearchEnabledTest;
+
+  void SetNotificationUIManagerForTesting(NotificationUIManager* manager);
+
   // Called from ExportedObject, when PrinterAdded() is exported as
   // a D-Bus method, or failed to be exported.
   void OnExported(const std::string& interface_name,
@@ -67,6 +73,8 @@ class PrinterServiceProvider
   // Called on UI thread from dbus request.
   void PrinterAdded(dbus::MethodCall* method_call,
                     dbus::ExportedObject::ResponseSender response_sender);
+
+  NotificationUIManager* notification_ui_manager_;
 
   scoped_refptr<dbus::ExportedObject> exported_object_;
   base::WeakPtrFactory<PrinterServiceProvider> weak_ptr_factory_;

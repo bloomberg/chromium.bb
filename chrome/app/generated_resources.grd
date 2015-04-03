@@ -15901,6 +15901,23 @@ Do you accept?
       <message name="IDS_ENABLE_INVALID_CERT_COLLECTION_DESCRIPTION" desc="Description of the 'Enable invalid certificate collection' flag.">
         Allows users to opt in to the collection of invalid TLS/SSL certificate chains.
       </message>
+
+      <!-- Printer detected notification -->
+      <if expr="chromeos">
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_TITLE" desc="Title for notification shown to the user when a printer gets plugged in to a Chrome OS device.">
+          Printer from <ph name="VENDOR_NAME">$1<ex>Google</ex></ph> detected
+        </message>
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_TITLE_UNKNOWN_VENDOR" desc="Title for notification shown to the user when a printer gets plugged in to a Chrome OS device in the case the printer manufacturer name is unknown.">
+          Printer detected
+        </message>
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_NO_PRINT_APP_BODY" desc="Content for notification shown to the user when a printer gets plugged in to a Chrome OS device if the active user does not have an app that supports the printer installed.">
+          Click to find a print app to use this printer.
+        </message>
+        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_PRINT_APP_FOUND_BODY" desc="Content for notification shown to the user when a printer gets plugged in to a Chrome OS device if the active user already has a print app that supports the printer installed.">
+          Your printer is ready.
+        </message>
+      </if>
+
     </messages>
   </release>
 </grit>
