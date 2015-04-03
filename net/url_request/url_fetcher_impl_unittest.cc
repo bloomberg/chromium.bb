@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -48,6 +49,40 @@ namespace {
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("net/data/url_fetcher_impl_unittest");
 const char kTestServerFilePrefix[] = "files/";
+
+// Request body for streams created by CreateUploadStream.
+const char kCreateUploadStreamBody[] = "rosebud";
+
+base::FilePath GetUploadFileTestPath() {
+  base::FilePath path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return path.Append(
+      FILE_PATH_LITERAL("net/data/url_request_unittest/BullRunSpeech.txt"));
+}
+
+// Simple URLRequestDelegate that waits for the specified fetcher to complete.
+// Can only be used once.
+class WaitingURLFetcherDelegate : public URLFetcherDelegate {
+ public:
+  WaitingURLFetcherDelegate() : fetcher_(nullptr) {}
+
+  void StartFetcherAndWait(URLFetcher* fetcher) {
+    EXPECT_FALSE(fetcher_);
+    fetcher_ = fetcher;
+    fetcher_->Start();
+    run_loop_.Run();
+    fetcher_ = nullptr;
+  }
+
+  void OnURLFetchComplete(const URLFetcher* source) override {
+    EXPECT_EQ(fetcher_, source);
+    run_loop_.Quit();
+  }
+
+ private:
+  URLFetcher* fetcher_;
+  base::RunLoop run_loop_;
+};
 
 class ThrottlingTestURLRequestContext : public TestURLRequestContext {
  public:
@@ -87,6 +122,7 @@ class URLFetcherTest : public testing::Test,
  public:
   URLFetcherTest()
       : io_message_loop_proxy_(base::MessageLoopProxy::current()),
+        num_upload_streams_created_(0),
         fetcher_(nullptr),
         expected_status_code_(200) {}
 
@@ -112,6 +148,23 @@ class URLFetcherTest : public testing::Test,
 
   TestURLRequestContext* request_context() {
     return context_.get();
+  }
+
+  // Callback passed to URLFetcher to create upload stream by some tests.
+  scoped_ptr<UploadDataStream> CreateUploadStream() {
+    ++num_upload_streams_created_;
+    std::vector<char> buffer(
+        kCreateUploadStreamBody,
+        kCreateUploadStreamBody + strlen(kCreateUploadStreamBody));
+    return ElementsUploadDataStream::CreateWithReader(
+        scoped_ptr<UploadElementReader>(
+            new UploadOwnedBytesElementReader(&buffer)),
+        0);
+  }
+
+  // Number of streams created by CreateUploadStream.
+  size_t num_upload_streams_created() const {
+    return num_upload_streams_created_;
   }
 
  protected:
@@ -149,6 +202,8 @@ class URLFetcherTest : public testing::Test,
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
   scoped_ptr<SpawnedTestServer> test_server_;
+
+  size_t num_upload_streams_created_;
 
   URLFetcherImpl* fetcher_;
   scoped_ptr<TestURLRequestContext> context_;
@@ -237,77 +292,6 @@ void URLFetcherMockDnsTest::OnURLFetchComplete(const URLFetcher* source) {
 }
 
 namespace {
-
-// Version of URLFetcherTest that does a POST instead
-class URLFetcherPostTest : public URLFetcherTest {
- public:
-  // URLFetcherTest:
-  void CreateFetcher(const GURL& url) override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-};
-
-// Version of URLFetcherTest that does a POST of a file using
-// SetUploadDataStream
-class URLFetcherPostFileTest : public URLFetcherTest {
- public:
-  URLFetcherPostFileTest();
-
-  void SetUploadRange(uint64 range_offset, uint64 range_length) {
-    range_offset_ = range_offset;
-    range_length_ = range_length;
-  }
-
-  // URLFetcherTest:
-  void CreateFetcher(const GURL& url) override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-
- private:
-  base::FilePath path_;
-  uint64 range_offset_;
-  uint64 range_length_;
-};
-
-class URLFetcherSetUploadFactoryTest : public URLFetcherTest {
- public:
-  URLFetcherSetUploadFactoryTest() : create_stream_count_(0) {}
-
-  // URLFetcherTest:
-  void CreateFetcher(const GURL& url) override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-
-  // Callback passed to URLFetcher to create upload stream.
-  scoped_ptr<UploadDataStream> CreateUploadStream() {
-    ++create_stream_count_;
-    const std::string str("bobsyeruncle\n");
-    std::vector<char> buffer(str.begin(), str.end());
-    return ElementsUploadDataStream::CreateWithReader(
-        scoped_ptr<UploadElementReader>(
-            new UploadOwnedBytesElementReader(&buffer)),
-        0);
-  }
-
-  size_t create_stream_count() const { return create_stream_count_; }
-
- private:
-  // Count of calling CreateStream.
-  size_t create_stream_count_;
-};
-
-// Version of URLFetcherTest that does a POST instead with empty upload body
-class URLFetcherEmptyPostTest : public URLFetcherTest {
- public:
-  // URLFetcherTest:
-  void CreateFetcher(const GURL& url) override;
-
-  // URLFetcherDelegate:
-  void OnURLFetchComplete(const URLFetcher* source) override;
-};
 
 // Version of URLFetcherTest that tests download progress reports.
 class URLFetcherDownloadProgressTest : public URLFetcherTest {
@@ -563,98 +547,6 @@ class URLFetcherFileTest : public URLFetcherTest {
   // Expected file error code for the test.  OK when expecting success.
   int expected_file_error_;
 };
-
-void URLFetcherPostTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
-  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy().get(), request_context()));
-  fetcher_->SetUploadData("application/x-www-form-urlencoded", "bobsyeruncle");
-  fetcher_->Start();
-}
-
-void URLFetcherPostTest::OnURLFetchComplete(const URLFetcher* source) {
-  std::string data;
-  EXPECT_TRUE(source->GetResponseAsString(&data));
-  EXPECT_EQ(std::string("bobsyeruncle"), data);
-  URLFetcherTest::OnURLFetchComplete(source);
-}
-
-URLFetcherPostFileTest::URLFetcherPostFileTest()
-    : range_offset_(0),
-      range_length_(kuint64max) {
-  PathService::Get(base::DIR_SOURCE_ROOT, &path_);
-  path_ = path_.Append(FILE_PATH_LITERAL("net"));
-  path_ = path_.Append(FILE_PATH_LITERAL("data"));
-  path_ = path_.Append(FILE_PATH_LITERAL("url_request_unittest"));
-  path_ = path_.Append(FILE_PATH_LITERAL("BullRunSpeech.txt"));
-}
-
-void URLFetcherPostFileTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
-  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy().get(), request_context()));
-  fetcher_->SetUploadFilePath("application/x-www-form-urlencoded",
-                              path_,
-                              range_offset_,
-                              range_length_,
-                              base::MessageLoopProxy::current());
-  fetcher_->Start();
-}
-
-void URLFetcherPostFileTest::OnURLFetchComplete(const URLFetcher* source) {
-  std::string expected;
-  ASSERT_TRUE(base::ReadFileToString(path_, &expected));
-  ASSERT_LE(range_offset_, expected.size());
-  uint64 expected_size =
-      std::min(range_length_, expected.size() - range_offset_);
-
-  std::string data;
-  EXPECT_TRUE(source->GetResponseAsString(&data));
-  EXPECT_EQ(expected.substr(range_offset_, expected_size), data);
-  URLFetcherTest::OnURLFetchComplete(source);
-}
-
-void URLFetcherSetUploadFactoryTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
-  fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy().get(), request_context()));
-  fetcher_->SetUploadStreamFactory(
-      "text/plain",
-      base::Bind(&URLFetcherSetUploadFactoryTest::CreateUploadStream,
-                 base::Unretained(this)));
-  fetcher_->SetAutomaticallyRetryOn5xx(true);
-  fetcher_->SetMaxRetriesOn5xx(1);
-  fetcher_->Start();
-}
-
-void URLFetcherSetUploadFactoryTest::OnURLFetchComplete(
-    const URLFetcher* source) {
-  std::string data;
-  EXPECT_TRUE(source->GetResponseAsString(&data));
-  EXPECT_EQ("bobsyeruncle\n", data);
-  URLFetcherTest::OnURLFetchComplete(source);
-}
-
-void URLFetcherEmptyPostTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
-  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
-      io_message_loop_proxy()));
-  fetcher_->SetUploadData("text/plain", std::string());
-  fetcher_->Start();
-}
-
-void URLFetcherEmptyPostTest::OnURLFetchComplete(const URLFetcher* source) {
-  EXPECT_TRUE(source->GetStatus().is_success());
-  EXPECT_EQ(200, source->GetResponseCode());  // HTTP OK
-
-  std::string data;
-  EXPECT_TRUE(source->GetResponseAsString(&data));
-  EXPECT_TRUE(data.empty());
-
-  CleanupAfterFetchComplete();
-  // Do not call the super class method URLFetcherTest::OnURLFetchComplete,
-  // since it expects a non-empty response.
-}
 
 void URLFetcherDownloadProgressTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
@@ -1109,39 +1001,125 @@ TEST_F(URLFetcherMockDnsTest, RetryOnNetworkChangedAndSucceed) {
   EXPECT_EQ(200, completed_fetcher_->GetResponseCode());
 }
 
-TEST_F(URLFetcherPostTest, Basic) {
-  CreateFetcher(test_server_->GetURL("echo"));
-  base::MessageLoop::current()->Run();
+TEST_F(URLFetcherTest, PostString) {
+  const char kUploadData[] = "bobsyeruncle";
+
+  WaitingURLFetcherDelegate delegate;
+  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST,
+                         &delegate);
+  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
+      request_context(), base::MessageLoopProxy::current()));
+  fetcher.SetUploadData("application/x-www-form-urlencoded", kUploadData);
+  delegate.StartFetcherAndWait(&fetcher);
+
+  EXPECT_TRUE(fetcher.GetStatus().is_success());
+  EXPECT_EQ(200, fetcher.GetResponseCode());
+  std::string data;
+  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  EXPECT_EQ(kUploadData, data);
 }
 
-TEST_F(URLFetcherPostFileTest, Basic) {
-  CreateFetcher(test_server_->GetURL("echo"));
-  base::MessageLoop::current()->Run();
+TEST_F(URLFetcherTest, PostEmptyString) {
+  const char kUploadData[] = "";
+
+  WaitingURLFetcherDelegate delegate;
+  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST,
+                         &delegate);
+  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
+      request_context(), base::MessageLoopProxy::current()));
+  fetcher.SetUploadData("application/x-www-form-urlencoded", kUploadData);
+  delegate.StartFetcherAndWait(&fetcher);
+
+  EXPECT_TRUE(fetcher.GetStatus().is_success());
+  EXPECT_EQ(200, fetcher.GetResponseCode());
+  std::string data;
+  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  EXPECT_EQ(kUploadData, data);
 }
 
-TEST_F(URLFetcherPostFileTest, Range) {
-  SetUploadRange(30, 100);
+TEST_F(URLFetcherTest, PostEntireFile) {
+  base::FilePath upload_path = GetUploadFileTestPath();
 
-  CreateFetcher(test_server_->GetURL("echo"));
-  base::MessageLoop::current()->Run();
+  WaitingURLFetcherDelegate delegate;
+  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST, this);
+  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
+      request_context(), base::MessageLoopProxy::current()));
+  fetcher.SetUploadFilePath("application/x-www-form-urlencoded", upload_path, 0,
+                            kuint64max, base::MessageLoopProxy::current());
+  delegate.StartFetcherAndWait(&fetcher);
+
+  EXPECT_TRUE(fetcher.GetStatus().is_success());
+  EXPECT_EQ(200, fetcher.GetResponseCode());
+
+  std::string expected;
+  ASSERT_TRUE(base::ReadFileToString(upload_path, &expected));
+  std::string data;
+  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  EXPECT_EQ(expected, data);
 }
 
-TEST_F(URLFetcherSetUploadFactoryTest, Basic) {
-  CreateFetcher(test_server_->GetURL("echo"));
-  base::MessageLoop::current()->Run();
-  ASSERT_EQ(1u, create_stream_count());
+TEST_F(URLFetcherTest, PostFileRange) {
+  const size_t kRangeStart = 30;
+  const size_t kRangeLength = 100;
+  base::FilePath upload_path = GetUploadFileTestPath();
+
+  WaitingURLFetcherDelegate delegate;
+  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST, this);
+  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
+      request_context(), base::MessageLoopProxy::current()));
+  fetcher.SetUploadFilePath("application/x-www-form-urlencoded", upload_path,
+                            kRangeStart, kRangeLength,
+                            base::MessageLoopProxy::current());
+  delegate.StartFetcherAndWait(&fetcher);
+
+  EXPECT_TRUE(fetcher.GetStatus().is_success());
+  EXPECT_EQ(200, fetcher.GetResponseCode());
+
+  std::string expected;
+  ASSERT_TRUE(base::ReadFileToString(upload_path, &expected));
+  std::string data;
+  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  EXPECT_EQ(expected.substr(kRangeStart, kRangeLength), data);
 }
 
-TEST_F(URLFetcherSetUploadFactoryTest, Retry) {
-  expected_status_code_ = 500;
-  CreateFetcher(test_server_->GetURL("echo?status=500"));
-  base::MessageLoop::current()->Run();
-  ASSERT_EQ(2u, create_stream_count());
+TEST_F(URLFetcherTest, PostWithUploadStreamFactory) {
+  WaitingURLFetcherDelegate delegate;
+  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST,
+                         &delegate);
+  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
+      request_context(), base::MessageLoopProxy::current()));
+  fetcher.SetUploadStreamFactory(
+      "text/plain",
+      base::Bind(&URLFetcherTest::CreateUploadStream, base::Unretained(this)));
+  delegate.StartFetcherAndWait(&fetcher);
+
+  EXPECT_TRUE(fetcher.GetStatus().is_success());
+  EXPECT_EQ(200, fetcher.GetResponseCode());
+  std::string data;
+  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  EXPECT_EQ(kCreateUploadStreamBody, data);
+  EXPECT_EQ(1u, num_upload_streams_created());
 }
 
-TEST_F(URLFetcherEmptyPostTest, Basic) {
-  CreateFetcher(test_server_->GetURL("echo"));
-  base::MessageLoop::current()->Run();
+TEST_F(URLFetcherTest, PostWithUploadStreamFactoryAndRetries) {
+  WaitingURLFetcherDelegate delegate;
+  URLFetcherImpl fetcher(test_server_->GetURL("echo?status=500"),
+                         URLFetcher::POST, &delegate);
+  fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
+      request_context(), base::MessageLoopProxy::current()));
+  fetcher.SetAutomaticallyRetryOn5xx(true);
+  fetcher.SetMaxRetriesOn5xx(1);
+  fetcher.SetUploadStreamFactory(
+      "text/plain",
+      base::Bind(&URLFetcherTest::CreateUploadStream, base::Unretained(this)));
+  delegate.StartFetcherAndWait(&fetcher);
+
+  EXPECT_TRUE(fetcher.GetStatus().is_success());
+  EXPECT_EQ(500, fetcher.GetResponseCode());
+  std::string data;
+  EXPECT_TRUE(fetcher.GetResponseAsString(&data));
+  EXPECT_EQ(kCreateUploadStreamBody, data);
+  EXPECT_EQ(2u, num_upload_streams_created());
 }
 
 TEST_F(URLFetcherUploadProgressTest, Basic) {
