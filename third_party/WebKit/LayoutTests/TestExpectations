@@ -1341,10 +1341,6 @@ crbug.com/375565 [ Mac ] virtual/slimmingpaint/fast/repaint/caret-with-transform
 
 crbug.com/375567 web-animations-api/w3c/simple-keyframes.html [ Pass Failure ]
 
-crbug.com/473119 fast/borders/border-radius-different-width-001.html [ NeedsRebaseline ]
-crbug.com/473119 ietestcenter/css3/bordersbackgrounds/border-radius-different-width-001.htm [ NeedsRebaseline ]
-crbug.com/473119 virtual/slimmingpaint/fast/borders/border-radius-different-width-001.html [ NeedsRebaseline ]
-
 crbug.com/376597 web-animations-api/player.html [ Pass Failure ]
 
 crbug.com/400841 media/video-canvas-draw.html [ ImageOnlyFailure ]
