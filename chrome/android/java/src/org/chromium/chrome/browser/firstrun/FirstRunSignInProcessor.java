@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.firstrun;
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -14,10 +15,12 @@ import android.util.Log;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.ChromeSwitches;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
+import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
@@ -195,7 +198,13 @@ public class FirstRunSignInProcessor {
      * @param accountName The account to show the sync settings for.
      */
     private void openSyncSettings(final String accountName) {
-        ((ChromiumApplication) mActivity.getApplication()).openSyncSettings(accountName);
+        if (TextUtils.isEmpty(accountName)) return;
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                mActivity, SyncCustomizationFragment.class.getName());
+        Bundle args = new Bundle();
+        args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT, accountName);
+        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, args);
+        mActivity.startActivity(intent);
     }
 
     /**
