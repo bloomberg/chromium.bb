@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/location.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
@@ -1091,6 +1092,53 @@ class PermissionsInsertRequest : public EntryActionRequest {
   std::string value_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsInsertRequest);
+};
+
+//========================== BatchUploadRequest ==========================
+
+struct BatchUploadChildEntry {
+  explicit BatchUploadChildEntry(UrlFetchRequestBase* request)
+      : request(request), prepared(false) {}
+  UrlFetchRequestBase* request;
+  bool prepared;
+};
+
+class BatchUploadRequest : public UrlFetchRequestBase {
+ public:
+  BatchUploadRequest(RequestSender* sender,
+                     const DriveApiUrlGenerator& url_generator);
+  ~BatchUploadRequest() override;
+
+  // Adds request to the batch request.
+  void AddRequest(UrlFetchRequestBase* request);
+
+  // Completes building batch upload request, and starts to send the request to
+  // server.
+  void Commit();
+
+  // Obtains weak pointer of this.
+  base::WeakPtr<BatchUploadRequest> GetWeakPtrAsBatchUploadRequest();
+
+  // Obtains reference to RequestSender that owns the request.
+  RequestSender* sender() const { return sender_; }
+  DriveApiUrlGenerator url_generator() const { return url_generator_; }
+
+  // Returns URL of this request.
+  GURL GetURL() const override;
+
+  void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
+
+ private:
+  RequestSender* const sender_;
+  const DriveApiUrlGenerator url_generator_;
+  std::vector<BatchUploadChildEntry> child_requests_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BatchUploadRequest> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(BatchUploadRequest);
 };
 
 }  // namespace drive

@@ -1623,8 +1623,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      "test/foo", 13, "non_existent", "new file.foo",
-      UploadNewFileOptions(),
+      "test/foo", 13, "non_existent", "new file.foo", UploadNewFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1656,8 +1655,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
-      "test/foo", 13, "2_file_resource_id",
-      UploadExistingFileOptions(),
+      "test/foo", 13, "2_file_resource_id", UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1674,8 +1672,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Forbidden) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
-      "test/foo", 13, "2_file_resource_id",
-      UploadExistingFileOptions(),
+      "test/foo", 13, "2_file_resource_id", UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 
@@ -1689,8 +1686,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
   DriveApiErrorCode error = DRIVE_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
-      "test/foo", 13, "non_existent",
-      UploadExistingFileOptions(),
+      "test/foo", 13, "non_existent", UploadExistingFileOptions(),
       test_util::CreateCopyResultCallback(&error, &upload_location));
   base::RunLoop().RunUntilIdle();
 

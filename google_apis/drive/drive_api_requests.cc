@@ -969,5 +969,50 @@ bool PermissionsInsertRequest::GetContentData(std::string* upload_content_type,
   return true;
 }
 
+//========================== BatchUploadRequest ==========================
+
+BatchUploadRequest::BatchUploadRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator)
+    : UrlFetchRequestBase(sender),
+      sender_(sender),
+      url_generator_(url_generator),
+      weak_ptr_factory_(this) {
+}
+
+BatchUploadRequest::~BatchUploadRequest() {
+  for (const auto& child : child_requests_) {
+    // Request will be deleted in RequestFinished method.
+    sender_->RequestFinished(child.request);
+  }
+}
+
+void BatchUploadRequest::AddRequest(UrlFetchRequestBase* request) {
+  DCHECK(request);
+  child_requests_.push_back(BatchUploadChildEntry(request));
+}
+
+void BatchUploadRequest::Commit() {
+  NOTIMPLEMENTED();
+}
+
+base::WeakPtr<BatchUploadRequest>
+BatchUploadRequest::GetWeakPtrAsBatchUploadRequest() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+GURL BatchUploadRequest::GetURL() const {
+  NOTIMPLEMENTED();
+  return GURL();
+}
+
+void BatchUploadRequest::ProcessURLFetchResults(const net::URLFetcher* source) {
+  NOTIMPLEMENTED();
+}
+
+void BatchUploadRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace drive
 }  // namespace google_apis

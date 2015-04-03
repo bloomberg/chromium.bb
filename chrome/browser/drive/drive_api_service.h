@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/drive/drive_service_interface.h"
@@ -26,7 +27,10 @@ class SequencedTaskRunner;
 
 namespace google_apis {
 class RequestSender;
-}
+namespace drive {
+class BatchUploadRequest;
+}  // namespace drive
+}  // namespace google_apis
 
 namespace net {
 class URLRequestContextGetter;
@@ -38,7 +42,10 @@ namespace drive {
 class BatchRequestConfigurator : public BatchRequestConfiguratorInterface,
                                  public base::NonThreadSafe {
  public:
-  BatchRequestConfigurator();
+  BatchRequestConfigurator(
+      const base::WeakPtr<google_apis::drive::BatchUploadRequest>&
+          batch_request,
+      const google_apis::CancelCallback& cancel_callback);
   ~BatchRequestConfigurator() override;
 
   // BatchRequestConfiguratorInterface overrides.
@@ -62,6 +69,10 @@ class BatchRequestConfigurator : public BatchRequestConfiguratorInterface,
   void Commit() override;
 
  private:
+  // Reference to batch request. It turns to null after committing.
+  base::WeakPtr<google_apis::drive::BatchUploadRequest> batch_request_;
+  google_apis::CancelCallback cancel_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(BatchRequestConfigurator);
 };
 

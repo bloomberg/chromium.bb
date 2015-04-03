@@ -159,10 +159,16 @@ const char kDriveApiRootDirectoryResourceId[] = "root";
 
 }  // namespace
 
-BatchRequestConfigurator::BatchRequestConfigurator() {
+BatchRequestConfigurator::BatchRequestConfigurator(
+    const base::WeakPtr<google_apis::drive::BatchUploadRequest>& batch_request,
+    const google_apis::CancelCallback& cancel_callback)
+    : batch_request_(batch_request), cancel_callback_(cancel_callback) {
 }
 
 BatchRequestConfigurator::~BatchRequestConfigurator() {
+  // The batch requst has not been committed.
+  if (batch_request_)
+    cancel_callback_.Run();
 }
 
 google_apis::CancelCallback BatchRequestConfigurator::MultipartUploadNewFile(
@@ -177,9 +183,15 @@ google_apis::CancelCallback BatchRequestConfigurator::MultipartUploadNewFile(
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  NOTIMPLEMENTED();
+  DCHECK(batch_request_);
 
-  return google_apis::CancelCallback();
+  batch_request_->AddRequest(
+      new google_apis::drive::MultipartUploadNewFileRequest(
+          batch_request_->sender(), title, parent_resource_id, content_type,
+          content_length, options.modified_date, options.last_viewed_by_me_date,
+          local_file_path, options.properties, batch_request_->url_generator(),
+          callback, progress_callback));
+  return cancel_callback_;
 }
 
 google_apis::CancelCallback
@@ -193,15 +205,24 @@ BatchRequestConfigurator::MultipartUploadExistingFile(
     const google_apis::ProgressCallback& progress_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
+  DCHECK(batch_request_);
 
-  NOTIMPLEMENTED();
-
-  return google_apis::CancelCallback();
+  batch_request_->AddRequest(
+      new google_apis::drive::MultipartUploadExistingFileRequest(
+          batch_request_->sender(), options.title, resource_id,
+          options.parent_resource_id, content_type, content_length,
+          options.modified_date, options.last_viewed_by_me_date,
+          local_file_path, options.etag, options.properties,
+          batch_request_->url_generator(), callback, progress_callback));
+  return cancel_callback_;
 }
 
 void BatchRequestConfigurator::Commit() {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
+  if (!batch_request_)
+    return;
+  batch_request_->Commit();
+  batch_request_.reset();
 }
 
 DriveAPIService::DriveAPIService(
@@ -827,8 +848,20 @@ void DriveAPIService::OnOAuth2RefreshTokenChanged() {
 
 scoped_ptr<BatchRequestConfiguratorInterface>
 DriveAPIService::StartBatchRequest() {
+  scoped_ptr<google_apis::drive::BatchUploadRequest> request(
+      new google_apis::drive::BatchUploadRequest(sender_.get(),
+                                                 url_generator_));
+  const base::WeakPtr<google_apis::drive::BatchUploadRequest> weak_ref =
+      request->GetWeakPtrAsBatchUploadRequest();
+  // Have sender_ manage the lifetime of the request.
+  // TODO(hirono): Currently we need to pass the ownership of the request to
+  // RequestSender before the request is committed because the request has a
+  // reference to RequestSender and we should ensure to delete the request when
+  // the sender is deleted. Resolve the circulating dependency and fix it.
+  const google_apis::CancelCallback callback =
+      sender_->StartRequestWithRetry(request.release());
   return make_scoped_ptr<BatchRequestConfiguratorInterface>(
-      new BatchRequestConfigurator);
+      new BatchRequestConfigurator(weak_ref, callback));
 }
 
 }  // namespace drive
