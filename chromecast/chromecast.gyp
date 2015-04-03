@@ -140,7 +140,8 @@
           'action_name': 'repack_cast_shell_pak',
           'variables': {
             'pak_inputs': [
-              '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources_100_percent.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_image_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/chromecast/shell_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/app/resources/content_resources_100_percent.pak',

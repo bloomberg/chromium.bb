@@ -63,6 +63,7 @@ static_library("extensions") {
     "//skia",
     "//storage/common",
     "//sync",
+    "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
     "//third_party/cacheinvalidation",
     "//third_party/icu",

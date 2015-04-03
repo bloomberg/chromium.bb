@@ -29,6 +29,7 @@
       }],
       ['OS != "ios"', {
         'pak_inputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
         ],

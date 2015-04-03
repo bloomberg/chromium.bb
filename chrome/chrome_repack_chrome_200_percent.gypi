@@ -15,7 +15,7 @@
     'conditions': [
       ['OS != "ios"', {
         'pak_inputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources_200_percent.pak',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_image_resources_200_percent.pak',
           '<(SHARED_INTERMEDIATE_DIR)/content/app/resources/content_resources_200_percent.pak',
         ],
       }],

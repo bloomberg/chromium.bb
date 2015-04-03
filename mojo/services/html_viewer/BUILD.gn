@@ -5,13 +5,26 @@
 import("//testing/test.gni")
 import("//third_party/mojo/src/mojo/public/mojo.gni")
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+import("//tools/grit/repack.gni")
+
+# Repack this here.
+repack("unified_blink_resources") {
+  sources = [
+    "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
+    "$root_gen_dir/blink/public/resources/blink_resources.pak",
+  ]
+  output = "$target_gen_dir/unified_blink_resources.pak"
+  deps = [
+    "//third_party/WebKit/public:image_resources",
+    "//third_party/WebKit/public:resources",
+  ]
+}
 
 action("generate_blink_resource_map") {
   script = "//mojo/services/html_viewer/generate_blink_resource_map.py"
   args = [
     "--pak-file",
-    rebase_path(
-        "$root_out_dir/gen/blink/public/resources/blink_resources_100_percent.pak"),
+    rebase_path("$target_gen_dir/unified_blink_resources.pak"),
     "--header",
     rebase_path("$target_gen_dir/blink_resource_map.h"),
     "--cpp",
@@ -21,7 +34,11 @@ action("generate_blink_resource_map") {
     "$target_gen_dir/blink_resource_map.cc",
     "$target_gen_dir/blink_resource_map.h",
   ]
+  deps = [
+    ":unified_blink_resources",
+  ]
   public_deps = [
+    "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
   ]
 }

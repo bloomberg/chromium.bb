@@ -264,6 +264,7 @@ static_library("content_shell_lib") {
     "//skia",
     "//storage/browser",
     "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
     "//third_party/WebKit/public:test_support",
     "//third_party/icu",
@@ -456,7 +457,8 @@ group("resources") {
 
 repack("pak") {
   sources = [
-    "$root_gen_dir/blink/public/resources/blink_resources_100_percent.pak",
+    "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
+    "$root_gen_dir/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
@@ -476,6 +478,7 @@ repack("pak") {
     "//content/app/strings",
     "//content/browser/tracing:resources",
     "//net:net_resources",
+    "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
     "//ui/resources",
     "//ui/strings",

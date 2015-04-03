@@ -109,6 +109,7 @@ source_set("browser") {
       "//net:http_server",
       "//storage/browser",
       "//storage/common",
+      "//third_party/WebKit/public:image_resources",
       "//third_party/WebKit/public:resources",
       "//third_party/angle:commit_id",
       "//third_party/icu",
