@@ -11,7 +11,10 @@ class RenderFrameHost;
 
 namespace extensions {
 
-void RegisterCoreExtensionServices(content::RenderFrameHost* render_frame_host);
+class Extension;
+
+void RegisterServicesForFrame(content::RenderFrameHost* render_frame_host,
+                              const Extension* extension);
 
 }  // namespace extensions
 

@@ -24,24 +24,6 @@
 namespace extensions {
 namespace {
 
-const Extension* GetExtension(content::RenderFrameHost* render_frame_host) {
-  content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
-  GURL url = render_frame_host->GetLastCommittedURL();
-  if (!url.is_empty()) {
-    if (site_instance->GetSiteURL().GetOrigin() != url.GetOrigin())
-      return nullptr;
-  } else {
-    url = site_instance->GetSiteURL();
-  }
-  content::BrowserContext* browser_context = site_instance->GetBrowserContext();
-  if (!url.SchemeIs(kExtensionScheme))
-    return nullptr;
-
-  return ExtensionRegistry::Get(browser_context)
-      ->enabled_extensions()
-      .GetExtensionOrAppByURL(url);
-}
-
 bool ExtensionHasPermission(const Extension* extension,
                             content::RenderProcessHost* render_process_host,
                             const std::string& permission_name) {
@@ -56,11 +38,9 @@ bool ExtensionHasPermission(const Extension* extension,
 
 }  // namespace
 
-void RegisterCoreExtensionServices(
-    content::RenderFrameHost* render_frame_host) {
-  const Extension* extension = GetExtension(render_frame_host);
-  if (!extension)
-    return;
+void RegisterServicesForFrame(content::RenderFrameHost* render_frame_host,
+                              const Extension* extension) {
+  DCHECK(extension);
 
   content::ServiceRegistry* service_registry =
       render_frame_host->GetServiceRegistry();

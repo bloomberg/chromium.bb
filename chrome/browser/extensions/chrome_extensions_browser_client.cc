@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
+#include "chrome/browser/extensions/chrome_mojo_service_registration.h"
 #include "chrome/browser/extensions/chrome_process_manager_delegate.h"
 #include "chrome/browser/extensions/chrome_url_request_util.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
@@ -35,6 +36,7 @@
 #include "extensions/browser/api/generated_api_registration.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/mojo/service_registration.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/url_request_util.h"
 
@@ -254,6 +256,13 @@ void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
 
   // Generated APIs from Chrome.
   extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
+}
+
+void ChromeExtensionsBrowserClient::RegisterMojoServices(
+    content::RenderFrameHost* render_frame_host,
+    const Extension* extension) const {
+  RegisterServicesForFrame(render_frame_host, extension);
+  RegisterChromeServicesForFrame(render_frame_host, extension);
 }
 
 scoped_ptr<extensions::RuntimeAPIDelegate>

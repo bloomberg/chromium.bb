@@ -518,6 +518,8 @@
       'browser/extensions/chrome_extension_web_contents_observer.h',
       'browser/extensions/chrome_extensions_browser_client.cc',
       'browser/extensions/chrome_extensions_browser_client.h',
+      'browser/extensions/chrome_mojo_service_registration.cc',
+      'browser/extensions/chrome_mojo_service_registration.h',
       'browser/extensions/chrome_notification_observer.cc',
       'browser/extensions/chrome_notification_observer.h',
       'browser/extensions/chrome_process_manager_delegate.cc',

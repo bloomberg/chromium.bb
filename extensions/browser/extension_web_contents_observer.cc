@@ -13,6 +13,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/mojo/service_registration.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
@@ -20,6 +21,28 @@
 #include "extensions/common/extension_messages.h"
 
 namespace extensions {
+namespace {
+
+const Extension* GetExtensionForRenderFrame(
+    content::RenderFrameHost* render_frame_host) {
+  content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+  GURL url = render_frame_host->GetLastCommittedURL();
+  if (!url.is_empty()) {
+    if (site_instance->GetSiteURL().GetOrigin() != url.GetOrigin())
+      return nullptr;
+  } else {
+    url = site_instance->GetSiteURL();
+  }
+  content::BrowserContext* browser_context = site_instance->GetBrowserContext();
+  if (!url.SchemeIs(kExtensionScheme))
+    return nullptr;
+
+  return ExtensionRegistry::Get(browser_context)
+      ->enabled_extensions()
+      .GetExtensionOrAppByURL(url);
+}
+
+}  // namespace
 
 ExtensionWebContentsObserver::ExtensionWebContentsObserver(
     content::WebContents* web_contents)
@@ -98,7 +121,11 @@ void ExtensionWebContentsObserver::RenderViewCreated(
 
 void ExtensionWebContentsObserver::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  RegisterCoreExtensionServices(render_frame_host);
+  const Extension* extension = GetExtensionForRenderFrame(render_frame_host);
+  if (extension) {
+    ExtensionsBrowserClient::Get()->RegisterMojoServices(render_frame_host,
+                                                         extension);
+  }
 }
 
 void ExtensionWebContentsObserver::FrameDeleted(
