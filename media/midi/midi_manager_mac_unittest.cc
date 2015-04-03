@@ -139,6 +139,10 @@ TEST_F(MidiManagerMacTest, MidiNotification) {
   status = MIDIDestinationCreate(
       midi_client, CFSTR("DestinationTest"), Noop, nullptr, &ep);
   EXPECT_EQ(noErr, status);
+  SInt32 id;
+  status = MIDIObjectGetIntegerProperty(ep, kMIDIPropertyUniqueID, &id);
+  EXPECT_EQ(noErr, status);
+  EXPECT_NE(0, id);
 
   // Wait until the created device is notified to MidiManagerMac.
   MidiPortInfo info = client->WaitForPort();

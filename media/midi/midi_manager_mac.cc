@@ -32,10 +32,6 @@ const size_t kCoreMIDIMaxPacketListSize = 65536;
 const size_t kEstimatedMaxPacketDataSize = kCoreMIDIMaxPacketListSize / 2;
 
 MidiPortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
-  SInt32 id_number = 0;
-  MIDIObjectGetIntegerProperty(endpoint, kMIDIPropertyUniqueID, &id_number);
-  string id = IntToString(id_number);
-
   string manufacturer;
   CFStringRef manufacturer_ref = NULL;
   OSStatus result = MIDIObjectGetStringProperty(
@@ -53,11 +49,12 @@ MidiPortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
   CFStringRef name_ref = NULL;
   result = MIDIObjectGetStringProperty(endpoint, kMIDIPropertyDisplayName,
                                        &name_ref);
-  if (result == noErr)
+  if (result == noErr) {
     name = SysCFStringRefToUTF8(name_ref);
-  else
+  } else {
     DLOG(WARNING) << "Failed to get kMIDIPropertyDisplayName with status "
                   << result;
+  }
 
   string version;
   SInt32 version_number = 0;
@@ -69,6 +66,22 @@ MidiPortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
     // kMIDIPropertyDriverVersion is not supported in IAC driver providing
     // endpoints, and the result will be kMIDIUnknownProperty (-10835).
     DLOG(WARNING) << "Failed to get kMIDIPropertyDriverVersion with status "
+                  << result;
+  }
+
+  string id;
+  SInt32 id_number = 0;
+  result = MIDIObjectGetIntegerProperty(
+      endpoint, kMIDIPropertyUniqueID, &id_number);
+  if (result == noErr) {
+    id = IntToString(id_number);
+  } else {
+    // On connecting some devices, e.g., nano KONTROL2, unknown endpoints
+    // appear and disappear quickly and they fail on queries.
+    // Let's ignore such ghost devices.
+    // Same problems will happen if the device is disconnected before finishing
+    // all queries.
+    DLOG(WARNING) << "Failed to get kMIDIPropertyUniqueID with status "
                   << result;
   }
 
@@ -235,12 +248,18 @@ void MidiManagerMac::ReceiveMidiNotify(const MIDINotification* message) {
       // Attaching device is an input device.
       auto it = source_map_.find(endpoint);
       if (it == source_map_.end()) {
-        uint32 index = source_map_.size();
-        source_map_[endpoint] = index;
         MidiPortInfo info = GetPortInfoFromEndpoint(endpoint);
-        AddInputPort(info);
-        MIDIPortConnectSource(
-            coremidi_input_, endpoint, reinterpret_cast<void*>(endpoint));
+        // If the device disappears before finishing queries, MidiPortInfo
+        // becomes incomplete. Skip and do not cache such information here.
+        // On kMIDIMsgObjectRemoved, the entry will be ignored because it
+        // will not be found in the pool.
+        if (!info.id.empty()) {
+          uint32 index = source_map_.size();
+          source_map_[endpoint] = index;
+          AddInputPort(info);
+          MIDIPortConnectSource(
+              coremidi_input_, endpoint, reinterpret_cast<void*>(endpoint));
+        }
       } else {
         SetInputPortState(it->second, MIDI_PORT_OPENED);
       }
@@ -248,9 +267,12 @@ void MidiManagerMac::ReceiveMidiNotify(const MIDINotification* message) {
       // Attaching device is an output device.
       auto it = std::find(destinations_.begin(), destinations_.end(), endpoint);
       if (it == destinations_.end()) {
-        destinations_.push_back(endpoint);
         MidiPortInfo info = GetPortInfoFromEndpoint(endpoint);
-        AddOutputPort(info);
+        // Skip cases that queries are not finished correctly.
+        if (!info.id.empty()) {
+          destinations_.push_back(endpoint);
+          AddOutputPort(info);
+        }
       } else {
         SetOutputPortState(it - destinations_.begin(), MIDI_PORT_OPENED);
       }
