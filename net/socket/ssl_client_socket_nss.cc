@@ -3223,6 +3223,20 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
     SSL_CipherPrefSet(nss_fd_, *it, PR_FALSE);
   }
 
+  if (!ssl_config_.enable_deprecated_cipher_suites) {
+    const PRUint16* const ssl_ciphers = SSL_GetImplementedCiphers();
+    const PRUint16 num_ciphers = SSL_GetNumImplementedCiphers();
+    for (int i = 0; i < num_ciphers; i++) {
+      SSLCipherSuiteInfo info;
+      if (SSL_GetCipherSuiteInfo(ssl_ciphers[i], &info, sizeof(info)) !=
+          SECSuccess) {
+        continue;
+      }
+      if (info.symCipher == ssl_calg_rc4)
+        SSL_CipherPrefSet(nss_fd_, ssl_ciphers[i], PR_FALSE);
+    }
+  }
+
   // Support RFC 5077
   rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_SESSION_TICKETS, PR_TRUE);
   if (rv != SECSuccess) {
@@ -3341,6 +3355,9 @@ int SSLClientSocketNSS::InitializeSSLPeerName() {
     default:
       NOTREACHED();
   }
+  peer_id += "/";
+  if (ssl_config_.enable_deprecated_cipher_suites)
+    peer_id += "deprecated";
 
   SECStatus rv = SSL_SetSockPeerID(nss_fd_, const_cast<char*>(peer_id.c_str()));
   if (rv != SECSuccess)

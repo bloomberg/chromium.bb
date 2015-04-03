@@ -17403,6 +17403,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.ConnectionUsedSSLDeprecatedCipherFallback"
+    enum="BooleanDeprecatedCiphers">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    True if an HTTPS connection was made using the deprecated cipher suite
+    fallback.
+  </summary>
+</histogram>
+
 <histogram name="Net.ConnectionUsedSSLv3Fallback">
   <obsolete>
     Replaced by Net.ConnectionUsedSSLVersionFallback in Chrome 21.
@@ -46105,6 +46114,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanDelete" type="int">
   <int value="0" label="Ignored"/>
   <int value="1" label="Deleted"/>
+</enum>
+
+<enum name="BooleanDeprecatedCiphers" type="int">
+  <int value="0" label="Deprecated ciphers disabled"/>
+  <int value="1" label="Deprecated ciphers enabled"/>
 </enum>
 
 <enum name="BooleanDidEvict" type="int">

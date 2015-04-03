@@ -149,6 +149,10 @@ int InitSocketPoolHelper(const GURL& request_url,
           break;
       }
     }
+    // Place sockets with and without deprecated ciphers into separate
+    // connection groups.
+    if (ssl_config_for_origin.enable_deprecated_cipher_suites)
+      prefix += "deprecatedciphers/";
     connection_group = prefix + connection_group;
   }
 

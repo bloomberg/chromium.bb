@@ -7196,6 +7196,50 @@ TEST_F(HTTPSRequestTest, HTTPSExpiredTest) {
   }
 }
 
+// Tests that servers which require a deprecated cipher suite still work.
+TEST_F(HTTPSRequestTest, CipherFallbackTest) {
+  CapturingNetLog net_log;
+  default_context_.set_net_log(&net_log);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.bulk_ciphers = SpawnedTestServer::SSLOptions::BULK_CIPHER_RC4;
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server.Start());
+
+  TestDelegate d;
+  scoped_ptr<URLRequest> r(default_context_.CreateRequest(
+      test_server.GetURL(std::string()), DEFAULT_PRIORITY, &d));
+  r->Start();
+  EXPECT_TRUE(r->is_pending());
+
+  base::RunLoop().Run();
+
+  EXPECT_EQ(1, d.response_started_count());
+  EXPECT_FALSE(d.received_data_before_response());
+  EXPECT_NE(0, d.bytes_received());
+  CheckSSLInfo(r->ssl_info());
+  EXPECT_EQ(test_server.host_port_pair().host(), r->GetSocketAddress().host());
+  EXPECT_EQ(test_server.host_port_pair().port(), r->GetSocketAddress().port());
+
+  // No version downgrade should have been necessary.
+  EXPECT_FALSE(r->ssl_info().connection_status &
+               SSL_CONNECTION_VERSION_FALLBACK);
+  int expected_version = SSL_CONNECTION_VERSION_TLS1_2;
+  if (SSLClientSocket::GetMaxSupportedSSLVersion() <
+      SSL_PROTOCOL_VERSION_TLS1_2) {
+    expected_version = SSL_CONNECTION_VERSION_TLS1_1;
+  }
+  EXPECT_EQ(expected_version,
+            SSLConnectionStatusToVersion(r->ssl_info().connection_status));
+
+  CapturingNetLog::CapturedEntryList entries;
+  net_log.GetEntries(&entries);
+  ExpectLogContainsSomewhere(entries, 0, NetLog::TYPE_SSL_CIPHER_FALLBACK,
+                             NetLog::PHASE_NONE);
+}
+
 // This tests that a load of www.google.com with a certificate error sets
 // the |certificate_errors_are_fatal| flag correctly. This flag will cause
 // the interstitial to be fatal.

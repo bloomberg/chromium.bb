@@ -106,6 +106,9 @@ struct NET_EXPORT SSLConfig {
   // disable TLS_ECDH_ECDSA_WITH_RC4_128_SHA, specify 0xC002.
   std::vector<uint16> disabled_cipher_suites;
 
+  // Enables deprecated cipher suites. Currently, RC4 is deprecated.
+  bool enable_deprecated_cipher_suites;
+
   bool channel_id_enabled;   // True if TLS channel ID extension is enabled.
   bool false_start_enabled;  // True if we'll use TLS False Start.
   // True if the Certificate Transparency signed_certificate_timestamp

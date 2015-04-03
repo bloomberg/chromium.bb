@@ -1281,6 +1281,9 @@ void HttpStreamFactoryImpl::Job::InitSSLConfig(const HostPortPair& server,
   UMA_HISTOGRAM_ENUMERATION("Net.ConnectionUsedSSLVersionFallback",
                             fallback, FALLBACK_MAX);
 
+  UMA_HISTOGRAM_BOOLEAN("Net.ConnectionUsedSSLDeprecatedCipherFallback",
+                        ssl_config->enable_deprecated_cipher_suites);
+
   // We also wish to measure the amount of fallback connections for a host that
   // we know implements TLS up to 1.2. Ideally there would be no fallback here
   // but high numbers of SSLv3 would suggest that SSLv3 fallback is being

@@ -2199,18 +2199,18 @@ TEST_F(SSLClientSocketTest, PrematureApplicationData) {
 }
 
 TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
-  // Rather than exhaustively disabling every RC4 ciphersuite defined at
-  // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml,
-  // only disabling those cipher suites that the test server actually
-  // implements.
+  // Rather than exhaustively disabling every AES_128_CBC ciphersuite defined at
+  // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml, only
+  // disabling those cipher suites that the test server actually implements.
   const uint16 kCiphersToDisable[] = {
-      0x0005,  // TLS_RSA_WITH_RC4_128_SHA
-      0xc011,  // TLS_ECDHE_RSA_WITH_RC4_128_SHA
+      0x002f,  // TLS_RSA_WITH_AES_128_CBC_SHA
+      0x0033,  // TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+      0xc013,  // TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
   };
 
   SpawnedTestServer::SSLOptions ssl_options;
-  // Enable only RC4 on the test server.
-  ssl_options.bulk_ciphers = SpawnedTestServer::SSLOptions::BULK_CIPHER_RC4;
+  // Enable only AES_128_CBC on the test server.
+  ssl_options.bulk_ciphers = SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128;
   SpawnedTestServer test_server(
       SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath());
   ASSERT_TRUE(test_server.Start());
@@ -2241,19 +2241,11 @@ TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
 
-  // NSS has special handling that maps a handshake_failure alert received
-  // immediately after a client_hello to be a mismatched cipher suite error,
-  // leading to ERR_SSL_VERSION_OR_CIPHER_MISMATCH. When using OpenSSL or
-  // Secure Transport (OS X), the handshake_failure is bubbled up without any
-  // interpretation, leading to ERR_SSL_PROTOCOL_ERROR. Either way, a failure
-  // indicates that no cipher suite was negotiated with the test server.
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
-  EXPECT_TRUE(rv == ERR_SSL_VERSION_OR_CIPHER_MISMATCH ||
-              rv == ERR_SSL_PROTOCOL_ERROR);
-  // The exact ordering differs between SSLClientSocketNSS (which issues an
-  // extra read) and SSLClientSocketMac (which does not). Just make sure the
-  // error appears somewhere in the log.
+  EXPECT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH, rv);
+  // The exact ordering depends no whether an extra read is issued. Just check
+  // the error is somewhere in the log.
   log.GetEntries(&entries);
   ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_SSL_HANDSHAKE_ERROR, NetLog::PHASE_NONE);
@@ -2875,6 +2867,104 @@ TEST_F(SSLClientSocketTest, FallbackShardSessionCache) {
   EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
   EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1,
             SSLConnectionStatusToVersion(ssl_info.connection_status));
+}
+
+// Test that RC4 is only enabled if enable_deprecated_cipher_suites is set.
+TEST_F(SSLClientSocketTest, DeprecatedRC4) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.bulk_ciphers = SpawnedTestServer::SSLOptions::BULK_CIPHER_RC4;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  // Normal handshakes with RC4 do not work.
+  SSLConfig ssl_config;
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  ASSERT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server()->host_port_pair(), ssl_config));
+  ASSERT_EQ(ERR_SSL_VERSION_OR_CIPHER_MISMATCH,
+            callback.GetResult(sock->Connect(callback.callback())));
+
+  // Enabling deprecated ciphers works fine.
+  ssl_config.enable_deprecated_cipher_suites = true;
+  transport.reset(new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  ASSERT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  sock = CreateSSLClientSocket(transport.Pass(),
+                               test_server()->host_port_pair(), ssl_config);
+  ASSERT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+}
+
+// Tests that enabling deprecated ciphers shards the session cache.
+TEST_F(SSLClientSocketTest, DeprecatedShardSessionCache) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  // Prepare a normal and deprecated SSL config.
+  SSLConfig ssl_config;
+  SSLConfig deprecated_ssl_config;
+  deprecated_ssl_config.enable_deprecated_cipher_suites = true;
+
+  // Connect with deprecated ciphers enabled to warm the session cache cache.
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  EXPECT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  scoped_ptr<SSLClientSocket> sock(
+      CreateSSLClientSocket(transport.Pass(), test_server()->host_port_pair(),
+                            deprecated_ssl_config));
+  EXPECT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+  SSLInfo ssl_info;
+  EXPECT_TRUE(sock->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+
+  // Test that re-connecting with deprecated ciphers enabled still resumes.
+  transport.reset(new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  EXPECT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  sock = CreateSSLClientSocket(
+      transport.Pass(), test_server()->host_port_pair(), deprecated_ssl_config);
+  EXPECT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+  EXPECT_TRUE(sock->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+
+  // However, a normal connection needs a full handshake.
+  transport.reset(new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  EXPECT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  sock = CreateSSLClientSocket(transport.Pass(),
+                               test_server()->host_port_pair(), ssl_config);
+  EXPECT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+  EXPECT_TRUE(sock->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+
+  // Clear the session cache for the inverse test.
+  SSLClientSocket::ClearSessionCache();
+
+  // Now make a normal connection to prime the session cache.
+  transport.reset(new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  EXPECT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  sock = CreateSSLClientSocket(transport.Pass(),
+                               test_server()->host_port_pair(), ssl_config);
+  EXPECT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+  EXPECT_TRUE(sock->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
+
+  // A normal connection should be able to resume.
+  transport.reset(new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  EXPECT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  sock = CreateSSLClientSocket(transport.Pass(),
+                               test_server()->host_port_pair(), ssl_config);
+  EXPECT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+  EXPECT_TRUE(sock->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
+
+  // However, enabling deprecated ciphers connects fresh.
+  transport.reset(new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  EXPECT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  sock = CreateSSLClientSocket(
+      transport.Pass(), test_server()->host_port_pair(), deprecated_ssl_config);
+  EXPECT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+  EXPECT_TRUE(sock->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
 }
 
 TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {

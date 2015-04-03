@@ -800,6 +800,9 @@ int SSLClientSocketOpenSSL::Init() {
      }
   }
 
+  if (!ssl_config_.enable_deprecated_cipher_suites)
+    command.append(":!RC4");
+
   // Disable ECDSA cipher suites on platforms that do not support ECDSA
   // signed certificates, as servers may use the presence of such
   // ciphersuites as a hint to send an ECDSA certificate.
@@ -1944,6 +1947,10 @@ std::string SSLClientSocketOpenSSL::GetSessionCacheKey() const {
     default:
       NOTREACHED();
   }
+
+  result.append("/");
+  if (ssl_config_.enable_deprecated_cipher_suites)
+    result.append("deprecated");
 
   return result;
 }
