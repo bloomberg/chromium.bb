@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_tooltip_controller.h"
 #include "chrome/browser/ui/cocoa/autofill/card_unmask_prompt_view_bridge.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
@@ -139,7 +140,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   base::scoped_nsobject<NSTextField> titleLabel_;
   base::scoped_nsobject<NSTextField> permanentErrorLabel_;
   base::scoped_nsobject<NSTextField> instructionsLabel_;
-  base::scoped_nsobject<NSTextField> cvcInput_;
+  base::scoped_nsobject<AutofillTextField> cvcInput_;
   base::scoped_nsobject<NSPopUpButton> monthPopup_;
   base::scoped_nsobject<NSPopUpButton> yearPopup_;
   base::scoped_nsobject<NSButton> cancelButton_;
@@ -249,6 +250,12 @@ void CardUnmaskPromptViewBridge::PerformClose() {
           SysUTF16ToNSString(text), chrome_style::kTextFontStyle,
           NSNaturalTextAlignment, NSLineBreakByWordWrapping);
   [errorLabel_ setAttributedStringValue:attributedString];
+
+  // If there is more than one input showing, don't mark anything as
+  // invalid since we don't know the location of the problem.
+  if (!text.empty() && !bridge_->GetController()->ShouldRequestExpirationDate())
+    [cvcInput_ setValidityMessage:@"invalid"];
+
   [self performLayoutAndDisplay:YES];
 }
 
@@ -333,6 +340,10 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
 // Called when text in CVC input field changes.
 - (void)controlTextDidChange:(NSNotification*)notification {
+  if (bridge_->GetController()->InputCvcIsValid(
+          base::SysNSStringToUTF16([cvcInput_ stringValue])))
+    [cvcInput_ setValidityMessage:@""];
+
   [self updateVerifyButtonEnabled];
 }
 
@@ -552,7 +563,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   }
 
   // Add CVC text input.
-  cvcInput_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
+  cvcInput_.reset([[AutofillTextField alloc] initWithFrame:NSZeroRect]);
   [[cvcInput_ cell]
       setPlaceholderString:l10n_util::GetNSString(
                                IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC)];
