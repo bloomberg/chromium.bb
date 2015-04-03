@@ -48,7 +48,7 @@ namespace {
 // The persistent cookie store is loaded into memory on eTLD at a time. This
 // variable controls the delay between loading eTLDs, so as to not overload the
 // CPU or I/O with these low priority requests immediately after start up.
-const int kLoadDelayMilliseconds = 200;
+const int kLoadDelayMilliseconds = 0;
 
 }  // namespace
 
