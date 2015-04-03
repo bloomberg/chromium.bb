@@ -13,8 +13,8 @@ LOGDIR=$abs_builddir/logs
 
 mkdir -p "$LOGDIR"
 
-SERVERLOG="$LOGDIR/$1-serverlog.txt"
-OUTLOG="$LOGDIR/$1-log.txt"
+SERVERLOG="$LOGDIR/${TEST_NAME}-serverlog.txt"
+OUTLOG="$LOGDIR/${TEST_NAME}-log.txt"
 
 rm -f "$SERVERLOG"
 
