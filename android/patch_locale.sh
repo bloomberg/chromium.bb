@@ -164,12 +164,15 @@ for i in locales/*.txt; do
     ja)
       EXTRA_CAL='japanese'
       ;;
+    *)
+      EXTRA_CAL=''
+      ;;
   esac
 
   # Add 'roc' calendar to zh_Hant*.
-  [[ "$(basename $i .txt)" =~ 'zh_Hant' ]] && { EXTRA_CAL="$EXTRA_CAL|roc"; }
+  [[ "$(basename $i .txt)" =~ 'zh_Hant' ]] && { EXTRA_CAL="${EXTRA_CAL}|roc"; }
 
-  CAL_PATTERN="(${COMMON_CALENDARS}|${EXTRA_CAL})"
+  CAL_PATTERN="(${COMMON_CALENDARS}${EXTRA_CAL:+|${EXTRA_CAL}})"
   echo $CAL_PATTERN
 
   echo Overwriting $i...
