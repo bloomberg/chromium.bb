@@ -246,7 +246,7 @@ GDig::GDig()
 
 GDig::~GDig() {
   if (log_)
-    log_->RemoveThreadSafeObserver(log_observer_.get());
+    log_->DeprecatedRemoveObserver(log_observer_.get());
 }
 
 GDig::Result GDig::Main(int argc, const char* argv[]) {
@@ -312,7 +312,7 @@ bool GDig::ParseCommandLine(int argc, const char* argv[]) {
     }
     log_.reset(new NetLog);
     log_observer_.reset(new FileNetLogObserver(stderr));
-    log_->AddThreadSafeObserver(log_observer_.get(), level);
+    log_->DeprecatedAddObserver(log_observer_.get(), level);
   }
 
   print_config_ = parsed_command_line.HasSwitch("print_config");

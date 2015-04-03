@@ -95,18 +95,18 @@ void TraceNetLogObserver::StopWatchForTraceStart() {
   DCHECK(net_log_to_watch_);
   base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
   if (net_log())
-    net_log()->RemoveThreadSafeObserver(this);
+    net_log()->DeprecatedRemoveObserver(this);
   net_log_to_watch_ = NULL;
 }
 
 void TraceNetLogObserver::OnTraceLogEnabled() {
-  net_log_to_watch_->AddThreadSafeObserver(this,
+  net_log_to_watch_->DeprecatedAddObserver(this,
                                            NetLog::LOG_STRIP_PRIVATE_DATA);
 }
 
 void TraceNetLogObserver::OnTraceLogDisabled() {
   if (net_log())
-    net_log()->RemoveThreadSafeObserver(this);
+    net_log()->DeprecatedRemoveObserver(this);
 }
 
 }  // namespace net

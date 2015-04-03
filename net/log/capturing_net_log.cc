@@ -7,11 +7,11 @@
 namespace net {
 
 CapturingNetLog::CapturingNetLog() {
-  AddThreadSafeObserver(&capturing_net_log_observer_, LOG_ALL_BUT_BYTES);
+  DeprecatedAddObserver(&capturing_net_log_observer_, LOG_ALL_BUT_BYTES);
 }
 
 CapturingNetLog::~CapturingNetLog() {
-  RemoveThreadSafeObserver(&capturing_net_log_observer_);
+  DeprecatedRemoveObserver(&capturing_net_log_observer_);
 }
 
 void CapturingNetLog::SetLogLevel(NetLog::LogLevel log_level) {

@@ -722,7 +722,7 @@ void NetInternalsMessageHandler::IOThreadImpl::Detach() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Unregister with network stack to observe events.
   if (net_log())
-    net_log()->RemoveThreadSafeObserver(this);
+    net_log()->DeprecatedRemoveObserver(this);
 
   // Cancel any in-progress connection tests.
   connection_tester_.reset();
@@ -743,7 +743,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   // pending events, so they won't appear before the status events created for
   // currently active network objects below.
   if (net_log()) {
-    net_log()->RemoveThreadSafeObserver(this);
+    net_log()->DeprecatedRemoveObserver(this);
     PostPendingEntries();
   }
 
@@ -752,7 +752,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   PrePopulateEventList();
 
   // Register with network stack to observe events.
-  io_thread_->net_log()->AddThreadSafeObserver(this,
+  io_thread_->net_log()->DeprecatedAddObserver(this,
       net::NetLog::LOG_ALL_BUT_BYTES);
 }
 

@@ -120,13 +120,13 @@ class ConnectNetLogObserver : public net::NetLog::ThreadSafeObserver {
   }
 
   void Attach() {
-    g_browser_process->net_log()->AddThreadSafeObserver(
+    g_browser_process->net_log()->DeprecatedAddObserver(
         this, net::NetLog::LOG_ALL_BUT_BYTES);
   }
 
   void Detach() {
     if (net_log())
-      net_log()->RemoveThreadSafeObserver(this);
+      net_log()->DeprecatedRemoveObserver(this);
   }
 
   void WaitForConnect() {

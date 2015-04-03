@@ -237,7 +237,11 @@ class NET_EXPORT NetLog {
   //
   // NetLog implementations must call NetLog::OnAddObserver to update the
   // observer's internal state.
-  void AddThreadSafeObserver(ThreadSafeObserver* observer, LogLevel log_level);
+  //
+  // DEPRECATED: The ability to watch the netlog stream is being phased out
+  // (crbug.com/472693) as it can be misused in production code. Please consult
+  // with a net/log OWNER before introducing a new dependency on this.
+  void DeprecatedAddObserver(ThreadSafeObserver* observer, LogLevel log_level);
 
   // Sets the log level of |observer| to |log_level|.  |observer| must be
   // watching |this|.  NetLog implementations must call
@@ -249,7 +253,11 @@ class NET_EXPORT NetLog {
   //
   // For thread safety reasons, it is recommended that this not be called in
   // an object's destructor.
-  void RemoveThreadSafeObserver(ThreadSafeObserver* observer);
+  //
+  // DEPRECATED: The ability to watch the netlog stream is being phased out
+  // (crbug.com/472693) as it can be misused in production code. Please consult
+  // with a net/log OWNER before introducing a new dependency on this.
+  void DeprecatedRemoveObserver(ThreadSafeObserver* observer);
 
   // Converts a time to the string format that the NetLog uses to represent
   // times.  Strings are used since integers may overflow.

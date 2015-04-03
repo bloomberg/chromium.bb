@@ -199,7 +199,7 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
 
   if (VLOG_IS_ON(2)) {
     net_log_observer_.reset(new NetLogObserver());
-    context_->net_log()->AddThreadSafeObserver(net_log_observer_.get(),
+    context_->net_log()->DeprecatedAddObserver(net_log_observer_.get(),
                                                net::NetLog::LOG_ALL_BUT_BYTES);
   }
 
@@ -236,7 +236,7 @@ void URLRequestContextAdapter::RunTaskAfterContextInitOnNetworkThread(
 URLRequestContextAdapter::~URLRequestContextAdapter() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   if (net_log_observer_) {
-    context_->net_log()->RemoveThreadSafeObserver(net_log_observer_.get());
+    context_->net_log()->DeprecatedRemoveObserver(net_log_observer_.get());
     net_log_observer_.reset();
   }
   StopNetLogHelper();

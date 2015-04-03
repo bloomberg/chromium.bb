@@ -42,11 +42,11 @@ void VlogNetLog::Observer::OnAddEntry(const net::NetLog::Entry& entry) {
 
 VlogNetLog::VlogNetLog()
     : observer_(new Observer()) {
-  AddThreadSafeObserver(observer_.get(), LOG_ALL_BUT_BYTES);
+  DeprecatedAddObserver(observer_.get(), LOG_ALL_BUT_BYTES);
 }
 
 VlogNetLog::~VlogNetLog() {
-  RemoveThreadSafeObserver(observer_.get());
+  DeprecatedRemoveObserver(observer_.get());
 }
 
 }  // namespace remoting

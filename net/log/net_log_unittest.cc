@@ -77,7 +77,7 @@ class CountingObserver : public NetLog::ThreadSafeObserver {
 
   ~CountingObserver() override {
     if (net_log())
-      net_log()->RemoveThreadSafeObserver(this);
+      net_log()->DeprecatedRemoveObserver(this);
   }
 
   void OnAddEntry(const NetLog::Entry& entry) override { ++count_; }
@@ -94,7 +94,7 @@ class LoggingObserver : public NetLog::ThreadSafeObserver {
 
   ~LoggingObserver() override {
     if (net_log())
-      net_log()->RemoveThreadSafeObserver(this);
+      net_log()->DeprecatedRemoveObserver(this);
   }
 
   void OnAddEntry(const NetLog::Entry& entry) override {
@@ -180,7 +180,7 @@ class AddRemoveObserverTestThread : public NetLogTestThread {
     for (int i = 0; i < kEvents; ++i) {
       ASSERT_FALSE(observer_.net_log());
 
-      net_log_->AddThreadSafeObserver(&observer_, NetLog::LOG_ALL_BUT_BYTES);
+      net_log_->DeprecatedAddObserver(&observer_, NetLog::LOG_ALL_BUT_BYTES);
       ASSERT_EQ(net_log_, observer_.net_log());
       ASSERT_EQ(NetLog::LOG_ALL_BUT_BYTES, observer_.log_level());
       ASSERT_LE(net_log_->GetLogLevel(), NetLog::LOG_ALL_BUT_BYTES);
@@ -190,7 +190,7 @@ class AddRemoveObserverTestThread : public NetLogTestThread {
       ASSERT_EQ(NetLog::LOG_ALL, observer_.log_level());
       ASSERT_LE(net_log_->GetLogLevel(), NetLog::LOG_ALL);
 
-      net_log_->RemoveThreadSafeObserver(&observer_);
+      net_log_->DeprecatedRemoveObserver(&observer_);
       ASSERT_TRUE(!observer_.net_log());
     }
   }
@@ -226,7 +226,7 @@ TEST(NetLogTest, NetLogEventThreads) {
   // safely detach themselves on destruction.
   CountingObserver observers[3];
   for (size_t i = 0; i < arraysize(observers); ++i)
-    net_log.AddThreadSafeObserver(&observers[i], NetLog::LOG_ALL);
+    net_log.DeprecatedAddObserver(&observers[i], NetLog::LOG_ALL);
 
   // Run a bunch of threads to completion, each of which will emit events to
   // |net_log|.
@@ -249,7 +249,7 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
   EXPECT_EQ(NetLog::LOG_NONE, net_log.GetLogLevel());
 
   // Add the observer and add an event.
-  net_log.AddThreadSafeObserver(&observer, NetLog::LOG_ALL_BUT_BYTES);
+  net_log.DeprecatedAddObserver(&observer, NetLog::LOG_ALL_BUT_BYTES);
   EXPECT_EQ(&net_log, observer.net_log());
   EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, observer.log_level());
   EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, net_log.GetLogLevel());
@@ -267,7 +267,7 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
   EXPECT_EQ(2, observer.count());
 
   // Remove observer and add an event.
-  net_log.RemoveThreadSafeObserver(&observer);
+  net_log.DeprecatedRemoveObserver(&observer);
   EXPECT_EQ(NULL, observer.net_log());
   EXPECT_EQ(NetLog::LOG_NONE, net_log.GetLogLevel());
 
@@ -275,7 +275,7 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
   EXPECT_EQ(2, observer.count());
 
   // Add the observer a final time, and add an event.
-  net_log.AddThreadSafeObserver(&observer, NetLog::LOG_ALL);
+  net_log.DeprecatedAddObserver(&observer, NetLog::LOG_ALL);
   EXPECT_EQ(&net_log, observer.net_log());
   EXPECT_EQ(NetLog::LOG_ALL, observer.log_level());
   EXPECT_EQ(NetLog::LOG_ALL, net_log.GetLogLevel());
@@ -290,14 +290,14 @@ TEST(NetLogTest, NetLogTwoObservers) {
   LoggingObserver observer[2];
 
   // Add first observer.
-  net_log.AddThreadSafeObserver(&observer[0], NetLog::LOG_ALL_BUT_BYTES);
+  net_log.DeprecatedAddObserver(&observer[0], NetLog::LOG_ALL_BUT_BYTES);
   EXPECT_EQ(&net_log, observer[0].net_log());
   EXPECT_EQ(NULL, observer[1].net_log());
   EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, observer[0].log_level());
   EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, net_log.GetLogLevel());
 
   // Add second observer observer.
-  net_log.AddThreadSafeObserver(&observer[1], NetLog::LOG_ALL);
+  net_log.DeprecatedAddObserver(&observer[1], NetLog::LOG_ALL);
   EXPECT_EQ(&net_log, observer[0].net_log());
   EXPECT_EQ(&net_log, observer[1].net_log());
   EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, observer[0].log_level());
@@ -316,7 +316,7 @@ TEST(NetLogTest, NetLogTwoObservers) {
   EXPECT_EQ(observer[1].log_level(), param);
 
   // Remove second observer.
-  net_log.RemoveThreadSafeObserver(&observer[1]);
+  net_log.DeprecatedRemoveObserver(&observer[1]);
   EXPECT_EQ(&net_log, observer[0].net_log());
   EXPECT_EQ(NULL, observer[1].net_log());
   EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, observer[0].log_level());
@@ -328,7 +328,7 @@ TEST(NetLogTest, NetLogTwoObservers) {
   EXPECT_EQ(1U, observer[1].GetNumValues());
 
   // Remove first observer.
-  net_log.RemoveThreadSafeObserver(&observer[0]);
+  net_log.DeprecatedRemoveObserver(&observer[0]);
   EXPECT_EQ(NULL, observer[0].net_log());
   EXPECT_EQ(NULL, observer[1].net_log());
   EXPECT_EQ(NetLog::LOG_NONE, net_log.GetLogLevel());

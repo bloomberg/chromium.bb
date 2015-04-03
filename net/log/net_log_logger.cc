@@ -61,11 +61,11 @@ void NetLogLogger::StartObserving(net::NetLog* net_log,
     CreateNetLogEntriesForActiveObjects(contexts, this);
   }
 
-  net_log->AddThreadSafeObserver(this, log_level_);
+  net_log->DeprecatedAddObserver(this, log_level_);
 }
 
 void NetLogLogger::StopObserving(net::URLRequestContext* url_request_context) {
-  net_log()->RemoveThreadSafeObserver(this);
+  net_log()->DeprecatedRemoveObserver(this);
 
   // End events array.
   fprintf(file_.get(), "]");

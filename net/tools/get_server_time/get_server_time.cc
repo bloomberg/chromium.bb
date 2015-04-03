@@ -103,7 +103,7 @@ class PrintingLogObserver : public net::NetLog::ThreadSafeObserver {
 
   ~PrintingLogObserver() override {
     // This is guaranteed to be safe as this program is single threaded.
-    net_log()->RemoveThreadSafeObserver(this);
+    net_log()->DeprecatedRemoveObserver(this);
   }
 
   // NetLog::ThreadSafeObserver implementation:
@@ -226,7 +226,7 @@ int main(int argc, char* argv[]) {
   // printing_log_observer.
   net::NetLog net_log;
   PrintingLogObserver printing_log_observer;
-  net_log.AddThreadSafeObserver(&printing_log_observer, net::NetLog::LOG_ALL);
+  net_log.DeprecatedAddObserver(&printing_log_observer, net::NetLog::LOG_ALL);
 
   QuitDelegate delegate;
   scoped_ptr<net::URLFetcher> fetcher(

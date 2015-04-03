@@ -225,7 +225,7 @@ NetLog::LogLevel NetLog::GetLogLevel() const {
   return static_cast<net::NetLog::LogLevel>(log_level);
 }
 
-void NetLog::AddThreadSafeObserver(net::NetLog::ThreadSafeObserver* observer,
+void NetLog::DeprecatedAddObserver(net::NetLog::ThreadSafeObserver* observer,
                                    LogLevel log_level) {
   DCHECK_NE(LOG_NONE, log_level);
   base::AutoLock lock(lock_);
@@ -250,7 +250,7 @@ void NetLog::SetObserverLogLevel(net::NetLog::ThreadSafeObserver* observer,
   UpdateLogLevel();
 }
 
-void NetLog::RemoveThreadSafeObserver(
+void NetLog::DeprecatedRemoveObserver(
     net::NetLog::ThreadSafeObserver* observer) {
   base::AutoLock lock(lock_);
 

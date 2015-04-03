@@ -122,7 +122,7 @@ void MediaInternalsProxy::ObserveMediaInternalsOnIOThread() {
   MediaInternals::GetInstance()->AddUpdateCallback(update_callback_);
   if (GetContentClient()->browser()->GetNetLog()) {
     net::NetLog* net_log = GetContentClient()->browser()->GetNetLog();
-    net_log->AddThreadSafeObserver(this, net::NetLog::LOG_ALL_BUT_BYTES);
+    net_log->DeprecatedAddObserver(this, net::NetLog::LOG_ALL_BUT_BYTES);
   }
 }
 
@@ -131,7 +131,7 @@ void MediaInternalsProxy::StopObservingMediaInternalsOnIOThread() {
   MediaInternals::GetInstance()->RemoveUpdateCallback(update_callback_);
   if (GetContentClient()->browser()->GetNetLog()) {
     net::NetLog* net_log = GetContentClient()->browser()->GetNetLog();
-    net_log->RemoveThreadSafeObserver(this);
+    net_log->DeprecatedRemoveObserver(this);
   }
 }
 

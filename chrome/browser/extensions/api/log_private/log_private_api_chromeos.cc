@@ -303,7 +303,7 @@ void LogPrivateAPI::MaybeStartNetInternalLogging(
     event_sink_ = event_sink;
     switch (event_sink_) {
       case api::log_private::EVENT_SINK_CAPTURE: {
-        io_thread->net_log()->AddThreadSafeObserver(
+        io_thread->net_log()->DeprecatedAddObserver(
             this, net::NetLog::LOG_ALL_BUT_BYTES);
         break;
       }
@@ -356,7 +356,7 @@ void LogPrivateAPI::StopNetInternalLogging() {
     logging_net_internals_ = false;
     switch (event_sink_) {
       case api::log_private::EVENT_SINK_CAPTURE:
-        net_log()->RemoveThreadSafeObserver(this);
+        net_log()->DeprecatedRemoveObserver(this);
         break;
       case api::log_private::EVENT_SINK_FILE:
         net_log_logger_->StopObserving(nullptr);
