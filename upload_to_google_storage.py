@@ -67,7 +67,7 @@ def get_md5_cached(filename):
 
 def _upload_worker(
     thread_num, upload_queue, base_url, gsutil, md5_lock, force,
-    use_md5, stdout_queue, ret_codes):
+    use_md5, stdout_queue, ret_codes, gzip):
   while True:
     filename, sha1_sum = upload_queue.get()
     if not filename:
@@ -92,7 +92,11 @@ def _upload_worker(
           continue
     stdout_queue.put('%d> Uploading %s...' % (
         thread_num, filename))
-    code, _, err = gsutil.check_call('cp', filename, file_url)
+    gsutil_args = ['cp']
+    if gzip:
+      gsutil_args.extend(['-z', gzip])
+    gsutil_args.extend([filename, file_url])
+    code, _, err = gsutil.check_call(*gsutil_args)
     if code != 0:
       ret_codes.put(
           (code,
@@ -129,7 +133,7 @@ def get_targets(args, parser, use_null_terminator):
 
 def upload_to_google_storage(
     input_filenames, base_url, gsutil, force,
-    use_md5, num_threads, skip_hashing):
+    use_md5, num_threads, skip_hashing, gzip):
   # We only want one MD5 calculation happening at a time to avoid HD thrashing.
   md5_lock = threading.Lock()
 
@@ -147,7 +151,7 @@ def upload_to_google_storage(
     t = threading.Thread(
         target=_upload_worker,
         args=[thread_num, upload_queue, base_url, gsutil, md5_lock,
-              force, use_md5, stdout_queue, ret_codes])
+              force, use_md5, stdout_queue, ret_codes, gzip])
     t.daemon = True
     t.start()
     all_threads.append(t)
@@ -223,6 +227,9 @@ def main():
                     help='Use \\0 instead of \\n when parsing '
                     'the file list from stdin.  This is useful if the input '
                     'is coming from "find ... -print0".')
+  parser.add_option('-z', '--gzip', metavar='ext',
+                    help='Gzip files which end in ext. '
+                         'ext is a comma-separated list')
   (options, args) = parser.parse_args()
 
   # Enumerate our inputs.
@@ -244,7 +251,7 @@ def main():
 
   return upload_to_google_storage(
       input_filenames, base_url, gsutil, options.force, options.use_md5,
-      options.num_threads, options.skip_hashing)
+      options.num_threads, options.skip_hashing, options.gzip)
 
 
 if __name__ == '__main__':

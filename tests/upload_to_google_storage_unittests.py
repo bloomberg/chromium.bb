@@ -48,14 +48,14 @@ class UploadTests(unittest.TestCase):
     filenames = [self.lorem_ipsum]
     output_filename = '%s.sha1'  % self.lorem_ipsum
     code = upload_to_google_storage.upload_to_google_storage(
-        filenames, self.base_url, self.gsutil, True, False, 1, False)
+        filenames, self.base_url, self.gsutil, True, False, 1, False, 'txt')
     self.assertEqual(
         self.gsutil.history,
         [('check_call',
           ('ls', '%s/%s' % (self.base_url, self.lorem_ipsum_sha1))),
          ('check_call',
-          ('cp', '-q', filenames[0], '%s/%s' % (self.base_url,
-                                                self.lorem_ipsum_sha1)))])
+          ('cp', '-z', 'txt', filenames[0],
+           '%s/%s' % (self.base_url, self.lorem_ipsum_sha1)))])
     self.assertTrue(os.path.exists(output_filename))
     self.assertEqual(
         open(output_filename, 'rb').read(),
@@ -70,7 +70,7 @@ class UploadTests(unittest.TestCase):
     self.gsutil.add_expected(0, '', '')
     self.gsutil.add_expected(0, etag_string, '')
     code = upload_to_google_storage.upload_to_google_storage(
-        filenames, self.base_url, self.gsutil, False, False, 1, False)
+        filenames, self.base_url, self.gsutil, False, False, 1, False, None)
     self.assertEqual(
         self.gsutil.history,
         [('check_call',
@@ -100,7 +100,8 @@ class UploadTests(unittest.TestCase):
         False,
         False,
         self.stdout_queue,
-        self.ret_codes)
+        self.ret_codes,
+        None)
     expected_ret_codes = [
       (20,
        'Encountered error on uploading %s to %s/%s\nExpected error message' %
@@ -114,7 +115,7 @@ class UploadTests(unittest.TestCase):
     with open(output_filename, 'wb') as f:
       f.write(fake_hash)  # Fake hash.
     code = upload_to_google_storage.upload_to_google_storage(
-        filenames, self.base_url, self.gsutil, False, False, 1, True)
+        filenames, self.base_url, self.gsutil, False, False, 1, True, None)
     self.assertEqual(
         self.gsutil.history,
         [('check_call',
@@ -122,7 +123,7 @@ class UploadTests(unittest.TestCase):
          ('check_call',
           ('ls', '-L', '%s/%s' % (self.base_url, fake_hash))),
          ('check_call',
-          ('cp', '-q', filenames[0], '%s/%s' % (self.base_url, fake_hash)))])
+          ('cp', filenames[0], '%s/%s' % (self.base_url, fake_hash)))])
     self.assertEqual(
         open(output_filename, 'rb').read(), fake_hash)
     os.remove(output_filename)
