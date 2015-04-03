@@ -21,6 +21,10 @@ version <code>X</code> running in Chrome version <code>Y</code> (with <code>X !=
 possible to do so. Simply translate the pexe to a nexe using the
 <a class="reference internal" href="/native-client/devguide/devcycle/debugging.html#debugging-pexes-via-nexes"><em>offline pnacl-translate tool from SDK version X</em></a> instead of using the translator in the
 browser (version <code>Y</code>).</li>
+<li>PNaCl&#8217;s support for use of libstdc++ 4.6 as the C++ standard library is
+deprecated and will be removed in the next release. PNaCl has used libc++
+(which is much more up-to-date, currently based on LLVM 3.6) as the default
+since Pepper 33.</li>
 </ul>
 <h2 id="chrome-pepper-42-20-february-2015">Chrome/Pepper 42 (20 February 2015)</h2>
 <h3 id="sdk">SDK</h3>

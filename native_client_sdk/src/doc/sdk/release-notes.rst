@@ -29,6 +29,10 @@ PNaCl
   :ref:`offline pnacl-translate tool from SDK version X
   <debugging_pexes_via_nexes>` instead of using the translator in the
   browser (version ``Y``).
+* PNaCl's support for use of libstdc++ 4.6 as the C++ standard library is
+  deprecated and will be removed in the next release. PNaCl has used libc++
+  (which is much more up-to-date, currently based on LLVM 3.6) as the default
+  since Pepper 33.
 
 .. _`code generation bug on ARM`: https://code.google.com/p/chromium/issues/detail?id=460432
 
