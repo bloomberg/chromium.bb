@@ -9,6 +9,7 @@
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,8 +67,14 @@ TEST(DomDistillerPageFeaturesTest, TestCalculateDerivedFeatures) {
     base::DictionaryValue* core_features;
     ASSERT_TRUE(input_entries->GetDictionary(i, &entry));
     ASSERT_TRUE(entry->GetDictionary("features", &core_features));
+    // CalculateDerivedFeaturesFromJSON expects a base::Value of the stringified
+    // JSON (and not a base::Value of the JSON itself)
+    std::string stringified_json;
+    ASSERT_TRUE(base::JSONWriter::Write(core_features, &stringified_json));
+    scoped_ptr<base::Value> stringified_value(
+        new base::StringValue(stringified_json));
     std::vector<double> derived(
-        CalculateDerivedFeaturesFromJSON(core_features));
+        CalculateDerivedFeaturesFromJSON(stringified_value.get()));
 
     ASSERT_EQ(labels.size(), derived.size());
     ASSERT_TRUE(expected_output_entries->GetDictionary(i, &entry));

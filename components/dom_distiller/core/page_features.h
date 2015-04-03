@@ -12,6 +12,9 @@
 
 namespace dom_distiller {
 
+// The length of the derived features vector.
+extern int kDerivedFeaturesCount;
+
 // The distillable page detector is a model trained on a list of numeric
 // features derived from core more complex features of a webpage (like the
 // body's .textContent). This derives the numeric features for a set of core
@@ -31,7 +34,8 @@ std::vector<double> CalculateDerivedFeatures(bool isOGArticle,
 
 // Calculates the derived features from the JSON value as returned by the
 // javascript core feature extraction.
-std::vector<double> CalculateDerivedFeaturesFromJSON(const base::Value* json);
+std::vector<double> CalculateDerivedFeaturesFromJSON(
+    const base::Value* stringified_json);
 
 }  // namespace dom_distiller
 

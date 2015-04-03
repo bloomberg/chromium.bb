@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/json/json_reader.h"
 #include "third_party/re2/re2/re2.h"
 
 namespace dom_distiller {
@@ -46,6 +47,8 @@ bool EndsWith(const std::string& t, const std::string& s) {
          s.compare(s.size() - t.size(), std::string::npos, t) == 0;
 }
 }
+
+int kDerivedFeaturesCount = 29;
 
 std::vector<double> CalculateDerivedFeatures(bool isOGArticle,
                                              const GURL& url,
@@ -132,7 +135,18 @@ std::vector<double> CalculateDerivedFeatures(bool isOGArticle,
   return features;
 }
 
-std::vector<double> CalculateDerivedFeaturesFromJSON(const base::Value* json) {
+std::vector<double> CalculateDerivedFeaturesFromJSON(
+    const base::Value* stringified_json) {
+  std::string stringified;
+  if (!stringified_json->GetAsString(&stringified)) {
+    return std::vector<double>();
+  }
+
+  scoped_ptr<base::Value> json(base::JSONReader::Read(stringified));
+  if (!json) {
+    return std::vector<double>();
+  }
+
   const base::DictionaryValue* dict;
   if (!json->GetAsDictionary(&dict)) {
     return std::vector<double>();

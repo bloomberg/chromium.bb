@@ -1155,6 +1155,7 @@
           'sources': [
             'autofill/content/browser/risk/fingerprint_browsertest.cc',
             'autofill/content/renderer/password_form_conversion_utils_browsertest.cc',
+            'dom_distiller/content/distillable_page_utils_browsertest.cc',
             'dom_distiller/content/distiller_page_web_contents_browsertest.cc',
             'password_manager/content/renderer/credential_manager_client_browsertest.cc',
           ],

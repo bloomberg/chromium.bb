@@ -5,8 +5,24 @@
 #include "components/dom_distiller/core/distillable_page_detector.h"
 
 #include "base/logging.h"
+#include "grit/components_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace dom_distiller {
+
+const DistillablePageDetector* DistillablePageDetector::GetDefault() {
+  static DistillablePageDetector* detector = nullptr;
+  if (!detector) {
+    std::string serialized_proto =
+        ResourceBundle::GetSharedInstance()
+            .GetRawDataResource(IDR_DISTILLABLE_PAGE_SERIALIZED_MODEL)
+            .as_string();
+    scoped_ptr<AdaBoostProto> proto(new AdaBoostProto);
+    CHECK(proto->ParseFromString(serialized_proto));
+    detector = new DistillablePageDetector(proto.Pass());
+  }
+  return detector;
+}
 
 DistillablePageDetector::DistillablePageDetector(
     scoped_ptr<AdaBoostProto> proto)
@@ -30,7 +46,9 @@ bool DistillablePageDetector::Classify(
 
 double DistillablePageDetector::Score(
     const std::vector<double>& features) const {
-  CHECK(features.size() == size_t(proto_->num_features()));
+  if (features.size() != size_t(proto_->num_features())) {
+    return 0.0;
+  }
   double score = 0.0;
   for (int i = 0; i < proto_->num_stumps(); ++i) {
     const StumpProto& stump = proto_->stump(i);

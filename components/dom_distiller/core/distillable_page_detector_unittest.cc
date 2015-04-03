@@ -91,6 +91,18 @@ TEST(DomDistillerDistillablePageDetectorTest, TestScoreAndClassify) {
   EXPECT_TRUE(detector->Classify(features));
 }
 
+TEST(DomDistillerDistillablePageDetectorTest, TestScoreWrongNumberFeatures) {
+  scoped_ptr<DistillablePageDetector> detector =
+      Builder().Stump(0, 1.0, 1.0).Stump(0, 1.4, 2.0).Build();
+  EXPECT_DOUBLE_EQ(1.5, detector->GetThreshold());
+
+  std::vector<double> features;
+  EXPECT_DOUBLE_EQ(0.0, detector->Score(features));
+  features.push_back(-3.0);
+  features.push_back(1.0);
+  EXPECT_DOUBLE_EQ(0.0, detector->Score(features));
+}
+
 
 }
 
