@@ -4,7 +4,6 @@
 
 #include "chrome/browser/lifetime/application_lifetime.h"
 
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -50,6 +49,10 @@
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #include "components/browser_watcher/exit_funnel_win.h"
+#endif
+
+#if defined(USE_ASH)
+#include "ash/shell.h"
 #endif
 
 namespace chrome {

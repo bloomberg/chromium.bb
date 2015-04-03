@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/desktop_capture/desktop_capture_api.h"
 
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/strings/utf_string_conversions.h"
@@ -178,9 +177,9 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
       media_list.reset(new DesktopMediaListAsh(
           (show_screens ? DesktopMediaListAsh::SCREENS : 0) |
           (show_windows ? DesktopMediaListAsh::WINDOWS : 0)));
-    } else
+    }
 #endif
-    {
+    if (!media_list) {
       webrtc::DesktopCaptureOptions options =
           webrtc::DesktopCaptureOptions::CreateDefault();
       options.set_disable_effects(false);

@@ -8,11 +8,14 @@
 #include <windows.h>
 #endif
 
-#include "ash/shell.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/aura/active_desktop_monitor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#endif
 
 namespace chrome {
 

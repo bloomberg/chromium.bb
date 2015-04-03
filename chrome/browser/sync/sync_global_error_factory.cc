@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/sync_global_error_factory.h"
 
-#include "ash/shell.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
