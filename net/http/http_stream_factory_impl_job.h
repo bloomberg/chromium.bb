@@ -55,12 +55,9 @@ class HttpStreamFactoryImpl::Job {
   int RestartTunnelWithProxyAuth(const AuthCredentials& credentials);
   LoadState GetLoadState() const;
 
-  // Marks this Job as the "alternate" job, from Alternate-Protocol. Tracks the
-  // original url so we can mark the Alternate-Protocol as broken if
-  // we fail to connect.  |alternate| specifies the alternate protocol to use
-  // and alternate port to connect to.
-  void MarkAsAlternate(const GURL& original_url,
-                       AlternativeService alternative_service);
+  // Marks this Job as the "alternate" job, from Alternate-Protocol or Alt-Svc
+  // using the specified alternate service.
+  void MarkAsAlternate(AlternativeService alternative_service);
 
   // Tells |this| to wait for |job| to resume it.
   void WaitFor(Job* job);
@@ -275,11 +272,14 @@ class HttpStreamFactoryImpl::Job {
   // original request when host mapping rules are set-up.
   GURL origin_url_;
 
-  // The original URL if the Job is for an alternative service.
-  GURL original_url_;
-
   // AlternateProtocol for this job if this is an alternate job.
   AlternativeService alternative_service_;
+
+  // The URL to be used for proxy resolution and socket pools. If the alternate
+  // service is SPDY, the URL will containg the host:port from
+  // |alternate_service_| and "https://" scheme. Otherwise, this will be the
+  // same as |origin_url_|.
+  GURL alternative_service_url_;
 
   // AlternateProtocol for the other job if this is not an alternate job.
   AlternativeService other_job_alternative_service_;

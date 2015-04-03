@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -45,11 +46,13 @@ namespace net {
 // Returns parameters associated with the start of a HTTP stream job.
 base::Value* NetLogHttpStreamJobCallback(const GURL* original_url,
                                          const GURL* url,
+                                         const GURL* alternate_url,
                                          RequestPriority priority,
                                          NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("original_url", original_url->GetOrigin().spec());
   dict->SetString("url", url->GetOrigin().spec());
+  dict->SetString("alternate_service_url", alternate_url->GetOrigin().spec());
   dict->SetString("priority", RequestPriorityToString(priority));
   return dict;
 }
@@ -167,10 +170,8 @@ LoadState HttpStreamFactoryImpl::Job::GetLoadState() const {
 }
 
 void HttpStreamFactoryImpl::Job::MarkAsAlternate(
-    const GURL& original_url,
     AlternativeService alternative_service) {
   DCHECK(!IsAlternate());
-  original_url_ = original_url;
   alternative_service_ = alternative_service;
   if (alternative_service.protocol == QUIC) {
     DCHECK(session_->params().enable_quic);
@@ -286,7 +287,7 @@ bool HttpStreamFactoryImpl::Job::CanUseExistingSpdySession() const {
   // if we're running with force_spdy_always_.  crbug.com/133176
   // TODO(ricea): Add "wss" back to this list when SPDY WebSocket support is
   // working.
-  return request_info_.url.SchemeIs("https") ||
+  return alternative_service_url_.SchemeIs("https") ||
          proxy_info_.proxy_server().is_https() ||
          session_->params().force_spdy_always;
 }
@@ -622,11 +623,32 @@ int HttpStreamFactoryImpl::Job::DoStart() {
   }
   origin_url_ =
       stream_factory_->ApplyHostMappingRules(request_info_.url, &server_);
+  alternative_service_url_ = origin_url_;
+  // For SPDY via Alt-Svc, set |alternative_service_url_| to
+  // https://<alternative host>:<alternative port>/...
+  // so the proxy resolution works with the actual destination, and so
+  // that the correct socket pool is used.
+  // TODO(rch): change the socket pool API to not require a full URL.
+  if (alternative_service_.protocol >= NPN_SPDY_MINIMUM_VERSION &&
+      alternative_service_.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
+    // TODO(rch):  Figure out how to make QUIC iteract with PAC
+    // scripts.  By not re-writing the URL, we will query the PAC script
+    // for the proxy to use to reach the original URL via TCP.  But
+    // the alternate request will be going via UDP to a different port.
+    GURL::Replacements replacements;
+    // new_port needs to be in scope here because GURL::Replacements references
+    // the memory contained by it directly.
+    const std::string new_port = base::IntToString(alternative_service_.port);
+    replacements.SetSchemeStr("https");
+    replacements.SetPortStr(new_port);
+    alternative_service_url_ =
+        alternative_service_url_.ReplaceComponents(replacements);
+  }
 
-  net_log_.BeginEvent(NetLog::TYPE_HTTP_STREAM_JOB,
-                      base::Bind(&NetLogHttpStreamJobCallback,
-                                 &request_info_.url, &origin_url_,
-                                 priority_));
+  net_log_.BeginEvent(
+      NetLog::TYPE_HTTP_STREAM_JOB,
+      base::Bind(&NetLogHttpStreamJobCallback, &request_info_.url, &origin_url_,
+                 &alternative_service_url_, priority_));
 
   // Don't connect to restricted ports.
   bool is_port_allowed = IsPortAllowedByDefault(server_.port());
@@ -660,8 +682,8 @@ int HttpStreamFactoryImpl::Job::DoResolveProxy() {
   }
 
   return session_->proxy_service()->ResolveProxy(
-      request_info_.url, request_info_.load_flags, &proxy_info_, io_callback_,
-      &pac_request_, session_->network_delegate(), net_log_);
+      alternative_service_url_, request_info_.load_flags, &proxy_info_,
+      io_callback_, &pac_request_, session_->network_delegate(), net_log_);
 }
 
 int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
@@ -747,8 +769,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   DCHECK(proxy_info_.proxy_server().is_valid());
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
-  using_ssl_ = request_info_.url.SchemeIs("https") ||
-      request_info_.url.SchemeIs("wss") || ShouldForceSpdySSL();
+  using_ssl_ = alternative_service_url_.SchemeIs("https") ||
+               alternative_service_url_.SchemeIs("wss") || ShouldForceSpdySSL();
   using_spdy_ = false;
 
   if (ShouldForceQuic())
@@ -848,22 +870,13 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   if (IsPreconnecting()) {
     DCHECK(!stream_factory_->for_websockets_);
     return PreconnectSocketsForHttpRequest(
-        origin_url_,
-        request_info_.extra_headers,
-        request_info_.load_flags,
-        priority_,
-        session_,
-        proxy_info_,
-        ShouldForceSpdySSL(),
-        want_spdy_over_npn,
-        server_ssl_config_,
-        proxy_ssl_config_,
-        request_info_.privacy_mode,
-        net_log_,
-        num_streams_);
+        alternative_service_url_, request_info_.extra_headers,
+        request_info_.load_flags, priority_, session_, proxy_info_,
+        ShouldForceSpdySSL(), want_spdy_over_npn, server_ssl_config_,
+        proxy_ssl_config_, request_info_.privacy_mode, net_log_, num_streams_);
   }
 
-  // If we can't use a SPDY session, don't both checking for one after
+  // If we can't use a SPDY session, don't bother checking for one after
   // the hostname is resolved.
   OnHostResolutionCallback resolution_callback = CanUseExistingSpdySession() ?
       base::Bind(&Job::OnHostResolution, session_->spdy_session_pool(),
@@ -882,10 +895,10 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   }
 
   return InitSocketHandleForHttpRequest(
-      origin_url_, request_info_.extra_headers, request_info_.load_flags,
-      priority_, session_, proxy_info_, ShouldForceSpdySSL(),
-      want_spdy_over_npn, server_ssl_config_, proxy_ssl_config_,
-      request_info_.privacy_mode, net_log_,
+      alternative_service_url_, request_info_.extra_headers,
+      request_info_.load_flags, priority_, session_, proxy_info_,
+      ShouldForceSpdySSL(), want_spdy_over_npn, server_ssl_config_,
+      proxy_ssl_config_, request_info_.privacy_mode, net_log_,
       connection_.get(), resolution_callback, io_callback_);
 }
 
@@ -1027,7 +1040,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   if (using_ssl_) {
     DCHECK(ssl_started);
     if (IsCertificateError(result)) {
-      if (using_spdy_ && IsAlternate() && original_url_.SchemeIs("http")) {
+      if (using_spdy_ && IsAlternate() && origin_url_.SchemeIs("http")) {
         // We ignore certificate errors for http over spdy.
         spdy_certificate_error_ = result;
         result = OK;
@@ -1231,8 +1244,8 @@ bool HttpStreamFactoryImpl::Job::IsHttpsProxyAndHttpUrl() const {
   if (IsAlternate()) {
     // We currently only support Alternate-Protocol where the original scheme
     // is http.
-    DCHECK(original_url_.SchemeIs("http"));
-    return original_url_.SchemeIs("http");
+    DCHECK(origin_url_.SchemeIs("http"));
+    return origin_url_.SchemeIs("http");
   }
   return request_info_.url.SchemeIs("http");
 }
