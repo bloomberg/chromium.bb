@@ -9,8 +9,8 @@ from measurements import timeline_controller
 from telemetry import benchmark
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
+from telemetry.page import action_runner
 from telemetry.page import page_test
-from telemetry.page.actions import action_runner
 from telemetry.results import results_options
 from telemetry.timeline.model import TimelineModel
 from telemetry.util import statistics

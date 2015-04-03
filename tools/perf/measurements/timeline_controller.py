@@ -4,7 +4,7 @@
 
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
-from telemetry.page.actions import action_runner
+from telemetry.page import action_runner
 from telemetry.timeline.model import TimelineModel
 from telemetry.value import trace
 from telemetry.web_perf import timeline_interaction_record as tir_module
