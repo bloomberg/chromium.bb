@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
@@ -40,9 +39,6 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
 #include "components/policy/core/common/schema_registry.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -69,8 +65,8 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #endif
@@ -340,21 +336,28 @@ class DeviceLocalAccountPolicyStatusProvider
 #endif
 
 // The JavaScript message handler for the chrome://policy page.
-class PolicyUIHandler : public content::NotificationObserver,
-                        public content::WebUIMessageHandler,
+class PolicyUIHandler : public content::WebUIMessageHandler,
+#if defined(ENABLE_EXTENSIONS)
+                        public extensions::ExtensionRegistryObserver,
+#endif
                         public policy::PolicyService::Observer,
                         public policy::SchemaRegistry::Observer {
  public:
   PolicyUIHandler();
   ~PolicyUIHandler() override;
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // content::WebUIMessageHandler implementation.
   void RegisterMessages() override;
+
+#if defined(ENABLE_EXTENSIONS)
+  // extensions::ExtensionRegistryObserver implementation.
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) override;
+#endif
 
   // policy::PolicyService::Observer implementation.
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
@@ -402,10 +405,6 @@ class PolicyUIHandler : public content::NotificationObserver,
   // the platform (Chrome OS / desktop) and type of policy that is in effect.
   scoped_ptr<CloudPolicyStatusProvider> user_status_provider_;
   scoped_ptr<CloudPolicyStatusProvider> device_status_provider_;
-
-#if defined(ENABLE_EXTENSIONS)
-  content::NotificationRegistrar registrar_;
-#endif
 
   base::WeakPtrFactory<PolicyUIHandler> weak_factory_;
 
@@ -537,6 +536,11 @@ PolicyUIHandler::~PolicyUIHandler() {
       policy::SchemaRegistryServiceFactory::GetForContext(
           Profile::FromWebUI(web_ui())->GetOriginalProfile())->registry();
   registry->RemoveObserver(this);
+
+#if defined(ENABLE_EXTENSIONS)
+  extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
+      ->RemoveObserver(this);
+#endif
 }
 
 void PolicyUIHandler::RegisterMessages() {
@@ -588,12 +592,8 @@ void PolicyUIHandler::RegisterMessages() {
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
 #if defined(ENABLE_EXTENSIONS)
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::NotificationService::AllSources());
+  extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
+      ->AddObserver(this);
 #endif
   policy::SchemaRegistry* registry =
       policy::SchemaRegistryServiceFactory::GetForContext(
@@ -609,16 +609,22 @@ void PolicyUIHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void PolicyUIHandler::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
 #if defined(ENABLE_EXTENSIONS)
-  DCHECK(type == extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED ||
-         type == extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED);
+void PolicyUIHandler::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
   SendPolicyNames();
   SendPolicyValues();
-#endif
 }
+
+void PolicyUIHandler::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  SendPolicyNames();
+  SendPolicyValues();
+}
+#endif
 
 // TODO(limasdf): Add default implementation and remove this override.
 void PolicyUIHandler::OnSchemaRegistryReady() {
