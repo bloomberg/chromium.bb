@@ -45,7 +45,7 @@ void WriteTransaction::TrackChangesTo(const EntryKernel* entry) {
 }
 
 ImmutableEntryKernelMutationMap WriteTransaction::RecordMutations() {
-  directory_->kernel_->transaction_mutex.AssertAcquired();
+  directory_->kernel()->transaction_mutex.AssertAcquired();
   for (syncable::EntryKernelMutationMap::iterator it = mutations_.begin();
        it != mutations_.end();) {
     EntryKernel* kernel = directory()->GetEntryByHandle(it->first);
@@ -83,17 +83,17 @@ void WriteTransaction::UnlockAndNotify(
 
 ModelTypeSet WriteTransaction::NotifyTransactionChangingAndEnding(
     const ImmutableEntryKernelMutationMap& mutations) {
-  directory_->kernel_->transaction_mutex.AssertAcquired();
+  directory_->kernel()->transaction_mutex.AssertAcquired();
   DCHECK(!mutations.Get().empty());
 
   WriteTransactionInfo write_transaction_info(
-      directory_->kernel_->next_write_transaction_id,
+      directory_->kernel()->next_write_transaction_id,
       from_here_, writer_, mutations);
-  ++directory_->kernel_->next_write_transaction_id;
+  ++directory_->kernel()->next_write_transaction_id;
 
   ImmutableWriteTransactionInfo immutable_write_transaction_info(
       &write_transaction_info);
-  DirectoryChangeDelegate* const delegate = directory_->kernel_->delegate;
+  DirectoryChangeDelegate* const delegate = directory_->kernel()->delegate;
   std::vector<int64> entry_changed;
   if (writer_ == syncable::SYNCAPI) {
     delegate->HandleCalculateChangesChangeEventFromSyncApi(
@@ -108,7 +108,7 @@ ModelTypeSet WriteTransaction::NotifyTransactionChangingAndEnding(
       delegate->HandleTransactionEndingChangeEvent(
           immutable_write_transaction_info, this);
 
-  directory_->kernel_->transaction_observer.Call(FROM_HERE,
+  directory_->kernel()->transaction_observer.Call(FROM_HERE,
       &TransactionObserver::OnTransactionWrite,
       immutable_write_transaction_info, models_with_changes);
 
@@ -117,7 +117,7 @@ ModelTypeSet WriteTransaction::NotifyTransactionChangingAndEnding(
 
 void WriteTransaction::NotifyTransactionComplete(
     ModelTypeSet models_with_changes) {
-  directory_->kernel_->delegate->HandleTransactionCompleteChangeEvent(
+  directory_->kernel()->delegate->HandleTransactionCompleteChangeEvent(
       models_with_changes);
 }
 

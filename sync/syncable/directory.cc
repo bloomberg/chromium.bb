@@ -189,6 +189,7 @@ DirOpenResult Directory::OpenImpl(
   if (OPENED != result)
     return result;
 
+  DCHECK(!kernel_);
   kernel_ = new Kernel(name, info, delegate, transaction_observer);
   delete_journal_.reset(new DeleteJournal(&delete_journals));
   InitializeIndices(&tmp_handles_map);
@@ -1546,6 +1547,14 @@ void Directory::GetAttachmentIdsToUpload(BaseTransaction* trans,
   std::set_difference(not_on_server_id_set.begin(), not_on_server_id_set.end(),
                       on_server_id_set.begin(), on_server_id_set.end(),
                       std::back_inserter(*ids));
+}
+
+Directory::Kernel* Directory::kernel() {
+  return kernel_;
+}
+
+const Directory::Kernel* Directory::kernel() const {
+  return kernel_;
 }
 
 }  // namespace syncable

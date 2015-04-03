@@ -51,15 +51,10 @@ enum InvariantCheckLevel {
 
 // Directory stores and manages EntryKernels.
 //
-// This class is tightly coupled to several other classes (see friends).
+// This class is tightly coupled to several other classes via Directory::Kernel.
+// Although Directory's kernel_ is exposed via public accessor it should be
+// treated as pseudo-private.
 class SYNC_EXPORT Directory {
-  friend class BaseTransaction;
-  friend class Entry;
-  friend class ModelNeutralMutableEntry;
-  friend class MutableEntry;
-  friend class ReadTransaction;
-  friend class ScopedKernelLock;
-  friend class WriteTransaction;
   friend class SyncableDirectoryTest;
   friend class syncer::TestUserShare;
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, ManageDeleteJournals);
@@ -160,6 +155,105 @@ class SYNC_EXPORT Directory {
     MetahandleSet delete_journals_to_purge;
   };
 
+  struct Kernel {
+    // |delegate| must not be NULL.  |transaction_observer| must be
+    // initialized.
+    Kernel(const std::string& name, const KernelLoadInfo& info,
+           DirectoryChangeDelegate* delegate,
+           const WeakHandle<TransactionObserver>& transaction_observer);
+
+    ~Kernel();
+
+    // Implements ReadTransaction / WriteTransaction using a simple lock.
+    base::Lock transaction_mutex;
+
+    // Protected by transaction_mutex.  Used by WriteTransactions.
+    int64 next_write_transaction_id;
+
+    // The name of this directory.
+    std::string const name;
+
+    // Protects all members below.
+    // The mutex effectively protects all the indices, but not the
+    // entries themselves.  So once a pointer to an entry is pulled
+    // from the index, the mutex can be unlocked and entry read or written.
+    //
+    // Never hold the mutex and do anything with the database or any
+    // other buffered IO.  Violating this rule will result in deadlock.
+    mutable base::Lock mutex;
+
+    // Entries indexed by metahandle.  This container is considered to be the
+    // owner of all EntryKernels, which may be referened by the other
+    // containers.  If you remove an EntryKernel from this map, you probably
+    // want to remove it from all other containers and delete it, too.
+    MetahandlesMap metahandles_map;
+
+    // Entries indexed by id
+    IdsMap ids_map;
+
+    // Entries indexed by server tag.
+    // This map does not include any entries with non-existent server tags.
+    TagsMap server_tags_map;
+
+    // Entries indexed by client tag.
+    // This map does not include any entries with non-existent client tags.
+    // IS_DEL items are included.
+    TagsMap client_tags_map;
+
+    // Contains non-deleted items, indexed according to parent and position
+    // within parent.  Protected by the ScopedKernelLock.
+    ParentChildIndex parent_child_index;
+
+    // This index keeps track of which metahandles refer to a given attachment.
+    // Think of it as the inverse of EntryKernel's AttachmentMetadata Records.
+    //
+    // Because entries can be undeleted (e.g. PutIsDel(false)), entries should
+    // not removed from the index until they are actually deleted from memory.
+    //
+    // All access should go through IsAttachmentLinked,
+    // RemoveFromAttachmentIndex, AddToAttachmentIndex, and
+    // UpdateAttachmentIndex methods to avoid iterator invalidation errors.
+    IndexByAttachmentId index_by_attachment_id;
+
+    // 3 in-memory indices on bits used extremely frequently by the syncer.
+    // |unapplied_update_metahandles| is keyed by the server model type.
+    MetahandleSet unapplied_update_metahandles[MODEL_TYPE_COUNT];
+    MetahandleSet unsynced_metahandles;
+    // Contains metahandles that are most likely dirty (though not
+    // necessarily).  Dirtyness is confirmed in TakeSnapshotForSaveChanges().
+    MetahandleSet dirty_metahandles;
+
+    // When a purge takes place, we remove items from all our indices and stash
+    // them in here so that SaveChanges can persist their permanent deletion.
+    MetahandleSet metahandles_to_purge;
+
+    KernelShareInfoStatus info_status;
+
+    // These 3 members are backed in the share_info table, and
+    // their state is marked by the flag above.
+
+    // A structure containing the Directory state that is written back into the
+    // database on SaveChanges.
+    PersistedKernelInfo persisted_info;
+
+    // A unique identifier for this account's cache db, used to generate
+    // unique server IDs. No need to lock, only written at init time.
+    const std::string cache_guid;
+
+    // It doesn't make sense for two threads to run SaveChanges at the same
+    // time; this mutex protects that activity.
+    base::Lock save_changes_mutex;
+
+    // The next metahandle is protected by kernel mutex.
+    int64 next_metahandle;
+
+    // The delegate for directory change events.  Must not be NULL.
+    DirectoryChangeDelegate* const delegate;
+
+    // The transaction observer.
+    const WeakHandle<TransactionObserver> transaction_observer;
+  };
+
   // Does not take ownership of |encryptor|.
   // |report_unrecoverable_error_function| may be NULL.
   // Takes ownership of |store|.
@@ -180,10 +274,6 @@ class SYNC_EXPORT Directory {
                      DirectoryChangeDelegate* delegate,
                      const WeakHandle<TransactionObserver>&
                          transaction_observer);
-
-  // Stops sending events to the delegate and the transaction
-  // observer.
-  void Close();
 
   int64 NextMetahandle();
   // Returns a negative integer unique to this client.
@@ -423,126 +513,20 @@ class SYNC_EXPORT Directory {
                                 ModelType type,
                                 AttachmentIdList* ids);
 
- private:
-  struct Kernel {
-    // |delegate| must not be NULL.  |transaction_observer| must be
-    // initialized.
-    Kernel(const std::string& name, const KernelLoadInfo& info,
-           DirectoryChangeDelegate* delegate,
-           const WeakHandle<TransactionObserver>& transaction_observer);
+  // For new entry creation only.
+  bool InsertEntry(BaseWriteTransaction* trans, EntryKernel* entry);
 
-    ~Kernel();
-
-    // Implements ReadTransaction / WriteTransaction using a simple lock.
-    base::Lock transaction_mutex;
-
-    // Protected by transaction_mutex.  Used by WriteTransactions.
-    int64 next_write_transaction_id;
-
-    // The name of this directory.
-    std::string const name;
-
-    // Protects all members below.
-    // The mutex effectively protects all the indices, but not the
-    // entries themselves.  So once a pointer to an entry is pulled
-    // from the index, the mutex can be unlocked and entry read or written.
-    //
-    // Never hold the mutex and do anything with the database or any
-    // other buffered IO.  Violating this rule will result in deadlock.
-    base::Lock mutex;
-
-    // Entries indexed by metahandle.  This container is considered to be the
-    // owner of all EntryKernels, which may be referened by the other
-    // containers.  If you remove an EntryKernel from this map, you probably
-    // want to remove it from all other containers and delete it, too.
-    MetahandlesMap metahandles_map;
-
-    // Entries indexed by id
-    IdsMap ids_map;
-
-    // Entries indexed by server tag.
-    // This map does not include any entries with non-existent server tags.
-    TagsMap server_tags_map;
-
-    // Entries indexed by client tag.
-    // This map does not include any entries with non-existent client tags.
-    // IS_DEL items are included.
-    TagsMap client_tags_map;
-
-    // Contains non-deleted items, indexed according to parent and position
-    // within parent.  Protected by the ScopedKernelLock.
-    ParentChildIndex parent_child_index;
-
-    // This index keeps track of which metahandles refer to a given attachment.
-    // Think of it as the inverse of EntryKernel's AttachmentMetadata Records.
-    //
-    // Because entries can be undeleted (e.g. PutIsDel(false)), entries should
-    // not removed from the index until they are actually deleted from memory.
-    //
-    // All access should go through IsAttachmentLinked,
-    // RemoveFromAttachmentIndex, AddToAttachmentIndex, and
-    // UpdateAttachmentIndex methods to avoid iterator invalidation errors.
-    IndexByAttachmentId index_by_attachment_id;
-
-    // 3 in-memory indices on bits used extremely frequently by the syncer.
-    // |unapplied_update_metahandles| is keyed by the server model type.
-    MetahandleSet unapplied_update_metahandles[MODEL_TYPE_COUNT];
-    MetahandleSet unsynced_metahandles;
-    // Contains metahandles that are most likely dirty (though not
-    // necessarily).  Dirtyness is confirmed in TakeSnapshotForSaveChanges().
-    MetahandleSet dirty_metahandles;
-
-    // When a purge takes place, we remove items from all our indices and stash
-    // them in here so that SaveChanges can persist their permanent deletion.
-    MetahandleSet metahandles_to_purge;
-
-    KernelShareInfoStatus info_status;
-
-    // These 3 members are backed in the share_info table, and
-    // their state is marked by the flag above.
-
-    // A structure containing the Directory state that is written back into the
-    // database on SaveChanges.
-    PersistedKernelInfo persisted_info;
-
-    // A unique identifier for this account's cache db, used to generate
-    // unique server IDs. No need to lock, only written at init time.
-    const std::string cache_guid;
-
-    // It doesn't make sense for two threads to run SaveChanges at the same
-    // time; this mutex protects that activity.
-    base::Lock save_changes_mutex;
-
-    // The next metahandle is protected by kernel mutex.
-    int64 next_metahandle;
-
-    // The delegate for directory change events.  Must not be NULL.
-    DirectoryChangeDelegate* const delegate;
-
-    // The transaction observer.
-    const WeakHandle<TransactionObserver> transaction_observer;
-  };
-
-  // You'll notice that some of these methods have two forms.  One that takes a
-  // ScopedKernelLock and one that doesn't.  The general pattern is that those
-  // without a ScopedKernelLock parameter construct one internally before
-  // calling the form that takes one.
-
-  virtual EntryKernel* GetEntryByHandle(int64 handle);
-  virtual EntryKernel* GetEntryByHandle(const ScopedKernelLock& lock,
-                                        int64 metahandle);
+  // Update the attachment index for |metahandle| removing it from the index
+  // under |old_metadata| entries and add it under |new_metadata| entries.
+  void UpdateAttachmentIndex(const int64 metahandle,
+                             const sync_pb::AttachmentMetadata& old_metadata,
+                             const sync_pb::AttachmentMetadata& new_metadata);
 
   virtual EntryKernel* GetEntryById(const Id& id);
-  virtual EntryKernel* GetEntryById(const ScopedKernelLock& lock, const Id& id);
-
-  EntryKernel* GetEntryByServerTag(const std::string& tag);
   virtual EntryKernel* GetEntryByClientTag(const std::string& tag);
+  EntryKernel* GetEntryByServerTag(const std::string& tag);
 
-  // For new entry creation only
-  bool InsertEntry(BaseWriteTransaction* trans, EntryKernel* entry);
-  bool InsertEntry(const ScopedKernelLock& lock,
-                   BaseWriteTransaction* trans,
-                   EntryKernel* entry);
+  virtual EntryKernel* GetEntryByHandle(int64 handle);
 
   bool ReindexId(BaseWriteTransaction* trans, EntryKernel* const entry,
                  const Id& new_id);
@@ -550,11 +534,25 @@ class SYNC_EXPORT Directory {
   bool ReindexParentId(BaseWriteTransaction* trans, EntryKernel* const entry,
                        const Id& new_parent_id);
 
-  // Update the attachment index for |metahandle| removing it from the index
-  // under |old_metadata| entries and add it under |new_metadata| entries.
-  void UpdateAttachmentIndex(const int64 metahandle,
-                             const sync_pb::AttachmentMetadata& old_metadata,
-                             const sync_pb::AttachmentMetadata& new_metadata);
+  // Accessors for the underlying Kernel. Although these are public methods, the
+  // number of classes that call these should be limited.
+  Kernel* kernel();
+  const Kernel* kernel() const;
+
+ private:
+  // You'll notice that some of the methods below are private overloads of the
+  // public ones declared above. The general pattern is that the public overload
+  // constructs a ScopedKernelLock before calling the corresponding private
+  // overload with the held ScopedKernelLock.
+
+  virtual EntryKernel* GetEntryByHandle(const ScopedKernelLock& lock,
+                                        int64 metahandle);
+
+  virtual EntryKernel* GetEntryById(const ScopedKernelLock& lock, const Id& id);
+
+  bool InsertEntry(const ScopedKernelLock& lock,
+                   BaseWriteTransaction* trans,
+                   EntryKernel* entry);
 
   // Remove each of |metahandle|'s attachment ids from index_by_attachment_id.
   void RemoveFromAttachmentIndex(
@@ -629,6 +627,10 @@ class SYNC_EXPORT Directory {
                             BaseTransaction* trans,
                             ModelType type,
                             std::vector<int64>* result);
+
+  // Stops sending events to the delegate and the transaction
+  // observer.
+  void Close();
 
   Kernel* kernel_;
 

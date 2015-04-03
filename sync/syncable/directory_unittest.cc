@@ -155,7 +155,7 @@ void SyncableDirectoryTest::CheckPurgeEntriesWithTypeInSucceeded(
     dir_->GetAllMetaHandles(&trans, &all_set);
     EXPECT_EQ(4U, all_set.size());
     if (before_reload)
-      EXPECT_EQ(6U, dir_->kernel_->metahandles_to_purge.size());
+      EXPECT_EQ(6U, dir_->kernel()->metahandles_to_purge.size());
     for (MetahandleSet::iterator iter = all_set.begin(); iter != all_set.end();
          ++iter) {
       Entry e(&trans, GET_BY_HANDLE, *iter);
@@ -187,11 +187,11 @@ void SyncableDirectoryTest::CheckPurgeEntriesWithTypeInSucceeded(
 }
 
 bool SyncableDirectoryTest::IsInDirtyMetahandles(int64 metahandle) {
-  return 1 == dir_->kernel_->dirty_metahandles.count(metahandle);
+  return 1 == dir_->kernel()->dirty_metahandles.count(metahandle);
 }
 
 bool SyncableDirectoryTest::IsInMetahandlesToPurge(int64 metahandle) {
-  return 1 == dir_->kernel_->metahandles_to_purge.count(metahandle);
+  return 1 == dir_->kernel()->metahandles_to_purge.count(metahandle);
 }
 
 scoped_ptr<Directory>& SyncableDirectoryTest::dir() {
@@ -256,7 +256,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
   dir()->PurgeEntriesWithTypeIn(to_purge, ModelTypeSet(), ModelTypeSet());
 
   Directory::SaveChangesSnapshot snapshot1;
-  base::AutoLock scoped_lock(dir()->kernel_->save_changes_mutex);
+  base::AutoLock scoped_lock(dir()->kernel()->save_changes_mutex);
   dir()->TakeSnapshotForSaveChanges(&snapshot1);
   EXPECT_TRUE(expected_purges == snapshot1.metahandles_to_purge);
 
@@ -285,7 +285,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
   // Fake SaveChanges() and make sure we got what we expected.
   {
     Directory::SaveChangesSnapshot snapshot;
-    base::AutoLock scoped_lock(dir()->kernel_->save_changes_mutex);
+    base::AutoLock scoped_lock(dir()->kernel()->save_changes_mutex);
     dir()->TakeSnapshotForSaveChanges(&snapshot);
     // Make sure there's an entry for each new metahandle.  Make sure all
     // entries are marked dirty.
@@ -321,7 +321,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
   // Fake SaveChanges() and make sure we got what we expected.
   {
     Directory::SaveChangesSnapshot snapshot;
-    base::AutoLock scoped_lock(dir()->kernel_->save_changes_mutex);
+    base::AutoLock scoped_lock(dir()->kernel()->save_changes_mutex);
     dir()->TakeSnapshotForSaveChanges(&snapshot);
     // Make sure there's an entry for each new metahandle.  Make sure all
     // entries are marked dirty.
@@ -388,7 +388,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest) {
   // Fake SaveChanges() and make sure we got what we expected.
   {
     Directory::SaveChangesSnapshot snapshot;
-    base::AutoLock scoped_lock(dir()->kernel_->save_changes_mutex);
+    base::AutoLock scoped_lock(dir()->kernel()->save_changes_mutex);
     dir()->TakeSnapshotForSaveChanges(&snapshot);
     // Make sure there are no dirty_metahandles.
     EXPECT_EQ(0u, snapshot.dirty_metas.size());
@@ -415,7 +415,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest) {
   // Fake SaveChanges() and make sure we got what we expected.
   {
     Directory::SaveChangesSnapshot snapshot;
-    base::AutoLock scoped_lock(dir()->kernel_->save_changes_mutex);
+    base::AutoLock scoped_lock(dir()->kernel()->save_changes_mutex);
     dir()->TakeSnapshotForSaveChanges(&snapshot);
     // Make sure there's an entry for each changed metahandle.  Make sure all
     // entries are marked dirty.

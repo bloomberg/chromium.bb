@@ -19,7 +19,7 @@ class ScopedKernelLock {
   ~ScopedKernelLock();
 
   base::AutoLock scoped_lock_;
-  Directory* const dir_;
+  const Directory* const dir_;
   DISALLOW_COPY_AND_ASSIGN(ScopedKernelLock);
 };
 

@@ -137,7 +137,6 @@ void SyncRollbackManagerBase::SaveChanges() {
 
 void SyncRollbackManagerBase::ShutdownOnSyncThread(ShutdownReason reason) {
   if (initialized_) {
-    share_.directory->Close();
     share_.directory.reset();
     initialized_ = false;
   }

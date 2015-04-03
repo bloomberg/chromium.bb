@@ -24,11 +24,11 @@ void BaseTransaction::Lock() {
                "src_file", from_here_.file_name(),
                "src_func", from_here_.function_name());
 
-  directory_->kernel_->transaction_mutex.Acquire();
+  directory_->kernel()->transaction_mutex.Acquire();
 }
 
 void BaseTransaction::Unlock() {
-  directory_->kernel_->transaction_mutex.Release();
+  directory_->kernel()->transaction_mutex.Release();
 }
 
 void BaseTransaction::OnUnrecoverableError(

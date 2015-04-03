@@ -10,7 +10,7 @@ namespace syncer {
 namespace syncable {
 
 ScopedKernelLock::ScopedKernelLock(const Directory* dir)
-  :  scoped_lock_(dir->kernel_->mutex), dir_(const_cast<Directory*>(dir)) {
+    : scoped_lock_(dir->kernel()->mutex), dir_(dir) {
 }
 
 ScopedKernelLock::~ScopedKernelLock() {}

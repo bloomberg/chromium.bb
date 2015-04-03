@@ -561,17 +561,15 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
   base::FilePath path =
       temp_dir_.path().Append(Directory::kSyncDatabaseFilename);
 
-  Directory dir(new OnDiskDirectoryBackingStore("ScopeTest", path),
-                &handler_,
-                NULL,
-                NULL,
-                NULL);
-  DirOpenResult result =
-      dir.Open("ScopeTest", &delegate_, NullTransactionObserver());
-  ASSERT_EQ(result, OPENED);
-  dir.Close();
+  {
+    Directory dir(new OnDiskDirectoryBackingStore("ScopeTest", path), &handler_,
+                  NULL, NULL, NULL);
+    DirOpenResult result =
+        dir.Open("ScopeTest", &delegate_, NullTransactionObserver());
+    ASSERT_EQ(result, OPENED);
+  }
 
-  // Closing the directory should have released the backing database file.
+  // Destroying the directory should have released the backing database file.
   ASSERT_TRUE(base::DeleteFile(path, true));
 }
 
