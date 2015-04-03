@@ -703,7 +703,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // kV8NativesDataDescriptor and kV8SnapshotDataDescriptor are shared with
     // child processes. On Android they are set in
     // ChildProcessService::InternalInitChildProcess, otherwise set them here.
-    if (!process_type.empty() && process_type != switches::kZygoteProcess) {
+    if (!process_type.empty() && process_type != switches::kZygoteProcess
+        && process_type != "service") {
       g_fds->Set(
           kV8NativesDataDescriptor,
           kV8NativesDataDescriptor + base::GlobalDescriptors::kBaseDescriptor);
