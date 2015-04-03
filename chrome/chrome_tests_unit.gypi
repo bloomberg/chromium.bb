@@ -1699,6 +1699,7 @@
         'browser/sync/profile_sync_service_mock.cc',
         'browser/sync/profile_sync_service_mock.h',
         'browser/ui/browser.h',
+        'browser/ui/cocoa/extensions/browser_action_test_util_mac.mm',
         'browser/ui/cocoa/find_bar/find_bar_host_unittest_util_cocoa.mm',
         'browser/ui/cocoa/run_loop_testing.h',
         'browser/ui/cocoa/run_loop_testing.mm',
@@ -1719,6 +1720,7 @@
         'browser/ui/toolbar/test_toolbar_action_view_controller.cc',
         'browser/ui/toolbar/test_toolbar_action_view_controller.h',
         'browser/ui/views/find_bar_host_unittest_util_views.cc',
+        'browser/ui/views/toolbar/browser_action_test_util_views.cc',
         'browser/ui/website_settings/mock_permission_bubble_request.cc',
         'browser/ui/website_settings/mock_permission_bubble_request.h',
         'browser/ui/webui/signin/login_ui_test_utils.cc',
@@ -1984,6 +1986,9 @@
             'app/chrome_crash_reporter_client_mac.mm',
             'app/chrome_main_mac.mm',
           ],
+          'sources!': [
+            'browser/ui/views/toolbar/browser_action_test_util_views.cc',
+          ]
         }],
         ['enable_mdns==1', {
           'sources': [
