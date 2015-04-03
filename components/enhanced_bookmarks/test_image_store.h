@@ -14,10 +14,12 @@ class TestImageStore : public ImageStore {
  public:
   TestImageStore();
   bool HasKey(const GURL& page_url) override;
-  void Insert(const GURL& page_url,
-              const enhanced_bookmarks::ImageRecord& image) override;
+  void Insert(
+      const GURL& page_url,
+      scoped_refptr<enhanced_bookmarks::ImageRecord> image_record) override;
   void Erase(const GURL& page_url) override;
-  enhanced_bookmarks::ImageRecord Get(const GURL& page_url) override;
+  scoped_refptr<enhanced_bookmarks::ImageRecord> Get(
+      const GURL& page_url) override;
   gfx::Size GetSize(const GURL& page_url) override;
   void GetAllPageUrls(std::set<GURL>* urls) override;
   void ClearAll() override;
@@ -27,7 +29,8 @@ class TestImageStore : public ImageStore {
   ~TestImageStore() override;
 
  private:
-  typedef std::map<const GURL, enhanced_bookmarks::ImageRecord> ImageMap;
+  typedef std::map<const GURL, scoped_refptr<enhanced_bookmarks::ImageRecord>>
+      ImageMap;
   ImageMap store_;
 
   DISALLOW_COPY_AND_ASSIGN(TestImageStore);

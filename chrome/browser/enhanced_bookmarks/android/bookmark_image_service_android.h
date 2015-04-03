@@ -50,7 +50,7 @@ class BookmarkImageServiceAndroid : public BookmarkImageService {
                                                bool update_bookmark,
                                                const base::Value* result);
 
-  gfx::Image ResizeImage(gfx::Image image) override;
+  scoped_ptr<gfx::Image> ResizeImage(const gfx::Image& image) override;
 
   content::BrowserContext* browser_context_;
   // The script injected in a page to extract image urls.

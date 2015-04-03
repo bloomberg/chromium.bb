@@ -45,14 +45,14 @@ using enhanced_bookmarks::ImageRecord;
 namespace {
 
 void Callback(ScopedJavaGlobalRef<jobject>* j_callback,
-              const ImageRecord& image_record) {
+              scoped_refptr<ImageRecord> image_record) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   scoped_ptr<ScopedJavaGlobalRef<jobject> > j_callback_ptr(j_callback);
   ScopedJavaLocalRef<jstring> j_url =
-      base::android::ConvertUTF8ToJavaString(env, image_record.url.spec());
+      base::android::ConvertUTF8ToJavaString(env, image_record->url.spec());
 
-  SkBitmap bitmap = image_record.image.AsBitmap();
+  SkBitmap bitmap = image_record->image->AsBitmap();
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (!bitmap.isNull()) {
     j_bitmap = gfx::ConvertToJavaBitmap(&bitmap);

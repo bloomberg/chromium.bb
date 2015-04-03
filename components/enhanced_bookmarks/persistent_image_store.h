@@ -20,9 +20,10 @@ class PersistentImageStore : public ImageStore {
   explicit PersistentImageStore(const base::FilePath& path);
   bool HasKey(const GURL& page_url) override;
   void Insert(const GURL& page_url,
-              const enhanced_bookmarks::ImageRecord& image) override;
+              scoped_refptr<enhanced_bookmarks::ImageRecord> image) override;
   void Erase(const GURL& page_url) override;
-  enhanced_bookmarks::ImageRecord Get(const GURL& page_url) override;
+  scoped_refptr<enhanced_bookmarks::ImageRecord> Get(
+      const GURL& page_url) override;
   gfx::Size GetSize(const GURL& page_url) override;
   void GetAllPageUrls(std::set<GURL>* urls) override;
   void ClearAll() override;

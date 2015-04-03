@@ -148,9 +148,9 @@ void BookmarkImageService::RetrieveSalientImageForPageUrl(
 
 void BookmarkImageService::FetchCallback(const GURL& page_url,
                                          ImageCallback original_callback,
-                                         const ImageRecord& record) {
+                                         scoped_refptr<ImageRecord> record) {
   DCHECK(CalledOnValidThread());
-  if (!record.image.IsEmpty() || !record.url.is_empty()) {
+  if (!record->image->IsEmpty() || !record->url.is_empty()) {
     // Either the record was in the store or there is no image in the store, but
     // an URL for a record is present, indicating that a previous attempt to
     // download the image failed. Just return the record.
@@ -191,15 +191,18 @@ void BookmarkImageService::SalientImageForUrl(const GURL& page_url,
 void BookmarkImageService::ProcessNewImage(const GURL& page_url,
                                            bool update_bookmarks,
                                            const GURL& image_url,
-                                           const gfx::Image& image) {
+                                           scoped_ptr<gfx::Image> image) {
   DCHECK(CalledOnValidThread());
-  PostTaskToStoreImage(image, image_url, page_url);
+
+  gfx::Size size = image->Size();
+  PostTaskToStoreImage(image.Pass(), image_url, page_url);
+
   if (update_bookmarks && image_url.is_valid()) {
     const BookmarkNode* bookmark =
         enhanced_bookmark_model_->bookmark_model()
             ->GetMostRecentlyAddedUserNodeForURL(page_url);
     if (bookmark) {
-      const gfx::Size& size = image.Size();
+
       bool result = enhanced_bookmark_model_->SetOriginalImage(
           bookmark, image_url, size.width(), size.height());
       DCHECK(result);
@@ -212,13 +215,13 @@ bool BookmarkImageService::IsPageUrlInProgress(const GURL& page_url) {
   return in_progress_page_urls_.find(page_url) != in_progress_page_urls_.end();
 }
 
-ImageRecord BookmarkImageService::ResizeAndStoreImage(const gfx::Image& image,
-                                                      const GURL& image_url,
-                                                      const GURL& page_url) {
-  gfx::Image resized_image = ResizeImage(image);
-  ImageRecord image_info(resized_image, image_url, SK_ColorBLACK);
-  if (!resized_image.IsEmpty()) {
-    image_info.dominant_color = DominantColorForImage(resized_image);
+scoped_refptr<ImageRecord> BookmarkImageService::ResizeAndStoreImage(
+    scoped_refptr<ImageRecord> image_info,
+    const GURL& page_url) {
+
+  if (!image_info->image->IsEmpty()) {
+    image_info->image = ResizeImage(*image_info->image);
+    image_info->dominant_color = DominantColorForImage(*image_info->image);
     // TODO(lpromero): this should be saved all the time, even when there is an
     // empty image. http://crbug.com/451450
     pool_->PostNamedSequencedWorkerTask(
@@ -226,26 +229,33 @@ ImageRecord BookmarkImageService::ResizeAndStoreImage(const gfx::Image& image,
         base::Bind(&ImageStore::Insert, base::Unretained(store_.get()),
                    page_url, image_info));
   }
+
   return image_info;
 }
 
-void BookmarkImageService::PostTaskToStoreImage(const gfx::Image& image,
-                                                const GURL& image_url,
-                                                const GURL& page_url) {
+void BookmarkImageService::PostTaskToStoreImage(
+    scoped_ptr<gfx::Image> image,
+    const GURL& image_url,
+    const GURL& page_url) {
   DCHECK(CalledOnValidThread());
 
-  base::Callback<ImageRecord(void)> task =
+  scoped_refptr<ImageRecord> image_info(
+      new ImageRecord(image.Pass(), image_url));
+
+  // TODO ensure image thread safety.
+  base::Callback<scoped_refptr<ImageRecord>(void)> task =
       base::Bind(&BookmarkImageService::ResizeAndStoreImage,
-                 base::Unretained(this), image, image_url, page_url);
-  base::Callback<void(const ImageRecord&)> reply =
+                 base::Unretained(this), image_info, page_url);
+  base::Callback<void(scoped_refptr<ImageRecord>)> reply =
       base::Bind(&BookmarkImageService::OnStoreImagePosted,
                  base::Unretained(this), page_url);
 
   base::PostTaskAndReplyWithResult(pool_.get(), FROM_HERE, task, reply);
 }
 
-void BookmarkImageService::OnStoreImagePosted(const GURL& page_url,
-                                              const ImageRecord& image) {
+void BookmarkImageService::OnStoreImagePosted(
+    const GURL& page_url,
+    scoped_refptr<ImageRecord> image) {
   DCHECK(CalledOnValidThread());
   in_progress_page_urls_.erase(page_url);
   ProcessRequests(page_url, image);
@@ -258,7 +268,7 @@ void BookmarkImageService::RemoveImageForUrl(const GURL& page_url) {
       FROM_HERE,
       base::Bind(&ImageStore::Erase, base::Unretained(store_.get()), page_url));
   in_progress_page_urls_.erase(page_url);
-  ProcessRequests(page_url, ImageRecord());
+  ProcessRequests(page_url, scoped_refptr<ImageRecord>(new ImageRecord()));
 }
 
 void BookmarkImageService::ChangeImageURL(const GURL& from, const GURL& to) {
@@ -270,7 +280,7 @@ void BookmarkImageService::ChangeImageURL(const GURL& from, const GURL& to) {
                                                  from,
                                                  to));
   in_progress_page_urls_.erase(from);
-  ProcessRequests(from, ImageRecord());
+  ProcessRequests(from, scoped_refptr<ImageRecord>(new ImageRecord()));
 }
 
 void BookmarkImageService::ClearAll() {
@@ -284,7 +294,7 @@ void BookmarkImageService::ClearAll() {
   for (std::map<const GURL, std::vector<ImageCallback>>::const_iterator it =
            callbacks_.begin();
        it != callbacks_.end(); ++it) {
-    ProcessRequests(it->first, ImageRecord());
+    ProcessRequests(it->first, scoped_refptr<ImageRecord>(new ImageRecord()));
   }
 
   in_progress_page_urls_.erase(in_progress_page_urls_.begin(),
@@ -292,7 +302,7 @@ void BookmarkImageService::ClearAll() {
 }
 
 void BookmarkImageService::ProcessRequests(const GURL& page_url,
-                                           const ImageRecord& record) {
+                                           scoped_refptr<ImageRecord> record) {
   DCHECK(CalledOnValidThread());
 
   std::vector<ImageCallback> callbacks = callbacks_[page_url];

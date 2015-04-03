@@ -22,7 +22,8 @@ namespace {
 // Generates a gfx::Image with a random UIImage representation. Uses off-center
 // circle gradient to make all pixels slightly different in order to detect
 // small image alterations.
-gfx::Image GenerateRandomUIImage(const gfx::Size& size, float scale) {
+scoped_ptr<gfx::Image> GenerateRandomUIImage(const gfx::Size& size,
+                                             float scale) {
   UIGraphicsBeginImageContextWithOptions(CGSizeMake(size.width(),
                                                     size.height()),
                                          YES,  // opaque.
@@ -56,7 +57,7 @@ gfx::Image GenerateRandomUIImage(const gfx::Size& size, float scale) {
                               kCGGradientDrawsAfterEndLocation);
   UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
   UIGraphicsEndImageContext();
-  return gfx::Image([image retain]);
+  return scoped_ptr<gfx::Image>(new gfx::Image([image retain]));
 }
 
 // Returns true if the two images are identical.
@@ -141,15 +142,18 @@ TYPED_TEST(ImageStoreUnitTestIOS, StoringImagesPreservesScale) {
   const gfx::Size image_size(42, 24);
   for (unsigned long i = 0; i < arraysize(scales); i++) {
     const GURL url("foo://bar");
-    const enhanced_bookmarks::ImageRecord image_in(
-        GenerateRandomUIImage(image_size, scales[i]), GURL("http://a.jpg"),
-        SK_ColorGREEN);
+    scoped_refptr<enhanced_bookmarks::ImageRecord> image_in(
+        new enhanced_bookmarks::ImageRecord(
+            GenerateRandomUIImage(image_size, scales[i]),
+            GURL("http://a.jpg"),
+            SK_ColorGREEN));
     this->store_->Insert(url, image_in);
-    const enhanced_bookmarks::ImageRecord image_out = this->store_->Get(url);
+    scoped_refptr<enhanced_bookmarks::ImageRecord> image_out =
+        this->store_->Get(url);
 
-    EXPECT_EQ(image_in.url, image_out.url);
-    EXPECT_TRUE(CompareImages(image_in.image, image_out.image));
-    EXPECT_EQ(image_in.dominant_color, image_out.dominant_color);
+    EXPECT_EQ(image_in->url, image_out->url);
+    EXPECT_TRUE(CompareImages(*image_in->image, *image_out->image));
+    EXPECT_EQ(image_in->dominant_color, image_out->dominant_color);
   }
 }
 

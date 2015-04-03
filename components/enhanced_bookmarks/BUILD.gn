@@ -23,6 +23,7 @@ source_set("enhanced_bookmarks") {
     "enhanced_bookmark_model_observer.h",
     "enhanced_bookmark_utils.cc",
     "enhanced_bookmark_utils.h",
+    "image_record.cc",
     "image_record.h",
     "image_store.cc",
     "image_store.h",

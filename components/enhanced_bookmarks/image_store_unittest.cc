@@ -19,29 +19,31 @@
 
 namespace {
 
-gfx::Image CreateImage(int width, int height, int a, int r, int g, int b) {
+scoped_ptr<gfx::Image> CreateImage(
+    int width, int height, int a, int r, int g, int b) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(width, height);
   bitmap.eraseARGB(a, r, g, b);
-  gfx::Image image(gfx::Image::CreateFrom1xBitmap(bitmap));
+  scoped_ptr<gfx::Image> image(
+      new gfx::Image(gfx::Image::CreateFrom1xBitmap(bitmap)));
 
 #if defined(OS_IOS)
   // Make sure the image has a kImageRepCocoaTouch.
-  image.ToUIImage();
+  image->ToUIImage();
 #endif  // defined(OS_IOS)
 
   return image;
 }
 
-gfx::Image GenerateWhiteImage() {
+scoped_ptr<gfx::Image> GenerateWhiteImage() {
   return CreateImage(42, 24, 255, 255, 255, 255);
 }
 
-gfx::Image GenerateBlackImage(int width, int height) {
+scoped_ptr<gfx::Image> GenerateBlackImage(int width, int height) {
   return CreateImage(width, height, 255, 0, 0, 0);
 }
 
-gfx::Image GenerateBlackImage() {
+scoped_ptr<gfx::Image> GenerateBlackImage() {
   return GenerateBlackImage(42, 24);
 }
 
@@ -97,7 +99,7 @@ bool CreateV1PersistentImageStoreDB(const base::FilePath& path) {
   statement.BindString(0, "foo://bar");
   statement.BindString(1, "http://a.jpg");
   scoped_refptr<base::RefCountedMemory> image_bytes =
-      enhanced_bookmarks::BytesForImage(GenerateWhiteImage());
+      enhanced_bookmarks::BytesForImage(*GenerateWhiteImage());
   statement.BindBlob(2, image_bytes->front(), (int)image_bytes->size());
   statement.BindInt(3, 42);
   statement.BindInt(4, 24);
@@ -170,8 +172,9 @@ TYPED_TEST(ImageStoreUnitTest, StartsEmpty) {
 }
 
 TYPED_TEST(ImageStoreUnitTest, StoreOne) {
-  const enhanced_bookmarks::ImageRecord image(
-      GenerateBlackImage(), GURL("http://a.jpg"), SK_ColorBLACK);
+  scoped_refptr<enhanced_bookmarks::ImageRecord> image(
+      new enhanced_bookmarks::ImageRecord(
+          GenerateBlackImage(), GURL("http://a.jpg"), SK_ColorBLACK));
   this->store_->Insert(GURL("foo://bar"), image);
 
   std::set<GURL> all_urls;
@@ -183,24 +186,27 @@ TYPED_TEST(ImageStoreUnitTest, StoreOne) {
 
 TYPED_TEST(ImageStoreUnitTest, Retrieve) {
   const GURL url("foo://bar");
-  const enhanced_bookmarks::ImageRecord image_in(
-      CreateImage(42, 24, 1, 0, 0, 1), GURL("http://a.jpg"), SK_ColorBLUE);
+  scoped_refptr<enhanced_bookmarks::ImageRecord> image_in(
+      new enhanced_bookmarks::ImageRecord(
+          CreateImage(42, 24, 1, 0, 0, 1), GURL("http://a.jpg"), SK_ColorBLUE));
   this->store_->Insert(url, image_in);
 
-  const enhanced_bookmarks::ImageRecord image_out = this->store_->Get(url);
+  scoped_refptr<enhanced_bookmarks::ImageRecord> image_out =
+      this->store_->Get(url);
   const gfx::Size size = this->store_->GetSize(url);
 
   EXPECT_EQ(42, size.width());
   EXPECT_EQ(24, size.height());
-  EXPECT_EQ(image_in.url, image_out.url);
-  EXPECT_TRUE(CompareImages(image_in.image, image_out.image));
-  EXPECT_EQ(SK_ColorBLUE, image_out.dominant_color);
+  EXPECT_EQ(image_in->url, image_out->url);
+  EXPECT_TRUE(CompareImages(*image_in->image, *image_out->image));
+  EXPECT_EQ(SK_ColorBLUE, image_out->dominant_color);
 }
 
 TYPED_TEST(ImageStoreUnitTest, Erase) {
   const GURL url("foo://bar");
-  const enhanced_bookmarks::ImageRecord image(
-      GenerateBlackImage(), GURL("http://a.jpg"), SK_ColorBLACK);
+  scoped_refptr<enhanced_bookmarks::ImageRecord> image(
+      new enhanced_bookmarks::ImageRecord(
+          GenerateBlackImage(), GURL("http://a.jpg"), SK_ColorBLACK));
   this->store_->Insert(url, image);
   this->store_->Erase(url);
 
@@ -212,12 +218,14 @@ TYPED_TEST(ImageStoreUnitTest, Erase) {
 
 TYPED_TEST(ImageStoreUnitTest, ClearAll) {
   const GURL url_foo("http://foo");
-  const enhanced_bookmarks::ImageRecord black_image(
-      GenerateBlackImage(), GURL("http://a.jpg"), SK_ColorBLACK);
+  scoped_refptr<enhanced_bookmarks::ImageRecord> black_image(
+      new enhanced_bookmarks::ImageRecord(
+          GenerateBlackImage(), GURL("http://a.jpg"), SK_ColorBLACK));
   this->store_->Insert(url_foo, black_image);
   const GURL url_bar("http://bar");
-  const enhanced_bookmarks::ImageRecord white_image(
-      GenerateWhiteImage(), GURL("http://a.jpg"), SK_ColorWHITE);
+  scoped_refptr<enhanced_bookmarks::ImageRecord> white_image(
+      new enhanced_bookmarks::ImageRecord(
+          GenerateWhiteImage(), GURL("http://a.jpg"), SK_ColorWHITE));
   this->store_->Insert(url_bar, white_image);
 
   this->store_->ClearAll();
@@ -231,29 +239,34 @@ TYPED_TEST(ImageStoreUnitTest, ClearAll) {
 
 TYPED_TEST(ImageStoreUnitTest, Update) {
   const GURL url("foo://bar");
-  const enhanced_bookmarks::ImageRecord image1(GenerateWhiteImage(),
-                                               GURL("1.jpg"), SK_ColorWHITE);
+
+  scoped_refptr<enhanced_bookmarks::ImageRecord> image1(
+      new enhanced_bookmarks::ImageRecord(
+          GenerateWhiteImage(), GURL("1.jpg"), SK_ColorWHITE));
   this->store_->Insert(url, image1);
 
-  const enhanced_bookmarks::ImageRecord image2(GenerateBlackImage(),
-                                               GURL("2.jpg"), SK_ColorBLACK);
+  scoped_refptr<enhanced_bookmarks::ImageRecord> image2(
+      new enhanced_bookmarks::ImageRecord(
+          GenerateBlackImage(), GURL("2.jpg"), SK_ColorBLACK));
   this->store_->Insert(url, image2);
 
-  const enhanced_bookmarks::ImageRecord image_out = this->store_->Get(url);
+  scoped_refptr<enhanced_bookmarks::ImageRecord> image_out =
+      this->store_->Get(url);
 
   EXPECT_TRUE(this->store_->HasKey(url));
   std::set<GURL> all_urls;
   this->store_->GetAllPageUrls(&all_urls);
   EXPECT_EQ(1u, all_urls.size());
-  EXPECT_EQ(image2.url, image_out.url);
-  EXPECT_TRUE(CompareImages(image2.image, image_out.image));
-  EXPECT_EQ(SK_ColorBLACK, image_out.dominant_color);
+  EXPECT_EQ(image2->url, image_out->url);
+  EXPECT_TRUE(CompareImages(*image2->image, *image_out->image));
+  EXPECT_EQ(SK_ColorBLACK, image_out->dominant_color);
 }
 
 TYPED_TEST(ImageStoreUnitTest, Persistence) {
   const GURL url("foo://bar");
-  const enhanced_bookmarks::ImageRecord image_in(
-      GenerateBlackImage(), GURL("http://a.jpg"), SK_ColorBLACK);
+  scoped_refptr<enhanced_bookmarks::ImageRecord> image_in(
+      new enhanced_bookmarks::ImageRecord(
+          GenerateBlackImage(), GURL("http://a.jpg"), SK_ColorBLACK));
   this->store_->Insert(url, image_in);
 
   this->ResetStore();
@@ -263,11 +276,12 @@ TYPED_TEST(ImageStoreUnitTest, Persistence) {
     EXPECT_EQ(1u, all_urls.size());
     EXPECT_EQ(url, *all_urls.begin());
     EXPECT_TRUE(this->store_->HasKey(url));
-    const enhanced_bookmarks::ImageRecord image_out = this->store_->Get(url);
+    scoped_refptr<enhanced_bookmarks::ImageRecord> image_out =
+        this->store_->Get(url);
 
-    EXPECT_EQ(image_in.url, image_out.url);
-    EXPECT_TRUE(CompareImages(image_in.image, image_out.image));
-    EXPECT_EQ(image_in.dominant_color, image_out.dominant_color);
+    EXPECT_EQ(image_in->url, image_out->url);
+    EXPECT_TRUE(CompareImages(*image_in->image, *image_out->image));
+    EXPECT_EQ(image_in->dominant_color, image_out->dominant_color);
   } else {
     std::set<GURL> all_urls;
     this->store_->GetAllPageUrls(&all_urls);
@@ -285,15 +299,16 @@ TYPED_TEST(ImageStoreUnitTest, MigrationToV2) {
   EXPECT_TRUE(CreateV1PersistentImageStoreDB(this->tempDir_.path().Append(
       base::FilePath::FromUTF8Unsafe("BookmarkImageAndUrlStore.db"))));
 
-  const enhanced_bookmarks::ImageRecord image_out =
+  scoped_refptr<enhanced_bookmarks::ImageRecord> image_out =
       this->store_->Get(GURL("foo://bar"));
-  EXPECT_EQ(SK_ColorWHITE, image_out.dominant_color);
+  EXPECT_EQ(SK_ColorWHITE, image_out->dominant_color);
 }
 
 TYPED_TEST(ImageStoreUnitTest, GetSize) {
   const GURL url("foo://bar");
-  const enhanced_bookmarks::ImageRecord image_in(
-      GenerateBlackImage(), GURL("http://a.jpg"), SK_ColorBLACK);
+  scoped_refptr<enhanced_bookmarks::ImageRecord> image_in(
+      new enhanced_bookmarks::ImageRecord(
+          GenerateBlackImage(), GURL("http://a.jpg"), SK_ColorBLACK));
 
   int64 size = 0;
   if (this->use_persistent_store()) {

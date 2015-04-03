@@ -27,8 +27,9 @@ class ImageStore {
   // be null indicating that the download of the image at this URL or
   // encoding for insertion failed previously. On non-iOS platforms, |image|
   // must have exactly one representation with a scale factor of 1.
-  virtual void Insert(const GURL& page_url,
-                      const enhanced_bookmarks::ImageRecord& image_record) = 0;
+  virtual void Insert(
+      const GURL& page_url,
+      scoped_refptr<enhanced_bookmarks::ImageRecord> image_record) = 0;
 
   // Removes an image from the store.
   virtual void Erase(const GURL& page_url) = 0;
@@ -38,7 +39,8 @@ class ImageStore {
   // image_url where the image was downloaded from or failed to be downloaded
   // from. When the image is not empty, the dominant color of the image is also
   // filled.
-  virtual enhanced_bookmarks::ImageRecord Get(const GURL& page_url) = 0;
+  virtual scoped_refptr<enhanced_bookmarks::ImageRecord> Get(
+      const GURL& page_url) = 0;
 
   // Returns the size of the image stored for this URL or empty size if no
   // images are present.

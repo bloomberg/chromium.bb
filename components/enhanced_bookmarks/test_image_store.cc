@@ -17,12 +17,13 @@ bool TestImageStore::HasKey(const GURL& page_url) {
   return store_.find(page_url) != store_.end();
 }
 
-void TestImageStore::Insert(const GURL& page_url,
-                            const enhanced_bookmarks::ImageRecord& image) {
+void TestImageStore::Insert(
+    const GURL& page_url,
+    scoped_refptr<enhanced_bookmarks::ImageRecord> image_record) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   Erase(page_url);
-  store_.insert(std::make_pair(page_url, image));
+  store_.insert(std::make_pair(page_url, image_record));
 }
 
 void TestImageStore::Erase(const GURL& page_url) {
@@ -31,11 +32,14 @@ void TestImageStore::Erase(const GURL& page_url) {
   store_.erase(page_url);
 }
 
-enhanced_bookmarks::ImageRecord TestImageStore::Get(const GURL& page_url) {
+scoped_refptr<enhanced_bookmarks::ImageRecord> TestImageStore::Get(
+    const GURL& page_url) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  if (store_.find(page_url) == store_.end())
-    return enhanced_bookmarks::ImageRecord();
+  if (store_.find(page_url) == store_.end()) {
+    return scoped_refptr<enhanced_bookmarks::ImageRecord>(
+        new enhanced_bookmarks::ImageRecord());
+  }
 
   return store_[page_url];
 }
@@ -47,7 +51,7 @@ gfx::Size TestImageStore::GetSize(const GURL& page_url) {
   if (pair_enumerator == store_.end())
     return gfx::Size();
 
-  return store_[page_url].image.Size();
+  return store_[page_url]->image->Size();
 }
 
 void TestImageStore::GetAllPageUrls(std::set<GURL>* urls) {
@@ -72,10 +76,10 @@ int64 TestImageStore::GetStoreSizeInBytes() {
     size += sizeof(it->first);
     size += it->first.spec().length();
     size += sizeof(it->second);
-    SkBitmap bitmap = it->second.image.AsBitmap();
+    SkBitmap bitmap = it->second->image->AsBitmap();
     size += bitmap.getSize();
-    size += it->second.url.spec().length();
-    size += sizeof(it->second.dominant_color);
+    size += it->second->url.spec().length();
+    size += sizeof(it->second->dominant_color);
   }
   return size;
 }

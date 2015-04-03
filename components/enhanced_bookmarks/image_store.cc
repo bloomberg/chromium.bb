@@ -18,7 +18,7 @@ void ImageStore::ChangeImageURL(const GURL& from, const GURL& to) {
   if (!HasKey(from))
     return;
 
-  const enhanced_bookmarks::ImageRecord& record = Get(from);
+  scoped_refptr<enhanced_bookmarks::ImageRecord> record = Get(from);
   Erase(from);
   Insert(to, record);
 }

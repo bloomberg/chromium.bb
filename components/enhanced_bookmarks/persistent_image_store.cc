@@ -163,7 +163,7 @@ bool PersistentImageStore::HasKey(const GURL& page_url) {
 
 void PersistentImageStore::Insert(
     const GURL& page_url,
-    const enhanced_bookmarks::ImageRecord& record) {
+    scoped_refptr<enhanced_bookmarks::ImageRecord> record) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (OpenDatabase() != sql::INIT_OK)
     return;
@@ -176,10 +176,10 @@ void PersistentImageStore::Insert(
       "VALUES (?, ?, ?, ?, ?, ?)"));
 
   statement.BindString(0, page_url.possibly_invalid_spec());
-  statement.BindString(1, record.url.possibly_invalid_spec());
+  statement.BindString(1, record->url.possibly_invalid_spec());
 
   scoped_refptr<base::RefCountedMemory> image_bytes =
-      enhanced_bookmarks::BytesForImage(record.image);
+      enhanced_bookmarks::BytesForImage(*record->image);
 
   // Insert an empty image in case encoding fails.
   if (!image_bytes.get())
@@ -189,9 +189,9 @@ void PersistentImageStore::Insert(
 
   statement.BindBlob(2, image_bytes->front(), (int)image_bytes->size());
 
-  statement.BindInt(3, record.image.Size().width());
-  statement.BindInt(4, record.image.Size().height());
-  statement.BindInt(5, record.dominant_color);
+  statement.BindInt(3, record->image->Size().width());
+  statement.BindInt(4, record->image->Size().height());
+  statement.BindInt(5, record->dominant_color);
   statement.Run();
 }
 
@@ -206,10 +206,11 @@ void PersistentImageStore::Erase(const GURL& page_url) {
   statement.Run();
 }
 
-enhanced_bookmarks::ImageRecord PersistentImageStore::Get(
+scoped_refptr<enhanced_bookmarks::ImageRecord> PersistentImageStore::Get(
     const GURL& page_url) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  enhanced_bookmarks::ImageRecord image_record;
+  scoped_refptr<enhanced_bookmarks::ImageRecord> image_record(
+      new enhanced_bookmarks::ImageRecord());
   if (OpenDatabase() != sql::INIT_OK)
     return image_record;
 
@@ -231,21 +232,21 @@ enhanced_bookmarks::ImageRecord PersistentImageStore::Get(
     if (statement.ColumnByteLength(0) > 0) {
       scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
       statement.ColumnBlobAsVector(0, &data->data());
-      image_record.image = enhanced_bookmarks::ImageForBytes(data);
+      *image_record->image = enhanced_bookmarks::ImageForBytes(data);
     }
 
     // URL.
-    image_record.url = GURL(statement.ColumnString(1));
+    image_record->url = GURL(statement.ColumnString(1));
 
     // Dominant color.
     if (statement.ColumnType(2) != sql::COLUMN_TYPE_NULL) {
-      image_record.dominant_color = SkColor(statement.ColumnInt(2));
+      image_record->dominant_color = SkColor(statement.ColumnInt(2));
     } else {
       // The dominant color was not computed when the image was first
       // stored.
       // Compute it now.
-      image_record.dominant_color =
-          enhanced_bookmarks::DominantColorForImage(image_record.image);
+      image_record->dominant_color =
+          enhanced_bookmarks::DominantColorForImage(*image_record->image);
       stored_image_record_needs_update = true;
     }
 

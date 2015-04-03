@@ -38,6 +38,7 @@
         'enhanced_bookmarks/enhanced_bookmark_model_observer.h',
         'enhanced_bookmarks/enhanced_bookmark_utils.cc',
         'enhanced_bookmarks/enhanced_bookmark_utils.h',
+        'enhanced_bookmarks/image_record.cc',
         'enhanced_bookmarks/image_record.h',
         'enhanced_bookmarks/image_store.cc',
         'enhanced_bookmarks/image_store.h',
