@@ -103,21 +103,6 @@
   },
   {
     "prefix": "stable",
-    "base": "compositing/columns",
-    "args": ["--stable-release-mode"]
-  },
-  {
-    "prefix": "stable",
-    "base": "fast/multicol",
-    "args": ["--stable-release-mode"]
-  },
-  {
-    "prefix": "stable",
-    "base": "fast/pagination",
-    "args": ["--stable-release-mode"]
-  },
-  {
-    "prefix": "stable",
     "base": "web-animations-api",
     "args": ["--stable-release-mode"]
   },
@@ -136,6 +121,21 @@
     "prefix": "threaded",
     "base": "printing",
     "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "regionbasedmulticol",
+    "base": "compositing/columns",
+    "args": ["--enable-region-based-columns"]
+  },
+  {
+    "prefix": "regionbasedmulticol",
+    "base": "fast/multicol",
+    "args": ["--enable-region-based-columns"]
+  },
+  {
+    "prefix": "regionbasedmulticol",
+    "base": "fast/pagination",
+    "args": ["--enable-region-based-columns"]
   },
   {
     "prefix": "slimmingpaint",
@@ -379,8 +379,8 @@
   {
     "prefix": "slimmingpaint",
     "base": "fast/multicol",
-    "args": ["--enable-slimming-paint"],
-    "reference_args": []
+    "args": ["--enable-slimming-paint", "--enable-region-based-columns"],
+    "reference_args": ["--enable-region-based-columns"]
   },
   {
     "prefix": "rootlayerscrolls",

@@ -1915,7 +1915,7 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
             continue;
 
         RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(styleRef(), child->style()->display());
-        if (!RuntimeEnabledFeatures::regionBasedColumnsEnabled()) {
+        if (!document().regionBasedColumnsEnabled()) {
             if (style()->specifiesColumns()) {
                 if (child->style()->specifiesColumns())
                     newStyle->inheritColumnPropertiesFrom(styleRef());

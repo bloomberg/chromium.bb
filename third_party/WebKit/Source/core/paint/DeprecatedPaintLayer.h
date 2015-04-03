@@ -611,6 +611,9 @@ private:
     void updatePagination();
     void clearPaginationRecursive();
 
+    // FIXME: Temporary. Remove when new columns come online.
+    bool useRegionBasedColumns() const;
+
     DeprecatedPaintLayerType m_layerType;
 
     // Self-painting layer is an optimization where we avoid the heavy Layer painting

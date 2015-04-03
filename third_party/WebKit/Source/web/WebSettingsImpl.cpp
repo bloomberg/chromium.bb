@@ -477,8 +477,7 @@ void WebSettingsImpl::setExperimentalWebGLEnabled(bool enabled)
 
 void WebSettingsImpl::setRegionBasedColumnsEnabled(bool enabled)
 {
-    // TODO(mstensho): Get rid of this method. Cannot do it yet, because it's still called from the
-    // Chromium side. See crbug.com/350853
+    m_settings->setRegionBasedColumnsEnabled(enabled);
 }
 
 void WebSettingsImpl::setOpenGLMultisamplingEnabled(bool enabled)

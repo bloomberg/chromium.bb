@@ -50,7 +50,6 @@
 #include "core/paint/BlockFlowPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/ClipRecorderStack.h"
 #include "platform/text/BidiTextRun.h"
@@ -3077,7 +3076,7 @@ LayoutMultiColumnFlowThread* LayoutBlockFlow::createMultiColumnFlowThread(FlowTh
 
 void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const ComputedStyle* oldStyle)
 {
-    if (!RuntimeEnabledFeatures::regionBasedColumnsEnabled())
+    if (!document().regionBasedColumnsEnabled())
         return;
 
     // Paged overflow trumps multicol in this implementation. Ideally, it should be possible to have

@@ -479,12 +479,17 @@ static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const DeprecatedP
     rect.moveBy(-ancestorLayer->visualOffsetFromAncestor(paginationLayer));
 }
 
+bool DeprecatedPaintLayer::useRegionBasedColumns() const
+{
+    return layoutObject()->document().regionBasedColumnsEnabled();
+}
+
 void DeprecatedPaintLayer::updatePaginationRecursive(bool needsPaginationUpdate)
 {
     m_isPaginated = false;
     m_enclosingPaginationLayer = 0;
 
-    if (RuntimeEnabledFeatures::regionBasedColumnsEnabled() && layoutObject()->isLayoutFlowThread())
+    if (useRegionBasedColumns() && layoutObject()->isLayoutFlowThread())
         needsPaginationUpdate = true;
 
     if (needsPaginationUpdate)
@@ -499,7 +504,7 @@ void DeprecatedPaintLayer::updatePaginationRecursive(bool needsPaginationUpdate)
 
 void DeprecatedPaintLayer::updatePagination()
 {
-    bool usesRegionBasedColumns = RuntimeEnabledFeatures::regionBasedColumnsEnabled();
+    bool usesRegionBasedColumns = useRegionBasedColumns();
     if ((!usesRegionBasedColumns && compositingState() != NotComposited) || !parent())
         return; // FIXME: For now the LayoutView can't be paginated.  Eventually printing will move to a model where it is though.
 
@@ -861,7 +866,7 @@ bool DeprecatedPaintLayer::updateLayerPosition()
         // implementation. The compositing system doesn't understand columns and we're hacking
         // around that fact by faking the position of the Layers when we think we'll end up
         // being composited.
-        if (hasStyleDeterminedDirectCompositingReasons() && !RuntimeEnabledFeatures::regionBasedColumnsEnabled()) {
+        if (hasStyleDeterminedDirectCompositingReasons() && !useRegionBasedColumns()) {
             // FIXME: Composited layers ignore pagination, so about the best we can do is make sure they're offset into the appropriate column.
             // They won't split across columns properly.
             if (!parent()->layoutObject()->hasColumns() && parent()->layoutObject()->isDocumentElement() && layoutObject()->view()->hasColumns())
@@ -2457,7 +2462,7 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
     // The layer created for the LayoutFlowThread is just a helper for painting and hit-testing,
     // and should not contribute to the bounding box. The LayoutMultiColumnSets will contribute
     // the correct size for the rendered content of the multicol container.
-    if (RuntimeEnabledFeatures::regionBasedColumnsEnabled() && layoutObject()->isLayoutFlowThread())
+    if (useRegionBasedColumns() && layoutObject()->isLayoutFlowThread())
         return LayoutRect();
 
     LayoutRect result = clipper().localClipRect();
