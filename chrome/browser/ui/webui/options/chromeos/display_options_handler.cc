@@ -205,9 +205,7 @@ void DisplayOptionsHandler::GetLocalizedValues(
 
 void DisplayOptionsHandler::InitializePage() {
   DCHECK(web_ui());
-  web_ui()->CallJavascriptFunction(
-      "options.BrowserOptions.enableDisplayButton",
-      base::FundamentalValue(true));
+  UpdateDisplaySettingsEnabled();
 }
 
 void DisplayOptionsHandler::RegisterMessages() {
@@ -245,6 +243,7 @@ void DisplayOptionsHandler::OnDisplayConfigurationChanging() {
 }
 
 void DisplayOptionsHandler::OnDisplayConfigurationChanged() {
+  UpdateDisplaySettingsEnabled();
   SendAllDisplayInfo();
 }
 
@@ -316,6 +315,13 @@ void DisplayOptionsHandler::SendDisplayInfo(
   web_ui()->CallJavascriptFunction(
       "options.DisplayOptions.setDisplayInfo",
       mirroring, js_displays, *layout_value.get(), *offset_value.get());
+}
+
+void DisplayOptionsHandler::UpdateDisplaySettingsEnabled() {
+  bool enabled = GetDisplayManager()->num_connected_displays() <= 2;
+  web_ui()->CallJavascriptFunction(
+      "options.BrowserOptions.enableDisplaySettings",
+      base::FundamentalValue(enabled));
 }
 
 void DisplayOptionsHandler::OnFadeOutForMirroringFinished(bool is_mirroring) {

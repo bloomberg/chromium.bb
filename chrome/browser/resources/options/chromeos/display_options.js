@@ -170,6 +170,12 @@ cr.define('options', function() {
      */
     lastTouchLocation_: null,
 
+    /**
+     * Whether the display settings can be shown.
+     * @private
+     */
+    enabled_: true,
+
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
@@ -226,6 +232,24 @@ cr.define('options', function() {
       for (var i = 0; i < optionTitles.length; i++)
         optionTitles[i].style.width = maxSize + 'px';
       chrome.send('getDisplayInfo');
+    },
+
+    /** @override */
+    canShowPage: function() {
+      return this.enabled_;
+    },
+
+    /**
+     * Enables or disables the page. When disabled, the page will not be able to
+     * open, and will close if currently opened.
+     * @param {boolean} enabled Whether the page should be enabled.
+     */
+    setEnabled: function(enabled) {
+      if (this.enabled_ == enabled)
+        return;
+      this.enabled_ = enabled;
+      if (!enabled && this.visible)
+        PageManager.closeOverlay();
     },
 
     /**

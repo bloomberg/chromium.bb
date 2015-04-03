@@ -1696,12 +1696,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Enables or disables the ChromeOS display settings button.
+     * Enables or disables the Chrome OS display settings button and overlay.
      * @private
      */
-    enableDisplayButton_: function(enabled) {
-      if (cr.isChromeOS)
+    enableDisplaySettings_: function(enabled) {
+      if (cr.isChromeOS) {
         $('display-options').disabled = !enabled;
+        DisplayOptions.getInstance().setEnabled(enabled);
+      }
     },
 
     /**
@@ -2168,7 +2170,7 @@ cr.define('options', function() {
     'addBluetoothDevice',
     'deleteCurrentProfile',
     'enableCertificateButton',
-    'enableDisplayButton',
+    'enableDisplaySettings',
     'enableFactoryResetSection',
     'getCurrentProfile',
     'getStartStopSyncButton',
