@@ -1973,4 +1973,8 @@ crbug.com/472902 paint/invalidation/animated-gif-offscreen.html [ Pass Failure ]
 
 crbug.com/472904 virtual/deferred/inspector/tracing/worker-events.html [ Pass Crash ]
 
+crbug.com/473532 http/tests/inspector/stacktraces/csp-inline-warning-contains-stacktrace.html [ Pass Failure ]
+crbug.com/473532 http/tests/inspector/stacktraces/csp-setInterval-warning-contains-stacktrace.html [ Pass Failure ]
+crbug.com/473532 http/tests/inspector/stacktraces/csp-setTimeout-warning-contains-stacktrace.html [ Pass Failure ]
+
 crbug.com/472905 inspector/elements/styles/page-reload-update-sidebar.html [ Pass Failure ]
