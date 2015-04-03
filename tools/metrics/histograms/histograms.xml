@@ -7087,6 +7087,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="EnhancedBookmarks.ViewMode" enum="EnhancedBookmarkViewMode">
+  <owner>ianwen@chromium.org</owner>
+  <summary>
+    Record which Enhanced Bookmark UI mode users are in. This will be recorded
+    everytime the user opens the bookmark manager UI.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.AutoEnrollmentExtraTime" units="milliseconds">
   <owner>mnissler@chromium.org</owner>
   <summary>
@@ -48144,6 +48152,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="SCRIPT_DOWNLOADING"/>
   <int value="5" label="SCRIPT_LOADED"/>
   <int value="6" label="SCRIPT_EVALUATED"/>
+</enum>
+
+<enum name="EnhancedBookmarkViewMode" type="int">
+  <int value="0" label="Default view mode"/>
+  <int value="1" label="List view mode"/>
+  <int value="2" label="Grid view mode"/>
 </enum>
 
 <enum name="EnrollmentStatus" type="int">
