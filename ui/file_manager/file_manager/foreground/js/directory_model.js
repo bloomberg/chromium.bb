@@ -51,6 +51,11 @@ function DirectoryModel(
       new FileListContext(fileFilter,  metadataModel);
   this.currentDirContents_ =
       DirectoryContents.createForDirectory(this.currentFileListContext_, null);
+  /**
+   * Empty file list which is used as a dummy for inactive view of file list.
+   * @type {!FileListModel}
+   */
+  this.emptyFileList_ = new FileListModel(metadataModel);
 
   this.metadataModel_ = metadataModel;
 
@@ -93,6 +98,13 @@ DirectoryModel.prototype.dispose = function() {
  */
 DirectoryModel.prototype.getFileList = function() {
   return this.currentFileListContext_.fileList;
+};
+
+/**
+ * @return {!FileListModel} File list which is always empty.
+ */
+DirectoryModel.prototype.getEmptyFileList = function() {
+  return this.emptyFileList_;
 };
 
 /**

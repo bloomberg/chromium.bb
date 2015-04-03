@@ -871,6 +871,8 @@ FileManager.prototype = /** @struct */ {
         assert(this.thumbnailModel_),
         this.volumeManager_);
     this.ui_.listContainer.dataModel = this.directoryModel_.getFileList();
+    this.ui_.listContainer.emptyDataModel =
+        this.directoryModel_.getEmptyFileList();
     this.ui_.listContainer.selectionModel =
         this.directoryModel_.getFileListSelection();
 

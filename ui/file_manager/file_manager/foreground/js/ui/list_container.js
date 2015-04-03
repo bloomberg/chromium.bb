@@ -71,7 +71,7 @@ function ListContainer(element, table, grid) {
   this.spinner = queryRequiredElement(element, '.spinner-layer');
 
   /**
-   * @type {cr.ui.ArrayDataModel}
+   * @type {FileListModel}
    */
   this.dataModel = null;
 
@@ -87,11 +87,9 @@ function ListContainer(element, table, grid) {
 
   /**
    * Data model which is used as a placefolder in inactive file list.
-   * @type {!cr.ui.ArrayDataModel}
-   * @const
-   * @private
+   * @type {FileListModel}
    */
-  this.emptyDataModel_ = new cr.ui.ArrayDataModel([]);
+  this.emptyDataModel = null;
 
   /**
    * Selection model which is used as a placefolder in inactive file list.
@@ -219,7 +217,7 @@ ListContainer.prototype.setCurrentListType = function(listType) {
       this.grid.hidden = true;
       this.grid.selectionModel = this.emptySelectionModel_;
       this.grid.setListThumbnailLoader(null);
-      this.grid.dataModel = this.emptyDataModel_;
+      this.grid.dataModel = this.emptyDataModel;
       break;
 
     case ListContainer.ListType.THUMBNAIL:
@@ -230,7 +228,7 @@ ListContainer.prototype.setCurrentListType = function(listType) {
       this.table.hidden = true;
       this.table.selectionModel = this.emptySelectionModel_;
       this.table.setListThumbnailLoader(null);
-      this.table.dataModel = this.emptyDataModel_;
+      this.table.dataModel = this.emptyDataModel;
       break;
 
     default:
