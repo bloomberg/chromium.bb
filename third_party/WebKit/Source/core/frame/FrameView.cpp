@@ -878,11 +878,13 @@ PassRefPtr<TracedValue> FrameView::analyzerCounters()
     return value;
 }
 
+#define PERFORM_LAYOUT_TRACE_CATEGORIES "blink,benchmark," TRACE_DISABLED_BY_DEFAULT("blink.debug.layout")
+
 void FrameView::performLayout(bool inSubtreeLayout)
 {
     ASSERT(inSubtreeLayout || m_layoutSubtreeRoots.isEmpty());
 
-    TRACE_EVENT_BEGIN0("blink,benchmark", "FrameView::performLayout");
+    TRACE_EVENT_BEGIN0(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout");
     prepareAnalyzer();
 
     ScriptForbiddenScope forbidScript;
@@ -920,7 +922,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
     ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
-    TRACE_EVENT_END1("blink,benchmark", "FrameView::performLayout",
+    TRACE_EVENT_END1(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout",
         "counters", analyzerCounters());
 }
 
