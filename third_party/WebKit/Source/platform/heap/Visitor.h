@@ -1118,7 +1118,7 @@ private:
     static size_t s_gcInfoTableSize;
 };
 
-// This macro should be used when returning a unique 15 bit integer
+// This macro should be used when returning a unique 14 bit integer
 // for a given gcInfo.
 #define RETURN_GCINFO_INDEX()                                  \
     static size_t gcInfoIndex = 0;                             \
