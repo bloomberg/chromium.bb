@@ -1293,6 +1293,7 @@
             'editing/EditCommand.cpp',
             'editing/EditingBehavior.cpp',
             'editing/EditingBehavior.h',
+            'editing/EditingStrategy.h',
             'editing/EditingStyle.cpp',
             'editing/Editor.cpp',
             'editing/EditorCommand.cpp',
