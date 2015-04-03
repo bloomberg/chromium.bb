@@ -368,6 +368,7 @@
       'browser/ui/cocoa/content_settings/cookie_tree_node.mm',
       'browser/ui/cocoa/content_settings/cookies_tree_controller_bridge.h',
       'browser/ui/cocoa/content_settings/cookies_tree_controller_bridge.mm',
+      'browser/ui/cocoa/create_native_web_modal_manager_cocoa.mm',
       'browser/ui/cocoa/custom_frame_view.h',
       'browser/ui/cocoa/custom_frame_view.mm',
       'browser/ui/cocoa/dev_tools_controller.h',

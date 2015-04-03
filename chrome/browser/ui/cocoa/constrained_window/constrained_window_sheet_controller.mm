@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_info.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 namespace {
 
@@ -19,6 +18,19 @@ NSMutableDictionary* g_sheetControllers;
 // Get a value for the given window that can be used as a key in a dictionary.
 NSValue* GetKeyForParentWindow(NSWindow* parent_window) {
   return [NSValue valueWithNonretainedObject:parent_window];
+}
+
+// Returns the bounds to use when showing a sheet for a given parent view. This
+// returns a rect in window coordinates.
+NSRect GetSheetParentBoundsForParentView(NSView* view) {
+  // If the devtools view is open, it shrinks the size of the WebContents, so go
+  // up the hierarchy to the devtools container view to avoid that. Note that
+  // the devtools view is always in the hierarchy even if it is not open or it
+  // is detached.
+  NSView* devtools_view = [[[view superview] superview] superview];
+  if (devtools_view)
+    view = devtools_view;
+  return [view convertRect:[view bounds] toView:nil];
 }
 
 }  // namespace

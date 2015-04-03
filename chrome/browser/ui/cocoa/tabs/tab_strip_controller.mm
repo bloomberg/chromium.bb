@@ -2289,27 +2289,3 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 }
 
 @end
-
-NSView* GetSheetParentViewForWebContents(WebContents* web_contents) {
-  // View hierarchy of the contents view:
-  // NSView  -- switchView, same for all tabs
-  // +- NSView  -- TabContentsController's view
-  //    +- WebContentsViewCocoa
-  //
-  // Changing it? Do not forget to modify
-  // -[TabStripController swapInTabAtIndex:] too.
-  return [web_contents->GetNativeView() superview];
-}
-
-NSRect GetSheetParentBoundsForParentView(NSView* view) {
-  // If the devtools view is open, it shrinks the size of the WebContents, so go
-  // up the hierarchy to the devtools container view to avoid that. Note that
-  // the devtools view is always in the hierarchy even if it is not open or it
-  // is detached.
-  NSView* devtools_view = [[[view superview] superview] superview];
-  if (devtools_view) {
-    return [devtools_view convertRect:[devtools_view bounds] toView:nil];
-  } else {
-    return [view convertRect:[view bounds] toView:nil];
-  }
-}

@@ -26,6 +26,10 @@ TabDialogsViews::TabDialogsViews(content::WebContents* contents)
 TabDialogsViews::~TabDialogsViews() {
 }
 
+gfx::NativeView TabDialogsViews::GetDialogParentView() const {
+  return web_contents_->GetNativeView();
+}
+
 void TabDialogsViews::ShowCollectedCookies() {
   // Deletes itself on close.
   new CollectedCookiesViews(web_contents_);

@@ -7,10 +7,9 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/tab_dialogs.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-
-using web_modal::SingleWebContentsDialogManagerDelegate;
+#include "content/public/browser/web_contents.h"
 
 SingleWebContentsDialogManagerCocoa::SingleWebContentsDialogManagerCocoa(
     ConstrainedWindowMac* client,
@@ -33,7 +32,10 @@ void SingleWebContentsDialogManagerCocoa::Show() {
 
   content::WebContents* web_contents = delegate_->GetWebContents();
   NSWindow* parent_window = web_contents->GetTopLevelNativeWindow();
-  NSView* parent_view = GetSheetParentViewForWebContents(web_contents);
+  TabDialogs* tab_dialogs = TabDialogs::FromWebContents(web_contents);
+  // |tab_dialogs| is null when |web_contents| is inside a packaged app window.
+  NSView* parent_view = tab_dialogs ? tab_dialogs->GetDialogParentView()
+                                    : web_contents->GetNativeView();
   if (!parent_window || !parent_view)
     return;
 
@@ -71,16 +73,3 @@ void SingleWebContentsDialogManagerCocoa::HostChanged(
 gfx::NativeWindow SingleWebContentsDialogManagerCocoa::dialog() {
   return [sheet_ sheetWindow];
 }
-
-namespace web_modal {
-
-SingleWebContentsDialogManager*
-WebContentsModalDialogManager::CreateNativeWebModalManager(
-    gfx::NativeWindow dialog,
-    SingleWebContentsDialogManagerDelegate* delegate) {
-  base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
-      [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:dialog]);
-  return new SingleWebContentsDialogManagerCocoa(nullptr, sheet, delegate);
-}
-
-}  // namespace web_modal

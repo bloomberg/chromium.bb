@@ -26,6 +26,17 @@ TabDialogsCocoa::TabDialogsCocoa(content::WebContents* contents)
 TabDialogsCocoa::~TabDialogsCocoa() {
 }
 
+gfx::NativeView TabDialogsCocoa::GetDialogParentView() const {
+  // View hierarchy of the contents view:
+  // NSView  -- switchView, same for all tabs
+  // +- TabContentsContainerView  -- TabContentsController's view
+  //    +- WebContentsViewCocoa
+  //
+  // Changing it? Do not forget to modify
+  // -[TabStripController swapInTabAtIndex:] too.
+  return [web_contents_->GetNativeView() superview];
+}
+
 void TabDialogsCocoa::ShowCollectedCookies() {
   // Deletes itself on close.
   new CollectedCookiesMac(web_contents_);

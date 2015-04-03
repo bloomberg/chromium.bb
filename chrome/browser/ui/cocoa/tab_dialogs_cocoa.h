@@ -14,6 +14,7 @@ class TabDialogsCocoa : public TabDialogs {
   ~TabDialogsCocoa() override;
 
   // TabDialogs:
+  gfx::NativeView GetDialogParentView() const override;
   void ShowCollectedCookies() override;
   void ShowHungRendererDialog() override;
   void HideHungRendererDialog() override;

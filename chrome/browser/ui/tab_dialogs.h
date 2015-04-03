@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Browser;
 class Profile;
@@ -39,6 +40,9 @@ class TabDialogs : public base::SupportsUserData::Data {
   // Returns the instance that was attached to |contents|.
   // If no instance was attached, returns NULL.
   static TabDialogs* FromWebContents(content::WebContents* contents);
+
+  // Returns the parent view to use when showing a tab modal dialog.
+  virtual gfx::NativeView GetDialogParentView() const = 0;
 
   // Shows the collected cookies dialog box.
   virtual void ShowCollectedCookies() = 0;
