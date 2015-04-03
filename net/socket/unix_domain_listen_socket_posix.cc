@@ -127,41 +127,5 @@ void UnixDomainListenSocket::Accept() {
   socket_delegate_->DidAccept(this, sock.Pass());
 }
 
-UnixDomainListenSocketFactory::UnixDomainListenSocketFactory(
-    const std::string& path,
-    const UnixDomainListenSocket::AuthCallback& auth_callback)
-    : path_(path),
-      auth_callback_(auth_callback) {}
-
-UnixDomainListenSocketFactory::~UnixDomainListenSocketFactory() {}
-
-scoped_ptr<StreamListenSocket> UnixDomainListenSocketFactory::CreateAndListen(
-    StreamListenSocket::Delegate* delegate) const {
-  return UnixDomainListenSocket::CreateAndListen(
-             path_, delegate, auth_callback_).Pass();
-}
-
-#if defined(SOCKET_ABSTRACT_NAMESPACE_SUPPORTED)
-
-UnixDomainListenSocketWithAbstractNamespaceFactory::
-UnixDomainListenSocketWithAbstractNamespaceFactory(
-    const std::string& path,
-    const std::string& fallback_path,
-    const UnixDomainListenSocket::AuthCallback& auth_callback)
-    : UnixDomainListenSocketFactory(path, auth_callback),
-      fallback_path_(fallback_path) {}
-
-UnixDomainListenSocketWithAbstractNamespaceFactory::
-~UnixDomainListenSocketWithAbstractNamespaceFactory() {}
-
-scoped_ptr<StreamListenSocket>
-UnixDomainListenSocketWithAbstractNamespaceFactory::CreateAndListen(
-    StreamListenSocket::Delegate* delegate) const {
-  return UnixDomainListenSocket::CreateAndListenWithAbstractNamespace(
-      path_, fallback_path_, delegate, auth_callback_);
-}
-
-#endif
-
 }  // namespace deprecated
 }  // namespace net
