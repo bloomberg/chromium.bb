@@ -11,7 +11,7 @@ Developer Preview.
 To test your app, you need three things:
 <ol>
   <li> Your APK. </li>
-  <li> PC, Mac, Linux, or Chromebook on Chrome Version 40+. </li>
+  <li> PC, Mac, Linux, or Chromebook on Chrome Version 41+. </li>
   <li> <a href="http://goo.gl/gAn0Xh">The ARC Welder app</a>. </li>
 </ol>
 </p>
@@ -21,7 +21,9 @@ To test your app, you need three things:
 <p>
 Open ARC Welder, attach your APK, and select your options. Click <strong>Launch
 App</strong> to test your app. When testing, <a href="http://goo.gl/4b9rEz">file
-a bug</a> if something doesn't work.
+a bug</a> if something doesn't work, or
+<a href="http://stackoverflow.com/questions/tagged/google-chrome-arc">find us
+on Stack Overflow</a> (tag: google-chrome-arc) for help.
 </p>
 
 <h2 id="upload">Upload your app</h2>
@@ -63,8 +65,22 @@ When testing your APK on ARC, developers have passed along these helpful tips:
       /data/data/package_name/path/to/your/log.txt')</code> directly in the
       JavaScript console (chrome://inspect/#apps).
     </li>
+    <li>
+      If the app crashes and you can't get logs using logcat, try collecting
+      <a href="/native-client/devguide/devcycle/debugging#debugging-with-printf">
+      stdout and stderr from Chrome/NaCl</a>.  On ChromeOS, you can get these
+      logs from chrome://system/ and expanding <em>ui_log</em>.
+    </li>
+    <li>
+      Javascript console logs sometimes contain relevant information.  There are
+      two contexts, the background page (chrome://extensions, enable Developer
+      Mode, select app_main.html for your app), and the app window
+      (chrome://inspect/#apps).
+    </li>
   </ul>
-  <li>To enable Google Play services, <a href="arc_playservices">read more</a>.</li>
+  <li>
+    To enable Google Play services, <a href="arc_playservices">read more</a>.
+  </li>
   <li>
     Since ARC is in Beta, it doesn't support all of Google Play Services yet.
     However, here are some available APIs:
