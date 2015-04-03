@@ -44,6 +44,12 @@ class CreditCardField : public FormField {
   // card type options.
   static bool LikelyCardTypeSelectField(AutofillScanner* scanner);
 
+  // Returns true if |scanner| points to a field that is for a gift card number.
+  // |scanner| advances if this returns true.
+  // Prepaid debit cards do not count as gift cards, since they can be used like
+  // a credit card.
+  static bool IsGiftCardField(AutofillScanner* scanner);
+
   CreditCardField();
 
   // Parses the expiration month/year/date fields. Returns true if it finds

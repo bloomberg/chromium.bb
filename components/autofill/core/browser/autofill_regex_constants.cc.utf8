@@ -197,6 +197,10 @@ const char kExpirationDateRe[] =
     "|Срок действия карты";  // ru
 const char kGiftCardRe[] =
     "gift.?card";
+const char kDebitGiftCardRe[] =
+    "(visa|mastercard|discover|amex|american express).*gift.?card";
+const char kDebitCardRe[] =
+    "debit.*card";
 
 
 /////////////////////////////////////////////////////////////////////////////

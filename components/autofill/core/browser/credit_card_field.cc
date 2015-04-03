@@ -65,7 +65,7 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   // the bottom of the loop.
   for (int fields = 0; !scanner->IsEnd(); ++fields) {
     // Ignore gift card fields.
-    if (ParseField(scanner, base::UTF8ToUTF16(kGiftCardRe), nullptr))
+    if (IsGiftCardField(scanner))
       break;
 
     if (!credit_card_field->cardholder_) {
@@ -255,6 +255,24 @@ bool CreditCardField::LikelyCardTypeSelectField(AutofillScanner* scanner) {
          AutofillField::FindValueInSelectControl(
              *field, l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD),
              nullptr);
+}
+
+// static
+bool CreditCardField::IsGiftCardField(AutofillScanner* scanner) {
+  if (scanner->IsEnd())
+    return false;
+
+  size_t saved_cursor = scanner->SaveCursor();
+  if (ParseField(scanner, base::UTF8ToUTF16(kDebitCardRe), nullptr)) {
+    scanner->RewindTo(saved_cursor);
+    return false;
+  }
+  if (ParseField(scanner, base::UTF8ToUTF16(kDebitGiftCardRe), nullptr)) {
+    scanner->RewindTo(saved_cursor);
+    return false;
+  }
+
+  return ParseField(scanner, base::UTF8ToUTF16(kGiftCardRe), nullptr);
 }
 
 CreditCardField::CreditCardField()
