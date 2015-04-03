@@ -4,17 +4,7 @@
     {
       "bounds": [2008, 2016],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "repaintRects": [
-        [8, 8, 2000, 54],
-        [8, 8, 50, 50]
-      ],
-      "paintInvalidationClients": [
-        "InlineBox",
-        "RootInlineBox",
-        "LayoutBlockFlow DIV",
-        "LayoutImage IMG id='targetImage'"
-      ]
+      "drawsContent": true
     }
   ]
 }
