@@ -3010,6 +3010,7 @@ interface Navigator
     getter maxTouchPoints
     getter mimeTypes
     getter onLine
+    getter permissions
     getter platform
     getter plugins
     getter product
@@ -3264,6 +3265,14 @@ interface PerformanceTiming
     method constructor
 interface PeriodicWave
     method constructor
+interface PermissionStatus
+    getter onchange
+    getter status
+    method constructor
+    setter onchange
+interface Permissions
+    method constructor
+    method query
 interface Plugin
     method constructor
     method item

@@ -107,7 +107,7 @@ OverlayScrollbars
 PagePopup status=stable
 PathOpsSVGClipping
 PeerConnection status=stable
-Permissions status=experimental
+Permissions status=stable
 Picture status=stable
 PreciseMemoryInfo
 // This feature is deprecated and replaced by EncryptedMedia.
