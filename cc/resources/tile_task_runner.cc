@@ -12,9 +12,8 @@ TileTask::TileTask() : did_schedule_(false), did_complete_(false) {
 }
 
 TileTask::~TileTask() {
-  // Debugging CHECKs to help track down a use-after-free.
-  CHECK(!did_schedule_);
-  CHECK(!did_run_ || did_complete_);
+  DCHECK(!did_schedule_);
+  DCHECK(!did_run_ || did_complete_);
 }
 
 ImageDecodeTask* TileTask::AsImageDecodeTask() {
