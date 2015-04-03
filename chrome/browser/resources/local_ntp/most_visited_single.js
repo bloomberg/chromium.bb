@@ -255,10 +255,14 @@ var showTiles = function() {
 var addTile = function(args) {
   if (args.rid) {
     var data = chrome.embeddedSearch.searchBox.getMostVisitedItemData(args.rid);
+    data.tid = data.rid;
     data.faviconUrl = 'chrome-search://favicon/size/16@' +
-        window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.rid;
+        window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
     tiles.appendChild(renderTile(data));
     logEvent(LOG_TYPE.NTP_CLIENT_SIDE_SUGGESTION);
+  } else if (args.id) {
+    tiles.appendChild(renderTile(args));
+    logEvent(LOG_TYPE.NTP_SERVER_SIDE_SUGGESTION);
   } else {
     tiles.appendChild(renderTile(null));
   }
@@ -277,7 +281,7 @@ var blacklistTile = function(tile) {
     if (ev.propertyName != 'width') return;
 
     window.parent.postMessage({cmd: 'tileBlacklisted',
-                               rid: Number(tile.getAttribute('data-rid'))},
+                               tid: Number(tile.getAttribute('data-tid'))},
                               DOMAIN_ORIGIN);
   });
 };
@@ -299,7 +303,7 @@ var renderTile = function(data) {
   logEvent(LOG_TYPE.NTP_TILE);
 
   tile.className = 'mv-tile';
-  tile.setAttribute('data-rid', data.rid);
+  tile.setAttribute('data-tid', data.tid);
   var tooltip = queryArgs['removeTooltip'] || '';
   var html = [];
   html.push('<div class="mv-favicon"></div>');

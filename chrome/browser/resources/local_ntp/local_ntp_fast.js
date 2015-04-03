@@ -630,9 +630,9 @@ function handlePostMessage(event) {
   var args = event.data;
   if (cmd == 'tileBlacklisted') {
     showNotification();
-    lastBlacklistedTile = args.rid;
+    lastBlacklistedTile = args.tid;
 
-    ntpApiHandle.deleteMostVisitedItem(args.rid);
+    ntpApiHandle.deleteMostVisitedItem(args.tid);
   }
 }
 
