@@ -265,35 +265,42 @@ class TestGetUSBConnectedDevices(USBDeviceTestCase):
 
 
 class TestGetDefaultDevice(USBDeviceTestCase):
-  """Tests GetDefaultDevice() function."""
+  """Tests _GetDefaultDevice() function."""
 
-  DEVICE_1 = remote_access.ChromiumOSDevice('1.1.1.1', alias='toaster1',
-                                            connect=False, ping=False)
-
-  DEVICE_2 = remote_access.ChromiumOSDevice('1.1.1.2', alias='toaster2',
-                                            connect=False, ping=False)
-
-  def _SetDevices(self, devices):
-    """Sets the devices that are available."""
-    self.PatchObject(
-        remote_access, 'GetUSBConnectedDevices').return_value = devices
+  SERVICE_1 = mdns.Service('d1.local', '1.1.1.1', 0, 'd1.a.local',
+                           {'alias': 'd1'})
+  SERVICE_2 = mdns.Service('d2.local', '2.2.2.2', 0, 'd2.a.local',
+                           {'alias': 'd2'})
 
   def testNoDevices(self):
     """Tests when no devices are found."""
-    self._SetDevices([])
+    self._MockNetworkResponse([])
     with self.assertRaises(remote_access.DefaultDeviceError):
-      remote_access.GetDefaultDevice()
+      remote_access._GetDefaultService()
 
   def testOneDevice(self):
     """Tests when one device is found."""
-    self._SetDevices([self.DEVICE_1])
-    self.assertEqual(self.DEVICE_1, remote_access.GetDefaultDevice())
+    self._MockNetworkResponse([self.SERVICE_1])
+    service = remote_access._GetDefaultService()
+    self.assertEqual(self.SERVICE_1.ip, service.ip)
+    self.assertEqual(
+        self.SERVICE_1.text[remote_access.BRILLO_DEVICE_PROPERTY_ALIAS],
+        service.text[remote_access.BRILLO_DEVICE_PROPERTY_ALIAS])
 
   def testMultipleDevices(self):
     """Tests when multiple devices are found."""
-    self._SetDevices([self.DEVICE_1, self.DEVICE_2])
+    self._MockNetworkResponse([self.SERVICE_1, self.SERVICE_2])
     with self.assertRaises(remote_access.DefaultDeviceError):
-      remote_access.GetDefaultDevice()
+      remote_access._GetDefaultService()
+
+  def testDefaultChromiumOSDevice(self):
+    """Tests finding the default ChromiumOSDevice."""
+    self._MockNetworkResponse([self.SERVICE_1])
+    device = remote_access.ChromiumOSDevice(None, ping=False, connect=False)
+    self.assertEqual(self.SERVICE_1.ip, device.hostname)
+    self.assertEqual(
+        self.SERVICE_1.text[remote_access.BRILLO_DEVICE_PROPERTY_ALIAS],
+        device.alias)
 
 
 class TestUSBDeviceIP(USBDeviceTestCase):

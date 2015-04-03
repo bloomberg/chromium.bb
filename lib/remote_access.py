@@ -796,11 +796,19 @@ class ChromiumOSDevice(RemoteDevice):
     """Initializes this object.
 
     Args:
-      hostname: A network hostname or a user-friendly USB device name (alias).
+      hostname: A network hostname or a user-friendly USB device name (alias);
+        None to find the default ChromiumOSDevice.
       alias: A user-friendly USB device name.
     """
-    self._alias = alias
-    hostname = self._ResolveHostname(hostname)
+    if hostname:
+      self._alias = alias
+      hostname = self._ResolveHostname(hostname)
+    else:
+      service = _GetDefaultService()
+      self._alias = service.text[BRILLO_DEVICE_PROPERTY_ALIAS]
+      hostname = service.ip
+      # We know this exists because it responded to the mDNS, no need to ping.
+      kwargs['ping'] = False
     super(ChromiumOSDevice, self).__init__(hostname, **kwargs)
     self._path = None
     self._lsb_release = {}
@@ -961,39 +969,54 @@ class ChromiumOSDevice(RemoteDevice):
     return super(ChromiumOSDevice, self).RunCommand(cmd, **kwargs)
 
 
-def GetUSBConnectedDevices():
-  """Returns a list of all USB-connected devices."""
+def _DiscoverServices():
+  """Performs service discovery.
+
+  Initializes the USB link and sends the mDNS query to find all
+  available Brillo services.
+
+  GetUSBConnectedDevices() can be used instead to get a list of full
+  ChromiumOSDevice objects.
+
+  Returns:
+    A list of mdns.Service objects.
+  """
   # Lazy import mdns so that we don't break the chromite requirement that
   # bootstrapping should not depend on third_party packages. mdns pulls in
   # dpkt which is a third_party package.
   from chromite.lib import mdns
   source_ip = debug_link.InitializeDebugLink()
-  services = mdns.FindServices(source_ip, BRILLO_DEBUG_LINK_SERVICE_NAME)
-  return [ChromiumOSDevice(service.ip,
-                           alias=service.text[BRILLO_DEVICE_PROPERTY_ALIAS],
-                           connect=False, ping=False) for service in services]
+  return mdns.FindServices(source_ip, BRILLO_DEBUG_LINK_SERVICE_NAME)
 
 
-def GetDefaultDevice():
-  """Returns the default device if one exists.
+def _GetDefaultService():
+  """Returns the default service if one exists.
 
   If there is exactly one device connected over USB it will be
   returned. Otherwise DefaultDeviceError will be raised.
 
   Returns:
-    A ChromiumOSDevice object.
+    The mdns.Service object for the default device.
 
   Raises:
     DefaultDeviceError: no default device was found.
   """
-  devices = GetUSBConnectedDevices()
-  if not devices:
+  services = _DiscoverServices()
+  if not services:
     raise DefaultDeviceError('No default device could be found.')
-  elif len(devices) > 1:
+  elif len(services) > 1:
     raise DefaultDeviceError(
         'More than one device was found, please specify a device from: %s.' %
-        ', '.join(device.alias for device in devices))
-  return devices[0]
+        ', '.join(service.text[BRILLO_DEVICE_PROPERTY_ALIAS]
+                  for service in services))
+  return services[0]
+
+
+def GetUSBConnectedDevices():
+  """Returns a list of all USB-connected devices."""
+  return [ChromiumOSDevice(
+      service.ip, alias=service.text[BRILLO_DEVICE_PROPERTY_ALIAS],
+      connect=False, ping=False) for service in _DiscoverServices()]
 
 
 def GetUSBDeviceIP(alias):

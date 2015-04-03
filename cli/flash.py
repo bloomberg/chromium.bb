@@ -670,7 +670,7 @@ def Flash(device, image, project_sdk_image=False, board=None, brick=None,
   same underlying functionality.
 
   Args:
-    device: A commandline.Device object to target.
+    device: commandline.Device object; None to use the default device.
     image: Path (string) to the update image. Can be a local or xbuddy path;
         non-existant local paths are converted to xbuddy.
     project_sdk_image: Use a clean project SDK image. Overrides |image| if True.
@@ -709,7 +709,7 @@ def Flash(device, image, project_sdk_image=False, board=None, brick=None,
     logging.error('Failed to create %s', _DEVSERVER_STATIC_DIR)
 
   if install:
-    if device.scheme != commandline.DEVICE_SCHEME_USB:
+    if not device or device.scheme != commandline.DEVICE_SCHEME_USB:
       raise ValueError(
           '--install can only be used when writing to a USB device')
     if not cros_build_lib.IsInsideChroot():
@@ -727,11 +727,15 @@ def Flash(device, image, project_sdk_image=False, board=None, brick=None,
   if brick:
     board = brick.FriendlyName()
 
-  if device.scheme == commandline.DEVICE_SCHEME_SSH:
-    logging.info('Preparing to update the remote device %s', device.hostname)
+  if not device or device.scheme == commandline.DEVICE_SCHEME_SSH:
+    if device:
+      hostname, port = device.hostname, device.port
+    else:
+      hostname, port = None, None
+    logging.info('Preparing to update the remote device %s', hostname)
     updater = RemoteDeviceUpdater(
-        device.hostname,
-        device.port,
+        hostname,
+        port,
         image,
         board=board,
         brick=brick,

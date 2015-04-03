@@ -11,7 +11,6 @@ import argparse
 from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import osutils
 from chromite.lib import remote_access
 
 
@@ -57,6 +56,8 @@ Quoting can be tricky; the rules are the same as with ssh:
   def __init__(self, options):
     """Initializes ShellCommand."""
     super(ShellCommand, self).__init__(options)
+    # ChromiumOSDevice to connect to.
+    self.device = None
     # SSH connection settings.
     self.ssh_hostname = None
     self.ssh_port = None
@@ -87,9 +88,10 @@ Quoting can be tricky; the rules are the same as with ssh:
 
   def _ReadOptions(self):
     """Processes options and set variables."""
-    self.ssh_hostname = self.options.device.hostname
-    self.ssh_username = self.options.device.username
-    self.ssh_port = self.options.device.port
+    if self.options.device:
+      self.ssh_hostname = self.options.device.hostname
+      self.ssh_username = self.options.device.username
+      self.ssh_port = self.options.device.port
     self.ssh_private_key = self.options.private_key
     self.known_hosts = self.options.known_hosts
     # By default ask the user if a new key is found. SSH will still reject
@@ -117,6 +119,9 @@ Quoting can be tricky; the rules are the same as with ssh:
     provides some common reasons a key may have changed to help the
     user decide whether it was legitimate or not.
 
+    _StartSsh() must have been called before this function so that
+    |self.device| is valid.
+
     Returns:
       True if the user is OK with a changed host key.
     """
@@ -127,10 +132,14 @@ Quoting can be tricky; the rules are the same as with ssh:
                ' - Device flash from a USB stick.\n'
                ' - Device flash using "cros flash --clobber-stateful".\n'
                'Otherwise, please verify that this is the correct device'
-               ' before continuing.' % self.ssh_hostname)
+               ' before continuing.' % self.device.hostname)
 
   def _StartSsh(self):
     """Starts an SSH session or executes a remote command.
+
+    Also creates |self.device| if it doesn't yet exist. It's created
+    once and saved so that if the user wants to use the default device,
+    we only have to go through the discovery procedure the first time.
 
     Requires that _ReadOptions() has already been called to provide the
     SSH configuration.
@@ -141,21 +150,26 @@ Quoting can be tricky; the rules are the same as with ssh:
     Raises:
       SSHConnectionError on SSH connect failure.
     """
-    with osutils.TempDir(prefix='cros-shell-tmp') as tempdir:
-      # Use the basic RemoteAccess class rather than the more powerful
-      # ChromiumOSDevice/RemoteDevice classes because:
-      #  1. We don't need the additional features for a basic SSH connection.
-      #  2. These classes add additional SSH commands for setup, which makes
-      #     usage really awkward with password authentication.
-      remote = remote_access.RemoteAccess(
-          self.ssh_hostname, tempdir, port=self.ssh_port,
-          username=self.ssh_username, private_key=self.ssh_private_key)
-      return remote.RemoteSh(self.command,
-                             connect_settings=self._ConnectSettings(),
-                             error_code_ok=True,
-                             mute_output=False,
-                             redirect_stderr=True,
-                             capture_output=False).returncode
+    # Create the ChromiumOSDevice the first time through this function.
+    if not self.device:
+      self.device = remote_access.ChromiumOSDevice(
+          self.ssh_hostname,
+          port=self.ssh_port,
+          username=self.ssh_username,
+          private_key=self.ssh_private_key,
+          connect=False,
+          ping=False)
+      # Set |setup_work_dir| to False to avoid the SSH setup commands which
+      # could require the user to enter a password multiple times. We don't
+      # need any of the additional functionality that |setup_work_dir| enables.
+      self.device.Connect(setup_work_dir=False)
+    return self.device.BaseRunCommand(
+        self.command,
+        connect_settings=self._ConnectSettings(),
+        error_code_ok=True,
+        mute_output=False,
+        redirect_stderr=True,
+        capture_output=False).returncode
 
   def Run(self):
     """Runs `cros shell`."""

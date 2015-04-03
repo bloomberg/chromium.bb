@@ -825,7 +825,7 @@ def Deploy(device, packages, board=None, brick=None, emerge=True, update=False,
   """Deploys packages to a device.
 
   Args:
-    device: commandline.Device object.
+    device: commandline.Device object; None to use the default device.
     packages: List of packages (strings) to deploy to device.
     board: Board to use; None to automatically detect.
     brick: Brick locator to use. Overrides |board| if not None.
@@ -858,10 +858,14 @@ def Deploy(device, packages, board=None, brick=None, emerge=True, update=False,
   if brick:
     board = brick.FriendlyName()
 
+  if device:
+    hostname, username, port = device.hostname, device.username, device.port
+  else:
+    hostname, username, port = None, None, None
+
   with remote_access.ChromiumOSDeviceHandler(
-      device.hostname, port=device.port, username=device.username,
-      private_key=ssh_private_key, base_dir=_DEVICE_BASE_DIR,
-      ping=ping) as device:
+      hostname, port=port, username=username, private_key=ssh_private_key,
+      base_dir=_DEVICE_BASE_DIR, ping=ping) as device:
     try:
       board = cros_build_lib.GetBoard(device_board=device.board,
                                       override_board=board)

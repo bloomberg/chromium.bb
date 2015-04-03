@@ -136,9 +136,10 @@ To debug a process by its pid:
 
   def _ReadOptions(self):
     """Process options and set variables."""
-    self.ssh_hostname = self.options.device.hostname
-    self.ssh_username = self.options.device.username
-    self.ssh_port = self.options.device.port
+    if self.options.device:
+      self.ssh_hostname = self.options.device.hostname
+      self.ssh_username = self.options.device.username
+      self.ssh_port = self.options.device.port
     self.ssh_private_key = self.options.private_key
     self.list = self.options.list
     self.exe = self.options.exe
@@ -146,9 +147,9 @@ To debug a process by its pid:
 
   def Run(self):
     """Run cros debug."""
+    commandline.RunInsideChroot(self, auto_detect_brick=True)
     self.options.Freeze()
     self._ReadOptions()
-    commandline.RunInsideChroot(self, auto_detect_brick=True)
     try:
       with remote_access.ChromiumOSDeviceHandler(
           self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
