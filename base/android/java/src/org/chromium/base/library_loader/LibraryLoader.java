@@ -355,9 +355,14 @@ public class LibraryLoader {
                         } else {
                             // The library is in its own file.
                             Log.i(TAG, "Loading " + library);
-                            ApplicationInfo applicationInfo = context.getApplicationInfo();
-                            mLoadedFrom.put(library, new File(applicationInfo.nativeLibraryDir,
-                                                              libFilePath).getAbsolutePath());
+                            if (context != null) {
+                                ApplicationInfo applicationInfo = context.getApplicationInfo();
+                                File file = new File(applicationInfo.nativeLibraryDir, libFilePath);
+                                mLoadedFrom.put(library, file.getAbsolutePath());
+                            } else {
+                                Log.i(TAG, "No context, cannot locate the native library file for "
+                                        + library);
+                            }
                         }
 
                         // Load the library.
