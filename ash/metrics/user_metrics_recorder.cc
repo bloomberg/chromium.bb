@@ -4,7 +4,10 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 
+#include "ash/shelf/shelf_delegate.h"
+#include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -119,6 +122,29 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
     }
   }
   return visible_window_count;
+}
+
+void RecordShelfItemCounts() {
+  ShelfDelegate* shelf_delegate = Shell::GetInstance()->GetShelfDelegate();
+  int pinned_item_count = 0;
+  int unpinned_item_count = 0;
+
+  for (const ShelfItem& shelf_item :
+       Shell::GetInstance()->shelf_model()->items()) {
+    if (shelf_item.type != TYPE_APP_LIST) {
+      if (shelf_delegate->IsAppPinned(
+              shelf_delegate->GetAppIDForShelfID(shelf_item.id)))
+        ++pinned_item_count;
+      else
+        ++unpinned_item_count;
+    }
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("Ash.Shelf.NumberOfItems",
+                           pinned_item_count + unpinned_item_count);
+  UMA_HISTOGRAM_COUNTS_100("Ash.Shelf.NumberOfPinnedItems", pinned_item_count);
+  UMA_HISTOGRAM_COUNTS_100("Ash.Shelf.NumberOfUnpinnedItems",
+                           unpinned_item_count);
 }
 
 }  // namespace
@@ -524,6 +550,8 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
   UMA_HISTOGRAM_ENUMERATION("Ash.ActiveWindowShowTypeOverTime",
                             GetActiveWindowState(),
                             ACTIVE_WINDOW_STATE_TYPE_COUNT);
+
+  RecordShelfItemCounts();
 }
 
 }  // namespace ash

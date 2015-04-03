@@ -702,6 +702,33 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.Shelf.NumberOfItems" units="Icons">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <summary>
+    The number of icons in the shelf, not including the App Launcher icon. This
+    metric is recorded every 30 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.NumberOfPinnedItems" units="Icons">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <summary>
+    The number of pinned icons in the shelf, not including the App Launcher
+    icon. This metric is recorded every 30 minutes.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.NumberOfUnpinnedItems" units="Icons">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <summary>
+    The number of unpinned icons in the shelf. This metric is recorded every 30
+    minutes.
+  </summary>
+</histogram>
+
 <histogram name="Ash.ShelfAlignmentOverTime" enum="ShelfAlignmentValue">
   <owner>kuscher@google.com</owner>
   <summary>
