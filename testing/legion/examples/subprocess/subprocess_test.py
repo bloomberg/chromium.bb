@@ -32,7 +32,7 @@ class ExampleTestController(test_controller.TestController):
 
     self.task = self.CreateNewTask(
         isolated_hash=args.task_hash,
-        dimensions={'os': 'Ubuntu-14.04', 'pool': 'Chromoting'},
+        dimensions={'os': 'Ubuntu-14.04'},
         idle_timeout_secs=90, connection_timeout_secs=90,
         verbosity=logging.DEBUG)
     self.task.Create()
@@ -47,42 +47,38 @@ class ExampleTestController(test_controller.TestController):
   def TestMultipleProcesses(self):
     start = time.time()
 
-    sleep20 = self.task.rpc.subprocess.Process(['sleep', '20'])
-    self.task.rpc.subprocess.Start(sleep20)
-    sleep10 = self.task.rpc.subprocess.Process(['sleep', '10'])
-    self.task.rpc.subprocess.Start(sleep10)
+    sleep10 = self.task.Process(['sleep', '10'])
+    sleep20 = self.task.Process(['sleep', '20'])
 
-    self.task.rpc.subprocess.Wait(sleep10)
+    sleep10.Wait()
     elapsed = time.time() - start
     assert elapsed >= 10 and elapsed < 11
 
-    self.task.rpc.subprocess.Wait(sleep20)
+    sleep20.Wait()
     elapsed = time.time() - start
     assert elapsed >= 20
 
-    self.task.rpc.subprocess.Delete(sleep20)
-    self.task.rpc.subprocess.Delete(sleep10)
+    sleep10.Delete()
+    sleep20.Delete()
 
   def TestTerminate(self):
     start = time.time()
-    proc = self.task.rpc.subprocess.Process(['sleep', '20'])
-    self.task.rpc.subprocess.Start(proc)
-    self.task.rpc.subprocess.Terminate(proc)
+    sleep20 = self.task.Process(['sleep', '20'])
+    sleep20.Terminate()
     try:
-      self.task.rpc.subprocess.Wait(proc)
+      sleep20.Wait()
     except xmlrpclib.Fault:
       pass
     finally:
-      self.task.rpc.subprocess.Delete(proc)
+      sleep20.Delete()
     assert time.time() - start < 20
 
   def TestLs(self):
-    proc = self.task.rpc.subprocess.Process(['ls'])
-    self.task.rpc.subprocess.Start(proc)
-    self.task.rpc.subprocess.Wait(proc)
-    assert self.task.rpc.subprocess.GetReturncode(proc) == 0
-    assert 'task.isolate' in self.task.rpc.subprocess.ReadStdout(proc)
-    self.task.rpc.subprocess.Delete(proc)
+    ls = self.task.Process(['ls'])
+    ls.Wait()
+    assert ls.GetReturncode() == 0
+    assert 'task.isolate' in ls.ReadStdout()
+    ls.Delete()
 
 
 if __name__ == '__main__':

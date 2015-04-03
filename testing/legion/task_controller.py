@@ -17,6 +17,7 @@ import xmlrpclib
 
 #pylint: disable=relative-import
 import common_lib
+import process
 
 ISOLATE_PY = os.path.join(common_lib.SWARMING_DIR, 'isolate.py')
 SWARMING_PY = os.path.join(common_lib.SWARMING_DIR, 'swarming.py')
@@ -124,6 +125,10 @@ class TaskController(object):
   def ReleaseAllTasks(cls):
     for task in cls._tasks:
       task.Release()
+
+  def Process(self, cmd, verbose=False, detached=False, cwd=None):
+    return process.ControllerProcessWrapper(
+        self.rpc, cmd, verbose, detached, cwd)
 
   def _CreateOTP(self):
     """Creates the OTP."""

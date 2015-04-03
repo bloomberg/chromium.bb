@@ -32,7 +32,7 @@ class ExampleTestController(test_controller.TestController):
     """Create a task object and set the proper values."""
     task = self.CreateNewTask(
         isolated_hash=isolated_hash,
-        dimensions={'os': 'Ubuntu-14.04', 'pool': 'Legion'}, priority=200,
+        dimensions={'os': 'Ubuntu-14.04'},
         idle_timeout_secs=90, connection_timeout_secs=90,
         verbosity=logging.INFO,
         run_id=1)
@@ -70,11 +70,11 @@ class ExampleTestController(test_controller.TestController):
   def CallTaskTest(self, task):
     """Call task_test.py name on a task."""
     logging.info('Calling Subprocess to run "./task_test.py %s"', task.name)
-    proc = task.rpc.subprocess.Popen(['./task_test.py', task.name])
-    task.rpc.subprocess.Wait(proc)
-    retcode = task.rpc.subprocess.GetReturncode(proc)
-    stdout = task.rpc.subprocess.ReadStdout(proc)
-    stderr = task.rpc.subprocess.ReadStderr(proc)
+    proc = task.Process(['./task_test.py', task.name])
+    proc.Wait()
+    retcode = proc.GetReturncode()
+    stdout = proc.ReadStdout()
+    stderr = proc.ReadStderr()
     logging.info('retcode: %s, stdout: %s, stderr: %s', retcode, stdout, stderr)
 
 

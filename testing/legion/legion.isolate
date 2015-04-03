@@ -8,6 +8,7 @@
       '__init__.py',
       'common_lib.py',
       'legion.isolate',
+      'process.py',
       'rpc_methods.py',
       'rpc_server.py',
       'run_task.py',

@@ -40,4 +40,4 @@ def ConnectToServer(server):
   """Connect to an RPC server."""
   addr = 'http://%s:%d' % (server, SERVER_PORT)
   logging.debug('Connecting to RPC server at %s', addr)
-  return xmlrpclib.Server(addr)
+  return xmlrpclib.Server(addr, allow_none=True)
