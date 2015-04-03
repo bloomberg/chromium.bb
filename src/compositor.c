@@ -5032,6 +5032,7 @@ usage(int error_code)
 		"  -i, --idle-time=SECS\tIdle time in seconds\n"
 		"  --modules\t\tLoad the comma-separated list of modules\n"
 		"  --log=FILE\t\tLog to the given file\n"
+		"  -c, --config=FILE\tConfig file to load, defaults to weston.ini\n"
 		"  --no-config\t\tDo not read weston.ini\n"
 		"  -h, --help\t\tThis help message\n\n");
 
