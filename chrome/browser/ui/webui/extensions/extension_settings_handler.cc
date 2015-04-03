@@ -102,8 +102,7 @@ ExtensionSettingsHandler::ExtensionSettingsHandler()
       error_console_observer_(this),
       extension_prefs_observer_(this),
       extension_registry_observer_(this),
-      extension_management_observer_(this),
-      should_do_verification_check_(false) {
+      extension_management_observer_(this) {
 }
 
 ExtensionSettingsHandler::~ExtensionSettingsHandler() {
@@ -498,10 +497,10 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
 
   // Promote the Chrome Apps & Extensions Developer Tools if they are not
   // installed and the user has not previously dismissed the warning.
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   bool promote_apps_dev_tools = false;
-  if (!ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->
-          GetExtensionById(kAppsDeveloperToolsExtensionId,
-                           ExtensionRegistry::EVERYTHING) &&
+  if (!registry->GetExtensionById(kAppsDeveloperToolsExtensionId,
+                                  ExtensionRegistry::EVERYTHING) &&
       !profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDismissedADTPromo)) {
     promote_apps_dev_tools = true;
   }
@@ -516,14 +515,26 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
       "extensions.ExtensionSettings.returnExtensionsData", results);
 
   MaybeRegisterForNotifications();
-  UMA_HISTOGRAM_BOOLEAN("ExtensionSettings.ShouldDoVerificationCheck",
-                        should_do_verification_check_);
-  if (should_do_verification_check_) {
-    should_do_verification_check_ = false;
-    ExtensionSystem::Get(Profile::FromWebUI(web_ui()))
-        ->install_verifier()
-        ->VerifyAllExtensions();
+
+  scoped_ptr<ExtensionSet> extensions =
+      registry->GenerateInstalledExtensionsSet(ExtensionRegistry::ENABLED |
+                                               ExtensionRegistry::DISABLED |
+                                               ExtensionRegistry::TERMINATED);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
+  bool should_do_verification_check = false;
+  for (const scoped_refptr<const Extension>& extension : *extensions) {
+    if (ui_util::ShouldDisplayInExtensionSettings(extension.get(), profile) &&
+        ((prefs->GetDisableReasons(extension->id()) &
+             Extension::DISABLE_NOT_VERIFIED) != 0)) {
+      should_do_verification_check = true;
+      break;
+    }
   }
+
+  UMA_HISTOGRAM_BOOLEAN("ExtensionSettings.ShouldDoVerificationCheck",
+                        should_do_verification_check);
+  if (should_do_verification_check)
+    ExtensionSystem::Get(profile)->install_verifier()->VerifyAllExtensions();
 }
 
 void ExtensionSettingsHandler::HandleToggleDeveloperMode(
