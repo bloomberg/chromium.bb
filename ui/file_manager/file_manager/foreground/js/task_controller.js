@@ -235,7 +235,7 @@ TaskController.prototype.openSuggestAppsDialog =
       return;
     }
 
-    var onDialogClosed = function(result) {
+    var onDialogClosed = function(result, itemId) {
       switch (result) {
         case SuggestAppsDialog.Result.INSTALL_SUCCESSFUL:
           onSuccess();

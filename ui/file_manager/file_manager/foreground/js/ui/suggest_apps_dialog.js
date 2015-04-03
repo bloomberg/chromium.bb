@@ -80,6 +80,7 @@ function SuggestAppsDialog(parentNode, state) {
 
   this.options_ = null;
   this.installingItemId_ = null;
+  this.installedItemId_ = null;
   this.state_ = SuggestAppsDialog.State.UNINITIALIZED;
 
   this.initializationTask_ = new AsyncUtil.Group();
@@ -178,9 +179,9 @@ SuggestAppsDialog.prototype.show = function() {
  *
  * @param {string} extension Extension of the file with a trailing dot.
  * @param {string} mime Mime of the file.
- * @param {function(boolean)} onDialogClosed Called when the dialog is closed.
- *     The argument is the result of installation: true if an app is installed,
- *     false otherwise.
+ * @param {function(SuggestAppsDialog.Result, ?string)} onDialogClosed Called
+ *     when the dialog is closed, with a result code and an optionally an
+ *     extension id, if an extension was installed.
  */
 SuggestAppsDialog.prototype.showByExtensionAndMime =
     function(extension, mime, onDialogClosed) {
@@ -197,9 +198,9 @@ SuggestAppsDialog.prototype.showByExtensionAndMime =
 
 /**
  * Shows suggest-apps dialog for FSP API
- * @param {function(boolean)} onDialogClosed Called when the dialog is closed.
- *     The argument is the result of installation: true if an app is installed,
- *     false otherwise.
+ * @param {function(SuggestAppsDialog.Result, ?string)} onDialogClosed Called
+ *     when the dialog is closed, with a result code and an optionally an
+ *     extension id, if an extension was installed.
  */
 SuggestAppsDialog.prototype.showProviders = function(onDialogClosed) {
   this.showInternal_(
@@ -218,10 +219,10 @@ SuggestAppsDialog.prototype.showProviders = function(onDialogClosed) {
  * @param {!Object<string, *>} options Map of options for the dialog.
  * @param {string} title Title of the dialog.
  * @param {?string} webStoreUrl Url for more results. Null if not supported.
- * @param {function(boolean)} onDialogClosed Called when the dialog is closed.
- *     The argument is the result of installation: true if an app is installed,
- *     false otherwise.
- *     @private
+ * @param {function(SuggestAppsDialog.Result, ?string)} onDialogClosed Called
+ *     when the dialog is closed, with a result code and an optionally an
+ *     extension id, if an extension was installed.
+ * @private
  */
 SuggestAppsDialog.prototype.showInternal_ =
     function(options, title, webStoreUrl, onDialogClosed) {
@@ -387,6 +388,7 @@ SuggestAppsDialog.prototype.onInstallCompleted_ = function(result, error) {
                 SuggestAppsDialog.State.INSTALLED_CLOSING :
                 SuggestAppsDialog.State.INITIALIZED;  // Back to normal state.
   this.webviewClient_.onInstallCompleted(success, this.installingItemId_);
+  this.installedItemId_ = this.installingItemId_;
   this.installingItemId_ = null;
 
   switch (result) {
@@ -500,7 +502,7 @@ SuggestAppsDialog.prototype.onHide_ = function(opt_originalOnHide) {
   }
   this.state_ = SuggestAppsDialog.State.UNINITIALIZED;
 
-  this.onDialogClosed_(result);
+  this.onDialogClosed_(result, this.installedItemId_);
 };
 
 /**

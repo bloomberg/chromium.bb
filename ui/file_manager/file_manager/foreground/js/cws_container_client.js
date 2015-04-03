@@ -177,21 +177,38 @@ CWSContainerClient.prototype.postInstallSuccessMessage_ = function(itemId) {
  * @private
  */
 CWSContainerClient.prototype.postInitializeMessage_ = function() {
-  var message = {
-    message: 'initialize',
-    hl: util.getCurrentLocaleOrDefault(),
-    width: this.width_,
-    height: this.height_,
-    v: 1
-  };
+  new Promise(function(fulfill, reject) {
+    chrome.management.getAll(function(items) {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError.message);
+        return;
+      }
+      fulfill(items.map(function(item) {
+        return item.id;
+      }));
+    })
+  }).then(
+      /**
+       * @param {!Array<string>} preinstalledExtensionIDs
+       */
+      function(preinstalledExtensionIDs) {
+        var message = {
+          message: 'initialize',
+          hl: util.getCurrentLocaleOrDefault(),
+          width: this.width_,
+          height: this.height_,
+          preinstalled_items: preinstalledExtensionIDs,
+          v: 1
+        };
 
-  if (this.options_) {
-    Object.keys(this.options_).forEach(function(key) {
-      message[key] = this.options_[key];
-    }.bind(this));
-  }
+        if (this.options_) {
+          Object.keys(this.options_).forEach(function(key) {
+            message[key] = this.options_[key];
+          }.bind(this));
+        }
 
-  this.postMessage_(message);
+        this.postMessage_(message);
+      }.bind(this));
 };
 
 /**
