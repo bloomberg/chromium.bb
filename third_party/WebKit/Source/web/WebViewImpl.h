@@ -110,6 +110,7 @@ public:
 
     virtual void beginFrame(const WebBeginFrameArgs&) override;
 
+    virtual void setNeedsLayoutAndFullPaintInvalidation() override;
     virtual void layout() override;
     virtual void paint(WebCanvas*, const WebRect&) override;
 #if OS(ANDROID)
