@@ -1017,11 +1017,21 @@ public:
     static size_t allocatedObjectSize() { return acquireLoad(&s_allocatedObjectSize); }
     static void increaseMarkedObjectSize(size_t delta) { atomicAdd(&s_markedObjectSize, static_cast<long>(delta)); }
     static size_t markedObjectSize() { return acquireLoad(&s_markedObjectSize); }
-    static void increaseAllocatedSpace(size_t delta) { atomicAdd(&s_allocatedSpace, static_cast<long>(delta)); }
-    static void decreaseAllocatedSpace(size_t delta) { atomicSubtract(&s_allocatedSpace, static_cast<long>(delta)); }
+    static void increaseAllocatedSpace(size_t delta)
+    {
+        atomicAdd(&s_allocatedSpace, static_cast<long>(delta));
+        Heap::reportMemoryUsage();
+    }
+    static void decreaseAllocatedSpace(size_t delta)
+    {
+        atomicSubtract(&s_allocatedSpace, static_cast<long>(delta));
+        // We don't need to report memory usage here because we report the usage
+        // only when we see the highest memory usage we've ever seen.
+    }
     static size_t allocatedSpace() { return acquireLoad(&s_allocatedSpace); }
 
     static double estimatedMarkingTime();
+    static void reportMemoryUsage();
 
     // On object allocation, register the object's externally allocated memory.
     static void increaseExternallyAllocatedBytes(size_t);

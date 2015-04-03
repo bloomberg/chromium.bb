@@ -42,6 +42,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/LeakAnnotations.h"
+#include "wtf/MainThread.h"
 #include "wtf/PageAllocator.h"
 #include "wtf/PassOwnPtr.h"
 #if ENABLE(GC_PROFILING)
@@ -2616,6 +2617,27 @@ double Heap::estimatedMarkingTime()
         estimatedObjectCountIncreaseRatio = (Heap::allocatedObjectSize() + Heap::markedObjectSize()) * ThreadState::current()->collectionRate() / Heap::markedObjectSize();
 
     return s_markingTimeInLastGC * estimatedObjectCountIncreaseRatio;
+}
+
+void Heap::reportMemoryUsage()
+{
+    static size_t supportedMaxSizeInMB = 4 * 1024;
+    static size_t observedMaxSizeInMB = 0;
+
+    // We only report the memory in the main thread.
+    if (!isMainThread())
+        return;
+    // +1 is for rounding up the sizeInMB.
+    size_t sizeInMB = Heap::allocatedSpace() / 1024 / 1024 + 1;
+    if (sizeInMB >= supportedMaxSizeInMB)
+        sizeInMB = supportedMaxSizeInMB - 1;
+    if (sizeInMB > observedMaxSizeInMB) {
+        // Send a UseCounter only when we see the highest memory usage
+        // we've ever seen.
+        if (Platform::current())
+            Platform::current()->histogramEnumeration("BlinkGC.CommittedSize", sizeInMB, supportedMaxSizeInMB);
+        observedMaxSizeInMB = sizeInMB;
+    }
 }
 
 size_t Heap::objectPayloadSizeForTesting()
