@@ -56,4 +56,9 @@ v8::Isolate* V8TestingScope::isolate() const
     return m_scriptState->isolate();
 }
 
+v8::Local<v8::Context> V8TestingScope::context() const
+{
+    return m_scriptState->context();
+}
+
 } // namespace blink

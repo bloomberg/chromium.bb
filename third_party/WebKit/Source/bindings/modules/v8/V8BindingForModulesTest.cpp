@@ -104,9 +104,9 @@ private:
 
 TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Isolate* isolate = scriptState()->isolate();
     v8::Local<v8::Object> object = v8::Object::New(isolate);
-    object->Set(v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"));
+    EXPECT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"))));
 
     ScriptValue scriptValue(scriptState(), object);
 
@@ -116,9 +116,9 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue)
 
 TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Isolate* isolate = scriptState()->isolate();
     v8::Local<v8::Object> object = v8::Object::New(isolate);
-    object->Set(v8AtomicString(isolate, "foo"), v8::Number::New(isolate, 456));
+    EXPECT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), v8::Number::New(isolate, 456))));
 
     ScriptValue scriptValue(scriptState(), object);
 
@@ -128,11 +128,11 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue)
 
 TEST_F(IDBKeyFromValueAndKeyPathTest, SubProperty)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Isolate* isolate = scriptState()->isolate();
     v8::Local<v8::Object> object = v8::Object::New(isolate);
     v8::Local<v8::Object> subProperty = v8::Object::New(isolate);
-    subProperty->Set(v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"));
-    object->Set(v8AtomicString(isolate, "foo"), subProperty);
+    EXPECT_TRUE(v8CallBoolean(subProperty->Set(scriptState()->context(), v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"))));
+    EXPECT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), subProperty)));
 
     ScriptValue scriptValue(scriptState(), object);
 
@@ -145,9 +145,9 @@ class InjectIDBKeyTest : public IDBKeyFromValueAndKeyPathTest {
 
 TEST_F(InjectIDBKeyTest, TopLevelPropertyStringValue)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Isolate* isolate = scriptState()->isolate();
     v8::Local<v8::Object> object = v8::Object::New(isolate);
-    object->Set(v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"));
+    EXPECT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"))));
 
     ScriptValue foozoo(scriptState(), object);
     checkInjection(scriptState(), IDBKey::createString("myNewKey"), foozoo, "bar");
@@ -158,11 +158,11 @@ TEST_F(InjectIDBKeyTest, TopLevelPropertyStringValue)
 
 TEST_F(InjectIDBKeyTest, SubProperty)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Isolate* isolate = scriptState()->isolate();
     v8::Local<v8::Object> object = v8::Object::New(isolate);
     v8::Local<v8::Object> subProperty = v8::Object::New(isolate);
-    subProperty->Set(v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"));
-    object->Set(v8AtomicString(isolate, "foo"), subProperty);
+    EXPECT_TRUE(v8CallBoolean(subProperty->Set(scriptState()->context(), v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"))));
+    EXPECT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), subProperty)));
 
     ScriptValue scriptObject(scriptState(), object);
     checkInjection(scriptState(), IDBKey::createString("myNewKey"), scriptObject, "foo.baz");

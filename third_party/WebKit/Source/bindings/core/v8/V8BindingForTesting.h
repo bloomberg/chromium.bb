@@ -28,6 +28,7 @@ public:
     explicit V8TestingScope(v8::Isolate*);
     ScriptState* scriptState() const;
     v8::Isolate* isolate() const;
+    v8::Local<v8::Context> context() const;
     ~V8TestingScope();
 
 private:
