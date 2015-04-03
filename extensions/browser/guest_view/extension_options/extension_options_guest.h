@@ -34,6 +34,7 @@ class ExtensionOptionsGuest
   const char* GetAPINamespace() const override;
   int GetTaskPrefix() const override;
   bool IsPreferredSizeModeEnabled() const override;
+  bool IsDragAndDropEnabled() const override;
   void OnPreferredSizeChanged(const gfx::Size& pref_size) override;
 
   // ExtensionFunctionDispatcher::Delegate implementation.

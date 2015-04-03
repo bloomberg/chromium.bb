@@ -42,6 +42,11 @@ cr.define('extensions', function() {
   var dragWrapperHandler = {
     /** @override */
     shouldAcceptDrag: function(e) {
+      // External Extension installation can be disabled globally, e.g. while a
+      // different overlay is already showing.
+      if (!ExtensionSettings.getInstance().dragEnabled_)
+        return false;
+
       // We can't access filenames during the 'dragenter' event, so we have to
       // wait until 'drop' to decide whether to do something with the file or
       // not.
@@ -52,7 +57,6 @@ cr.define('extensions', function() {
     /** @override */
     doDragEnter: function() {
       chrome.send('startDrag');
-      ExtensionSettings.showOverlay(null);
       ExtensionSettings.showOverlay($('drop-target-overlay'));
     },
     /** @override */
@@ -123,6 +127,22 @@ cr.define('extensions', function() {
     displayPromo_: false,
 
     /**
+     * The drag-drop wrapper for installing external Extensions, if available.
+     * null if external Extension installation is not available.
+     * @type {cr.ui.DragWrapper}
+     * @private
+     */
+    dragWrapper_: null,
+
+    /**
+     * True if drag-drop is both available and currently enabled - it can be
+     * temporarily disabled while overlays are showing.
+     * @type {boolean}
+     * @private
+     */
+    dragEnabled_: false,
+
+    /**
      * Perform initial setup.
      */
     initialize: function() {
@@ -178,6 +198,7 @@ cr.define('extensions', function() {
       if (!loadTimeData.getBoolean('offStoreInstallEnabled')) {
         this.dragWrapper_ = new cr.ui.DragWrapper(document.documentElement,
                                                   dragWrapperHandler);
+        this.dragEnabled_ = true;
       }
 
       extensions.PackExtensionOverlay.getInstance().initializePage();
@@ -385,6 +406,13 @@ cr.define('extensions', function() {
 
     if (node)
       ExtensionSettings.focusOverlay();
+
+    // If drag-drop for external Extension installation is available, enable
+    // drag-drop when there is any overlay showing other than the usual overlay
+    // shown when drag-drop is started.
+    var settings = ExtensionSettings.getInstance();
+    if (settings.dragWrapper_)
+      settings.dragEnabled_ = !node || node == $('drop-target-overlay');
 
     uber.invokeMethodOnParent(node ? 'beginInterceptingEvents' :
                                      'stopInterceptingEvents');

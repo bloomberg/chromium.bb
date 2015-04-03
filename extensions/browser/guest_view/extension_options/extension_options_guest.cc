@@ -143,6 +143,10 @@ bool ExtensionOptionsGuest::IsPreferredSizeModeEnabled() const {
   return true;
 }
 
+bool ExtensionOptionsGuest::IsDragAndDropEnabled() const {
+  return true;
+}
+
 void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
   extension_options_internal::PreferredSizeChangedOptions options;
   // Convert the size from physical pixels to logical pixels.
