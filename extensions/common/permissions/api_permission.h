@@ -142,6 +142,7 @@ class APIPermission {
     kManagement,
     kMediaGalleries,
     kMediaPlayerPrivate,
+    kMediaRouterPrivate,
     kMetricsPrivate,
     kMDns,
     kMusicManagerPrivate,

@@ -739,6 +739,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kIdentityPrivate);
   skip.insert(APIPermission::kInputMethodPrivate);
   skip.insert(APIPermission::kMediaPlayerPrivate);
+  skip.insert(APIPermission::kMediaRouterPrivate);
   skip.insert(APIPermission::kMetricsPrivate);
   skip.insert(APIPermission::kPreferencesPrivate);
   skip.insert(APIPermission::kPrincipalsPrivate);
