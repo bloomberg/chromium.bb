@@ -35,11 +35,13 @@ bool HasPageActionVisibilityReachedTarget(
       target_visible_page_action_count;
 }
 
-bool HaveAllExtensionRenderFrameHostsFinishedLoading(
+bool HaveAllExtensionRenderViewHostsFinishedLoading(
     extensions::ProcessManager* manager) {
-  extensions::ProcessManager::FrameSet all_views = manager->GetAllFrames();
-  for (content::RenderFrameHost* host : manager->GetAllFrames()) {
-    if (content::WebContents::FromRenderFrameHost(host)->IsLoading())
+  extensions::ProcessManager::ViewSet all_views = manager->GetAllViews();
+  for (extensions::ProcessManager::ViewSet::const_iterator iter =
+           all_views.begin();
+       iter != all_views.end(); ++iter) {
+    if ((*iter)->IsLoading())
       return false;
   }
   return true;
@@ -148,7 +150,7 @@ bool ExtensionTestNotificationObserver::WaitForExtensionViewsToLoad() {
   notification_set.Add(content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
   notification_set.Add(content::NOTIFICATION_LOAD_STOP);
   WaitForCondition(
-      base::Bind(&HaveAllExtensionRenderFrameHostsFinishedLoading, manager),
+      base::Bind(&HaveAllExtensionRenderViewHostsFinishedLoading, manager),
       &notification_set);
   return true;
 }

@@ -8,8 +8,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
@@ -45,19 +45,19 @@ IPC::Message* CreateClearMessage(const std::vector<std::string>& ids,
 }
 
 // Sends a message exactly once to each render process host owning one of the
-// given |frame_hosts| and |tab_process|. If |tab_process| doesn't own any of
-// the |frame_hosts|, it will not be signaled to update its origin whitelist.
+// given |view_hosts| and |tab_process|. If |tab_process| doesn't own any of the
+// |view_hosts|, it will not be signaled to update its origin whitelist.
 void SendMessageToProcesses(
-    const std::set<content::RenderFrameHost*>& frame_hosts,
+    const std::set<content::RenderViewHost*>& view_hosts,
     content::RenderProcessHost* tab_process,
     const CreateMessageFunction& create_message) {
   std::set<content::RenderProcessHost*> sent_to_hosts;
-  for (content::RenderFrameHost* frame_host : frame_hosts) {
-    content::RenderProcessHost* process_host = frame_host->GetProcess();
+  for (content::RenderViewHost* view_host : view_hosts) {
+    content::RenderProcessHost* process_host = view_host->GetProcess();
     if (sent_to_hosts.count(process_host) == 0) {
       // Extension processes have to update the origin whitelists.
       process_host->Send(create_message.Run(true));
-      sent_to_hosts.insert(frame_host->GetProcess());
+      sent_to_hosts.insert(view_host->GetProcess());
     }
   }
   // If the tab wasn't one of those processes already updated (it likely
@@ -121,7 +121,7 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
                      tab_id_);
       SendMessageToProcesses(
           ProcessManager::Get(web_contents()->GetBrowserContext())->
-              GetRenderFrameHostsForExtension(extension->id()),
+              GetRenderViewHostsForExtension(extension->id()),
           web_contents()->GetRenderProcessHost(),
           update_message);
 
@@ -180,22 +180,21 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
   if (granted_extensions_.is_empty())
     return;
 
-  std::set<content::RenderFrameHost*> frame_hosts;
+  std::set<content::RenderViewHost*> view_hosts;
   std::vector<std::string> extension_ids;
   ProcessManager* process_manager =
       ProcessManager::Get(web_contents()->GetBrowserContext());
   for (const scoped_refptr<const Extension>& extension : granted_extensions_) {
     extension->permissions_data()->ClearTabSpecificPermissions(tab_id_);
     extension_ids.push_back(extension->id());
-    std::set<content::RenderFrameHost*> extension_frame_hosts =
-        process_manager->GetRenderFrameHostsForExtension(extension->id());
-    frame_hosts.insert(extension_frame_hosts.begin(),
-                       extension_frame_hosts.end());
+    std::set<content::RenderViewHost*> extension_view_hosts =
+        process_manager->GetRenderViewHostsForExtension(extension->id());
+    view_hosts.insert(extension_view_hosts.begin(), extension_view_hosts.end());
   }
 
   CreateMessageFunction clear_message =
       base::Bind(&CreateClearMessage, extension_ids, tab_id_);
-  SendMessageToProcesses(frame_hosts,
+  SendMessageToProcesses(view_hosts,
                          web_contents()->GetRenderProcessHost(),
                          clear_message);
 

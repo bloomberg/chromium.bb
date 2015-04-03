@@ -138,6 +138,13 @@ GURL ToDataURL(const base::FilePath& path, developer_private::ItemType type) {
   return GetImageURLFromData(contents);
 }
 
+std::string GetExtensionID(const content::RenderViewHost* render_view_host) {
+  if (!render_view_host->GetSiteInstance())
+    return std::string();
+
+  return render_view_host->GetSiteInstance()->GetSiteURL().host();
+}
+
 void BroadcastItemStateChanged(content::BrowserContext* browser_context,
                                developer::EventType event_type,
                                const std::string& item_id) {
@@ -203,16 +210,22 @@ DeveloperPrivateAPI::DeveloperPrivateAPI(content::BrowserContext* context)
 }
 
 DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
-    : extension_registry_observer_(this),
-      error_console_observer_(this),
-      process_manager_observer_(this),
-      profile_(profile) {
+    : extension_registry_observer_(this), profile_(profile) {
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_VIEW_REGISTERED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 extensions::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED,
+                 content::Source<Profile>(profile_));
+
+  // TODO(limasdf): Use scoped_observer instead.
+  ErrorConsole::Get(profile)->AddObserver(this);
+
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-  error_console_observer_.Add(ErrorConsole::Get(profile));
-  process_manager_observer_.Add(ProcessManager::Get(profile));
 }
 
 DeveloperPrivateEventRouter::~DeveloperPrivateEventRouter() {
+  ErrorConsole::Get(profile_)->RemoveObserver(this);
 }
 
 void DeveloperPrivateEventRouter::AddExtensionId(
@@ -223,6 +236,36 @@ void DeveloperPrivateEventRouter::AddExtensionId(
 void DeveloperPrivateEventRouter::RemoveExtensionId(
     const std::string& extension_id) {
   extension_ids_.erase(extension_id);
+}
+
+void DeveloperPrivateEventRouter::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  Profile* profile = content::Source<Profile>(source).ptr();
+  CHECK(profile);
+  CHECK(profile_->IsSameProfile(profile));
+  developer::EventData event_data;
+
+  switch (type) {
+    case extensions::NOTIFICATION_EXTENSION_VIEW_UNREGISTERED: {
+      event_data.event_type = developer::EVENT_TYPE_VIEW_UNREGISTERED;
+      event_data.item_id = GetExtensionID(
+          content::Details<const content::RenderViewHost>(details).ptr());
+      break;
+    }
+    case extensions::NOTIFICATION_EXTENSION_VIEW_REGISTERED: {
+      event_data.event_type = developer::EVENT_TYPE_VIEW_REGISTERED;
+      event_data.item_id = GetExtensionID(
+          content::Details<const content::RenderViewHost>(details).ptr());
+      break;
+    }
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  BroadcastItemStateChanged(profile, event_data.event_type, event_data.item_id);
 }
 
 void DeveloperPrivateEventRouter::OnExtensionLoaded(
@@ -271,20 +314,6 @@ void DeveloperPrivateEventRouter::OnErrorAdded(const ExtensionError* error) {
 
   BroadcastItemStateChanged(
       profile_, developer::EVENT_TYPE_ERROR_ADDED, error->extension_id());
-}
-
-void DeveloperPrivateEventRouter::OnExtensionFrameRegistered(
-    const std::string& extension_id,
-    content::RenderFrameHost* render_frame_host) {
-  BroadcastItemStateChanged(
-      profile_, developer::EVENT_TYPE_VIEW_REGISTERED, extension_id);
-}
-
-void DeveloperPrivateEventRouter::OnExtensionFrameUnregistered(
-    const std::string& extension_id,
-    content::RenderFrameHost* render_frame_host) {
-  BroadcastItemStateChanged(
-      profile_, developer::EVENT_TYPE_VIEW_UNREGISTERED, extension_id);
 }
 
 void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {

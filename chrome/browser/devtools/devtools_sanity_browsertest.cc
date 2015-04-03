@@ -363,11 +363,11 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
 
     extensions::ProcessManager* manager =
         extensions::ProcessManager::Get(browser()->profile());
-    extensions::ProcessManager::FrameSet all_frames = manager->GetAllFrames();
-    for (extensions::ProcessManager::FrameSet::const_iterator iter =
-             all_frames.begin();
-         iter != all_frames.end();) {
-      if (!content::WebContents::FromRenderFrameHost(*iter)->IsLoading())
+    extensions::ProcessManager::ViewSet all_views = manager->GetAllViews();
+    for (extensions::ProcessManager::ViewSet::const_iterator iter =
+             all_views.begin();
+         iter != all_views.end();) {
+      if (!(*iter)->IsLoading())
         ++iter;
       else
         content::RunMessageLoop();

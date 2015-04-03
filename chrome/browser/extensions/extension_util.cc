@@ -315,7 +315,7 @@ bool IsExtensionIdle(const std::string& extension_id,
     if (site_instance && site_instance->HasProcess())
       return false;
 
-    if (!process_manager->GetRenderFrameHostsForExtension(id).empty())
+    if (!process_manager->GetRenderViewHostsForExtension(id).empty())
       return false;
   }
   return true;

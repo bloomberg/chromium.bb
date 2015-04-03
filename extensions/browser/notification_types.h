@@ -157,6 +157,14 @@ enum NotificationType {
   // associated window.
   NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC,
 
+  // A new extension RenderViewHost has been registered. The details are
+  // the RenderViewHost*.
+  NOTIFICATION_EXTENSION_VIEW_REGISTERED,
+
+  // An extension RenderViewHost has been unregistered. The details are
+  // the RenderViewHost*.
+  NOTIFICATION_EXTENSION_VIEW_UNREGISTERED,
+
   // Sent by an extension to notify the browser about the results of a unit
   // test.
   NOTIFICATION_EXTENSION_TEST_PASSED,

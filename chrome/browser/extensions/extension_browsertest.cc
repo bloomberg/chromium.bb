@@ -637,17 +637,22 @@ extensions::ExtensionHost* ExtensionBrowserTest::FindHostWithPath(
     extensions::ProcessManager* manager,
     const std::string& path,
     int expected_hosts) {
-  extensions::ExtensionHost* result_host = nullptr;
+  extensions::ExtensionHost* host = NULL;
   int num_hosts = 0;
-  for (extensions::ExtensionHost* host : manager->background_hosts()) {
-    if (host->GetURL().path() == path) {
-      EXPECT_FALSE(result_host);
-      result_host = host;
+  extensions::ProcessManager::ExtensionHostSet background_hosts =
+      manager->background_hosts();
+  for (extensions::ProcessManager::const_iterator iter =
+           background_hosts.begin();
+       iter != background_hosts.end();
+       ++iter) {
+    if ((*iter)->GetURL().path() == path) {
+      EXPECT_FALSE(host);
+      host = *iter;
     }
     num_hosts++;
   }
   EXPECT_EQ(expected_hosts, num_hosts);
-  return result_host;
+  return host;
 }
 
 std::string ExtensionBrowserTest::ExecuteScriptInBackgroundPage(

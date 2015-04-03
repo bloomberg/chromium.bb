@@ -202,7 +202,8 @@ void GuestViewBase::Init(const base::DictionaryValue& create_params,
 
   const Extension* owner_extension =
       ProcessManager::Get(owner_web_contents()->GetBrowserContext())->
-          GetExtensionForWebContents(owner_web_contents());
+          GetExtensionForRenderViewHost(
+              owner_web_contents()->GetRenderViewHost());
   owner_extension_id_ = owner_extension ? owner_extension->id() : std::string();
 
   // Ok for |owner_extension| to be nullptr, the embedder might be WebUI.

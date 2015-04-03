@@ -52,8 +52,8 @@ ContextMenuContentType::~ContextMenuContentType() {
 const Extension* ContextMenuContentType::GetExtension() const {
   ProcessManager* process_manager =
       ProcessManager::Get(source_web_contents_->GetBrowserContext());
-  return process_manager->GetExtensionForWebContents(
-      source_web_contents_);
+  return process_manager->GetExtensionForRenderViewHost(
+      source_web_contents_->GetRenderViewHost());
 }
 #endif
 

@@ -15,10 +15,12 @@
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_view_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/browser/process_manager_observer.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -31,7 +33,6 @@ class ExtensionError;
 class ExtensionRegistry;
 class ExtensionSystem;
 class ManagementPolicy;
-class ProcessManager;
 class RequirementsChecker;
 
 namespace api {
@@ -60,9 +61,9 @@ typedef std::vector<linked_ptr<developer::ProjectInfo> > ProjectInfoList;
 typedef std::vector<linked_ptr<developer::ItemInspectView> >
     ItemInspectViewList;
 
-class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
-                                    public ErrorConsole::Observer,
-                                    public ProcessManagerObserver {
+class DeveloperPrivateEventRouter : public content::NotificationObserver,
+                                    public ExtensionRegistryObserver,
+                                    public ErrorConsole::Observer {
  public:
   explicit DeveloperPrivateEventRouter(Profile* profile);
   ~DeveloperPrivateEventRouter() override;
@@ -72,7 +73,12 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   void RemoveExtensionId(const std::string& extension_id);
 
  private:
-  // ExtensionRegistryObserver:
+  // content::NotificationObserver implementation.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
+  // ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -87,22 +93,14 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
                               const Extension* extension,
                               extensions::UninstallReason reason) override;
 
-  // ErrorConsole::Observer:
+  // ErrorConsole::Observer implementation.
   void OnErrorAdded(const ExtensionError* error) override;
 
-  // ProcessManagerObserver:
-  void OnExtensionFrameRegistered(
-      const std::string& extension_id,
-      content::RenderFrameHost* render_frame_host) override;
-  void OnExtensionFrameUnregistered(
-      const std::string& extension_id,
-      content::RenderFrameHost* render_frame_host) override;
+  content::NotificationRegistrar registrar_;
 
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
-  ScopedObserver<ErrorConsole, ErrorConsole::Observer> error_console_observer_;
-  ScopedObserver<ProcessManager, ProcessManagerObserver>
-      process_manager_observer_;
 
   Profile* profile_;
 

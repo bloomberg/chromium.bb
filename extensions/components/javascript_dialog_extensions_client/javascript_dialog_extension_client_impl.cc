@@ -26,8 +26,8 @@ extensions::ProcessManager* GetProcessManager(
 // associated extension (or extensions are not supported).
 const Extension* GetExtensionForWebContents(
     content::WebContents* web_contents) {
-  return GetProcessManager(web_contents)->GetExtensionForWebContents(
-      web_contents);
+  extensions::ProcessManager* pm = GetProcessManager(web_contents);
+  return pm->GetExtensionForRenderViewHost(web_contents->GetRenderViewHost());
 }
 
 class JavaScriptDialogExtensionsClientImpl

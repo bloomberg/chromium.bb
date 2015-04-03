@@ -7,10 +7,6 @@
 
 #include <string>
 
-namespace content {
-class RenderFrameHost;
-}
-
 namespace extensions {
 class Extension;
 
@@ -25,14 +21,6 @@ class ProcessManagerObserver {
 
   // Called immediately after the extension background host is destroyed.
   virtual void OnBackgroundHostClose(const std::string& extension_id) {}
-
-  virtual void OnExtensionFrameRegistered(
-      const std::string& extension_id,
-      content::RenderFrameHost* render_frame_host) {}
-
-  virtual void OnExtensionFrameUnregistered(
-      const std::string& extension_id,
-      content::RenderFrameHost* render_frame_host) {}
 };
 
 }  // namespace extensions
