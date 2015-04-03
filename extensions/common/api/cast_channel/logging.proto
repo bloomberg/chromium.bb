@@ -32,13 +32,15 @@ enum EventType {
   MESSAGE_WRITTEN = 20;    // Message
   SOCKET_READ = 21;        // Logged with RV.
   MESSAGE_READ = 22;       // Message
-  NOTIFY_ON_MESSAGE = 23;  // Message
-  NOTIFY_ON_ERROR = 24;
   SOCKET_CLOSED = 25;
   SSL_CERT_EXCESSIVE_LIFETIME = 26;
   CHANNEL_POLICY_ENFORCED = 27;
-  TCP_SOCKET_CONNECT_COMPLETE = 28;  // Logged with RV.
-  SSL_SOCKET_CONNECT_COMPLETE = 29;  // Logged with RV.
+  TCP_SOCKET_CONNECT_COMPLETE = 28;   // Logged with RV.
+  SSL_SOCKET_CONNECT_COMPLETE = 29;   // Logged with RV.
+  SSL_SOCKET_CONNECT_FAILED = 30;     // Logged with RV.
+  SEND_AUTH_CHALLENGE_FAILED = 31;    // Logged with RV.
+  AUTH_CHALLENGE_REPLY_INVALID = 32;
+  PING_WRITE_ERROR = 33;              // Logged with RV.
 }
 
 enum ChannelAuth {

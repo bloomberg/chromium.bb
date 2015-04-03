@@ -15,6 +15,7 @@ namespace core_api {
 namespace cast_channel {
 
 class CastSocket;
+class Logger;
 
 // Decorator delegate which provides keep-alive functionality.
 // Keep-alive messages are handled by this object; all other messages and
@@ -22,6 +23,8 @@ class CastSocket;
 class KeepAliveDelegate : public CastTransport::Delegate {
  public:
   // |socket|: The socket to be kept alive.
+  // |logger|: The logging object which collects protocol events and error
+  //           details.
   // |inner_delegate|: The delegate which processes all non-keep-alive
   //                   messages. This object assumes ownership of
   //                   |inner_delegate|.
@@ -30,6 +33,7 @@ class KeepAliveDelegate : public CastTransport::Delegate {
   // |liveness_timeout|: The amount of idle time to wait before terminating the
   //                     connection.
   KeepAliveDelegate(CastSocket* socket,
+                    scoped_refptr<Logger> logger,
                     scoped_ptr<CastTransport::Delegate> inner_delegate,
                     base::TimeDelta ping_interval,
                     base::TimeDelta liveness_timeout);
@@ -44,8 +48,7 @@ class KeepAliveDelegate : public CastTransport::Delegate {
 
   // CastTransport::Delegate implementation.
   void Start() override;
-  void OnError(ChannelError error_state,
-               const LastErrors& last_errors) override;
+  void OnError(ChannelError error_state) override;
   void OnMessage(const CastMessage& message) override;
 
   static const char kHeartbeatPingType[];
@@ -72,6 +75,9 @@ class KeepAliveDelegate : public CastTransport::Delegate {
 
   // Socket that is managed by the keep-alive object.
   CastSocket* socket_;
+
+  // Logging object.
+  scoped_refptr<Logger> logger_;
 
   // Delegate object which receives all non-keep alive messages.
   scoped_ptr<CastTransport::Delegate> inner_delegate_;
@@ -103,4 +109,4 @@ class KeepAliveDelegate : public CastTransport::Delegate {
 }  // namespace core_api
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_SOCKET_H_
+#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_KEEP_ALIVE_DELEGATE_H_

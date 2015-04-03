@@ -38,6 +38,7 @@ using cast_channel::ChannelAuthType;
 using cast_channel::ChannelError;
 using cast_channel::CreateIPEndPointForTest;
 using cast_channel::ErrorInfo;
+using cast_channel::LastErrors;
 using cast_channel::Logger;
 using cast_channel::MessageInfo;
 using cast_channel::MockCastSocket;
@@ -75,10 +76,6 @@ ACTION_TEMPLATE(InvokeCompletionCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(result)) {
   ::std::tr1::get<k>(args).Run(result);
-}
-
-ACTION_P2(InvokeDelegateOnError, api_test, api) {
-  api_test->CallOnError(api);
 }
 
 }  // namespace
@@ -164,13 +161,12 @@ class CastChannelAPITest : public ExtensionApiTest {
     return extensions::CastChannelAPI::Get(profile());
   }
 
-  void CallOnError(extensions::CastChannelAPI* api) {
-    cast_channel::LastErrors last_errors;
-    last_errors.challenge_reply_error_type =
-        cast_channel::proto::CHALLENGE_REPLY_ERROR_CERT_PARSING_FAILED;
-    last_errors.nss_error_code = -8164;
-    message_delegate_->OnError(cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                               last_errors);
+  // Logs some bogus error details and calls the OnError handler.
+  void DoCallOnError(extensions::CastChannelAPI* api) {
+    api->GetLogger()->LogSocketEventWithRv(mock_cast_socket_->id(),
+                                           cast_channel::proto::SOCKET_WRITE,
+                                           net::ERR_FAILED);
+    message_delegate_->OnError(cast_channel::CHANNEL_ERROR_CONNECT_ERROR);
   }
 
  protected:
@@ -234,10 +230,18 @@ class CastChannelAPITest : public ExtensionApiTest {
   MockCastSocket* mock_cast_socket_;
   base::MockTimer* timeout_timer_;
   net::IPEndPoint ip_endpoint_;
+  LastErrors last_errors_;
   CastTransport::Delegate* message_delegate_;
   net::CapturingNetLog capturing_net_log_;
   int channel_id_;
 };
+
+ACTION_P2(InvokeDelegateOnError, api_test, api) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&CastChannelAPITest::DoCallOnError, base::Unretained(api_test),
+                 base::Unretained(api)));
+}
 
 // TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest
 // always return true without actually running the test. Remove when fixed.

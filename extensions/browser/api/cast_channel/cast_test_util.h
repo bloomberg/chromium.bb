@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_TEST_UTIL_H
-#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_TEST_UTIL_H
+#ifndef EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TEST_UTIL_H_
+#define EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TEST_UTIL_H_
+
+#include <string>
 
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/cast_transport.h"
@@ -46,8 +48,7 @@ class MockCastTransportDelegate : public CastTransport::Delegate {
   MockCastTransportDelegate();
   ~MockCastTransportDelegate() override;
 
-  MOCK_METHOD2(OnError,
-               void(ChannelError error, const LastErrors& last_errors));
+  MOCK_METHOD1(OnError, void(ChannelError error));
   MOCK_METHOD1(OnMessage, void(const CastMessage& message));
   MOCK_METHOD0(Start, void(void));
 
@@ -68,8 +69,8 @@ class MockCastSocket : public CastSocket {
 
   // Proxy for ConnectRawPtr. Unpacks scoped_ptr into a GMock-friendly bare
   // ptr.
-  virtual void Connect(scoped_ptr<CastTransport::Delegate> delegate,
-                       base::Callback<void(ChannelError)> callback) override {
+  void Connect(scoped_ptr<CastTransport::Delegate> delegate,
+               base::Callback<void(ChannelError)> callback) override {
     delegate_ = delegate.Pass();
     ConnectRawPtr(delegate_.get(), callback);
   }
@@ -120,4 +121,4 @@ ACTION_TEMPLATE(RunCompletionCallback,
 }  // namespace core_api
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_TEST_UTIL_H
+#endif  // EXTENSIONS_BROWSER_API_CAST_CHANNEL_CAST_TEST_UTIL_H_

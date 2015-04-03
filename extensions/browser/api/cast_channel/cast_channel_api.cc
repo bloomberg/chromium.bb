@@ -400,12 +400,14 @@ void CastChannelOpenFunction::AsyncWorkStart() {
   // Construct read delegates.
   scoped_ptr<core_api::cast_channel::CastTransport::Delegate> delegate(
       make_scoped_ptr(new CastMessageHandler(
-          base::Bind(&CastChannelAPI::SendEvent, api_->AsWeakPtr()), socket)));
+          base::Bind(&CastChannelAPI::SendEvent, api_->AsWeakPtr()), socket,
+          api_->GetLogger())));
   if (socket->keep_alive()) {
     // Wrap read delegate in a KeepAliveDelegate for timeout handling.
     core_api::cast_channel::KeepAliveDelegate* keep_alive =
         new core_api::cast_channel::KeepAliveDelegate(
-            socket, delegate.Pass(), ping_interval_, liveness_timeout_);
+            socket, api_->GetLogger(), delegate.Pass(), ping_interval_,
+            liveness_timeout_);
     scoped_ptr<base::Timer> injected_timer =
         api_->GetInjectedTimeoutTimerForTest();
     if (injected_timer) {
@@ -565,24 +567,26 @@ void CastChannelGetLogsFunction::AsyncWorkStart() {
 
 CastChannelOpenFunction::CastMessageHandler::CastMessageHandler(
     const EventDispatchCallback& ui_dispatch_cb,
-    cast_channel::CastSocket* socket)
-    : ui_dispatch_cb_(ui_dispatch_cb), socket_(socket) {
+    cast_channel::CastSocket* socket,
+    scoped_refptr<Logger> logger)
+    : ui_dispatch_cb_(ui_dispatch_cb), socket_(socket), logger_(logger) {
   DCHECK(socket_);
+  DCHECK(logger_);
 }
 
 CastChannelOpenFunction::CastMessageHandler::~CastMessageHandler() {
 }
 
 void CastChannelOpenFunction::CastMessageHandler::OnError(
-    cast_channel::ChannelError error_state,
-    const cast_channel::LastErrors& last_errors) {
+    cast_channel::ChannelError error_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ChannelInfo channel_info;
   FillChannelInfo(*socket_, &channel_info);
   channel_info.error_state = error_state;
   ErrorInfo error_info;
-  FillErrorInfo(error_state, last_errors, &error_info);
+  FillErrorInfo(error_state, logger_->GetLastErrors(socket_->id()),
+                &error_info);
 
   scoped_ptr<base::ListValue> results =
       OnError::Create(channel_info, error_info);

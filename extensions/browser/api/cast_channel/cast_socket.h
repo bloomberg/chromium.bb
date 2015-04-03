@@ -18,6 +18,7 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/cast_transport.h"
+#include "extensions/browser/api/cast_channel/logger_util.h"
 #include "extensions/common/api/cast_channel.h"
 #include "extensions/common/api/cast_channel/logging.pb.h"
 #include "net/base/completion_callback.h"
@@ -103,9 +104,10 @@ class CastSocket : public ApiResource {
   // True when keep-alive signaling is handled for this socket.
   virtual bool keep_alive() const = 0;
 
-  // Marks a socket as invalid due to an error. Errors close the socket
-  // and any further socket operations will return the error code
-  // net::SOCKET_NOT_CORRECTED.
+  // Marks a socket as invalid due to an error, and sends an OnError
+  // event to |delegate_|.
+  // The OnError event receipient is responsible for closing the socket in the
+  // event of an error.
   // Setting the error state does not close the socket if it is open.
   virtual void SetErrorState(ChannelError error_state) = 0;
 
@@ -172,7 +174,7 @@ class CastSocketImpl : public CastSocket {
   // CastTransport::Delegate methods for receiving handshake messages.
   class AuthTransportDelegate : public CastTransport::Delegate {
    public:
-    AuthTransportDelegate(CastSocketImpl* socket);
+    explicit AuthTransportDelegate(CastSocketImpl* socket);
 
     // Gets the error state of the channel.
     // Returns CHANNEL_ERROR_NONE if no errors are present.
@@ -182,8 +184,7 @@ class CastSocketImpl : public CastSocket {
     LastErrors last_errors() const;
 
     // CastTransport::Delegate interface.
-    void OnError(ChannelError error_state,
-                 const LastErrors& last_errors) override;
+    void OnError(ChannelError error_state) override;
     void OnMessage(const CastMessage& message) override;
     void Start() override;
 
@@ -360,7 +361,7 @@ class CastSocketImpl : public CastSocket {
   scoped_ptr<CastTransport> transport_;
 
   // Caller's message read and error handling delegate.
-  scoped_ptr<CastTransport::Delegate> read_delegate_;
+  scoped_ptr<CastTransport::Delegate> delegate_;
 
   // Raw pointer to the auth handshake delegate. Used to get detailed error
   // information.

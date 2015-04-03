@@ -45,11 +45,9 @@ class CastTransport {
     // Owned read delegates are Start()ed automatically.
     virtual void Start() = 0;
 
-    // An error occurred on the channel. |last_errors| contains the last errors
-    // logged for the channel from the implementation.
+    // An error occurred on the channel.
     // The caller is responsible for closing |socket| if an error occurred.
-    virtual void OnError(ChannelError error_state,
-                         const LastErrors& last_errors) = 0;
+    virtual void OnError(ChannelError error_state) = 0;
 
     // A message was received on the channel.
     virtual void OnMessage(const CastMessage& message) = 0;
@@ -188,7 +186,7 @@ class CastTransportImpl : public CastTransport, public base::NonThreadSafe {
   net::Socket* const socket_;
 
   // Methods for communicating message receipt and error status to client code.
-  scoped_ptr<Delegate> read_delegate_;
+  scoped_ptr<Delegate> delegate_;
 
   // Write flow state machine state.
   WriteState write_state_;

@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/keep_alive_delegate.h"
+#include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "extensions/common/api/cast_channel/logging.pb.h"
 #include "net/base/net_errors.h"
@@ -76,11 +79,13 @@ CastMessage KeepAliveDelegate::CreateKeepAliveMessage(
 
 KeepAliveDelegate::KeepAliveDelegate(
     CastSocket* socket,
+    scoped_refptr<Logger> logger,
     scoped_ptr<CastTransport::Delegate> inner_delegate,
     base::TimeDelta ping_interval,
     base::TimeDelta liveness_timeout)
     : started_(false),
       socket_(socket),
+      logger_(logger),
       inner_delegate_(inner_delegate.Pass()),
       liveness_timeout_(liveness_timeout),
       ping_interval_(ping_interval) {
@@ -149,26 +154,23 @@ void KeepAliveDelegate::SendKeepAliveMessageComplete(const char* message_type,
   VLOG(2) << "Sending " << message_type << " complete, rv=" << rv;
   if (rv != net::OK) {
     // An error occurred while sending the ping response.
-    // Close the connection.
     VLOG(1) << "Error sending " << message_type;
-    inner_delegate_->OnError(cast_channel::CHANNEL_ERROR_SOCKET_ERROR,
-                             LastErrors());
+    logger_->LogSocketEventWithRv(socket_->id(), proto::PING_WRITE_ERROR, rv);
+    inner_delegate_->OnError(cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
   }
 }
 
 void KeepAliveDelegate::LivenessTimeout() const {
   VLOG(1) << "Ping timeout";
-  inner_delegate_->OnError(cast_channel::CHANNEL_ERROR_PING_TIMEOUT,
-                           LastErrors());
+  inner_delegate_->OnError(cast_channel::CHANNEL_ERROR_PING_TIMEOUT);
 }
 
 // CastTransport::Delegate interface.
-void KeepAliveDelegate::OnError(ChannelError error_state,
-                                const LastErrors& last_errors) {
+void KeepAliveDelegate::OnError(ChannelError error_state) {
   DCHECK(started_);
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(2) << "KeepAlive::OnError";
-  inner_delegate_->OnError(error_state, last_errors);
+  inner_delegate_->OnError(error_state);
 }
 
 void KeepAliveDelegate::OnMessage(const CastMessage& message) {

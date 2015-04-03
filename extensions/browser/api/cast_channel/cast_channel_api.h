@@ -167,12 +167,12 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   class CastMessageHandler : public cast_channel::CastTransport::Delegate {
    public:
     CastMessageHandler(const EventDispatchCallback& ui_dispatch_cb,
-                       cast_channel::CastSocket* socket);
+                       cast_channel::CastSocket* socket,
+                       scoped_refptr<core_api::cast_channel::Logger> logger);
     ~CastMessageHandler() override;
 
     // CastTransport::Delegate implementation.
-    void OnError(cast_channel::ChannelError error_state,
-                 const cast_channel::LastErrors& last_errors) override;
+    void OnError(cast_channel::ChannelError error_state) override;
     void OnMessage(const cast_channel::CastMessage& message) override;
     void Start() override;
 
@@ -182,6 +182,8 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
     // conditions.
     EventDispatchCallback const ui_dispatch_cb_;
     cast_channel::CastSocket* const socket_;
+    // Logger object for reporting error details.
+    scoped_refptr<core_api::cast_channel::Logger> logger_;
 
     DISALLOW_COPY_AND_ASSIGN(CastMessageHandler);
   };

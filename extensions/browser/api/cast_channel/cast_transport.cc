@@ -123,12 +123,12 @@ proto::ErrorState CastTransportImpl::ErrorStateToProto(ChannelError state) {
   }
 }
 
-void CastTransportImpl::SetReadDelegate(scoped_ptr<Delegate> read_delegate) {
+void CastTransportImpl::SetReadDelegate(scoped_ptr<Delegate> delegate) {
   DCHECK(CalledOnValidThread());
-  DCHECK(read_delegate);
-  read_delegate_ = read_delegate.Pass();
+  DCHECK(delegate);
+  delegate_ = delegate.Pass();
   if (started_) {
-    read_delegate_->Start();
+    delegate_->Start();
   }
 }
 
@@ -241,6 +241,12 @@ void CastTransportImpl::OnWriteResult(int result) {
     logger_->LogSocketWriteState(channel_id_, WriteStateToProto(write_state_));
   }
 
+  if (rv == net::ERR_FAILED) {
+    VLOG_WITH_CONNECTION(2) << "Sending OnError().";
+    DCHECK_NE(CHANNEL_ERROR_NONE, error_state_);
+    delegate_->OnError(error_state_);
+  }
+
   // If write loop is done because the queue is empty then set write
   // state to NONE
   if (write_queue_.empty()) {
@@ -275,6 +281,7 @@ int CastTransportImpl::DoWrite() {
 int CastTransportImpl::DoWriteComplete(int result) {
   VLOG_WITH_CONNECTION(2) << "DoWriteComplete result=" << result;
   DCHECK(!write_queue_.empty());
+  logger_->LogSocketEventWithRv(channel_id_, proto::SOCKET_WRITE, result);
   if (result <= 0) {  // NOTE that 0 also indicates an error
     SetErrorState(CHANNEL_ERROR_SOCKET_ERROR);
     SetWriteState(WRITE_STATE_ERROR);
@@ -320,9 +327,8 @@ int CastTransportImpl::DoWriteError(int result) {
 void CastTransportImpl::Start() {
   DCHECK(CalledOnValidThread());
   DCHECK(!started_);
-  DCHECK(read_delegate_)
-      << "Read delegate must be set prior to calling Start()";
-  read_delegate_->Start();
+  DCHECK(delegate_) << "Read delegate must be set prior to calling Start()";
+  delegate_->Start();
   if (read_state_ == READ_STATE_NONE) {
     // Initialize and run the read state machine.
     SetReadState(READ_STATE_READ);
@@ -371,9 +377,9 @@ void CastTransportImpl::OnReadResult(int result) {
   }
 
   if (rv == net::ERR_FAILED) {
-    VLOG_WITH_CONNECTION(2) << "Sending OnError().";
     DCHECK_NE(CHANNEL_ERROR_NONE, error_state_);
-    read_delegate_->OnError(error_state_, logger_->GetLastErrors(channel_id_));
+    VLOG_WITH_CONNECTION(2) << "Sending OnError().";
+    delegate_->OnError(error_state_);
   }
 }
 
@@ -393,7 +399,7 @@ int CastTransportImpl::DoRead() {
 
 int CastTransportImpl::DoReadComplete(int result) {
   VLOG_WITH_CONNECTION(2) << "DoReadComplete result = " << result;
-
+  logger_->LogSocketEventWithRv(channel_id_, proto::SOCKET_READ, result);
   if (result <= 0) {
     VLOG_WITH_CONNECTION(1) << "Read error, peer closed the socket.";
     SetErrorState(CHANNEL_ERROR_SOCKET_ERROR);
@@ -431,11 +437,7 @@ int CastTransportImpl::DoReadCallback() {
     return net::ERR_INVALID_RESPONSE;
   }
   SetReadState(READ_STATE_READ);
-  logger_->LogSocketEventForMessage(channel_id_, proto::NOTIFY_ON_MESSAGE,
-                                    current_message_->namespace_(),
-                                    std::string());
-
-  read_delegate_->OnMessage(*current_message_);
+  delegate_->OnMessage(*current_message_);
   current_message_.reset();
   return net::OK;
 }
