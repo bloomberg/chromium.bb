@@ -46,7 +46,6 @@ const CGFloat kSpinnerToProgressTextGap = 8.0f;
 const CGFloat kYearToCvcGap = 12.0f;
 
 const SkColor kPermanentErrorTextColor = SK_ColorWHITE;
-const SkColor kPermanentErrorBackgroundColor = SkColorSetRGB(0xd3, 0x2f, 0x2f);
 // Material blue. TODO(bondd): share with Views version.
 const SkColor kProgressTextColor = SkColorSetRGB(0x42, 0x85, 0xf4);
 // TODO(bondd): Unify colors with Views version and AutofillMessageView.
@@ -283,7 +282,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
     if (!permanentErrorBox_) {
       permanentErrorBox_ = [CardUnmaskPromptViewCocoa createPlainBox];
       [permanentErrorBox_ setFillColor:gfx::SkColorToCalibratedNSColor(
-                                           kPermanentErrorBackgroundColor)];
+                                           autofill::kWarningColor)];
       [permanentErrorBox_
           setContentViewMargins:NSMakeSize(kPermanentErrorHorizontalPadding,
                                            kPermanentErrorVerticalPadding)];
