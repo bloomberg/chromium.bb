@@ -31,6 +31,7 @@ namespace {
 const CGFloat kButtonGap = 6.0f;
 const CGFloat kButtonsToRetriableErrorGap = 12.0f;
 const CGFloat kCvcInputWidth = 64.0f;
+const CGFloat kCvcInputToImageGap = 8.0f;
 const CGFloat kDialogContentMinWidth = 210.0f;
 const CGFloat kInputRowToInstructionsGap = 16.0f;
 const CGFloat kInstructionsToTitleGap = 8.0f;
@@ -42,6 +43,7 @@ const CGFloat kRetriableErrorToInputRowGap = 4.0f;
 const CGFloat kSeparatorHeight = 1.0f;
 const CGFloat kSpinnerSize = 16.0f;
 const CGFloat kSpinnerToProgressTextGap = 8.0f;
+const CGFloat kYearToCvcGap = 12.0f;
 
 const SkColor kPermanentErrorTextColor = SK_ColorWHITE;
 const SkColor kPermanentErrorBackgroundColor = SkColorSetRGB(0xd3, 0x2f, 0x2f);
@@ -580,6 +582,19 @@ void CardUnmaskPromptViewBridge::PerformClose() {
     [monthPopup_ setAction:@selector(onExpirationDateChanged:)];
     [expirationView addSubview:monthPopup_];
 
+    // Add separator between month and year.
+    base::scoped_nsobject<NSTextField> separatorLabel(
+        [constrained_window::CreateLabel() retain]);
+    NSAttributedString* separatorString =
+        constrained_window::GetAttributedLabelString(
+            SysUTF16ToNSString(l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR)),
+            chrome_style::kTextFontStyle, NSNaturalTextAlignment,
+            NSLineBreakByWordWrapping);
+    [separatorLabel setAttributedStringValue:separatorString];
+    [separatorLabel sizeToFit];
+    [expirationView addSubview:separatorLabel];
+
     // Add expiration year.
     autofill::YearComboboxModel yearModel;
     yearPopupDefaultIndex_ = yearModel.GetDefaultIndex();
@@ -589,14 +604,14 @@ void CardUnmaskPromptViewBridge::PerformClose() {
     [yearPopup_ setAction:@selector(onExpirationDateChanged:)];
     [expirationView addSubview:yearPopup_];
 
-    // Layout month and year within expirationView.
-    [yearPopup_
-        setFrameOrigin:NSMakePoint(NSMaxX([monthPopup_ frame]) + kButtonGap,
-                                   0)];
+    // Layout month, separator, and year within expirationView.
+    [separatorLabel setFrameOrigin:NSMakePoint(NSMaxX([monthPopup_ frame]), 0)];
+    [yearPopup_ setFrameOrigin:NSMakePoint(NSMaxX([separatorLabel frame]), 0)];
     NSRect expirationFrame =
         NSUnionRect([monthPopup_ frame], [yearPopup_ frame]);
-    expirationFrame.size.width += kButtonGap;
+    expirationFrame.size.width += kYearToCvcGap;
     [expirationView setFrame:expirationFrame];
+    [CardUnmaskPromptViewCocoa verticallyCenterSubviewsInView:expirationView];
     [inputRowView_ addSubview:expirationView];
   }
 
@@ -621,7 +636,8 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [cvcImageView setImage:cvcImage];
   [cvcImageView setFrameSize:[cvcImage size]];
   [cvcImageView
-      setFrameOrigin:NSMakePoint(NSMaxX([cvcInput_ frame]) + kButtonGap, 0)];
+      setFrameOrigin:NSMakePoint(
+                         NSMaxX([cvcInput_ frame]) + kCvcInputToImageGap, 0)];
   [inputRowView_ addSubview:cvcImageView];
 
   // Add error message label.
