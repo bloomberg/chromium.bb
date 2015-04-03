@@ -17,13 +17,16 @@ class DeviceMonitorWin {
  public:
   class Observer {
    public:
-    virtual void OnDeviceAdded(const std::string& device_path);
-    virtual void OnDeviceRemoved(const std::string& device_path);
+    virtual void OnDeviceAdded(const GUID& class_guid,
+                               const std::string& device_path);
+    virtual void OnDeviceRemoved(const GUID& class_guid,
+                                 const std::string& device_path);
   };
 
   ~DeviceMonitorWin();
 
   static DeviceMonitorWin* GetForDeviceInterface(const GUID& guid);
+  static DeviceMonitorWin* GetForAllInterfaces();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -31,14 +34,16 @@ class DeviceMonitorWin {
  private:
   friend class DeviceMonitorMessageWindow;
 
-  DeviceMonitorWin(HDEVNOTIFY notify_handle);
+  DeviceMonitorWin();
 
-  void NotifyDeviceAdded(const std::string& device_path);
-  void NotifyDeviceRemoved(const std::string& device_path);
+  void NotifyDeviceAdded(const GUID& class_guid,
+                         const std::string& device_path);
+  void NotifyDeviceRemoved(const GUID& class_guid,
+                           const std::string& device_path);
 
   ObserverList<Observer> observer_list_;
-  HDEVNOTIFY notify_handle_;
 };
-}
+
+}  // namespace device
 
 #endif  // DEVICE_CORE_DEVICE_MONITOR_WIN_H_

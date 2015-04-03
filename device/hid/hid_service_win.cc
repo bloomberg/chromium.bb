@@ -273,14 +273,16 @@ void HidServiceWin::AddDeviceOnFileThread(
       FROM_HERE, base::Bind(&HidServiceWin::AddDevice, service, device_info));
 }
 
-void HidServiceWin::OnDeviceAdded(const std::string& device_path) {
+void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
+                                  const std::string& device_path) {
   file_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&HidServiceWin::AddDeviceOnFileThread,
                  weak_factory_.GetWeakPtr(), task_runner_, device_path));
 }
 
-void HidServiceWin::OnDeviceRemoved(const std::string& device_path) {
+void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,
+                                    const std::string& device_path) {
   // Execute a no-op closure on the file task runner to synchronize with any
   // devices that are still being enumerated.
   file_task_runner_->PostTaskAndReply(

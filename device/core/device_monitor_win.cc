@@ -40,9 +40,14 @@ class DeviceMonitorMessageWindow {
   static DeviceMonitorMessageWindow* GetInstance() {
     if (!g_message_window) {
       g_message_window = new DeviceMonitorMessageWindow();
-      base::AtExitManager::RegisterTask(
+      if (g_message_window->Init()) {
+        base::AtExitManager::RegisterTask(
           base::Bind(&base::DeletePointer<DeviceMonitorMessageWindow>,
                      base::Unretained(g_message_window)));
+      } else {
+        delete g_message_window;
+        g_message_window = nullptr;
+      }
     }
     return g_message_window;
   }
@@ -51,59 +56,77 @@ class DeviceMonitorMessageWindow {
     scoped_ptr<DeviceMonitorWin>& device_monitor =
         device_monitors_[device_interface];
     if (!device_monitor) {
-      DEV_BROADCAST_DEVICEINTERFACE db = {sizeof(DEV_BROADCAST_DEVICEINTERFACE),
-                                          DBT_DEVTYP_DEVICEINTERFACE,
-                                          0,
-                                          device_interface};
-      HDEVNOTIFY notify_handle = RegisterDeviceNotification(
-          window_->hwnd(), &db, DEVICE_NOTIFY_WINDOW_HANDLE);
-      if (!notify_handle) {
-        LOG(ERROR) << "Failed to register for device notifications.";
-        return nullptr;
-      }
-      device_monitor.reset(new DeviceMonitorWin(notify_handle));
+      device_monitor.reset(new DeviceMonitorWin());
     }
     return device_monitor.get();
   }
+
+  DeviceMonitorWin* GetForAllInterfaces() { return &all_device_monitor_; }
 
  private:
   friend void base::DeletePointer<DeviceMonitorMessageWindow>(
       DeviceMonitorMessageWindow* message_window);
 
   DeviceMonitorMessageWindow() {
+  }
+
+  ~DeviceMonitorMessageWindow() {
+    if (notify_handle_) {
+      UnregisterDeviceNotification(notify_handle_);
+    }
+  }
+
+  bool Init() {
     window_.reset(new base::win::MessageWindow());
     if (!window_->CreateNamed(
             base::Bind(&DeviceMonitorMessageWindow::HandleMessage,
                        base::Unretained(this)),
             base::string16(kWindowClassName))) {
       LOG(ERROR) << "Failed to create message window: " << kWindowClassName;
-      window_.reset();
+      return false;
     }
-  }
 
-  ~DeviceMonitorMessageWindow() {}
+    DEV_BROADCAST_DEVICEINTERFACE db = {sizeof(DEV_BROADCAST_DEVICEINTERFACE),
+                                        DBT_DEVTYP_DEVICEINTERFACE};
+    notify_handle_ = RegisterDeviceNotification(
+        window_->hwnd(), &db,
+        DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
+    if (!notify_handle_) {
+      PLOG(ERROR) << "Failed to register for device notifications";
+      return false;
+    }
+
+    return true;
+  }
 
   bool HandleMessage(UINT message,
                      WPARAM wparam,
                      LPARAM lparam,
                      LRESULT* result) {
     if (message == WM_DEVICECHANGE) {
+      DeviceMonitorWin* device_monitor = nullptr;
       DEV_BROADCAST_DEVICEINTERFACE* db =
           reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE*>(lparam);
       const auto& map_entry = device_monitors_.find(db->dbcc_classguid);
-      if (map_entry == device_monitors_.end()) {
-        return false;
+      if (map_entry != device_monitors_.end()) {
+        device_monitor = map_entry->second.get();
       }
-      DeviceMonitorWin* device_monitor = map_entry->second.get();
 
       std::string device_path(base::SysWideToUTF8(db->dbcc_name));
       DCHECK(base::IsStringASCII(device_path));
+      device_path = base::StringToLowerASCII(device_path);
+
       if (wparam == DBT_DEVICEARRIVAL) {
-        device_monitor->NotifyDeviceAdded(
-            base::StringToLowerASCII(device_path));
+        if (device_monitor) {
+          device_monitor->NotifyDeviceAdded(db->dbcc_classguid, device_path);
+        }
+        all_device_monitor_.NotifyDeviceAdded(db->dbcc_classguid, device_path);
       } else if (wparam == DBT_DEVICEREMOVECOMPLETE) {
-        device_monitor->NotifyDeviceRemoved(
-            base::StringToLowerASCII(device_path));
+        if (device_monitor) {
+          device_monitor->NotifyDeviceRemoved(db->dbcc_classguid, device_path);
+        }
+        all_device_monitor_.NotifyDeviceRemoved(db->dbcc_classguid,
+                                                device_path);
       } else {
         return false;
       }
@@ -114,15 +137,19 @@ class DeviceMonitorMessageWindow {
   }
 
   std::map<GUID, scoped_ptr<DeviceMonitorWin>, CompareGUID> device_monitors_;
+  DeviceMonitorWin all_device_monitor_;
   scoped_ptr<base::win::MessageWindow> window_;
+  HDEVNOTIFY notify_handle_ = NULL;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceMonitorMessageWindow);
 };
 
-void DeviceMonitorWin::Observer::OnDeviceAdded(const std::string& device_path) {
+void DeviceMonitorWin::Observer::OnDeviceAdded(const GUID& class_guid,
+                                               const std::string& device_path) {
 }
 
 void DeviceMonitorWin::Observer::OnDeviceRemoved(
+    const GUID& class_guid,
     const std::string& device_path) {
 }
 
@@ -131,11 +158,23 @@ DeviceMonitorWin* DeviceMonitorWin::GetForDeviceInterface(
     const GUID& device_interface) {
   DeviceMonitorMessageWindow* message_window =
       DeviceMonitorMessageWindow::GetInstance();
-  return message_window->GetForDeviceInterface(device_interface);
+  if (message_window) {
+    return message_window->GetForDeviceInterface(device_interface);
+  }
+  return nullptr;
+}
+
+// static
+DeviceMonitorWin* DeviceMonitorWin::GetForAllInterfaces() {
+  DeviceMonitorMessageWindow* message_window =
+      DeviceMonitorMessageWindow::GetInstance();
+  if (message_window) {
+    return message_window->GetForAllInterfaces();
+  }
+  return nullptr;
 }
 
 DeviceMonitorWin::~DeviceMonitorWin() {
-  UnregisterDeviceNotification(notify_handle_);
 }
 
 void DeviceMonitorWin::AddObserver(Observer* observer) {
@@ -146,15 +185,19 @@ void DeviceMonitorWin::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-DeviceMonitorWin::DeviceMonitorWin(HDEVNOTIFY notify_handle)
-    : notify_handle_(notify_handle) {
+DeviceMonitorWin::DeviceMonitorWin() {
 }
 
-void DeviceMonitorWin::NotifyDeviceAdded(const std::string& device_path) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceAdded(device_path));
+void DeviceMonitorWin::NotifyDeviceAdded(const GUID& class_guid,
+                                         const std::string& device_path) {
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnDeviceAdded(class_guid, device_path));
 }
 
-void DeviceMonitorWin::NotifyDeviceRemoved(const std::string& device_path) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(device_path));
+void DeviceMonitorWin::NotifyDeviceRemoved(const GUID& class_guid,
+                                           const std::string& device_path) {
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnDeviceRemoved(class_guid, device_path));
 }
-}
+
+}  // namespace device

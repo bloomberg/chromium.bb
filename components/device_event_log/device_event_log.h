@@ -34,6 +34,9 @@
 #define USB_LOG(level)                         \
   DEVICE_LOG(::device_event_log::LOG_TYPE_USB, \
              ::device_event_log::LOG_LEVEL_##level)
+#define USB_PLOG(level)                         \
+  DEVICE_PLOG(::device_event_log::LOG_TYPE_USB, \
+              ::device_event_log::LOG_LEVEL_##level)
 #define HID_LOG(level)                         \
   DEVICE_LOG(::device_event_log::LOG_TYPE_HID, \
              ::device_event_log::LOG_LEVEL_##level)

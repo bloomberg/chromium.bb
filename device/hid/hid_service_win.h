@@ -56,8 +56,10 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
       const std::string& device_path);
 
   // DeviceMonitorWin::Observer implementation:
-  void OnDeviceAdded(const std::string& device_path) override;
-  void OnDeviceRemoved(const std::string& device_path) override;
+  void OnDeviceAdded(const GUID& class_guid,
+                     const std::string& device_path) override;
+  void OnDeviceRemoved(const GUID& class_guid,
+                       const std::string& device_path) override;
 
   // Tries to open the device read-write and falls back to read-only.
   static base::win::ScopedHandle OpenDevice(const std::string& device_path);

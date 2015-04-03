@@ -16,19 +16,76 @@
 #include "device/usb/usb_error.h"
 
 #if defined(OS_WIN)
+#include <setupapi.h>
 #include <usbiodef.h>
 
 #include "base/scoped_observer.h"
+#include "base/strings/string_util.h"
 #include "device/core/device_monitor_win.h"
 #endif  // OS_WIN
 
 namespace device {
 
 #if defined(OS_WIN)
+
+namespace {
+
+// Wrapper around a HDEVINFO that automatically destroys it.
+class ScopedDeviceInfoList {
+ public:
+  explicit ScopedDeviceInfoList(HDEVINFO handle) : handle_(handle) {}
+
+  ~ScopedDeviceInfoList() {
+    if (valid()) {
+      SetupDiDestroyDeviceInfoList(handle_);
+    }
+  }
+
+  bool valid() { return handle_ != INVALID_HANDLE_VALUE; }
+
+  HDEVINFO get() { return handle_; }
+
+ private:
+  HDEVINFO handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDeviceInfoList);
+};
+
+// Wrapper around an SP_DEVINFO_DATA that initializes it properly and
+// automatically deletes it.
+class ScopedDeviceInfo {
+ public:
+  ScopedDeviceInfo() {
+    memset(&dev_info_data_, 0, sizeof(dev_info_data_));
+    dev_info_data_.cbSize = sizeof(dev_info_data_);
+  }
+
+  ~ScopedDeviceInfo() {
+    if (dev_info_set_ != INVALID_HANDLE_VALUE) {
+      SetupDiDeleteDeviceInfo(dev_info_set_, &dev_info_data_);
+    }
+  }
+
+  // Once the SP_DEVINFO_DATA has been populated it must be freed using the
+  // HDEVINFO it was created from.
+  void set_valid(HDEVINFO dev_info_set) {
+    DCHECK(dev_info_set_ == INVALID_HANDLE_VALUE);
+    DCHECK(dev_info_set != INVALID_HANDLE_VALUE);
+    dev_info_set_ = dev_info_set;
+  }
+
+  PSP_DEVINFO_DATA get() { return &dev_info_data_; }
+
+ private:
+  HDEVINFO dev_info_set_ = INVALID_HANDLE_VALUE;
+  SP_DEVINFO_DATA dev_info_data_;
+};
+
+}  // namespace
+
 // This class lives on the application main thread so that it can listen for
 // device change notification window messages. It registers for notifications
-// regarding devices implementating the "UsbDevice" interface, which represents
-// most of the devices the UsbService will enumerate.
+// that may indicate new devices that the UsbService will enumerate.
 class UsbServiceImpl::UIThreadHelper final
     : private DeviceMonitorWin::Observer {
  public:
@@ -40,29 +97,42 @@ class UsbServiceImpl::UIThreadHelper final
   ~UIThreadHelper() {}
 
   void Start() {
-    DeviceMonitorWin* device_monitor =
-        DeviceMonitorWin::GetForDeviceInterface(GUID_DEVINTERFACE_USB_DEVICE);
+    DeviceMonitorWin* device_monitor = DeviceMonitorWin::GetForAllInterfaces();
     if (device_monitor) {
       device_observer_.Add(device_monitor);
     }
   }
 
  private:
-  void OnDeviceAdded(const std::string& device_path) override {
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(&UsbServiceImpl::RefreshDevices, usb_service_));
+  void OnDeviceAdded(const GUID& class_guid,
+                     const std::string& device_path) override {
+    // Only the root node of a composite USB device has the class GUID
+    // GUID_DEVINTERFACE_USB_DEVICE but we want to wait until WinUSB is loaded.
+    // This first pass filter will catch anything that's sitting on the USB bus
+    // (including devices on 3rd party USB controllers) to avoid the more
+    // expensive driver check that needs to be done on the FILE thread.
+    if (device_path.find("usb") != std::string::npos) {
+      task_runner_->PostTask(
+          FROM_HERE, base::Bind(&UsbServiceImpl::RefreshDevicesIfWinUsbDevice,
+                                usb_service_, device_path));
+    }
   }
 
-  void OnDeviceRemoved(const std::string& device_path) override {
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(&UsbServiceImpl::RefreshDevices, usb_service_));
+  void OnDeviceRemoved(const GUID& class_guid,
+                       const std::string& device_path) override {
+    // The root USB device node is removed last
+    if (class_guid == GUID_DEVINTERFACE_USB_DEVICE) {
+      task_runner_->PostTask(
+          FROM_HERE, base::Bind(&UsbServiceImpl::RefreshDevices, usb_service_));
+    }
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<UsbServiceImpl> usb_service_;
   ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;
 };
-#endif
+
+#endif  // OS_WIN
 
 // static
 UsbService* UsbServiceImpl::Create(
@@ -195,6 +265,52 @@ void UsbServiceImpl::RefreshDevices() {
 
   libusb_free_device_list(platform_devices, true);
 }
+
+#if defined(OS_WIN)
+void UsbServiceImpl::RefreshDevicesIfWinUsbDevice(
+    const std::string& device_path) {
+  ScopedDeviceInfoList dev_info_list(SetupDiCreateDeviceInfoList(NULL, NULL));
+  if (!dev_info_list.valid()) {
+    USB_PLOG(ERROR) << "Failed to create a device information set";
+    return;
+  }
+
+  // This will add the device to |dev_info_list| so we can query driver info.
+  if (!SetupDiOpenDeviceInterfaceA(dev_info_list.get(), device_path.c_str(), 0,
+                                   NULL)) {
+    USB_PLOG(ERROR) << "Failed to get device interface data for "
+                    << device_path;
+    return;
+  }
+
+  ScopedDeviceInfo dev_info;
+  if (!SetupDiEnumDeviceInfo(dev_info_list.get(), 0, dev_info.get())) {
+    USB_PLOG(ERROR) << "Failed to get device info for " << device_path;
+    return;
+  }
+  dev_info.set_valid(dev_info_list.get());
+
+  DWORD reg_data_type;
+  BYTE buffer[256];
+  if (!SetupDiGetDeviceRegistryPropertyA(dev_info_list.get(), dev_info.get(),
+                                         SPDRP_SERVICE, &reg_data_type,
+                                         &buffer[0], sizeof buffer, NULL)) {
+    USB_PLOG(ERROR) << "Failed to get device service property";
+    return;
+  }
+  if (reg_data_type != REG_SZ) {
+    USB_LOG(ERROR) << "Unexpected data type for driver service: "
+                   << reg_data_type;
+    return;
+  }
+
+  USB_LOG(DEBUG) << "Driver for " << device_path << " is " << buffer << ".";
+  if (base::strncasecmp("WinUSB", (const char*)&buffer[0], sizeof "WinUSB") ==
+      0) {
+    RefreshDevices();
+  }
+}
+#endif  // OS_WIN
 
 scoped_refptr<UsbDeviceImpl> UsbServiceImpl::AddDevice(
     PlatformUsbDevice platform_device) {

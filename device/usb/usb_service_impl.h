@@ -35,6 +35,10 @@ class UsbServiceImpl : public UsbService {
   // Enumerate USB devices from OS and update devices_ map.
   void RefreshDevices();
 
+#if defined(OS_WIN)
+  void RefreshDevicesIfWinUsbDevice(const std::string& device_path);
+#endif  // OS_WIN
+
   // Adds a new UsbDevice to the devices_ map based on the given libusb device.
   scoped_refptr<UsbDeviceImpl> AddDevice(PlatformUsbDevice platform_device);
 
