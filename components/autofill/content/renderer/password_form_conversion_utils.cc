@@ -356,35 +356,20 @@ void GetPasswordForm(
     password_form->username_value = username_value;
   }
 
-  // Get the document URL
-  GURL full_origin(form.document().url());
-
-  // Calculate the canonical action URL
-  WebString action = form.action();
-  if (action.isNull())
-    action = WebString(""); // missing 'action' attribute implies current URL
-  GURL full_action(form.document().completeURL(action));
-  if (!full_action.is_valid())
-    return;
-
   WebInputElement password;
   WebInputElement new_password;
   if (!LocateSpecificPasswords(passwords, &password, &new_password))
     return;
 
-  // We want to keep the path but strip any authentication data, as well as
-  // query and ref portions of URL, for the form action and form origin.
+  password_form->action = GetCanonicalActionForForm(form);
+  if (!password_form->action.is_valid())
+    return;
+
+  password_form->origin = GetCanonicalOriginForDocument(form.document());
   GURL::Replacements rep;
-  rep.ClearUsername();
-  rep.ClearPassword();
-  rep.ClearQuery();
-  rep.ClearRef();
-  password_form->action = full_action.ReplaceComponents(rep);
-  password_form->origin = full_origin.ReplaceComponents(rep);
-
   rep.SetPathStr("");
-  password_form->signon_realm = full_origin.ReplaceComponents(rep).spec();
-
+  password_form->signon_realm =
+      password_form->origin.ReplaceComponents(rep).spec();
   password_form->other_possible_usernames.swap(other_possible_usernames);
 
   if (!password.isNull()) {
@@ -412,7 +397,31 @@ void GetPasswordForm(
   password_form->type = PasswordForm::TYPE_MANUAL;
 }
 
+GURL StripAuthAndParams(const GURL& gurl) {
+  // We want to keep the path but strip any authentication data, as well as
+  // query and ref portions of URL, for the form action and form origin.
+  GURL::Replacements rep;
+  rep.ClearUsername();
+  rep.ClearPassword();
+  rep.ClearQuery();
+  rep.ClearRef();
+  return gurl.ReplaceComponents(rep);
+}
+
 }  // namespace
+
+GURL GetCanonicalActionForForm(const WebFormElement& form) {
+  WebString action = form.action();
+  if (action.isNull())
+    action = WebString(""); // missing 'action' attribute implies current URL
+  GURL full_action(form.document().completeURL(action));
+  return StripAuthAndParams(full_action);
+}
+
+GURL GetCanonicalOriginForDocument(const WebDocument& document) {
+  GURL full_origin(document.url());
+  return StripAuthAndParams(full_origin);
+}
 
 scoped_ptr<PasswordForm> CreatePasswordForm(
     const WebFormElement& web_form,

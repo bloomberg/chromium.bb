@@ -8,8 +8,10 @@
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
+#include "url/gurl.h"
 
 namespace blink {
+class WebDocument;
 class WebFormElement;
 class WebInputElement;
 class WebString;
@@ -20,6 +22,12 @@ namespace autofill {
 struct FormData;
 struct FormFieldData;
 struct PasswordForm;
+
+// Helper functions to assist in getting the canonical form of the action and
+// origin. The action will proplerly take into account <BASE>, and both will
+// strip unnecessary data (e.g. query params and HTTP credentials).
+GURL GetCanonicalActionForForm(const blink::WebFormElement& form);
+GURL GetCanonicalOriginForDocument(const blink::WebDocument& document);
 
 // Create a PasswordForm from DOM form. Webkit doesn't allow storing
 // custom metadata to DOM nodes, so we have to do this every time an event

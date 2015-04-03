@@ -188,16 +188,11 @@ void FindFormElements(content::RenderFrame* render_frame,
                       FormElementsList* results) {
   DCHECK(results);
 
-  GURL::Replacements rep;
-  rep.ClearQuery();
-  rep.ClearRef();
-
   blink::WebDocument doc = render_frame->GetWebFrame()->document();
   if (!doc.isHTMLDocument())
     return;
 
-  GURL full_origin(doc.url());
-  if (data.origin != full_origin.ReplaceComponents(rep))
+  if (data.origin != GetCanonicalOriginForDocument(doc))
     return;
 
   blink::WebVector<blink::WebFormElement> forms;
@@ -206,14 +201,8 @@ void FindFormElements(content::RenderFrame* render_frame,
   for (size_t i = 0; i < forms.size(); ++i) {
     blink::WebFormElement fe = forms[i];
 
-    GURL full_action(doc.completeURL(fe.action()));
-    if (full_action.is_empty()) {
-      // The default action URL is the form's origin.
-      full_action = full_origin;
-    }
-
     // Action URL must match.
-    if (data.action != full_action.ReplaceComponents(rep))
+    if (data.action != GetCanonicalActionForForm(fe))
       continue;
 
     scoped_ptr<FormElements> curr_elements(new FormElements);
