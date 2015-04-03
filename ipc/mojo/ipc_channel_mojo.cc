@@ -184,7 +184,7 @@ base::ScopedFD TakeOrDupFile(internal::PlatformFileAttachment* attachment) {
 
 void ChannelMojo::ChannelInfoDeleter::operator()(
     mojo::embedder::ChannelInfo* ptr) const {
-  mojo::embedder::DestroyChannel(ptr, base::Bind(&base::DoNothing), nullptr);
+  mojo::embedder::DestroyChannelOnIOThread(ptr);
 }
 
 //------------------------------------------------------------------------------
