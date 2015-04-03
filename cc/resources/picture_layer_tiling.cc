@@ -896,9 +896,12 @@ void PictureLayerTiling::GetAllTilesAndPrioritiesForTracing(
   for (const auto& tile_pair : tiles_) {
     const Tile* tile = tile_pair.second.get();
     const TilePriority& priority = ComputePriorityForTile(tile);
+    // If the tile is shared, it means the twin also has the same tile.
+    // Otherwise, use the default priority.
     const TilePriority& twin_priority =
-        twin_tiling ? twin_tiling->ComputePriorityForTile(tile)
-                    : TilePriority();
+        (twin_tiling && tile->is_shared())
+            ? twin_tiling->ComputePriorityForTile(tile)
+            : TilePriority();
 
     // Store combined priority.
     (*tile_map)[tile] = TilePriority(priority, twin_priority);
