@@ -22,7 +22,6 @@ ApplicationCache status=stable
 AudioVideoTracks depends_on=Media, status=experimental
 AuthorShadowDOMForAnyElement
 BackgroundSync status=experimental
-Beacon status=stable
 // Enable bleeding-edge code to make Blink draw content faster.
 // The changes enabled behind this flag are very likely to break lots of content.
 // ** DO NOT use this flag unless you know what you are doing. **
