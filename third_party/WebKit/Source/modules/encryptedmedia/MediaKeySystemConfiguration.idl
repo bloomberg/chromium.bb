@@ -18,6 +18,6 @@ enum MediaKeysRequirement {
     sequence<MediaKeySystemMediaCapability> videoCapabilities;
     MediaKeysRequirement distinctiveIdentifier = "optional";
     MediaKeysRequirement persistentState = "optional";
-    sequence<MediaKeySessionType> sessionTypes;
+    sequence<DOMString> sessionTypes;
     DOMString label;
 };
