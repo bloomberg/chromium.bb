@@ -1219,22 +1219,9 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void LocationBarView::PaintChildren(const ui::PaintContext& context) {
-  // Paint all the children except for the omnibox itself, which may need to be
-  // clipped if it's animating in.
-  for (int i = 0, count = child_count(); i < count; ++i) {
-    views::View* child = child_at(i);
-    if (!child->layer() && (child != omnibox_view_))
-      child->Paint(context);
-  }
+  View::PaintChildren(context);
 
   gfx::Canvas* canvas = context.canvas();
-
-  {
-    // TODO(danakj): Paint already scopes its use of canvas, so this is
-    // redundant?
-    gfx::ScopedCanvas scoped_canvas(canvas);
-    omnibox_view_->Paint(context);
-  }
 
   // For non-InstantExtendedAPI cases, if necessary, show focus rect. As we need
   // the focus rect to appear on top of children we paint here rather than
