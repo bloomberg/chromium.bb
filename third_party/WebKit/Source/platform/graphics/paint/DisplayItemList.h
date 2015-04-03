@@ -55,8 +55,9 @@ protected:
     DisplayItemList() : m_validlyCachedClientsDirty(false) { }
 
 private:
+    friend class DisplayItemListTest;
+    friend class DisplayItemListPaintTest;
     friend class LayoutObjectDrawingRecorderTest;
-    friend class ViewDisplayListTest;
 
     void updatePaintList();
 

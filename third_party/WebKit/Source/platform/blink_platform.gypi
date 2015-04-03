@@ -954,6 +954,7 @@
       'graphics/filters/FilterOperationsTest.cpp',
       'graphics/filters/ImageFilterBuilderTest.cpp',
       'graphics/gpu/DrawingBufferTest.cpp',
+      'graphics/paint/DisplayItemListTest.cpp',
       'graphics/paint/DisplayItemTest.cpp',
       'graphics/paint/DisplayItemTransformTreeBuilderTest.cpp',
       'image-decoders/FastSharedBufferReaderTest.cpp',
