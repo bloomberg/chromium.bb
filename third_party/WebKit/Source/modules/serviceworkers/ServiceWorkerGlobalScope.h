@@ -39,7 +39,6 @@
 
 namespace blink {
 
-class CacheStorage;
 class Dictionary;
 class Request;
 class ScriptPromise;
@@ -67,8 +66,6 @@ public:
     // ServiceWorkerGlobalScope.idl
     ServiceWorkerClients* clients();
     ServiceWorkerRegistration* registration();
-
-    CacheStorage* caches(ExecutionContext*);
 
     ScriptPromise fetch(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&);
 
@@ -104,7 +101,6 @@ private:
 
     PersistentWillBeMember<ServiceWorkerClients> m_clients;
     PersistentWillBeMember<ServiceWorkerRegistration> m_registration;
-    PersistentWillBeMember<CacheStorage> m_caches;
     bool m_didEvaluateScript;
     bool m_hadErrorInTopLevelEventHandler;
     unsigned m_eventNestingLevel;

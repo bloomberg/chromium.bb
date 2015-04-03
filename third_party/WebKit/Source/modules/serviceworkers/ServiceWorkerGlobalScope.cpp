@@ -44,7 +44,6 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
 #include "modules/fetch/GlobalFetch.h"
-#include "modules/serviceworkers/CacheStorage.h"
 #include "modules/serviceworkers/InspectorServiceWorkerCacheAgent.h"
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
@@ -115,16 +114,6 @@ void ServiceWorkerGlobalScope::didEvaluateWorkerScript()
             platform->histogramCustomCounts("ServiceWorker.ScriptCachedMetadataTotalSize", m_scriptCachedMetadataTotalSize, 1000, 50000000, 50);
     }
     m_didEvaluateScript = true;
-}
-
-CacheStorage* ServiceWorkerGlobalScope::caches(ExecutionContext* context)
-{
-    if (!m_caches) {
-        String identifier = createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin());
-        ASSERT(!identifier.isEmpty());
-        m_caches = CacheStorage::create(Platform::current()->cacheStorage(identifier));
-    }
-    return m_caches;
 }
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
@@ -217,7 +206,6 @@ DEFINE_TRACE(ServiceWorkerGlobalScope)
 {
     visitor->trace(m_clients);
     visitor->trace(m_registration);
-    visitor->trace(m_caches);
     WorkerGlobalScope::trace(visitor);
 }
 
