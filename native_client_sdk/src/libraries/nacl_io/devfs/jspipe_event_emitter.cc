@@ -194,12 +194,14 @@ Error JSPipeEventEmitter::SendAckMessage(size_t byte_count) {
 }
 
 size_t JSPipeEventEmitter::HandleJSWrite(const char* data, size_t len) {
+  AUTO_LOCK(GetLock());
   size_t out_len = input_fifo_.Write(data, len);
   UpdateStatus_Locked();
   return out_len;
 }
 
 void JSPipeEventEmitter::HandleJSAck(size_t byte_count) {
+  AUTO_LOCK(GetLock());
   if (byte_count > bytes_sent_) {
     ERROR("Unexpected byte count: %" PRIuS, byte_count);
     return;
