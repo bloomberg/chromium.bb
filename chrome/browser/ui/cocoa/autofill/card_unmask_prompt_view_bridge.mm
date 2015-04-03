@@ -29,13 +29,16 @@
 namespace {
 
 const CGFloat kButtonGap = 6.0f;
+const CGFloat kButtonsToRetriableErrorGap = 12.0f;
 const CGFloat kCvcInputWidth = 64.0f;
 const CGFloat kDialogContentMinWidth = 210.0f;
+const CGFloat kInputRowToInstructionsGap = 16.0f;
 const CGFloat kInstructionsToTitleGap = 8.0f;
 const CGFloat kPermanentErrorExteriorPadding = 12.0f;
 const CGFloat kPermanentErrorHorizontalPadding = 16.0f;
 const CGFloat kPermanentErrorVerticalPadding = 12.0f;
 const CGFloat kProgressToInstructionsGap = 24.0f;
+const CGFloat kRetriableErrorToInputRowGap = 4.0f;
 const CGFloat kSeparatorHeight = 1.0f;
 const CGFloat kSpinnerSize = 16.0f;
 const CGFloat kSpinnerToProgressTextGap = 8.0f;
@@ -470,17 +473,17 @@ void CardUnmaskPromptViewBridge::PerformClose() {
                                  NSMinY([verifyButton_ frame]))];
 
   [errorLabel_ setFrame:NSMakeRect(contentMinX, NSMaxY([cancelButton_ frame]) +
-                                                    chrome_style::kRowPadding,
+                                                    kButtonsToRetriableErrorGap,
                                    contentWidth, 0)];
   cocoa_l10n_util::WrapOrSizeToFit(errorLabel_);
 
-  [inputRowView_
-      setFrameOrigin:NSMakePoint(contentMinX, NSMaxY([errorLabel_ frame]) +
-                                                  chrome_style::kRowPadding)];
+  [inputRowView_ setFrameOrigin:NSMakePoint(contentMinX,
+                                            NSMaxY([errorLabel_ frame]) +
+                                                kRetriableErrorToInputRowGap)];
 
   [instructionsLabel_
       setFrame:NSMakeRect(contentMinX, NSMaxY([inputRowView_ frame]) +
-                                           chrome_style::kRowPadding,
+                                           kInputRowToInstructionsGap,
                           contentWidth, 0)];
   cocoa_l10n_util::WrapOrSizeToFit(instructionsLabel_);
 
