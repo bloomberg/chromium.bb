@@ -1729,7 +1729,7 @@ void BrowserOptionsHandler::HandleRequestGoogleNowAvailable(
     }
   }
 
-  std::string group = base::FieldTrialList::FindFullName("GoogleNowLauncher");
+  std::string group = base::FieldTrialList::FindFullName("GoogleNowExtension");
   bool has_field_trial = !group.empty() && group != "Disabled";
 
   bool should_show = is_search_provider_google && has_field_trial;
