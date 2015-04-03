@@ -2897,7 +2897,7 @@ def CMDset_close(parser, args):
 
 
 def CMDdiff(parser, args):
-  """shows differences between local tree and last upload."""
+  """Shows differences between local tree and last upload."""
   parser.parse_args(args)
   cl = Changelist()
   issue = cl.GetIssue()
@@ -2926,7 +2926,7 @@ def CMDdiff(parser, args):
 
 
 def CMDowners(parser, args):
-  """interactively find the owners for reviewing"""
+  """Interactively find the owners for reviewing."""
   parser.add_option(
       '--no-color',
       action='store_true',
