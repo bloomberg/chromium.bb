@@ -36,6 +36,9 @@ class PasswordManagerClient;
 class PasswordManagerDriver;
 class PasswordFormManager;
 
+// TODO(melandory): Separate the PasswordFormManager API interface and the
+// implementation in two classes crbug/473184.
+
 // Per-tab password manager. Handles creation and management of UI elements,
 // receiving password form data from the renderer and managing the password
 // database through the PasswordStore. The PasswordManager is a LoginModel

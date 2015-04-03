@@ -150,10 +150,10 @@ bool SavePasswordInfoBarDelegate::Cancel() {
   DCHECK(form_to_save_.get());
   if (source_type_ ==
       password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API) {
+    InfoBarDismissed();
+  } else {
     form_to_save_->PermanentlyBlacklist();
     infobar_response_ = password_manager::metrics_util::NEVER_REMEMBER_PASSWORD;
-  } else {
-    InfoBarDismissed();
   }
   return true;
 }

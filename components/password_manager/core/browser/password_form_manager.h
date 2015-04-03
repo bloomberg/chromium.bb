@@ -138,7 +138,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
   // TODO: Make this private once we switch to the new UI.
-  void PermanentlyBlacklist();
+  virtual void PermanentlyBlacklist();
 
   // If the user has submitted observed_form_, provisionally hold on to
   // the submitted credentials until we are told by PasswordManager whether

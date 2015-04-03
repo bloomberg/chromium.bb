@@ -57,12 +57,14 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
 
- private:
+ protected:
+  // Makes a ctor available in tests.
   SavePasswordInfoBarDelegate(
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       const std::string& uma_histogram_suffix,
       password_manager::CredentialSourceType source_type);
 
+ private:
   // The PasswordFormManager managing the form we're asking the user about,
   // and should update as per her decision.
   scoped_ptr<password_manager::PasswordFormManager> form_to_save_;
