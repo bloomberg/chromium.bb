@@ -412,6 +412,8 @@ component("media") {
   }
 
   if (is_win) {
+    deps += [ "//device/usb" ]
+
     libs += [
       "mf.lib",
       "mfplat.lib",

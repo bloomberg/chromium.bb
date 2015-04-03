@@ -2,6 +2,7 @@
 include_rules = [
   "+crypto",
   "+device/udev_linux",
+  "+device/usb",
   "+gpu",
   "+jni",
   "+skia/ext",

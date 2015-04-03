@@ -971,6 +971,9 @@
           },
         }],
         ['OS=="win"', {
+          'dependencies': [
+            '../device/usb/usb.gyp:device_usb',
+          ],
           'link_settings':  {
             'libraries': [
               '-lmf.lib',

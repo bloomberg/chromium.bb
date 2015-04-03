@@ -40,6 +40,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "base/win/message_window.h"
+#include "device/usb/usb_ids.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/midi_message_queue.h"
 #include "media/midi/midi_message_util.h"
@@ -288,6 +289,14 @@ struct MidiDeviceInfo final {
     return EXTRACT_USBAUDIO_PID(&caps.ProductGuid);
   }
 };
+
+std::string GetManufacturerName(const MidiDeviceInfo& info) {
+  if (info.is_usb_device)
+    return device::UsbIds::GetVendorName(info.usb_vendor_id);
+
+  // TODO(toyoshim): Support non USB-MIDI devices. crbug.com/472341.
+  return "";
+}
 
 using PortNumberCache = base::hash_map<
     MidiDeviceInfo,
@@ -630,13 +639,12 @@ class MidiServiceWinImpl : public MidiServiceWin {
         make_scoped_refptr(new MidiInputDeviceState(MidiDeviceInfo(caps)));
     state->midi_handle = midi_in_handle;
     state->midi_header = CreateMIDIHDR(kBufferLength);
+    const auto& state_device_info = state->device_info;
     bool add_new_port = false;
     uint32 port_number = 0;
-    base::string16 product_name;
-    uint32 driver_version = 0;
     {
       base::AutoLock auto_lock(input_ports_lock_);
-      const auto it = unused_input_ports_.find(state->device_info);
+      const auto it = unused_input_ports_.find(state_device_info);
       if (it == unused_input_ports_.end()) {
         port_number = input_ports_.size();
         add_new_port = true;
@@ -656,8 +664,6 @@ class MidiServiceWinImpl : public MidiServiceWin {
           input_ports_[port_number];
       input_ports_[port_number]->port_index = port_number;
       input_ports_[port_number]->port_age = input_ports_ages_[port_number];
-      product_name = input_ports_[port_number]->device_info.product_name;
-      driver_version = input_ports_[port_number]->device_info.driver_version;
     }
     // Several initial startup tasks cannot be done in MIM_OPEN handler.
     task_thread_.message_loop()->PostTask(
@@ -667,10 +673,9 @@ class MidiServiceWinImpl : public MidiServiceWin {
       const MidiPortInfo port_info(
           // TODO(toyoshim): Use a hash ID insted crbug.com/467448
           base::IntToString(static_cast<int>(port_number)),
-          // TODO(toyoshim): Retrieve the manifacturer name.
-          "",
-          base::WideToUTF8(product_name),
-          MmversionToString(driver_version),
+          GetManufacturerName(state_device_info),
+          base::WideToUTF8(state_device_info.product_name),
+          MmversionToString(state_device_info.driver_version),
           MIDI_PORT_OPENED);
       task_thread_.message_loop()->PostTask(
           FROM_HERE, base::Bind(&MidiServiceWinImpl::AddInputPortOnTaskThread,
@@ -815,14 +820,12 @@ class MidiServiceWinImpl : public MidiServiceWin {
     auto state =
         make_scoped_refptr(new MidiOutputDeviceState(MidiDeviceInfo(caps)));
     state->midi_handle = midi_out_handle;
-
+    const auto& state_device_info = state->device_info;
     bool add_new_port = false;
     uint32 port_number = 0;
-    base::string16 product_name;
-    uint32 driver_version = 0;
     {
       base::AutoLock auto_lock(output_ports_lock_);
-      const auto it = unused_output_ports_.find(state->device_info);
+      const auto it = unused_output_ports_.find(state_device_info);
       if (it == unused_output_ports_.end()) {
         port_number = output_ports_.size();
         add_new_port = true;
@@ -840,17 +843,14 @@ class MidiServiceWinImpl : public MidiServiceWin {
           output_ports_[port_number];
       output_ports_[port_number]->port_index = port_number;
       output_ports_[port_number]->port_age = output_ports_ages_[port_number];
-      product_name = output_ports_[port_number]->device_info.product_name;
-      driver_version = output_ports_[port_number]->device_info.driver_version;
     }
     if (add_new_port) {
       const MidiPortInfo port_info(
           // TODO(toyoshim): Use a hash ID insted. crbug.com/467448
           base::IntToString(static_cast<int>(port_number)),
-          // TODO(toyoshim): Retrieve the manifacturer name.
-          "",
-          base::WideToUTF8(product_name),
-          MmversionToString(driver_version),
+          GetManufacturerName(state_device_info),
+          base::WideToUTF8(state_device_info.product_name),
+          MmversionToString(state_device_info.driver_version),
           MIDI_PORT_OPENED);
       task_thread_.message_loop()->PostTask(
           FROM_HERE, base::Bind(&MidiServiceWinImpl::AddOutputPortOnTaskThread,
