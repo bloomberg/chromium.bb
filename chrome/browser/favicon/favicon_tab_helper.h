@@ -16,11 +16,14 @@
 #include "content/public/common/favicon_url.h"
 
 class GURL;
-class Profile;
 class SkBitmap;
 
 namespace gfx {
 class Image;
+}
+
+namespace bookmarks {
+class BookmarkModel;
 }
 
 namespace content {
@@ -30,6 +33,11 @@ struct FaviconStatus;
 namespace favicon {
 class FaviconDriverObserver;
 class FaviconHandler;
+class FaviconService;
+}
+
+namespace history {
+class HistoryService;
 }
 
 // FaviconTabHelper works with favicon::FaviconHandlers to fetch the favicons.
@@ -43,6 +51,8 @@ class FaviconTabHelper : public content::WebContentsObserver,
                          public content::WebContentsUserData<FaviconTabHelper> {
  public:
   ~FaviconTabHelper() override;
+
+  static void CreateForWebContents(content::WebContents* web_contents);
 
   // Initiates loading the favicon for the specified url.
   void FetchFavicon(const GURL& url);
@@ -104,7 +114,13 @@ class FaviconTabHelper : public content::WebContentsObserver,
   friend class content::WebContentsUserData<FaviconTabHelper>;
   friend class FaviconTabHelperTest;
 
-  explicit FaviconTabHelper(content::WebContents* web_contents);
+  // Creates a new FaviconTabHelper bound to |web_contents|. Initialize
+  // |favicon_service_|, |bookmark_model_| and |history_service_| from the
+  // corresponding parameter.
+  FaviconTabHelper(content::WebContents* web_contents,
+                   favicon::FaviconService* favicon_service,
+                   history::HistoryService* history_service,
+                   bookmarks::BookmarkModel* bookmark_model);
 
   // content::WebContentsObserver overrides.
   void DidStartNavigationToPendingEntry(
@@ -117,7 +133,11 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // Helper method that returns the active navigation entry's favicon.
   content::FaviconStatus& GetFaviconStatus();
 
-  Profile* profile_;
+  // KeyedService used by FaviconTabHelper. They may be null during testing, but
+  // if they are defined, they must outlive the FaviconTabHelper.
+  favicon::FaviconService* favicon_service_;
+  history::HistoryService* history_service_;
+  bookmarks::BookmarkModel* bookmark_model_;
 
   std::vector<content::FaviconURL> favicon_urls_;
 
