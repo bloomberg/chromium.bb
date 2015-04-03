@@ -3104,6 +3104,25 @@
               },
             },
             {
+              'target_name': 'telemetry_isolate_base',
+              'type': 'none',
+              'dependencies': [
+                '../tools/telemetry/telemetry.gyp:bitmaptools#host',
+              ],
+              'conditions': [
+                ['OS=="linux" or OS=="mac"', {
+                  'dependencies': [
+                    '../breakpad/breakpad.gyp:dump_syms',
+                  ],
+                }],
+                ['OS=="mac"', {
+                  'dependencies': [
+                    '../third_party/crashpad/crashpad/tools/tools.gyp:crashpad_database_util',
+                  ],
+                }],
+              ],
+            },
+            {
               'target_name': 'angle_unittests_run',
               'type': 'none',
               'dependencies': [
@@ -3141,8 +3160,8 @@
               'type': 'none',
               'dependencies': [
                 'chrome_run',
-                '../tools/telemetry/telemetry.gyp:bitmaptools#host',
                 'gpu_tests_base',
+                'telemetry_isolate_base',
               ],
               'sources': [
                 'telemetry_gpu_test.isolate',
