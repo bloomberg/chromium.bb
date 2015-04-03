@@ -1739,6 +1739,13 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableReaderModeToolbarIcon)
   },
+  {
+    "enable-dom-distiller-button-animation",
+    IDS_FLAGS_READER_MODE_BUTTON_ANIMATION,
+    IDS_FLAGS_READER_MODE_BUTTON_ANIMATION_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableDomDistillerButtonAnimation)
+  },
 #endif
   {
     "num-raster-threads",

@@ -125,6 +125,10 @@ public abstract class ChromeSwitches {
     /** Enable the Reader Mode icon in toolbar. */
     public static final String ENABLE_READER_MODE_TOOLBAR_ICON = "enable-reader-mode-toolbar-icon";
 
+    /** Enable Reader Mode button animation. */
+    public static final String ENABLE_READER_MODE_BUTTON_ANIMATION =
+            "enable-dom-distiller-button-animation";
+
     /** Enable the native app banners. */
     public static final String ENABLE_APP_INSTALL_ALERTS = "enable-app-install-alerts";
 

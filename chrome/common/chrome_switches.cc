@@ -1242,6 +1242,10 @@ const char kEnableAppInstallAlerts[]        = "enable-app-install-alerts";
 // Enables Contextual Search.
 const char kEnableContextualSearch[]        = "enable-contextual-search";
 
+// Enables the DOM distiller animated button UI for Android.
+const char kEnableDomDistillerButtonAnimation[] =
+    "enable-dom-distiller-button-animation";
+
 // Enables zero suggest functionality on Dev channel, showing most visited
 // sites as default suggestions.
 const char kEnableZeroSuggestMostVisited[] =

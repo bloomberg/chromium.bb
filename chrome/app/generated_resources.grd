@@ -15292,6 +15292,15 @@ Do you accept?
           Adds a button to the toolbar for viewing a more readable version of the current page.
         </message>
       </if>
+      <if expr="is_android">
+        <message name="IDS_FLAGS_READER_MODE_BUTTON_ANIMATION" desc="Title for flag enabling the reader mode button animation">
+          Enable Reader Mode Button Animation
+        </message>
+        <message name="IDS_FLAGS_READER_MODE_BUTTON_ANIMATION_DESCRIPTION" desc="Describes the flag to enable reading mode UI button animation">
+          If enabled, a reader mode button click slides up the reader mode version of a web page instead of navigating to it
+        </message>
+      </if>
+
       <!-- Prefetch search results experiment flags -->
       <message name="IDS_FLAGS_PREFETCH_SEARCH_RESULTS_NAME" desc="An about::flags experiment title to prefetch search results">
         Prefetch search results
