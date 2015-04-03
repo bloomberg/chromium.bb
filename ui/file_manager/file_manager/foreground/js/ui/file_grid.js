@@ -531,11 +531,12 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
     frame.appendChild(inactive_checkmark);
   }
 
-  var bottom = li.ownerDocument.createElement('div');
-  bottom.className = 'thumbnail-bottom';
   var badge = li.ownerDocument.createElement('div');
   badge.className = 'badge';
-  bottom.appendChild(badge);
+  frame.appendChild(badge);
+
+  var bottom = li.ownerDocument.createElement('div');
+  bottom.className = 'thumbnail-bottom';
   var detailIcon = filelist.renderFileTypeIcon(li.ownerDocument, entry);
   if (isDirectory) {
     var checkmark = li.ownerDocument.createElement('div');
