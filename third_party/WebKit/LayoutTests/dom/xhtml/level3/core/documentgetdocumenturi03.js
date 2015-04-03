@@ -109,7 +109,7 @@ docElem = doc.documentElement;
 
       docURI = importedOwner.documentURI;
 
-      assertNull("documentgetdocumenturi03",docURI);
+      assertEquals("documentgetdocumenturi03", "about:blank", docURI);
 
 }
 

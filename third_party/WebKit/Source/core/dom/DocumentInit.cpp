@@ -93,12 +93,6 @@ DocumentInit::~DocumentInit()
 {
 }
 
-bool DocumentInit::shouldSetURL() const
-{
-    LocalFrame* frame = frameForSecurityContext();
-    return (frame && frame->owner()) || !m_url.isEmpty();
-}
-
 bool DocumentInit::shouldTreatURLAsSrcdocDocument() const
 {
     return m_parent && m_frame->loader().shouldTreatURLAsSrcdocDocument(m_url);

@@ -103,7 +103,7 @@ function documentgetdocumenturi02() {
 newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
       docURI = newDoc.documentURI;
 
-      assertNull("documentgetdocumenturi02",docURI);
+      assertEquals("documentgetdocumenturi02", "about:blank", docURI);
 
 }
 

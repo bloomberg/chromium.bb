@@ -487,13 +487,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         m_fetcher = FrameFetchContext::createContextAndFetcher(nullptr);
     static_cast<FrameFetchContext&>(m_fetcher->context()).setDocument(this);
 
-    // We depend on the url getting immediately set in subframes, but we
-    // also depend on the url NOT getting immediately set in opened windows.
-    // See fast/dom/early-frame-url.html
-    // and fast/dom/location-new-window-no-crash.html, respectively.
-    // FIXME: Can/should we unify this behavior?
-    if (initializer.shouldSetURL())
-        setURL(initializer.url());
+    setURL(initializer.url());
 
     initSecurityContext(initializer);
     initDNSPrefetch();
