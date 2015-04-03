@@ -27,6 +27,7 @@ AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationOSMesaGL:
     case gfx::kGLImplementationDesktopGL:
+    case gfx::kGLImplementationDesktopGLCoreProfile:
     case gfx::kGLImplementationEGLGLES2:
       return new AsyncPixelTransferManagerIdle(true);
     case gfx::kGLImplementationMockGL:

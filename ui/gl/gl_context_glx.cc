@@ -38,6 +38,18 @@ bool GLContextGLX::Initialize(
   if (GLSurfaceGLX::IsCreateContextSupported()) {
     DVLOG(1) << "GLX_ARB_create_context supported.";
     std::vector<int> attribs;
+    if (gfx::GetGLImplementation() ==
+        gfx::kGLImplementationDesktopGLCoreProfile) {
+      // TODO(kbr): NVIDIA's driver doesn't return a later context
+      // version if any version later than 3.1 is requested. We
+      // explicitly want to request a 3.2+ context with no support for
+      // the compatibility profile. WebGL 2.0 support currently
+      // requires a 4.2 context. crbug.com/473427
+      attribs.push_back(GLX_CONTEXT_MAJOR_VERSION_ARB);
+      attribs.push_back(4);
+      attribs.push_back(GLX_CONTEXT_MINOR_VERSION_ARB);
+      attribs.push_back(2);
+    }
     if (GLSurfaceGLX::IsCreateContextRobustnessSupported()) {
       DVLOG(1) << "GLX_ARB_create_context_robustness supported.";
       attribs.push_back(GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB);

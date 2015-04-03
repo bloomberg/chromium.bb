@@ -33,6 +33,7 @@ class ShaderTranslatorInterface
   ShaderTranslatorInterface() {}
   enum GlslImplementationType {
     kGlsl,
+    kGlslCoreProfile,
     kGlslES
   };
 
