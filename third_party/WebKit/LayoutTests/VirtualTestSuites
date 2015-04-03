@@ -467,7 +467,7 @@
   },
   {
     "prefix": "slimmingpaint",
-    "base": "compositing/gestures",
+    "base": "compositing",
     "args": ["--enable-slimming-paint"],
     "reference_args": []
   },
