@@ -23,6 +23,8 @@ import os
 import sys
 
 from chromite.lib import brick_lib
+from chromite.lib import commandline
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_import
 
 
@@ -148,6 +150,39 @@ class CliCommand(object):
   def AddParser(cls, parser):
     """Add arguments for this command to the parser."""
     parser.set_defaults(command_class=cls)
+
+  @classmethod
+  def AddDeviceArgument(cls, parser, schemes=commandline.DEVICE_SCHEME_SSH,
+                        optional=None):
+    """Add a device argument to the parser.
+
+    This has a few advantages over adding a device argument directly:
+      - Standardizes the device --help message for all tools.
+      - May allow `brillo` and `cros` to use the same source.
+
+    The device argument is normally positional in cros but optional in
+    brillo. If that is the only difference between a cros and brillo
+    tool, this function allows the same source be shared for both.
+
+    Args:
+      parser: The parser to add the device argument to.
+      schemes: List of device schemes or single scheme to allow.
+      optional: Whether the device is an optional or positional
+        argument; None to auto-determine based on toolset.
+    """
+    if optional is None:
+      optional = (_GetToolset() == 'brillo')
+    help_strings = []
+    schemes = list(cros_build_lib.iflatten_instance(schemes))
+    if commandline.DEVICE_SCHEME_SSH in schemes:
+      help_strings.append('Target a device with [user@]hostname[:port].')
+    if commandline.DEVICE_SCHEME_USB in schemes:
+      help_strings.append('Target removable media with usb://[path].')
+    if commandline.DEVICE_SCHEME_FILE in schemes:
+      help_strings.append('Target a local file with file://path.')
+    parser.add_argument('--device' if optional else 'device',
+                        type=commandline.DeviceParser(schemes),
+                        help=' '.join(help_strings))
 
   def Run(self):
     """The command to run."""

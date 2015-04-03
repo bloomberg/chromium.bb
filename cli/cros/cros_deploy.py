@@ -44,10 +44,7 @@ For more information of cros build usage:
   def AddParser(cls, parser):
     """Add a parser."""
     super(cls, DeployCommand).AddParser(parser)
-    parser.add_argument(
-        'device',
-        type=commandline.DeviceParser(commandline.DEVICE_SCHEME_SSH),
-        help='IP[:port] address of the target device.')
+    cls.AddDeviceArgument(parser)
     parser.add_argument(
         'packages', help='Packages to install. You can specify '
         '[category/]package[:slot] or the path to the binary package. '

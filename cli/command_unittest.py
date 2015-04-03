@@ -29,7 +29,7 @@ class TestCommand(command.CliCommand):
     print('Just testing')
 
 
-class TestCommandTest(cros_test_lib.TestCase):
+class TestCommandTest(cros_test_lib.MockTestCase):
   """This test class tests that Commands method."""
 
   def testParserSetsCommandClass(self):
@@ -57,6 +57,26 @@ class TestCommandTest(cros_test_lib.TestCase):
       pass
     else:
       self.fail('Invalid command was accepted by the CommandDecorator')
+
+  def testCrosAddDeviceArgument(self):
+    """Tests CliCommand.AddDeviceArgument() for `cros`."""
+    self.PatchObject(command, '_GetToolset', return_value='cros')
+    parser = argparse.ArgumentParser()
+    command.CliCommand.AddDeviceArgument(parser)
+    # cros should have a positional device argument.
+    parser.parse_args(['device'])
+    with self.assertRaises(SystemExit):
+      parser.parse_args(['--device', 'device'])
+
+  def testBrilloAddDeviceArgument(self):
+    """Tests CliCommand.AddDeviceArgument() for `brillo`."""
+    self.PatchObject(command, '_GetToolset', return_value='brillo')
+    parser = argparse.ArgumentParser()
+    command.CliCommand.AddDeviceArgument(parser)
+    # brillo should have an optional device argument.
+    with self.assertRaises(SystemExit):
+      parser.parse_args(['device'])
+    parser.parse_args(['--device', 'device'])
 
 
 class MockCommand(partial_mock.PartialMock):

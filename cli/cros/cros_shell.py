@@ -9,7 +9,6 @@ from __future__ import print_function
 import argparse
 
 from chromite.cli import command
-from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
@@ -68,16 +67,14 @@ Quoting can be tricky; the rules are the same as with ssh:
     # How to set SSH StrictHostKeyChecking. Can be 'no', 'yes', or 'ask'. Has
     # no effect if |known_hosts| is not True.
     self.host_key_checking = None
+    # The command to execute remotely.
+    self.command = None
 
   @classmethod
   def AddParser(cls, parser):
     """Adds a parser."""
     super(cls, ShellCommand).AddParser(parser)
-    parser.add_argument(
-        'device',
-        type=commandline.DeviceParser(commandline.DEVICE_SCHEME_SSH),
-        help='[user@]IP[:port] address of the target device. Defaults to '
-        'user=root, port=22')
+    cls.AddDeviceArgument(parser)
     parser.add_argument(
         '--private-key', type='path', default=None,
         help='SSH identify file (private key).')
@@ -98,6 +95,10 @@ Quoting can be tricky; the rules are the same as with ssh:
     # By default ask the user if a new key is found. SSH will still reject
     # modified keys for existing hosts without asking the user.
     self.host_key_checking = 'ask'
+    # argparse doesn't always handle -- correctly.
+    self.command = self.options.command
+    if self.command and self.command[0] == '--':
+      self.command.pop(0)
 
   def _ConnectSettings(self):
     """Generates the correct SSH connect settings based on our state."""
@@ -149,7 +150,7 @@ Quoting can be tricky; the rules are the same as with ssh:
       remote = remote_access.RemoteAccess(
           self.ssh_hostname, tempdir, port=self.ssh_port,
           username=self.ssh_username, private_key=self.ssh_private_key)
-      return remote.RemoteSh(self.options.command,
+      return remote.RemoteSh(self.command,
                              connect_settings=self._ConnectSettings(),
                              error_code_ok=True,
                              mute_output=False,

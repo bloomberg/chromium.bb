@@ -52,8 +52,8 @@ class DevicesCommand(command.CliCommand):
   def AddParser(cls, parser):
     """Add parser arguments."""
     super(cls, DevicesCommand).AddParser(parser)
-    parser.add_argument(
-        '--device', help='IP address or alias of the target device.')
+    # Device argument is always optional for the `devices` tool.
+    cls.AddDeviceArgument(parser, optional=True)
     parser.add_argument(
         'subcommand', nargs='?',
         help='Optional subcommand ("alias" or "full-reset").')

@@ -62,14 +62,9 @@ Examples:
   def AddParser(cls, parser):
     """Add parser arguments."""
     super(FlashCommand, cls).AddParser(parser)
-    parser.add_argument(
-        'device',
-        type=commandline.DeviceParser([commandline.DEVICE_SCHEME_FILE,
-                                       commandline.DEVICE_SCHEME_SSH,
-                                       commandline.DEVICE_SCHEME_USB]),
-        help='ssh://device_hostname[:port], usb://[device_path], or '
-        'file://{path}. If no USB device_path is given (i.e. usb://), user '
-        'will be prompted to choose from a list of removable devices.')
+    cls.AddDeviceArgument(parser, schemes=[commandline.DEVICE_SCHEME_FILE,
+                                           commandline.DEVICE_SCHEME_SSH,
+                                           commandline.DEVICE_SCHEME_USB])
     parser.add_argument(
         'image', nargs='?', default='latest', help="A local path or an xbuddy "
         "path: xbuddy://{local|remote}/board/version/{image_type} image_type "
