@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// <p>The <code>chrome.printerProvider</code> API exposes events used by print
+// The <code>chrome.printerProvider</code> API exposes events used by print
 // manager to query printers controlled by extensions, to query their
 // capabilities and to submit print jobs to these printers.
-// <p/>
-// <p>Available only on dev channel since Chrome 42.</p>
 namespace printerProvider {
   // Error codes returned in response to $(ref:onPrintRequested) event.
   enum PrintError {
