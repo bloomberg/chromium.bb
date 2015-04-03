@@ -54,7 +54,15 @@ class CALayerStorageProvider
   ImageTransportSurfaceFBO* transport_surface_;
 
   // Used to determine if we should use setNeedsDisplay or setAsynchronous to
-  // animate.
+  // animate. If the last swap time happened very recently, then
+  // setAsynchronous is used (which allows smooth animation, but comes with the
+  // penalty of the canDrawInCGLContext function waking up the process every
+  // vsync).
+  base::TimeTicks last_synchronous_swap_time_;
+
+  // Used to determine if we should use setNeedsDisplay or setAsynchronous to
+  // animate. If vsync is disabled, an immediate setNeedsDisplay and
+  // displayIfNeeded are called.
   const bool gpu_vsync_disabled_;
 
   // Used also to determine if we should wait for CoreAnimation to call our

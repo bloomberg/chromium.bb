@@ -18,6 +18,8 @@
 namespace {
 const size_t kFramesToKeepCAContextAfterDiscard = 2;
 const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
+const base::TimeDelta kMinDeltaToSwitchToAsync =
+    base::TimeDelta::FromSecondsD(1. / 15.);
 }
 
 @interface ImageTransportLayer : CAOpenGLLayer {
@@ -336,8 +338,19 @@ void CALayerStorageProvider::SwapBuffers(
   if (gpu_vsync_disabled_ || throttling_disabled_) {
     DrawImmediatelyAndUnblockBrowser();
   } else {
-    if (![layer_ isAsynchronous])
-      [layer_ setAsynchronous:YES];
+    if (![layer_ isAsynchronous]) {
+      // Switch to asynchronous drawing only if we get two frames in rapid
+      // succession.
+      base::TimeTicks this_swap_time = base::TimeTicks::Now();
+      base::TimeDelta delta = this_swap_time - last_synchronous_swap_time_;
+      if (delta <= kMinDeltaToSwitchToAsync) {
+        last_synchronous_swap_time_ = base::TimeTicks();
+        [layer_ setAsynchronous:YES];
+      } else {
+        last_synchronous_swap_time_ = this_swap_time;
+        [layer_ setNeedsDisplay];
+      }
+    }
 
     // If CoreAnimation doesn't end up drawing our frame, un-block the browser
     // after a timeout of 1/6th of a second has passed.
