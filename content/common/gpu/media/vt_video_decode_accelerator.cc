@@ -47,25 +47,6 @@ static const int kNumPictureBuffers = media::limits::kMaxVideoFrames + 1;
 // reorder queue.)
 static const int kMaxReorderQueueSize = 16;
 
-// Logged to UMA, so never reuse values. Make sure to update
-// VTVDAInitializationFailureType in histograms.xml to match.
-enum VTVDAInitializationFailureType {
-  IFT_SUCCESSFULLY_INITIALIZED = 0,
-  IFT_FRAMEWORK_LOAD_ERROR = 1,
-  IFT_HARDWARE_SESSION_ERROR = 2,
-  IFT_SOFTWARE_SESSION_ERROR = 3,
-  // Must always be equal to largest entry logged.
-  IFT_MAX = IFT_SOFTWARE_SESSION_ERROR
-};
-
-static void ReportInitializationFailure(
-    VTVDAInitializationFailureType failure_type) {
-  DCHECK_LT(failure_type, IFT_MAX + 1);
-  UMA_HISTOGRAM_ENUMERATION("Media.VTVDA.InitializationFailureReason",
-                            failure_type,
-                            IFT_MAX + 1);
-}
-
 // Build an |image_config| dictionary for VideoToolbox initialization.
 static base::ScopedCFTypeRef<CFMutableDictionaryRef>
 BuildImageConfig(CMVideoDimensions coded_dimensions) {
@@ -115,13 +96,14 @@ static bool CreateVideoToolboxSession(const uint8_t* sps, size_t sps_size,
   base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
   OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSets(
       kCFAllocatorDefault,
-      2,                          // parameter_set_count
-      data_ptrs,                  // &parameter_set_pointers
-      data_sizes,                 // &parameter_set_sizes
-      kNALUHeaderLength,          // nal_unit_header_length
+      2,                    // parameter_set_count
+      data_ptrs,            // &parameter_set_pointers
+      data_sizes,           // &parameter_set_sizes
+      kNALUHeaderLength,    // nal_unit_header_length
       format.InitializeInto());
   if (status) {
-    OSSTATUS_LOG(ERROR, status) << "Failed to create CMVideoFormatDescription.";
+    OSSTATUS_DLOG(WARNING, status)
+        << "Failed to create CMVideoFormatDescription.";
     return false;
   }
 
@@ -158,9 +140,7 @@ static bool CreateVideoToolboxSession(const uint8_t* sps, size_t sps_size,
       &callback,            // output_callback
       session.InitializeInto());
   if (status) {
-    ReportInitializationFailure(require_hardware ? IFT_HARDWARE_SESSION_ERROR
-                                                 : IFT_SOFTWARE_SESSION_ERROR);
-    OSSTATUS_LOG(ERROR, status) << "Failed to create VTDecompressionSession";
+    OSSTATUS_DLOG(WARNING, status) << "Failed to create VTDecompressionSession";
     return false;
   }
 
@@ -188,9 +168,8 @@ static bool InitializeVideoToolboxInternal() {
     paths[kModuleVt].push_back(FILE_PATH_LITERAL(
         "/System/Library/Frameworks/VideoToolbox.framework/VideoToolbox"));
     if (!InitializeStubs(paths)) {
-      ReportInitializationFailure(IFT_FRAMEWORK_LOAD_ERROR);
-      LOG(ERROR) << "Failed to initialize VideoToobox framework. "
-                 << "Hardware accelerated video decoding will be disabled.";
+      LOG(WARNING) << "Failed to initialize VideoToolbox framework. "
+                   << "Hardware accelerated video decoding will be disabled.";
       return false;
     }
   }
@@ -203,8 +182,8 @@ static bool InitializeVideoToolboxInternal() {
   const uint8_t pps_normal[] = {0x68, 0xe9, 0x7b, 0xcb};
   if (!CreateVideoToolboxSession(sps_normal, arraysize(sps_normal), pps_normal,
                                  arraysize(pps_normal), true)) {
-    LOG(ERROR) << "Failed to create hardware VideoToolbox session. "
-               << "Hardware accelerated video decoding will be disabled.";
+    LOG(WARNING) << "Failed to create hardware VideoToolbox session. "
+                 << "Hardware accelerated video decoding will be disabled.";
     return false;
   }
 
@@ -216,12 +195,11 @@ static bool InitializeVideoToolboxInternal() {
   const uint8_t pps_small[] = {0x68, 0xe9, 0x79, 0x72, 0xc0};
   if (!CreateVideoToolboxSession(sps_small, arraysize(sps_small), pps_small,
                                  arraysize(pps_small), false)) {
-    LOG(ERROR) << "Failed to create software VideoToolbox session. "
-               << "Hardware accelerated video decoding will be disabled.";
+    LOG(WARNING) << "Failed to create software VideoToolbox session. "
+                 << "Hardware accelerated video decoding will be disabled.";
     return false;
   }
 
-  ReportInitializationFailure(IFT_SUCCESSFULLY_INITIALIZED);
   return true;
 }
 
