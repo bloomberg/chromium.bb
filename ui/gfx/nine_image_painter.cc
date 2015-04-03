@@ -22,18 +22,20 @@ namespace gfx {
 
 namespace {
 
-// The following functions width and height of the image in pixels for the
-// scale factor in the Canvas.
-int ImageWidthInPixels(const ImageSkia& i, Canvas* c) {
+// The following functions calculate width and height of the image in pixels
+// for the scale factor.
+int ImageWidthInPixels(const ImageSkia& i, float scale) {
   if (i.isNull())
     return 0;
-  return i.GetRepresentation(c->image_scale()).pixel_width();
+  ImageSkiaRep image_rep = i.GetRepresentation(scale);
+  return image_rep.pixel_width() * scale / image_rep.scale();
 }
 
-int ImageHeightInPixels(const ImageSkia& i, Canvas* c) {
+int ImageHeightInPixels(const ImageSkia& i, float scale) {
   if (i.isNull())
     return 0;
-  return i.GetRepresentation(c->image_scale()).pixel_height();
+  ImageSkiaRep image_rep = i.GetRepresentation(scale);
+  return image_rep.pixel_height() * scale / image_rep.scale();
 }
 
 // Stretches the given image over the specified canvas area.
@@ -46,8 +48,9 @@ void Fill(Canvas* c,
           const SkPaint& paint) {
   if (i.isNull())
     return;
-  c->DrawImageIntInPixel(i, 0, 0, ImageWidthInPixels(i, c),
-                         ImageHeightInPixels(i, c), x, y, w, h, false, paint);
+  c->DrawImageIntInPixel(i, 0, 0, ImageWidthInPixels(i, c->image_scale()),
+                         ImageHeightInPixels(i, c->image_scale()),
+                         x, y, w, h, false, paint);
 }
 
 }  // namespace
@@ -115,27 +118,29 @@ void NineImagePainter::Paint(Canvas* canvas,
 
   const int width_in_pixels = bounds_in_pixels.width();
   const int height_in_pixels = bounds_in_pixels.height();
+  const float scale_x = matrix.getScaleX();
+  const float scale_y = matrix.getScaleY();
 
   // In case the corners and edges don't all have the same width/height, we draw
   // the center first, and extend it out in all directions to the edges of the
   // images with the smallest widths/heights.  This way there will be no
   // unpainted areas, though some corners or edges might overlap the center.
-  int i0w = ImageWidthInPixels(images_[0], canvas);
-  int i2w = ImageWidthInPixels(images_[2], canvas);
-  int i3w = ImageWidthInPixels(images_[3], canvas);
-  int i5w = ImageWidthInPixels(images_[5], canvas);
-  int i6w = ImageWidthInPixels(images_[6], canvas);
-  int i8w = ImageWidthInPixels(images_[8], canvas);
+  int i0w = ImageWidthInPixels(images_[0], scale_x);
+  int i2w = ImageWidthInPixels(images_[2], scale_x);
+  int i3w = ImageWidthInPixels(images_[3], scale_x);
+  int i5w = ImageWidthInPixels(images_[5], scale_x);
+  int i6w = ImageWidthInPixels(images_[6], scale_x);
+  int i8w = ImageWidthInPixels(images_[8], scale_x);
 
   int i4x = std::min(std::min(i0w, i3w), i6w);
   int i4w = width_in_pixels - i4x - std::min(std::min(i2w, i5w), i8w);
 
-  int i0h = ImageHeightInPixels(images_[0], canvas);
-  int i1h = ImageHeightInPixels(images_[1], canvas);
-  int i2h = ImageHeightInPixels(images_[2], canvas);
-  int i6h = ImageHeightInPixels(images_[6], canvas);
-  int i7h = ImageHeightInPixels(images_[7], canvas);
-  int i8h = ImageHeightInPixels(images_[8], canvas);
+  int i0h = ImageHeightInPixels(images_[0], scale_y);
+  int i1h = ImageHeightInPixels(images_[1], scale_y);
+  int i2h = ImageHeightInPixels(images_[2], scale_y);
+  int i6h = ImageHeightInPixels(images_[6], scale_y);
+  int i7h = ImageHeightInPixels(images_[7], scale_y);
+  int i8h = ImageHeightInPixels(images_[8], scale_y);
 
   int i4y = std::min(std::min(i0h, i1h), i2h);
   int i4h = height_in_pixels - i4y - std::min(std::min(i6h, i7h), i8h);
@@ -145,8 +150,7 @@ void NineImagePainter::Paint(Canvas* canvas,
 
   Fill(canvas, images_[4], i4x, i4y, i4w, i4h, paint);
 
-  canvas->DrawImageIntInPixel(images_[0], 0, 0, i0w, i0h,
-                              0, 0, i0w, i0h, false, paint);
+  Fill(canvas, images_[0], 0, 0, i0w, i0h, paint);
 
   Fill(canvas, images_[1], i0w, 0, width_in_pixels - i0w - i2w, i1h, paint);
 
