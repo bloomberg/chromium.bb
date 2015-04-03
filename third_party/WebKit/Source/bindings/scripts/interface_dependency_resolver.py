@@ -185,11 +185,31 @@ def merge_interface_dependencies(definitions, component, target_interface, depen
                                                                      component))
 
             if dependency_component in resolved_definitions:
+                # When merging a new partial interfaces, should not overwrite
+                # ImpelemntedAs extended attributes in merged partial
+                # interface.
+                # See also the below "if 'ImplementedAs' not in ... " line's
+                # comment.
+                dependency_interface.extended_attributes.pop('ImplementedAs', None)
                 resolved_definitions[dependency_component].update(dependency_definitions)
                 continue
 
             dependency_interface.extended_attributes.update(target_interface.extended_attributes)
             assert target_interface == definitions.interfaces[dependency_interface.name]
+            # A partial interface should use its original interface's
+            # ImplementedAs. If the original interface doesn't have,
+            # remove ImplementedAs defined in the partial interface.
+            # Because partial interface needs the original interface's
+            # cpp class to obtain partial interface's cpp class.
+            # e.g.. V8WindowPartial.cpp:
+            #   DOMWindow* impl = V8Window::toImpl(holder);
+            #   RawPtr<...> cppValue(DOMWindowQuota::webkitStorageInfo(impl));
+            # TODO(tasak): remove ImplementedAs extended attributes
+            # from all partial interfaces. Instead, rename all cpp/header
+            # files correctly. ImplementedAs should not be allowed in
+            # partial interfaces.
+            if 'ImplementedAs' not in target_interface.extended_attributes:
+                dependency_interface.extended_attributes.pop('ImplementedAs', None)
             dependency_interface.original_interface = target_interface
             target_interface.partial_interfaces.append(dependency_interface)
             resolved_definitions[dependency_component] = dependency_definitions
