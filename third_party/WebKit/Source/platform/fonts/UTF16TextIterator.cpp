@@ -41,7 +41,7 @@ UTF16TextIterator::UTF16TextIterator(const UChar* characters, int length)
 
 UTF16TextIterator::UTF16TextIterator(const UChar* characters, int currentCharacter, int endOffset, int endCharacter)
     : m_characters(characters)
-    , m_charactersEnd(characters + endCharacter)
+    , m_charactersEnd(characters + (endCharacter - currentCharacter))
     , m_offset(currentCharacter)
     , m_endOffset(endOffset)
     , m_currentGlyphLength(0)
