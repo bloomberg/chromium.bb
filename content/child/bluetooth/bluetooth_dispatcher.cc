@@ -80,7 +80,7 @@ BluetoothDispatcher* BluetoothDispatcher::GetOrCreateThreadSpecificInstance(
     return g_dispatcher_tls.Pointer()->Get();
 
   BluetoothDispatcher* dispatcher = new BluetoothDispatcher(thread_safe_sender);
-  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
+  if (CurrentWorkerId())
     WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
   return dispatcher;
 }
