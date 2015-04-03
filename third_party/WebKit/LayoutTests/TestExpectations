@@ -35,12 +35,6 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/013.html [ P
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/014.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/018.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 
-crbug.com/334335 fast/borders/border-antialiasing.html [ NeedsRebaseline ]
-crbug.com/334335 fast/repaint/multicol-as-paint-container.html [ NeedsRebaseline ]
-crbug.com/334335 fast/repaint/multicol-repaint.html [ NeedsRebaseline ]
-crbug.com/334335 virtual/slimmingpaint/fast/repaint/multicol-as-paint-container.html [ NeedsRebaseline ]
-crbug.com/334335 virtual/slimmingpaint/fast/repaint/multicol-repaint.html [ NeedsRebaseline ]
-
 # These baselines need to be reviewed and perhaps updated after crbug.com/452967
 crbug.com/452967 compositing/color-matching/pdf-image-match.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-005.htm [ Pass Failure ImageOnlyFailure ]

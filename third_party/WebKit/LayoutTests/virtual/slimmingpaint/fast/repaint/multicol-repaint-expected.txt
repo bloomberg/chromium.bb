@@ -6,18 +6,14 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [284, 15, 250, 50],
-        [9, 9, 525, 100],
+        [284, 15, 125, 50],
         [9, 9, 400, 100]
       ],
       "paintInvalidationClients": [
-        "RootInlineBox",
-        "RootInlineBox",
-        "InlineTextBox '\u00A0'",
-        "InlineTextBox '\n'",
-        "InlineFlowBox",
         "InlineTextBox ''",
-        "LayoutMultiColumnFlowThread",
+        "InlineFlowBox",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV class='container'",
         "LayoutText #text",
         "InlineTextBox 'XXXXXX'"
       ]
