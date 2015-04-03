@@ -237,9 +237,13 @@ TEST(BoringSSL, PQueue) {
 }
 
 TEST(BoringSSL, HKDF) {
-  TestSimple("hkdf_test");                                                     
+  TestSimple("hkdf_test");
 }
 
 TEST(BoringSSL, PBKDF) {
-  TestSimple("pbkdf_test");                                                     
+  TestSimple("pbkdf_test");
+}
+
+TEST(BoringSSL, Thread) {
+  TestSimple("thread_test");
 }

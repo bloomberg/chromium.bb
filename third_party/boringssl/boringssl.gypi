@@ -182,6 +182,8 @@
       'src/crypto/sha/sha512.c',
       'src/crypto/stack/stack.c',
       'src/crypto/thread.c',
+      'src/crypto/thread_pthread.c',
+      'src/crypto/thread_win.c',
       'src/crypto/time_support.c',
       'src/crypto/x509/a_digest.c',
       'src/crypto/x509/a_sign.c',

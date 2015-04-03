@@ -13,7 +13,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/base64/base64_test.c',
+        'src/crypto/base64/base64_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -26,7 +26,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/bio/bio_test.c',
+        'src/crypto/bio/bio_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -39,7 +39,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/bn/bn_test.c',
+        'src/crypto/bn/bn_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -52,7 +52,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/bytestring/bytestring_test.c',
+        'src/crypto/bytestring/bytestring_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -117,7 +117,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/digest/digest_test.c',
+        'src/crypto/digest/digest_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -182,7 +182,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/err/err_test.c',
+        'src/crypto/err/err_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -195,7 +195,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/evp/evp_test.c',
+        'src/crypto/evp/evp_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -208,7 +208,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/evp/pbkdf_test.c',
+        'src/crypto/evp/pbkdf_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -234,7 +234,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/crypto/hmac/hmac_test.c',
+        'src/crypto/hmac/hmac_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -293,6 +293,19 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      'target_name': 'boringssl_thread_test',
+      'type': 'executable',
+      'dependencies': [
+        'boringssl.gyp:boringssl',
+      ],
+      'sources': [
+        'src/crypto/thread_test.c',
+      ],
+      # TODO(davidben): Fix size_t truncations in BoringSSL.
+      # https://crbug.com/429039
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
       'target_name': 'boringssl_pkcs7_test',
       'type': 'executable',
       'dependencies': [
@@ -325,7 +338,7 @@
         'boringssl.gyp:boringssl',
       ],
       'sources': [
-        'src/ssl/ssl_test.c',
+        'src/ssl/ssl_test.cc',
       ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
@@ -359,6 +372,7 @@
       'boringssl_pqueue_test',
       'boringssl_rsa_test',
       'boringssl_ssl_test',
+      'boringssl_thread_test',
     ],
   }
 }
