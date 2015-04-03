@@ -106,8 +106,9 @@ public class LoadUrlTest extends AwTestBase {
 
     private static List<Pair<String, String>> createHeadersList(String[] namesAndValues) {
         List<Pair<String, String>> result = new ArrayList<Pair<String, String>>();
-        for (int i = 0; i < namesAndValues.length; i += 2)
+        for (int i = 0; i < namesAndValues.length; i += 2) {
             result.add(Pair.create(namesAndValues[i], namesAndValues[i + 1]));
+        }
         return result;
     }
 

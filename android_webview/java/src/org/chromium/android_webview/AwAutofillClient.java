@@ -64,8 +64,7 @@ public class AwAutofillClient {
 
     @CalledByNative
     public void hideAutofillPopup() {
-        if (mAutofillPopup == null)
-            return;
+        if (mAutofillPopup == null) return;
         mAutofillPopup.dismiss();
         mAutofillPopup = null;
     }

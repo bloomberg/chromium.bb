@@ -215,8 +215,9 @@ public abstract class AwContentsClient {
             // TODO: Move this code to Aw. Once code is moved
             // and merged to M37 get rid of this.
             String mimeType = "*/*";
-            if (mAcceptTypes != null && !mAcceptTypes.trim().isEmpty())
+            if (mAcceptTypes != null && !mAcceptTypes.trim().isEmpty()) {
                 mimeType = mAcceptTypes.split(";")[0];
+            }
 
             Intent i = new Intent(Intent.ACTION_GET_CONTENT);
             i.addCategory(Intent.CATEGORY_OPENABLE);

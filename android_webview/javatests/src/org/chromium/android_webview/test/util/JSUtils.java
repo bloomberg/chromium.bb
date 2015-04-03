@@ -48,10 +48,10 @@ public class JSUtils {
             @Override
             public void run() {
                 awContents.getWebContents().evaluateJavaScript(
-                        "var evObj = document.createEvent('Events'); " +
-                        "evObj.initEvent('click', true, false); " +
-                        "document.getElementById('" + linkId + "').dispatchEvent(evObj);" +
-                        "console.log('element with id [" + linkId + "] clicked');",
+                        "var evObj = document.createEvent('Events'); "
+                                + "evObj.initEvent('click', true, false); "
+                                + "document.getElementById('" + linkId + "').dispatchEvent(evObj);"
+                                + "console.log('element with id [" + linkId + "] clicked');",
                         null);
             }
         });

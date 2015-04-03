@@ -766,11 +766,12 @@ public class AwContents implements SmartClipProvider,
      * in the WebView.
      */
     void exitFullScreen() {
-        if (!isFullScreen() || isDestroyed())
+        if (!isFullScreen() || isDestroyed()) {
             // exitFullScreen() can be called without a prior call to enterFullScreen() if a
             // "misbehave" app overrides onShowCustomView but does not add the custom view to
             // the window. Exiting avoids a crash.
             return;
+        }
 
         // Detach to tear down the GL functor if this is still associated with the old
         // container view. It will be recreated during the next call to onDraw attached to
@@ -2605,6 +2606,7 @@ public class AwContents implements SmartClipProvider,
             return;
         }
         mContentViewCore.setSmartClipDataListener(new ContentViewCore.SmartClipDataListener() {
+            @Override
             public void onSmartClipDataExtracted(String text, String html, Rect clipRect) {
                 Bundle bundle = new Bundle();
                 bundle.putString("url", mContentViewCore.getWebContents().getVisibleUrl());

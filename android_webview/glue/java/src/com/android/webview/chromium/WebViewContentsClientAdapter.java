@@ -1195,24 +1195,28 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         public static long toAwPermissionResources(String[] resources) {
             long result = 0;
             for (String resource : resources) {
-                if (resource.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE))
+                if (resource.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
                     result |= BITMASK_RESOURCE_VIDEO_CAPTURE;
-                else if (resource.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE))
+                } else if (resource.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
                     result |= BITMASK_RESOURCE_AUDIO_CAPTURE;
-                else if (resource.equals(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID))
+                } else if (resource.equals(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID)) {
                     result |= BITMASK_RESOURCE_PROTECTED_MEDIA_ID;
+                }
             }
             return result;
         }
 
         private static String[] toPermissionResources(long resources) {
             ArrayList<String> result = new ArrayList<String>();
-            if ((resources & BITMASK_RESOURCE_VIDEO_CAPTURE) != 0)
+            if ((resources & BITMASK_RESOURCE_VIDEO_CAPTURE) != 0) {
                 result.add(PermissionRequest.RESOURCE_VIDEO_CAPTURE);
-            if ((resources & BITMASK_RESOURCE_AUDIO_CAPTURE) != 0)
+            }
+            if ((resources & BITMASK_RESOURCE_AUDIO_CAPTURE) != 0) {
                 result.add(PermissionRequest.RESOURCE_AUDIO_CAPTURE);
-            if ((resources & BITMASK_RESOURCE_PROTECTED_MEDIA_ID) != 0)
+            }
+            if ((resources & BITMASK_RESOURCE_PROTECTED_MEDIA_ID) != 0) {
                 result.add(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID);
+            }
             String[] resource_array = new String[result.size()];
             return result.toArray(resource_array);
         }
@@ -1244,10 +1248,11 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         @Override
         public void grant(String[] resources) {
             long requestedResource = mAwPermissionRequest.getResources();
-            if ((requestedResource & toAwPermissionResources(resources)) == requestedResource)
+            if ((requestedResource & toAwPermissionResources(resources)) == requestedResource) {
                 mAwPermissionRequest.grant();
-            else
+            } else {
                 mAwPermissionRequest.deny();
+            }
         }
 
         @Override

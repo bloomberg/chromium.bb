@@ -72,8 +72,7 @@ public class ObserverListTest extends InstrumentationTestCase {
 
     private static <T> int getSizeOfIterable(Iterable<T> iterable) {
         int num = 0;
-        for (T el : iterable)
-            num++;
+        for (T el : iterable) num++;
         return num;
     }
 
@@ -91,8 +90,7 @@ public class ObserverListTest extends InstrumentationTestCase {
         observerList.addObserver(a);
         observerList.addObserver(b);
 
-        for (Observer obs : observerList)
-            obs.observe(10);
+        for (Observer obs : observerList) obs.observe(10);
 
         // Removing an observer not in the list should do nothing.
         observerList.removeObserver(e);
@@ -101,8 +99,7 @@ public class ObserverListTest extends InstrumentationTestCase {
         observerList.addObserver(c);
         observerList.addObserver(d);
 
-        for (Observer obs : observerList)
-            obs.observe(10);
+        for (Observer obs : observerList) obs.observe(10);
 
         // observe should be called twice on a.
         assertEquals(20, a.mTotal);
@@ -129,8 +126,7 @@ public class ObserverListTest extends InstrumentationTestCase {
         observerList.addObserver(a);
         observerList.addObserver(b);
 
-        for (Observer obs : observerList)
-            obs.observe(10);
+        for (Observer obs : observerList) obs.observe(10);
 
         assertTrue(observerList.hasObserver(c));
         assertEquals(10, a.mTotal);

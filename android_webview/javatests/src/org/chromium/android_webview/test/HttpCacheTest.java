@@ -61,8 +61,7 @@ public class HttpCacheTest extends AwTestBase {
     }
 
     private void deleteDirectory(File dir) throws Exception {
-        if (!dir.exists())
-            return;
+        if (!dir.exists()) return;
         assertTrue(dir.isDirectory());
         Process rmrf = Runtime.getRuntime().exec("rm -rf " + dir.getAbsolutePath());
         rmrf.waitFor();

@@ -106,17 +106,17 @@ public class SuggestionAnswer {
                 mTextFields.add(new TextField(textValues.getJSONObject(i)));
             }
 
-            mAdditionalText = jsonLine.has(ANSWERS_JSON_ADDITIONAL_TEXT) ?
-                    new TextField(jsonLine.getJSONObject(ANSWERS_JSON_ADDITIONAL_TEXT)) :
-                    null;
+            mAdditionalText = jsonLine.has(ANSWERS_JSON_ADDITIONAL_TEXT)
+                    ? new TextField(jsonLine.getJSONObject(ANSWERS_JSON_ADDITIONAL_TEXT))
+                    : null;
 
-            mStatusText = jsonLine.has(ANSWERS_JSON_STATUS_TEXT) ?
-                    new TextField(jsonLine.getJSONObject(ANSWERS_JSON_STATUS_TEXT)) :
-                    null;
+            mStatusText = jsonLine.has(ANSWERS_JSON_STATUS_TEXT)
+                    ? new TextField(jsonLine.getJSONObject(ANSWERS_JSON_STATUS_TEXT))
+                    : null;
 
-            mImage = jsonLine.has(ANSWERS_JSON_IMAGE) ?
-                    jsonLine.getJSONObject(ANSWERS_JSON_IMAGE).getString(ANSWERS_JSON_IMAGE_DATA) :
-                    null;
+            mImage = jsonLine.has(ANSWERS_JSON_IMAGE)
+                    ? jsonLine.getJSONObject(ANSWERS_JSON_IMAGE).getString(ANSWERS_JSON_IMAGE_DATA)
+                    : null;
         }
 
         /**

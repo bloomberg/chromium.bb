@@ -44,8 +44,7 @@ public class ArchiveTest extends AwTestBase {
 
     private void deleteFile(String path) {
         File file = new File(path);
-        if (file.exists())
-            assertTrue(file.delete());
+        if (file.exists()) assertTrue(file.delete());
         assertFalse(file.exists());
     }
 

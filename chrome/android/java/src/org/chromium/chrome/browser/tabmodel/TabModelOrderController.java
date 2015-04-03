@@ -117,9 +117,9 @@ public class TabModelOrderController {
      * Determine if a launch type is the result of linked being clicked.
      */
     static boolean linkClicked(TabLaunchType type) {
-        return type == TabLaunchType.FROM_LINK ||
-                type == TabLaunchType.FROM_LONGPRESS_FOREGROUND ||
-                type == TabLaunchType.FROM_LONGPRESS_BACKGROUND;
+        return type == TabLaunchType.FROM_LINK
+                || type == TabLaunchType.FROM_LONGPRESS_FOREGROUND
+                || type == TabLaunchType.FROM_LONGPRESS_BACKGROUND;
     }
 
     /**

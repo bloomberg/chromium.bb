@@ -203,8 +203,8 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         values.put(BookmarkColumns.VISITS, visits[1]);
         String[] selectionArgs = { String.valueOf(lastUpdateTime[0]),
                 String.valueOf(isBookmark[0]) };
-        getContentResolver().update(uri, values, BookmarkColumns.FAVICON +  " IS NOT NULL AND " +
-                BookmarkColumns.DATE + "= ? AND " + BookmarkColumns.BOOKMARK + " = ?",
+        getContentResolver().update(uri, values, BookmarkColumns.FAVICON +  " IS NOT NULL AND "
+                + BookmarkColumns.DATE + "= ? AND " + BookmarkColumns.BOOKMARK + " = ?",
                 selectionArgs);
         Cursor cursor = getContentResolver().query(uri, null, null, null, null);
         assertEquals(1, cursor.getCount());
@@ -253,8 +253,8 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
 
         String[] selectionArgs = { String.valueOf(lastUpdateTime[0]),
                 String.valueOf(isBookmark[0]) };
-        getContentResolver().delete(mBookmarksUri, BookmarkColumns.FAVICON +  " IS NOT NULL AND " +
-                BookmarkColumns.DATE + "= ? AND " + BookmarkColumns.BOOKMARK + " = ?",
+        getContentResolver().delete(mBookmarksUri, BookmarkColumns.FAVICON +  " IS NOT NULL AND "
+                + BookmarkColumns.DATE + "= ? AND " + BookmarkColumns.BOOKMARK + " = ?",
                 selectionArgs);
         Cursor cursor = getContentResolver().query(uris[0], null, null, null, null);
         assertNotNull(cursor);
@@ -264,8 +264,8 @@ public class ProviderBookmarksUriTest extends ProviderTestBase {
         assertEquals(1, cursor.getCount());
         String[] selectionArgs1 = { String.valueOf(lastUpdateTime[1]),
                 String.valueOf(isBookmark[1]) };
-        getContentResolver().delete(mBookmarksUri, BookmarkColumns.FAVICON +  " IS NULL AND " +
-                BookmarkColumns.DATE + "= ? AND " + BookmarkColumns.BOOKMARK + " = ?",
+        getContentResolver().delete(mBookmarksUri, BookmarkColumns.FAVICON +  " IS NULL AND "
+                + BookmarkColumns.DATE + "= ? AND " + BookmarkColumns.BOOKMARK + " = ?",
                 selectionArgs1);
         cursor = getContentResolver().query(uris[1], null, null, null, null);
         assertNotNull(cursor);

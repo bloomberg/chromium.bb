@@ -51,15 +51,17 @@ public class AwPermissionRequest {
 
     public void grant() {
         validate();
-        if (mNativeAwPermissionRequest != 0)
+        if (mNativeAwPermissionRequest != 0) {
             nativeOnAccept(mNativeAwPermissionRequest, true);
+        }
         mProcessed = true;
     }
 
     public void deny() {
         validate();
-        if (mNativeAwPermissionRequest != 0)
+        if (mNativeAwPermissionRequest != 0) {
             nativeOnAccept(mNativeAwPermissionRequest, false);
+        }
         mProcessed = true;
     }
 

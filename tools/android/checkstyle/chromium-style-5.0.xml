@@ -101,8 +101,10 @@
       <property name="severity" value="error"/>
     </module>
     <module name="NeedBraces">
-      <property name="severity" value="info"/>
-      <property name="tokens" value="LITERAL_FOR, LITERAL_WHILE, LITERAL_DO"/>
+      <message key="needBraces" value="if, for, while, and do require curly braces unless they are single-line statements."/>
+      <property name="severity" value="error"/>
+      <property name="tokens" value="LITERAL_FOR, LITERAL_WHILE, LITERAL_DO, LITERAL_IF"/>
+      <property name="allowSingleLineStatement" value="true"/>
     </module>
     <module name="EmptyBlock">
       <property name="severity" value="error"/>

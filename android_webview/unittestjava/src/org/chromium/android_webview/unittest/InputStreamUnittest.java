@@ -55,10 +55,11 @@ class InputStreamUnittest {
 
             @Override
             public int read() {
-                if (mCount < size)
+                if (mCount < size) {
                     return mCount++ % 256;
-                else
+                } else {
                     return -1;
+                }
             }
         };
     }

@@ -34,7 +34,7 @@ public class TestContentProvider extends ContentProvider {
     private static final String TAG = "TestContentProvider";
     private enum ColumnIndex {
         RESOURCE_REQUEST_COUNT_COLUMN,
-    };
+    }
     private final Map<String, Integer> mResourceRequestCount;
 
     public static String createContentUrl(String target) {
@@ -186,8 +186,8 @@ public class TestContentProvider extends ContentProvider {
         String resource = uri.getQuery();
         if (GET_RESOURCE_REQUEST_COUNT.equals(action)) {
             return new ProviderStateCursor(
-                mResourceRequestCount.containsKey(resource) ?
-                mResourceRequestCount.get(resource) : 0);
+                mResourceRequestCount.containsKey(resource)
+                    ? mResourceRequestCount.get(resource) : 0);
         } else if (RESET_RESOURCE_REQUEST_COUNT.equals(action)) {
             mResourceRequestCount.put(resource, 0);
         }

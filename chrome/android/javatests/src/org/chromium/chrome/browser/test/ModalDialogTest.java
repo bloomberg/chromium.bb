@@ -35,11 +35,10 @@ public class ModalDialogTest extends ChromeShellTestBase {
     private static final String TAG = "ModalDialogTest";
     private static final String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><title>Modal Dialog Test</title><p>Testcase.</p></title></html>");
-    private static final String BEFORE_UNLOAD_URL = UrlUtils.encodeHtmlDataUri(
-            "<html>" +
-            "<head><script>window.onbeforeunload=function() {" +
-            "return 'Are you sure?';" +
-            "};</script></head></html>");
+    private static final String BEFORE_UNLOAD_URL = UrlUtils.encodeHtmlDataUri("<html>"
+                    + "<head><script>window.onbeforeunload=function() {"
+                    + "return 'Are you sure?';"
+                    + "};</script></head></html>");
 
     @Override
     public void setUp() throws Exception {

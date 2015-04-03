@@ -78,8 +78,7 @@ public abstract class LockScreenTransportControl
                         }
                         break;
                     case KeyEvent.KEYCODE_MEDIA_STOP:
-                        for (Listener listener : listeners)
-                            listener.onStop();
+                        for (Listener listener : listeners) listener.onStop();
                         break;
                     default:
                         Log.w(TAG, "Unrecognized event: " + event);

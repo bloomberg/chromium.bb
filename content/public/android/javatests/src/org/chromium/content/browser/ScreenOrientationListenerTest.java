@@ -45,11 +45,12 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
             case ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE:
             case ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT:
             case ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE:
-                if (expectedOrientation == currentOrientation)
+                if (expectedOrientation == currentOrientation) {
                     return true;
-                else if (ALLOW_0_FOR_180 && expectedOrientation == 180
-                        && currentOrientation == 0)
+                } else if (ALLOW_0_FOR_180 && expectedOrientation == 180
+                        && currentOrientation == 0) {
                     return true;
+                }
                 return false;
             default:
                 return false;

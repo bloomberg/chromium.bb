@@ -74,8 +74,7 @@ class LockScreenTransportControlV18 extends LockScreenTransportControlV16 {
 
         @Override
         public void onPlaybackPositionUpdate(long position) {
-            for (Listener listener : getListeners())
-                listener.onSeek((int) position);
+            for (Listener listener : getListeners()) listener.onSeek((int) position);
         }
     }
 }

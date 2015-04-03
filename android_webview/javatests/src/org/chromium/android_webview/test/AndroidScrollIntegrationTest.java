@@ -100,10 +100,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
 
         @Override
         public void scrollTo(int x, int y) {
-            if (mMaxScrollXPix != -1)
-                x = Math.min(mMaxScrollXPix, x);
-            if (mMaxScrollYPix != -1)
-                y = Math.min(mMaxScrollYPix, y);
+            if (mMaxScrollXPix != -1) x = Math.min(mMaxScrollXPix, x);
+            if (mMaxScrollYPix != -1) y = Math.min(mMaxScrollYPix, y);
             super.scrollTo(x, y);
             mOnScrollToCallbackHelper.notifyCalled();
         }

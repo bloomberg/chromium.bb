@@ -25,8 +25,8 @@ public class ImagePageGenerator {
         "D+AQAA/9vaUwc", "D/AQEBANNhzkw"
     };
 
-    private static final String IMAGE_PREFIX = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA" +
-            "6fptVAAAAAXNSR0IArs4c6QAAAA1JREFUCB0BAgD9/w";
+    private static final String IMAGE_PREFIX = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA"
+            + "6fptVAAAAAXNSR0IArs4c6QAAAA1JREFUCB0BAgD9/w";
 
     private static final String IMAGE_SUFFIX = "AAAAASUVORK5CYII=";
 

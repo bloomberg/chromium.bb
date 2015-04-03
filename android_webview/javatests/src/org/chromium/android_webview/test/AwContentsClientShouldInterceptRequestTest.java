@@ -513,8 +513,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
                 + "})();";
         String header = executeJavaScriptAndWaitForResult(awContents, contentsClient, syncGetJs);
 
-        if (header.equals("null"))
-            return null;
+        if (header.equals("null")) return null;
         // JSON stringification applied by executeJavaScriptAndWaitForResult adds quotes
         // around returned strings.
         assertTrue(header.length() > 2);

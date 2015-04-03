@@ -29,12 +29,12 @@ public class TestFileUtil {
         Writer writer = null;
         try {
             writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
-            writer.write("<html><meta charset=\"UTF-8\" />" +
-                         "<head><title>" + title + "</title></head>" +
-                         "<body>" +
-                         (body != null ? body : "") +
-                         "</body>" +
-                         "</html>");
+            writer.write("<html><meta charset=\"UTF-8\" />"
+                    + "     <head><title>" + title + "</title></head>"
+                    + "     <body>"
+                    + (body != null ? body : "")
+                    + "     </body>"
+                    + "   </html>");
         } finally {
             if (writer != null) {
                 writer.close();
@@ -61,8 +61,8 @@ public class TestFileUtil {
         try {
             File f = new File(fileName);
             if (f.length() > sizeLimit) {
-                throw new IOException("File " + fileName + " length " + f.length() +
-                        " exceeds limit " + sizeLimit);
+                throw new IOException("File " + fileName + " length " + f.length()
+                        + " exceeds limit " + sizeLimit);
             }
             char[] buffer = new char[(int) f.length()];
             reader = new InputStreamReader(new FileInputStream(f), "UTF-8");

@@ -74,8 +74,9 @@ public class ResourcesContextWrapperFactory {
 
             @Override
             public Context getApplicationContext() {
-                if (mApplicationContext == null)
+                if (mApplicationContext == null) {
                     mApplicationContext = get(ctx.getApplicationContext());
+                }
                 return mApplicationContext;
             }
 

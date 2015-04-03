@@ -460,10 +460,11 @@ public class BrowserAccessibilityManager {
         // this node and its subtree. If accessibility focus is on anything other than
         // the root, do it - otherwise set it to -1 so we don't load inline text boxes
         // for the whole subtree of the root.
-        if (mAccessibilityFocusId == mCurrentRootId)
+        if (mAccessibilityFocusId == mCurrentRootId) {
             nativeSetAccessibilityFocus(mNativeObj, -1);
-        else
+        } else {
             nativeSetAccessibilityFocus(mNativeObj, mAccessibilityFocusId);
+        }
 
         sendAccessibilityEvent(mAccessibilityFocusId,
                 AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);

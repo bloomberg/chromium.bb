@@ -54,8 +54,8 @@ public class ProviderSearchesUriTest extends ProviderTestBase {
         Uri uri = addSearchTerm(searchTerm, searchTime);
         assertNotNull(uri);
         String[] selectionArgs = { searchTerm, String.valueOf(searchTime) };
-        Cursor cursor = getContentResolver().query(uri, null, SearchColumns.SEARCH + "=? AND " +
-                SearchColumns.DATE + " = ? ", selectionArgs, null);
+        Cursor cursor = getContentResolver().query(uri, null, SearchColumns.SEARCH + "=? AND "
+                + SearchColumns.DATE + " = ? ", selectionArgs, null);
         assertNotNull(cursor);
         assertEquals(1, cursor.getCount());
         assertTrue(cursor.moveToNext());

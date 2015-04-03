@@ -241,8 +241,7 @@ public class AwScrollOffsetManager {
             return;
         }
 
-        if (x == mNativeScrollX && y == mNativeScrollY)
-            return;
+        if (x == mNativeScrollX && y == mNativeScrollY) return;
 
         // The scrollNativeTo call should be a simple store, so it's OK to assume it always
         // succeeds.
@@ -322,8 +321,7 @@ public class AwScrollOffsetManager {
         int dx = x - scrollX;
         int dy = y - scrollY;
 
-        if (dx == 0 && dy == 0)
-            return false;
+        if (dx == 0 && dy == 0) return false;
 
         mScroller.startScroll(scrollX, scrollY, dx, dy, computeDurationInMilliSec(dx, dy));
         mDelegate.invalidate();

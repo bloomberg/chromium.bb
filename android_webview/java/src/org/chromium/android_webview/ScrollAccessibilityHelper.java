@@ -57,8 +57,7 @@ class ScrollAccessibilityHelper {
      * {@link android.view.ViewConfiguration#getSendRecurringAccessibilityEventsInterval()}
      */
     public void postViewScrolledAccessibilityEventCallback() {
-        if (mMsgViewScrolledQueued)
-            return;
+        if (mMsgViewScrolledQueued) return;
         mMsgViewScrolledQueued = true;
 
         Message msg = mHandler.obtainMessage(HandlerCallback.MSG_VIEW_SCROLLED);
@@ -66,8 +65,7 @@ class ScrollAccessibilityHelper {
     }
 
     public void removePostedViewScrolledAccessibilityEventCallback() {
-        if (!mMsgViewScrolledQueued)
-            return;
+        if (!mMsgViewScrolledQueued) return;
         mMsgViewScrolledQueued = false;
 
         mHandler.removeMessages(HandlerCallback.MSG_VIEW_SCROLLED);

@@ -35,8 +35,7 @@ public class OrientationChangeObserverCriteria implements Criteria {
 
     @Override
     public boolean isSatisfied() {
-        if (!mObserver.mHasChanged)
-            return false;
+        if (!mObserver.mHasChanged) return false;
 
         return !mCheckTarget || mObserver.mOrientation == mTarget;
     }

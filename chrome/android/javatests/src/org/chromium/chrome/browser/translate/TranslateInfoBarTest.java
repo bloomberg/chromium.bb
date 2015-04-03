@@ -34,8 +34,8 @@ public class TranslateInfoBarTest extends ChromeShellTestBase {
     }
 
     private static final String NEVER_TRANSLATE_MESSAGE =
-            "Would you like Google Chrome to offer to translate French pages from this" +
-            " site next time?";
+            "Would you like Google Chrome to offer to translate French pages from this"
+                    + " site next time?";
 
     /**
      * Test the translate language panel.

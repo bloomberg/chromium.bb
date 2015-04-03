@@ -50,8 +50,9 @@ public class VideoTestUtil {
             testCase.loadDataAsync(awContents, data, "text/html", false);
             return observer.waitForEvent(waitTime);
         } finally {
-            if (webServer != null && webServer.getTestWebServer() != null)
+            if (webServer != null && webServer.getTestWebServer() != null) {
                 webServer.getTestWebServer().shutdown();
+            }
         }
     }
 }

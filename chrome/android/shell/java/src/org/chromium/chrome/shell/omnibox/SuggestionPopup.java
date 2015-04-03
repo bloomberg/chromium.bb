@@ -121,8 +121,7 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
     @Override
     public void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
             String inlineAutocompleteText) {
-        if (!mUrlField.isFocused() || suggestions.isEmpty())
-            return;
+        if (!mUrlField.isFocused() || suggestions.isEmpty()) return;
         mSuggestionsPopupItemsCount = suggestions.size();
         if (mSuggestionsPopup == null) {
             mSuggestionsPopup = new ListPopupWindow(

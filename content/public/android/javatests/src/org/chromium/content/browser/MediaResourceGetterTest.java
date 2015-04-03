@@ -72,15 +72,11 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (!super.equals(obj))
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
+            if (this == obj) return true;
+            if (!super.equals(obj)) return false;
+            if (getClass() != obj.getClass()) return false;
             FakeFile other = (FakeFile) obj;
-            if (mExists != other.mExists)
-                return false;
+            if (mExists != other.mExists) return false;
             return true;
         }
 

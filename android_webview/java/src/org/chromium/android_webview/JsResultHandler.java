@@ -25,8 +25,7 @@ class JsResultHandler implements JsResultReceiver, JsPromptResultReceiver {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (mBridge != null)
-                    mBridge.confirmJsResult(mId, promptResult);
+                if (mBridge != null) mBridge.confirmJsResult(mId, promptResult);
                 mBridge = null;
             }
         });
@@ -37,8 +36,7 @@ class JsResultHandler implements JsResultReceiver, JsPromptResultReceiver {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (mBridge != null)
-                    mBridge.cancelJsResult(mId);
+                if (mBridge != null) mBridge.cancelJsResult(mId);
                 mBridge = null;
             }
         });

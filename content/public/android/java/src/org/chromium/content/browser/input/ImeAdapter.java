@@ -320,9 +320,13 @@ public class ImeAdapter {
     private int shouldSendKeyEventWithKeyCode(String text) {
         if (text.length() != 1) return COMPOSITION_KEY_CODE;
 
-        if (text.equals("\n")) return KeyEvent.KEYCODE_ENTER;
-        else if (text.equals("\t")) return KeyEvent.KEYCODE_TAB;
-        else return COMPOSITION_KEY_CODE;
+        if (text.equals("\n")) {
+            return KeyEvent.KEYCODE_ENTER;
+        } else if (text.equals("\t")) {
+            return KeyEvent.KEYCODE_TAB;
+        } else {
+            return COMPOSITION_KEY_CODE;
+        }
     }
 
     /**
@@ -365,12 +369,14 @@ public class ImeAdapter {
         }
 
         // The content has grown in length: assume the last character is the key that caused it.
-        if (newtext.length() > oldtext.length() && newtext.startsWith(oldtext))
+        if (newtext.length() > oldtext.length() && newtext.startsWith(oldtext)) {
             return androidKeyEventForCharacter(newtext.charAt(newtext.length() - 1));
+        }
 
         // The content has shrunk in length: assume that backspace was pressed.
-        if (oldtext.length() > newtext.length() && oldtext.startsWith(newtext))
+        if (oldtext.length() > newtext.length() && oldtext.startsWith(newtext)) {
             return new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
+        }
 
         // The content is unchanged or has undergone a complex change (i.e. not a simple tail
         // modification) so return an unknown key-code.

@@ -177,8 +177,8 @@ public class ContextMenuParams {
     private static ContextMenuParams create(int mediaType, String linkUrl, String linkText,
             String unfilteredLinkUrl, String srcUrl, String selectionText, boolean isEditable,
             String sanitizedReferrer, int referrerPolicy) {
-        Referrer referrer = TextUtils.isEmpty(sanitizedReferrer) ?
-                null : new Referrer(sanitizedReferrer, referrerPolicy);
+        Referrer referrer = TextUtils.isEmpty(sanitizedReferrer)
+                ? null : new Referrer(sanitizedReferrer, referrerPolicy);
         return new ContextMenuParams(mediaType, linkUrl, linkText, unfilteredLinkUrl, srcUrl,
                 selectionText, isEditable, referrer);
     }

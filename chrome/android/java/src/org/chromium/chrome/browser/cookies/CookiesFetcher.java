@@ -266,8 +266,9 @@ public class CookiesFetcher {
             protected Void doInBackground(Void... voids) {
                 File cookiesFile = new File(fetchFileName());
                 if (cookiesFile.exists()) {
-                    if (!cookiesFile.delete())
+                    if (!cookiesFile.delete()) {
                         Log.e(TAG, "Failed to delete " + cookiesFile.getName());
+                    }
                 }
                 return null;
             }

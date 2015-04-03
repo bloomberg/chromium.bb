@@ -120,15 +120,14 @@ public class VideoSurfaceViewUtils {
 
     private static int containsNumChildrenOfTypeOnUiThread(final View view,
             final Class<? extends View> childType, int sum) throws Exception {
-        if (childType.isInstance(view))
-            return 1;
+        if (childType.isInstance(view)) return 1;
 
         if (view instanceof ViewGroup) {
             ViewGroup viewGroup = (ViewGroup) view;
-            for (int i = 0; i < viewGroup.getChildCount(); i++)
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
                 sum += containsNumChildrenOfTypeOnUiThread(viewGroup.getChildAt(i), childType);
+            }
         }
-
         return sum;
     }
 }
