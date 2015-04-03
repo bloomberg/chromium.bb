@@ -88,13 +88,6 @@ Gallery.Item.prototype.getMetadataItem = function() {
 };
 
 /**
- * @return {!MetadataItem} Metadata.
- */
-Gallery.Item.prototype.getMetadataItem = function() {
-  return this.metadataItem_;
-};
-
-/**
  * @return {!ThumbnailMetadataItem} Thumbnail metadata item.
  */
 Gallery.Item.prototype.getThumbnailMetadataItem = function() {
