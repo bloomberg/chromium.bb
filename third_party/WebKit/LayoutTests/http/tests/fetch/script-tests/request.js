@@ -554,4 +554,17 @@ promise_test(function(t) {
         });
   }, 'Extract a MIME type (1)');
 
+promise_test(function(t) {
+    var req = new Request('http://localhost/', {method: 'POST', body: 'hello'});
+    return req.text().then(function(text) {
+        assert_equals(text, 'hello');
+        var req2 = new Request(req);
+        assert_true(req.bodyUsed);
+        assert_false(req2.bodyUsed);
+        return req2.text();
+      }).then(function(text) {
+        assert_equals(text, '');
+      });
+  }, 'Consume and pass');
+
 done();

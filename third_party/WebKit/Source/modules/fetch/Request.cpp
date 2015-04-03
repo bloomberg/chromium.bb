@@ -65,6 +65,17 @@ Request* Request::createRequestWithRequestOrString(ExecutionContext* context, Re
     // |request|'s credentials mode, and cache mode is |request|'s cache mode."
     FetchRequestData* request = createCopyOfFetchRequestDataForFetch(context, inputRequest ? inputRequest->request() : FetchRequestData::create());
 
+    if (inputRequest && inputRequest->blobDataHandle() && inputRequest->isBodyConsumed()) {
+        // Currently the only methods that can consume body data without
+        // setting 'body passed' flag consume entire body (e.g. text()). Thus
+        // we can set an empty blob to the new request instead of creating a
+        // draining stream.
+        // TODO(yhirano): Fix this once Request.body is introduced.
+        OwnPtr<BlobData> blobData = BlobData::create();
+        blobData->setContentType(inputRequest->blobDataHandle()->type());
+        request->setBlobDataHandle(BlobDataHandle::create(blobData.release(), 0));
+    }
+
     // "4. Let |fallbackMode| be null."
     // "5. Let |fallbackCredentials| be null."
     // "6. Let |fallbackCache| be null."
