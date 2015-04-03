@@ -5,7 +5,10 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_UTILS_H_
 #define ASH_SYSTEM_TRAY_TRAY_UTILS_H_
 
+#include <vector>
+
 #include "ash/shelf/shelf_types.h"
+#include "base/strings/string16.h"
 
 namespace views {
 class Label;
@@ -27,6 +30,12 @@ void SetTrayImageItemBorder(views::View* tray_view, ShelfAlignment alignment);
 // around it.
 void SetTrayLabelItemBorder(TrayItemView* tray_view,
                             ShelfAlignment alignment);
+
+// Computes an accessible label for this button based on all descendant view
+// labels by concatenating them in depth-first order.
+void GetAccessibleLabelFromDescendantViews(
+    views::View* view,
+    std::vector<base::string16>& out_labels);
 
 }  // namespace ash
 

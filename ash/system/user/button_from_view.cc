@@ -6,6 +6,10 @@
 
 #include "ash/ash_constants.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_utils.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -78,6 +82,14 @@ void ButtonFromView::OnBlur() {
   View::OnBlur();
   // Removing focus frame.
   SchedulePaint();
+}
+
+void ButtonFromView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_BUTTON;
+  std::vector<base::string16> labels;
+  for (int i = 0; i < child_count(); ++i)
+    GetAccessibleLabelFromDescendantViews(child_at(i), labels);
+  state->name = JoinString(labels, base::ASCIIToUTF16(" "));
 }
 
 void ButtonFromView::ShowActive() {

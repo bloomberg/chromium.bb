@@ -21,6 +21,7 @@ class ButtonFromView : public views::CustomButton {
   // highlighted upon hover and show the accessibility caret.
   // The |tab_frame_inset| will be used to inset the blue tab frame inside the
   // button.
+  // An accessible label gets computed based upon descendant views of this view.
   ButtonFromView(views::View* content,
                  views::ButtonListener* listener,
                  bool highlight_on_hover,
@@ -36,6 +37,7 @@ class ButtonFromView : public views::CustomButton {
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // Check if the item is hovered.
   bool is_hovered_for_test() { return button_hovered_; }

@@ -22,6 +22,9 @@ class UserCardView : public views::View {
                int multiprofile_index);
   ~UserCardView() override;
 
+  // views::View overrides.
+  void GetAccessibleState(ui::AXViewState* state) override;
+
  private:
   // Creates the content for the public mode.
   void AddPublicModeUserContent(int max_width);

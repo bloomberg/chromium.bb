@@ -50,6 +50,8 @@ class UserView : public views::View,
   TrayUser::TestState GetStateForTest() const;
   gfx::Rect GetBoundsInScreenOfUserButtonForTest();
 
+  views::View* user_card_view_for_test() const { return user_card_view_; }
+
  private:
   // Overridden from views::View.
   gfx::Size GetPreferredSize() const override;

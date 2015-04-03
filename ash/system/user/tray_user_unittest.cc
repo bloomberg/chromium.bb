@@ -12,10 +12,13 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/user/tray_user.h"
 #include "ash/system/user/tray_user_separator.h"
+#include "ash/system/user/user_view.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/user_manager/user_info.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/animation/animation_container_element.h"
 #include "ui/views/view.h"
@@ -161,6 +164,36 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
               tray_user(i)->GetStateForTest());
   EXPECT_FALSE(tray_user_separator()->separator_shown());
   tray()->CloseSystemBubble();
+}
+
+TEST_F(TrayUserTest, AccessibleLabelContainsSingleUserInfo) {
+  InitializeParameters(1, false);
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ShowTrayMenu(&generator);
+
+  views::View* view =
+      tray_user(0)->user_view_for_test()->user_card_view_for_test();
+  ui::AXViewState state;
+  view->GetAccessibleState(&state);
+  EXPECT_EQ(
+      base::UTF8ToUTF16("Über tray Über tray Über tray Über tray First@tray"),
+      state.name);
+  EXPECT_EQ(ui::AX_ROLE_STATIC_TEXT, state.role);
+}
+
+TEST_F(TrayUserTest, AccessibleLabelContainsMultiUserInfo) {
+  InitializeParameters(1, true);
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ShowTrayMenu(&generator);
+
+  views::View* view =
+      tray_user(0)->user_view_for_test()->user_card_view_for_test();
+  ui::AXViewState state;
+  view->GetAccessibleState(&state);
+  EXPECT_EQ(
+      base::UTF8ToUTF16("Über tray Über tray Über tray Über tray First@tray"),
+      state.name);
+  EXPECT_EQ(ui::AX_ROLE_BUTTON, state.role);
 }
 
 #if defined(OS_CHROMEOS)

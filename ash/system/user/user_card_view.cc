@@ -12,6 +12,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_utils.h"
 #include "ash/system/user/config.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "base/i18n/rtl.h"
@@ -22,6 +23,7 @@
 #include "components/user_manager/user_info.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
@@ -347,6 +349,14 @@ UserCardView::UserCardView(user::LoginStatus login_status,
 }
 
 UserCardView::~UserCardView() {}
+
+void UserCardView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_STATIC_TEXT;
+  std::vector<base::string16> labels;
+  for (int i = 0; i < child_count(); ++i)
+    GetAccessibleLabelFromDescendantViews(child_at(i), labels);
+  state->name = JoinString(labels, base::ASCIIToUTF16(" "));
+}
 
 void UserCardView::AddPublicModeUserContent(int max_width) {
   views::View* icon = CreateIcon(user::LOGGED_IN_PUBLIC, 0);
