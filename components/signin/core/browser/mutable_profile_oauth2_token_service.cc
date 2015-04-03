@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_permanent_error.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -157,12 +157,21 @@ std::string MutableProfileOAuth2TokenService::GetRefreshToken(
   return std::string();
 }
 
+bool MutableProfileOAuth2TokenService::HasPermanentError(
+    const std::string& account_id) {
+  return refresh_tokens_[account_id]->GetAuthStatus().IsPersistentError();
+}
+
 OAuth2AccessTokenFetcher*
 MutableProfileOAuth2TokenService::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
     OAuth2AccessTokenConsumer* consumer) {
   ValidateAccountId(account_id);
+  if (HasPermanentError(account_id)) {
+    return new OAuth2AccessTokenFetcherPermanentError(
+        consumer, refresh_tokens_[account_id]->GetAuthStatus());
+  }
   std::string refresh_token = GetRefreshToken(account_id);
   DCHECK(!refresh_token.empty());
   return new OAuth2AccessTokenFetcherImpl(consumer, getter, refresh_token);
@@ -297,8 +306,7 @@ void MutableProfileOAuth2TokenService::UpdateAuthError(
   // Do not report connection errors as these are not actually auth errors.
   // We also want to avoid masking a "real" auth error just because we
   // subsequently get a transient network error.
-  if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
-      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE)
+  if (error.IsTransientError())
     return;
 
   if (refresh_tokens_.count(account_id) == 0) {

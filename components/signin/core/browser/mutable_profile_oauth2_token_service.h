@@ -88,6 +88,8 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
 
   virtual std::string GetRefreshToken(const std::string& account_id) const;
 
+  bool HasPermanentError(const std::string& account_id);
+
   AccountInfoMap& refresh_tokens() { return refresh_tokens_; }
 
  private:
@@ -101,6 +103,8 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
                            PersistenceLoadCredentials);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
                            CanonicalizeAccountId);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
+                           FetchPersistentError);
 
   // WebDataServiceConsumer implementation:
   void OnWebDataServiceRequestDone(WebDataServiceBase::Handle handle,

@@ -139,6 +139,7 @@ class GoogleServiceAuthError {
 
   // For test only.
   bool operator==(const GoogleServiceAuthError &b) const;
+  bool operator!=(const GoogleServiceAuthError &b) const;
 
   // Construct a GoogleServiceAuthError from a State with no additional data.
   explicit GoogleServiceAuthError(State s);
@@ -185,6 +186,11 @@ class GoogleServiceAuthError {
 
   // Returns a message describing the error.
   std::string ToString() const;
+
+  // Check if this is error may go away simply by trying again.  Except for the
+  // NONE case, these are mutually exclusive.
+  bool IsPersistentError() const;
+  bool IsTransientError() const;
 
  private:
   GoogleServiceAuthError(State s, int error);

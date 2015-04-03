@@ -11,6 +11,8 @@
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -27,10 +29,14 @@ static const char kEmail[] = "user@gmail.com";
 
 class MutableProfileOAuth2TokenServiceTest
     : public testing::Test,
+      public OAuth2AccessTokenConsumer,
       public OAuth2TokenService::Observer {
  public:
   MutableProfileOAuth2TokenServiceTest()
       : factory_(NULL),
+        access_token_success_count_(0),
+        access_token_failure_count_(0),
+        access_token_failure_(GoogleServiceAuthError::NONE),
         token_available_count_(0),
         token_revoked_count_(0),
         tokens_loaded_count_(0),
@@ -62,6 +68,17 @@ class MutableProfileOAuth2TokenServiceTest
     scoped_refptr<TokenWebData> token_web_data = client_.GetDatabase();
     if (token_web_data.get())
       token_web_data->SetTokenForService(service, value);
+  }
+
+  // OAuth2AccessTokenConusmer implementation
+  void OnGetTokenSuccess(const std::string& access_token,
+                         const base::Time& expiration_time) override {
+    ++access_token_success_count_;
+  }
+
+  void OnGetTokenFailure(const GoogleServiceAuthError& error) override {
+    ++access_token_failure_count_;
+    access_token_failure_ = error;
   }
 
   // OAuth2TokenService::Observer implementation.
@@ -120,6 +137,9 @@ class MutableProfileOAuth2TokenServiceTest
   MutableProfileOAuth2TokenService oauth2_service_;
   TestingOAuth2TokenServiceConsumer consumer_;
   SigninErrorController signin_error_controller_;
+  int access_token_success_count_;
+  int access_token_failure_count_;
+  GoogleServiceAuthError access_token_failure_;
   int token_available_count_;
   int token_revoked_count_;
   int tokens_loaded_count_;
@@ -363,7 +383,36 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, FetchTransientError) {
       oauth2_service_.StartRequest(kEmail, scope_list, &consumer_));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
-           signin_error_controller_.auth_error());
+            signin_error_controller_.auth_error());
+}
+
+TEST_F(MutableProfileOAuth2TokenServiceTest, FetchPersistentError) {
+  oauth2_service_.UpdateCredentials(kEmail, "refreshToken");
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            signin_error_controller_.auth_error());
+
+  GoogleServiceAuthError authfail(GoogleServiceAuthError::ACCOUNT_DELETED);
+  oauth2_service_.UpdateAuthError(kEmail, authfail);
+  EXPECT_NE(GoogleServiceAuthError::AuthErrorNone(),
+            signin_error_controller_.auth_error());
+
+  // Create a "success" fetch we don't expect to get called.
+  factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                           GetValidTokenResponse("token", 3600),
+                           net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+
+  EXPECT_EQ(0, access_token_success_count_);
+  EXPECT_EQ(0, access_token_failure_count_);
+  std::vector<std::string> scope_list;
+  scope_list.push_back("scope");
+  scoped_ptr<OAuth2AccessTokenFetcher> fetcher(
+      oauth2_service_.CreateAccessTokenFetcher(
+          kEmail, oauth2_service_.GetRequestContext(), this));
+  fetcher->Start("foo", "bar", scope_list);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, access_token_success_count_);
+  EXPECT_EQ(1, access_token_failure_count_);
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceTest, CanonicalizeAccountId) {
