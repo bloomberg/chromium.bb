@@ -93,17 +93,9 @@ TextIterator::TextIterator(const Position& start, const Position& end, TextItera
     , m_lastCharacter(0)
     , m_sortedTextBoxesPosition(0)
     , m_hasEmitted(false)
-    , m_emitsCharactersBetweenAllVisiblePositions(behavior & TextIteratorEmitsCharactersBetweenAllVisiblePositions)
-    , m_entersTextControls(behavior & TextIteratorEntersTextControls)
-    , m_emitsOriginalText(behavior & TextIteratorEmitsOriginalText)
+    , m_behavior(behavior)
     , m_handledFirstLetter(false)
-    , m_ignoresStyleVisibility(behavior & TextIteratorIgnoresStyleVisibility)
-    , m_stopsOnFormControls(behavior & TextIteratorStopsOnFormControls)
     , m_shouldStop(false)
-    , m_emitsImageAltText(behavior & TextIteratorEmitsImageAltText)
-    , m_entersOpenShadowRoots(behavior & TextIteratorEntersOpenShadowRoots)
-    , m_emitsObjectReplacementCharacter(behavior & TextIteratorEmitsObjectReplacementCharacter)
-    , m_breaksAtReplacedElement(!(behavior & TextIteratorDoesNotBreakAtReplacedElement))
 {
     ASSERT(start.isNotNull());
     ASSERT(end.isNotNull());
@@ -216,7 +208,7 @@ void TextIterator::advance()
     }
 
     while (m_node && (m_node != m_pastEndNode || m_shadowDepth > 0)) {
-        if (!m_shouldStop && m_stopsOnFormControls && HTMLFormControlElement::enclosingFormControlElement(m_node))
+        if (!m_shouldStop && stopsOnFormControls() && HTMLFormControlElement::enclosingFormControlElement(m_node))
             m_shouldStop = true;
 
         // if the range ends at offset 0 of an element, represent the
@@ -240,7 +232,7 @@ void TextIterator::advance()
         } else {
             // Enter author shadow roots, from youngest, if any and if necessary.
             if (m_iterationProgress < HandledOpenShadowRoots) {
-                if (m_entersOpenShadowRoots && m_node->isElementNode() && toElement(m_node)->hasOpenShadowRoot()) {
+                if (entersOpenShadowRoots() && m_node->isElementNode() && toElement(m_node)->hasOpenShadowRoot()) {
                     ShadowRoot* youngestShadowRoot = toElement(m_node)->shadowRoot();
                     ASSERT(youngestShadowRoot->type() == ShadowRoot::OpenShadowRoot);
                     m_node = youngestShadowRoot;
@@ -255,7 +247,7 @@ void TextIterator::advance()
 
             // Enter user-agent shadow root, if necessary.
             if (m_iterationProgress < HandledClosedShadowRoot) {
-                if (m_entersTextControls && renderer->isTextControl()) {
+                if (entersTextControls() && renderer->isTextControl()) {
                     ShadowRoot* closedShadowRoot = toElement(m_node)->closedShadowRoot();
                     ASSERT(closedShadowRoot->type() == ShadowRoot::ClosedShadowRoot);
                     m_node = closedShadowRoot;
@@ -429,7 +421,7 @@ static bool hasVisibleTextNode(LayoutText* renderer)
 
 bool TextIterator::handleTextNode()
 {
-    if (m_fullyClippedStack.top() && !m_ignoresStyleVisibility)
+    if (m_fullyClippedStack.top() && !ignoresStyleVisibility())
         return false;
 
     Text* textNode = toText(m_node);
@@ -455,7 +447,7 @@ bool TextIterator::handleTextNode()
                 return false;
             }
         }
-        if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
+        if (renderer->style()->visibility() != VISIBLE && !ignoresStyleVisibility())
             return false;
         int strLength = str.length();
         int end = (textNode == m_endContainer) ? m_endOffset : INT_MAX;
@@ -476,7 +468,7 @@ bool TextIterator::handleTextNode()
         handleTextNodeFirstLetter(toLayoutTextFragment(renderer));
 
     if (!renderer->firstTextBox() && str.length() > 0 && !shouldHandleFirstLetter) {
-        if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
+        if (renderer->style()->visibility() != VISIBLE && !ignoresStyleVisibility())
             return false;
         m_lastTextNodeEndedWithCollapsedSpace = true; // entire block is collapsed space
         return true;
@@ -504,7 +496,7 @@ void TextIterator::handleTextBox()
 {
     LayoutText* renderer = m_firstLetterText ? m_firstLetterText.get() : toLayoutText(m_node->layoutObject());
 
-    if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility) {
+    if (renderer->style()->visibility() != VISIBLE && !ignoresStyleVisibility()) {
         m_textBox = 0;
     } else {
         String str = renderer->text();
@@ -611,7 +603,7 @@ void TextIterator::handleTextNodeFirstLetter(LayoutTextFragment* renderer)
         return;
 
     LayoutObject* pseudoRenderer = firstLetterElement->layoutObject();
-    if (pseudoRenderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
+    if (pseudoRenderer->style()->visibility() != VISIBLE && !ignoresStyleVisibility())
         return;
 
     LayoutObject* firstLetter = pseudoRenderer->slowFirstChild();
@@ -643,10 +635,10 @@ bool TextIterator::handleReplacedElement()
         return false;
 
     LayoutObject* renderer = m_node->layoutObject();
-    if (renderer->style()->visibility() != VISIBLE && !m_ignoresStyleVisibility)
+    if (renderer->style()->visibility() != VISIBLE && !ignoresStyleVisibility())
         return false;
 
-    if (m_emitsObjectReplacementCharacter) {
+    if (emitsObjectReplacementCharacter()) {
         emitCharacter(objectReplacementCharacter, m_node->parentNode(), m_node, 0, 1);
         return true;
     }
@@ -656,14 +648,14 @@ bool TextIterator::handleReplacedElement()
         return false;
     }
 
-    if (m_entersTextControls && renderer->isTextControl()) {
+    if (entersTextControls() && renderer->isTextControl()) {
         // The shadow tree should be already visited.
         return true;
     }
 
     m_hasEmitted = true;
 
-    if (m_emitsCharactersBetweenAllVisiblePositions) {
+    if (emitsCharactersBetweenAllVisiblePositions()) {
         // We want replaced elements to behave like punctuation for boundary
         // finding, and to simply take up space for the selection preservation
         // code in moveParagraphs, so we use a comma.
@@ -677,7 +669,7 @@ bool TextIterator::handleReplacedElement()
     m_positionEndOffset = 1;
     m_singleCharacterBuffer = 0;
 
-    if (m_emitsImageAltText && TextIterator::supportsAltText(m_node)) {
+    if (emitsImageAltText() && TextIterator::supportsAltText(m_node)) {
         m_text = toHTMLElement(m_node)->altText();
         if (!m_text.isEmpty()) {
             m_textLength = m_text.length();
@@ -819,7 +811,7 @@ static bool shouldEmitExtraNewlineForNode(Node* node)
 // Whether or not we should emit a character as we enter m_node (if it's a container) or as we hit it (if it's atomic).
 bool TextIterator::shouldRepresentNodeOffsetZero()
 {
-    if (m_emitsCharactersBetweenAllVisiblePositions && isRenderedTableElement(m_node))
+    if (emitsCharactersBetweenAllVisiblePositions() && isRenderedTableElement(m_node))
         return true;
 
     // Leave element positioned flush with start of a paragraph
@@ -875,7 +867,7 @@ bool TextIterator::shouldRepresentNodeOffsetZero()
 
 bool TextIterator::shouldEmitSpaceBeforeAndAfterNode(Node* node)
 {
-    return isRenderedTableElement(node) && (node->layoutObject()->isInline() || m_emitsCharactersBetweenAllVisiblePositions);
+    return isRenderedTableElement(node) && (node->layoutObject()->isInline() || emitsCharactersBetweenAllVisiblePositions());
 }
 
 void TextIterator::representNodeOffsetZero()
@@ -900,9 +892,9 @@ void TextIterator::representNodeOffsetZero()
 
 bool TextIterator::handleNonTextNode()
 {
-    if (shouldEmitNewlineForNode(m_node, m_emitsOriginalText))
+    if (shouldEmitNewlineForNode(m_node, emitsOriginalText()))
         emitCharacter('\n', m_node->parentNode(), m_node, 0, 1);
-    else if (m_emitsCharactersBetweenAllVisiblePositions && m_node->layoutObject() && m_node->layoutObject()->isHR())
+    else if (emitsCharactersBetweenAllVisiblePositions() && m_node->layoutObject() && m_node->layoutObject()->isHR())
         emitCharacter(space, m_node->parentNode(), m_node, 0, 1);
     else
         representNodeOffsetZero();
@@ -983,7 +975,7 @@ void TextIterator::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, 
 
 void TextIterator::emitText(Node* textNode, LayoutText* renderer, int textStartOffset, int textEndOffset)
 {
-    m_text = m_emitsOriginalText ? renderer->originalText() : renderer->text();
+    m_text = emitsOriginalText() ? renderer->originalText() : renderer->text();
     ASSERT(!m_text.isEmpty());
     ASSERT(0 <= textStartOffset && textStartOffset < static_cast<int>(m_text.length()));
     ASSERT(0 <= textEndOffset && textEndOffset <= static_cast<int>(m_text.length()));
