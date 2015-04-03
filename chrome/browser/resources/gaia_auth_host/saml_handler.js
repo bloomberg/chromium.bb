@@ -142,6 +142,8 @@ cr.define('cr.login', function() {
     this.blockInsecureContent = false;
 
     this.webview_.addEventListener(
+        'contentload', this.onContentLoad_.bind(this));
+    this.webview_.addEventListener(
         'loadabort', this.onLoadAbort_.bind(this));
     this.webview_.addEventListener(
         'loadcommit', this.onLoadCommit_.bind(this));
@@ -233,9 +235,15 @@ cr.define('cr.login', function() {
         code: injectedJs,
         allFrames: true,
         runAt: 'document_start'
-      }, (function() {
-        PostMessageChannel.init(this.webview_.contentWindow);
-      }).bind(this));
+      });
+    },
+
+    /**
+     * Invoked on the webview's contentload event.
+     * @private
+     */
+    onContentLoad_: function(e) {
+      PostMessageChannel.init(this.webview_.contentWindow);
     },
 
     /**
