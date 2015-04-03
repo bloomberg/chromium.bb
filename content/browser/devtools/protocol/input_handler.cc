@@ -28,6 +28,33 @@ void InputHandler::SetRenderViewHost(RenderViewHostImpl* host) {
 void InputHandler::SetClient(scoped_ptr<DevToolsProtocolClient> client) {
 }
 
+Response InputHandler::DispatchKeyEvent(
+    const std::string& type,
+    const int* modifiers,
+    const double* timestamp,
+    const std::string* text,
+    const std::string* unmodified_text,
+    const std::string* key_identifier,
+    const std::string* code,
+    const int* windows_virtual_key_code,
+    const int* native_virtual_key_code,
+    const bool* auto_repeat,
+    const bool* is_keypad,
+    const bool* is_system_key) {
+  return Response::FallThrough();
+}
+
+Response InputHandler::DispatchMouseEvent(
+    const std::string& type,
+    int x,
+    int y,
+    const int* modifiers,
+    const double* timestamp,
+    const std::string* button,
+    const int* click_count) {
+  return Response::FallThrough();
+}
+
 Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
                                                   int x,
                                                   int y,

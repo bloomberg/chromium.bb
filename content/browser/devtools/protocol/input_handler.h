@@ -24,6 +24,27 @@ class InputHandler {
   void SetRenderViewHost(RenderViewHostImpl* host);
   void SetClient(scoped_ptr<DevToolsProtocolClient> client);
 
+  Response DispatchKeyEvent(const std::string& type,
+                            const int* modifiers,
+                            const double* timestamp,
+                            const std::string* text,
+                            const std::string* unmodified_text,
+                            const std::string* key_identifier,
+                            const std::string* code,
+                            const int* windows_virtual_key_code,
+                            const int* native_virtual_key_code,
+                            const bool* auto_repeat,
+                            const bool* is_keypad,
+                            const bool* is_system_key);
+
+  Response DispatchMouseEvent(const std::string& type,
+                              int x,
+                              int y,
+                              const int* modifiers,
+                              const double* timestamp,
+                              const std::string* button,
+                              const int* click_count);
+
   Response EmulateTouchFromMouseEvent(const std::string& type,
                                       int x,
                                       int y,
