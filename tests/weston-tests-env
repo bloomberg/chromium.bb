@@ -1,8 +1,9 @@
 #!/bin/bash
 
-TESTNAME=$1
+TEST_FILE=${1##*/}
+TEST_NAME=${TEST_FILE%.*}
 
-if test -z "$TESTNAME"; then
+if test -z "$TEST_NAME"; then
 	echo "usage: $(basename $0) <test name>"
 	exit 1;
 fi
@@ -27,26 +28,26 @@ SHELL_PLUGIN=$MODDIR/desktop-shell.so
 TEST_PLUGIN=$MODDIR/weston-test.so
 XWAYLAND_PLUGIN=$MODDIR/xwayland.so
 
-case $TESTNAME in
+case $TEST_FILE in
 	*.la|*.so)
 		WESTON_BUILD_DIR=$abs_builddir \
 		$WESTON --backend=$MODDIR/$BACKEND \
 			--no-config \
 			--shell=$SHELL_PLUGIN \
-			--socket=test-$(basename $TESTNAME) \
-			--modules=$MODDIR/${TESTNAME/.la/.so},$XWAYLAND_PLUGIN \
+			--socket=test-${TEST_NAME} \
+			--modules=$MODDIR/${TEST_FILE/.la/.so},$XWAYLAND_PLUGIN \
 			--log="$SERVERLOG" \
 			&> "$OUTLOG"
 		;;
 	*)
 		WESTON_BUILD_DIR=$abs_builddir \
-		WESTON_TEST_CLIENT_PATH=$abs_builddir/$TESTNAME $WESTON \
-			--socket=test-$(basename $TESTNAME) \
+		WESTON_TEST_CLIENT_PATH=$abs_builddir/$TEST_FILE $WESTON \
+			--socket=test-${TEST_NAME} \
 			--backend=$MODDIR/$BACKEND \
 			--no-config \
 			--shell=$SHELL_PLUGIN \
 			--log="$SERVERLOG" \
 			--modules=$TEST_PLUGIN,$XWAYLAND_PLUGIN \
-			$($abs_builddir/$TESTNAME --params) \
+			$($abs_builddir/$TEST_FILE --params) \
 			&> "$OUTLOG"
 esac
