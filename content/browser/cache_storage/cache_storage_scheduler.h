@@ -12,6 +12,14 @@
 
 namespace content {
 
+// TODO(jkarlin): Support readers and writers so operations can run in parallel.
+// TODO(jkarlin): Support operation identification so that ops can be checked in
+// DCHECKs.
+
+// CacheStorageScheduler runs the scheduled callbacks sequentially. Add an
+// operation by calling ScheduleOperation() with your callback. Once your
+// operation is done be sure to call CompleteOperationAndRunNext() to schedule
+// the next operation.
 class CONTENT_EXPORT CacheStorageScheduler {
  public:
   CacheStorageScheduler();

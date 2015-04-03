@@ -7,18 +7,20 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
 
-class JobStats {
+class TestTask {
  public:
-  JobStats(CacheStorageScheduler* scheduler)
+  TestTask(CacheStorageScheduler* scheduler)
       : scheduler_(scheduler), callback_count_(0) {}
 
-  virtual void Run() = 0;
+  virtual void Run() { callback_count_++; }
+  void Done() { scheduler_->CompleteOperationAndRunNext(); }
 
   int callback_count() const { return callback_count_; }
 
@@ -27,59 +29,53 @@ class JobStats {
   int callback_count_;
 };
 
-class SyncJob : public JobStats {
- public:
-  SyncJob(CacheStorageScheduler* scheduler) : JobStats(scheduler) {}
-
-  void Run() override {
-    callback_count_++;
-    scheduler_->CompleteOperationAndRunNext();
-  }
-};
-
-class AsyncJob : public JobStats {
- public:
-  AsyncJob(CacheStorageScheduler* scheduler) : JobStats(scheduler) {}
-
-  void Run() override { callback_count_++; }
-  void Done() { scheduler_->CompleteOperationAndRunNext(); }
-};
-
 }  // namespace
 
 class CacheStorageSchedulerTest : public testing::Test {
  protected:
   CacheStorageSchedulerTest()
-      : async_job_(AsyncJob(&scheduler_)), sync_job_(SyncJob(&scheduler_)) {}
+      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        task1_(TestTask(&scheduler_)),
+        task2_(TestTask(&scheduler_)) {}
 
+  TestBrowserThreadBundle browser_thread_bundle_;
   CacheStorageScheduler scheduler_;
-  AsyncJob async_job_;
-  SyncJob sync_job_;
+  TestTask task1_;
+  TestTask task2_;
 };
 
 TEST_F(CacheStorageSchedulerTest, ScheduleOne) {
   scheduler_.ScheduleOperation(
-      base::Bind(&JobStats::Run, base::Unretained(&sync_job_)));
-  EXPECT_EQ(1, sync_job_.callback_count());
+      base::Bind(&TestTask::Run, base::Unretained(&task1_)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, task1_.callback_count());
 }
 
 TEST_F(CacheStorageSchedulerTest, ScheduleTwo) {
   scheduler_.ScheduleOperation(
-      base::Bind(&JobStats::Run, base::Unretained(&sync_job_)));
+      base::Bind(&TestTask::Run, base::Unretained(&task1_)));
   scheduler_.ScheduleOperation(
-      base::Bind(&JobStats::Run, base::Unretained(&sync_job_)));
-  EXPECT_EQ(2, sync_job_.callback_count());
+      base::Bind(&TestTask::Run, base::Unretained(&task2_)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, task1_.callback_count());
+  EXPECT_EQ(0, task2_.callback_count());
+
+  task1_.Done();
+  EXPECT_TRUE(scheduler_.ScheduledOperations());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, task1_.callback_count());
+  EXPECT_EQ(1, task2_.callback_count());
 }
 
-TEST_F(CacheStorageSchedulerTest, Block) {
+TEST_F(CacheStorageSchedulerTest, ScheduledOperations) {
   scheduler_.ScheduleOperation(
-      base::Bind(&JobStats::Run, base::Unretained(&async_job_)));
-  EXPECT_EQ(1, async_job_.callback_count());
-  scheduler_.ScheduleOperation(
-      base::Bind(&JobStats::Run, base::Unretained(&sync_job_)));
-  EXPECT_EQ(0, sync_job_.callback_count());
-  async_job_.Done();
-  EXPECT_EQ(1, sync_job_.callback_count());
+      base::Bind(&TestTask::Run, base::Unretained(&task1_)));
+  EXPECT_TRUE(scheduler_.ScheduledOperations());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, task1_.callback_count());
+  EXPECT_TRUE(scheduler_.ScheduledOperations());
+  task1_.Done();
+  EXPECT_FALSE(scheduler_.ScheduledOperations());
 }
 
 }  // namespace content

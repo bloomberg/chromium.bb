@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
+#include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -36,9 +37,8 @@ class ServiceWorkerContextWrapper;
 // registered events.
 // TODO(jkarlin): Keep the browser alive if "Let Google Chrome Run in the
 // Background" is true and a sync is registered.
-// TODO(jkarlin): Unregister syncs when storage for an origin is cleared.
-// TODO(jkarlin): Detect and handle a corrupt or broken backend.
-class CONTENT_EXPORT BackgroundSyncManager {
+class CONTENT_EXPORT BackgroundSyncManager
+    : NON_EXPORTED_BASE(public ServiceWorkerContextObserver) {
  public:
   enum ErrorType {
     ERROR_TYPE_OK = 0,
@@ -88,7 +88,7 @@ class CONTENT_EXPORT BackgroundSyncManager {
 
   static scoped_ptr<BackgroundSyncManager> Create(
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
-  virtual ~BackgroundSyncManager();
+  ~BackgroundSyncManager() override;
 
   // Stores the given background sync registration and adds it to the scheduling
   // queue. Overwrites any existing registration with the same name but
@@ -121,6 +121,11 @@ class CONTENT_EXPORT BackgroundSyncManager {
                        const std::string sync_registration_name,
                        const StatusAndRegistrationCallback& callback);
 
+  // ServiceWorkerContextObserver overrides.
+  void OnRegistrationDeleted(int64 registration_id,
+                             const GURL& pattern) override;
+  void OnStorageWiped() override;
+
  protected:
   explicit BackgroundSyncManager(
       const scoped_refptr<ServiceWorkerContextWrapper>& context);
@@ -144,6 +149,19 @@ class CONTENT_EXPORT BackgroundSyncManager {
   using PermissionStatusCallback = base::Callback<void(bool)>;
   using SWIdToRegistrationsMap = std::map<int64, BackgroundSyncRegistrations>;
 
+  // Disable the manager. Already queued operations will abort once they start
+  // to run (in their impl methods). Future operations will not queue. Any
+  // registrations are cleared from memory and the backend (if it's still
+  // functioning). The manager will reenable itself once it receives the
+  // OnStorageWiped message or on browser restart.
+  void DisableAndClearManager(const base::Closure& callback);
+  void DisableAndClearDidGetRegistrations(
+      const base::Closure& callback,
+      const std::vector<std::pair<int64, std::string>>& user_data,
+      ServiceWorkerStatusCode status);
+  void DisableAndClearManagerClearedOne(const base::Closure& barrier_closure,
+                                        ServiceWorkerStatusCode status);
+
   // Returns the existing registration in |existing_registration| if it is not
   // null.
   bool LookupRegistration(int64 sw_registration_id,
@@ -165,8 +183,9 @@ class CONTENT_EXPORT BackgroundSyncManager {
       int64 sw_registration_id,
       const BackgroundSyncRegistration& sync_registration);
 
-  void InitImpl();
+  void InitImpl(const base::Closure& callback);
   void InitDidGetDataFromBackend(
+      const base::Closure& callback,
       const std::vector<std::pair<int64, std::string>>& user_data,
       ServiceWorkerStatusCode status);
 
@@ -177,7 +196,6 @@ class CONTENT_EXPORT BackgroundSyncManager {
                     const StatusAndRegistrationCallback& callback);
   void RegisterDidStore(int64 sw_registration_id,
                         const BackgroundSyncRegistration& sync_registration,
-                        const BackgroundSyncRegistration& previous_registration,
                         const StatusAndRegistrationCallback& callback,
                         ServiceWorkerStatusCode status);
 
@@ -200,16 +218,31 @@ class CONTENT_EXPORT BackgroundSyncManager {
                            const std::string sync_registration_name,
                            const StatusAndRegistrationCallback& callback);
 
+  // OnRegistrationDeleted callbacks
+  void OnRegistrationDeletedImpl(int64 registration_id,
+                                 const base::Closure& callback);
+
+  // OnStorageWiped callbacks
+  void OnStorageWipedImpl(const base::Closure& callback);
+
   // Operation Scheduling callbacks
   void PendingStatusAndRegistrationCallback(
       const StatusAndRegistrationCallback& callback,
       ErrorType error,
       const BackgroundSyncRegistration& sync_registration);
   void PendingStatusCallback(const StatusCallback& callback, ErrorType error);
+  void PendingClosure(const base::Closure& closure);
+
+  StatusAndRegistrationCallback MakeStatusAndRegistrationCompletion(
+      const StatusAndRegistrationCallback& callback);
+  BackgroundSyncManager::StatusCallback MakeStatusCompletion(
+      const StatusCallback& callback);
+  base::Closure MakeEmptyCompletion();
 
   SWIdToRegistrationsMap sw_to_registrations_map_;
   CacheStorageScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  bool disabled_;
 
   base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_;
 

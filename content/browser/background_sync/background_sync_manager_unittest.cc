@@ -9,19 +9,41 @@
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 namespace {
-const char kOriginUrl[] = "https://example.com";
-const int64 kServiceWorkerVersionId = 0;
-const int64 kServiceWorkerId1 = 1;
-const int64 kServiceWorkerId2 = 2;
+
+const char kOrigin[] = "https://example.com";
+const char kPattern1[] = "https://example.com/a";
+const char kPattern2[] = "https://example.com/b";
+const char kScript1[] = "https://example.com/a/script.js";
+const char kScript2[] = "https://example.com/b/script.js";
+const int kRenderProcessId = 99;
+
+void RegisterServiceWorkerCallback(bool* called,
+                                   int64* store_registration_id,
+                                   ServiceWorkerStatusCode status,
+                                   const std::string& status_message,
+                                   int64 registration_id) {
+  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+  *called = true;
+  *store_registration_id = registration_id;
 }
 
-namespace content {
+void UnregisterServiceWorkerCallback(bool* called,
+                                     ServiceWorkerStatusCode code) {
+  EXPECT_EQ(SERVICE_WORKER_OK, code);
+  *called = true;
+}
+
+}  // namespace
 
 // A BackgroundSyncManager that can simulate delaying and corrupting the
 // backend. This class assumes (and verifies) that only one operation runs at a
@@ -115,32 +137,36 @@ class BackgroundSyncManagerTest : public testing::Test {
  public:
   BackgroundSyncManagerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        service_worker_context_(new ServiceWorkerContextWrapper(NULL)),
-        origin_(kOriginUrl),
         sync_reg_1_(BackgroundSyncManager::BackgroundSyncRegistration("foo")),
         sync_reg_2_(BackgroundSyncManager::BackgroundSyncRegistration("bar")),
         callback_error_(BackgroundSyncManager::ERROR_TYPE_OK),
         callback_sw_status_code_(SERVICE_WORKER_OK) {}
 
   void SetUp() override {
-    scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
-        new MockServiceWorkerDatabaseTaskManager(
-            base::ThreadTaskRunnerHandle::Get()));
-
-    service_worker_context_->InitInternal(
-        base::FilePath(), database_task_manager.Pass(),
-        base::ThreadTaskRunnerHandle::Get(), NULL, NULL);
-    context_ptr_ = service_worker_context_->context()->AsWeakPtr();
+    helper_.reset(
+        new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
 
     background_sync_manager_ =
-        BackgroundSyncManager::Create(service_worker_context_);
+        BackgroundSyncManager::Create(helper_->context_wrapper());
 
     // Wait for storage to finish initializing before registering service
     // workers.
     base::RunLoop().RunUntilIdle();
 
-    RegisterServiceWorker(kServiceWorkerId1);
-    RegisterServiceWorker(kServiceWorkerId2);
+    bool called_1 = false;
+    bool called_2 = false;
+    helper_->context()->RegisterServiceWorker(
+        GURL(kPattern1), GURL(kScript1), NULL,
+        base::Bind(&RegisterServiceWorkerCallback, &called_1,
+                   &sw_registration_id_1_));
+
+    helper_->context()->RegisterServiceWorker(
+        GURL(kPattern2), GURL(kScript2), NULL,
+        base::Bind(&RegisterServiceWorkerCallback, &called_2,
+                   &sw_registration_id_2_));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(called_1);
+    EXPECT_TRUE(called_2);
   }
 
   void StatusAndRegistrationCallback(
@@ -161,7 +187,7 @@ class BackgroundSyncManagerTest : public testing::Test {
  protected:
   TestBackgroundSyncManager* UseTestBackgroundSyncManager() {
     TestBackgroundSyncManager* manager =
-        new TestBackgroundSyncManager(service_worker_context_);
+        new TestBackgroundSyncManager(helper_->context_wrapper());
     background_sync_manager_.reset(manager);
     manager->DoInit();
     return manager;
@@ -169,7 +195,8 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   bool Register(const BackgroundSyncManager::BackgroundSyncRegistration&
                     sync_registration) {
-    return RegisterWithServiceWorkerId(kServiceWorkerId1, sync_registration);
+    return RegisterWithServiceWorkerId(sw_registration_id_1_,
+                                       sync_registration);
   }
 
   bool RegisterWithServiceWorkerId(
@@ -178,7 +205,7 @@ class BackgroundSyncManagerTest : public testing::Test {
           sync_registration) {
     bool was_called = false;
     background_sync_manager_->Register(
-        origin_, sw_registration_id, sync_registration,
+        GURL(kOrigin), sw_registration_id, sync_registration,
         base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                    base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
@@ -188,7 +215,8 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   bool Unregister(const BackgroundSyncManager::BackgroundSyncRegistration&
                       sync_registration) {
-    return UnregisterWithServiceWorkerId(kServiceWorkerId1, sync_registration);
+    return UnregisterWithServiceWorkerId(sw_registration_id_1_,
+                                         sync_registration);
   }
 
   bool UnregisterWithServiceWorkerId(
@@ -197,7 +225,7 @@ class BackgroundSyncManagerTest : public testing::Test {
           sync_registration) {
     bool was_called = false;
     background_sync_manager_->Unregister(
-        origin_, sw_registration_id, sync_registration.name,
+        GURL(kOrigin), sw_registration_id, sync_registration.name,
         sync_registration.id,
         base::Bind(&BackgroundSyncManagerTest::StatusCallback,
                    base::Unretained(this), &was_called));
@@ -207,7 +235,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   bool GetRegistration(const std::string& sync_registration_name) {
-    return GetRegistrationWithServiceWorkerId(kServiceWorkerId1,
+    return GetRegistrationWithServiceWorkerId(sw_registration_id_1_,
                                               sync_registration_name);
   }
 
@@ -216,7 +244,7 @@ class BackgroundSyncManagerTest : public testing::Test {
       const std::string& sync_registration_name) {
     bool was_called = false;
     background_sync_manager_->GetRegistration(
-        origin_, sw_registration_id, sync_registration_name,
+        GURL(kOrigin), sw_registration_id, sync_registration_name,
         base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                    base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
@@ -232,32 +260,28 @@ class BackgroundSyncManagerTest : public testing::Test {
     callback_sw_status_code_ = result;
   }
 
-  void RegisterServiceWorker(uint64 sw_registration_id) {
-    scoped_refptr<ServiceWorkerRegistration> live_registration =
-        new ServiceWorkerRegistration(origin_, sw_registration_id,
-                                      context_ptr_);
-
-    scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-        live_registration.get(), GURL(std::string(kOriginUrl) + "/script.js"),
-        kServiceWorkerVersionId, context_ptr_);
-    live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
-    live_registration->SetWaitingVersion(live_version.get());
-
-    service_worker_context_->context()->storage()->StoreRegistration(
-        live_registration.get(), live_version.get(),
-        base::Bind(&BackgroundSyncManagerTest::StorageRegistrationCallback,
-                   base::Unretained(this)));
-
+  void UnregisterServiceWorker(uint64 sw_registration_id) {
+    bool called = false;
+    helper_->context()->UnregisterServiceWorker(
+        PatternForSWId(sw_registration_id),
+        base::Bind(&UnregisterServiceWorkerCallback, &called));
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(SERVICE_WORKER_OK, callback_sw_status_code_);
+    EXPECT_TRUE(called);
+  }
+
+  GURL PatternForSWId(int64 sw_id) {
+    EXPECT_TRUE(sw_id == sw_registration_id_1_ ||
+                sw_id == sw_registration_id_2_);
+    return sw_id == sw_registration_id_1_ ? GURL(kPattern1) : GURL(kPattern2);
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
-  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_ptr<BackgroundSyncManager> background_sync_manager_;
-  base::WeakPtr<ServiceWorkerContextCore> context_ptr_;
 
-  const GURL origin_;
+  int64 sw_registration_id_1_;
+  int64 sw_registration_id_2_;
+
   BackgroundSyncManager::BackgroundSyncRegistration sync_reg_1_;
   BackgroundSyncManager::BackgroundSyncRegistration sync_reg_2_;
 
@@ -304,22 +328,8 @@ TEST_F(BackgroundSyncManagerTest, RegisterBadBackend) {
   manager->set_corrupt_backend(true);
   EXPECT_FALSE(Register(sync_reg_1_));
   manager->set_corrupt_backend(false);
-  EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
-}
-
-TEST_F(BackgroundSyncManagerTest, RegisterOverwriteBadBackend) {
-  TestBackgroundSyncManager* manager = UseTestBackgroundSyncManager();
-  EXPECT_TRUE(Register(sync_reg_1_));
-  BackgroundSyncManager::BackgroundSyncRegistration first_registration =
-      callback_registration_;
-
-  sync_reg_1_.min_period = 100;
-
-  manager->set_corrupt_backend(true);
   EXPECT_FALSE(Register(sync_reg_1_));
-  EXPECT_TRUE(GetRegistration(sync_reg_1_.name));
-  EXPECT_EQ(callback_registration_.id, first_registration.id);
-  EXPECT_TRUE(callback_registration_.Equals(first_registration));
+  EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
 }
 
 TEST_F(BackgroundSyncManagerTest, TwoRegistrations) {
@@ -342,10 +352,12 @@ TEST_F(BackgroundSyncManagerTest, GetRegistrationBadBackend) {
   EXPECT_TRUE(Register(sync_reg_1_));
   manager->set_corrupt_backend(true);
   EXPECT_TRUE(GetRegistration(sync_reg_1_.name));
-  EXPECT_FALSE(GetRegistration(sync_reg_2_.name));
+  EXPECT_FALSE(Register(sync_reg_2_));
+  // Registration should have discovered the bad backend and disabled the
+  // BackgroundSyncManager.
+  EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
   manager->set_corrupt_backend(false);
-  EXPECT_TRUE(GetRegistration(sync_reg_1_.name));
-  EXPECT_FALSE(GetRegistration(sync_reg_2_.name));
+  EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
 }
 
 TEST_F(BackgroundSyncManagerTest, Unregister) {
@@ -383,11 +395,14 @@ TEST_F(BackgroundSyncManagerTest, UnregisterBadBackend) {
   TestBackgroundSyncManager* manager = UseTestBackgroundSyncManager();
   sync_reg_1_.min_period += 1;
   EXPECT_TRUE(Register(sync_reg_1_));
+  EXPECT_TRUE(Register(sync_reg_2_));
   manager->set_corrupt_backend(true);
   EXPECT_FALSE(Unregister(callback_registration_));
+  // Unregister should have discovered the bad backend and disabled the
+  // BackgroundSyncManager.
   manager->set_corrupt_backend(false);
-  EXPECT_TRUE(GetRegistration(sync_reg_1_.name));
-  EXPECT_TRUE(callback_registration_.Equals(sync_reg_1_));
+  EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
+  EXPECT_FALSE(GetRegistration(sync_reg_2_.name));
 }
 
 TEST_F(BackgroundSyncManagerTest, RegistrationIncreasesId) {
@@ -411,40 +426,40 @@ TEST_F(BackgroundSyncManagerTest, RebootRecovery) {
   EXPECT_TRUE(Register(sync_reg_1_));
 
   background_sync_manager_ =
-      BackgroundSyncManager::Create(service_worker_context_);
+      BackgroundSyncManager::Create(helper_->context_wrapper());
 
   EXPECT_TRUE(GetRegistration(sync_reg_1_.name));
   EXPECT_FALSE(GetRegistration(sync_reg_2_.name));
 }
 
 TEST_F(BackgroundSyncManagerTest, RebootRecoveryTwoServiceWorkers) {
-  EXPECT_TRUE(RegisterWithServiceWorkerId(kServiceWorkerId1, sync_reg_1_));
-  EXPECT_TRUE(RegisterWithServiceWorkerId(kServiceWorkerId2, sync_reg_2_));
+  EXPECT_TRUE(RegisterWithServiceWorkerId(sw_registration_id_1_, sync_reg_1_));
+  EXPECT_TRUE(RegisterWithServiceWorkerId(sw_registration_id_2_, sync_reg_2_));
 
   background_sync_manager_ =
-      BackgroundSyncManager::Create(service_worker_context_);
+      BackgroundSyncManager::Create(helper_->context_wrapper());
 
-  EXPECT_TRUE(
-      GetRegistrationWithServiceWorkerId(kServiceWorkerId1, sync_reg_1_.name));
-  EXPECT_FALSE(
-      GetRegistrationWithServiceWorkerId(kServiceWorkerId1, sync_reg_2_.name));
-  EXPECT_FALSE(
-      GetRegistrationWithServiceWorkerId(kServiceWorkerId2, sync_reg_1_.name));
-  EXPECT_TRUE(
-      GetRegistrationWithServiceWorkerId(kServiceWorkerId2, sync_reg_2_.name));
+  EXPECT_TRUE(GetRegistrationWithServiceWorkerId(sw_registration_id_1_,
+                                                 sync_reg_1_.name));
+  EXPECT_FALSE(GetRegistrationWithServiceWorkerId(sw_registration_id_1_,
+                                                  sync_reg_2_.name));
+  EXPECT_FALSE(GetRegistrationWithServiceWorkerId(sw_registration_id_2_,
+                                                  sync_reg_1_.name));
+  EXPECT_TRUE(GetRegistrationWithServiceWorkerId(sw_registration_id_2_,
+                                                 sync_reg_2_.name));
 
-  EXPECT_TRUE(
-      GetRegistrationWithServiceWorkerId(kServiceWorkerId1, sync_reg_1_.name));
-  EXPECT_TRUE(
-      GetRegistrationWithServiceWorkerId(kServiceWorkerId2, sync_reg_2_.name));
+  EXPECT_TRUE(GetRegistrationWithServiceWorkerId(sw_registration_id_1_,
+                                                 sync_reg_1_.name));
+  EXPECT_TRUE(GetRegistrationWithServiceWorkerId(sw_registration_id_2_,
+                                                 sync_reg_2_.name));
 
-  EXPECT_TRUE(RegisterWithServiceWorkerId(kServiceWorkerId1, sync_reg_2_));
-  EXPECT_TRUE(RegisterWithServiceWorkerId(kServiceWorkerId2, sync_reg_1_));
+  EXPECT_TRUE(RegisterWithServiceWorkerId(sw_registration_id_1_, sync_reg_2_));
+  EXPECT_TRUE(RegisterWithServiceWorkerId(sw_registration_id_2_, sync_reg_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, InitWithCorruptBackend) {
+TEST_F(BackgroundSyncManagerTest, InitWithBadBackend) {
   TestBackgroundSyncManager* manager =
-      new TestBackgroundSyncManager(service_worker_context_);
+      new TestBackgroundSyncManager(helper_->context_wrapper());
   background_sync_manager_.reset(manager);
   manager->set_corrupt_backend(true);
   manager->DoInit();
@@ -457,7 +472,7 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   // Schedule Init and all of the operations on a delayed backend. Verify that
   // the operations complete sequentially.
   TestBackgroundSyncManager* manager =
-      new TestBackgroundSyncManager(service_worker_context_);
+      new TestBackgroundSyncManager(helper_->context_wrapper());
   background_sync_manager_.reset(manager);
   manager->set_delay_backend(true);
   manager->DoInit();
@@ -469,15 +484,15 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   bool unregister_called = false;
   bool get_registration_called = false;
   manager->Register(
-      origin_, kServiceWorkerId1, sync_reg_1_,
+      GURL(kOrigin), sw_registration_id_1_, sync_reg_1_,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &register_called));
-  manager->Unregister(origin_, kServiceWorkerId1, sync_reg_1_.name,
+  manager->Unregister(GURL(kOrigin), sw_registration_id_1_, sync_reg_1_.name,
                       kExpectedInitialId,
                       base::Bind(&BackgroundSyncManagerTest::StatusCallback,
                                  base::Unretained(this), &unregister_called));
   manager->GetRegistration(
-      origin_, kServiceWorkerId1, sync_reg_1_.name,
+      GURL(kOrigin), sw_registration_id_1_, sync_reg_1_.name,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &get_registration_called));
 
@@ -510,6 +525,98 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_NOT_FOUND, callback_error_);
   EXPECT_TRUE(unregister_called);
   EXPECT_TRUE(get_registration_called);
+}
+
+TEST_F(BackgroundSyncManagerTest, UnregisterServiceWorker) {
+  EXPECT_TRUE(Register(sync_reg_1_));
+  UnregisterServiceWorker(sw_registration_id_1_);
+  EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
+}
+
+TEST_F(BackgroundSyncManagerTest,
+       UnregisterServiceWorkerDuringSyncRegistration) {
+  TestBackgroundSyncManager* manager =
+      new TestBackgroundSyncManager(helper_->context_wrapper());
+  background_sync_manager_.reset(manager);
+  manager->DoInit();
+
+  EXPECT_TRUE(Register(sync_reg_1_));
+
+  manager->set_delay_backend(true);
+  bool callback_called = false;
+  manager->Register(
+      GURL(kOrigin), sw_registration_id_1_, sync_reg_2_,
+      base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+                 base::Unretained(this), &callback_called));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(callback_called);
+  UnregisterServiceWorker(sw_registration_id_1_);
+
+  manager->Continue();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(callback_called);
+  EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_STORAGE, callback_error_);
+
+  manager->set_delay_backend(false);
+  EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
+}
+
+TEST_F(BackgroundSyncManagerTest, DeleteAndStartOverServiceWorkerContext) {
+  EXPECT_TRUE(Register(sync_reg_1_));
+  helper_->context()->ScheduleDeleteAndStartOver();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
+}
+
+TEST_F(BackgroundSyncManagerTest, DisabledManagerWorksAfterBrowserRestart) {
+  TestBackgroundSyncManager* manager =
+      new TestBackgroundSyncManager(helper_->context_wrapper());
+  background_sync_manager_.reset(manager);
+  manager->DoInit();
+  EXPECT_TRUE(Register(sync_reg_1_));
+  manager->set_corrupt_backend(true);
+  EXPECT_FALSE(Register(sync_reg_2_));
+
+  // The manager is now disabled and not accepting new requests until browser
+  // restart or notification that the storage has been wiped.
+  manager->set_corrupt_backend(false);
+  EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
+  EXPECT_FALSE(Register(sync_reg_2_));
+
+  // Simulate restarting the browser by creating a new BackgroundSyncManager.
+  background_sync_manager_.reset(
+      new TestBackgroundSyncManager(helper_->context_wrapper()));
+  EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
+  EXPECT_TRUE(Register(sync_reg_1_));
+}
+
+TEST_F(BackgroundSyncManagerTest, DisabledManagerWorksAfterDeleteAndStartOver) {
+  TestBackgroundSyncManager* manager =
+      new TestBackgroundSyncManager(helper_->context_wrapper());
+  background_sync_manager_.reset(manager);
+  manager->DoInit();
+  EXPECT_TRUE(Register(sync_reg_1_));
+  manager->set_corrupt_backend(true);
+  EXPECT_FALSE(Register(sync_reg_2_));
+
+  // The manager is now disabled and not accepting new requests until browser
+  // restart or notification that the storage has been wiped.
+  manager->set_corrupt_backend(false);
+  helper_->context()->ScheduleDeleteAndStartOver();
+  base::RunLoop().RunUntilIdle();
+
+  bool called = false;
+  helper_->context()->RegisterServiceWorker(
+      GURL(kPattern1), GURL(kScript1), NULL,
+      base::Bind(&RegisterServiceWorkerCallback, &called,
+                 &sw_registration_id_1_));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+
+  EXPECT_TRUE(Register(sync_reg_2_));
+  EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
+  EXPECT_TRUE(GetRegistration(sync_reg_2_.name));
 }
 
 }  // namespace content

@@ -46,6 +46,7 @@ scoped_ptr<BackgroundSyncManager> BackgroundSyncManager::Create(
 }
 
 BackgroundSyncManager::~BackgroundSyncManager() {
+  service_worker_context_->RemoveObserver(this);
 }
 
 void BackgroundSyncManager::Register(
@@ -57,13 +58,17 @@ void BackgroundSyncManager::Register(
   DCHECK_EQ(BackgroundSyncRegistration::kInvalidRegistrationId,
             sync_registration.id);
 
-  StatusAndRegistrationCallback pending_callback =
-      base::Bind(&BackgroundSyncManager::PendingStatusAndRegistrationCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
+  if (disabled_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
+    return;
+  }
 
   op_scheduler_.ScheduleOperation(base::Bind(
       &BackgroundSyncManager::RegisterImpl, weak_ptr_factory_.GetWeakPtr(),
-      origin, sw_registration_id, sync_registration, pending_callback));
+      origin, sw_registration_id, sync_registration,
+      MakeStatusAndRegistrationCompletion(callback)));
 }
 
 void BackgroundSyncManager::Unregister(
@@ -74,14 +79,16 @@ void BackgroundSyncManager::Unregister(
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  StatusCallback pending_callback =
-      base::Bind(&BackgroundSyncManager::PendingStatusCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
+  if (disabled_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, ERROR_TYPE_STORAGE));
+    return;
+  }
 
   op_scheduler_.ScheduleOperation(base::Bind(
       &BackgroundSyncManager::UnregisterImpl, weak_ptr_factory_.GetWeakPtr(),
       origin, sw_registration_id, sync_registration_name, sync_registration_id,
-      pending_callback));
+      MakeStatusCompletion(callback)));
 }
 
 void BackgroundSyncManager::GetRegistration(
@@ -91,43 +98,82 @@ void BackgroundSyncManager::GetRegistration(
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  StatusAndRegistrationCallback pending_callback =
-      base::Bind(&BackgroundSyncManager::PendingStatusAndRegistrationCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback);
+  if (disabled_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
+    return;
+  }
 
+  op_scheduler_.ScheduleOperation(base::Bind(
+      &BackgroundSyncManager::GetRegistrationImpl,
+      weak_ptr_factory_.GetWeakPtr(), origin, sw_registration_id,
+      sync_registration_name, MakeStatusAndRegistrationCompletion(callback)));
+}
+
+void BackgroundSyncManager::OnRegistrationDeleted(int64 registration_id,
+                                                  const GURL& pattern) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Operations already in the queue will either fail when they write to storage
+  // or return stale results based on registrations loaded in memory. This is
+  // inconsequential since the service worker is gone.
+  op_scheduler_.ScheduleOperation(base::Bind(
+      &BackgroundSyncManager::OnRegistrationDeletedImpl,
+      weak_ptr_factory_.GetWeakPtr(), registration_id, MakeEmptyCompletion()));
+}
+
+void BackgroundSyncManager::OnStorageWiped() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Operations already in the queue will either fail when they write to storage
+  // or return stale results based on registrations loaded in memory. This is
+  // inconsequential since the service workers are gone.
   op_scheduler_.ScheduleOperation(
-      base::Bind(&BackgroundSyncManager::GetRegistrationImpl,
-                 weak_ptr_factory_.GetWeakPtr(), origin, sw_registration_id,
-                 sync_registration_name, pending_callback));
+      base::Bind(&BackgroundSyncManager::OnStorageWipedImpl,
+                 weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
 }
 
 BackgroundSyncManager::BackgroundSyncManager(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
-    : service_worker_context_(service_worker_context), weak_ptr_factory_(this) {
+    : service_worker_context_(service_worker_context),
+      disabled_(false),
+      weak_ptr_factory_(this) {
+  service_worker_context_->AddObserver(this);
 }
 
 void BackgroundSyncManager::Init() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!op_scheduler_.ScheduledOperations());
+  DCHECK(!disabled_);
 
   op_scheduler_.ScheduleOperation(base::Bind(&BackgroundSyncManager::InitImpl,
-                                             weak_ptr_factory_.GetWeakPtr()));
+                                             weak_ptr_factory_.GetWeakPtr(),
+                                             MakeEmptyCompletion()));
 }
 
-void BackgroundSyncManager::InitImpl() {
+void BackgroundSyncManager::InitImpl(const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (disabled_) {
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback));
+    return;
+  }
 
   GetDataFromBackend(
       kBackgroundSyncUserDataKey,
       base::Bind(&BackgroundSyncManager::InitDidGetDataFromBackend,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void BackgroundSyncManager::InitDidGetDataFromBackend(
+    const base::Closure& callback,
     const std::vector<std::pair<int64, std::string>>& user_data,
     ServiceWorkerStatusCode status) {
-  if (status != SERVICE_WORKER_OK && status != SERVICE_WORKER_ERROR_NOT_FOUND)
-    LOG(ERROR) << "Background Sync Failed to load from backend.";
+  if (status != SERVICE_WORKER_OK && status != SERVICE_WORKER_ERROR_NOT_FOUND) {
+    LOG(ERROR) << "BackgroundSync failed to init due to backend failure.";
+    DisableAndClearManager(base::Bind(callback));
+    return;
+  }
 
   bool corruption_detected = false;
   for (const std::pair<int64, std::string>& data : user_data) {
@@ -163,12 +209,13 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
 
   if (corruption_detected) {
     LOG(ERROR) << "Corruption detected in background sync backend";
-    sw_to_registrations_map_.clear();
+    DisableAndClearManager(base::Bind(callback));
+    return;
   }
 
   // TODO(jkarlin): Call the scheduling algorithm here.
 
-  op_scheduler_.CompleteOperationAndRunNext();
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback));
 }
 
 void BackgroundSyncManager::RegisterImpl(
@@ -176,6 +223,13 @@ void BackgroundSyncManager::RegisterImpl(
     int64 sw_registration_id,
     const BackgroundSyncRegistration& sync_registration,
     const StatusAndRegistrationCallback& callback) {
+  if (disabled_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
+    return;
+  }
+
   BackgroundSyncRegistration existing_registration;
   if (LookupRegistration(sw_registration_id, sync_registration.name,
                          &existing_registration)) {
@@ -198,7 +252,54 @@ void BackgroundSyncManager::RegisterImpl(
       origin, sw_registration_id,
       base::Bind(&BackgroundSyncManager::RegisterDidStore,
                  weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                 new_registration, existing_registration, callback));
+                 new_registration, callback));
+}
+
+void BackgroundSyncManager::DisableAndClearManager(
+    const base::Closure& callback) {
+  if (disabled_) {
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback));
+    return;
+  }
+
+  disabled_ = true;
+  sw_to_registrations_map_.clear();
+
+  // Delete all backend entries. The memory representation of registered syncs
+  // may be out of sync with storage (e.g., due to corruption detection on
+  // loading from storage), so reload the registrations from storage again.
+  GetDataFromBackend(
+      kBackgroundSyncUserDataKey,
+      base::Bind(&BackgroundSyncManager::DisableAndClearDidGetRegistrations,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void BackgroundSyncManager::DisableAndClearDidGetRegistrations(
+    const base::Closure& callback,
+    const std::vector<std::pair<int64, std::string>>& user_data,
+    ServiceWorkerStatusCode status) {
+  if (status != SERVICE_WORKER_OK || user_data.empty()) {
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback));
+    return;
+  }
+
+  base::Closure barrier_closure =
+      base::BarrierClosure(user_data.size(), base::Bind(callback));
+
+  for (const auto& sw_id_and_regs : user_data) {
+    service_worker_context_->context()->storage()->ClearUserData(
+        sw_id_and_regs.first, kBackgroundSyncUserDataKey,
+        base::Bind(&BackgroundSyncManager::DisableAndClearManagerClearedOne,
+                   weak_ptr_factory_.GetWeakPtr(), barrier_closure));
+  }
+}
+
+void BackgroundSyncManager::DisableAndClearManagerClearedOne(
+    const base::Closure& barrier_closure,
+    ServiceWorkerStatusCode status) {
+  // The status doesn't matter at this point, there is nothing else to be done.
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(barrier_closure));
 }
 
 bool BackgroundSyncManager::LookupRegistration(
@@ -255,20 +356,21 @@ void BackgroundSyncManager::StoreRegistrations(
 void BackgroundSyncManager::RegisterDidStore(
     int64 sw_registration_id,
     const BackgroundSyncRegistration& new_registration,
-    const BackgroundSyncRegistration& previous_registration,
     const StatusAndRegistrationCallback& callback,
     ServiceWorkerStatusCode status) {
-  if (status != SERVICE_WORKER_OK) {
-    // Restore the previous state.
-    if (previous_registration.id !=
-        BackgroundSyncRegistration::kInvalidRegistrationId) {
-      AddRegistrationToMap(sw_registration_id, previous_registration);
-    } else {
-      RemoveRegistrationFromMap(sw_registration_id, new_registration.name,
-                                nullptr);
-    }
+  if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
+    // The registration is gone.
+    sw_to_registrations_map_.erase(sw_registration_id);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
+        base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
+    return;
+  }
+
+  if (status != SERVICE_WORKER_OK) {
+    LOG(ERROR) << "BackgroundSync failed to store registration due to backend "
+                  "failure.";
+    DisableAndClearManager(
         base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
     return;
   }
@@ -334,6 +436,12 @@ void BackgroundSyncManager::UnregisterImpl(
     const std::string& sync_registration_name,
     BackgroundSyncRegistration::RegistrationId sync_registration_id,
     const StatusCallback& callback) {
+  if (disabled_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, ERROR_TYPE_STORAGE));
+    return;
+  }
+
   BackgroundSyncRegistration existing_registration;
   if (!LookupRegistration(sw_registration_id, sync_registration_name,
                           &existing_registration) ||
@@ -359,11 +467,17 @@ void BackgroundSyncManager::UnregisterDidStore(
     const BackgroundSyncRegistration& old_sync_registration,
     const StatusCallback& callback,
     ServiceWorkerStatusCode status) {
-  if (status != SERVICE_WORKER_OK) {
-    // Restore the previous state.
-    AddRegistrationToMap(sw_registration_id, old_sync_registration);
+  if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
+    // ServiceWorker was unregistered.
+    sw_to_registrations_map_.erase(sw_registration_id);
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, ERROR_TYPE_STORAGE));
+    return;
+  }
+
+  if (status != SERVICE_WORKER_OK) {
+    LOG(ERROR) << "BackgroundSync failed to unregister due to backend failure.";
+    DisableAndClearManager(base::Bind(callback, ERROR_TYPE_STORAGE));
     return;
   }
 
@@ -377,6 +491,13 @@ void BackgroundSyncManager::GetRegistrationImpl(
     int64 sw_registration_id,
     const std::string sync_registration_name,
     const StatusAndRegistrationCallback& callback) {
+  if (disabled_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, ERROR_TYPE_STORAGE, BackgroundSyncRegistration()));
+    return;
+  }
+
   BackgroundSyncRegistration out_registration;
   if (!LookupRegistration(sw_registration_id, sync_registration_name,
                           &out_registration)) {
@@ -388,6 +509,21 @@ void BackgroundSyncManager::GetRegistrationImpl(
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, out_registration));
+}
+
+void BackgroundSyncManager::OnRegistrationDeletedImpl(
+    int64 registration_id,
+    const base::Closure& callback) {
+  // The backend (ServiceWorkerStorage) will delete the data, so just delete the
+  // memory representation here.
+  sw_to_registrations_map_.erase(registration_id);
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback));
+}
+
+void BackgroundSyncManager::OnStorageWipedImpl(const base::Closure& callback) {
+  sw_to_registrations_map_.clear();
+  disabled_ = false;
+  InitImpl(callback);
 }
 
 void BackgroundSyncManager::PendingStatusAndRegistrationCallback(
@@ -409,6 +545,34 @@ void BackgroundSyncManager::PendingStatusCallback(
   callback.Run(error);
   if (manager)
     op_scheduler_.CompleteOperationAndRunNext();
+}
+
+void BackgroundSyncManager::PendingClosure(const base::Closure& callback) {
+  // The callback might delete this object, so hang onto a weak ptr to find out.
+  base::WeakPtr<BackgroundSyncManager> manager = weak_ptr_factory_.GetWeakPtr();
+  callback.Run();
+  if (manager)
+    op_scheduler_.CompleteOperationAndRunNext();
+}
+
+base::Closure BackgroundSyncManager::MakeEmptyCompletion() {
+  return base::Bind(&BackgroundSyncManager::PendingClosure,
+                    weak_ptr_factory_.GetWeakPtr(),
+                    base::Bind(base::DoNothing));
+}
+
+BackgroundSyncManager::StatusAndRegistrationCallback
+BackgroundSyncManager::MakeStatusAndRegistrationCompletion(
+    const StatusAndRegistrationCallback& callback) {
+  return base::Bind(
+      &BackgroundSyncManager::PendingStatusAndRegistrationCallback,
+      weak_ptr_factory_.GetWeakPtr(), callback);
+}
+
+BackgroundSyncManager::StatusCallback
+BackgroundSyncManager::MakeStatusCompletion(const StatusCallback& callback) {
+  return base::Bind(&BackgroundSyncManager::PendingStatusCallback,
+                    weak_ptr_factory_.GetWeakPtr(), callback);
 }
 
 }  // namespace content
