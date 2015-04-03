@@ -193,7 +193,7 @@ div.splitter {
   width: 36px;
 }
 
-#directory-tree .tree-row > .volume-icon {
+#directory-tree .tree-row > .item-icon {
   flex: none;
   height: 16px;
   width: 16px;

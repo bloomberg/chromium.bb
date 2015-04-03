@@ -21,12 +21,13 @@ var WEBVIEW_WIDTH = 735;
 var WEBVIEW_HEIGHT = 480;
 
 /**
- * The URL of the widget.
+ * The URL of the widget showing suggested apps.
  * @type {string}
  * @const
  */
 var CWS_WIDGET_URL =
     'https://clients5.google.com/webstore/wall/cros-widget-container';
+
 /**
  * The origin of the widget.
  * @type {string}
@@ -62,6 +63,7 @@ function SuggestAppsDialog(parentNode, state) {
   this.frame_.appendChild(this.buttons_);
 
   this.webstoreButton_ = this.document_.createElement('div');
+  this.webstoreButton_.hidden = true;
   this.webstoreButton_.id = 'webstore-button';
   this.webstoreButton_.innerHTML = str('SUGGEST_DIALOG_LINK_TO_WEBSTORE');
   this.webstoreButton_.addEventListener(
@@ -72,13 +74,11 @@ function SuggestAppsDialog(parentNode, state) {
 
   this.webview_ = null;
   this.accessToken_ = null;
-  this.widgetUrl_ =
-      state.overrideCwsContainerUrlForTest || CWS_WIDGET_URL;
-  this.widgetOrigin_ =
-      state.overrideCwsContainerOriginForTest || CWS_WIDGET_ORIGIN;
+  this.widgetUrl_ = state.overrideCwsContainerUrlForTest || CWS_WIDGET_URL;
+  this.widgetOrigin_ = state.overrideCwsContainerOriginForTest ||
+      CWS_WIDGET_ORIGIN;
 
-  this.extension_ = null;
-  this.mime_ = null;
+  this.options_ = null;
   this.installingItemId_ = null;
   this.state_ = SuggestAppsDialog.State.UNINITIALIZED;
 
@@ -176,7 +176,7 @@ SuggestAppsDialog.prototype.show = function() {
 /**
  * Shows suggest-apps dialog by file extension and mime.
  *
- * @param {string} extension Extension of the file.
+ * @param {string} extension Extension of the file with a trailing dot.
  * @param {string} mime Mime of the file.
  * @param {function(boolean)} onDialogClosed Called when the dialog is closed.
  *     The argument is the result of installation: true if an app is installed,
@@ -184,32 +184,58 @@ SuggestAppsDialog.prototype.show = function() {
  */
 SuggestAppsDialog.prototype.showByExtensionAndMime =
     function(extension, mime, onDialogClosed) {
-  this.text_.hidden = true;
-  this.dialogText_ = '';
-  this.showInternal_(null, extension, mime, onDialogClosed);
+  assert(extension && extension[0] === '.');
+  this.showInternal_(
+      {
+        file_extension: extension.substr(1),
+        mime_type: mime
+      },
+      str('SUGGEST_DIALOG_TITLE'),
+      FileTasks.createWebStoreLink(extension, mime),
+      onDialogClosed);
+};
+
+/**
+ * Shows suggest-apps dialog for FSP API
+ * @param {function(boolean)} onDialogClosed Called when the dialog is closed.
+ *     The argument is the result of installation: true if an app is installed,
+ *     false otherwise.
+ */
+SuggestAppsDialog.prototype.showProviders = function(onDialogClosed) {
+  this.showInternal_(
+      {
+        file_system_provider: true
+      },
+      str('SUGGEST_DIALOG_FOR_PROVIDERS_TITLE'),
+      null /* webStoreUrl */,
+      onDialogClosed);
 };
 
 /**
  * Internal method to show a dialog. This should be called only from 'Suggest.
  * appDialog.showXxxx()' functions.
  *
- * @param {?string} filename Filename (without extension) of the file.
- * @param {?string} extension Extension of the file.
- * @param {?string} mime Mime of the file.
+ * @param {!Object<string, *>} options Map of options for the dialog.
+ * @param {string} title Title of the dialog.
+ * @param {?string} webStoreUrl Url for more results. Null if not supported.
  * @param {function(boolean)} onDialogClosed Called when the dialog is closed.
  *     The argument is the result of installation: true if an app is installed,
  *     false otherwise.
  *     @private
  */
 SuggestAppsDialog.prototype.showInternal_ =
-    function(filename, extension, mime, onDialogClosed) {
+    function(options, title, webStoreUrl, onDialogClosed) {
   if (this.state_ != SuggestAppsDialog.State.UNINITIALIZED) {
     console.error('Invalid state.');
     return;
   }
 
-  this.extension_ = extension;
-  this.mimeType_ = mime;
+  this.text_.hidden = true;
+  this.webstoreButton_.hidden = (webStoreUrl === null);
+  this.dialogText_ = '';
+
+  this.webStoreUrl_ = webStoreUrl;
+  this.options_ = options;
   this.onDialogClosed_ = onDialogClosed;
   this.state_ = SuggestAppsDialog.State.INITIALIZING;
 
@@ -224,7 +250,6 @@ SuggestAppsDialog.prototype.showInternal_ =
       return;
     }
 
-    var title = str('SUGGEST_DIALOG_TITLE');
     var show = this.dialogText_ ?
         FileManagerDialogBase.prototype.showTitleAndTextDialog.call(
             this, title, this.dialogText_) :
@@ -259,9 +284,11 @@ SuggestAppsDialog.prototype.showInternal_ =
 
     this.webviewClient_ = new CWSContainerClient(
         this.webview_,
-        extension, mime, filename,
-        WEBVIEW_WIDTH, WEBVIEW_HEIGHT,
-        this.widgetUrl_, this.widgetOrigin_);
+        WEBVIEW_WIDTH,
+        WEBVIEW_HEIGHT,
+        this.widgetUrl_,
+        this.widgetOrigin_,
+        this.options_);
     this.webviewClient_.addEventListener(CWSContainerClient.Events.LOADED,
                                          this.onWidgetLoaded_.bind(this));
     this.webviewClient_.addEventListener(CWSContainerClient.Events.LOAD_FAILED,
@@ -279,9 +306,9 @@ SuggestAppsDialog.prototype.showInternal_ =
  * @private
  */
 SuggestAppsDialog.prototype.onWebstoreLinkClicked_ = function(e) {
-  var webStoreUrl =
-      FileTasks.createWebStoreLink(this.extension_, this.mimeType_);
-  util.visitURL(webStoreUrl);
+  if (!this.webStoreUrl_)
+    return;
+  util.visitURL(this.webStoreUrl_);
   this.state_ = SuggestAppsDialog.State.OPENING_WEBSTORE_CLOSING;
   this.hide();
 };
@@ -427,8 +454,8 @@ SuggestAppsDialog.prototype.hide = function(opt_originalOnHide) {
 
   this.webviewContainer_.removeChild(this.webview_);
   this.webview_ = null;
-  this.extension_ = null;
-  this.mime_ = null;
+  this.webStoreUrl_ = null;
+  this.options_ = null;
 
   FileManagerDialogBase.prototype.hide.call(
       this,
