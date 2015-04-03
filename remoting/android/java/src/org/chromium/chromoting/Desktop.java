@@ -15,7 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ImageButton;
 
 import org.chromium.chromoting.jni.JniInterface;
 
@@ -33,14 +32,10 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
     /** The surface that displays the remote host's desktop feed. */
     private DesktopView mRemoteHostDesktop;
 
-    /** The button used to show the action bar. */
-    private ImageButton mOverlayButton;
-
     /** Set of pressed keys for which we've sent TextEvent. */
     private Set<Integer> mPressedTextKeys = new TreeSet<Integer>();
 
     private ActivityLifecycleListener mActivityLifecycleListener;
-
 
     /** Called when the activity is first created. */
     @Override
@@ -48,15 +43,11 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
         super.onCreate(savedInstanceState);
         setContentView(R.layout.desktop);
         mRemoteHostDesktop = (DesktopView) findViewById(R.id.desktop_view);
-        mOverlayButton = (ImageButton) findViewById(R.id.desktop_overlay_button);
         mRemoteHostDesktop.setDesktop(this);
 
         // For this Activity, the home button in the action bar acts as a Disconnect button, so
         // set the description for accessibility/screen readers.
         getSupportActionBar().setHomeActionContentDescription(R.string.disconnect_myself_button);
-
-        // Ensure the overlay button is initially hidden.
-        showActionBar();
 
         View decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener(this);
@@ -131,9 +122,9 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
         // the action-bar should remain hidden.
         int fullscreenFlags = getSystemUiFlags();
         if ((visibility & fullscreenFlags) != 0) {
-            hideActionBar();
+            hideActionBarWithoutSystemUi();
         } else {
-            showActionBar();
+            showActionBarWithoutSystemUi();
         }
     }
 
@@ -147,17 +138,20 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
     }
 
     public void showActionBar() {
-        mOverlayButton.setVisibility(View.INVISIBLE);
-        getSupportActionBar().show();
+        showActionBarWithoutSystemUi();
 
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
 
+    /** Shows the action bar without changing SystemUiVisibility. */
+    private void showActionBarWithoutSystemUi() {
+        getSupportActionBar().show();
+    }
+
     @SuppressLint("InlinedApi")
     public void hideActionBar() {
-        mOverlayButton.setVisibility(View.VISIBLE);
-        getSupportActionBar().hide();
+        hideActionBarWithoutSystemUi();
 
         View decorView = getWindow().getDecorView();
 
@@ -171,15 +165,15 @@ public class Desktop extends ActionBarActivity implements View.OnSystemUiVisibil
         // keeping the navigation controls hidden. This flag was introduced in 4.4, later than
         // HIDE_NAVIGATION, and so a runtime check is needed before setting either of these flags.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            flags |= (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            flags |= (View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE);
         }
 
         decorView.setSystemUiVisibility(flags);
     }
 
-    /** The overlay button's onClick handler. */
-    public void onOverlayButtonPressed(@SuppressWarnings("unused") View view) {
-        showActionBar();
+    /** Hides the action bar without changing SystemUiVisibility. */
+    private void hideActionBarWithoutSystemUi() {
+        getSupportActionBar().hide();
     }
 
     /** Called whenever an action bar button is pressed. */
