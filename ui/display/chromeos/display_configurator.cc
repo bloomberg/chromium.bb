@@ -924,7 +924,8 @@ void DisplayConfigurator::OnConfigured(
     // |framebuffer_size| is empty in software mirroring mode, headless mode,
     // or all displays are off.
     DCHECK(!framebuffer_size.IsEmpty() ||
-           mirroring_controller_->SoftwareMirroringEnabled() ||
+           (mirroring_controller_ &&
+            mirroring_controller_->SoftwareMirroringEnabled()) ||
            new_display_state == MULTIPLE_DISPLAY_STATE_HEADLESS ||
            new_power_state == chromeos::DISPLAY_POWER_ALL_OFF);
 
