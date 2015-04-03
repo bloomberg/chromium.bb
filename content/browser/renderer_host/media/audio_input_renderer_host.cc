@@ -71,11 +71,13 @@ AudioInputRendererHost::AudioEntry::AudioEntry()
 AudioInputRendererHost::AudioEntry::~AudioEntry() {}
 
 AudioInputRendererHost::AudioInputRendererHost(
+    int render_process_id,
     media::AudioManager* audio_manager,
     MediaStreamManager* media_stream_manager,
     AudioMirroringManager* audio_mirroring_manager,
     media::UserInputMonitor* user_input_monitor)
     : BrowserMessageFilter(AudioMsgStart),
+      render_process_id_(render_process_id),
       audio_manager_(audio_manager),
       media_stream_manager_(media_stream_manager),
       audio_mirroring_manager_(audio_mirroring_manager),
@@ -419,10 +421,8 @@ void AudioInputRendererHost::DoCreateStream(
   entry->stream_id = stream_id;
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
   audio_log_->OnCreated(stream_id, audio_params, device_id);
-
-  // TODO(dalecurtis): Wire up input streams to show WebContents titles, needs
-  // AudioInputRendererHost converted to use RenderProcessID & RenderFrameID
-  // instead of RenderViewID.
+  MediaInternals::GetInstance()->SetWebContentsTitleForAudioLogEntry(
+      stream_id, render_process_id_, render_frame_id, audio_log_.get());
 }
 
 void AudioInputRendererHost::OnRecordStream(int stream_id) {
