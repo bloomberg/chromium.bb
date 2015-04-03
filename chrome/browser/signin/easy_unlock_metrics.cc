@@ -7,6 +7,11 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 
+void RecordEasyUnlockDidUserManuallyUnlockPhone(bool did_unlock) {
+  UMA_HISTOGRAM_BOOLEAN("EasyUnlock.AuthEvent.DidUserManuallyUnlockPhone",
+                        did_unlock);
+}
+
 void RecordEasyUnlockSigninDuration(const base::TimeDelta& duration) {
   UMA_HISTOGRAM_MEDIUM_TIMES("EasyUnlock.AuthEvent.SignIn.Duration", duration);
 }

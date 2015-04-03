@@ -6726,6 +6726,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="EasyUnlock.AuthEvent.DidUserManuallyUnlockPhone"
+    enum="EasyUnlockDidUserManuallyUnlockPhone">
+  <owner>isherman@google.com</owner>
+  <owner>xiaowenx@google.com</owner>
+  <owner>xiyuan@google.com</owner>
+  <summary>
+    Upon a successful Smart Lock unlock or signin, records whether the user's
+    phone was locked during any point while the lock screen was up. This can be
+    used to get a sense for whether users are using Smart Lock for Chrome
+    without something like Smart Lock for Android to keep their phones unlocked.
+  </summary>
+</histogram>
+
 <histogram name="EasyUnlock.AuthEvent.SignIn" enum="EasyUnlockAuthEvent">
   <owner>isherman@google.com</owner>
   <owner>xiaowenx@google.com</owner>
@@ -48102,6 +48115,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="-617422855" label="LGE Nexus 4"/>
   <int value="1286382027" label="Motorola XT1095"/>
   <int value="1881443083" label="LGE Nexus 5"/>
+</enum>
+
+<enum name="EasyUnlockDidUserManuallyUnlockPhone" type="int">
+  <int value="0" label="Never locked"/>
+  <int value="1" label="Manually unlocked"/>
 </enum>
 
 <enum name="EasyUnlockHasSecureScreenLock" type="int">

@@ -140,6 +140,9 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   // run should be set if the screen was locked by the Easy Unlock setup app.
   bool is_trial_run_;
 
+  // Whether the user's phone was ever locked while on the current lock screen.
+  bool did_see_locked_phone_;
+
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockScreenlockStateHandler);
 };
 

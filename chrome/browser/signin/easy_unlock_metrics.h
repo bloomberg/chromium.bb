@@ -73,6 +73,7 @@ enum EasyUnlockTrialRunEvent {
   EASY_UNLOCK_TRIAL_RUN_EVENT_COUNT  // Must be the last entry.
 };
 
+void RecordEasyUnlockDidUserManuallyUnlockPhone(bool did_unlock);
 void RecordEasyUnlockSigninDuration(const base::TimeDelta& duration);
 void RecordEasyUnlockSigninEvent(EasyUnlockAuthEvent event);
 void RecordEasyUnlockScreenUnlockDuration(const base::TimeDelta& duration);

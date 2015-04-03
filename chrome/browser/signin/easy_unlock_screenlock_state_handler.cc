@@ -84,6 +84,13 @@ bool TooltipContainsDeviceType(EasyUnlockScreenlockStateHandler::State state) {
                       STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH;
 }
 
+// Returns true iff the |state| corresponds to a locked remote device.
+bool IsLockedState(EasyUnlockScreenlockStateHandler::State state) {
+  return (state == EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED ||
+          state == EasyUnlockScreenlockStateHandler::
+                       STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH);
+}
+
 }  // namespace
 
 
@@ -96,7 +103,8 @@ EasyUnlockScreenlockStateHandler::EasyUnlockScreenlockStateHandler(
       screenlock_bridge_(screenlock_bridge),
       hardlock_state_(initial_hardlock_state),
       hardlock_ui_shown_(false),
-      is_trial_run_(false) {
+      is_trial_run_(false),
+      did_see_locked_phone_(false) {
   DCHECK(screenlock_bridge_);
   screenlock_bridge_->AddObserver(this);
 }
@@ -135,6 +143,9 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
       ScreenlockBridge::LockHandler::ONLINE_SIGN_IN) {
     return;
   }
+
+  if (IsLockedState(state_))
+    did_see_locked_phone_ = true;
 
   // No hardlock UI for trial run.
   if (!is_trial_run_ && hardlock_state_ != NO_HARDLOCK) {
@@ -212,6 +223,7 @@ void EasyUnlockScreenlockStateHandler::RecordClickOnLockIcon() {
 
 void EasyUnlockScreenlockStateHandler::OnScreenDidLock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
+  did_see_locked_phone_ = IsLockedState(state_);
   RefreshScreenlockState();
 }
 
@@ -221,6 +233,12 @@ void EasyUnlockScreenlockStateHandler::OnScreenDidUnlock(
     hardlock_state_ = NO_HARDLOCK;
   hardlock_ui_shown_ = false;
   is_trial_run_ = false;
+
+  // Upon a successful unlock event, record whether the user's phone was locked
+  // at any point while the lock screen was up.
+  if (state_ == STATE_AUTHENTICATED)
+    RecordEasyUnlockDidUserManuallyUnlockPhone(did_see_locked_phone_);
+  did_see_locked_phone_ = false;
 }
 
 void EasyUnlockScreenlockStateHandler::OnFocusedUserChanged(
