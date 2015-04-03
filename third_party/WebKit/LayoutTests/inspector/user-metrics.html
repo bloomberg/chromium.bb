@@ -10,7 +10,7 @@ function test()
 {
     InspectorFrontendHost.recordActionTaken = function(actionCode)
     {
-        InspectorTest.addResult("Action taken: " + nameOf(WebInspector.UserMetrics.Actions, actionCode));
+        InspectorTest.addResult("Action taken: " + nameOf(WebInspector.UserMetrics._ActionCodes, actionCode));
     }
 
     InspectorFrontendHost.recordPanelShown = function(panelCode)
@@ -28,9 +28,9 @@ function test()
     }
 
     InspectorTest.addResult("recordActionTaken:");
-    InspectorTest.dump(WebInspector.UserMetrics.Actions);
-    WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Actions.WindowDocked);
-    WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Actions.WindowUndocked);
+    InspectorTest.dump(WebInspector.UserMetrics._ActionCodes);
+    WebInspector.userMetrics.WindowDocked.record();
+    WebInspector.userMetrics.WindowUndocked.record();
 
     InspectorTest.addResult("\nrecordPanelShown:");
     InspectorTest.dump(WebInspector.UserMetrics._PanelCodes);
