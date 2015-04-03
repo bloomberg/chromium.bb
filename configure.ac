@@ -141,7 +141,7 @@ if test "x$enable_documentation" = "xyes"; then
 		AC_MSG_ERROR([Documentation build requested but graphviz's dot not found. Install graphviz or disable the documentation using --disable-documentation])
 	fi
 	AC_MSG_CHECKING([for compatible dot version])
-	dot_version=`$DOT -V 2>&1|$GREP -oP '(?<=version\W)@<:@0-9.@:>@*(?=\W(.*))'`
+	dot_version=`$DOT -V 2>&1|$GREP -o ['[0-9]*\.[0-9]*\.[0-9]*']`
 	AS_VERSION_COMPARE([$dot_version], [2.26.0],
 	                   [AC_MSG_RESULT([no])
 	                    AC_MSG_ERROR([Graphviz dot $dot_version too old. Graphviz 2.26+ required for documentation build. Install required graphviz version or disable the documentation using --disable-documentation])],
