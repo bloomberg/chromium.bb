@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<head>
+    <title>SRI with MIME types allowed</title>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+</head>
+<body>
+        <script>
+            var result = false;
+            function scriptLoaded() {
+                assert_true(result, "|result| is set to true.");
+                done();
+            }
+            function scriptError() {
+                assert_unreached("Script load should not result in an error.");
+            }
+        </script>
+        <script onload="scriptLoaded()" onerror="scriptError()" src='resources/setResultWithMIME.php?mime=application/javascript&value=true' integrity="type:application/javascript sha256;_CPhHgLf4bYjXZA6KVnegM7ECdy7A3f35ntfHeYy9zI="></script>
+</body>
