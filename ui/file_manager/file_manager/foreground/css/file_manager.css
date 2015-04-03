@@ -1048,10 +1048,10 @@ body[type='full-page'] .detail-name .detail-icon {
 }
 
 .thumbnail-grid .checkmark {
+  -webkit-margin-start: 2px;
   background-position: center;
   background-repeat: no-repeat;
   height: 36px;
-  left: 2px;
   opacity: 0;
   position: absolute;
   top: 2px;
