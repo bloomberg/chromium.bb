@@ -653,12 +653,20 @@ void UserMediaClientImpl::OnCreateNativeTracksCompleted(
   DVLOG(1) << "UserMediaClientImpl::OnCreateNativeTracksComplete("
            << "{request_id = " << request->request_id << "} "
            << "{result = " << result << "})";
-  if (result == content::MEDIA_DEVICE_OK)
-    GetUserMediaRequestSucceeded(request->web_stream, &request->request);
-  else
-    GetUserMediaRequestFailed(&request->request, result, result_name);
 
+  // Completing the request can lead to that blink call
+  // cancelUserMediaRequest with the blink request and the UserMediaClientImpl
+  // is destroyed. Therefore, we copy (blink objects are smart pointers) the
+  // following objects and delete |request| before completing the blink request.
+  blink::WebMediaStream stream = request->web_stream;
+  blink::WebUserMediaRequest blink_request = request->request;
+  blink::WebString result_name_copy = result_name;
   DeleteUserMediaRequestInfo(request);
+
+  if (result == content::MEDIA_DEVICE_OK)
+    GetUserMediaRequestSucceeded(stream, &blink_request);
+  else
+    GetUserMediaRequestFailed(&blink_request, result, result_name_copy);
 }
 
 void UserMediaClientImpl::OnDevicesEnumerated(
