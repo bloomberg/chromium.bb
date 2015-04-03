@@ -118,8 +118,10 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
     // The fading length in pixels is passed by the caller.
     var mask = 'linear-gradient(' + dir + ', rgba(0,0,0,1), rgba(0,0,0,1) ' +
         styles.textFadePos + 'px, rgba(0,0,0,0))';
+    link.style.lineHeight = 'auto';
     link.style.textOverflow = 'clip';
     link.style.webkitMask = mask;
+    link.style.whiteSpace = 'nowrap';
   }
 
   link.href = href;
@@ -267,6 +269,7 @@ function fillMostVisited(location, fill) {
     // Means that the suggestion data comes from the server. Create data object.
     data = {
       url: params.url,
+      largeIconUrl: params.liu || '',
       thumbnailUrl: params.tu || '',
       title: params.ti || '',
       direction: params.di || '',
@@ -281,6 +284,7 @@ function fillMostVisited(location, fill) {
     // Allow server-side provider override.
     data.provider = params.pr || CLIENT_PROVIDER_NAME;
   }
+
   if (isFinite(params.dummy) && parseInt(params.dummy, 10)) {
     data.dummy = true;
   }

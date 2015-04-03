@@ -448,7 +448,7 @@ function updateContentWidth() {
   var innerWidth = window.innerWidth || maxSnapSize;
   // Each tile has left and right margins that sum to NTP_DESIGN.tileMargin.
   var availableWidth = innerWidth + NTP_DESIGN.tileMargin -
-      MIN_TOTAL_HORIZONTAL_PADDING;
+      NTP_DESIGN.fakeboxWingSize * 2 - MIN_TOTAL_HORIZONTAL_PADDING;
   var newNumColumns = Math.floor(availableWidth / tileRequiredWidth);
   if (newNumColumns < MIN_NUM_COLUMNS)
     newNumColumns = MIN_NUM_COLUMNS;
@@ -464,6 +464,7 @@ function updateContentWidth() {
   if (fakebox) {
     // -2 to account for border.
     var fakeboxWidth = (tilesContainerWidth - NTP_DESIGN.tileMargin - 2);
+    fakeboxWidth += NTP_DESIGN.fakeboxWingSize * 2;
     fakebox.style.width = fakeboxWidth + 'px';
   }
   return true;
@@ -667,6 +668,11 @@ function init() {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }
 
+  // Modify design for experimental icon NTP, if specified.
+  if (configData.useIcons)
+    modifyNtpDesignForIcons();
+  document.querySelector('#ntp-contents').classList.add(NTP_DESIGN.mainClass);
+
   // Hide notifications after fade out, so we can't focus on links via keyboard.
   notification.addEventListener('webkitTransitionEnd', hideNotification);
 
@@ -736,6 +742,7 @@ function init() {
         if (text) {
           searchboxApiHandle.paste(text);
         }
+        setFakeboxDragFocus(false);
       };
       inputbox.ondragenter = function() {
         setFakeboxDragFocus(true);
@@ -761,9 +768,10 @@ function init() {
   iframe.id = 'mv-single';
   var args = [];
 
-  if (searchboxApiHandle.rtl) {
+  if (searchboxApiHandle.rtl)
     args.push('rtl=1');
-  }
+  if (window.configData.useIcons)
+    args.push('icons=1');
 
   args.push('removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));

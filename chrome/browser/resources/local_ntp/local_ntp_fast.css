@@ -167,17 +167,39 @@ body.fakebox-focused #cursor {
   text-align: -webkit-center;
 }
 
+.icon-ntp #most-visited {
+  margin-top: calc(100px - 36px);
+}
+
 /* Non-Google pages have no Fakebox, so don't need top margin. */
 .non-google-page #most-visited {
   margin-top: 0;
 }
 
 #mv-tiles {
-  height: calc(2 * 146px);
-  line-height: 146px;
   margin: 0;
   position: relative;
   text-align: -webkit-auto;
+}
+
+.thumb-ntp #mv-tiles {
+  height: calc(2 * 146px);
+  line-height: 146px;
+}
+
+.icon-ntp #mv-tiles {
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+  height: calc(2 * 120px);
+  padding: calc(36px - 18px) calc(36px - 18px - 12px);
+}
+
+.icon-ntp.dark #mv-tiles {
+  background: rgba(0,0,0,0.4);
+}
+
+.default-theme.icon-ntp #mv-tiles {
+  background: none;
 }
 
 #mv-notice-x {
@@ -216,6 +238,10 @@ html[dir=rtl] #mv-notice-x {
   font-weight: bold;
   opacity: 1;
   padding: 10px 0;
+}
+
+.icon-ntp #mv-notice {
+  margin-top: 30px;
 }
 
 #mv-notice span {

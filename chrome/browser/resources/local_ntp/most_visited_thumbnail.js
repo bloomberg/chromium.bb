@@ -71,13 +71,14 @@ window.addEventListener('DOMContentLoaded', function() {
       image.src = src;
     }
 
+    var useIcons = params['icons'] == '1';
     if (data.dummy) {
       showEmptyTile();
       logEvent(NTP_LOGGING_EVENT_TYPE.NTP_EXTERNAL_TILE);
-    } else if (data.largeIconUrl) {
+    } else if (useIcons && data.largeIconUrl) {
       createThumbnail(data.largeIconUrl, 'large-icon');
       // TODO(huangs): Log event for large icons.
-    } else if (data.thumbnailUrl) {
+    } else if (!useIcons && data.thumbnailUrl) {
       createThumbnail(data.thumbnailUrl, 'thumbnail');
       logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_TILE);
     } else if (data.domain) {

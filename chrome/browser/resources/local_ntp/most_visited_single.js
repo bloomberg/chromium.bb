@@ -47,6 +47,13 @@ var LOG_TYPE = {
 
 
 /**
+ * Whether to use icons instead of thumbnails.
+ * @const {number}
+ */
+var USE_ICONS = false;
+
+
+/**
  * Total number of tiles to show at any time. If the host page doesn't send
  * enough tiles, we fill them blank.
  * @const {number}
@@ -150,28 +157,34 @@ var updateTheme = function(info) {
   var themeStyle = [];
 
   if (info.tileBorderColor) {
-    themeStyle.push('.mv-tile {' +
+    themeStyle.push('.thumb-ntp .mv-tile {' +
         'border: 1px solid ' + info.tileBorderColor + '; }');
   }
   if (info.tileHoverBorderColor) {
-    themeStyle.push('.mv-tile:hover {' +
+    themeStyle.push('.thumb-ntp .mv-tile:hover {' +
         'border-color: ' + info.tileHoverBorderColor + '; }');
   }
   if (info.isThemeDark) {
-    themeStyle.push('.mv-tile, .mv-empty-tile { background: rgb(51,51,51); }');
-    themeStyle.push('.mv-thumb.failed-img { background-color: #555; }');
-    themeStyle.push('.mv-thumb.failed-img::after { border-color: #333; }');
-    themeStyle.push('.mv-x { ' +
+    themeStyle.push('.thumb-ntp .mv-tile, .thumb-ntp .mv-empty-tile { ' +
+        'background: rgb(51,51,51); }');
+    themeStyle.push('.thumb-ntp .mv-thumb.failed-img { ' +
+        'background-color: #555; }');
+    themeStyle.push('.thumb-ntp .mv-thumb.failed-img::after { ' +
+        'border-color: #333; }');
+    themeStyle.push('.thumb-ntp .mv-x { ' +
         'background: linear-gradient(to left, ' +
         'rgb(51,51,51) 60%, transparent); }');
-    themeStyle.push('html[dir=rtl] .mv-x { ' +
+    themeStyle.push('html[dir=rtl] .thumb-ntp .mv-x { ' +
         'background: linear-gradient(to right, ' +
         'rgb(51,51,51) 60%, transparent); }');
-    themeStyle.push('.mv-x::after { ' +
+    themeStyle.push('.thumb-ntp .mv-x::after { ' +
         'background-color: rgba(255,255,255,0.7); }');
-    themeStyle.push('.mv-x:hover::after { background-color: #fff; }');
-    themeStyle.push('.mv-x:active::after { ' +
+    themeStyle.push('.thumb-ntp .mv-x:hover::after { ' +
+        'background-color: #fff; }');
+    themeStyle.push('.thumb-ntp .mv-x:active::after { ' +
         'background-color: rgba(255,255,255,0.5); }');
+    themeStyle.push('.icon-ntp .mv-tile:focus { ' +
+        'background: rgba(255,255,255,0.2); }');
   }
   if (info.tileTitleColor) {
     themeStyle.push('body { color: ' + info.tileTitleColor + '; }');
@@ -210,6 +223,8 @@ var removeAllOldTiles = function() {
  * we are ready to show the new tiles and drop the old ones.
  */
 var showTiles = function() {
+  removeAllOldTiles();
+
   // Store the tiles on the current closure.
   var cur = tiles;
 
@@ -306,7 +321,9 @@ var renderTile = function(data) {
   tile.setAttribute('data-tid', data.tid);
   var tooltip = queryArgs['removeTooltip'] || '';
   var html = [];
-  html.push('<div class="mv-favicon"></div>');
+  if (!USE_ICONS) {
+    html.push('<div class="mv-favicon"></div>');
+  }
   html.push('<div class="mv-title"></div><div class="mv-thumb"></div>');
   html.push('<div title="' + tooltip + '" class="mv-x"></div>');
   tile.innerHTML = html.join('');
@@ -329,14 +346,16 @@ var renderTile = function(data) {
   title.innerText = data.title;
   title.style.direction = data.direction || 'ltr';
 
+  var hasIcon = USE_ICONS && data.largeIconUrl;
+  var hasThumb = !USE_ICONS && data.thumbnailUrl;
   var thumb = tile.querySelector('.mv-thumb');
-  if (data.largeIconUrl || data.thumbnailUrl) {
+  if (hasIcon || hasThumb) {
     var img = document.createElement('img');
     img.title = data.title;
-    if (data.largeIconUrl) {
+    if (hasIcon) {
       img.src = data.largeIconUrl;
       img.classList.add('large-icon');
-    } else {
+    } else {  // hasThumb
       img.src = data.thumbnailUrl;
       img.classList.add('thumbnail');
     }
@@ -359,21 +378,23 @@ var renderTile = function(data) {
     thumb.classList.add('failed-img');
   }
 
-  var favicon = tile.querySelector('.mv-favicon');
-  if (data.faviconUrl) {
-    var fi = document.createElement('img');
-    fi.src = data.faviconUrl;
-    // Set the title to empty so screen readers won't say the image name.
-    fi.title = '';
-    loadedCounter += 1;
-    fi.addEventListener('load', countLoad);
-    fi.addEventListener('error', countLoad);
-    fi.addEventListener('error', function(ev) {
+  if (!USE_ICONS) {
+    var favicon = tile.querySelector('.mv-favicon');
+    if (data.faviconUrl) {
+      var fi = document.createElement('img');
+      fi.src = data.faviconUrl;
+      // Set the title to empty so screen readers won't say the image name.
+      fi.title = '';
+      loadedCounter += 1;
+      fi.addEventListener('load', countLoad);
+      fi.addEventListener('error', countLoad);
+      fi.addEventListener('error', function(ev) {
+        favicon.classList.add('failed-favicon');
+      });
+      favicon.appendChild(fi);
+    } else {
       favicon.classList.add('failed-favicon');
-    });
-    favicon.appendChild(fi);
-  } else {
-    favicon.classList.add('failed-favicon');
+    }
   }
 
   var mvx = tile.querySelector('.mv-x');
@@ -403,6 +424,12 @@ var init = function() {
     if (val[0] == '') continue;
     queryArgs[decodeURIComponent(val[0])] = decodeURIComponent(val[1]);
   }
+
+  // Apply class for icon NTP, if specified.
+  USE_ICONS = queryArgs['icons'] == '1';
+  // Duplicating NTP_DESIGN.mainClass.
+  document.querySelector('#most-visited').classList.add(
+      USE_ICONS ? 'icon-ntp' : 'thumb-ntp');
 
   // Enable RTL.
   if (queryArgs['rtl'] == '1') {
