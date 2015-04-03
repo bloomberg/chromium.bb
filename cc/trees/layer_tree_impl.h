@@ -332,6 +332,8 @@ class CC_EXPORT LayerTreeImpl {
       scoped_ptr<PendingPageScaleAnimation> pending_animation);
   scoped_ptr<PendingPageScaleAnimation> TakePendingPageScaleAnimation();
 
+  void GatherFrameTimingRequestIds(std::vector<int64_t>* request_ids);
+
  protected:
   explicit LayerTreeImpl(
       LayerTreeHostImpl* layer_tree_host_impl,

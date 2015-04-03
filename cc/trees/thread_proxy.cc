@@ -366,6 +366,16 @@ void ThreadProxy::DidSwapBuffersCompleteOnImplThread() {
 
 void ThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
   impl().layer_tree_host_impl->WillBeginImplFrame(args);
+  if (impl().last_processed_begin_main_frame_args.IsValid()) {
+    // Last processed begin main frame args records the frame args that we sent
+    // to the main thread for the last frame that we've processed. If that is
+    // set, that means the current frame is one past the frame in which we've
+    // finished the processing.
+    impl().layer_tree_host_impl->RecordMainFrameTiming(
+        impl().last_processed_begin_main_frame_args,
+        impl().layer_tree_host_impl->CurrentBeginFrameArgs());
+    impl().last_processed_begin_main_frame_args = BeginFrameArgs();
+  }
 }
 
 void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {
@@ -691,6 +701,10 @@ void ThreadProxy::ScheduledActionSendBeginMainFrame() {
       impl().layer_tree_host_impl->memory_allocation_priority_cutoff();
   begin_main_frame_state->evicted_ui_resources =
       impl().layer_tree_host_impl->EvictedUIResourcesExist();
+  // TODO(vmpstr): This needs to be fixed if
+  // main_frame_before_activation_enabled is set, since we might run this code
+  // twice before recording a duration. crbug.com/469824
+  impl().last_begin_main_frame_args = begin_main_frame_state->begin_frame_args;
   Proxy::MainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ThreadProxy::BeginMainFrame,
@@ -935,8 +949,11 @@ void ThreadProxy::BeginMainFrameAbortedOnImplThread(
   DCHECK(impl().scheduler->CommitPending());
   DCHECK(!impl().layer_tree_host_impl->pending_tree());
 
-  if (CommitEarlyOutHandledCommit(reason))
+  if (CommitEarlyOutHandledCommit(reason)) {
     SetInputThrottledUntilCommitOnImplThread(false);
+    impl().last_processed_begin_main_frame_args =
+        impl().last_begin_main_frame_args;
+  }
   impl().layer_tree_host_impl->BeginMainFrameAborted(reason);
   impl().scheduler->BeginMainFrameAborted(reason);
 }
@@ -1367,6 +1384,8 @@ void ThreadProxy::DidActivateSyncTree() {
   }
 
   impl().timing_history.DidActivateSyncTree();
+  impl().last_processed_begin_main_frame_args =
+      impl().last_begin_main_frame_args;
 }
 
 void ThreadProxy::DidPrepareTiles() {

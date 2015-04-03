@@ -32,6 +32,20 @@ class CC_EXPORT FrameTimingTracker {
   using CompositeTimingSet =
       base::hash_map<int, std::vector<CompositeTimingEvent>>;
 
+  struct CC_EXPORT MainFrameTimingEvent {
+    MainFrameTimingEvent(int frame_id,
+                         base::TimeTicks timestamp,
+                         base::TimeTicks end_time);
+    ~MainFrameTimingEvent();
+
+    int frame_id;
+    base::TimeTicks timestamp;
+    base::TimeTicks end_time;
+  };
+
+  using MainFrameTimingSet =
+      base::hash_map<int, std::vector<MainFrameTimingEvent>>;
+
   static scoped_ptr<FrameTimingTracker> Create();
 
   ~FrameTimingTracker();
@@ -41,7 +55,11 @@ class CC_EXPORT FrameTimingTracker {
   // [ {f_id1,r_id1,t1}, {f_id2,r_id1,t2}, {f_id3,r_id2,t3} ]
   // ====>
   // [ {r_id1,<{f_id1,t1},{f_id2,t2}>}, {r_id2,<{f_id3,t3}>} ]
-  scoped_ptr<CompositeTimingSet> GroupCountsByRectId();
+  scoped_ptr<CompositeTimingSet> GroupCompositeCountsByRectId();
+
+  // This routine takes all of the individual MainFrameEvents stored in the
+  // tracker and collects them by "rect_id", as in the example below.
+  scoped_ptr<MainFrameTimingSet> GroupMainFrameCountsByRectId();
 
   // This routine takes a timestamp and an array of frame_id,rect_id pairs
   // and generates CompositeTimingEvents (frame_id, timestamp) and adds them to
@@ -50,10 +68,16 @@ class CC_EXPORT FrameTimingTracker {
   void SaveTimeStamps(base::TimeTicks timestamp,
                       const std::vector<FrameAndRectIds>& frame_ids);
 
+  void SaveMainFrameTimeStamps(const std::vector<int64_t>& request_ids,
+                               base::TimeTicks main_frame_time,
+                               base::TimeTicks end_time,
+                               int source_frame_number);
+
  private:
   FrameTimingTracker();
 
   scoped_ptr<CompositeTimingSet> composite_events_;
+  scoped_ptr<MainFrameTimingSet> main_frame_events_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTimingTracker);
 };

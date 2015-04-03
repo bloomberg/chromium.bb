@@ -1044,6 +1044,11 @@ void LayerImpl::PassFrameTimingRequests(
   SetNeedsPushProperties();
 }
 
+void LayerImpl::GatherFrameTimingRequestIds(std::vector<int64_t>* request_ids) {
+  for (const auto& request : frame_timing_requests_)
+    request_ids->push_back(request.id());
+}
+
 void LayerImpl::SetTransform(const gfx::Transform& transform) {
   if (transform_ == transform)
     return;

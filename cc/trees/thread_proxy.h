@@ -143,6 +143,10 @@ class CC_EXPORT ThreadProxy : public Proxy,
 
     scoped_ptr<BeginFrameSource> external_begin_frame_source;
 
+    // Values used to keep track of frame durations. Used only in frame timing.
+    BeginFrameArgs last_begin_main_frame_args;
+    BeginFrameArgs last_processed_begin_main_frame_args;
+
     scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl;
     base::WeakPtrFactory<ThreadProxy> weak_factory;
   };

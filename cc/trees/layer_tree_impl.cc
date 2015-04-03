@@ -34,7 +34,6 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
-
 // This class exists to split the LayerScrollOffsetDelegate between the
 // InnerViewportScrollLayer and the OuterViewportScrollLayer in a manner
 // that never requires the embedder or LayerImpl to know about.
@@ -133,6 +132,20 @@ void LayerTreeImpl::RecreateResources() {
         root_layer_.get(),
         [](LayerImpl* layer) { layer->RecreateResources(); });
   }
+}
+
+void LayerTreeImpl::GatherFrameTimingRequestIds(
+    std::vector<int64_t>* request_ids) {
+  if (!root_layer_)
+    return;
+
+  // TODO(vmpstr): Early out if there are no requests on any of the layers. For
+  // that, we need to inform LayerTreeImpl whenever there are requests when we
+  // get them.
+  LayerTreeHostCommon::CallFunctionForSubtree(
+      root_layer_.get(), [request_ids](LayerImpl* layer) {
+        layer->GatherFrameTimingRequestIds(request_ids);
+      });
 }
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {

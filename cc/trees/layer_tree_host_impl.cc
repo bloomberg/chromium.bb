@@ -2120,6 +2120,20 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
                                      settings_.renderer_settings.refresh_rate));
 }
 
+void LayerTreeHostImpl::RecordMainFrameTiming(
+    const BeginFrameArgs& start_of_main_frame_args,
+    const BeginFrameArgs& expected_next_main_frame_args) {
+  std::vector<int64_t> request_ids;
+  active_tree_->GatherFrameTimingRequestIds(&request_ids);
+  if (request_ids.empty())
+    return;
+
+  base::TimeTicks start_time = start_of_main_frame_args.frame_time;
+  base::TimeTicks end_time = expected_next_main_frame_args.frame_time;
+  frame_timing_tracker_->SaveMainFrameTimeStamps(
+      request_ids, start_time, end_time, active_tree_->source_frame_number());
+}
+
 void LayerTreeHostImpl::DestroyTileManager() {
   tile_manager_ = nullptr;
   resource_pool_ = nullptr;

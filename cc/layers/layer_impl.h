@@ -596,6 +596,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   const std::vector<FrameTimingRequest>& frame_timing_requests() const {
     return frame_timing_requests_;
   }
+  void GatherFrameTimingRequestIds(std::vector<int64_t>* request_ids);
 
   SyncedScrollOffset* synced_scroll_offset() { return scroll_offset_.get(); }
 

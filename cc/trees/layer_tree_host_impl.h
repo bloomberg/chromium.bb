@@ -536,6 +536,19 @@ class CC_EXPORT LayerTreeHostImpl
                              const gfx::Point& viewport_point,
                              bool is_wheel_scroll);
 
+  // Record main frame timing information.
+  // |start_of_main_frame_args| is the BeginFrameArgs of the beginning of the
+  // main frame (ie the frame that kicked off the main frame).
+  // |expected_next_main_frame_args| is the BeginFrameArgs of the frame that
+  // follows the completion of the main frame (whether it is activation or some
+  // other completion, such as early out). Note that if there is a main frame
+  // scheduled in that frame, then this BeginFrameArgs will become the main
+  // frame args. However, if no such frame is scheduled, then this _would_ be
+  // the main frame args if it was scheduled.
+  void RecordMainFrameTiming(
+      const BeginFrameArgs& start_of_main_frame_args,
+      const BeginFrameArgs& expected_next_main_frame_args);
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,

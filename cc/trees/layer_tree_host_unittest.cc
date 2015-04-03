@@ -6463,16 +6463,35 @@ class LayerTreeHostTestFrameTimingRequestsSaveTimestamps
     // TODO(vmpstr): Change this to read things from the main thread when this
     // information is propagated to the main thread (not yet implemented).
     FrameTimingTracker* tracker = host_impl->frame_timing_tracker();
-    scoped_ptr<FrameTimingTracker::CompositeTimingSet> timing_set =
-        tracker->GroupCountsByRectId();
-    EXPECT_EQ(1u, timing_set->size());
-    auto rect_1_it = timing_set->find(1);
-    EXPECT_TRUE(rect_1_it != timing_set->end());
-    const auto& timing_events = rect_1_it->second;
-    EXPECT_EQ(1u, timing_events.size());
-    EXPECT_EQ(host_impl->active_tree()->source_frame_number(),
-              timing_events[0].frame_id);
-    EXPECT_GT(timing_events[0].timestamp, base::TimeTicks());
+
+    // Check composite events.
+    {
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> timing_set =
+          tracker->GroupCompositeCountsByRectId();
+      EXPECT_EQ(1u, timing_set->size());
+      auto rect_1_it = timing_set->find(1);
+      EXPECT_TRUE(rect_1_it != timing_set->end());
+      const auto& timing_events = rect_1_it->second;
+      EXPECT_EQ(1u, timing_events.size());
+      EXPECT_EQ(host_impl->active_tree()->source_frame_number(),
+                timing_events[0].frame_id);
+      EXPECT_GT(timing_events[0].timestamp, base::TimeTicks());
+    }
+
+    // Check main frame events.
+    {
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> timing_set =
+          tracker->GroupMainFrameCountsByRectId();
+      EXPECT_EQ(2u, timing_set->size());
+      auto rect_1_it = timing_set->find(1);
+      EXPECT_TRUE(rect_1_it != timing_set->end());
+      const auto& timing_events = rect_1_it->second;
+      EXPECT_EQ(1u, timing_events.size());
+      EXPECT_EQ(host_impl->active_tree()->source_frame_number(),
+                timing_events[0].frame_id);
+      EXPECT_GT(timing_events[0].timestamp, base::TimeTicks());
+      EXPECT_GT(timing_events[0].end_time, timing_events[0].timestamp);
+    }
 
     EndTest();
   }
