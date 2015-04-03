@@ -270,7 +270,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void LostMouseLock() override;
   void SetIsLoading(bool is_loading) override;
   void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event) override;
-  void OnPointerEventActivate() override;
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event) override;
   gfx::Rect GetRootWindowResizerRect() const override;
 

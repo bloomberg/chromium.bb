@@ -573,7 +573,6 @@ class Browser : public TabStripModelObserver,
                          bool* proceed_to_fire_unload) override;
   bool ShouldFocusLocationBarByDefault(content::WebContents* source) override;
   void SetFocusToLocationBar(bool select_all) override;
-  int GetExtraRenderViewHeight() const override;
   void ViewSourceForTab(content::WebContents* source,
                         const GURL& page_url) override;
   void ViewSourceForFrame(content::WebContents* source,

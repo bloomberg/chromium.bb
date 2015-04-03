@@ -298,12 +298,6 @@ class BrowserWindow : public ui::BaseWindow {
   // indicating that it's time to redraw everything.
   virtual void UserChangedTheme() = 0;
 
-  // Get extra vertical height that the render view should add to its requests
-  // to webkit. This can help prevent sending extraneous layout/repaint requests
-  // when the delegate is in the process of resizing the tab contents view (e.g.
-  // during infobar animations).
-  virtual int GetExtraRenderViewHeight() const = 0;
-
   // Notification that |contents| got the focus through user action (click
   // on the page).
   virtual void WebContentsFocused(content::WebContents* contents) = 0;
