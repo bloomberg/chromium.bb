@@ -621,6 +621,7 @@ public:
     static AccessibilityRole ariaRoleToWebCoreRole(const String&);
     static IntRect boundingBoxForQuads(LayoutObject*, const Vector<FloatQuad>&);
     static const AtomicString& roleName(AccessibilityRole);
+    static const AtomicString& internalRoleName(AccessibilityRole);
     static bool isInsideFocusableElementOrARIAWidget(const Node&);
 
     bool hasInheritedPresentationalRole() const { return m_cachedHasInheritedPresentationalRole; }

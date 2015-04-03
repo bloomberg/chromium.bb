@@ -126,6 +126,134 @@ const RoleEntry roles[] = {
     { "treeitem", TreeItemRole }
 };
 
+struct InternalRoleEntry {
+    AccessibilityRole webcoreRole;
+    const char* internalRoleName;
+};
+
+const InternalRoleEntry internalRoles[] = {
+    { UnknownRole, "Unknown" },
+    { AlertDialogRole, "AlertDialog" },
+    { AlertRole, "Alert" },
+    { AnnotationRole, "Annotation" },
+    { ApplicationRole, "Application" },
+    { ArticleRole, "Article" },
+    { BannerRole, "Banner" },
+    { BlockquoteRole, "Blockquote" },
+    { BusyIndicatorRole, "BusyIndicator" },
+    { ButtonRole, "Button" },
+    { CanvasRole, "Canvas" },
+    { CaptionRole, "Caption" },
+    { CellRole, "Cell" },
+    { CheckBoxRole, "CheckBox" },
+    { ColorWellRole, "ColorWell" },
+    { ColumnHeaderRole, "ColumnHeader" },
+    { ColumnRole, "Column" },
+    { ComboBoxRole, "ComboBox" },
+    { ComplementaryRole, "Complementary" },
+    { ContentInfoRole, "ContentInfo" },
+    { DateRole, "Date" },
+    { DateTimeRole, "DateTime" },
+    { DefinitionRole, "Definition" },
+    { DescriptionListDetailRole, "DescriptionListDetail" },
+    { DescriptionListRole, "DescriptionList" },
+    { DescriptionListTermRole, "DescriptionListTerm" },
+    { DetailsRole, "Details" },
+    { DialogRole, "Dialog" },
+    { DirectoryRole, "Directory" },
+    { DisclosureTriangleRole, "DisclosureTriangle" },
+    { DivRole, "Div" },
+    { DocumentRole, "Document" },
+    { EmbeddedObjectRole, "EmbeddedObject" },
+    { FigcaptionRole, "Figcaption" },
+    { FigureRole, "Figure" },
+    { FooterRole, "Footer" },
+    { FormRole, "Form" },
+    { GridRole, "Grid" },
+    { GroupRole, "Group" },
+    { HeadingRole, "Heading" },
+    { IframePresentationalRole, "IframePresentational" },
+    { IframeRole, "Iframe" },
+    { IgnoredRole, "Ignored" },
+    { ImageMapLinkRole, "ImageMapLink" },
+    { ImageMapRole, "ImageMap" },
+    { ImageRole, "Image" },
+    { InlineTextBoxRole, "InlineTextBox" },
+    { LabelRole, "Label" },
+    { LegendRole, "Legend" },
+    { LinkRole, "Link" },
+    { ListBoxOptionRole, "ListBoxOption" },
+    { ListBoxRole, "ListBox" },
+    { ListItemRole, "ListItem" },
+    { ListMarkerRole, "ListMarker" },
+    { ListRole, "List" },
+    { LogRole, "Log" },
+    { MainRole, "Main" },
+    { MarqueeRole, "Marquee" },
+    { MathRole, "Math" },
+    { MenuBarRole, "MenuBar" },
+    { MenuButtonRole, "MenuButton" },
+    { MenuItemRole, "MenuItem" },
+    { MenuItemCheckBoxRole, "MenuItemCheckBox" },
+    { MenuItemRadioRole, "MenuItemRadio" },
+    { MenuListOptionRole, "MenuListOption" },
+    { MenuListPopupRole, "MenuListPopup" },
+    { MenuRole, "Menu" },
+    { MeterRole, "Meter" },
+    { NavigationRole, "Navigation" },
+    { NoneRole, "None" },
+    { NoteRole, "Note" },
+    { OutlineRole, "Outline" },
+    { ParagraphRole, "Paragraph" },
+    { PopUpButtonRole, "PopUpButton" },
+    { PreRole, "Pre" },
+    { PresentationalRole, "Presentational" },
+    { ProgressIndicatorRole, "ProgressIndicator" },
+    { RadioButtonRole, "RadioButton" },
+    { RadioGroupRole, "RadioGroup" },
+    { RegionRole, "Region" },
+    { RootWebAreaRole, "RootWebArea" },
+    { RowHeaderRole, "RowHeader" },
+    { RowRole, "Row" },
+    { RubyRole, "Ruby" },
+    { RulerRole, "Ruler" },
+    { SVGRootRole, "SVGRoot" },
+    { ScrollAreaRole, "ScrollArea" },
+    { ScrollBarRole, "ScrollBar" },
+    { SeamlessWebAreaRole, "SeamlessWebArea" },
+    { SearchRole, "Search" },
+    { SearchBoxRole, "SearchBox" },
+    { SliderRole, "Slider" },
+    { SliderThumbRole, "SliderThumb" },
+    { SpinButtonPartRole, "SpinButtonPart" },
+    { SpinButtonRole, "SpinButton" },
+    { SplitterRole, "Splitter" },
+    { StaticTextRole, "StaticText" },
+    { StatusRole, "Status" },
+    { SwitchRole, "Switch" },
+    { TabGroupRole, "TabGroup" },
+    { TabListRole, "TabList" },
+    { TabPanelRole, "TabPanel" },
+    { TabRole, "Tab" },
+    { TableHeaderContainerRole, "TableHeaderContainer" },
+    { TableRole, "Table" },
+    { TextAreaRole, "TextArea" },
+    { TextFieldRole, "TextField" },
+    { TimeRole, "Time" },
+    { TimerRole, "Timer" },
+    { ToggleButtonRole, "ToggleButton" },
+    { ToolbarRole, "Toolbar" },
+    { TreeGridRole, "TreeGrid" },
+    { TreeItemRole, "TreeItem" },
+    { TreeRole, "Tree" },
+    { UserInterfaceTooltipRole, "UserInterfaceTooltip" },
+    { WebAreaRole, "WebArea" },
+    { LineBreakRole, "LineBreak" },
+    { WindowRole, "Window" }
+};
+
+static_assert(WTF_ARRAY_LENGTH(internalRoles) == NumRoles, "Not all internal roles have an entry in internalRoles array");
+
 // Roles which we need to map in the other direction
 const RoleEntry reverseRoles[] = {
     { "button", ToggleButtonRole },
@@ -159,6 +287,15 @@ static Vector<AtomicString>* createRoleNameVector()
         (*roleNameVector)[reverseRoles[i].webcoreRole] = AtomicString(reverseRoles[i].ariaRole);
 
     return roleNameVector;
+}
+
+static Vector<AtomicString>* createInternalRoleNameVector()
+{
+    Vector<AtomicString>* internalRoleNameVector = new Vector<AtomicString>(NumRoles);
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(internalRoles); i++)
+        (*internalRoleNameVector)[internalRoles[i].webcoreRole] = AtomicString(internalRoles[i].internalRoleName);
+
+    return internalRoleNameVector;
 }
 
 const char* ariaWidgets[] = {
@@ -1151,6 +1288,13 @@ const AtomicString& AXObject::roleName(AccessibilityRole role)
     static const Vector<AtomicString>* roleNameVector = createRoleNameVector();
 
     return roleNameVector->at(role);
+}
+
+const AtomicString& AXObject::internalRoleName(AccessibilityRole role)
+{
+    static const Vector<AtomicString>* internalRoleNameVector = createInternalRoleNameVector();
+
+    return internalRoleNameVector->at(role);
 }
 
 } // namespace blink
