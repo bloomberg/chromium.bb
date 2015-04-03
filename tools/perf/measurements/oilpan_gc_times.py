@@ -4,54 +4,63 @@
 
 import os
 
+from measurements import smoothness_controller
+from measurements import timeline_controller
+from telemetry import benchmark
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
-from telemetry.page.actions import action_runner
 from telemetry.page import page_test
+from telemetry.page.actions import action_runner
+from telemetry.results import results_options
 from telemetry.timeline.model import TimelineModel
 from telemetry.util import statistics
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 from telemetry.value import trace
 
-from measurements import smoothness_controller
-from measurements import timeline_controller
-
 
 _CR_RENDERER_MAIN = 'CrRendererMain'
 _RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
-_NAMES_TO_DUMP = ['oilpan_precise_mark',
-                  'oilpan_precise_lazy_sweep',
-                  'oilpan_precise_complete_sweep',
-                  'oilpan_conservative_mark',
-                  'oilpan_conservative_lazy_sweep',
-                  'oilpan_conservative_complete_sweep',
-                  'oilpan_coalesce']
+_GC_REASONS = ['precise', 'conservative', 'idle', 'forced']
+_GC_STAGES = ['mark', 'lazy_sweep', 'complete_sweep']
 
-def _GetGcType(args):
+
+def _GetGcReason(args):
   # Old style
   if 'precise' in args:
     if args['forced']:
-      return None
+      return 'forced'
     return 'precise' if args['precise'] else 'conservative'
 
-  if args['gcReason'] == 'ForcedGCForTesting':
-    return None
   if args['gcReason'] == 'ConservativeGC':
     return 'conservative'
   if args['gcReason'] == 'PreciseGC':
     return 'precise'
+  if args['gcReason'] == 'ForcedGCForTesting':
+    return 'forced'
+  if args['gcReason'] == 'IdleGC':
+    return 'idle'
   return None  # Unknown
 
 
 def _AddTracingResults(events, results):
+  def DumpMetric(page, name, values, unit, results):
+    if values[name]:
+      results.AddValue(list_of_scalar_values.ListOfScalarValues(
+          page, name, unit, values[name]))
+      results.AddValue(scalar.ScalarValue(
+          page, name + '_max', unit, max(values[name])))
+      results.AddValue(scalar.ScalarValue(
+          page, name + '_total', unit, sum(values[name])))
+
   # Prepare
-  values = {}
-  for name in _NAMES_TO_DUMP:
-    values[name] = []
+  values = {'oilpan_coalesce': []}
+  for reason in _GC_REASONS:
+    for stage in _GC_STAGES:
+      values['oilpan_%s_%s' % (reason, stage)] = []
 
   # Parse in time line
-  gc_type = None
+  reason = None
   mark_time = 0
   lazy_sweep_time = 0
   complete_sweep_time = 0
@@ -61,12 +70,12 @@ def _AddTracingResults(events, results):
       values['oilpan_coalesce'].append(duration)
       continue
     if event.name == 'Heap::collectGarbage':
-      if not gc_type is None:
-        values['oilpan_%s_mark' % gc_type].append(mark_time)
-        values['oilpan_%s_lazy_sweep' % gc_type].append(lazy_sweep_time)
-        values['oilpan_%s_complete_sweep' % gc_type].append(complete_sweep_time)
+      if reason is not None:
+        values['oilpan_%s_mark' % reason].append(mark_time)
+        values['oilpan_%s_lazy_sweep' % reason].append(lazy_sweep_time)
+        values['oilpan_%s_complete_sweep' % reason].append(complete_sweep_time)
 
-      gc_type = _GetGcType(event.args)
+      reason = _GetGcReason(event.args)
       mark_time = duration
       lazy_sweep_time = 0
       complete_sweep_time = 0
@@ -78,37 +87,35 @@ def _AddTracingResults(events, results):
       complete_sweep_time += duration
       continue
 
-  if not gc_type is None:
-    values['oilpan_%s_mark' % gc_type].append(mark_time)
-    values['oilpan_%s_lazy_sweep' % gc_type].append(lazy_sweep_time)
-    values['oilpan_%s_complete_sweep' % gc_type].append(complete_sweep_time)
+  if reason is not None:
+    values['oilpan_%s_mark' % reason].append(mark_time)
+    values['oilpan_%s_lazy_sweep' % reason].append(lazy_sweep_time)
+    values['oilpan_%s_complete_sweep' % reason].append(complete_sweep_time)
 
-  # Dump
   page = results.current_page
   unit = 'ms'
-  for name in _NAMES_TO_DUMP:
-    if values[name]:
-      results.AddValue(list_of_scalar_values.ListOfScalarValues(
-          page, name, unit, values[name]))
-      results.AddValue(scalar.ScalarValue(
-          page, name + '_max', unit, max(values[name])))
-    results.AddValue(scalar.ScalarValue(
-        page, name + '_total', unit, sum(values[name])))
 
-  # Summarize marking time
-  total_mark_time = 0
-  for gc_type in ['precise', 'conservative']:
-    total_mark_time += sum(values['oilpan_%s_mark' % gc_type])
-  results.AddValue(
-      scalar.ScalarValue(page, 'oilpan_mark', unit, total_mark_time))
+  # Dump each metric
+  DumpMetric(page, 'oilpan_coalesce', values, unit, results)
+  for reason in _GC_REASONS:
+    for stage in _GC_STAGES:
+      DumpMetric(page, 'oilpan_%s_%s' % (reason, stage), values, unit, results)
+
+  # Summarize each stage
+  for stage in _GC_STAGES:
+    total_time = 0
+    for reason in _GC_REASONS:
+      total_time += sum(values['oilpan_%s_%s' % (reason, stage)])
+    results.AddValue(
+        scalar.ScalarValue(page, 'oilpan_%s' % stage, unit, total_time))
 
   # Summarize sweeping time
   total_sweep_time = 0
-  for do_type in ['lazy_sweep', 'complete_sweep']:
+  for stage in ['lazy_sweep', 'complete_sweep']:
     sweep_time = 0
-    for gc_type in ['precise', 'conservative']:
-      sweep_time += sum(values['oilpan_%s_%s' % (gc_type, do_type)])
-    key = 'oilpan_%s' % do_type
+    for reason in _GC_REASONS:
+      sweep_time += sum(values['oilpan_%s_%s' % (reason, stage)])
+    key = 'oilpan_%s' % stage
     results.AddValue(scalar.ScalarValue(page, key, unit, sweep_time))
     total_sweep_time += sweep_time
   results.AddValue(
@@ -121,8 +128,8 @@ def _AddTracingResults(events, results):
 
 
 class _OilpanGCTimesBase(page_test.PageTest):
-  def __init__(self):
-    super(_OilpanGCTimesBase, self).__init__()
+  def __init__(self, action_name=''):
+    super(_OilpanGCTimesBase, self).__init__(action_name)
     self._timeline_model = None
 
   def WillNavigateToPage(self, page, tab):
