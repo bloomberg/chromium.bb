@@ -131,8 +131,7 @@ remoting.AppRemoting.prototype.startApplication_ = function(token) {
           response.host.hostId) {
         var hostJid = response.hostJid;
         that.contextMenu_.setHostId(response.host.hostId);
-        var host = new remoting.Host;
-        host.hostId = response.host.hostId;
+        var host = new remoting.Host(response.host.hostId);
         host.jabberId = hostJid;
         host.authorizationCode = response.authorizationCode;
         host.sharedSecret = response.sharedSecret;

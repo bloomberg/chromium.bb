@@ -17,17 +17,16 @@ var remoting = remoting || {};
 'use strict';
 
 /**
- * Note that the object has more fields than are detailed below--these
- * are just the ones that we refer to directly.
+ * @param {!string} hostId
  *
  * TODO(kelvinp):Make fields private and expose them via getters.
  * @constructor
  */
-remoting.Host = function() {
+remoting.Host = function(hostId) {
+  /** @const {string} */
+  this.hostId = hostId;
   /** @type {string} */
   this.hostName = '';
-  /** @type {string} */
-  this.hostId = '';
   /** @type {string} */
   this.status = '';
   /** @type {string} */
@@ -43,16 +42,16 @@ remoting.Host = function() {
   /** @type {string} */
   this.hostOfflineReason = '';
   /** @type {remoting.Host.Options} */
-  this.options = new remoting.Host.Options(this.hostId);
+  this.options = new remoting.Host.Options(hostId);
 };
 
 /**
  * @constructor
- * @param {string} hostId
+ * @param {!string} hostId
  * @struct
  */
 remoting.Host.Options = function(hostId) {
-  /** @private */
+  /** @private @const */
   this.hostId_ = hostId;
   /** @type {boolean} */
   this.shrinkToFit = true;

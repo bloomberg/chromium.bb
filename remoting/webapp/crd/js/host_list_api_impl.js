@@ -105,9 +105,8 @@ remoting.HostListApiImpl.prototype.parseHostListResponse_ =
       var items = obj.data.items || [];
       var hosts = items.map(
         function(/** Object */ item) {
-          var host = new remoting.Host();
+          var host = new remoting.Host(base.getStringAttr(item, 'hostId', ''));
           host.hostName = base.getStringAttr(item, 'hostName', '');
-          host.hostId = base.getStringAttr(item, 'hostId', '');
           host.status = base.getStringAttr(item, 'status', '');
           host.jabberId = base.getStringAttr(item, 'jabberId', '');
           host.publicKey = base.getStringAttr(item, 'publicKey', '');

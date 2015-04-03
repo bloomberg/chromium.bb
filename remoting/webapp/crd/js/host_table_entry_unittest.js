@@ -45,7 +45,7 @@ QUnit.module('HostTableEntry', {
  * @param {string=} opt_offlineReason
  */
 function setHost(hostName, status, opt_offlineReason) {
-  var host = new remoting.Host();
+  var host = new remoting.Host('id');
   host.hostName = hostName;
   host.status = status;
   if (opt_offlineReason) {

@@ -384,12 +384,11 @@ remoting.HostList.prototype.onLocalHostStarted = function(
   // host JID, but it can be missing from the cache with no ill effects.
   // It will be refreshed if the user tries to connect to the local host,
   // and we hope that the directory will have been updated by that point.
-  var localHost = new remoting.Host();
+  var localHost = new remoting.Host(hostId);
   localHost.hostName = hostName;
   // Provide a version number to avoid warning about this dummy host being
   // out-of-date.
   localHost.hostVersion = String(this.webappMajorVersion_) + ".x"
-  localHost.hostId = hostId;
   localHost.publicKey = publicKey;
   localHost.status = 'ONLINE';
   this.hosts_.push(localHost);

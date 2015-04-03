@@ -113,8 +113,7 @@ remoting.It2MeConnectFlow.prototype.onHostInfo_ = function(xhrResponse) {
         (base.jsonParseSafe(xhrResponse.getText()));
     if (response && response.data &&
         response.data.jabberId && response.data.publicKey) {
-      var host = new remoting.Host();
-      host.hostId = this.hostId_;
+      var host = new remoting.Host(this.hostId_);
       host.jabberId = response.data.jabberId;
       host.publicKey = response.data.publicKey;
       host.hostName = response.data.jabberId.split('/')[0];
