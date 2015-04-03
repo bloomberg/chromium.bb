@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "blink/public/resources/grit/blink_resources.h"
+#include "blink/public/resources/grit/blink_image_resources.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/public/common/content_switches.h"
@@ -65,7 +65,7 @@ base::StringPiece ShellContentClient::GetDataResource(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRunLayoutTest)) {
     switch (resource_id) {
-      case IDR_BROKENIMAGE:
+      case IDR2_BROKENIMAGE:
 #if defined(OS_MACOSX)
         resource_id = IDR_CONTENT_SHELL_MISSING_IMAGE_PNG;
 #else
@@ -73,7 +73,7 @@ base::StringPiece ShellContentClient::GetDataResource(
 #endif
         break;
 
-      case IDR_TEXTAREA_RESIZER:
+      case IDR2_TEXTAREA_RESIZER:
         resource_id = IDR_CONTENT_SHELL_TEXT_AREA_RESIZE_CORNER_PNG;
         break;
     }
