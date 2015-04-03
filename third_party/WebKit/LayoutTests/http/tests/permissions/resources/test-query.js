@@ -8,6 +8,23 @@ if (self.importScripts) {
 }
 
 async_test(function(test) {
+    // Querying a random permission name should fail.
+    navigator.permissions.query({name:'foobar'}).then(function(result) {
+        assert_unreached('querying a random permission should fail');
+    }, function(error) {
+        assert_equals(error.name, 'TypeError');
+
+        // Querying a permission without a name should fail.
+        return navigator.permissions.query({});
+    }).then(function(result) {
+        assert_unreached('querying a permission without a name should fail');
+    }, function(error) {
+        assert_equals(error.name, 'TypeError');
+        test.done();
+    });
+}, 'Test PermissionDescription WebIDL rules in ' + get_current_scope() + ' scope.');
+
+async_test(function(test) {
     navigator.permissions.query({name:'geolocation'}).then(function(result) {
         // TODO(mlamouri): test values when some instrumentation are available.
         assert_true(result instanceof PermissionStatus);

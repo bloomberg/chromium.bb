@@ -13,5 +13,5 @@ enum PermissionName {
 // permissions will extend it. The methods reading it will re-parse it depending
 // on the name.
 dictionary PermissionDescriptor {
-    /* required */ PermissionName name;
+    required PermissionName name;
 };

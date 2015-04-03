@@ -50,8 +50,6 @@ ScriptPromise Permissions::query(ScriptState* scriptState, const ScriptValue& ra
 
     if (exceptionState.hadException())
         return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), exceptionState.message())));
-    if (!permission.hasName())
-        return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), "'name' is a required property.")));
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
