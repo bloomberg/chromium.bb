@@ -762,7 +762,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       StartTestWithPage("files/overscroll_navigation.html"));
 
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
-  window->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  window->Init(ui::LAYER_NOT_DRAWN);
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -888,7 +888,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, WebContentsViewReparent) {
       StartTestWithPage("files/overscroll_navigation.html"));
 
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
-  window->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  window->Init(ui::LAYER_NOT_DRAWN);
 
   RenderWidgetHostViewAura* rwhva =
       static_cast<RenderWidgetHostViewAura*>(

@@ -112,7 +112,7 @@ Widget::InitParams::InitParams()
       parent(NULL),
       native_widget(NULL),
       desktop_window_tree_host(NULL),
-      layer_type(aura::WINDOW_LAYER_TEXTURED),
+      layer_type(ui::LAYER_TEXTURED),
       context(NULL),
       force_show_in_taskbar(false) {
 }
@@ -135,7 +135,7 @@ Widget::InitParams::InitParams(Type type)
       parent(NULL),
       native_widget(NULL),
       desktop_window_tree_host(NULL),
-      layer_type(aura::WINDOW_LAYER_TEXTURED),
+      layer_type(ui::LAYER_TEXTURED),
       context(NULL),
       force_show_in_taskbar(false) {
 }

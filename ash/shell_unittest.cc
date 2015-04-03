@@ -445,7 +445,7 @@ TEST_F(ShellTest, ToggleAutoHide) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  window->Init(aura::WINDOW_LAYER_TEXTURED);
+  window->Init(ui::LAYER_TEXTURED);
   ParentWindowInPrimaryRootWindow(window.get());
   window->Show();
   wm::ActivateWindow(window.get());
@@ -522,7 +522,7 @@ class ShellTest2 : public test::AshTestBase {
 
 TEST_F(ShellTest2, DontCrashWhenWindowDeleted) {
   window_.reset(new aura::Window(NULL));
-  window_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  window_->Init(ui::LAYER_NOT_DRAWN);
 }
 
 }  // namespace ash

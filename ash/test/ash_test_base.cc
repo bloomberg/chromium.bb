@@ -254,7 +254,7 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
   aura::Window* window = new aura::Window(delegate);
   window->set_id(id);
   window->SetType(type);
-  window->Init(aura::WINDOW_LAYER_TEXTURED);
+  window->Init(ui::LAYER_TEXTURED);
   window->Show();
 
   if (bounds.IsEmpty()) {

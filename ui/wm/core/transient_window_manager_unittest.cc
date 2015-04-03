@@ -65,7 +65,7 @@ class TransientWindowManagerTest : public aura::test::AuraTestBase {
     Window* window = new Window(NULL);
     window->set_id(id);
     window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-    window->Init(aura::WINDOW_LAYER_TEXTURED);
+    window->Init(ui::LAYER_TEXTURED);
     AddTransientChild(parent, window);
     aura::client::ParentWindowWithContext(window, root_window(), gfx::Rect());
     return window;
@@ -364,11 +364,11 @@ TEST_F(TransientWindowManagerTest, NotifyDelegateAfterDeletingTransients) {
 
   DestroyedTrackingDelegate parent_delegate("parent", &destruction_order);
   scoped_ptr<Window> parent(new Window(&parent_delegate));
-  parent->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  parent->Init(ui::LAYER_NOT_DRAWN);
 
   DestroyedTrackingDelegate transient_delegate("transient", &destruction_order);
   Window* transient = new Window(&transient_delegate);  // Owned by |parent|.
-  transient->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  transient->Init(ui::LAYER_NOT_DRAWN);
   AddTransientChild(parent.get(), transient);
   parent.reset();
 

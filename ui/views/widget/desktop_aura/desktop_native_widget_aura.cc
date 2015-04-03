@@ -96,7 +96,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
         Widget::InitParams::TYPE_POPUP;
     init_params.bounds = bounds;
     init_params.ownership = Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
-    init_params.layer_type = aura::WINDOW_LAYER_NOT_DRAWN;
+    init_params.layer_type = ui::LAYER_NOT_DRAWN;
     init_params.activatable = full_screen ?
         Widget::InitParams::ACTIVATABLE_YES :
         Widget::InitParams::ACTIVATABLE_NO;
@@ -413,7 +413,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   wm::SetShadowType(content_window_, wm::SHADOW_TYPE_NONE);
 
   content_window_container_ = new aura::Window(NULL);
-  content_window_container_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  content_window_container_->Init(ui::LAYER_NOT_DRAWN);
   content_window_container_->Show();
   content_window_container_->AddChild(content_window_);
 

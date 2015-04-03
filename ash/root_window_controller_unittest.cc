@@ -558,7 +558,7 @@ TEST_F(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
   window1->SetType(ui::wm::WINDOW_TYPE_CONTROL);
   window1->set_owned_by_parent(false);
   observer1.SetWindow(window1);
-  window1->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  window1->Init(ui::LAYER_NOT_DRAWN);
   aura::client::ParentWindowWithContext(
       window1, Shell::GetInstance()->GetPrimaryRootWindow(), gfx::Rect());
 
@@ -566,7 +566,7 @@ TEST_F(RootWindowControllerTest, DontDeleteWindowsNotOwnedByParent) {
   aura::Window* window2 = new aura::Window(NULL);
   window2->set_owned_by_parent(false);
   observer2.SetWindow(window2);
-  window2->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  window2->Init(ui::LAYER_NOT_DRAWN);
   Shell::GetInstance()->GetPrimaryRootWindow()->AddChild(window2);
 
   Shell::GetInstance()->GetPrimaryRootWindowController()->CloseChildWindows();

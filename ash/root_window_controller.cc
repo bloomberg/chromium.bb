@@ -100,7 +100,7 @@ aura::Window* CreateContainer(int window_id,
   aura::Window* container = new aura::Window(NULL);
   container->set_id(window_id);
   container->SetName(name);
-  container->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  container->Init(ui::LAYER_NOT_DRAWN);
   parent->AddChild(container);
   if (window_id != kShellWindowId_UnparentedControlContainer)
     container->Show();
@@ -763,7 +763,7 @@ void RootWindowController::InitLayoutManagers() {
     // This window exists only to be a event target on login screen.
     // It does not have to handle events, nor be visible.
     mouse_event_target_.reset(new aura::Window(new EmptyWindowDelegate));
-    mouse_event_target_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+    mouse_event_target_->Init(ui::LAYER_NOT_DRAWN);
 
     aura::Window* lock_background_container =
         GetContainer(kShellWindowId_LockScreenBackgroundContainer);

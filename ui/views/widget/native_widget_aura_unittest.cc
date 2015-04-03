@@ -54,7 +54,7 @@ TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
   // Make a parent window larger than the host represented by
   // WindowEventDispatcher.
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
-  parent->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  parent->Init(ui::LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 1024, 800));
   scoped_ptr<Widget> widget(new Widget());
   NativeWidgetAura* window = Init(parent.get(), widget.get());
@@ -71,7 +71,7 @@ TEST_F(NativeWidgetAuraTest, CenterWindowSmallParent) {
   // Make a parent window smaller than the host represented by
   // WindowEventDispatcher.
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
-  parent->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  parent->Init(ui::LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 480, 320));
   scoped_ptr<Widget> widget(new Widget());
   NativeWidgetAura* window = Init(parent.get(), widget.get());
@@ -89,7 +89,7 @@ TEST_F(NativeWidgetAuraTest, CenterWindowSmallParentNotAtOrigin) {
   // Make a parent window smaller than the host represented by
   // WindowEventDispatcher and offset it slightly from the origin.
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
-  parent->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  parent->Init(ui::LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(20, 40, 480, 320));
   scoped_ptr<Widget> widget(new Widget());
   NativeWidgetAura* window = Init(parent.get(), widget.get());
@@ -422,7 +422,7 @@ TEST_F(NativeWidgetAuraTest, FlashFrame) {
 
 TEST_F(NativeWidgetAuraTest, NoCrashOnThemeAfterClose) {
   scoped_ptr<aura::Window> parent(new aura::Window(NULL));
-  parent->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  parent->Init(ui::LAYER_NOT_DRAWN);
   parent->SetBounds(gfx::Rect(0, 0, 480, 320));
   scoped_ptr<Widget> widget(new Widget());
   Init(parent.get(), widget.get());

@@ -805,7 +805,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyFullscreenOnBlur) {
   TestWindowObserver observer(window);
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> sibling(new aura::Window(&delegate));
-  sibling->Init(aura::WINDOW_LAYER_TEXTURED);
+  sibling->Init(ui::LAYER_TEXTURED);
   sibling->Show();
   window->parent()->AddChild(sibling.get());
   sibling->Focus();
@@ -910,7 +910,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PopupClosesWhenParentLosesFocus) {
 
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> dialog_window(new aura::Window(&delegate));
-  dialog_window->Init(aura::WINDOW_LAYER_TEXTURED);
+  dialog_window->Init(ui::LAYER_TEXTURED);
   aura::client::ParentWindowWithContext(
       dialog_window.get(), popup_window, gfx::Rect());
   dialog_window->Show();
@@ -1735,6 +1735,8 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
+  view_->InitAsChild(NULL);
+
   size_t max_renderer_frames =
       RendererFrameManager::GetInstance()->GetMaxNumberOfSavedFrames();
   ASSERT_LE(2u, max_renderer_frames);
@@ -1896,6 +1898,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
+  view_->InitAsChild(NULL);
+
   size_t max_renderer_frames =
       RendererFrameManager::GetInstance()->GetMaxNumberOfSavedFrames();
   ASSERT_LE(2u, max_renderer_frames);
@@ -1958,6 +1962,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
 // Test that changing the memory pressure should delete saved frames. This test
 // only applies to ChromeOS.
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
+  view_->InitAsChild(NULL);
+
   size_t max_renderer_frames =
       RendererFrameManager::GetInstance()->GetMaxNumberOfSavedFrames();
   ASSERT_LE(2u, max_renderer_frames);
@@ -3189,6 +3195,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
 // Tests that when view initiated shutdown happens (i.e. RWHView is deleted
 // before RWH), we clean up properly and don't leak the RWHVGuest.
 TEST_F(RenderWidgetHostViewGuestAuraTest, GuestViewDoesNotLeak) {
+  view_->InitAsChild(NULL);
   TearDownEnvironment();
   ASSERT_FALSE(guest_view_weak_.get());
 }

@@ -163,8 +163,9 @@ class PaintCountView : public View {
 TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
   Widget* widget = new Widget;
   Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW);
-  // Don't add a layer, so that calls to paint can be observed synchronously.
-  init_params.layer_type = aura::WINDOW_LAYER_NONE;
+  // Make the layer not drawn, so that calls to paint can be observed
+  // synchronously.
+  init_params.layer_type = ui::LAYER_NOT_DRAWN;
   widget->Init(init_params);
 
   PaintCountView* view = new PaintCountView();

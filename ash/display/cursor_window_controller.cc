@@ -197,7 +197,7 @@ void CursorWindowController::SetContainer(aura::Window* container) {
   // Just creates a new one instead. crbug.com/384218.
   cursor_window_.reset(new aura::Window(delegate_.get()));
   cursor_window_->SetTransparent(true);
-  cursor_window_->Init(aura::WINDOW_LAYER_TEXTURED);
+  cursor_window_->Init(ui::LAYER_TEXTURED);
   cursor_window_->set_ignore_events(true);
   cursor_window_->set_owned_by_parent(false);
   // Call UpdateCursorImage() to figure out |cursor_window_|'s desired size.

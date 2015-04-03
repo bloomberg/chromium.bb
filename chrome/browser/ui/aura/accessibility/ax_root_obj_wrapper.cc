@@ -13,6 +13,7 @@
 
 AXRootObjWrapper::AXRootObjWrapper(int32 id)
     : id_(id), alert_window_(new aura::Window(NULL)) {
+  alert_window_->Init(ui::LAYER_NOT_DRAWN);
 }
 
 AXRootObjWrapper::~AXRootObjWrapper() {

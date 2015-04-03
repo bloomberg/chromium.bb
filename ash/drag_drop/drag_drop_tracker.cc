@@ -44,7 +44,7 @@ aura::Window* CreateCaptureWindow(aura::Window* context_root,
   // Set type of window as popup to prevent different window manager codes
   // trying to manage this window.
   window->SetType(ui::wm::WINDOW_TYPE_POPUP);
-  window->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  window->Init(ui::LAYER_NOT_DRAWN);
   aura::client::ParentWindowWithContext(window, context_root, gfx::Rect());
   aura::client::SetActivationDelegate(window, activation_delegate_instance);
   window->Show();

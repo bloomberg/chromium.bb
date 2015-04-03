@@ -30,6 +30,7 @@ typedef ViewsTestBase DesktopNativeWidgetAuraTest;
 // crash.
 TEST_F(DesktopNativeWidgetAuraTest, CreateWithParentNotInRootWindow) {
   scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  window->Init(ui::LAYER_NOT_DRAWN);
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
@@ -199,6 +200,7 @@ TEST_F(DesktopNativeWidgetAuraTest, DontAccessContentWindowDuringDestruction) {
 
     // Owned by |widget|.
     aura::Window* window = new aura::Window(&delegate);
+    window->Init(ui::LAYER_NOT_DRAWN);
     window->Show();
     widget.GetNativeWindow()->parent()->AddChild(window);
 
@@ -275,7 +277,7 @@ class DesktopAuraTopLevelWindowTest
     init_params.type = Widget::InitParams::TYPE_WINDOW;
     init_params.bounds = bounds;
     init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    init_params.layer_type = aura::WINDOW_LAYER_NOT_DRAWN;
+    init_params.layer_type = ui::LAYER_NOT_DRAWN;
     init_params.accept_events = fullscreen;
 
     widget_.Init(init_params);
@@ -289,7 +291,7 @@ class DesktopAuraTopLevelWindowTest
     } else {
       owned_window_->SetType(ui::wm::WINDOW_TYPE_MENU);
     }
-    owned_window_->Init(aura::WINDOW_LAYER_TEXTURED);
+    owned_window_->Init(ui::LAYER_TEXTURED);
     aura::client::ParentWindowWithContext(
         owned_window_,
         widget_.GetNativeView()->GetRootWindow(),

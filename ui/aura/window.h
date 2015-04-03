@@ -15,7 +15,6 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/window_layer_type.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_delegate.h"
@@ -81,7 +80,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   ~Window() override;
 
   // Initializes the window. This creates the window's layer.
-  void Init(WindowLayerType layer_type);
+  void Init(ui::LayerType layer_type);
 
   void set_owned_by_parent(bool owned_by_parent) {
     owned_by_parent_ = owned_by_parent;

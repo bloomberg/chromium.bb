@@ -75,7 +75,6 @@ component("aura") {
     "window_delegate.h",
     "window_event_dispatcher.cc",
     "window_event_dispatcher.h",
-    "window_layer_type.h",
     "window_observer.cc",
     "window_observer.h",
     "window_targeter.cc",

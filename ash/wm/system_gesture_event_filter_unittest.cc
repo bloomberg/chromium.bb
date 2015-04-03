@@ -531,7 +531,7 @@ TEST_F(SystemGestureEventFilterTest,
   delegate.set_window_component(HTCLIENT);
   scoped_ptr<aura::Window> child(new aura::Window(&delegate));
   child->SetType(ui::wm::WINDOW_TYPE_CONTROL);
-  child->Init(aura::WINDOW_LAYER_TEXTURED);
+  child->Init(ui::LAYER_TEXTURED);
   parent->AddChild(child.get());
   child->SetBounds(gfx::Rect(100, 100));
   child->Show();

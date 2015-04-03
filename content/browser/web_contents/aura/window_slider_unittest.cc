@@ -38,7 +38,7 @@ void ChangeSliderOwnerDuringScrollCallback(scoped_ptr<aura::Window>* window,
   if (type != ui::ET_GESTURE_SCROLL_UPDATE)
     return;
   aura::Window* new_window = new aura::Window(NULL);
-  new_window->Init(aura::WINDOW_LAYER_TEXTURED);
+  new_window->Init(ui::LAYER_TEXTURED);
   new_window->Show();
   slider->ChangeOwner(new_window);
   (*window)->parent()->AddChild(new_window);

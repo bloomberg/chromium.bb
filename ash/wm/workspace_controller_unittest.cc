@@ -88,7 +88,7 @@ class WorkspaceControllerTest : public test::AshTestBase {
     aura::Window* window = new aura::Window(NULL);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-    window->Init(aura::WINDOW_LAYER_TEXTURED);
+    window->Init(ui::LAYER_TEXTURED);
     return window;
   }
 
@@ -96,7 +96,7 @@ class WorkspaceControllerTest : public test::AshTestBase {
     aura::Window* window = new aura::Window(NULL);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-    window->Init(aura::WINDOW_LAYER_TEXTURED);
+    window->Init(ui::LAYER_TEXTURED);
     ParentWindowInPrimaryRootWindow(window);
     return window;
   }

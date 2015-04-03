@@ -68,7 +68,7 @@ class MultiWindowResizeControllerTest : public test::AshTestBase {
                                  const gfx::Rect& bounds) {
     aura::Window* window = new aura::Window(delegate);
     window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-    window->Init(aura::WINDOW_LAYER_TEXTURED);
+    window->Init(ui::LAYER_TEXTURED);
     ParentWindowInPrimaryRootWindow(window);
     window->SetBounds(bounds);
     window->Show();

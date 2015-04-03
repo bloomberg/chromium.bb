@@ -109,7 +109,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
 
     // TODO(oshima): Start mirroring.
     aura::Window* mirror_window = new aura::Window(NULL);
-    mirror_window->Init(aura::WINDOW_LAYER_SOLID_COLOR);
+    mirror_window->Init(ui::LAYER_SOLID_COLOR);
     host->window()->AddChild(mirror_window);
     mirror_window->SetBounds(host->window()->bounds());
     mirror_window->Show();

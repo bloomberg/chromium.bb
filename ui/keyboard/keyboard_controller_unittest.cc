@@ -96,7 +96,7 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
   aura::Window* GetKeyboardWindow() override {
     if (!window_) {
       window_.reset(new aura::Window(&delegate_));
-      window_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+      window_->Init(ui::LAYER_NOT_DRAWN);
       window_->set_owned_by_parent(false);
     }
     return window_.get();
@@ -270,7 +270,7 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   const gfx::Rect& root_bounds = root_window()->bounds();
   aura::test::EventCountDelegate delegate;
   scoped_ptr<aura::Window> window(new aura::Window(&delegate));
-  window->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  window->Init(ui::LAYER_NOT_DRAWN);
   window->SetBounds(root_bounds);
   root_window()->AddChild(window.get());
   window->Show();
@@ -314,7 +314,7 @@ TEST_F(KeyboardControllerTest, EventHitTestingInContainer) {
   const gfx::Rect& root_bounds = root_window()->bounds();
   aura::test::EventCountDelegate delegate;
   scoped_ptr<aura::Window> window(new aura::Window(&delegate));
-  window->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  window->Init(ui::LAYER_NOT_DRAWN);
   window->SetBounds(root_bounds);
   root_window()->AddChild(window.get());
   window->Show();
@@ -352,7 +352,7 @@ TEST_F(KeyboardControllerTest, KeyboardWindowCreation) {
   const gfx::Rect& root_bounds = root_window()->bounds();
   aura::test::EventCountDelegate delegate;
   scoped_ptr<aura::Window> window(new aura::Window(&delegate));
-  window->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  window->Init(ui::LAYER_NOT_DRAWN);
   window->SetBounds(root_bounds);
   root_window()->AddChild(window.get());
   window->Show();

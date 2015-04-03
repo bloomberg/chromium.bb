@@ -84,7 +84,7 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
     gfx::Rect desktop_bounds = root_window()->bounds();
     window_delegate_.reset(new aura::test::TestWindowDelegate());
     desktop_window_.reset(new aura::Window(window_delegate_.get()));
-    desktop_window_->Init(aura::WINDOW_LAYER_TEXTURED);
+    desktop_window_->Init(ui::LAYER_TEXTURED);
     desktop_window_->SetBounds(desktop_bounds);
     aura::client::ParentWindowWithContext(
         desktop_window_.get(), root_window(), desktop_bounds);

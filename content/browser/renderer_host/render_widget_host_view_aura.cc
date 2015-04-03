@@ -491,7 +491,7 @@ bool RenderWidgetHostViewAura::OnMessageReceived(
 void RenderWidgetHostViewAura::InitAsChild(
     gfx::NativeView parent_view) {
   window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
-  window_->Init(aura::WINDOW_LAYER_SOLID_COLOR);
+  window_->Init(ui::LAYER_SOLID_COLOR);
   window_->SetName("RenderWidgetHostViewAura");
   window_->layer()->SetColor(background_color_);
 }
@@ -520,7 +520,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
   }
   popup_parent_host_view_->popup_child_host_view_ = this;
   window_->SetType(ui::wm::WINDOW_TYPE_MENU);
-  window_->Init(aura::WINDOW_LAYER_SOLID_COLOR);
+  window_->Init(ui::LAYER_SOLID_COLOR);
   window_->SetName("RenderWidgetHostViewAura");
   window_->layer()->SetColor(background_color_);
 
@@ -548,7 +548,7 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
   is_fullscreen_ = true;
   window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  window_->Init(aura::WINDOW_LAYER_SOLID_COLOR);
+  window_->Init(ui::LAYER_SOLID_COLOR);
   window_->SetName("RenderWidgetHostViewAura");
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   window_->layer()->SetColor(background_color_);

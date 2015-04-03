@@ -211,7 +211,7 @@ void WindowTreeHost::CreateCompositor(
   // TODO(beng): I think this setup should probably all move to a "accelerated
   // widget available" function.
   if (!dispatcher()) {
-    window()->Init(WINDOW_LAYER_NOT_DRAWN);
+    window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);
     window()->SetName("RootWindow");
     window()->SetEventTargeter(

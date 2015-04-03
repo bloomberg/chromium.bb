@@ -8,7 +8,6 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_layer_type.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -43,7 +42,7 @@ TEST_F(DesktopFocusRulesTest, DontFocusWindowsInOtherHierarchies) {
   aura::test::TestWindowDelegate w2_child_delegate;
   w2_child_delegate.set_can_focus(false);
   aura::Window* w2_child = new aura::Window(&w2_child_delegate);
-  w2_child->Init(aura::WINDOW_LAYER_SOLID_COLOR);
+  w2_child->Init(ui::LAYER_SOLID_COLOR);
   w2->GetNativeView()->AddChild(w2_child);
   wm::AddTransientChild(w1->GetNativeView(), w2_child);
   aura::client::GetFocusClient(w2->GetNativeView())->FocusWindow(w2_child);

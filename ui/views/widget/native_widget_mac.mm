@@ -101,19 +101,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   // "Infer" must be handled by ViewsDelegate::OnBeforeWidgetInit().
   DCHECK_NE(Widget::InitParams::INFER_OPACITY, params.opacity);
   bool translucent = params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
-  switch (params.layer_type) {
-    case aura::WINDOW_LAYER_NONE:
-      break;
-    case aura::WINDOW_LAYER_TEXTURED:
-      bridge_->CreateLayer(ui::LAYER_TEXTURED, translucent);
-      break;
-    case aura::WINDOW_LAYER_NOT_DRAWN:
-      bridge_->CreateLayer(ui::LAYER_NOT_DRAWN, translucent);
-      break;
-    case aura::WINDOW_LAYER_SOLID_COLOR:
-      bridge_->CreateLayer(ui::LAYER_SOLID_COLOR, translucent);
-      break;
-  }
+  bridge_->CreateLayer(params.layer_type, translucent);
 }
 
 NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {

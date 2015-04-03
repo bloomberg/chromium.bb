@@ -125,7 +125,7 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
     aura::Window* window = new aura::Window(nullptr);
     window->set_id(0);
     window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-    window->Init(aura::WINDOW_LAYER_TEXTURED);
+    window->Init(ui::LAYER_TEXTURED);
     window->Show();
 
     aura::client::ParentWindowWithContext(window, container,

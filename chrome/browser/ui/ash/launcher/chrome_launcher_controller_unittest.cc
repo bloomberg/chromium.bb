@@ -649,7 +649,7 @@ scoped_ptr<TestBrowserWindowAura> CreateTestBrowserWindow(
   aura::Window* window = new aura::Window(NULL);
   window->set_id(0);
   window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  window->Init(aura::WINDOW_LAYER_TEXTURED);
+  window->Init(ui::LAYER_TEXTURED);
   window->Show();
 
   scoped_ptr<TestBrowserWindowAura> browser_window(
@@ -691,7 +691,7 @@ class V1App : public TestBrowserWindow {
     native_window_.reset(new aura::Window(NULL));
     native_window_->set_id(0);
     native_window_->SetType(ui::wm::WINDOW_TYPE_POPUP);
-    native_window_->Init(aura::WINDOW_LAYER_TEXTURED);
+    native_window_->Init(ui::LAYER_TEXTURED);
     native_window_->Show();
     aura::client::ParentWindowWithContext(native_window_.get(),
                                           ash::Shell::GetPrimaryRootWindow(),
