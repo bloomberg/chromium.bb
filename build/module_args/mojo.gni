@@ -29,4 +29,7 @@ declare_args() {
   # android_x64. And it is also useful for supportted platform as well when
   # developer want to try its own version of network service files.
   mojo_prebuilt_network_service_location = ""
+
+  # For network_service_apptests.mojo
+  mojo_prebuilt_network_service_apptests_location = ""
 }
