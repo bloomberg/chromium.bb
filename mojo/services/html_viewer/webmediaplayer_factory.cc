@@ -79,6 +79,7 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     media::MediaPermission* media_permission,
+    media::CdmFactory* cdm_factory,
     blink::WebContentDecryptionModule* initial_cdm,
     mojo::Shell* shell) {
 #if defined(OS_ANDROID)
@@ -107,11 +108,9 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
       initial_cdm);
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate;
 
-  scoped_ptr<media::CdmFactory> cdm_factory(new media::DefaultCdmFactory());
-
   return new media::WebMediaPlayerImpl(frame, client, delegate,
                                        media_renderer_factory.Pass(),
-                                       cdm_factory.Pass(), params);
+                                       cdm_factory, params);
 #endif
 }
 

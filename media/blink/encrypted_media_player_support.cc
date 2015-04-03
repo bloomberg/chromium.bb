@@ -113,11 +113,11 @@ static EmeInitDataType GuessInitDataType(const unsigned char* init_data,
 }
 
 EncryptedMediaPlayerSupport::EncryptedMediaPlayerSupport(
-    scoped_ptr<CdmFactory> cdm_factory,
+    CdmFactory* cdm_factory,
     blink::WebMediaPlayerClient* client,
     MediaPermission* media_permission,
     const SetCdmContextCB& set_cdm_context_cb)
-    : cdm_factory_(cdm_factory.Pass()),
+    : cdm_factory_(cdm_factory),
       client_(client),
       media_permission_(media_permission),
       init_data_type_(EmeInitDataType::UNKNOWN),
@@ -167,7 +167,7 @@ EncryptedMediaPlayerSupport::GenerateKeyRequestInternal(
 
     GURL security_origin(frame->document().securityOrigin().toString());
 
-    if (!proxy_decryptor_->InitializeCDM(cdm_factory_.get(), key_system,
+    if (!proxy_decryptor_->InitializeCDM(cdm_factory_, key_system,
                                          security_origin)) {
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
     }

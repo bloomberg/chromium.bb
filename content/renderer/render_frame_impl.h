@@ -67,6 +67,7 @@ class Rect;
 }
 
 namespace media {
+class CdmFactory;
 class MediaPermission;
 class WebEncryptedMediaClientImpl;
 }
@@ -91,6 +92,7 @@ class PepperPluginInstanceImpl;
 class PermissionDispatcher;
 class PresentationDispatcher;
 class PushMessagingDispatcher;
+class RenderCdmFactory;
 class RendererAccessibility;
 class RendererCdmManager;
 class RendererMediaPlayerManager;
@@ -752,9 +754,8 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererMediaPlayerManager* GetMediaPlayerManager();
 #endif
 
-#if defined(ENABLE_BROWSER_CDMS)
-  RendererCdmManager* GetCdmManager();
-#endif
+  media::MediaPermission* GetMediaPermission();
+  media::CdmFactory* GetCdmFactory();
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until SetWebFrame is called, and it is null after
@@ -871,6 +872,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // RenderFrameObserver.
   RendererCdmManager* cdm_manager_;
 #endif
+
+  // The CDM factory attached to this frame, lazily initialized.
+  RenderCdmFactory* cdm_factory_;
 
 #if defined(VIDEO_HOLE)
   // Whether or not this RenderFrameImpl contains a media player. Used to

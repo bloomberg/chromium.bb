@@ -17,21 +17,24 @@
 
 namespace content {
 
-#if defined(ENABLE_PEPPER_CDMS)
 RenderCdmFactory::RenderCdmFactory(
-    const CreatePepperCdmCB& create_pepper_cdm_cb)
-    : create_pepper_cdm_cb_(create_pepper_cdm_cb) {
-}
+#if defined(ENABLE_PEPPER_CDMS)
+    const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(ENABLE_BROWSER_CDMS)
-RenderCdmFactory::RenderCdmFactory(RendererCdmManager* manager)
-    : manager_(manager) {
-}
-#else
-RenderCdmFactory::RenderCdmFactory() {
-}
+    RendererCdmManager* manager,
 #endif  // defined(ENABLE_PEPPER_CDMS)
+    RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame)
+#if defined(ENABLE_PEPPER_CDMS)
+    , create_pepper_cdm_cb_(create_pepper_cdm_cb)
+#elif defined(ENABLE_BROWSER_CDMS)
+    , manager_(manager)
+#endif  // defined(ENABLE_PEPPER_CDMS)
+{
+}
 
 RenderCdmFactory::~RenderCdmFactory() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 scoped_ptr<media::MediaKeys> RenderCdmFactory::Create(
@@ -44,6 +47,7 @@ scoped_ptr<media::MediaKeys> RenderCdmFactory::Create(
     const media::LegacySessionErrorCB& legacy_session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(jrummell): Pass |security_origin| to all constructors.
   // TODO(jrummell): Enable the following line once blink code updated to
   // check the security origin before calling.

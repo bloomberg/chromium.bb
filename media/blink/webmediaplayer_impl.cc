@@ -108,7 +108,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     scoped_ptr<RendererFactory> renderer_factory,
-    scoped_ptr<CdmFactory> cdm_factory,
+    CdmFactory* cdm_factory,
     const WebMediaPlayerParams& params)
     : frame_(frame),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
@@ -138,7 +138,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
       encrypted_media_support_(
-          cdm_factory.Pass(),
+          cdm_factory,
           client,
           params.media_permission(),
           base::Bind(&WebMediaPlayerImpl::SetCdm, AsWeakPtr())),

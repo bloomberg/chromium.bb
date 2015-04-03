@@ -40,7 +40,7 @@ class EncryptedMediaPlayerSupport
   typedef base::Callback<void(CdmContext*, const CdmAttachedCB&)>
       SetCdmContextCB;
 
-  EncryptedMediaPlayerSupport(scoped_ptr<CdmFactory> cdm_factory,
+  EncryptedMediaPlayerSupport(CdmFactory* cdm_factory,
                               blink::WebMediaPlayerClient* client,
                               MediaPermission* media_permission,
                               const SetCdmContextCB& set_cdm_context_cb);
@@ -95,7 +95,7 @@ class EncryptedMediaPlayerSupport
                     const std::vector<uint8>& message,
                     const GURL& destination_url);
 
-  scoped_ptr<CdmFactory> cdm_factory_;
+  CdmFactory* cdm_factory_;
 
   blink::WebMediaPlayerClient* client_;
 

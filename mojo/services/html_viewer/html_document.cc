@@ -230,14 +230,11 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     blink::WebContentDecryptionModule* initial_cdm) {
-  if (!media_permission_)
-    media_permission_.reset(new media::DefaultMediaPermission(true));
-
   blink::WebMediaPlayer* player =
       web_media_player_factory_
           ? web_media_player_factory_->CreateMediaPlayer(
-                frame, url, client, media_permission_.get(), initial_cdm,
-                shell_)
+                frame, url, client, GetMediaPermission(), GetCdmFactory(),
+                initial_cdm, shell_)
           : nullptr;
   return player;
 }
@@ -303,11 +300,8 @@ void HTMLDocument::didNavigateWithinPage(
 
 blink::WebEncryptedMediaClient* HTMLDocument::encryptedMediaClient() {
   if (!web_encrypted_media_client_) {
-    if (!media_permission_)
-      media_permission_.reset(new media::DefaultMediaPermission(true));
     web_encrypted_media_client_.reset(new media::WebEncryptedMediaClientImpl(
-        make_scoped_ptr(new media::DefaultCdmFactory()),
-        media_permission_.get()));
+        GetCdmFactory(), GetMediaPermission()));
   }
   return web_encrypted_media_client_.get();
 }
@@ -345,6 +339,18 @@ void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {
       event.To<scoped_ptr<blink::WebInputEvent>>();
   if (web_event)
     web_view_->handleInputEvent(*web_event);
+}
+
+media::MediaPermission* HTMLDocument::GetMediaPermission() {
+  if (!media_permission_)
+    media_permission_.reset(new media::DefaultMediaPermission(true));
+  return media_permission_.get();
+}
+
+media::CdmFactory* HTMLDocument::GetCdmFactory() {
+  if (!cdm_factory_)
+    cdm_factory_.reset(new media::DefaultCdmFactory());
+  return cdm_factory_.get();
 }
 
 }  // namespace html_viewer

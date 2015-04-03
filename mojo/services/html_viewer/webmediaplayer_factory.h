@@ -27,6 +27,7 @@ class WebMediaPlayerClient;
 namespace media {
 class AudioManager;
 class AudioRendererSink;
+class CdmFactory;
 class MediaPermission;
 }
 
@@ -51,6 +52,7 @@ class WebMediaPlayerFactory {
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
       media::MediaPermission* media_permission,
+      media::CdmFactory* cdm_factory,
       blink::WebContentDecryptionModule* initial_cdm,
       mojo::Shell* shell);
 

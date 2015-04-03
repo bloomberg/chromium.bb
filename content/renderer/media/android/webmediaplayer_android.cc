@@ -149,7 +149,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
     RendererMediaPlayerManager* player_manager,
-    RendererCdmManager* cdm_manager,
+    media::CdmFactory* cdm_factory,
     media::MediaPermission* media_permission,
     blink::WebContentDecryptionModule* initial_cdm,
     scoped_refptr<StreamTextureFactory> factory,
@@ -166,7 +166,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       seeking_(false),
       did_loading_progress_(false),
       player_manager_(player_manager),
-      cdm_manager_(cdm_manager),
+      cdm_factory_(cdm_factory),
       media_permission_(media_permission),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
@@ -195,7 +195,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       interpolator_(&default_tick_clock_),
       weak_factory_(this) {
   DCHECK(player_manager_);
-  DCHECK(cdm_manager_);
+  DCHECK(cdm_factory_);
 
   DCHECK(main_thread_checker_.CalledOnValidThread());
   stream_texture_factory_->AddObserver(this);
@@ -1541,8 +1541,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
     }
 
     GURL security_origin(frame_->document().securityOrigin().toString());
-    RenderCdmFactory cdm_factory(cdm_manager_);
-    if (!proxy_decryptor_->InitializeCDM(&cdm_factory, key_system,
+    if (!proxy_decryptor_->InitializeCDM(cdm_factory_, key_system,
                                          security_origin)) {
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
     }

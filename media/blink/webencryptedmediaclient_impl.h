@@ -24,7 +24,7 @@ class MediaPermission;
 class MEDIA_EXPORT WebEncryptedMediaClientImpl
     : public blink::WebEncryptedMediaClient {
  public:
-  WebEncryptedMediaClientImpl(scoped_ptr<CdmFactory> cdm_factory,
+  WebEncryptedMediaClientImpl(CdmFactory* cdm_factory,
                               MediaPermission* media_permission);
   virtual ~WebEncryptedMediaClientImpl();
 
@@ -62,7 +62,7 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
   Reporters reporters_;
 
   const KeySystems& key_systems_;
-  scoped_ptr<CdmFactory> cdm_factory_;
+  CdmFactory* cdm_factory_;
   MediaPermission* media_permission_;
 
   base::WeakPtrFactory<WebEncryptedMediaClientImpl> weak_factory_;

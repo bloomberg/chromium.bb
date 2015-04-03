@@ -71,7 +71,7 @@ class MEDIA_EXPORT WebMediaPlayerImpl
                      blink::WebMediaPlayerClient* client,
                      base::WeakPtr<WebMediaPlayerDelegate> delegate,
                      scoped_ptr<RendererFactory> renderer_factory,
-                     scoped_ptr<CdmFactory> cdm_factory,
+                     CdmFactory* cdm_factory,
                      const WebMediaPlayerParams& params);
   virtual ~WebMediaPlayerImpl();
 

@@ -31,6 +31,7 @@ class MessageLoopProxy;
 }
 
 namespace media {
+class CdmFactory;
 class MediaPermission;
 class WebEncryptedMediaClientImpl;
 }
@@ -132,6 +133,9 @@ class HTMLDocument : public blink::WebViewClient,
 
   void Load(mojo::URLResponsePtr response);
 
+  media::MediaPermission* GetMediaPermission();
+  media::CdmFactory* GetCdmFactory();
+
   mojo::URLResponsePtr response_;
   mojo::ServiceProviderImpl exported_services_;
   mojo::ServiceProviderPtr embedder_service_provider_;
@@ -146,7 +150,9 @@ class HTMLDocument : public blink::WebViewClient,
 
   // EncryptedMediaClient attached to this frame; lazily initialized.
   scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
+
   scoped_ptr<media::MediaPermission> media_permission_;
+  scoped_ptr<media::CdmFactory> cdm_factory_;
 
   // HTMLDocument owns these pointers.
   std::set<AxProviderImpl*> ax_provider_impls_;

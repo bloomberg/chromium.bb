@@ -599,10 +599,10 @@ class WebEncryptedMediaClientImpl::Reporter {
 };
 
 WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
-    scoped_ptr<CdmFactory> cdm_factory,
+    CdmFactory* cdm_factory,
     MediaPermission* media_permission)
     : key_systems_(KeySystems::GetInstance()),
-      cdm_factory_(cdm_factory.Pass()),
+      cdm_factory_(cdm_factory),
       media_permission_(media_permission),
       weak_factory_(this) {
   DCHECK(media_permission);
@@ -707,10 +707,9 @@ void WebEncryptedMediaClientImpl::CreateCdm(
     bool allow_persistent_state,
     const blink::WebSecurityOrigin& security_origin,
     blink::WebContentDecryptionModuleResult result) {
-  WebContentDecryptionModuleImpl::Create(cdm_factory_.get(), key_system,
-                                         allow_distinctive_identifier,
-                                         allow_persistent_state,
-                                         security_origin, result);
+  WebContentDecryptionModuleImpl::Create(
+      cdm_factory_, key_system, allow_distinctive_identifier,
+      allow_persistent_state, security_origin, result);
 }
 
 // Lazily create Reporters.

@@ -58,6 +58,7 @@ struct MailboxHolder;
 
 namespace media {
 class CdmContext;
+class CdmFactory;
 class MediaLog;
 class MediaPermission;
 class WebContentDecryptionModuleImpl;
@@ -89,7 +90,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
       blink::WebMediaPlayerClient* client,
       base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
       RendererMediaPlayerManager* player_manager,
-      RendererCdmManager* cdm_manager,
+      media::CdmFactory* cdm_factory,
       media::MediaPermission* media_permission,
       blink::WebContentDecryptionModule* initial_cdm,
       scoped_refptr<StreamTextureFactory> factory,
@@ -396,10 +397,9 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Owned by RenderFrameImpl.
   RendererMediaPlayerManager* const player_manager_;
 
-  // Delegates EME calls to the browser process. Owned by RenderFrameImpl.
-  // TODO(xhwang): Remove |cdm_manager_| when prefixed EME is deprecated. See
+  // TODO(xhwang): Remove |cdm_factory_| when prefixed EME is deprecated. See
   // http://crbug.com/249976
-  RendererCdmManager* const cdm_manager_;
+  media::CdmFactory* const cdm_factory_;
 
   media::MediaPermission* media_permission_;
 
