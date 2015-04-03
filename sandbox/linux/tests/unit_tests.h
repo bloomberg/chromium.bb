@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_LINUX_TESTS_UNIT_TESTS_H__
-#define SANDBOX_LINUX_TESTS_UNIT_TESTS_H__
+#ifndef SANDBOX_LINUX_TESTS_UNIT_TESTS_H_
+#define SANDBOX_LINUX_TESTS_UNIT_TESTS_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/tests/sandbox_test_runner_function_pointer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -198,4 +198,4 @@ class UnitTests {
 
 }  // namespace
 
-#endif  // SANDBOX_LINUX_TESTS_UNIT_TESTS_H__
+#endif  // SANDBOX_LINUX_TESTS_UNIT_TESTS_H_

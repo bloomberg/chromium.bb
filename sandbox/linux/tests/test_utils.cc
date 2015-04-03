@@ -10,7 +10,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 

@@ -5,7 +5,7 @@
 #ifndef SANDBOX_LINUX_TESTS_SANDBOX_TEST_RUNNER_H_
 #define SANDBOX_LINUX_TESTS_SANDBOX_TEST_RUNNER_H_
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace sandbox {
 
