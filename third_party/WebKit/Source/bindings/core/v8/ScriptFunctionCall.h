@@ -60,7 +60,6 @@ public:
     ScriptFunctionCall(const ScriptValue& thisObject, const String& name);
     ScriptValue call(bool& hadException, bool reportExceptions = true);
     ScriptValue call();
-    ScriptValue construct(bool& hadException, bool reportExceptions = true);
 
 protected:
     ScriptValue m_thisObject;

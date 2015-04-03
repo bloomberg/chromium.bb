@@ -135,33 +135,4 @@ ScriptValue ScriptFunctionCall::call()
     return call(hadException);
 }
 
-ScriptValue ScriptFunctionCall::construct(bool& hadException, bool reportExceptions)
-{
-    ScriptState::Scope scope(m_scriptState.get());
-    v8::TryCatch tryCatch;
-    tryCatch.SetVerbose(reportExceptions);
-
-    v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_thisObject.v8Value());
-    v8::Local<v8::Value> value = thisObject->Get(v8String(m_scriptState->isolate(), m_name));
-    if (tryCatch.HasCaught()) {
-        hadException = true;
-        return ScriptValue();
-    }
-
-    ASSERT(value->IsFunction());
-
-    v8::Local<v8::Function> constructor = v8::Local<v8::Function>::Cast(value);
-    OwnPtr<v8::Local<v8::Value>[]> info = adoptArrayPtr(new v8::Local<v8::Value>[m_arguments.size()]);
-    for (size_t i = 0; i < m_arguments.size(); ++i)
-        info[i] = m_arguments[i].v8Value();
-
-    v8::Local<v8::Object> result = V8ObjectConstructor::newInstance(m_scriptState->isolate(), constructor, m_arguments.size(), info.get());
-    if (tryCatch.HasCaught()) {
-        hadException = true;
-        return ScriptValue();
-    }
-
-    return ScriptValue(m_scriptState.get(), result);
-}
-
 } // namespace blink
