@@ -364,6 +364,11 @@ LayoutUnit LayoutFlexibleBox::childIntrinsicWidth(LayoutBox& child) const
     return child.size().width();
 }
 
+bool LayoutFlexibleBox::mainAxisExtentIsDefinite() const
+{
+    return isColumnFlow() ? hasDefiniteLogicalHeight() : hasDefiniteLogicalWidth();
+}
+
 LayoutUnit LayoutFlexibleBox::crossAxisIntrinsicExtentForChild(LayoutBox& child) const
 {
     return isHorizontalFlow() ? childIntrinsicHeight(child) : childIntrinsicWidth(child);
@@ -589,17 +594,17 @@ LayoutUnit LayoutFlexibleBox::mainAxisBorderAndPaddingExtentForChild(LayoutBox& 
     return isHorizontalFlow() ? child.borderAndPaddingWidth() : child.borderAndPaddingHeight();
 }
 
-static inline bool preferredMainAxisExtentDependsOnLayout(const Length& flexBasis, bool hasInfiniteLineLength)
+bool LayoutFlexibleBox::preferredMainAxisExtentDependsOnLayout(const Length& flexBasis) const
 {
-    return flexBasis.isAuto() || (flexBasis.isPercent() && hasInfiniteLineLength);
+    return flexBasis.isAuto() || (flexBasis.isPercent() && !mainAxisExtentIsDefinite());
 }
 
-bool LayoutFlexibleBox::childPreferredMainAxisContentExtentRequiresLayout(LayoutBox& child, bool hasInfiniteLineLength) const
+bool LayoutFlexibleBox::childPreferredMainAxisContentExtentRequiresLayout(LayoutBox& child) const
 {
-    return preferredMainAxisExtentDependsOnLayout(flexBasisForChild(child), hasInfiniteLineLength) && hasOrthogonalFlow(child);
+    return preferredMainAxisExtentDependsOnLayout(flexBasisForChild(child)) && hasOrthogonalFlow(child);
 }
 
-LayoutUnit LayoutFlexibleBox::preferredMainAxisContentExtentForChild(LayoutBox& child, bool hasInfiniteLineLength, bool relayoutChildren)
+LayoutUnit LayoutFlexibleBox::preferredMainAxisContentExtentForChild(LayoutBox& child, bool relayoutChildren)
 {
     child.clearOverrideSize();
 
@@ -607,7 +612,7 @@ LayoutUnit LayoutFlexibleBox::preferredMainAxisContentExtentForChild(LayoutBox& 
         UseCounter::count(document(), UseCounter::AspectRatioFlexItem);
 
     Length flexBasis = flexBasisForChild(child);
-    if (preferredMainAxisExtentDependsOnLayout(flexBasis, hasInfiniteLineLength)) {
+    if (preferredMainAxisExtentDependsOnLayout(flexBasis)) {
         LayoutUnit mainAxisExtent;
         if (hasOrthogonalFlow(child)) {
             if (child.needsLayout() || relayoutChildren || !m_intrinsicSizeAlongMainAxis.contains(&child)) {
@@ -638,19 +643,18 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren)
 
     m_orderIterator.first();
     LayoutUnit crossAxisOffset = flowAwareBorderBefore() + flowAwarePaddingBefore();
-    bool hasInfiniteLineLength = false;
-    while (computeNextFlexLine(orderedChildren, sumFlexBaseSize, totalFlexGrow, totalWeightedFlexShrink, sumHypotheticalMainSize, hasInfiniteLineLength, relayoutChildren)) {
+    while (computeNextFlexLine(orderedChildren, sumFlexBaseSize, totalFlexGrow, totalWeightedFlexShrink, sumHypotheticalMainSize, relayoutChildren)) {
         LayoutUnit containerMainInnerSize = mainAxisContentExtent(sumHypotheticalMainSize);
         LayoutUnit availableFreeSpace = containerMainInnerSize - sumFlexBaseSize;
         FlexSign flexSign = (sumHypotheticalMainSize < containerMainInnerSize) ? PositiveFlexibility : NegativeFlexibility;
         InflexibleFlexItemSize inflexibleItems;
         childSizes.reserveCapacity(orderedChildren.size());
-        while (!resolveFlexibleLengths(flexSign, orderedChildren, availableFreeSpace, totalFlexGrow, totalWeightedFlexShrink, inflexibleItems, childSizes, hasInfiniteLineLength)) {
+        while (!resolveFlexibleLengths(flexSign, orderedChildren, availableFreeSpace, totalFlexGrow, totalWeightedFlexShrink, inflexibleItems, childSizes)) {
             ASSERT(totalFlexGrow >= 0 && totalWeightedFlexShrink >= 0);
             ASSERT(inflexibleItems.size() > 0);
         }
 
-        layoutAndPlaceChildren(crossAxisOffset, orderedChildren, childSizes, availableFreeSpace, relayoutChildren, lineContexts, hasInfiniteLineLength);
+        layoutAndPlaceChildren(crossAxisOffset, orderedChildren, childSizes, availableFreeSpace, relayoutChildren, lineContexts);
     }
     if (hasLineIfEmpty()) {
         // Even if computeNextFlexLine returns true, the flexbox might not have
@@ -843,7 +847,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, Layo
     return std::max(childSize, minExtent);
 }
 
-bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool& hasInfiniteLineLength, bool relayoutChildren)
+bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren, LayoutUnit& sumFlexBaseSize, double& totalFlexGrow, double& totalWeightedFlexShrink, LayoutUnit& sumHypotheticalMainSize, bool relayoutChildren)
 {
     orderedChildren.clear();
     sumFlexBaseSize = 0;
@@ -854,7 +858,6 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
         return false;
 
     LayoutUnit lineBreakLength = mainAxisContentExtent(LayoutUnit::max());
-    hasInfiniteLineLength = lineBreakLength == LayoutUnit::max();
 
     bool lineHasInFlowItem = false;
 
@@ -864,7 +867,7 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
             continue;
         }
 
-        LayoutUnit childMainAxisExtent = preferredMainAxisContentExtentForChild(*child, hasInfiniteLineLength, relayoutChildren);
+        LayoutUnit childMainAxisExtent = preferredMainAxisContentExtentForChild(*child, relayoutChildren);
         LayoutUnit childMainAxisMarginBorderPadding = mainAxisBorderAndPaddingExtentForChild(*child)
             + (isHorizontalFlow() ? child->marginWidth() : child->marginHeight());
         LayoutUnit childFlexBaseSize = childMainAxisExtent + childMainAxisMarginBorderPadding;
@@ -884,12 +887,12 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
     return true;
 }
 
-void LayoutFlexibleBox::freezeViolations(const Vector<Violation>& violations, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems, bool hasInfiniteLineLength)
+void LayoutFlexibleBox::freezeViolations(const Vector<Violation>& violations, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems)
 {
     for (size_t i = 0; i < violations.size(); ++i) {
         LayoutBox* child = violations[i].child;
         LayoutUnit childSize = violations[i].childSize;
-        LayoutUnit preferredChildSize = preferredMainAxisContentExtentForChild(*child, hasInfiniteLineLength);
+        LayoutUnit preferredChildSize = preferredMainAxisContentExtentForChild(*child);
         availableFreeSpace -= childSize - preferredChildSize;
         totalFlexGrow -= child->style()->flexGrow();
         totalWeightedFlexShrink -= child->style()->flexShrink() * preferredChildSize;
@@ -898,7 +901,7 @@ void LayoutFlexibleBox::freezeViolations(const Vector<Violation>& violations, La
 }
 
 // Returns true if we successfully ran the algorithm and sized the flex items.
-bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedFlexItemList& children, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems, Vector<LayoutUnit, 16>& childSizes, bool hasInfiniteLineLength)
+bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedFlexItemList& children, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalWeightedFlexShrink, InflexibleFlexItemSize& inflexibleItems, Vector<LayoutUnit, 16>& childSizes)
 {
     childSizes.resize(0);
     LayoutUnit totalViolation = 0;
@@ -915,7 +918,7 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedF
         if (inflexibleItems.contains(child)) {
             childSizes.append(inflexibleItems.get(child));
         } else {
-            LayoutUnit preferredChildSize = preferredMainAxisContentExtentForChild(*child, hasInfiniteLineLength);
+            LayoutUnit preferredChildSize = preferredMainAxisContentExtentForChild(*child);
             LayoutUnit childSize = preferredChildSize;
             double extraSpace = 0;
             if (availableFreeSpace > 0 && totalFlexGrow > 0 && flexSign == PositiveFlexibility && std::isfinite(totalFlexGrow))
@@ -939,7 +942,7 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedF
     }
 
     if (totalViolation)
-        freezeViolations(totalViolation < 0 ? maxViolations : minViolations, availableFreeSpace, totalFlexGrow, totalWeightedFlexShrink, inflexibleItems, hasInfiniteLineLength);
+        freezeViolations(totalViolation < 0 ? maxViolations : minViolations, availableFreeSpace, totalFlexGrow, totalWeightedFlexShrink, inflexibleItems);
     else
         availableFreeSpace -= usedFreeSpace;
 
@@ -1052,7 +1055,7 @@ bool LayoutFlexibleBox::needToStretchChildLogicalHeight(LayoutBox& child) const
     return isHorizontalFlow() && child.style()->height().isAuto();
 }
 
-void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, Vector<LineContext>& lineContexts, bool hasInfiniteLineLength)
+void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, Vector<LineContext>& lineContexts)
 {
     ASSERT(childSizes.size() == children.size());
 
@@ -1088,7 +1091,7 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
             resetAutoMarginsAndLogicalTopInCrossAxis(*child);
         }
         // We may have already forced relayout for orthogonal flowing children in preferredMainAxisContentExtentForChild.
-        bool forceChildRelayout = relayoutChildren && !childPreferredMainAxisContentExtentRequiresLayout(*child, hasInfiniteLineLength);
+        bool forceChildRelayout = relayoutChildren && !childPreferredMainAxisContentExtentRequiresLayout(*child);
         updateBlockChildDirtyBitsBeforeLayout(forceChildRelayout, *child);
         child->layoutIfNeeded();
 
