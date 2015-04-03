@@ -52,8 +52,8 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
-            'favicon/content/favicon_url_util.h',
             'favicon/content/favicon_url_util.cc',
+            'favicon/content/favicon_url_util.h',
           ],
           'include_dirs': [
             '..',

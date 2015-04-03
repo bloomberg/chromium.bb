@@ -211,35 +211,33 @@ bool FaviconTabHelper::IsBookmarked(const GURL& url) {
   return bookmark_model && bookmark_model->IsBookmarked(url);
 }
 
-const gfx::Image FaviconTabHelper::GetActiveFaviconImage() {
-  return GetFaviconStatus().image;
-}
-
-const GURL FaviconTabHelper::GetActiveFaviconURL() {
-  return GetFaviconStatus().url;
+GURL FaviconTabHelper::GetActiveURL() {
+  NavigationEntry* entry = web_contents()->GetController().GetActiveEntry();
+  return entry ? entry->GetURL() : GURL();
 }
 
 bool FaviconTabHelper::GetActiveFaviconValidity() {
   return GetFaviconStatus().valid;
 }
 
-const GURL FaviconTabHelper::GetActiveURL() {
-  NavigationEntry* entry = web_contents()->GetController().GetActiveEntry();
-  if (!entry || entry->GetURL().is_empty())
-    return GURL();
-  return entry->GetURL();
+void FaviconTabHelper::SetActiveFaviconValidity(bool valid) {
+  GetFaviconStatus().valid = valid;
 }
 
-void FaviconTabHelper::SetActiveFaviconImage(gfx::Image image) {
-  GetFaviconStatus().image = image;
+GURL FaviconTabHelper::GetActiveFaviconURL() {
+  return GetFaviconStatus().url;
 }
 
-void FaviconTabHelper::SetActiveFaviconURL(GURL url) {
+void FaviconTabHelper::SetActiveFaviconURL(const GURL& url) {
   GetFaviconStatus().url = url;
 }
 
-void FaviconTabHelper::SetActiveFaviconValidity(bool validity) {
-  GetFaviconStatus().valid = validity;
+gfx::Image FaviconTabHelper::GetActiveFaviconImage() {
+  return GetFaviconStatus().image;
+}
+
+void FaviconTabHelper::SetActiveFaviconImage(const gfx::Image& image) {
+  GetFaviconStatus().image = image;
 }
 
 void FaviconTabHelper::OnFaviconAvailable(const gfx::Image& image,
@@ -264,6 +262,33 @@ void FaviconTabHelper::OnFaviconAvailable(const gfx::Image& image,
   if (!image.IsEmpty()) {
     FOR_EACH_OBSERVER(favicon::FaviconDriverObserver, observer_list_,
                       OnFaviconAvailable(image));
+  }
+}
+
+void FaviconTabHelper::DidDownloadFavicon(
+    int id,
+    int http_status_code,
+    const GURL& image_url,
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& original_bitmap_sizes) {
+  if (bitmaps.empty() && http_status_code == 404) {
+    DVLOG(1) << "Failed to Download Favicon:" << image_url;
+    favicon::FaviconService* favicon_service =
+        FaviconServiceFactory::GetForProfile(
+            profile_->GetOriginalProfile(), ServiceAccessType::IMPLICIT_ACCESS);
+    if (favicon_service)
+      favicon_service->UnableToDownloadFavicon(image_url);
+  }
+
+  favicon_handler_->OnDidDownloadFavicon(id, image_url, bitmaps,
+                                         original_bitmap_sizes);
+  if (touch_icon_handler_.get()) {
+    touch_icon_handler_->OnDidDownloadFavicon(id, image_url, bitmaps,
+                                              original_bitmap_sizes);
+  }
+  if (large_icon_handler_.get()) {
+    large_icon_handler_->OnDidDownloadFavicon(id, image_url, bitmaps,
+                                              original_bitmap_sizes);
   }
 }
 
@@ -321,32 +346,4 @@ void FaviconTabHelper::DidUpdateFaviconURL(
     touch_icon_handler_->OnUpdateFaviconURL(favicon_urls);
   if (large_icon_handler_.get())
     large_icon_handler_->OnUpdateFaviconURL(favicon_urls);
-}
-
-void FaviconTabHelper::DidDownloadFavicon(
-    int id,
-    int http_status_code,
-    const GURL& image_url,
-    const std::vector<SkBitmap>& bitmaps,
-    const std::vector<gfx::Size>& original_bitmap_sizes) {
-
-  if (bitmaps.empty() && http_status_code == 404) {
-    DVLOG(1) << "Failed to Download Favicon:" << image_url;
-    favicon::FaviconService* favicon_service =
-        FaviconServiceFactory::GetForProfile(
-            profile_->GetOriginalProfile(), ServiceAccessType::IMPLICIT_ACCESS);
-    if (favicon_service)
-      favicon_service->UnableToDownloadFavicon(image_url);
-  }
-
-  favicon_handler_->OnDidDownloadFavicon(
-      id, image_url, bitmaps, original_bitmap_sizes);
-  if (touch_icon_handler_.get()) {
-    touch_icon_handler_->OnDidDownloadFavicon(
-        id, image_url, bitmaps, original_bitmap_sizes);
-  }
-  if (large_icon_handler_.get()) {
-    large_icon_handler_->OnDidDownloadFavicon(
-        id, image_url, bitmaps, original_bitmap_sizes);
-  }
 }

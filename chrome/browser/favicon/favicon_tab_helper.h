@@ -58,7 +58,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
 
   // Returns whether the favicon should be displayed. If this returns false, no
   // space is provided for the favicon, and the favicon is never displayed.
-  virtual bool ShouldDisplayFavicon();
+  bool ShouldDisplayFavicon();
 
   // Returns the current tab's favicon urls. If this is empty,
   // DidUpdateFaviconURL has not yet been called for the current navigation.
@@ -81,10 +81,13 @@ class FaviconTabHelper : public content::WebContentsObserver,
   int StartDownload(const GURL& url, int max_bitmap_size) override;
   bool IsOffTheRecord() override;
   bool IsBookmarked(const GURL& url) override;
-  const gfx::Image GetActiveFaviconImage() override;
-  const GURL GetActiveFaviconURL() override;
+  GURL GetActiveURL() override;
   bool GetActiveFaviconValidity() override;
-  const GURL GetActiveURL() override;
+  void SetActiveFaviconValidity(bool valid) override;
+  GURL GetActiveFaviconURL() override;
+  void SetActiveFaviconURL(const GURL& url) override;
+  gfx::Image GetActiveFaviconImage() override;
+  void SetActiveFaviconImage(const gfx::Image& image) override;
   void OnFaviconAvailable(const gfx::Image& image,
                           const GURL& url,
                           bool is_active_favicon) override;
@@ -110,16 +113,6 @@ class FaviconTabHelper : public content::WebContentsObserver,
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-
-  // Sets whether the page's favicon is valid (if false, the default favicon is
-  // being used). Requires GetActiveURL() to be valid.
-  void SetActiveFaviconValidity(bool validity);
-
-  // Sets the URL of the favicon's bitmap.
-  void SetActiveFaviconURL(GURL url);
-
-  // Sets the bitmap of the current page's favicon.
-  void SetActiveFaviconImage(gfx::Image image);
 
   // Helper method that returns the active navigation entry's favicon.
   content::FaviconStatus& GetFaviconStatus();

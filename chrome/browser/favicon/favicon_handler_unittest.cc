@@ -183,30 +183,34 @@ class TestFaviconDriver : public favicon::FaviconDriver {
 
   ~TestFaviconDriver() override {}
 
-  bool IsOffTheRecord() override { return false; }
-
-  bool IsBookmarked(const GURL& url) override { return false; }
-
-  const gfx::Image GetActiveFaviconImage() override { return image_; }
-
-  const GURL GetActiveFaviconURL() override { return favicon_url_; }
-
-  bool GetActiveFaviconValidity() override { return favicon_validity_; }
-
-  const GURL GetActiveURL() override { return url_; }
-
-  void SetActiveFaviconImage(gfx::Image image) { image_ = image; }
-
-  void SetActiveFaviconURL(GURL favicon_url) { favicon_url_ = favicon_url; }
-
-  void SetActiveFaviconValidity(bool favicon_validity) {
-    favicon_validity_ = favicon_validity;
-  }
-
   int StartDownload(const GURL& url, int max_bitmap_size) override {
     ADD_FAILURE() << "TestFaviconDriver::StartDownload() "
                   << "should never be called in tests.";
     return -1;
+  }
+
+  bool IsOffTheRecord() override { return false; }
+
+  bool IsBookmarked(const GURL& url) override { return false; }
+
+  GURL GetActiveURL() override { return url_; }
+
+  bool GetActiveFaviconValidity() override { return favicon_validity_; }
+
+  void SetActiveFaviconValidity(bool favicon_validity) override {
+    favicon_validity_ = favicon_validity;
+  }
+
+  GURL GetActiveFaviconURL() override { return favicon_url_; }
+
+  void SetActiveFaviconURL(const GURL& favicon_url) override {
+    favicon_url_ = favicon_url;
+  }
+
+  gfx::Image GetActiveFaviconImage() override { return image_; }
+
+  void SetActiveFaviconImage(const gfx::Image& image) override {
+    image_ = image;
   }
 
   void OnFaviconAvailable(const gfx::Image& image,

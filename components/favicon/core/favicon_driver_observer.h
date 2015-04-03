@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_OBSERVER_H_
 #define COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_OBSERVER_H_
 
+#include "base/macros.h"
+
 namespace gfx {
 class Image;
 }
@@ -15,12 +17,15 @@ namespace favicon {
 // FaviconDriver.
 class FaviconDriverObserver {
  public:
+  FaviconDriverObserver() {}
+  virtual ~FaviconDriverObserver() {}
+
   // Called when favicon |image| is retrieved from either web site or cached
   // storage.
   virtual void OnFaviconAvailable(const gfx::Image& image) = 0;
 
- protected:
-  virtual ~FaviconDriverObserver() {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FaviconDriverObserver);
 };
 
 }  // namespace favicon
