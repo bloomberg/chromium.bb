@@ -1,5 +1,5 @@
 self.onmessage = function(e) {
-  self.clients.getAll().then(function(clients) {
+  self.clients.matchAll().then(function(clients) {
       clients.forEach(function(client) {
           var messageChannel = new MessageChannel();
           messageChannel.port1.onmessage =
