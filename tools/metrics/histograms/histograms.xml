@@ -34098,6 +34098,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sdch3.NetworkBytesSavedByCompression" units="bytes">
+  <owner>ellyjones@chromium.org</owner>
+  <summary>
+    The absolute difference in bytes between the amount of data entering the
+    SDCH filter and the amount of data exiting the SDCH filter.
+  </summary>
+</histogram>
+
 <histogram name="Sdch3.PartialBytesIn" units="bytes">
   <owner>rdsmith@chromium.org</owner>
   <summary>

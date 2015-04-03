@@ -166,10 +166,13 @@ SdchFilter::~SdchFilter() {
 
   switch (decoding_status_) {
     case DECODING_IN_PROGRESS: {
-      if (output_bytes_)
+      if (output_bytes_) {
         UMA_HISTOGRAM_PERCENTAGE("Sdch3.Network_Decode_Ratio_a",
             static_cast<int>(
                 (filter_context_.GetByteReadCount() * 100) / output_bytes_));
+        UMA_HISTOGRAM_COUNTS("Sdch3.NetworkBytesSavedByCompression",
+            output_bytes_ - source_bytes_);
+      }
       UMA_HISTOGRAM_COUNTS("Sdch3.Network_Decode_Bytes_VcdiffOut_a",
                            output_bytes_);
       filter_context_.RecordPacketStats(FilterContext::SDCH_DECODE);
@@ -403,6 +406,14 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
   if (!next_stream_data_ || stream_data_len_ <= 0)
     return FILTER_NEED_MORE_DATA;
 
+  // A note on accounting: DecodeChunk() appends to its output buffer, so any
+  // preexisting data in |dest_buffer_excess_| could skew the value of
+  // |output_bytes_|. However, OutputBufferExcess guarantees that it will
+  // consume all of |dest_buffer_excess_| when called above unless the
+  // destination buffer runs out of space, and if the destination buffer runs
+  // out of space, this code returns FILTER_OK early above. Therefore, if
+  // execution reaches this point, |dest_buffer_excess_| is empty, which is
+  // DCHECKed above.
   bool ret = vcdiff_streaming_decoder_->DecodeChunk(
     next_stream_data_, stream_data_len_, &dest_buffer_excess_);
   // Assume all data was used in decoding.

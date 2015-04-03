@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "net/base/io_buffer.h"
 #include "net/base/sdch_observer.h"
@@ -644,8 +645,16 @@ TEST_F(SdchFilterTest, CanStillDecodeHttp) {
   const size_t output_block_size(100);
   std::string output;
 
+  base::HistogramTester tester;
+
   EXPECT_TRUE(FilterTestData(compressed, feed_block_size, output_block_size,
                              filter.get(), &output));
+  // The filter's destructor is responsible for uploading total ratio
+  // histograms.
+  filter.reset();
+
+  tester.ExpectTotalCount("Sdch3.Network_Decode_Ratio_a", 1);
+  tester.ExpectTotalCount("Sdch3.NetworkBytesSavedByCompression", 1);
 }
 
 TEST_F(SdchFilterTest, CrossDomainDictionaryUse) {
