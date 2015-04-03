@@ -20,7 +20,9 @@ SurfaceTextureListener::~SurfaceTextureListener() {
 }
 
 void SurfaceTextureListener::Destroy(JNIEnv* env, jobject obj) {
-  delete this;
+  if (!browser_loop_->DeleteSoon(FROM_HERE, this)) {
+    delete this;
+  }
 }
 
 void SurfaceTextureListener::FrameAvailable(JNIEnv* env, jobject obj) {

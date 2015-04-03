@@ -8,6 +8,7 @@
 #include <jni.h>
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "ui/gl/gl_export.h"
 
 namespace base {
@@ -28,6 +29,8 @@ class GL_EXPORT SurfaceTextureListener {
   static bool RegisterSurfaceTextureListener(JNIEnv* env);
 
  private:
+  friend class base::DeleteHelper<SurfaceTextureListener>;
+
   // Native code should not hold any reference to this object, and instead pass
   // it up to Java for being referenced by a SurfaceTexture instance.
   SurfaceTextureListener(const base::Closure& callback);
