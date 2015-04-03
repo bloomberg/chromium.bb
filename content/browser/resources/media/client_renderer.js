@@ -35,6 +35,20 @@ var ClientRenderer = (function() {
     }
 
     this.hiddenKeys = ['component_id', 'component_type', 'owner_id'];
+
+    // Tell CSS to hide certain content prior to making selections.
+    document.body.classList.add(ClientRenderer.Css_.NO_PLAYERS_SELECTED);
+    document.body.classList.add(ClientRenderer.Css_.NO_COMPONENTS_SELECTED);
+  };
+
+  /**
+   * CSS classes added / removed in JS to trigger styling changes.
+   * @private @enum {string}
+   */
+  ClientRenderer.Css_ = {
+    NO_PLAYERS_SELECTED: 'no-players-selected',
+    NO_COMPONENTS_SELECTED: 'no-components-selected',
+    SELECTABLE_BUTTON: 'selectable-button'
   };
 
   function removeChildren(element) {
@@ -43,16 +57,41 @@ var ClientRenderer = (function() {
     }
   };
 
-  function createButton(text, select_cb) {
-    var button = document.createElement('button');
+  function createSelectableButton(id, groupName, text, select_cb) {
+    // For CSS styling.
+    var radioButton = document.createElement('input');
+    radioButton.classList.add(ClientRenderer.Css_.SELECTABLE_BUTTON);
+    radioButton.type = 'radio';
+    radioButton.id = id;
+    radioButton.name = groupName;
 
-    button.appendChild(document.createTextNode(text));
-    button.onclick = function() {
+    var buttonLabel = document.createElement('label');
+    buttonLabel.classList.add(ClientRenderer.Css_.SELECTABLE_BUTTON);
+    buttonLabel.setAttribute('for', radioButton.id);
+    buttonLabel.appendChild(document.createTextNode(text));
+
+    var fragment = document.createDocumentFragment();
+    fragment.appendChild(radioButton);
+    fragment.appendChild(buttonLabel);
+
+    // Listen to 'change' rather than 'click' to keep styling in sync with
+    // button behavior.
+    radioButton.addEventListener('change', function() {
       select_cb();
-    };
+    });
 
-    return button;
+    return fragment;
   };
+
+  function selectSelectableButton(id) {
+    var element = document.getElementById(id);
+    if (!element) {
+      console.error('failed to select button with id: ' + id);
+      return;
+    }
+
+    element.checked = true;
+  }
 
   ClientRenderer.prototype = {
     /**
@@ -68,6 +107,10 @@ var ClientRenderer = (function() {
       if (this.selectedAudioComponentType == componentType &&
           this.selectedAudioComponentId &&
           this.selectedAudioComponentId in components) {
+        // TODO(chcunningham): This path is used both for adding and updating
+        // the components. Split this up to have a separate update method.
+        // At present, this selectAudioComponent call is key to *updating* the
+        // the property table for existing audio components.
         this.selectAudioComponent_(
             componentType, this.selectedAudioComponentId,
             components[this.selectedAudioComponentId]);
@@ -82,12 +125,6 @@ var ClientRenderer = (function() {
      */
     audioComponentRemoved: function(componentType, components) {
       this.redrawAudioComponentList_(componentType, components);
-
-      // Clear the component if it was previously currently selected.
-      if (this.selectedAudioComponentType == componentType &&
-          !(this.selectedAudioComponentId in components)) {
-        this.selectAudioComponent_(null, null, {});
-      }
     },
 
     /**
@@ -187,51 +224,100 @@ var ClientRenderer = (function() {
       }
     },
 
-    redrawAudioComponentList_: function(componentType, components) {
-      function redrawList(renderer, baseName, element) {
-        var fragment = document.createDocumentFragment();
-        for (id in components) {
-          var li = document.createElement('li');
-          var friendlyName = baseName + ' ' + id;
-          li.appendChild(createButton(
-              friendlyName, renderer.selectAudioComponent_.bind(
-                  renderer, componentType, id, components[id], friendlyName)));
-          fragment.appendChild(li);
-        }
-        removeChildren(element);
-        element.appendChild(fragment);
-      }
-
+    getAudioComponentName_ : function(componentType, id) {
+      var baseName;
       switch (componentType) {
         case 0:
-          redrawList(this, 'Controller', document.getElementById(
-              'audio-input-controller-list'));
-          break;
         case 1:
-          redrawList(this, 'Controller', document.getElementById(
-              'audio-output-controller-list'));
+          baseName = 'Controller';
           break;
         case 2:
-          redrawList(this, 'Stream', document.getElementById(
-              'audio-output-stream-list'));
+          baseName = 'Stream';
           break;
         default:
+          baseName = 'UnknownType'
+          console.error('Unrecognized component type: ' + componentType);
           break;
+      }
+      return baseName + ' ' + id;
+    },
+
+    getListElementForAudioComponent_ : function(componentType) {
+      var listElement;
+      switch (componentType) {
+        case 0:
+          listElement = document.getElementById(
+              'audio-input-controller-list');
+          break;
+        case 1:
+          listElement = document.getElementById(
+              'audio-output-controller-list');
+          break;
+        case 2:
+          listElement = document.getElementById(
+              'audio-output-stream-list');
+          break;
+        default:
+          console.error('Unrecognized component type: ' + componentType);
+          listElement = null;
+          break;
+      }
+      return listElement;
+    },
+
+    redrawAudioComponentList_: function(componentType, components) {
+      // Group name imposes rule that only one component can be selected
+      // (and have its properties displayed) at a time.
+      var buttonGroupName = 'audio-components';
+
+      var listElement = this.getListElementForAudioComponent_(componentType);
+      if (!listElement) {
+        console.error('Failed to find list element for component type: ' +
+            componentType);
+        return;
+      }
+
+      var fragment = document.createDocumentFragment();
+      for (id in components) {
+        var li = document.createElement('li');
+        var button_cb = this.selectAudioComponent_.bind(
+                this, componentType, id, components[id]);
+        var friendlyName = this.getAudioComponentName_(componentType, id);
+        li.appendChild(createSelectableButton(
+            id, buttonGroupName, friendlyName, button_cb));
+        fragment.appendChild(li);
+      }
+      removeChildren(listElement);
+      listElement.appendChild(fragment);
+
+      if (this.selectedAudioComponentType &&
+          this.selectedAudioComponentType == componentType &&
+          this.selectedAudioComponentId in components) {
+        // Re-select the selected component since the button was just recreated.
+        selectSelectableButton(this.selectedAudioComponentId);
       }
     },
 
     selectAudioComponent_: function(
-          componentType, componentId, componentData, friendlyName) {
+          componentType, componentId, componentData) {
+      document.body.classList.remove(
+         ClientRenderer.Css_.NO_COMPONENTS_SELECTED);
+
       this.selectedAudioComponentType = componentType;
       this.selectedAudioComponentId = componentId;
       this.selectedAudioCompontentData = componentData;
       this.drawProperties_(componentData, this.audioPropertiesTable);
 
       removeChildren(this.audioPropertyName);
-      this.audioPropertyName.appendChild(document.createTextNode(friendlyName));
+      this.audioPropertyName.appendChild(document.createTextNode(
+          this.getAudioComponentName_(componentType, componentId)));
     },
 
     redrawPlayerList_: function(players) {
+      // Group name imposes rule that only one component can be selected
+      // (and have its properties displayed) at a time.
+      var buttonGroupName = 'player-buttons';
+
       var fragment = document.createDocumentFragment();
       for (id in players) {
         var player = players[id];
@@ -240,15 +326,23 @@ var ClientRenderer = (function() {
             'Player ' + player.id;
 
         var li = document.createElement('li');
-        li.appendChild(createButton(
-            usableName, this.selectPlayer_.bind(this, player)));
+        var button_cb = this.selectPlayer_.bind(this, player);
+        li.appendChild(createSelectableButton(
+            id, buttonGroupName, usableName, button_cb));
         fragment.appendChild(li);
       }
       removeChildren(this.playerListElement);
       this.playerListElement.appendChild(fragment);
+
+      if (this.selectedPlayer && this.selectedPlayer.id in players) {
+        // Re-select the selected player since the button was just recreated.
+        selectSelectableButton(this.selectedPlayer.id);
+      }
     },
 
     selectPlayer_: function(player) {
+      document.body.classList.remove(ClientRenderer.Css_.NO_PLAYERS_SELECTED);
+
       this.selectedPlayer = player;
       this.selectedPlayerLogIndex = 0;
       this.selectedAudioComponentType = null;
@@ -371,11 +465,11 @@ var ClientRenderer = (function() {
     },
 
     copyToClipboard_: function() {
-      var properties = this.selectedAudioCompontentData ||
-          this.selectedPlayer.properties || false;
-      if (!properties) {
+      if (!this.selectedPlayer && !this.selectedAudioCompontentData) {
         return;
       }
+      var properties = this.selectedAudioCompontentData ||
+          this.selectedPlayer.properties;
       var stringBuffer = [];
 
       for (var key in properties) {

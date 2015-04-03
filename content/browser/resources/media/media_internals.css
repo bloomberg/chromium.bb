@@ -100,12 +100,13 @@ h3 {
   padding: 0px;
 }
 
-#property-wrapper,
+.property-wrapper,
 #log-wrapper {
+  align-self: stretch;
   display:block;
   flex-grow: 0.25;
-  align-self: stretch;
   overflow: auto;
+  margin-bottom: 10px;
 }
 
 #video-capture-capabilities-wrapper {
@@ -178,3 +179,29 @@ h3 {
   content: "none";
   color: rgba(0, 0, 0, .5);
 }
+
+label.selectable-button {
+  -webkit-appearance: button;
+  -webkit-user-select: none;
+  padding: 2px 5px;
+  margin-bottom: 5px;
+}
+
+input.selectable-button {
+  display: none;
+}
+
+input.selectable-button:checked + label.selectable-button {
+  background-color: #4AA9E4;
+  color: white;
+}
+
+.no-players-selected #players .property-wrapper,
+.no-players-selected #players #log-wrapper {
+  display: none;
+}
+
+.no-components-selected #audio .property-wrapper {
+  display: none;
+}
+
