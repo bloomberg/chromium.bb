@@ -226,7 +226,7 @@ FileGrid.prototype.getItemTop = function(index) {
   if (index < this.dataModel.getFolderCount())
     return Math.floor(index / this.columns) * this.getFolderItemHeight_();
 
-  var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
+  var folderRows = this.getFolderRowCount();
   var indexInFiles = index - this.dataModel.getFolderCount();
   return folderRows * this.getFolderItemHeight_() +
       (folderRows > 0 ? this.getSeparatorHeight_() : 0) +
@@ -240,7 +240,7 @@ FileGrid.prototype.getItemRow = function(index) {
   if (index < this.dataModel.getFolderCount())
     return Math.floor(index / this.columns);
 
-  var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
+  var folderRows = this.getFolderRowCount();
   var indexInFiles = index - this.dataModel.getFolderCount();
   return folderRows + Math.floor(indexInFiles / this.columns);
 };
@@ -259,28 +259,28 @@ FileGrid.prototype.getItemColumn = function(index) {
 
 /**
  * Return the item index which is placed at the given position.
- * If there is no item in the given position, returns the index of the last item
- * before the empty spaces.
+ * If there is no item in the given position, returns -1.
  * @param {number} row The row index.
  * @param {number} column The column index.
  */
 FileGrid.prototype.getItemIndex = function(row, column) {
-  if (row < 0)
-    return 0;
+  if (row < 0 || column < 0 || column >= this.columns)
+    return -1;
   var folderCount = this.dataModel.getFolderCount();
-  var folderRows = Math.ceil(folderCount / this.columns);
-  if (row < folderRows)
-    return Math.min(row * this.columns + column, folderCount - 1);
-
-  return Math.min(folderCount + (row - folderRows) * this.columns + column,
-                  this.dataModel.length - 1);
+  var folderRows = this.getFolderRowCount();
+  if (row < folderRows) {
+    var index = row * this.columns + column;
+    return index < folderCount ? index : -1;
+  }
+  var index = folderCount + (row - folderRows) * this.columns + column;
+  return index < this.dataModel.length ? index : -1;
 };
 
 /**
  * @override
  */
 FileGrid.prototype.getFirstItemInRow = function(row) {
-  var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
+  var folderRows = this.getFolderRowCount();
   if (row < folderRows)
     return row * this.columns;
 
@@ -354,8 +354,8 @@ FileGrid.prototype.getItemsInViewPort = function(scrollTop, clientHeight) {
  * @override
  */
 FileGrid.prototype.getAfterFillerHeight = function(lastIndex) {
-  var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
-  var fileRows =  Math.ceil(this.dataModel.getFileCount() / this.columns);
+  var folderRows = this.getFolderRowCount();
+  var fileRows = this.getFileRowCount();
   var row = this.getItemRow(lastIndex - 1);
   if (row < folderRows) {
     var fillerHeight = (folderRows - 1 - row) * this.getFolderItemHeight_() +
@@ -366,6 +366,22 @@ FileGrid.prototype.getAfterFillerHeight = function(lastIndex) {
   }
   var rowInFiles = row - folderRows;
   return (fileRows - 1 - rowInFiles) * this.getFileItemHeight_();
+};
+
+/**
+ * Returns the number of rows in folders section.
+ * @return {number}
+ */
+FileGrid.prototype.getFolderRowCount = function() {
+  return Math.ceil(this.dataModel.getFolderCount() / this.columns);
+};
+
+/**
+ * Returns the number of rows in files section.
+ * @return {number}
+ */
+FileGrid.prototype.getFileRowCount = function() {
+  return Math.ceil(this.dataModel.getFileCount() / this.columns);
 };
 
 /**
@@ -385,6 +401,30 @@ FileGrid.prototype.getFileItemHeight_ = function() {
 };
 
 /**
+ * Returns the width of grid items.
+ * @return {number}
+ */
+FileGrid.prototype.getItemWidth_ = function() {
+  return 184;  // TODO(fukino): Read from DOM and cache it.
+};
+
+/**
+ * Returns the margin top of grid items.
+ * @return {number};
+ */
+FileGrid.prototype.getItemMarginTop_ = function() {
+  return 4;  // TODO(fukino): Read from DOM and cache it.
+};
+
+/**
+ * Returns the margin left of grid items.
+ * @return {number}
+ */
+FileGrid.prototype.getItemMarginLeft_ = function() {
+  return 4;  // TODO(fukino): Read from DOM and cache it.
+};
+
+/**
  * Returns the height of the separator which separates folders and files.
  * @return {number} The height of the separator.
  */
@@ -400,7 +440,7 @@ FileGrid.prototype.getSeparatorHeight_ = function() {
  */
 FileGrid.prototype.getRowForListOffset_ = function(offset) {
   var innerOffset = Math.max(0, offset - this.paddingTop_);
-  var folderRows = Math.ceil(this.dataModel.getFolderCount() / this.columns);
+  var folderRows = this.getFolderRowCount();
   if (innerOffset < folderRows * this.getFolderItemHeight_())
     return Math.floor(innerOffset / this.getFolderItemHeight_());
 
@@ -717,19 +757,48 @@ FileGrid.prototype.shouldStartDragSelection = function(event) {
 };
 
 /**
- * Obtains the column/row index that the coordinate points.
- * @param {number} coordinate Vertical/horizontal coordinate value that points
- *     column/row.
- * @param {number} step Length from a column/row to the next one.
- * @param {number} threshold Threshold that determines whether 1 offset is added
- *     to the return value or not. This is used in order to handle the margin of
- *     column/row.
- * @return {number} Index of hit column/row.
+ * Returns the index of row corresponding to the given y position.
+ *
+ * If the reverse is false, this returns index of the first row in which bottom
+ * of grid items is greater than or equal to y. Otherwise, this returns index of
+ * the last row in which top of grid items is less than or equal to y.
+ * @param {number} y
+ * @param {boolean} reverse
+ * @return {number}
  * @private
  */
-FileGrid.prototype.getHitIndex_ = function(coordinate, step, threshold) {
-  var index = ~~(coordinate / step);
-  return (coordinate % step >= threshold) ? index + 1 : index;
+FileGrid.prototype.getHitRowIndex_ = function(y, reverse) {
+  var folderRows = this.getFolderRowCount();
+  var folderHeight = this.getFolderItemHeight_();
+  var fileHeight = this.getFileItemHeight_();
+
+  if (y < folderHeight * folderRows) {
+    var shift = reverse ? -this.getItemMarginTop_() : 0;
+    return Math.floor((y + shift) / folderHeight);
+  }
+  var yInFiles = y - folderHeight * folderRows;
+  if (folderRows > 0)
+    yInFiles = Math.max(0, yInFiles - this.getSeparatorHeight_());
+  var shift = reverse ? -this.getItemMarginTop_() : 0;
+  return folderRows + Math.floor((yInFiles + shift) / fileHeight);
+};
+
+/**
+ * Returns the index of column corresponding to the given x position.
+ *
+ * If the reverse is false, this returns index of the first column in which
+ * left of grid items is greater than or equal to x. Otherwise, this returns
+ * index of the last column in which right of grid items is less than or equal
+ * to x.
+ * @param {number} x
+ * @param {boolean} reverse
+ * @return {number}
+ * @private
+ */
+FileGrid.prototype.getHitColumnIndex_ = function(x, reverse) {
+  var itemWidth = this.getItemWidth_();
+  var shift = reverse ? -this.getItemMarginLeft_() : 0;
+  return Math.floor((x + shift) / itemWidth);
 };
 
 /**
@@ -746,30 +815,19 @@ FileGrid.prototype.getHitIndex_ = function(coordinate, step, threshold) {
  */
 FileGrid.prototype.getHitElements = function(x, y, opt_width, opt_height) {
   var currentSelection = [];
-  var xInAvailableSpace = Math.max(0, x - this.paddingLeft_);
-  var yInAvailableSpace = Math.max(0, y - this.paddingTop_);
-  var right = xInAvailableSpace + (opt_width || 0);
-  var bottom = yInAvailableSpace + (opt_height || 0);
-  var itemMetrics = this.measureItem();
-  var horizontalStartIndex = this.getHitIndex_(
-      xInAvailableSpace, itemMetrics.width,
-      itemMetrics.width - itemMetrics.marginRight);
-  var horizontalEndIndex = Math.min(this.columns, this.getHitIndex_(
-      right, itemMetrics.width, itemMetrics.marginLeft));
-  var verticalStartIndex = this.getHitIndex_(
-      yInAvailableSpace, itemMetrics.height,
-      itemMetrics.height - itemMetrics.marginBottom);
-  var verticalEndIndex = this.getHitIndex_(
-      bottom, itemMetrics.height, itemMetrics.marginTop);
+  var left = Math.max(0, x - this.paddingLeft_);
+  var top = Math.max(0, y - this.paddingTop_);
+  var right = left + (opt_width ? opt_width - 1 : 0);
+  var bottom = top + (opt_height ? opt_height - 1 : 0);
 
-  for (var verticalIndex = verticalStartIndex;
-       verticalIndex < verticalEndIndex;
-       verticalIndex++) {
-    var indexBase = this.getFirstItemInRow(verticalIndex);
-    for (var horizontalIndex = horizontalStartIndex;
-         horizontalIndex < horizontalEndIndex;
-         horizontalIndex++) {
-      var index = indexBase + horizontalIndex;
+  var firstRow = this.getHitRowIndex_(top, false);
+  var lastRow = this.getHitRowIndex_(bottom, true);
+  var firstColumn = this.getHitColumnIndex_(left, false);
+  var lastColumn = this.getHitColumnIndex_(right, true);
+
+  for (var row = firstRow; row <= lastRow; row++) {
+    for (var col = firstColumn; col <= lastColumn; col++) {
+      var index = this.getItemIndex(row, col);
       if (0 <= index && index < this.dataModel.length)
         currentSelection.push(index);
     }
@@ -814,7 +872,13 @@ FileGridSelectionController.prototype.getIndexBelow = function(index) {
 
   var row = this.grid_.getItemRow(index);
   var col = this.grid_.getItemColumn(index);
-  return this.grid_.getItemIndex(row + 1, col);
+  var nextIndex = this.grid_.getItemIndex(row + 1, col);
+  if (nextIndex === -1) {
+    return row + 1 < this.grid_.getFolderRowCount() ?
+        this.grid_.dataModel.getFolderCount() - 1 :
+        this.grid_.dataModel.length - 1;
+  }
+  return nextIndex;
 };
 
 /** @override */
@@ -826,5 +890,11 @@ FileGridSelectionController.prototype.getIndexAbove = function(index) {
 
   var row = this.grid_.getItemRow(index);
   var col = this.grid_.getItemColumn(index);
-  return this.grid_.getItemIndex(row - 1, col);
+  var nextIndex = this.grid_.getItemIndex(row - 1, col);
+  if (nextIndex === -1) {
+    return row - 1 < this.grid_.getFolderRowCount() ?
+        this.grid_.dataModel.getFolderCount() - 1 :
+        this.grid_.dataModel.length - 1;
+  }
+  return nextIndex;
 };
