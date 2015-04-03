@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -16,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
+#include "components/dom_distiller/core/feedback_reporter.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/viewer.h"
@@ -308,15 +308,19 @@ void DomDistillerViewerSource::StartDataRequest(
     std::string css = viewer::GetCss();
     callback.Run(base::RefCountedString::TakeString(&css));
     return;
-  }
-  if (kViewerJsPath == path) {
+  } else if (kViewerJsPath == path) {
     std::string js = viewer::GetJavaScript();
     callback.Run(base::RefCountedString::TakeString(&js));
     return;
-  }
-  if (kViewerViewOriginalPath == path) {
+  } else if (kViewerViewOriginalPath == path) {
     content::RecordAction(base::UserMetricsAction("DomDistiller_ViewOriginal"));
     callback.Run(NULL);
+    return;
+  } else if (kFeedbackBad == path) {
+    FeedbackReporter::ReportQuality(false);
+    return;
+  } else if (kFeedbackGood == path) {
+    FeedbackReporter::ReportQuality(true);
     return;
   }
   content::WebContents* web_contents =
