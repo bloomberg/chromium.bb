@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 // Content settings API test
-// Run with browser_tests --gtest_filter=ExtensionApiTest.DataReductionProxy
+// Run with browser_tests
+// --gtest_filter=ExtensionPreferenceApiTest.DataReductionProxy
 
 var dataReductionProxy = chrome.dataReductionProxy;
 var privatePreferences = chrome.preferencesPrivate;
@@ -89,6 +90,8 @@ chrome.test.runTests([
                 'levelOfControl': 'controllable_by_this_extension'
               },
               result);
+          dataReductionProxy.dataReductionDailyContentLength.onChange.
+              removeListener(confirmDailyContentLength);
       }));
       privatePreferences.dataReductionUpdateDailyLengths.get({},
         chrome.test.callbackPass(function(result) {
@@ -97,7 +100,34 @@ chrome.test.runTests([
                 'value': false
               },
               result);
+          dataReductionProxy.dataReductionDailyReceivedLength.onChange.
+              removeListener(confirmRecievedLength);
       }));
     }
+  },
+  function clearDataSavings() {
+    dataReductionProxy.spdyProxyEnabled.set({ 'value': true });
+
+    dataReductionProxy.clearDataSavings(function() {
+        // Confirm that data is cleared
+        dataReductionProxy.dataReductionDailyContentLength.get({},
+          chrome.test.callbackPass(function(result) {
+            chrome.test.assertEq(
+              {
+                'value': [],
+                'levelOfControl': 'controllable_by_this_extension'
+              },
+              result);
+          }));
+        dataReductionProxy.dataReductionDailyReceivedLength.get({},
+          chrome.test.callbackPass(function(result) {
+            chrome.test.assertEq(
+              {
+                'value': [],
+                'levelOfControl': 'controllable_by_this_extension'
+              },
+              result);
+          }));
+    });
   }
 ]);

@@ -69,6 +69,9 @@ class DataReductionProxyCompressionStats {
   // Must be called on the UI thread.
   base::Value* HistoricNetworkStatsInfoToValue();
 
+  // Clears all data saving statistics.
+  void ClearDataSavingStatistics();
+
   base::WeakPtr<DataReductionProxyCompressionStats> GetWeakPtr();
 
  private:
@@ -96,9 +99,6 @@ class DataReductionProxyCompressionStats {
   // Gets an int64, stored as a string, in a ListPref at the specified
   // index.
   int64 GetListPrefInt64Value(const base::ListValue& list_update, size_t index);
-
-  // Clears all data saving statistics.
-  void ClearDataSavingStatistics();
 
   PrefService* pref_service_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

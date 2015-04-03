@@ -47,34 +47,26 @@ void DataReductionProxyCompressionStats::Init() {
     return;
 
   // Init all int64 prefs.
-  InitInt64Pref(data_reduction_proxy::prefs::
-                kDailyHttpContentLengthLastUpdateDate);
-  InitInt64Pref(data_reduction_proxy::prefs::kHttpReceivedContentLength);
-  InitInt64Pref(data_reduction_proxy::prefs::kHttpOriginalContentLength);
+  InitInt64Pref(prefs::kDailyHttpContentLengthLastUpdateDate);
+  InitInt64Pref(prefs::kHttpReceivedContentLength);
+  InitInt64Pref(prefs::kHttpOriginalContentLength);
 
   // Init all list prefs.
-  InitListPref(data_reduction_proxy::prefs::
-               kDailyContentLengthHttpsWithDataReductionProxyEnabled);
-  InitListPref(data_reduction_proxy::prefs::
-               kDailyContentLengthLongBypassWithDataReductionProxyEnabled);
-  InitListPref(data_reduction_proxy::prefs::
-               kDailyContentLengthShortBypassWithDataReductionProxyEnabled);
-  InitListPref(data_reduction_proxy::prefs::
-               kDailyContentLengthUnknownWithDataReductionProxyEnabled);
-  InitListPref(data_reduction_proxy::prefs::
-               kDailyContentLengthViaDataReductionProxy);
-  InitListPref(data_reduction_proxy::prefs::
-               kDailyContentLengthWithDataReductionProxyEnabled);
-  InitListPref(data_reduction_proxy::prefs::kDailyHttpOriginalContentLength);
-  InitListPref(data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
-  InitListPref(data_reduction_proxy::prefs::
-               kDailyOriginalContentLengthViaDataReductionProxy);
-  InitListPref(data_reduction_proxy::prefs::
-               kDailyOriginalContentLengthWithDataReductionProxyEnabled);
+  InitListPref(prefs::kDailyContentLengthHttpsWithDataReductionProxyEnabled);
+  InitListPref(
+      prefs::kDailyContentLengthLongBypassWithDataReductionProxyEnabled);
+  InitListPref(
+      prefs::kDailyContentLengthShortBypassWithDataReductionProxyEnabled);
+  InitListPref(prefs::kDailyContentLengthUnknownWithDataReductionProxyEnabled);
+  InitListPref(prefs::kDailyContentLengthViaDataReductionProxy);
+  InitListPref(prefs::kDailyContentLengthWithDataReductionProxyEnabled);
+  InitListPref(prefs::kDailyHttpOriginalContentLength);
+  InitListPref(prefs::kDailyHttpReceivedContentLength);
+  InitListPref(prefs::kDailyOriginalContentLengthViaDataReductionProxy);
+  InitListPref(prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          data_reduction_proxy::switches::
-              kClearDataReductionProxyDataSavings)) {
+      switches::kClearDataReductionProxyDataSavings)) {
     ClearDataSavingStatistics();
   }
 
@@ -154,10 +146,8 @@ void DataReductionProxyCompressionStats::WritePrefs() {
 base::Value*
 DataReductionProxyCompressionStats::HistoricNetworkStatsInfoToValue() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  int64 total_received = GetInt64(
-      data_reduction_proxy::prefs::kHttpReceivedContentLength);
-  int64 total_original = GetInt64(
-      data_reduction_proxy::prefs::kHttpOriginalContentLength);
+  int64 total_received = GetInt64(prefs::kHttpReceivedContentLength);
+  int64 total_original = GetInt64(prefs::kHttpOriginalContentLength);
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   // Use strings to avoid overflow. base::Value only supports 32-bit integers.
@@ -166,6 +156,32 @@ DataReductionProxyCompressionStats::HistoricNetworkStatsInfoToValue() {
   dict->SetString("historic_original_content_length",
                   base::Int64ToString(total_original));
   return dict;
+}
+
+void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
+  list_pref_map_.get(
+      prefs::kDailyContentLengthHttpsWithDataReductionProxyEnabled)->Clear();
+  list_pref_map_
+      .get(prefs::kDailyContentLengthLongBypassWithDataReductionProxyEnabled)
+      ->Clear();
+  list_pref_map_
+      .get(prefs::kDailyContentLengthShortBypassWithDataReductionProxyEnabled)
+      ->Clear();
+  list_pref_map_
+      .get(prefs::kDailyContentLengthUnknownWithDataReductionProxyEnabled)
+      ->Clear();
+  list_pref_map_.get(prefs::kDailyContentLengthViaDataReductionProxy)->Clear();
+  list_pref_map_.get(prefs::kDailyContentLengthWithDataReductionProxyEnabled)
+      ->Clear();
+  list_pref_map_.get(prefs::kDailyHttpOriginalContentLength)->Clear();
+  list_pref_map_.get(prefs::kDailyHttpReceivedContentLength)->Clear();
+  list_pref_map_.get(prefs::kDailyOriginalContentLengthViaDataReductionProxy)
+      ->Clear();
+  list_pref_map_
+      .get(prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled)
+      ->Clear();
+
+  WritePrefs();
 }
 
 void DataReductionProxyCompressionStats::DelayedWritePrefs() {
@@ -204,32 +220,6 @@ int64 DataReductionProxyCompressionStats::GetListPrefInt64Value(
   bool rv = base::StringToInt64(string_value, &value);
   DCHECK(rv);
   return value;
-}
-
-void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
-  list_pref_map_.get(data_reduction_proxy::prefs::
-      kDailyContentLengthHttpsWithDataReductionProxyEnabled)->Clear();
-  list_pref_map_.get(data_reduction_proxy::prefs::
-      kDailyContentLengthLongBypassWithDataReductionProxyEnabled)->Clear();
-  list_pref_map_.get(data_reduction_proxy::prefs::
-      kDailyContentLengthShortBypassWithDataReductionProxyEnabled)->Clear();
-  list_pref_map_.get(data_reduction_proxy::prefs::
-      kDailyContentLengthUnknownWithDataReductionProxyEnabled)->Clear();
-  list_pref_map_.get(
-      data_reduction_proxy::prefs::kDailyContentLengthViaDataReductionProxy)->
-          Clear();
-  list_pref_map_.get(data_reduction_proxy::prefs::
-      kDailyContentLengthWithDataReductionProxyEnabled)->Clear();
-  list_pref_map_.get(data_reduction_proxy::prefs::
-      kDailyHttpOriginalContentLength)->Clear();
-  list_pref_map_.get(data_reduction_proxy::prefs::
-      kDailyHttpReceivedContentLength)->Clear();
-  list_pref_map_.get(data_reduction_proxy::prefs::
-      kDailyOriginalContentLengthViaDataReductionProxy)->Clear();
-  list_pref_map_.get(data_reduction_proxy::prefs::
-      kDailyOriginalContentLengthWithDataReductionProxyEnabled)->Clear();
-
-  WritePrefs();
 }
 
 base::WeakPtr<DataReductionProxyCompressionStats>

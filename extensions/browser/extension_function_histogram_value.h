@@ -1054,6 +1054,7 @@ enum HistogramValue {
   WEBVIEWINTERNAL_SETZOOMMODE,
   WEBVIEWINTERNAL_GETZOOMMODE,
   LAUNCHERSEARCHPROVIDER_SETSEARCHRESULTS,
+  DATAREDUCTIONPROXY_CLEARDATASAVINGS,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

@@ -5,7 +5,7 @@
 [
   {
     "namespace": "dataReductionProxy",
-    "description": "Use the <code>chrome.dataReductionProxy</code> API to control usage of the features in Chrome that can affect a user's privacy. This API relies on the <a href='types#ChromeSetting'>ChromeSetting prototype of the type API</a> for getting and setting Chrome's configuration.",
+    "description": "Use the <code>chrome.dataReductionProxy</code> API to control the data reduction proxy and access usage metrics. This API relies on the <a href='types#ChromeSetting'>ChromeSetting prototype of the type API</a> for getting and setting Chrome's configuration.",
     "properties": {
       "spdyProxyEnabled": {
         "nocompile": true,
@@ -31,6 +31,22 @@
         "value": ["data_reduction.update_daily_lengths", {"type":"boolean"}],
         "description": "Flag to indicate that dataReductionDailyContentLength and dataReductionDailyReceivedLength must be updated with their latest values. This preference's value is a boolean, defaulting to <code>false</code>."
       }
-    }        
+    },
+    "functions": [
+      {
+        "name": "clearDataSavings",
+        "type": "function",
+        "description": "Clear all data saving metrics obtained by using the data reduction proxy.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Callback to call after data savings have been cleared",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      }
+    ]
   }
 ]
