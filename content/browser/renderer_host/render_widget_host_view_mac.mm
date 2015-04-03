@@ -953,8 +953,7 @@ gfx::NativeViewId RenderWidgetHostViewMac::GetNativeViewId() const {
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
-  NOTIMPLEMENTED();
-  return static_cast<gfx::NativeViewAccessible>(NULL);
+  return cocoa_view_;
 }
 
 void RenderWidgetHostViewMac::MovePluginWindows(
