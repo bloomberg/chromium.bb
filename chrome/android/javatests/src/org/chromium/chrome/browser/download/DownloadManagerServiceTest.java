@@ -101,8 +101,9 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void notifyDownloadSuccessful(DownloadInfo downloadInfo) {
+        public boolean notifyDownloadSuccessful(DownloadInfo downloadInfo) {
             assertCorrectExpectedCall(MethodID.DOWNLOAD_SUCCESSFUL, downloadInfo);
+            return true;
         }
 
         @Override

@@ -11,7 +11,6 @@ import android.content.Context;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.chromium.chrome.R;
 
@@ -62,7 +61,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     }
 
     @Override
-    public void notifyDownloadSuccessful(DownloadInfo downloadInfo) {
+    public boolean notifyDownloadSuccessful(DownloadInfo downloadInfo) {
         String mimeType = downloadInfo.getMimeType();
         if (TextUtils.isEmpty(mimeType)) mimeType = UNKNOWN_MIME_TYPE;
 
@@ -75,9 +74,9 @@ public class SystemDownloadNotifier implements DownloadNotifier {
             // TODO(qinmin): Properly handle the case that we fail to add a completed
             // download item to DownloadManager
             Log.w(LOGTAG, "Failed to add the download item to DownloadManager: " + e);
-            Toast.makeText(mApplicationContext, R.string.cannot_add_downloaded_item_to_manager,
-                    Toast.LENGTH_SHORT).show();
+            return false;
         }
+        return true;
     }
 
     @Override

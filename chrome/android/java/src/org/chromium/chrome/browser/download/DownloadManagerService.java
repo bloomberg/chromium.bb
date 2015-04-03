@@ -407,16 +407,20 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
     /**
      * Updates notifications for all current downloads. Should not be called from UI thread.
+     *
+     * @return true if all completed downloads are added to the DownloadManager, or false
+     *         if one of them fails.
      */
-    private void updateAllNotifications() {
+    private boolean updateAllNotifications() {
         assert !ThreadUtils.runningOnUiThread();
+        boolean ret = true;
         for (DownloadProgress progress : mDownloadProgressMap.values()) {
             if (progress != null) {
                 switch (progress.mDownloadStatus) {
                     case COMPLETE:
                         removeProgressNotificationForDownload(progress.mDownloadInfo
                                 .getDownloadId());
-                        mDownloadNotifier.notifyDownloadSuccessful(progress.mDownloadInfo);
+                        ret = mDownloadNotifier.notifyDownloadSuccessful(progress.mDownloadInfo);
                         broadcastDownloadSuccessful(progress.mDownloadInfo);
                         break;
                     case FAILED:
@@ -431,6 +435,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 }
             }
         }
+        return ret;
     }
 
     /**
@@ -441,11 +446,18 @@ public class DownloadManagerService extends BroadcastReceiver implements
             Runnable updateTask = new Runnable() {
                 @Override
                 public void run() {
-                    new AsyncTask<Void, Void, Void>() {
+                    new AsyncTask<Void, Void, Boolean>() {
                         @Override
-                        public Void doInBackground(Void... params) {
-                            updateAllNotifications();
-                            return null;
+                        public Boolean doInBackground(Void... params) {
+                            return updateAllNotifications();
+                        }
+
+                        protected void onPostExecute(Boolean result) {
+                            if (!result) {
+                                Toast.makeText(mContext,
+                                               R.string.cannot_add_downloaded_item_to_manager,
+                                               Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     mIsUIUpdateScheduled.set(false);
