@@ -6,7 +6,7 @@
 /**
  * T-Rex runner.
  * @param {string} outerContainerId Outer containing element id.
- * @param {object} opt_config
+ * @param {Object} opt_config
  * @constructor
  * @export
  */
@@ -19,6 +19,7 @@ function Runner(outerContainerId, opt_config) {
 
   this.outerContainerEl = document.querySelector(outerContainerId);
   this.containerEl = null;
+  this.snackbarEl = null;
   this.detailsButton = this.outerContainerEl.querySelector('#details-button');
 
   this.config = opt_config || Runner.config;
@@ -87,8 +88,8 @@ var FPS = 60;
 var IS_HIDPI = window.devicePixelRatio > 1;
 
 /** @const */
-var IS_IOS =
-    window.navigator.userAgent.indexOf('UIWebViewForStaticFileContent') > -1;
+var IS_IOS = window.navigator.userAgent.indexOf('CriOS') > -1 ||
+    window.navigator.userAgent == 'UIWebViewForStaticFileContent';
 
 /** @const */
 var IS_MOBILE = window.navigator.userAgent.indexOf('Mobi') > -1 || IS_IOS;
@@ -112,7 +113,8 @@ Runner.config = {
   INITIAL_JUMP_VELOCITY: 12,
   MAX_CLOUDS: 6,
   MAX_OBSTACLE_LENGTH: 3,
-  MAX_SPEED: 12,
+  MAX_OBSTACLE_DUPLICATION: 2,
+  MAX_SPEED: 13,
   MIN_JUMP_HEIGHT: 35,
   MOBILE_SPEED_COEFFICIENT: 1.2,
   RESOURCE_TEMPLATE_ID: 'audio-resources',
@@ -147,28 +149,30 @@ Runner.classes = {
 
 
 /**
- * Image source urls.
- * @enum {array<object>}
+ * Sprite definition layout of the spritesheet.
+ * @enum {Object}
  */
-Runner.imageSources = {
-  LDPI: [
-    {name: 'CACTUS_LARGE', id: '1x-obstacle-large'},
-    {name: 'CACTUS_SMALL', id: '1x-obstacle-small'},
-    {name: 'CLOUD', id: '1x-cloud'},
-    {name: 'HORIZON', id: '1x-horizon'},
-    {name: 'RESTART', id: '1x-restart'},
-    {name: 'TEXT_SPRITE', id: '1x-text'},
-    {name: 'TREX', id: '1x-trex'}
-  ],
-  HDPI: [
-    {name: 'CACTUS_LARGE', id: '2x-obstacle-large'},
-    {name: 'CACTUS_SMALL', id: '2x-obstacle-small'},
-    {name: 'CLOUD', id: '2x-cloud'},
-    {name: 'HORIZON', id: '2x-horizon'},
-    {name: 'RESTART', id: '2x-restart'},
-    {name: 'TEXT_SPRITE', id: '2x-text'},
-    {name: 'TREX', id: '2x-trex'}
-  ]
+Runner.spriteDefinition = {
+  LDPI: {
+    CACTUS_LARGE: {x: 332, y: 2},
+    CACTUS_SMALL: {x: 228, y: 2},
+    CLOUD: {x: 86, y: 2},
+    HORIZON: {x: 2, y: 54},
+    PTERODACTYL: {x: 134, y: 2},
+    RESTART: {x: 2, y: 2},
+    TEXT_SPRITE: {x: 484, y: 2},
+    TREX: {x: 677, y: 2}
+  },
+  HDPI: {
+    CACTUS_LARGE: {x: 652,y: 2},
+    CACTUS_SMALL: {x: 446,y: 2},
+    CLOUD: {x: 166,y: 2},
+    HORIZON: {x: 2,y: 104},
+    PTERODACTYL: {x: 260,y: 2},
+    RESTART: {x: 2,y: 2},
+    TEXT_SPRITE: {x: 954,y: 2},
+    TREX: {x: 1338,y: 2}
+  }
 };
 
 
@@ -185,7 +189,7 @@ Runner.sounds = {
 
 /**
  * Key code mapping.
- * @enum {object}
+ * @enum {Object}
  */
 Runner.keycodes = {
   JUMP: {'38': 1, '32': 1},  // Up, spacebar
@@ -268,18 +272,18 @@ Runner.prototype = {
   },
 
   /**
-   * Load and cache the image assets from the page.
+   * Cache the appropriate image sprite from the page and get the sprite sheet
+   * definition.
    */
   loadImages: function() {
-    var imageSources = IS_HIDPI ? Runner.imageSources.HDPI :
-        Runner.imageSources.LDPI;
-
-    var numImages = imageSources.length;
-
-    for (var i = numImages - 1; i >= 0; i--) {
-      var imgSource = imageSources[i];
-      this.images[imgSource.name] = document.getElementById(imgSource.id);
+    if (IS_HIDPI) {
+      Runner.imageSprite = document.getElementById('offline-resources-2x');
+      this.spriteDef = Runner.spriteDefinition.HDPI;
+    } else {
+      Runner.imageSprite = document.getElementById('offline-resources-1x');
+      this.spriteDef = Runner.spriteDefinition.LDPI;
     }
+
     this.init();
   },
 
@@ -289,6 +293,7 @@ Runner.prototype = {
   loadSounds: function() {
     if (!IS_IOS) {
       this.audioContext = new AudioContext();
+
       var resourceTemplate =
           document.getElementById(this.config.RESOURCE_TEMPLATE_ID).content;
 
@@ -347,15 +352,15 @@ Runner.prototype = {
     Runner.updateCanvasScaling(this.canvas);
 
     // Horizon contains clouds, obstacles and the ground.
-    this.horizon = new Horizon(this.canvas, this.images, this.dimensions,
+    this.horizon = new Horizon(this.canvas, this.spriteDef, this.dimensions,
         this.config.GAP_COEFFICIENT);
 
     // Distance meter
     this.distanceMeter = new DistanceMeter(this.canvas,
-          this.images.TEXT_SPRITE, this.dimensions.WIDTH);
+          this.spriteDef.TEXT_SPRITE, this.dimensions.WIDTH);
 
     // Draw t-rex
-    this.tRex = new Trex(this.canvas, this.images.TREX);
+    this.tRex = new Trex(this.canvas, this.spriteDef.TREX);
 
     this.outerContainerEl.appendChild(this.containerEl);
 
@@ -504,7 +509,7 @@ Runner.prototype = {
       this.clearCanvas();
 
       if (this.tRex.jumping) {
-        this.tRex.updateJump(deltaTime, this.config);
+        this.tRex.updateJump(deltaTime);
       }
 
       this.runningTime += deltaTime;
@@ -535,11 +540,6 @@ Runner.prototype = {
         }
       } else {
         this.gameOver();
-      }
-
-      if (this.distanceMeter.getActualDistance(this.distanceRan) >
-          this.distanceMeter.maxScore) {
-        this.distanceRan = 0;
       }
 
       var playAcheivementSound = this.distanceMeter.update(deltaTime,
@@ -618,17 +618,23 @@ Runner.prototype = {
    * @param {Event} e
    */
   onKeyDown: function(e) {
+    // Prevent native page scrolling whilst tapping on mobile.
+    if (IS_MOBILE) {
+      e.preventDefault();
+    }
+
     if (e.target != this.detailsButton) {
-      if (!this.crashed && (Runner.keycodes.JUMP[String(e.keyCode)] ||
+      if (!this.crashed && (Runner.keycodes.JUMP[e.keyCode] ||
            e.type == Runner.events.TOUCHSTART)) {
         if (!this.activated) {
           this.loadSounds();
           this.activated = true;
+          errorPageController.trackEasterEgg();
         }
 
-        if (!this.tRex.jumping) {
+        if (!this.tRex.jumping && !this.tRex.ducking) {
           this.playSound(this.soundFx.BUTTON_PRESS);
-          this.tRex.startJump();
+          this.tRex.startJump(this.currentSpeed);
         }
       }
 
@@ -638,10 +644,15 @@ Runner.prototype = {
       }
     }
 
-    // Speed drop, activated only when jump key is not pressed.
-    if (Runner.keycodes.DUCK[e.keyCode] && this.tRex.jumping) {
+    if (this.activated && !this.crashed && Runner.keycodes.DUCK[e.keyCode]) {
       e.preventDefault();
-      this.tRex.setSpeedDrop();
+      if (this.tRex.jumping) {
+        // Speed drop, activated only when jump key is not pressed.
+        this.tRex.setSpeedDrop();
+      } else if (!this.tRex.jumping && !this.tRex.ducking) {
+        // Duck.
+        this.tRex.setDuck(true);
+      }
     }
   },
 
@@ -660,19 +671,32 @@ Runner.prototype = {
       this.tRex.endJump();
     } else if (Runner.keycodes.DUCK[keyCode]) {
       this.tRex.speedDrop = false;
+      this.tRex.setDuck(false);
     } else if (this.crashed) {
       // Check that enough time has elapsed before allowing jump key to restart.
       var deltaTime = getTimeStamp() - this.time;
 
-      if (Runner.keycodes.RESTART[keyCode] ||
-         (e.type == Runner.events.MOUSEUP && e.target == this.canvas) ||
-         (deltaTime >= this.config.GAMEOVER_CLEAR_TIME &&
-         Runner.keycodes.JUMP[keyCode])) {
+      if (Runner.keycodes.RESTART[keyCode] || this.isLeftClickOnCanvas(e) ||
+          (deltaTime >= this.config.GAMEOVER_CLEAR_TIME &&
+          Runner.keycodes.JUMP[keyCode])) {
         this.restart();
       }
     } else if (this.paused && isjumpKey) {
+      // Reset the jump state
+      this.tRex.reset();
       this.play();
     }
+  },
+
+  /**
+   * Returns whether the event was a left click on canvas.
+   * On Windows right click is registered as a click.
+   * @param {Event} e
+   * @return {boolean}
+   */
+  isLeftClickOnCanvas: function(e) {
+    return e.button && e.button < 2 && e.type == Runner.events.MOUSEUP &&
+        e.target == this.canvas;
   },
 
   /**
@@ -709,7 +733,7 @@ Runner.prototype = {
     // Game over panel.
     if (!this.gameOverPanel) {
       this.gameOverPanel = new GameOverPanel(this.canvas,
-          this.images.TEXT_SPRITE, this.images.RESTART,
+          this.spriteDef.TEXT_SPRITE, this.spriteDef.RESTART,
           this.dimensions);
     } else {
       this.gameOverPanel.draw();
@@ -812,7 +836,6 @@ Runner.updateCanvasScaling = function(canvas, opt_width, opt_height) {
 
   // Upscale the canvas if the two ratios don't match
   if (devicePixelRatio !== backingStoreRatio) {
-
     var oldWidth = opt_width || canvas.width;
     var oldHeight = opt_height || canvas.height;
 
@@ -910,17 +933,17 @@ function getTimeStamp() {
 /**
  * Game over panel.
  * @param {!HTMLCanvasElement} canvas
- * @param {!HTMLImage} textSprite
- * @param {!HTMLImage} restartImg
+ * @param {Object} textImgPos
+ * @param {Object} restartImgPos
  * @param {!Object} dimensions Canvas dimensions.
  * @constructor
  */
-function GameOverPanel(canvas, textSprite, restartImg, dimensions) {
+function GameOverPanel(canvas, textImgPos, restartImgPos, dimensions) {
   this.canvas = canvas;
   this.canvasCtx = canvas.getContext('2d');
   this.canvasDimensions = dimensions;
-  this.textSprite = textSprite;
-  this.restartImg = restartImg;
+  this.textImgPos = textImgPos;
+  this.restartImgPos = restartImgPos;
   this.draw();
 };
 
@@ -985,13 +1008,17 @@ GameOverPanel.prototype = {
       restartSourceHeight *= 2;
     }
 
+    textSourceX += this.textImgPos.x;
+    textSourceY += this.textImgPos.y;
+
     // Game over text from sprite.
-    this.canvasCtx.drawImage(this.textSprite,
+    this.canvasCtx.drawImage(Runner.imageSprite,
         textSourceX, textSourceY, textSourceWidth, textSourceHeight,
         textTargetX, textTargetY, textTargetWidth, textTargetHeight);
 
     // Restart button.
-    this.canvasCtx.drawImage(this.restartImg, 0, 0,
+    this.canvasCtx.drawImage(Runner.imageSprite,
+        this.restartImgPos.x, this.restartImgPos.y,
         restartSourceWidth, restartSourceHeight,
         restartTargetX, restartTargetY, dimensions.RESTART_WIDTH,
         dimensions.RESTART_HEIGHT);
@@ -1034,7 +1061,8 @@ function checkForCollision(obstacle, tRex, opt_canvasCtx) {
   // Simple outer bounds check.
   if (boxCompare(tRexBox, obstacleBox)) {
     var collisionBoxes = obstacle.collisionBoxes;
-    var tRexCollisionBoxes = Trex.collisionBoxes;
+    var tRexCollisionBoxes = tRex.ducking ?
+        Trex.collisionBoxes.DUCKING : Trex.collisionBoxes.RUNNING;
 
     // Detailed axis aligned box check.
     for (var t = 0; t < tRexCollisionBoxes.length; t++) {
@@ -1082,12 +1110,11 @@ function createAdjustedCollisionBox(box, adjustment) {
 function drawCollisionBoxes(canvasCtx, tRexBox, obstacleBox) {
   canvasCtx.save();
   canvasCtx.strokeStyle = '#f00';
-  canvasCtx.strokeRect(tRexBox.x, tRexBox.y,
-  tRexBox.width, tRexBox.height);
+  canvasCtx.strokeRect(tRexBox.x, tRexBox.y, tRexBox.width, tRexBox.height);
 
   canvasCtx.strokeStyle = '#0f0';
   canvasCtx.strokeRect(obstacleBox.x, obstacleBox.y,
-  obstacleBox.width, obstacleBox.height);
+      obstacleBox.width, obstacleBox.height);
   canvasCtx.restore();
 };
 
@@ -1141,26 +1168,31 @@ function CollisionBox(x, y, w, h) {
  * Obstacle.
  * @param {HTMLCanvasCtx} canvasCtx
  * @param {Obstacle.type} type
- * @param {image} obstacleImg Image sprite.
+ * @param {Object} spritePos Obstacle position in sprite.
  * @param {Object} dimensions
  * @param {number} gapCoefficient Mutipler in determining the gap.
  * @param {number} speed
  */
-function Obstacle(canvasCtx, type, obstacleImg, dimensions,
+function Obstacle(canvasCtx, type, spriteImgPos, dimensions,
     gapCoefficient, speed) {
 
   this.canvasCtx = canvasCtx;
-  this.image = obstacleImg;
+  this.spritePos = spriteImgPos;
   this.typeConfig = type;
   this.gapCoefficient = gapCoefficient;
   this.size = getRandomNum(1, Obstacle.MAX_OBSTACLE_LENGTH);
   this.dimensions = dimensions;
   this.remove = false;
   this.xPos = 0;
-  this.yPos = this.typeConfig.yPos;
+  this.yPos = 0;
   this.width = 0;
   this.collisionBoxes = [];
   this.gap = 0;
+  this.speedOffset = 0;
+
+  // For animated obstacles.
+  this.currentFrame = 0;
+  this.timer = 0;
 
   this.init(speed);
 };
@@ -1194,6 +1226,15 @@ Obstacle.prototype = {
     this.width = this.typeConfig.width * this.size;
     this.xPos = this.dimensions.WIDTH - this.width;
 
+    // Check if obstacle can be positioned at various heights.
+    if (Array.isArray(this.typeConfig.yPos))  {
+      var yPosConfig = IS_MOBILE ? this.typeConfig.yPosMobile :
+          this.typeConfig.yPos;
+      this.yPos = yPosConfig[getRandomNum(0, yPosConfig.length - 1)];
+    } else {
+      this.yPos = this.typeConfig.yPos;
+    }
+
     this.draw();
 
     // Make collision box adjustments,
@@ -1208,6 +1249,12 @@ Obstacle.prototype = {
       this.collisionBoxes[1].width = this.width - this.collisionBoxes[0].width -
           this.collisionBoxes[2].width;
       this.collisionBoxes[2].x = this.width - this.collisionBoxes[2].width;
+    }
+
+    // For obstacles that go at a different speed from the horizon.
+    if (this.typeConfig.speedOffset) {
+      this.speedOffset = Math.random() > 0.5 ? this.typeConfig.speedOffset :
+          -this.typeConfig.speedOffset;
     }
 
     this.gap = this.getGap(this.gapCoefficient, speed);
@@ -1225,10 +1272,17 @@ Obstacle.prototype = {
       sourceHeight = sourceHeight * 2;
     }
 
-    // Sprite
-    var sourceX = (sourceWidth * this.size) * (0.5 * (this.size - 1));
-    this.canvasCtx.drawImage(this.image,
-      sourceX, 0,
+    // X position in sprite.
+    var sourceX = (sourceWidth * this.size) * (0.5 * (this.size - 1)) +
+        this.spritePos.x;
+
+    // Animation frames.
+    if (this.currentFrame > 0) {
+      sourceX += sourceWidth * this.currentFrame;
+    }
+
+    this.canvasCtx.drawImage(Runner.imageSprite,
+      sourceX, this.spritePos.y,
       sourceWidth * this.size, sourceHeight,
       this.xPos, this.yPos,
       this.typeConfig.width * this.size, this.typeConfig.height);
@@ -1241,7 +1295,21 @@ Obstacle.prototype = {
    */
   update: function(deltaTime, speed) {
     if (!this.remove) {
+      if (this.typeConfig.speedOffset) {
+        speed += this.speedOffset;
+      }
       this.xPos -= Math.floor((speed * FPS / 1000) * deltaTime);
+
+      // Update frame
+      if (this.typeConfig.numFrames) {
+        this.timer += deltaTime;
+        if (this.timer >= this.typeConfig.frameRate) {
+          this.currentFrame =
+              this.currentFrame == this.typeConfig.numFrames - 1 ?
+              0 : this.currentFrame + 1;
+          this.timer = 0;
+        }
+      }
       this.draw();
 
       if (!this.isVisible()) {
@@ -1292,16 +1360,18 @@ Obstacle.prototype = {
  * Obstacle definitions.
  * minGap: minimum pixel space betweeen obstacles.
  * multipleSpeed: Speed at which multiples are allowed.
+ * speedOffset: speed faster / slower than the horizon.
+ * minSpeed: Minimum speed which the obstacle can make an appearance.
  */
 Obstacle.types = [
   {
     type: 'CACTUS_SMALL',
-    className: ' cactus cactus-small ',
     width: 17,
     height: 35,
     yPos: 105,
-    multipleSpeed: 3,
+    multipleSpeed: 4,
     minGap: 120,
+    minSpeed: 0,
     collisionBoxes: [
       new CollisionBox(0, 7, 5, 27),
       new CollisionBox(4, 0, 6, 34),
@@ -1310,17 +1380,37 @@ Obstacle.types = [
   },
   {
     type: 'CACTUS_LARGE',
-    className: ' cactus cactus-large ',
     width: 25,
     height: 50,
     yPos: 90,
-    multipleSpeed: 6,
+    multipleSpeed: 7,
     minGap: 120,
+    minSpeed: 0,
     collisionBoxes: [
       new CollisionBox(0, 12, 7, 38),
       new CollisionBox(8, 0, 7, 49),
       new CollisionBox(13, 10, 10, 38)
     ]
+  },
+  {
+    type: 'PTERODACTYL',
+    width: 46,
+    height: 40,
+    yPos: [ 100, 75, 50 ], // Variable height.
+    yPosMobile: [ 100, 50 ], // Variable height mobile.
+    multipleSpeed: 999,
+    minSpeed: 8.5,
+    minGap: 150,
+    collisionBoxes: [
+      new CollisionBox(15, 15, 16, 5),
+      new CollisionBox(18, 21, 24, 6),
+      new CollisionBox(2, 14, 4, 3),
+      new CollisionBox(6, 10, 4, 7),
+      new CollisionBox(10, 8, 6, 9)
+    ],
+    numFrames: 2,
+    frameRate: 1000/6,
+    speedOffset: .8
   }
 ];
 
@@ -1329,13 +1419,13 @@ Obstacle.types = [
 /**
  * T-rex game character.
  * @param {HTMLCanvas} canvas
- * @param {HTMLImage} image Character image.
+ * @param {Object} spritePos Positioning within image sprite.
  * @constructor
  */
-function Trex(canvas, image) {
+function Trex(canvas, spritePos) {
   this.canvas = canvas;
   this.canvasCtx = canvas.getContext('2d');
-  this.image = image;
+  this.spritePos = spritePos;
   this.xPos = 0;
   this.yPos = 0;
   // Position when on the ground.
@@ -1351,6 +1441,7 @@ function Trex(canvas, image) {
   this.status = Trex.status.WAITING;
 
   this.jumping = false;
+  this.ducking = false;
   this.jumpVelocity = 0;
   this.reachedMinHeight = false;
   this.speedDrop = false;
@@ -1369,6 +1460,7 @@ Trex.config = {
   DROP_VELOCITY: -5,
   GRAVITY: 0.6,
   HEIGHT: 47,
+  HEIGHT_DUCK: 25,
   INIITAL_JUMP_VELOCITY: -10,
   INTRO_DURATION: 1500,
   MAX_JUMP_HEIGHT: 30,
@@ -1376,7 +1468,8 @@ Trex.config = {
   SPEED_DROP_COEFFICIENT: 3,
   SPRITE_WIDTH: 262,
   START_X_POS: 50,
-  WIDTH: 44
+  WIDTH: 44,
+  WIDTH_DUCK: 59
 };
 
 
@@ -1384,14 +1477,19 @@ Trex.config = {
  * Used in collision detection.
  * @type {Array<CollisionBox>}
  */
-Trex.collisionBoxes = [
-  new CollisionBox(1, -1, 30, 26),
-  new CollisionBox(32, 0, 8, 16),
-  new CollisionBox(10, 35, 14, 8),
-  new CollisionBox(1, 24, 29, 5),
-  new CollisionBox(5, 30, 21, 4),
-  new CollisionBox(9, 34, 15, 4)
-];
+Trex.collisionBoxes = {
+  DUCKING: [
+    new CollisionBox(1, 18, 55, 25)
+  ],
+  RUNNING: [
+    new CollisionBox(22, 0, 17, 16),
+    new CollisionBox(1, 18, 30, 9),
+    new CollisionBox(10, 35, 14, 8),
+    new CollisionBox(1, 24, 29, 5),
+    new CollisionBox(5, 30, 21, 4),
+    new CollisionBox(9, 34, 15, 4)
+  ]
+};
 
 
 /**
@@ -1400,6 +1498,7 @@ Trex.collisionBoxes = [
  */
 Trex.status = {
   CRASHED: 'CRASHED',
+  DUCKING: 'DUCKING',
   JUMPING: 'JUMPING',
   RUNNING: 'RUNNING',
   WAITING: 'WAITING'
@@ -1414,7 +1513,7 @@ Trex.BLINK_TIMING = 7000;
 
 /**
  * Animation config for different states.
- * @enum {object}
+ * @enum {Object}
  */
 Trex.animFrames = {
   WAITING: {
@@ -1432,6 +1531,10 @@ Trex.animFrames = {
   JUMPING: {
     frames: [0],
     msPerFrame: 1000 / 60
+  },
+  DUCKING: {
+    frames: [262, 321],
+    msPerFrame: 1000 / 8
   }
 };
 
@@ -1500,6 +1603,12 @@ Trex.prototype = {
           this.currentAnimFrames.length - 1 ? 0 : this.currentFrame + 1;
       this.timer = 0;
     }
+
+    // Speed drop becomes duck if the down key is still being pressed.
+    if (this.speedDrop && this.yPos == this.groundYPos) {
+      this.speedDrop = false;
+      this.setDuck(true);
+    }
   },
 
   /**
@@ -1510,7 +1619,8 @@ Trex.prototype = {
   draw: function(x, y) {
     var sourceX = x;
     var sourceY = y;
-    var sourceWidth = this.config.WIDTH;
+    var sourceWidth = this.ducking && this.status != Trex.status.CRASHED ?
+        this.config.WIDTH_DUCK : this.config.WIDTH;
     var sourceHeight = this.config.HEIGHT;
 
     if (IS_HIDPI) {
@@ -1520,10 +1630,27 @@ Trex.prototype = {
       sourceHeight *= 2;
     }
 
-    this.canvasCtx.drawImage(this.image, sourceX, sourceY,
-        sourceWidth, sourceHeight,
-        this.xPos, this.yPos,
-        this.config.WIDTH, this.config.HEIGHT);
+    // Adjustments for sprite sheet position.
+    sourceX += this.spritePos.x;
+    sourceY += this.spritePos.y;
+
+    // Ducking.
+    if (this.ducking && this.status != Trex.status.CRASHED) {
+      this.canvasCtx.drawImage(Runner.imageSprite, sourceX, sourceY,
+          sourceWidth, sourceHeight,
+          this.xPos, this.yPos,
+          this.config.WIDTH_DUCK, this.config.HEIGHT);
+    } else {
+      // Crashed whilst ducking. Trex is standing up so needs adjustment.
+      if (this.ducking && this.status == Trex.status.CRASHED) {
+        this.xPos++;
+      }
+      // Standing / running
+      this.canvasCtx.drawImage(Runner.imageSprite, sourceX, sourceY,
+          sourceWidth, sourceHeight,
+          this.xPos, this.yPos,
+          this.config.WIDTH, this.config.HEIGHT);
+    }
   },
 
   /**
@@ -1553,11 +1680,13 @@ Trex.prototype = {
 
   /**
    * Initialise a jump.
+   * @param {number} speed
    */
-  startJump: function() {
+  startJump: function(speed) {
     if (!this.jumping) {
       this.update(0, Trex.status.JUMPING);
-      this.jumpVelocity = this.config.INIITAL_JUMP_VELOCITY;
+      // Tweak the jump velocity based on the speed.
+      this.jumpVelocity = this.config.INIITAL_JUMP_VELOCITY - (speed / 10);
       this.jumping = true;
       this.reachedMinHeight = false;
       this.speedDrop = false;
@@ -1577,8 +1706,9 @@ Trex.prototype = {
   /**
    * Update frame for a jump.
    * @param {number} deltaTime
+   * @param {number} speed
    */
-  updateJump: function(deltaTime) {
+  updateJump: function(deltaTime, speed) {
     var msPerFrame = Trex.animFrames[this.status].msPerFrame;
     var framesElapsed = deltaTime / msPerFrame;
 
@@ -1620,12 +1750,26 @@ Trex.prototype = {
   },
 
   /**
+   * @param {boolean} isDucking.
+   */
+  setDuck: function(isDucking) {
+    if (isDucking && this.status != Trex.status.DUCKING) {
+      this.update(0, Trex.status.DUCKING);
+      this.ducking = true;
+    } else if (this.status == Trex.status.DUCKING) {
+      this.update(0, Trex.status.RUNNING);
+      this.ducking = false;
+    }
+  },
+
+  /**
    * Reset the t-rex to running at start of game.
    */
   reset: function() {
     this.yPos = this.groundYPos;
     this.jumpVelocity = 0;
     this.jumping = false;
+    this.ducking = false;
     this.update(0, Trex.status.RUNNING);
     this.midair = false;
     this.speedDrop = false;
@@ -1639,14 +1783,15 @@ Trex.prototype = {
 /**
  * Handles displaying the distance meter.
  * @param {!HTMLCanvasElement} canvas
- * @param {!HTMLImage} spriteSheet Image sprite.
+ * @param {Object} spritePos Image position in sprite.
  * @param {number} canvasWidth
  * @constructor
  */
-function DistanceMeter(canvas, spriteSheet, canvasWidth) {
+function DistanceMeter(canvas, spritePos, canvasWidth) {
   this.canvas = canvas;
   this.canvasCtx = canvas.getContext('2d');
-  this.image = spriteSheet;
+  this.image = Runner.imageSprite;
+  this.spritePos = spritePos;
   this.x = 0;
   this.y = 5;
 
@@ -1662,6 +1807,7 @@ function DistanceMeter(canvas, spriteSheet, canvasWidth) {
   this.flashIterations = 0;
 
   this.config = DistanceMeter.config;
+  this.maxScoreUnits = this.config.MAX_DISTANCE_UNITS;
   this.init(canvasWidth);
 };
 
@@ -1679,7 +1825,7 @@ DistanceMeter.dimensions = {
 /**
  * Y positioning of the digits in the sprite sheet.
  * X position is always 0.
- * @type {array<number>}
+ * @type {Array<number>}
  */
 DistanceMeter.yPos = [0, 13, 27, 40, 53, 67, 80, 93, 107, 120];
 
@@ -1715,8 +1861,8 @@ DistanceMeter.prototype = {
     var maxDistanceStr = '';
 
     this.calcXPos(width);
-    this.maxScore = this.config.MAX_DISTANCE_UNITS;
-    for (var i = 0; i < this.config.MAX_DISTANCE_UNITS; i++) {
+    this.maxScore = this.maxScoreUnits;
+    for (var i = 0; i < this.maxScoreUnits; i++) {
       this.draw(i, 0);
       this.defaultString += '0';
       maxDistanceStr += '9';
@@ -1731,7 +1877,7 @@ DistanceMeter.prototype = {
    */
   calcXPos: function(canvasWidth) {
     this.x = canvasWidth - (DistanceMeter.dimensions.DEST_WIDTH *
-        (this.config.MAX_DISTANCE_UNITS + 1));
+        (this.maxScoreUnits + 1));
   },
 
   /**
@@ -1744,6 +1890,7 @@ DistanceMeter.prototype = {
     var sourceWidth = DistanceMeter.dimensions.WIDTH;
     var sourceHeight = DistanceMeter.dimensions.HEIGHT;
     var sourceX = DistanceMeter.dimensions.WIDTH * value;
+    var sourceY = 0;
 
     var targetX = digitPos * DistanceMeter.dimensions.DEST_WIDTH;
     var targetY = this.y;
@@ -1757,18 +1904,21 @@ DistanceMeter.prototype = {
       sourceX *= 2;
     }
 
+    sourceX += this.spritePos.x;
+    sourceY += this.spritePos.y;
+
     this.canvasCtx.save();
 
     if (opt_highScore) {
       // Left of the current score.
-      var highScoreX = this.x - (this.config.MAX_DISTANCE_UNITS * 2) *
+      var highScoreX = this.x - (this.maxScoreUnits * 2) *
           DistanceMeter.dimensions.WIDTH;
       this.canvasCtx.translate(highScoreX, this.y);
     } else {
       this.canvasCtx.translate(this.x, this.y);
     }
 
-    this.canvasCtx.drawImage(this.image, sourceX, 0,
+    this.canvasCtx.drawImage(this.image, sourceX, sourceY,
         sourceWidth, sourceHeight,
         targetX, targetY,
         targetWidth, targetHeight
@@ -1783,14 +1933,13 @@ DistanceMeter.prototype = {
    * @return {number} The 'real' distance ran.
    */
   getActualDistance: function(distance) {
-    return distance ?
-        Math.round(distance * this.config.COEFFICIENT) : 0;
+    return distance ? Math.round(distance * this.config.COEFFICIENT) : 0;
   },
 
   /**
    * Update the distance meter.
-   * @param {number} deltaTime
    * @param {number} distance
+   * @param {number} deltaTime
    * @return {boolean} Whether the acheivement sound fx should be played.
    */
   update: function(deltaTime, distance) {
@@ -1799,6 +1948,15 @@ DistanceMeter.prototype = {
 
     if (!this.acheivement) {
       distance = this.getActualDistance(distance);
+
+      // Score has gone beyond the initial digit count.
+      if (distance > this.maxScore && this.maxScoreUnits ==
+        this.config.MAX_DISTANCE_UNITS) {
+        this.maxScoreUnits++;
+        this.maxScore = parseInt(this.maxScore + '9');
+      } else {
+        this.distance = 0;
+      }
 
       if (distance > 0) {
         // Acheivement unlocked
@@ -1811,7 +1969,7 @@ DistanceMeter.prototype = {
 
         // Create a string representation of the distance with leading 0.
         var distanceStr = (this.defaultString +
-            distance).substr(-this.config.MAX_DISTANCE_UNITS);
+            distance).substr(-this.maxScoreUnits);
         this.digits = distanceStr.split('');
       } else {
         this.digits = this.defaultString.split('');
@@ -1867,7 +2025,7 @@ DistanceMeter.prototype = {
   setHighScore: function(distance) {
     distance = this.getActualDistance(distance);
     var highScoreStr = (this.defaultString +
-        distance).substr(-this.config.MAX_DISTANCE_UNITS);
+        distance).substr(-this.maxScoreUnits);
 
     this.highScore = ['10', '11', ''].concat(highScoreStr.split(''));
   },
@@ -1888,13 +2046,13 @@ DistanceMeter.prototype = {
  * Cloud background item.
  * Similar to an obstacle object but without collision boxes.
  * @param {HTMLCanvasElement} canvas Canvas element.
- * @param {Image} cloudImg
+ * @param {Object} spritePos Position of image in sprite.
  * @param {number} containerWidth
  */
-function Cloud(canvas, cloudImg, containerWidth) {
+function Cloud(canvas, spritePos, containerWidth) {
   this.canvas = canvas;
   this.canvasCtx = this.canvas.getContext('2d');
-  this.image = cloudImg;
+  this.spritePos = spritePos;
   this.containerWidth = containerWidth;
   this.xPos = containerWidth;
   this.yPos = 0;
@@ -1943,7 +2101,8 @@ Cloud.prototype = {
       sourceHeight = sourceHeight * 2;
     }
 
-    this.canvasCtx.drawImage(this.image, 0, 0,
+    this.canvasCtx.drawImage(Runner.imageSprite, this.spritePos.x,
+        this.spritePos.y,
         sourceWidth, sourceHeight,
         this.xPos, this.yPos,
         Cloud.config.WIDTH, Cloud.config.HEIGHT);
@@ -1983,16 +2142,17 @@ Cloud.prototype = {
  * Horizon Line.
  * Consists of two connecting lines. Randomly assigns a flat / bumpy horizon.
  * @param {HTMLCanvasElement} canvas
- * @param {HTMLImage} bgImg Horizon line sprite.
+ * @param {Object} spritePos Horizon position in sprite.
  * @constructor
  */
-function HorizonLine(canvas, bgImg) {
-  this.image = bgImg;
+function HorizonLine(canvas, spritePos) {
+  this.spritePos = spritePos;
   this.canvas = canvas;
   this.canvasCtx = canvas.getContext('2d');
   this.sourceDimensions = {};
   this.dimensions = HorizonLine.dimensions;
-  this.sourceXPos = [0, this.dimensions.WIDTH];
+  this.sourceXPos = [this.spritePos.x, this.spritePos.x +
+      this.dimensions.WIDTH];
   this.xPos = [];
   this.yPos = 0;
   this.bumpThreshold = 0.5;
@@ -2047,12 +2207,14 @@ HorizonLine.prototype = {
    * Draw the horizon line.
    */
   draw: function() {
-    this.canvasCtx.drawImage(this.image, this.sourceXPos[0], 0,
+    this.canvasCtx.drawImage(Runner.imageSprite, this.sourceXPos[0],
+        this.spritePos.y,
         this.sourceDimensions.WIDTH, this.sourceDimensions.HEIGHT,
         this.xPos[0], this.yPos,
         this.dimensions.WIDTH, this.dimensions.HEIGHT);
 
-    this.canvasCtx.drawImage(this.image, this.sourceXPos[1], 0,
+    this.canvasCtx.drawImage(Runner.imageSprite, this.sourceXPos[1],
+        this.spritePos.y,
         this.sourceDimensions.WIDTH, this.sourceDimensions.HEIGHT,
         this.xPos[1], this.yPos,
         this.dimensions.WIDTH, this.dimensions.HEIGHT);
@@ -2073,7 +2235,7 @@ HorizonLine.prototype = {
     if (this.xPos[line1] <= -this.dimensions.WIDTH) {
       this.xPos[line1] += this.dimensions.WIDTH * 2;
       this.xPos[line2] = this.xPos[line1] - this.dimensions.WIDTH;
-      this.sourceXPos[line1] = this.getRandomType();
+      this.sourceXPos[line1] = this.getRandomType() + this.spritePos.x;
     }
   },
 
@@ -2108,35 +2270,29 @@ HorizonLine.prototype = {
 /**
  * Horizon background class.
  * @param {HTMLCanvasElement} canvas
- * @param {Array<HTMLImageElement>} images
- * @param {object} dimensions Canvas dimensions.
+ * @param {Object} spritePos Sprite positioning.
+ * @param {Object} dimensions Canvas dimensions.
  * @param {number} gapCoefficient
  * @constructor
  */
-function Horizon(canvas, images, dimensions, gapCoefficient) {
+function Horizon(canvas, spritePos, dimensions, gapCoefficient) {
   this.canvas = canvas;
   this.canvasCtx = this.canvas.getContext('2d');
   this.config = Horizon.config;
   this.dimensions = dimensions;
   this.gapCoefficient = gapCoefficient;
   this.obstacles = [];
+  this.obstacleHistory = [];
   this.horizonOffsets = [0, 0];
   this.cloudFrequency = this.config.CLOUD_FREQUENCY;
+  this.spritePos = spritePos;
 
   // Cloud
   this.clouds = [];
-  this.cloudImg = images.CLOUD;
   this.cloudSpeed = this.config.BG_CLOUD_SPEED;
 
   // Horizon
-  this.horizonImg = images.HORIZON;
   this.horizonLine = null;
-
-  // Obstacles
-  this.obstacleImgs = {
-    CACTUS_SMALL: images.CACTUS_SMALL,
-    CACTUS_LARGE: images.CACTUS_LARGE
-  };
 
   this.init();
 };
@@ -2161,7 +2317,7 @@ Horizon.prototype = {
    */
   init: function() {
     this.addCloud();
-    this.horizonLine = new HorizonLine(this.canvas, this.horizonImg);
+    this.horizonLine = new HorizonLine(this.canvas, this.spritePos.HORIZON);
   },
 
   /**
@@ -2252,13 +2408,42 @@ Horizon.prototype = {
    * @param {number} currentSpeed
    */
   addNewObstacle: function(currentSpeed) {
-    var obstacleTypeIndex =
-        getRandomNum(0, Obstacle.types.length - 1);
+    var obstacleTypeIndex = getRandomNum(0, Obstacle.types.length - 1);
     var obstacleType = Obstacle.types[obstacleTypeIndex];
-    var obstacleImg = this.obstacleImgs[obstacleType.type];
 
-    this.obstacles.push(new Obstacle(this.canvasCtx, obstacleType,
-        obstacleImg, this.dimensions, this.gapCoefficient, currentSpeed));
+    // Check for multiples of the same type of obstacle.
+    // Also check obstacle is available at current speed.
+    if (this.duplicateObstacleCheck(obstacleType.type) ||
+        currentSpeed < obstacleType.minSpeed) {
+      this.addNewObstacle(currentSpeed);
+    } else {
+      var obstacleSpritePos = this.spritePos[obstacleType.type];
+
+      this.obstacles.push(new Obstacle(this.canvasCtx, obstacleType,
+          obstacleSpritePos, this.dimensions,
+          this.gapCoefficient, currentSpeed));
+
+      this.obstacleHistory.unshift(obstacleType.type);
+
+      if (this.obstacleHistory.length > 1) {
+        this.obstacleHistory.splice(Runner.config.MAX_OBSTACLE_DUPLICATION);
+      }
+    }
+  },
+
+  /**
+   * Returns whether the previous two obstacles are the same as the next one.
+   * Maximum duplication is set in config value MAX_OBSTACLE_DUPLICATION.
+   * @return {boolean}
+   */
+  duplicateObstacleCheck: function(nextObstacleType) {
+    var duplicateCount = 0;
+
+    for (var i = 0; i < this.obstacleHistory.length; i++) {
+      duplicateCount = this.obstacleHistory[i] == nextObstacleType ?
+          duplicateCount + 1 : 0;
+    }
+    return duplicateCount >= Runner.config.MAX_OBSTACLE_DUPLICATION;
   },
 
   /**
@@ -2284,7 +2469,7 @@ Horizon.prototype = {
    * Add a new cloud to the horizon.
    */
   addCloud: function() {
-    this.clouds.push(new Cloud(this.canvas, this.cloudImg,
+    this.clouds.push(new Cloud(this.canvas, this.spritePos.CLOUD,
         this.dimensions.WIDTH));
   }
 };

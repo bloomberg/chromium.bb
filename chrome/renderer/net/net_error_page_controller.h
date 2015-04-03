@@ -43,6 +43,9 @@ class NetErrorPageController
   // service.
   bool TrackClick(const gin::Arguments& args);
 
+  // Track easter egg plays.
+  void TrackEasterEgg();
+
   // gin::WrappableBase
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;

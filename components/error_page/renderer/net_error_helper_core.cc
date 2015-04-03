@@ -926,6 +926,10 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
       chrome_common_net::RecordEvent(
           chrome_common_net::NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED);
       return;
+    case EASTER_EGG:
+      chrome_common_net::RecordEvent(
+          chrome_common_net::NETWORK_ERROR_EASTER_EGG_ACTIVATED);
+      return;
     case NO_BUTTON:
       NOTREACHED();
       return;

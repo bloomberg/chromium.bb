@@ -47,6 +47,7 @@ class NetErrorHelperCore {
     RELOAD_BUTTON,
     SHOW_SAVED_COPY_BUTTON,
     MORE_BUTTON,
+    EASTER_EGG,
   };
 
   // The Delegate handles all interaction with the RenderView, WebFrame, and

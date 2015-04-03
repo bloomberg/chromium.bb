@@ -83,6 +83,9 @@ class NetErrorHelper
   // Called when a link with the given tracking ID is pressed.
   void TrackClick(int tracking_id);
 
+  // Tracks easter egg activations on the offline interstitial.
+  void TrackActivatedEasterEgg();
+
  private:
   // NetErrorHelperCore::Delegate implementation:
   void GenerateLocalizedErrorPage(

@@ -86,6 +86,16 @@ bool NetErrorPageController::TrackClick(const gin::Arguments& args) {
   return true;
 }
 
+void NetErrorPageController::TrackEasterEgg() {
+  if (!render_frame())
+    return;
+
+  NetErrorHelper* net_error_helper =
+      content::RenderFrameObserverTracker<NetErrorHelper>::Get(render_frame());
+  DCHECK(net_error_helper);
+  net_error_helper->TrackActivatedEasterEgg();
+}
+
 NetErrorPageController::NetErrorPageController(
     content::RenderFrame* render_frame) : RenderFrameObserver(render_frame) {}
 
@@ -102,7 +112,9 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
       .SetMethod("detailsButtonClick",
                  &NetErrorPageController::DetailsButtonClick)
       .SetMethod("trackClick",
-                 &NetErrorPageController::TrackClick);
+                 &NetErrorPageController::TrackClick)
+      .SetMethod("trackEasterEgg",
+                 &NetErrorPageController::TrackEasterEgg);
 }
 
 void NetErrorPageController::OnDestruct() {}

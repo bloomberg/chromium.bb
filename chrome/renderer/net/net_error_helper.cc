@@ -104,6 +104,10 @@ void NetErrorHelper::MoreButtonPressed() {
   core_->ExecuteButtonPress(NetErrorHelperCore::MORE_BUTTON);
 }
 
+void NetErrorHelper::TrackActivatedEasterEgg() {
+  core_->ExecuteButtonPress(NetErrorHelperCore::EASTER_EGG);
+}
+
 void NetErrorHelper::DidStartProvisionalLoad() {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   core_->OnStartLoad(GetFrameType(frame), GetLoadingPageType(frame));
