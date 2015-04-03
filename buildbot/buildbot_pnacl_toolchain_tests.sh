@@ -182,12 +182,16 @@ tc-test-bot() {
 
   # Run the torture tests.
   for arch in ${archset}; do
+    echo "@@@BUILD_STEP torture_tests_clang $arch @@@"
+    ${TORTURE_TEST} clang ${arch} --verbose \
+      --concurrency=${PNACL_CONCURRENCY} || handle-error
+
     if [[ "${arch}" == "x86-32" ]]; then
       # Torture tests on x86-32 are covered by tc-tests-all in
       # buildbot_pnacl.sh.
       continue
     fi
-    echo "@@@BUILD_STEP torture_tests $arch @@@"
+    echo "@@@BUILD_STEP torture_tests_pnacl $arch @@@"
     ${TORTURE_TEST} pnacl ${arch} --verbose \
       --concurrency=${PNACL_CONCURRENCY} || handle-error
   done

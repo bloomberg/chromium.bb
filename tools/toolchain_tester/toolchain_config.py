@@ -407,3 +407,91 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O0_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
     attributes=['x86-64', 'O0f', 'O0b'],
     TRANSLATE_FLAGS = '-translate-fast')
+
+######################################################################
+# CLANG + SEL_LDR
+######################################################################
+
+def NaClClangCommands(arch):
+  commands = [
+      ('compile',
+       '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.nexe -lm',
+      ),
+  ]
+  if arch == 'arm':
+    commands.append(
+        ('qemu-sel_ldr',
+         '%(EMU)s %(SEL_LDR)s -B %(IRT)s -Q %(tmp)s.nexe',
+        ))
+  else:
+    commands.append(
+        ('sel_ldr',
+         '%(SEL_LDR)s -B %(IRT)s %(tmp)s.nexe',
+        ))
+  return commands
+
+def NaClClang(arch, cpp=False):
+  arch_map = {'x86-64': 'x86_64', 'x86-32': 'i686', 'arm': 'arm'}
+  suffix = '++' if cpp else ''
+  return os.path.join(PNACL_ROOT, 'bin',
+                      arch_map[arch] + '-nacl-clang' + suffix)
+
+# TODO(dschuff): the other uses of SEL_LDR_ARCH etc can probably just be
+# replaced with something like this everywhere.
+def Tool(arch, tool):
+  toolmap = {
+    'x86-64': {
+      'sel_ldr': SEL_LDR_X64,
+      'bootstrap': BOOTSTRAP_X64,
+      'irt': IRT_X64,
+      'run_sel_ldr': RUN_SEL_LDR_X64,
+    },
+    'x86-32': {
+      'sel_ldr': SEL_LDR_X32,
+      'bootstrap': BOOTSTRAP_X32,
+      'irt': IRT_X32,
+      'run_sel_ldr': RUN_SEL_LDR_X32,
+    },
+    'arm': {
+      'sel_ldr': SEL_LDR_ARM,
+      'bootstrap': BOOTSTRAP_ARM,
+      'irt': IRT_ARM,
+      'run_sel_ldr': RUN_SEL_LDR_ARM,
+    }
+  }
+  return toolmap[arch][tool]
+
+for arch in ['x86-64', 'x86-32', 'arm']:
+  TOOLCHAIN_CONFIGS['nacl_clang_%s_O0' % arch] = ToolchainConfig(
+    desc='clang [%s O0]' % arch,
+    attributes=[arch, 'O0'],
+    commands=NaClClangCommands(arch),
+    tools_needed=[NaClClang(arch), Tool(arch, 'bootstrap'),
+                  Tool(arch, 'sel_ldr')],
+    CC = NaClClang(arch),
+    SEL_LDR = Tool(arch, 'run_sel_ldr'),
+    IRT = Tool(arch, 'irt'),
+    EMU = EMU_SCRIPT,
+    CFLAGS = '-O0 ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
+
+  # Unlike gcc (which doesn't care) and pnacl-clang (which figures out the
+  # source language and explicitly tells the underlying clang), nacl-clang
+  # doesn't like building C files using the C++ compiler. So different configs
+  # are needed for C++ vs C tests.
+  TOOLCHAIN_CONFIGS['nacl_clang++_%s_O0' % arch] = ToolchainConfig(
+    base=TOOLCHAIN_CONFIGS['nacl_clang_%s_O0' % arch],
+    desc='clang++ [%s O0]' % arch,
+    attributes=[arch, 'O3'],
+    CC = NaClClang(arch, cpp=True))
+
+  TOOLCHAIN_CONFIGS['nacl_clang_%s_O3' % arch] = ToolchainConfig(
+    base=TOOLCHAIN_CONFIGS['nacl_clang_%s_O0' % arch],
+    desc='clang [%s O3]' % arch,
+    attributes=[arch, 'O3'],
+    CFLAGS = '-O3 ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
+
+  TOOLCHAIN_CONFIGS['nacl_clang++_%s_O3' % arch] = ToolchainConfig(
+    base=TOOLCHAIN_CONFIGS['nacl_clang_%s_O3' % arch],
+    desc='clang++ [%s O3]' % arch,
+    attributes=[arch, 'O3'],
+    CC = NaClClang(arch, cpp=True))
