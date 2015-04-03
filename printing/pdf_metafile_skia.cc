@@ -36,12 +36,14 @@ namespace {
 // This struct represents all the data we need to draw and redraw this
 // page into a SkDocument.
 struct Page {
-  Page(const SkSize& page_size, const SkRect& content_area)
+  Page(const SkSize& page_size, const SkRect& content_area, float scale)
       : page_size_(page_size),
         content_area_(content_area),
+        scale_factor_(scale),
         content_(/*NULL*/) {}
   SkSize page_size_;
   SkRect content_area_;
+  float scale_factor_;
   skia::RefPtr<SkPicture> content_;
 };
 }  // namespace
@@ -92,15 +94,17 @@ bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
     this->FinishPage();
   DCHECK(!data_->recorder_.getRecordingCanvas());
   SkSize sk_page_size = gfx::SizeFToSkSize(gfx::SizeF(page_size));
-  data_->pages_.push_back(Page(sk_page_size, gfx::RectToSkRect(content_area)));
-
-  SkCanvas* recordingCanvas = data_->recorder_.beginRecording(
-      sk_page_size.width(), sk_page_size.height(), NULL, 0);
-  // recordingCanvas is owned by the data_->recorder_.  No ref() necessary.
-  if (!recordingCanvas)
-    return false;
-  recordingCanvas->scale(scale_factor, scale_factor);
-  return true;
+  data_->pages_.push_back(
+      Page(sk_page_size, gfx::RectToSkRect(content_area), scale_factor));
+  DCHECK_GT(scale_factor, 0.0f);
+  // We scale the recording canvas's size so that
+  // canvas->getTotalMatrix() returns a value that ignores the scale
+  // factor.  We store the scale factor and re-apply it to the PDF
+  // Canvas later.  http://crbug.com/469656
+  // Recording canvas is owned by the data_->recorder_.  No ref() necessary.
+  return !!data_->recorder_.beginRecording(sk_page_size.width() / scale_factor,
+                                           sk_page_size.height() / scale_factor,
+                                           NULL, 0);
 }
 
 skia::PlatformCanvas* PdfMetafileSkia::GetVectorCanvasForNewPage(
@@ -135,6 +139,8 @@ bool PdfMetafileSkia::FinishDocument() {
   for (const auto& page : data_->pages_) {
     SkCanvas* canvas = pdf_doc->beginPage(
         page.page_size_.width(), page.page_size_.height(), &page.content_area_);
+    // No need to save/restore, since this canvas is not reused after endPage()
+    canvas->scale(page.scale_factor_, page.scale_factor_);
     canvas->drawPicture(page.content_.get());
     pdf_doc->endPage();
   }
