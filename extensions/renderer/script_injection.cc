@@ -304,19 +304,18 @@ void ScriptInjection::OnJsInjectionCompleted(
 
   bool expects_results = injector_->ExpectsResults();
   if (expects_results) {
-    v8::Local<v8::Value> script_value;
-    if (!results.isEmpty())
-      script_value = results[0];
-    // Right now, we only support returning single results (per frame).
-    scoped_ptr<content::V8ValueConverter> v8_converter(
-        content::V8ValueConverter::create());
-    // It's safe to always use the main world context when converting
-    // here. V8ValueConverterImpl shouldn't actually care about the
-    // context scope, and it switches to v8::Object's creation context
-    // when encountered.
-    v8::Local<v8::Context> context = frame->mainWorldScriptContext();
-    scoped_ptr<base::Value> result(
-        v8_converter->FromV8Value(script_value, context));
+    scoped_ptr<base::Value> result;
+    if (!results.isEmpty()) {
+      // Right now, we only support returning single results (per frame).
+      scoped_ptr<content::V8ValueConverter> v8_converter(
+          content::V8ValueConverter::create());
+      // It's safe to always use the main world context when converting
+      // here. V8ValueConverterImpl shouldn't actually care about the
+      // context scope, and it switches to v8::Object's creation context
+      // when encountered.
+      v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+      result.reset(v8_converter->FromV8Value(results[0], context));
+    }
     if (!result.get())
       result.reset(base::Value::CreateNullValue());
     // We guarantee that the main frame's result is at the first index, but
