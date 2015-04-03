@@ -259,6 +259,8 @@ void ResolutionNotificationController::AcceptResolutionChange(
     message_center::MessageCenter::Get()->RemoveNotification(
         kNotificationId, false /* by_user */);
   }
+  if (!change_info_)
+    return;
   base::Closure callback = change_info_->accept_callback;
   change_info_.reset();
   callback.Run();
@@ -267,6 +269,8 @@ void ResolutionNotificationController::AcceptResolutionChange(
 void ResolutionNotificationController::RevertResolutionChange() {
   message_center::MessageCenter::Get()->RemoveNotification(
       kNotificationId, false /* by_user */);
+  if (!change_info_)
+    return;
   int64 display_id = change_info_->display_id;
   DisplayMode old_resolution = change_info_->old_resolution;
   change_info_.reset();
