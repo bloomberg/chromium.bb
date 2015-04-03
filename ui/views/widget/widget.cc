@@ -15,6 +15,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/image/image_skia.h"
@@ -1184,7 +1185,7 @@ void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
   // SetInitialBounds call.
   if (!native_widget_initialized_)
     return;
-  GetRootView()->Paint(View::PaintContext(canvas, GetLayer()->PaintRect()));
+  GetRootView()->Paint(ui::PaintContext(canvas, GetLayer()->PaintRect()));
 }
 
 int Widget::GetNonClientComponent(const gfx::Point& point) {

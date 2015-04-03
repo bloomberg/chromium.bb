@@ -92,7 +92,7 @@ class OmniboxPopupContentsView : public views::View,
   // views::View:
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void PaintChildren(const PaintContext& context) override;
+  void PaintChildren(const ui::PaintContext& context) override;
 
   // views::ViewTargeterDelegate:
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;

@@ -57,7 +57,7 @@ class PageActionImageView : public ToolbarActionViewDelegateViews,
   static const char kViewClassName[];
 
   // Overridden from View.
-  void PaintChildren(const PaintContext& context) override;
+  void PaintChildren(const ui::PaintContext& context) override;
 
   // ToolbarActionViewDelegateViews:
   void UpdateState() override;

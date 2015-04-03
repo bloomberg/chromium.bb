@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -239,7 +240,7 @@ void InfoBarView::ViewHierarchyChanged(
   SetBarTargetHeight(height);
 }
 
-void InfoBarView::PaintChildren(const PaintContext& context) {
+void InfoBarView::PaintChildren(const ui::PaintContext& context) {
   gfx::Canvas* canvas = context.canvas();
   canvas->Save();
 

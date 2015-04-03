@@ -114,7 +114,7 @@ class InfoBarView : public infobars::InfoBar,
   // views::View:
   void GetAccessibleState(ui::AXViewState* state) override;
   gfx::Size GetPreferredSize() const override;
-  void PaintChildren(const PaintContext& context) override;
+  void PaintChildren(const ui::PaintContext& context) override;
 
   // views::ExternalFocusTracker:
   void OnWillChangeFocus(View* focused_before, View* focused_now) override;

@@ -51,6 +51,7 @@ struct AXViewState;
 class Compositor;
 class Layer;
 class NativeTheme;
+class PaintContext;
 class TextInputClient;
 class Texture;
 class ThemeProvider;
@@ -491,77 +492,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void SchedulePaint();
   virtual void SchedulePaintInRect(const gfx::Rect& r);
 
-  class PaintContext {
-   public:
-    explicit PaintContext(gfx::Canvas* canvas)
-        : PaintContext(canvas, gfx::Rect()) {}
-    PaintContext(gfx::Canvas* canvas, const gfx::Rect& invalidation)
-        : canvas_(canvas), invalidation_(invalidation) {
-#if DCHECK_IS_ON()
-      root_visited_ = nullptr;
-#endif
-    }
-
-    // TODO(danakj): Remove this once everything is painting to display lists.
-    gfx::Canvas* canvas() const { return canvas_; }
-
-    bool CanCheckInvalidated() const { return !invalidation_.IsEmpty(); }
-
-    // When true, the |bounds| touches an invalidated area, so should be
-    // re-painted. When false, re-painting can be skipped. Bounds should be in
-    // the local space with offsets up to the painting root in the PaintContext.
-    bool IsRectInvalidated(const gfx::Rect& bounds) const {
-      DCHECK(CanCheckInvalidated());
-      return invalidation_.Intersects(bounds + offset_);
-    }
-
-    PaintContext CloneWithPaintOffset(const gfx::Vector2d& offset) const {
-      return PaintContext(*this, offset);
-    }
-
-    PaintContext CloneWithoutInvalidation() const {
-      return PaintContext(canvas_, gfx::Rect());
-    }
-
-#if DCHECK_IS_ON()
-    void Visited(void* visited) const {
-      if (!root_visited_)
-        root_visited_ = visited;
-    }
-    void* RootVisited() const { return root_visited_; }
-    const gfx::Vector2d& PaintOffset() const { return offset_; }
-#endif
-
-   private:
-    PaintContext(const PaintContext& other, const gfx::Vector2d& offset)
-        : canvas_(other.canvas_),
-          invalidation_(other.invalidation_),
-          offset_(other.offset_ + offset) {
-#if DCHECK_IS_ON()
-      root_visited_ = other.root_visited_;
-#endif
-    }
-
-    gfx::Canvas* canvas_;
-    // Invalidation in the space of the paint root (ie the space of the layer
-    // backing the paint taking place).
-    gfx::Rect invalidation_;
-    // Offset from the PaintContext to the space of the paint root and the
-    // |invalidation_|.
-    gfx::Vector2d offset_;
-
-#if DCHECK_IS_ON()
-    // Used to verify that the |invalidation_| is only used to compare against
-    // rects in the same space.
-    mutable void* root_visited_;
-#endif
-  };
-
   // Called by the framework to paint a View. Performs translation and clipping
   // for View coordinates and language direction as required, allows the View
   // to paint itself via the various OnPaint*() event handlers and then paints
   // the hierarchy beneath it.
-  void Paint(const PaintContext& parent_context);
+  void Paint(const ui::PaintContext& parent_context);
 
   // The background object is owned by this object and may be NULL.
   void set_background(Background* b);
@@ -1137,7 +1072,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Responsible for calling Paint() on child Views. Override to control the
   // order child Views are painted.
-  virtual void PaintChildren(const PaintContext& context);
+  virtual void PaintChildren(const ui::PaintContext& context);
 
   // Override to provide rendering in any part of the View's bounds. Typically
   // this is the "contents" of the view. If you override this method you will

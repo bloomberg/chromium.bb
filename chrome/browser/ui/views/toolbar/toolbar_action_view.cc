@@ -19,6 +19,7 @@
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -107,7 +108,7 @@ void ToolbarActionView::ViewHierarchyChanged(
   MenuButton::ViewHierarchyChanged(details);
 }
 
-void ToolbarActionView::PaintChildren(const PaintContext& context) {
+void ToolbarActionView::PaintChildren(const ui::PaintContext& context) {
   View::PaintChildren(context);
   view_controller_->PaintExtra(context.canvas(), GetLocalBounds(),
                                GetCurrentWebContents());

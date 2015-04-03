@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -460,7 +461,7 @@ CardUnmaskPromptViews::FadeOutView::~FadeOutView() {
 }
 
 void CardUnmaskPromptViews::FadeOutView::PaintChildren(
-    const PaintContext& context) {
+    const ui::PaintContext& context) {
   if (opacity_ > 0.99)
     return views::View::PaintChildren(context);
 

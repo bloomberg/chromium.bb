@@ -74,6 +74,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
@@ -1217,7 +1218,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   // inner shadow which should be drawn over the contents.
 }
 
-void LocationBarView::PaintChildren(const PaintContext& context) {
+void LocationBarView::PaintChildren(const ui::PaintContext& context) {
   // Paint all the children except for the omnibox itself, which may need to be
   // clipped if it's animating in.
   for (int i = 0, count = child_count(); i < count; ++i) {

@@ -8,6 +8,7 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -75,7 +76,7 @@ void SetDragImage(const GURL& url,
   // Render the image.
   scoped_ptr<gfx::Canvas> canvas(
       views::GetCanvasForDragImage(widget, prefsize));
-  button.Paint(views::View::PaintContext(canvas.get()));
+  button.Paint(ui::PaintContext(canvas.get()));
   drag_utils::SetDragImageOnDataObject(*canvas, press_point, data);
 }
 

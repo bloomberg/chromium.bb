@@ -30,6 +30,7 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
@@ -753,7 +754,7 @@ const char* AutofillDialogViews::NotificationArea::GetClassName() const {
 }
 
 void AutofillDialogViews::NotificationArea::PaintChildren(
-    const PaintContext& context) {
+    const ui::PaintContext& context) {
   views::View::PaintChildren(context);
   gfx::Canvas* canvas = context.canvas();
   if (HasArrow()) {

@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "ui/compositor/paint_context.h"
 
 TopContainerView::TopContainerView(BrowserView* browser_view)
     : browser_view_(browser_view) {
@@ -19,7 +20,7 @@ const char* TopContainerView::GetClassName() const {
   return "TopContainerView";
 }
 
-void TopContainerView::PaintChildren(const PaintContext& context) {
+void TopContainerView::PaintChildren(const ui::PaintContext& context) {
   if (browser_view_->immersive_mode_controller()->IsRevealed()) {
     // Top-views depend on parts of the frame (themes, window title,
     // window controls) being painted underneath them. Clip rect has already

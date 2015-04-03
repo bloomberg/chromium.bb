@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -107,7 +108,7 @@ void PageActionImageView::UpdateVisibility(content::WebContents* contents) {
   SetVisible(true);
 }
 
-void PageActionImageView::PaintChildren(const PaintContext& context) {
+void PageActionImageView::PaintChildren(const ui::PaintContext& context) {
   View::PaintChildren(context);
   int tab_id = SessionTabHelper::IdForTab(GetCurrentWebContents());
   if (tab_id >= 0) {

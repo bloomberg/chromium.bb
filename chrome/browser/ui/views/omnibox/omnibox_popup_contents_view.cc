@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "ui/base/theme_provider.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
@@ -414,7 +415,7 @@ void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
                        width(), bottom_shadow_->height());
 }
 
-void OmniboxPopupContentsView::PaintChildren(const PaintContext& context) {
+void OmniboxPopupContentsView::PaintChildren(const ui::PaintContext& context) {
   gfx::Rect contents_bounds = GetContentsBounds();
   contents_bounds.Inset(0, views::NonClientFrameView::kClientEdgeThickness, 0,
                         bottom_shadow_->height() - kBorderInterior);

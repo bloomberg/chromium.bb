@@ -1907,7 +1907,7 @@ void BrowserView::Layout() {
   toolbar_->location_bar()->omnibox_view()->SetFocusable(IsToolbarVisible());
 }
 
-void BrowserView::PaintChildren(const PaintContext& context) {
+void BrowserView::PaintChildren(const ui::PaintContext& context) {
   // Paint the |infobar_container_| last so that it may paint its
   // overlapping tabs.
   for (int i = 0; i < child_count(); ++i) {

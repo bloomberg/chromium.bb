@@ -23,6 +23,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -731,7 +732,7 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
   }
 }
 
-void View::Paint(const PaintContext& parent_context) {
+void View::Paint(const ui::PaintContext& parent_context) {
   if (!visible_)
     return;
 
@@ -742,7 +743,8 @@ void View::Paint(const PaintContext& parent_context) {
     DCHECK_IMPLIES(!parent(), bounds().origin() == gfx::Point());
     offset_to_parent = GetMirroredPosition().OffsetFromOrigin();
   }
-  PaintContext context = parent_context.CloneWithPaintOffset(offset_to_parent);
+  ui::PaintContext context =
+      parent_context.CloneWithPaintOffset(offset_to_parent);
 
   if (context.CanCheckInvalidated()) {
 #if DCHECK_IS_ON()
@@ -1335,7 +1337,7 @@ void View::NativeViewHierarchyChanged() {
 
 // Painting --------------------------------------------------------------------
 
-void View::PaintChildren(const PaintContext& context) {
+void View::PaintChildren(const ui::PaintContext& context) {
   TRACE_EVENT1("views", "View::PaintChildren", "class", GetClassName());
   for (int i = 0, count = child_count(); i < count; ++i)
     if (!child_at(i)->layer())
@@ -1450,7 +1452,7 @@ void View::OnPaintLayer(gfx::Canvas* canvas) {
     canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
   if (!visible_)
     return;
-  Paint(PaintContext(canvas, layer()->PaintRect()));
+  Paint(ui::PaintContext(canvas, layer()->PaintRect()));
 }
 
 void View::OnDelegatedFrameDamage(

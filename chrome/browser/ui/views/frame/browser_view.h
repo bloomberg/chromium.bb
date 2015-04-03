@@ -423,7 +423,7 @@ class BrowserView : public BrowserWindow,
   // Overridden from views::View:
   const char* GetClassName() const override;
   void Layout() override;
-  void PaintChildren(const PaintContext& context) override;
+  void PaintChildren(const ui::PaintContext& context) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void ChildPreferredSizeChanged(View* child) override;

@@ -15,6 +15,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -449,7 +450,7 @@ TEST_F(ViewTest, PaintWithUnknownInvalidation) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas));
+  root_view->Paint(ui::PaintContext(&canvas));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 
@@ -458,7 +459,7 @@ TEST_F(ViewTest, PaintWithUnknownInvalidation) {
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
   root_view->Paint(
-      View::PaintContext(&canvas, paint_area).CloneWithoutInvalidation());
+      ui::PaintContext(&canvas, paint_area).CloneWithoutInvalidation());
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }
@@ -483,7 +484,7 @@ TEST_F(ViewTest, PaintContainsChildren) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }
@@ -521,7 +522,7 @@ TEST_F(ViewTest, PaintContainsChildrenInRTL) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }
@@ -546,7 +547,7 @@ TEST_F(ViewTest, PaintIntersectsChildren) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }
@@ -584,7 +585,7 @@ TEST_F(ViewTest, PaintIntersectsChildrenInRTL) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }
@@ -609,7 +610,7 @@ TEST_F(ViewTest, PaintIntersectsChildButNotGrandChild) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 }
@@ -647,7 +648,7 @@ TEST_F(ViewTest, PaintIntersectsChildButNotGrandChildInRTL) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 }
@@ -672,7 +673,7 @@ TEST_F(ViewTest, PaintIntersectsNoChildren) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 }
@@ -710,7 +711,7 @@ TEST_F(ViewTest, PaintIntersectsNoChildrenInRTL) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 }
@@ -736,7 +737,7 @@ TEST_F(ViewTest, PaintIntersectsOneChild) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 
@@ -747,7 +748,7 @@ TEST_F(ViewTest, PaintIntersectsOneChild) {
   v2->Reset();
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 }
@@ -786,7 +787,7 @@ TEST_F(ViewTest, PaintIntersectsOneChildInRTL) {
 
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_TRUE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
 
@@ -797,7 +798,7 @@ TEST_F(ViewTest, PaintIntersectsOneChildInRTL) {
   v2->Reset();
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_FALSE(v2->did_paint_);
-  root_view->Paint(View::PaintContext(&canvas, paint_area));
+  root_view->Paint(ui::PaintContext(&canvas, paint_area));
   EXPECT_FALSE(v1->did_paint_);
   EXPECT_TRUE(v2->did_paint_);
 }
@@ -826,7 +827,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
     gfx::Rect paint_area(25, 26);
 
     // The promoted views are not painted as they are separate paint roots.
-    root_view->Paint(View::PaintContext(&canvas, paint_area));
+    root_view->Paint(ui::PaintContext(&canvas, paint_area));
     EXPECT_FALSE(v1->did_paint_);
     EXPECT_FALSE(v2->did_paint_);
   }
@@ -837,7 +838,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
 
     // The |v1| view is painted. If it used its offset incorrect, it would think
     // its at (10,11) instead of at (0,0) since it is the paint root.
-    v1->Paint(View::PaintContext(&canvas, paint_area));
+    v1->Paint(ui::PaintContext(&canvas, paint_area));
     EXPECT_TRUE(v1->did_paint_);
     EXPECT_FALSE(v2->did_paint_);
   }
@@ -850,7 +851,7 @@ TEST_F(ViewTest, PaintInPromotedToLayer) {
 
     // The |v2| view is painted also. If it used its offset incorrect, it would
     // think its at (13,15) instead of at (3,4) since |v1| is the paint root.
-    v1->Paint(View::PaintContext(&canvas, paint_area));
+    v1->Paint(ui::PaintContext(&canvas, paint_area));
     EXPECT_TRUE(v1->did_paint_);
     EXPECT_TRUE(v2->did_paint_);
   }

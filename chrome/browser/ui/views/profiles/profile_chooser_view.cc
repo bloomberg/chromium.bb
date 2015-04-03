@@ -43,6 +43,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -257,7 +258,7 @@ class EditableProfilePhoto : public views::LabelButton {
     views::LabelButton::OnPaint(canvas);
   }
 
-  void PaintChildren(const PaintContext& context) override {
+  void PaintChildren(const ui::PaintContext& context) override {
     // Display any children (the "change photo" overlay) as a circle.
     context.canvas()->ClipPath(circular_mask_, true);
     View::PaintChildren(context);

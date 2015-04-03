@@ -72,6 +72,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/text_constants.h"
@@ -975,7 +976,7 @@ void BookmarkBarView::ViewHierarchyChanged(
   }
 }
 
-void BookmarkBarView::PaintChildren(const PaintContext& context) {
+void BookmarkBarView::PaintChildren(const ui::PaintContext& context) {
   View::PaintChildren(context);
 
   if (drop_info_.get() && drop_info_->valid &&

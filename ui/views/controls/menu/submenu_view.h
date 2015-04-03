@@ -62,7 +62,7 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
   ui::TextInputClient* GetTextInputClient() override;
 
   // Painting.
-  void PaintChildren(const PaintContext& context) override;
+  void PaintChildren(const ui::PaintContext& context) override;
 
   // Drag and drop methods. These are forwarded to the MenuController.
   bool GetDropFormats(

@@ -38,6 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
@@ -1240,7 +1241,7 @@ void TabStrip::Layout() {
   DoLayout();
 }
 
-void TabStrip::PaintChildren(const PaintContext& context) {
+void TabStrip::PaintChildren(const ui::PaintContext& context) {
   gfx::Canvas* canvas = context.canvas();
   // The view order doesn't match the paint order (tabs_ contains the tab
   // ordering). Additionally we need to paint the tabs that are closing in
@@ -1982,7 +1983,7 @@ TabStrip::FindClosingTabResult TabStrip::FindClosingTab(const Tab* tab) {
   return FindClosingTabResult(tabs_closing_map_.end(), Tabs::iterator());
 }
 
-void TabStrip::PaintClosingTabs(int index, const PaintContext& context) {
+void TabStrip::PaintClosingTabs(int index, const ui::PaintContext& context) {
   if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
     return;
 

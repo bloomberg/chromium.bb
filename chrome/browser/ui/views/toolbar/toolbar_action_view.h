@@ -120,7 +120,7 @@ class ToolbarActionView : public views::MenuButton,
   void OnDragDone() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  void PaintChildren(const PaintContext& context) override;
+  void PaintChildren(const ui::PaintContext& context) override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
 
   // ToolbarActionViewDelegateViews:

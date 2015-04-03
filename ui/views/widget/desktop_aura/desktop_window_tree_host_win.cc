@@ -16,6 +16,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/win/shell.h"
 #include "ui/compositor/compositor_constants.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
@@ -674,7 +675,7 @@ void DesktopWindowTreeHostWin::ResetWindowControls() {
 }
 
 void DesktopWindowTreeHostWin::PaintLayeredWindow(gfx::Canvas* canvas) {
-  GetWidget()->GetRootView()->Paint(View::PaintContext(canvas));
+  GetWidget()->GetRootView()->Paint(ui::PaintContext(canvas));
 }
 
 gfx::NativeViewAccessible DesktopWindowTreeHostWin::GetNativeViewAccessible() {
