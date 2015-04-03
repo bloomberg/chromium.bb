@@ -751,6 +751,40 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
   EXPECT_EQ(GURL(), root->current_url());
 }
 
+// When a new subframe is added, related SiteInstances that can reach the
+// subframe should create proxies for it (https://crbug.com/423587).  This test
+// checks that if A embeds B and later adds a new subframe A2, A2 gets a proxy
+// in B's process.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CreateProxiesForNewFrames) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  // Make sure the frame starts out at the correct cross-site URL.
+  EXPECT_EQ(embedded_test_server()->GetURL("baz.com", "/title1.html"),
+            root->child_at(0)->current_url());
+
+  // Add a new child frame to the top-level frame.
+  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "window.domAutomationController.send("
+                            "    addFrame('data:text/html,foo'));"));
+  frame_observer.Wait();
+  ASSERT_EQ(2U, root->child_count());
+
+  // The new child frame should now have a proxy in first frame's process.
+  RenderFrameProxyHost* proxy =
+      root->child_at(1)->render_manager()->GetRenderFrameProxyHost(
+          root->child_at(0)->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(proxy);
+}
+
 // TODO(nasko): Disable this test until out-of-process iframes is ready and the
 // security checks are back in place.
 // TODO(creis): Replace SpawnedTestServer with host_resolver to get test to run

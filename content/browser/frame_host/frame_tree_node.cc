@@ -96,6 +96,15 @@ void FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child,
       render_manager_.current_host()->GetRoutingID(),
       frame_routing_id);
   child->set_parent(this);
+
+  // Other renderer processes in this BrowsingInstance may need to find out
+  // about the new frame.  Create a proxy for the child frame in all
+  // SiteInstances that have a proxy for the frame's parent, since all frames
+  // in a frame tree should have the same set of proxies.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    render_manager_.CreateProxiesForChildFrame(child.get());
+
   children_.push_back(child.release());
 }
 

@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html>
-<head></head>
+<head>
+<script>
+  function addFrame(url) {
+    var frame = document.createElement('iframe');
+    frame.src = url;
+    document.body.appendChild(frame);
+  }
+</script>
+</head>
 <body>
   This page has one cross-site iframe.
   <iframe src="/cross-site/baz.com/title1.html"></iframe>

@@ -328,6 +328,12 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // its routing id.
   int CreateRenderFrameProxy(SiteInstance* instance);
 
+  // Creates proxies for a new child frame at FrameTreeNode |child| in all
+  // SiteInstances for which the current frame has proxies.  This method is
+  // called on the parent of a new child frame before the child leaves the
+  // SiteInstance.
+  void CreateProxiesForChildFrame(FrameTreeNode* child);
+
   // Sets the passed passed interstitial as the currently showing interstitial.
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
   // method to unset the interstitial) and no interstitial page should be set

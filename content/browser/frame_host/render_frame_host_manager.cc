@@ -1510,6 +1510,13 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   return proxy->GetRoutingID();
 }
 
+void RenderFrameHostManager::CreateProxiesForChildFrame(FrameTreeNode* child) {
+  for (const auto& pair : proxy_hosts_) {
+    child->render_manager()->CreateRenderFrameProxy(
+        pair.second->GetSiteInstance());
+  }
+}
+
 void RenderFrameHostManager::EnsureRenderViewInitialized(
     FrameTreeNode* source,
     RenderViewHostImpl* render_view_host,
