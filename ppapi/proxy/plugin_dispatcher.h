@@ -140,12 +140,19 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
                              bool is_client);
 
   // Dispatcher overrides.
-  virtual bool IsPlugin() const;
-  virtual bool Send(IPC::Message* msg);
+  bool IsPlugin() const override;
+  // Send the message to the renderer. If |msg| is a synchronous message, we
+  // will unlock the ProxyLock so that we can handle incoming messages from the
+  // renderer.
+  bool Send(IPC::Message* msg) override;
+
+  // Unlike |Send()|, this function continues to hold the Pepper proxy lock
+  // until we are finished sending |msg|, even if it is a synchronous message.
+  bool SendAndStayLocked(IPC::Message* msg);
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual void OnChannelError();
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnChannelError() override;
 
   // Keeps track of which dispatcher to use for each instance, active instances
   // and tracks associated data like the current size.

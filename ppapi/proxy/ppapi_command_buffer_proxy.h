@@ -21,14 +21,14 @@ class Message;
 namespace ppapi {
 namespace proxy {
 
-class ProxyChannel;
+class PluginDispatcher;
 class SerializedHandle;
 
 class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
                                                    public gpu::GpuControl {
  public:
   PpapiCommandBufferProxy(const HostResource& resource,
-                          ProxyChannel* channel,
+                          PluginDispatcher* dispatcher,
                           const gpu::Capabilities& capabilities,
                           const SerializedHandle& shared_state);
   virtual ~PpapiCommandBufferProxy();
@@ -83,7 +83,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   scoped_ptr<base::SharedMemory> shared_state_shm_;
 
   HostResource resource_;
-  ProxyChannel* channel_;
+  PluginDispatcher* dispatcher_;
 
   base::Closure channel_error_callback_;
 

@@ -5,8 +5,8 @@
 #include "ppapi/proxy/ppapi_command_buffer_proxy.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/proxy_channel.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -16,12 +16,12 @@ namespace proxy {
 
 PpapiCommandBufferProxy::PpapiCommandBufferProxy(
     const ppapi::HostResource& resource,
-    ProxyChannel* channel,
+    PluginDispatcher* dispatcher,
     const gpu::Capabilities& capabilities,
     const SerializedHandle& shared_state)
     : capabilities_(capabilities),
       resource_(resource),
-      channel_(channel) {
+      dispatcher_(dispatcher) {
   shared_state_shm_.reset(
       new base::SharedMemory(shared_state.shmem(), false));
   shared_state_shm_->Map(shared_state.size());
@@ -229,7 +229,11 @@ int32 PpapiCommandBufferProxy::CreateGpuMemoryBufferImage(
 bool PpapiCommandBufferProxy::Send(IPC::Message* msg) {
   DCHECK(last_state_.error == gpu::error::kNoError);
 
-  if (channel_->Send(msg))
+  // We need to hold the Pepper proxy lock for sync IPC, because the GPU command
+  // buffer may use a sync IPC with another lock held which could lead to lock
+  // and deadlock if we dropped the proxy lock here.
+  // http://crbug.com/418651
+  if (dispatcher_->SendAndStayLocked(msg))
     return true;
 
   last_state_.error = gpu::error::kLostContext;
