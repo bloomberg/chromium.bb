@@ -36,6 +36,12 @@ PNaCl
 
 .. _`code generation bug on ARM`: https://code.google.com/p/chromium/issues/detail?id=460432
 
+Pepper
+------
+
+* UDP Socket Multicast API in development preview (PPB_UDP_SOCKET 1.2).
+* Hardware Video Encoder API in development preview (PPB_VIDEO_ENCODER 0.1).
+
 Chrome/Pepper 42 (20 February 2015)
 ===================================
 
