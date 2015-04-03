@@ -5,20 +5,15 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 <head>
-<title>NaCl Load Test</title>
+<title>PNaCl Load Options Test</title>
 <script type="text/javascript" src="nacltest.js"></script> 
+<script type="text/javascript" src="load_util.js"></script> 
+<script type="text/javascript" src="simple_cc.js"></script> 
 </head>
 <body>
 <h2>PNaCl Load Options Test</h2>
 </body>
 <script>
-
-function report(msg) {
-  domAutomationController.setAutomationId(0);
-  // The automation controller seems to choke on Objects, so turn them into
-  // strings.
-  domAutomationController.send(JSON.stringify(msg));
-}
 
 function create(manifest_prefix, manifest_opt) {
   var embed = document.createElement("embed");
@@ -26,16 +21,7 @@ function create(manifest_prefix, manifest_opt) {
 
   embed.src = nmf_url;
   embed.type = "application/x-pnacl";
-
-  embed.addEventListener("load", function(evt) {
-    report({type: "Shutdown", message: "1 test passed.", passed: true});
-  }, true);
-
-  embed.addEventListener("error", function(evt) {
-    report({type: "Log", message: "Load error: " + embed.lastError});
-    report({type: "Shutdown", message: "1 test failed.", passed: false});
-  }, true);
-
+  simple_test.addTestListeners(embed);
   document.body.appendChild(embed);
 }
 

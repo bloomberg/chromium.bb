@@ -38,6 +38,7 @@
           'load_util.js',
           'manifest_file/test_file.txt',
           'progress_event_listener.js',
+          'simple_cc.js',
         ],
       },
       'conditions': [
@@ -122,6 +123,7 @@
           # Note that the .nexe names are embedded in this file.
           'extension_validation_cache/manifest.json',
           'load_util.js',
+	  'simple_cc.js',
         ],
       },
       'dependencies': [

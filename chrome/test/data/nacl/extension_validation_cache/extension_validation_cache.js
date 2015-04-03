@@ -4,16 +4,7 @@
 
 function create(manifest_url) {
   var embed = load_util.embed(manifest_url);
-
-  embed.addEventListener("load", function(evt) {
-    load_util.shutdown("1 test passed.", true);
-  }, true);
-
-  embed.addEventListener("error", function(evt) {
-    load_util.log("Load error: " + embed.lastError);
-    load_util.shutdown("1 test failed.", false);
-  }, true);
-
+  simple_test.addTestListeners(embed);
   document.body.appendChild(embed);
 }
 
