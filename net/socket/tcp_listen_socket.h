@@ -12,12 +12,36 @@
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/stream_listen_socket.h"
 
+namespace nacl {
+class NaClProcessHost;
+}
+
 namespace net {
 
-// Implements a TCP socket.
+namespace test_server {
+class EmbeddedTestServer;
+}
+
+// Implements a TCP socket. This class is deprecated and will be removed
+// once crbug.com/472766 is fixed. There should not be any new consumer of this
+// class.
 class NET_EXPORT TCPListenSocket : public StreamListenSocket {
  public:
   ~TCPListenSocket() override;
+
+ protected:
+  TCPListenSocket(SocketDescriptor s, StreamListenSocket::Delegate* del);
+
+  // Implements StreamListenSocket::Accept.
+  void Accept() override;
+
+ private:
+  // Note that friend classes are temporary until crbug.com/472766 is fixed.
+  friend class test_server::EmbeddedTestServer;
+  friend class TCPListenSocketTester;
+  friend class TransportClientSocketTest;
+  friend class nacl::NaClProcessHost;
+
   // Listen on port for the specified IP address.  Use 127.0.0.1 to only
   // accept local connections.
   static scoped_ptr<TCPListenSocket> CreateAndListen(
@@ -32,13 +56,6 @@ class NET_EXPORT TCPListenSocket : public StreamListenSocket {
   static SocketDescriptor CreateAndBindAnyPort(const std::string& ip,
                                                uint16* port);
 
- protected:
-  TCPListenSocket(SocketDescriptor s, StreamListenSocket::Delegate* del);
-
-  // Implements StreamListenSocket::Accept.
-  void Accept() override;
-
- private:
   DISALLOW_COPY_AND_ASSIGN(TCPListenSocket);
 };
 
