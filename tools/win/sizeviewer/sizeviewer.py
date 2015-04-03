@@ -15,8 +15,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def Run(*args):
-  with open(os.devnull, 'w') as null:
-    subprocess.check_call(args, stdout=null, stderr=null)
+  p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  out, err = p.communicate()
+  if p.returncode != 0:
+    raise SystemExit(out)
 
 
 def FindNode(node, component):
@@ -73,10 +75,14 @@ def AppendAsScriptBlock(f, value, var=None):
 
 
 def main():
-  out_dir = os.path.join(BASE_DIR, '..', '..', '..', 'out', 'Release')
   jsons = []
-  for dll in ('chrome.dll', 'chrome_child.dll'):
-    dll_path = os.path.normpath(os.path.join(out_dir, dll))
+  if len(sys.argv) > 1:
+    dlls = sys.argv[1:]
+  else:
+    out_dir = os.path.join(BASE_DIR, '..', '..', '..', 'out', 'Release')
+    dlls = [os.path.normpath(os.path.join(out_dir, dll))
+            for dll in ('chrome.dll', 'chrome_child.dll')]
+  for dll_path in dlls:
     if os.path.exists(dll_path):
       print 'Tallying %s...' % dll_path
       json_path = dll_path + '.json'
@@ -87,7 +93,9 @@ def main():
           '--output-file=' + json_path)
       jsons.append(json_path)
   if not jsons:
-    print 'Couldn\'t find binaries, looking in', out_dir
+    print 'Couldn\'t find dlls.'
+    print 'Pass fully qualified dll name(s) if you want to use something other '
+    print 'than out\\Release\\chrome.dll and chrome_child.dll.'
     return 1
 
   # Munge the code_tally json format into an easier-to-view format.

@@ -119,6 +119,10 @@ source_set("lib") {
     "//third_party/mojo_services/src/view_manager/public/cpp",
     ":generate_blink_resource_map",
   ]
+
+  if (is_win) {
+    sources += [ "html_viewer_version.rc" ]
+  }
 }
 
 if (is_android) {
