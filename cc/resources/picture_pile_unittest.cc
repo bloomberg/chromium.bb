@@ -287,6 +287,7 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
   UpdateAndExpandInvalidation(&invalidation, tiling_size(), viewport);
   EXPECT_EQ(tiling_rect().ToString(), invalidation.ToString());
 
+  bool had_tiles_with_no_pictures = false;
   for (int i = 0; i < pile_.tiling().num_tiles_x(); ++i) {
     for (int j = 0; j < pile_.tiling().num_tiles_y(); ++j) {
       FakePicturePile::PictureInfo& picture_info =
@@ -297,12 +298,16 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
 
       // If the y far enough away we expect to find no picture (no re-recording
       // happened). For close y, the picture should change.
-      if (j >= 2)
+      if (j >= 3) {
         EXPECT_FALSE(picture_info.GetPicture()) << "i " << i << " j " << j;
-      else
+        had_tiles_with_no_pictures = true;
+      } else {
         EXPECT_TRUE(picture_info.GetPicture()) << "i " << i << " j " << j;
+      }
     }
   }
+
+  EXPECT_TRUE(had_tiles_with_no_pictures);
 
   // Update a partial tile that doesn't get recorded. We should expand the
   // invalidation to the entire tiles that overlap it.
@@ -360,20 +365,20 @@ TEST_F(PicturePileTest, FrequentInvalidationCanRaster) {
       gfx::ToCeiledSize(gfx::ScaleSize(tiling_size(), 4.f));
   SetTilingSize(new_tiling_size);
 
-  gfx::Rect tile01_borders = pile_.tiling().TileBoundsWithBorder(0, 1);
   gfx::Rect tile02_borders = pile_.tiling().TileBoundsWithBorder(0, 2);
-  gfx::Rect tile01_noborders = pile_.tiling().TileBounds(0, 1);
+  gfx::Rect tile03_borders = pile_.tiling().TileBoundsWithBorder(0, 3);
   gfx::Rect tile02_noborders = pile_.tiling().TileBounds(0, 2);
+  gfx::Rect tile03_noborders = pile_.tiling().TileBounds(0, 3);
 
   // Sanity check these two tiles are overlapping with borders, since this is
   // what the test is trying to repro.
-  EXPECT_TRUE(tile01_borders.Intersects(tile02_borders));
-  EXPECT_FALSE(tile01_noborders.Intersects(tile02_noborders));
+  EXPECT_TRUE(tile02_borders.Intersects(tile03_borders));
+  EXPECT_FALSE(tile02_noborders.Intersects(tile03_noborders));
   UpdateWholePile();
-  EXPECT_TRUE(pile_.CanRasterLayerRect(tile01_noborders));
-  EXPECT_TRUE(pile_.CanRasterSlowTileCheck(tile01_noborders));
   EXPECT_TRUE(pile_.CanRasterLayerRect(tile02_noborders));
   EXPECT_TRUE(pile_.CanRasterSlowTileCheck(tile02_noborders));
+  EXPECT_TRUE(pile_.CanRasterLayerRect(tile03_noborders));
+  EXPECT_TRUE(pile_.CanRasterSlowTileCheck(tile03_noborders));
   // Sanity check that an initial paint goes down the fast path of having
   // a valid recorded viewport.
   EXPECT_TRUE(!pile_.recorded_viewport().IsEmpty());
@@ -391,16 +396,16 @@ TEST_F(PicturePileTest, FrequentInvalidationCanRaster) {
 
   // Sanity check some pictures exist and others don't.
   EXPECT_TRUE(pile_.picture_map()
-                  .find(FakePicturePile::PictureMapKey(0, 1))
+                  .find(FakePicturePile::PictureMapKey(0, 2))
                   ->second.GetPicture());
   EXPECT_FALSE(pile_.picture_map()
-                   .find(FakePicturePile::PictureMapKey(0, 2))
+                   .find(FakePicturePile::PictureMapKey(0, 3))
                    ->second.GetPicture());
 
-  EXPECT_TRUE(pile_.CanRasterLayerRect(tile01_noborders));
-  EXPECT_TRUE(pile_.CanRasterSlowTileCheck(tile01_noborders));
-  EXPECT_FALSE(pile_.CanRasterLayerRect(tile02_noborders));
-  EXPECT_FALSE(pile_.CanRasterSlowTileCheck(tile02_noborders));
+  EXPECT_TRUE(pile_.CanRasterLayerRect(tile02_noborders));
+  EXPECT_TRUE(pile_.CanRasterSlowTileCheck(tile02_noborders));
+  EXPECT_FALSE(pile_.CanRasterLayerRect(tile03_noborders));
+  EXPECT_FALSE(pile_.CanRasterSlowTileCheck(tile03_noborders));
 }
 
 TEST_F(PicturePileTest, NoInvalidationValidViewport) {

@@ -30,8 +30,10 @@ const int kBasePictureSize = 512;
 // indicates when to stop invalidating offscreen regions.
 // kFrequentInvalidationDistanceThreshold defines what it means to be
 // "offscreen" in terms of distance to visible in css pixels.
+// TODO(vmpstr): Remove invalidation frequency after frequently invalidated
+// content is not painted at a higher level.
 const float kInvalidationFrequencyThreshold = 0.75f;
-const int kFrequentInvalidationDistanceThreshold = 512;
+const int kFrequentInvalidationDistanceThreshold = 1024;
 
 // TODO(humper): The density threshold here is somewhat arbitrary; need a
 // way to set // this from the command line so we can write a benchmark
