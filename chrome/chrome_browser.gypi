@@ -2556,6 +2556,8 @@
       'browser/sessions/session_restore.h',
       'browser/sessions/session_restore_delegate.cc',
       'browser/sessions/session_restore_delegate.h',
+      'browser/sessions/session_restore_stats_collector.cc',
+      'browser/sessions/session_restore_stats_collector.h',
       'browser/sessions/session_service.cc',
       'browser/sessions/session_service.h',
       'browser/sessions/session_service_factory.cc',

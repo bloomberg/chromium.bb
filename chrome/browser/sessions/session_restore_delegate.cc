@@ -4,11 +4,13 @@
 
 #include "chrome/browser/sessions/session_restore_delegate.h"
 
+#include "chrome/browser/sessions/session_restore_stats_collector.h"
 #include "chrome/browser/sessions/tab_loader.h"
 
 // static
 void SessionRestoreDelegate::RestoreTabs(
     const std::vector<RestoredTab>& tabs,
     const base::TimeTicks& restore_started) {
+  SessionRestoreStatsCollector::TrackTabs(tabs, restore_started);
   TabLoader::RestoreTabs(tabs, restore_started);
 }

@@ -27,117 +27,22 @@ void TabLoader::Observe(int type,
                         const content::NotificationSource& source,
                         const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_LOAD_START: {
-      // Add this render_widget_host to the set of those we're waiting for
-      // paints on. We want to only record stats for paints that occur after
-      // a load has finished.
-      NavigationController* tab =
-          content::Source<NavigationController>(source).ptr();
-      RenderWidgetHost* render_widget_host = GetRenderWidgetHost(tab);
-      DCHECK(render_widget_host);
-      render_widget_hosts_loading_.insert(render_widget_host);
-      break;
-    }
     case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
       WebContents* web_contents = content::Source<WebContents>(source).ptr();
-      if (!got_first_paint_) {
-        RenderWidgetHost* render_widget_host =
-            GetRenderWidgetHost(&web_contents->GetController());
-        render_widget_hosts_loading_.erase(render_widget_host);
-      }
       HandleTabClosedOrLoaded(&web_contents->GetController());
       break;
     }
     case content::NOTIFICATION_LOAD_STOP: {
-      NavigationController* tab =
+      NavigationController* controller =
           content::Source<NavigationController>(source).ptr();
-      RenderWidgetHost* render_widget_host = GetRenderWidgetHost(tab);
-      render_widget_hosts_to_paint_.insert(render_widget_host);
-      HandleTabClosedOrLoaded(tab);
-      if (!got_first_foreground_load_ && render_widget_host &&
-          render_widget_host->GetView() &&
-          render_widget_host->GetView()->IsShowing()) {
-        got_first_foreground_load_ = true;
-        base::TimeDelta time_to_load =
-            base::TimeTicks::Now() - restore_started_;
-        UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.ForegroundTabFirstLoaded",
-                                   time_to_load,
-                                   base::TimeDelta::FromMilliseconds(10),
-                                   base::TimeDelta::FromSeconds(100), 100);
-        // Record a time for the number of tabs, to help track down
-        // contention.
-        std::string time_for_count = base::StringPrintf(
-            "SessionRestore.ForegroundTabFirstLoaded_%d", tab_count_);
-        base::HistogramBase* counter_for_count =
-            base::Histogram::FactoryTimeGet(
-                time_for_count, base::TimeDelta::FromMilliseconds(10),
-                base::TimeDelta::FromSeconds(100), 100,
-                base::Histogram::kUmaTargetedHistogramFlag);
-        counter_for_count->AddTime(time_to_load);
-      }
-      break;
-    }
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE: {
-      RenderWidgetHost* render_widget_host =
-          content::Source<RenderWidgetHost>(source).ptr();
-      if (!got_first_paint_ && render_widget_host->GetView() &&
-          render_widget_host->GetView()->IsShowing()) {
-        if (render_widget_hosts_to_paint_.find(render_widget_host) !=
-            render_widget_hosts_to_paint_.end()) {
-          // Got a paint for one of our renderers, so record time.
-          got_first_paint_ = true;
-          base::TimeDelta time_to_paint =
-              base::TimeTicks::Now() - restore_started_;
-          // TODO(danduong): to remove this with 467680, to make sure we
-          // don't forget to clean this up.
-          UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.ForegroundTabFirstPaint",
-                                     time_to_paint,
-                                     base::TimeDelta::FromMilliseconds(10),
-                                     base::TimeDelta::FromSeconds(100), 100);
-          // Record a time for the number of tabs, to help track down
-          // contention.
-          std::string time_for_count = base::StringPrintf(
-              "SessionRestore.ForegroundTabFirstPaint_%d", tab_count_);
-          base::HistogramBase* counter_for_count =
-              base::Histogram::FactoryTimeGet(
-                  time_for_count, base::TimeDelta::FromMilliseconds(10),
-                  base::TimeDelta::FromSeconds(100), 100,
-                  base::Histogram::kUmaTargetedHistogramFlag);
-          counter_for_count->AddTime(time_to_paint);
-          UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.ForegroundTabFirstPaint2",
-                                     time_to_paint,
-                                     base::TimeDelta::FromMilliseconds(100),
-                                     base::TimeDelta::FromMinutes(16), 50);
-          // Record a time for the number of tabs, to help track down
-          // contention.
-          std::string time_for_count2 = base::StringPrintf(
-              "SessionRestore.ForegroundTabFirstPaint2_%d", tab_count_);
-          base::HistogramBase* counter_for_count2 =
-              base::Histogram::FactoryTimeGet(
-                  time_for_count2, base::TimeDelta::FromMilliseconds(100),
-                  base::TimeDelta::FromMinutes(16), 50,
-                  base::Histogram::kUmaTargetedHistogramFlag);
-          counter_for_count2->AddTime(time_to_paint);
-        } else if (render_widget_hosts_loading_.find(render_widget_host) ==
-                   render_widget_hosts_loading_.end()) {
-          // If this is a host for a tab we're not loading some other tab
-          // has rendered and there's no point tracking the time. This could
-          // happen because the user opened a different tab or restored tabs
-          // to an already existing browser and an existing tab painted.
-          got_first_paint_ = true;
-        }
-      }
+      HandleTabClosedOrLoaded(controller);
       break;
     }
     default:
       NOTREACHED() << "Unknown notification received:" << type;
   }
-  // Delete ourselves when we're not waiting for any more notifications. If this
-  // was not the last reference, a SessionRestoreImpl holding a reference will
-  // eventually call StartLoading (which assigns this_retainer_), or drop the
-  // reference without initiating a load.
-  if ((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
-      tabs_loading_.empty() && tabs_to_load_.empty())
+  // Delete ourselves when we are done.
+  if (tabs_loading_.empty() && tabs_to_load_.empty())
     this_retainer_ = nullptr;
 }
 
@@ -165,16 +70,14 @@ TabLoader::TabLoader(base::TimeTicks restore_started)
           base::Bind(&TabLoader::OnMemoryPressure, base::Unretained(this))),
       force_load_delay_multiplier_(1),
       loading_enabled_(true),
-      got_first_foreground_load_(false),
-      got_first_paint_(false),
-      tab_count_(0),
-      restore_started_(restore_started),
-      max_parallel_tab_loads_(0) {
+      restore_started_(restore_started) {
+  shared_tab_loader_ = this;
+  this_retainer_ = this;
 }
 
 TabLoader::~TabLoader() {
-  DCHECK((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
-         tabs_loading_.empty() && tabs_to_load_.empty());
+  DCHECK(tabs_loading_.empty() && tabs_to_load_.empty());
+  DCHECK(shared_tab_loader_ == this);
   shared_tab_loader_ = nullptr;
 }
 
@@ -195,10 +98,6 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
   if (delegate_)
     return;
 
-  registrar_.Add(
-      this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-      content::NotificationService::AllSources());
-  this_retainer_ = this;
   // Create a TabLoaderDelegate which will allow OS specific behavior for tab
   // loading.
   if (!delegate_) {
@@ -209,40 +108,17 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
   }
 }
 
-void TabLoader::ScheduleLoad(NavigationController* controller) {
-  CheckNotObserving(controller);
-  DCHECK(controller);
-  DCHECK(find(tabs_to_load_.begin(), tabs_to_load_.end(), controller) ==
-         tabs_to_load_.end());
-  tabs_to_load_.push_back(controller);
-  RegisterForNotifications(controller);
-}
-
-void TabLoader::TabIsLoading(NavigationController* controller) {
-  CheckNotObserving(controller);
-  DCHECK(controller);
-  DCHECK(find(tabs_loading_.begin(), tabs_loading_.end(), controller) ==
-         tabs_loading_.end());
-  tabs_loading_.insert(controller);
-  RenderWidgetHost* render_widget_host = GetRenderWidgetHost(controller);
-  DCHECK(render_widget_host);
-  render_widget_hosts_loading_.insert(render_widget_host);
-  RegisterForNotifications(controller);
-}
-
 void TabLoader::LoadNextTab() {
   // LoadNextTab should only get called after we have started the tab
   // loading.
   CHECK(delegate_);
   if (!tabs_to_load_.empty()) {
-    NavigationController* tab = tabs_to_load_.front();
-    DCHECK(tab);
-    tabs_loading_.insert(tab);
-    if (tabs_loading_.size() > max_parallel_tab_loads_)
-      max_parallel_tab_loads_ = tabs_loading_.size();
+    NavigationController* controller = tabs_to_load_.front();
+    DCHECK(controller);
+    tabs_loading_.insert(controller);
     tabs_to_load_.pop_front();
-    tab->LoadIfNecessary();
-    content::WebContents* contents = tab->GetWebContents();
+    controller->LoadIfNecessary();
+    content::WebContents* contents = controller->GetWebContents();
     if (contents) {
       Browser* browser = chrome::FindBrowserWithWebContents(contents);
       if (browser &&
@@ -271,20 +147,18 @@ void TabLoader::StartTimer() {
                           this, &TabLoader::ForceLoadTimerFired);
 }
 
-void TabLoader::RemoveTab(NavigationController* tab) {
+void TabLoader::RemoveTab(NavigationController* controller) {
   registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    content::Source<WebContents>(tab->GetWebContents()));
+                    content::Source<WebContents>(controller->GetWebContents()));
   registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
-                    content::Source<NavigationController>(tab));
-  registrar_.Remove(this, content::NOTIFICATION_LOAD_START,
-                    content::Source<NavigationController>(tab));
+                    content::Source<NavigationController>(controller));
 
-  TabsLoading::iterator i = tabs_loading_.find(tab);
+  TabsLoading::iterator i = tabs_loading_.find(controller);
   if (i != tabs_loading_.end())
     tabs_loading_.erase(i);
 
   TabsToLoad::iterator j =
-      find(tabs_to_load_.begin(), tabs_to_load_.end(), tab);
+      find(tabs_to_load_.begin(), tabs_to_load_.end(), controller);
   if (j != tabs_to_load_.end())
     tabs_to_load_.erase(j);
 }
@@ -294,69 +168,17 @@ void TabLoader::ForceLoadTimerFired() {
   LoadNextTab();
 }
 
-RenderWidgetHost* TabLoader::GetRenderWidgetHost(NavigationController* tab) {
-  WebContents* web_contents = tab->GetWebContents();
-  if (web_contents) {
-    content::RenderWidgetHostView* render_widget_host_view =
-        web_contents->GetRenderWidgetHostView();
-    if (render_widget_host_view)
-      return render_widget_host_view->GetRenderWidgetHost();
-  }
-  return nullptr;
-}
-
 void TabLoader::RegisterForNotifications(NavigationController* controller) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::Source<WebContents>(controller->GetWebContents()));
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
-  registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 content::Source<NavigationController>(controller));
-  ++tab_count_;
 }
 
-void TabLoader::HandleTabClosedOrLoaded(NavigationController* tab) {
-  RemoveTab(tab);
+void TabLoader::HandleTabClosedOrLoaded(NavigationController* controller) {
+  RemoveTab(controller);
   if (delegate_ && loading_enabled_)
     LoadNextTab();
-  if (tabs_loading_.empty() && tabs_to_load_.empty()) {
-    base::TimeDelta time_to_load = base::TimeTicks::Now() - restore_started_;
-    UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.AllTabsLoaded", time_to_load,
-                               base::TimeDelta::FromMilliseconds(10),
-                               base::TimeDelta::FromSeconds(100), 100);
-    // Record a time for the number of tabs, to help track down contention.
-    std::string time_for_count =
-        base::StringPrintf("SessionRestore.AllTabsLoaded_%d", tab_count_);
-    base::HistogramBase* counter_for_count = base::Histogram::FactoryTimeGet(
-        time_for_count, base::TimeDelta::FromMilliseconds(10),
-        base::TimeDelta::FromSeconds(100), 100,
-        base::Histogram::kUmaTargetedHistogramFlag);
-    counter_for_count->AddTime(time_to_load);
-
-    UMA_HISTOGRAM_COUNTS_100("SessionRestore.ParallelTabLoads",
-                             max_parallel_tab_loads_);
-  }
-}
-
-void TabLoader::CheckNotObserving(NavigationController* controller) {
-  const bool in_tabs_to_load = find(tabs_to_load_.begin(), tabs_to_load_.end(),
-                                    controller) != tabs_to_load_.end();
-  const bool in_tabs_loading = find(tabs_loading_.begin(), tabs_loading_.end(),
-                                    controller) != tabs_loading_.end();
-  const bool observing =
-      registrar_.IsRegistered(
-          this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-          content::Source<WebContents>(controller->GetWebContents())) ||
-      registrar_.IsRegistered(
-          this, content::NOTIFICATION_LOAD_STOP,
-          content::Source<NavigationController>(controller)) ||
-      registrar_.IsRegistered(
-          this, content::NOTIFICATION_LOAD_START,
-          content::Source<NavigationController>(controller));
-  base::debug::Alias(&in_tabs_to_load);
-  base::debug::Alias(&in_tabs_loading);
-  base::debug::Alias(&observing);
-  CHECK(!in_tabs_to_load && !in_tabs_loading && !observing);
 }
 
 void TabLoader::OnMemoryPressure(

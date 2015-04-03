@@ -57,20 +57,12 @@ class TabLoader : public content::NotificationObserver,
 
   using TabsLoading = std::set<content::NavigationController*>;
   using TabsToLoad = std::list<content::NavigationController*>;
-  using RenderWidgetHostSet = std::set<content::RenderWidgetHost*>;
 
   explicit TabLoader(base::TimeTicks restore_started);
   ~TabLoader() override;
 
   // This is invoked once by RestoreTabs to start loading.
   void StartLoading(const std::vector<RestoredTab>& tabs);
-
-  // Schedules a tab for loading.
-  void ScheduleLoad(content::NavigationController* controller);
-
-  // Notifies the loader that a tab has been scheduled for loading through
-  // some other mechanism.
-  void TabIsLoading(content::NavigationController* controller);
 
   // Loads the next tab. If there are no more tabs to load this deletes itself,
   // otherwise |force_load_timer_| is restarted.
@@ -83,7 +75,7 @@ class TabLoader : public content::NotificationObserver,
   // Removes the listeners from the specified tab and removes the tab from
   // the set of tabs to load and list of tabs we're waiting to get a load
   // from.
-  void RemoveTab(content::NavigationController* tab);
+  void RemoveTab(content::NavigationController* controller);
 
   // Invoked from |force_load_timer_|. Doubles |force_load_delay_multiplier_|
   // and invokes |LoadNextTab| to load the next tab
@@ -92,16 +84,13 @@ class TabLoader : public content::NotificationObserver,
   // Returns the RenderWidgetHost associated with a tab if there is one,
   // NULL otherwise.
   static content::RenderWidgetHost* GetRenderWidgetHost(
-      content::NavigationController* tab);
+      content::NavigationController* controller);
 
   // Register for necessary notifications on a tab navigation controller.
   void RegisterForNotifications(content::NavigationController* controller);
 
   // Called when a tab goes away or a load completes.
   void HandleTabClosedOrLoaded(content::NavigationController* controller);
-
-  // TODO(sky): remove. For debugging 368236.
-  void CheckNotObserving(content::NavigationController* controller);
 
   // React to memory pressure by stopping to load any more tabs.
   void OnMemoryPressure(
@@ -121,12 +110,6 @@ class TabLoader : public content::NotificationObserver,
   // True if the tab loading is enabled.
   bool loading_enabled_;
 
-  // Have we recorded the times for a foreground tab load?
-  bool got_first_foreground_load_;
-
-  // Have we recorded the times for a foreground tab paint?
-  bool got_first_paint_;
-
   // The set of tabs we've initiated loading on. This does NOT include the
   // selected tabs.
   TabsLoading tabs_loading_;
@@ -134,22 +117,10 @@ class TabLoader : public content::NotificationObserver,
   // The tabs we need to load.
   TabsToLoad tabs_to_load_;
 
-  // The renderers we have started loading into.
-  RenderWidgetHostSet render_widget_hosts_loading_;
-
-  // The renderers we have loaded and are waiting on to paint.
-  RenderWidgetHostSet render_widget_hosts_to_paint_;
-
-  // The number of tabs that have been restored.
-  int tab_count_;
-
   base::OneShotTimer<TabLoader> force_load_timer_;
 
   // The time the restore process started.
   base::TimeTicks restore_started_;
-
-  // Max number of tabs that were loaded in parallel (for metrics).
-  size_t max_parallel_tab_loads_;
 
   // For keeping TabLoader alive while it's loading even if no
   // SessionRestoreImpls reference it.

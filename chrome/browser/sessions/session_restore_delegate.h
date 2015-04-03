@@ -14,7 +14,7 @@ class WebContents;
 }
 
 // SessionRestoreDelegate is responsible for creating the tab loader and the
-// stats tracker.
+// stats collector.
 class SessionRestoreDelegate {
  public:
   struct RestoredTab {
