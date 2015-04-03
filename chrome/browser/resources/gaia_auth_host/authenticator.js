@@ -535,6 +535,14 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onContentLoad_ = function(e) {
+    if (this.isConstrainedWindow_) {
+      // Signin content in constrained windows should not zoom. Isolate the
+      // webview from the zooming of other webviews using the 'per-view' zoom
+      // mode, and then set it to 100% zoom.
+      this.webview_.setZoomMode('per-view');
+      this.webview_.setZoom(1);
+    }
+
     // Posts a message to IdP pages to initiate communication.
     var currentUrl = this.webview_.src;
     if (currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
