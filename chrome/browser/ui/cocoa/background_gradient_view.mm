@@ -56,7 +56,7 @@
                  forView:[self cr_viewBeingDrawnTo]];
 
   ui::ThemeProvider* themeProvider = [[self window] themeProvider];
-  if (themeProvider && themeProvider->UsingSystemTheme()) {
+  if (themeProvider && !themeProvider->UsingSystemTheme()) {
     // If the background image is semi transparent then we need something
     // to blend against. Using 20% black gives us a color similar to Windows.
     [[NSColor colorWithCalibratedWhite:0.2 alpha:1.0] set];
