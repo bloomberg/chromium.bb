@@ -39,6 +39,7 @@ struct AccessibilityHostMsg_FindInPageResultParams;
 struct AccessibilityHostMsg_LocationChangeParams;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 struct FrameHostMsg_OpenURL_Params;
+struct FrameMsg_TextTrackSettings_Params;
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 struct FrameHostMsg_ShowPopup_Params;
 #endif
@@ -371,6 +372,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // retrieved using GetAXTreeForTesting().
   void SetAccessibilityCallbackForTesting(
       const base::Callback<void(ui::AXEvent, int)>& callback);
+
+  // Send a message to the render process to change text track style settings.
+  void SetTextTrackSettings(const FrameMsg_TextTrackSettings_Params& params);
 
   // Returns a snapshot of the accessibility tree received from the
   // renderer as of the last time an accessibility notification was

@@ -44,6 +44,7 @@ class GURL;
 class TransportDIB;
 struct FrameHostMsg_AddNavigationTransitionData_Params;
 struct FrameMsg_NewFrame_WidgetParams;
+struct FrameMsg_TextTrackSettings_Params;
 
 namespace blink {
 class WebGeolocationClient;
@@ -637,6 +638,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnDisownOpener();
   void OnDidUpdateSandboxFlags(SandboxFlags flags);
+  void OnTextTrackSettingsChanged(
+      const FrameMsg_TextTrackSettings_Params& params);
 #if defined(OS_ANDROID)
   void OnSelectPopupMenuItems(bool canceled,
                               const std::vector<int>& selected_indices);

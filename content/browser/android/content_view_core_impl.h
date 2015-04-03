@@ -171,6 +171,16 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void SetAccessibilityEnabled(JNIEnv* env, jobject obj, bool enabled);
 
+  void SetTextTrackSettings(JNIEnv* env,
+                            jobject obj,
+                            jstring textTrackBackgroundColor,
+                            jstring textTrackFontFamily,
+                            jstring textTrackFontStyle,
+                            jstring textTrackFontVariant,
+                            jstring textTrackTextColor,
+                            jstring textTrackTextShadow,
+                            jstring textTrackTextSize);
+
   void ExtractSmartClipData(JNIEnv* env,
                             jobject obj,
                             jint x,

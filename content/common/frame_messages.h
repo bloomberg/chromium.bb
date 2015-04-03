@@ -275,6 +275,29 @@ IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(bool, user_gesture)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(FrameMsg_TextTrackSettings_Params)
+  // Background color of the text track.
+  IPC_STRUCT_MEMBER(std::string, text_track_background_color)
+
+  // Font family of the text track text.
+  IPC_STRUCT_MEMBER(std::string, text_track_font_family)
+
+  // Font style of the text track text.
+  IPC_STRUCT_MEMBER(std::string, text_track_font_style)
+
+  // Font variant of the text track text.
+  IPC_STRUCT_MEMBER(std::string, text_track_font_variant)
+
+  // Color of the text track text.
+  IPC_STRUCT_MEMBER(std::string, text_track_text_color)
+
+  // Text shadow (edge style) of the text track text.
+  IPC_STRUCT_MEMBER(std::string, text_track_text_shadow)
+
+  // Size of the text track text.
+  IPC_STRUCT_MEMBER(std::string, text_track_text_size)
+IPC_STRUCT_END()
+
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 // This message is used for supporting popup menus on Mac OS X and Android using
 // native controls. See the FrameHostMsg_ShowPopup message.
@@ -479,6 +502,11 @@ IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateSandboxFlags, content::SandboxFlags)
 // Update a proxy's window.name property.  Used when the frame's name is
 // changed in another process.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateName, std::string /* name */)
+
+// Send to the RenderFrame to set text track style settings.
+// Sent for top-level frames.
+IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
+                    FrameMsg_TextTrackSettings_Params /* params */)
 
 #if defined(OS_ANDROID)
 

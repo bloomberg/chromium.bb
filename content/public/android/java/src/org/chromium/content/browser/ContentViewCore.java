@@ -61,6 +61,9 @@ import org.chromium.content.R;
 import org.chromium.content.browser.ScreenOrientationListener.ScreenOrientationObserver;
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
 import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
+import org.chromium.content.browser.accessibility.captioning.CaptioningBridgeFactory;
+import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBridge;
+import org.chromium.content.browser.accessibility.captioning.TextTrackSettings;
 import org.chromium.content.browser.input.AdapterInputConnection;
 import org.chromium.content.browser.input.GamepadList;
 import org.chromium.content.browser.input.ImeAdapter;
@@ -552,6 +555,10 @@ public class ContentViewCore
     // System accessibility service.
     private final AccessibilityManager mAccessibilityManager;
 
+    // Notifies the ContentViewCore when platform closed caption settings have changed
+    // if they are supported. Otherwise does nothing.
+    private final SystemCaptioningBridge mSystemCaptioningBridge;
+
     // Accessibility touch exploration state.
     private boolean mTouchExplorationEnabled;
 
@@ -651,6 +658,7 @@ public class ContentViewCore
         mRenderCoordinates.setDeviceScaleFactor(deviceScaleFactor);
         mAccessibilityManager = (AccessibilityManager)
                 getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
+        mSystemCaptioningBridge = CaptioningBridgeFactory.create(this);
         mGestureStateListeners = new ObserverList<GestureStateListener>();
         mGestureStateListenersIterator = mGestureStateListeners.rewindableIterator();
 
@@ -995,6 +1003,7 @@ public class ContentViewCore
         if (mNativeContentViewCore != 0) {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
+        mSystemCaptioningBridge.destroy();
         mWebContentsObserver.destroy();
         mWebContentsObserver = null;
         setSmartClipDataListener(null);
@@ -2545,6 +2554,8 @@ public class ContentViewCore
     @CalledByNative
     private void onRenderProcessChange() {
         attachImeAdapter();
+        // Immediately sync closed caption settings to the new render process.
+        mSystemCaptioningBridge.syncToDelegate();
     }
 
     /**
@@ -2849,6 +2860,20 @@ public class ContentViewCore
         }
 
         return null;
+    }
+
+    /**
+     * Set closed captioning text track style settings.
+     *
+     * @param settings The TextTrackSettings object containing the new settings.
+     */
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public void setTextTrackSettings(TextTrackSettings settings) {
+        if (mNativeContentViewCore == 0) return;
+        nativeSetTextTrackSettings(mNativeContentViewCore, settings.getTextTrackBackgroundColor(),
+                settings.getTextTrackFontFamily(), settings.getTextTrackFontStyle(),
+                settings.getTextTrackFontVariant(), settings.getTextTrackTextColor(),
+                settings.getTextTrackTextShadow(), settings.getTextTrackTextSize());
     }
 
     /**
@@ -3247,6 +3272,11 @@ public class ContentViewCore
 
     private native void nativeSetAccessibilityEnabled(
             long nativeContentViewCoreImpl, boolean enabled);
+
+    private native void nativeSetTextTrackSettings(long nativeContentViewCoreImpl,
+            String textTrackBackgroundColor, String textTrackFontFamily, String textTrackFontStyle,
+            String textTrackFontVariant, String textTrackTextColor, String textTrackTextShadow,
+            String textTrackTextSize);
 
     private native void nativeExtractSmartClipData(long nativeContentViewCoreImpl,
             int x, int y, int w, int h);

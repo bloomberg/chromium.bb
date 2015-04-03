@@ -1245,6 +1245,34 @@ void ContentViewCoreImpl::SetAccessibilityEnabled(JNIEnv* env, jobject obj,
   SetAccessibilityEnabledInternal(enabled);
 }
 
+void ContentViewCoreImpl::SetTextTrackSettings(JNIEnv* env,
+                                               jobject obj,
+                                               jstring textTrackBackgroundColor,
+                                               jstring textTrackFontFamily,
+                                               jstring textTrackFontStyle,
+                                               jstring textTrackFontVariant,
+                                               jstring textTrackTextColor,
+                                               jstring textTrackTextShadow,
+                                               jstring textTrackTextSize) {
+  FrameMsg_TextTrackSettings_Params params;
+  params.text_track_background_color = ConvertJavaStringToUTF8(
+      env, textTrackBackgroundColor);
+  params.text_track_font_family = ConvertJavaStringToUTF8(
+      env, textTrackFontFamily);
+  params.text_track_font_style = ConvertJavaStringToUTF8(
+      env, textTrackFontStyle);
+  params.text_track_font_variant = ConvertJavaStringToUTF8(
+      env, textTrackFontVariant);
+  params.text_track_text_color = ConvertJavaStringToUTF8(
+      env, textTrackTextColor);
+  params.text_track_text_shadow = ConvertJavaStringToUTF8(
+      env, textTrackTextShadow);
+  params.text_track_text_size = ConvertJavaStringToUTF8(
+      env, textTrackTextSize);
+
+  web_contents_->GetMainFrame()->SetTextTrackSettings(params);
+}
+
 bool ContentViewCoreImpl::IsFullscreenRequiredForOrientationLock() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

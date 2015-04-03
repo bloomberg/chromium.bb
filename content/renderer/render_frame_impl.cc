@@ -137,6 +137,7 @@
 #include "third_party/WebKit/public/web/WebSearchableFormData.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
+#include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebSurroundingText.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -1045,6 +1046,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_CommitNavigation, OnCommitNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
+                        OnTextTrackSettingsChanged)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
 #elif defined(OS_MACOSX)
@@ -1575,6 +1578,27 @@ void RenderFrameImpl::OnDisownOpener() {
 
 void RenderFrameImpl::OnDidUpdateSandboxFlags(SandboxFlags flags) {
   frame_->setFrameOwnerSandboxFlags(ContentToWebSandboxFlags(flags));
+}
+
+void RenderFrameImpl::OnTextTrackSettingsChanged(
+    const FrameMsg_TextTrackSettings_Params& params) {
+  DCHECK(!frame_->parent());
+  if (!render_view_->webview())
+    return;
+  render_view_->webview()->settings()->setTextTrackBackgroundColor(
+      WebString::fromUTF8(params.text_track_background_color));
+  render_view_->webview()->settings()->setTextTrackFontFamily(
+      WebString::fromUTF8(params.text_track_font_family));
+  render_view_->webview()->settings()->setTextTrackFontStyle(
+      WebString::fromUTF8(params.text_track_font_style));
+  render_view_->webview()->settings()->setTextTrackFontVariant(
+      WebString::fromUTF8(params.text_track_font_variant));
+  render_view_->webview()->settings()->setTextTrackTextColor(
+      WebString::fromUTF8(params.text_track_text_color));
+  render_view_->webview()->settings()->setTextTrackTextShadow(
+      WebString::fromUTF8(params.text_track_text_shadow));
+  render_view_->webview()->settings()->setTextTrackTextSize(
+      WebString::fromUTF8(params.text_track_text_size));
 }
 
 #if defined(OS_ANDROID)
