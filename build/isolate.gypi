@@ -80,6 +80,7 @@
         '--config-variable', 'chromeos=<(chromeos)',
         '--config-variable', 'component=<(component)',
         '--config-variable', 'disable_nacl=<(disable_nacl)',
+        '--config-variable', 'enable_plugins=<(enable_plugins)',
         '--config-variable', 'fastbuild=<(fastbuild)',
         '--config-variable', 'icu_use_data_file_flag=<(icu_use_data_file_flag)',
         # TODO(kbr): move this to chrome_tests.gypi:gles2_conform_tests_run

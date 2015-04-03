@@ -30,6 +30,7 @@ def DefaultConfigVariables():
     'asan': '0',
     'chromeos': '0',
     'component': 'static_library',
+    'enable_plugins': '0',
     'fastbuild': '0',
     'icu_use_data_file_flag': '1',
     'lsan': '0',

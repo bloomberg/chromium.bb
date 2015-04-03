@@ -68,6 +68,12 @@
           '<(PRODUCT_DIR)/content_shell.pak',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
+        ],
+      },
+    }],
+    ['OS=="linux" and enable_plugins==1', {
+      'variables': {
+        'files': [
           '<(PRODUCT_DIR)/libppapi_tests.so',
         ],
       },
