@@ -7,8 +7,13 @@ package org.chromium.chrome.browser.sync;
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
+import org.chromium.base.ApplicationState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ApplicationStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -24,6 +29,8 @@ import org.chromium.sync.signin.ChromeSigninController;
  * SyncController handles the coordination of sync state between the invalidation controller,
  * the Android sync settings, and the native sync code.
  *
+ * It also handles initialization of some pieces of sync state on startup.
+ *
  * Sync state can be changed from four places:
  *
  * - The Chrome UI, which will call SyncController directly.
@@ -35,7 +42,8 @@ import org.chromium.sync.signin.ChromeSigninController;
  * are careful to not change the Android Chrome sync setting so we know whether to turn sync back
  * on when it is re-enabled.
  */
-public class SyncController implements ProfileSyncService.SyncStateChangedListener,
+public class SyncController implements ApplicationStateListener,
+        ProfileSyncService.SyncStateChangedListener,
         AndroidSyncSettings.AndroidSyncSettingsObserver {
     private static final String TAG = "SyncController";
 
@@ -46,6 +54,11 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
      */
     public static final String GENERATOR_ID = "SYNC";
 
+    /**
+     * Key for the delay_sync_setup preference.
+     */
+    private static final String DELAY_SYNC_SETUP_PREF = "delay_sync_setup";
+
     private static SyncController sInstance;
 
     private final Context mContext;
@@ -54,6 +67,13 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     private final ProfileSyncService mProfileSyncService;
     private final SyncNotificationController mSyncNotificationController;
 
+    /**
+     * Denotes whether some extra work that's done only when the visible browser
+     * is shown has been completed once. This is used for things that should be
+     * done once per cold-start but only when the browser is visible.
+     */
+    private boolean mFirstActivityStarted = false;
+
     private SyncController(Context context) {
         mContext = context;
         mChromeSigninController = ChromeSigninController.get(mContext);
@@ -61,13 +81,19 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         mAndroidSyncSettings.registerObserver(this);
         mProfileSyncService = ProfileSyncService.get(mContext);
         mProfileSyncService.addSyncStateChangedListener(this);
-        mChromeSigninController.ensureGcmIsInitialized();
+
         // Set the sessions ID using the generator that was registered for GENERATOR_ID.
         mProfileSyncService.setSessionsId(
                 UniqueIdentificationGeneratorFactory.getInstance(GENERATOR_ID));
+
+        // Create the SyncNotificationController.
         mSyncNotificationController = new SyncNotificationController(
                 mContext, PassphraseActivity.class, AccountManagementFragment.class);
         mProfileSyncService.addSyncStateChangedListener(mSyncNotificationController);
+
+        updateSyncStateFromAndroid();
+
+        ApplicationStatus.registerApplicationStateListener(this);
     }
 
     /**
@@ -204,5 +230,42 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
      */
     public SyncNotificationController getSyncNotificationController() {
         return mSyncNotificationController;
+    }
+
+    @Override
+    public void onApplicationStateChange(int newState) {
+        if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+            onMainActivityStart();
+        }
+    }
+
+    /**
+     * Set the value of the delay_sync_setup preference.
+     */
+    public void setDelaySync(boolean delay) {
+        PreferenceManager.getDefaultSharedPreferences(mContext).edit()
+                .putBoolean(DELAY_SYNC_SETUP_PREF, delay).apply();
+    }
+
+    private void onMainActivityStart() {
+        if (!mFirstActivityStarted) {
+            onFirstStart();
+        }
+        if (mProfileSyncService.isFirstSetupInProgress()) {
+            mProfileSyncService.setSyncSetupCompleted();
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+            if (prefs.getBoolean(DELAY_SYNC_SETUP_PREF, false)) {
+                mProfileSyncService.setSetupInProgress(false);
+            }
+        }
+    }
+
+    private void onFirstStart() {
+        if (mAndroidSyncSettings.isSyncEnabled()) {
+            mChromeSigninController.ensureGcmIsInitialized();
+            InvalidationController controller = InvalidationController.get(mContext);
+            controller.refreshRegisteredTypes(mProfileSyncService.getPreferredDataTypes());
+        }
+        mFirstActivityStarted = true;
     }
 }
