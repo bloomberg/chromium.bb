@@ -121,6 +121,7 @@
       <script src="foreground/js/dialog_type.js"></script>
       <script src="foreground/js/directory_contents.js"></script>
       <script src="foreground/js/directory_model.js"></script>
+      <script src="foreground/js/empty_folder_controller.js"></script>
       <script src="foreground/js/file_manager.js"></script>
       <script src="foreground/js/file_manager_commands.js"></script>
       <script src="foreground/js/file_selection.js"></script>
@@ -156,6 +157,7 @@
       <script src="foreground/js/ui/dialog_footer.js"></script>
       <script src="foreground/js/ui/directory_tree.js"></script>
       <script src="foreground/js/ui/drag_selector.js"></script>
+      <script src="foreground/js/ui/empty_folder.js"></script>
       <script src="foreground/js/ui/error_dialog.js"></script>
       <script src="foreground/js/ui/file_grid.js"></script>
       <script src="foreground/js/ui/file_manager_ui.js"></script>
@@ -458,6 +460,10 @@
                 Welcome to the new epic photo importer!
               </div>
               <div id="list-container">
+                <div id="empty-folder">
+                  <div class="image"></div>
+                  <span class="label" i18n-content="EMPTY_FOLDER"></span>
+                </div>
                 <div class="detail-table" id="detail-table" tabindex="1" autofocus>
                 </div>
                 <grid class="thumbnail-grid" tabindex="2"></grid>

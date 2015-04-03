@@ -153,6 +153,14 @@ function FileManagerUI(element, launchParam) {
       this.element.querySelector('#no-search-results'));
 
   /**
+   * Empty folder UI.
+   * @type {!EmptyFolder}
+   * @const
+   */
+  this.emptyFolder = new EmptyFolder(
+      queryRequiredElement(this.element, '#empty-folder'));
+
+  /**
    * Toggle-view button.
    * @type {!Element}
    * @const

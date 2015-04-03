@@ -186,6 +186,12 @@ function FileManager() {
   this.toolbarController_ = null;
 
   /**
+   * Empty folder controller.
+   * @private {EmptyFolderController}
+   */
+  this.emptyFolderController_ = null;
+
+  /**
    * App state controller.
    * @type {AppStateController}
    * @private
@@ -427,6 +433,9 @@ FileManager.prototype = /** @struct */ {
         this.ui_.dialogNavigationList,
         assert(this.ui_.locationLine),
         this.selectionHandler_,
+        this.directoryModel_);
+    this.emptyFolderController_ = new EmptyFolderController(
+        this.ui_.emptyFolder,
         this.directoryModel_);
 
     importer.importEnabled().then(
