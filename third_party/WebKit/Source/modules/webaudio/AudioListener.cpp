@@ -105,7 +105,7 @@ void AudioListener::setPosition(const FloatPoint3D& position)
     // This synchronizes with panner's process().
     MutexLocker listenerLocker(m_listenerLock);
     m_position = position;
-    markPannersAsDirty(PannerNode::AzimuthElevationDirty | PannerNode::DistanceConeGainDirty | PannerNode::DopplerRateDirty);
+    markPannersAsDirty(PannerHandler::AzimuthElevationDirty | PannerHandler::DistanceConeGainDirty | PannerHandler::DopplerRateDirty);
 }
 
 void AudioListener::setOrientation(const FloatPoint3D& orientation)
@@ -116,7 +116,7 @@ void AudioListener::setOrientation(const FloatPoint3D& orientation)
     // This synchronizes with panner's process().
     MutexLocker listenerLocker(m_listenerLock);
     m_orientation = orientation;
-    markPannersAsDirty(PannerNode::AzimuthElevationDirty);
+    markPannersAsDirty(PannerHandler::AzimuthElevationDirty);
 }
 
 void AudioListener::setUpVector(const FloatPoint3D& upVector)
@@ -127,7 +127,7 @@ void AudioListener::setUpVector(const FloatPoint3D& upVector)
     // This synchronizes with panner's process().
     MutexLocker listenerLocker(m_listenerLock);
     m_upVector = upVector;
-    markPannersAsDirty(PannerNode::AzimuthElevationDirty);
+    markPannersAsDirty(PannerHandler::AzimuthElevationDirty);
 }
 
 void AudioListener::setVelocity(const FloatPoint3D& velocity)
@@ -138,7 +138,7 @@ void AudioListener::setVelocity(const FloatPoint3D& velocity)
     // This synchronizes with panner's process().
     MutexLocker listenerLocker(m_listenerLock);
     m_velocity = velocity;
-    markPannersAsDirty(PannerNode::DopplerRateDirty);
+    markPannersAsDirty(PannerHandler::DopplerRateDirty);
 }
 
 void AudioListener::setDopplerFactor(double dopplerFactor)
@@ -149,7 +149,7 @@ void AudioListener::setDopplerFactor(double dopplerFactor)
     // This synchronizes with panner's process().
     MutexLocker listenerLocker(m_listenerLock);
     m_dopplerFactor = dopplerFactor;
-    markPannersAsDirty(PannerNode::DopplerRateDirty);
+    markPannersAsDirty(PannerHandler::DopplerRateDirty);
 }
 
 void AudioListener::setSpeedOfSound(double speedOfSound)
@@ -160,7 +160,7 @@ void AudioListener::setSpeedOfSound(double speedOfSound)
     // This synchronizes with panner's process().
     MutexLocker listenerLocker(m_listenerLock);
     m_speedOfSound = speedOfSound;
-    markPannersAsDirty(PannerNode::DopplerRateDirty);
+    markPannersAsDirty(PannerHandler::DopplerRateDirty);
 }
 
 } // namespace blink

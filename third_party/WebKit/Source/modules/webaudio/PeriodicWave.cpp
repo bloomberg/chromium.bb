@@ -61,28 +61,28 @@ PeriodicWave* PeriodicWave::create(float sampleRate, DOMFloat32Array* real, DOMF
 PeriodicWave* PeriodicWave::createSine(float sampleRate)
 {
     PeriodicWave* periodicWave = new PeriodicWave(sampleRate);
-    periodicWave->generateBasicWaveform(OscillatorNode::SINE);
+    periodicWave->generateBasicWaveform(OscillatorHandler::SINE);
     return periodicWave;
 }
 
 PeriodicWave* PeriodicWave::createSquare(float sampleRate)
 {
     PeriodicWave* periodicWave = new PeriodicWave(sampleRate);
-    periodicWave->generateBasicWaveform(OscillatorNode::SQUARE);
+    periodicWave->generateBasicWaveform(OscillatorHandler::SQUARE);
     return periodicWave;
 }
 
 PeriodicWave* PeriodicWave::createSawtooth(float sampleRate)
 {
     PeriodicWave* periodicWave = new PeriodicWave(sampleRate);
-    periodicWave->generateBasicWaveform(OscillatorNode::SAWTOOTH);
+    periodicWave->generateBasicWaveform(OscillatorHandler::SAWTOOTH);
     return periodicWave;
 }
 
 PeriodicWave* PeriodicWave::createTriangle(float sampleRate)
 {
     PeriodicWave* periodicWave = new PeriodicWave(sampleRate);
-    periodicWave->generateBasicWaveform(OscillatorNode::TRIANGLE);
+    periodicWave->generateBasicWaveform(OscillatorHandler::TRIANGLE);
     return periodicWave;
 }
 
@@ -248,11 +248,11 @@ void PeriodicWave::generateBasicWaveform(int shape)
         // Calculate Fourier coefficients depending on the shape. Note that the overall scaling
         // (magnitude) of the waveforms is normalized in createBandLimitedTables().
         switch (shape) {
-        case OscillatorNode::SINE:
+        case OscillatorHandler::SINE:
             // Standard sine wave function.
             b = (n == 1) ? 1 : 0;
             break;
-        case OscillatorNode::SQUARE:
+        case OscillatorHandler::SQUARE:
             // Square-shaped waveform with the first half its maximum value and the second half its
             // minimum value.
             //
@@ -263,7 +263,7 @@ void PeriodicWave::generateBasicWaveform(int shape)
             //      = 2*(2/(n*pi)) for n odd
             b = (n & 1) ? 2 * piFactor : 0;
             break;
-        case OscillatorNode::SAWTOOTH:
+        case OscillatorHandler::SAWTOOTH:
             // Sawtooth-shaped waveform with the first half ramping from zero to maximum and the
             // second half from minimum to zero.
             //
@@ -271,7 +271,7 @@ void PeriodicWave::generateBasicWaveform(int shape)
             //      = (2/(n*pi))*(-1)^(n+1)
             b = piFactor * ((n & 1) ? 1 : -1);
             break;
-        case OscillatorNode::TRIANGLE:
+        case OscillatorHandler::TRIANGLE:
             // Triangle-shaped waveform going from 0 at time 0 to 1 at time pi/2 and back to 0 at
             // time pi.
             //

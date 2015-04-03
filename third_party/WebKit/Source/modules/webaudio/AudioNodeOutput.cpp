@@ -46,7 +46,7 @@ inline AudioNodeOutput::AudioNodeOutput(AudioHandler* handler, unsigned numberOf
 {
     ASSERT(numberOfChannels <= AudioContext::maxNumberOfChannels());
 
-    m_internalBus = AudioBus::create(numberOfChannels, AudioNode::ProcessingSizeInFrames);
+    m_internalBus = AudioBus::create(numberOfChannels, AudioHandler::ProcessingSizeInFrames);
 }
 
 PassOwnPtr<AudioNodeOutput> AudioNodeOutput::create(AudioHandler* handler, unsigned numberOfChannels)
@@ -87,7 +87,7 @@ void AudioNodeOutput::updateInternalBus()
     if (numberOfChannels() == m_internalBus->numberOfChannels())
         return;
 
-    m_internalBus = AudioBus::create(numberOfChannels(), AudioNode::ProcessingSizeInFrames);
+    m_internalBus = AudioBus::create(numberOfChannels(), AudioHandler::ProcessingSizeInFrames);
 }
 
 void AudioNodeOutput::updateRenderingState()

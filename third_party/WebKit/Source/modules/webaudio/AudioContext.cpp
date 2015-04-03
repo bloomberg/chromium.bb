@@ -294,7 +294,7 @@ AudioBufferSourceNode* AudioContext::createBufferSource(ExceptionState& exceptio
         return nullptr;
     }
 
-    AudioBufferSourceNode* node = AudioBufferSourceNode::create(this, m_destinationNode->sampleRate());
+    AudioBufferSourceNode* node = AudioBufferSourceNode::create(this, sampleRate());
 
     // Do not add a reference to this source node now. The reference will be added when start() is
     // called.
@@ -423,7 +423,7 @@ ScriptProcessorNode* AudioContext::createScriptProcessor(size_t bufferSize, size
         return nullptr;
     }
 
-    ScriptProcessorNode* node = ScriptProcessorNode::create(this, m_destinationNode->sampleRate(), bufferSize, numberOfInputChannels, numberOfOutputChannels);
+    ScriptProcessorNode* node = ScriptProcessorNode::create(this, sampleRate(), bufferSize, numberOfInputChannels, numberOfOutputChannels);
 
     if (!node) {
         if (!numberOfInputChannels && !numberOfOutputChannels) {
@@ -463,7 +463,7 @@ StereoPannerNode* AudioContext::createStereoPanner(ExceptionState& exceptionStat
         return nullptr;
     }
 
-    return StereoPannerNode::create(this, m_destinationNode->sampleRate());
+    return StereoPannerNode::create(this, sampleRate());
 }
 
 BiquadFilterNode* AudioContext::createBiquadFilter(ExceptionState& exceptionState)
@@ -474,7 +474,7 @@ BiquadFilterNode* AudioContext::createBiquadFilter(ExceptionState& exceptionStat
         return nullptr;
     }
 
-    return BiquadFilterNode::create(this, m_destinationNode->sampleRate());
+    return BiquadFilterNode::create(this, sampleRate());
 }
 
 WaveShaperNode* AudioContext::createWaveShaper(ExceptionState& exceptionState)
@@ -496,7 +496,7 @@ PannerNode* AudioContext::createPanner(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    return PannerNode::create(this, m_destinationNode->sampleRate());
+    return PannerNode::create(this, sampleRate());
 }
 
 ConvolverNode* AudioContext::createConvolver(ExceptionState& exceptionState)
@@ -507,7 +507,7 @@ ConvolverNode* AudioContext::createConvolver(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    return ConvolverNode::create(this, m_destinationNode->sampleRate());
+    return ConvolverNode::create(this, sampleRate());
 }
 
 DynamicsCompressorNode* AudioContext::createDynamicsCompressor(ExceptionState& exceptionState)
@@ -518,7 +518,7 @@ DynamicsCompressorNode* AudioContext::createDynamicsCompressor(ExceptionState& e
         return nullptr;
     }
 
-    return DynamicsCompressorNode::create(this, m_destinationNode->sampleRate());
+    return DynamicsCompressorNode::create(this, sampleRate());
 }
 
 AnalyserNode* AudioContext::createAnalyser(ExceptionState& exceptionState)
@@ -540,7 +540,7 @@ GainNode* AudioContext::createGain(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    return GainNode::create(this, m_destinationNode->sampleRate());
+    return GainNode::create(this, sampleRate());
 }
 
 DelayNode* AudioContext::createDelay(ExceptionState& exceptionState)
@@ -562,7 +562,7 @@ DelayNode* AudioContext::createDelay(double maxDelayTime, ExceptionState& except
         return nullptr;
     }
 
-    DelayNode* node = DelayNode::create(this, m_destinationNode->sampleRate(), maxDelayTime, exceptionState);
+    DelayNode* node = DelayNode::create(this, sampleRate(), maxDelayTime, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
     return node;
@@ -588,7 +588,7 @@ ChannelSplitterNode* AudioContext::createChannelSplitter(size_t numberOfOutputs,
         return nullptr;
     }
 
-    ChannelSplitterNode* node = ChannelSplitterNode::create(this, m_destinationNode->sampleRate(), numberOfOutputs);
+    ChannelSplitterNode* node = ChannelSplitterNode::create(this, sampleRate(), numberOfOutputs);
 
     if (!node) {
         exceptionState.throwDOMException(
@@ -621,7 +621,7 @@ ChannelMergerNode* AudioContext::createChannelMerger(size_t numberOfInputs, Exce
         return nullptr;
     }
 
-    ChannelMergerNode* node = ChannelMergerNode::create(this, m_destinationNode->sampleRate(), numberOfInputs);
+    ChannelMergerNode* node = ChannelMergerNode::create(this, sampleRate(), numberOfInputs);
 
     if (!node) {
         exceptionState.throwDOMException(
@@ -643,7 +643,7 @@ OscillatorNode* AudioContext::createOscillator(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    OscillatorNode* node = OscillatorNode::create(this, m_destinationNode->sampleRate());
+    OscillatorNode* node = OscillatorNode::create(this, sampleRate());
 
     // Do not add a reference to this source node now. The reference will be added when start() is
     // called.
@@ -939,7 +939,7 @@ void AudioContext::handleStoppableSourceNodes()
     for (unsigned i = 0; i < m_referencedNodes.size(); ++i) {
         AudioNode* node = m_referencedNodes.at(i).get();
 
-        if (node->nodeType() == AudioNode::NodeTypeAudioBufferSource) {
+        if (node->nodeType() == AudioHandler::NodeTypeAudioBufferSource) {
             AudioBufferSourceNode* sourceNode = static_cast<AudioBufferSourceNode*>(node);
             sourceNode->handleStoppableSourceNode();
         }
@@ -1284,7 +1284,7 @@ void DeferredTaskHandler::updateChangedChannelCountMode()
 {
     ASSERT(isGraphOwner());
 
-    for (AudioNode* node : m_deferredCountModeChange)
+    for (AudioHandler* node : m_deferredCountModeChange)
         node->updateChannelCountMode();
     m_deferredCountModeChange.clear();
 }

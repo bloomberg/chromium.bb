@@ -64,7 +64,7 @@ protected:
     class LocalAudioInputProvider final : public AudioSourceProvider {
     public:
         LocalAudioInputProvider()
-            : m_sourceBus(AudioBus::create(2, AudioNode::ProcessingSizeInFrames)) // FIXME: handle non-stereo local input.
+            : m_sourceBus(AudioBus::create(2, ProcessingSizeInFrames)) // FIXME: handle non-stereo local input.
         {
         }
 

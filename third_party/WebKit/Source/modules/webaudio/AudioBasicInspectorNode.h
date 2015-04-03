@@ -40,7 +40,7 @@ public:
 
     // AudioHandler
     virtual void pullInputs(size_t framesToProcess) override final;
-    virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&) override final;
+    virtual void connect(AudioHandler*, unsigned outputIndex, unsigned inputIndex, ExceptionState&) override final;
     virtual void disconnect(unsigned outputIndex, ExceptionState&) override final;
     virtual void checkNumberOfChannelsForInput(AudioNodeInput*) override final;
 

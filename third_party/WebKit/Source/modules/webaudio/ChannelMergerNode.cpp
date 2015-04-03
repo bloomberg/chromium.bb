@@ -41,14 +41,6 @@
 
 namespace blink {
 
-ChannelMergerHandler* ChannelMergerHandler::create(AudioContext* context, float sampleRate, unsigned numberOfInputs)
-{
-    if (!numberOfInputs || numberOfInputs > AudioContext::maxNumberOfChannels())
-        return nullptr;
-
-    return new ChannelMergerHandler(context, sampleRate, numberOfInputs);
-}
-
 ChannelMergerHandler::ChannelMergerHandler(AudioContext* context, float sampleRate, unsigned numberOfInputs)
     : AudioHandler(NodeTypeChannelMerger, context, sampleRate)
 {
@@ -128,6 +120,13 @@ void ChannelMergerHandler::setChannelCountMode(const String& mode, ExceptionStat
                 "ChannelMergerNode",
                 "channelCountMode cannot be changed"));
     }
+}
+
+ChannelMergerHandler* ChannelMergerHandler::create(AudioContext* context, float sampleRate, unsigned numberOfInputs)
+{
+    if (!numberOfInputs || numberOfInputs > AudioContext::maxNumberOfChannels())
+        return nullptr;
+    return new ChannelMergerHandler(context, sampleRate, numberOfInputs);
 }
 
 } // namespace blink

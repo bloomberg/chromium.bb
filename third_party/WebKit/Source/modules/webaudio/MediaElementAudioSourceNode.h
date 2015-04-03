@@ -49,7 +49,7 @@ public:
 
     HTMLMediaElement* mediaElement() { return m_mediaElement.get(); }
 
-    // AudioNode
+    // AudioHandler
     virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
 

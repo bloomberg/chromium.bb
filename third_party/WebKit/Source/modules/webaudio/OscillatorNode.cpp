@@ -44,18 +44,18 @@ OscillatorHandler* OscillatorHandler::create(AudioContext* context, float sample
     return new OscillatorHandler(context, sampleRate);
 }
 
-OscillatorHandler::OscillatorHandler(AudioContext* context, float sampleRate)
-    : AudioScheduledSourceHandler(NodeTypeOscillator, context, sampleRate)
+OscillatorHandler::OscillatorHandler(AudioContext* audioContext, float sampleRate)
+    : AudioScheduledSourceHandler(NodeTypeOscillator, audioContext, sampleRate)
     , m_type(SINE)
     , m_firstRender(true)
     , m_virtualReadIndex(0)
-    , m_phaseIncrements(AudioNode::ProcessingSizeInFrames)
-    , m_detuneValues(AudioNode::ProcessingSizeInFrames)
+    , m_phaseIncrements(ProcessingSizeInFrames)
+    , m_detuneValues(ProcessingSizeInFrames)
 {
     // Use musical pitch standard A440 as a default.
-    m_frequency = AudioParam::create(context, 440);
+    m_frequency = AudioParam::create(context(), 440);
     // Default to no detuning.
-    m_detune = AudioParam::create(context, 0);
+    m_detune = AudioParam::create(context(), 0);
 
     // Sets up default wavetable.
     setType(m_type);

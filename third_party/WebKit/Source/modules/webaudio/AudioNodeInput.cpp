@@ -37,7 +37,7 @@ inline AudioNodeInput::AudioNodeInput(AudioHandler& handler)
     , m_handler(handler)
 {
     // Set to mono by default.
-    m_internalSummingBus = AudioBus::create(1, AudioNode::ProcessingSizeInFrames);
+    m_internalSummingBus = AudioBus::create(1, AudioHandler::ProcessingSizeInFrames);
 }
 
 PassOwnPtr<AudioNodeInput> AudioNodeInput::create(AudioHandler& handler)
@@ -126,7 +126,7 @@ void AudioNodeInput::updateInternalBus()
     if (numberOfInputChannels == m_internalSummingBus->numberOfChannels())
         return;
 
-    m_internalSummingBus = AudioBus::create(numberOfInputChannels, AudioNode::ProcessingSizeInFrames);
+    m_internalSummingBus = AudioBus::create(numberOfInputChannels, AudioHandler::ProcessingSizeInFrames);
 }
 
 unsigned AudioNodeInput::numberOfChannels() const

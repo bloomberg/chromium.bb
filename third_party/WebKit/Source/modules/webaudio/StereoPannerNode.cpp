@@ -18,11 +18,11 @@
 
 namespace blink {
 
-StereoPannerHandler::StereoPannerHandler(AudioContext* context, float sampleRate)
-    : AudioHandler(NodeTypeStereoPanner, context, sampleRate)
-    , m_sampleAccuratePanValues(AudioNode::ProcessingSizeInFrames)
+StereoPannerHandler::StereoPannerHandler(AudioContext* audioContext, float sampleRate)
+    : AudioHandler(NodeTypeStereoPanner, audioContext, sampleRate)
+    , m_sampleAccuratePanValues(ProcessingSizeInFrames)
 {
-    m_pan = AudioParam::create(context, 0);
+    m_pan = AudioParam::create(context(), 0);
 
     addInput();
     addOutput(2);

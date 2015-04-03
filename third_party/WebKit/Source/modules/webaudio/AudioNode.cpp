@@ -194,7 +194,7 @@ AudioNodeOutput* AudioHandler::output(unsigned i)
     return nullptr;
 }
 
-void AudioHandler::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
+void AudioHandler::connect(AudioHandler* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -237,7 +237,7 @@ void AudioHandler::connect(AudioNode* destination, unsigned outputIndex, unsigne
 
     destination->input(inputIndex)->connect(*output(outputIndex));
     if (!m_connectedNodes[outputIndex])
-        m_connectedNodes[outputIndex] = new HeapHashSet<Member<AudioNode>>();
+        m_connectedNodes[outputIndex] = new HeapHashSet<Member<AudioHandler>>();
     m_connectedNodes[outputIndex]->add(destination);
 
     // Let context know that a connection has been made.
@@ -321,7 +321,7 @@ void AudioHandler::disconnect(unsigned outputIndex, ExceptionState& exceptionSta
     m_connectedParams[outputIndex] = nullptr;
 }
 
-void AudioHandler::disconnect(AudioNode* destination, ExceptionState& exceptionState)
+void AudioHandler::disconnect(AudioHandler* destination, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -351,7 +351,7 @@ void AudioHandler::disconnect(AudioNode* destination, ExceptionState& exceptionS
     }
 }
 
-void AudioHandler::disconnect(AudioNode* destination, unsigned outputIndex, ExceptionState& exceptionState)
+void AudioHandler::disconnect(AudioHandler* destination, unsigned outputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -397,7 +397,7 @@ void AudioHandler::disconnect(AudioNode* destination, unsigned outputIndex, Exce
     }
 }
 
-void AudioHandler::disconnect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
+void AudioHandler::disconnect(AudioHandler* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -616,16 +616,6 @@ void AudioHandler::updateChannelsForInputs()
 {
     for (unsigned i = 0; i < m_inputs.size(); ++i)
         input(i)->changedOutputs();
-}
-
-const AtomicString& AudioHandler::interfaceName() const
-{
-    return EventTargetNames::AudioNode;
-}
-
-ExecutionContext* AudioHandler::executionContext() const
-{
-    return const_cast<AudioNode*>(this)->context()->executionContext();
 }
 
 void AudioHandler::processIfNecessary(size_t framesToProcess)
@@ -848,6 +838,16 @@ void AudioHandler::updateChannelCountMode()
 {
     m_channelCountMode = m_newChannelCountMode;
     updateChannelsForInputs();
+}
+
+const AtomicString& AudioHandler::interfaceName() const
+{
+    return EventTargetNames::AudioNode;
+}
+
+ExecutionContext* AudioHandler::executionContext() const
+{
+    return const_cast<AudioNode*>(this)->context()->executionContext();
 }
 
 } // namespace blink

@@ -36,18 +36,18 @@ static const unsigned defaultNumberOfOutputChannels = 2;
 
 namespace blink {
 
-DynamicsCompressorHandler::DynamicsCompressorHandler(AudioContext* context, float sampleRate)
-    : AudioHandler(NodeTypeDynamicsCompressor, context, sampleRate)
+DynamicsCompressorHandler::DynamicsCompressorHandler(AudioContext* audioContext, float sampleRate)
+    : AudioHandler(NodeTypeDynamicsCompressor, audioContext, sampleRate)
 {
     addInput();
     addOutput(defaultNumberOfOutputChannels);
 
-    m_threshold = AudioParam::create(context, -24);
-    m_knee = AudioParam::create(context, 30);
-    m_ratio = AudioParam::create(context, 12);
-    m_reduction = AudioParam::create(context, 0);
-    m_attack = AudioParam::create(context, 0.003);
-    m_release = AudioParam::create(context, 0.250);
+    m_threshold = AudioParam::create(context(), -24);
+    m_knee = AudioParam::create(context(), 30);
+    m_ratio = AudioParam::create(context(), 12);
+    m_reduction = AudioParam::create(context(), 0);
+    m_attack = AudioParam::create(context(), 0.003);
+    m_release = AudioParam::create(context(), 0.250);
 
     initialize();
 }

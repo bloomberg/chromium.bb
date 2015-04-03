@@ -149,7 +149,7 @@ void AudioParamHandler::calculateFinalValues(float* values, unsigned numberOfVal
         ASSERT(output);
 
         // Render audio from this output.
-        AudioBus* connectionBus = output->pull(0, AudioNode::ProcessingSizeInFrames);
+        AudioBus* connectionBus = output->pull(0, AudioHandler::ProcessingSizeInFrames);
 
         // Sum, with unity-gain.
         summingBus->sumFrom(*connectionBus);
@@ -158,8 +158,8 @@ void AudioParamHandler::calculateFinalValues(float* values, unsigned numberOfVal
 
 void AudioParamHandler::calculateTimelineValues(float* values, unsigned numberOfValues)
 {
-    // Calculate values for this render quantum.
-    // Normally numberOfValues will equal AudioNode::ProcessingSizeInFrames (the render quantum size).
+    // Calculate values for this render quantum.  Normally numberOfValues will
+    // equal AudioHandler::ProcessingSizeInFrames (the render quantum size).
     double sampleRate = context()->sampleRate();
     double startTime = context()->currentTime();
     double endTime = startTime + numberOfValues / sampleRate;

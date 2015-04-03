@@ -39,53 +39,6 @@
 
 namespace blink {
 
-static size_t chooseBufferSize()
-{
-    // Choose a buffer size based on the audio hardware buffer size. Arbitarily make it a power of
-    // two that is 4 times greater than the hardware buffer size.
-    // FIXME: What is the best way to choose this?
-    size_t hardwareBufferSize = Platform::current()->audioHardwareBufferSize();
-    size_t bufferSize = 1 << static_cast<unsigned>(log2(4 * hardwareBufferSize) + 0.5);
-
-    if (bufferSize < 256)
-        return 256;
-    if (bufferSize > 16384)
-        return 16384;
-
-    return bufferSize;
-}
-
-ScriptProcessorHandler* ScriptProcessorHandler::create(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
-{
-    // Check for valid buffer size.
-    switch (bufferSize) {
-    case 0:
-        bufferSize = chooseBufferSize();
-        break;
-    case 256:
-    case 512:
-    case 1024:
-    case 2048:
-    case 4096:
-    case 8192:
-    case 16384:
-        break;
-    default:
-        return nullptr;
-    }
-
-    if (!numberOfInputChannels && !numberOfOutputChannels)
-        return nullptr;
-
-    if (numberOfInputChannels > AudioContext::maxNumberOfChannels())
-        return nullptr;
-
-    if (numberOfOutputChannels > AudioContext::maxNumberOfChannels())
-        return nullptr;
-
-    return new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels);
-}
-
 ScriptProcessorHandler::ScriptProcessorHandler(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
     : AudioHandler(NodeTypeJavaScript, context, sampleRate)
     , m_doubleBufferIndex(0)
@@ -94,11 +47,11 @@ ScriptProcessorHandler::ScriptProcessorHandler(AudioContext* context, float samp
     , m_bufferReadWriteIndex(0)
     , m_numberOfInputChannels(numberOfInputChannels)
     , m_numberOfOutputChannels(numberOfOutputChannels)
-    , m_internalInputBus(AudioBus::create(numberOfInputChannels, AudioNode::ProcessingSizeInFrames, false))
+    , m_internalInputBus(AudioBus::create(numberOfInputChannels, ProcessingSizeInFrames, false))
 {
     // Regardless of the allowed buffer sizes, we still need to process at the granularity of the AudioNode.
-    if (m_bufferSize < AudioNode::ProcessingSizeInFrames)
-        m_bufferSize = AudioNode::ProcessingSizeInFrames;
+    if (m_bufferSize < ProcessingSizeInFrames)
+        m_bufferSize = ProcessingSizeInFrames;
 
     ASSERT(numberOfInputChannels <= AudioContext::maxNumberOfChannels());
 
@@ -302,6 +255,53 @@ DEFINE_TRACE(ScriptProcessorHandler)
     visitor->trace(m_inputBuffers);
     visitor->trace(m_outputBuffers);
     AudioHandler::trace(visitor);
+}
+
+static size_t chooseBufferSize()
+{
+    // Choose a buffer size based on the audio hardware buffer size. Arbitarily make it a power of
+    // two that is 4 times greater than the hardware buffer size.
+    // FIXME: What is the best way to choose this?
+    size_t hardwareBufferSize = Platform::current()->audioHardwareBufferSize();
+    size_t bufferSize = 1 << static_cast<unsigned>(log2(4 * hardwareBufferSize) + 0.5);
+
+    if (bufferSize < 256)
+        return 256;
+    if (bufferSize > 16384)
+        return 16384;
+
+    return bufferSize;
+}
+
+ScriptProcessorHandler* ScriptProcessorHandler::create(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
+{
+    // Check for valid buffer size.
+    switch (bufferSize) {
+    case 0:
+        bufferSize = chooseBufferSize();
+        break;
+    case 256:
+    case 512:
+    case 1024:
+    case 2048:
+    case 4096:
+    case 8192:
+    case 16384:
+        break;
+    default:
+        return nullptr;
+    }
+
+    if (!numberOfInputChannels && !numberOfOutputChannels)
+        return nullptr;
+
+    if (numberOfInputChannels > AudioContext::maxNumberOfChannels())
+        return nullptr;
+
+    if (numberOfOutputChannels > AudioContext::maxNumberOfChannels())
+        return nullptr;
+
+    return new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels);
 }
 
 } // namespace blink

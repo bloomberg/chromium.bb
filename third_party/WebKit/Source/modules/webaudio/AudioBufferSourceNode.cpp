@@ -52,8 +52,8 @@ AudioBufferSourceHandler* AudioBufferSourceHandler::create(AudioContext* context
     return new AudioBufferSourceHandler(context, sampleRate);
 }
 
-AudioBufferSourceHandler::AudioBufferSourceHandler(AudioContext* context, float sampleRate)
-    : AudioScheduledSourceHandler(NodeTypeAudioBufferSource, context, sampleRate)
+AudioBufferSourceHandler::AudioBufferSourceHandler(AudioContext* audioContext, float sampleRate)
+    : AudioScheduledSourceHandler(NodeTypeAudioBufferSource, audioContext, sampleRate)
     , m_buffer(nullptr)
     , m_isLooping(false)
     , m_loopStart(0)
@@ -63,7 +63,7 @@ AudioBufferSourceHandler::AudioBufferSourceHandler(AudioContext* context, float 
     , m_grainOffset(0.0)
     , m_grainDuration(DefaultGrainDuration)
 {
-    m_playbackRate = AudioParam::create(context, 1.0);
+    m_playbackRate = AudioParam::create(context(), 1.0);
 
     // Default to mono. A call to setBuffer() will set the number of output
     // channels to that of the buffer.

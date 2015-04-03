@@ -196,7 +196,7 @@ float AudioParamTimeline::valueForContextTime(AudioContext* context, float defau
     double sampleRate = context->sampleRate();
     double startTime = context->currentTime();
     double endTime = startTime + 1.1 / sampleRate; // time just beyond one sample-frame
-    double controlRate = sampleRate / AudioNode::ProcessingSizeInFrames; // one parameter change per render quantum
+    double controlRate = sampleRate / AudioHandler::ProcessingSizeInFrames; // one parameter change per render quantum
     value = valuesForTimeRange(startTime, endTime, defaultValue, &value, 1, sampleRate, controlRate);
 
     hasValue = true;

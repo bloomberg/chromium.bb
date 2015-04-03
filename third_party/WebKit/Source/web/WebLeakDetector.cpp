@@ -126,7 +126,7 @@ void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)
     ASSERT(m_client);
 
     WebLeakDetectorClient::Result result;
-    result.numberOfLiveAudioNodes = AudioNode::instanceCount();
+    result.numberOfLiveAudioNodes = AudioHandler::instanceCount();
     result.numberOfLiveDocuments = InspectorCounters::counterValue(InspectorCounters::DocumentCounter);
     result.numberOfLiveNodes = InspectorCounters::counterValue(InspectorCounters::NodeCounter);
     result.numberOfLiveLayoutObjects = LayoutObject::instanceCount();

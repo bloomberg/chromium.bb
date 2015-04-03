@@ -210,7 +210,7 @@ bool PannerHandler::setPanningModel(unsigned model)
 
 String PannerHandler::distanceModel() const
 {
-    switch (const_cast<PannerNode*>(this)->m_distanceEffect.model()) {
+    switch (const_cast<PannerHandler*>(this)->m_distanceEffect.model()) {
     case DistanceEffect::ModelLinear:
         return "linear";
     case DistanceEffect::ModelInverse:

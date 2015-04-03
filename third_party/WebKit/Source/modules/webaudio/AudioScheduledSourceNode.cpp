@@ -55,8 +55,8 @@ void AudioScheduledSourceHandler::updateSchedulingInfo(
     if (!outputBus)
         return;
 
-    ASSERT(quantumFrameSize == AudioNode::ProcessingSizeInFrames);
-    if (quantumFrameSize != AudioNode::ProcessingSizeInFrames)
+    ASSERT(quantumFrameSize == ProcessingSizeInFrames);
+    if (quantumFrameSize != ProcessingSizeInFrames)
         return;
 
     double sampleRate = this->sampleRate();

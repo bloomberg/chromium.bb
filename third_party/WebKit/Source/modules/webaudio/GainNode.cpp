@@ -32,12 +32,12 @@
 
 namespace blink {
 
-GainHandler::GainHandler(AudioContext* context, float sampleRate)
-    : AudioHandler(NodeTypeGain, context, sampleRate)
+GainHandler::GainHandler(AudioContext* audioContext, float sampleRate)
+    : AudioHandler(NodeTypeGain, audioContext, sampleRate)
     , m_lastGain(1.0)
-    , m_sampleAccurateGainValues(AudioNode::ProcessingSizeInFrames) // FIXME: can probably share temp buffer in context
+    , m_sampleAccurateGainValues(ProcessingSizeInFrames) // FIXME: can probably share temp buffer in context
 {
-    m_gain = AudioParam::create(context, 1.0);
+    m_gain = AudioParam::create(context(), 1.0);
 
     addInput();
     addOutput(1);
