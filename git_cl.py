@@ -2531,6 +2531,10 @@ def CMDpatch(parser, args):
     return 1
   issue_arg = args[0]
 
+  # We don't want uncommitted changes mixed up with the patch.
+  if is_dirty_git_tree('patch'):
+    return 1
+
   # TODO(maruel): Use apply_issue.py
   # TODO(ukai): use gerrit-cherry-pick for gerrit repository?
 
@@ -2546,6 +2550,10 @@ def CMDpatch(parser, args):
 
 
 def PatchIssue(issue_arg, reject, nocommit, directory):
+  # There's a "reset --hard" when failing to apply the patch. In order
+  # not to destroy users' data, make sure the tree is not dirty here.
+  assert(not is_dirty_git_tree('apply'))
+
   if type(issue_arg) is int or issue_arg.isdigit():
     # Input is an issue id.  Figure out the URL.
     issue = int(issue_arg)
@@ -2594,6 +2602,7 @@ def PatchIssue(issue_arg, reject, nocommit, directory):
     subprocess2.check_call(cmd, env=GetNoGitPagerEnv(),
                            stdin=patch_data, stdout=subprocess2.VOID)
   except subprocess2.CalledProcessError:
+    RunGit(['reset', '--hard'])
     DieWithError('Failed to apply the patch')
 
   # If we had an issue, commit the current state and register the issue.
@@ -2900,6 +2909,15 @@ def CMDset_close(parser, args):
 def CMDdiff(parser, args):
   """Shows differences between local tree and last upload."""
   parser.parse_args(args)
+
+  # Uncommitted (staged and unstaged) changes will be destroyed by
+  # "git reset --hard" if there are merging conflicts in PatchIssue().
+  # Staged changes would be committed along with the patch from last
+  # upload, hence counted toward the "last upload" side in the final
+  # diff output, and this is not what we want.
+  if is_dirty_git_tree('diff'):
+    return 1
+
   cl = Changelist()
   issue = cl.GetIssue()
   branch = cl.GetBranch()
