@@ -38,6 +38,7 @@
 namespace blink {
 
 class AudioContext;
+class AudioNode;
 class AudioNodeInput;
 class AudioNodeOutput;
 class AudioParam;
@@ -49,9 +50,7 @@ class ExceptionState;
 // An AudioDestinationNode has one input and no outputs and represents the final destination to the audio hardware.
 // Most processing nodes such as filters will have one input and one output, although multiple inputs and outputs are possible.
 
-class AudioHandler : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioHandler> {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioHandler>);
-    DEFINE_WRAPPERTYPEINFO();
+class AudioHandler : public GarbageCollectedFinalized<AudioHandler> {
 public:
     enum { ProcessingSizeInFrames = 128 };
 
@@ -78,13 +77,15 @@ public:
         NodeTypeEnd
     };
 
-    AudioHandler(NodeType, AudioContext*, float sampleRate);
+    AudioHandler(NodeType, AudioNode&, float sampleRate);
     virtual ~AudioHandler();
     // dispose() is called just before the destructor. This must be called in
     // the main thread, and while the graph lock is held.
     virtual void dispose();
     static unsigned instanceCount() { return s_instanceCount; }
 
+    // node() always returns a valid pointer for now.
+    AudioNode* node() const { return m_node; }
     AudioContext* context() { return m_context.get(); }
     const AudioContext* context() const { return m_context.get(); }
 
@@ -202,10 +203,6 @@ public:
     ChannelCountMode internalChannelCountMode() const { return m_channelCountMode; }
     AudioBus::ChannelInterpretation internalChannelInterpretation() const { return m_channelInterpretation; }
 
-    // EventTarget
-    virtual const AtomicString& interfaceName() const override final;
-    virtual ExecutionContext* executionContext() const override final;
-
     void updateChannelCountMode();
 
     DECLARE_VIRTUAL_TRACE();
@@ -228,6 +225,7 @@ private:
 
     volatile bool m_isInitialized;
     NodeType m_nodeType;
+    Member<AudioNode> m_node;
     Member<AudioContext> m_context;
     float m_sampleRate;
     Vector<OwnPtr<AudioNodeInput>> m_inputs;
@@ -263,8 +261,45 @@ protected:
     ChannelCountMode m_newChannelCountMode;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using AudioNode = AudioHandler;
+class AudioNode : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode> {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioNode>);
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    DECLARE_VIRTUAL_TRACE();
+    AudioHandler& handler() const;
+
+    void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
+    void connect(AudioParam*, unsigned outputIndex, ExceptionState&);
+    void disconnect();
+    void disconnect(unsigned outputIndex, ExceptionState&);
+    void disconnect(AudioNode*, ExceptionState&);
+    void disconnect(AudioNode*, unsigned outputIndex, ExceptionState&);
+    void disconnect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
+    void disconnect(AudioParam*, ExceptionState&);
+    void disconnect(AudioParam*, unsigned outputIndex, ExceptionState&);
+    AudioContext* context() const;
+    unsigned numberOfInputs() const;
+    unsigned numberOfOutputs() const;
+    unsigned long channelCount() const;
+    void setChannelCount(unsigned long, ExceptionState&);
+    String channelCountMode() const;
+    void setChannelCountMode(const String&, ExceptionState&);
+    String channelInterpretation() const;
+    void setChannelInterpretation(const String&, ExceptionState&);
+
+    // EventTarget
+    virtual const AtomicString& interfaceName() const override final;
+    virtual ExecutionContext* executionContext() const override final;
+
+protected:
+    explicit AudioNode(AudioContext&);
+    // This should be called in a constructor.
+    void setHandler(AudioHandler*);
+
+private:
+    Member<AudioContext> m_context;
+    Member<AudioHandler> m_handler;
+};
 
 } // namespace blink
 

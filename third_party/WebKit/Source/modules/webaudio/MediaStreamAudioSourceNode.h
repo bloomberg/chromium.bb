@@ -39,12 +39,10 @@ namespace blink {
 
 class AudioContext;
 
-class MediaStreamAudioSourceHandler final : public AudioSourceNode, public AudioSourceProviderClient {
-    DEFINE_WRAPPERTYPEINFO();
+class MediaStreamAudioSourceHandler final : public AudioHandler, public AudioSourceProviderClient {
     USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceHandler);
 public:
-    static MediaStreamAudioSourceHandler* create(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
-
+    MediaStreamAudioSourceHandler(AudioNode&, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
     virtual ~MediaStreamAudioSourceHandler();
 
     MediaStream* mediaStream() { return m_mediaStream.get(); }
@@ -61,8 +59,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MediaStreamAudioSourceHandler(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
-
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const override { return false; }
 
@@ -75,8 +71,17 @@ private:
     unsigned m_sourceNumberOfChannels;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using MediaStreamAudioSourceNode = MediaStreamAudioSourceHandler;
+class MediaStreamAudioSourceNode final : public AudioSourceNode {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static MediaStreamAudioSourceNode* create(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
+    MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
+
+    MediaStream* mediaStream() const;
+
+private:
+    MediaStreamAudioSourceNode(AudioContext&, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
+};
 
 } // namespace blink
 

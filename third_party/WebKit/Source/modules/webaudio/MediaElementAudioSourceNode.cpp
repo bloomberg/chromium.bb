@@ -37,13 +37,8 @@
 
 namespace blink {
 
-MediaElementAudioSourceHandler* MediaElementAudioSourceHandler::create(AudioContext* context, HTMLMediaElement* mediaElement)
-{
-    return new MediaElementAudioSourceHandler(context, mediaElement);
-}
-
-MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(AudioContext* context, HTMLMediaElement* mediaElement)
-    : AudioSourceNode(NodeTypeMediaElementAudioSource, context, context->sampleRate())
+MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(AudioNode& node, HTMLMediaElement* mediaElement)
+    : AudioHandler(NodeTypeMediaElementAudioSource, node, node.context()->sampleRate())
     , m_mediaElement(mediaElement)
     , m_sourceNumberOfChannels(0)
     , m_sourceSampleRate(0)
@@ -64,7 +59,7 @@ void MediaElementAudioSourceHandler::dispose()
 {
     m_mediaElement->setAudioSourceNode(nullptr);
     uninitialize();
-    AudioSourceNode::dispose();
+    AudioHandler::dispose();
 }
 
 void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels, float sourceSampleRate)
@@ -163,8 +158,31 @@ void MediaElementAudioSourceHandler::unlock()
 DEFINE_TRACE(MediaElementAudioSourceHandler)
 {
     visitor->trace(m_mediaElement);
-    AudioSourceNode::trace(visitor);
+    AudioHandler::trace(visitor);
     AudioSourceProviderClient::trace(visitor);
+}
+
+// ----------------------------------------------------------------
+
+MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext& context, HTMLMediaElement* mediaElement)
+    : AudioSourceNode(context)
+{
+    setHandler(new MediaElementAudioSourceHandler(*this, mediaElement));
+}
+
+MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AudioContext* context, HTMLMediaElement* mediaElement)
+{
+    return new MediaElementAudioSourceNode(*context, mediaElement);
+}
+
+MediaElementAudioSourceHandler& MediaElementAudioSourceNode::mediaElementAudioSourceHandler() const
+{
+    return static_cast<MediaElementAudioSourceHandler&>(handler());
+}
+
+HTMLMediaElement* MediaElementAudioSourceNode::mediaElement() const
+{
+    return mediaElementAudioSourceHandler().mediaElement();
 }
 
 } // namespace blink

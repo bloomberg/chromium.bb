@@ -38,9 +38,8 @@ namespace blink {
 class AudioContext;
 
 class MediaStreamAudioDestinationHandler final : public AudioBasicInspectorHandler {
-    DEFINE_WRAPPERTYPEINFO();
 public:
-    static MediaStreamAudioDestinationHandler* create(AudioContext*, size_t numberOfChannels);
+    MediaStreamAudioDestinationHandler(AudioNode&, size_t numberOfChannels);
     virtual ~MediaStreamAudioDestinationHandler();
     DECLARE_VIRTUAL_TRACE();
 
@@ -51,8 +50,6 @@ public:
     virtual void process(size_t framesToProcess) override;
 
 private:
-    MediaStreamAudioDestinationHandler(AudioContext*, size_t numberOfChannels);
-
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const override { return false; }
 
@@ -61,8 +58,15 @@ private:
     RefPtr<AudioBus> m_mixBus;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using MediaStreamAudioDestinationNode = MediaStreamAudioDestinationHandler;
+class MediaStreamAudioDestinationNode final : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static MediaStreamAudioDestinationNode* create(AudioContext*, size_t numberOfChannels);
+    MediaStream* stream() const;
+
+private:
+    MediaStreamAudioDestinationNode(AudioContext&, size_t numberOfChannels);
+};
 
 } // namespace blink
 

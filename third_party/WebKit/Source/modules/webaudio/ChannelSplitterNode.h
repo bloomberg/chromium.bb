@@ -33,19 +33,21 @@ namespace blink {
 class AudioContext;
 
 class ChannelSplitterHandler final : public AudioHandler {
-    DEFINE_WRAPPERTYPEINFO();
 public:
-    static ChannelSplitterHandler* create(AudioContext*, float sampleRate, unsigned numberOfOutputs);
+    ChannelSplitterHandler(AudioNode&, float sampleRate, unsigned numberOfOutputs);
 
     // AudioHandler
     virtual void process(size_t framesToProcess) override;
-
-private:
-    ChannelSplitterHandler(AudioContext*, float sampleRate, unsigned numberOfOutputs);
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using ChannelSplitterNode = ChannelSplitterHandler;
+class ChannelSplitterNode final : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static ChannelSplitterNode* create(AudioContext*, float sampleRate, unsigned numberOfOutputs);
+
+private:
+    ChannelSplitterNode(AudioContext&, float sampleRate, unsigned numberOfOutputs);
+};
 
 } // namespace blink
 

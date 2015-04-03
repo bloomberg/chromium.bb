@@ -37,7 +37,7 @@ class AudioProcessor;
 // AudioBasicProcessorNode is an AudioNode with one input and one output where the input and output have the same number of channels.
 class AudioBasicProcessorHandler : public AudioHandler {
 public:
-    AudioBasicProcessorHandler(NodeType, AudioContext*, float sampleRate);
+    AudioBasicProcessorHandler(NodeType, AudioNode&, float sampleRate, PassOwnPtr<AudioProcessor>);
     virtual ~AudioBasicProcessorHandler();
     DECLARE_VIRTUAL_TRACE();
 
@@ -53,17 +53,14 @@ public:
 
     // Returns the number of channels for both the input and the output.
     unsigned numberOfChannels();
+    AudioProcessor* processor() { return m_processor.get(); }
 
-protected:
+private:
     virtual double tailTime() const override final;
     virtual double latencyTime() const override final;
 
-    AudioProcessor* processor() { return m_processor.get(); }
     OwnPtr<AudioProcessor> m_processor;
 };
-
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using AudioBasicProcessorNode = AudioBasicProcessorHandler;
 
 } // namespace blink
 

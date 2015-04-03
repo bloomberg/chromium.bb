@@ -36,11 +36,7 @@ class ExceptionState;
 
 class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
 public:
-    static DefaultAudioDestinationHandler* create(AudioContext* context)
-    {
-        return new DefaultAudioDestinationHandler(context);
-    }
-
+    explicit DefaultAudioDestinationHandler(AudioNode&);
     virtual ~DefaultAudioDestinationHandler();
 
     // AudioHandler
@@ -55,7 +51,6 @@ public:
     virtual unsigned long maxChannelCount() const override;
 
 private:
-    explicit DefaultAudioDestinationHandler(AudioContext*);
     void createDestination();
 
     OwnPtr<AudioDestination> m_destination;
@@ -63,8 +58,13 @@ private:
     unsigned m_numberOfInputChannels;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using DefaultAudioDestinationNode = DefaultAudioDestinationHandler;
+class DefaultAudioDestinationNode final : public AudioDestinationNode {
+public:
+    static DefaultAudioDestinationNode* create(AudioContext*);
+
+private:
+    explicit DefaultAudioDestinationNode(AudioContext&);
+};
 
 } // namespace blink
 

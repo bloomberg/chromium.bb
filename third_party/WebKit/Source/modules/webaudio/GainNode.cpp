@@ -32,8 +32,8 @@
 
 namespace blink {
 
-GainHandler::GainHandler(AudioContext* audioContext, float sampleRate)
-    : AudioHandler(NodeTypeGain, audioContext, sampleRate)
+GainHandler::GainHandler(AudioNode& node, float sampleRate)
+    : AudioHandler(NodeTypeGain, node, sampleRate)
     , m_lastGain(1.0)
     , m_sampleAccurateGainValues(ProcessingSizeInFrames) // FIXME: can probably share temp buffer in context
 {
@@ -109,6 +109,24 @@ DEFINE_TRACE(GainHandler)
 {
     visitor->trace(m_gain);
     AudioHandler::trace(visitor);
+}
+
+// ----------------------------------------------------------------
+
+GainNode::GainNode(AudioContext& context, float sampelRate)
+    : AudioNode(context)
+{
+    setHandler(new GainHandler(*this, sampelRate));
+}
+
+GainNode* GainNode::create(AudioContext* context, float sampleRate)
+{
+    return new GainNode(*context, sampleRate);
+}
+
+AudioParam* GainNode::gain() const
+{
+    return static_cast<GainHandler&>(handler()).gain();
 }
 
 } // namespace blink

@@ -44,14 +44,8 @@ class AudioContext;
 // AudioBuffers for each input and output.
 
 class ScriptProcessorHandler final : public AudioHandler {
-    DEFINE_WRAPPERTYPEINFO();
 public:
-    // bufferSize must be one of the following values: 256, 512, 1024, 2048, 4096, 8192, 16384.
-    // This value controls how frequently the onaudioprocess event handler is called and how many sample-frames need to be processed each call.
-    // Lower numbers for bufferSize will result in a lower (better) latency. Higher numbers will be necessary to avoid audio breakup and glitches.
-    // The value chosen must carefully balance between latency and audio quality.
-    static ScriptProcessorHandler* create(AudioContext*, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
-
+    ScriptProcessorHandler(AudioNode&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
     virtual ~ScriptProcessorHandler();
 
     // AudioHandler
@@ -65,15 +59,11 @@ public:
     virtual void setChannelCount(unsigned long, ExceptionState&) override;
     virtual void setChannelCountMode(const String&, ExceptionState&) override;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
-
     DECLARE_TRACE();
 
 private:
     virtual double tailTime() const override;
     virtual double latencyTime() const override;
-
-    ScriptProcessorHandler(AudioContext*, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
 
     void fireProcessEvent();
 
@@ -96,8 +86,25 @@ private:
     mutable Mutex m_processEventLock;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using ScriptProcessorNode = ScriptProcessorHandler;
+class ScriptProcessorNode final : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    // bufferSize must be one of the following values: 256, 512, 1024, 2048,
+    // 4096, 8192, 16384.
+    // This value controls how frequently the onaudioprocess event handler is
+    // called and how many sample-frames need to be processed each call.
+    // Lower numbers for bufferSize will result in a lower (better)
+    // latency. Higher numbers will be necessary to avoid audio breakup and
+    // glitches.
+    // The value chosen must carefully balance between latency and audio quality.
+    static ScriptProcessorNode* create(AudioContext*, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
+    size_t bufferSize() const;
+
+private:
+    ScriptProcessorNode(AudioContext&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
+};
 
 } // namespace blink
 

@@ -159,7 +159,7 @@ void AudioParamHandler::calculateFinalValues(float* values, unsigned numberOfVal
 void AudioParamHandler::calculateTimelineValues(float* values, unsigned numberOfValues)
 {
     // Calculate values for this render quantum.  Normally numberOfValues will
-    // equal AudioHandler::ProcessingSizeInFrames (the render quantum size).
+    // equal to AudioHandler::ProcessingSizeInFrames (the render quantum size).
     double sampleRate = context()->sampleRate();
     double startTime = context()->currentTime();
     double endTime = startTime + numberOfValues / sampleRate;

@@ -44,7 +44,6 @@ namespace blink {
 // All of these effects follow the OpenAL specification very closely.
 
 class PannerHandler final : public AudioHandler {
-    DEFINE_WRAPPERTYPEINFO();
 public:
     // These enums are used to distinguish what cached values of panner are dirty.
     enum {
@@ -53,11 +52,7 @@ public:
         DopplerRateDirty = 0x4,
     };
 
-    static PannerHandler* create(AudioContext* context, float sampleRate)
-    {
-        return new PannerHandler(context, sampleRate);
-    }
-
+    PannerHandler(AudioNode&, float sampleRate);
     virtual ~PannerHandler();
 
     // AudioHandler
@@ -110,8 +105,6 @@ public:
     virtual void setChannelCountMode(const String&, ExceptionState&) final;
 
 private:
-    PannerHandler(AudioContext*, float sampleRate);
-
     // AudioContext's listener
     AudioListener* listener();
 
@@ -157,8 +150,35 @@ private:
     mutable Mutex m_processLock;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using PannerNode = PannerHandler;
+class PannerNode final : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static PannerNode* create(AudioContext*, float sampleRate);
+    PannerHandler& pannerHandler() const;
+
+    String panningModel() const;
+    void setPanningModel(const String&);
+    void setPosition(float x, float y, float z);
+    void setOrientation(float x, float y, float z);
+    void setVelocity(float x, float y, float z);
+    String distanceModel() const;
+    void setDistanceModel(const String&);
+    double refDistance() const;
+    void setRefDistance(double);
+    double maxDistance() const;
+    void setMaxDistance(double);
+    double rolloffFactor() const;
+    void setRolloffFactor(double);
+    double coneInnerAngle() const;
+    void setConeInnerAngle(double);
+    double coneOuterAngle() const;
+    void setConeOuterAngle(double);
+    double coneOuterGain() const;
+    void setConeOuterGain(double);
+
+private:
+    PannerNode(AudioContext&, float sampleRate);
+};
 
 } // namespace blink
 

@@ -43,10 +43,8 @@ class AudioContext;
 // It generally will be used for short sounds which require a high degree of scheduling flexibility (can playback in rhythmically perfect ways).
 
 class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
-    DEFINE_WRAPPERTYPEINFO();
 public:
-    static AudioBufferSourceHandler* create(AudioContext*, float sampleRate);
-
+    AudioBufferSourceHandler(AudioNode&, float sampleRate);
     virtual ~AudioBufferSourceHandler();
 
     // AudioHandler
@@ -96,8 +94,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    AudioBufferSourceHandler(AudioContext*, float sampleRate);
-
     void startSource(double when, double grainOffset, double grainDuration, bool isDurationGiven, ExceptionState&);
 
     // Returns true on success.
@@ -154,8 +150,30 @@ private:
     mutable Mutex m_processLock;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using AudioBufferSourceNode = AudioBufferSourceHandler;
+class AudioBufferSourceNode final : public AudioScheduledSourceNode {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static AudioBufferSourceNode* create(AudioContext*, float sampleRate);
+    AudioBufferSourceHandler& audioBufferSourceHandler() const;
+
+    AudioBuffer* buffer() const;
+    void setBuffer(AudioBuffer*, ExceptionState&);
+    AudioParam* playbackRate() const;
+    bool loop() const;
+    void setLoop(bool);
+    double loopStart() const;
+    void setLoopStart(double);
+    double loopEnd() const;
+    void setLoopEnd(double);
+
+    void start(ExceptionState&);
+    void start(double when, ExceptionState&);
+    void start(double when, double grainOffset, ExceptionState&);
+    void start(double when, double grainOffset, double grainDuration, ExceptionState&);
+
+private:
+    AudioBufferSourceNode(AudioContext&, float sampleRate);
+};
 
 } // namespace blink
 

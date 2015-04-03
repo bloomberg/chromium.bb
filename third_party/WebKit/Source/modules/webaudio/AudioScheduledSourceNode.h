@@ -35,7 +35,7 @@ namespace blink {
 
 class AudioBus;
 
-class AudioScheduledSourceHandler : public AudioSourceNode {
+class AudioScheduledSourceHandler : public AudioHandler {
 public:
     // These are the possible states an AudioScheduledSourceNode can be in:
     //
@@ -54,20 +54,17 @@ public:
         FINISHED_STATE = 3
     };
 
-    AudioScheduledSourceHandler(NodeType, AudioContext*, float sampleRate);
+    AudioScheduledSourceHandler(NodeType, AudioNode&, float sampleRate);
 
     // Scheduling.
-    void start(ExceptionState& exceptionState) { start(0.0, exceptionState); }
     void start(double when, ExceptionState&);
-    void stop(ExceptionState& exceptionState) { stop(0.0, exceptionState); }
     void stop(double when, ExceptionState&);
 
     unsigned short playbackState() const { return static_cast<unsigned short>(m_playbackState); }
     bool isPlayingOrScheduled() const { return m_playbackState == PLAYING_STATE || m_playbackState == SCHEDULED_STATE; }
     bool hasFinished() const { return m_playbackState == FINISHED_STATE; }
 
-    EventListener* onended() { return getAttributeEventListener(EventTypeNames::ended); }
-    void setOnended(PassRefPtr<EventListener>);
+    void setHasEndedListener() { m_hasEndedListener = true; }
 
 protected:
     // Get frame information for the current time quantum.
@@ -101,6 +98,21 @@ protected:
     bool m_hasEndedListener;
 
     static const double UnknownTime;
+};
+
+class AudioScheduledSourceNode : public AudioSourceNode {
+public:
+    void start(ExceptionState&);
+    void start(double when, ExceptionState&);
+    void stop(ExceptionState&);
+    void stop(double when, ExceptionState&);
+
+    EventListener* onended();
+    void setOnended(PassRefPtr<EventListener>);
+
+protected:
+    explicit AudioScheduledSourceNode(AudioContext&);
+    AudioScheduledSourceHandler& audioScheduledSourceHandler() const;
 };
 
 } // namespace blink

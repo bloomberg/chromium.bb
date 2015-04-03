@@ -37,13 +37,8 @@ class ExceptionState;
 class Reverb;
 
 class ConvolverHandler final : public AudioHandler {
-    DEFINE_WRAPPERTYPEINFO();
 public:
-    static ConvolverHandler* create(AudioContext* context, float sampleRate)
-    {
-        return new ConvolverHandler(context, sampleRate);
-    }
-
+    ConvolverHandler(AudioNode&, float sampleRate);
     virtual ~ConvolverHandler();
 
     // AudioHandler
@@ -62,8 +57,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ConvolverHandler(AudioContext*, float sampleRate);
-
     virtual double tailTime() const override;
     virtual double latencyTime() const override;
 
@@ -77,8 +70,20 @@ private:
     bool m_normalize;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using ConvolverNode = ConvolverHandler;
+class ConvolverNode final : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static ConvolverNode* create(AudioContext*, float sampleRate);
+
+    AudioBuffer* buffer() const;
+    void setBuffer(AudioBuffer*, ExceptionState&);
+    bool normalize() const;
+    void setNormalize(bool);
+
+private:
+    ConvolverNode(AudioContext&, float sampleRate);
+    ConvolverHandler& convolverHandler() const;
+};
 
 } // namespace blink
 

@@ -34,8 +34,8 @@
 
 namespace blink {
 
-AnalyserHandler::AnalyserHandler(AudioContext* context, float sampleRate)
-    : AudioBasicInspectorHandler(NodeTypeAnalyser, context, sampleRate, 2)
+AnalyserHandler::AnalyserHandler(AudioNode& node, float sampleRate)
+    : AudioBasicInspectorHandler(NodeTypeAnalyser, node, sampleRate, 2)
 {
     initialize();
 }
@@ -113,6 +113,89 @@ void AnalyserHandler::setSmoothingTimeConstant(double k, ExceptionState& excepti
             IndexSizeError,
             ExceptionMessages::indexOutsideRange("smoothing value", k, 0.0, ExceptionMessages::InclusiveBound, 1.0, ExceptionMessages::InclusiveBound));
     }
+}
+
+// ----------------------------------------------------------------
+
+AnalyserNode::AnalyserNode(AudioContext& context, float sampleRate)
+    : AudioNode(context)
+{
+    setHandler(new AnalyserHandler(*this, sampleRate));
+}
+
+AnalyserNode* AnalyserNode::create(AudioContext* context, float sampleRate)
+{
+    return new AnalyserNode(*context, sampleRate);
+}
+
+AnalyserHandler& AnalyserNode::analyserHandler() const
+{
+    return static_cast<AnalyserHandler&>(handler());
+}
+
+unsigned AnalyserNode::fftSize() const
+{
+    return analyserHandler().fftSize();
+}
+
+void AnalyserNode::setFftSize(unsigned size, ExceptionState& exceptionState)
+{
+    return analyserHandler().setFftSize(size, exceptionState);
+}
+
+unsigned AnalyserNode::frequencyBinCount() const
+{
+    return analyserHandler().frequencyBinCount();
+}
+
+void AnalyserNode::setMinDecibels(double min, ExceptionState& exceptionState)
+{
+    analyserHandler().setMinDecibels(min, exceptionState);
+}
+
+double AnalyserNode::minDecibels() const
+{
+    return analyserHandler().minDecibels();
+}
+
+void AnalyserNode::setMaxDecibels(double max, ExceptionState& exceptionState)
+{
+    analyserHandler().setMaxDecibels(max, exceptionState);
+}
+
+double AnalyserNode::maxDecibels() const
+{
+    return analyserHandler().maxDecibels();
+}
+
+void AnalyserNode::setSmoothingTimeConstant(double smoothingTime, ExceptionState& exceptionState)
+{
+    analyserHandler().setSmoothingTimeConstant(smoothingTime, exceptionState);
+}
+
+double AnalyserNode::smoothingTimeConstant() const
+{
+    return analyserHandler().smoothingTimeConstant();
+}
+
+void AnalyserNode::getFloatFrequencyData(DOMFloat32Array* array)
+{
+    analyserHandler().getFloatFrequencyData(array);
+}
+
+void AnalyserNode::getByteFrequencyData(DOMUint8Array* array)
+{
+    analyserHandler().getByteFrequencyData(array);
+}
+
+void AnalyserNode::getFloatTimeDomainData(DOMFloat32Array* array)
+{
+    analyserHandler().getFloatTimeDomainData(array);
+}
+
+void AnalyserNode::getByteTimeDomainData(DOMUint8Array* array)
+{
+    analyserHandler().getByteTimeDomainData(array);
 }
 
 } // namespace blink

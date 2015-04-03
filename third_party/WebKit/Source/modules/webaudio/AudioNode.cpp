@@ -43,10 +43,11 @@ namespace blink {
 
 unsigned AudioHandler::s_instanceCount = 0;
 
-AudioHandler::AudioHandler(NodeType nodeType, AudioContext* context, float sampleRate)
+AudioHandler::AudioHandler(NodeType nodeType, AudioNode& node, float sampleRate)
     : m_isInitialized(false)
     , m_nodeType(NodeTypeUnknown)
-    , m_context(context)
+    , m_node(node)
+    , m_context(node.context())
     , m_sampleRate(sampleRate)
     , m_lastProcessingTime(-1)
     , m_lastNonSilentTime(-1)
@@ -59,7 +60,7 @@ AudioHandler::AudioHandler(NodeType nodeType, AudioContext* context, float sampl
 {
     setNodeType(nodeType);
 
-    m_context->registerLiveNode(*this);
+    m_context->registerLiveNode(node);
 #if DEBUG_AUDIONODE_REFERENCES
     if (!s_isNodeCountInitialized) {
         s_isNodeCountInitialized = true;
@@ -818,6 +819,7 @@ void AudioHandler::printNodeCounts()
 
 DEFINE_TRACE(AudioHandler)
 {
+    visitor->trace(m_node);
     visitor->trace(m_context);
     // TODO(tkent): Oilpan: renderingOutputs should not be strong references.
     // This is a short-term workaround to avoid crashes, and causes AudioNode
@@ -831,7 +833,6 @@ DEFINE_TRACE(AudioHandler)
     }
     visitor->trace(m_connectedNodes);
     visitor->trace(m_connectedParams);
-    RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode>::trace(visitor);
 }
 
 void AudioHandler::updateChannelCountMode()
@@ -840,14 +841,130 @@ void AudioHandler::updateChannelCountMode()
     updateChannelsForInputs();
 }
 
-const AtomicString& AudioHandler::interfaceName() const
+// ----------------------------------------------------------------
+
+AudioNode::AudioNode(AudioContext& context)
+    : m_context(context)
+    , m_handler(nullptr)
+{
+}
+
+void AudioNode::setHandler(AudioHandler* handler)
+{
+    ASSERT(handler);
+    m_handler = handler;
+}
+
+AudioHandler& AudioNode::handler() const
+{
+    return *m_handler;
+}
+
+DEFINE_TRACE(AudioNode)
+{
+    visitor->trace(m_context);
+    visitor->trace(m_handler);
+    RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode>::trace(visitor);
+}
+
+void AudioNode::connect(AudioNode* node, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
+{
+    handler().connect(&node->handler(), outputIndex, inputIndex, exceptionState);
+}
+
+void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionState& exceptionState)
+{
+    handler().connect(param, outputIndex, exceptionState);
+}
+
+void AudioNode::disconnect()
+{
+    handler().disconnect();
+}
+
+void AudioNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
+{
+    handler().disconnect(outputIndex, exceptionState);
+}
+
+void AudioNode::disconnect(AudioNode* node, ExceptionState& exceptionState)
+{
+    handler().disconnect(&node->handler(), exceptionState);
+}
+
+void AudioNode::disconnect(AudioNode* node, unsigned outputIndex, ExceptionState& exceptionState)
+{
+    handler().disconnect(&node->handler(), outputIndex, exceptionState);
+}
+
+void AudioNode::disconnect(AudioNode* node, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
+{
+    handler().disconnect(&node->handler(), outputIndex, inputIndex, exceptionState);
+}
+
+void AudioNode::disconnect(AudioParam* param, ExceptionState& exceptionState)
+{
+    handler().disconnect(param, exceptionState);
+}
+
+void AudioNode::disconnect(AudioParam* param, unsigned outputIndex, ExceptionState& exceptionState)
+{
+    handler().disconnect(param, outputIndex, exceptionState);
+}
+
+AudioContext* AudioNode::context() const
+{
+    return m_context;
+}
+
+unsigned AudioNode::numberOfInputs() const
+{
+    return handler().numberOfInputs();
+}
+
+unsigned AudioNode::numberOfOutputs() const
+{
+    return handler().numberOfOutputs();
+}
+
+unsigned long AudioNode::channelCount() const
+{
+    return handler().channelCount();
+}
+
+void AudioNode::setChannelCount(unsigned long count, ExceptionState& exceptionState)
+{
+    handler().setChannelCount(count, exceptionState);
+}
+
+String AudioNode::channelCountMode() const
+{
+    return handler().channelCountMode();
+}
+
+void AudioNode::setChannelCountMode(const String& mode, ExceptionState& exceptionState)
+{
+    handler().setChannelCountMode(mode, exceptionState);
+}
+
+String AudioNode::channelInterpretation() const
+{
+    return handler().channelInterpretation();
+}
+
+void AudioNode::setChannelInterpretation(const String& interpretation, ExceptionState& exceptionState)
+{
+    handler().setChannelInterpretation(interpretation, exceptionState);
+}
+
+const AtomicString& AudioNode::interfaceName() const
 {
     return EventTargetNames::AudioNode;
 }
 
-ExecutionContext* AudioHandler::executionContext() const
+ExecutionContext* AudioNode::executionContext() const
 {
-    return const_cast<AudioNode*>(this)->context()->executionContext();
+    return context()->executionContext();
 }
 
 } // namespace blink

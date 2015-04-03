@@ -33,7 +33,7 @@ namespace blink {
 
 class AudioParam;
 
-class BiquadFilterNode final : public AudioBasicProcessorNode {
+class BiquadFilterNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // These must be defined as in the .idl file and must match those in the BiquadProcessor class.
@@ -69,7 +69,7 @@ public:
 private:
     BiquadFilterNode(AudioContext*, float sampleRate);
 
-    BiquadProcessor* biquadProcessor() { return static_cast<BiquadProcessor*>(processor()); }
+    BiquadProcessor* biquadProcessor() const;
     bool setType(unsigned); // Returns true on success.
 
     Member<AudioParam> m_frequency;

@@ -39,12 +39,10 @@ namespace blink {
 class AudioContext;
 class HTMLMediaElement;
 
-class MediaElementAudioSourceHandler final : public AudioSourceNode, public AudioSourceProviderClient {
-    DEFINE_WRAPPERTYPEINFO();
+class MediaElementAudioSourceHandler final : public AudioHandler, public AudioSourceProviderClient {
     USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceHandler);
 public:
-    static MediaElementAudioSourceHandler* create(AudioContext*, HTMLMediaElement*);
-
+    MediaElementAudioSourceHandler(AudioNode&, HTMLMediaElement*);
     virtual ~MediaElementAudioSourceHandler();
 
     HTMLMediaElement* mediaElement() { return m_mediaElement.get(); }
@@ -62,8 +60,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MediaElementAudioSourceHandler(AudioContext*, HTMLMediaElement*);
-
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const override { return false; }
 
@@ -78,8 +74,17 @@ private:
     OwnPtr<MultiChannelResampler> m_multiChannelResampler;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using MediaElementAudioSourceNode = MediaElementAudioSourceHandler;
+class MediaElementAudioSourceNode final : public AudioSourceNode {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static MediaElementAudioSourceNode* create(AudioContext*, HTMLMediaElement*);
+    MediaElementAudioSourceHandler& mediaElementAudioSourceHandler() const;
+
+    HTMLMediaElement* mediaElement() const;
+
+private:
+    MediaElementAudioSourceNode(AudioContext&, HTMLMediaElement*);
+};
 
 } // namespace blink
 

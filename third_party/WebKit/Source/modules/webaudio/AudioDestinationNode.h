@@ -37,9 +37,8 @@ class AudioBus;
 class AudioContext;
 
 class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
-    DEFINE_WRAPPERTYPEINFO();
 public:
-    AudioDestinationHandler(AudioContext*, float sampleRate);
+    AudioDestinationHandler(AudioNode&, float sampleRate);
     virtual ~AudioDestinationHandler();
 
     // AudioHandler
@@ -93,8 +92,16 @@ protected:
     LocalAudioInputProvider m_localAudioInputProvider;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using AudioDestinationNode = AudioDestinationHandler;
+class AudioDestinationNode : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    AudioDestinationHandler& audioDestinationHandler() const;
+
+    unsigned long maxChannelCount() const;
+
+protected:
+    AudioDestinationNode(AudioContext&);
+};
 
 } // namespace blink
 

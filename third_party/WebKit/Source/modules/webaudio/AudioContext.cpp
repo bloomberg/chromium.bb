@@ -169,7 +169,7 @@ void AudioContext::initialize()
     m_listener = AudioListener::create();
 
     if (m_destinationNode.get()) {
-        m_destinationNode->initialize();
+        m_destinationNode->handler().initialize();
 
         if (!isOfflineContext()) {
             // This starts the audio thread. The destination node's provideInput() method will now be called repeatedly to render audio.
@@ -208,7 +208,7 @@ void AudioContext::uninitialize()
 
     // This stops the audio thread and all audio rendering.
     if (m_destinationNode)
-        m_destinationNode->uninitialize();
+        m_destinationNode->handler().uninitialize();
 
     if (!isOfflineContext()) {
         ASSERT(s_hardwareContextCount);
@@ -328,7 +328,7 @@ MediaElementAudioSourceNode* AudioContext::createMediaElementSource(HTMLMediaEle
 
     MediaElementAudioSourceNode* node = MediaElementAudioSourceNode::create(this, mediaElement);
 
-    mediaElement->setAudioSourceNode(node);
+    mediaElement->setAudioSourceNode(&node->mediaElementAudioSourceHandler());
 
     refNode(node); // context keeps reference until node is disconnected
     return node;
@@ -364,7 +364,7 @@ MediaStreamAudioSourceNode* AudioContext::createMediaStreamSource(MediaStream* m
     MediaStreamAudioSourceNode* node = MediaStreamAudioSourceNode::create(this, mediaStream, audioTrack, provider.release());
 
     // FIXME: Only stereo streams are supported right now. We should be able to accept multi-channel streams.
-    node->setFormat(2, sampleRate());
+    node->mediaStreamAudioSourceHandler().setFormat(2, sampleRate());
 
     refNode(node); // context keeps reference until node is disconnected
     return node;
@@ -529,7 +529,7 @@ AnalyserNode* AudioContext::createAnalyser(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    return AnalyserNode::create(this, m_destinationNode->sampleRate());
+    return AnalyserNode::create(this, sampleRate());
 }
 
 GainNode* AudioContext::createGain(ExceptionState& exceptionState)
@@ -715,7 +715,7 @@ PeriodicWave* AudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32
 size_t AudioContext::currentSampleFrame() const
 {
     if (isAudioThread())
-        return m_destinationNode ? m_destinationNode->currentSampleFrame() : 0;
+        return m_destinationNode ? m_destinationNode->audioDestinationHandler().currentSampleFrame() : 0;
 
     return m_cachedSampleFrame;
 }
@@ -723,7 +723,7 @@ size_t AudioContext::currentSampleFrame() const
 double AudioContext::currentTime() const
 {
     if (isAudioThread())
-        return m_destinationNode ? m_destinationNode->currentTime() : 0;
+        return m_destinationNode ? m_destinationNode->audioDestinationHandler().currentTime() : 0;
 
     return m_cachedSampleFrame / static_cast<double>(sampleRate());
 }
@@ -862,7 +862,7 @@ void AudioContext::refNode(AudioNode* node)
     AutoLocker locker(this);
 
     m_referencedNodes.append(node);
-    node->makeConnection();
+    node->handler().makeConnection();
 }
 
 void AudioContext::derefNode(AudioNode* node)
@@ -871,7 +871,7 @@ void AudioContext::derefNode(AudioNode* node)
 
     for (unsigned i = 0; i < m_referencedNodes.size(); ++i) {
         if (node == m_referencedNodes.at(i).get()) {
-            node->breakConnection();
+            node->handler().breakConnection();
             m_referencedNodes.remove(i);
             break;
         }
@@ -882,7 +882,7 @@ void AudioContext::derefUnfinishedSourceNodes()
 {
     ASSERT(isMainThread());
     for (unsigned i = 0; i < m_referencedNodes.size(); ++i)
-        m_referencedNodes.at(i)->breakConnection();
+        m_referencedNodes.at(i)->handler().breakConnection();
 
     m_referencedNodes.clear();
 }
@@ -939,9 +939,9 @@ void AudioContext::handleStoppableSourceNodes()
     for (unsigned i = 0; i < m_referencedNodes.size(); ++i) {
         AudioNode* node = m_referencedNodes.at(i).get();
 
-        if (node->nodeType() == AudioHandler::NodeTypeAudioBufferSource) {
+        if (node->handler().nodeType() == AudioHandler::NodeTypeAudioBufferSource) {
             AudioBufferSourceNode* sourceNode = static_cast<AudioBufferSourceNode*>(node);
-            sourceNode->handleStoppableSourceNode();
+            sourceNode->audioBufferSourceHandler().handleStoppableSourceNode();
         }
     }
 }
@@ -1008,7 +1008,7 @@ AudioContext::AudioNodeDisposer::~AudioNodeDisposer()
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(m_node.context());
-    m_node.dispose();
+    m_node.handler().dispose();
 }
 
 void DeferredTaskHandler::disposeOutputs(AudioHandler& node)
@@ -1203,7 +1203,7 @@ void AudioContext::startRendering()
     ASSERT(m_destinationNode);
 
     if (m_contextState == Suspended) {
-        destination()->startRendering();
+        destination()->audioDestinationHandler().startRendering();
         setContextState(Running);
     }
 }
@@ -1215,7 +1215,7 @@ void AudioContext::stopRendering()
     ASSERT(!isOfflineContext());
 
     if (m_contextState == Running) {
-        destination()->stopRendering();
+        destination()->audioDestinationHandler().stopRendering();
         setContextState(Suspended);
     }
 }
@@ -1323,7 +1323,7 @@ ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
     for (auto& node : m_liveNodes.keys()) {
         if (node) {
             for (unsigned k = 0; k < node->numberOfOutputs(); ++k)
-                node->disconnectWithoutException(k);
+                node->handler().disconnectWithoutException(k);
         }
     }
 

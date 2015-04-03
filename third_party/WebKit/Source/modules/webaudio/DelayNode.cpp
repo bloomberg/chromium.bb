@@ -36,10 +36,10 @@ namespace blink {
 const double maximumAllowedDelayTime = 180;
 
 DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTime)
-    : AudioBasicProcessorNode(NodeTypeDelay, context, sampleRate)
+    : AudioNode(*context)
     , m_delayTime(AudioParam::create(context, 0.0))
 {
-    m_processor = adoptPtr(new DelayProcessor(sampleRate, 1, m_delayTime->handler(), maxDelayTime));
+    setHandler(new AudioBasicProcessorHandler(AudioHandler::NodeTypeDelay, *this, sampleRate, adoptPtr(new DelayProcessor(sampleRate, 1, m_delayTime->handler(), maxDelayTime))));
 }
 
 DelayNode* DelayNode::create(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& exceptionState)
@@ -63,7 +63,7 @@ AudioParam* DelayNode::delayTime()
 DEFINE_TRACE(DelayNode)
 {
     visitor->trace(m_delayTime);
-    AudioBasicProcessorNode::trace(visitor);
+    AudioNode::trace(visitor);
 }
 
 } // namespace blink

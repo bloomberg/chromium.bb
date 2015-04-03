@@ -47,13 +47,8 @@ const double DefaultGrainDuration = 0.020; // 20ms
 // to minimize linear interpolation aliasing.
 const double MaxRate = 1024;
 
-AudioBufferSourceHandler* AudioBufferSourceHandler::create(AudioContext* context, float sampleRate)
-{
-    return new AudioBufferSourceHandler(context, sampleRate);
-}
-
-AudioBufferSourceHandler::AudioBufferSourceHandler(AudioContext* audioContext, float sampleRate)
-    : AudioScheduledSourceHandler(NodeTypeAudioBufferSource, audioContext, sampleRate)
+AudioBufferSourceHandler::AudioBufferSourceHandler(AudioNode& node, float sampleRate)
+    : AudioScheduledSourceHandler(NodeTypeAudioBufferSource, node, sampleRate)
     , m_buffer(nullptr)
     , m_isLooping(false)
     , m_loopStart(0)
@@ -490,7 +485,7 @@ double AudioBufferSourceHandler::totalPitchRate()
 {
     double dopplerRate = 1.0;
     if (m_pannerNode)
-        dopplerRate = m_pannerNode->dopplerRate();
+        dopplerRate = m_pannerNode->pannerHandler().dopplerRate();
 
     // Incorporate buffer's sample-rate versus AudioContext's sample-rate.
     // Normally it's not an issue because buffers are loaded at the AudioContext's sample-rate, but we can handle it in any case.
@@ -527,16 +522,16 @@ void AudioBufferSourceHandler::setPannerNode(PannerNode* pannerNode)
         PannerNode* oldPannerNode(m_pannerNode.release());
         m_pannerNode = pannerNode;
         if (pannerNode)
-            pannerNode->makeConnection();
+            pannerNode->handler().makeConnection();
         if (oldPannerNode)
-            oldPannerNode->breakConnection();
+            oldPannerNode->handler().breakConnection();
     }
 }
 
 void AudioBufferSourceHandler::clearPannerNode()
 {
     if (m_pannerNode) {
-        m_pannerNode->breakConnection();
+        m_pannerNode->handler().breakConnection();
         m_pannerNode.clear();
     }
 }
@@ -569,6 +564,88 @@ DEFINE_TRACE(AudioBufferSourceHandler)
     visitor->trace(m_playbackRate);
     visitor->trace(m_pannerNode);
     AudioScheduledSourceHandler::trace(visitor);
+}
+
+// ----------------------------------------------------------------
+AudioBufferSourceNode::AudioBufferSourceNode(AudioContext& context, float sampleRate)
+    : AudioScheduledSourceNode(context)
+{
+    setHandler(new AudioBufferSourceHandler(*this, sampleRate));
+}
+
+AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext* context, float sampleRate)
+{
+    return new AudioBufferSourceNode(*context, sampleRate);
+}
+
+AudioBufferSourceHandler& AudioBufferSourceNode::audioBufferSourceHandler() const
+{
+    return static_cast<AudioBufferSourceHandler&>(handler());
+}
+
+AudioBuffer* AudioBufferSourceNode::buffer() const
+{
+    return audioBufferSourceHandler().buffer();
+}
+
+void AudioBufferSourceNode::setBuffer(AudioBuffer* newBuffer, ExceptionState& exceptionState)
+{
+    audioBufferSourceHandler().setBuffer(newBuffer, exceptionState);
+}
+
+AudioParam* AudioBufferSourceNode::playbackRate() const
+{
+    return audioBufferSourceHandler().playbackRate();
+}
+
+bool AudioBufferSourceNode::loop() const
+{
+    return audioBufferSourceHandler().loop();
+}
+
+void AudioBufferSourceNode::setLoop(bool loop)
+{
+    audioBufferSourceHandler().setLoop(loop);
+}
+
+double AudioBufferSourceNode::loopStart() const
+{
+    return audioBufferSourceHandler().loopStart();
+}
+
+void AudioBufferSourceNode::setLoopStart(double loopStart)
+{
+    audioBufferSourceHandler().setLoopStart(loopStart);
+}
+
+double AudioBufferSourceNode::loopEnd() const
+{
+    return audioBufferSourceHandler().loopEnd();
+}
+
+void AudioBufferSourceNode::setLoopEnd(double loopEnd)
+{
+    audioBufferSourceHandler().setLoopEnd(loopEnd);
+}
+
+void AudioBufferSourceNode::start(ExceptionState& exceptionState)
+{
+    audioBufferSourceHandler().start(exceptionState);
+}
+
+void AudioBufferSourceNode::start(double when, ExceptionState& exceptionState)
+{
+    audioBufferSourceHandler().start(when, exceptionState);
+}
+
+void AudioBufferSourceNode::start(double when, double grainOffset, ExceptionState& exceptionState)
+{
+    audioBufferSourceHandler().start(when, grainOffset, exceptionState);
+}
+
+void AudioBufferSourceNode::start(double when, double grainOffset, double grainDuration, ExceptionState& exceptionState)
+{
+    audioBufferSourceHandler().start(when, grainOffset, grainDuration, exceptionState);
 }
 
 } // namespace blink

@@ -18,8 +18,8 @@
 
 namespace blink {
 
-StereoPannerHandler::StereoPannerHandler(AudioContext* audioContext, float sampleRate)
-    : AudioHandler(NodeTypeStereoPanner, audioContext, sampleRate)
+StereoPannerHandler::StereoPannerHandler(AudioNode& node, float sampleRate)
+    : AudioHandler(NodeTypeStereoPanner, node, sampleRate)
     , m_sampleAccuratePanValues(ProcessingSizeInFrames)
 {
     m_pan = AudioParam::create(context(), 0);
@@ -154,6 +154,24 @@ DEFINE_TRACE(StereoPannerHandler)
 {
     visitor->trace(m_pan);
     AudioHandler::trace(visitor);
+}
+
+// ----------------------------------------------------------------
+
+StereoPannerNode::StereoPannerNode(AudioContext& context, float sampleRate)
+    : AudioNode(context)
+{
+    setHandler(new StereoPannerHandler(*this, sampleRate));
+}
+
+StereoPannerNode* StereoPannerNode::create(AudioContext* context, float sampleRate)
+{
+    return new StereoPannerNode(*context, sampleRate);
+}
+
+AudioParam* StereoPannerNode::pan() const
+{
+    return static_cast<StereoPannerHandler&>(handler()).pan();
 }
 
 } // namespace blink

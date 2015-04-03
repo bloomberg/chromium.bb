@@ -45,8 +45,8 @@ static void fixNANs(double& x)
         x = 0.0;
 }
 
-PannerHandler::PannerHandler(AudioContext* context, float sampleRate)
-    : AudioHandler(NodeTypePanner, context, sampleRate)
+PannerHandler::PannerHandler(AudioNode& node, float sampleRate)
+    : AudioHandler(NodeTypePanner, node, sampleRate)
     , m_panningModel(Panner::PanningModelEqualPower)
     , m_distanceModel(DistanceEffect::ModelInverse)
     , m_position(0, 0, 0)
@@ -63,7 +63,7 @@ PannerHandler::PannerHandler(AudioContext* context, float sampleRate)
 {
     // Load the HRTF database asynchronously so we don't block the Javascript thread while creating the HRTF database.
     // The HRTF panner will return zeroes until the database is loaded.
-    listener()->createAndLoadHRTFDatabaseLoader(context->sampleRate());
+    listener()->createAndLoadHRTFDatabaseLoader(node.context()->sampleRate());
 
     addInput();
     addOutput(2);
@@ -579,6 +579,119 @@ void PannerHandler::setChannelCountMode(const String& mode, ExceptionState& exce
 
     if (m_newChannelCountMode != oldMode)
         context()->handler().addChangedChannelCountMode(this);
+}
+
+// ----------------------------------------------------------------
+
+PannerNode::PannerNode(AudioContext& context, float sampelRate)
+    : AudioNode(context)
+{
+    setHandler(new PannerHandler(*this, sampelRate));
+}
+
+PannerNode* PannerNode::create(AudioContext* context, float sampleRate)
+{
+    return new PannerNode(*context, sampleRate);
+}
+
+PannerHandler& PannerNode::pannerHandler() const
+{
+    return static_cast<PannerHandler&>(handler());
+}
+
+String PannerNode::panningModel() const
+{
+    return pannerHandler().panningModel();
+}
+
+void PannerNode::setPanningModel(const String& model)
+{
+    pannerHandler().setPanningModel(model);
+}
+
+void PannerNode::setPosition(float x, float y, float z)
+{
+    pannerHandler().setPosition(x, y, z);
+}
+
+void PannerNode::setOrientation(float x, float y, float z)
+{
+    pannerHandler().setOrientation(x, y, z);
+}
+
+void PannerNode::setVelocity(float x, float y, float z)
+{
+    pannerHandler().setVelocity(x, y, z);
+}
+
+String PannerNode::distanceModel() const
+{
+    return pannerHandler().distanceModel();
+}
+
+void PannerNode::setDistanceModel(const String& model)
+{
+    pannerHandler().setDistanceModel(model);
+}
+
+double PannerNode::refDistance() const
+{
+    return pannerHandler().refDistance();
+}
+
+void PannerNode::setRefDistance(double distance)
+{
+    pannerHandler().setRefDistance(distance);
+}
+
+double PannerNode::maxDistance() const
+{
+    return pannerHandler().maxDistance();
+}
+
+void PannerNode::setMaxDistance(double distance)
+{
+    pannerHandler().setMaxDistance(distance);
+}
+
+double PannerNode::rolloffFactor() const
+{
+    return pannerHandler().rolloffFactor();
+}
+
+void PannerNode::setRolloffFactor(double factor)
+{
+    pannerHandler().setRolloffFactor(factor);
+}
+
+double PannerNode::coneInnerAngle() const
+{
+    return pannerHandler().coneInnerAngle();
+}
+
+void PannerNode::setConeInnerAngle(double angle)
+{
+    pannerHandler().setConeInnerAngle(angle);
+}
+
+double PannerNode::coneOuterAngle() const
+{
+    return pannerHandler().coneOuterAngle();
+}
+
+void PannerNode::setConeOuterAngle(double angle)
+{
+    pannerHandler().setConeOuterAngle(angle);
+}
+
+double PannerNode::coneOuterGain() const
+{
+    return pannerHandler().coneOuterGain();
+}
+
+void PannerNode::setConeOuterGain(double gain)
+{
+    pannerHandler().setConeOuterGain(gain);
 }
 
 } // namespace blink

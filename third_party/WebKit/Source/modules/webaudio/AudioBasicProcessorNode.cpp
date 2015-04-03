@@ -34,13 +34,12 @@
 
 namespace blink {
 
-AudioBasicProcessorHandler::AudioBasicProcessorHandler(NodeType nodeType, AudioContext* context, float sampleRate)
-    : AudioHandler(nodeType, context, sampleRate)
+AudioBasicProcessorHandler::AudioBasicProcessorHandler(NodeType nodeType, AudioNode& node, float sampleRate, PassOwnPtr<AudioProcessor> processor)
+    : AudioHandler(nodeType, node, sampleRate)
+    , m_processor(processor)
 {
     addInput();
     addOutput(1);
-
-    // The subclass must create m_processor.
 }
 
 AudioBasicProcessorHandler::~AudioBasicProcessorHandler()

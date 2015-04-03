@@ -39,8 +39,8 @@ namespace blink {
 
 const double AudioScheduledSourceHandler::UnknownTime = -1;
 
-AudioScheduledSourceHandler::AudioScheduledSourceHandler(NodeType nodeType, AudioContext* context, float sampleRate)
-    : AudioSourceNode(nodeType, context, sampleRate)
+AudioScheduledSourceHandler::AudioScheduledSourceHandler(NodeType nodeType, AudioNode& node, float sampleRate)
+    : AudioHandler(nodeType, node, sampleRate)
     , m_playbackState(UNSCHEDULED_STATE)
     , m_startTime(0)
     , m_endTime(UnknownTime)
@@ -151,7 +151,7 @@ void AudioScheduledSourceHandler::start(double when, ExceptionState& exceptionSt
     // The node is started. Add a reference to keep us alive so that audio will eventually get
     // played even if Javascript should drop all references to this node. The reference will get
     // dropped when the source has finished playing.
-    context()->refNode(this);
+    context()->refNode(node());
 
     // If |when| < currentTime, the source must start now according to the spec.
     // So just set startTime to currentTime in this case to start the source now.
@@ -185,17 +185,11 @@ void AudioScheduledSourceHandler::stop(double when, ExceptionState& exceptionSta
     m_endTime = when;
 }
 
-void AudioScheduledSourceHandler::setOnended(PassRefPtr<EventListener> listener)
-{
-    m_hasEndedListener = listener;
-    setAttributeEventListener(EventTypeNames::ended, listener);
-}
-
 void AudioScheduledSourceHandler::finishWithoutOnEnded()
 {
     if (m_playbackState != FINISHED_STATE) {
         // Let the context dereference this AudioNode.
-        context()->notifyNodeFinishedProcessing(this);
+        context()->notifyNodeFinishedProcessing(node());
         m_playbackState = FINISHED_STATE;
     }
 }
@@ -210,7 +204,50 @@ void AudioScheduledSourceHandler::finish()
 
 void AudioScheduledSourceHandler::notifyEnded()
 {
-    dispatchEvent(Event::create(EventTypeNames::ended));
+    node()->dispatchEvent(Event::create(EventTypeNames::ended));
+}
+
+// ----------------------------------------------------------------
+
+AudioScheduledSourceNode::AudioScheduledSourceNode(AudioContext& context)
+    : AudioSourceNode(context)
+{
+}
+
+AudioScheduledSourceHandler& AudioScheduledSourceNode::audioScheduledSourceHandler() const
+{
+    return static_cast<AudioScheduledSourceHandler&>(handler());
+}
+
+void AudioScheduledSourceNode::start(ExceptionState& exceptionState)
+{
+    start(0, exceptionState);
+}
+
+void AudioScheduledSourceNode::start(double when, ExceptionState& exceptionState)
+{
+    audioScheduledSourceHandler().start(when, exceptionState);
+}
+
+void AudioScheduledSourceNode::stop(ExceptionState& exceptionState)
+{
+    stop(0, exceptionState);
+}
+
+void AudioScheduledSourceNode::stop(double when, ExceptionState& exceptionState)
+{
+    audioScheduledSourceHandler().stop(when, exceptionState);
+}
+
+EventListener* AudioScheduledSourceNode::onended()
+{
+    return getAttributeEventListener(EventTypeNames::ended);
+}
+
+void AudioScheduledSourceNode::setOnended(PassRefPtr<EventListener> listener)
+{
+    audioScheduledSourceHandler().setHasEndedListener();
+    setAttributeEventListener(EventTypeNames::ended, listener);
 }
 
 } // namespace blink

@@ -47,33 +47,33 @@
 
 namespace blink {
 
-class AnalyserHandler;
+class AnalyserNode;
 class AudioBuffer;
 class AudioBufferCallback;
-class AudioBufferSourceHandler;
+class AudioBufferSourceNode;
 class AudioListener;
 class AudioSummingJunction;
 class BiquadFilterNode;
-class ChannelMergerHandler;
-class ChannelSplitterHandler;
-class ConvolverHandler;
+class ChannelMergerNode;
+class ChannelSplitterNode;
+class ConvolverNode;
 class DelayNode;
 class Document;
-class DynamicsCompressorHandler;
+class DynamicsCompressorNode;
 class ExceptionState;
-class GainHandler;
+class GainNode;
 class HTMLMediaElement;
-class MediaElementAudioSourceHandler;
-class MediaStreamAudioDestinationHandler;
-class MediaStreamAudioSourceHandler;
-class OscillatorHandler;
-class PannerHandler;
+class MediaElementAudioSourceNode;
+class MediaStreamAudioDestinationNode;
+class MediaStreamAudioSourceNode;
+class OscillatorNode;
+class PannerNode;
 class PeriodicWave;
-class ScriptProcessorHandler;
+class ScriptProcessorNode;
 class ScriptPromiseResolver;
 class ScriptState;
 class SecurityOrigin;
-class StereoPannerHandler;
+class StereoPannerNode;
 class WaveShaperNode;
 
 // DeferredTaskHandler manages the major part of pre- and post- rendering tasks,
@@ -236,7 +236,7 @@ public:
     size_t currentSampleFrame() const;
     double currentTime() const;
 
-    float sampleRate() const { return m_destinationNode ? m_destinationNode->sampleRate() : 0; }
+    float sampleRate() const { return m_destinationNode ? m_destinationNode->handler().sampleRate() : 0; }
 
     String state() const;
 
@@ -248,29 +248,29 @@ public:
     AudioListener* listener() { return m_listener.get(); }
 
     // The AudioNode create methods are called on the main thread (from JavaScript).
-    AudioBufferSourceHandler* createBufferSource(ExceptionState&);
-    MediaElementAudioSourceHandler* createMediaElementSource(HTMLMediaElement*, ExceptionState&);
-    MediaStreamAudioSourceHandler* createMediaStreamSource(MediaStream*, ExceptionState&);
-    MediaStreamAudioDestinationHandler* createMediaStreamDestination(ExceptionState&);
-    GainHandler* createGain(ExceptionState&);
+    AudioBufferSourceNode* createBufferSource(ExceptionState&);
+    MediaElementAudioSourceNode* createMediaElementSource(HTMLMediaElement*, ExceptionState&);
+    MediaStreamAudioSourceNode* createMediaStreamSource(MediaStream*, ExceptionState&);
+    MediaStreamAudioDestinationNode* createMediaStreamDestination(ExceptionState&);
+    GainNode* createGain(ExceptionState&);
     BiquadFilterNode* createBiquadFilter(ExceptionState&);
     WaveShaperNode* createWaveShaper(ExceptionState&);
     DelayNode* createDelay(ExceptionState&);
     DelayNode* createDelay(double maxDelayTime, ExceptionState&);
-    PannerHandler* createPanner(ExceptionState&);
-    ConvolverHandler* createConvolver(ExceptionState&);
-    DynamicsCompressorHandler* createDynamicsCompressor(ExceptionState&);
-    AnalyserHandler* createAnalyser(ExceptionState&);
-    ScriptProcessorHandler* createScriptProcessor(ExceptionState&);
-    ScriptProcessorHandler* createScriptProcessor(size_t bufferSize, ExceptionState&);
-    ScriptProcessorHandler* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState&);
-    ScriptProcessorHandler* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState&);
-    StereoPannerHandler* createStereoPanner(ExceptionState&);
-    ChannelSplitterHandler* createChannelSplitter(ExceptionState&);
-    ChannelSplitterHandler* createChannelSplitter(size_t numberOfOutputs, ExceptionState&);
-    ChannelMergerHandler* createChannelMerger(ExceptionState&);
-    ChannelMergerHandler* createChannelMerger(size_t numberOfInputs, ExceptionState&);
-    OscillatorHandler* createOscillator(ExceptionState&);
+    PannerNode* createPanner(ExceptionState&);
+    ConvolverNode* createConvolver(ExceptionState&);
+    DynamicsCompressorNode* createDynamicsCompressor(ExceptionState&);
+    AnalyserNode* createAnalyser(ExceptionState&);
+    ScriptProcessorNode* createScriptProcessor(ExceptionState&);
+    ScriptProcessorNode* createScriptProcessor(size_t bufferSize, ExceptionState&);
+    ScriptProcessorNode* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState&);
+    ScriptProcessorNode* createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState&);
+    StereoPannerNode* createStereoPanner(ExceptionState&);
+    ChannelSplitterNode* createChannelSplitter(ExceptionState&);
+    ChannelSplitterNode* createChannelSplitter(size_t numberOfOutputs, ExceptionState&);
+    ChannelMergerNode* createChannelMerger(ExceptionState&);
+    ChannelMergerNode* createChannelMerger(size_t numberOfInputs, ExceptionState&);
+    OscillatorNode* createOscillator(ExceptionState&);
     PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState&);
 
     // Close

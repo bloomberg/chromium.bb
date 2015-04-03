@@ -36,8 +36,8 @@ static const unsigned defaultNumberOfOutputChannels = 2;
 
 namespace blink {
 
-DynamicsCompressorHandler::DynamicsCompressorHandler(AudioContext* audioContext, float sampleRate)
-    : AudioHandler(NodeTypeDynamicsCompressor, audioContext, sampleRate)
+DynamicsCompressorHandler::DynamicsCompressorHandler(AudioNode& node, float sampleRate)
+    : AudioHandler(NodeTypeDynamicsCompressor, node, sampleRate)
 {
     addInput();
     addOutput(defaultNumberOfOutputChannels);
@@ -128,6 +128,54 @@ DEFINE_TRACE(DynamicsCompressorHandler)
     visitor->trace(m_attack);
     visitor->trace(m_release);
     AudioHandler::trace(visitor);
+}
+
+// ----------------------------------------------------------------
+
+DynamicsCompressorNode::DynamicsCompressorNode(AudioContext& context, float sampleRate)
+    : AudioNode(context)
+{
+    setHandler(new DynamicsCompressorHandler(*this, sampleRate));
+}
+
+DynamicsCompressorNode* DynamicsCompressorNode::create(AudioContext* context, float sampleRate)
+{
+    return new DynamicsCompressorNode(*context, sampleRate);
+}
+
+DynamicsCompressorHandler& DynamicsCompressorNode::dynamicsCompressorHandler() const
+{
+    return static_cast<DynamicsCompressorHandler&>(handler());
+}
+
+AudioParam* DynamicsCompressorNode::threshold() const
+{
+    return dynamicsCompressorHandler().threshold();
+}
+
+AudioParam* DynamicsCompressorNode::knee() const
+{
+    return dynamicsCompressorHandler().knee();
+}
+
+AudioParam* DynamicsCompressorNode::ratio() const
+{
+    return dynamicsCompressorHandler().ratio();
+}
+
+AudioParam* DynamicsCompressorNode::reduction() const
+{
+    return dynamicsCompressorHandler().reduction();
+}
+
+AudioParam* DynamicsCompressorNode::attack() const
+{
+    return dynamicsCompressorHandler().attack();
+}
+
+AudioParam* DynamicsCompressorNode::release() const
+{
+    return dynamicsCompressorHandler().release();
 }
 
 } // namespace blink

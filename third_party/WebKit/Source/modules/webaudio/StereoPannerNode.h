@@ -15,13 +15,8 @@ namespace blink {
 // StereoPannerNode is an AudioNode with one input and one output. It is
 // specifically designed for equal-power stereo panning.
 class StereoPannerHandler final : public AudioHandler {
-    DEFINE_WRAPPERTYPEINFO();
 public:
-    static StereoPannerHandler* create(AudioContext* context, float sampleRate)
-    {
-        return new StereoPannerHandler(context, sampleRate);
-    }
-
+    StereoPannerHandler(AudioNode&, float sampleRate);
     virtual ~StereoPannerHandler();
 
     virtual void dispose() override;
@@ -37,16 +32,22 @@ public:
     AudioParam* pan() { return m_pan.get(); }
 
 private:
-    StereoPannerHandler(AudioContext*, float sampleRate);
-
     OwnPtr<Spatializer> m_stereoPanner;
     Member<AudioParam> m_pan;
 
     AudioFloatArray m_sampleAccuratePanValues;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using StereoPannerNode = StereoPannerHandler;
+class StereoPannerNode final : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static StereoPannerNode* create(AudioContext*, float sampleRate);
+
+    AudioParam* pan() const;
+
+private:
+    StereoPannerNode(AudioContext&, float sampleRate);
+};
 
 } // namespace blink
 

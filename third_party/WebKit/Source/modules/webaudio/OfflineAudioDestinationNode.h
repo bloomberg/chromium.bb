@@ -38,11 +38,7 @@ class AudioContext;
 
 class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
 public:
-    static OfflineAudioDestinationHandler* create(AudioContext* context, AudioBuffer* renderTarget)
-    {
-        return new OfflineAudioDestinationHandler(context, renderTarget);
-    }
-
+    OfflineAudioDestinationHandler(AudioNode&, AudioBuffer* renderTarget);
     virtual ~OfflineAudioDestinationHandler();
 
     // AudioHandler
@@ -59,8 +55,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    OfflineAudioDestinationHandler(AudioContext*, AudioBuffer* renderTarget);
-
     void offlineRender();
     void offlineRenderInternal();
 
@@ -77,8 +71,13 @@ private:
     bool m_startedRendering;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using OfflineAudioDestinationNode = OfflineAudioDestinationHandler;
+class OfflineAudioDestinationNode final : public AudioDestinationNode {
+public:
+    static OfflineAudioDestinationNode* create(AudioContext*, AudioBuffer* renderTarget);
+
+private:
+    OfflineAudioDestinationNode(AudioContext&, AudioBuffer* renderTarget);
+};
 
 } // namespace blink
 

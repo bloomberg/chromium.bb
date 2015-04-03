@@ -36,8 +36,8 @@ namespace blink {
 class AudioSourceNode : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    AudioSourceNode(NodeType nodeType, AudioContext* context, float sampleRate)
-        : AudioNode(nodeType, context, sampleRate) { }
+    AudioSourceNode(AudioContext& context)
+        : AudioNode(context) { }
 };
 
 } // namespace blink

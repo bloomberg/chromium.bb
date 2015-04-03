@@ -34,7 +34,7 @@ namespace blink {
 
 class ExceptionState;
 
-class WaveShaperNode final : public AudioBasicProcessorNode {
+class WaveShaperNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static WaveShaperNode* create(AudioContext* context)
@@ -52,7 +52,7 @@ public:
 private:
     explicit WaveShaperNode(AudioContext*);
 
-    WaveShaperProcessor* waveShaperProcessor() { return static_cast<WaveShaperProcessor*>(processor()); }
+    WaveShaperProcessor* waveShaperProcessor() const;
 };
 
 } // namespace blink

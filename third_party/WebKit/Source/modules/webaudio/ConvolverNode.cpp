@@ -45,8 +45,8 @@ const size_t MaxFFTSize = 32768;
 
 namespace blink {
 
-ConvolverHandler::ConvolverHandler(AudioContext* context, float sampleRate)
-    : AudioHandler(NodeTypeConvolver, context, sampleRate)
+ConvolverHandler::ConvolverHandler(AudioNode& node, float sampleRate)
+    : AudioHandler(NodeTypeConvolver, node, sampleRate)
     , m_normalize(true)
 {
     addInput();
@@ -185,6 +185,44 @@ DEFINE_TRACE(ConvolverHandler)
 {
     visitor->trace(m_buffer);
     AudioHandler::trace(visitor);
+}
+
+// ----------------------------------------------------------------
+
+ConvolverNode::ConvolverNode(AudioContext& context, float sampleRate)
+    : AudioNode(context)
+{
+    setHandler(new ConvolverHandler(*this, sampleRate));
+}
+
+ConvolverNode* ConvolverNode::create(AudioContext* context, float sampleRate)
+{
+    return new ConvolverNode(*context, sampleRate);
+}
+
+ConvolverHandler& ConvolverNode::convolverHandler() const
+{
+    return static_cast<ConvolverHandler&>(handler());
+}
+
+AudioBuffer* ConvolverNode::buffer() const
+{
+    return convolverHandler().buffer();
+}
+
+void ConvolverNode::setBuffer(AudioBuffer* newBuffer, ExceptionState& exceptionState)
+{
+    convolverHandler().setBuffer(newBuffer, exceptionState);
+}
+
+bool ConvolverNode::normalize() const
+{
+    return convolverHandler().normalize();
+}
+
+void ConvolverNode::setNormalize(bool normalize)
+{
+    convolverHandler().setNormalize(normalize);
 }
 
 } // namespace blink

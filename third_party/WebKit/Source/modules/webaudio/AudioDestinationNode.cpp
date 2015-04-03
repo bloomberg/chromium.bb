@@ -34,8 +34,8 @@
 
 namespace blink {
 
-AudioDestinationHandler::AudioDestinationHandler(AudioContext* context, float sampleRate)
-    : AudioHandler(NodeTypeDestination, context, sampleRate)
+AudioDestinationHandler::AudioDestinationHandler(AudioNode& node, float sampleRate)
+    : AudioHandler(NodeTypeDestination, node, sampleRate)
     , m_currentSampleFrame(0)
 {
     addInput();
@@ -97,6 +97,23 @@ void AudioDestinationHandler::render(AudioBus* sourceBus, AudioBus* destinationB
 
     // Advance current sample-frame.
     m_currentSampleFrame += numberOfFrames;
+}
+
+// ----------------------------------------------------------------
+
+AudioDestinationNode::AudioDestinationNode(AudioContext& context)
+    : AudioNode(context)
+{
+}
+
+AudioDestinationHandler& AudioDestinationNode::audioDestinationHandler() const
+{
+    return static_cast<AudioDestinationHandler&>(handler());
+}
+
+unsigned long AudioDestinationNode::maxChannelCount() const
+{
+    return audioDestinationHandler().maxChannelCount();
 }
 
 } // namespace blink

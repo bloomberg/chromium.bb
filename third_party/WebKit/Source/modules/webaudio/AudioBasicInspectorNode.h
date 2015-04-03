@@ -36,7 +36,7 @@ class ExceptionState;
 // AudioContext before the end of each render quantum so that it can inspect the audio stream.
 class AudioBasicInspectorHandler : public AudioHandler {
 public:
-    AudioBasicInspectorHandler(NodeType, AudioContext*, float sampleRate, unsigned outputChannelCount);
+    AudioBasicInspectorHandler(NodeType, AudioNode&, float sampleRate, unsigned outputChannelCount);
 
     // AudioHandler
     virtual void pullInputs(size_t framesToProcess) override final;

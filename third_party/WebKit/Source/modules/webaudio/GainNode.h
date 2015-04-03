@@ -38,12 +38,8 @@ class AudioContext;
 // De-zippering (smoothing) is applied when the gain value is changed dynamically.
 
 class GainHandler final : public AudioHandler {
-    DEFINE_WRAPPERTYPEINFO();
 public:
-    static GainHandler* create(AudioContext* context, float sampleRate)
-    {
-        return new GainHandler(context, sampleRate);
-    }
+    GainHandler(AudioNode&, float sampleRate);
 
     // AudioHandler
     virtual void process(size_t framesToProcess) override;
@@ -57,16 +53,22 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    GainHandler(AudioContext*, float sampleRate);
-
     float m_lastGain; // for de-zippering
     Member<AudioParam> m_gain;
 
     AudioFloatArray m_sampleAccurateGainValues;
 };
 
-// TODO(tkent): Introduce an actual class to wrap a handler.
-using GainNode = GainHandler;
+class GainNode : public AudioNode {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static GainNode* create(AudioContext*, float sampleRate);
+
+    AudioParam* gain() const;
+
+private:
+    GainNode(AudioContext&, float sampelRate);
+};
 
 } // namespace blink
 

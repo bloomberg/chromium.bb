@@ -34,8 +34,8 @@
 
 namespace blink {
 
-DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(AudioContext* context)
-    : AudioDestinationHandler(context, AudioDestination::hardwareSampleRate())
+DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(AudioNode& node)
+    : AudioDestinationHandler(node, AudioDestination::hardwareSampleRate())
     , m_numberOfInputChannels(0)
 {
     // Node-specific default mixing rules.
@@ -132,6 +132,19 @@ void DefaultAudioDestinationHandler::setChannelCount(unsigned long channelCount,
         createDestination();
         m_destination->start();
     }
+}
+
+// ----------------------------------------------------------------
+
+DefaultAudioDestinationNode::DefaultAudioDestinationNode(AudioContext& context)
+    : AudioDestinationNode(context)
+{
+    setHandler(new DefaultAudioDestinationHandler(*this));
+}
+
+DefaultAudioDestinationNode* DefaultAudioDestinationNode::create(AudioContext* context)
+{
+    return new DefaultAudioDestinationNode(*context);
 }
 
 } // namespace blink

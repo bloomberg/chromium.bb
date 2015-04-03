@@ -39,13 +39,8 @@ namespace blink {
 
 using namespace VectorMath;
 
-OscillatorHandler* OscillatorHandler::create(AudioContext* context, float sampleRate)
-{
-    return new OscillatorHandler(context, sampleRate);
-}
-
-OscillatorHandler::OscillatorHandler(AudioContext* audioContext, float sampleRate)
-    : AudioScheduledSourceHandler(NodeTypeOscillator, audioContext, sampleRate)
+OscillatorHandler::OscillatorHandler(AudioNode& node, float sampleRate)
+    : AudioScheduledSourceHandler(NodeTypeOscillator, node, sampleRate)
     , m_type(SINE)
     , m_firstRender(true)
     , m_virtualReadIndex(0)
@@ -346,6 +341,49 @@ DEFINE_TRACE(OscillatorHandler)
     visitor->trace(m_detune);
     visitor->trace(m_periodicWave);
     AudioScheduledSourceHandler::trace(visitor);
+}
+
+// ----------------------------------------------------------------
+
+OscillatorNode::OscillatorNode(AudioContext& context, float sampleRate)
+    : AudioScheduledSourceNode(context)
+{
+    setHandler(new OscillatorHandler(*this, sampleRate));
+}
+
+OscillatorNode* OscillatorNode::create(AudioContext* context, float sampleRate)
+{
+    return new OscillatorNode(*context, sampleRate);
+}
+
+OscillatorHandler& OscillatorNode::oscillatorHandler() const
+{
+    return static_cast<OscillatorHandler&>(handler());
+}
+
+String OscillatorNode::type() const
+{
+    return oscillatorHandler().type();
+}
+
+void OscillatorNode::setType(const String& type)
+{
+    oscillatorHandler().setType(type);
+}
+
+AudioParam* OscillatorNode::frequency()
+{
+    return oscillatorHandler().frequency();
+}
+
+AudioParam* OscillatorNode::detune()
+{
+    return oscillatorHandler().detune();
+}
+
+void OscillatorNode::setPeriodicWave(PeriodicWave* wave)
+{
+    oscillatorHandler().setPeriodicWave(wave);
 }
 
 } // namespace blink
