@@ -840,6 +840,10 @@ bool TransportSecurityState::GetDynamicDomainState(const std::string& host,
 
   base::Time current_time(base::Time::Now());
 
+  // Although STS and PKP states are completely independent, they are currently
+  // stored and processed together. This loop performs both independent queries
+  // together and combines the two results into a single output. See
+  // https://crbug.com/470295
   bool found_sts = false;
   bool found_pkp = false;
   for (size_t i = 0; canonicalized_host[i]; i += canonicalized_host[i] + 1) {
@@ -858,28 +862,38 @@ bool TransportSecurityState::GetDynamicDomainState(const std::string& host,
       continue;
     }
 
-    // If this is the most specific STS match, add it to the result.
-    if (!found_sts && (i == 0 || j->second.sts.include_subdomains) &&
-        current_time <= j->second.sts.expiry &&
+    // If this is the most specific STS match, add it to the result. Note: a STS
+    // entry at a more specific domain overrides a less specific domain whether
+    // or not |include_subdomains| is set.
+    if (!found_sts && current_time <= j->second.sts.expiry &&
         j->second.ShouldUpgradeToSSL()) {
       found_sts = true;
-      state.sts = j->second.sts;
-      state.sts.domain = DNSDomainToString(host_sub_chunk);
+      if (i == 0 || j->second.sts.include_subdomains) {
+        state.sts = j->second.sts;
+        state.sts.domain = DNSDomainToString(host_sub_chunk);
+      }
     }
 
-    // If this is the most specific PKP match, add it to the result.
-    if (!found_pkp && (i == 0 || j->second.pkp.include_subdomains) &&
-        current_time <= j->second.pkp.expiry && j->second.HasPublicKeyPins()) {
+    // If this is the most specific PKP match, add it to the result. Note: a PKP
+    // entry at a more specific domain overrides a less specific domain whether
+    // or not |include_subdomains| is set.
+    if (!found_pkp && current_time <= j->second.pkp.expiry &&
+        j->second.HasPublicKeyPins()) {
       found_pkp = true;
-      state.pkp = j->second.pkp;
-      state.pkp.domain = DNSDomainToString(host_sub_chunk);
+      if (i == 0 || j->second.pkp.include_subdomains) {
+        state.pkp = j->second.pkp;
+        state.pkp.domain = DNSDomainToString(host_sub_chunk);
+      }
     }
 
+    // Both queries have terminated. Abort the loop early.
     if (found_sts && found_pkp)
       break;
   }
 
-  if (!found_sts && !found_pkp)
+  // If neither STS nor PKP state was found, do not return any DomainState. This
+  // determines whether ShouldSSLErrorsBeFatal returns true or false.
+  if (!state.ShouldUpgradeToSSL() && !state.HasPublicKeyPins())
     return false;
 
   *result = state;
@@ -941,7 +955,8 @@ bool TransportSecurityState::DomainState::ShouldUpgradeToSSL() const {
 
 bool TransportSecurityState::DomainState::ShouldSSLErrorsBeFatal() const {
   // Both HSTS and HPKP cause fatal SSL errors, so enable this on the presense
-  // of either. (If neither is active, no DomainState will be returned.)
+  // of either. (If neither is active, no DomainState will be returned from
+  // GetDynamicDomainState.)
   return true;
 }
 

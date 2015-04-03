@@ -53,7 +53,8 @@ class NET_EXPORT TransportSecurityState
   //
   // TODO(davidben): STSState and PKPState are queried and processed
   // independently (with the exception of ShouldSSLErrorsBeFatal triggering on
-  // both and on-disk storage). DomainState should be split into the two.
+  // both and on-disk storage). DomainState should be split into the
+  // two. https://crbug.com/470295.
   class NET_EXPORT DomainState {
    public:
     enum UpgradeMode {
