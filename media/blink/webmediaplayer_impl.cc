@@ -26,7 +26,6 @@
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
-#include "media/base/key_systems.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/pipeline.h"
@@ -665,11 +664,10 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
          BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnCdmAttached, result));
 }
 
-// TODO(jrummell): |init_data_type| should be an enum. http://crbug.com/417440
 void WebMediaPlayerImpl::OnEncryptedMediaInitData(
-    const std::string& init_data_type,
+    EmeInitDataType init_data_type,
     const std::vector<uint8>& init_data) {
-  DCHECK(!init_data_type.empty());
+  DCHECK(init_data_type != EmeInitDataType::UNKNOWN);
 
   // Do not fire "encrypted" event if encrypted media is not enabled.
   // TODO(xhwang): Handle this in |client_|.
@@ -683,10 +681,9 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
 
   encrypted_media_support_.SetInitDataType(init_data_type);
 
-  client_->encrypted(
-      ConvertToWebInitDataType(GetInitDataTypeForName(init_data_type)),
-      vector_as_array(&init_data),
-      base::saturated_cast<unsigned int>(init_data.size()));
+  client_->encrypted(ConvertToWebInitDataType(init_data_type),
+                     vector_as_array(&init_data),
+                     base::saturated_cast<unsigned int>(init_data.size()));
 }
 
 void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {

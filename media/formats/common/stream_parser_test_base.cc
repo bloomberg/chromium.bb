@@ -108,9 +108,10 @@ bool StreamParserTestBase::OnNewBuffers(
   return true;
 }
 
-void StreamParserTestBase::OnKeyNeeded(const std::string& type,
+void StreamParserTestBase::OnKeyNeeded(EmeInitDataType type,
                                        const std::vector<uint8>& init_data) {
-  DVLOG(1) << __FUNCTION__ << "(" << type << ", " << init_data.size() << ")";
+  DVLOG(1) << __FUNCTION__ << "(" << static_cast<int>(type) << ", "
+           << init_data.size() << ")";
 }
 
 void StreamParserTestBase::OnNewSegment() {

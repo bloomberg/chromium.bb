@@ -11,7 +11,6 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/key_systems.h"
 #include "media/base/media.h"
 #include "media/base/media_keys.h"
 #include "media/base/media_switches.h"
@@ -56,7 +55,6 @@ using testing::SaveArg;
 namespace media {
 
 const char kSourceId[] = "SourceId";
-const char kCencInitDataType[] = "cenc";
 
 const char kWebM[] = "video/webm; codecs=\"vp8,vorbis\"";
 const char kWebMVP9[] = "video/webm; codecs=\"vp9\"";
@@ -165,7 +163,7 @@ class FakeEncryptedMedia {
       FAIL() << "Unexpected Key Error";
     }
 
-    virtual void OnEncryptedMediaInitData(const std::string& init_data_type,
+    virtual void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                           const std::vector<uint8>& init_data,
                                           AesDecryptor* decryptor) = 0;
   };
@@ -210,7 +208,7 @@ class FakeEncryptedMedia {
                                error_message);
   }
 
-  void OnEncryptedMediaInitData(const std::string& init_data_type,
+  void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                 const std::vector<uint8>& init_data) {
     app_->OnEncryptedMediaInitData(init_data_type, init_data, &decryptor_);
   }
@@ -298,7 +296,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     EXPECT_EQ(has_additional_usable_key, true);
   }
 
-  void OnEncryptedMediaInitData(const std::string& init_data_type,
+  void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                 const std::vector<uint8>& init_data,
                                 AesDecryptor* decryptor) override {
     // Since only 1 session is created, skip the request if the |init_data|
@@ -308,7 +306,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     prev_init_data_ = init_data;
 
     if (current_session_id_.empty()) {
-      if (init_data_type == kCencInitDataType) {
+      if (init_data_type == EmeInitDataType::CENC) {
         // Since the 'cenc' files are not created with proper 'pssh' boxes,
         // simply pretend that this is a webm file and pass the expected
         // key ID as the init_data.
@@ -318,8 +316,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
             arraysize(kKeyId), CreateSessionPromise(RESOLVED));
       } else {
         decryptor->CreateSessionAndGenerateRequest(
-            MediaKeys::TEMPORARY_SESSION,
-            media::GetInitDataTypeForName(init_data_type),
+            MediaKeys::TEMPORARY_SESSION, init_data_type,
             vector_as_array(&init_data), init_data.size(),
             CreateSessionPromise(RESOLVED));
       }
@@ -331,7 +328,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     // 'pssh' box). Therefore, provide the correct key ID.
     const uint8* key_id = vector_as_array(&init_data);
     size_t key_id_length = init_data.size();
-    if (init_data_type == kCencInitDataType) {
+    if (init_data_type == EmeInitDataType::CENC) {
       key_id = kKeyId;
       key_id_length = arraysize(kKeyId);
     }
@@ -358,7 +355,7 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
     EXPECT_GT(num_distint_need_key_calls_, 1u);
   }
 
-  void OnEncryptedMediaInitData(const std::string& init_data_type,
+  void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                 const std::vector<uint8>& init_data,
                                 AesDecryptor* decryptor) override {
     // Skip the request if the |init_data| has been seen.
@@ -371,7 +368,7 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
     std::vector<uint8> key;
     EXPECT_TRUE(GetKeyAndKeyId(init_data, &key, &key_id));
 
-    if (init_data_type == kCencInitDataType) {
+    if (init_data_type == EmeInitDataType::CENC) {
       // Since the 'cenc' files are not created with proper 'pssh' boxes,
       // simply pretend that this is a webm file and pass the expected
       // key ID as the init_data.
@@ -382,8 +379,7 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
           CreateSessionPromise(RESOLVED));
     } else {
       decryptor->CreateSessionAndGenerateRequest(
-          MediaKeys::TEMPORARY_SESSION,
-          media::GetInitDataTypeForName(init_data_type),
+          MediaKeys::TEMPORARY_SESSION, init_data_type,
           vector_as_array(&init_data), init_data.size(),
           CreateSessionPromise(RESOLVED));
     }
@@ -457,7 +453,7 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
     EXPECT_EQ(has_additional_usable_key, true);
   }
 
-  void OnEncryptedMediaInitData(const std::string& init_data_type,
+  void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                 const std::vector<uint8>& init_data,
                                 AesDecryptor* decryptor) override {}
 };
@@ -601,7 +597,7 @@ class MockMediaSource {
     AppendData(initial_append_size_);
   }
 
-  void OnEncryptedMediaInitData(const std::string& init_data_type,
+  void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                 const std::vector<uint8>& init_data) {
     DCHECK(!init_data.empty());
     CHECK(!encrypted_media_init_data_cb_.is_null());

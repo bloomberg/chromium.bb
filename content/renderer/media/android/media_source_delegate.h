@@ -138,7 +138,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void FinishResettingDecryptingDemuxerStreams();
 
   void OnDemuxerOpened();
-  void OnEncryptedMediaInitData(const std::string& init_data_type,
+  void OnEncryptedMediaInitData(media::EmeInitDataType init_data_type,
                                 const std::vector<uint8>& init_data);
   void NotifyDemuxerReady();
 
@@ -200,10 +200,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   MediaSourceOpenedCB media_source_opened_cb_;
   media::Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   base::Closure waiting_for_decryption_key_cb_;
-
-  // Temporary for EME v0.1. In the future the init data type should be passed
-  // through GenerateKeyRequest() directly from WebKit.
-  std::string init_data_type_;
 
   // Lock used to serialize access for |seeking_|.
   mutable base::Lock seeking_lock_;

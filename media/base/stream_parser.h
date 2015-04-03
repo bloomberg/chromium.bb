@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
 
@@ -105,7 +106,7 @@ class MEDIA_EXPORT StreamParser {
   // First parameter - The type of the initialization data associated with the
   //                   stream.
   // Second parameter - The initialization data associated with the stream.
-  typedef base::Callback<void(const std::string&, const std::vector<uint8>&)>
+  typedef base::Callback<void(EmeInitDataType, const std::vector<uint8>&)>
       EncryptedMediaInitDataCB;
 
   StreamParser();

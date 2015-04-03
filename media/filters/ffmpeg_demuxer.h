@@ -180,7 +180,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   // Calls |encrypted_media_init_data_cb_| with the initialization data
   // encountered in the file.
-  void OnEncryptedMediaInitData(const std::string& init_data_type,
+  void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                 const std::string& encryption_key_id);
 
   // Allow FFmpegDemuxerStream to notify us when there is updated information

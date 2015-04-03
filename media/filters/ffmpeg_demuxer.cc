@@ -165,7 +165,7 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
       return;
 
     encryption_key_id_.assign(enc_key_id);
-    demuxer_->OnEncryptedMediaInitData(kWebMInitDataType, enc_key_id);
+    demuxer_->OnEncryptedMediaInitData(EmeInitDataType::WEBM, enc_key_id);
   }
 }
 
@@ -1259,7 +1259,7 @@ void FFmpegDemuxer::StreamHasEnded() {
 }
 
 void FFmpegDemuxer::OnEncryptedMediaInitData(
-    const std::string& init_data_type,
+    EmeInitDataType init_data_type,
     const std::string& encryption_key_id) {
   std::vector<uint8> key_id_local(encryption_key_id.begin(),
                                   encryption_key_id.end());

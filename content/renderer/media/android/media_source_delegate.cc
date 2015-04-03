@@ -670,7 +670,7 @@ void MediaSourceDelegate::OnDemuxerOpened() {
 }
 
 void MediaSourceDelegate::OnEncryptedMediaInitData(
-    const std::string& init_data_type,
+    media::EmeInitDataType init_data_type,
     const std::vector<uint8>& init_data) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (encrypted_media_init_data_cb_.is_null())

@@ -80,7 +80,7 @@ void StripHeader(std::vector<uint8>& data, size_t length) {
   data.erase(data.begin(), data.begin() + length);
 }
 
-bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
+bool ProxyDecryptor::GenerateKeyRequest(EmeInitDataType init_data_type,
                                         const uint8* init_data,
                                         int init_data_length) {
   DVLOG(1) << "GenerateKeyRequest()";
@@ -146,7 +146,7 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
 
 void ProxyDecryptor::OnPermissionStatus(
     MediaKeys::SessionType session_type,
-    const std::string& init_data_type,
+    EmeInitDataType init_data_type,
     const std::vector<uint8>& init_data,
     scoped_ptr<NewSessionCdmPromise> promise,
     bool granted) {
@@ -157,8 +157,8 @@ void ProxyDecryptor::OnPermissionStatus(
   DVLOG_IF(1, !granted) << "Permission request rejected.";
 
   media_keys_->CreateSessionAndGenerateRequest(
-      session_type, GetInitDataTypeForName(init_data_type),
-      vector_as_array(&init_data), init_data.size(), promise.Pass());
+      session_type, init_data_type, vector_as_array(&init_data),
+      init_data.size(), promise.Pass());
 }
 
 void ProxyDecryptor::AddKey(const uint8* key,

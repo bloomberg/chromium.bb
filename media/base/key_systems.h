@@ -122,10 +122,6 @@ MEDIA_EXPORT std::string GetPepperType(
     const std::string& concrete_key_system);
 #endif
 
-// Gets the Initialization Data Type for |init_data_type|.
-MEDIA_EXPORT EmeInitDataType
-GetInitDataTypeForName(const std::string& init_data_type);
-
 #if defined(UNIT_TEST)
 // Helper functions to add container/codec types for testing purposes.
 MEDIA_EXPORT void AddContainerMask(const std::string& container, uint32 mask);

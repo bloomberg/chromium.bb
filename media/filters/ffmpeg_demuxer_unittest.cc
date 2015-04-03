@@ -19,7 +19,6 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
 #include "media/formats/mp4/avc.h"
-#include "media/formats/webm/webm_crypto_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;
@@ -184,7 +183,7 @@ class FFmpegDemuxerTest : public testing::Test {
   }
 
   MOCK_METHOD2(OnEncryptedMediaInitData,
-               void(const std::string& init_data_type,
+               void(EmeInitDataType init_data_type,
                     const std::vector<uint8>& init_data));
 
   // Accessor to demuxer internals.
@@ -378,7 +377,7 @@ TEST_F(FFmpegDemuxerTest, Initialize_MultitrackText) {
 TEST_F(FFmpegDemuxerTest, Initialize_Encrypted) {
   EXPECT_CALL(*this,
               OnEncryptedMediaInitData(
-                  kWebMInitDataType,
+                  EmeInitDataType::WEBM,
                   std::vector<uint8>(kEncryptedMediaInitData,
                                      kEncryptedMediaInitData +
                                          arraysize(kEncryptedMediaInitData))))

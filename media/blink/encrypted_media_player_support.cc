@@ -103,13 +103,13 @@ static void ReportMediaKeyExceptionToUMA(const std::string& method,
 
 // Guess the type of |init_data|. This is only used to handle some corner cases
 // so we keep it as simple as possible without breaking major use cases.
-static std::string GuessInitDataType(const unsigned char* init_data,
-                                     unsigned init_data_length) {
+static EmeInitDataType GuessInitDataType(const unsigned char* init_data,
+                                         unsigned init_data_length) {
   // Most WebM files use KeyId of 16 bytes. CENC init data is always >16 bytes.
   if (init_data_length == 16)
-    return "webm";
+    return EmeInitDataType::WEBM;
 
-  return "cenc";
+  return EmeInitDataType::CENC;
 }
 
 EncryptedMediaPlayerSupport::EncryptedMediaPlayerSupport(
@@ -120,6 +120,7 @@ EncryptedMediaPlayerSupport::EncryptedMediaPlayerSupport(
     : cdm_factory_(cdm_factory.Pass()),
       client_(client),
       media_permission_(media_permission),
+      init_data_type_(EmeInitDataType::UNKNOWN),
       set_cdm_context_cb_(set_cdm_context_cb) {
 }
 
@@ -182,8 +183,8 @@ EncryptedMediaPlayerSupport::GenerateKeyRequestInternal(
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
   }
 
-  std::string init_data_type = init_data_type_;
-  if (init_data_type.empty())
+  EmeInitDataType init_data_type = init_data_type_;
+  if (init_data_type == EmeInitDataType::UNKNOWN)
     init_data_type = GuessInitDataType(init_data, init_data_length);
 
   if (!proxy_decryptor_->GenerateKeyRequest(init_data_type, init_data,
@@ -277,12 +278,12 @@ EncryptedMediaPlayerSupport::CancelKeyRequestInternal(
 }
 
 void EncryptedMediaPlayerSupport::SetInitDataType(
-    const std::string& init_data_type) {
-  DCHECK(!init_data_type.empty());
-  DLOG_IF(WARNING,
-          !init_data_type_.empty() && init_data_type != init_data_type_)
+    EmeInitDataType init_data_type) {
+  DCHECK(init_data_type != EmeInitDataType::UNKNOWN);
+  DLOG_IF(WARNING, init_data_type_ != EmeInitDataType::UNKNOWN &&
+                       init_data_type != init_data_type_)
       << "Mixed init data type not supported. The new type is ignored.";
-  if (init_data_type_.empty())
+  if (init_data_type_ == EmeInitDataType::UNKNOWN)
     init_data_type_ = init_data_type;
 }
 

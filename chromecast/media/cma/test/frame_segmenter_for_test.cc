@@ -263,7 +263,7 @@ BufferList H264SegmenterForTest(const uint8* data, size_t data_size) {
   return video_frames;
 }
 
-void OnEncryptedMediaInitData(const std::string& init_data_type,
+void OnEncryptedMediaInitData(::media::EmeInitDataType init_data_type,
                               const std::vector<uint8>& init_data) {
   LOG(FATAL) << "Unexpected test failure: file is encrypted.";
 }

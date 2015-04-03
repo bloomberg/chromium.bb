@@ -11,6 +11,7 @@
 #include "media/base/data_source.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/demuxer_stream_provider.h"
+#include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
@@ -48,7 +49,7 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
   // A new potentially encrypted stream has been parsed.
   // First parameter - The type of initialization data.
   // Second parameter - The initialization data associated with the stream.
-  typedef base::Callback<void(const std::string& type,
+  typedef base::Callback<void(EmeInitDataType type,
                               const std::vector<uint8>& init_data)>
       EncryptedMediaInitDataCB;
 

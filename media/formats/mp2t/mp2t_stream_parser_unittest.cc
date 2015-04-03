@@ -171,8 +171,7 @@ class Mp2tStreamParserTest : public testing::Test {
     return true;
   }
 
-  void OnKeyNeeded(const std::string& type,
-                   const std::vector<uint8>& init_data) {
+  void OnKeyNeeded(EmeInitDataType type, const std::vector<uint8>& init_data) {
     NOTREACHED() << "OnKeyNeeded not expected in the Mpeg2 TS parser";
   }
 

@@ -22,8 +22,6 @@
 namespace media {
 namespace mp4 {
 
-static const char kCencInitDataType[] = "cenc";
-
 MP4StreamParser::MP4StreamParser(const std::set<int>& audio_object_types,
                                  bool has_sbr)
     : state_(kWaitingForInit),
@@ -357,7 +355,7 @@ void MP4StreamParser::OnEncryptedMediaInitData(
            headers[i].raw_box.size());
     pos += headers[i].raw_box.size();
   }
-  encrypted_media_init_data_cb_.Run(kCencInitDataType, init_data);
+  encrypted_media_init_data_cb_.Run(EmeInitDataType::CENC, init_data);
 }
 
 bool MP4StreamParser::PrepareAVCBuffer(

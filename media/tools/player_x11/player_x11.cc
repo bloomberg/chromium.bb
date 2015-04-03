@@ -95,7 +95,7 @@ static void OnAddTextTrack(const media::TextTrackConfig& config,
                            const media::AddTextTrackDoneCB& done_cb) {
 }
 
-static void OnEncryptedMediaInitData(const std::string& init_data_type,
+static void OnEncryptedMediaInitData(media::EmeInitDataType init_data_type,
                                      const std::vector<uint8>& init_data) {
   std::cout << "File is encrypted." << std::endl;
 }

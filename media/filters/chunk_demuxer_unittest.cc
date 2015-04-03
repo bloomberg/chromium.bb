@@ -19,7 +19,6 @@
 #include "media/filters/chunk_demuxer.h"
 #include "media/formats/webm/cluster_builder.h"
 #include "media/formats/webm/webm_constants.h"
-#include "media/formats/webm/webm_crypto_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;
@@ -1159,7 +1158,7 @@ class ChunkDemuxerTest : public ::testing::Test {
 
   MOCK_METHOD0(DemuxerOpened, void());
   MOCK_METHOD2(OnEncryptedMediaInitData,
-               void(const std::string& init_data_type,
+               void(EmeInitDataType init_data_type,
                     const std::vector<uint8>& init_data));
 
   MOCK_METHOD0(InitSegmentReceived, void(void));
@@ -1222,7 +1221,7 @@ TEST_F(ChunkDemuxerTest, Init) {
       int need_key_count = (is_audio_encrypted ? 1 : 0) +
                            (is_video_encrypted ? 1 : 0);
       EXPECT_CALL(*this, OnEncryptedMediaInitData(
-                             kWebMInitDataType,
+                             EmeInitDataType::WEBM,
                              std::vector<uint8>(
                                  kEncryptedMediaInitData,
                                  kEncryptedMediaInitData +

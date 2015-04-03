@@ -43,7 +43,7 @@ static void QuitLoopWithStatus(base::MessageLoop* message_loop,
   message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
-static void OnEncryptedMediaInitData(const std::string& init_data_type,
+static void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
                                      const std::vector<uint8>& init_data) {
   VLOG(0) << "File is encrypted.";
 }

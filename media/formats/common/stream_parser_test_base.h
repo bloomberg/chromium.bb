@@ -57,8 +57,7 @@ class StreamParserTestBase {
   bool OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
                     const StreamParser::BufferQueue& video_buffers,
                     const StreamParser::TextBufferQueueMap& text_map);
-  void OnKeyNeeded(const std::string& type,
-                   const std::vector<uint8>& init_data);
+  void OnKeyNeeded(EmeInitDataType type, const std::vector<uint8>& init_data);
   void OnNewSegment();
   void OnEndOfSegment();
 

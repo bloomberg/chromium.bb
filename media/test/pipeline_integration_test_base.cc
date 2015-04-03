@@ -66,7 +66,7 @@ void PipelineIntegrationTestBase::OnStatusCallback(
 }
 
 void PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB(
-    const std::string& type,
+    EmeInitDataType type,
     const std::vector<uint8>& init_data) {
   DCHECK(!init_data.empty());
   CHECK(!encrypted_media_init_data_cb_.is_null());

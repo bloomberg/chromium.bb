@@ -12,7 +12,6 @@
 #include "media/formats/webm/webm_cluster_parser.h"
 #include "media/formats/webm/webm_constants.h"
 #include "media/formats/webm/webm_content_encodings.h"
-#include "media/formats/webm/webm_crypto_helpers.h"
 #include "media/formats/webm/webm_info_parser.h"
 #include "media/formats/webm/webm_tracks_parser.h"
 
@@ -279,7 +278,7 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
 
 void WebMStreamParser::OnEncryptedMediaInitData(const std::string& key_id) {
   std::vector<uint8> key_id_vector(key_id.begin(), key_id.end());
-  encrypted_media_init_data_cb_.Run(kWebMInitDataType, key_id_vector);
+  encrypted_media_init_data_cb_.Run(EmeInitDataType::WEBM, key_id_vector);
 }
 
 }  // namespace media

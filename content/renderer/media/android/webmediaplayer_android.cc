@@ -188,6 +188,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       player_type_(MEDIA_PLAYER_TYPE_URL),
       is_remote_(false),
       media_log_(media_log),
+      init_data_type_(media::EmeInitDataType::UNKNOWN),
       cdm_context_(NULL),
       allow_stored_credentials_(false),
       is_local_resource_(false),
@@ -1506,13 +1507,13 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::generateKeyRequest(
 
 // Guess the type of |init_data|. This is only used to handle some corner cases
 // so we keep it as simple as possible without breaking major use cases.
-static std::string GuessInitDataType(const unsigned char* init_data,
-                                     unsigned init_data_length) {
+static media::EmeInitDataType GuessInitDataType(const unsigned char* init_data,
+                                                unsigned init_data_length) {
   // Most WebM files use KeyId of 16 bytes. CENC init data is always >16 bytes.
   if (init_data_length == 16)
-    return "webm";
+    return media::EmeInitDataType::WEBM;
 
-  return "cenc";
+  return media::EmeInitDataType::CENC;
 }
 
 // TODO(xhwang): Report an error when there is encrypted stream but EME is
@@ -1557,8 +1558,8 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
   }
 
-  std::string init_data_type = init_data_type_;
-  if (init_data_type.empty())
+  media::EmeInitDataType init_data_type = init_data_type_;
+  if (init_data_type == media::EmeInitDataType::UNKNOWN)
     init_data_type = GuessInitDataType(init_data, init_data_length);
 
   // TODO(xhwang): We assume all streams are from the same container (thus have
@@ -1739,9 +1740,8 @@ void WebMediaPlayerAndroid::OnMediaSourceOpened(
   client_->mediaSourceOpened(web_media_source);
 }
 
-// TODO(jrummell): |init_data_type| should be an enum. http://crbug.com/417440
 void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
-    const std::string& init_data_type,
+    media::EmeInitDataType init_data_type,
     const std::vector<uint8>& init_data) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
@@ -1753,16 +1753,15 @@ void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
 
   UMA_HISTOGRAM_COUNTS(kMediaEme + std::string("NeedKey"), 1);
 
-  DCHECK(!init_data_type.empty());
-  DLOG_IF(WARNING,
-          !init_data_type_.empty() && init_data_type != init_data_type_)
+  DCHECK(init_data_type != media::EmeInitDataType::UNKNOWN);
+  DLOG_IF(WARNING, init_data_type_ != media::EmeInitDataType::UNKNOWN &&
+                       init_data_type != init_data_type_)
       << "Mixed init data type not supported. The new type is ignored.";
-  if (init_data_type_.empty())
+  if (init_data_type_ == media::EmeInitDataType::UNKNOWN)
     init_data_type_ = init_data_type;
 
-  client_->encrypted(
-      ConvertToWebInitDataType(media::GetInitDataTypeForName(init_data_type)),
-      vector_as_array(&init_data), init_data.size());
+  client_->encrypted(ConvertToWebInitDataType(init_data_type),
+                     vector_as_array(&init_data), init_data.size());
 }
 
 void WebMediaPlayerAndroid::OnWaitingForDecryptionKey() {

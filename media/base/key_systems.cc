@@ -29,18 +29,6 @@ const char kUnsupportedClearKeyKeySystem[] = "unsupported-org.w3.clearkey";
 const char kClearKeyKeySystemNameForUMA[] = "ClearKey";
 const char kUnknownKeySystemNameForUMA[] = "Unknown";
 
-struct NamedInitDataType {
-  const char* name;
-  EmeInitDataType type;
-};
-
-// Mapping between initialization data types names and enum values.
-static NamedInitDataType kInitDataTypeNames[] = {
-    {"webm", EmeInitDataType::WEBM},
-    {"cenc", EmeInitDataType::CENC},
-    {"keyids", EmeInitDataType::KEYIDS},
-};
-
 struct NamedCodec {
   const char* name;
   EmeCodec type;
@@ -255,9 +243,6 @@ class KeySystemsImpl : public KeySystems {
       const std::string& key_system,
       EmeFeatureRequirement requirement) const override;
 
-  EmeInitDataType GetInitDataTypeForName(
-      const std::string& init_data_type) const;
-
  private:
   void InitializeUMAInfo();
 
@@ -309,7 +294,6 @@ class KeySystemsImpl : public KeySystems {
 
   KeySystemsSupportUMA key_systems_support_uma_;
 
-  InitDataTypesMap init_data_type_name_map_;
   ContainerCodecsMap container_to_codec_mask_map_;
   CodecsMap codec_string_map_;
   KeySystemNameForUMAMap key_system_name_for_uma_map_;
@@ -337,11 +321,6 @@ KeySystemsImpl& KeySystemsImpl::GetInstance() {
 KeySystemsImpl::KeySystemsImpl() :
     audio_codec_mask_(EME_CODEC_AUDIO_ALL),
     video_codec_mask_(EME_CODEC_VIDEO_ALL) {
-  for (size_t i = 0; i < arraysize(kInitDataTypeNames); ++i) {
-    const std::string& name = kInitDataTypeNames[i].name;
-    DCHECK(!init_data_type_name_map_.count(name));
-    init_data_type_name_map_[name] = kInitDataTypeNames[i].type;
-  }
   for (size_t i = 0; i < arraysize(kContainerToCodecMasks); ++i) {
     const std::string& name = kContainerToCodecMasks[i].name;
     DCHECK(!container_to_codec_mask_map_.count(name));
@@ -357,15 +336,6 @@ KeySystemsImpl::KeySystemsImpl() :
 
   // Always update supported key systems during construction.
   UpdateSupportedKeySystems();
-}
-
-EmeInitDataType KeySystemsImpl::GetInitDataTypeForName(
-    const std::string& init_data_type) const {
-  InitDataTypesMap::const_iterator iter =
-      init_data_type_name_map_.find(init_data_type);
-  if (iter != init_data_type_name_map_.end())
-    return iter->second;
-  return EmeInitDataType::UNKNOWN;
 }
 
 SupportedCodecs KeySystemsImpl::GetCodecMaskForContainer(
@@ -1009,10 +979,6 @@ std::string GetPepperType(const std::string& concrete_key_system) {
   return KeySystemsImpl::GetInstance().GetPepperType(concrete_key_system);
 }
 #endif
-
-EmeInitDataType GetInitDataTypeForName(const std::string& init_data_type) {
-  return KeySystemsImpl::GetInstance().GetInitDataTypeForName(init_data_type);
-}
 
 // These two functions are for testing purpose only. The declaration in the
 // header file is guarded by "#if defined(UNIT_TEST)" so that they can be used

@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
+#include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
@@ -56,7 +57,7 @@ class MEDIA_EXPORT ProxyDecryptor {
                      const GURL& security_origin);
 
   // May only be called after InitializeCDM() succeeds.
-  bool GenerateKeyRequest(const std::string& init_data_type,
+  bool GenerateKeyRequest(EmeInitDataType init_data_type,
                           const uint8* init_data,
                           int init_data_length);
   void AddKey(const uint8* key, int key_length,
@@ -90,7 +91,7 @@ class MEDIA_EXPORT ProxyDecryptor {
 
   // Callback for permission request.
   void OnPermissionStatus(MediaKeys::SessionType session_type,
-                          const std::string& init_data_type,
+                          EmeInitDataType init_data_type,
                           const std::vector<uint8>& init_data,
                           scoped_ptr<NewSessionCdmPromise> promise,
                           bool granted);

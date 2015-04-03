@@ -14,6 +14,7 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/demuxer.h"
+#include "media/base/eme_constants.h"
 #include "media/cdm/proxy_decryptor.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
@@ -63,7 +64,7 @@ class EncryptedMediaPlayerSupport
       const blink::WebString& key_system,
       const blink::WebString& session_id);
 
-  void SetInitDataType(const std::string& init_data_type);
+  void SetInitDataType(EmeInitDataType init_data_type);
 
   void OnPipelineDecryptError();
 
@@ -106,7 +107,7 @@ class EncryptedMediaPlayerSupport
 
   // We assume all streams are from the same container, thus have the same
   // init data type.
-  std::string init_data_type_;
+  EmeInitDataType init_data_type_;
 
   SetCdmContextCB set_cdm_context_cb_;
 

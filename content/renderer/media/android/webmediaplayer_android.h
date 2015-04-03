@@ -263,7 +263,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   void OnMediaSourceOpened(blink::WebMediaSource* web_media_source);
 
-  void OnEncryptedMediaInitData(const std::string& init_data_type,
+  void OnEncryptedMediaInitData(media::EmeInitDataType init_data_type,
                                 const std::vector<uint8>& init_data);
 
   // Called when a decoder detects that the key needed to decrypt the stream
@@ -481,9 +481,9 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // has been selected.
   std::string current_key_system_;
 
-  // Temporary for EME v0.1. In the future the init data type should be passed
-  // through GenerateKeyRequest() directly from WebKit.
-  std::string init_data_type_;
+  // Temporary for EME v0.1. Not needed for unprefixed EME, and can be removed
+  // when prefixed EME is removed.
+  media::EmeInitDataType init_data_type_;
 
   // Manages decryption keys and decrypts encrypted frames.
   scoped_ptr<media::ProxyDecryptor> proxy_decryptor_;
