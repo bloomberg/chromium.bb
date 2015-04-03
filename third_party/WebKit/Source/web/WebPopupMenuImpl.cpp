@@ -222,7 +222,7 @@ void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, Web
     m_widget->paint(&context, rect);
 
     if (DisplayItemList* displayItemList = this->displayItemList())
-        displayItemList->endNewPaints();
+        displayItemList->commitNewDisplayItems();
 }
 
 void WebPopupMenuImpl::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& clip, WebContentLayerClient::PaintingControlSetting paintingControl)
@@ -235,7 +235,7 @@ void WebPopupMenuImpl::paintContents(WebDisplayItemList* webDisplayItemList, con
 
     paintContents(static_cast<WebCanvas*>(nullptr), clip, paintingControl);
 
-    for (const auto& item : displayItemList()->paintList())
+    for (const auto& item : displayItemList()->displayItems())
         item->appendToWebDisplayItemList(webDisplayItemList);
 }
 

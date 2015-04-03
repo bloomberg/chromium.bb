@@ -92,7 +92,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
     }
 
     if (displayItemList)
-        displayItemList->replay(context);
+        displayItemList->commitNewDisplayItemsAndReplay(context);
     m_maskContentPicture = context.endRecording();
     return m_maskContentPicture;
 }

@@ -31,7 +31,7 @@ public:
 protected:
     LayoutView& layoutView() { return *m_layoutView; }
     DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
-    const Vector<OwnPtr<DisplayItem>>& newPaintListBeforeUpdate() { return rootDisplayItemList().m_newPaints; }
+    const Vector<OwnPtr<DisplayItem>>& newPaintListBeforeUpdate() { return rootDisplayItemList().m_newDisplayItems; }
 
 private:
     virtual void SetUp() override
@@ -97,9 +97,9 @@ TEST_F(DisplayItemListPaintTest, FullDocumentPaintingWithCaret)
     GraphicsContext context(nullptr, &rootDisplayItemList());
     DeprecatedPaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().endNewPaints();
+    rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
         TestDisplayItem(htmlLayoutObject, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
@@ -109,9 +109,9 @@ TEST_F(DisplayItemListPaintTest, FullDocumentPaintingWithCaret)
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divLayoutObject.displayItemClient()));
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(textInlineBox.displayItemClient()));
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().endNewPaints();
+    rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 3,
         TestDisplayItem(htmlLayoutObject, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(divLayoutObject, DisplayItem::Caret)); // New!
@@ -132,9 +132,9 @@ TEST_F(DisplayItemListPaintTest, InlineRelayout)
     GraphicsContext context(nullptr, &rootDisplayItemList());
     DeprecatedPaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().endNewPaints();
+    rootDisplayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 2,
         TestDisplayItem(htmlObject, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(firstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
@@ -144,13 +144,13 @@ TEST_F(DisplayItemListPaintTest, InlineRelayout)
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divBlock.displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstTextBoxDisplayItemClient));
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().endNewPaints();
+    rootDisplayItemList().commitNewDisplayItems();
 
     LayoutText& newText = *toLayoutText(divBlock.firstChild());
     InlineTextBox& newFirstTextBox = *newText.firstTextBox();
     InlineTextBox& secondTextBox = *newText.firstTextBox()->nextTextBox();
 
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().displayItems(), 3,
         TestDisplayItem(htmlObject, DisplayItem::BoxDecorationBackground),
         TestDisplayItem(newFirstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
         TestDisplayItem(secondTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));

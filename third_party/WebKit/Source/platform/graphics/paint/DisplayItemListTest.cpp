@@ -17,7 +17,7 @@ namespace blink {
 class DisplayItemListTest : public ::testing::Test {
 protected:
     DisplayItemList& displayItemList() { return m_displayItemList; }
-    const Vector<OwnPtr<DisplayItem>>& newPaintListBeforeUpdate() { return displayItemList().m_newPaints; }
+    const Vector<OwnPtr<DisplayItem>>& newPaintListBeforeUpdate() { return displayItemList().m_newDisplayItems; }
 
 private:
     virtual void SetUp() override
@@ -100,9 +100,9 @@ TEST_F(DisplayItemListTest, NestedRecorders)
     TestDisplayItemClient client("client");
 
     drawClippedRect(context, client, clipType, backgroundDrawingType, FloatRect(100, 100, 200, 200));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 3,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
         TestDisplayItem(client, clipType),
         TestDisplayItem(client, backgroundDrawingType),
         TestDisplayItem(client, DisplayItem::clipTypeToEndClipType(clipType)));
@@ -117,9 +117,9 @@ TEST_F(DisplayItemListTest, UpdateBasic)
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 200, 200));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 3,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
@@ -127,9 +127,9 @@ TEST_F(DisplayItemListTest, UpdateBasic)
     displayItemList().invalidate(second.displayItemClient());
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 2,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 }
@@ -144,9 +144,9 @@ TEST_F(DisplayItemListTest, UpdateSwapOrder)
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 3,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(unaffected, backgroundDrawingType));
@@ -155,9 +155,9 @@ TEST_F(DisplayItemListTest, UpdateSwapOrder)
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 3,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(unaffected, backgroundDrawingType));
@@ -172,18 +172,18 @@ TEST_F(DisplayItemListTest, UpdateNewItemInMiddle)
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 2,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, third, backgroundDrawingType, FloatRect(125, 100, 200, 50));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 3,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
@@ -202,9 +202,9 @@ TEST_F(DisplayItemListTest, UpdateInvalidationWithPhases)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, foregroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, third, foregroundDrawingType, FloatRect(300, 100, 50, 50));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 6,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 6,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType),
@@ -219,9 +219,9 @@ TEST_F(DisplayItemListTest, UpdateInvalidationWithPhases)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, foregroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, third, foregroundDrawingType, FloatRect(300, 100, 50, 50));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 6,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 6,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(third, backgroundDrawingType),
@@ -238,9 +238,9 @@ TEST_F(DisplayItemListTest, UpdateAddFirstOverlap)
 
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 2,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 
@@ -250,9 +250,9 @@ TEST_F(DisplayItemListTest, UpdateAddFirstOverlap)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 4,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 4,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
@@ -261,9 +261,9 @@ TEST_F(DisplayItemListTest, UpdateAddFirstOverlap)
     displayItemList().invalidate(first.displayItemClient());
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 2,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
         TestDisplayItem(second, backgroundDrawingType),
         TestDisplayItem(second, foregroundDrawingType));
 }
@@ -276,9 +276,9 @@ TEST_F(DisplayItemListTest, UpdateAddLastOverlap)
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 2,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 
@@ -288,9 +288,9 @@ TEST_F(DisplayItemListTest, UpdateAddLastOverlap)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 4,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 4,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
@@ -300,9 +300,9 @@ TEST_F(DisplayItemListTest, UpdateAddLastOverlap)
     displayItemList().invalidate(second.displayItemClient());
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 2,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(first, foregroundDrawingType));
 }
@@ -318,9 +318,9 @@ TEST_F(DisplayItemListTest, UpdateClip)
         drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
         drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     }
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 4,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 4,
         TestDisplayItem(first, clipType),
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
@@ -329,9 +329,9 @@ TEST_F(DisplayItemListTest, UpdateClip)
     displayItemList().invalidate(first.displayItemClient());
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 2,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
 
@@ -341,9 +341,9 @@ TEST_F(DisplayItemListTest, UpdateClip)
         ClipRecorder clipRecorder(context, second, clipType, LayoutRect(1, 1, 2, 2));
         drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     }
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 4,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 4,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, clipType),
         TestDisplayItem(second, backgroundDrawingType),
@@ -358,15 +358,15 @@ TEST_F(DisplayItemListTest, CachedDisplayItems)
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 2,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
     EXPECT_TRUE(displayItemList().clientCacheIsValid(first.displayItemClient()));
     EXPECT_TRUE(displayItemList().clientCacheIsValid(second.displayItemClient()));
-    DisplayItem* firstDisplayItem = displayItemList().paintList()[0].get();
-    DisplayItem* secondDisplayItem = displayItemList().paintList()[1].get();
+    DisplayItem* firstDisplayItem = displayItemList().displayItems()[0].get();
+    DisplayItem* secondDisplayItem = displayItemList().displayItems()[1].get();
 
     displayItemList().invalidate(first.displayItemClient());
     EXPECT_FALSE(displayItemList().clientCacheIsValid(first.displayItemClient()));
@@ -374,15 +374,15 @@ TEST_F(DisplayItemListTest, CachedDisplayItems)
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 2,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 2,
         TestDisplayItem(first, backgroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType));
     // The first display item should be updated.
-    EXPECT_NE(firstDisplayItem, displayItemList().paintList()[0].get());
+    EXPECT_NE(firstDisplayItem, displayItemList().displayItems()[0].get());
     // The second display item should be cached.
-    EXPECT_EQ(secondDisplayItem, displayItemList().paintList()[1].get());
+    EXPECT_EQ(secondDisplayItem, displayItemList().displayItems()[1].get());
     EXPECT_TRUE(displayItemList().clientCacheIsValid(first.displayItemClient()));
     EXPECT_TRUE(displayItemList().clientCacheIsValid(second.displayItemClient()));
 
@@ -407,9 +407,9 @@ TEST_F(DisplayItemListTest, ComplexUpdateSwapOrder)
     drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
     drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
     drawRect(context, container2, foregroundDrawingType, FloatRect(100, 200, 100, 100));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 8,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 8,
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, backgroundDrawingType),
         TestDisplayItem(content1, foregroundDrawingType),
@@ -429,9 +429,9 @@ TEST_F(DisplayItemListTest, ComplexUpdateSwapOrder)
     drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, content1, foregroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 8,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 8,
         TestDisplayItem(container2, backgroundDrawingType),
         TestDisplayItem(content2, backgroundDrawingType),
         TestDisplayItem(content2, foregroundDrawingType),
@@ -476,9 +476,9 @@ TEST_F(DisplayItemListTest, CachedSubtreeSwapOrder)
         drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
         drawRect(context, container2, foregroundDrawingType, FloatRect(100, 200, 100, 100));
     }
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 16,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 16,
         TestDisplayItem(container1, DisplayItem::paintPhaseToBeginSubtreeType(backgroundDrawingType)),
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, backgroundDrawingType),
@@ -524,9 +524,9 @@ TEST_F(DisplayItemListTest, CachedSubtreeSwapOrder)
         drawRect(context, content1, foregroundDrawingType, FloatRect(100, 100, 50, 200));
         drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     }
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 14,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 14,
         TestDisplayItem(container2, DisplayItem::paintPhaseToBeginSubtreeType(backgroundDrawingType)),
         TestDisplayItem(container2, backgroundDrawingType),
         TestDisplayItem(container2, DisplayItem::paintPhaseToEndSubtreeType(backgroundDrawingType)),
@@ -566,14 +566,14 @@ TEST_F(DisplayItemListTest, Scope)
     displayItemList().beginScope(multicol.displayItemClient());
     drawRect(context, content, foregroundDrawingType, rect2);
     displayItemList().endScope(multicol.displayItemClient());
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 3,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    RefPtr<const SkPicture> picture1 = static_cast<DrawingDisplayItem*>(displayItemList().paintList()[1].get())->picture();
-    RefPtr<const SkPicture> picture2 = static_cast<DrawingDisplayItem*>(displayItemList().paintList()[2].get())->picture();
+    RefPtr<const SkPicture> picture1 = static_cast<DrawingDisplayItem*>(displayItemList().displayItems()[1].get())->picture();
+    RefPtr<const SkPicture> picture2 = static_cast<DrawingDisplayItem*>(displayItemList().displayItems()[2].get())->picture();
     EXPECT_NE(picture1, picture2);
 
     // Draw again with nothing invalidated.
@@ -589,14 +589,14 @@ TEST_F(DisplayItemListTest, Scope)
     EXPECT_TRUE(newPaintListBeforeUpdate()[0]->isCached());
     EXPECT_TRUE(newPaintListBeforeUpdate()[1]->isCached());
     EXPECT_TRUE(newPaintListBeforeUpdate()[2]->isCached());
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 3,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    EXPECT_EQ(picture1, static_cast<DrawingDisplayItem*>(displayItemList().paintList()[1].get())->picture());
-    EXPECT_EQ(picture2, static_cast<DrawingDisplayItem*>(displayItemList().paintList()[2].get())->picture());
+    EXPECT_EQ(picture1, static_cast<DrawingDisplayItem*>(displayItemList().displayItems()[1].get())->picture());
+    EXPECT_EQ(picture2, static_cast<DrawingDisplayItem*>(displayItemList().displayItems()[2].get())->picture());
 
     // Now the multicol becomes 3 columns and repaints.
     displayItemList().invalidate(multicol.displayItemClient());
@@ -620,15 +620,15 @@ TEST_F(DisplayItemListTest, Scope)
     EXPECT_TRUE(newPaintListBeforeUpdate()[1]->isDrawing());
     EXPECT_TRUE(newPaintListBeforeUpdate()[2]->isDrawing());
     EXPECT_TRUE(newPaintListBeforeUpdate()[3]->isDrawing());
-    displayItemList().endNewPaints();
+    displayItemList().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(displayItemList().paintList(), 4,
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 4,
         TestDisplayItem(multicol, backgroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType),
         TestDisplayItem(content, foregroundDrawingType));
-    EXPECT_NE(picture1, static_cast<DrawingDisplayItem*>(displayItemList().paintList()[1].get())->picture());
-    EXPECT_NE(picture2, static_cast<DrawingDisplayItem*>(displayItemList().paintList()[2].get())->picture());
+    EXPECT_NE(picture1, static_cast<DrawingDisplayItem*>(displayItemList().displayItems()[1].get())->picture());
+    EXPECT_NE(picture2, static_cast<DrawingDisplayItem*>(displayItemList().displayItems()[2].get())->picture());
 }
 
 } // namespace blink

@@ -49,7 +49,7 @@ static void endRecordingContent(GraphicsContext* context, FilterData* filterData
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(filterData->m_displayItemList);
         ASSERT(filterData->m_context);
-        filterData->m_displayItemList->replay(*filterData->m_context);
+        filterData->m_displayItemList->commitNewDisplayItemsAndReplay(*filterData->m_context);
         context = filterData->m_context.get();
     }
 

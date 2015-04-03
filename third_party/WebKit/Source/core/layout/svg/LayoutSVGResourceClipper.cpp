@@ -199,7 +199,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(Affin
     }
 
     if (displayItemList)
-        displayItemList->replay(context);
+        displayItemList->commitNewDisplayItemsAndReplay(context);
     m_clipContentPicture = context.endRecording();
     return m_clipContentPicture;
 }

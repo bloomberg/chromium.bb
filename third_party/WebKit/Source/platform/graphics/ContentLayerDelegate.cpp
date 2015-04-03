@@ -71,7 +71,7 @@ void ContentLayerDelegate::paintContents(
     m_painter->paint(context, clip);
 
     if (displayItemList)
-        displayItemList->endNewPaints();
+        displayItemList->commitNewDisplayItems();
 }
 
 void ContentLayerDelegate::paintContents(
@@ -80,8 +80,8 @@ void ContentLayerDelegate::paintContents(
 {
     paintContents(static_cast<SkCanvas*>(0), clip, paintingControl);
 
-    const PaintList& paintList = m_painter->displayItemList()->paintList();
-    for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
+    const DisplayItems& paintList = m_painter->displayItemList()->displayItems();
+    for (DisplayItems::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
         (*it)->appendToWebDisplayItemList(webDisplayItemList);
 }
 

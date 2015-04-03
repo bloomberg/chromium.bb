@@ -260,7 +260,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     }
 
     if (displayItemList)
-        displayItemList->replay(recordingContext);
+        displayItemList->commitNewDisplayItemsAndReplay(recordingContext);
 
     RefPtr<const SkPicture> tilePicture = recordingContext.endRecording();
 

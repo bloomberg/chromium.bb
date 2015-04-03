@@ -203,7 +203,7 @@ void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()
         graphicsLayer->paint(graphicsContext, WebRect(0, 0, viewportWidth, viewportHeight));
 
         GraphicsContext replayContext(&canvas, nullptr /* displayItemList */);
-        graphicsLayer->displayItemList()->replay(replayContext);
+        graphicsLayer->displayItemList()->commitNewDisplayItemsAndReplay(replayContext);
     } else {
         GraphicsContext graphicsContext(&canvas, nullptr /* displayItemList */);
         graphicsLayer->paint(graphicsContext, WebRect(0, 0, viewportWidth, viewportHeight));

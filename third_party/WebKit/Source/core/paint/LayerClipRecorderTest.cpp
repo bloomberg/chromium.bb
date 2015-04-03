@@ -62,25 +62,25 @@ TEST_F(LayerClipRecorderTest, Single)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = layoutView().viewRect();
-    EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
+    EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
 
     drawRectInClip(context, layoutView(), PaintPhaseForeground, bound);
-    rootDisplayItemList().endNewPaints();
-    EXPECT_EQ((size_t)3, rootDisplayItemList().paintList().size());
-    EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isClip());
-    EXPECT_TRUE(rootDisplayItemList().paintList()[1]->isDrawing());
-    EXPECT_TRUE(rootDisplayItemList().paintList()[2]->isEndClip());
+    rootDisplayItemList().commitNewDisplayItems();
+    EXPECT_EQ((size_t)3, rootDisplayItemList().displayItems().size());
+    EXPECT_TRUE(rootDisplayItemList().displayItems()[0]->isClip());
+    EXPECT_TRUE(rootDisplayItemList().displayItems()[1]->isDrawing());
+    EXPECT_TRUE(rootDisplayItemList().displayItems()[2]->isEndClip());
 }
 
 TEST_F(LayerClipRecorderTest, Empty)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = layoutView().viewRect();
-    EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
+    EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
 
     drawEmptyClip(context, layoutView(), PaintPhaseForeground, bound);
-    rootDisplayItemList().endNewPaints();
-    EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
+    rootDisplayItemList().commitNewDisplayItems();
+    EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
 }
 
 }

@@ -22,7 +22,7 @@ public:
 protected:
     LayoutView& layoutView() { return *m_layoutView; }
     DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
-    const Vector<OwnPtr<DisplayItem>>& newPaintListBeforeUpdate() { return rootDisplayItemList().m_newPaints; }
+    const Vector<OwnPtr<DisplayItem>>& newdisplayItemsBeforeUpdate() { return rootDisplayItemList().m_newDisplayItems; }
 
 private:
     virtual void SetUp() override
@@ -67,11 +67,11 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 {
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = layoutView().viewRect();
-    EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
+    EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
 
     drawNothing(context, layoutView(), PaintPhaseForeground, bound);
-    rootDisplayItemList().endNewPaints();
-    EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
+    rootDisplayItemList().commitNewDisplayItems();
+    EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Rect)
@@ -79,9 +79,9 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect)
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = layoutView().viewRect();
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
-    rootDisplayItemList().endNewPaints();
-    EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
-    EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isDrawing());
+    rootDisplayItemList().commitNewDisplayItems();
+    EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
+    EXPECT_TRUE(rootDisplayItemList().displayItems()[0]->isDrawing());
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Cached)
@@ -90,18 +90,18 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
     FloatRect bound = layoutView().viewRect();
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
-    rootDisplayItemList().endNewPaints();
-    EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
-    EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isDrawing());
+    rootDisplayItemList().commitNewDisplayItems();
+    EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
+    EXPECT_TRUE(rootDisplayItemList().displayItems()[0]->isDrawing());
 
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
-    EXPECT_EQ((size_t)2, newPaintListBeforeUpdate().size());
-    EXPECT_TRUE(newPaintListBeforeUpdate()[0]->isCached());
-    EXPECT_TRUE(newPaintListBeforeUpdate()[1]->isCached());
-    rootDisplayItemList().endNewPaints();
-    EXPECT_EQ((size_t)1, rootDisplayItemList().paintList().size());
-    EXPECT_TRUE(rootDisplayItemList().paintList()[0]->isDrawing());
+    EXPECT_EQ((size_t)2, newdisplayItemsBeforeUpdate().size());
+    EXPECT_TRUE(newdisplayItemsBeforeUpdate()[0]->isCached());
+    EXPECT_TRUE(newdisplayItemsBeforeUpdate()[1]->isCached());
+    rootDisplayItemList().commitNewDisplayItems();
+    EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
+    EXPECT_TRUE(rootDisplayItemList().displayItems()[0]->isDrawing());
 }
 
 }

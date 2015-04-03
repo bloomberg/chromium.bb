@@ -22,7 +22,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
     , m_canUseCachedDrawing(false)
 #if ENABLE(ASSERT)
     , m_checkedCachedDrawing(false)
-    , m_displayItemPosition(RuntimeEnabledFeatures::slimmingPaintEnabled() ? m_context.displayItemList()->newPaintsSize() : 0)
+    , m_displayItemPosition(RuntimeEnabledFeatures::slimmingPaintEnabled() ? m_context.displayItemList()->newDisplayItemsSize() : 0)
 #endif
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
@@ -74,7 +74,7 @@ DrawingRecorder::~DrawingRecorder()
     }
 
 #if ENABLE(ASSERT)
-    ASSERT(m_displayItemPosition == m_context.displayItemList()->newPaintsSize());
+    ASSERT(m_displayItemPosition == m_context.displayItemList()->newDisplayItemsSize());
 #endif
     m_context.displayItemList()->add(displayItem.release());
 }

@@ -15,7 +15,7 @@ namespace blink {
 
 class GraphicsContext;
 
-typedef Vector<OwnPtr<DisplayItem>> PaintList;
+typedef Vector<OwnPtr<DisplayItem>> DisplayItems;
 
 class PLATFORM_EXPORT DisplayItemList {
     WTF_MAKE_NONCOPYABLE(DisplayItemList);
@@ -33,18 +33,22 @@ public:
     void endScope(DisplayItemClient);
 
     // Must be called when a painting is finished.
-    void endNewPaints() { updatePaintList(); }
+    void commitNewDisplayItems();
 
     // Get the paint list generated after the last painting.
-    const PaintList& paintList() const;
+    const DisplayItems& displayItems() const;
 
     bool clientCacheIsValid(DisplayItemClient) const;
 
-    // Plays back the current PaintList() into the given context.
-    void replay(GraphicsContext&);
+    // Commits the new display items and plays back the updated display items into the given context.
+    void commitNewDisplayItemsAndReplay(GraphicsContext& context)
+    {
+        commitNewDisplayItems();
+        replay(context);
+    }
 
 #if ENABLE(ASSERT)
-    size_t newPaintsSize() const { return m_newPaints.size(); }
+    size_t newDisplayItemsSize() const { return m_newDisplayItems.size(); }
 #endif
 
 #ifndef NDEBUG
@@ -59,30 +63,30 @@ private:
     friend class DisplayItemListPaintTest;
     friend class LayoutObjectDrawingRecorderTest;
 
-    void updatePaintList();
-
     void updateValidlyCachedClientsIfNeeded() const;
 
 #ifndef NDEBUG
-    WTF::String paintListAsDebugString(const PaintList&) const;
+    WTF::String displayItemsAsDebugString(const DisplayItems&) const;
 #endif
 
     // Indices into PaintList of all DrawingDisplayItems and BeginSubtreeDisplayItems of each client.
     // Temporarily used during merge to find out-of-order display items.
     using DisplayItemIndicesByClientMap = HashMap<DisplayItemClient, Vector<size_t>>;
 
-    static size_t findMatchingItemFromIndex(const DisplayItem&, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap&, const PaintList&);
+    static size_t findMatchingItemFromIndex(const DisplayItem&, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap&, const DisplayItems&);
     static void addItemToIndex(const DisplayItem&, size_t index, DisplayItemIndicesByClientMap&);
-    size_t findOutOfOrderCachedItem(size_t& currentPaintListIndex, const DisplayItem&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
-    size_t findOutOfOrderCachedItemForward(size_t& currentPaintListIndex, const DisplayItem&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
+    size_t findOutOfOrderCachedItem(size_t& currentDisplayItemsIndex, const DisplayItem&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
+    size_t findOutOfOrderCachedItemForward(size_t& currentDisplayItemsIndex, const DisplayItem&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
 
     // The following two methods are for checking under-invalidations
     // (when RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled).
-    void checkCachedDisplayItemIsUnchangedFromPreviousPaintList(const DisplayItem&, DisplayItemIndicesByClientMap&);
+    void checkCachedDisplayItemIsUnchanged(const DisplayItem&, DisplayItemIndicesByClientMap&);
     void checkNoRemainingCachedDisplayItems();
 
-    PaintList m_paintList;
-    PaintList m_newPaints;
+    void replay(GraphicsContext&) const;
+
+    DisplayItems m_currentDisplayItems;
+    DisplayItems m_newDisplayItems;
 
     // Contains all clients having valid cached paintings if updated.
     // It's lazily updated in updateValidlyCachedClientsIfNeeded().
