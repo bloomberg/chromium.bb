@@ -16,7 +16,6 @@
 #include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
-#include "net/quic/crypto/cached_network_parameters.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sustained_bandwidth_recorder.h"

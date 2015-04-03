@@ -26,8 +26,10 @@
         '../native_client/tools.gyp:prep_toolchain',
         '../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
         '../third_party/boringssl/boringssl_nacl.gyp:boringssl_nacl',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../url/url_nacl.gyp:url_nacl',
         'net.gyp:net_derived_sources',
+        'net.gyp:net_quic_proto',
         'net.gyp:net_resources',
       ],
       'defines': [

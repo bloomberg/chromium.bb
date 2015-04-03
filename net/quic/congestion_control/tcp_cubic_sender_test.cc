@@ -9,6 +9,7 @@
 #include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/proto/cached_network_parameters.pb.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"

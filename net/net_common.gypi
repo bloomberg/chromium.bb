@@ -12,8 +12,10 @@
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
     '../crypto/crypto.gyp:crypto',
     '../sdch/sdch.gyp:sdch',
+    '../third_party/protobuf/protobuf.gyp:protobuf_lite',
     '../third_party/zlib/zlib.gyp:zlib',
     'net_derived_sources',
+    'net_quic_proto',
     'net_resources',
   ],
   'sources': [

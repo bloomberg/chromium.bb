@@ -12,7 +12,6 @@
 
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
-#include "net/quic/crypto/cached_network_parameters.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_config.h"
@@ -22,6 +21,7 @@
 
 namespace net {
 
+class CachedNetworkParameters;
 class RttStats;
 
 class NET_EXPORT_PRIVATE SendAlgorithmInterface {

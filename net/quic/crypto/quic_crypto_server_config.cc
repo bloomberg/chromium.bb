@@ -30,9 +30,9 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
-#include "net/quic/crypto/source_address_token.h"
 #include "net/quic/crypto/strike_register.h"
 #include "net/quic/crypto/strike_register_client.h"
+#include "net/quic/proto/source_address_token.pb.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
@@ -50,7 +50,7 @@ namespace net {
 
 namespace {
 
-const size_t kMaxTokenAddresses = 4;
+const int kMaxTokenAddresses = 4;
 
 string DeriveSourceAddressTokenKey(StringPiece source_address_token_secret) {
   crypto::HKDF hkdf(source_address_token_secret,
@@ -1443,8 +1443,7 @@ string QuicCryptoServerConfig::NewSourceAddressToken(
   }
 
   // Append previous tokens.
-  for (size_t i = 0; i < previous_tokens.tokens_size(); i++) {
-    const SourceAddressToken& token = previous_tokens.tokens(i);
+  for (const SourceAddressToken& token : previous_tokens.tokens()) {
     if (source_address_tokens.tokens_size() > kMaxTokenAddresses) {
       break;
     }
@@ -1561,8 +1560,7 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressTokens(
     CachedNetworkParameters* cached_network_params) const {
   HandshakeFailureReason reason =
       SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE;
-  for (size_t i = 0; i < source_address_tokens.tokens_size(); i++) {
-    const SourceAddressToken& token = source_address_tokens.tokens(i);
+  for (const SourceAddressToken& token : source_address_tokens.tokens()) {
     reason = ValidateSingleSourceAddressToken(token, ip, now);
     if (reason == HANDSHAKE_OK) {
       if (token.has_cached_network_parameters()) {

@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "net/quic/congestion_control/pacing_sender.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/proto/cached_network_parameters.pb.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_flags.h"

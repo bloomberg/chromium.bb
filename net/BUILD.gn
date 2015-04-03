@@ -9,6 +9,7 @@ import("//build/module_args/v8.gni")
 import("//url/config.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 # TODO(cjhopman): //build/config/android/rules.gni also imports grit_rule.gni.
 # Currently, that file can't be imported multiple times.  Make this always
@@ -89,11 +90,13 @@ component("net") {
   ]
   deps = [
     ":net_resources",
+    ":net_quic_proto",
     "//base",
     "//base:prefs",
     "//base/third_party/dynamic_annotations",
     "//net/base/registry_controlled_domains",
     "//sdch",
+    "//third_party/protobuf:protobuf_lite",
     "//third_party/zlib",
     "//url",
   ]
@@ -536,6 +539,19 @@ grit("net_resources") {
     "net_resources.pak",
     "net_resources.rc",
   ]
+}
+
+proto_library("net_quic_proto") {
+  sources = [
+    "quic/proto/cached_network_parameters.proto",
+    "quic/proto/source_address_token.proto",
+  ]
+  cc_generator_options = "dllexport_decl=NET_EXPORT_PRIVATE:"
+  cc_include = "net/base/net_export.h"
+
+  defines = [ "NET_IMPLEMENTATION" ]
+
+  extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("extras") {
@@ -1155,6 +1171,7 @@ if (is_linux) {
       ":balsa",
       ":epoll_server",
       ":net",
+      ":net_quic_proto",
       "//base",
       "//base/third_party/dynamic_annotations",
       "//crypto",
@@ -1187,6 +1204,7 @@ if (is_linux) {
       ":epoll_server",
       ":epoll_quic_tools",
       ":net",
+      ":net_quic_proto",
       ":simple_quic_tools",
       "//base",
       "//third_party/boringssl",
@@ -1260,6 +1278,7 @@ source_set("simple_quic_tools") {
   ]
   deps = [
     ":net",
+    ":net_quic_proto",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//url",
@@ -1284,6 +1303,7 @@ executable("quic_server") {
   ]
   deps = [
     ":net",
+    ":net_quic_proto",
     ":simple_quic_tools",
     "//base",
     "//third_party/boringssl",
@@ -1305,6 +1325,7 @@ if (!is_android && !is_win && !is_mac) {
       ":extras",
       ":http_server",
       ":net",
+      ":net_quic_proto",
       ":epoll_quic_tools",
       ":simple_quic_tools",
       ":test_support",

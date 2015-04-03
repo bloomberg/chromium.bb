@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/strings/string_piece.h"
-#include "net/quic/crypto/cached_network_parameters.h"
+#include "net/quic/proto/cached_network_parameters.pb.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_packet_writer.h"
 #include "net/quic/quic_session.h"

@@ -9,6 +9,7 @@
 #include "net/quic/congestion_control/prr_sender.h"
 #include "net/quic/congestion_control/rtt_stats.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/proto/cached_network_parameters.pb.h"
 
 using std::max;
 using std::min;

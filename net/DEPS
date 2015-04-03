@@ -7,6 +7,7 @@ include_rules = [
   "+third_party/libevent",
   "+third_party/mojo/src/mojo/public",
   "+third_party/nss",
+  "+third_party/protobuf/src/google/protobuf",
   "+third_party/zlib",
   "+sdch/open-vcdiff",
   "+v8",

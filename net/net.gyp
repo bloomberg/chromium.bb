@@ -80,12 +80,37 @@
       },
     },
     {
+      # Protobuf compiler / generator for QUIC crypto protocol buffer.
+      # GN version: //net/quic/proto
+      'target_name': 'net_quic_proto',
+      'type': 'static_library',
+      'sources': [
+        'quic/proto/cached_network_parameters.proto',
+        'quic/proto/source_address_token.proto',
+      ],
+      'variables': {
+        'enable_wexit_time_destructors': 1,
+        'proto_in_dir': 'quic/proto',
+        'proto_out_dir': 'net/quic/proto',
+        'cc_generator_options': 'dllexport_decl=NET_EXPORT_PRIVATE:',
+        'cc_include': 'net/base/net_export.h',
+      },
+      'includes': [
+        '../build/protoc.gypi',
+      ],
+      'defines': [
+        'NET_IMPLEMENTATION',
+      ],
+    },
+    {
       'target_name': 'net',
       'dependencies': [
         '../base/base.gyp:base_i18n',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../url/url.gyp:url_lib',
+        'net_quic_proto',
       ],
       'sources': [
         'base/filename_util_icu.cc',
@@ -111,6 +136,7 @@
         'balsa',
         'http_server',
         'net',
+        'net_quic_proto',
         'net_derived_sources',
         'net_extras',
         'net_test_support',
@@ -779,6 +805,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../url/url.gyp:url_lib',
         'net',
+        'net_quic_proto',
       ],
       'sources': [
         'tools/quic/quic_client_session.cc',
@@ -1089,6 +1116,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             'net',
+            'net_quic_proto',
             'simple_quic_tools',
           ],
           'sources': [
@@ -1231,6 +1259,7 @@
             'balsa',
             'epoll_server',
             'net',
+            'net_quic_proto',
           ],
           'sources': [
             'tools/quic/quic_client.cc',
@@ -1270,6 +1299,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             'net',
+            'net_quic_proto',
             'epoll_quic_tools',
             'simple_quic_tools',
           ],

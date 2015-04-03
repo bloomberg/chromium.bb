@@ -24,6 +24,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/iovector.h"
+#include "net/quic/proto/cached_network_parameters.pb.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_fec_group.h"
