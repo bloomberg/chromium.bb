@@ -116,7 +116,28 @@ ScriptPromise MIDIPort::close(ScriptState* scriptState)
 
 void MIDIPort::setState(PortState state)
 {
-    setStates(state, m_connection);
+    // TODO(toyoshim): Remove MIDIPortStateOpened state and rewrite by using
+    // switch.
+    if (state == PortState::MIDIPortStateOpened)
+        state = PortState::MIDIPortStateConnected;
+
+    if (state == PortState::MIDIPortStateDisconnected) {
+        if (m_connection != ConnectionStateClosed) {
+            setStates(PortState::MIDIPortStateDisconnected, ConnectionStatePending);
+        } else {
+            setStates(PortState::MIDIPortStateDisconnected, ConnectionStateClosed);
+        }
+    } else {
+        ASSERT(m_connection != ConnectionStateOpen);
+        if (m_connection == ConnectionStatePending) {
+            // We do not use |setStates| in order not to dispatch events twice.
+            // |open| calls |setStates|.
+            m_state = PortState::MIDIPortStateConnected;
+            open();
+        } else {
+            setStates(PortState::MIDIPortStateConnected, ConnectionStateClosed);
+        }
+    }
 }
 
 ExecutionContext* MIDIPort::executionContext() const
@@ -146,21 +167,19 @@ DEFINE_TRACE(MIDIPort)
 
 void MIDIPort::open()
 {
-    if (m_connection == ConnectionStateClosed) {
-        switch (m_state) {
-        case PortState::MIDIPortStateDisconnected:
-            setStates(m_state, ConnectionStatePending);
-            break;
-        case PortState::MIDIPortStateConnected:
-            // TODO(toyoshim): Add blink API to perform a real open and close
-            // operation.
-            setStates(m_state, ConnectionStateOpen);
-            break;
-        case PortState::MIDIPortStateOpened:
-            // TODO(toyoshim): Remove PortState::MIDIPortStateOpened.
-            ASSERT_NOT_REACHED();
-            break;
-        }
+    switch (m_state) {
+    case PortState::MIDIPortStateDisconnected:
+        setStates(m_state, ConnectionStatePending);
+        break;
+    case PortState::MIDIPortStateConnected:
+        // TODO(toyoshim): Add blink API to perform a real open and close
+        // operation.
+        setStates(m_state, ConnectionStateOpen);
+        break;
+    case PortState::MIDIPortStateOpened:
+        // TODO(toyoshim): Remove PortState::MIDIPortStateOpened.
+        ASSERT_NOT_REACHED();
+        break;
     }
 }
 
@@ -176,6 +195,7 @@ ScriptPromise MIDIPort::reject(ScriptState* scriptState, ExceptionCode ec, const
 
 void MIDIPort::setStates(PortState state, ConnectionState connection)
 {
+    ASSERT(state != PortState::MIDIPortStateDisconnected || connection != ConnectionStateOpen);
     if (m_state == state && m_connection == connection)
         return;
     m_state = state;

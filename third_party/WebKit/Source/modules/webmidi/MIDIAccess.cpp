@@ -128,7 +128,6 @@ void MIDIAccess::didSetInputPortState(unsigned portIndex, PortState state)
         return;
 
     m_inputs[portIndex]->setState(state);
-    dispatchEvent(MIDIConnectionEvent::create(m_inputs[portIndex]));
 }
 
 void MIDIAccess::didSetOutputPortState(unsigned portIndex, PortState state)
@@ -138,7 +137,6 @@ void MIDIAccess::didSetOutputPortState(unsigned portIndex, PortState state)
         return;
 
     m_outputs[portIndex]->setState(state);
-    dispatchEvent(MIDIConnectionEvent::create(m_outputs[portIndex]));
 }
 
 void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
