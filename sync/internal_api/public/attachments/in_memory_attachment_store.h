@@ -49,7 +49,17 @@ class SYNC_EXPORT InMemoryAttachmentStore : public AttachmentStoreBackend,
       const AttachmentStore::ReadMetadataCallback& callback) override;
 
  private:
-  AttachmentMap attachments_;
+  struct AttachmentEntry {
+    AttachmentEntry(const Attachment& attachment,
+                    AttachmentStore::Component initial_reference_component);
+    ~AttachmentEntry();
+
+    Attachment attachment;
+    std::set<AttachmentStore::Component> components;
+  };
+
+  typedef std::map<AttachmentId, AttachmentEntry> AttachmentEntryMap;
+  AttachmentEntryMap attachments_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryAttachmentStore);
 };

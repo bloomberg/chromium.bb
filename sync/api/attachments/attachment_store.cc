@@ -117,6 +117,9 @@ AttachmentStoreForSync::AttachmentStoreForSync(
       sync_component_(sync_component) {
 }
 
+AttachmentStoreForSync::~AttachmentStoreForSync() {
+}
+
 void AttachmentStoreForSync::SetSyncReference(const AttachmentIdList& ids) {
   frontend()->SetReference(sync_component_, ids);
 }
@@ -124,6 +127,11 @@ void AttachmentStoreForSync::SetSyncReference(const AttachmentIdList& ids) {
 void AttachmentStoreForSync::DropSyncReference(const AttachmentIdList& ids) {
   frontend()->DropReference(sync_component_, ids,
                             base::Bind(&NoOpDropCallback));
+}
+
+void AttachmentStoreForSync::ReadSyncMetadata(
+    const ReadMetadataCallback& callback) {
+  frontend()->ReadAllMetadata(sync_component_, callback);
 }
 
 }  // namespace syncer

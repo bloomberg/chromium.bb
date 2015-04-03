@@ -69,12 +69,18 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBackend,
   scoped_ptr<Attachment> ReadSingleAttachment(
       const AttachmentId& attachment_id);
   // Writes single attachment to store. Returns false in case of errors.
-  bool WriteSingleAttachment(const Attachment& attachment);
-  // Reads single store_pb::RecordMetadata from levelDB into the provided
-  // buffer. Returns false in case of an error.
+  bool WriteSingleAttachment(const Attachment& attachment,
+                             AttachmentStore::Component component);
+  // Reads single attachment_store_pb::RecordMetadata from levelDB into the
+  // provided buffer. Returns false in case of an error.
   bool ReadSingleRecordMetadata(
       const AttachmentId& attachment_id,
       attachment_store_pb::RecordMetadata* record_metadata);
+  // Writes single attachment_store_pb::RecordMetadata to levelDB. Returns false
+  // in case of an error.
+  bool WriteSingleRecordMetadata(
+      const AttachmentId& attachment_id,
+      const attachment_store_pb::RecordMetadata& record_metadata);
 
   static std::string MakeDataKeyFromAttachmentId(
       const AttachmentId& attachment_id);

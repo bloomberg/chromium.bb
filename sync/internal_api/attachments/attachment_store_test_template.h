@@ -48,6 +48,7 @@ class AttachmentStoreTest : public testing::Test {
   AttachmentStoreFactory attachment_store_factory;
   base::MessageLoop message_loop;
   scoped_ptr<AttachmentStore> store;
+  scoped_ptr<AttachmentStoreForSync> store_for_sync;
   AttachmentStore::Result result;
   scoped_ptr<AttachmentMap> attachments;
   scoped_ptr<AttachmentIdList> failed_attachment_ids;
@@ -65,6 +66,7 @@ class AttachmentStoreTest : public testing::Test {
 
   void SetUp() override {
     store = attachment_store_factory.CreateAttachmentStore();
+    store_for_sync = store->CreateAttachmentStoreForSync();
 
     Clear();
     read_callback = base::Bind(&AttachmentStoreTest::CopyResultAttachments,
@@ -351,7 +353,8 @@ TYPED_TEST_P(AttachmentStoreTest, ReadMetadata) {
   EXPECT_EQ(attachment2.GetId(), iter->GetId());
 }
 
-// Verify getting metadata for all attachments.
+// Verify that ReadAllMetadata/ReadSyncMetadata returns metadata for correct
+// set of attachments.
 TYPED_TEST_P(AttachmentStoreTest, ReadAllMetadata) {
   // Try to read all metadata from an empty store.
   this->store->ReadAllMetadata(this->read_metadata_callback);
@@ -359,37 +362,148 @@ TYPED_TEST_P(AttachmentStoreTest, ReadAllMetadata) {
   EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
   EXPECT_EQ(0U, this->attachment_metadata->size());
 
-  // Create and write two attachments.
-  Attachment attachment1 = Attachment::Create(this->some_data1);
-  Attachment attachment2 = Attachment::Create(this->some_data2);
+  // Create and write attachments with different set of references.
+  Attachment attachment_mt = Attachment::Create(this->some_data1);
+  Attachment attachment_sync = Attachment::Create(this->some_data1);
+  Attachment attachment_both = Attachment::Create(this->some_data1);
 
-  AttachmentList some_attachments;
-  some_attachments.push_back(attachment1);
-  some_attachments.push_back(attachment2);
-  this->store->Write(some_attachments, this->write_callback);
+  AttachmentList attachments;
+  attachments.push_back(attachment_mt);
+  attachments.push_back(attachment_sync);
+  attachments.push_back(attachment_both);
+  this->store->Write(attachments, this->write_callback);
   this->ClearAndPumpLoop();
   EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
 
-  // Read all metadata again.
+  AttachmentIdList ids;
+  ids.push_back(attachment_sync.GetId());
+  ids.push_back(attachment_both.GetId());
+  this->store_for_sync->SetSyncReference(ids);
+
+  ids.clear();
+  ids.push_back(attachment_sync.GetId());
+  this->store->Drop(ids, this->drop_callback);
+  this->ClearAndPumpLoop();
+
+  // Calling ReadMetadata for above three attachments should return all of them.
+  ids.clear();
+  ids.push_back(attachment_sync.GetId());
+  ids.push_back(attachment_sync.GetId());
+  ids.push_back(attachment_both.GetId());
+  this->store->ReadMetadata(ids, this->read_metadata_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
+  EXPECT_EQ(3U, this->attachment_metadata->size());
+
+  // Call to ReadAllMetadata() should only return attachments with model type
+  // reference.
   this->store->ReadAllMetadata(this->read_metadata_callback);
   this->ClearAndPumpLoop();
   EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
   EXPECT_EQ(2U, this->attachment_metadata->size());
 
   // Verify that we get all attachments back (the order is undefined).
-  AttachmentIdSet ids;
-  ids.insert(attachment1.GetId());
-  ids.insert(attachment2.GetId());
+  AttachmentIdSet id_set;
+  id_set.insert(attachment_mt.GetId());
+  id_set.insert(attachment_both.GetId());
+  EXPECT_THAT(id_set,
+              testing::Contains((*this->attachment_metadata)[0].GetId()));
+  EXPECT_THAT(id_set,
+              testing::Contains((*this->attachment_metadata)[1].GetId()));
 
-  AttachmentMetadataList::const_iterator iter =
-      this->attachment_metadata->begin();
-  const AttachmentMetadataList::const_iterator end =
-      this->attachment_metadata->end();
-  for (; iter != end; ++iter) {
-    EXPECT_THAT(ids, testing::Contains(iter->GetId()));
-    ids.erase(iter->GetId());
-  }
-  EXPECT_TRUE(ids.empty());
+  // Call to ReadSyncMetadata() should only return attachments with sync
+  // reference.
+  this->store_for_sync->ReadSyncMetadata(this->read_metadata_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
+  EXPECT_EQ(2U, this->attachment_metadata->size());
+
+  id_set.clear();
+  id_set.insert(attachment_sync.GetId());
+  id_set.insert(attachment_both.GetId());
+  EXPECT_THAT(id_set,
+              testing::Contains((*this->attachment_metadata)[0].GetId()));
+  EXPECT_THAT(id_set,
+              testing::Contains((*this->attachment_metadata)[1].GetId()));
+}
+
+// Verify that setting/droping references gets reflected in ReadAllMetadata and
+// that attachment is only deleted after last reference is droped.
+TYPED_TEST_P(AttachmentStoreTest, SetSyncReference_DropSyncReference) {
+  Attachment attachment = Attachment::Create(this->some_data1);
+  AttachmentList attachments;
+  attachments.push_back(attachment);
+  AttachmentIdList ids;
+  ids.push_back(attachment.GetId());
+
+  // When writing attachment to store only model type reference should be set.
+  this->store->Write(attachments, this->write_callback);
+
+  this->store->ReadAllMetadata(this->read_metadata_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
+  EXPECT_EQ(1U, this->attachment_metadata->size());
+  EXPECT_EQ(attachment.GetId(), this->attachment_metadata->begin()->GetId());
+
+  this->store_for_sync->ReadSyncMetadata(this->read_metadata_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
+  EXPECT_EQ(0U, this->attachment_metadata->size());
+
+  // After call to SetSyncReference() ReadSyncMetadata should start returning
+  // attachment.
+  this->store_for_sync->SetSyncReference(ids);
+
+  this->store_for_sync->ReadSyncMetadata(this->read_metadata_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
+  EXPECT_EQ(1U, this->attachment_metadata->size());
+
+  // Call SetSyncReference() to verify it is idempotent.
+  this->store_for_sync->SetSyncReference(ids);
+  this->ClearAndPumpLoop();
+
+  // Droping attachment should remove model type reference, but there is still
+  // sync reference.
+  this->store->Drop(ids, this->drop_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
+
+  this->store->ReadAllMetadata(this->read_metadata_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
+  EXPECT_EQ(0U, this->attachment_metadata->size());
+
+  this->store_for_sync->ReadSyncMetadata(this->read_metadata_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
+  EXPECT_EQ(1U, this->attachment_metadata->size());
+
+  // ReadMetadata should still return this attachment even though it does not
+  // have model type reference.
+  this->store->ReadMetadata(ids, this->read_metadata_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
+  EXPECT_EQ(1U, this->attachment_metadata->size());
+
+  // Call Drop() again to ensure it doesn't fail.
+  this->store->Drop(ids, this->drop_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
+
+  // After droping sync reference attachment should be deleted from store.
+  // ReadMetadata should return UNSPECIFIED_ERROR.
+  this->store_for_sync->DropSyncReference(ids);
+
+  this->store_for_sync->ReadSyncMetadata(this->read_metadata_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, this->result);
+  EXPECT_EQ(0U, this->attachment_metadata->size());
+
+  this->store->ReadMetadata(ids, this->read_metadata_callback);
+  this->ClearAndPumpLoop();
+  EXPECT_EQ(AttachmentStore::UNSPECIFIED_ERROR, this->result);
+  EXPECT_EQ(0U, this->attachment_metadata->size());
 }
 
 REGISTER_TYPED_TEST_CASE_P(AttachmentStoreTest,
@@ -400,7 +514,8 @@ REGISTER_TYPED_TEST_CASE_P(AttachmentStoreTest,
                            Drop_DropTwoButOnlyOneExists,
                            Drop_DoesNotExist,
                            ReadMetadata,
-                           ReadAllMetadata);
+                           ReadAllMetadata,
+                           SetSyncReference_DropSyncReference);
 
 }  // namespace syncer
 

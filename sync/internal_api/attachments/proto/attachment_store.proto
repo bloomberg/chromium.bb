@@ -26,4 +26,13 @@ message RecordMetadata {
   optional int64 attachment_size = 1;
   // Crc32c of attachment data.
   optional fixed32 crc32c = 2;
+
+  // Component enum mirrors values of AttachmentStore::Component.
+  enum Component {
+    UNKNOWN = 0;
+    MODEL_TYPE = 1;
+    SYNC = 2;
+  }
+  // Set of components that reference this attachment.
+  repeated Component component = 3;
 }

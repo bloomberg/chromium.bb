@@ -43,16 +43,13 @@ void InMemoryAttachmentStore::Read(
     const AttachmentStore::ReadCallback& callback) {
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result_code = AttachmentStore::SUCCESS;
-  AttachmentIdList::const_iterator id_iter = ids.begin();
-  AttachmentIdList::const_iterator id_end = ids.end();
   scoped_ptr<AttachmentMap> result_map(new AttachmentMap);
   scoped_ptr<AttachmentIdList> unavailable_attachments(new AttachmentIdList);
-  for (; id_iter != id_end; ++id_iter) {
-    const AttachmentId& id = *id_iter;
-    syncer::AttachmentMap::iterator attachment_iter =
-        attachments_.find(*id_iter);
+
+  for (const auto& id : ids) {
+    AttachmentEntryMap::iterator attachment_iter = attachments_.find(id);
     if (attachment_iter != attachments_.end()) {
-      const Attachment& attachment = attachment_iter->second;
+      const Attachment& attachment = attachment_iter->second.attachment;
       result_map->insert(std::make_pair(id, attachment));
     } else {
       unavailable_attachments->push_back(id);
@@ -70,10 +67,9 @@ void InMemoryAttachmentStore::Write(
     const AttachmentList& attachments,
     const AttachmentStore::WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
-  AttachmentList::const_iterator iter = attachments.begin();
-  AttachmentList::const_iterator end = attachments.end();
-  for (; iter != end; ++iter) {
-    attachments_.insert(std::make_pair(iter->GetId(), *iter));
+  for (const auto& attachment : attachments) {
+    attachments_.insert(std::make_pair(attachment.GetId(),
+                                       AttachmentEntry(attachment, component)));
   }
   PostCallback(base::Bind(callback, AttachmentStore::SUCCESS));
 }
@@ -81,7 +77,12 @@ void InMemoryAttachmentStore::Write(
 void InMemoryAttachmentStore::SetReference(AttachmentStore::Component component,
                                            const AttachmentIdList& ids) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(AttachmentStore::SYNC, component);
+  for (const auto& id : ids) {
+    AttachmentEntryMap::iterator attachments_iter = attachments_.find(id);
+    if (attachments_iter != attachments_.end()) {
+      attachments_iter->second.components.insert(component);
+    }
+  }
 }
 
 void InMemoryAttachmentStore::DropReference(
@@ -90,18 +91,13 @@ void InMemoryAttachmentStore::DropReference(
     const AttachmentStore::DropCallback& callback) {
   DCHECK(CalledOnValidThread());
   AttachmentStore::Result result = AttachmentStore::SUCCESS;
-  if (component == AttachmentStore::SYNC) {
-    // TODO(pavely): There is no reference handling implementation yet. All
-    // calls to AddReferrer are ignored. Calls to Drop coming from sync should
-    // be ignored too.
-    PostCallback(base::Bind(callback, AttachmentStore::SUCCESS));
-    return;
-  }
-  AttachmentIdList::const_iterator ids_iter = ids.begin();
-  AttachmentIdList::const_iterator ids_end = ids.end();
-  for (; ids_iter != ids_end; ++ids_iter) {
-    AttachmentMap::iterator attachments_iter = attachments_.find(*ids_iter);
-    if (attachments_iter != attachments_.end()) {
+  for (const auto& id : ids) {
+    AttachmentEntryMap::iterator attachments_iter = attachments_.find(id);
+    if (attachments_iter == attachments_.end()) {
+      continue;
+    }
+    attachments_iter->second.components.erase(component);
+    if (attachments_iter->second.components.empty()) {
       attachments_.erase(attachments_iter);
     }
   }
@@ -115,13 +111,13 @@ void InMemoryAttachmentStore::ReadMetadata(
   AttachmentStore::Result result_code = AttachmentStore::SUCCESS;
   scoped_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());
-  AttachmentIdList::const_iterator ids_iter = ids.begin();
-  AttachmentIdList::const_iterator ids_end = ids.end();
 
-  for (; ids_iter != ids_end; ++ids_iter) {
-    AttachmentMap::iterator attachments_iter = attachments_.find(*ids_iter);
+  for (const auto& id : ids) {
+    // TODO(pavely): ReadMetadata should only return attachments with component
+    // reference similarly to ReadAllMetadata behavior.
+    AttachmentEntryMap::iterator attachments_iter = attachments_.find(id);
     if (attachments_iter != attachments_.end()) {
-      AppendMetadata(metadata_list.get(), attachments_iter->second);
+      AppendMetadata(metadata_list.get(), attachments_iter->second.attachment);
     } else {
       result_code = AttachmentStore::UNSPECIFIED_ERROR;
     }
@@ -137,11 +133,23 @@ void InMemoryAttachmentStore::ReadAllMetadata(
   scoped_ptr<AttachmentMetadataList> metadata_list(
       new AttachmentMetadataList());
 
-  for (AttachmentMap::const_iterator iter = attachments_.begin();
+  for (AttachmentEntryMap::const_iterator iter = attachments_.begin();
        iter != attachments_.end(); ++iter) {
-    AppendMetadata(metadata_list.get(), iter->second);
+    if (iter->second.components.count(component) > 0) {
+      AppendMetadata(metadata_list.get(), iter->second.attachment);
+    }
   }
   PostCallback(base::Bind(callback, result_code, base::Passed(&metadata_list)));
+}
+
+InMemoryAttachmentStore::AttachmentEntry::AttachmentEntry(
+    const Attachment& attachment,
+    AttachmentStore::Component initial_reference_component)
+    : attachment(attachment) {
+  components.insert(initial_reference_component);
+}
+
+InMemoryAttachmentStore::AttachmentEntry::~AttachmentEntry() {
 }
 
 }  // namespace syncer

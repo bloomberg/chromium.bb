@@ -113,7 +113,8 @@ class SYNC_EXPORT AttachmentStore {
   void ReadMetadata(const AttachmentIdList& ids,
                     const ReadMetadataCallback& callback);
 
-  // Asynchronously reads metadata for all attachments in the store.
+  // Asynchronously reads metadata for all attachments with |component_|
+  // reference in the store.
   //
   // |callback| will be invoked when finished. If any of the metadata entries
   // could not be read, |callback|'s Result will be UNSPECIFIED_ERROR.
@@ -166,13 +167,22 @@ class SYNC_EXPORT AttachmentStore {
 // AttachmentService writes attachment on behalf of model type after download
 // and takes reference on attachment for the duration of upload.
 // Model type implementation shouldn't use this interface.
-class AttachmentStoreForSync : public AttachmentStore {
+class SYNC_EXPORT_PRIVATE AttachmentStoreForSync : public AttachmentStore {
  public:
+  ~AttachmentStoreForSync();
+
   // Asynchronously adds reference from sync to attachments.
   void SetSyncReference(const AttachmentIdList& ids);
 
   // Asynchronously drops sync reference from attachments.
   void DropSyncReference(const AttachmentIdList& ids);
+
+  // Asynchronously reads metadata for all attachments with |sync_component_|
+  // reference in the store.
+  //
+  // |callback| will be invoked when finished. If any of the metadata entries
+  // could not be read, |callback|'s Result will be UNSPECIFIED_ERROR.
+  void ReadSyncMetadata(const ReadMetadataCallback& callback);
 
  private:
   friend class AttachmentStore;

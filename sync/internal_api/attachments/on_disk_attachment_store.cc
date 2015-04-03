@@ -37,6 +37,20 @@ const int32 kCurrentSchemaVersion = 1;
 const base::FilePath::CharType kLeveldbDirectory[] =
     FILE_PATH_LITERAL("leveldb");
 
+// Converts syncer::AttachmentStore::Component values into
+// attachment_store_pb::RecordMetadata::Component.
+attachment_store_pb::RecordMetadata::Component ComponentToProto(
+    syncer::AttachmentStore::Component component) {
+  switch (component) {
+    case AttachmentStore::MODEL_TYPE:
+      return attachment_store_pb::RecordMetadata::MODEL_TYPE;
+    case AttachmentStore::SYNC:
+      return attachment_store_pb::RecordMetadata::SYNC;
+  }
+  NOTREACHED();
+  return attachment_store_pb::RecordMetadata::UNKNOWN;
+}
+
 leveldb::WriteOptions MakeWriteOptions() {
   leveldb::WriteOptions write_options;
   write_options.sync = true;
@@ -78,6 +92,44 @@ leveldb::Status WriteStoreMetadata(
 
   metadata.SerializeToString(&data_str);
   return db->Put(MakeWriteOptions(), kDatabaseMetadataKey, data_str);
+}
+
+// Adds reference to component into RecordMetadata::component set.
+// Returns true if record_metadata was modified and needs to be written to disk.
+bool SetReferenceInRecordMetadata(
+    attachment_store_pb::RecordMetadata* record_metadata,
+    attachment_store_pb::RecordMetadata::Component proto_component) {
+  DCHECK(record_metadata);
+  for (const int component : record_metadata->component()) {
+    if (component == proto_component)
+      return false;
+  }
+  record_metadata->add_component(proto_component);
+  return true;
+}
+
+// Drops reference to component from RecordMetadata::component set.
+// Returns true if record_metadata was modified and needs to be written to disk.
+bool DropReferenceInRecordMetadata(
+    attachment_store_pb::RecordMetadata* record_metadata,
+    attachment_store_pb::RecordMetadata::Component proto_component) {
+  DCHECK(record_metadata);
+  bool component_removed = false;
+  ::google::protobuf::RepeatedField<int>* mutable_components =
+      record_metadata->mutable_component();
+  for (int i = 0; i < mutable_components->size();) {
+    if (mutable_components->Get(i) == proto_component) {
+      if (i < mutable_components->size() - 1) {
+        // Don't swap last element with itself.
+        mutable_components->SwapElements(i, mutable_components->size() - 1);
+      }
+      mutable_components->RemoveLast();
+      component_removed = true;
+    } else {
+      ++i;
+    }
+  }
+  return component_removed;
 }
 
 }  // namespace
@@ -147,7 +199,7 @@ void OnDiskAttachmentStore::Write(
     AttachmentList::const_iterator iter = attachments.begin();
     const AttachmentList::const_iterator end = attachments.end();
     for (; iter != end; ++iter) {
-      if (!WriteSingleAttachment(*iter))
+      if (!WriteSingleAttachment(*iter, component))
         result_code = AttachmentStore::UNSPECIFIED_ERROR;
     }
   }
@@ -157,7 +209,17 @@ void OnDiskAttachmentStore::Write(
 void OnDiskAttachmentStore::SetReference(AttachmentStore::Component component,
                                          const AttachmentIdList& ids) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(AttachmentStore::SYNC, component);
+  if (!db_)
+    return;
+  attachment_store_pb::RecordMetadata::Component proto_component =
+      ComponentToProto(component);
+  for (const auto& id : ids) {
+    attachment_store_pb::RecordMetadata record_metadata;
+    if (!ReadSingleRecordMetadata(id, &record_metadata))
+      continue;
+    if (SetReferenceInRecordMetadata(&record_metadata, proto_component))
+      WriteSingleRecordMetadata(id, record_metadata);
+  }
 }
 
 void OnDiskAttachmentStore::DropReference(
@@ -165,31 +227,35 @@ void OnDiskAttachmentStore::DropReference(
     const AttachmentIdList& ids,
     const AttachmentStore::DropCallback& callback) {
   DCHECK(CalledOnValidThread());
-  if (component == AttachmentStore::SYNC) {
-    // TODO(pavely): There is no reference handling implementation yet. All
-    // calls to AddReferrer are ignored. Calls to Drop coming from sync should
-    // be ignored too.
-    PostCallback(base::Bind(callback, AttachmentStore::SUCCESS));
-    return;
-  }
   AttachmentStore::Result result_code =
       AttachmentStore::STORE_INITIALIZATION_FAILED;
   if (db_) {
+    attachment_store_pb::RecordMetadata::Component proto_component =
+        ComponentToProto(component);
     result_code = AttachmentStore::SUCCESS;
     leveldb::WriteOptions write_options = MakeWriteOptions();
-    AttachmentIdList::const_iterator iter = ids.begin();
-    const AttachmentIdList::const_iterator end = ids.end();
-    for (; iter != end; ++iter) {
-      leveldb::WriteBatch write_batch;
-      write_batch.Delete(MakeDataKeyFromAttachmentId(*iter));
-      write_batch.Delete(MakeMetadataKeyFromAttachmentId(*iter));
+    for (const auto& id : ids) {
+      attachment_store_pb::RecordMetadata record_metadata;
+      if (!ReadSingleRecordMetadata(id, &record_metadata))
+        continue;  // Record not found.
+      if (!DropReferenceInRecordMetadata(&record_metadata, proto_component))
+        continue;  // Component is not in components set. Metadata was not
+                   // updated.
+      if (record_metadata.component_size() == 0) {
+        // Last reference dropped. Need to delete attachment.
+        leveldb::WriteBatch write_batch;
+        write_batch.Delete(MakeDataKeyFromAttachmentId(id));
+        write_batch.Delete(MakeMetadataKeyFromAttachmentId(id));
 
-      leveldb::Status status = db_->Write(write_options, &write_batch);
-      if (!status.ok()) {
-        // DB::Delete doesn't check if record exists, it returns ok just like
-        // AttachmentStore::Drop should.
-        DVLOG(1) << "DB::Write failed: status=" << status.ToString();
-        result_code = AttachmentStore::UNSPECIFIED_ERROR;
+        leveldb::Status status = db_->Write(write_options, &write_batch);
+        if (!status.ok()) {
+          // DB::Delete doesn't check if record exists, it returns ok just like
+          // AttachmentStore::Drop should.
+          DVLOG(1) << "DB::Write failed: status=" << status.ToString();
+          result_code = AttachmentStore::UNSPECIFIED_ERROR;
+        }
+      } else {
+        WriteSingleRecordMetadata(id, record_metadata);
       }
     }
   }
@@ -206,13 +272,12 @@ void OnDiskAttachmentStore::ReadMetadata(
       new AttachmentMetadataList());
   if (db_) {
     result_code = AttachmentStore::SUCCESS;
-    AttachmentIdList::const_iterator iter = ids.begin();
-    const AttachmentIdList::const_iterator end = ids.end();
-    for (; iter != end; ++iter) {
+    // TODO(pavely): ReadMetadata should only return attachments with component
+    // reference similarly to ReadAllMetadata behavior.
+    for (const auto& id : ids) {
       attachment_store_pb::RecordMetadata record_metadata;
-      if (ReadSingleRecordMetadata(*iter, &record_metadata)) {
-        metadata_list->push_back(
-            MakeAttachmentMetadata(*iter, record_metadata));
+      if (ReadSingleRecordMetadata(id, &record_metadata)) {
+        metadata_list->push_back(MakeAttachmentMetadata(id, record_metadata));
       } else {
         result_code = AttachmentStore::UNSPECIFIED_ERROR;
       }
@@ -231,6 +296,8 @@ void OnDiskAttachmentStore::ReadAllMetadata(
       new AttachmentMetadataList());
 
   if (db_) {
+    attachment_store_pb::RecordMetadata::Component proto_component =
+        ComponentToProto(component);
     result_code = AttachmentStore::SUCCESS;
     scoped_ptr<leveldb::Iterator> db_iterator(
         db_->NewIterator(MakeNonCachingReadOptions()));
@@ -253,7 +320,16 @@ void OnDiskAttachmentStore::ReadAllMetadata(
         result_code = AttachmentStore::UNSPECIFIED_ERROR;
         continue;
       }
-      metadata_list->push_back(MakeAttachmentMetadata(id, record_metadata));
+      // Check if attachment has reference from component.
+      bool has_reference_from_component = false;
+      for (const auto& reference_component : record_metadata.component()) {
+        if (reference_component == proto_component) {
+          has_reference_from_component = true;
+          break;
+        }
+      }
+      if (has_reference_from_component)
+        metadata_list->push_back(MakeAttachmentMetadata(id, record_metadata));
     }
 
     if (!db_iterator->status().ok()) {
@@ -350,7 +426,8 @@ scoped_ptr<Attachment> OnDiskAttachmentStore::ReadSingleAttachment(
 }
 
 bool OnDiskAttachmentStore::WriteSingleAttachment(
-    const Attachment& attachment) {
+    const Attachment& attachment,
+    AttachmentStore::Component component) {
   const std::string metadata_key =
       MakeMetadataKeyFromAttachmentId(attachment.GetId());
   const std::string data_key = MakeDataKeyFromAttachmentId(attachment.GetId());
@@ -373,6 +450,7 @@ bool OnDiskAttachmentStore::WriteSingleAttachment(
   attachment_store_pb::RecordMetadata metadata;
   metadata.set_attachment_size(attachment.GetData()->size());
   metadata.set_crc32c(attachment.GetCrc32c());
+  SetReferenceInRecordMetadata(&metadata, ComponentToProto(component));
   metadata_str = metadata.SerializeAsString();
   write_batch.Put(metadata_key, metadata_str);
   // Write data.
@@ -404,6 +482,22 @@ bool OnDiskAttachmentStore::ReadSingleRecordMetadata(
   }
   if (!record_metadata->ParseFromString(metadata_str)) {
     DVLOG(1) << "RecordMetadata::ParseFromString failed";
+    return false;
+  }
+  return true;
+}
+
+bool OnDiskAttachmentStore::WriteSingleRecordMetadata(
+    const AttachmentId& attachment_id,
+    const attachment_store_pb::RecordMetadata& record_metadata) {
+  const std::string metadata_key =
+      MakeMetadataKeyFromAttachmentId(attachment_id);
+  std::string metadata_str;
+  metadata_str = record_metadata.SerializeAsString();
+  leveldb::Status status =
+      db_->Put(MakeWriteOptions(), metadata_key, metadata_str);
+  if (!status.ok()) {
+    DVLOG(1) << "DB::Put failed: status=" << status.ToString();
     return false;
   }
   return true;
