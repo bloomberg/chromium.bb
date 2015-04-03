@@ -244,7 +244,7 @@ ListPicker.prototype._updateChildren = function(parent, config) {
     for (var i = 0; i < config.children.length; ++i) {
         var childConfig = config.children[i];
         var item = this._findReusableItem(parent, childConfig, outOfDateIndex) || this._createItemElement(childConfig);
-        this._configureItem(item, childConfig);
+        this._configureItem(item, childConfig, parent.tagName === "OPTGROUP");
         if (outOfDateIndex < parent.children.length)
             parent.insertBefore(item, parent.children[outOfDateIndex]);
         else
@@ -297,7 +297,7 @@ ListPicker.prototype._applyItemStyle = function(element, styleConfig) {
     element.style.unicodeBidi = styleConfig.unicodeBidi;
 };
 
-ListPicker.prototype._configureItem = function(element, config) {
+ListPicker.prototype._configureItem = function(element, config, inGroup) {
     if (config.type === "option") {
         element.label = config.label;
         element.value = config.value;
@@ -306,6 +306,10 @@ ListPicker.prototype._configureItem = function(element, config) {
         element.setAttribute("aria-label", config.ariaLabel);
         element.style.webkitPaddingStart = this._config.paddingStart + "px";
         element.style.webkitPaddingEnd = this._config.paddingEnd + "px";
+        if (inGroup) {
+            element.style.webkitMarginStart = (- this._config.paddingStart) + "px";
+            element.style.webkitMarginEnd = (- this._config.paddingEnd) + "px";
+        }
     } else if (config.type === "optgroup") {
         element.label = config.label;
         element.title = config.title;
@@ -318,6 +322,10 @@ ListPicker.prototype._configureItem = function(element, config) {
         element.title = config.title;
         element.disabled = config.disabled;
         element.setAttribute("aria-label", config.ariaLabel);
+        if (inGroup) {
+            element.style.webkitMarginStart = (- this._config.paddingStart) + "px";
+            element.style.webkitMarginEnd = (- this._config.paddingEnd) + "px";
+        }
     }
     this._applyItemStyle(element, config.style);
 };
