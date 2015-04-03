@@ -369,7 +369,7 @@ void FillStreetAddress(const base::string16& value,
 
 std::string Hash32Bit(const std::string& str) {
   std::string hash_bin = base::SHA1HashString(str);
-  DCHECK_EQ(20U, hash_bin.length());
+  DCHECK_EQ(base::kSHA1Length, hash_bin.length());
 
   uint32 hash32 = ((hash_bin[0] & 0xFF) << 24) |
                   ((hash_bin[1] & 0xFF) << 16) |
