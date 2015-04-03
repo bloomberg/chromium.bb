@@ -663,6 +663,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kOverrideEscFullscreen);
   skip.insert(APIPermission::kPointerLock);
   skip.insert(APIPermission::kPower);
+  skip.insert(APIPermission::kPrinterProvider);
   skip.insert(APIPermission::kSessions);
   skip.insert(APIPermission::kStorage);
   skip.insert(APIPermission::kSystemCpu);
@@ -1737,26 +1738,6 @@ TEST(PermissionsTest, IsPrivilegeIncrease_DeclarativeWebRequest) {
                    IsPrivilegeIncrease(permissions.get(),
                                        permissions_dwr.get(),
                                        extension->GetType()));
-}
-
-#if defined(OFFICIAL_BUILD)
-#define MAYBE_PrinterProviderPermission DISABLED_PrinterProviderPermission
-#else
-#define MAYBE_PrinterProviderPermission PrinterProviderPermission
-#endif
-// Failing on (official) Win trunk (http://crbug.com/471301).
-// TODO(tbarzic): Reenable this when the API goes stable.
-TEST(PermissionsTest, MAYBE_PrinterProviderPermission) {
-  scoped_refptr<Extension> extension =
-      LoadManifest("permissions", "printer_provider.json");
-  APIPermissionSet apis;
-  apis.insert(APIPermission::kPrinterProvider);
-  EXPECT_TRUE(extension->is_platform_app());
-  EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
-      APIPermission::kPrinterProvider));
-  EXPECT_TRUE(VerifyOnePermissionMessage(
-      extension->permissions_data(),
-      "Add printing destinations and access any jobs you submit to them"));
 }
 
 }  // namespace extensions
