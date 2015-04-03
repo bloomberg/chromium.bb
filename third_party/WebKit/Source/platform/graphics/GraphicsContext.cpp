@@ -1155,8 +1155,8 @@ void GraphicsContext::fillRect(const FloatRect& rect, const Color& color, SkXfer
     drawRect(rect, paint);
 }
 
-void GraphicsContext::fillBetweenRoundedRects(const FloatRect& outer, const FloatSize& outerTopLeft, const FloatSize& outerTopRight, const FloatSize& outerBottomLeft, const FloatSize& outerBottomRight,
-    const FloatRect& inner, const FloatSize& innerTopLeft, const FloatSize& innerTopRight, const FloatSize& innerBottomLeft, const FloatSize& innerBottomRight, const Color& color)
+void GraphicsContext::fillDRRect(const FloatRoundedRect& outer,
+    const FloatRoundedRect& inner, const Color& color)
 {
     if (contextDisabled())
         return;
@@ -1164,24 +1164,20 @@ void GraphicsContext::fillBetweenRoundedRects(const FloatRect& outer, const Floa
 
     SkVector outerRadii[4];
     SkVector innerRadii[4];
-    setRadii(outerRadii, outerTopLeft, outerTopRight, outerBottomRight, outerBottomLeft);
-    setRadii(innerRadii, innerTopLeft, innerTopRight, innerBottomRight, innerBottomLeft);
+    setRadii(outerRadii, outer.radii().topLeft(), outer.radii().topRight(),
+        outer.radii().bottomRight(), outer.radii().bottomLeft());
+    setRadii(innerRadii, inner.radii().topLeft(), inner.radii().topRight(),
+        inner.radii().bottomRight(), inner.radii().bottomLeft());
 
     SkRRect rrOuter;
     SkRRect rrInner;
-    rrOuter.setRectRadii(outer, outerRadii);
-    rrInner.setRectRadii(inner, innerRadii);
+    rrOuter.setRectRadii(outer.rect(), outerRadii);
+    rrInner.setRectRadii(inner.rect(), innerRadii);
 
     SkPaint paint(immutableState()->fillPaint());
     paint.setColor(color.rgb());
 
     m_canvas->drawDRRect(rrOuter, rrInner, paint);
-}
-
-void GraphicsContext::fillBetweenRoundedRects(const FloatRoundedRect& outer, const FloatRoundedRect& inner, const Color& color)
-{
-    fillBetweenRoundedRects(outer.rect(), outer.radii().topLeft(), outer.radii().topRight(), outer.radii().bottomLeft(), outer.radii().bottomRight(),
-        inner.rect(), inner.radii().topLeft(), inner.radii().topRight(), inner.radii().bottomLeft(), inner.radii().bottomRight(), color);
 }
 
 void GraphicsContext::fillRoundedRect(const FloatRect& rect, const FloatSize& topLeft, const FloatSize& topRight,

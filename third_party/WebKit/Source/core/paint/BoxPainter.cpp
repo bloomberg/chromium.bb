@@ -1067,10 +1067,10 @@ bool BoxPainter::paintNinePieceImage(LayoutBoxModelObject& obj, GraphicsContext*
     return true;
 }
 
-static FloatRect calculateSideRect(const FloatRoundedRect& outerBorder, const BorderEdge edges[], int side)
+static FloatRect calculateSideRect(const FloatRoundedRect& outerBorder, const BorderEdge& edge, int side)
 {
     FloatRect sideRect = outerBorder.rect();
-    int width = edges[side].width;
+    int width = edge.width;
 
     if (side == BSTop)
         sideRect.setHeight(width);
@@ -1346,7 +1346,9 @@ void BoxPainter::clipBorderSideForComplexInnerPath(GraphicsContext* graphicsCont
         graphicsContext->clipOutRoundedRect(adjustedInnerRect);
 }
 
-static bool allCornersClippedOut(const FloatRoundedRect& border, const IntRect& intClipRect)
+namespace {
+
+bool allCornersClippedOut(const FloatRoundedRect& border, const IntRect& intClipRect)
 {
     LayoutRect boundingRect(border.rect());
     LayoutRect clipRect(intClipRect);
@@ -1378,7 +1380,60 @@ static bool allCornersClippedOut(const FloatRoundedRect& border, const IntRect& 
     return true;
 }
 
-static inline void drawSolidBorderRect(GraphicsContext* context, const FloatRect& borderRect,
+struct BoxBorderInfo {
+    BoxBorderInfo(const ComputedStyle& style, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
+        : visibleEdgeCount(0)
+        , firstVisibleEdge(0)
+        , visibleEdgeSet(0)
+        , isUniformStyle(true)
+        , isUniformWidth(true)
+        , isUniformColor(true)
+        , hasAlpha(false)
+    {
+
+        style.getBorderEdgeInfo(edges, includeLogicalLeftEdge, includeLogicalRightEdge);
+
+        for (unsigned i = 0; i < WTF_ARRAY_LENGTH(edges); ++i) {
+            const BorderEdge& edge = edges[i];
+
+            if (!edge.shouldRender()) {
+                if (edge.presentButInvisible()) {
+                    isUniformWidth = false;
+                    isUniformColor = false;
+                }
+
+                continue;
+            }
+
+            visibleEdgeCount++;
+            visibleEdgeSet |= edgeFlagForSide(static_cast<BoxSide>(i));
+
+            hasAlpha = hasAlpha || edge.color.hasAlpha();
+
+            if (visibleEdgeCount == 1) {
+                firstVisibleEdge = i;
+                continue;
+            }
+
+            isUniformStyle = isUniformStyle && (edge.borderStyle() == edges[firstVisibleEdge].borderStyle());
+            isUniformWidth = isUniformWidth && (edge.width == edges[firstVisibleEdge].width);
+            isUniformColor = isUniformColor && (edge.color == edges[firstVisibleEdge].color);
+        }
+    }
+
+    BorderEdge edges[4];
+
+    unsigned visibleEdgeCount;
+    unsigned firstVisibleEdge;
+    BorderEdgeFlags visibleEdgeSet;
+
+    bool isUniformStyle;
+    bool isUniformWidth;
+    bool isUniformColor;
+    bool hasAlpha;
+};
+
+void drawSolidBorderRect(GraphicsContext* context, const FloatRect& borderRect,
     float borderWidth, const Color& color)
 {
     FloatRect strokeRect(borderRect);
@@ -1397,6 +1452,55 @@ static inline void drawSolidBorderRect(GraphicsContext* context, const FloatRect
         context->setShouldAntialias(wasAntialias);
 }
 
+void drawDoubleBorderRect(GraphicsContext* context, const BoxBorderInfo& borderInfo,
+    const FloatRect& outerBorder, const FloatRect& innerBorder)
+{
+    ASSERT(borderInfo.isUniformColor);
+    ASSERT(borderInfo.isUniformStyle);
+    ASSERT(borderInfo.edges[borderInfo.firstVisibleEdge].borderStyle() == DOUBLE);
+    ASSERT(borderInfo.visibleEdgeSet == AllBorderEdges);
+
+    FloatRectOutsets innerThirdOutsets;
+    FloatRectOutsets outerThirdOutsets;
+
+    int innerWidth;
+    int outerWidth;
+
+    borderInfo.edges[BSLeft].getDoubleBorderStripeWidths(outerWidth, innerWidth);
+    innerThirdOutsets.setLeft(-innerWidth);
+    outerThirdOutsets.setLeft(-outerWidth);
+
+    borderInfo.edges[BSTop].getDoubleBorderStripeWidths(outerWidth, innerWidth);
+    innerThirdOutsets.setTop(-innerWidth);
+    outerThirdOutsets.setTop(-outerWidth);
+
+    borderInfo.edges[BSRight].getDoubleBorderStripeWidths(outerWidth, innerWidth);
+    innerThirdOutsets.setRight(-innerWidth);
+    outerThirdOutsets.setRight(-outerWidth);
+
+    borderInfo.edges[BSBottom].getDoubleBorderStripeWidths(outerWidth, innerWidth);
+    innerThirdOutsets.setBottom(-innerWidth);
+    outerThirdOutsets.setBottom(-outerWidth);
+
+    FloatRect innerThirdRect = outerBorder;
+    FloatRect outerThirdRect = outerBorder;
+    innerThirdRect.expand(innerThirdOutsets);
+    outerThirdRect.expand(outerThirdOutsets);
+
+    // TODO(fmalita): use 2 x fillDRRect() instead of fillPath()?
+    Path path;
+    path.addRect(outerBorder);
+    path.addRect(outerThirdRect);
+    path.addRect(innerThirdRect);
+    path.addRect(innerBorder);
+
+    context->setFillRule(RULE_EVENODD);
+    context->setFillColor(borderInfo.edges[borderInfo.firstVisibleEdge].color);
+    context->fillPath(path);
+}
+
+} // anonymous namespace
+
 void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, const LayoutRect& rect, const ComputedStyle& style, BackgroundBleedAvoidance bleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     GraphicsContext* graphicsContext = info.context;
@@ -1404,154 +1508,62 @@ void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, c
     if (paintNinePieceImage(obj, graphicsContext, rect, style, style.borderImage()))
         return;
 
-    BorderEdge edges[4];
-    style.getBorderEdgeInfo(edges, includeLogicalLeftEdge, includeLogicalRightEdge);
+    const BoxBorderInfo borderInfo(style, includeLogicalLeftEdge, includeLogicalRightEdge);
     FloatRoundedRect outerBorder = style.getRoundedBorderFor(rect, includeLogicalLeftEdge, includeLogicalRightEdge);
     FloatRoundedRect innerBorder = style.getRoundedInnerBorderFor(borderInnerRectAdjustedForBleedAvoidance(graphicsContext, rect, bleedAvoidance), includeLogicalLeftEdge, includeLogicalRightEdge);
 
-    if (outerBorder.rect().isEmpty())
+    if (outerBorder.rect().isEmpty() || !borderInfo.visibleEdgeCount)
         return;
 
-    bool haveAlphaColor = false;
-    bool haveAllSolidEdges = true;
-    bool haveAllDoubleEdges = true;
-    int numEdgesVisible = 4;
-    bool allEdgesShareColor = true;
-    bool allEdgesShareWidth = true;
-    int firstVisibleEdge = -1;
-    BorderEdgeFlags edgesToDraw = 0;
-
-    for (int i = BSTop; i <= BSLeft; ++i) {
-        const BorderEdge& currEdge = edges[i];
-
-        if (edges[i].shouldRender())
-            edgesToDraw |= edgeFlagForSide(static_cast<BoxSide>(i));
-
-        if (currEdge.presentButInvisible()) {
-            --numEdgesVisible;
-            allEdgesShareColor = false;
-            allEdgesShareWidth = false;
-            continue;
-        }
-
-        if (!currEdge.shouldRender()) {
-            --numEdgesVisible;
-            continue;
-        }
-
-        if (firstVisibleEdge == -1) {
-            firstVisibleEdge = i;
-        } else {
-            if (currEdge.color != edges[firstVisibleEdge].color)
-                allEdgesShareColor = false;
-            if (currEdge.width != edges[firstVisibleEdge].width)
-                allEdgesShareWidth = false;
-        }
-
-        if (currEdge.color.hasAlpha())
-            haveAlphaColor = true;
-
-        if (currEdge.borderStyle() != SOLID)
-            haveAllSolidEdges = false;
-
-        if (currEdge.borderStyle() != DOUBLE)
-            haveAllDoubleEdges = false;
-    }
+    const BorderEdge& firstEdge = borderInfo.edges[borderInfo.firstVisibleEdge];
+    bool haveAllSolidEdges = borderInfo.isUniformStyle && firstEdge.borderStyle() == SOLID;
+    bool haveAllDoubleEdges = borderInfo.isUniformStyle && firstEdge.borderStyle() == DOUBLE;
 
     // If no corner intersects the clip region, we can pretend outerBorder is
     // rectangular to improve performance.
     if (haveAllSolidEdges && outerBorder.isRounded() && allCornersClippedOut(outerBorder, info.rect))
         outerBorder.setRadii(FloatRoundedRect::Radii());
 
+    // Fast path for drawing 4-side all-solid uniform-color borders.
+    if (haveAllSolidEdges && borderInfo.visibleEdgeSet == AllBorderEdges && borderInfo.isUniformColor && innerBorder.isRenderable()) {
+        if (borderInfo.isUniformWidth && !outerBorder.isRounded() && !innerBorder.isRounded()) {
+            // Non-rounded, solid, uniform color and width => one drawRect()
+            // TODO(fmalita): we should be able to handle uniform-width rrects similarly.
+            drawSolidBorderRect(graphicsContext, outerBorder.rect(), firstEdge.width, firstEdge.color);
+        } else {
+            // Non-rounded/rounded, solid, uniform color, non-uniform/uniform width => one drawDRRect()
+            graphicsContext->fillDRRect(outerBorder, innerBorder, firstEdge.color);
+        }
+
+        return;
+    }
+
     // isRenderable() check avoids issue described in https://bugs.webkit.org/show_bug.cgi?id=38787
-    if ((haveAllSolidEdges || haveAllDoubleEdges) && allEdgesShareColor && innerBorder.isRenderable()) {
-        // Fast path for non-rounded, solid, uniform width and color borders.
-        if (edgesToDraw == AllBorderEdges && haveAllSolidEdges && allEdgesShareWidth
-            && !outerBorder.isRounded() && !innerBorder.isRounded()) {
-            drawSolidBorderRect(graphicsContext, outerBorder.rect(), edges[firstVisibleEdge].width, edges[firstVisibleEdge].color);
+    if ((haveAllSolidEdges || haveAllDoubleEdges) && borderInfo.isUniformColor && innerBorder.isRenderable()) {
+        // Fast path for drawing all unrounded double edges.
+        // TODO(fmalita): why is this predicated on hasAlpha?
+        if (borderInfo.visibleEdgeSet == AllBorderEdges && borderInfo.hasAlpha && !outerBorder.isRounded() && !innerBorder.isRounded()) {
+            // Solid edges are handled by prevous fast paths.
+            ASSERT(!haveAllSolidEdges);
+
+            drawDoubleBorderRect(graphicsContext, borderInfo, outerBorder.rect(), innerBorder.rect());
             return;
         }
 
-        // Fast path for drawing all solid edges and all unrounded double edges
-        if (numEdgesVisible == 4 && (outerBorder.isRounded() || haveAlphaColor)
-            && (haveAllSolidEdges || (!outerBorder.isRounded() && !innerBorder.isRounded()))) {
-            Path path;
-
-            if (outerBorder.isRounded() && allEdgesShareWidth) {
-
-                // Very fast path for single stroked round rect with circular corners
-
-                graphicsContext->fillBetweenRoundedRects(outerBorder, innerBorder, edges[firstVisibleEdge].color);
-                return;
-            }
-            if (outerBorder.isRounded() && bleedAvoidance != BackgroundBleedClipBackground)
-                path.addRoundedRect(outerBorder);
-            else
-                path.addRect(outerBorder.rect());
-
-            if (haveAllDoubleEdges) {
-                FloatRect innerThirdRect = outerBorder.rect();
-                FloatRect outerThirdRect = outerBorder.rect();
-                for (int side = BSTop; side <= BSLeft; ++side) {
-                    int outerWidth;
-                    int innerWidth;
-                    edges[side].getDoubleBorderStripeWidths(outerWidth, innerWidth);
-
-                    if (side == BSTop) {
-                        innerThirdRect.shiftYEdgeTo(innerThirdRect.y() + innerWidth);
-                        outerThirdRect.shiftYEdgeTo(outerThirdRect.y() + outerWidth);
-                    } else if (side == BSBottom) {
-                        innerThirdRect.setHeight(innerThirdRect.height() - innerWidth);
-                        outerThirdRect.setHeight(outerThirdRect.height() - outerWidth);
-                    } else if (side == BSLeft) {
-                        innerThirdRect.shiftXEdgeTo(innerThirdRect.x() + innerWidth);
-                        outerThirdRect.shiftXEdgeTo(outerThirdRect.x() + outerWidth);
-                    } else {
-                        innerThirdRect.setWidth(innerThirdRect.width() - innerWidth);
-                        outerThirdRect.setWidth(outerThirdRect.width() - outerWidth);
-                    }
-                }
-
-                FloatRoundedRect outerThird = outerBorder;
-                FloatRoundedRect innerThird = innerBorder;
-                innerThird.setRect(innerThirdRect);
-                outerThird.setRect(outerThirdRect);
-
-                if (outerThird.isRounded() && bleedAvoidance != BackgroundBleedClipBackground)
-                    path.addRoundedRect(outerThird);
-                else
-                    path.addRect(outerThird.rect());
-
-                if (innerThird.isRounded() && bleedAvoidance != BackgroundBleedClipBackground)
-                    path.addRoundedRect(innerThird);
-                else
-                    path.addRect(innerThird.rect());
-            }
-
-            if (innerBorder.isRounded())
-                path.addRoundedRect(innerBorder);
-            else
-                path.addRect(innerBorder.rect());
-
-            graphicsContext->setFillRule(RULE_EVENODD);
-            graphicsContext->setFillColor(edges[firstVisibleEdge].color);
-            graphicsContext->fillPath(path);
-            return;
-        }
         // Avoid creating transparent layers
-        if (haveAllSolidEdges && numEdgesVisible != 4 && !outerBorder.isRounded() && haveAlphaColor) {
+        if (haveAllSolidEdges && borderInfo.visibleEdgeSet != AllBorderEdges && !outerBorder.isRounded() && borderInfo.hasAlpha) {
             Path path;
 
             for (int i = BSTop; i <= BSLeft; ++i) {
-                const BorderEdge& currEdge = edges[i];
+                const BorderEdge& currEdge = borderInfo.edges[i];
                 if (currEdge.shouldRender()) {
-                    FloatRect sideRect = calculateSideRect(outerBorder, edges, i);
+                    FloatRect sideRect = calculateSideRect(outerBorder, currEdge, i);
                     path.addRect(sideRect);
                 }
             }
 
             graphicsContext->setFillRule(RULE_NONZERO);
-            graphicsContext->setFillColor(edges[firstVisibleEdge].color);
+            graphicsContext->setFillColor(firstEdge.color);
             graphicsContext->fillPath(path);
             return;
         }
@@ -1570,13 +1582,16 @@ void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, c
     }
 
     // If only one edge visible antialiasing doesn't create seams
-    bool antialias = shouldAntialiasLines(graphicsContext) || numEdgesVisible == 1;
+    bool antialias = shouldAntialiasLines(graphicsContext) || borderInfo.visibleEdgeCount == 1;
     FloatRoundedRect unadjustedInnerBorder = (bleedAvoidance == BackgroundBleedBackgroundOverBorder) ? style.getRoundedInnerBorderFor(rect, includeLogicalLeftEdge, includeLogicalRightEdge) : innerBorder;
     IntPoint innerBorderAdjustment(innerBorder.rect().x() - unadjustedInnerBorder.rect().x(), innerBorder.rect().y() - unadjustedInnerBorder.rect().y());
-    if (haveAlphaColor)
-        paintTranslucentBorderSides(graphicsContext, style, outerBorder, unadjustedInnerBorder, innerBorderAdjustment, edges, edgesToDraw, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias);
-    else
-        paintBorderSides(graphicsContext, style, outerBorder, unadjustedInnerBorder, innerBorderAdjustment, edges, edgesToDraw, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias);
+    if (borderInfo.hasAlpha) {
+        paintTranslucentBorderSides(graphicsContext, style, outerBorder, unadjustedInnerBorder, innerBorderAdjustment,
+            borderInfo.edges, borderInfo.visibleEdgeSet, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias);
+    } else {
+        paintBorderSides(graphicsContext, style, outerBorder, unadjustedInnerBorder, innerBorderAdjustment,
+            borderInfo.edges, borderInfo.visibleEdgeSet, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge, antialias);
+    }
 }
 
 static inline bool includesAdjacentEdges(BorderEdgeFlags flags)

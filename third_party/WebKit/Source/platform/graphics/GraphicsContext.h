@@ -206,15 +206,12 @@ public:
     void fillRect(const FloatRect&, const Color&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
     void fillRoundedRect(const FloatRect&, const FloatSize& topLeft, const FloatSize& topRight, const FloatSize& bottomLeft, const FloatSize& bottomRight, const Color&);
     void fillRoundedRect(const FloatRoundedRect&, const Color&);
+    void fillDRRect(const FloatRoundedRect&, const FloatRoundedRect&, const Color&);
 
     void clearRect(const FloatRect&);
 
     void strokeRect(const FloatRect&);
     void strokeRect(const FloatRect&, float lineWidth);
-
-    void fillBetweenRoundedRects(const FloatRect&, const FloatSize& outerTopLeft, const FloatSize& outerTopRight, const FloatSize& outerBottomLeft, const FloatSize& outerBottomRight,
-        const FloatRect&, const FloatSize& innerTopLeft, const FloatSize& innerTopRight, const FloatSize& innerBottomLeft, const FloatSize& innerBottomRight, const Color&);
-    void fillBetweenRoundedRects(const FloatRoundedRect&, const FloatRoundedRect&, const Color&);
 
     void drawPicture(const SkPicture*);
     void compositePicture(SkPicture*, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode);
