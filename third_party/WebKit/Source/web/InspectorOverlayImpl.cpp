@@ -273,9 +273,10 @@ void InspectorOverlayImpl::update()
     if (!view)
         return;
 
-    IntRect visibleRect = enclosingIntRect(m_webViewImpl->page()->frameHost().pinchViewport().visibleRectInDocument());
-    toLocalFrame(overlayPage()->mainFrame())->view()->resize(visibleRect.size());
-    reset(visibleRect);
+    IntRect visibleRectInDocument = enclosingIntRect(m_webViewImpl->page()->frameHost().pinchViewport().visibleRectInDocument());
+    IntSize viewportSize = m_webViewImpl->page()->frameHost().pinchViewport().size();
+    toLocalFrame(overlayPage()->mainFrame())->view()->resize(viewportSize);
+    reset(viewportSize, visibleRectInDocument.location());
 
     drawNodeHighlight();
     drawQuadHighlight();
@@ -398,14 +399,14 @@ LocalFrame* InspectorOverlayImpl::overlayMainFrame()
     return toLocalFrame(overlayPage()->mainFrame());
 }
 
-void InspectorOverlayImpl::reset(const IntRect& visibleRect)
+void InspectorOverlayImpl::reset(const IntSize& viewportSize, const IntPoint& documentScrollOffset)
 {
     RefPtr<JSONObject> resetData = JSONObject::create();
     resetData->setNumber("deviceScaleFactor", m_webViewImpl->page()->deviceScaleFactor());
-    resetData->setObject("viewportSize", buildObjectForSize(visibleRect.size()));
+    resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
     resetData->setNumber("pageZoomFactor", m_webViewImpl->mainFrameImpl()->frame()->pageZoomFactor());
-    resetData->setNumber("scrollX", visibleRect.x());
-    resetData->setNumber("scrollY", visibleRect.y());
+    resetData->setNumber("scrollX", documentScrollOffset.x());
+    resetData->setNumber("scrollY", documentScrollOffset.y());
     evaluateInOverlay("reset", resetData.release());
 }
 

@@ -103,7 +103,7 @@ private:
 
     Page* overlayPage();
     LocalFrame* overlayMainFrame();
-    void reset(const IntRect& visibleRect);
+    void reset(const IntSize& viewportSize, const IntPoint& documentScrollOffset);
     void evaluateInOverlay(const String& method, const String& argument);
     void evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument);
     void onTimer(Timer<InspectorOverlayImpl>*);
