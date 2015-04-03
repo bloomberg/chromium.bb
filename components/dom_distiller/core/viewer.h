@@ -24,6 +24,9 @@ class ViewRequestDelegate;
 
 namespace viewer {
 
+// Returns the JavaScript to show the feedback footer for a distilled page.
+const std::string GetShowFeedbackFormJs();
+
 // Returns a full HTML page based on the given |article_proto|. This is supposed
 // to be displayed to the end user. The returned HTML should be considered
 // unsafe, so callers must ensure rendering it does not compromise Chrome.

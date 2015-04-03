@@ -66,6 +66,20 @@ var updateLoadingIndicator = function() {
   };
 }();
 
+/**
+ * Show the distiller feedback form.
+ * @param questionText The i18n text for the feedback question.
+ * @param yesText The i18n text for the feedback answer 'YES'.
+ * @param noText The i18n text for the feedback answer 'NO'.
+ */
+function showFeedbackForm(questionText, yesText, noText) {
+  document.getElementById('feedbackYes').innerText = yesText;
+  document.getElementById('feedbackNo').innerText = noText;
+  document.getElementById('feedbackQuestion').innerText = questionText;
+
+  document.getElementById('feedbackContainer').style.display = 'block';
+}
+
 // Add a listener to the "View Original" link to report opt-outs.
 document.getElementById('showOriginal').addEventListener('click', function(e) {
   var img = document.createElement('img');

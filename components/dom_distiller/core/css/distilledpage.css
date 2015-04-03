@@ -76,6 +76,7 @@ th {
 body,
 html {
   font-size: 14px;
+  height: 100%;
   line-height: 1.4;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
@@ -273,6 +274,75 @@ pre {
 
 .hidden {
   display: none;
+}
+
+/* Footer feedback form. */
+.contentWrap {
+  min-height: 100%;
+  overflow: auto;
+  padding-bottom: 120px;
+}
+
+.footerFeedback {
+  clear: both;
+  display: none;
+  height: 120px;
+  margin-top: -120px;
+  background-color: #4285F4;
+  color: #fff;
+}
+
+.feedbackContent {
+  background-color: #4285F4;
+  clear: both;
+  padding: 14px;
+}
+
+#feedbackQuestion {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  width: 100%;
+}
+
+.feedbackButtonWrap {
+  margin-top: 14px;
+  text-align: center;
+  width: 100%;
+}
+
+.feedbackButton {
+  background-color: #FFFFFF;
+  border-radius: 3px;
+  color: #4285F4;
+  display: inline-block;
+  font-weight: 900;
+  height: 35px;
+  margin: 0px 4% 0px 4%;
+  padding-top: 8px;
+  text-align: center;
+  text-transform: uppercase;
+  width: 40%;
+}
+
+.clear {
+  clear: both;
+}
+
+/* Feedback fade out */
+.fadeOut {
+  animation-duration: 0.5s;
+  animation-name: fadeOutAnimation;
+}
+
+@keyframes fadeOutAnimation {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 /* Loading Indicator. */

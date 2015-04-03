@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -191,6 +192,7 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishLoad(
   if (is_error_page_) {
     waiting_for_page_ready_ = false;
     SendJavaScript(viewer::GetErrorPageJs());
+    SendJavaScript(viewer::GetShowFeedbackFormJs());
     Cancel(); // This will cause the object to clean itself up.
     return;
   }
@@ -218,6 +220,8 @@ void DomDistillerViewerSource::RequestViewerHandle::OnArticleReady(
     callback_.Run(base::RefCountedString::TakeString(&unsafe_page_html));
     // Send first page to client.
     SendJavaScript(viewer::GetUnsafeArticleContentJs(article_proto));
+    // If any content was loaded, show the feedback form.
+    SendJavaScript(viewer::GetShowFeedbackFormJs());
   } else if (page_count_ == article_proto->pages_size()) {
     // We may still be showing the "Loading" indicator.
     SendJavaScript(viewer::GetToggleLoadingIndicatorJs(true));
@@ -242,6 +246,10 @@ void DomDistillerViewerSource::RequestViewerHandle::OnArticleUpdated(
        page_count_++) {
     const DistilledPageProto& page =
         article_update.GetDistilledPage(page_count_);
+    // Send the page content to the client. This will execute after the page is
+    // ready.
+    SendJavaScript(viewer::GetUnsafeIncrementalDistilledPageJs(&page, false));
+
     if (page_count_ == 0) {
       // This is the first page, so send Viewer page scaffolding too.
       std::string unsafe_page_html = viewer::GetUnsafeArticleTemplateHtml(
@@ -249,9 +257,9 @@ void DomDistillerViewerSource::RequestViewerHandle::OnArticleUpdated(
           distilled_page_prefs_->GetTheme(),
           distilled_page_prefs_->GetFontFamily());
       callback_.Run(base::RefCountedString::TakeString(&unsafe_page_html));
+      // If any content was loaded, show the feedback form.
+      SendJavaScript(viewer::GetShowFeedbackFormJs());
     }
-    // Send the page content to the client.
-    SendJavaScript(viewer::GetUnsafeIncrementalDistilledPageJs(&page, false));
   }
 }
 

@@ -114,6 +114,8 @@ std::string ReplaceHtmlTemplateValues(
   base::StringPiece html_template =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DOM_DISTILLER_VIEWER_HTML);
+  // TODO(mdjones): Many or all of these substitutions can be placed on the
+  // page via JavaScript.
   std::vector<std::string> substitutions;
   substitutions.push_back(title);                                         // $1
 
@@ -139,12 +141,32 @@ std::string ReplaceHtmlTemplateValues(
       l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL));  // $7
   substitutions.push_back(textDirection);                                 // $8
   substitutions.push_back(htmlContent);                                   // $9
+
   return ReplaceStringPlaceholders(html_template, substitutions, NULL);
 }
 
 }  // namespace
 
 namespace viewer {
+
+const std::string GetShowFeedbackFormJs() {
+  base::StringValue question_val(
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_QUALITY_QUESTION));
+  base::StringValue no_val(
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_QUALITY_ANSWER_NO));
+  base::StringValue yes_val(
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_QUALITY_ANSWER_YES));
+
+  std::string question;
+  std::string yes;
+  std::string no;
+
+  base::JSONWriter::Write(&question_val, &question);
+  base::JSONWriter::Write(&yes_val, &yes);
+  base::JSONWriter::Write(&no_val, &no);
+
+  return "showFeedbackForm(" + question + ", " + yes + ", " + no + ");";
+}
 
 const std::string GetUnsafeIncrementalDistilledPageJs(
     const DistilledPageProto* page_proto,

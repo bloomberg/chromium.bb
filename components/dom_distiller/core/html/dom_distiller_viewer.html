@@ -13,69 +13,81 @@ found in the LICENSE file.
   <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 </head>
 <body dir="$8" class="$4">
-  <div id="mainContent">
-    <article>
-      <header>
-        <h1>$1</h1>
-      </header>
-      <div id="content">$9</div>
-    </article>
-  </div>
-  <div id="loadingIndicator" class="$5">
-    <div id="loader">
-      <div class="circle initial">
-        <span class="mask">
-          <span class="mover"></span>
-        </span>
-      </div>
+  <div class="contentWrap">
+    <div id="mainContent">
+      <article>
+        <header>
+          <h1>$1</h1>
+        </header>
+        <div id="content">$9</div>
+      </article>
+    </div>
+    <div id="loadingIndicator" class="$5">
+      <div id="loader">
+        <div class="circle initial">
+          <span class="mask">
+            <span class="mover"></span>
+          </span>
+        </div>
 
-      <div class="circle red">
-        <span class="mask first">
-          <span class="base"></span>
-          <span class="mover"></span>
-        </span>
-        <span class="mask second">
-          <span class="base"></span>
-          <span class="mover"></span>
-        </span>
-      </div>
+        <div class="circle red">
+          <span class="mask first">
+            <span class="base"></span>
+            <span class="mover"></span>
+          </span>
+          <span class="mask second">
+            <span class="base"></span>
+            <span class="mover"></span>
+          </span>
+        </div>
 
-      <div class="circle yellow">
-        <span class="mask first">
-          <span class="base"></span>
-          <span class="mover"></span>
-        </span>
-        <span class="mask second">
-          <span class="base"></span>
-          <span class="mover"></span>
-        </span>
-      </div>
+        <div class="circle yellow">
+          <span class="mask first">
+            <span class="base"></span>
+            <span class="mover"></span>
+          </span>
+          <span class="mask second">
+            <span class="base"></span>
+            <span class="mover"></span>
+          </span>
+        </div>
 
-      <div class="circle green">
-        <span class="mask first">
-          <span class="base"></span>
-          <span class="mover"></span>
-        </span>
-        <span class="mask second">
-          <span class="base"></span>
-          <span class="mover"></span>
-        </span>
-      </div>
+        <div class="circle green">
+          <span class="mask first">
+            <span class="base"></span>
+            <span class="mover"></span>
+          </span>
+          <span class="mask second">
+            <span class="base"></span>
+            <span class="mover"></span>
+          </span>
+        </div>
 
-      <div class="circle blue">
-        <span class="mask first">
-          <span class="base"></span>
-          <span class="mover"></span>
-        </span>
-        <span class="mask second">
-          <span class="base"></span>
-          <span class="mover"></span>
-        </span>
+        <div class="circle blue">
+          <span class="mask first">
+            <span class="base"></span>
+            <span class="mover"></span>
+          </span>
+          <span class="mask second">
+            <span class="base"></span>
+            <span class="mover"></span>
+          </span>
+        </div>
       </div>
     </div>
+    <div id="showOriginal">
+      <a href="$6">$7</a>
+    </div>
   </div>
-  <div id="showOriginal">
-    <a href="$6">$7</a>
+  <div id="feedbackContainer" class="footerFeedback">
+    <div class="feedbackContent">
+      <div id="feedbackQuestion"></div>
+      <div class="feedbackButtonWrap">
+        <a class="feedbackButton" id="feedbackNo"></a>
+        <a class="feedbackButton" id="feedbackYes"></a>
+      </div>
+    </div>
+    <div class="clear"></div>
   </div>
 </body>
 $3
