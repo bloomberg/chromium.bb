@@ -1903,6 +1903,14 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
         frame()->loader().replaceDocumentWhileExecutingJavaScriptURL(scriptResult, ownerDocument.get());
 }
 
+static void ensureFrameLoaderHasCommitted(FrameLoader& frameLoader)
+{
+    if (frameLoader.stateMachine()->committedFirstRealDocumentLoad())
+        return;
+    frameLoader.stateMachine()->advanceTo(frameLoader.client()->backForwardLength() > 1 ?
+        FrameLoaderStateMachine::CommittedMultipleRealLoads : FrameLoaderStateMachine::CommittedFirstRealLoad);
+}
+
 void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame, const WebString& name, WebSandboxFlags flags)
 {
     Frame* oldFrame = toCoreFrame(oldWebFrame);
@@ -1921,7 +1929,7 @@ void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFra
     // during init(). Note that this may dispatch JS events; the frame may be
     // detached after init() returns.
     m_frame->init();
-    m_frame->loader().stateMachine()->advanceTo(m_frameLoaderClientImpl.backForwardLength() > 1 ? FrameLoaderStateMachine::CommittedMultipleRealLoads : FrameLoaderStateMachine::CommittedFirstRealLoad);
+    ensureFrameLoaderHasCommitted(m_frame->loader());
 }
 
 void WebLocalFrameImpl::setAutofillClient(WebAutofillClient* autofillClient)
@@ -1977,6 +1985,12 @@ bool WebLocalFrameImpl::isResourceLoadInProgress() const
     if (!frame() || !frame()->document())
         return false;
     return frame()->document()->fetcher()->requestCount();
+}
+
+void WebLocalFrameImpl::setCommittedFirstRealLoad()
+{
+    ASSERT(frame());
+    ensureFrameLoaderHasCommitted(frame()->loader());
 }
 
 void WebLocalFrameImpl::addStyleSheetByURL(const WebString& url)

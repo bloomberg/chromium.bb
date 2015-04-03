@@ -69,6 +69,11 @@ public:
     // instead.
     virtual bool isResourceLoadInProgress() const = 0;
 
+    // Override the normal rules for whether a load has successfully committed
+    // in this frame. Used to propagate state when this frame has navigated
+    // cross process.
+    virtual void setCommittedFirstRealLoad() = 0;
+
 
     // Navigation Transitions -------------------------------------------------
     virtual void addStyleSheetByURL(const WebString& url) = 0;
