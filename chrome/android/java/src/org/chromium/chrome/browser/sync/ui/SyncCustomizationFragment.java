@@ -416,6 +416,10 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
 
     private void handleDecryption(String passphrase) {
         if (!passphrase.isEmpty() && mProfileSyncService.setDecryptionPassphrase(passphrase)) {
+            // PassphraseDialogFragment doesn't handle closing itself, so do it here. This is
+            // not done in updateSyncState() because that happens onResume and possibly in other
+            // cases where the dialog should stay open.
+            closeDialogIfOpen(FRAGMENT_ENTER_PASSWORD);
             // Update our configuration UI.
             updateSyncState();
         } else {
