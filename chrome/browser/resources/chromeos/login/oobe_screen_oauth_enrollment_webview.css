@@ -89,14 +89,11 @@
 }
 
 .oauth-enroll-state-signin.mode-manual #oauth-enroll-cancel-button,
-.oauth-enroll-state-signin.mode-forced #oauth-enroll-back-button,
-.oauth-enroll-state-signin.mode-recovery #oauth-enroll-back-button,
+.oauth-enroll-state-signin #oauth-enroll-back-button,
 .oauth-enroll-state-working.mode-manual #oauth-enroll-cancel-button,
-.oauth-enroll-state-working.mode-forced #oauth-enroll-back-button,
-.oauth-enroll-state-working.mode-recovery #oauth-enroll-back-button,
+.oauth-enroll-state-working #oauth-enroll-back-button,
 .oauth-enroll-state-error.mode-manual #oauth-enroll-cancel-button,
-.oauth-enroll-state-error.mode-forced #oauth-enroll-back-button,
-.oauth-enroll-state-error.mode-recovery #oauth-enroll-back-button,
+.oauth-enroll-state-error #oauth-enroll-back-button,
 .oauth-enroll-state-success #oauth-enroll-done-button {
   display: inline;
 }
@@ -150,4 +147,23 @@
 html[dir=rtl] #oauth-enroll-cancel-button {
   left: 15px;
   right: auto;
+}
+
+#oauth-enroll-back-button {
+  background: transparent none;
+  background-image: url(chrome://theme/IDR_LOGIN_BACK_BUTTTON);
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 18px;
+  left: 14px;
+  position: absolute;
+  top: 14px;
+  width: 18px;
+  z-index: 1;
+}
+
+html[dir=rtl] #oauth-enroll-back-button {
+  -webkit-transform: scaleX(-1);
+  left: auto;
+  right: 14px;
 }

@@ -38,10 +38,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       if (disabled == this.isCancelDisabled)
         return;
       this.isCancelDisabled_ = disabled;
-
-      $('oauth-enroll-back-button').disabled = disabled;
-      $('oauth-enroll-back-button').
-          classList.toggle('preserve-disabled-state', disabled);
     },
 
     /** @override */
@@ -85,6 +81,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
             this.classList.toggle('saml', isSAML);
           }).bind(this));
 
+      this.authenticator_.addEventListener('backButton',
+          (function(e) {
+            $('oauth-enroll-back-button').hidden = !e.detail;
+          }).bind(this));
+
       this.authenticator_.insecureContentBlockedCallback =
           (function(url) {
             this.showError(
@@ -103,6 +104,13 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
                                                      this.doRetry_.bind(this));
       $('oauth-enroll-cancel-button').addEventListener('click',
                                                        this.cancel.bind(this));
+
+      $('oauth-enroll-back-button').addEventListener('click',
+          (function(e) {
+            $('oauth-enroll-back-button').hidden = true;
+            $('oauth-enroll-auth-view').back();
+            e.preventDefault();
+          }).bind(this));
     },
 
     /**
@@ -130,12 +138,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         button.addEventListener('click', handler);
         buttons.push(button);
       }
-
-      makeButton(
-          'oauth-enroll-back-button',
-          ['oauth-enroll-focus-on-error'],
-          loadTimeData.getString('oauthEnrollBack'),
-          this.cancel.bind(this));
 
       makeButton(
           'oauth-enroll-done-button',
