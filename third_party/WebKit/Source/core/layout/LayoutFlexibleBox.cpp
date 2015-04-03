@@ -410,9 +410,12 @@ LayoutUnit LayoutFlexibleBox::mainAxisContentExtent(LayoutUnit contentLogicalHei
 
 LayoutUnit LayoutFlexibleBox::computeMainAxisExtentForChild(LayoutBox& child, SizeType sizeType, const Length& size)
 {
-    // FIXME: This is wrong for orthogonal flows. It should use the flexbox's writing-mode, not the child's in order
-    // to figure out the logical height/width.
-    if (isColumnFlow()) {
+    // If we have a horizontal flow, that means the main size is the width.
+    // That's the logical width for horizontal writing modes, and the logical height in vertical writing modes.
+    // For a vertical flow, main size is the height, so it's the inverse.
+    // So we need the logical width if we have a horizontal flow and horizontal writing mode, or vertical flow and vertical writing mode.
+    // Otherwise we need the logical height.
+    if (isHorizontalFlow() != child.styleRef().isHorizontalWritingMode()) {
         // We don't have to check for "auto" here - computeContentLogicalHeight will just return -1 for that case anyway.
         if (size.isIntrinsic())
             child.layoutIfNeeded();
