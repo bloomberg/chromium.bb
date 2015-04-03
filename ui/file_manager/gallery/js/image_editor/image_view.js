@@ -498,7 +498,7 @@ ImageView.prototype.load =
  * @param {number=} opt_delay Image load delay in ms.
  */
 ImageView.prototype.prefetch = function(item, opt_delay) {
-  if (item.contentImage)
+  if (item.contentImage || this.prefetchLoader_.isLoading(item.getEntry()))
     return;
   this.prefetchLoader_.load(item, function(canvas) {
     if (canvas.width && canvas.height && !item.contentImage)

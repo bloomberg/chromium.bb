@@ -515,21 +515,6 @@ SlideMode.prototype.enter = function(
   this.sequenceDirection_ = 0;
   this.sequenceLength_ = 0;
 
-  var loadDone = function(loadType, delay) {
-    this.active_ = true;
-
-    this.selectionModel_.addEventListener('change', this.onSelectionBound_);
-    this.dataModel_.addEventListener('splice', this.onSpliceBound_);
-
-    ImageUtil.setAttribute(this.arrowBox_, 'active', this.getItemCount_() > 1);
-    this.ribbon_.enable();
-
-    // Wait 1000ms after the animation is done, then prefetch the next image.
-    this.requestPrefetch(1, delay + 1000);
-
-    if (loadCallback) loadCallback();
-  }.bind(this);
-
   // The latest |leave| call might have left the image animating. Remove it.
   this.unloadImage_();
 
@@ -774,12 +759,6 @@ SlideMode.prototype.loadSelectedItem_ = function() {
 
   this.displayedItem_ = this.getSelectedItem();
   var selectedItem = assertInstanceof(this.getSelectedItem(), Gallery.Item);
-
-  if (this.sequenceLength_ <= 1) {
-    // We have just broke the sequence. Touch the current image so that it stays
-    // in the cache longer.
-    this.imageView_.prefetch(selectedItem);
-  }
 
   function shouldPrefetch(loadType, step, sequenceLength) {
     // Never prefetch when selecting out of sequence.
