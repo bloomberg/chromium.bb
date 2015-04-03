@@ -182,10 +182,11 @@ const char kExpirationYearRe[] =
     "|Срок действия карты"  // ru
     "|年|有效期";  // zh-CN
 
-// This regex is a little bit nasty, but it is simply requiring exactly two
-// adjacent y's.
+// The "yy" portion of the regex is just looking for two adjacent y's.
 const char kExpirationDate2DigitYearRe[] =
-    "exp.*date.*[^y]yy([^y]|$)";
+    "(exp.*date.*|mm\\s*[-/]\\s*)[^y]yy([^y]|$)";
+const char kExpirationDate4DigitYearRe[] =
+    "^mm\\s*[-/]\\syyyy$";
 const char kExpirationDateRe[] =
     "expir|exp.*date"
     "|gueltig|gültig"  // de-DE

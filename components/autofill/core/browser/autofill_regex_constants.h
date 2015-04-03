@@ -30,6 +30,7 @@ extern const char kCardTypeRe[];
 extern const char kExpirationMonthRe[];
 extern const char kExpirationYearRe[];
 extern const char kExpirationDate2DigitYearRe[];
+extern const char kExpirationDate4DigitYearRe[];
 extern const char kExpirationDateRe[];
 extern const char kCardIgnoredRe[];
 extern const char kGiftCardRe[];

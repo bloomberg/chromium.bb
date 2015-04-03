@@ -50,6 +50,28 @@ bool FindConsecutiveStrings(const std::vector<base::string16>& regex_needles,
   return false;
 }
 
+// Returns true if a field that has |max_length| can fit the data for a field of
+// |type|.
+bool FieldCanFitDataForFieldType(int max_length, ServerFieldType type) {
+  if (max_length == 0)
+    return true;
+
+  switch (type) {
+    case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR: {
+      static int kMinimum2YearCcExpLength = strlen("12/14");
+      return max_length >= kMinimum2YearCcExpLength;
+    }
+    case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR: {
+      static int kMinimum4YearCcExpLength = strlen("12/2014");
+      return max_length >= kMinimum4YearCcExpLength;
+    }
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+
 }  // namespace
 
 // static
@@ -377,17 +399,17 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
   }
 
   // If that fails, try to parse a combined expiration field.
-  // Look for a 2-digit year first.
   // We allow <select> fields, because they're used e.g. on qvc.com.
   scanner->RewindTo(month_year_saved_cursor);
 
-  static int kMinimum2YearCcExpLength = strlen("12/14");
-  int current_field_max_length = scanner->Cursor()->max_length;
-  if (current_field_max_length > 0 &&
-      current_field_max_length < kMinimum2YearCcExpLength) {
+  // Bail out if the field cannot fit a 2-digit year expiration date.
+  const int current_field_max_length = scanner->Cursor()->max_length;
+  if (!FieldCanFitDataForFieldType(current_field_max_length,
+                                   CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR)) {
     return false;
   }
 
+  // Try to look for a 2-digit year expiration date.
   if (ParseFieldSpecifics(scanner,
                           base::UTF8ToUTF16(kExpirationDate2DigitYearRe),
                           kMatchTelAndSelect,
@@ -397,15 +419,29 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
     return true;
   }
 
+  // Try to look for a generic expiration date field. (2 or 4 digit year)
   if (ParseFieldSpecifics(scanner,
                           base::UTF8ToUTF16(kExpirationDateRe),
                           kMatchTelAndSelect,
                           &expiration_date_)) {
-    static int kMinimum4YearCcExpLength = strlen("12/2014");
-    if (current_field_max_length > 0 &&
-        current_field_max_length < kMinimum4YearCcExpLength) {
+    // If such a field exists, but it cannot fit a 4-digit year expiration
+    // date, then the likely possibility is that it is a 2-digit year expiration
+    // date.
+    if (!FieldCanFitDataForFieldType(current_field_max_length,
+                                     CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR)) {
       exp_year_type_ = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
     }
+    expiration_month_ = nullptr;
+    return true;
+  }
+
+  // Try to look for a 4-digit year expiration date.
+  if (FieldCanFitDataForFieldType(current_field_max_length,
+                                  CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) &&
+      ParseFieldSpecifics(scanner,
+                          base::UTF8ToUTF16(kExpirationDate4DigitYearRe),
+                          kMatchTelAndSelect,
+                          &expiration_date_)) {
     expiration_month_ = nullptr;
     return true;
   }
