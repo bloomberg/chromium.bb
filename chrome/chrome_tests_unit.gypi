@@ -1362,6 +1362,7 @@
       'browser/ui/views/frame/test_with_browser_view.cc',
       'browser/ui/views/frame/test_with_browser_view.h',
       'browser/ui/views/frame/web_contents_close_handler_unittest.cc',
+      'browser/ui/views/omnibox/omnibox_view_views_unittest.cc',
       'browser/ui/views/status_icons/status_tray_win_unittest.cc',
       'browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views_unittest.cc',
       'browser/ui/views/tabs/fake_base_tab_strip_controller.cc',

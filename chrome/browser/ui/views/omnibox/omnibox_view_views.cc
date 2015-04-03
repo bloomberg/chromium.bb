@@ -169,9 +169,11 @@ void OmniboxViewViews::Init() {
   if (popup_window_mode_)
     SetReadOnly(true);
 
-  // Initialize the popup view using the same font.
-  popup_view_.reset(OmniboxPopupContentsView::Create(
-      GetFontList(), this, model(), location_bar_view_));
+  if (location_bar_view_) {
+    // Initialize the popup view using the same font.
+    popup_view_.reset(OmniboxPopupContentsView::Create(
+        GetFontList(), this, model(), location_bar_view_));
+  }
 
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InputMethodManager::Get()->
@@ -328,8 +330,10 @@ gfx::Size OmniboxViewViews::GetMinimumSize() const {
 
 void OmniboxViewViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   views::Textfield::OnNativeThemeChanged(theme);
-  SetBackgroundColor(location_bar_view_->GetColor(
-      ToolbarModel::NONE, LocationBarView::BACKGROUND));
+  if (location_bar_view_) {
+    SetBackgroundColor(location_bar_view_->GetColor(
+        ToolbarModel::NONE, LocationBarView::BACKGROUND));
+  }
   EmphasizeURLComponents();
 }
 
@@ -351,28 +355,33 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
     // These commands don't invoke the popup via OnBefore/AfterPossibleChange().
     case IDS_PASTE_AND_GO:
       model()->PasteAndGo(GetClipboardText());
-      break;
+      return;
     case IDS_SHOW_URL:
       controller()->ShowURL();
-      break;
+      return;
     case IDC_EDIT_SEARCH_ENGINES:
       command_updater()->ExecuteCommand(command_id);
-      break;
+      return;
     case IDS_MOVE_DOWN:
     case IDS_MOVE_UP:
       model()->OnUpOrDownKeyPressed(command_id == IDS_MOVE_DOWN ? 1 : -1);
-      break;
+      return;
 
+    // These commands do invoke the popup.
+    case IDS_APP_PASTE:
+      OnPaste();
+      return;
     default:
-      OnBeforePossibleChange();
-      if (command_id == IDS_APP_PASTE)
-        OnPaste();
-      else if (Textfield::IsCommandIdEnabled(command_id))
+      if (Textfield::IsCommandIdEnabled(command_id)) {
+        // The Textfield code will invoke OnBefore/AfterPossibleChange() itself
+        // as necessary.
         Textfield::ExecuteCommand(command_id, event_flags);
-      else
-        command_updater()->ExecuteCommand(command_id);
+        return;
+      }
+      OnBeforePossibleChange();
+      command_updater()->ExecuteCommand(command_id);
       OnAfterPossibleChange();
-      break;
+      return;
   }
 }
 
@@ -390,12 +399,14 @@ base::string16 OmniboxViewViews::GetSelectedText() const {
 void OmniboxViewViews::OnPaste() {
   const base::string16 text(GetClipboardText());
   if (!text.empty()) {
+    OnBeforePossibleChange();
     // Record this paste, so we can do different behavior.
     model()->OnPaste();
     // Force a Paste operation to trigger the text_changed code in
     // OnAfterPossibleChange(), even if identical contents are pasted.
     text_before_change_.clear();
     InsertOrReplaceText(text);
+    OnAfterPossibleChange();
   }
 }
 
@@ -481,12 +492,12 @@ bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
   if (display_text == text())
     return false;
 
-  if (IsIMEComposing()) {
-    location_bar_view_->SetImeInlineAutocompletion(
-        display_text.substr(user_text_length));
-  } else {
+  if (!IsIMEComposing()) {
     gfx::Range range(display_text.size(), user_text_length);
     SetTextAndSelectedRange(display_text, range);
+  } else if (location_bar_view_) {
+    location_bar_view_->SetImeInlineAutocompletion(
+        display_text.substr(user_text_length));
   }
   TextChanged();
   return true;
@@ -494,7 +505,8 @@ bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
 
 void OmniboxViewViews::OnInlineAutocompleteTextCleared() {
   // Hide the inline autocompletion for IME users.
-  location_bar_view_->SetImeInlineAutocompletion(base::string16());
+  if (location_bar_view_)
+    location_bar_view_->SetImeInlineAutocompletion(base::string16());
 }
 
 void OmniboxViewViews::OnRevertTemporaryText() {
@@ -558,15 +570,17 @@ gfx::NativeView OmniboxViewViews::GetRelativeWindowForPopup() const {
 }
 
 void OmniboxViewViews::SetGrayTextAutocompletion(const base::string16& input) {
-  location_bar_view_->SetGrayTextAutocompletion(input);
+  if (location_bar_view_)
+    location_bar_view_->SetGrayTextAutocompletion(input);
 }
 
 base::string16 OmniboxViewViews::GetGrayTextAutocompletion() const {
-  return location_bar_view_->GetGrayTextAutocompletion();
+  return location_bar_view_ ?
+      location_bar_view_->GetGrayTextAutocompletion() : base::string16();
 }
 
 int OmniboxViewViews::GetWidth() const {
-  return location_bar_view_->width();
+  return location_bar_view_ ? location_bar_view_->width() : 0;
 }
 
 bool OmniboxViewViews::IsImeShowingPopup() const {
@@ -594,6 +608,8 @@ int OmniboxViewViews::GetOmniboxTextLength() const {
 }
 
 void OmniboxViewViews::EmphasizeURLComponents() {
+  if (!location_bar_view_)
+    return;
   // See whether the contents are a URL with a non-empty host portion, which we
   // should emphasize.  To check for a URL, rather than using the type returned
   // by Parse(), ask the model, which will check the desired page transition for

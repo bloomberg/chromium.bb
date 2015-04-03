@@ -103,9 +103,8 @@ class OmniboxViewViews
   // Paste text from the clipboard into the omnibox.
   // Textfields implementation of Paste() pastes the contents of the clipboard
   // as is. We want to strip whitespace and other things (see GetClipboardText()
-  // for details).
-  // It is assumed this is invoked after a call to OnBeforePossibleChange() and
-  // that after invoking this OnAfterPossibleChange() is invoked.
+  // for details). The function invokes OnBefore/AfterPossibleChange() as
+  // necessary.
   void OnPaste();
 
   // Handle keyword hint tab-to-search and tabbing through dropdown results.
@@ -211,6 +210,8 @@ class OmniboxViewViews
 
   // Was the delete key pressed with an empty selection at the end of the edit?
   bool delete_at_end_pressed_;
+
+  // |location_bar_view_| can be NULL in tests.
   LocationBarView* location_bar_view_;
 
   // True if the IME candidate window is open. When this is true, we want to
