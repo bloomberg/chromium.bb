@@ -24,6 +24,7 @@ from .mathtls import *
 from .handshakesettings import HandshakeSettings
 from .utils.tackwrapper import *
 from .utils.rsakey import RSAKey
+from .utils import p256
 
 class KeyExchange(object):
     def __init__(self, cipherSuite, clientHello, serverHello, privateKey):
@@ -126,6 +127,25 @@ DE2BCBF6 95581718 3995497C EA956AE5 15D22618 98FA0510
 
         S = powMod(dh_Yc, self.dh_Xs, self.dh_p)
         return numberToByteArray(S)
+
+class ECDHE_RSAKeyExchange(KeyExchange):
+    def makeServerKeyExchange(self):
+        public, self.private = p256.generatePublicPrivate()
+
+        version = self.serverHello.server_version
+        serverKeyExchange = ServerKeyExchange(self.cipherSuite, version)
+        serverKeyExchange.createECDH(NamedCurve.secp256r1, bytearray(public))
+        hashBytes = serverKeyExchange.hash(self.clientHello.random,
+                                           self.serverHello.random)
+        if version >= (3,3):
+            # TODO: Signature algorithm negotiation not supported.
+            hashBytes = RSAKey.addPKCS1SHA1Prefix(hashBytes)
+        serverKeyExchange.signature = self.privateKey.sign(hashBytes)
+        return serverKeyExchange
+
+    def processClientKeyExchange(self, clientKeyExchange):
+        ecdh_Yc = clientKeyExchange.ecdh_Yc
+        return bytearray(p256.generateSharedValue(bytes(ecdh_Yc), self.private))
 
 class TLSConnection(TLSRecordLayer):
     """
@@ -1321,9 +1341,8 @@ class TLSConnection(TLSRecordLayer):
                 else: break
             premasterSecret = result
 
-        # Perform the RSA or DHE_RSA key exchange
-        elif (cipherSuite in CipherSuite.certSuites or
-              cipherSuite in CipherSuite.dheCertSuites):
+        # Perform a certificate-based key exchange
+        elif cipherSuite in CipherSuite.certAllSuites:
             if cipherSuite in CipherSuite.certSuites:
                 keyExchange = RSAKeyExchange(cipherSuite,
                                              clientHello,
@@ -1334,6 +1353,11 @@ class TLSConnection(TLSRecordLayer):
                                                  clientHello,
                                                  serverHello,
                                                  privateKey)
+            elif cipherSuite in CipherSuite.ecdheCertSuites:
+                keyExchange = ECDHE_RSAKeyExchange(cipherSuite,
+                                                   clientHello,
+                                                   serverHello,
+                                                   privateKey)
             else:
                 assert(False)
             for result in self._serverCertKeyExchange(clientHello, serverHello, 
@@ -1450,6 +1474,7 @@ class TLSConnection(TLSRecordLayer):
                     CipherSuite.getSrpCertSuites(settings, self.version)
             cipherSuites += CipherSuite.getSrpSuites(settings, self.version)
         elif certChain:
+            cipherSuites += CipherSuite.getEcdheCertSuites(settings, self.version)
             cipherSuites += CipherSuite.getDheCertSuites(settings, self.version)
             cipherSuites += CipherSuite.getCertSuites(settings, self.version)
         elif anon:

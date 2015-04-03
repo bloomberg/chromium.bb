@@ -24,7 +24,7 @@ Local Modifications:
 - patches/ssl3_padding.patch: SSL3 requires minimal padding in CBC mode.
 - patches/fix_test_file.patch: Fix #! line in random test file to appease our
   presubmit checks.
-- patches/dhe_rsa.patch: Implement DHE_RSA-based cipher suites.
+- patches/dhe_rsa.patch: Implement DHE_RSA-based cipher suites on the server.
 - patches/req_cert_types.patch: Add a reqCertTypes parameter to populate the
   certificate_types field of CertificateRequest. Also fixes type errors.
 - patches/ignore_write_failure.patch: Don't invalidate sessions on write
@@ -38,3 +38,4 @@ Local Modifications:
   unless >= TLS 1.2 is negotiated.
 - patches/alert_after_handshake.patch: Add an option to send a fatal alert
   immediately after the handshake completes.
+- patches/ecdhe_rsa.patch: Implement ECDHE_RSA-based ciper suites on the server.

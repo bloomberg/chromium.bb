@@ -59,6 +59,8 @@ void GetKeyExchangesList(int key_exchange, base::ListValue* values) {
     values->Append(new base::StringValue("rsa"));
   if (key_exchange & BaseTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA)
     values->Append(new base::StringValue("dhe_rsa"));
+  if (key_exchange & BaseTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA)
+    values->Append(new base::StringValue("ecdhe_rsa"));
 }
 
 void GetCiphersList(int cipher, base::ListValue* values) {

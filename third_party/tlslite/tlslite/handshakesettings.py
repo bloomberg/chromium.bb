@@ -14,7 +14,7 @@ from .utils import cipherfactory
 CIPHER_NAMES = ["aes128gcm", "rc4", "aes256", "aes128", "3des"]
 MAC_NAMES = ["sha", "sha256", "aead"] # Don't allow "md5" by default.
 ALL_MAC_NAMES = MAC_NAMES + ["md5"]
-KEY_EXCHANGE_NAMES = ["rsa", "dhe_rsa", "srp_sha", "srp_sha_rsa", "dh_anon"]
+KEY_EXCHANGE_NAMES = ["rsa", "dhe_rsa", "ecdhe_rsa", "srp_sha", "srp_sha_rsa", "dh_anon"]
 CIPHER_IMPLEMENTATIONS = ["openssl", "pycrypto", "python"]
 CERTIFICATE_TYPES = ["x509"]
 TLS_INTOLERANCE_TYPES = ["alert", "close", "reset"]

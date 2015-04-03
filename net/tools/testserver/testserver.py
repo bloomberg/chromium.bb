@@ -2258,11 +2258,11 @@ class ServerRunner(testserver_base.TestServerRunner):
     self.option_parser.add_option('--ssl-key-exchange', action='append',
                                   help='Specify the key exchange algorithm(s)'
                                   'that will be accepted by the SSL server. '
-                                  'Valid values are "rsa", "dhe_rsa". If '
-                                  'omitted, all algorithms will be used. This '
-                                  'option may appear multiple times, '
-                                  'indicating multiple algorithms should be '
-                                  'enabled.');
+                                  'Valid values are "rsa", "dhe_rsa", '
+                                  '"ecdhe_rsa". If omitted, all algorithms '
+                                  'will be used. This option may appear '
+                                  'multiple times, indicating multiple '
+                                  'algorithms should be enabled.');
     # TODO(davidben): Add ALPN support to tlslite.
     self.option_parser.add_option('--enable-npn', dest='enable_npn',
                                   default=False, const=True,
