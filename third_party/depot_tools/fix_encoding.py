@@ -1,6 +1,6 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
-# Use of this source code is governed under the Apache License, Version 2.0 that
-# can be found in the LICENSE file.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Collection of functions and classes to fix various encoding problems on
 multiple platforms with python.
@@ -229,7 +229,7 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
         remaining -= n.value
         if not remaining:
           break
-        text = text[n.value:]
+        text = text[int(n.value):]
     except Exception, e:
       complain('%s.write: %r' % (self.name, e))
       raise
