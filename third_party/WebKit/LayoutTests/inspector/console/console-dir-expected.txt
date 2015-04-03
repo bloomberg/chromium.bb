@@ -32,13 +32,13 @@ console-dir.html:21 Object
     c d: "c d"
     negZero: -0
     __proto__: Object
-console-dir.html:24 function () {}
+console-dir.html:24 anonymous()
     arguments: null
     caller: null
     length: 0
     name: ""
     prototype: Object
-    __proto__: Empty() {}
+    __proto__: Empty()
     <function scope>
         Global: Window
 console-dir.html:28 outer.inner
@@ -49,12 +49,12 @@ console-dir.html:32 Object
     foo: Object
         No Properties
     __proto__: Object
-console-dir.html:34 function __proto__() { [native code] }
+console-dir.html:34 __proto__()
     arguments: null
     caller: null
     length: 0
     name: "__proto__"
-    __proto__: Empty() {}
+    __proto__: Empty()
     <function scope>
         No Scopes
 console-dir.html:39 Uint8Array[400000000]

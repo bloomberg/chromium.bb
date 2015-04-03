@@ -6,25 +6,25 @@ Tests how debugger presents special properties of closures, bound functions and 
 properties-special.html:10 Boolean
     __proto__: Boolean
     [[PrimitiveValue]]: true
-properties-special.html:11 function (a,b) { return a + b; }
+properties-special.html:11 anonymous(a, b)
     arguments: null
     caller: null
     length: 2
     name: ""
     prototype: Object
-    __proto__: Empty() {}
+    __proto__: Empty()
     <function scope>
-properties-special.html:12 function () { [native code] }
+properties-special.html:12 b()
     arguments: (...)
-    get arguments: ThrowTypeError() { [native code] }
-    set arguments: ThrowTypeError() { [native code] }
+    get arguments: ThrowTypeError()
+    set arguments: ThrowTypeError()
     caller: (...)
-    get caller: ThrowTypeError() { [native code] }
-    set caller: ThrowTypeError() { [native code] }
+    get caller: ThrowTypeError()
+    set caller: ThrowTypeError()
     length: 1
     name: ""
-    __proto__: Empty() {}
-    [[TargetFunction]]: (a,b) { return a + b; }
+    __proto__: Empty()
+    [[TargetFunction]]: (a,b)
     [[BoundThis]]: Object
     [[BoundArgs]]: Array[1]
 
