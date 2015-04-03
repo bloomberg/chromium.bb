@@ -262,6 +262,8 @@ class CodeGeneratorV8(CodeGeneratorBase):
         # Add the include for interface itself
         if interface_info['include_path']:
             template_context['header_includes'].add(interface_info['include_path'])
+        template_context['header_includes'].add(self.info_provider.include_path_for_export)
+        template_context['exported'] = self.info_provider.specifier_for_export
         header_text, cpp_text = render_template(
             include_paths, header_template, cpp_template, template_context)
         header_path, cpp_path = self.output_paths(dictionary_name)
@@ -292,6 +294,7 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
         cpp_template = self.jinja_env.get_template('dictionary_impl.cpp')
         template_context = v8_dictionary.dictionary_impl_context(
             dictionary, interfaces_info)
+        template_context['exported'] = self.info_provider.specifier_for_export
         include_paths = interface_info.get('dependencies_include_paths')
         # Add union containers header file to header_includes rather than
         # cpp file so that union containers can be used in dictionary headers.
@@ -300,6 +303,7 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
         include_paths = [header for header in include_paths
                          if header not in union_container_headers]
         template_context['header_includes'].update(union_container_headers)
+        template_context['header_includes'].add(self.info_provider.include_path_for_export)
         header_text, cpp_text = render_template(
             include_paths, header_template, cpp_template, template_context)
         header_path, cpp_path = self.output_paths(

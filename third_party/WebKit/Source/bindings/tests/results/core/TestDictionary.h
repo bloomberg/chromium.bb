@@ -14,6 +14,7 @@
 #include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
 #include "bindings/tests/idls/core/TestInterfaceImplementation.h"
 #include "bindings/tests/idls/core/TestInterfaceWillBeGarbageCollected.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/Element.h"
 #include "core/events/EventTarget.h"
@@ -24,7 +25,7 @@
 
 namespace blink {
 
-class TestDictionary {
+class CORE_EXPORT TestDictionary {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     TestDictionary();

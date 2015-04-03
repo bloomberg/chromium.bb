@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/tests/idls/core/TestDictionary.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -18,11 +19,11 @@ class ExceptionState;
 
 class V8TestDictionary {
 public:
-    static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestDictionary&, ExceptionState&);
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestDictionary&, ExceptionState&);
 };
 
 v8::Local<v8::Value> toV8(const TestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
-void toV8TestDictionary(const TestDictionary&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
+CORE_EXPORT void toV8TestDictionary(const TestDictionary&, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionary& impl)

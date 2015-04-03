@@ -7,13 +7,14 @@
 #ifndef TestInterfaceEventInit_h
 #define TestInterfaceEventInit_h
 
+#include "core/CoreExport.h"
 #include "core/events/EventInitDictionary.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class TestInterfaceEventInit : public EventInitDictionary {
+class CORE_EXPORT TestInterfaceEventInit : public EventInitDictionary {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     TestInterfaceEventInit();

@@ -14,7 +14,7 @@
 namespace blink {
 
 {# FIXME: Add "final" if this class doesn't have subclasses #}
-class {{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_class}}{% endif %} {
+class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_class}}{% endif %} {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     {{cpp_class}}();

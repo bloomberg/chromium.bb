@@ -9,12 +9,13 @@
 
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/tests/idls/core/TestDictionary.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class TestDictionaryDerivedImplementedAs : public TestDictionary {
+class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     TestDictionaryDerivedImplementedAs();

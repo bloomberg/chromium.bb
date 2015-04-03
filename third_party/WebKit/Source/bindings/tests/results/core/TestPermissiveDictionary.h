@@ -8,11 +8,12 @@
 #define TestPermissiveDictionary_h
 
 #include "bindings/core/v8/Nullable.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class TestPermissiveDictionary {
+class CORE_EXPORT TestPermissiveDictionary {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     TestPermissiveDictionary();
