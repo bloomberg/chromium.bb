@@ -10,8 +10,6 @@ crbug.com/453972 [ Android ] virtual/slimmingpaint/fast/block [ Pass ]
 crbug.com/452320 [ Mac ] virtual/slimmingpaint/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/452320 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
-crbug.com/472569 fast/forms/select/popup-menu-appearance-styled.html [ NeedsRebaseline ]
-
 # These need a manual rebaseline after crbug.com/452967
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/svg-as-mask.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-body-background.html [ ImageOnlyFailure NeedsManualRebaseline ]
@@ -177,7 +175,6 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
-crbug.com/472569 fast/forms/select/popup-menu-appearance-zoom.html [ NeedsRebaseline ]
 crbug.com/472569 virtual/slimmingpaint/fast/forms/select/popup-menu-appearance-zoom.html [ Failure ImageOnlyFailure Pass NeedsManualRebaseline ]
 
 # This batch were marked as NeedsRebaseline for crbug.com/133097 but are flaky:
