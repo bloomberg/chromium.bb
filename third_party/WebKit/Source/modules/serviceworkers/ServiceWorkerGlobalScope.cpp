@@ -55,6 +55,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "public/platform/WebURL.h"
 #include "wtf/CurrentTime.h"
@@ -94,6 +95,9 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String
     , m_didEvaluateScript(false)
     , m_hadErrorInTopLevelEventHandler(false)
     , m_eventNestingLevel(0)
+    , m_scriptCount(0)
+    , m_scriptTotalSize(0)
+    , m_scriptCachedMetadataTotalSize(0)
 {
     workerInspectorController()->registerModuleAgent(InspectorServiceWorkerCacheAgent::create(this));
 }
@@ -104,6 +108,12 @@ ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()
 
 void ServiceWorkerGlobalScope::didEvaluateWorkerScript()
 {
+    if (Platform* platform = Platform::current()) {
+        platform->histogramCustomCounts("ServiceWorker.ScriptCount", m_scriptCount, 1, 1000, 50);
+        platform->histogramCustomCounts("ServiceWorker.ScriptTotalSize", m_scriptTotalSize, 1000, 5000000, 50);
+        if (m_scriptCachedMetadataTotalSize)
+            platform->histogramCustomCounts("ServiceWorker.ScriptCachedMetadataTotalSize", m_scriptCachedMetadataTotalSize, 1000, 50000000, 50);
+    }
     m_didEvaluateScript = true;
 }
 
@@ -233,6 +243,13 @@ void ServiceWorkerGlobalScope::logExceptionToConsole(const String& errorMessage,
     consoleMessage->setScriptId(scriptId);
     consoleMessage->setCallStack(callStack);
     addMessageToWorkerConsole(consoleMessage.release());
+}
+
+void ServiceWorkerGlobalScope::scriptLoaded(size_t scriptSize, size_t cachedMetadataSize)
+{
+    ++m_scriptCount;
+    m_scriptTotalSize += scriptSize;
+    m_scriptCachedMetadataTotalSize += cachedMetadataSize;
 }
 
 } // namespace blink

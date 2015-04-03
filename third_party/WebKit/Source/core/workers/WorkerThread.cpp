@@ -323,6 +323,7 @@ void WorkerThread::initialize()
 
         m_isolate = initializeIsolate();
         m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
+        m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
         PlatformThreadData::current().threadTimers().setSharedTimer(adoptPtr(new WorkerSharedTimer(this)));
     }

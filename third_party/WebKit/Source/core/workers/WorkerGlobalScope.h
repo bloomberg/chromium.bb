@@ -133,6 +133,8 @@ public:
 
     void exceptionHandled(int exceptionId, bool isHandled);
 
+    virtual void scriptLoaded(size_t scriptSize, size_t cachedMetadataSize) { }
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
