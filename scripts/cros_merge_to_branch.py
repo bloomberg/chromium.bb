@@ -183,7 +183,7 @@ def _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest, email):
   # branch.
   git.CreatePushBranch(
       constants.PATCH_BRANCH, work_dir, sync=False,
-      remote_push_branch=('ignore', 'origin/%s' % branch))
+      remote_push_branch=git.RemoteRef('ignore', 'origin/%s' % branch))
 
   return branch
 

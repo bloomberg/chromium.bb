@@ -189,7 +189,9 @@ class RemoteTryJob(object):
         raise ChromiteUpgradeNeeded(val)
     push_branch = manifest_version.PUSH_BRANCH
 
-    remote_branch = ('origin', 'refs/remotes/origin/test') if testjob else None
+    remote_branch = None
+    if testjob:
+      remote_branch = git.RemoteRef('origin', 'refs/remotes/origin/test')
     git.CreatePushBranch(push_branch, workdir, sync=False,
                          remote_push_branch=remote_branch)
 
