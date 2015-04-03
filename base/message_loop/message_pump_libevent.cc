@@ -274,9 +274,6 @@ void MessagePumpLibevent::Run(Delegate* delegate) {
         delayed_work_time_ = TimeTicks();
       }
     }
-
-    if (!keep_running_)
-      break;
   }
 }
 
