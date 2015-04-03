@@ -1379,6 +1379,13 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-ste
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-with-async-callstack.html [ Crash ]
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/async-callstack-get-as-string.html [ Crash ]
 
+crbug.com/473119 fast/borders/border-radius-complex-inner-double.html [ NeedsRebaseline ]
+crbug.com/473119 fast/borders/border-radius-constraints-double.html [ NeedsRebaseline ]
+crbug.com/473119 fast/borders/border-radius-different-width-001-double.html [ NeedsRebaseline ]
+crbug.com/473119 virtual/slimmingpaint/fast/borders/border-radius-complex-inner-double.html [ NeedsRebaseline ]
+crbug.com/473119 virtual/slimmingpaint/fast/borders/border-radius-constraints-double.html [ NeedsRebaseline ]
+crbug.com/473119 virtual/slimmingpaint/fast/borders/border-radius-different-width-001-double.html [ NeedsRebaseline ]
+
 # Tiny changes due to optimizations added/fixed in SkImageFilters
 crbug.com/464741 css3/filters/effect-brightness-clamping-hw.html [ NeedsManualRebaseline  ]
 crbug.com/464741 css3/filters/effect-combined-hw.html [ NeedsManualRebaseline  ]
