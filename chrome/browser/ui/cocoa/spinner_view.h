@@ -7,14 +7,15 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_nsobject.h"
 
-@class CAAnimationGroup;
-@class CAShapeLayer;
-
+// A view that displays a Material Design Circular Activity Indicator (aka a
+// "spinner") for Mac Chrome. To use, create a SpinnerView of the desired size
+// and add to a view hierarchy. SpinnerView uses Core Animation to achieve GPU-
+// accelerated animation and smooth scaling to any size.
 @interface SpinnerView : NSView {
-  @private
-  bool is_animating_;
+ @private
+  bool isAnimating_;
 }
 
 @end
