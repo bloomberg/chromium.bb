@@ -937,8 +937,9 @@ void ExtensionInstallPrompt::ShowConfirmation() {
         REGULAR_PERMISSIONS);
 
     scoped_refptr<const extensions::PermissionSet> withheld =
-        extension_->permissions_data()->withheld_permissions();
-    if (!withheld->IsEmpty()) {
+        extension_ ? extension_->permissions_data()->withheld_permissions()
+                   : nullptr;
+    if (withheld && !withheld->IsEmpty()) {
       prompt_->SetPermissions(
           message_provider->GetLegacyWarningMessages(withheld.get(), type),
           PermissionsType::WITHHELD_PERMISSIONS);

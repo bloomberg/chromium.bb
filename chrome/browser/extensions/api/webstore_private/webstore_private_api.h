@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/extensions/active_install_data.h"
+#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
@@ -18,6 +20,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class GPUFeatureChecker;
+
+namespace chrome {
+class BitmapFetcher;
+}  // namespace chrome
 
 namespace extensions {
 
@@ -180,6 +186,37 @@ class WebstorePrivateShowPermissionPromptForDelegatedInstallFunction
   void ShowPrompt(ExtensionInstallPrompt* install_prompt) override;
   scoped_ptr<base::ListValue> CreateResults(
       api::webstore_private::Result result) const override;
+};
+
+class WebstorePrivateInstallBundleFunction
+    : public UIThreadExtensionFunction,
+      public chrome::BitmapFetcherDelegate {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.installBundle",
+                             WEBSTOREPRIVATE_INSTALLBUNDLE)
+
+  WebstorePrivateInstallBundleFunction();
+
+ private:
+  ~WebstorePrivateInstallBundleFunction() override;
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+
+  // chrome::BitmapFetcherDelegate:
+  void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override;
+
+  void OnInstallApproval(BundleInstaller::ApprovalState state);
+  void OnInstallComplete();
+
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  // This stores the input parameters to the function.
+  scoped_ptr<api::webstore_private::InstallBundle::Params> params_;
+
+  scoped_ptr<extensions::BundleInstaller> bundle_;
+
+  scoped_ptr<chrome::BitmapFetcher> icon_fetcher_;
 };
 
 class WebstorePrivateEnableAppLauncherFunction

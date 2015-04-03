@@ -4371,13 +4371,13 @@ Even if you have downloaded files from this website before, the website might ha
         Add "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
       <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_EXTENSIONS" desc="First bold line in the content area of the extension bundle installation prompt. Asks the user if they want to install the set of extensions.">
-        Install these extensions?
+        "<ph name="BUNDLE_NAME">$1<ex>My Awesome Bundle</ex></ph>" adds these extensions:
       </message>
       <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_APPS" desc="First bold line in the content area of the app bundle installation prompt. Asks the user if they want to install the set of apps.">
-        Install these apps?
+        "<ph name="BUNDLE_NAME">$1<ex>My Awesome Bundle</ex></ph>" adds these apps:
       </message>
       <message name="IDS_EXTENSION_BUNDLE_INSTALL_PROMPT_HEADING_EXTENSION_APPS" desc="First bold line in the content area of the extension and app bundle installation prompt. Asks the user if they want to install the set of apps and extensions.">
-        Install these apps and extensions?
+        "<ph name="BUNDLE_NAME">$1<ex>My Awesome Bundle</ex></ph>" adds these apps and extensions:
       </message>
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app uninstallation prompt. Asks the user if they want to uninstall a particular extension or app.">
         Remove "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?

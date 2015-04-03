@@ -132,6 +132,8 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
 }
 
 - (const Extension*)extension {
+  if (type_ == extension_installed_bubble::kBundle)
+    return nullptr;
   return installedBubble_->extension();
 }
 
@@ -152,6 +154,8 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
 
 // Returns YES if the sync promo should be shown in the bubble.
 - (BOOL)showSyncPromo {
+  if (type_ == extension_installed_bubble::kBundle)
+    return false;
   return extensions::sync_helper::IsSyncableExtension([self extension]) &&
       SyncPromoUI::ShouldShowSyncPromo(browser_->profile());
 }
@@ -441,7 +445,8 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
     newWindowHeight += sync_promo_height;
   }
 
-  if (installedBubble_->has_command_keybinding()) {
+  if (type_ != extension_installed_bubble::kBundle &&
+      installedBubble_->has_command_keybinding()) {
     [manageShortcutLink_ setHidden:NO];
     [[manageShortcutLink_ cell]
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];

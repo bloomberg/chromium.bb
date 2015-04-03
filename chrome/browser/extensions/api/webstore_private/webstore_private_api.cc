@@ -7,12 +7,14 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/apps/ephemeral_app_launcher.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -31,6 +33,9 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
+#include "net/base/load_flags.h"
+#include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -43,6 +48,7 @@ namespace GetEphemeralAppsEnabled =
 namespace GetIsLauncherEnabled = api::webstore_private::GetIsLauncherEnabled;
 namespace GetStoreLogin = api::webstore_private::GetStoreLogin;
 namespace GetWebGLStatus = api::webstore_private::GetWebGLStatus;
+namespace InstallBundle = api::webstore_private::InstallBundle;
 namespace IsInIncognitoMode = api::webstore_private::IsInIncognitoMode;
 namespace LaunchEphemeralApp = api::webstore_private::LaunchEphemeralApp;
 namespace SetStoreLogin = api::webstore_private::SetStoreLogin;
@@ -155,9 +161,12 @@ static base::LazyInstance<PendingApprovals> g_pending_approvals =
 // A preference set by the web store to indicate login information for
 // purchased apps.
 const char kWebstoreLogin[] = "extensions.webstore_login";
+
+// Error messages that can be returned by the API.
 const char kAlreadyInstalledError[] = "This item is already installed";
 const char kCannotSpecifyIconDataAndUrlError[] =
     "You cannot specify both icon data and an icon url";
+const char kInvalidBundleError[] = "Invalid bundle";
 const char kInvalidIconUrlError[] = "Invalid icon url";
 const char kInvalidIdError[] = "Invalid id";
 const char kInvalidManifestError[] = "Invalid manifest";
@@ -165,7 +174,7 @@ const char kNoPreviousBeginInstallWithManifestError[] =
     "* does not match a previous call to beginInstallWithManifest3";
 const char kUserCancelledError[] = "User cancelled install";
 
-WebstoreInstaller::Delegate* test_webstore_installer_delegate = NULL;
+WebstoreInstaller::Delegate* test_webstore_installer_delegate = nullptr;
 
 // We allow the web store to set a string containing login information when a
 // purchase is made, so that when a user logs into sync with a different
@@ -266,7 +275,7 @@ WebstorePrivateFunctionWithPermissionPrompt<Params>::Run() {
   if (response)
     return RespondNow(response.Pass());
 
-  net::URLRequestContextGetter* context_getter = NULL;
+  net::URLRequestContextGetter* context_getter = nullptr;
   if (!icon_url.is_empty())
     context_getter = browser_context()->GetRequestContext();
 
@@ -584,6 +593,107 @@ scoped_ptr<base::ListValue>
 WebstorePrivateShowPermissionPromptForDelegatedInstallFunction::CreateResults(
     api::webstore_private::Result result) const {
   return ShowPermissionPromptForDelegatedInstall::Results::Create(result);
+}
+
+WebstorePrivateInstallBundleFunction::WebstorePrivateInstallBundleFunction()
+  : chrome_details_(this) {
+}
+
+WebstorePrivateInstallBundleFunction::~WebstorePrivateInstallBundleFunction() {
+}
+
+ExtensionFunction::ResponseAction WebstorePrivateInstallBundleFunction::Run() {
+  params_ = InstallBundle::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_);
+
+  if (params_->contents.empty())
+    return RespondNow(Error(kInvalidBundleError));
+
+  if (params_->details.icon_url) {
+    GURL icon_url = source_url().Resolve(*params_->details.icon_url);
+    if (!icon_url.is_valid())
+      return RespondNow(Error(kInvalidIconUrlError));
+
+    // The bitmap fetcher will call us back via OnFetchComplete.
+    icon_fetcher_.reset(new chrome::BitmapFetcher(icon_url, this));
+    icon_fetcher_->Start(
+        browser_context()->GetRequestContext(), std::string(),
+        net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+        net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
+  } else {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebstorePrivateInstallBundleFunction::OnFetchComplete,
+                   this, GURL(), nullptr));
+  }
+
+  AddRef();  // Balanced in OnFetchComplete.
+
+  // The response is sent asynchronously in OnFetchComplete, OnInstallApproval,
+  // or OnInstallComplete.
+  return RespondLater();
+}
+
+void WebstorePrivateInstallBundleFunction::OnFetchComplete(
+    const GURL& url, const SkBitmap* bitmap) {
+  InstallTracker* tracker = InstallTracker::Get(browser_context());
+  DCHECK(tracker);
+
+  std::string authuser;
+  if (params_->details.authuser)
+    authuser = *params_->details.authuser;
+
+  BundleInstaller::ItemList items;
+  for (const auto& entry : params_->contents) {
+    // Skip already-installed items.
+    if (util::IsExtensionInstalledPermanently(entry->id, browser_context()) ||
+        tracker->GetActiveInstall(entry->id)) {
+      continue;
+    }
+    BundleInstaller::Item item;
+    item.id = entry->id;
+    item.manifest = entry->manifest;
+    item.localized_name = entry->localized_name;
+    if (entry->icon_url)
+      item.icon_url = source_url().Resolve(*entry->icon_url);
+    items.push_back(item);
+  }
+  if (items.empty()) {
+    Respond(Error(kAlreadyInstalledError));
+    Release();  // Matches the AddRef in Run.
+    return;
+  }
+  bundle_.reset(new BundleInstaller(chrome_details_.GetCurrentBrowser(),
+                                    params_->details.localized_name,
+                                    bitmap ? *bitmap : SkBitmap(), authuser,
+                                    items));
+
+  // The bundle installer will call us back via OnInstallApproval.
+  bundle_->PromptForApproval(
+      base::Bind(&WebstorePrivateInstallBundleFunction::OnInstallApproval,
+                 this));
+
+  Release();  // Matches the AddRef in Run.
+}
+
+void WebstorePrivateInstallBundleFunction::OnInstallApproval(
+    BundleInstaller::ApprovalState state) {
+  if (state != BundleInstaller::APPROVED) {
+    Respond(Error(state == BundleInstaller::USER_CANCELED
+                      ? kUserCancelledError
+                      : kInvalidBundleError));
+    return;
+  }
+
+  // The bundle installer will call us back via OnInstallComplete.
+  bundle_->CompleteInstall(
+      chrome_details_.GetAssociatedWebContents(),
+      base::Bind(&WebstorePrivateInstallBundleFunction::OnInstallComplete,
+                 this));
+}
+
+void WebstorePrivateInstallBundleFunction::OnInstallComplete() {
+  Respond(NoArguments());
 }
 
 WebstorePrivateEnableAppLauncherFunction::
