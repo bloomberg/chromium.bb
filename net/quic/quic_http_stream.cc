@@ -60,6 +60,10 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
     return was_handshake_confirmed_ ? ERR_CONNECTION_CLOSED :
         ERR_QUIC_HANDSHAKE_FAILED;
 
+  stream_net_log.AddEvent(
+      NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION,
+      stream_net_log.source().ToEventParametersCallback());
+
   if (request_info->url.SchemeIsSecure()) {
     SSLInfo ssl_info;
     bool secure_session =

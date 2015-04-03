@@ -1722,6 +1722,13 @@ EVENT_TYPE(QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS)
 //   }
 EVENT_TYPE(QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS)
 
+// Identifies the NetLog::Source() for the QuicSesssion that handled the stream.
+// The event parameters are:
+//   {
+//      "source_dependency": <Source identifier for session that was used>,
+//   }
+EVENT_TYPE(HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION)
+
 // ------------------------------------------------------------------------
 // HttpStreamParser
 // ------------------------------------------------------------------------
