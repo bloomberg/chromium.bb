@@ -68,7 +68,7 @@ bool ProgressMarkersMatch(const ProfileSyncService* service1,
 //
 // The long-term plan is to deprecate this hack by replacing all its usees with
 // more reliable status checkers.
-class ProgressMarkerWatcher : public ProfileSyncServiceObserver {
+class ProgressMarkerWatcher : public sync_driver::SyncServiceObserver {
  public:
   ProgressMarkerWatcher(
       ProfileSyncService* service,

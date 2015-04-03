@@ -2719,6 +2719,7 @@
         '../components/components.gyp:invalidation',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:password_manager_core_browser',
+        '../components/components.gyp:sync_driver',
         '../components/components.gyp:ui_zoom',
         '../components/components.gyp:update_client',
         '../components/components_resources.gyp:components_resources',

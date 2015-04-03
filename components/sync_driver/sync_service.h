@@ -1,28 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_BASE_H_
-#define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_BASE_H_
+#ifndef COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_H_
+#define COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_H_
 
-#include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "base/macros.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "sync/internal_api/public/base/model_type.h"
 
-namespace content {
-class BrowserContext;
-}
+namespace sync_driver {
 
-// API for ProfileSyncService.
-class ProfileSyncServiceBase {
+class SyncService {
  public:
-  // Retrieve the sync service to use in the given context.
-  // Returns NULL if sync is not enabled for the context.
-  static ProfileSyncServiceBase* FromBrowserContext(
-      content::BrowserContext* context);
-
-  typedef ProfileSyncServiceObserver Observer;
-
-  virtual ~ProfileSyncServiceBase() {}
+  virtual ~SyncService() {}
 
   // Whether sync is enabled by user or not. This does not necessarily mean
   // that sync is currently running (due to delayed startup, unrecoverable
@@ -45,13 +36,21 @@ class ProfileSyncServiceBase {
   // be updated.
   virtual syncer::ModelTypeSet GetActiveDataTypes() const = 0;
 
-  // Adds/removes an observer. ProfileSyncServiceBase does not take
-  // ownership of the observer.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
+  // Adds/removes an observer. SyncService does not take ownership of the
+  // observer.
+  virtual void AddObserver(SyncServiceObserver* observer) = 0;
+  virtual void RemoveObserver(SyncServiceObserver* observer) = 0;
 
   // Returns true if |observer| has already been added as an observer.
-  virtual bool HasObserver(const Observer* observer) const = 0;
+  virtual bool HasObserver(const SyncServiceObserver* observer) const = 0;
+
+ protected:
+  SyncService() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SyncService);
 };
 
-#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_BASE_H_
+}  // namespace sync_driver
+
+#endif  // COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_H_

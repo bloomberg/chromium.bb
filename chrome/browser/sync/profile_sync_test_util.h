@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -33,10 +33,10 @@ ACTION(QuitUIMessageLoop) {
   base::MessageLoop::current()->Quit();
 }
 
-class ProfileSyncServiceObserverMock : public ProfileSyncServiceObserver {
+class SyncServiceObserverMock : public sync_driver::SyncServiceObserver {
  public:
-  ProfileSyncServiceObserverMock();
-  virtual ~ProfileSyncServiceObserverMock();
+  SyncServiceObserverMock();
+  virtual ~SyncServiceObserverMock();
 
   MOCK_METHOD0(OnStateChanged, void());
 };

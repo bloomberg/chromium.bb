@@ -10,8 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "components/sync_driver/sync_service_observer.h"
 
 namespace base {
 class StringValue;
@@ -22,7 +22,7 @@ namespace options {
 // Chrome personal stuff profiles manage overlay UI handler.
 class ManageProfileHandler : public OptionsPageUIHandler,
                              public ProfileInfoCacheObserver,
-                             public ProfileSyncServiceObserver {
+                             public sync_driver::SyncServiceObserver {
  public:
   ManageProfileHandler();
   ~ManageProfileHandler() override;
@@ -44,7 +44,7 @@ class ManageProfileHandler : public OptionsPageUIHandler,
                             const base::string16& old_profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
-  // ProfileSyncServiceObserver:
+  // sync_driver::SyncServiceObserver:
   void OnStateChanged() override;
 
  private:

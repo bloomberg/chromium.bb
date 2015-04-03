@@ -80,9 +80,9 @@ using testing::Return;
 using testing::StrictMock;
 using testing::_;
 
-class TestProfileSyncServiceObserver : public ProfileSyncServiceObserver {
+class TestSyncServiceObserver : public sync_driver::SyncServiceObserver {
  public:
-  explicit TestProfileSyncServiceObserver(ProfileSyncService* service)
+  explicit TestSyncServiceObserver(ProfileSyncService* service)
       : service_(service), first_setup_in_progress_(false) {}
   void OnStateChanged() override {
     first_setup_in_progress_ = service_->FirstSetupInProgress();
@@ -349,7 +349,7 @@ TEST_F(ProfileSyncServiceTest, SetupInProgress) {
   CreateService(browser_sync::AUTO_START);
   InitializeForNthSync();
 
-  TestProfileSyncServiceObserver observer(service());
+  TestSyncServiceObserver observer(service());
   service()->AddObserver(&observer);
 
   service()->SetSetupInProgress(true);

@@ -9,9 +9,11 @@
 
 using content::BrowserThread;
 
-ProfileSyncServiceObserverMock::ProfileSyncServiceObserverMock() {}
+SyncServiceObserverMock::SyncServiceObserverMock() {
+}
 
-ProfileSyncServiceObserverMock::~ProfileSyncServiceObserverMock() {}
+SyncServiceObserverMock::~SyncServiceObserverMock() {
+}
 
 ThreadNotifier::ThreadNotifier(base::Thread* notify_thread)
     : done_event_(false, false),

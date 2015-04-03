@@ -9,6 +9,10 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace sync_driver {
+class SyncService;
+}
+
 class Profile;
 class ProfileSyncService;
 
@@ -16,6 +20,11 @@ class ProfileSyncServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ProfileSyncService* GetForProfile(Profile* profile);
   static bool HasProfileSyncService(Profile* profile);
+
+  // Convenience method that returns the ProfileSyncService as a
+  // sync_driver::SyncService.
+  static sync_driver::SyncService* GetSyncServiceForBrowserContext(
+      content::BrowserContext* context);
 
   static ProfileSyncServiceFactory* GetInstance();
 

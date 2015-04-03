@@ -14,7 +14,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
@@ -23,14 +22,18 @@
 #include "chrome/browser/sync_file_system/sync_service_state.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "url/gurl.h"
 
 class Profile;
-class ProfileSyncServiceBase;
 
 namespace storage {
 class FileSystemContext;
+}
+
+namespace sync_driver {
+class SyncService;
 }
 
 namespace sync_file_system {
@@ -43,7 +46,7 @@ class SyncEventObserver;
 class SyncFileSystemService
     : public KeyedService,
       public SyncProcessRunner::Client,
-      public ProfileSyncServiceObserver,
+      public sync_driver::SyncServiceObserver,
       public FileStatusObserver,
       public extensions::ExtensionRegistryObserver,
       public base::SupportsWeakPtr<SyncFileSystemService> {
@@ -144,7 +147,7 @@ class SyncFileSystemService
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override;
 
-  // ProfileSyncServiceObserver implementation.
+  // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // SyncFileStatusObserver implementation.
@@ -157,7 +160,7 @@ class SyncFileSystemService
   // Check the profile's sync preference settings and call
   // remote_file_service_->SetSyncEnabled() to update the status.
   // |profile_sync_service| must be non-null.
-  void UpdateSyncEnabledStatus(ProfileSyncServiceBase* profile_sync_service);
+  void UpdateSyncEnabledStatus(sync_driver::SyncService* profile_sync_service);
 
   // Runs the SyncProcessRunner method of all sync runners (e.g. for Local sync
   // and Remote sync).

@@ -934,12 +934,12 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 }
 
 void ProfileSyncService::NotifyObservers() {
-  FOR_EACH_OBSERVER(ProfileSyncServiceBase::Observer, observers_,
+  FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
                     OnStateChanged());
 }
 
 void ProfileSyncService::NotifySyncCycleCompleted() {
-  FOR_EACH_OBSERVER(ProfileSyncServiceBase::Observer, observers_,
+  FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
                     OnSyncCycleCompleted());
 }
 
@@ -2235,12 +2235,12 @@ void ProfileSyncService::GoogleSignedOut(const std::string& account_id,
 }
 
 void ProfileSyncService::AddObserver(
-    ProfileSyncServiceBase::Observer* observer) {
+    sync_driver::SyncServiceObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 void ProfileSyncService::RemoveObserver(
-    ProfileSyncServiceBase::Observer* observer) {
+    sync_driver::SyncServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -2397,7 +2397,7 @@ void ProfileSyncService::GetAllNodes(
 }
 
 bool ProfileSyncService::HasObserver(
-    const ProfileSyncServiceBase::Observer* observer) const {
+    const sync_driver::SyncServiceObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 

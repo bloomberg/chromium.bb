@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync_driver/sync_service_observer.h"
 
 class Profile;
 
@@ -19,7 +19,7 @@ namespace chromeos {
 // This class is responsible for detecting authentication problems reported
 // by sync service and
 class AuthSyncObserver : public KeyedService,
-                         public ProfileSyncServiceObserver {
+                         public sync_driver::SyncServiceObserver {
  public:
   explicit AuthSyncObserver(Profile* user_profile);
   ~AuthSyncObserver() override;
@@ -32,7 +32,7 @@ class AuthSyncObserver : public KeyedService,
   // KeyedService implementation.
   void Shutdown() override;
 
-  // ProfileSyncServiceObserver implementation.
+  // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // Called on attempt to restore supervised user token.

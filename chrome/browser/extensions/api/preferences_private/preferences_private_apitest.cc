@@ -68,16 +68,15 @@ class FakeProfileSyncService : public ProfileSyncService {
   // ProfileSyncService:
   bool SyncActive() const override { return sync_initialized_; }
 
-  void AddObserver(ProfileSyncServiceBase::Observer* observer) override {
+  void AddObserver(sync_driver::SyncServiceObserver* observer) override {
     if (sync_initialized_)
       initialized_state_violation_ = true;
     // Set sync initialized state to true so the function will run after
     // OnStateChanged is called.
     sync_initialized_ = true;
     base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ProfileSyncServiceBase::Observer::OnStateChanged,
-                   base::Unretained(observer)));
+        FROM_HERE, base::Bind(&sync_driver::SyncServiceObserver::OnStateChanged,
+                              base::Unretained(observer)));
   }
 
   syncer::ModelTypeSet GetEncryptedDataTypes() const override {

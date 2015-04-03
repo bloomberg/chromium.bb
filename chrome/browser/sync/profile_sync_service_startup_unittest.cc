@@ -185,7 +185,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
   ProfileSyncService* sync_;
-  ProfileSyncServiceObserverMock observer_;
+  SyncServiceObserverMock observer_;
   sync_driver::DataTypeStatusTable data_type_status_table_;
 };
 

@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "components/sync_driver/sync_service_observer.h"
 
 class PrefServiceSyncable;
 class Profile;
@@ -27,7 +27,7 @@ namespace extensions {
 // thread and they are expecting public method calls from the UI thread.
 class ExternalPrefLoader : public ExternalLoader,
                            public PrefServiceSyncableObserver,
-                           public ProfileSyncServiceObserver {
+                           public sync_driver::SyncServiceObserver {
  public:
   enum Options {
     NONE = 0,
@@ -70,7 +70,7 @@ class ExternalPrefLoader : public ExternalLoader,
   // PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
 
-  // ProfileSyncServiceObserver
+  // sync_driver::SyncServiceObserver
   void OnStateChanged() override;
 
   // If priority sync ready posts LoadOnFileThread and return true.

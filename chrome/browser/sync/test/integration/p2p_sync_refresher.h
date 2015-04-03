@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_P2P_SYNC_REFRESHER_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "components/sync_driver/sync_service_observer.h"
 
 class ProfileSyncService;
 
@@ -15,12 +15,12 @@ class ProfileSyncService;
 //
 // It register and unregisters in its constructor and destructor.  This is
 // intended to make it easy to manage with a scoped_ptr.
-class P2PSyncRefresher : public ProfileSyncServiceObserver {
+class P2PSyncRefresher : public sync_driver::SyncServiceObserver {
  public:
   explicit P2PSyncRefresher(ProfileSyncService* sync_service);
   ~P2PSyncRefresher() override;
 
-  // Implementation of ProfileSyncServiceObserver
+  // Implementation of sync_driver::SyncServiceObserver
   void OnStateChanged() override;
   void OnSyncCycleCompleted() override;
 

@@ -7,13 +7,14 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
 class PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction
-    : public ChromeAsyncExtensionFunction, public ProfileSyncServiceObserver {
+    : public ChromeAsyncExtensionFunction,
+      public sync_driver::SyncServiceObserver {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "preferencesPrivate.getSyncCategoriesWithoutPassphrase",
@@ -25,7 +26,7 @@ class PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction
   ~PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction() override;
 
  private:
-  // ProfileSyncServiceObserver:
+  // sync_driver::SyncServiceObserver:
   void OnStateChanged() override;
 
   // ExtensionFunction:

@@ -12,9 +12,9 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "components/invalidation/invalidation_util.h"
 #include "components/sync_driver/sync_prefs.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -26,7 +26,7 @@ class ProfileSyncService;
 // a single instance of this wrapper. The name of the Java class is
 // ProfileSyncService.
 // This class should only be accessed from the UI thread.
-class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
+class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
  public:
 
   ProfileSyncServiceAndroid(JNIEnv* env, jobject obj);
@@ -192,7 +192,7 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // (GoogleServiceAuthError.State).
   jint GetAuthError(JNIEnv* env, jobject obj);
 
-  // ProfileSyncServiceObserver:
+  // sync_driver::SyncServiceObserver:
   void OnStateChanged() override;
 
   // Returns a timestamp for when a sync was last executed. The return value is

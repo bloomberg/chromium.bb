@@ -75,7 +75,7 @@ class SingleClientBackupRollbackTest : public SyncTest {
 };
 
 // Waits until the ProfileSyncService's backend is in IDLE mode.
-class SyncBackendStoppedChecker : public ProfileSyncServiceBase::Observer {
+class SyncBackendStoppedChecker : public sync_driver::SyncServiceObserver {
  public:
   explicit SyncBackendStoppedChecker(ProfileSyncService* service)
       : pss_(service),
@@ -111,7 +111,7 @@ class SyncBackendStoppedChecker : public ProfileSyncServiceBase::Observer {
 };
 
 // Waits until a rollback finishes.
-class SyncRollbackChecker : public ProfileSyncServiceBase::Observer,
+class SyncRollbackChecker : public sync_driver::SyncServiceObserver,
                             public BrowsingDataRemover::Observer {
  public:
   explicit SyncRollbackChecker(ProfileSyncService* service)
@@ -120,7 +120,7 @@ class SyncRollbackChecker : public ProfileSyncServiceBase::Observer,
         rollback_started_(false),
         clear_done_(false) {}
 
-  // ProfileSyncServiceBase::Observer implementation.
+  // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override {
     if (ProfileSyncService::ROLLBACK == pss_->backend_mode()) {
       rollback_started_ = true;

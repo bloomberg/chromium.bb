@@ -25,8 +25,6 @@
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/backup_rollback_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/profile_sync_service_base.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/protocol_event_observer.h"
 #include "chrome/browser/sync/sessions/sessions_sync_manager.h"
 #include "chrome/browser/sync/startup_controller.h"
@@ -43,6 +41,7 @@
 #include "components/sync_driver/non_blocking_data_type_manager.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
+#include "components/sync_driver/sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
@@ -181,7 +180,7 @@ class EncryptedData;
 //   tell the sync engine that setup is completed and it can begin downloading
 //   data from the sync server.
 //
-class ProfileSyncService : public ProfileSyncServiceBase,
+class ProfileSyncService : public sync_driver::SyncService,
                            public sync_driver::SyncFrontend,
                            public sync_driver::SyncPrefObserver,
                            public sync_driver::DataTypeManagerObserver,
@@ -283,16 +282,16 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // immediately after an object of this class is constructed.
   void Initialize();
 
-  virtual void SetSyncSetupCompleted();
+  void SetSyncSetupCompleted();
 
-  // ProfileSyncServiceBase implementation.
+  // sync_driver::SyncService implementation
   bool HasSyncSetupCompleted() const override;
   bool SyncActive() const override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
-  void AddObserver(ProfileSyncServiceBase::Observer* observer) override;
-  void RemoveObserver(ProfileSyncServiceBase::Observer* observer) override;
+  void AddObserver(sync_driver::SyncServiceObserver* observer) override;
+  void RemoveObserver(sync_driver::SyncServiceObserver* observer) override;
   bool HasObserver(
-      const ProfileSyncServiceBase::Observer* observer) const override;
+      const sync_driver::SyncServiceObserver* observer) const override;
 
   void AddProtocolEventObserver(browser_sync::ProtocolEventObserver* observer);
   void RemoveProtocolEventObserver(
@@ -1025,7 +1024,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Manager for the non-blocking data types.
   sync_driver::NonBlockingDataTypeManager non_blocking_data_type_manager_;
 
-  ObserverList<ProfileSyncServiceBase::Observer> observers_;
+  ObserverList<sync_driver::SyncServiceObserver> observers_;
   ObserverList<browser_sync::ProtocolEventObserver> protocol_event_observers_;
   ObserverList<syncer::TypeDebugInfoObserver> type_debug_info_observers_;
 

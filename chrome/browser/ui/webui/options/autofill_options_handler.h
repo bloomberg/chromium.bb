@@ -9,9 +9,9 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/sync_driver/sync_service_observer.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -27,7 +27,7 @@ namespace options {
 
 class AutofillOptionsHandler : public OptionsPageUIHandler,
                                public autofill::PersonalDataManagerObserver,
-                               public ProfileSyncServiceObserver {
+                               public sync_driver::SyncServiceObserver {
  public:
   AutofillOptionsHandler();
   ~AutofillOptionsHandler() override;
@@ -41,7 +41,7 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   // PersonalDataManagerObserver implementation.
   void OnPersonalDataChanged() override;
 
-  // ProfileSyncServiceObserver implementation.
+  // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
  private:
@@ -116,7 +116,7 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   // Unowned pointer, may not be NULL.
   autofill::PersonalDataManager* personal_data_;
 
-  ScopedObserver<ProfileSyncService, ProfileSyncServiceBase::Observer>
+  ScopedObserver<ProfileSyncService, sync_driver::SyncServiceObserver>
       observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillOptionsHandler);

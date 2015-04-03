@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
+#include "components/sync_driver/sync_service_observer.h"
 
 class ProfileSyncService;
 

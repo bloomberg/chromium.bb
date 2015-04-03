@@ -81,7 +81,7 @@ class ProfileSyncServiceHarness {
   bool AwaitBackendInitialization();
 
   // Blocks the caller until sync setup is complete. Returns true if and only
-  // if sync setup completed successfully. See ProfileSyncServiceBase's
+  // if sync setup completed successfully. See sync_driver::SyncService's
   // SyncActive() method for the definition of what successful means here.
   bool AwaitSyncSetupCompletion();
 

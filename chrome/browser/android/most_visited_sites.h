@@ -12,17 +12,17 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/suggestions/proto/suggestions.pb.h"
+#include "components/sync_driver/sync_service_observer.h"
 
 namespace suggestions {
 class SuggestionsService;
 }
 
 // Provides the list of most visited sites and their thumbnails to Java.
-class MostVisitedSites : public ProfileSyncServiceObserver,
+class MostVisitedSites : public sync_driver::SyncServiceObserver,
                          public history::TopSitesObserver {
  public:
   typedef base::Callback<
@@ -44,7 +44,7 @@ class MostVisitedSites : public ProfileSyncServiceObserver,
   void BlacklistUrl(JNIEnv* env, jobject obj, jstring j_url);
   void RecordOpenedMostVisitedItem(JNIEnv* env, jobject obj, jint index);
 
-  // ProfileSyncServiceObserver implementation.
+  // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // Registers JNI methods.

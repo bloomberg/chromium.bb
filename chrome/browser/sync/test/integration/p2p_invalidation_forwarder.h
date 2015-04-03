@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "components/sync_driver/sync_service_observer.h"
 
 class ProfileSyncService;
 
@@ -22,14 +22,14 @@ class P2PInvalidationService;
 //
 // It register and unregisters in its constructor and destructor.  This is
 // intended to make it easy to manage with a scoped_ptr.
-class P2PInvalidationForwarder : public ProfileSyncServiceObserver {
+class P2PInvalidationForwarder : public sync_driver::SyncServiceObserver {
  public:
   P2PInvalidationForwarder(
       ProfileSyncService* sync_service,
       invalidation::P2PInvalidationService* invalidation_service);
   ~P2PInvalidationForwarder() override;
 
-  // Implementation of ProfileSyncServiceObserver
+  // Implementation of sync_driver::SyncServiceObserver
   void OnStateChanged() override;
   void OnSyncCycleCompleted() override;
 

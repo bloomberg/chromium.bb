@@ -8,13 +8,13 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "components/sync_driver/sync_service_observer.h"
 
 class Profile;
 class ProfileSyncService;
 
 // Keep track of sync errors and expose them to observers in the UI.
-class SyncErrorController : public ProfileSyncServiceObserver {
+class SyncErrorController : public sync_driver::SyncServiceObserver {
  public:
   // The observer class for SyncErrorController lets the controller notify
   // observers when an error arises or changes.
@@ -33,7 +33,7 @@ class SyncErrorController : public ProfileSyncServiceObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // ProfileSyncServiceObserver:
+  // sync_driver::SyncServiceObserver:
   void OnStateChanged() override;
 
  private:

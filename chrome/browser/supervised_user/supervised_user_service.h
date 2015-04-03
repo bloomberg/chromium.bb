@@ -19,10 +19,10 @@
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_type_preference_provider.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -66,7 +66,7 @@ class SupervisedUserService : public KeyedService,
                               public extensions::ManagementPolicy::Provider,
 #endif
                               public SyncTypePreferenceProvider,
-                              public ProfileSyncServiceObserver,
+                              public sync_driver::SyncServiceObserver,
                               public chrome::BrowserListObserver,
                               public SupervisedUserURLFilter::Observer {
  public:
@@ -170,7 +170,7 @@ class SupervisedUserService : public KeyedService,
   // SyncTypePreferenceProvider implementation:
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
 
-  // ProfileSyncServiceObserver implementation:
+  // sync_driver::SyncServiceObserver implementation:
   void OnStateChanged() override;
 
   // chrome::BrowserListObserver implementation:

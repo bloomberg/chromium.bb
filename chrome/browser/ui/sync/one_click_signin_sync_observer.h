@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_SYNC_OBSERVER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -17,7 +17,7 @@ class WebContents;
 }
 
 class OneClickSigninSyncObserver : public content::WebContentsObserver,
-                                   public ProfileSyncServiceObserver {
+                                   public sync_driver::SyncServiceObserver {
  public:
   // Waits for Sync to be initialized, then navigates the |web_contents| to the
   // |continue_url|.  Instances of this class delete themselves once the job is
@@ -33,7 +33,7 @@ class OneClickSigninSyncObserver : public content::WebContentsObserver,
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
 
-  // ProfileSyncServiceObserver:
+  // sync_driver::SyncServiceObserver:
   void OnStateChanged() override;
 
   // Loads the |continue_url_| in the |web_contents()|.

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_OBSERVER_H_
-#define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_OBSERVER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_OBSERVER_H_
+#define COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_OBSERVER_H_
+
+namespace sync_driver {
 
 // Various UI components such as the New Tab page can be driven by observing
-// the ProfileSyncService through this interface.
-class ProfileSyncServiceObserver {
+// the SyncService through this interface.
+class SyncServiceObserver {
  public:
   // When one of the following events occurs, OnStateChanged() is called.
   // Observers should query the service to determine what happened.
@@ -25,7 +27,9 @@ class ProfileSyncServiceObserver {
   virtual void OnSyncCycleCompleted();
 
  protected:
-  virtual ~ProfileSyncServiceObserver() { }
+  virtual ~SyncServiceObserver() {}
 };
 
-#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_OBSERVER_H_
+}  // namespace sync_driver
+
+#endif  // COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_OBSERVER_H_

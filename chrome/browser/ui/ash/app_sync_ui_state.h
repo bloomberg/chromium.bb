@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -28,7 +28,7 @@ class ExtensionRegistry;
 // normal user profile (i.e. it does not watch for guest profile or exsiting
 // user profile) and lasts for at the most 1 minute.
 class AppSyncUIState : public KeyedService,
-                       public ProfileSyncServiceObserver,
+                       public sync_driver::SyncServiceObserver,
                        public extensions::ExtensionRegistryObserver {
  public:
   enum Status {
@@ -67,7 +67,7 @@ class AppSyncUIState : public KeyedService,
   // Invoked when |max_syncing_status_timer_| fires.
   void OnMaxSyncingTimer();
 
-  // ProfileSyncServiceObserver overrides:
+  // sync_driver::SyncServiceObserver overrides:
   void OnStateChanged() override;
 
   // extensions::ExtensionRegistryObserver overrides:

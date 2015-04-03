@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/protocol_event_observer.h"
+#include "components/sync_driver/sync_service_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
 #include "sync/js/js_controller.h"
@@ -24,7 +24,7 @@ class ProfileSyncService;
 // The implementation for the chrome://sync-internals page.
 class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
                                     public syncer::JsEventHandler,
-                                    public ProfileSyncServiceObserver,
+                                    public sync_driver::SyncServiceObserver,
                                     public browser_sync::ProtocolEventObserver,
                                     public syncer::TypeDebugInfoObserver {
  public:
@@ -55,7 +55,7 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   // Callback used in GetAllNodes.
   void OnReceivedAllNodes(int request_id, scoped_ptr<base::ListValue> nodes);
 
-  // ProfileSyncServiceObserver implementation.
+  // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // ProtocolEventObserver implementation.

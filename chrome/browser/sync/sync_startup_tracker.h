@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "components/sync_driver/sync_service_observer.h"
 
 class Profile;
 
@@ -17,7 +17,7 @@ class Profile;
 // but now that sync initialization is no longer a required part of signin,
 // it has been broken out of that class so only those places that care about
 // sync initialization depend on it.
-class SyncStartupTracker : public ProfileSyncServiceObserver {
+class SyncStartupTracker : public sync_driver::SyncServiceObserver {
  public:
   // Observer interface used to notify observers when sync has started up.
   class Observer {
@@ -45,7 +45,7 @@ class SyncStartupTracker : public ProfileSyncServiceObserver {
   // Returns the current state of the sync service.
   static SyncServiceState GetSyncServiceState(Profile* profile);
 
-  // ProfileSyncServiceObserver implementation.
+  // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
  private:
