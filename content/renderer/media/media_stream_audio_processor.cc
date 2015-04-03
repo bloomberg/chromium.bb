@@ -72,7 +72,7 @@ void RecordProcessingState(AudioTrackProcessingStates state) {
                             state, AUDIO_PROCESSING_MAX);
 }
 
-bool isDelayAgnosticAecEnabled() {
+bool IsDelayAgnosticAecEnabled() {
   // Note: It's important to query the field trial state first, to ensure that
   // UMA reports the correct group.
   const std::string group_name =
@@ -83,6 +83,14 @@ bool isDelayAgnosticAecEnabled() {
 
   return (group_name == "Enabled" || group_name == "DefaultEnabled");
 }
+
+bool IsBeamformingEnabled(const MediaAudioConstraints& audio_constraints) {
+  return audio_constraints.GetProperty(
+             MediaAudioConstraints::kGoogBeamforming) ||
+         base::FieldTrialList::FindFullName("ChromebookBeamforming") ==
+             "Enabled";
+}
+
 }  // namespace
 
 // Wraps AudioBus to provide access to the array of channel pointers, since this
@@ -454,8 +462,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
       MediaAudioConstraints::kGoogNoiseSuppression);
   const bool goog_experimental_ns = audio_constraints.GetProperty(
       MediaAudioConstraints::kGoogExperimentalNoiseSuppression);
-  const bool goog_beamforming = audio_constraints.GetProperty(
-      MediaAudioConstraints::kGoogBeamforming);
+  const bool goog_beamforming = IsBeamformingEnabled(audio_constraints);
   const bool goog_high_pass_filter = audio_constraints.GetProperty(
       MediaAudioConstraints::kGoogHighpassFilter);
   audio_proc_48kHz_support_ = audio_constraints.GetProperty(
@@ -474,7 +481,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     config.Set<webrtc::DelayCorrection>(new webrtc::DelayCorrection(true));
   if (goog_experimental_ns)
     config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(true));
-  if (isDelayAgnosticAecEnabled())
+  if (IsDelayAgnosticAecEnabled())
     config.Set<webrtc::ReportedDelay>(new webrtc::ReportedDelay(false));
   if (goog_beamforming) {
     ConfigureBeamforming(&config);

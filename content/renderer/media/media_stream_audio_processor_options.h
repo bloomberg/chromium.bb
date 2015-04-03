@@ -66,21 +66,22 @@ class CONTENT_EXPORT MediaAudioConstraints {
   // default value of the constraint.
   // Note, for constraint of |kEchoCancellation| or |kGoogEchoCancellation|,
   // clients should use GetEchoCancellationProperty().
-  bool GetProperty(const std::string& key);
+  bool GetProperty(const std::string& key) const;
 
   // Gets the property of echo cancellation defined in |constraints_|. The
   // returned value depends on a combination of |effects_|, |kEchoCancellation|
   // and |kGoogEchoCancellation| in |constraints_|.
-  bool GetEchoCancellationProperty();
+  bool GetEchoCancellationProperty() const;
 
   // Returns true if all the mandatory constraints in |constraints_| are valid;
   // Otherwise return false.
-  bool IsValid();
+  bool IsValid() const;
 
  private:
   // Gets the default value of constraint named by |key| in |constraints|.
   bool GetDefaultValueForConstraint(
-      const blink::WebMediaConstraints& constraints, const std::string& key);
+      const blink::WebMediaConstraints& constraints,
+      const std::string& key) const;
 
   const blink::WebMediaConstraints constraints_;
   const int effects_;

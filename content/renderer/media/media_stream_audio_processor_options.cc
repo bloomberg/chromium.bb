@@ -150,7 +150,7 @@ MediaAudioConstraints::MediaAudioConstraints(
 
 MediaAudioConstraints::~MediaAudioConstraints() {}
 
-bool MediaAudioConstraints::GetProperty(const std::string& key) {
+bool MediaAudioConstraints::GetProperty(const std::string& key) const {
   // Return the value if the constraint is specified in |constraints|,
   // otherwise return the default value.
   bool value = false;
@@ -160,7 +160,7 @@ bool MediaAudioConstraints::GetProperty(const std::string& key) {
   return value;
 }
 
-bool MediaAudioConstraints::GetEchoCancellationProperty() {
+bool MediaAudioConstraints::GetEchoCancellationProperty() const {
   // If platform echo canceller is enabled, disable the software AEC.
   if (effects_ & media::AudioParameters::ECHO_CANCELLER)
     return false;
@@ -174,7 +174,7 @@ bool MediaAudioConstraints::GetEchoCancellationProperty() {
   return GetProperty(kGoogEchoCancellation);
 }
 
-bool MediaAudioConstraints::IsValid() {
+bool MediaAudioConstraints::IsValid() const {
   blink::WebVector<blink::WebMediaConstraint> mandatory;
   constraints_.getMandatoryConstraints(mandatory);
   for (size_t i = 0; i < mandatory.size(); ++i) {
@@ -204,7 +204,8 @@ bool MediaAudioConstraints::IsValid() {
 }
 
 bool MediaAudioConstraints::GetDefaultValueForConstraint(
-    const blink::WebMediaConstraints& constraints, const std::string& key) {
+    const blink::WebMediaConstraints& constraints,
+    const std::string& key) const {
   // |kMediaStreamAudioDucking| is not restricted by
   // |default_audio_processing_constraint_value_| since it does not require
   // audio processing.
