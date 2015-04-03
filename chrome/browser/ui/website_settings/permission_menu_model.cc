@@ -16,14 +16,14 @@ PermissionMenuModel::PermissionMenuModel(
   DCHECK(!callback_.is_null());
   base::string16 label;
 
-  ContentSetting effective_setting = permission_.setting;
+  ContentSetting effective_default_setting = permission_.default_setting;
 
 #if defined(ENABLE_PLUGINS)
-  effective_setting = PluginsFieldTrial::EffectiveContentSetting(
-      permission_.type, permission_.setting);
+  effective_default_setting = PluginsFieldTrial::EffectiveContentSetting(
+      permission_.type, permission_.default_setting);
 #endif  // defined(ENABLE_PLUGINS)
 
-  switch (effective_setting) {
+  switch (effective_default_setting) {
     case CONTENT_SETTING_ALLOW:
       label = l10n_util::GetStringUTF16(
           IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ALLOW);
