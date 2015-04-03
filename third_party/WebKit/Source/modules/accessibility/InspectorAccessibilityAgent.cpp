@@ -383,11 +383,11 @@ void fillRelationships(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXPrope
     results.clear();
 }
 
-PassRefPtr<AXNode> buildObjectForNode(Element* element, AXObject* axObject, AXObjectCacheImpl* cacheImpl, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
+PassRefPtr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObjectCacheImpl* cacheImpl, PassRefPtr<TypeBuilder::Array<AXProperty>> properties)
 {
     AccessibilityRole role = axObject->roleValue();
     RefPtr<AXNode> nodeObject = AXNode::create().setNodeId(String::number(axObject->axObjectID())).setRole(createValue(AXObject::roleName(role), AXValueType::Role)).setProperties(properties);
-    String computedName = cacheImpl->computedNameForNode(element);
+    String computedName = cacheImpl->computedNameForNode(node);
     if (!computedName.isEmpty())
         nodeObject->setName(createValue(computedName));
 
@@ -416,13 +416,13 @@ void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId
         *errorString = "DOM agent must be enabled";
         return;
     }
-    Element* element = domAgent->assertElement(errorString, nodeId);
-    if (!element)
+    Node* node = domAgent->assertNode(errorString, nodeId);
+    if (!node)
         return;
-    Document& document = element->document();
+    Document& document = node->document();
     ScopedAXObjectCache cache(document);
     AXObjectCacheImpl* cacheImpl = toAXObjectCacheImpl(cache.get());
-    AXObject* axObject = cacheImpl->getOrCreate(element);
+    AXObject* axObject = cacheImpl->getOrCreate(node);
     if (!axObject)
         return;
 
@@ -433,7 +433,7 @@ void InspectorAccessibilityAgent::getAXNode(ErrorString* errorString, int nodeId
     fillWidgetStates(axObject, properties);
     fillRelationships(axObject, properties);
 
-    accessibilityNode = buildObjectForNode(element, axObject, cacheImpl, properties);
+    accessibilityNode = buildObjectForNode(node, axObject, cacheImpl, properties);
 }
 
 DEFINE_TRACE(InspectorAccessibilityAgent)
