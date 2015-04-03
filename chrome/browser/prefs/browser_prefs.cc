@@ -498,7 +498,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::EnterprisePlatformKeysPrivateChallengeUserKeyFunction::
       RegisterProfilePrefs(registry);
   FlagsUI::RegisterProfilePrefs(registry);
-  ProtectedMediaIdentifierPermissionContext::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_WIN)

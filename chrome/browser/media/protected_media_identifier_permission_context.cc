@@ -29,6 +29,10 @@
 #error This file currently only supports Chrome OS and Android.
 #endif
 
+#if defined(OS_CHROMEOS)
+using chromeos::attestation::PlatformVerificationDialog;
+#endif
+
 ProtectedMediaIdentifierPermissionContext::
     ProtectedMediaIdentifierPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
@@ -43,18 +47,6 @@ ProtectedMediaIdentifierPermissionContext::
 ProtectedMediaIdentifierPermissionContext::
     ~ProtectedMediaIdentifierPermissionContext() {
 }
-
-#if defined(OS_CHROMEOS)
-using chromeos::attestation::PlatformVerificationDialog;
-
-// static
-void ProtectedMediaIdentifierPermissionContext::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kRAConsentGranted,
-                             false,  // Default value.
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-}
-#endif
 
 void ProtectedMediaIdentifierPermissionContext::RequestPermission(
     content::WebContents* web_contents,
@@ -127,15 +119,7 @@ ContentSetting ProtectedMediaIdentifierPermissionContext::GetPermissionStatus(
          content_setting == CONTENT_SETTING_BLOCK ||
          content_setting == CONTENT_SETTING_ASK);
 
-#if defined(OS_CHROMEOS)
-  // Check kRAConsentGranted here because it's possible that user dismissed
-  // the dialog triggered by RequestPermission() and the content setting is
-  // set to "allow" by server sync. In this case, we should still "ask".
-  if (content_setting == CONTENT_SETTING_ALLOW &&
-      !profile()->GetPrefs()->GetBoolean(prefs::kRAConsentGranted)) {
-    content_setting = CONTENT_SETTING_ASK;
-  }
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   // When kDisableInfobarForProtectedMediaIdentifier is enabled, do not "ask"
   // the user and always "allow".
   if (content_setting == CONTENT_SETTING_ASK &&
@@ -221,16 +205,6 @@ bool ProtectedMediaIdentifierPermissionContext::
 }
 
 #if defined(OS_CHROMEOS)
-static void RecordRAConsentGranted(content::WebContents* web_contents) {
-  PrefService* pref_service =
-      user_prefs::UserPrefs::Get(web_contents->GetBrowserContext());
-  if (!pref_service) {
-    LOG(ERROR) << "Failed to get user prefs.";
-    return;
-  }
-  pref_service->SetBoolean(prefs::kRAConsentGranted, true);
-}
-
 void ProtectedMediaIdentifierPermissionContext::
     OnPlatformVerificationConsentResponse(
         content::WebContents* web_contents,
@@ -258,7 +232,6 @@ void ProtectedMediaIdentifierPermissionContext::
       VLOG(1) << "Platform verification accepted by user.";
       content::RecordAction(
           base::UserMetricsAction("PlatformVerificationAccepted"));
-      RecordRAConsentGranted(web_contents);
       content_setting = CONTENT_SETTING_ALLOW;
       persist = true;
       break;

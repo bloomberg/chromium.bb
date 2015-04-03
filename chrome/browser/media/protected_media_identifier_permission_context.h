@@ -38,10 +38,6 @@ class ProtectedMediaIdentifierPermissionContext
  public:
   explicit ProtectedMediaIdentifierPermissionContext(Profile* profile);
 
-#if defined(OS_CHROMEOS)
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
-#endif
-
   // In addition to the base class flow checks that it is only code from
   // valid iframes. It also adds special logic when called through an extension.
   void RequestPermission(content::WebContents* web_contents,
