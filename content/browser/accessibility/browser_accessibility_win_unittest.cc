@@ -802,6 +802,9 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndTextSelection) {
   BrowserAccessibilityWin* combo_box_accessible =
       root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
   ASSERT_NE(nullptr, combo_box_accessible);
+  manager->SetFocus(combo_box_accessible, false /* notify */);
+  ASSERT_EQ(combo_box_accessible,
+      manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
   BrowserAccessibilityWin* text_field_accessible =
       root_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
   ASSERT_NE(nullptr, text_field_accessible);
@@ -816,8 +819,19 @@ TEST_F(BrowserAccessibilityTest, TestCaretAndTextSelection) {
   HRESULT hr = combo_box_accessible->get_caretOffset(&caret_offset);;
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, caret_offset);
+  // caret_offset should be -1 when the object is not focused.
+  hr = text_field_accessible->get_caretOffset(&caret_offset);;
+  EXPECT_EQ(S_FALSE, hr);
+  EXPECT_EQ(-1L, caret_offset);
+
+  // Move the focus to the text field.
+  combo_box.state &= ~(1 << ui::AX_STATE_FOCUSED);
+  text_field.state |= 1 << ui::AX_STATE_FOCUSED;
+  manager->SetFocus(text_field_accessible, false /* notify */);
+  ASSERT_EQ(text_field_accessible,
+      manager->GetFocus(root_accessible)->ToBrowserAccessibilityWin());
+
   // The caret should be at the start of the selection.
-  // TODO(nektar): caret_offset should be -1 when the object is not focused.
   hr = text_field_accessible->get_caretOffset(&caret_offset);;
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1L, caret_offset);

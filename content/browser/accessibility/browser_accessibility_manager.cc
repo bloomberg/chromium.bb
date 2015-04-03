@@ -312,11 +312,8 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFocus(
   if (root && !focus_->IsDescendantOf(root->node()))
     return NULL;
 
-  if (!delegate())
-    return NULL;
-
   BrowserAccessibility* obj = GetFromAXNode(focus_);
-  if (obj->HasBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST)) {
+  if (delegate() && obj->HasBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST)) {
     BrowserAccessibilityManager* child_manager =
         delegate()->AccessibilityGetChildFrame(obj->GetId());
     if (child_manager)

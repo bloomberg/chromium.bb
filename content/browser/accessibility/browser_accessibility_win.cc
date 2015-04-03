@@ -1936,12 +1936,17 @@ STDMETHODIMP BrowserAccessibilityWin::get_nCharacters(LONG* n_characters) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
-  // TODO(nektar): Spec says that caret_offset == -1 when state != focused.
   if (!instance_active())
     return E_FAIL;
 
   if (!offset)
     return E_INVALIDARG;
+
+  // IA2 spec says that caret offset should be -1 if the object is not focused.
+  if (manager()->GetFocus(this) != this) {
+    *offset = -1;
+    return S_FALSE;
+  }
 
   *offset = 0;
   if (IsEditableText()) {
