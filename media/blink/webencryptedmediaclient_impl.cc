@@ -309,7 +309,7 @@ static ConfigurationSupport GetSupportedConfiguration(
   }
 
   // 3. Follow the steps for the value of candidate configuration's
-  //    distinctiveIdentifier attribute from the following list:
+  //    distinctiveIdentifier member from the following list:
   //      - "required": If the implementation does not support a persistent
   //        Distinctive Identifier in combination with accumulated
   //        configuration, return null.
@@ -329,12 +329,12 @@ static ConfigurationSupport GetSupportedConfiguration(
   config_state.AddRule(di_rule);
 
   // 4. Add the value of the candidate configuration's distinctiveIdentifier
-  //    attribute to accumulated configuration.
+  //    member to accumulated configuration.
   accumulated_configuration->distinctiveIdentifier =
       candidate.distinctiveIdentifier;
 
   // 5. Follow the steps for the value of candidate configuration's
-  //    persistentState attribute from the following list:
+  //    persistentState member from the following list:
   //      - "required": If the implementation does not support persisting state
   //        in combination with accumulated configuration, return null.
   //      - "optional": Continue.
@@ -350,7 +350,7 @@ static ConfigurationSupport GetSupportedConfiguration(
   config_state.AddRule(ps_rule);
 
   // 6. Add the value of the candidate configuration's persistentState
-  //    attribute to accumulated configuration.
+  //    member to accumulated configuration.
   accumulated_configuration->persistentState = candidate.persistentState;
 
   // 7. Follow the steps for the first matching condition from the following
@@ -539,7 +539,12 @@ static ConfigurationSupport GetSupportedConfiguration(
       return CONFIGURATION_REQUIRES_PERMISSION;
   }
 
-  // 16. Return accumulated configuration.
+  // 16. If the label member is present in candidate configuration, add the
+  //     value of the candidate configuration's label member to accumulated
+  //     configuration.
+  accumulated_configuration->label = candidate.label;
+
+  // 17. Return accumulated configuration.
   return CONFIGURATION_SUPPORTED;
 }
 
