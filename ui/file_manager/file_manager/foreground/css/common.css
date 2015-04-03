@@ -250,7 +250,7 @@ select {
 }
 
 .buttonbar button {
-  -webkit-margin-start: 10px;
+  -webkit-margin-start: 12px;
 }
 
 button:hover,
