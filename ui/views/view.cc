@@ -778,22 +778,18 @@ void View::Paint(const PaintContext& parent_context) {
   // If the view is backed by a layer, it should paint with itself as the origin
   // rather than relative to its parent.
   if (!layer()) {
-    // Set the clip rect to the bounds of this View and translating the origin
-    // to the local bounds' top left point.
-    //
-    // Note that the X (or left) position we pass to ClipRectInt takes into
-    // consideration whether or not the view uses a right-to-left layout so that
-    // we paint our view in its mirrored position if need be.
+    // Set the clip rect to the bounds of this View. Note that the X (or left)
+    // position we pass to ClipRect takes into consideration whether or not the
+    // View uses a right-to-left layout so that we paint the View in its
+    // mirrored position if need be.
     gfx::Rect clip_rect = bounds();
     clip_rect.Inset(clip_insets_);
     if (parent_)
       clip_rect.set_x(parent_->GetMirroredXForRect(clip_rect));
     canvas->ClipRect(clip_rect);
-    if (canvas->IsClipEmpty())
-      return;
 
-    // Non-empty clip, translate the graphics such that 0,0 corresponds to where
-    // this view is located (related to its parent).
+    // Translate the graphics such that 0,0 corresponds to where
+    // this View is located relative to its parent.
     canvas->Translate(GetMirroredPosition().OffsetFromOrigin());
     canvas->Transform(GetTransform());
   }
