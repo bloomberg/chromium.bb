@@ -7,13 +7,15 @@
       "drawsContent": true,
       "repaintRects": [
         [90, 30, 11, 19],
+        [64, 8, 58, 54],
         [8, 8, 60, 54]
       ],
       "paintInvalidationClients": [
         "InlineTextBox 'A'",
         "LayoutText #text",
         "RootInlineBox",
-        "LayoutTableCell TD id='foo'"
+        "LayoutTableCell TD id='foo'",
+        "LayoutTableCell TD"
       ]
     }
   ]

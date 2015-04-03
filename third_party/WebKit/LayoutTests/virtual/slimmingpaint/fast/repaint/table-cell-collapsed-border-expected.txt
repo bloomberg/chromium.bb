@@ -6,14 +6,30 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [332, 260, 112, 110],
+        [332, 60, 112, 108],
+        [220, 360, 122, 105],
         [220, 260, 122, 110],
+        [220, 165, 122, 105],
         [220, 60, 122, 108],
-        [3, 260, 118, 110]
+        [116, 60, 114, 107],
+        [115, 260, 115, 110],
+        [3, 360, 118, 105],
+        [3, 260, 118, 110],
+        [3, 163, 117, 107]
       ],
       "paintInvalidationClients": [
+        "LayoutTableCell TD",
         "LayoutTableCell TD id='t1'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
         "LayoutTableCell TD id='t2'",
-        "LayoutTableCell TD id='t3'"
+        "LayoutTableCell TD",
+        "LayoutTableCell TD id='t3'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD"
       ]
     }
   ]
