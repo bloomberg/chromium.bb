@@ -9,7 +9,7 @@ import page_sets
 
 
 # This benchmark depends on tracing categories available in M43
-@benchmark.Disabled('reference','windows')  # http://crbug.com/463111
+@benchmark.Disabled('reference','win')  # http://crbug.com/463111
 class DrawPropertiesToughScrolling(benchmark.Benchmark):
   test = draw_properties.DrawProperties
   page_set = page_sets.ToughScrollingCasesPageSet
@@ -19,7 +19,7 @@ class DrawPropertiesToughScrolling(benchmark.Benchmark):
 
 
 # This benchmark depends on tracing categories available in M43
-@benchmark.Disabled('reference','windows')  # http://crbug.com/463111
+@benchmark.Disabled('reference','win')  # http://crbug.com/463111
 class DrawPropertiesTop25(benchmark.Benchmark):
   """Measures the relative performance of CalcDrawProperties vs computing draw
   properties from property trees.
