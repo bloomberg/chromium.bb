@@ -21,6 +21,18 @@ class PeImageReader {
     WORD_SIZE_64,
   };
 
+  // A callback invoked by EnumCertificates once for each attribute certificate
+  // entry in the image's attribute certificate table. |revision| and
+  // |certificate_type| identify the contents of |certificate_data| (which is of
+  // |certificate_data_size| bytes). |context| is the value provided by the
+  // caller to EnumCertificates(). Implementations must return true to continue
+  // the enumeration, or false to abort.
+  typedef bool (*EnumCertificatesCallback)(uint16_t revision,
+                                           uint16_t certificate_type,
+                                           const uint8_t* certificate_data,
+                                           size_t certificate_data_size,
+                                           void* context);
+
   PeImageReader();
   ~PeImageReader();
 
@@ -46,6 +58,14 @@ class PeImageReader {
   const IMAGE_DEBUG_DIRECTORY* GetDebugEntry(size_t index,
                                              const uint8_t** raw_data,
                                              size_t* raw_data_size);
+
+  // Invokes |callback| once per attribute certificate entry. |context| is a
+  // caller-specific value that is passed to |callback|. Returns true if all
+  // certificate entries are visited (even if there are no such entries) and
+  // |callback| returns true for each. Conversely, returns |false| if |callback|
+  // returns false or if the image is malformed in any way.
+  bool EnumCertificates(EnumCertificatesCallback callback,
+                        void* context);
 
  private:
   // Bits indicating what portions of the image have been validated.

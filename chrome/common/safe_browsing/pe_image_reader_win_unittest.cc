@@ -2,12 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <windows.h>
+#include <wintrust.h>
+
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/pe_image_reader_win.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::_;
+using ::testing::Gt;
+using ::testing::NotNull;
+using ::testing::Return;
+using ::testing::StrictMock;
 
 struct TestData {
   const char* filename;
@@ -155,3 +165,125 @@ INSTANTIATE_TEST_CASE_P(WordSize32,
 INSTANTIATE_TEST_CASE_P(WordSize64,
                         PeImageReaderTest,
                         testing::Values(&kTestData[1]));
+
+// An object exposing a PeImageReader::EnumCertificatesCallback that invokes a
+// virtual OnCertificate() method. This method is suitable for mocking in tests.
+class CertificateReceiver {
+ public:
+  void* AsContext() { return this; }
+  static bool OnCertificateCallback(uint16_t revision,
+                                    uint16_t certificate_type,
+                                    const uint8_t* certificate_data,
+                                    size_t certificate_data_size,
+                                    void* context) {
+    return reinterpret_cast<CertificateReceiver*>(context)->OnCertificate(
+        revision, certificate_type, certificate_data, certificate_data_size);
+  }
+
+ protected:
+  CertificateReceiver() {}
+  virtual ~CertificateReceiver() {}
+  virtual bool OnCertificate(uint16_t revision,
+                             uint16_t certificate_type,
+                             const uint8_t* certificate_data,
+                             size_t certificate_data_size) = 0;
+};
+
+class MockCertificateReceiver : public CertificateReceiver {
+ public:
+  MockCertificateReceiver() {}
+  MOCK_METHOD4(OnCertificate, bool(uint16_t, uint16_t, const uint8_t*, size_t));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCertificateReceiver);
+};
+
+struct CertificateTestData {
+  const char* filename;
+  int num_signers;
+};
+
+// A test fixture parameterized on test data containing the name of a PE image
+// to parse and the expected values to be read from it. The file is read from
+// the src/chrome/test/data/safe_browsing/download_protection directory.
+class PeImageReaderCertificateTest
+    : public testing::TestWithParam<const CertificateTestData*> {
+ protected:
+  PeImageReaderCertificateTest() : expected_data_(GetParam()) {}
+
+  void SetUp() override {
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_file_path_));
+    data_file_path_ = data_file_path_.AppendASCII("safe_browsing");
+    data_file_path_ = data_file_path_.AppendASCII("download_protection");
+    data_file_path_ = data_file_path_.AppendASCII(expected_data_->filename);
+    ASSERT_TRUE(data_file_.Initialize(data_file_path_));
+    ASSERT_TRUE(image_reader_.Initialize(data_file_.data(),
+                                         data_file_.length()));
+  }
+
+  const CertificateTestData* expected_data_;
+  base::FilePath data_file_path_;
+  base::MemoryMappedFile data_file_;
+  safe_browsing::PeImageReader image_reader_;
+};
+
+TEST_P(PeImageReaderCertificateTest, EnumCertificates) {
+  StrictMock<MockCertificateReceiver> receiver;
+  if (expected_data_->num_signers) {
+    EXPECT_CALL(receiver, OnCertificate(WIN_CERT_REVISION_2_0,
+                                        WIN_CERT_TYPE_PKCS_SIGNED_DATA,
+                                        NotNull(),
+                                        Gt(0U)))
+        .Times(expected_data_->num_signers)
+        .WillRepeatedly(Return(true));
+  }
+  EXPECT_TRUE(image_reader_.EnumCertificates(
+      &CertificateReceiver::OnCertificateCallback, receiver.AsContext()));
+}
+
+TEST_P(PeImageReaderCertificateTest, AbortEnum) {
+  StrictMock<MockCertificateReceiver> receiver;
+  if (expected_data_->num_signers) {
+    // Return false for the first cert, thereby stopping the enumeration.
+    EXPECT_CALL(receiver, OnCertificate(_, _, _, _)).WillOnce(Return(false));
+    EXPECT_FALSE(image_reader_.EnumCertificates(
+        &CertificateReceiver::OnCertificateCallback, receiver.AsContext()));
+  } else {
+    // An unsigned file always reports true with no invocations of the callback.
+    EXPECT_TRUE(image_reader_.EnumCertificates(
+        &CertificateReceiver::OnCertificateCallback, receiver.AsContext()));
+  }
+}
+
+namespace {
+
+const CertificateTestData kCertificateTestData[] = {
+  {
+    "signed.exe",
+    1,
+  }, {
+    "unsigned.exe",
+    0,
+  }, {
+    "wow_helper.exe",
+    1,
+  }, {
+    "signed_twice.exe",
+    2,
+  },
+};
+
+}  // namespace
+
+INSTANTIATE_TEST_CASE_P(SignedExe,
+                        PeImageReaderCertificateTest,
+                        testing::Values(&kCertificateTestData[0]));
+INSTANTIATE_TEST_CASE_P(UnsignedExe,
+                        PeImageReaderCertificateTest,
+                        testing::Values(&kCertificateTestData[1]));
+INSTANTIATE_TEST_CASE_P(WowHelperExe,
+                        PeImageReaderCertificateTest,
+                        testing::Values(&kCertificateTestData[2]));
+INSTANTIATE_TEST_CASE_P(SignedTwiceExe,
+                        PeImageReaderCertificateTest,
+                        testing::Values(&kCertificateTestData[3]));

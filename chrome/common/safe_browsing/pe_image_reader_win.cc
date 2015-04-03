@@ -4,6 +4,8 @@
 
 #include "chrome/common/safe_browsing/pe_image_reader_win.h"
 
+#include <wintrust.h>
+
 #include "base/logging.h"
 
 namespace safe_browsing {
@@ -154,6 +156,36 @@ const IMAGE_DEBUG_DIRECTORY* PeImageReader::GetDebugEntry(
     *raw_data_size = entry.SizeOfData;
   }
   return &entry;
+}
+
+bool PeImageReader::EnumCertificates(EnumCertificatesCallback callback,
+                                     void* context) {
+  size_t data_size = 0;
+  const uint8_t* data = GetImageData(IMAGE_DIRECTORY_ENTRY_SECURITY,
+                                     &data_size);
+  if (!data)
+    return false;  // Certificate table is out of bounds.
+  const size_t kWinCertificateSize = offsetof(WIN_CERTIFICATE, bCertificate);
+  while (data_size) {
+    const WIN_CERTIFICATE* win_certificate =
+        reinterpret_cast<const WIN_CERTIFICATE*>(data);
+    if (kWinCertificateSize > data_size ||
+        kWinCertificateSize > win_certificate->dwLength ||
+        win_certificate->dwLength > data_size) {
+      return false;
+    }
+    if (!(*callback)(win_certificate->wRevision,
+                     win_certificate->wCertificateType,
+                     &win_certificate->bCertificate[0],
+                     win_certificate->dwLength - kWinCertificateSize,
+                     context)) {
+      return false;
+    }
+    size_t padded_length = (win_certificate->dwLength + 7) & ~0x7;
+    data_size -= padded_length;
+    data += padded_length;
+  }
+  return true;
 }
 
 void PeImageReader::Clear() {
@@ -308,6 +340,18 @@ const uint8_t* PeImageReader::GetImageData(size_t index, size_t* data_length) {
   const IMAGE_DATA_DIRECTORY* entry = GetDataDirectoryEntryAt(index);
   if (!entry)
     return NULL;
+
+  // The entry for the certificate table is special in that its address is a
+  // file pointer rather than an RVA.
+  if (index == IMAGE_DIRECTORY_ENTRY_SECURITY) {
+    // Does the data fit within the file.
+    if (entry->VirtualAddress > image_size_ ||
+        image_size_ - entry->VirtualAddress < entry->Size) {
+      return nullptr;
+    }
+    *data_length = entry->Size;
+    return image_data_ + entry->VirtualAddress;
+  }
 
   // Find the section containing the data.
   const IMAGE_SECTION_HEADER* header =
