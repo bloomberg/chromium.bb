@@ -51,6 +51,7 @@
 
     <!-- Contextual search dimensions -->
     <dimen name="contextual_search_bar_height">80dp</dimen>
+    <dimen name="contextual_search_text_size">18sp</dimen>
 
     <!-- Password generation popup dimensions -->
     <dimen name="password_generation_divider_height">1dp</dimen>

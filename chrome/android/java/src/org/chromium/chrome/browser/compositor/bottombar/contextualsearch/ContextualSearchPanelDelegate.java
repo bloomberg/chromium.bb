@@ -118,4 +118,9 @@ public interface ContextualSearchPanelDelegate {
      * @param wasPrefetch Whether the request was prefetch-enabled.
      */
     void onSearchResultsLoaded(boolean wasPrefetch);
+
+    /**
+     * @return ContextualSearchControl The Android View that renders the BottomBar text.
+     */
+    ContextualSearchControl getContextualSearchControl();
 }

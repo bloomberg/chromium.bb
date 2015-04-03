@@ -127,11 +127,7 @@ abstract class ContextualSearchPanelAnimation extends ContextualSearchPanelBase
         animatePanelToState(PanelState.PEEKED, reason);
     }
 
-    /**
-     * Animates the Contextual Search Panel to its closed state.
-     *
-     * @param reason The reason for the change of panel state.
-     */
+    @Override
     protected void closePanel(StateChangeReason reason, boolean animate) {
         if (animate) {
             animatePanelToState(PanelState.CLOSED, reason);

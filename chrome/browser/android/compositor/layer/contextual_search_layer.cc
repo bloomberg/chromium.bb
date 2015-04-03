@@ -15,7 +15,8 @@
 
 namespace {
 
-const SkColor kContextualSearchBarBorderColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
+const SkColor kSearchBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
+const SkColor kSearchBarBorderColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
 
 }  // namespace
 
@@ -31,11 +32,16 @@ scoped_refptr<ContextualSearchLayer> ContextualSearchLayer::Create(
 void ContextualSearchLayer::SetProperties(
     int search_bar_background_resource_id,
     int search_bar_text_resource_id,
+    int search_bar_shadow_resource_id,
     int search_provider_icon_resource_id,
     int search_icon_resource_id,
     int progress_bar_background_resource_id,
     int progress_bar_resource_id,
+    int search_promo_resource_id,
     content::ContentViewCore* content_view_core,
+    bool search_promo_visible,
+    float search_promo_height,
+    float search_promo_opacity,
     float search_panel_y,
     float search_panel_width,
     float search_bar_margin_top,
@@ -44,6 +50,8 @@ void ContextualSearchLayer::SetProperties(
     bool search_bar_border_visible,
     float search_bar_border_y,
     float search_bar_border_height,
+    bool search_bar_shadow_visible,
+    float search_bar_shadow_opacity,
     float search_provider_icon_opacity,
     float search_icon_padding_left,
     float search_icon_opacity,
@@ -131,15 +139,83 @@ void ContextualSearchLayer::SetProperties(
   search_icon_->SetOpacity(search_icon_opacity);
 
   // ---------------------------------------------------------------------------
+  // Search Promo
+  // ---------------------------------------------------------------------------
+  if (search_promo_visible) {
+    // Grab the Search Opt Out Promo resource.
+    ui::ResourceManager::Resource* search_promo_resource =
+        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
+                                       search_promo_resource_id);
+
+    if (search_promo_resource) {
+      // Search Promo Container
+      if (search_promo_container_->parent() != layer_)
+        layer_->AddChild(search_promo_container_);
+
+      int search_promo_content_height = search_promo_resource->size.height();
+      gfx::Size search_promo_size(search_panel_width, search_promo_height);
+      search_promo_container_->SetBounds(search_promo_size);
+      search_promo_container_->SetPosition(gfx::PointF(0.f, search_bar_height));
+      search_promo_container_->SetMasksToBounds(true);
+
+      // Search Promo
+      if (search_promo_->parent() != search_promo_container_)
+        search_promo_container_->AddChild(search_promo_);
+
+      search_promo_->SetUIResourceId(search_promo_resource->ui_resource->id());
+      search_promo_->SetBounds(search_promo_resource->size);
+      // Align promo at the bottom of the container so the confirmation button
+      // is is not clipped when resizing the promo.
+      search_promo_->SetPosition(
+          gfx::PointF(0.f, search_promo_height - search_promo_content_height));
+      search_promo_->SetOpacity(search_promo_opacity);
+    }
+  } else {
+    // TODO(pedrosimonetti): confirm with dtrainor@ that we don't need to remove
+    // the child too (since it's going to be removed when the parent is gone).
+
+    // Search Promo Container
+    if (search_promo_container_.get() && search_promo_container_->parent())
+      search_promo_container_->RemoveFromParent();
+  }
+
+  // ---------------------------------------------------------------------------
   // Search Content View
   // ---------------------------------------------------------------------------
-  content_view_container_->SetPosition(gfx::PointF(0.f, search_bar_height));
+  content_view_container_->SetPosition(
+      gfx::PointF(0.f, search_bar_height + search_promo_height));
   if (content_view_core && content_view_core->GetLayer().get()) {
     scoped_refptr<cc::Layer> content_view_layer = content_view_core->GetLayer();
     if (content_view_layer->parent() != content_view_container_)
       content_view_container_->AddChild(content_view_layer);
   } else {
     content_view_container_->RemoveAllChildren();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Search Bar Shadow
+  // ---------------------------------------------------------------------------
+  if (search_bar_shadow_visible) {
+    ui::ResourceManager::Resource* search_bar_shadow_resource =
+        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
+                                       search_bar_shadow_resource_id);
+
+    if (search_bar_shadow_resource) {
+      if (search_bar_shadow_->parent() != layer_)
+        layer_->AddChild(search_bar_shadow_);
+    }
+
+    int shadow_height = search_bar_shadow_resource->size.height();
+    gfx::Size shadow_size(search_panel_width, shadow_height);
+
+    search_bar_shadow_->SetUIResourceId(
+        search_bar_shadow_resource->ui_resource->id());
+    search_bar_shadow_->SetBounds(shadow_size);
+    search_bar_shadow_->SetPosition(gfx::PointF(0.f, search_bar_height));
+    search_bar_shadow_->SetOpacity(search_bar_shadow_opacity);
+  } else {
+    if (search_bar_shadow_.get() && search_bar_shadow_->parent())
+      search_bar_shadow_->RemoveFromParent();
   }
 
   // ---------------------------------------------------------------------------
@@ -222,12 +298,15 @@ ContextualSearchLayer::ContextualSearchLayer(
       layer_(cc::Layer::Create()),
       search_bar_background_(cc::NinePatchLayer::Create()),
       search_bar_text_(cc::UIResourceLayer::Create()),
+      search_bar_shadow_(cc::UIResourceLayer::Create()),
       search_provider_icon_(cc::UIResourceLayer::Create()),
       search_icon_(cc::UIResourceLayer::Create()),
       content_view_container_(cc::Layer::Create()),
       search_bar_border_(cc::SolidColorLayer::Create()),
       progress_bar_(cc::NinePatchLayer::Create()),
-      progress_bar_background_(cc::NinePatchLayer::Create()) {
+      progress_bar_background_(cc::NinePatchLayer::Create()),
+      search_promo_(cc::UIResourceLayer::Create()),
+      search_promo_container_(cc::SolidColorLayer::Create()) {
   layer_->SetMasksToBounds(false);
   layer_->SetIsDrawable(true);
 
@@ -248,9 +327,14 @@ ContextualSearchLayer::ContextualSearchLayer(
   search_icon_->SetIsDrawable(true);
   layer_->AddChild(search_icon_);
 
+  // Search Opt Out Promo
+  search_promo_container_->SetIsDrawable(true);
+  search_promo_container_->SetBackgroundColor(kSearchBackgroundColor);
+  search_promo_->SetIsDrawable(true);
+
   // Search Bar Border
   search_bar_border_->SetIsDrawable(true);
-  search_bar_border_->SetBackgroundColor(kContextualSearchBarBorderColor);
+  search_bar_border_->SetBackgroundColor(kSearchBarBorderColor);
 
   // Progress Bar Background
   progress_bar_background_->SetIsDrawable(true);
@@ -260,8 +344,11 @@ ContextualSearchLayer::ContextualSearchLayer(
   progress_bar_->SetIsDrawable(true);
   progress_bar_->SetFillCenter(true);
 
-  // Search Content View
+  // Search Content View Container
   layer_->AddChild(content_view_container_);
+
+  // Search Bar Shadow
+  search_bar_shadow_->SetIsDrawable(true);
 }
 
 ContextualSearchLayer::~ContextualSearchLayer() {

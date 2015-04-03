@@ -138,6 +138,12 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         }
     }
 
+    @Override
+    protected boolean isPanelPromoAvailable() {
+        // TODO(donnd, pedrosimonetti): Check for field trial here.
+        return false;
+    }
+
     // ============================================================================================
     // Generic Event Handling
     // ============================================================================================
@@ -244,7 +250,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      * @return Whether the given |y| coordinate is inside the Search Bar area.
      */
     public boolean isYCoordinateInsideSearchBar(float y) {
-        return !isYCoordinateInsideBasePage(y) && !isYCoordinateInsideSearchContentView(y);
+        return y >= getOffsetY() && y <= (getOffsetY() + getSearchBarHeight());
     }
 
     /**
@@ -260,7 +266,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      * @return The vertical offset of the Search Content View in dp.
      */
     public float getSearchContentViewOffsetY() {
-        return getOffsetY() + getSearchBarHeight();
+        return getOffsetY() + getSearchBarHeight() + getPromoHeight();
     }
 
     /**
@@ -452,6 +458,13 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
     @Override
     public void onSearchResultsLoaded(boolean wasPrefetch) {
+        // NOTE(pedrosimonetti): exposing superclass method to the interface.
         super.onSearchResultsLoaded(wasPrefetch);
+    }
+
+    @Override
+    public ContextualSearchControl getContextualSearchControl() {
+        // NOTE(pedrosimonetti): exposing superclass method to the interface.
+        return super.getContextualSearchControl();
     }
 }

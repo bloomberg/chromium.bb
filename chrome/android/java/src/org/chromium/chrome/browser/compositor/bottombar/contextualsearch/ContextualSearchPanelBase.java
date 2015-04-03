@@ -5,17 +5,26 @@
 package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import android.content.Context;
+import android.os.Handler;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchOptOutPromo.ContextualSearchPromoHost;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
  * Base abstract class for the Contextual Search Panel.
  */
-abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandler {
+abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandler
+        implements ContextualSearchPromoHost {
 
     /**
      * The height of the expanded Contextual Search Panel relative to the height
@@ -165,6 +174,11 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     private boolean mIsShowing;
 
+    /**
+     * The current context.
+     */
+    private final Context mContext;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -173,6 +187,8 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @param context The current Android {@link Context}.
      */
     public ContextualSearchPanelBase(Context context) {
+        mContext = context;
+
         mPxToDp = 1.f / context.getResources().getDisplayMetrics().density;
 
         mSearchBarHeightPeeking = context.getResources().getDimension(
@@ -184,6 +200,22 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
         initializeUiState();
     }
+
+    // ============================================================================================
+    // General API
+    // ============================================================================================
+
+    /**
+     * Animates the Contextual Search Panel to its closed state.
+     *
+     * @param reason The reason for the change of panel state.
+     */
+    protected abstract void closePanel(StateChangeReason reason, boolean animate);
+
+    /**
+     * @return Whether the Panel Promo is available.
+     */
+    protected abstract boolean isPanelPromoAvailable();
 
     // ============================================================================================
     // Layout Integration
@@ -353,6 +385,10 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private boolean mIsSearchBarBorderVisible;
     private float mSearchBarBorderY;
     private float mSearchBarBorderHeight;
+
+    boolean mSearchBarShadowVisible = false;
+    float mSearchBarShadowOpacity = 0.f;
+
     private float mSearchProviderIconOpacity;
     private float mSearchIconPaddingLeft;
     private float mSearchIconOpacity;
@@ -397,6 +433,20 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     public float getSearchBarBorderHeight() {
         return mSearchBarBorderHeight;
+    }
+
+    /**
+     * @return Whether the Search Bar shadow is visible.
+     */
+    public boolean getSearchBarShadowVisible() {
+        return mSearchBarShadowVisible;
+    }
+
+    /**
+     * @return The opacity of the Search Bar shadow.
+     */
+    public float getSearchBarShadowOpacity() {
+        return mSearchBarShadowOpacity;
     }
 
     /**
@@ -504,10 +554,68 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     // Promo states
     // --------------------------------------------------------------------------------------------
 
+    private boolean mPromoVisible = false;
+    private float mPromoContentHeightPx = 0.f;
+    private float mPromoHeightPx;
+    private float mPromoOpacity;
+
+    /**
+     * @param visible Whether the promo will be set to visible.
+     */
+    protected void setPromoVisible(boolean visible) {
+        mPromoVisible = visible;
+    }
+
+    /**
+     * @return Whether the promo is visible.
+     */
+    public boolean getPromoVisible() {
+        return mPromoVisible;
+    }
+
+    /**
+     * Sets the height of the promo content.
+     */
+    public void setPromoContentHeightPx(float heightPx) {
+        mPromoContentHeightPx = heightPx;
+    }
+
+    /**
+     * @return Height of the promo in dps.
+     */
+    public float getPromoHeight() {
+        return mPromoHeightPx * mPxToDp;
+    }
+
+    /**
+     * @return Height of the promo in pixels.
+     */
+    public float getPromoHeightPx() {
+        return mPromoHeightPx;
+    }
+
+    /**
+     * @return The opacity of the promo.
+     */
+    public float getPromoOpacity() {
+        return mPromoOpacity;
+    }
+
+    /**
+     * @return Y coordinate of the promo in pixels.
+     */
+    protected float getPromoYPx() {
+        return Math.round((getOffsetY() + getSearchBarHeight()) / mPxToDp);
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Opt In Promo states
+    // --------------------------------------------------------------------------------------------
+
     private float mPromoContentHeight;
     private boolean mShouldHidePromoHeader;
 
-     /**
+    /**
      * Sets the height of the promo content.
      */
     protected void setPromoContentHeight(float height) {
@@ -634,6 +742,10 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
         if (state == PanelState.CLOSED) {
             mIsShowing = false;
+            destroySearchPromo();
+            destroyContextualSearchControl();
+        } else if (state == PanelState.EXPANDED) {
+            showPromoViewAtYPosition(getPromoYPx());
         }
     }
 
@@ -643,6 +755,12 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @param height The height of the panel in dps.
      */
     protected void setPanelHeight(float height) {
+        // As soon as we resize the Panel to a different height than the expanded one,
+        // then we should hide the Promo View once the snapshot will be shown in its place.
+        if (height != getPanelHeightFromState(PanelState.EXPANDED)) {
+            hidePromoView();
+        }
+
         updatePanelForHeight(height);
     }
 
@@ -750,6 +868,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @param percentage The completion percentage.
      */
     private void updatePanelForCloseOrPeek(float percentage) {
+        // Update the opt out promo.
+        updatePromo(1.f);
+
         // Base page offset.
         mBasePageY = 0.f;
 
@@ -773,6 +894,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
         // Progress Bar.
         mProgressBarOpacity = 0.f;
+
+        // Update the Search Bar Shadow.
+        updateSearchBarShadow();
     }
 
     /**
@@ -782,6 +906,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @param percentage The completion percentage.
      */
     private void updatePanelForExpansion(float percentage) {
+        // Update the opt out promo.
+        updatePromo(1.f);
+
         // Base page offset.
         float baseBaseY = MathUtils.interpolate(
                 0.f,
@@ -825,6 +952,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         float progressBarOpacity = MathUtils.interpolate(0.f, 1.f, diff / threshold);
         mProgressBarOpacity = progressBarOpacity;
         mProgressBarY = searchBarHeight - PROGRESS_BAR_HEIGHT_DP + 1;
+
+        // Update the Search Bar Shadow.
+        updateSearchBarShadow();
     }
 
     /**
@@ -834,6 +964,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @param percentage The completion percentage.
      */
     private void updatePanelForMaximization(float percentage) {
+        // Update the opt out promo.
+        updatePromo(1.f - percentage);
+
         // Base page offset.
         mBasePageY = getBasePageTargetY();
 
@@ -875,6 +1008,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // Progress Bar.
         mProgressBarOpacity = 1.f;
         mProgressBarY = searchBarHeight - PROGRESS_BAR_HEIGHT_DP + 1;
+
+        // Update the Search Bar Shadow.
+        updateSearchBarShadow();
     }
 
     /**
@@ -926,6 +1062,40 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // Progress Bar.
         mProgressBarOpacity = 0.f;
         mProgressBarY = searchBarHeight - PROGRESS_BAR_HEIGHT_DP + 1;
+    }
+
+    /**
+     * Updates the UI state for Opt Out Promo.
+     *
+     * @param percentage The visibility percentage of the Promo. A visibility of 0 means the
+     * Promo is not visible. A visibility of 1 means the Promo is fully visible. And
+     * visibility between 0 and 1 means the Promo is partially visible.
+     */
+    private void updatePromo(float percentage) {
+        if (isPanelPromoAvailable()) {
+            mPromoVisible = true;
+
+            mPromoHeightPx = Math.round(MathUtils.clamp(percentage * mPromoContentHeightPx,
+                    0.f, mPromoContentHeightPx));
+            mPromoOpacity = percentage;
+        } else {
+            mPromoVisible = false;
+        }
+    }
+
+    /**
+     * Updates the UI state for Search Bar Shadow.
+     */
+    public void updateSearchBarShadow() {
+        float searchBarShadowHeightPx = 9 / mPxToDp;
+        if (mPromoVisible && mPromoHeightPx > 0.f) {
+            mSearchBarShadowVisible = true;
+            float threshold = 2 * searchBarShadowHeightPx;
+            mSearchBarShadowOpacity = mPromoHeightPx > searchBarShadowHeightPx ? 1.f :
+                MathUtils.interpolate(0.f, 1.f, mPromoHeightPx / threshold);
+        } else {
+            // TODO(pedrosimonetti): Calculate shadow when promo is not displayed.
+        }
     }
 
     // ============================================================================================
@@ -1003,7 +1173,198 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     }
 
     // ============================================================================================
-    // Promo
+    // Resource Loader
+    // ============================================================================================
+
+    private ViewGroup mContainerView;
+    private DynamicResourceLoader mResourceLoader;
+
+    /**
+     * @param resourceLoader The {@link DynamicResourceLoader} to register and unregister the view.
+     */
+    public void setDynamicResourceLoader(DynamicResourceLoader resourceLoader) {
+        mResourceLoader = resourceLoader;
+
+        if (mControl != null) {
+            mResourceLoader.registerResource(R.id.contextual_search_view,
+                    mControl.getResourceAdapter());
+        }
+
+        if (mSearchPromoView != null) {
+            mResourceLoader.registerResource(R.id.contextual_search_opt_out_promo,
+                    mSearchPromoView.getResourceAdapter());
+        }
+    }
+
+    /**
+     * Sets the container ViewGroup to which the auxiliary Views will be attached to.
+     *
+     * @param container The {@link ViewGroup} container.
+     */
+    public void setContainerView(ViewGroup container) {
+        mContainerView = container;
+    }
+
+    // ============================================================================================
+    // ContextualSearchControl
+    // ============================================================================================
+
+    // TODO(pedrosimonetti): rename this to something more generic (e.g. BottomBarTextView).
+
+    private ContextualSearchControl mControl;
+
+    /**
+     * Inflates the Contextual Search control, if needed. The View will be set to INVISIBLE
+     * after being inflated, because it won't actually be displayed on the screen (its
+     * snapshot will be displayed instead).
+     */
+    protected ContextualSearchControl getContextualSearchControl() {
+        assert mContainerView != null;
+
+        if (mControl == null) {
+            LayoutInflater.from(mContext).inflate(R.layout.contextual_search_view, mContainerView);
+            mControl = (ContextualSearchControl)
+                    mContainerView.findViewById(R.id.contextual_search_view);
+            if (mResourceLoader != null) {
+                mResourceLoader.registerResource(R.id.contextual_search_view,
+                        mControl.getResourceAdapter());
+            }
+        }
+
+        assert mControl != null;
+        // TODO(pedrosimonetti): For now, we're still relying on a Android View
+        // to render the text that appears in the Search Bar. The View will be
+        // invisible and will not capture events. Consider rendering the text
+        // in the Compositor and get rid of the View entirely.
+        mControl.setVisibility(View.INVISIBLE);
+        return mControl;
+    }
+
+    protected void destroyContextualSearchControl() {
+        if (mControl != null) {
+            mContainerView.removeView(mControl);
+            mControl = null;
+            if (mResourceLoader != null) {
+                mResourceLoader.unregisterResource(R.id.contextual_search_view);
+            }
+        }
+    }
+
+    // ============================================================================================
+    // Promo Host
+    // ============================================================================================
+
+    @Override
+    public void onPromoPreferenceClick() {
+        closePanel(StateChangeReason.UNKNOWN, true);
+
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                PreferencesLauncher.launchSettingsPage(mContext,
+                        ContextualSearchPreferenceFragment.class.getName());
+            }
+        });
+    }
+
+    @Override
+    public void onPromoButtonClick(boolean accepted) {
+        // TODO(pedrosimonetti): Implement this!
+    }
+
+    // ============================================================================================
+    // Opt Out Promo View
+    // ============================================================================================
+
+    // TODO(pedrosimonetti): Consider maybe adding a 9.patch to avoid the hacky nested layouts in
+    // order to have the transparent gap at the top of the Promo View.
+
+    /**
+     * The {@link ContextualSearchOptOutPromo} instance.
+     */
+    private ContextualSearchOptOutPromo mSearchPromoView;
+
+    /**
+     * Whether the Search Promo View is visible.
+     */
+    private boolean mIsSearchPromoViewVisible = false;
+
+    /**
+     * Creates the Search Promo View.
+     */
+    public void createSearchPromo() {
+        if (!isPanelPromoAvailable()) return;
+
+        assert mContainerView != null;
+
+        if (mSearchPromoView == null) {
+            LayoutInflater.from(mContext).inflate(
+                    R.layout.contextual_search_opt_out_promo, mContainerView);
+            mSearchPromoView = (ContextualSearchOptOutPromo)
+                    mContainerView.findViewById(R.id.contextual_search_opt_out_promo);
+            if (mResourceLoader != null) {
+                mResourceLoader.registerResource(R.id.contextual_search_opt_out_promo,
+                        mSearchPromoView.getResourceAdapter());
+            }
+
+            mSearchPromoView.setPromoHost(this);
+            setPromoContentHeightPx(
+                    mSearchPromoView.getHeightForGivenWidth(mContainerView.getWidth()));
+        }
+
+        assert mSearchPromoView != null;
+    }
+
+    /**
+     * Destroys the Search Promo View.
+     */
+    protected void destroySearchPromo() {
+        if (!isPanelPromoAvailable()) return;
+
+        if (mSearchPromoView != null) {
+            mContainerView.removeView(mSearchPromoView);
+            mSearchPromoView = null;
+            if (mResourceLoader != null) {
+                mResourceLoader.unregisterResource(R.id.contextual_search_opt_out_promo);
+            }
+        }
+    }
+
+    /**
+     * Displays the Search Promo View at the given Y position.
+     *
+     * @param y The Y position.
+     */
+    public void showPromoViewAtYPosition(float y) {
+        if (mSearchPromoView == null || !isPanelPromoAvailable()) return;
+
+        mSearchPromoView.setTranslationY(y);
+        mSearchPromoView.setVisibility(View.VISIBLE);
+
+        // NOTE(pedrosimonetti): We need to call requestLayout, otherwise
+        // the Promo View will not become visible.
+        mSearchPromoView.requestLayout();
+
+        mIsSearchPromoViewVisible = true;
+    }
+
+    /**
+     * Hides the Search Promo View.
+     */
+    public void hidePromoView() {
+        if (mSearchPromoView == null
+                || !mIsSearchPromoViewVisible
+                || !isPanelPromoAvailable()) {
+            return;
+        }
+
+        mSearchPromoView.setVisibility(View.INVISIBLE);
+
+        mIsSearchPromoViewVisible = false;
+    }
+
+    // ============================================================================================
+    // Opt In Promo
     // ============================================================================================
 
     /**

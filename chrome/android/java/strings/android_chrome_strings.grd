@@ -296,6 +296,9 @@
       <message name="IDS_CONTEXTUAL_SEARCH_TITLE" desc="Name for the Contextual Search feature, which allows users to search for a term in a web page by tapping on it.">
         Touch to Search
       </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_ACTION_BAR" desc="Message shown on the action bar, to invite the user to tap to search for a term.">
+        Search for “<ph name="SEARCH_TERM">%1$s<ex>Eiffel Tower</ex></ph>”
+      </message>
       <message name="IDS_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for Contextual Search preference">
         Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results, and other details.
 
@@ -303,6 +306,15 @@ To adjust your search term, long press to select. To refine your search, slide t
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_LEARN_MORE_URL" desc="URL for learning more about Contextual Search preference" translateable="false">
         https://support.google.com/chrome/answer/95440#android
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_SHORT_DESCRIPTION" desc="A promo message shown to users who have Touch to Search enabled to explain the new behavior and provide an option to opt out">
+        Touch to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_GOT_IT_BUTTON" desc="A button to confirm and dismiss opt out promo">
+        Allow
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_NO_THANKS_BUTTON" desc="A button to confirm and dismiss opt out promo">
+        No thanks
       </message>
       <message name="IDS_CRASH_DUMP_UPLOAD_TITLE" desc="Title for crash upload upload preference">
         Usage and crash reports
@@ -1460,7 +1472,7 @@ Hit the back button to exit.
       <message name="IDS_ACCESSIBILITY_FRE_ACCOUNT_SPINNER" desc="Content description for the first run account drop down spinner.">
         Choose account
       </message>
-      
+
       <!-- External Navigation Strings -->
       <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_WARNING" desc="Alert dialog text warning that user that incognito mode does not continue into external apps.">
         Leaving incognito mode if this link is opened in an external application. Continue?
@@ -1486,7 +1498,7 @@ Hit the back button to exit.
       <message name="IDS_CAST_NOTIFICATION_PAUSED" desc="AtHome notification text when paused. [CHAR LIMIT=40]">
         Paused
       </message>
-      
+
       <!-- Messages for remote media playback (casting) -->
       <message name="IDS_CAST_NOTIFICATION_LOADING" desc="AtHome notification text when loading a video. [CHAR LIMIT=40]">
         Loading video
@@ -1524,7 +1536,7 @@ Hit the back button to exit.
       <message name="IDS_ACCESSIBILITY_STOP" desc="Content description for the stop button that stops playing the media.">
         Stop
       </message>
- 
+
     </messages>
   </release>
 </grit>

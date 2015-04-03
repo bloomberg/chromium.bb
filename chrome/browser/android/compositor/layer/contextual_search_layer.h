@@ -34,11 +34,16 @@ class ContextualSearchLayer : public Layer {
 
   void SetProperties(int search_bar_background_resource_id,
                      int search_bar_text_resource_id,
+                     int search_bar_shadow_resource_id,
                      int search_provider_icon_resource_id,
                      int search_icon_resource_id,
                      int progress_bar_background_resource_id,
                      int progress_bar_resource_id,
+                     int search_promo_resource_id,
                      content::ContentViewCore* content_view_core,
+                     bool search_promo_visible,
+                     float search_promo_height,
+                     float search_promo_opacity,
                      float search_panel_y,
                      float search_panel_width,
                      float search_bar_margin_top,
@@ -47,6 +52,8 @@ class ContextualSearchLayer : public Layer {
                      bool search_bar_border_visible,
                      float search_bar_border_y,
                      float search_bar_border_height,
+                     bool search_bar_shadow_visible,
+                     float search_bar_shadow_opacity,
                      float search_provider_icon_opacity,
                      float search_icon_padding_left,
                      float search_icon_opacity,
@@ -68,13 +75,15 @@ class ContextualSearchLayer : public Layer {
   scoped_refptr<cc::Layer> layer_;
   scoped_refptr<cc::NinePatchLayer> search_bar_background_;
   scoped_refptr<cc::UIResourceLayer> search_bar_text_;
+  scoped_refptr<cc::UIResourceLayer> search_bar_shadow_;
   scoped_refptr<cc::UIResourceLayer> search_provider_icon_;
   scoped_refptr<cc::UIResourceLayer> search_icon_;
-  scoped_refptr<cc::UIResourceLayer> search_scroll_shadow_;
   scoped_refptr<cc::Layer> content_view_container_;
   scoped_refptr<cc::SolidColorLayer> search_bar_border_;
   scoped_refptr<cc::NinePatchLayer> progress_bar_;
   scoped_refptr<cc::NinePatchLayer> progress_bar_background_;
+  scoped_refptr<cc::UIResourceLayer> search_promo_;
+  scoped_refptr<cc::SolidColorLayer> search_promo_container_;
 };
 
 }  //  namespace android
