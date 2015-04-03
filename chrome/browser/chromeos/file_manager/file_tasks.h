@@ -265,8 +265,10 @@ void FindDriveAppTasks(const drive::DriveAppRegistry& drive_app_registry,
                        const PathAndMimeTypeSet& path_mime_set,
                        std::vector<FullTaskDescriptor>* result_list);
 
-// Returns whether a file handler info is a generic file handler or not.
-bool IsGenericFileHandler(const extensions::FileHandlerInfo& file_handler_info);
+// Returns true if a file handler matches with files as good match.
+bool IsGoodMatchFileHandler(
+    const extensions::FileHandlerInfo& file_handler_info,
+    const PathAndMimeTypeSet& path_mime_set);
 
 // Finds the file handler tasks (apps declaring "file_handlers" in
 // manifest.json) that can be used with the given files, appending them to

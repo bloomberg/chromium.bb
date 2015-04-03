@@ -351,54 +351,85 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackFileBrowser) {
   EXPECT_TRUE(tasks[0].is_default());
 }
 
-// Test IsGenericFileHandler which returns whether a file handle info is a
-// generic file handler or not.
-TEST(FileManagerFileTasksTest, IsGenericFileHandler) {
+// Test IsGoodMatchFileHandler which returns whether a file handle info matches
+// with files as good match or not.
+TEST(FileManagerFileTasksTest, IsGoodMatchFileHandler) {
   using FileHandlerInfo = extensions::FileHandlerInfo;
+  typedef std::pair<base::FilePath, std::string> PathMime;
+
+  PathAndMimeTypeSet path_and_mime_set_1;
+  path_and_mime_set_1.insert(
+      PathMime(base::FilePath(FILE_PATH_LITERAL("foo.jpg")), "image/jpeg"));
+  path_and_mime_set_1.insert(
+      PathMime(base::FilePath(FILE_PATH_LITERAL("bar.txt")), "text/plain"));
+
+  PathAndMimeTypeSet path_and_mime_set_2;
+  path_and_mime_set_2.insert(
+      PathMime(base::FilePath(FILE_PATH_LITERAL("foo.ics")), "text/calendar"));
 
   // extensions: ["*"]
   FileHandlerInfo file_handler_info_1;
   file_handler_info_1.extensions.insert("*");
-  EXPECT_TRUE(IsGenericFileHandler(file_handler_info_1));
+  EXPECT_FALSE(
+      IsGoodMatchFileHandler(file_handler_info_1, path_and_mime_set_1));
 
   // extensions: ["*", "jpg"]
   FileHandlerInfo file_handler_info_2;
   file_handler_info_2.extensions.insert("*");
   file_handler_info_2.extensions.insert("jpg");
-  EXPECT_TRUE(IsGenericFileHandler(file_handler_info_2));
+  EXPECT_FALSE(
+      IsGoodMatchFileHandler(file_handler_info_2, path_and_mime_set_1));
 
   // extensions: ["jpg"]
   FileHandlerInfo file_handler_info_3;
   file_handler_info_3.extensions.insert("jpg");
-  EXPECT_FALSE(IsGenericFileHandler(file_handler_info_3));
+  EXPECT_TRUE(IsGoodMatchFileHandler(file_handler_info_3, path_and_mime_set_1));
 
   // types: ["*"]
   FileHandlerInfo file_handler_info_4;
   file_handler_info_4.types.insert("*");
-  EXPECT_TRUE(IsGenericFileHandler(file_handler_info_4));
+  EXPECT_FALSE(
+      IsGoodMatchFileHandler(file_handler_info_4, path_and_mime_set_1));
 
   // types: ["*/*"]
   FileHandlerInfo file_handler_info_5;
   file_handler_info_5.types.insert("*/*");
-  EXPECT_TRUE(IsGenericFileHandler(file_handler_info_5));
+  EXPECT_FALSE(
+      IsGoodMatchFileHandler(file_handler_info_5, path_and_mime_set_1));
 
   // types: ["image/*"]
   FileHandlerInfo file_handler_info_6;
   file_handler_info_6.types.insert("image/*");
   // Partial wild card is not generic.
-  EXPECT_FALSE(IsGenericFileHandler(file_handler_info_6));
+  EXPECT_TRUE(IsGoodMatchFileHandler(file_handler_info_6, path_and_mime_set_1));
 
   // types: ["*", "image/*"]
   FileHandlerInfo file_handler_info_7;
   file_handler_info_7.types.insert("*");
   file_handler_info_7.types.insert("image/*");
-  EXPECT_TRUE(IsGenericFileHandler(file_handler_info_7));
+  EXPECT_FALSE(
+      IsGoodMatchFileHandler(file_handler_info_7, path_and_mime_set_1));
 
   // extensions: ["*"], types: ["image/*"]
   FileHandlerInfo file_handler_info_8;
   file_handler_info_8.extensions.insert("*");
   file_handler_info_8.types.insert("image/*");
-  EXPECT_TRUE(IsGenericFileHandler(file_handler_info_8));
+  EXPECT_FALSE(
+      IsGoodMatchFileHandler(file_handler_info_8, path_and_mime_set_1));
+
+  // types: ["text/*"] and target files contain unsupported text mime type, e.g.
+  // text/calendar.
+  FileHandlerInfo file_handler_info_9;
+  file_handler_info_9.types.insert("text/*");
+  EXPECT_FALSE(
+      IsGoodMatchFileHandler(file_handler_info_9, path_and_mime_set_2));
+
+  // types: ["text/*"] and target files don't contain unsupported text mime
+  // type.
+  FileHandlerInfo file_handler_info_10;
+  file_handler_info_10.types.insert("text/*");
+  EXPECT_TRUE(
+      IsGoodMatchFileHandler(file_handler_info_10, path_and_mime_set_1));
 }
 
 // Test using the test extension system, which needs lots of setup.

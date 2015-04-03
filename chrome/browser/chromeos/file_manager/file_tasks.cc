@@ -361,11 +361,24 @@ void FindDriveAppTasks(
   }
 }
 
-bool IsGenericFileHandler(
-    const extensions::FileHandlerInfo& file_handler_info) {
-  return file_handler_info.extensions.count("*") > 0 ||
+bool IsGoodMatchFileHandler(
+    const extensions::FileHandlerInfo& file_handler_info,
+    const PathAndMimeTypeSet& path_mime_set) {
+  if (file_handler_info.extensions.count("*") > 0 ||
       file_handler_info.types.count("*") > 0 ||
-      file_handler_info.types.count("*/*") > 0;
+      file_handler_info.types.count("*/*") > 0)
+    return false;
+
+  // If text/* file handler matches with unsupported text mime type, we don't
+  // regard it as good match.
+  if (file_handler_info.types.count("text/*")) {
+    for (const auto& path_mime : path_mime_set) {
+      if (net::IsUnsupportedTextMimeType(path_mime.second))
+        return false;
+    }
+  }
+
+  return true;
 }
 
 void FindFileHandlerTasks(
@@ -411,17 +424,14 @@ void FindFileHandlerTasks(
       continue;
     }
 
-    // Show the first matching non-generic handler of each app. If there doesn't
-    // exist such handler, show the first matching handler of the app.
-    const extensions::FileHandlerInfo* file_handler = nullptr;
+    // Show the first good matching handler of each app. If there doesn't exist
+    // such handler, show the first matching handler of the app.
+    const extensions::FileHandlerInfo* file_handler = file_handlers.front();
     for (auto handler : file_handlers) {
-      if (!IsGenericFileHandler(*handler)) {
+      if (IsGoodMatchFileHandler(*handler, path_mime_set)) {
         file_handler = handler;
         break;
       }
-    }
-    if (file_handler == nullptr) {
-      file_handler = file_handlers.front();
     }
 
     std::string task_id = file_tasks::MakeTaskID(
@@ -434,14 +444,15 @@ void FindFileHandlerTasks(
         false,  // grayscale
         NULL);  // exists
 
-    result_list->push_back(
-        FullTaskDescriptor(TaskDescriptor(extension->id(),
-                                          file_tasks::TASK_TYPE_FILE_HANDLER,
-                                          file_handler->id),
-                           extension->name(),
-                           best_icon,
-                           false /* is_default */,
-                           IsGenericFileHandler(*file_handler)));
+    // If file handler doesn't match as good match, regards it as generic file
+    // handler.
+    const bool is_generic_file_handler =
+        !IsGoodMatchFileHandler(*file_handler, path_mime_set);
+    result_list->push_back(FullTaskDescriptor(
+        TaskDescriptor(extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER,
+                       file_handler->id),
+        extension->name(), best_icon, false /* is_default */,
+        is_generic_file_handler));
   }
 }
 
