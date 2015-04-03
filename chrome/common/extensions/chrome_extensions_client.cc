@@ -305,8 +305,8 @@ void ChromeExtensionsClient::RegisterAPISchemaResources(
 }
 
 bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {
-  // Suppress fatal errors only on beta and stable channels.
-  return GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV;
+  // Suppress fatal on all release branches.
+  return GetCurrentChannel() > chrome::VersionInfo::CHANNEL_CANARY;
 }
 
 std::string ChromeExtensionsClient::GetWebstoreBaseURL() const {
