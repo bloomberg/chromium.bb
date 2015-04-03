@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
 #include "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_pop_up_button.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_tooltip_controller.h"
 #include "chrome/browser/ui/cocoa/autofill/card_unmask_prompt_view_bridge.h"
@@ -141,8 +142,8 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   base::scoped_nsobject<NSTextField> permanentErrorLabel_;
   base::scoped_nsobject<NSTextField> instructionsLabel_;
   base::scoped_nsobject<AutofillTextField> cvcInput_;
-  base::scoped_nsobject<NSPopUpButton> monthPopup_;
-  base::scoped_nsobject<NSPopUpButton> yearPopup_;
+  base::scoped_nsobject<AutofillPopUpButton> monthPopup_;
+  base::scoped_nsobject<AutofillPopUpButton> yearPopup_;
   base::scoped_nsobject<NSButton> cancelButton_;
   base::scoped_nsobject<NSButton> verifyButton_;
   base::scoped_nsobject<NSButton> storageCheckbox_;
@@ -158,9 +159,9 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   autofill::CardUnmaskPromptViewBridge* bridge_;
 }
 
-+ (NSPopUpButton*)buildDatePopupWithModel:(ui::ComboboxModel&)model {
-  NSPopUpButton* popup =
-      [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
++ (AutofillPopUpButton*)buildDatePopupWithModel:(ui::ComboboxModel&)model {
+  AutofillPopUpButton* popup =
+      [[AutofillPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
 
   for (int i = 0; i < model.GetItemCount(); ++i) {
     [popup addItemWithTitle:base::SysUTF16ToNSString(model.GetItemAt(i))];
@@ -327,9 +328,15 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
 - (void)onExpirationDateChanged:(id)sender {
   if ([self expirationDateIsValid]) {
-    [self setRetriableErrorMessage:base::string16()];
+    if ([monthPopup_ invalid]) {
+      [monthPopup_ setValidityMessage:@""];
+      [yearPopup_ setValidityMessage:@""];
+      [self setRetriableErrorMessage:base::string16()];
+    }
   } else if ([monthPopup_ indexOfSelectedItem] != monthPopupDefaultIndex_ &&
              [yearPopup_ indexOfSelectedItem] != yearPopupDefaultIndex_) {
+    [monthPopup_ setValidityMessage:@"invalid"];
+    [yearPopup_ setValidityMessage:@"invalid"];
     [self setRetriableErrorMessage:
               l10n_util::GetStringUTF16(
                   IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE)];
