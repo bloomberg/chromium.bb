@@ -9,6 +9,7 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import constants
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import project_sdk
@@ -73,3 +74,71 @@ class ProjectSdkTest(cros_test_lib.TempDirTestCase):
   def testFindVersionSpecifiedNested(self):
     """Test FindVersion with nested inside repo tree."""
     self.assertEqual(self.version, project_sdk.FindVersion(self.nested_dir))
+
+
+class ProjectSdkVerifyFake(cros_test_lib.MockTestCase):
+  """Test VerifyEnvironment with mocks."""
+
+  def setUp(self):
+    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+
+  def testGTrusty(self):
+    """Test with mock of 'gTrusty' distribution."""
+    self.rc_mock.AddCmdResult(['/bin/bash', '--version'])
+    self.rc_mock.AddCmdResult(['git', '--version'],
+                              output='git version 2.2.0.rc0.207.ga3a616c')
+    self.rc_mock.AddCmdResult(['curl', '--version'])
+
+    self.assertTrue(project_sdk.VerifyEnvironment())
+
+  def testUbuntu14(self):
+    """Test with mock of 'Ubuntu LTS 14' distribution."""
+    self.rc_mock.AddCmdResult(['/bin/bash', '--version'])
+    self.rc_mock.AddCmdResult(['git', '--version'],
+                              output='git version 2.1.0')
+    self.rc_mock.AddCmdResult(['curl', '--version'])
+
+    self.assertTrue(project_sdk.VerifyEnvironment())
+
+  def testGitNewEnough(self):
+    """Test with mock of git 1.8."""
+    self.rc_mock.AddCmdResult(['/bin/bash', '--version'])
+    self.rc_mock.AddCmdResult(['git', '--version'],
+                              output='git version 1.8.3.1')
+    self.rc_mock.AddCmdResult(['curl', '--version'])
+
+    self.assertTrue(project_sdk.VerifyEnvironment())
+
+  def testFailNoBash(self):
+    """Test with mock of no bash present."""
+    self.rc_mock.AddCmdResult(['/bin/bash', '--version'], returncode=127)
+    self.rc_mock.AddCmdResult(['git', '--version'],
+                              output='git version 2.2.0.rc0.207.ga3a616c')
+    self.rc_mock.AddCmdResult(['curl', '--version'])
+
+    self.assertFalse(project_sdk.VerifyEnvironment())
+
+  def testFailGitTooOld(self):
+    """Test with mock of git too old to use."""
+    self.rc_mock.AddCmdResult(['/bin/bash', '--version'])
+    self.rc_mock.AddCmdResult(['git', '--version'],
+                              output='git version 1.7.10.4')
+    self.rc_mock.AddCmdResult(['curl', '--version'])
+
+    self.assertFalse(project_sdk.VerifyEnvironment())
+
+  def testFailNoCurl(self):
+    """Test with mock of no curl present."""
+    self.rc_mock.AddCmdResult(['/bin/bash', '--version'])
+    self.rc_mock.AddCmdResult(['git', '--version'],
+                              output='git version 1.7.10.4')
+    self.rc_mock.AddCmdResult(['curl', '--version'], returncode=127)
+
+    self.assertFalse(project_sdk.VerifyEnvironment())
+
+class ProjectSdkVerifyReal(cros_test_lib.TestCase):
+  """Test VerifyEnvironment for real."""
+
+  def testVerifyEnvironment(self):
+    """Test, assuming production environment is valid."""
+    self.assertTrue(project_sdk.VerifyEnvironment())

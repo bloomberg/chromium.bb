@@ -7,8 +7,11 @@
 from __future__ import print_function
 
 import os
+import re
 
 from chromite.cbuildbot import constants
+from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 
@@ -65,3 +68,60 @@ def FindVersion(sdk_dir=None):
 
   v_file = VersionFile(sdk_root)
   return osutils.ReadFile(v_file) if os.path.exists(v_file) else None
+
+
+def VerifyEnvironment():
+  """Verify the environment we are installed to.
+
+  Returns:
+    boolean: True if the environment looks friendly.
+  """
+  result = True
+
+  # Verify Python:
+  #   We assume the python environment is acceptable, because we got here.
+  #   However, we can add imports here to check for any required external
+  #   packages.
+
+  # Verify that bash is available in the expected place.
+  test = cros_build_lib.RunCommand(
+      ['/bin/bash', '--version'],
+      error_code_ok=True, print_cmd=False, capture_output=True)
+
+  if test.returncode:
+    logging.warn('/bin/bash is required to use the SDK.')
+    result = False
+
+  # Verify Git.
+  test = cros_build_lib.RunCommand(
+      ['git', '--version'],
+      error_code_ok=True, print_cmd=False, capture_output=True)
+
+  if test.returncode:
+    logging.warn('Git is required to use the SDK.')
+    result = False
+  else:
+    # Eg: 'git version 2.2.0.rc0.207.ga3a616c'.
+    git_version = test.output
+
+    m = re.match(r'git version (\d+)\.(\d+)', git_version)
+    if not m:
+      logging.warn("Git version not recognized from: '%s'", git_version)
+      result = False
+    else:
+      gv_int_list = [int(d) for d in m.groups()] # Something like [2, 3]
+      if gv_int_list < [1, 8]:
+        logging.warn("Git 1.8 or greater required. Not supported: %s",
+                     git_version)
+        result = False
+
+  # Verify curl.
+  test = cros_build_lib.RunCommand(
+      ['curl', '--version'],
+      error_code_ok=True, print_cmd=False, capture_output=True)
+
+  if test.returncode:
+    logging.warn('Curl is required to use the SDK.')
+    result = False
+
+  return result

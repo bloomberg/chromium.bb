@@ -213,6 +213,9 @@ class SdkCommand(command.CliCommand):
     if not sdk_dir and not workspace_path:
       cros_build_lib.Die('You must be in a workspace, or specifiy --sdk-dir.')
 
+    if not project_sdk.VerifyEnvironment():
+      return 1
+
     # Perform the update.
     if self.options.update:
       bootstrap_path = bootstrap_lib.FindBootstrapPath()

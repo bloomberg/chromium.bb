@@ -301,6 +301,9 @@ class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase,
         project_sdk, 'FindRepoRoot',
         side_effect=lambda d: d if d.startswith(self.sdk_path) else None)
 
+    # This is broken if RunCommand is mocked out.
+    self.PatchObject(project_sdk, 'VerifyEnvironment')
+
     # Prevent actually downloading a repository.
     self.mock_repo = self.PatchObject(repository, 'RepoRepository')
 
