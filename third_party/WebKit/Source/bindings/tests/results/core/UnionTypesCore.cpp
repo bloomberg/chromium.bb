@@ -807,7 +807,7 @@ void TestEnumOrDouble::setTestEnum(String value)
         "EnumValue2",
         "EnumValue3",
     };
-    if (!isValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
+    if (!isValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState)) {
         ASSERT_NOT_REACHED();
         return;
     }
@@ -871,7 +871,7 @@ void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
             "EnumValue2",
             "EnumValue3",
         };
-        if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState))
+        if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState))
             return;
         impl.setTestEnum(cppValue);
         return;

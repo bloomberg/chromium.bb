@@ -41,7 +41,7 @@ void {{container.cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}}
     {% if member.enum_values %}
     NonThrowableExceptionState exceptionState;
     {{declare_enum_validation_variable(member.enum_values) | indent}}
-    if (!isValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
+    if (!isValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), "{{member.type_name}}", exceptionState)) {
         ASSERT_NOT_REACHED();
         return;
     }
@@ -146,7 +146,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value
         {{v8_value_to_local_cpp_value(container.string_type) | indent(8)}}
         {% if container.string_type.enum_values %}
         {{declare_enum_validation_variable(container.string_type.enum_values) | indent(8)}}
-        if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState))
+        if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{container.string_type.type_name}}", exceptionState))
             return;
         {% endif %}
         impl.set{{container.string_type.type_name}}(cppValue);

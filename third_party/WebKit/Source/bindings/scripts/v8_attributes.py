@@ -106,6 +106,7 @@ def attribute_context(interface, attribute):
         'cpp_type': idl_type.cpp_type,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
         'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
+        'enum_type': idl_type.enum_type,
         'enum_values': idl_type.enum_values,
         'exposed_test': v8_utilities.exposed(attribute, interface),  # [Exposed]
         'has_custom_getter': has_custom_getter(attribute),

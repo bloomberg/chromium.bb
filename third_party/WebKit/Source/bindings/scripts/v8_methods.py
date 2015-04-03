@@ -223,6 +223,7 @@ def argument_context(interface, method, argument, index):
         'cpp_value': this_cpp_value,
         # FIXME: check that the default value's type is compatible with the argument's
         'set_default_value': set_default_value,
+        'enum_type': idl_type.enum_type,
         'enum_values': idl_type.enum_values,
         'handle': '%sHandle' % argument.name,
         # FIXME: remove once [Default] removed and just use argument.default_value

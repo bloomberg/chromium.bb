@@ -238,7 +238,7 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
             "EnumModulesValue1",
             "EnumModulesValue2",
         };
-        if (!isValidEnum(arg, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
+        if (!isValidEnum(arg, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnumModules", exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }

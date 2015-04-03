@@ -337,7 +337,7 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
     NonThrowableExceptionState exceptionState;
     {% endif %}
     {{declare_enum_validation_variable(attribute.enum_values) | indent}}
-    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
+    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{attribute.enum_type}}", exceptionState)) {
         currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, exceptionState.message()));
         return;
     }

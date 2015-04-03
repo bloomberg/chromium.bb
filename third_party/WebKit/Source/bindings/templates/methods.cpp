@@ -199,7 +199,7 @@ if (!{{argument.name}}{% if argument.is_nullable %} && !isUndefinedOrNull(info[{
 {% elif argument.enum_values %}
 {# Invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
 {{declare_enum_validation_variable(argument.enum_values)}}
-if (!isValidEnum({{argument.name}}, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
+if (!isValidEnum({{argument.name}}, validValues, WTF_ARRAY_LENGTH(validValues), "{{argument.enum_type}}", exceptionState)) {
     exceptionState.throwIfNeeded();
     return;
 }

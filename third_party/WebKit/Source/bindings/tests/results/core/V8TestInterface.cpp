@@ -287,7 +287,7 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
         "EnumValue2",
         "EnumValue3",
     };
-    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
+    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState)) {
         currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, exceptionState.message()));
         return;
     }
@@ -973,7 +973,7 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
         "foo",
         "bar",
     };
-    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
+    if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "PartialEnumType", exceptionState)) {
         currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, exceptionState.message()));
         return;
     }
@@ -1196,7 +1196,7 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
             "EnumValue2",
             "EnumValue3",
         };
-        if (!isValidEnum(testEnumArg, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState)) {
+        if (!isValidEnum(testEnumArg, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
         }

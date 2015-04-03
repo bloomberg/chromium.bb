@@ -136,7 +136,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
             "EnumValue2",
             "EnumValue3",
         };
-        if (!isValidEnum(enumMember, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState))
+        if (!isValidEnum(enumMember, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState))
             return;
         impl.setEnumMember(enumMember);
     }
@@ -158,7 +158,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
             "EnumValue2",
             "EnumValue3",
         };
-        if (!isValidEnum(enumSequenceMember, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState))
+        if (!isValidEnum(enumSequenceMember, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState))
             return;
         impl.setEnumSequenceMember(enumSequenceMember);
     }

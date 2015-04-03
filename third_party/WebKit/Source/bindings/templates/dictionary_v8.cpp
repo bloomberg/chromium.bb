@@ -70,7 +70,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
         {% endif %}
         {% if member.enum_values %}
         {{declare_enum_validation_variable(member.enum_values) | indent(8)}}
-        if (!isValidEnum({{member.name}}, validValues, WTF_ARRAY_LENGTH(validValues), exceptionState))
+        if (!isValidEnum({{member.name}}, validValues, WTF_ARRAY_LENGTH(validValues), "{{member.enum_type}}", exceptionState))
             return;
         {% elif member.is_object %}
         if (!{{member.name}}.isObject()) {

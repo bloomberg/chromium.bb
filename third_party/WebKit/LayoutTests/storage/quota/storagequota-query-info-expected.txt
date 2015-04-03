@@ -10,7 +10,7 @@ PASS quota is >= usage
 PASS usage is >= 0
 PASS quota is >= usage
 * Querying about unknown storage.
-PASS rejected as expected: TypeError: Failed to execute 'queryInfo' on 'StorageQuota': The provided value 'unknown' is not a valid enum value.
+PASS rejected as expected: TypeError: Failed to execute 'queryInfo' on 'StorageQuota': The provided value 'unknown' is not a valid enum value of interface StorageType.
 * Querying with missing storage type.
 PASS rejected as expected: TypeError: Failed to execute 'queryInfo' on 'StorageQuota': 1 argument required, but only 0 present.
 Finished running tests.

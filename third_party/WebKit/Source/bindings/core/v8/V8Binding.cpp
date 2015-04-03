@@ -778,20 +778,20 @@ void crashIfV8IsDead()
     }
 }
 
-bool isValidEnum(const String value, const char** validValues, size_t length, ExceptionState& exceptionState)
+bool isValidEnum(const String value, const char** validValues, size_t length, const String interfaceName, ExceptionState& exceptionState)
 {
     for (size_t i = 0; i < length; ++i) {
         if (value == validValues[i])
             return true;
     }
-    exceptionState.throwTypeError("The provided value '" + value + "' is not a valid enum value.");
+    exceptionState.throwTypeError("The provided value '" + value + "' is not a valid enum value of interface " + interfaceName + ".");
     return false;
 }
 
-bool isValidEnum(const Vector<String>& values, const char** validValues, size_t length, ExceptionState& exceptionState)
+bool isValidEnum(const Vector<String>& values, const char** validValues, size_t length, const String interfaceName, ExceptionState& exceptionState)
 {
     for (auto value : values) {
-        if (!isValidEnum(value, validValues, length, exceptionState))
+        if (!isValidEnum(value, validValues, length, interfaceName, exceptionState))
             return false;
     }
     return true;
