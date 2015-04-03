@@ -11449,6 +11449,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="History.FaviconDatabaseAdvancedMetricsTime" units="ticks">
+  <owner>rogerm@chromium.org</owner>
+  <summary>
+    The wall-clock time taken to gather favicon database metrics. Metrics are
+    logged on initialization of the Favicon DB on 1% of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.FaviconDatabaseSizeMB" units="MB">
+  <owner>rogerm@chromium.org</owner>
+  <summary>
+    Size of the Favicons database in MB. This is calculated as the number of
+    pages consumed by the database multiplied by the page size. Logged on
+    initialization of the Favicon DB on 1% of starts.
+  </summary>
+</histogram>
+
 <histogram name="History.FaviconsRecoveredPercentage" units="%">
   <owner>rpop@google.com</owner>
   <summary>
@@ -11483,6 +11500,55 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>rpop@google.com</owner>
   <summary>
     Track results of SQLite database recovery code in thumbnail_database.cc.
+  </summary>
+</histogram>
+
+<histogram name="History.NumFaviconBitmapsInDB">
+  <owner>rogerm@chromium.org</owner>
+  <summary>
+    The total number of favicon bitmaps (of all sizes) cached in a user's
+    Favicon database. A given favicon URL may be associated with multiple
+    bitmaps (of different sizes). Logged on initialization of the Favicon DB on
+    1% of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.NumFaviconMappingsInDB">
+  <owner>rogerm@chromium.org</owner>
+  <summary>
+    The number of page URL (e.g., http://www.google.com) to favicon URL (e.g.,
+    http://www.google.com/favicon.ico) mappings stored in a user's Favicon
+    database. Logged on initialization of the Favicon DB on 1% of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.NumFaviconsInDB">
+  <owner>rogerm@chromium.org</owner>
+  <summary>
+    The total number of favicon URLs (e.g. http://www.google.com/favicon.ico)
+    tracked in a user's Favicon database. This metric tracks knowledge of a
+    favicon URL not whether there are cached bitmaps for that favicon URL. See
+    History.NumFaviconBitmapsInDB for that. Logged on initialization of the
+    Favicon DB on 1% of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.NumLargeFaviconBitmapsInDB">
+  <owner>rogerm@chromium.org</owner>
+  <summary>
+    The total number of large (&gt;= 64 pixels wide) favicons being tracked in a
+    user's Favicon database. This is a subset of History.NumFaviconBitmapsInDB,
+    which includes all sizes in its count. Logged on initialization of the
+    Favicon DB on 1% of starts.
+  </summary>
+</histogram>
+
+<histogram name="History.NumTouchIconsInDB">
+  <owner>rogerm@chromium.org</owner>
+  <summary>
+    The total number of touch icons being tracked in a user's Favicon database.
+    This is a subset of History.NumFaviconsInDB, which includes all icon types
+    in its count. Logged on initialization of the Favicon DB on 1% of starts.
   </summary>
 </histogram>
 
