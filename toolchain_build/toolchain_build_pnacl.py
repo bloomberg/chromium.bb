@@ -651,7 +651,7 @@ def HostTools(host, options):
                   '-DLLVM_EXTERNAL_CLANG_SOURCE_DIR=%(clang_src)s',
                   '-DLLVM_EXTERNAL_SUBZERO_SOURCE_DIR=%(subzero_src)s',
                   '-DLLVM_INSTALL_UTILS=ON',
-                  '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips',
+                  '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips;JSBackend',
                   '%(llvm_src)s']),
               command.Command(['ninja', '-v']),
               command.Command(['ninja', 'install']),
@@ -687,7 +687,7 @@ def HostTools(host, options):
                                             else 'yes'),
                    '--enable-debug=' + ('yes' if HostIsDebug(options)
                                         else 'no'),
-                   '--enable-targets=x86,arm,mips',
+                   '--enable-targets=x86,arm,mips,js',
                    '--enable-werror=' + ('yes' if llvm_do_werror else 'no'),
                    '--prefix=/',
                    '--program-prefix=',
