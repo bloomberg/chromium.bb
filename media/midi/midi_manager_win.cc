@@ -8,7 +8,7 @@
 #include <dbt.h>
 #include <ks.h>
 #include <ksmedia.h>
-
+#include <mmreg.h>
 // Prevent unnecessary functions from being included from <mmsystem.h>
 #define MMNODRV
 #define MMNOSOUND
@@ -294,8 +294,13 @@ std::string GetManufacturerName(const MidiDeviceInfo& info) {
   if (info.is_usb_device)
     return device::UsbIds::GetVendorName(info.usb_vendor_id);
 
-  // TODO(toyoshim): Support non USB-MIDI devices. crbug.com/472341.
-  return "";
+  switch (info.manufacturer_id) {
+    case MM_MICROSOFT:
+      return "Microsoft Corporation";
+    default:
+      // TODO(toyoshim): Support other manufacture IDs.  crbug.com/472341.
+      return "";
+  }
 }
 
 using PortNumberCache = base::hash_map<
