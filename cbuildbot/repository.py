@@ -167,16 +167,13 @@ def PrepManifestForRepo(git_repo, manifest):
 
 class RepoRepository(object):
   """A Class that encapsulates a repo repository."""
-  # Use our own repo, in case android.kernel.org (the default location) is down.
-  _INIT_CMD = ['repo', 'init']
-
   # If a repo hasn't been used in the last 5 runs, wipe it.
   LRU_THRESHOLD = 5
 
   def __init__(self, manifest_repo_url, directory, branch=None,
                referenced_repo=None, manifest=constants.DEFAULT_MANIFEST,
                depth=None, repo_url=constants.REPO_URL, repo_branch=None,
-               groups=None):
+               groups=None, repo_cmd='repo'):
     """Initialize.
 
     Args:
@@ -191,6 +188,7 @@ class RepoRepository(object):
       repo_url: URL to fetch repo tool from.
       repo_branch: Branch to check out the repo tool at.
       groups: Only sync projects that match this filter.
+      repo_cmd: Name of repo_cmd to use.
     """
     self.manifest_repo_url = manifest_repo_url
     self.repo_url = repo_url
@@ -198,6 +196,7 @@ class RepoRepository(object):
     self.directory = directory
     self.branch = branch
     self.groups = groups
+    self.repo_cmd = repo_cmd
 
     # It's perfectly acceptable to pass in a reference pathway that isn't
     # usable.  Detect it, and suppress the setting so that any depth
@@ -240,9 +239,9 @@ class RepoRepository(object):
     # manifest from it, we know it's fairly screwed up and needs a fresh
     # rebuild.
     if os.path.exists(os.path.join(self.directory, '.repo', 'manifest.xml')):
+      cmd = [self.repo_cmd, 'manifest']
       try:
-        cros_build_lib.RunCommand(
-            ['repo', 'manifest'], cwd=self.directory, capture_output=True)
+        cros_build_lib.RunCommand(cmd, cwd=self.directory, capture_output=True)
       except cros_build_lib.RunCommandError:
         logging.warning("Wiping %r due to `repo manifest` failure",
                         self.directory)
@@ -266,15 +265,19 @@ class RepoRepository(object):
     # Additionally, note that this method may be called multiple times;
     # thus code appropriately.
     if self._repo_update_needed:
+      cmd = [self.repo_cmd, 'selfupdate']
       try:
-        cros_build_lib.RunCommand(['repo', 'selfupdate'], cwd=self.directory)
+        cros_build_lib.RunCommand(cmd, cwd=self.directory)
       except cros_build_lib.RunCommandError:
         osutils.RmDir(os.path.join(self.directory, '.repo', 'repo'),
                       ignore_missing=True)
       self._repo_update_needed = False
 
-    init_cmd = self._INIT_CMD + ['--repo-url', self.repo_url,
-                                 '--manifest-url', self.manifest_repo_url]
+    # Use our own repo, in case android.kernel.org (the default location) is
+    # down.
+    init_cmd = [self.repo_cmd, 'init',
+                '--repo-url', self.repo_url,
+                '--manifest-url', self.manifest_repo_url]
     if self._referenced_repo:
       init_cmd.extend(['--reference', self._referenced_repo])
     if self._manifest:
@@ -365,7 +368,7 @@ class RepoRepository(object):
       # Fix existing broken mirroring configurations.
       self._EnsureMirroring()
 
-      cmd = ['repo', '--time', 'sync']
+      cmd = [self.repo_cmd, '--time', 'sync']
       if jobs:
         cmd += ['--jobs', str(jobs)]
       if not all_branches or self._depth is not None:
@@ -460,7 +463,7 @@ class RepoRepository(object):
     Returns:
       The manifest as a string.
     """
-    cmd = ['repo', 'manifest', '-o', '-']
+    cmd = [self.repo_cmd, 'manifest', '-o', '-']
     if revisions:
       cmd += ['-r']
     output = cros_build_lib.RunCommand(

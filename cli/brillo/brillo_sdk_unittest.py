@@ -87,7 +87,8 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     expected = [mock.call(mock.ANY,
                           os.path.join(self.tempdir,
                                        'bootstrap/sdk_checkouts/1.2.3'),
-                          depth=1),
+                          depth=1,
+                          repo_cmd=mock.ANY),
                 mock.call().Sync()]
 
     self.assertEqual(expected, self.mock_repo.mock_calls)
@@ -106,7 +107,8 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     expected = [mock.call(constants.MANIFEST_URL,
                           os.path.join(self.tempdir,
                                        'bootstrap/sdk_checkouts/tot'),
-                          groups='project_sdk'),
+                          groups='project_sdk',
+                          repo_cmd=mock.ANY),
                 mock.call().Sync()]
 
     self.assertEqual(expected, self.mock_repo.mock_calls)
@@ -119,7 +121,8 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     expected = [mock.call(constants.MANIFEST_URL,
                           os.path.join(self.tempdir,
                                        'bootstrap/sdk_checkouts/tot'),
-                          groups='project_sdk'),
+                          groups='project_sdk',
+                          repo_cmd=mock.ANY),
                 mock.call().Sync()]
 
     self.assertEqual(2 * expected, self.mock_repo.mock_calls)
@@ -131,7 +134,8 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(mock.ANY,
                           self.sdk_path,
-                          depth=1),
+                          depth=1,
+                          repo_cmd=mock.ANY),
                 mock.call().Sync()]
 
     self.assertEqual(expected, self.mock_repo.mock_calls)
@@ -148,7 +152,8 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(mock.ANY,
                           self.sdk_path,
-                          depth=1),
+                          depth=1,
+                          repo_cmd=mock.ANY),
                 mock.call().Sync()]
 
     self.assertEqual(expected, self.mock_repo.mock_calls)
@@ -160,7 +165,8 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(mock.ANY,
                           self.sdk_path,
-                          depth=1),
+                          depth=1,
+                          repo_cmd=mock.ANY),
                 mock.call().Sync()]
 
     self.assertEqual(expected, self.mock_repo.mock_calls)
@@ -172,7 +178,8 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     # Given the explicit path and version, sync what we expect, and where.
     expected = [mock.call(constants.MANIFEST_URL,
                           self.sdk_path,
-                          groups='project_sdk'),
+                          groups='project_sdk',
+                          repo_cmd=mock.ANY),
                 mock.call().Sync()]
 
     self.assertEqual(expected, self.mock_repo.mock_calls)
@@ -185,7 +192,8 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     expected = [mock.call(mock.ANY,
                           os.path.join(self.tempdir,
                                        'bootstrap/sdk_checkouts/1.2.3'),
-                          depth=1),
+                          depth=1,
+                          repo_cmd=mock.ANY),
                 mock.call().Sync()]
 
     self.assertEqual(expected, self.mock_repo.mock_calls)

@@ -68,12 +68,15 @@ def _UpdateSdk(gs_ctx, sdk_dir, version):
   # Create the SDK dir, if it doesn't already exist.
   osutils.SafeMakedirs(sdk_dir)
 
+  repo_cmd = os.path.join(constants.BOOTSTRAP_DIR, 'repo')
+
   logging.notice('Fetching files. This could take a few minutes...')
   # TOT is a special case, handle it first.
   if version.lower() == 'tot':
     # Init new repo.
     repo = repository.RepoRepository(
-        constants.MANIFEST_URL, sdk_dir, groups='project_sdk')
+        constants.MANIFEST_URL, sdk_dir, groups='project_sdk',
+        repo_cmd=repo_cmd)
     # Sync it.
     repo.Sync()
     return
@@ -90,7 +93,8 @@ def _UpdateSdk(gs_ctx, sdk_dir, version):
     repository.PrepManifestForRepo(manifest_git_dir, manifest.name)
 
     # Fetch the SDK.
-    repo = repository.RepoRepository(manifest_git_dir, sdk_dir, depth=1)
+    repo = repository.RepoRepository(manifest_git_dir, sdk_dir, depth=1,
+                                     repo_cmd=repo_cmd)
     repo.Sync()
 
   # TODO(dgarrett): Embed this step into the manifest itself.
