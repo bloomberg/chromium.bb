@@ -63,6 +63,7 @@ CHROMEOS_EXPORT extern const char kEnableExtensionAssetsSharing[];
 CHROMEOS_EXPORT extern const char kEnableFirewallHolePunching[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUITransitions[];
 CHROMEOS_EXPORT extern const char kEnableKioskMode[];
+CHROMEOS_EXPORT extern const char kEnableMtpWriteSupport[];
 CHROMEOS_EXPORT extern const char kEnableNetworkPortalNotification[];
 CHROMEOS_EXPORT extern const char kEnableNewKoreanIme[];
 CHROMEOS_EXPORT extern const char kEnablePhysicalKeyboardAutocorrect[];

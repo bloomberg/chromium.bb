@@ -2328,6 +2328,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(app_list::switches::kEnableLauncherSearchProviderApi)
   },
 #endif  // defined(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
+  {
+    "enable-mtp-write-support",
+    IDS_FLAG_ENABLE_MTP_WRITE_SUPPORT_NAME,
+    IDS_FLAG_ENABLE_MTP_WRITE_SUPPORT_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableMtpWriteSupport)
+  },
+#endif  // defined(OS_CHROMEOS)
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

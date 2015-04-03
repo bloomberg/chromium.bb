@@ -6213,4 +6213,10 @@ All users must sign out to continue.
   <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_NO_BUTTON" desc="Label on the button to reject permissions.">
     No
   </message>
+  <message name="IDS_FLAG_ENABLE_MTP_WRITE_SUPPORT_NAME" desc="Name of the option to enable mtp write support.">
+    Enable MTP write support
+  </message>
+  <message name="IDS_FLAG_ENABLE_MTP_WRITE_SUPPORT_DESCRIPTION" desc="Description of the option to enable mtp write support.">
+    Enable MTP write support in file manager. Some operations (editing an image on MTP volume) are not supported yet.
+  </message>
 </grit-part>

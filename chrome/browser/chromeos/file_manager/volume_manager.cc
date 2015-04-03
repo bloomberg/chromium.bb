@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_context.h"
@@ -686,9 +688,8 @@ void VolumeManager::OnRemovableStorageAttached(
           path);
   DCHECK(result);
 
-  // TODO(yawano) A variable to switch MTP write support. This variable should
-  // be false until MTP write operation is implemented and shipped.
-  bool write_supported = false;
+  bool write_supported = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableMtpWriteSupport);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,

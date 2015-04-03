@@ -141,6 +141,9 @@ const char kDisableVoiceInput[] = "disable-voice-input";
 // Enabled sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[]  = "enable-extension-assets-sharing";
 
+// Enables mtp write support.
+const char kEnableMtpWriteSupport[] = "enable-mtp-write-support";
+
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
