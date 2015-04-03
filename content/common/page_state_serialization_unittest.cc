@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/files/file_util.h"
+#include "base/float_util.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
@@ -15,16 +16,8 @@
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX)
-using std::isnan;
-#endif
-
 namespace content {
 namespace {
-
-#if defined(OS_WIN)
-inline bool isnan(double num) { return !!_isnan(num); }
-#endif
 
 base::NullableString16 NS16(const char* s) {
   return s ? base::NullableString16(base::ASCIIToUTF16(s), false) :
@@ -54,8 +47,10 @@ void ExpectEquality(const ExplodedHttpBodyElement& a,
   EXPECT_EQ(a.filesystem_url, b.filesystem_url);
   EXPECT_EQ(a.file_start, b.file_start);
   EXPECT_EQ(a.file_length, b.file_length);
-  if (!(isnan(a.file_modification_time) && isnan(b.file_modification_time)))
+  if (!(base::IsNaN(a.file_modification_time) &&
+        base::IsNaN(b.file_modification_time))) {
     EXPECT_DOUBLE_EQ(a.file_modification_time, b.file_modification_time);
+  }
   EXPECT_EQ(a.blob_uuid, b.blob_uuid);
 }
 
