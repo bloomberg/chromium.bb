@@ -3832,6 +3832,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Cookie.Type" enum="CookieType">
+  <owner>mkwst@chromium.org</owner>
+  <summary>For each cookie added to the store, record it's type(s).</summary>
+</histogram>
+
 <histogram name="Cras.StreamTimeoutMilliSeconds" units="milliseconds">
   <owner>hychao@chromium.org</owner>
   <summary>
@@ -47140,6 +47145,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     The cookie deletion occurred because the server overwrote it with an already
     expired cookie (this is a common idiom for server deletions of cookies).
   </int>
+</enum>
+
+<enum name="CookieType" type="int">
+  <summary>The type of a cookie when its added to the cookie store.</summary>
+  <int value="0" label="Default"/>
+  <int value="1" label="First-Party-Only"/>
+  <int value="2" label="HttpOnly"/>
+  <int value="3" label="First-Party-Only, HttpOnly"/>
+  <int value="4" label="Secure"/>
+  <int value="5" label="First-Party-Only, Secure"/>
+  <int value="6" label="HttpOnly, Secure"/>
+  <int value="7" label="First-Party-Only, HttpOnly, Secure"/>
 </enum>
 
 <enum name="CorruptExtensionDisabledReason" type="int">

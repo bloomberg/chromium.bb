@@ -1827,6 +1827,13 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
     delegate_->OnCookieChanged(*cc, false,
                                CookieMonsterDelegate::CHANGE_COOKIE_EXPLICIT);
   }
+
+  // See InitializeHistograms() for details.
+  int32_t sample = cc->IsFirstPartyOnly() ? 1 << COOKIE_TYPE_FIRSTPARTYONLY : 0;
+  sample |= cc->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
+  sample |= cc->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
+  histogram_cookie_type_->Add(sample);
+
   RunCallbacks(*cc, false);
 
   return inserted;
@@ -2281,6 +2288,9 @@ void CookieMonster::InitializeHistograms() {
   histogram_cookie_deletion_cause_ = base::LinearHistogram::FactoryGet(
       "Cookie.DeletionCause", 1, DELETE_COOKIE_LAST_ENTRY - 1,
       DELETE_COOKIE_LAST_ENTRY, base::Histogram::kUmaTargetedHistogramFlag);
+  histogram_cookie_type_ = base::LinearHistogram::FactoryGet(
+      "Cookie.Type", 1, COOKIE_TYPE_LAST_ENTRY - 1, COOKIE_TYPE_LAST_ENTRY,
+      base::Histogram::kUmaTargetedHistogramFlag);
 
   // From UMA_HISTOGRAM_{CUSTOM_,}TIMES
   histogram_time_blocked_on_load_ = base::Histogram::FactoryTimeGet(

@@ -405,6 +405,17 @@ class NET_EXPORT CookieMonster : public CookieStore {
     DELETE_COOKIE_LAST_ENTRY
   };
 
+  // This enum is used to generate a histogramed bitmask measureing the types
+  // of stored cookies. Please do not reorder the list when adding new entries.
+  // New items MUST be added at the end of the list, just before
+  // COOKIE_TYPE_LAST_ENTRY;
+  enum CookieType {
+    COOKIE_TYPE_FIRSTPARTYONLY = 0,
+    COOKIE_TYPE_HTTPONLY,
+    COOKIE_TYPE_SECURE,
+    COOKIE_TYPE_LAST_ENTRY
+  };
+
   // The number of days since last access that cookies will not be subject
   // to global garbage collection.
   static const int kSafeFromGlobalPurgeDays;
@@ -652,6 +663,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::HistogramBase* histogram_domain_per_etldp1_count_;
   base::HistogramBase* histogram_number_duplicate_db_cookies_;
   base::HistogramBase* histogram_cookie_deletion_cause_;
+  base::HistogramBase* histogram_cookie_type_;
   base::HistogramBase* histogram_time_mac_;
   base::HistogramBase* histogram_time_blocked_on_load_;
 
