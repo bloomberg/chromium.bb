@@ -50149,6 +50149,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="994" label="WEBVIEWINTERNAL_GETZOOMMODE"/>
   <int value="995" label="LAUNCHERSEARCHPROVIDER_SETSEARCHRESULTS"/>
   <int value="996" label="DATAREDUCTIONPROXY_CLEARDATASAVINGS"/>
+  <int value="997" label="BLUETOOTHPRIVATE_SETDISCOVERYFILTER"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

@@ -14,6 +14,8 @@
 #include "extensions/common/api/bluetooth_private.h"
 
 namespace bt_private = extensions::core_api::bluetooth_private;
+namespace SetDiscoveryFilter =
+    extensions::core_api::bluetooth_private::SetDiscoveryFilter;
 
 namespace extensions {
 
@@ -83,6 +85,8 @@ const char kAdapterNotPresent[] =
     "Could not find a Bluetooth adapter.";
 
 const char kDisconnectError[] = "Failed to disconnect device";
+
+const char kSetDiscoveryFilterFailed[] = "Failed to set discovery filter";
 
 // Returns true if the pairing response options passed into the
 // setPairingResponse function are valid.
@@ -341,6 +345,19 @@ void BluetoothPrivateDisconnectAllFunction::OnErrorCallback(
     SetError(kDisconnectError);
 
   SendResponse(false);
+}
+
+bool BluetoothPrivateSetDiscoveryFilterFunction::DoWork(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  scoped_ptr<SetDiscoveryFilter::Params> params(
+      SetDiscoveryFilter::Params::Create(*args_));
+
+  // TODO(jpawlowski): parse arguments, and call event router when method is
+  // implemented.
+
+  SetError(kSetDiscoveryFilterFailed);
+  SendResponse(false);
+  return true;
 }
 
 }  // namespace core_api

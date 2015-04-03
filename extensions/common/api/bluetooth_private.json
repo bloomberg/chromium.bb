@@ -52,6 +52,24 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "setDiscoveryFilter",
+        "type": "function",
+        "platforms" : ["chromeos"],
+        "description": "Set or clear discovery filter",
+        "parameters": [
+          {
+            "name": "discoveryFilter",
+            "$ref": "DiscoveryFilter"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [
@@ -198,6 +216,39 @@
             "name": "passkey",
             "type": "integer",
             "description": "An integer between 0-999999 set in response to <code>requestPasskey</code>."
+          }
+        }
+      },
+      {
+        "type": "object",
+        "id": "DiscoveryFilter",
+        "properties": {
+          "transport": {
+            "optional": true,
+            "name": "transport",
+            "type": "string",
+            "enum": [ "le", "bredr", "dual"],
+            "description": "Transport type."
+          },
+          "uuids": {
+            "name": "uuids",
+            "optional": true,
+            "choices": [
+              {"type": "string", "name": "uuid of service"},
+              {"type": "array",  "items": {"type": "string"}, "name": "array of uuids"}
+            ]
+          },
+          "rssi": {
+            "optional": true,
+            "name": "rssi",
+            "type": "integer",
+            "description": "RSSI ranging value. Only devices with RSSI higher than this value will be reported."
+          },
+          "pathloss": {
+            "optional": true,
+            "name": "pathloss",
+            "type": "integer",
+            "description": "Pathloss ranging value. Only devices with pathloss lower than this value will be reported."
           }
         }
       }
