@@ -12,19 +12,19 @@ properties-special.html:11 function (a,b) { return a + b; }
     length: 2
     name: ""
     prototype: Object
-    __proto__: function Empty() {}
+    __proto__: Empty() {}
     <function scope>
 properties-special.html:12 function () { [native code] }
     arguments: (...)
-    get arguments: function ThrowTypeError() { [native code] }
-    set arguments: function ThrowTypeError() { [native code] }
+    get arguments: ThrowTypeError() { [native code] }
+    set arguments: ThrowTypeError() { [native code] }
     caller: (...)
-    get caller: function ThrowTypeError() { [native code] }
-    set caller: function ThrowTypeError() { [native code] }
+    get caller: ThrowTypeError() { [native code] }
+    set caller: ThrowTypeError() { [native code] }
     length: 1
     name: ""
-    __proto__: function Empty() {}
-    [[TargetFunction]]: function (a,b) { return a + b; }
+    __proto__: Empty() {}
+    [[TargetFunction]]: (a,b) { return a + b; }
     [[BoundThis]]: Object
     [[BoundArgs]]: Array[1]
 

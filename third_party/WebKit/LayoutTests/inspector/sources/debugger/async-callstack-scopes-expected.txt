@@ -26,7 +26,7 @@ Local
     this: Window
     x: 200
 Closure
-    callback: function innerTimeout2()
+    callback: innerTimeout2()
     makeClosureLocalVar: "local.2"
     n: 2
     withScope: Object
@@ -36,7 +36,7 @@ WindowGlobal
 3) timeout2 async-callstack-scopes.html:53
 Scope variables sidebar pane:
 Local
-    innerTimeout2: function innerTimeout2()
+    innerTimeout2: innerTimeout2()
     localInTimeout2: "timeout2"
     this: Window
 WindowGlobal
@@ -60,7 +60,7 @@ Local
     this: Window
     x: 100
 Closure
-    callback: function innerTimeout1()
+    callback: innerTimeout1()
     makeClosureLocalVar: "local.1"
     n: 1
     withScope: Object
@@ -70,7 +70,7 @@ WindowGlobal
 6) timeout1 async-callstack-scopes.html:42
 Scope variables sidebar pane:
 Local
-    innerTimeout1: function innerTimeout1()
+    innerTimeout1: innerTimeout1()
     localInTimeout1: "timeout1"
     this: Window
 WindowGlobal

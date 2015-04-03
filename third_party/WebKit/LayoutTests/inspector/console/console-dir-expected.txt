@@ -38,7 +38,7 @@ console-dir.html:24 function () {}
     length: 0
     name: ""
     prototype: Object
-    __proto__: function Empty() {}
+    __proto__: Empty() {}
     <function scope>
         Global: Window
 console-dir.html:28 outer.inner
@@ -54,7 +54,7 @@ console-dir.html:34 function __proto__() { [native code] }
     caller: null
     length: 0
     name: "__proto__"
-    __proto__: function Empty() {}
+    __proto__: Empty() {}
     <function scope>
         No Scopes
 console-dir.html:39 Uint8Array[400000000]
