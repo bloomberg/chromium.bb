@@ -82,3 +82,6 @@ SafeBrowsingModuleVerifierWinTest.VerifyModuleUnmodified
 
 # http://crbug.com/467004
 SigninErrorNotifierTest.NoErrorAuthStatusProviders
+
+# http://crbug.com/473689
+ManagePasswordsBubbleModelTest.CloseWithoutLogging
