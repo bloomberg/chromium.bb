@@ -13,6 +13,8 @@ source_set("core") {
     "article_distillation_update.h",
     "article_entry.cc",
     "article_entry.h",
+    "distillable_page_detector.cc",
+    "distillable_page_detector.h",
     "distilled_content_store.cc",
     "distilled_content_store.h",
     "distilled_page_prefs.cc",

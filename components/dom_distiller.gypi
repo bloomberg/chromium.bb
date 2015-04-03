@@ -17,8 +17,8 @@
         '../url/url.gyp:url_lib',
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
-        'distilled_page_proto',
         'dom_distiller_core',
+        'dom_distiller_protos',
       ],
       'include_dirs': [
         '..',
@@ -44,14 +44,14 @@
         'components.gyp:leveldb_proto',
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
-        'distilled_page_proto',
+        'dom_distiller_protos',
         'pref_registry',
       ],
       'include_dirs': [
         '..',
       ],
       'export_dependent_settings': [
-        'distilled_page_proto',
+        'dom_distiller_protos',
         '../third_party/dom_distiller_js/dom_distiller_js.gyp:dom_distiller_js_proto',
       ],
       'sources': [
@@ -63,6 +63,8 @@
         'dom_distiller/core/article_distillation_update.h',
         'dom_distiller/core/article_entry.cc',
         'dom_distiller/core/article_entry.h',
+        'dom_distiller/core/distillable_page_detector.cc',
+        'dom_distiller/core/distillable_page_detector.h',
         'dom_distiller/core/distilled_content_store.cc',
         'dom_distiller/core/distilled_content_store.h',
         'dom_distiller/core/distilled_page_prefs.cc',
@@ -136,9 +138,10 @@
     },
     {
       # GN version: //components/dom_distiller/core/proto
-      'target_name': 'distilled_page_proto',
+      'target_name': 'dom_distiller_protos',
       'type': 'static_library',
       'sources': [
+        'dom_distiller/core/proto/adaboost.proto',
         'dom_distiller/core/proto/distilled_article.proto',
         'dom_distiller/core/proto/distilled_page.proto',
       ],
@@ -167,6 +170,7 @@
             'components_resources.gyp:components_resources',
             'components_strings.gyp:components_strings',
             'dom_distiller_core',
+            'dom_distiller_protos',
           ],
           'include_dirs': [
             '..',
@@ -189,7 +193,7 @@
           'type': 'static_library',
           'dependencies': [
             '../ios/provider/ios_provider_web.gyp:ios_provider_web',
-            'distilled_page_proto',
+            'dom_distiller_protos',
             'dom_distiller_core',
           ],
           'include_dirs': [

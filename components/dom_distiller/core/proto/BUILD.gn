@@ -4,9 +4,10 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-# GYP version: components/dom_distiller.gypi:distilled_page_proto
+# GYP version: components/dom_distiller.gypi:dom_distiller_protos
 proto_library("proto") {
   sources = [
+    "adaboost.proto",
     "distilled_article.proto",
     "distilled_page.proto",
   ]
