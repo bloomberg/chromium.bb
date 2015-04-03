@@ -1506,6 +1506,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </if>
 
       <!-- App menu -->
+      <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
+        Software incompatibility: Learn more
+      </message>
       <if expr="chromeos">
         <message name="IDS_TOGGLE_REQUEST_TABLET_SITE" desc="The toggle to request tablet site on a touch dev.">
           Request tablet site
@@ -1548,11 +1551,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_HELP_MENU" desc="The text label of the Help sub-menu item">
           H&amp;elp
         </message>
-        <if expr="is_win">
-          <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
-            Software incompatibility: Learn more
-          </message>
-        </if>
         <message name="IDS_EXIT" desc="The text label of the Exit menu item">
           E&amp;xit
         </message>

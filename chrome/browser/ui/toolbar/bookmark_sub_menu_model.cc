@@ -20,11 +20,6 @@ BookmarkSubMenuModel::BookmarkSubMenuModel(
 BookmarkSubMenuModel::~BookmarkSubMenuModel() {}
 
 void BookmarkSubMenuModel::Build(Browser* browser) {
-  AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR, IDS_SHOW_BOOKMARK_BAR);
-  AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
-#if !defined(OS_CHROMEOS)
-  AddItemWithStringId(IDC_IMPORT_SETTINGS, IDS_IMPORT_SETTINGS_MENU_LABEL);
-#endif
   bool is_submenu_visible =
       delegate()->IsCommandIdVisible(IDC_BOOKMARK_PAGE) ||
       delegate()->IsCommandIdVisible(IDC_BOOKMARK_ALL_TABS);
@@ -32,17 +27,19 @@ void BookmarkSubMenuModel::Build(Browser* browser) {
   is_submenu_visible |=
       delegate()->IsCommandIdVisible(IDC_PIN_TO_START_SCREEN);
 #endif
-  if (is_submenu_visible) {
-    AddSeparator(ui::NORMAL_SEPARATOR);
 
+  if (is_submenu_visible) {
     AddItemWithStringId(IDC_BOOKMARK_PAGE, IDS_BOOKMARK_THIS_PAGE);
     AddItemWithStringId(IDC_BOOKMARK_ALL_TABS, IDS_BOOKMARK_OPEN_PAGES);
 
 #if defined(OS_WIN)
     AddItemWithStringId(IDC_PIN_TO_START_SCREEN, IDS_PIN_TO_START_SCREEN);
 #endif
+    AddSeparator(ui::NORMAL_SEPARATOR);
   }
-#if defined(OS_MACOSX)
-  AddSeparator(ui::NORMAL_SEPARATOR);
+  AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR, IDS_SHOW_BOOKMARK_BAR);
+  AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
+#if !defined(OS_CHROMEOS)
+  AddItemWithStringId(IDC_IMPORT_SETTINGS, IDS_IMPORT_SETTINGS_MENU_LABEL);
 #endif
 }

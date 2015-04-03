@@ -184,7 +184,10 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   void Build();
 
-  void AddGlobalErrorMenuItems();
+  // Adds actionable global error menu items to the menu.
+  // Examples: Extension permissions and sign in errors.
+  // Returns a boolean indicating whether any menu items were added.
+  bool AddGlobalErrorMenuItems();
 
   // Appends everything needed for the clipboard menu: a menu break, the
   // clipboard menu content and the finalizing menu break.
