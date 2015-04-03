@@ -59,6 +59,7 @@ class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
   virtual ~InstrumentedGaiaCookieManagerService() { total--; }
 
   MOCK_METHOD0(StartFetching, void());
+  MOCK_METHOD0(StartFetchingMergeSession, void());
   MOCK_METHOD0(StartLogOutUrlFetch, void());
 
  private:
@@ -154,6 +155,60 @@ TEST_F(GaiaCookieManagerServiceTest, FailedMergeSession) {
 
   helper.AddAccountToCookie("acc1@gmail.com");
   SimulateMergeSessionFailure(&helper, error());
+  // Persistent error incurs no further retries.
+  DCHECK(!helper.is_running());
+}
+
+TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+  EXPECT_CALL(helper, StartFetching());
+  EXPECT_CALL(helper, StartFetchingMergeSession());
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      no_error()));
+
+  helper.AddAccountToCookie("acc1@gmail.com");
+  SimulateMergeSessionFailure(&helper, canceled());
+  DCHECK(helper.is_running());
+  // Transient error incurs a retry after 1 second.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(1100));
+  base::MessageLoop::current()->Run();
+  SimulateMergeSessionSuccess(&helper, "token");
+  DCHECK(!helper.is_running());
+}
+
+TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+  EXPECT_CALL(helper, StartFetching());
+  EXPECT_CALL(helper, StartFetchingMergeSession()).Times(2);
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      no_error()));
+
+  helper.AddAccountToCookie("acc1@gmail.com");
+  SimulateMergeSessionFailure(&helper, canceled());
+  DCHECK(helper.is_running());
+  // Transient error incurs a retry after 1 second.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(1100));
+  base::MessageLoop::current()->Run();
+  SimulateMergeSessionFailure(&helper, canceled());
+  DCHECK(helper.is_running());
+  // Next transient error incurs a retry after 3 seconds.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(3100));
+  base::MessageLoop::current()->Run();
+  SimulateMergeSessionSuccess(&helper, "token");
+  DCHECK(!helper.is_running());
 }
 
 TEST_F(GaiaCookieManagerServiceTest, FailedUbertoken) {

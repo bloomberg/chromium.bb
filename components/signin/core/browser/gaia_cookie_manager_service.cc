@@ -22,6 +22,47 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+
+namespace {
+
+// In case of an error while fetching using the GaiaAuthFetcher, retry with
+// exponential backoff. Try up to 7 times within 15 minutes.
+const net::BackoffEntry::Policy kBackoffPolicy = {
+  // Number of initial errors (in sequence) to ignore before applying
+  // exponential back-off rules.
+  0,
+
+  // Initial delay for exponential backoff in ms.
+  1000,
+
+  // Factor by which the waiting time will be multiplied.
+  3,
+
+  // Fuzzing percentage. ex: 10% will spread requests randomly
+  // between 90%-100% of the calculated time.
+  0.2, // 20%
+
+  // Maximum amount of time we are willing to delay our request in ms.
+  1000 * 60 * 60 * 4, // 15 minutes.
+
+  // Time to keep an entry from being discarded even when it
+  // has no significant state, -1 to never discard.
+  -1,
+
+  // Don't use initial delay unless the last request was an error.
+  false,
+};
+
+const int kMaxGaiaAuthFetcherRetries = 8;
+
+bool IsTransientError(const GoogleServiceAuthError& error) {
+  return error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
+      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
+      error.state() == GoogleServiceAuthError::REQUEST_CANCELED;
+}
+
+}  // namespace
+
 GaiaCookieManagerService::ExternalCcResultFetcher::ExternalCcResultFetcher(
     GaiaCookieManagerService* helper)
     : helper_(helper) {
@@ -187,6 +228,8 @@ GaiaCookieManagerService::GaiaCookieManagerService(
     : token_service_(token_service),
       signin_client_(signin_client),
       external_cc_result_fetcher_(this),
+      gaia_auth_fetcher_backoff_(&kBackoffPolicy),
+      gaia_auth_fetcher_retries_(0),
       source_(source) {
 }
 
@@ -217,6 +260,7 @@ void GaiaCookieManagerService::CancelAll() {
   gaia_auth_fetcher_.reset();
   uber_token_fetcher_.reset();
   accounts_.clear();
+  gaia_auth_fetcher_timer_.Stop();
 }
 
 void GaiaCookieManagerService::LogOut(
@@ -302,14 +346,9 @@ void GaiaCookieManagerService::OnUbertokenSuccess(
     const std::string& uber_token) {
   VLOG(1) << "GaiaCookieManagerService::OnUbertokenSuccess"
           << " account=" << accounts_.front();
-  gaia_auth_fetcher_.reset(
-      new GaiaAuthFetcher(this, source_,
-                          signin_client_->GetURLRequestContext()));
-
-  // It's possible that not all external checks have completed.
-  // GetExternalCcResult() returns results for those that have.
-  gaia_auth_fetcher_->StartMergeSession(uber_token,
-      external_cc_result_fetcher_.GetExternalCcResult());
+  gaia_auth_fetcher_retries_ = 0;
+  uber_token_ = uber_token;
+  StartFetchingMergeSession();
 }
 
 void GaiaCookieManagerService::OnUbertokenFailure(
@@ -326,12 +365,27 @@ void GaiaCookieManagerService::OnMergeSessionSuccess(const std::string& data) {
   const std::string account_id = accounts_.front();
   HandleNextAccount();
   SignalComplete(account_id, GoogleServiceAuthError::AuthErrorNone());
+
+  gaia_auth_fetcher_backoff_.InformOfRequest(true);
+  uber_token_ = std::string();
 }
 
 void GaiaCookieManagerService::OnMergeSessionFailure(
     const GoogleServiceAuthError& error) {
   VLOG(1) << "Failed MergeSession"
-          << " account=" << accounts_.front() << " error=" << error.ToString();
+          << " account=" << accounts_.front() << " error=" << error.ToString()
+          << " on retry=" << gaia_auth_fetcher_retries_;
+
+  if (++gaia_auth_fetcher_retries_ < kMaxGaiaAuthFetcherRetries &&
+      IsTransientError(error)) {
+    gaia_auth_fetcher_backoff_.InformOfRequest(false);
+    gaia_auth_fetcher_timer_.Start(
+        FROM_HERE, gaia_auth_fetcher_backoff_.GetTimeUntilRelease(), this,
+        &GaiaCookieManagerService::StartFetchingMergeSession);
+    return;
+  }
+
+  uber_token_ = std::string();
   const std::string account_id = accounts_.front();
   HandleNextAccount();
   SignalComplete(account_id, error);
@@ -344,6 +398,18 @@ void GaiaCookieManagerService::StartFetching() {
       new UbertokenFetcher(token_service_, this, source_,
                            signin_client_->GetURLRequestContext()));
   uber_token_fetcher_->StartFetchingToken(accounts_.front());
+}
+
+void GaiaCookieManagerService::StartFetchingMergeSession() {
+  DCHECK(!uber_token_.empty());
+  gaia_auth_fetcher_.reset(
+      new GaiaAuthFetcher(this, source_,
+                          signin_client_->GetURLRequestContext()));
+
+  // It's possible that not all external checks have completed.
+  // GetExternalCcResult() returns results for those that have.
+  gaia_auth_fetcher_->StartMergeSession(uber_token_,
+      external_cc_result_fetcher_.GetExternalCcResult());
 }
 
 void GaiaCookieManagerService::OnURLFetchComplete(

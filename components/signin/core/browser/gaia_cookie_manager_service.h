@@ -12,6 +12,7 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
+#include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GaiaAuthFetcher;
@@ -169,9 +170,12 @@ class GaiaCookieManagerService : public KeyedService,
   void LogOutInternal(const std::string& account_id,
                       const std::vector<std::string>& accounts);
 
-  // Starts the proess of fetching the uber token and performing a merge session
-  // for the next account.  Virtual so that it can be overriden in tests.
+  // Starts the process of fetching the uber token and then performing a merge
+  // session for the next account. Virtual so that it can be overriden in tests.
   virtual void StartFetching();
+
+  // Virtual for testing purposes.
+  virtual void StartFetchingMergeSession();
 
   // Virtual for testing purpose.
   virtual void StartLogOutUrlFetch();
@@ -187,6 +191,14 @@ class GaiaCookieManagerService : public KeyedService,
   scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   scoped_ptr<UbertokenFetcher> uber_token_fetcher_;
   ExternalCcResultFetcher external_cc_result_fetcher_;
+
+  // If the GaiaAuthFetcher fails, retry with exponential backoff.
+  net::BackoffEntry gaia_auth_fetcher_backoff_;
+  base::OneShotTimer<GaiaCookieManagerService> gaia_auth_fetcher_timer_;
+  int gaia_auth_fetcher_retries_;
+
+  // The last fetched ubertoken, for use in MergeSession retries.
+  std::string uber_token_;
 
   // A worklist for this class. Accounts names are stored here if
   // we are pending a signin action for that account. Empty strings
