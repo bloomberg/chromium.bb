@@ -20,6 +20,7 @@ Usage:
   $ gcl commit <change>
 """
 
+import collections
 import logging
 import os
 import shutil
@@ -43,48 +44,36 @@ def _ReportValueError(error_string):
 
 
 class BuildUpdater(object):
+  # Remove a platform name from this list to disable updating it.
   _REF_BUILD_PLATFORMS = ['Mac', 'Win', 'Linux', 'Linux_x64']
-  _OMAHA_PLATFORMS = ['mac', 'linux', 'win']
+
   # Omaha is Chrome's autoupdate server. It reports the current versions used
   # by each platform on each channel.
+  _OMAHA_PLATFORMS = ['mac', 'linux', 'win']
 
-  # Map of platform names to omaha platform names.
-  _OMAHA_PLATFORM_MAP = {
-    'Mac': 'mac',
-    'Win': 'win',
-    'Linux': 'linux',
-    'Linux_x64': 'linux'
-  }
-
-  _CHROME_PLATFORM_FILES_MAP = {
-      'Win': [
-          'chrome-win.zip',
-      ],
-      'Mac': [
-          'chrome-mac.zip',
-      ],
-      'Linux': [
-          'chrome-precise32.zip',
-      ],
-      'Linux_x64': [
-          'chrome-precise64.zip',
-      ],
-  }
-
-  # Map of platform names to gs:// Chrome build names.
-  _BUILD_PLATFORM_MAP = {
-      'Linux': 'precise32',
-      'Linux_x64': 'precise64',
-      'Win': 'win',
-      'Mac': 'mac',
-  }
-
-  _PLATFORM_DEST_MAP = {
-      'Linux': 'chrome_linux',
-      'Linux_x64': 'chrome_linux64',
-      'Win': 'chrome_win',
-      'Mac': 'chrome_mac',
-  }
+  # All of the information we need to update each platform.
+  #   omaha: name omaha uses for the plaftorms.
+  #   zip_name: name of the zip file to be retrieved from cloud storage.
+  #   gs_build: name of the Chrome build platform used in cloud storage.
+  #   destination: Name of the folder to download the reference build to.
+  UpdateInfo = collections.namedtuple('UpdateInfo',
+      'omaha, gs_build, zip_name, destination')
+  _PLATFORM_MAP = { 'Mac': UpdateInfo(omaha='mac',
+                                      gs_build='mac',
+                                      zip_name='chrome-mac.zip',
+                                      destination='chrome_mac'),
+                    'Win': UpdateInfo(omaha='win',
+                                      gs_build='win',
+                                      zip_name='chrome-win.zip',
+                                      destination='chrome_win'),
+                    'Linux': UpdateInfo(omaha='linux',
+                                        gs_build='precise32',
+                                        zip_name='chrome-precise32.zip',
+                                        destination='chrome_linux'),
+                    'Linux_x64': UpdateInfo(omaha='linux',
+                                            gs_build='precise64',
+                                            zip_name='chrome-precise65.zip',
+                                            destination='chrome_linux64')}
 
   def __init__(self):
     stable_versions = self._StableVersionsMap()
@@ -100,7 +89,7 @@ class BuildUpdater(object):
     omaha_versions_map = cls._OmahaVersionsMap()
     versions_map = {}
     for platform in cls._REF_BUILD_PLATFORMS:
-      omaha_platform = cls._OMAHA_PLATFORM_MAP[platform]
+      omaha_platform = cls._PLATFORM_MAP[platform].omaha
       if omaha_platform in omaha_versions_map:
         versions_map[platform] = omaha_versions_map[omaha_platform]
     return versions_map
@@ -135,7 +124,7 @@ class BuildUpdater(object):
   def _CurrentRefBuildsMap(cls):
     #TODO(aiolos): Add logic for pulling the current reference build versions.
     # Return an empty dictionary to force an update until we store the builds in
-    # cloud storage.
+    # in cloud storage.
     return {}
 
   @staticmethod
@@ -165,7 +154,7 @@ class BuildUpdater(object):
     """Returns the URL for fetching one file.
 
     Args:
-      platform: Platform name, must be a key in |self._BUILD_PLATFORM_MAP|.
+      platform: Platform name, must be a key in |self._PLATFORM_MAP|.
       version: A Chrome version number, e.g. 30.0.1600.1.
       filename: Name of the file to fetch.
 
@@ -173,7 +162,7 @@ class BuildUpdater(object):
       The URL for fetching a file. This may be a GS or HTTP URL.
     """
     return CHROME_GS_URL_FMT % (
-        version, self._BUILD_PLATFORM_MAP[platform], filename)
+        version, self._PLATFORM_MAP[platform].gs_build, filename)
 
   def _FindBuildVersion(self, platform, version, filename):
     """Searches for a version where a filename can be found.
@@ -211,8 +200,8 @@ class BuildUpdater(object):
     return not exit_code
 
   def _GetPlatformFiles(self, platform):
-    """Returns a list of filenames to fetch for the given platform."""
-    return BuildUpdater._CHROME_PLATFORM_FILES_MAP[platform]
+    """Returns the name of the zip file to fetch for |platform|."""
+    return BuildUpdater._PLATFORM_MAP[platform].zip_name
 
   def _DownloadBuilds(self):
     for platform in self._platform_to_version_map:
@@ -297,8 +286,9 @@ class BuildUpdater(object):
     for platform in self._platform_to_version_map:
       if os.path.exists('tmp_unzip'):
         os.path.unlink('tmp_unzip')
-      dest_dir = os.path.join('reference_builds', 'reference_builds',
-                              BuildUpdater._PLATFORM_DEST_MAP[platform])
+      dest_dir = os.path.join(
+          'reference_builds', 'reference_builds',
+          BuildUpdater._PLATFORM_MAP[platform].destination)
       self._ClearDir(dest_dir)
       for root, _, dl_files in os.walk(os.path.join('dl', platform)):
         for dl_file in dl_files:
