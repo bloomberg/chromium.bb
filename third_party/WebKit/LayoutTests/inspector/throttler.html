@@ -135,6 +135,20 @@ function test()
                 throttler.schedule(nextProcess, false);
             }
         },
+
+        function testExceptionFromProcess(next)
+        {
+            var process = ProcessMock.create("operation #1", processBody);
+            throttler.schedule(process);
+            timeoutMock.fireAllTimers();
+            assertThrottlerIdle();
+            next();
+
+            function processBody()
+            {
+                throw new Error("Exception during process execution.");
+            }
+        }
     ]);
 
     function throttlerToRunningState()
