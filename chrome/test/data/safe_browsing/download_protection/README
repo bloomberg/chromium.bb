@@ -15,6 +15,9 @@ signtool sign /f test.pfx /p password signed.exe
 
 wow_helper.exe: Signed Google Chrome binary from an official build.
 
+signed_twice.exe: A copy of signed.exe with a bogus hand-crafted second
+attribute certificate entry.
+
 The various zipfile*.zip files, used by the SandboxedZipAnalyzerTest, were
 generated with the following commands:
 - zip zipfile_no_binaries.zip simple_exe.cc
