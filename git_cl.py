@@ -1575,7 +1575,8 @@ def CMDdescription(parser, args):
     DieWithError('This branch has no associated changelist.')
   description = ChangeDescription(cl.GetDescription())
   description.prompt()
-  cl.UpdateDescription(description.description)
+  if cl.GetDescription() != description.description:
+    cl.UpdateDescription(description.description)
   return 0
 
 
