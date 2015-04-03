@@ -108,7 +108,7 @@ newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
 
       docURI = newDoc.documentURI;
 
-      assertEquals("documentsetdocumenturi03","about:blank",docURI);
+      assertEquals("documentsetdocumenturi03","somestring",docURI);
 
 }
 

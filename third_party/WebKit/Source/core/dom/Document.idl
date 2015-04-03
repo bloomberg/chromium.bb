@@ -31,7 +31,8 @@ enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
 interface Document : Node {
     [SameObject] readonly attribute DOMImplementation implementation;
     readonly attribute DOMString URL;
-    [ImplementedAs=url, MeasureAs=DocumentURI] readonly attribute DOMString documentURI;
+    // FIXME: documentURI should not be nullable.
+    [ImplementedAs=url] readonly attribute DOMString? documentURI;
     readonly attribute DOMString origin;
     readonly attribute DOMString compatMode;
     // FIXME: characterSet should not be nullable.

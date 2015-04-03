@@ -57,6 +57,7 @@ public:
 
     bool hasSecurityContext() const { return frameForSecurityContext(); }
     bool shouldTreatURLAsSrcdocDocument() const;
+    bool shouldSetURL() const;
     bool isSeamlessAllowedFor(Document* child) const;
     bool shouldReuseDefaultView() const { return m_shouldReuseDefaultView; }
     SandboxFlags sandboxFlags() const;

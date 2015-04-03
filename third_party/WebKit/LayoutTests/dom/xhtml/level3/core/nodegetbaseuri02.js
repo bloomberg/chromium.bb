@@ -105,7 +105,7 @@ function nodegetbaseuri02() {
 newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
       baseURI = newDoc.baseURI;
 
-      assertEquals("baseURIIsNull", "about:blank", baseURI);
+      assertNull("baseURIIsNull",baseURI);
     newDoc.documentURI = "http://www.example.com/sample.xml";
 
       baseURI = newDoc.baseURI;

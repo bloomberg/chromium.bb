@@ -1,3 +1,3 @@
 Test	http://www.w3.org/2001/DOM-Test-Suite/level3/core/nodegetbaseuri02
-Status	failure
-Message	baseURISameAsDocURI: assertEquals failed, actual about:blank, expected http://www.example.com/sample.xml.
+Status	error
+Message	Line undefined: TypeError
