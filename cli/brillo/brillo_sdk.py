@@ -25,6 +25,10 @@ from chromite.lib import workspace_lib
 
 _BRILLO_SDK_NO_UPDATE = 'BRILLO_SDK_NO_UPDATE'
 
+# To fake the repo command into accepting a simple manifest, we
+# have to put that manifest into a git repository. This is the
+# name of that repo.
+_BRILLO_SDK_LOCAL_MANIFEST_REPO = '.local_manifest_repo'
 
 def _ResolveLatest(gs_ctx):
   """Find the 'latest' SDK release."""
@@ -80,13 +84,14 @@ def _UpdateSdk(gs_ctx, sdk_dir, version):
                                 '%s.xml' % version)
     gs_ctx.Copy(manifest_url, manifest.name)
 
-    with osutils.TempDir() as manifest_git_dir:
-      # Convert manifest into a git repository for the repo command.
-      repository.PrepManifestForRepo(manifest_git_dir, manifest.name)
+    manifest_git_dir = os.path.join(sdk_dir, _BRILLO_SDK_LOCAL_MANIFEST_REPO)
 
-      # Fetch the SDK.
-      repo = repository.RepoRepository(manifest_git_dir, sdk_dir, depth=1)
-      repo.Sync()
+    # Convert manifest into a git repository for the repo command.
+    repository.PrepManifestForRepo(manifest_git_dir, manifest.name)
+
+    # Fetch the SDK.
+    repo = repository.RepoRepository(manifest_git_dir, sdk_dir, depth=1)
+    repo.Sync()
 
   # TODO(dgarrett): Embed this step into the manifest itself.
   # Write out the SDK Version.

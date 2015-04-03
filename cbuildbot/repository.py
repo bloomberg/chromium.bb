@@ -152,14 +152,17 @@ def PrepManifestForRepo(git_repo, manifest):
     manifest: Path to existing manifest file to copy into the new git
               repository.
   """
-  git.Init(git_repo)
+  if not git.IsGitRepo(git_repo):
+    git.Init(git_repo)
 
   new_manifest = os.path.join(git_repo, constants.DEFAULT_MANIFEST)
 
   shutil.copyfile(manifest, new_manifest)
   git.AddPath(new_manifest)
   message = 'Local repository holding: %s' % manifest
-  git.Commit(git_repo, message)
+
+  # Commit new manifest. allow_empty in case it's the same as last manifest.
+  git.Commit(git_repo, message, allow_empty=True)
 
 
 class RepoRepository(object):
