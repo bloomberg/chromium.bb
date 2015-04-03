@@ -297,6 +297,22 @@ const Experiment::Choice kNumRasterThreadsChoices[] = {
   { IDS_FLAGS_NUM_RASTER_THREADS_FOUR, switches::kNumRasterThreads, "4" }
 };
 
+const Experiment::Choice kGpuRasterizationMSAASampleCountChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT,
+    "",
+    "" },
+  { IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_ZERO,
+    switches::kGpuRasterizationMSAASampleCount, "0" },
+  { IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_TWO,
+    switches::kGpuRasterizationMSAASampleCount, "2" },
+  { IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_FOUR,
+    switches::kGpuRasterizationMSAASampleCount, "4" },
+  { IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_EIGHT,
+    switches::kGpuRasterizationMSAASampleCount, "8" },
+  { IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_SIXTEEN,
+    switches::kGpuRasterizationMSAASampleCount, "16" },
+};
+
 const Experiment::Choice kEnableGpuRasterizationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -770,6 +786,13 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(
         switches::kEnableThreadedGpuRasterization,
         switches::kDisableThreadedGpuRasterization)
+  },
+  {
+    "gpu-rasterization-msaa-sample-count",
+    IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_NAME,
+    IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kGpuRasterizationMSAASampleCountChoices)
   },
   {
     "enable-slimming-paint",

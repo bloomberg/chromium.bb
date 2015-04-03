@@ -53783,6 +53783,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1692384483" label="disambiguate-autofill-server-name-types"/>
   <int value="-1691668194" label="enable-new-bookmark-apps"/>
   <int value="-1662447331" label="wake-on-packets"/>
+  <int value="-1660972490" label="gpu-rasterization-msaa-sample-count"/>
   <int value="-1654344175" label="disable-extension-info-dialog"/>
   <int value="-1630419335" label="enable-download-notification"/>
   <int value="-1619757314" label="touch-scrolling-mode"/>

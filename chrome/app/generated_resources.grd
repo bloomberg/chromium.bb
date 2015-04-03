@@ -6267,6 +6267,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_THREADED_GPU_RASTERIZATION_DESCRIPTION" desc="Description for the flag to enable threaded GPU rasterizer.">
         Use secondary thread for GPU rasterization of web content. Requires GPU rasterization to be enabled.
       </message>
+      <message name="IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_NAME" desc="Name of about:flags option for number of GPU rasterization MSAA samples.">
+        GPU rasterization MSAA sample count.
+      </message>
+      <message name="IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_DESCRIPTION" desc="Description of about:flags option for number of GPU rasterization MSAA samples.">
+        Specify the number of MSAA samples for GPU rasterization.
+      </message>
+      <message name="IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_ZERO" desc="">
+        0
+      </message>
+      <message name="IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_TWO" desc="">
+        2
+      </message>
+      <message name="IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_FOUR" desc="">
+        4
+      </message>
+      <message name="IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_EIGHT" desc="">
+        8
+      </message>
+      <message name="IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_SIXTEEN" desc="">
+        16
+      </message>
       <message name="IDS_FLAGS_ENABLE_SLIMMING_PAINT_NAME" desc="Title for the flag to enable slimming paint.">
         Enable slimming paint.
       </message>
