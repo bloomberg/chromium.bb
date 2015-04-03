@@ -100,6 +100,14 @@ bool CanQueryForResources(int fd) {
   return !drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &resources);
 }
 
+bool Authenticate(int fd) {
+  drm_magic_t magic;
+  memset(&magic, 0, sizeof(magic));
+  // We need to make sure the DRM device has enough privilege. Use the DRM
+  // authentication logic to figure out if the device has enough permissions.
+  return !drmGetMagic(fd, &magic) && !drmAuthMagic(fd, magic);
+}
+
 }  // namespace
 
 class DrmDevice::IOWatcher
@@ -202,6 +210,26 @@ bool DrmDevice::Initialize() {
     VLOG(2) << "Cannot query for resources for '" << device_path_.value()
             << "'";
     return false;
+  }
+
+  bool print_warning = true;
+  // TODO(dnicoara) Ugly hack to block until getting master. This is needed
+  // since DRM devices from an old GPU process may be getting deallocated while
+  // the new GPU process tries to take them.
+  // Move ownership of devices in the Browser process and just have the GPU
+  // processes authenticate.
+  while (!Authenticate(file_.GetPlatformFile())) {
+    PLOG_IF(WARNING, print_warning) << "Failed to take master on "
+                                    << device_path_.value();
+    print_warning = false;
+
+    usleep(100000);
+    file_ =
+        base::File(device_path_, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                     base::File::FLAG_WRITE);
+    LOG_IF(FATAL, !file_.IsValid())
+        << "Failed to open '" << device_path_.value()
+        << "': " << base::File::ErrorToString(file_.error_details());
   }
 
 #if defined(USE_DRM_ATOMIC)
