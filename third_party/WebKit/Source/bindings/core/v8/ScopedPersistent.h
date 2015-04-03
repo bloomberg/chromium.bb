@@ -47,6 +47,13 @@ public:
     {
     }
 
+    ScopedPersistent(v8::Isolate* isolate, v8::MaybeLocal<T> maybe)
+    {
+        v8::Local<T> local;
+        if (maybe.ToLocal(&local))
+            m_handle.Reset(isolate, local);
+    }
+
     ~ScopedPersistent()
     {
         clear();

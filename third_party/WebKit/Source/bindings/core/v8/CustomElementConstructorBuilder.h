@@ -77,12 +77,12 @@ public:
 private:
     bool hasValidPrototypeChainFor(const WrapperTypeInfo*) const;
     bool prototypeIsValid(const AtomicString& type, ExceptionState&) const;
-    v8::Handle<v8::Function> retrieveCallback(v8::Isolate*, const char* name);
+    v8::MaybeLocal<v8::Function> retrieveCallback(const char* name);
 
     RefPtr<ScriptState> m_scriptState;
     const ElementRegistrationOptions& m_options;
-    v8::Handle<v8::Object> m_prototype;
-    v8::Handle<v8::Function> m_constructor;
+    v8::Local<v8::Object> m_prototype;
+    v8::Local<v8::Function> m_constructor;
     RefPtrWillBeMember<V8CustomElementLifecycleCallbacks> m_callbacks;
 };
 

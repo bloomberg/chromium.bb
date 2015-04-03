@@ -49,7 +49,7 @@ class V8PerContextData;
 class V8CustomElementLifecycleCallbacks final : public CustomElementLifecycleCallbacks, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8CustomElementLifecycleCallbacks);
 public:
-    static PassRefPtrWillBeRawPtr<V8CustomElementLifecycleCallbacks> create(ScriptState*, v8::Local<v8::Object> prototype, v8::Local<v8::Function> created, v8::Local<v8::Function> attached, v8::Local<v8::Function> detached, v8::Local<v8::Function> attributeChanged);
+    static PassRefPtrWillBeRawPtr<V8CustomElementLifecycleCallbacks> create(ScriptState*, v8::Local<v8::Object> prototype, v8::MaybeLocal<v8::Function> created, v8::MaybeLocal<v8::Function> attached, v8::MaybeLocal<v8::Function> detached, v8::MaybeLocal<v8::Function> attributeChanged);
 
     virtual ~V8CustomElementLifecycleCallbacks();
 
@@ -58,7 +58,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    V8CustomElementLifecycleCallbacks(ScriptState*, v8::Local<v8::Object> prototype, v8::Local<v8::Function> created, v8::Local<v8::Function> attached, v8::Local<v8::Function> detached, v8::Local<v8::Function> attributeChanged);
+    V8CustomElementLifecycleCallbacks(ScriptState*, v8::Local<v8::Object> prototype, v8::MaybeLocal<v8::Function> created, v8::MaybeLocal<v8::Function> attached, v8::MaybeLocal<v8::Function> detached, v8::MaybeLocal<v8::Function> attributeChanged);
 
     virtual void created(Element*) override;
     virtual void attached(Element*) override;
