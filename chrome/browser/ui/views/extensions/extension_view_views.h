@@ -73,6 +73,7 @@ class ExtensionViewViews : public views::NativeViewHost,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void PreferredSizeChanged() override;
   void OnFocus() override;
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
 
   // Initializes the RenderWidgetHostView for this object.
   void CreateWidgetHostView();

@@ -153,6 +153,10 @@ void ExtensionViewViews::OnFocus() {
   host()->host_contents()->Focus();
 }
 
+void ExtensionViewViews::AboutToRequestFocusFromTabTraversal(bool reverse) {
+  host()->host_contents()->FocusThroughTabTraversal(reverse);
+}
+
 void ExtensionViewViews::CreateWidgetHostView() {
   DCHECK(!initialized_);
   initialized_ = true;

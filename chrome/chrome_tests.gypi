@@ -1025,6 +1025,7 @@
       'browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h',
       'browser/ui/views/certificate_selector_browsertest.cc',
       'browser/ui/views/constrained_window_views_browsertest.cc',
+      'browser/ui/views/extensions/extension_dialog_interactive_uitest.cc',
       'browser/ui/views/find_bar_controller_interactive_uitest.cc',
       'browser/ui/views/find_bar_host_interactive_uitest.cc',
       'browser/ui/views/frame/browser_view_focus_uitest.cc',
