@@ -45,9 +45,7 @@ bool MessagePipeReader::Send(scoped_ptr<Message> message) {
   message->TraceMessageBegin();
   std::vector<MojoHandle> handles;
   MojoResult result = MOJO_RESULT_OK;
-#if defined(OS_POSIX) && !defined(OS_NACL)
   result = ChannelMojo::ReadFromMessageAttachmentSet(message.get(), &handles);
-#endif
   if (result == MOJO_RESULT_OK) {
     result = MojoWriteMessage(handle(),
                               message->data(),
@@ -72,16 +70,12 @@ void MessagePipeReader::OnMessageReceived() {
 
   std::vector<MojoHandle> handle_buffer;
   TakeHandleBuffer(&handle_buffer);
-#if defined(OS_POSIX) && !defined(OS_NACL)
   MojoResult write_result =
       ChannelMojo::WriteToMessageAttachmentSet(handle_buffer, &message);
   if (write_result != MOJO_RESULT_OK) {
     CloseWithError(write_result);
     return;
   }
-#else
-  DCHECK(handle_buffer.empty());
-#endif
 
   message.TraceMessageEnd();
   delegate_->OnMessageReceived(message);
