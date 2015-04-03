@@ -1402,7 +1402,8 @@ TEST_F(PasswordFormManagerTest,
   credentials.password_value = saved_match()->password_value;
   credentials.new_password_value = ASCIIToUTF16("NewPassword");
 
-  EXPECT_FALSE(manager.IsIgnorableChangePasswordForm(credentials));
+  manager.SetSubmittedForm(credentials);
+  EXPECT_FALSE(manager.is_ignorable_change_password_form());
 }
 
 TEST_F(PasswordFormManagerTest,
@@ -1422,7 +1423,8 @@ TEST_F(PasswordFormManagerTest,
   saved_match()->new_password_element =
       base::ASCIIToUTF16("new_password_field");
   saved_match()->new_password_value = base::ASCIIToUTF16("new_pwd");
-  EXPECT_TRUE(manager.IsIgnorableChangePasswordForm(*saved_match()));
+  manager.SetSubmittedForm(*saved_match());
+  EXPECT_TRUE(manager.is_ignorable_change_password_form());
 }
 
 TEST_F(PasswordFormManagerTest,
@@ -1442,7 +1444,8 @@ TEST_F(PasswordFormManagerTest,
   saved_match()->new_password_element =
       base::ASCIIToUTF16("new_password_field");
   saved_match()->new_password_value = base::ASCIIToUTF16("new_pwd");
-  EXPECT_TRUE(manager.IsIgnorableChangePasswordForm(*saved_match()));
+  manager.SetSubmittedForm(*saved_match());
+  EXPECT_TRUE(manager.is_ignorable_change_password_form());
 }
 
 TEST_F(PasswordFormManagerTest, PasswordToSave_NoElements) {

@@ -241,7 +241,9 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     if (result == PasswordFormManager::RESULT_NO_MATCH)
       continue;
 
-    if ((*iter)->IsIgnorableChangePasswordForm(form)) {
+    (*iter)->SetSubmittedForm(form);
+
+    if ((*iter)->is_ignorable_change_password_form()) {
       if (logger)
         logger->LogMessage(Logger::STRING_CHANGE_PASSWORD_FORM);
       continue;

@@ -96,11 +96,13 @@ PasswordFormManager::PasswordFormManager(
       has_generated_password_(false),
       password_manager_(password_manager),
       preferred_match_(nullptr),
+      is_ignorable_change_password_form_(false),
       state_(PRE_MATCHING_PHASE),
       client_(client),
       manager_action_(kManagerActionNone),
       user_action_(kUserActionNone),
-      submit_result_(kSubmitResultNotSubmitted) {
+      submit_result_(kSubmitResultNotSubmitted),
+      form_type_(kFormTypeUnspecified) {
   drivers_.push_back(driver);
   if (observed_form_.origin.is_valid())
     base::SplitString(observed_form_.origin.path(), '/', &form_path_tokens_);
@@ -111,6 +113,10 @@ PasswordFormManager::~PasswordFormManager() {
       "PasswordManager.ActionsTakenV3", GetActionsTaken(), kMaxNumActionsTaken);
   if (has_generated_password_ && submit_result_ == kSubmitResultNotSubmitted)
     LogPasswordGenerationSubmissionEvent(PASSWORD_NOT_SUBMITTED);
+  if (form_type_ != kFormTypeUnspecified) {
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedFormType", form_type_,
+                              kFormTypeMax);
+  }
 }
 
 int PasswordFormManager::GetActionsTaken() const {
@@ -415,13 +421,36 @@ bool PasswordFormManager::HasCompletedMatching() const {
   return state_ == POST_MATCHING_PHASE;
 }
 
-bool PasswordFormManager::IsIgnorableChangePasswordForm(
-    const PasswordForm& form) const {
+void PasswordFormManager::SetSubmittedForm(const autofill::PasswordForm& form) {
   bool is_change_password_form =
       !form.new_password_value.empty() && !form.password_value.empty();
-  return is_change_password_form && !form.username_marked_by_site &&
-         !DoesUsenameAndPasswordMatchCredentials(
-             form.username_value, form.password_value, best_matches_);
+  is_ignorable_change_password_form_ =
+      is_change_password_form && !form.username_marked_by_site &&
+      !DoesUsenameAndPasswordMatchCredentials(
+          form.username_value, form.password_value, best_matches_);
+  bool is_signup_form =
+      !form.new_password_value.empty() && form.password_value.empty();
+  bool no_username = form.username_element.empty();
+
+  if (form.layout == PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP) {
+    form_type_ = kFormTypeLoginAndSignup;
+  } else if (is_ignorable_change_password_form_) {
+    if (no_username)
+      form_type_ = kFormTypeChangePasswordNoUsername;
+    else
+      form_type_ = kFormTypeChangePasswordDisabled;
+  } else if (is_change_password_form) {
+    form_type_ = kFormTypeChangePasswordEnabled;
+  } else if (is_signup_form) {
+    if (no_username)
+      form_type_ = kFormTypeSignupNoUsername;
+    else
+      form_type_ = kFormTypeSignup;
+  } else if (no_username) {
+    form_type_ = kFormTypeLoginNoUsername;
+  } else {
+    form_type_ = kFormTypeLogin;
+  }
 }
 
 void PasswordFormManager::OnRequestDone(

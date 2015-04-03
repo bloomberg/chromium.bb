@@ -93,16 +93,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // the same thread!
   bool HasCompletedMatching() const;
 
-  // When attempting to provisionally save |form|, call this to check if it is
-  // actually a change-password form which should be ignored, i.e., whether:
-  // * the username was not explicitly marked with "autocomplete=username", and
-  // * both the current and new password fields are non-empty, and
-  // * the username and password do not match any credentials already stored.
-  // In these cases the username field is detection is unreliable (there might
-  // even be none), and the user should not be bothered with saving a
-  // potentially malformed credential. Once we handle change password forms
-  // correctly, this method should be replaced accordingly.
-  bool IsIgnorableChangePasswordForm(const autofill::PasswordForm& form) const;
+  // Update |this| with the |form| that was actually submitted. Used to
+  // determine what type the submitted form is for
+  // IsIgnorableChangePasswordForm() and UMA stats.
+  void SetSubmittedForm(const autofill::PasswordForm& form);
 
   // Determines if the user opted to 'never remember' passwords for this form.
   bool IsBlacklisted() const;
@@ -160,6 +154,22 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // These routines are used to update internal statistics ("ActionsTaken").
   void SubmitPassed();
   void SubmitFailed();
+
+  // When attempting to provisionally save |form|, call this to check if it is
+  // actually a change-password form which should be ignored, i.e., whether:
+  // * the username was not explicitly marked with "autocomplete=username", and
+  // * both the current and new password fields are non-empty, and
+  // * the username and password do not match any credentials already stored.
+  // In these cases the username field is detection is unreliable (there might
+  // even be none), and the user should not be bothered with saving a
+  // potentially malformed credential. Once we handle change password forms
+  // correctly, this method should be replaced accordingly.
+  //
+  // Must be called after SetSubmittedForm().
+  bool is_ignorable_change_password_form() const {
+    DCHECK(form_type_ != kFormTypeUnspecified);
+    return is_ignorable_change_password_form_;
+  }
 
   // Returns the username associated with the credentials.
   const base::string16& associated_username() const {
@@ -233,6 +243,21 @@ class PasswordFormManager : public PasswordStoreConsumer {
     kSubmitResultFailed,
     kSubmitResultPassed,
     kSubmitResultMax
+  };
+
+  // What the form is used for. kFormTypeUnspecified is only set before
+  // the SetSubmittedForm() is called, and should never be actually uploaded.
+  enum FormType {
+    kFormTypeLogin,
+    kFormTypeLoginNoUsername,
+    kFormTypeChangePasswordEnabled,
+    kFormTypeChangePasswordDisabled,
+    kFormTypeChangePasswordNoUsername,
+    kFormTypeSignup,
+    kFormTypeSignupNoUsername,
+    kFormTypeLoginAndSignup,
+    kFormTypeUnspecified,
+    kFormTypeMax
   };
 
   // The maximum number of combinations of the three preceding enums.
@@ -341,6 +366,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // multiple matches (when first saved, a login is marked preferred).
   const autofill::PasswordForm* preferred_match_;
 
+  // If the submitted form is for a change password form and the username
+  // doesn't match saved credentials.
+  bool is_ignorable_change_password_form_;
+
   typedef enum {
     PRE_MATCHING_PHASE,  // Have not yet invoked a GetLogins query to find
                          // matching login information from password store.
@@ -373,6 +402,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   ManagerAction manager_action_;
   UserAction user_action_;
   SubmitResult submit_result_;
+
+  // Form type of the form that |this| is managing. Set after SetSubmittedForm()
+  // as our classification of the form can change depending on what data the
+  // user has entered.
+  FormType form_type_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };
