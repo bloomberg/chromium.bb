@@ -428,14 +428,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   args->nexe_desc = NaClDescCreateWithFilePathMetadata(nexe_file,
                                                        file_path_str.c_str());
 
-#if defined(OS_POSIX)
   if (params.enable_mojo) {
-#if !defined(OS_MACOSX)
-    // Don't call mojo::embedder::Init on Mac; it's already been called from
-    // ChromeMain() (see chrome/app/chrome_exe_main_mac.cc).
-    mojo::embedder::Init(make_scoped_ptr(
-        new mojo::embedder::SimplePlatformSupport()));
-#endif
     // InjectMojo adds a file descriptor to the process that allows Mojo calls
     // to use an implementation defined outside the NaCl sandbox. See
     // //mojo/nacl for implementation details.
@@ -445,9 +438,6 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     // fails on any imc_sendmsg() call to make debugging easier.
     InjectDisabledMojo(nap);
   }
-#else
-  InjectDisabledMojo(nap);
-#endif
   // TODO(yusukes): Support pre-opening resource files.
   CHECK(params.prefetched_resource_files.empty());
 
