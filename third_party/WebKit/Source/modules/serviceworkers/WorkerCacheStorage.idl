@@ -7,5 +7,5 @@
     RuntimeEnabled=GlobalCacheStorage,
     ImplementedAs=GlobalCacheStorage,
 ] partial interface WorkerGlobalScope {
-  [CallWith=ScriptState, Unforgeable, MeasureAs=GlobalCacheStorage, RuntimeEnabled=GlobalCacheStorage, RaisesException] readonly attribute CacheStorage caches;
+  [Unforgeable, MeasureAs=GlobalCacheStorage, RuntimeEnabled=GlobalCacheStorage, RaisesException] readonly attribute CacheStorage caches;
 };

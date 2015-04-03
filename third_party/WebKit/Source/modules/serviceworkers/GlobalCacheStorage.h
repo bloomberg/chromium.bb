@@ -10,13 +10,12 @@ namespace blink {
 class CacheStorage;
 class DOMWindow;
 class ExceptionState;
-class ScriptState;
 class WorkerGlobalScope;
 
 class GlobalCacheStorage {
 public:
-    static CacheStorage* caches(ScriptState*, DOMWindow&, ExceptionState&);
-    static CacheStorage* caches(ScriptState*, WorkerGlobalScope&, ExceptionState&);
+    static CacheStorage* caches(DOMWindow&, ExceptionState&);
+    static CacheStorage* caches(WorkerGlobalScope&, ExceptionState&);
 };
 
 } // namespace blink

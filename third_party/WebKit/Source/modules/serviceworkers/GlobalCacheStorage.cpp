@@ -5,6 +5,7 @@
 #include "config.h"
 #include "modules/serviceworkers/GlobalCacheStorage.h"
 
+#include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -32,9 +33,8 @@ public:
         return *supplement;
     }
 
-    CacheStorage* caches(ScriptState* scriptState, ExceptionState& exceptionState)
+    CacheStorage* caches(ExecutionContext* context, ExceptionState& exceptionState)
     {
-        ExecutionContext* context = scriptState->executionContext();
         if (!context->securityOrigin()->canAccessCacheStorage()) {
             if (context->securityContext().isSandboxed(SandboxOrigin))
                 exceptionState.throwSecurityError("Cache storage is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag.");
@@ -71,14 +71,14 @@ private:
 
 } // namespace
 
-CacheStorage* GlobalCacheStorage::caches(ScriptState* scriptState, DOMWindow& window, ExceptionState& exceptionState)
+CacheStorage* GlobalCacheStorage::caches(DOMWindow& window, ExceptionState& exceptionState)
 {
-    return GlobalCacheStorageImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.executionContext()).caches(scriptState, exceptionState);
+    return GlobalCacheStorageImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.executionContext()).caches(window.executionContext(), exceptionState);
 }
 
-CacheStorage* GlobalCacheStorage::caches(ScriptState* scriptState, WorkerGlobalScope& worker, ExceptionState& exceptionState)
+CacheStorage* GlobalCacheStorage::caches(WorkerGlobalScope& worker, ExceptionState& exceptionState)
 {
-    return GlobalCacheStorageImpl<WorkerGlobalScope>::from(worker, worker.executionContext()).caches(scriptState, exceptionState);
+    return GlobalCacheStorageImpl<WorkerGlobalScope>::from(worker, worker.executionContext()).caches(worker.executionContext(), exceptionState);
 }
 
 } // namespace blink
