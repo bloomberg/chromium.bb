@@ -1,28 +1,8 @@
-diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-17 17:52:46.705854118 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-17 17:54:27.087523439 -0800
-@@ -6985,6 +6985,9 @@ ssl3_HandleCertificateRequest(sslSocket
-     if (rv != SECSuccess)
-     	goto loser;		/* malformed, alert has been sent */
- 
-+    PORT_Assert(!ss->requestedCertTypes);
-+    ss->requestedCertTypes = &cert_types;
-+
-     if (isTLS12) {
- 	rv = ssl3_ConsumeHandshakeVariable(ss, &algorithms, 2, &b, &length);
- 	if (rv != SECSuccess)
-@@ -7186,6 +7189,7 @@ loser:
-     PORT_SetError(errCode);
-     rv = SECFailure;
- done:
-+    ss->requestedCertTypes = NULL;
-     if (arena != NULL)
-     	PORT_FreeArena(arena, PR_FALSE);
- #ifdef NSS_PLATFORM_CLIENT_AUTH
-diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2014-01-17 17:53:39.726735852 -0800
-+++ b/nss/lib/ssl/ssl.h	2014-01-17 17:54:27.087523439 -0800
-@@ -793,6 +793,16 @@ SSL_IMPORT SECStatus SSL_ReHandshakeWith
+diff --git a/ssl/ssl.h b/ssl/ssl.h
+index 34142fc..e2d1b09 100644
+--- a/ssl/ssl.h
++++ b/ssl/ssl.h
+@@ -803,6 +803,16 @@ SSL_IMPORT SECStatus SSL_ReHandshakeWithTimeout(PRFileDesc *fd,
                                                  PRBool flushCache,
                                                  PRIntervalTime timeout);
  
@@ -39,10 +19,33 @@ diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
  
  #ifdef SSL_DEPRECATED_FUNCTION 
  /* deprecated!
-diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2014-01-17 17:52:46.715854283 -0800
-+++ b/nss/lib/ssl/sslimpl.h	2014-01-17 17:54:27.087523439 -0800
-@@ -1229,6 +1229,10 @@ struct sslSocketStr {
+diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
+index 40ae885..cb59cc1 100644
+--- a/ssl/ssl3con.c
++++ b/ssl/ssl3con.c
+@@ -7045,6 +7045,9 @@ ssl3_HandleCertificateRequest(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
+     if (rv != SECSuccess)
+     	goto loser;		/* malformed, alert has been sent */
+ 
++    PORT_Assert(!ss->requestedCertTypes);
++    ss->requestedCertTypes = &cert_types;
++
+     if (isTLS12) {
+ 	rv = ssl3_ConsumeHandshakeVariable(ss, &algorithms, 2, &b, &length);
+ 	if (rv != SECSuccess)
+@@ -7246,6 +7249,7 @@ loser:
+     PORT_SetError(errCode);
+     rv = SECFailure;
+ done:
++    ss->requestedCertTypes = NULL;
+     if (arena != NULL)
+     	PORT_FreeArena(arena, PR_FALSE);
+ #ifdef NSS_PLATFORM_CLIENT_AUTH
+diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
+index cda1869..9f59f5a 100644
+--- a/ssl/sslimpl.h
++++ b/ssl/sslimpl.h
+@@ -1231,6 +1231,10 @@ struct sslSocketStr {
      unsigned int     sizeCipherSpecs;
  const unsigned char *  preferredCipher;
  
@@ -53,10 +56,11 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
      ssl3KeyPair *         stepDownKeyPair;	/* RSA step down keys */
  
      /* Callbacks */
-diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
---- a/nss/lib/ssl/sslsock.c	2014-01-17 17:53:39.726735852 -0800
-+++ b/nss/lib/ssl/sslsock.c	2014-01-17 17:54:27.097523605 -0800
-@@ -1869,6 +1869,20 @@ SSL_HandshakeResumedSession(PRFileDesc *
+diff --git a/ssl/sslsock.c b/ssl/sslsock.c
+index 688f399..a939781 100644
+--- a/ssl/sslsock.c
++++ b/ssl/sslsock.c
+@@ -1911,6 +1911,20 @@ SSL_HandshakeResumedSession(PRFileDesc *fd, PRBool *handshake_resumed) {
      return SECSuccess;
  }
  
@@ -77,11 +81,11 @@ diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
  /************************************************************************/
  /* The following functions are the TOP LEVEL SSL functions.
  ** They all get called through the NSPRIOMethods table below.
-@@ -2936,6 +2950,7 @@ ssl_NewSocket(PRBool makeLocks, SSLProto
- 	    sc->serverKeyBits   = 0;
- 	    ss->certStatusArray[i] = NULL;
- 	}
-+	ss->requestedCertTypes = NULL;
- 	ss->stepDownKeyPair    = NULL;
- 	ss->dbHandle           = CERT_GetDefaultCertDB();
+@@ -2989,6 +3003,7 @@ ssl_NewSocket(PRBool makeLocks, SSLProtocolVariant protocolVariant)
+             sc->serverKeyBits   = 0;
+             ss->certStatusArray[i] = NULL;
+         }
++        ss->requestedCertTypes = NULL;
+         ss->stepDownKeyPair    = NULL;
+         ss->dbHandle           = CERT_GetDefaultCertDB();
  

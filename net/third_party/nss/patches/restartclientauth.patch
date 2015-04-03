@@ -1,7 +1,24 @@
-diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-17 17:55:01.518095989 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-17 17:55:19.158389328 -0800
-@@ -7199,6 +7199,85 @@ done:
+diff --git a/ssl/ssl.h b/ssl/ssl.h
+index e2d1b09..593dd00 100644
+--- a/ssl/ssl.h
++++ b/ssl/ssl.h
+@@ -409,6 +409,11 @@ SSL_IMPORT SECStatus SSL_ForceHandshake(PRFileDesc *fd);
+ SSL_IMPORT SECStatus SSL_ForceHandshakeWithTimeout(PRFileDesc *fd,
+                                                    PRIntervalTime timeout);
+ 
++SSL_IMPORT SECStatus SSL_RestartHandshakeAfterCertReq(PRFileDesc *fd,
++					    CERTCertificate *cert,
++					    SECKEYPrivateKey *key,
++					    CERTCertificateList *certChain);
++
+ /*
+ ** Query security status of socket. *on is set to one if security is
+ ** enabled. *keySize will contain the stream key size used. *issuer will
+diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
+index cb59cc1..1852806 100644
+--- a/ssl/ssl3con.c
++++ b/ssl/ssl3con.c
+@@ -7259,6 +7259,85 @@ done:
      return rv;
  }
  
@@ -87,25 +104,11 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  static SECStatus
  ssl3_CheckFalseStart(sslSocket *ss)
  {
-diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2014-01-17 17:55:01.538096321 -0800
-+++ b/nss/lib/ssl/ssl.h	2014-01-17 17:55:19.158389328 -0800
-@@ -399,6 +399,11 @@ SSL_IMPORT SECStatus SSL_ForceHandshake(
- SSL_IMPORT SECStatus SSL_ForceHandshakeWithTimeout(PRFileDesc *fd,
-                                                    PRIntervalTime timeout);
- 
-+SSL_IMPORT SECStatus SSL_RestartHandshakeAfterCertReq(PRFileDesc *fd,
-+					    CERTCertificate *cert,
-+					    SECKEYPrivateKey *key,
-+					    CERTCertificateList *certChain);
-+
- /*
- ** Query security status of socket. *on is set to one if security is
- ** enabled. *keySize will contain the stream key size used. *issuer will
-diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2014-01-17 17:55:01.538096321 -0800
-+++ b/nss/lib/ssl/sslimpl.h	2014-01-17 17:55:19.158389328 -0800
-@@ -1588,16 +1588,17 @@ extern  SECStatus ssl3_MasterKeyDeriveBy
+diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
+index 9f59f5a..c6ac398 100644
+--- a/ssl/sslimpl.h
++++ b/ssl/sslimpl.h
+@@ -1592,16 +1592,17 @@ extern  SECStatus ssl3_MasterKeyDeriveBypass( ssl3CipherSpec * pwSpec,
  /* These functions are called from secnav, even though they're "private". */
  
  extern int ssl2_SendErrorMessage(struct sslSocketStr *ss, int error);
@@ -127,10 +130,11 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  extern SECStatus ssl3_AuthCertificateComplete(sslSocket *ss, PRErrorCode error);
  
  /*
-diff -pu a/nss/lib/ssl/sslsecur.c b/nss/lib/ssl/sslsecur.c
---- a/nss/lib/ssl/sslsecur.c	2014-01-17 17:49:26.072517368 -0800
-+++ b/nss/lib/ssl/sslsecur.c	2014-01-17 17:55:19.158389328 -0800
-@@ -1518,17 +1518,70 @@ SSL_CertDBHandleSet(PRFileDesc *fd, CERT
+diff --git a/ssl/sslsecur.c b/ssl/sslsecur.c
+index ea2d408..d44336e 100644
+--- a/ssl/sslsecur.c
++++ b/ssl/sslsecur.c
+@@ -1516,17 +1516,70 @@ SSL_CertDBHandleSet(PRFileDesc *fd, CERTCertDBHandle *dbHandle)
      return SECSuccess;
  }
  

@@ -428,7 +428,6 @@ ssl2_CreateMAC(sslSecurityInfo *sec, SECItem *readKey, SECItem *writeKey,
           int cipherChoice)
 {
     switch (cipherChoice) {
-
       case SSL_CK_RC2_128_CBC_EXPORT40_WITH_MD5:
       case SSL_CK_RC2_128_CBC_WITH_MD5:
       case SSL_CK_RC4_128_EXPORT40_WITH_MD5:
@@ -436,8 +435,10 @@ ssl2_CreateMAC(sslSecurityInfo *sec, SECItem *readKey, SECItem *writeKey,
       case SSL_CK_DES_64_CBC_WITH_MD5:
       case SSL_CK_DES_192_EDE3_CBC_WITH_MD5:
 	sec->hash = HASH_GetHashObject(HASH_AlgMD5);
-	SECITEM_CopyItem(0, &sec->sendSecret, writeKey);
-	SECITEM_CopyItem(0, &sec->rcvSecret, readKey);
+	if (SECITEM_CopyItem(0, &sec->sendSecret, writeKey) ||
+	    SECITEM_CopyItem(0, &sec->rcvSecret, readKey)) {
+	    return SECFailure;
+	}
 	break;
 
       default:
@@ -3101,7 +3102,7 @@ ssl2_BeginClientHandshake(sslSocket *ss)
 
 	return rv;
     }
-#if defined(NSS_ENABLE_ECC)
+#ifndef NSS_DISABLE_ECC
     /* ensure we don't neogtiate ECC cipher suites with SSL2 hello */
     ssl3_DisableECCSuites(ss, NULL); /* disable all ECC suites */
     if (ss->cipherSpecs != NULL) {
@@ -3109,7 +3110,7 @@ ssl2_BeginClientHandshake(sslSocket *ss)
 	ss->cipherSpecs     = NULL;
 	ss->sizeCipherSpecs = 0;
     }
-#endif
+#endif /* NSS_DISABLE_ECC */
 
     if (!ss->cipherSpecs) {
         rv = ssl2_ConstructCipherSpecs(ss);

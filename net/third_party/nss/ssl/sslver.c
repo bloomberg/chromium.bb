@@ -18,6 +18,7 @@
 #define _DATE_AND_TIME __DATE__ " " __TIME__
 #endif
 
+
 /*
  * Version information for the 'ident' and 'what commands
  *

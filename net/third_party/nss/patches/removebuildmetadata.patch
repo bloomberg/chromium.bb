@@ -1,7 +1,7 @@
-diff --git a/net/third_party/nss/ssl/sslver.c b/net/third_party/nss/ssl/sslver.c
+diff --git a/ssl/sslver.c b/ssl/sslver.c
 index 35e0317..ea60888 100644
---- a/net/third_party/nss/ssl/sslver.c
-+++ b/net/third_party/nss/ssl/sslver.c
+--- a/ssl/sslver.c
++++ b/ssl/sslver.c
 @@ -12,6 +12,13 @@
  #define _DEBUG_STRING ""
  #endif

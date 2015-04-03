@@ -1,19 +1,8 @@
-diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-17 19:00:52.843413560 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-17 19:01:36.374129696 -0800
-@@ -11318,7 +11318,7 @@ ssl3_FinishHandshake(sslSocket * ss)
-         ss->ssl3.hs.receivedNewSessionTicket = PR_FALSE;
-     }
- 
--    if (ss->ssl3.hs.cacheSID) {
-+    if (ss->ssl3.hs.cacheSID && ss->sec.isServer) {
- 	PORT_Assert(ss->sec.ci.sid->cached == never_cached);
- 	(*ss->sec.cache)(ss->sec.ci.sid);
- 	ss->ssl3.hs.cacheSID = PR_FALSE;
-diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2014-01-17 19:00:52.843413560 -0800
-+++ b/nss/lib/ssl/ssl.h	2014-01-17 19:01:36.374129696 -0800
-@@ -892,6 +892,18 @@ SSL_IMPORT int SSL_DataPending(PRFileDes
+diff --git a/ssl/ssl.h b/ssl/ssl.h
+index be6d88e..57771cd 100644
+--- a/ssl/ssl.h
++++ b/ssl/ssl.h
+@@ -900,6 +900,18 @@ SSL_IMPORT int SSL_DataPending(PRFileDesc *fd);
  SSL_IMPORT SECStatus SSL_InvalidateSession(PRFileDesc *fd);
  
  /*
@@ -32,10 +21,24 @@ diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
  ** Return a SECItem containing the SSL session ID associated with the fd.
  */
  SSL_IMPORT SECItem *SSL_GetSessionID(PRFileDesc *fd);
-diff -pu a/nss/lib/ssl/sslsecur.c b/nss/lib/ssl/sslsecur.c
---- a/nss/lib/ssl/sslsecur.c	2014-01-17 17:59:03.242109996 -0800
-+++ b/nss/lib/ssl/sslsecur.c	2014-01-17 19:01:36.374129696 -0800
-@@ -1469,6 +1469,49 @@ SSL_InvalidateSession(PRFileDesc *fd)
+diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
+index c1f30a3..17c368e 100644
+--- a/ssl/ssl3con.c
++++ b/ssl/ssl3con.c
+@@ -11367,7 +11367,7 @@ ssl3_FinishHandshake(sslSocket * ss)
+         ss->ssl3.hs.receivedNewSessionTicket = PR_FALSE;
+     }
+ 
+-    if (ss->ssl3.hs.cacheSID) {
++    if (ss->ssl3.hs.cacheSID && ss->sec.isServer) {
+ 	PORT_Assert(ss->sec.ci.sid->cached == never_cached);
+ 	(*ss->sec.cache)(ss->sec.ci.sid);
+ 	ss->ssl3.hs.cacheSID = PR_FALSE;
+diff --git a/ssl/sslsecur.c b/ssl/sslsecur.c
+index 5c6751a..00ab455 100644
+--- a/ssl/sslsecur.c
++++ b/ssl/sslsecur.c
+@@ -1467,6 +1467,49 @@ SSL_InvalidateSession(PRFileDesc *fd)
      return rv;
  }
  

@@ -420,9 +420,8 @@ ER3(SSL_ERROR_NEXT_PROTOCOL_NO_PROTOCOL, (SSL_ERROR_BASE + 130),
 "The server supports no protocols that the client advertises in the ALPN extension.")
 
 ER3(SSL_ERROR_INAPPROPRIATE_FALLBACK_ALERT, (SSL_ERROR_BASE + 131),
-"The connection was using a lesser TLS version as a result of a previous"
-" handshake failure, but the server indicated that it should not have been"
-" needed.")
+"The server rejected the handshake because the client downgraded to a lower "
+"TLS version than the server supports.")
 
 ER3(SSL_ERROR_BAD_CHANNEL_ID_DATA, (SSL_ERROR_BASE + 132),
 "SSL received a malformed TLS Channel ID extension.")

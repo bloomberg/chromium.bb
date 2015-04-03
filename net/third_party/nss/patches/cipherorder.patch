@@ -1,7 +1,26 @@
-diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-17 18:45:24.378132013 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-17 18:46:29.929216162 -0800
-@@ -12540,6 +12540,46 @@ ssl3_CipherPrefGet(sslSocket *ss, ssl3Ci
+diff --git a/ssl/ssl.h b/ssl/ssl.h
+index e9f5fb0..be6d88e 100644
+--- a/ssl/ssl.h
++++ b/ssl/ssl.h
+@@ -295,6 +295,13 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDefault(PRInt32 cipher, PRBool *enabled);
+ SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
+ SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
+ 
++/* SSL_CipherOrderSet sets the cipher suite preference order from |ciphers|,
++ * which must be an array of cipher suite ids of length |len|. All the given
++ * cipher suite ids must appear in the array that is returned by
++ * |SSL_GetImplementedCiphers| and may only appear once, at most. */
++SSL_IMPORT SECStatus SSL_CipherOrderSet(PRFileDesc *fd, const PRUint16 *ciphers,
++                                        unsigned int len);
++
+ /* SSLChannelBindingType enumerates the types of supported channel binding
+  * values. See RFC 5929. */
+ typedef enum SSLChannelBindingType {
+diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
+index 3421e0b..c1f30a3 100644
+--- a/ssl/ssl3con.c
++++ b/ssl/ssl3con.c
+@@ -12623,6 +12623,46 @@ ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *enabled)
      return rv;
  }
  
@@ -48,27 +67,11 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  /* copy global default policy into socket. */
  void
  ssl3_InitSocketPolicy(sslSocket *ss)
-diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2014-01-17 18:45:24.378132013 -0800
-+++ b/nss/lib/ssl/ssl.h	2014-01-17 18:46:29.929216162 -0800
-@@ -285,6 +285,13 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDe
- SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
- SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
- 
-+/* SSL_CipherOrderSet sets the cipher suite preference order from |ciphers|,
-+ * which must be an array of cipher suite ids of length |len|. All the given
-+ * cipher suite ids must appear in the array that is returned by
-+ * |SSL_GetImplementedCiphers| and may only appear once, at most. */
-+SSL_IMPORT SECStatus SSL_CipherOrderSet(PRFileDesc *fd, const PRUint16 *ciphers,
-+                                        unsigned int len);
-+
- /* SSLChannelBindingType enumerates the types of supported channel binding
-  * values. See RFC 5929. */
- typedef enum SSLChannelBindingType {
-diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2014-01-17 18:45:24.378132013 -0800
-+++ b/nss/lib/ssl/sslimpl.h	2014-01-17 18:46:29.929216162 -0800
-@@ -1743,6 +1743,8 @@ extern SECStatus ssl3_CipherPrefSet(sslS
+diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
+index 2f61a46..f796a14 100644
+--- a/ssl/sslimpl.h
++++ b/ssl/sslimpl.h
+@@ -1747,6 +1747,8 @@ extern SECStatus ssl3_CipherPrefSet(sslSocket *ss, ssl3CipherSuite which, PRBool
  extern SECStatus ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *on);
  extern SECStatus ssl2_CipherPrefSet(sslSocket *ss, PRInt32 which, PRBool enabled);
  extern SECStatus ssl2_CipherPrefGet(sslSocket *ss, PRInt32 which, PRBool *enabled);
@@ -77,14 +80,14 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  
  extern SECStatus ssl3_SetPolicy(ssl3CipherSuite which, PRInt32 policy);
  extern SECStatus ssl3_GetPolicy(ssl3CipherSuite which, PRInt32 *policy);
-diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
---- a/nss/lib/ssl/sslsock.c	2014-01-17 18:45:24.378132013 -0800
-+++ b/nss/lib/ssl/sslsock.c	2014-01-17 18:46:29.929216162 -0800
-@@ -1278,6 +1278,19 @@ SSL_CipherPrefSet(PRFileDesc *fd, PRInt3
-     return rv;
+diff --git a/ssl/sslsock.c b/ssl/sslsock.c
+index 80f4e67..13634c6 100644
+--- a/ssl/sslsock.c
++++ b/ssl/sslsock.c
+@@ -1316,6 +1316,19 @@ SSL_CipherPrefSet(PRFileDesc *fd, PRInt32 which, PRBool enabled)
  }
  
-+SECStatus
+ SECStatus
 +SSL_CipherOrderSet(PRFileDesc *fd, const PRUint16 *ciphers, unsigned int len)
 +{
 +    sslSocket *ss = ssl_FindSocket(fd);
@@ -97,6 +100,7 @@ diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
 +    return ssl3_CipherOrderSet(ss, ciphers, len);
 +}
 +
- SECStatus 
++SECStatus
  SSL_CipherPrefGet(PRFileDesc *fd, PRInt32 which, PRBool *enabled)
  {
+     SECStatus  rv;

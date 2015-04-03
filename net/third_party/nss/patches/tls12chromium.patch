@@ -1,6 +1,7 @@
-diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-17 18:00:11.213237373 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-17 18:04:22.497405273 -0800
+diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
+index 67c8f6d..da0abfb 100644
+--- a/ssl/ssl3con.c
++++ b/ssl/ssl3con.c
 @@ -31,6 +31,15 @@
  #include "blapi.h"
  #endif
@@ -17,9 +18,10 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  #include <stdio.h>
  #ifdef NSS_ENABLE_ZLIB
  #include "zlib.h"
-diff -pu a/nss/lib/ssl/ssl3ecc.c b/nss/lib/ssl/ssl3ecc.c
---- a/nss/lib/ssl/ssl3ecc.c	2014-01-17 18:01:31.474568608 -0800
-+++ b/nss/lib/ssl/ssl3ecc.c	2014-01-17 18:04:22.497405273 -0800
+diff --git a/ssl/ssl3ecc.c b/ssl/ssl3ecc.c
+index 0f805ec..003ed78 100644
+--- a/ssl/ssl3ecc.c
++++ b/ssl/ssl3ecc.c
 @@ -30,6 +30,12 @@
  
  #include <stdio.h>
@@ -30,12 +32,13 @@ diff -pu a/nss/lib/ssl/ssl3ecc.c b/nss/lib/ssl/ssl3ecc.c
 +#define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
 +#endif
 +
- #ifdef NSS_ENABLE_ECC
+ #ifndef NSS_DISABLE_ECC
  
  #ifndef PK11_SETATTRS
-diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
---- a/nss/lib/ssl/sslsock.c	2014-01-17 18:00:11.213237373 -0800
-+++ b/nss/lib/ssl/sslsock.c	2014-01-17 18:04:22.497405273 -0800
+diff --git a/ssl/sslsock.c b/ssl/sslsock.c
+index 47906e0..0d12273 100644
+--- a/ssl/sslsock.c
++++ b/ssl/sslsock.c
 @@ -17,8 +17,15 @@
  #ifndef NO_PKCS11_BYPASS
  #include "blapi.h"
@@ -51,8 +54,8 @@ diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
 +
  #define SET_ERROR_CODE   /* reminder */
  
- static const sslSocketOps ssl_default_ops = {	/* No SSL. */
-@@ -1836,6 +1843,24 @@ SSL_VersionRangeGet(PRFileDesc *fd, SSLV
+ static const sslSocketOps ssl_default_ops = {   /* No SSL. */
+@@ -1878,6 +1885,24 @@ SSL_VersionRangeGet(PRFileDesc *fd, SSLVersionRange *vrange)
      return SECSuccess;
  }
  
@@ -77,7 +80,7 @@ diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
  SECStatus
  SSL_VersionRangeSet(PRFileDesc *fd, const SSLVersionRange *vrange)
  {
-@@ -1856,6 +1881,20 @@ SSL_VersionRangeSet(PRFileDesc *fd, cons
+@@ -1898,6 +1923,20 @@ SSL_VersionRangeSet(PRFileDesc *fd, const SSLVersionRange *vrange)
      ssl_GetSSL3HandshakeLock(ss);
  
      ss->vrange = *vrange;

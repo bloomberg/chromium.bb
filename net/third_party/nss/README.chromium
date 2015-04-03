@@ -1,6 +1,6 @@
 Name: Network Security Services (NSS)
 URL: http://www.mozilla.org/projects/security/pki/nss/
-Version: 3.15.5 Beta 2
+Version: 3.18 RTM
 Security Critical: Yes
 License: MPL 2
 License File: NOT_SHIPPED
@@ -11,7 +11,7 @@ This directory includes a copy of NSS's libssl from the hg repo at:
 The same module appears in crypto/third_party/nss (and third_party/nss on some
 platforms), so we don't repeat the license file here.
 
-The snapshot was updated to the hg tag: NSS_3_15_5_BETA2
+The snapshot was updated to the hg tag: NSS_3_18_RTM
 
 Patches:
 
@@ -83,9 +83,6 @@ Patches:
   * Add a function to allow the cipher suites preference order to be set.
     patches/cipherorder.patch
 
-  * Add TLS_FALLBACK_SCSV cipher suite to version fallback connections.
-    patches/fallbackscsv.patch
-
   * Add explicit functions for managing the SSL/TLS session cache.
     This is a temporary workaround until Chromium migrates to NSS's
     asynchronous certificate verification.
@@ -96,22 +93,15 @@ Patches:
     patches/nssrwlock.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=957812
 
-  * Use the IANA-assigned value for the TLS padding extension.
-    patches/paddingextvalue.patch
-    https://bugzilla.mozilla.org/show_bug.cgi?id=994883
-
-  * Move the signature_algorithms extension to the end of the extension list.
-    This works around a bug in WebSphere Application Server 7.0 which is
-    intolerant to the final extension having zero length.
+  * Add a comment explaining why signature_algorithms extension should be at
+    the end of the extension list. This works around a bug in WebSphere
+    Application Server 7.0, which is intolerant to the final extension having
+    zero length. This also ensures that the padding extension has non-zero
+    length.
     patches/reorderextensions.patch
 
-  * Ignore out-of-order DTLS ChangeCipherSpec.
-    patches/ignorechangecipherspec.patch
-    https://bugzilla.mozilla.org/show_bug.cgi?id=1009227
-
-  * Implement server-side components of ALPN (RFC 7301).
-    patches/alpnserver.patch
-    https://bugzilla.mozilla.org/show_bug.cgi?id=996250
+  * Make the build metadata deterministic
+    patches/removebuildmetadata.patch
 
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.

@@ -1,7 +1,40 @@
-diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2014-01-17 17:59:03.242109996 -0800
-+++ b/nss/lib/ssl/ssl3con.c	2014-01-17 17:59:45.862816905 -0800
-@@ -12383,6 +12383,68 @@ ssl3_InitSocketPolicy(sslSocket *ss)
+diff --git a/ssl/ssl.h b/ssl/ssl.h
+index 716537d..80717db 100644
+--- a/ssl/ssl.h
++++ b/ssl/ssl.h
+@@ -292,6 +292,27 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDefault(PRInt32 cipher, PRBool *enabled);
+ SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
+ SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
+ 
++/* SSLChannelBindingType enumerates the types of supported channel binding
++ * values. See RFC 5929. */
++typedef enum SSLChannelBindingType {
++    SSL_CHANNEL_BINDING_TLS_UNIQUE = 1,
++} SSLChannelBindingType;
++
++/* SSL_GetChannelBinding copies the requested channel binding value, as defined
++ * in RFC 5929, into |out|. The full length of the binding value is written
++ * into |*outLen|.
++ *
++ * At most |outLenMax| bytes of data are copied. If |outLenMax| is
++ * insufficient then the function returns SECFailure and sets the error to
++ * SEC_ERROR_OUTPUT_LEN, but |*outLen| is still set.
++ *
++ * This call will fail if made during a renegotiation. */
++SSL_IMPORT SECStatus SSL_GetChannelBinding(PRFileDesc *fd,
++					   SSLChannelBindingType binding_type,
++					   unsigned char *out,
++					   unsigned int *outLen,
++					   unsigned int outLenMax);
++
+ /* SSL Version Range API
+ **
+ ** This API should be used to control SSL 3.0 & TLS support instead of the
+diff --git a/ssl/ssl3con.c b/ssl/ssl3con.c
+index 45c3454..67c8f6d 100644
+--- a/ssl/ssl3con.c
++++ b/ssl/ssl3con.c
+@@ -12471,6 +12471,68 @@ ssl3_InitSocketPolicy(sslSocket *ss)
      PORT_Memcpy(ss->cipherSuites, cipherSuites, sizeof cipherSuites);
  }
  
@@ -70,41 +103,11 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  /* ssl3_config_match_init must have already been called by
   * the caller of this function.
   */
-diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2014-01-17 17:59:03.242109996 -0800
-+++ b/nss/lib/ssl/ssl.h	2014-01-17 17:59:45.862816905 -0800
-@@ -282,6 +282,27 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDe
- SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
- SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
- 
-+/* SSLChannelBindingType enumerates the types of supported channel binding
-+ * values. See RFC 5929. */
-+typedef enum SSLChannelBindingType {
-+    SSL_CHANNEL_BINDING_TLS_UNIQUE = 1,
-+} SSLChannelBindingType;
-+
-+/* SSL_GetChannelBinding copies the requested channel binding value, as defined
-+ * in RFC 5929, into |out|. The full length of the binding value is written
-+ * into |*outLen|.
-+ *
-+ * At most |outLenMax| bytes of data are copied. If |outLenMax| is
-+ * insufficient then the function returns SECFailure and sets the error to
-+ * SEC_ERROR_OUTPUT_LEN, but |*outLen| is still set.
-+ *
-+ * This call will fail if made during a renegotiation. */
-+SSL_IMPORT SECStatus SSL_GetChannelBinding(PRFileDesc *fd,
-+					   SSLChannelBindingType binding_type,
-+					   unsigned char *out,
-+					   unsigned int *outLen,
-+					   unsigned int outLenMax);
-+
- /* SSL Version Range API
- **
- ** This API should be used to control SSL 3.0 & TLS support instead of the
-diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2014-01-17 17:59:03.242109996 -0800
-+++ b/nss/lib/ssl/sslimpl.h	2014-01-17 17:59:45.862816905 -0800
-@@ -1853,6 +1853,11 @@ extern PRBool ssl_GetSessionTicketKeysPK
+diff --git a/ssl/sslimpl.h b/ssl/sslimpl.h
+index 57346cb..2d21e90 100644
+--- a/ssl/sslimpl.h
++++ b/ssl/sslimpl.h
+@@ -1857,6 +1857,11 @@ extern PRBool ssl_GetSessionTicketKeysPKCS11(SECKEYPrivateKey *svrPrivKey,
  extern SECStatus ssl3_ValidateNextProtoNego(const unsigned char* data,
  					    unsigned int length);
  
@@ -116,10 +119,11 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
  /* Construct a new NSPR socket for the app to use */
  extern PRFileDesc *ssl_NewPRSocket(sslSocket *ss, PRFileDesc *fd);
  extern void ssl_FreePRSocket(PRFileDesc *fd);
-diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
---- a/nss/lib/ssl/sslsock.c	2014-01-17 17:59:03.252110162 -0800
-+++ b/nss/lib/ssl/sslsock.c	2014-01-17 17:59:45.872817074 -0800
-@@ -1308,6 +1308,27 @@ NSS_SetFrancePolicy(void)
+diff --git a/ssl/sslsock.c b/ssl/sslsock.c
+index d3f3bf4..47906e0 100644
+--- a/ssl/sslsock.c
++++ b/ssl/sslsock.c
+@@ -1345,6 +1345,27 @@ NSS_SetFrancePolicy(void)
      return NSS_SetDomesticPolicy();
  }
  

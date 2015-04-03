@@ -696,11 +696,11 @@ NSS_FindCertKEAType(CERTCertificate * cert)
   case SEC_OID_X942_DIFFIE_HELMAN_KEY:
     keaType = kt_dh;
     break;
-#ifdef NSS_ENABLE_ECC
+#ifndef NSS_DISABLE_ECC
   case SEC_OID_ANSIX962_EC_PUBLIC_KEY:
     keaType = kt_ecdh;
     break;
-#endif /* NSS_ENABLE_ECC */
+#endif /* NSS_DISABLE_ECC */
   default:
     keaType = kt_null;
   }
@@ -968,11 +968,9 @@ ssl_CopySecurityInfo(sslSocket *ss, sslSocket *os)
 	ss->sec.hashcx 		= NULL;
     }
 
-    SECITEM_CopyItem(0, &ss->sec.sendSecret, &os->sec.sendSecret);
-    if (os->sec.sendSecret.data && !ss->sec.sendSecret.data)
+    if (SECITEM_CopyItem(0, &ss->sec.sendSecret, &os->sec.sendSecret))
     	goto loser;
-    SECITEM_CopyItem(0, &ss->sec.rcvSecret,  &os->sec.rcvSecret);
-    if (os->sec.rcvSecret.data && !ss->sec.rcvSecret.data)
+    if (SECITEM_CopyItem(0, &ss->sec.rcvSecret,  &os->sec.rcvSecret))
     	goto loser;
 
     /* XXX following code is wrong if either cx != 0 */
