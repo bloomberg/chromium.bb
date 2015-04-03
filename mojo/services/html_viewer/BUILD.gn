@@ -106,6 +106,7 @@ source_set("lib") {
     "//ui/events",
     "//ui/events:gesture_detection",
     "//ui/events/blink",
+    "//ui/events/gestures/blink",
     "//ui/gfx/geometry",
     "//ui/native_theme",
     "//ui/resources:ui_test_pak",

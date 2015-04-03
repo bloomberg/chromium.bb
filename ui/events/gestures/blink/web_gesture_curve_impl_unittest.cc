@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/web_gesture_curve_impl.h"
+#include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +15,7 @@ using blink::WebFloatSize;
 using blink::WebGestureCurve;
 using blink::WebGestureCurveTarget;
 
-namespace content {
+namespace ui {
 namespace {
 
 class MockGestureCurveTarget : public WebGestureCurveTarget {
@@ -69,4 +69,4 @@ TEST(WebGestureCurveImplTest, Basic) {
   EXPECT_EQ(target.current_velocity().height, 0);
 }
 
-}  // namespace content
+}  // namespace ui

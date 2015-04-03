@@ -19,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
+#include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
 namespace html_viewer {
 namespace {
@@ -255,6 +256,17 @@ blink::WebWaitableEvent* BlinkPlatformImpl::waitMultipleEvents(
       vector_as_array(&events), events.size());
   DCHECK_LT(idx, web_events.size());
   return web_events[idx];
+}
+
+blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
+    blink::WebGestureDevice device_source,
+    const blink::WebFloatPoint& velocity,
+    const blink::WebSize& cumulative_scroll) {
+  const bool is_main_thread = true;
+  return ui::WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
+             gfx::Vector2dF(velocity.x, velocity.y),
+             gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height),
+             is_main_thread).release();
 }
 
 // static

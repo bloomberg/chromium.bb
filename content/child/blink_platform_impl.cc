@@ -41,7 +41,6 @@
 #include "content/child/push_messaging/push_provider.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_discardable_memory_impl.h"
-#include "content/child/web_gesture_curve_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/websocket_bridge.h"
 #include "content/child/webthread_impl.h"
@@ -59,6 +58,7 @@
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "ui/base/layout.h"
+#include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 
 using blink::WebData;
@@ -1027,7 +1027,7 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
-  return WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
+  return ui::WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
              gfx::Vector2dF(velocity.x, velocity.y),
              gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height),
              IsMainThread()).release();

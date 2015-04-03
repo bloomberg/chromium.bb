@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/web_gesture_curve_impl.h"
+#include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -18,14 +18,14 @@
 
 using blink::WebGestureCurve;
 
-namespace content {
+namespace ui {
 namespace {
 
-scoped_ptr<ui::GestureCurve> CreateDefaultPlatformCurve(
+scoped_ptr<GestureCurve> CreateDefaultPlatformCurve(
     const gfx::Vector2dF& initial_velocity) {
   DCHECK(!initial_velocity.IsZero());
 #if defined(OS_ANDROID)
-  auto scroller = make_scoped_ptr(new ui::Scroller(ui::Scroller::Config()));
+  auto scroller = make_scoped_ptr(new Scroller(Scroller::Config()));
   scroller->Fling(0,
                   0,
                   initial_velocity.x(),
@@ -38,7 +38,7 @@ scoped_ptr<ui::GestureCurve> CreateDefaultPlatformCurve(
   return scroller.Pass();
 #else
   return make_scoped_ptr(
-      new ui::FlingCurve(initial_velocity, base::TimeTicks()));
+      new FlingCurve(initial_velocity, base::TimeTicks()));
 #endif
 }
 
@@ -56,13 +56,13 @@ scoped_ptr<WebGestureCurve> WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
 
 // static
 scoped_ptr<WebGestureCurve> WebGestureCurveImpl::CreateFromUICurveForTesting(
-    scoped_ptr<ui::GestureCurve> curve,
+    scoped_ptr<GestureCurve> curve,
     const gfx::Vector2dF& initial_offset) {
   return scoped_ptr<WebGestureCurve>(
       new WebGestureCurveImpl(curve.Pass(), initial_offset, ThreadType::TEST));
 }
 
-WebGestureCurveImpl::WebGestureCurveImpl(scoped_ptr<ui::GestureCurve> curve,
+WebGestureCurveImpl::WebGestureCurveImpl(scoped_ptr<GestureCurve> curve,
                                          const gfx::Vector2dF& initial_offset,
                                          ThreadType animating_thread_type)
     : curve_(curve.Pass()),
@@ -138,4 +138,4 @@ bool WebGestureCurveImpl::apply(double time,
   return did_scroll && still_active;
 }
 
-}  // namespace content
+}  // namespace ui

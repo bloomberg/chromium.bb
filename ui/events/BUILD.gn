@@ -294,6 +294,7 @@ test("events_unittests") {
     "gesture_detection/snap_scroll_controller_unittest.cc",
     "gesture_detection/touch_disposition_gesture_filter_unittest.cc",
     "gesture_detection/velocity_tracker_unittest.cc",
+    "gestures/blink/web_gesture_curve_impl_unittest.cc",
     "gestures/fling_curve_unittest.cc",
     "keycodes/dom4/keycode_converter_unittest.cc",
     "latency_info_unittest.cc",
@@ -311,7 +312,9 @@ test("events_unittests") {
     "//base/test:run_all_unittests",
     "//skia",
     "//testing/gtest",
+    "//third_party/WebKit/public:blink_headers",
     "//ui/events/devices",
+    "//ui/events/gestures/blink",
     "//ui/events/platform",
     "//ui/gfx:test_support",
   ]

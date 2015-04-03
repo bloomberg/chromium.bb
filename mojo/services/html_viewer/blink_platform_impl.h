@@ -57,6 +57,10 @@ class BlinkPlatformImpl : public blink::Platform {
   const unsigned char* getTraceCategoryEnabledFlag(
       const char* category_name) override;
   blink::WebData loadResource(const char* name) override;
+  blink::WebGestureCurve* createFlingAnimationCurve(
+      blink::WebGestureDevice device_source,
+      const blink::WebFloatPoint& velocity,
+      const blink::WebSize& cumulative_scroll) override;
 
  private:
   void SuspendSharedTimer();

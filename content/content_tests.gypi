@@ -591,7 +591,6 @@
       'child/site_isolation_policy_unittest.cc',
       'child/v8_value_converter_impl_unittest.cc',
       'child/web_data_consumer_handle_impl_unittest.cc',
-      'child/web_gesture_curve_impl_unittest.cc',
       'child/web_url_loader_impl_unittest.cc',
       'child/webcrypto/test/aes_cbc_unittest.cc',
       'child/webcrypto/test/aes_ctr_unittest.cc',

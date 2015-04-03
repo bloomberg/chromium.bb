@@ -30,6 +30,7 @@ source_set("child") {
     "//third_party/icu",
     "//third_party/mojo/src/mojo/public/interfaces/application",
     "//ui/base",
+    "//ui/events/gestures/blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/native_theme",
