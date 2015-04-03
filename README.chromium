@@ -276,3 +276,7 @@ This directory contains the source code of ICU 54.1 for C/C++.
    - upstream bug
      http://www.icu-project.org/trac/ticket/11602
 
+15. Cherry-pick an upstream patch to add an API to detect the host timezone
+   - patches/tzdetect.patch
+   - upstream bug (fixed in the upstream 55 RC)
+     http://bugs.icu-project.org/trac/ticket/11358
