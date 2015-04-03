@@ -4,9 +4,8 @@
 
 #include "components/autofill/core/browser/autofill_field.h"
 
-#include "base/format_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -23,9 +22,8 @@ namespace {
 FormFieldData GenerateSelectFieldWithOptions(const char* const* options,
                                              size_t options_size) {
   std::vector<base::string16> options16(options_size);
-  for (size_t i = 0; i < options_size; ++i) {
-    options16[i] = ASCIIToUTF16(options[i]);
-  }
+  for (size_t i = 0; i < options_size; ++i)
+    options16[i] = UTF8ToUTF16(options[i]);
 
   FormFieldData form_field;
   form_field.form_control_type = "select-one";
@@ -171,9 +169,8 @@ TEST(AutofillFieldTest, FillSelectControlByValue) {
 
   // Set semantically empty contents for each option, so that only the values
   // can be used for matching.
-  for (size_t i = 0; i < field.option_contents.size(); ++i) {
-    field.option_contents[i] = ASCIIToUTF16(base::StringPrintf("%" PRIuS, i));
-  }
+  for (size_t i = 0; i < field.option_contents.size(); ++i)
+    field.option_contents[i] = base::SizeTToString16(i);
 
   AutofillField::FillFormField(
       field, ASCIIToUTF16("Meenie"), "en-US", "en-US", &field);
@@ -190,9 +187,8 @@ TEST(AutofillFieldTest, FillSelectControlByContents) {
 
   // Set semantically empty values for each option, so that only the contents
   // can be used for matching.
-  for (size_t i = 0; i < field.option_values.size(); ++i) {
-    field.option_values[i] = ASCIIToUTF16(base::StringPrintf("%" PRIuS, i));
-  }
+  for (size_t i = 0; i < field.option_values.size(); ++i)
+    field.option_values[i] = base::SizeTToString16(i);
 
   AutofillField::FillFormField(
       field, ASCIIToUTF16("Miney"), "en-US", "en-US", &field);
@@ -393,7 +389,7 @@ TEST(AutofillFieldTest, FillSelectControlWithAbbreviatedMonthName) {
 
 TEST(AutofillFieldTest, FillSelectControlWithFullMonthName) {
   const char* const kMonthsFull[] = {
-    "January","February", "March", "April", "May", "June",
+    "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
   };
   AutofillField field(
@@ -620,6 +616,60 @@ TEST(AutofillFieldTest, FillCreditCardNumberWithUnequalSizeSplits) {
 
   // Verify for expected results.
   EXPECT_EQ(ASCIIToUTF16(test.card_number_), cc_number_full.value);
+}
+
+TEST(AutofillFieldTest, FindValueInSelectControl) {
+  const size_t kBadIndex = 1000;
+
+  {
+    const char* const kCountries[] = {
+      "Albania", "Canada"
+    };
+    FormFieldData field(
+        GenerateSelectFieldWithOptions(kCountries, arraysize(kCountries)));
+    size_t index = kBadIndex;
+    bool ret = AutofillField::FindValueInSelectControl(
+        field, ASCIIToUTF16("Canada"), &index);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(1U, index);
+
+    index = kBadIndex;
+    ret = AutofillField::FindValueInSelectControl(
+        field, ASCIIToUTF16("CANADA"), &index);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(1U, index);
+
+    index = kBadIndex;
+    ret = AutofillField::FindValueInSelectControl(
+        field, ASCIIToUTF16("Canadia"), &index);
+    EXPECT_FALSE(ret);
+    EXPECT_EQ(kBadIndex, index);
+  }
+
+  {
+    const char* const kProvinces[] = {
+      "ALBERTA", "QUÉBEC", "NOVA SCOTIA",
+    };
+    FormFieldData field(
+        GenerateSelectFieldWithOptions(kProvinces, arraysize(kProvinces)));
+    size_t index = kBadIndex;
+    bool ret = AutofillField::FindValueInSelectControl(
+        field, ASCIIToUTF16("alberta"), &index);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(0U, index);
+
+    index = kBadIndex;
+    ret = AutofillField::FindValueInSelectControl(
+        field, UTF8ToUTF16("québec"), &index);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(1U, index);
+
+    index = kBadIndex;
+    ret = AutofillField::FindValueInSelectControl(
+        field, UTF8ToUTF16("NoVaScOtIa"), &index);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(2U, index);
+  }
 }
 
 }  // namespace

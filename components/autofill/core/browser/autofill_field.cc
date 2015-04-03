@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/autofill_field.h"
 
 #include "base/command_line.h"
+#include "base/i18n/string_compare.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/sha1.h"
@@ -379,6 +380,27 @@ std::string Hash32Bit(const std::string& str) {
   return base::UintToString(hash32);
 }
 
+scoped_ptr<icu::Collator> CreateCaseInsensitiveCollator() {
+  UErrorCode error = U_ZERO_ERROR;
+  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
+  DCHECK(U_SUCCESS(error));
+  collator->setStrength(icu::Collator::PRIMARY);
+  return collator;
+}
+
+base::string16 RemoveWhitespace(const base::string16& value) {
+  base::string16 stripped_value;
+  base::RemoveChars(value, base::kWhitespaceUTF16, &stripped_value);
+  return stripped_value;
+}
+
+bool StringsEqualWithCollator(const base::string16& lhs,
+                              const base::string16& rhs,
+                              icu::Collator* collator) {
+  return base::i18n::CompareString16WithCollator(collator, lhs, rhs) ==
+      UCOL_EQUAL;
+}
+
 }  // namespace
 
 AutofillField::AutofillField()
@@ -529,22 +551,23 @@ base::string16 AutofillField::GetPhoneNumberValue(
 bool AutofillField::FindValueInSelectControl(const FormFieldData& field,
                                              const base::string16& value,
                                              size_t* index) {
-  // TODO(thestig): Improve this. See http://crbug.com/470726)
-  // Try stripping off spaces.
-  base::string16 value_stripped;
-  base::RemoveChars(base::StringToLowerASCII(value), base::kWhitespaceUTF16,
-                    &value_stripped);
-  for (size_t i = 0; i < field.option_values.size(); ++i) {
-    base::string16 option_value_lowercase;
-    base::RemoveChars(base::StringToLowerASCII(field.option_values[i]),
-                      base::kWhitespaceUTF16, &option_value_lowercase);
-    base::string16 option_contents_lowercase;
-    base::RemoveChars(base::StringToLowerASCII(field.option_contents[i]),
-                      base::kWhitespaceUTF16, &option_contents_lowercase);
+  scoped_ptr<icu::Collator> collator = CreateCaseInsensitiveCollator();
 
-    // Perform a case-insensitive comparison.
-    if (value_stripped == option_value_lowercase ||
-        value_stripped == option_contents_lowercase) {
+  // Strip off spaces for all values in the comparisons.
+  const base::string16 value_stripped = RemoveWhitespace(value);
+
+  for (size_t i = 0; i < field.option_values.size(); ++i) {
+    base::string16 option_value = RemoveWhitespace(field.option_values[i]);
+    if (StringsEqualWithCollator(value_stripped, option_value,
+                                 collator.get())) {
+      if (index)
+        *index = i;
+      return true;
+    }
+
+    base::string16 option_contents = RemoveWhitespace(field.option_contents[i]);
+    if (StringsEqualWithCollator(value_stripped, option_contents,
+                                 collator.get())) {
       if (index)
         *index = i;
       return true;
