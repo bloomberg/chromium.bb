@@ -242,8 +242,7 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
 
   def testDepotTools(self):
     """Test that the entry point used by depot_tools works."""
-    path = os.path.join(constants.SOURCE_ROOT, 'chromite', 'buildbot',
-                        'cbuildbot')
+    path = os.path.join(constants.SOURCE_ROOT, 'chromite', 'bin', 'cbuildbot')
 
     # Verify the tests below actually are testing correct behaviour;
     # specifically that it doesn't always just return 0.
