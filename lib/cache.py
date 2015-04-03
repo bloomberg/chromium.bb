@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import errno
 import os
 import shutil
 import tempfile
@@ -296,3 +297,24 @@ class TarballCache(RemoteCache):
       os.mkdir(extract_path)
       Untar(tarball_path, extract_path)
       DiskCache._Insert(self, key, extract_path)
+
+  def _KeyExists(self, key):
+    """Specialized DiskCache._KeyExits that ignores empty directories.
+
+    The normal _KeyExists just checks to see if the key path exists in the cache
+    directory. Many tests mock out RunCommand then fetch a tarball. The mock
+    blocks untarring into it. This leaves behind an empty dir which blocks
+    future untarring in non-test scripts.
+
+    See crbug.com/468838
+    """
+    # Wipe out empty directories before testing for existence.
+    key_path = self._GetKeyPath(key)
+
+    try:
+      os.rmdir(key_path)
+    except OSError as ex:
+      if ex.errno not in (errno.ENOTEMPTY, errno.ENOENT):
+        raise
+
+    return os.path.exists(key_path)
