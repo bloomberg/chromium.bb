@@ -326,6 +326,13 @@ config("compiler") {
 
     defines += [ "_FILE_OFFSET_BITS=64" ]
 
+    if (!is_android) {
+      defines += [
+        "_LARGEFILE_SOURCE",
+        "_LARGEFILE64_SOURCE",
+      ]
+    }
+
     # Omit unwind support in official builds to save space. We can use breakpad
     # for these builds.
     if (is_chrome_branded && is_official_build) {
