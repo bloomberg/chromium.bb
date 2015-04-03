@@ -2100,6 +2100,7 @@ void Element::parseAttribute(const QualifiedName& name, const AtomicString& valu
             setTabIndexExplicitly(max(static_cast<int>(std::numeric_limits<short>::min()), std::min(tabindex, static_cast<int>(std::numeric_limits<short>::max()))));
         }
     } else if (RuntimeEnabledFeatures::tabStopAttributeEnabled() && name == tabstopAttr) {
+        UseCounter::count(document(), UseCounter::TabStopAttribute);
         if (!hasAttribute(tabstopAttr)) {
             // tabstop attribute removed.
             clearElementFlag(TabStopWasSetExplicitly);
