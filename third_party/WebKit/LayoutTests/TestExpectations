@@ -2046,5 +2046,6 @@ crbug.com/473633 http/tests/inspector/service-workers/user-agent-override.html [
 crbug.com/473626 fast/forms/form-submission-cancelable.html [ Pass Timeout ]
 crbug.com/473626 virtual/slimmingpaint/fast/forms/form-submission-cancelable.html [ Pass Timeout ]
 crbug.com/461041 fast/forms/calendar-picker/month-picker-ax.html [ Pass Timeout ]
+crbug.com/473632 fast/dom/Geolocation/success-clear-watch.html [ Pass Timeout ]
 
 crbug.com/472905 inspector/elements/styles/page-reload-update-sidebar.html [ Pass Failure ]
