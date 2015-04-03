@@ -7,8 +7,11 @@ package org.chromium.chrome.browser;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.chromium.base.ActivityState;
@@ -46,6 +49,9 @@ import java.util.concurrent.Callable;
 public abstract class ChromiumApplication extends ContentApplication {
 
     private static final String TAG = "ChromiumApplication";
+    private static final String PREF_BOOT_TIMESTAMP =
+            "com.google.android.apps.chrome.ChromeMobileApplication.BOOT_TIMESTAMP";
+    private static final long BOOT_TIMESTAMP_MARGIN_MS = 1000;
 
     /**
      * Returns whether the Activity is being shown in multi-window mode.
@@ -282,6 +288,36 @@ public abstract class ChromiumApplication extends ContentApplication {
         }
     }
 
+    /**
+     * Removes all session cookies (cookies with no expiration date) after device reboots.
+     * This function will incorrectly clear cookies when Daylight Savings Time changes the clock.
+     * Without a way to get a monotonically increasing system clock, the boot timestamp will be off
+     * by one hour.  However, this should only happen at most once when the clock changes since the
+     * updated timestamp is immediately saved.
+     */
+    protected void removeSessionCookies() {
+        long lastKnownBootTimestamp =
+                PreferenceManager.getDefaultSharedPreferences(this).getLong(PREF_BOOT_TIMESTAMP, 0);
+        long bootTimestamp = System.currentTimeMillis() - SystemClock.uptimeMillis();
+        long difference = bootTimestamp - lastKnownBootTimestamp;
+
+        // Allow some leeway to account for fractions of milliseconds.
+        if (Math.abs(difference) > BOOT_TIMESTAMP_MARGIN_MS) {
+            nativeRemoveSessionCookies();
+
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putLong(PREF_BOOT_TIMESTAMP, bootTimestamp);
+            editor.apply();
+        }
+    }
+
+    protected void changeAppStatus(boolean inForeground) {
+        nativeChangeAppStatus(inForeground);
+    }
+
+    private static native void nativeRemoveSessionCookies();
+    private static native void nativeChangeAppStatus(boolean inForeground);
     private static native String nativeGetBrowserUserAgent();
     private static native void nativeFlushPersistentData();
 }

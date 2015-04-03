@@ -12,17 +12,21 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/protocol_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ChromiumApplication_jni.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using base::android::ConvertUTF8ToJavaString;
 
 namespace {
+
 void FlushCookiesOnIOThread(
     scoped_refptr<net::URLRequestContextGetter> getter) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -43,6 +47,29 @@ void CommitPendingWritesForProfile(Profile* profile) {
                  make_scoped_refptr(profile->GetRequestContext())));
   profile->GetNetworkPredictor()->SaveStateForNextStartupAndTrim();
 }
+
+void RemoveSessionCookiesOnIOThread(
+    scoped_refptr<net::URLRequestContextGetter> getter) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  getter->GetURLRequestContext()->cookie_store()->DeleteSessionCookiesAsync(
+      net::CookieStore::DeleteCallback());
+}
+
+void RemoveSessionCookiesForProfile(Profile* profile) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&RemoveSessionCookiesOnIOThread,
+                 make_scoped_refptr(profile->GetRequestContext())));
+}
+
+void ChangeAppStatusOnIOThread(SafeBrowsingService* sb_service,
+                               jboolean foreground) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  SafeBrowsingProtocolManager* proto_manager = sb_service->protocol_manager();
+  if (proto_manager)
+    proto_manager->SetAppInForeground(foreground);
+}
+
 }  // namespace
 
 static jstring GetBrowserUserAgent(JNIEnv* env, jclass clazz) {
@@ -58,6 +85,21 @@ static void FlushPersistentData(JNIEnv* env, jclass obj) {
 
   if (g_browser_process->local_state())
     g_browser_process->local_state()->CommitPendingWrite();
+}
+
+static void RemoveSessionCookies(JNIEnv* env, jclass obj) {
+  std::vector<Profile*> loaded_profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  std::for_each(loaded_profiles.begin(), loaded_profiles.end(),
+                RemoveSessionCookiesForProfile);
+}
+
+static void ChangeAppStatus(JNIEnv* env, jclass obj, jboolean foreground) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&ChangeAppStatusOnIOThread,
+                 base::Unretained(g_browser_process->safe_browsing_service()),
+                 foreground));
 }
 
 namespace chrome {
