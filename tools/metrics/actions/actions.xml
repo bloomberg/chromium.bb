@@ -7057,6 +7057,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Launcher_ButtonPressed_Mouse">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <description>
+    Recorded when the user activates a shelf button using the mouse.
+  </description>
+</action>
+
+<action name="Launcher_ButtonPressed_Touch">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <description>
+    Recorded when the user activates a shelf button using touch.
+  </description>
+</action>
+
 <action name="Launcher_ClickOnApp">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -7065,6 +7081,14 @@ should be able to be added at any place in this file.
 <action name="Launcher_ClickOnApplistButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Launcher_LaunchTask">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <description>
+    Recorded when the user launches a new task from the shelf.
+  </description>
 </action>
 
 <action name="LoadURL">

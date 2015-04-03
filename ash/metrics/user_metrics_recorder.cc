@@ -211,12 +211,23 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_GESTURE_OVERVIEW:
       base::RecordAction(base::UserMetricsAction("Gesture_Overview"));
       break;
+    case ash::UMA_LAUNCHER_BUTTON_PRESSED_WITH_MOUSE:
+      base::RecordAction(
+          base::UserMetricsAction("Launcher_ButtonPressed_Mouse"));
+      break;
+    case ash::UMA_LAUNCHER_BUTTON_PRESSED_WITH_TOUCH:
+      base::RecordAction(
+          base::UserMetricsAction("Launcher_ButtonPressed_Touch"));
+      break;
     case ash::UMA_LAUNCHER_CLICK_ON_APP:
       base::RecordAction(base::UserMetricsAction("Launcher_ClickOnApp"));
       break;
     case ash::UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON:
       base::RecordAction(
           base::UserMetricsAction("Launcher_ClickOnApplistButton"));
+      break;
+    case ash::UMA_LAUNCHER_LAUNCH_TASK:
+      base::RecordAction(base::UserMetricsAction("Launcher_LaunchTask"));
       break;
     case UMA_MAXIMIZE_MODE_DISABLED:
       base::RecordAction(base::UserMetricsAction("Touchview_Disabled"));

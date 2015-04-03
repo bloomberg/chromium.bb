@@ -309,6 +309,15 @@ void ReflectItemStatus(const ShelfItem& item, ShelfButton* button) {
   }
 }
 
+void RecordIconActivatedAction(const ui::Event& event) {
+  if (event.IsMouseEvent())
+    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        UMA_LAUNCHER_BUTTON_PRESSED_WITH_MOUSE);
+  else if (event.IsGestureEvent())
+    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+        UMA_LAUNCHER_BUTTON_PRESSED_WITH_TOUCH);
+}
+
 }  // namespace
 
 // AnimationDelegate used when deleting an item. This steadily decreased the
@@ -1683,6 +1692,7 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
 
   if (sender == overflow_button_) {
     ToggleOverflowBubble();
+    RecordIconActivatedAction(event);
     return;
   }
 
@@ -1741,10 +1751,16 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
         break;
     }
 
+    RecordIconActivatedAction(event);
+
     ShelfItemDelegate* item_delegate =
         item_manager_->GetShelfItemDelegate(model_->items()[view_index].id);
-    if (!item_delegate->ItemSelected(event))
+    if (!item_delegate->ItemSelected(event)) {
       ShowListMenuForView(model_->items()[view_index], sender, event);
+    } else {
+      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          UMA_LAUNCHER_LAUNCH_TASK);
+    }
   }
 }
 
