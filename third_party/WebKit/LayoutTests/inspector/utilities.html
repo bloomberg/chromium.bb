@@ -421,8 +421,8 @@ function test()
         {
             var stringA = " ".repeat(10000);
             var stringB = stringA + " ";
-            var hashA = stringA.hashCode();
-            InspectorTest.assertTrue(hashA !== stringB.hashCode());
+            var hashA = String.hashCode(stringA);
+            InspectorTest.assertTrue(hashA !== String.hashCode(stringB));
             InspectorTest.assertTrue(isFinite(hashA));
             InspectorTest.assertTrue(hashA + 1 !== hashA);
             next();
