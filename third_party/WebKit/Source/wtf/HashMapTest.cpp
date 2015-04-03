@@ -284,4 +284,22 @@ TEST(HashMapTest, AddResultVectorValue)
     EXPECT_EQ(11, map.find(1)->value.first());
 }
 
+class InstanceCounter {
+public:
+    InstanceCounter() { ++counter; }
+    InstanceCounter(const InstanceCounter& another) { ++counter; }
+    ~InstanceCounter() { --counter; }
+    static int counter;
+};
+int InstanceCounter::counter = 0;
+
+TEST(HashMapTest, ValueTypeDestructed)
+{
+    InstanceCounter::counter = 0;
+    HashMap<int, InstanceCounter> map;
+    map.set(1, InstanceCounter());
+    map.clear();
+    EXPECT_EQ(0, InstanceCounter::counter);
+}
+
 } // namespace

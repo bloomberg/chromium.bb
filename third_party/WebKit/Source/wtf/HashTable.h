@@ -1009,10 +1009,11 @@ namespace WTF {
                 // store. With the default allocator it's enough to call the
                 // destructor, since we will free the memory explicitly and
                 // we won't see the memory with the bucket again.
-                if (!isEmptyOrDeletedBucket(table[i])) {
-                    if (Allocator::isGarbageCollected)
+                if (Allocator::isGarbageCollected) {
+                    if (!isEmptyOrDeletedBucket(table[i]))
                         deleteBucket(table[i]);
-                    else
+                } else {
+                    if (!isDeletedBucket(table[i]))
                         table[i].~ValueType();
                 }
             }
