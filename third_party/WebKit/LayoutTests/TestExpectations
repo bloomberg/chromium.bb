@@ -658,8 +658,6 @@ crbug.com/321237 [ Lion ] fast/text/international/complex-text-leading-space-wra
 crbug.com/321237 [ Lion ] virtual/slimmingpaint/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 crbug.com/321237 [ Lion ] virtual/antialiasedtext/fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
 
-crbug.com/449949 [ Android ] inspector-protocol/input/dispatchMouseEvent.html [ Failure Pass ]
-
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 crbug.com/309675 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
 
