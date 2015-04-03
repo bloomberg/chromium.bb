@@ -12413,9 +12413,6 @@ The following application will be launched if you accept this request:
       <message name="IDS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
         Automatically send usage statistics and crash reports to Google
       </message>
-      <message name="IDS_OPTIONS_ENABLE_RAPPOR" desc="The label of the checkbox to enable/disable rappor metrics logging">
-        Send <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>RAPPOR<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> statistics to Google
-      </message>
       <message name="IDS_OPTIONS_ENABLE_LOGGING_RESTART" desc="The restart string after changing crash and user metrics logging. The text within the | symbols will be made into a link that should indicate to the user that clicking on it will cause Chrome to restart.">
         (requires Chrome |restart|)
       </message>

@@ -478,11 +478,6 @@ cr.define('options', function() {
         $('metrics-reporting-enabled').checked =
             loadTimeData.getBoolean('metricsReportingEnabledAtStart');
       }
-      // 'rappor-setting' element is only present on Chrome branded builds.
-      if ($('rappor-setting')) {
-        $('rappor-setting').hidden =
-            !loadTimeData.getBoolean('hasRapporOption');
-      }
       $('networkPredictionOptions').onchange = function(event) {
         var value = (event.target.checked ?
             NetworkPredictionOptions.WIFI_ONLY :

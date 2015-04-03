@@ -13,9 +13,6 @@ const char kRapporCohortDeprecated[] = "rappor.cohort";
 // A randomly generated number, which determines cohorts data is reported for.
 const char kRapporCohortSeed[] = "rappor.cohort_seed";
 
-// True if rappor reports should be uploaded.
-const char kRapporEnabled[] = "rappor.enabled";
-
 // Timestamp of the last time we sampled daily metrics.
 const char kRapporLastDailySample[] = "rappor.last_daily_sample";
 

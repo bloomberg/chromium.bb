@@ -9364,16 +9364,6 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="Options_RapporEnabledCheckbox_Disable">
-  <owner>holte@chromium.org</owner>
-  <description>Settings: Privacy: RAPPOR disabled</description>
-</action>
-
-<action name="Options_RapporEnabledCheckbox_Enable">
-  <owner>holte@chromium.org</owner>
-  <description>Settings: Privacy: RAPPOR enabled</description>
-</action>
-
 <action name="Options_ResetAutoOpenFiles">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

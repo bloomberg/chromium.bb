@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/threading/thread_checker.h"
-#include "components/rappor/rappor_service.h"
 
 class ChromeMetricsServiceClient;
 class PrefService;
@@ -59,12 +58,6 @@ class MetricsServicesManager {
 
   // Update the managed services when permissions for uploading metrics change.
   void UpdateUploadPermissions(bool may_upload);
-
-  // Returns true iff Rappor reporting is enabled.
-  bool IsRapporEnabled(bool metrics_enabled) const;
-
-  // Returns the recording level for Rappor metrics.
-  rappor::RecordingLevel GetRapporRecordingLevel(bool metrics_enabled) const;
 
  private:
   // Update the managed services when permissions for recording/uploading

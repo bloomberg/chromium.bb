@@ -9,9 +9,6 @@
 
 typedef base::Callback<void(bool)> OnMetricsReportingCallbackType;
 
-// Returns true if RAPPOR is controlled by a seperate option.
-bool HasRapporOption();
-
 // Initiates a change to metrics reporting state to the new value of |enabled|.
 // Starts or stops the metrics service based on the new state and then runs
 // |callback_fn| (which can be null) with the updated state (as the operation

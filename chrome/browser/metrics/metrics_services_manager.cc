@@ -14,15 +14,12 @@
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
-#include "components/rappor/rappor_pref_names.h"
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -30,32 +27,12 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #endif
 
-namespace {
-
-// Check if the safe browsing setting is enabled for all existing profiles.
-bool CheckSafeBrowsingSettings() {
-  bool all_enabled = true;
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (profile_manager) {
-    std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
-    for (Profile* profile : profiles) {
-      if (profile->IsOffTheRecord())
-        continue;
-      all_enabled = all_enabled && profile->GetPrefs()->GetBoolean(
-          prefs::kSafeBrowsingEnabled);
-    }
-  }
-  return all_enabled;
-}
-
 // Posts |GoogleUpdateSettings::StoreMetricsClientInfo| on blocking pool thread
 // because it needs access to IO and cannot work from UI thread.
 void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
   content::BrowserThread::GetBlockingPool()->PostTask(FROM_HERE,
       base::Bind(&GoogleUpdateSettings::StoreMetricsClientInfo, client_info));
 }
-
-}  // namespace
 
 MetricsServicesManager::MetricsServicesManager(PrefService* local_state)
     : local_state_(local_state),
@@ -121,44 +98,6 @@ metrics::MetricsStateManager* MetricsServicesManager::GetMetricsStateManager() {
   return metrics_state_manager_.get();
 }
 
-bool MetricsServicesManager::IsRapporEnabled(bool metrics_enabled) const {
-  if (!local_state_->HasPrefPath(rappor::prefs::kRapporEnabled)) {
-    // For upgrading users, derive an initial setting from UMA / safe browsing.
-    bool should_enable = metrics_enabled || CheckSafeBrowsingSettings();
-    local_state_->SetBoolean(rappor::prefs::kRapporEnabled, should_enable);
-  }
-  return local_state_->GetBoolean(rappor::prefs::kRapporEnabled);
-}
-
-rappor::RecordingLevel MetricsServicesManager::GetRapporRecordingLevel(
-    bool metrics_enabled) const {
-  rappor::RecordingLevel recording_level = rappor::RECORDING_DISABLED;
-#if defined(GOOGLE_CHROME_BUILD)
-  if (HasRapporOption()) {
-    if (IsRapporEnabled(metrics_enabled)) {
-      recording_level = metrics_enabled ?
-                        rappor::FINE_LEVEL :
-                        rappor::COARSE_LEVEL;
-    }
-  } else if (metrics_enabled) {
-    recording_level = rappor::FINE_LEVEL;
-  }
-#endif  // defined(GOOGLE_CHROME_BUILD)
-  return recording_level;
-}
-
-void MetricsServicesManager::UpdateRapporService() {
-  GetRapporService()->Update(GetRapporRecordingLevel(may_record_), may_upload_);
-  // The first time this function is called, we can start listening for
-  // changes to RAPPOR option.  This avoids starting the RapporService in
-  // tests which do not intend to start services.
-  if (pref_change_registrar_.IsEmpty() && HasRapporOption()) {
-    pref_change_registrar_.Add(rappor::prefs::kRapporEnabled,
-        base::Bind(&MetricsServicesManager::UpdateRapporService,
-                   base::Unretained(this)));
-  }
-}
-
 void MetricsServicesManager::UpdatePermissions(bool may_record,
                                                bool may_upload) {
   // Stash the current permissions so that we can update the RapporService
@@ -194,7 +133,12 @@ void MetricsServicesManager::UpdatePermissions(bool may_record,
     metrics->Stop();
   }
 
-  UpdateRapporService();
+  rappor::RecordingLevel recording_level = rappor::RECORDING_DISABLED;
+#if defined(GOOGLE_CHROME_BUILD)
+  if (may_record)
+    recording_level = rappor::FINE_LEVEL
+#endif  // defined(GOOGLE_CHROME_BUILD)
+  GetRapporService()->Update(recording_level, may_upload);
 }
 
 void MetricsServicesManager::UpdateUploadPermissions(bool may_upload) {

@@ -412,9 +412,6 @@ extern const char kKillReasonURL[];
 // "Learn more" URL for the Privacy section under Options.
 extern const char kPrivacyLearnMoreURL[];
 
-// Help URL for the Rappor setting.
-extern const char kRapporLearnMoreURL[];
-
 // "Learn more" URL for the "Do not track" setting in the privacy section.
 extern const char kDoNotTrackLearnMoreURL[];
 

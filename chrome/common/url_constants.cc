@@ -486,13 +486,6 @@ const char kPrivacyLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_privacy";
 #endif
 
-const char kRapporLearnMoreURL[] =
-#if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=rappor";
-#else
-    "https://support.google.com/chrome/?p=rappor";
-#endif
-
 const char kDoNotTrackLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromeos/?p=settings_do_not_track";

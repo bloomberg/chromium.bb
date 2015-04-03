@@ -974,16 +974,16 @@
       },
       'example_value': True,
       'id': 15,
-      'caption': '''Enable reporting of RAPPOR, usage, and crash-related data''',
-      'desc': '''Enables anonymous reporting of RAPPOR, usage, and crash-related data about <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to Google and prevents users from changing this setting.
+      'caption': '''Enable reporting of usage and crash-related data''',
+      'desc': '''Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to Google and prevents users from changing this setting.
 
-      If you enable this setting, anonymous reporting of RAPPOR, usage, and crash-related data is sent to Google.
+      If you enable this setting, anonymous reporting of usage and crash-related data is sent to Google.
 
-      If you disable this setting, anonymous reporting of RAPPOR, usage, and crash-related data is never sent to Google.
+      If you disable this setting, anonymous reporting of usage and crash-related data is never sent to Google.
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If this policy is left not set, RAPPOR will be enabled unless disabled by the user, and the usage and crash reporting setting will be what the user chose upon installation / first run.
+      If this policy is left not set the setting will be what the user chose upon installation / first run.
 
       This policy is not available on Windows instances that are not joined to
       an Active Directory domain.''',

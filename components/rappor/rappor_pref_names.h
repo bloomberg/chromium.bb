@@ -12,7 +12,6 @@ namespace prefs {
 // component. Keep alphabetized, and document each in the .cc file.
 extern const char kRapporCohortDeprecated[];
 extern const char kRapporCohortSeed[];
-extern const char kRapporEnabled[];
 extern const char kRapporLastDailySample[];
 extern const char kRapporSecret[];
 

@@ -38,7 +38,6 @@ void RecordLoadSecretResult(LoadResult reason) {
 } // namespace
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kRapporEnabled, true);
   registry->RegisterStringPref(prefs::kRapporSecret, std::string());
   registry->RegisterIntegerPref(prefs::kRapporCohortDeprecated, -1);
   registry->RegisterIntegerPref(prefs::kRapporCohortSeed, -1);
