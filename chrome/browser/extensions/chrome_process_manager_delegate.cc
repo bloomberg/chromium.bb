@@ -113,7 +113,7 @@ void ChromeProcessManagerDelegate::OnBrowserWindowReady(Browser* browser) {
   // a related incognito profile or other regular profiles.
   ProcessManager* manager = ProcessManager::Get(profile);
   DCHECK(manager);
-  DCHECK_EQ(profile, manager->GetBrowserContext());
+  DCHECK_EQ(profile, manager->browser_context());
   manager->MaybeCreateStartupBackgroundHosts();
 
   // For incognito profiles also inform the original profile's process manager
@@ -124,7 +124,7 @@ void ChromeProcessManagerDelegate::OnBrowserWindowReady(Browser* browser) {
     Profile* original_profile = profile->GetOriginalProfile();
     ProcessManager* original_manager = ProcessManager::Get(original_profile);
     DCHECK(original_manager);
-    DCHECK_EQ(original_profile, original_manager->GetBrowserContext());
+    DCHECK_EQ(original_profile, original_manager->browser_context());
     original_manager->MaybeCreateStartupBackgroundHosts();
   }
 }

@@ -16,6 +16,7 @@ class Profile;
 class GURL;
 
 namespace content {
+class RenderFrameHost;
 class RenderViewHost;
 }
 
@@ -63,7 +64,7 @@ class InspectableViewsFinder {
   // Returns all inspectable views for the extension process.
   void GetViewsForExtensionProcess(
       const Extension& extension,
-      const std::set<content::RenderViewHost*>& views,
+      const std::set<content::RenderFrameHost*>& frames,
       bool is_incognito,
       ViewList* result);
 

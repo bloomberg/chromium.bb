@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/developer_private.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -105,7 +106,7 @@ void InspectableViewsFinder::GetViewsForExtensionForProfile(
   // Get the extension process's active views.
   GetViewsForExtensionProcess(
       extension,
-      process_manager->GetRenderViewHostsForExtension(extension.id()),
+      process_manager->GetRenderFrameHostsForExtension(extension.id()),
       is_incognito,
       result);
   // Get app window views, if not incognito.
@@ -126,14 +127,14 @@ void InspectableViewsFinder::GetViewsForExtensionForProfile(
 
 void InspectableViewsFinder::GetViewsForExtensionProcess(
     const Extension& extension,
-    const std::set<content::RenderViewHost*>& views,
+    const std::set<content::RenderFrameHost*>& hosts,
     bool is_incognito,
     ViewList* result) {
-  for (const content::RenderViewHost* host : views) {
+  for (content::RenderFrameHost* host : hosts) {
     content::WebContents* web_contents =
-        content::WebContents::FromRenderViewHost(host);
+        content::WebContents::FromRenderFrameHost(host);
     ViewType host_type = GetViewType(web_contents);
-    if (host == deleting_rvh_ ||
+    if (host->GetRenderViewHost() == deleting_rvh_ ||
         host_type == VIEW_TYPE_EXTENSION_POPUP ||
         host_type == VIEW_TYPE_EXTENSION_DIALOG) {
       continue;
@@ -144,7 +145,7 @@ void InspectableViewsFinder::GetViewsForExtensionProcess(
     result->push_back(ConstructView(
         url,
         process->GetID(),
-        host->GetRoutingID(),
+        host->GetRenderViewHost()->GetRoutingID(),
         is_incognito,
         host_type));
   }

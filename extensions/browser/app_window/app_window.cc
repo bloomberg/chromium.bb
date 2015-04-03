@@ -253,6 +253,7 @@ void AppWindow::Init(const GURL& url,
   app_window_contents_->Initialize(browser_context(), url);
 
   content::WebContentsObserver::Observe(web_contents());
+  SetViewType(web_contents(), VIEW_TYPE_APP_WINDOW);
   app_delegate_->InitWebContents(web_contents());
 
   WebContentsModalDialogManager::CreateForWebContents(web_contents());
@@ -260,7 +261,6 @@ void AppWindow::Init(const GURL& url,
   web_contents()->SetDelegate(this);
   WebContentsModalDialogManager::FromWebContents(web_contents())
       ->SetDelegate(this);
-  SetViewType(web_contents(), VIEW_TYPE_APP_WINDOW);
 
   // Initialize the window
   CreateParams new_params = LoadDefaults(params);

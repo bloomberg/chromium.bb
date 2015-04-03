@@ -259,11 +259,8 @@ ChromeContentBrowserClientExtensionsPart::ShouldTryToUseExistingProcessHost(
       GetLoadedProfiles();
   for (size_t i = 0; i < profiles.size(); ++i) {
     ProcessManager* epm = ProcessManager::Get(profiles[i]);
-    for (ProcessManager::const_iterator iter = epm->background_hosts().begin();
-         iter != epm->background_hosts().end(); ++iter) {
-      const ExtensionHost* host = *iter;
+    for (extensions::ExtensionHost* host : epm->background_hosts())
       process_ids.insert(host->render_process_host()->GetID());
-    }
   }
 
   return (process_ids.size() >

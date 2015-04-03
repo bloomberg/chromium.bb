@@ -31,7 +31,7 @@ namespace {
 
 const Extension* GetExtensionForWebContents(WebContents* web_contents) {
   return extensions::ProcessManager::Get(web_contents->GetBrowserContext())
-      ->GetExtensionForRenderViewHost(web_contents->GetRenderViewHost());
+      ->GetExtensionForWebContents(web_contents);
 }
 
 }  // namespace
@@ -124,11 +124,10 @@ void ExtensionInformation::GetAll(const NewWebContentsCallback& callback) {
   }
 
   for (size_t i = 0; i < profiles.size(); ++i) {
-    const extensions::ProcessManager::ViewSet all_views =
-        extensions::ProcessManager::Get(profiles[i])->GetAllViews();
-    extensions::ProcessManager::ViewSet::const_iterator jt = all_views.begin();
-    for (; jt != all_views.end(); ++jt) {
-      WebContents* web_contents = WebContents::FromRenderViewHost(*jt);
+    const extensions::ProcessManager::FrameSet all_frames =
+        extensions::ProcessManager::Get(profiles[i])->GetAllFrames();
+    for (content::RenderFrameHost* host : all_frames) {
+      WebContents* web_contents = WebContents::FromRenderFrameHost(host);
       if (CheckOwnership(web_contents))
         callback.Run(web_contents);
     }
