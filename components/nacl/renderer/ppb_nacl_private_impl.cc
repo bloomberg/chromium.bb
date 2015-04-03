@@ -704,6 +704,30 @@ void GetNexeFd(PP_Instance instance,
       callback);
 }
 
+void LogTranslationFinishedUMA(const std::string& uma_suffix,
+                               int32_t opt_level,
+                               int32_t unknown_opt_level,
+                               int64_t nexe_size,
+                               int64_t pexe_size,
+                               int64_t compile_time_us,
+                               base::TimeDelta total_time) {
+  HistogramEnumerate("NaCl.Options.PNaCl.OptLevel" + uma_suffix, opt_level,
+                     unknown_opt_level + 1);
+  HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.CompileKBPerSec" + uma_suffix,
+                    pexe_size / 1024, compile_time_us);
+  HistogramSizeKB("NaCl.Perf.Size.PNaClTranslatedNexe" + uma_suffix,
+                  nexe_size / 1024);
+  HistogramSizeKB("NaCl.Perf.Size.Pexe" + uma_suffix, pexe_size / 1024);
+  HistogramRatio("NaCl.Perf.Size.PexeNexeSizePct" + uma_suffix, pexe_size,
+                 nexe_size);
+  HistogramTimeTranslation(
+      "NaCl.Perf.PNaClLoadTime.TotalUncachedTime" + uma_suffix,
+      total_time.InMilliseconds());
+  HistogramKBPerSec(
+      "NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec" + uma_suffix,
+      pexe_size / 1024, total_time.InMicroseconds());
+}
+
 void ReportTranslationFinished(PP_Instance instance,
                                PP_Bool success,
                                int32_t opt_level,
@@ -711,33 +735,22 @@ void ReportTranslationFinished(PP_Instance instance,
                                int64_t nexe_size,
                                int64_t pexe_size,
                                int64_t compile_time_us) {
-  // TODO(jvoung): Log use_subzero stat in UMA.
-  (void)use_subzero;
-  if (success == PP_TRUE) {
+  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (success == PP_TRUE && load_manager) {
+    base::TimeDelta total_time =
+        base::Time::Now() - load_manager->pnacl_start_time();
     static const int32_t kUnknownOptLevel = 4;
     if (opt_level < 0 || opt_level > 3)
       opt_level = kUnknownOptLevel;
-    HistogramEnumerate("NaCl.Options.PNaCl.OptLevel",
-                       opt_level,
-                       kUnknownOptLevel + 1);
-    HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.CompileKBPerSec",
-                      pexe_size / 1024,
-                      compile_time_us);
-    HistogramSizeKB("NaCl.Perf.Size.PNaClTranslatedNexe",
-                    nexe_size / 1024);
-    HistogramSizeKB("NaCl.Perf.Size.Pexe", pexe_size / 1024);
-    HistogramRatio("NaCl.Perf.Size.PexeNexeSizePct", pexe_size, nexe_size);
-
-    NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-    if (load_manager) {
-      base::TimeDelta total_time = base::Time::Now() -
-                                   load_manager->pnacl_start_time();
-      HistogramTimeTranslation("NaCl.Perf.PNaClLoadTime.TotalUncachedTime",
-                               total_time.InMilliseconds());
-      HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec",
-                        pexe_size / 1024,
-                        total_time.InMicroseconds());
-    }
+    // Log twice: once to cover all PNaCl UMA, and then a second
+    // time with the more specific UMA (Subzero vs LLC).
+    std::string uma_suffix(use_subzero ? ".Subzero" : ".LLC");
+    LogTranslationFinishedUMA("", opt_level, kUnknownOptLevel, nexe_size,
+                              pexe_size, compile_time_us, total_time);
+    LogTranslationFinishedUMA(uma_suffix, opt_level, kUnknownOptLevel,
+                              nexe_size, pexe_size, compile_time_us,
+                              total_time);
   }
 
   // If the resource host isn't initialized, don't try to do that here.
@@ -1509,10 +1522,16 @@ void LogTranslateTime(const char* histogram_name,
                  time_in_us / 1000));
 }
 
-void LogBytesCompiledVsDowloaded(int64_t pexe_bytes_compiled,
+void LogBytesCompiledVsDowloaded(PP_Bool use_subzero,
+                                 int64_t pexe_bytes_compiled,
                                  int64_t pexe_bytes_downloaded) {
   HistogramRatio("NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded",
                  pexe_bytes_compiled, pexe_bytes_downloaded);
+  HistogramRatio(
+      use_subzero
+          ? "NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded.Subzero"
+          : "NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded.LLC",
+      pexe_bytes_compiled, pexe_bytes_downloaded);
 }
 
 void SetPNaClStartTime(PP_Instance instance) {
@@ -1594,6 +1613,9 @@ class PexeDownloader : public blink::WebURLLoaderClient {
     }
 
     HistogramEnumerate("NaCl.Perf.PNaClCache.IsHit", cache_hit, 2);
+    HistogramEnumerate(use_subzero_ ? "NaCl.Perf.PNaClCache.IsHit.Subzero"
+                                    : "NaCl.Perf.PNaClCache.IsHit.LLC",
+                       cache_hit, 2);
     if (cache_hit) {
       stream_handler_->DidCacheHit(stream_handler_user_data_, file_handle);
 

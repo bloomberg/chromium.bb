@@ -366,8 +366,8 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
       TranslateFinished(pp_error);
   } else {
     // Compare download completion pct (100% now), to compile completion pct.
-    GetNaClInterface()->LogBytesCompiledVsDownloaded(pexe_bytes_compiled_,
-                                                     pexe_size_);
+    GetNaClInterface()->LogBytesCompiledVsDownloaded(
+        pnacl_options_.use_subzero, pexe_bytes_compiled_, pexe_size_);
     translate_thread_->EndStream();
   }
 }

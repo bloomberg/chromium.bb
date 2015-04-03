@@ -338,7 +338,8 @@ struct PPB_NaCl_Private {
    */
   void (*LogTranslateTime)(const char* histogram_name, int64_t time_us);
   /* Logs amount of pexe bytes compiled when download is complete. */
-  void (*LogBytesCompiledVsDownloaded)(int64_t pexe_bytes_compiled,
+  void (*LogBytesCompiledVsDownloaded)(PP_Bool use_subzero,
+                                       int64_t pexe_bytes_compiled,
                                        int64_t pexe_bytes_downloaded);
   /* Sets the start time for PNaCl downloading and translation to the current
    * time.

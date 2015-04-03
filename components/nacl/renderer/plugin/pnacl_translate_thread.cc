@@ -191,9 +191,15 @@ void PnaclTranslateThread::DoTranslate() {
                     error_info.message());
     return;
   }
+  int64_t compiler_load_time_total =
+      NaClGetTimeOfDayMicroseconds() - compiler_load_start_time;
+  GetNaClInterface()->LogTranslateTime("NaCl.Perf.PNaClLoadTime.LoadCompiler",
+                                       compiler_load_time_total);
   GetNaClInterface()->LogTranslateTime(
-      "NaCl.Perf.PNaClLoadTime.LoadCompiler",
-      NaClGetTimeOfDayMicroseconds() - compiler_load_start_time);
+      pnacl_options_->use_subzero
+          ? "NaCl.Perf.PNaClLoadTime.LoadCompiler.Subzero"
+          : "NaCl.Perf.PNaClLoadTime.LoadCompiler.LLC",
+      compiler_load_time_total);
 
   {
     nacl::MutexLocker ml(&subprocess_mu_);
@@ -307,6 +313,11 @@ void PnaclTranslateThread::DoTranslate() {
   compile_time_ = NaClGetTimeOfDayMicroseconds() - do_compile_start_time;
   GetNaClInterface()->LogTranslateTime("NaCl.Perf.PNaClLoadTime.CompileTime",
                                        compile_time_);
+  GetNaClInterface()->LogTranslateTime(
+      pnacl_options_->use_subzero
+          ? "NaCl.Perf.PNaClLoadTime.CompileTime.Subzero"
+          : "NaCl.Perf.PNaClLoadTime.CompileTime.LLC",
+      compile_time_);
 
   // Shut down the llc subprocess.
   NaClXMutexLock(&subprocess_mu_);

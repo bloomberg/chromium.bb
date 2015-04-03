@@ -5,11 +5,44 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 #include "components/nacl/browser/nacl_browser.h"
+#include "components/nacl/renderer/platform_info.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "content/public/test/browser_test_utils.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 namespace {
+
+void CheckPNaClLoadUMAs(base::HistogramTester& histograms,
+                        const std::string& compiler_suffix) {
+  // The histograms that do not vary by compiler (so no compiler_suffix).
+  histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.LoadLinker", 1);
+  histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.LinkTime", 1);
+  histograms.ExpectTotalCount("NaCl.Perf.Size.Manifest", 1);
+  histograms.ExpectTotalCount("NaCl.Perf.Size.Pexe", 1);
+  // The histograms that vary by compiler.
+  histograms.ExpectTotalCount("NaCl.Options.PNaCl.OptLevel" + compiler_suffix,
+                              1);
+  histograms.ExpectTotalCount(
+      "NaCl.Perf.Size.PNaClTranslatedNexe" + compiler_suffix, 1);
+  histograms.ExpectTotalCount(
+      "NaCl.Perf.Size.PexeNexeSizePct" + compiler_suffix, 1);
+  histograms.ExpectTotalCount(
+      "NaCl.Perf.PNaClLoadTime.LoadCompiler" + compiler_suffix, 1);
+  histograms.ExpectTotalCount(
+      "NaCl.Perf.PNaClLoadTime.CompileTime" + compiler_suffix, 1);
+  histograms.ExpectTotalCount(
+      "NaCl.Perf.PNaClLoadTime.CompileKBPerSec" + compiler_suffix, 1);
+  histograms.ExpectTotalCount(
+      "NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded" +
+          compiler_suffix,
+      1);
+  histograms.ExpectTotalCount(
+      "NaCl.Perf.PNaClLoadTime.TotalUncachedTime" + compiler_suffix, 1);
+  histograms.ExpectTotalCount(
+      "NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec" + compiler_suffix, 1);
+  histograms.ExpectTotalCount("NaCl.Perf.PNaClCache.IsHit" + compiler_suffix,
+                              1);
+}
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
   base::HistogramTester histograms;
@@ -62,24 +95,38 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
     histograms.ExpectTotalCount("NaCl.Perf.Size.Manifest", 1);
     histograms.ExpectTotalCount("NaCl.Perf.Size.Nexe", 1);
   } else {
-    histograms.ExpectTotalCount("NaCl.Options.PNaCl.OptLevel", 1);
-    histograms.ExpectTotalCount("NaCl.Perf.Size.Manifest", 1);
-    histograms.ExpectTotalCount("NaCl.Perf.Size.Pexe", 1);
-    histograms.ExpectTotalCount("NaCl.Perf.Size.PNaClTranslatedNexe", 1);
-    histograms.ExpectTotalCount("NaCl.Perf.Size.PexeNexeSizePct", 1);
-    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.LoadCompiler", 1);
-    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.LoadLinker", 1);
-    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.CompileTime", 1);
-    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.CompileKBPerSec", 1);
-    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.LinkTime", 1);
-    histograms.ExpectTotalCount(
-        "NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded", 1);
-    histograms.ExpectTotalCount("NaCl.Perf.PNaClLoadTime.TotalUncachedTime", 1);
-    histograms.ExpectTotalCount(
-        "NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec", 1);
-    histograms.ExpectTotalCount("NaCl.Perf.PNaClCache.IsHit", 1);
+    // There should be the total (suffix-free), and the LLC bucket.
+    // Subzero is tested separately.
+    CheckPNaClLoadUMAs(histograms, "");
+    CheckPNaClLoadUMAs(histograms, ".LLC");
   }
 })
+
+// Test that a successful load adds stats to Subzero buckets.
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclSubzero, SuccessfulLoadUMA) {
+  // Only test where Subzero is supported.
+  if (strcmp(nacl::GetSandboxArch(), "x86-32") != 0)
+    return;
+
+  base::HistogramTester histograms;
+  // Run a load test that uses the -O0 NMF option.
+  RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
+
+  // Make sure histograms from child processes have been accumulated in the
+  // browser brocess.
+  content::FetchHistogramsFromChildProcesses();
+
+  // Did the plugin report success?
+  histograms.ExpectUniqueSample("NaCl.LoadStatus.Plugin",
+                                PP_NACL_ERROR_LOAD_SUCCESS, 1);
+
+  // Did the sel_ldr report success?
+  histograms.ExpectUniqueSample("NaCl.LoadStatus.SelLdr", LOAD_OK, 1);
+
+  // There should be the total (suffix-free), and the Subzero bucket.
+  CheckPNaClLoadUMAs(histograms, "");
+  CheckPNaClLoadUMAs(histograms, ".Subzero");
+}
 
 class NaClBrowserTestNewlibVcacheExtension:
       public NaClBrowserTestNewlibExtension {
