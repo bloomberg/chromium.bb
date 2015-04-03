@@ -26864,6 +26864,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PlatformFile.FlushTime" units="milliseconds">
+  <owner>tnagel@chromium.org</owner>
+  <summary>The time it takes to run File::Flush().</summary>
+</histogram>
+
 <histogram name="PlatformFile.UnknownCreateFileErrors" units="code">
   <obsolete>
     Deprecated as of 2013-05, replaced by

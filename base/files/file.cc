@@ -4,6 +4,8 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram.h"
+#include "base/timer/elapsed_timer.h"
 
 #if defined(OS_POSIX)
 #include "base/files/file_posix_hooks_internal.h"
@@ -132,6 +134,13 @@ std::string File::ErrorToString(Error error) {
 
   NOTREACHED();
   return "";
+}
+
+bool File::Flush() {
+  ElapsedTimer timer;
+  bool return_value = DoFlush();
+  UMA_HISTOGRAM_TIMES("PlatformFile.FlushTime", timer.Elapsed());
+  return return_value;
 }
 
 }  // namespace base

@@ -418,19 +418,6 @@ bool File::SetLength(int64 length) {
   return !CallFtruncate(file_.get(), length);
 }
 
-bool File::Flush() {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(IsValid());
-#if defined(OS_NACL)
-  NOTIMPLEMENTED();  // NaCl doesn't implement fsync.
-  return true;
-#elif defined(OS_LINUX) || defined(OS_ANDROID)
-  return !HANDLE_EINTR(fdatasync(file_.get()));
-#else
-  return !HANDLE_EINTR(fsync(file_.get()));
-#endif
-}
-
 bool File::SetTimes(Time last_access_time, Time last_modified_time) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
@@ -552,6 +539,19 @@ void File::MemoryCheckingScopedFD::Check() const {
 
 void File::MemoryCheckingScopedFD::UpdateChecksum() {
   ComputeMemoryChecksum(&file_memory_checksum_);
+}
+
+bool File::DoFlush() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(IsValid());
+#if defined(OS_NACL)
+  NOTIMPLEMENTED();  // NaCl doesn't implement fsync.
+  return true;
+#elif defined(OS_LINUX) || defined(OS_ANDROID)
+  return !HANDLE_EINTR(fdatasync(file_.get()));
+#else
+  return !HANDLE_EINTR(fsync(file_.get()));
+#endif
 }
 
 void File::SetPlatformFile(PlatformFile file) {

@@ -256,12 +256,6 @@ bool File::SetLength(int64 length) {
            FALSE));
 }
 
-bool File::Flush() {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(IsValid());
-  return ::FlushFileBuffers(file_.Get()) != FALSE;
-}
-
 bool File::SetTimes(Time last_access_time, Time last_modified_time) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
@@ -366,6 +360,12 @@ File::Error File::OSErrorToFileError(DWORD last_error) {
                                   last_error);
       return FILE_ERROR_FAILED;
   }
+}
+
+bool File::DoFlush() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(IsValid());
+  return ::FlushFileBuffers(file_.Get()) != FALSE;
 }
 
 void File::SetPlatformFile(PlatformFile file) {

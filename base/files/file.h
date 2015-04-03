@@ -354,6 +354,10 @@ class BASE_EXPORT File {
   };
 #endif
 
+  // TODO(tnagel): Reintegrate into Flush() once histogram isn't needed anymore,
+  // cf. issue 473337.
+  bool DoFlush();
+
   void SetPlatformFile(PlatformFile file);
 
 #if defined(OS_WIN)
