@@ -74,12 +74,6 @@
             '../content/content_shell_and_tests.gyp:content_shell_apk',
             '<@(android_app_targets)',
             'android_builder_tests',
-            '../android_webview/android_webview.gyp:android_webview_apk',
-            '../android_webview/android_webview.gyp:system_webview_apk',
-            '../android_webview/android_webview_telemetry_shell.gyp:android_webview_telemetry_shell_apk',
-            '../chrome/chrome.gyp:chrome_shell_apk',
-            '../chrome/chrome.gyp:chrome_sync_shell_apk',
-            '../remoting/remoting.gyp:remoting_apk',
             '../tools/telemetry/telemetry.gyp:*#host',
             # TODO(nyquist) This should instead by a target for sync when all of
             # the sync-related code for Android has been upstreamed.
@@ -87,6 +81,16 @@
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
           ],
           'conditions': [
+            ['chromecast==0', {
+              'dependencies': [
+                '../android_webview/android_webview.gyp:android_webview_apk',
+                '../android_webview/android_webview.gyp:system_webview_apk',
+                '../android_webview/android_webview_telemetry_shell.gyp:android_webview_telemetry_shell_apk',
+                '../chrome/chrome.gyp:chrome_shell_apk',
+                '../chrome/chrome.gyp:chrome_sync_shell_apk',
+                '../remoting/remoting.gyp:remoting_apk',
+              ],
+            }],
             ['target_arch == "arm" or target_arch == "arm64"', {
               'dependencies': [
                 # The relocation packer only works on ARM or ARM64.
@@ -780,7 +784,6 @@
           'target_name': 'android_builder_tests',
           'type': 'none',
           'dependencies': [
-            '../android_webview/android_webview.gyp:android_webview_unittests',
             '../base/android/jni_generator/jni_generator.gyp:jni_generator_tests',
             '../base/base.gyp:base_unittests',
             '../breakpad/breakpad.gyp:breakpad_unittests_deps',
@@ -795,7 +798,6 @@
             '../cc/blink/cc_blink_tests.gyp:cc_blink_unittests',
             '../cc/cc_tests.gyp:cc_perftests_apk',
             '../cc/cc_tests.gyp:cc_unittests',
-            '../chrome/chrome.gyp:unit_tests',
             '../components/components_tests.gyp:components_unittests',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_gl_tests',
@@ -825,17 +827,9 @@
             '../ui/events/events.gyp:events_unittests',
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
             # Unit test bundles packaged as an apk.
-            '../android_webview/android_webview.gyp:android_webview_test_apk',
-            '../android_webview/android_webview.gyp:android_webview_unittests_apk',
             '../base/base.gyp:base_unittests_apk',
             '../cc/blink/cc_blink_tests.gyp:cc_blink_unittests_apk',
             '../cc/cc_tests.gyp:cc_unittests_apk',
-            '../chrome/chrome.gyp:chrome_junit_tests',
-            '../chrome/chrome.gyp:chrome_shell_test_apk',
-            '../chrome/chrome.gyp:chrome_sync_shell_test_apk',
-            '../chrome/chrome.gyp:chrome_shell_uiautomator_tests',
-            '../chrome/chrome.gyp:chromedriver_webview_shell_apk',
-            '../chrome/chrome.gyp:unit_tests_apk',
             '../components/components_tests.gyp:components_unittests_apk',
             '../content/content_shell_and_tests.gyp:content_browsertests_apk',
             '../content/content_shell_and_tests.gyp:content_gl_tests_apk',
@@ -858,6 +852,21 @@
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_apk',
           ],
           'conditions': [
+            ['chromecast==0', {
+              'dependencies': [
+                '../android_webview/android_webview.gyp:android_webview_unittests',
+                '../chrome/chrome.gyp:unit_tests',
+                # Unit test bundles packaged as an apk.
+                '../android_webview/android_webview.gyp:android_webview_test_apk',
+                '../android_webview/android_webview.gyp:android_webview_unittests_apk',
+                '../chrome/chrome.gyp:chrome_junit_tests',
+                '../chrome/chrome.gyp:chrome_shell_test_apk',
+                '../chrome/chrome.gyp:chrome_sync_shell_test_apk',
+                '../chrome/chrome.gyp:chrome_shell_uiautomator_tests',
+                '../chrome/chrome.gyp:chromedriver_webview_shell_apk',
+                '../chrome/chrome.gyp:unit_tests_apk',
+              ],
+            }],
             ['enable_webrtc==1 and "<(libpeer_target_type)"=="static_library"', {
               'dependencies': [
                 '../components/devtools_bridge.gyp:devtools_bridge_tests_apk',
