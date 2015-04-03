@@ -67,6 +67,7 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
         ClickableSpan clickableTermsSpan = new ClickableSpan() {
             @Override
             public void onClick(View widget) {
+                if (!isAdded()) return;
                 getPageDelegate().showEmbedContentViewActivity(R.string.terms_of_service_title,
                         R.string.chrome_terms_of_service_url);
             }
@@ -75,6 +76,7 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
         ClickableSpan clickablePrivacySpan = new ClickableSpan() {
             @Override
             public void onClick(View widget) {
+                if (!isAdded()) return;
                 getPageDelegate().showEmbedContentViewActivity(R.string.privacy_notice_title,
                         R.string.chrome_privacy_notice_url);
             }
