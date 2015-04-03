@@ -298,10 +298,6 @@ body.check-select button:hover {
   width: 32px;
 }
 
-.dialog-header button paper-ripple {
-  color: rgb(40, 40, 40);
-}
-
 body.check-select .dialog-header button paper-ripple {
   color: rgb(90, 90, 90);
 }
