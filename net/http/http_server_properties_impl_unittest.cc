@@ -245,12 +245,12 @@ TEST_F(AlternateProtocolServerPropertiesTest, Basic) {
   HostPortPair test_host_port_pair("foo", 80);
   EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
 
-  AlternativeService alternative_service(NPN_SPDY_3, "foo", 443);
+  AlternativeService alternative_service(NPN_SPDY_4, "foo", 443);
   impl_.SetAlternativeService(test_host_port_pair, alternative_service, 1.0);
   ASSERT_TRUE(HasAlternativeService(test_host_port_pair));
   alternative_service = impl_.GetAlternativeService(test_host_port_pair);
   EXPECT_EQ(443, alternative_service.port);
-  EXPECT_EQ(NPN_SPDY_3, alternative_service.protocol);
+  EXPECT_EQ(NPN_SPDY_4, alternative_service.protocol);
 
   impl_.Clear();
   EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
@@ -258,7 +258,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Basic) {
 
 TEST_F(AlternateProtocolServerPropertiesTest, DefaultProbabilityExcluded) {
   HostPortPair test_host_port_pair("foo", 80);
-  const AlternativeService alternative_service(NPN_SPDY_3, "foo", 443);
+  const AlternativeService alternative_service(NPN_SPDY_4, "foo", 443);
   impl_.SetAlternativeService(test_host_port_pair, alternative_service, 0.99);
 
   EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
@@ -268,7 +268,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Probability) {
   impl_.SetAlternateProtocolProbabilityThreshold(0.25);
 
   HostPortPair test_host_port_pair("foo", 80);
-  const AlternativeService alternative_service(NPN_SPDY_3, "foo", 443);
+  const AlternativeService alternative_service(NPN_SPDY_4, "foo", 443);
   impl_.SetAlternativeService(test_host_port_pair, alternative_service, 0.5);
   EXPECT_TRUE(HasAlternativeService(test_host_port_pair));
 
@@ -276,7 +276,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Probability) {
       impl_.alternative_service_map().Peek(test_host_port_pair);
   ASSERT_TRUE(it != impl_.alternative_service_map().end());
   EXPECT_EQ(443, it->second.alternative_service.port);
-  EXPECT_EQ(NPN_SPDY_3, it->second.alternative_service.protocol);
+  EXPECT_EQ(NPN_SPDY_4, it->second.alternative_service.protocol);
   EXPECT_EQ(0.5, it->second.probability);
 }
 
@@ -284,24 +284,24 @@ TEST_F(AlternateProtocolServerPropertiesTest, ProbabilityExcluded) {
   impl_.SetAlternateProtocolProbabilityThreshold(0.75);
 
   HostPortPair test_host_port_pair("foo", 80);
-  const AlternativeService alternative_service(NPN_SPDY_3, "foo", 443);
+  const AlternativeService alternative_service(NPN_SPDY_4, "foo", 443);
   impl_.SetAlternativeService(test_host_port_pair, alternative_service, 0.5);
   EXPECT_FALSE(HasAlternativeService(test_host_port_pair));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   HostPortPair test_host_port_pair1("foo1", 80);
-  const AlternativeService alternative_service1(NPN_SPDY_3, "foo1", 443);
+  const AlternativeService alternative_service1(NPN_SPDY_4, "foo1", 443);
   impl_.SetAlternativeService(test_host_port_pair1, alternative_service1, 1.0);
   impl_.MarkAlternativeServiceBroken(alternative_service1);
 
   HostPortPair test_host_port_pair2("foo2", 80);
-  const AlternativeService alternative_service2(NPN_SPDY_3, "foo2", 443);
+  const AlternativeService alternative_service2(NPN_SPDY_4, "foo2", 443);
   impl_.SetAlternativeService(test_host_port_pair2, alternative_service2, 1.0);
 
   AlternativeServiceMap alternative_service_map(
       AlternativeServiceMap::NO_AUTO_EVICT);
-  AlternativeServiceInfo alternative_service_info(NPN_SPDY_3, "bar", 123, 1.0);
+  AlternativeServiceInfo alternative_service_info(NPN_SPDY_4, "bar", 123, 1.0);
   alternative_service_map.Put(test_host_port_pair2, alternative_service_info);
   HostPortPair test_host_port_pair3("foo3", 80);
   alternative_service_info.alternative_service.port = 1234;
@@ -313,51 +313,51 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   AlternativeServiceMap::const_iterator it = map.begin();
   ASSERT_TRUE(it != map.end());
   EXPECT_TRUE(it->first.Equals(test_host_port_pair3));
-  EXPECT_EQ(NPN_SPDY_3, it->second.alternative_service.protocol);
+  EXPECT_EQ(NPN_SPDY_4, it->second.alternative_service.protocol);
   EXPECT_EQ(1234, it->second.alternative_service.port);
 
   ASSERT_TRUE(HasAlternativeService(test_host_port_pair1));
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
   const AlternativeService alternative_service =
       impl_.GetAlternativeService(test_host_port_pair2);
-  EXPECT_EQ(NPN_SPDY_3, alternative_service.protocol);
+  EXPECT_EQ(NPN_SPDY_4, alternative_service.protocol);
   EXPECT_EQ(123, alternative_service.port);
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternateProtocol) {
   HostPortPair test_host_port_pair1("foo1", 80);
-  const AlternativeService alternative_service1(NPN_SPDY_3, "foo1", 443);
+  const AlternativeService alternative_service1(NPN_SPDY_4, "foo1", 443);
   impl_.SetAlternativeService(test_host_port_pair1, alternative_service1, 1.0);
   HostPortPair test_host_port_pair2("foo2", 80);
-  const AlternativeService alternative_service2(NPN_SPDY_3, "foo2", 1234);
+  const AlternativeService alternative_service2(NPN_SPDY_4, "foo2", 1234);
   impl_.SetAlternativeService(test_host_port_pair2, alternative_service2, 1.0);
 
   const AlternativeServiceMap& map = impl_.alternative_service_map();
   AlternativeServiceMap::const_iterator it = map.begin();
   EXPECT_TRUE(it->first.Equals(test_host_port_pair2));
-  EXPECT_EQ(NPN_SPDY_3, it->second.alternative_service.protocol);
+  EXPECT_EQ(NPN_SPDY_4, it->second.alternative_service.protocol);
   EXPECT_EQ(1234, it->second.alternative_service.port);
 
   // GetAlternativeService should reorder the AlternateProtocol map.
   const AlternativeService alternative_service =
       impl_.GetAlternativeService(test_host_port_pair1);
   EXPECT_EQ(443, alternative_service.port);
-  EXPECT_EQ(NPN_SPDY_3, alternative_service.protocol);
+  EXPECT_EQ(NPN_SPDY_4, alternative_service.protocol);
   it = map.begin();
   EXPECT_TRUE(it->first.Equals(test_host_port_pair1));
-  EXPECT_EQ(NPN_SPDY_3, it->second.alternative_service.protocol);
+  EXPECT_EQ(NPN_SPDY_4, it->second.alternative_service.protocol);
   EXPECT_EQ(443, it->second.alternative_service.port);
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   HostPortPair test_host_port_pair("foo", 80);
-  const AlternativeService alternative_service1(NPN_SPDY_3, "foo", 443);
+  const AlternativeService alternative_service1(NPN_SPDY_4, "foo", 443);
   impl_.SetAlternativeService(test_host_port_pair, alternative_service1, 1.0);
   impl_.MarkAlternativeServiceBroken(alternative_service1);
   ASSERT_TRUE(HasAlternativeService(test_host_port_pair));
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
 
-  const AlternativeService alternative_service2(NPN_SPDY_3, "foo", 1234);
+  const AlternativeService alternative_service2(NPN_SPDY_4, "foo", 1234);
   impl_.SetAlternativeService(test_host_port_pair, alternative_service2, 1.0);
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service1));
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service2));
@@ -366,7 +366,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
   HostPortPair test_host_port_pair("foo", 80);
-  const AlternativeService alternative_service(NPN_SPDY_3, "foo", 443);
+  const AlternativeService alternative_service(NPN_SPDY_4, "foo", 443);
   impl_.SetAlternativeService(test_host_port_pair, alternative_service, 1.0);
   impl_.MarkAlternativeServiceBroken(alternative_service);
   ASSERT_TRUE(HasAlternativeService(test_host_port_pair));

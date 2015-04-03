@@ -165,7 +165,7 @@ TEST_F(HttpServerPropertiesManagerTest,
 
   // Set up alternative_service for www.google.com:80.
   base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
-  alternative_service_dict->SetString("protocol_str", "npn-spdy/3");
+  alternative_service_dict->SetString("protocol_str", "npn-h2");
   alternative_service_dict->SetString("host", "maps.google.com");
   alternative_service_dict->SetInteger("port", 443);
   base::ListValue* alternative_service_list = new base::ListValue;
@@ -235,7 +235,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Verify alternative service.
   AlternativeService alternative_service =
       http_server_props_manager_->GetAlternativeService(google_server);
-  EXPECT_EQ(NPN_SPDY_3, alternative_service.protocol);
+  EXPECT_EQ(NPN_SPDY_4, alternative_service.protocol);
   EXPECT_EQ("maps.google.com", alternative_service.host);
   EXPECT_EQ(443, alternative_service.port);
   alternative_service =
@@ -477,7 +477,7 @@ TEST_F(HttpServerPropertiesManagerTest, GetAlternativeService) {
 
   HostPortPair spdy_server_mail("mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
-  AlternativeService alternative_service(NPN_SPDY_3, "mail.google.com", 443);
+  AlternativeService alternative_service(NPN_SPDY_4, "mail.google.com", 443);
   http_server_props_manager_->SetAlternativeService(spdy_server_mail,
                                                     alternative_service, 1.0);
 
@@ -488,7 +488,7 @@ TEST_F(HttpServerPropertiesManagerTest, GetAlternativeService) {
   alternative_service =
       http_server_props_manager_->GetAlternativeService(spdy_server_mail);
   EXPECT_EQ(443, alternative_service.port);
-  EXPECT_EQ(NPN_SPDY_3, alternative_service.protocol);
+  EXPECT_EQ(NPN_SPDY_4, alternative_service.protocol);
 }
 
 TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
@@ -534,7 +534,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   HostPortPair spdy_server_mail("mail.google.com", 443);
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
-  AlternativeService alternative_service(NPN_SPDY_3, "mail.google.com", 443);
+  AlternativeService alternative_service(NPN_SPDY_4, "mail.google.com", 443);
   http_server_props_manager_->SetAlternativeService(spdy_server_mail,
                                                     alternative_service, 1.0);
   IPAddressNumber actual_address;
@@ -606,7 +606,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   for (int i = 0; i < 200; ++i) {
     // Set up alternative_service for www.google.com:i.
     base::DictionaryValue* alternative_service_dict = new base::DictionaryValue;
-    alternative_service_dict->SetString("protocol_str", "npn-spdy/3");
+    alternative_service_dict->SetString("protocol_str", "npn-h2");
     alternative_service_dict->SetString("host", "");
     alternative_service_dict->SetInteger("port", i);
     base::ListValue* alternative_service_list = new base::ListValue;
@@ -651,7 +651,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
         http_server_props_manager_->GetAlternativeService(
             HostPortPair::FromString(server));
     EXPECT_EQ(i, alternative_service.port);
-    EXPECT_EQ(NPN_SPDY_3, alternative_service.protocol);
+    EXPECT_EQ(NPN_SPDY_4, alternative_service.protocol);
   }
 
   // Verify SupportsQuic.
@@ -665,7 +665,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   const HostPortPair server_mail("mail.google.com", 80);
 
   // Set alternate protocol.
-  AlternativeService www_altsvc(NPN_SPDY_3, "", 443);
+  AlternativeService www_altsvc(NPN_SPDY_4, "", 443);
   AlternativeService mail_altsvc(NPN_SPDY_3_1, "mail.google.com", 444);
   http_server_props_manager_->SetAlternativeService(server_www, www_altsvc,
                                                     1.0);
@@ -696,7 +696,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       "\"npn-spdy/"
       "3.1\"}],\"network_stats\":{\"srtt\":42}},\"www.google.com:80\":"
       "{\"alternative_service\":[{\"port\":443,\"probability\":1.0,"
-      "\"protocol_str\":\"npn-spdy/3\"}]}},\"supports_quic\":"
+      "\"protocol_str\":\"npn-h2\"}]}},\"supports_quic\":"
       "{\"address\":\"127.0.0.1\",\"used_quic\":true},\"version\":3}";
 
   const base::Value* http_server_properties =
