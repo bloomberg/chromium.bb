@@ -54,7 +54,8 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
 // Designated initializer. |bridge| must not be NULL.
 - (id)initWithBridge:(autofill::CardUnmaskPromptViewBridge*)bridge;
 
-- (void)setProgressOverlayText:(const base::string16&)text;
+- (void)setProgressOverlayText:(const base::string16&)text
+                   showSpinner:(BOOL)showSpinner;
 - (void)setRetriableErrorMessage:(const base::string16&)text;
 - (void)setPermanentErrorMessage:(const base::string16&)text;
 

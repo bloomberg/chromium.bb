@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
+#import "chrome/browser/ui/cocoa/spinner_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -32,12 +33,14 @@ const CGFloat kInstructionsToTitleGap = 8.0f;
 const CGFloat kPermanentErrorExteriorPadding = 12.0f;
 const CGFloat kPermanentErrorHorizontalPadding = 16.0f;
 const CGFloat kPermanentErrorVerticalPadding = 12.0f;
+const CGFloat kProgressToInstructionsGap = 24.0f;
+const CGFloat kSpinnerSize = 16.0f;
+const CGFloat kSpinnerToProgressTextGap = 8.0f;
+
 const SkColor kPermanentErrorTextColor = SK_ColorWHITE;
 const SkColor kPermanentErrorBackgroundColor = SkColorSetRGB(0xd3, 0x2f, 0x2f);
-const ui::ResourceBundle::FontStyle kProgressFontStyle =
-    chrome_style::kTitleFontStyle;
-const ui::ResourceBundle::FontStyle kErrorFontStyle =
-    chrome_style::kTextFontStyle;
+// Material blue. TODO(bondd): share with Views version.
+const SkColor kProgressTextColor = SkColorSetRGB(0x42, 0x85, 0xf4);
 
 }  // namespace
 
@@ -78,7 +81,8 @@ void CardUnmaskPromptViewBridge::ControllerGone() {
 void CardUnmaskPromptViewBridge::DisableAndWaitForVerification() {
   [view_controller_ setProgressOverlayText:
                         l10n_util::GetStringUTF16(
-                            IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS)];
+                            IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS)
+                               showSpinner:YES];
 }
 
 void CardUnmaskPromptViewBridge::GotVerificationResult(
@@ -87,14 +91,15 @@ void CardUnmaskPromptViewBridge::GotVerificationResult(
   if (error_message.empty()) {
     [view_controller_ setProgressOverlayText:
                           l10n_util::GetStringUTF16(
-                              IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS)];
+                              IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS)
+                                 showSpinner:NO];
 
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&CardUnmaskPromptViewBridge::PerformClose,
                               weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(1));
   } else {
-    [view_controller_ setProgressOverlayText:base::string16()];
+    [view_controller_ setProgressOverlayText:base::string16() showSpinner:NO];
 
     if (allow_retry) {
       // TODO(bondd): Views version never hides |errorLabel_|. When Views
@@ -128,6 +133,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 @implementation CardUnmaskPromptViewCocoa {
   base::scoped_nsobject<NSBox> permanentErrorBox_;
   base::scoped_nsobject<NSView> inputRowView_;
+  base::scoped_nsobject<NSView> progressOverlayView_;
   base::scoped_nsobject<NSView> storageView_;
 
   base::scoped_nsobject<NSTextField> titleLabel_;
@@ -142,6 +148,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   base::scoped_nsobject<AutofillTooltipController> storageTooltip_;
   base::scoped_nsobject<NSTextField> errorLabel_;
   base::scoped_nsobject<NSTextField> progressOverlayLabel_;
+  base::scoped_nsobject<SpinnerView> progressOverlaySpinner_;
 
   int monthPopupDefaultIndex_;
   int yearPopupDefaultIndex_;
@@ -189,17 +196,42 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   return self;
 }
 
-- (void)setProgressOverlayText:(const base::string16&)text {
+- (void)updateProgressOverlayOrigin {
+  // Center progressOverlayView_ horizontally in the dialog, and position it a
+  // fixed distance below instructionsLabel_.
+  CGFloat viewMinY = NSMinY([instructionsLabel_ frame]) -
+                     kProgressToInstructionsGap -
+                     NSHeight([progressOverlayView_ frame]);
+  [progressOverlayView_
+      setFrameOrigin:NSMakePoint(
+                         NSMidX([[self view] frame]) -
+                             NSWidth([progressOverlayView_ frame]) / 2.0,
+                         viewMinY)];
+}
+
+- (void)setProgressOverlayText:(const base::string16&)text
+                   showSpinner:(BOOL)showSpinner {
   if (!text.empty()) {
     NSAttributedString* attributedString =
         constrained_window::GetAttributedLabelString(
-            SysUTF16ToNSString(text), kProgressFontStyle, NSCenterTextAlignment,
-            NSLineBreakByWordWrapping);
+            SysUTF16ToNSString(text), chrome_style::kTextFontStyle,
+            NSNaturalTextAlignment, NSLineBreakByWordWrapping);
     [progressOverlayLabel_ setAttributedStringValue:attributedString];
+    [progressOverlayLabel_ sizeToFit];
+    CGFloat labelMinX = showSpinner
+                            ? NSMaxX([progressOverlaySpinner_ frame]) +
+                                  kSpinnerToProgressTextGap
+                            : 0;
+    [progressOverlayLabel_ setFrameOrigin:NSMakePoint(labelMinX, 0)];
+
+    [CardUnmaskPromptViewCocoa sizeToFitView:progressOverlayView_];
+    [self updateProgressOverlayOrigin];
   }
 
-  [progressOverlayLabel_ setHidden:text.empty()];
+  [progressOverlayView_ setHidden:text.empty()];
+  [progressOverlaySpinner_ setHidden:!showSpinner];
   [inputRowView_ setHidden:!text.empty()];
+  [errorLabel_ setHidden:!text.empty()];
   [storageView_ setHidden:!text.empty()];
   [self updateVerifyButtonEnabled];
 }
@@ -214,8 +246,8 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 - (void)setRetriableErrorMessage:(const base::string16&)text {
   NSAttributedString* attributedString =
       constrained_window::GetAttributedLabelString(
-          SysUTF16ToNSString(text), kErrorFontStyle, NSNaturalTextAlignment,
-          NSLineBreakByWordWrapping);
+          SysUTF16ToNSString(text), chrome_style::kTextFontStyle,
+          NSNaturalTextAlignment, NSLineBreakByWordWrapping);
   [errorLabel_ setAttributedStringValue:attributedString];
   [self performLayoutAndDisplay:YES];
 }
@@ -244,8 +276,8 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
     NSAttributedString* attributedString =
         constrained_window::GetAttributedLabelString(
-            SysUTF16ToNSString(text), kErrorFontStyle, NSNaturalTextAlignment,
-            NSLineBreakByWordWrapping);
+            SysUTF16ToNSString(text), chrome_style::kTextFontStyle,
+            NSNaturalTextAlignment, NSLineBreakByWordWrapping);
     [permanentErrorLabel_ setAttributedStringValue:attributedString];
   }
 
@@ -349,13 +381,21 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 // |     (All enclosed in inputRowView_. Month and year may be hidden.)        |
 // |---------------------------------------------------------------------------|
 // | errorLabel_ (Multiline. Always takes up space for one line even if        |
-// |                 empty.)                                                   |
+// |                 empty. Hidden when progressOverlayView_ is displayed.)    |
 // |---------------------------------------------------------------------------|
 // |                                                         [Cancel] [Verify] |
 // |---------------------------------------------------------------------------|
 // | storageCheckbox_ storageTooltip_                                          |
 // |     (Both enclosed in storageView_. May be hidden but still taking up     |
 // |         layout space. Will all be nil if !CanStoreLocally()).             |
+// +---------------------------------------------------------------------------+
+//
+// progressOverlayView_:
+//     (Displayed below instructionsLabel_, may be hidden.
+//         progressOverlaySpinner_ may be hidden while progressOverlayLabel_
+//         is shown.)
+// +---------------------------------------------------------------------------+
+// | progressOverlaySpinner_ progressOverlayLabel_                             |
 // +---------------------------------------------------------------------------+
 - (void)performLayoutAndDisplay:(BOOL)display {
   // Calculate dialog content width.
@@ -415,19 +455,12 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 
   [titleLabel_ setFrameOrigin:NSMakePoint(contentMinX, titleMinY)];
 
-  // Center progressOverlayLabel_ vertically within inputRowView_ frame.
-  CGFloat progressHeight = ui::ResourceBundle::GetSharedInstance()
-                               .GetFont(kProgressFontStyle)
-                               .GetHeight();
-  [progressOverlayLabel_
-      setFrame:NSMakeRect(contentMinX, ceil(NSMidY([inputRowView_ frame]) -
-                                            progressHeight / 2.0),
-                          contentWidth, progressHeight)];
-
   // Set dialog size.
   [[self view]
       setFrameSize:NSMakeSize(dialogWidth, NSMaxY([titleLabel_ frame]) +
                                                chrome_style::kTitleTopPadding)];
+
+  [self updateProgressOverlayOrigin];
 
   NSRect frameRect =
       [[[self view] window] frameRectForContentRect:[[self view] frame]];
@@ -449,9 +482,19 @@ void CardUnmaskPromptViewBridge::PerformClose() {
     [mainView addSubview:storageView_];
   }
 
+  // Add progress overlay.
+  progressOverlayView_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
+  [progressOverlayView_ setHidden:YES];
+  [mainView addSubview:progressOverlayView_];
+
   progressOverlayLabel_.reset([constrained_window::CreateLabel() retain]);
-  [progressOverlayLabel_ setHidden:YES];
-  [mainView addSubview:progressOverlayLabel_];
+  [progressOverlayLabel_
+      setTextColor:gfx::SkColorToCalibratedNSColor(kProgressTextColor)];
+  [progressOverlayView_ addSubview:progressOverlayLabel_];
+
+  progressOverlaySpinner_.reset([[SpinnerView alloc]
+      initWithFrame:NSMakeRect(0, 0, kSpinnerSize, kSpinnerSize)]);
+  [progressOverlayView_ addSubview:progressOverlaySpinner_];
 
   // Add title label.
   titleLabel_.reset([constrained_window::CreateLabel() retain]);
