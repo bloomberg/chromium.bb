@@ -226,9 +226,8 @@
       'conditions': [
         ['desktop_linux==1', {
           # Controls whether Wallet cards can be saved to the local instance of
-          # chrome. TODO(estade): set to 0 for Linux before M43 branch,
-          # currently defined on Linux for ease of testing.
-          'defines': [ 'ENABLE_SAVE_WALLET_CARDS_LOCALLY=1' ],
+          # chrome.
+          'defines': [ 'ENABLE_SAVE_WALLET_CARDS_LOCALLY=0' ],
         }, {
           'defines': [ 'ENABLE_SAVE_WALLET_CARDS_LOCALLY=1' ],
         }],

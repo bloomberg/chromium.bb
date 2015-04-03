@@ -142,9 +142,11 @@ static_library("browser") {
   sources += get_target_outputs(":regexes")
 
   # Controls whether Wallet cards can be saved to the local instance of chrome.
-  # TODO(estade): set to 0 for is_desktop_linux before M43 branch, currently
-  # defined on Linux for ease of testing:
-  defines = [ "ENABLE_SAVE_WALLET_CARDS_LOCALLY=1" ]
+  if (is_desktop_linux) {
+    defines = [ "ENABLE_SAVE_WALLET_CARDS_LOCALLY=0" ]
+  } else {
+    defines = [ "ENABLE_SAVE_WALLET_CARDS_LOCALLY=1" ]
+  }
 
   deps = [
     ":regexes",
