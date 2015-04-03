@@ -94,7 +94,7 @@ LayoutObject* LayoutTextControlMultiLine::layoutSpecialExcludedChild(bool relayo
     if (!placeholderRenderer->isBox())
         return placeholderRenderer;
     LayoutBox* placeholderBox = toLayoutBox(placeholderRenderer);
-    placeholderBox->style()->setLogicalWidth(Length(contentLogicalWidth() - placeholderBox->borderAndPaddingLogicalWidth(), Fixed));
+    placeholderBox->mutableStyleRef().setLogicalWidth(Length(contentLogicalWidth() - placeholderBox->borderAndPaddingLogicalWidth(), Fixed));
     placeholderBox->layoutIfNeeded();
     placeholderBox->setX(borderLeft() + paddingLeft());
     placeholderBox->setY(borderTop() + paddingTop());

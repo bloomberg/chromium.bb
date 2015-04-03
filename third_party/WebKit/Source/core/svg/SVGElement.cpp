@@ -911,7 +911,7 @@ PassRefPtr<ComputedStyle> SVGElement::customStyleForLayoutObject()
     if (!correspondingElement())
         return document().ensureStyleResolver().styleForElement(this);
 
-    const ComputedStyle* style = 0;
+    const ComputedStyle* style = nullptr;
     if (Element* parent = parentOrShadowHostElement()) {
         if (LayoutObject* renderer = parent->layoutObject())
             style = renderer->style();
@@ -943,7 +943,7 @@ const ComputedStyle* SVGElement::ensureComputedStyle(PseudoId pseudoElementSpeci
     if (!hasSVGRareData() || !svgRareData()->useOverrideComputedStyle())
         return Element::ensureComputedStyle(pseudoElementSpecifier);
 
-    ComputedStyle* parentStyle = 0;
+    const ComputedStyle* parentStyle = nullptr;
     if (Element* parent = parentOrShadowHostElement()) {
         if (LayoutObject* renderer = parent->layoutObject())
             parentStyle = renderer->style();

@@ -157,7 +157,7 @@ void LayoutMenuList::styleDidChange(StyleDifference diff, const ComputedStyle* o
     LayoutBlock::styleDidChange(diff, oldStyle);
 
     if (m_buttonText)
-        m_buttonText->setStyle(style());
+        m_buttonText->setStyle(mutableStyle());
     if (m_innerBlock) // LayoutBlock handled updating the anonymous block's style.
         adjustInnerStyle();
 
@@ -281,7 +281,7 @@ void LayoutMenuList::setText(const String& s)
             if (m_buttonText)
                 m_buttonText->destroy();
             m_buttonText = new LayoutBR(&document());
-            m_buttonText->setStyle(style());
+            m_buttonText->setStyle(mutableStyle());
             addChild(m_buttonText);
         }
     } else {
@@ -294,7 +294,7 @@ void LayoutMenuList::setText(const String& s)
             if (m_buttonText)
                 m_buttonText->destroy();
             m_buttonText = new LayoutText(&document(), s.impl());
-            m_buttonText->setStyle(style());
+            m_buttonText->setStyle(mutableStyle());
             // We need to set the text explicitly though it was specified in the
             // constructor because LayoutText doesn't refer to the text
             // specified in the constructor in a case of re-transforming.

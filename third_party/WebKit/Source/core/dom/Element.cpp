@@ -2732,7 +2732,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         // Need to clear the cached style if the PseudoElement wants a recalc so it
         // computes a new style.
         if (element->needsStyleRecalc())
-            layoutObject()->style()->removeCachedPseudoStyle(pseudoId);
+            layoutObject()->mutableStyle()->removeCachedPseudoStyle(pseudoId);
 
         // PseudoElement styles hang off their parent element's style so if we needed
         // a style recalc we should Force one on the pseudo.

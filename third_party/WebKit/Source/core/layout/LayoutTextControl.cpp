@@ -72,8 +72,8 @@ void LayoutTextControl::styleDidChange(StyleDifference diff, const ComputedStyle
     if (innerEditorRenderer) {
         // We may have set the width and the height in the old style in layout().
         // Reset them now to avoid getting a spurious layout hint.
-        innerEditorRenderer->style()->setHeight(Length());
-        innerEditorRenderer->style()->setWidth(Length());
+        innerEditorRenderer->mutableStyleRef().setHeight(Length());
+        innerEditorRenderer->mutableStyleRef().setWidth(Length());
         innerEditorRenderer->setStyle(createInnerEditorStyle(styleRef()));
         innerEditor->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Control));
     }

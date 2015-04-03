@@ -72,7 +72,7 @@ public:
     MutableStylePropertySet* animatedSMILStyleProperties() const { return m_animatedSMILStyleProperties.get(); }
     MutableStylePropertySet* ensureAnimatedSMILStyleProperties();
 
-    ComputedStyle* overrideComputedStyle(Element*, ComputedStyle*);
+    ComputedStyle* overrideComputedStyle(Element*, const ComputedStyle*);
 
     bool useOverrideComputedStyle() const { return m_useOverrideComputedStyle; }
     void setUseOverrideComputedStyle(bool value) { m_useOverrideComputedStyle = value; }

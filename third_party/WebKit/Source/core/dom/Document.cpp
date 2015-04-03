@@ -1668,7 +1668,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 
     WebScrollBlocksOn scrollBlocksOn = documentElementStyle->scrollBlocksOn();
 
-    RefPtr<ComputedStyle> documentStyle = layoutView()->style();
+    RefPtr<ComputedStyle> documentStyle = layoutView()->mutableStyle();
     if (documentStyle->writingMode() != rootWritingMode
         || documentStyle->direction() != rootDirection
         || documentStyle->overflowX() != overflowX

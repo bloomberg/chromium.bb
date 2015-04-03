@@ -705,7 +705,7 @@ static bool setTextAutosizingMultiplier(Document* document, float multiplier)
     bool multiplierSet = false;
     for (LayoutObject* renderer = document->layoutView(); renderer; renderer = renderer->nextInPreOrder()) {
         if (renderer->style()) {
-            renderer->style()->setTextAutosizingMultiplier(multiplier);
+            renderer->mutableStyleRef().setTextAutosizingMultiplier(multiplier);
 
             EXPECT_EQ(multiplier, renderer->style()->textAutosizingMultiplier());
             multiplierSet = true;

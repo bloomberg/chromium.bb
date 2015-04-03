@@ -339,7 +339,7 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
         for (LayoutBlock* currCont = blockElementContinuation(); currCont; currCont = currCont->blockElementContinuation()) {
             LayoutBoxModelObject* nextCont = currCont->continuation();
             currCont->setContinuation(0);
-            currCont->setStyle(style());
+            currCont->setStyle(mutableStyle());
             currCont->setContinuation(nextCont);
         }
     }
@@ -591,7 +591,7 @@ LayoutBlock* LayoutBlock::clone() const
     } else {
         LayoutObject* cloneRenderer = toElement(node())->createLayoutObject(styleRef());
         cloneBlock = toLayoutBlock(cloneRenderer);
-        cloneBlock->setStyle(style());
+        cloneBlock->setStyle(mutableStyle());
 
         // This takes care of setting the right value of childrenInline in case
         // generated content is added to cloneBlock and 'this' does not have
@@ -3053,7 +3053,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
             continue;
         }
 
-        RefPtr<ComputedStyle> childStyle = child->style();
+        RefPtr<ComputedStyle> childStyle = child->mutableStyle();
         if (child->isFloating() || (child->isBox() && toLayoutBox(child)->avoidsFloats())) {
             LayoutUnit floatTotalWidth = floatLeftWidth + floatRightWidth;
             if (childStyle->clear() & CLEFT) {

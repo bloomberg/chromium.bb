@@ -77,7 +77,7 @@ static NSAttributedString* attributedSubstringFromRange(const Range* range)
         if (!renderer)
             continue;
 
-        ComputedStyle* style = renderer->style();
+        const ComputedStyle* style = renderer->style();
         const FontPlatformData& fontPlatformData = style->font().primaryFont()->platformData();
         NSFont* font = toNSFont(fontPlatformData.ctFont());
         // If the platform font can't be loaded, it's likely that the site is

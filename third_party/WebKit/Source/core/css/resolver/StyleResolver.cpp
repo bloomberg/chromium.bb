@@ -737,7 +737,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     if (!parentRenderer->canHaveGeneratedChildren())
         return nullptr;
 
-    ComputedStyle* parentStyle = parentRenderer->style();
+    ComputedStyle* parentStyle = parentRenderer->mutableStyle();
     if (ComputedStyle* cachedStyle = parentStyle->getCachedPseudoStyle(pseudoId)) {
         if (!pseudoElementRendererIsNeeded(cachedStyle))
             return nullptr;

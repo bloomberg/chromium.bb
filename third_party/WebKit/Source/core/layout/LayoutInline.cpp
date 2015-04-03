@@ -196,7 +196,7 @@ void LayoutInline::styleDidChange(StyleDifference diff, const ComputedStyle* old
     for (LayoutInline* currCont = continuation; currCont; currCont = currCont->inlineElementContinuation()) {
         LayoutBoxModelObject* nextCont = currCont->continuation();
         currCont->setContinuation(0);
-        currCont->setStyle(style());
+        currCont->setStyle(mutableStyle());
         currCont->setContinuation(nextCont);
     }
 
@@ -359,7 +359,7 @@ void LayoutInline::addChildIgnoringContinuation(LayoutObject* newChild, LayoutOb
 LayoutInline* LayoutInline::clone() const
 {
     LayoutInline* cloneInline = new LayoutInline(node());
-    cloneInline->setStyle(style());
+    cloneInline->setStyle(mutableStyle());
     cloneInline->setFlowThreadState(flowThreadState());
     return cloneInline;
 }

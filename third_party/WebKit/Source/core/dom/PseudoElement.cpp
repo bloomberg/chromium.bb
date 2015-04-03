@@ -156,7 +156,7 @@ void PseudoElement::didRecalcStyle(StyleRecalcChange)
         if (!child->isText() && !child->isQuote() && !child->isImage())
             continue;
 
-        child->setPseudoStyle(renderer->style());
+        child->setPseudoStyle(renderer->mutableStyle());
     }
 }
 

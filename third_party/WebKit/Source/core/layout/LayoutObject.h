@@ -817,7 +817,8 @@ public:
     virtual LayoutUnit minPreferredLogicalWidth() const { return 0; }
     virtual LayoutUnit maxPreferredLogicalWidth() const { return 0; }
 
-    ComputedStyle* style() const { return m_style.get(); }
+    const ComputedStyle* style() const { return m_style.get(); }
+    ComputedStyle* mutableStyle() const { return m_style.get(); }
 
     // m_style can only be nullptr before the first style is set, thus most
     // callers will never see a nullptr style and should use styleRef().
