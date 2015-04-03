@@ -40,6 +40,7 @@
 #include "third_party/WebKit/public/web/WebGraphicsContext.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMIDIClientMock.h"
 #include "third_party/WebKit/public/web/WebPageOverlay.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
@@ -187,6 +188,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   bool HasCustomPageSizeStyle(int page_index);
   void ForceRedSelectionColors();
   void InjectStyleSheet(const std::string& source_code, bool all_frames);
+  void InsertStyleSheet(const std::string& source_code);
   bool FindString(const std::string& search_text,
                   const std::vector<std::string>& options_array);
   std::string SelectionAsMarkup();
@@ -394,6 +396,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("forceRedSelectionColors",
                  &TestRunnerBindings::ForceRedSelectionColors)
       .SetMethod("injectStyleSheet", &TestRunnerBindings::InjectStyleSheet)
+      .SetMethod("insertStyleSheet", &TestRunnerBindings::InsertStyleSheet)
       .SetMethod("findString", &TestRunnerBindings::FindString)
       .SetMethod("selectionAsMarkup", &TestRunnerBindings::SelectionAsMarkup)
       .SetMethod("setTextSubpixelPositioning",
@@ -798,6 +801,11 @@ void TestRunnerBindings::InjectStyleSheet(const std::string& source_code,
                                           bool all_frames) {
   if (runner_)
     runner_->InjectStyleSheet(source_code, all_frames);
+}
+
+void TestRunnerBindings::InsertStyleSheet(const std::string& source_code) {
+  if (runner_)
+    runner_->InsertStyleSheet(source_code);
 }
 
 bool TestRunnerBindings::FindString(
@@ -2272,6 +2280,11 @@ void TestRunner::InjectStyleSheet(const std::string& source_code,
       WebVector<WebString>(),
       all_frames ? WebView::InjectStyleInAllFrames
                  : WebView::InjectStyleInTopFrameOnly);
+}
+
+void TestRunner::InsertStyleSheet(const std::string& source_code) {
+  WebLocalFrame::frameForCurrentContext()->document().insertStyleSheet(
+      WebString::fromUTF8(source_code));
 }
 
 bool TestRunner::FindString(const std::string& search_text,
