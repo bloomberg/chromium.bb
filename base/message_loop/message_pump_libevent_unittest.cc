@@ -7,9 +7,13 @@
 #include <unistd.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/files/file_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libevent/event.h"
@@ -19,7 +23,7 @@ namespace base {
 class MessagePumpLibeventTest : public testing::Test {
  protected:
   MessagePumpLibeventTest()
-      : ui_loop_(MessageLoop::TYPE_UI),
+      : ui_loop_(new MessageLoop(MessageLoop::TYPE_UI)),
         io_thread_("MessagePumpLibeventTestIOThread") {}
   ~MessagePumpLibeventTest() override {}
 
@@ -38,7 +42,6 @@ class MessagePumpLibeventTest : public testing::Test {
       PLOG(ERROR) << "close";
   }
 
-  MessageLoop* ui_loop() { return &ui_loop_; }
   MessageLoopForIO* io_loop() const {
     return static_cast<MessageLoopForIO*>(io_thread_.message_loop());
   }
@@ -50,9 +53,9 @@ class MessagePumpLibeventTest : public testing::Test {
   }
 
   int pipefds_[2];
+  scoped_ptr<MessageLoop> ui_loop_;
 
  private:
-  MessageLoop ui_loop_;
   Thread io_thread_;
 };
 
@@ -192,6 +195,60 @@ TEST_F(MessagePumpLibeventTest, NestedPumpWatcher) {
 
   // Spoof a libevent notification.
   OnLibeventNotification(pump.get(), &watcher);
+}
+
+void FatalClosure() {
+  FAIL() << "Reached fatal closure.";
+}
+
+class QuitWatcher : public BaseWatcher {
+ public:
+  QuitWatcher(MessagePumpLibevent::FileDescriptorWatcher* controller,
+              RunLoop* run_loop)
+      : BaseWatcher(controller), run_loop_(run_loop) {}
+  ~QuitWatcher() override {}
+
+  void OnFileCanReadWithoutBlocking(int /* fd */) override {
+    // Post a fatal closure to the MessageLoop before we quit it.
+    MessageLoop::current()->PostTask(FROM_HERE, Bind(&FatalClosure));
+
+    // Now quit the MessageLoop.
+    run_loop_->Quit();
+  }
+
+ private:
+  RunLoop* run_loop_;  // weak
+};
+
+// Tests that MessagePumpLibevent quits immediately when it is quit from
+// libevent's event_base_loop().
+TEST_F(MessagePumpLibeventTest, QuitWatcher) {
+  // Delete the old MessageLoop so that we can manage our own one here.
+  ui_loop_.reset();
+
+  MessagePumpLibevent* pump = new MessagePumpLibevent;  // owned by |loop|.
+  MessageLoop loop(make_scoped_ptr(pump));
+  RunLoop run_loop;
+  MessagePumpLibevent::FileDescriptorWatcher controller;
+  QuitWatcher delegate(&controller, &run_loop);
+  WaitableEvent event(false /* manual_reset */, false /* initially_signaled */);
+
+  // Tell the pump to watch the pipe.
+  pump->WatchFileDescriptor(pipefds_[0], false, MessagePumpLibevent::WATCH_READ,
+                            &controller, &delegate);
+
+  // Make the IO thread wait for |event| before writing to pipefds[1].
+  const char buf = 0;
+  io_loop()->PostTask(FROM_HERE,
+                      Bind(&WaitableEvent::Wait, Unretained(&event)));
+  io_loop()->PostTask(FROM_HERE, Bind(IgnoreResult(&WriteFileDescriptor),
+                                      pipefds_[1], &buf, 1));
+
+  // Queue |event| to signal on |loop|.
+  loop.PostTask(FROM_HERE, Bind(&WaitableEvent::Signal, Unretained(&event)));
+
+  // Now run the MessageLoop.
+  run_loop.Run();
 }
 
 }  // namespace
