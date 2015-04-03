@@ -3,7 +3,7 @@
 TEST_FILE=${1##*/}
 TEST_NAME=${TEST_FILE%.*}
 
-if test -z "$TEST_NAME"; then
+if [ -z "$TEST_NAME" ]; then
 	echo "usage: $(basename $0) <test name>"
 	exit 1;
 fi
@@ -18,9 +18,7 @@ OUTLOG="$LOGDIR/${TEST_NAME}-log.txt"
 
 rm -f "$SERVERLOG"
 
-if test -z "$BACKEND"; then
-	BACKEND=headless-backend.so
-fi
+BACKEND=${BACKEND:-headless-backend.so}
 
 MODDIR=$abs_builddir/.libs
 
