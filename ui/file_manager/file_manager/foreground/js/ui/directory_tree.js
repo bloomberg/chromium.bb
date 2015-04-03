@@ -985,7 +985,7 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
     } else {
       var modelItem = this.dataModel.item(modelIndex);
       switch (modelItem.type) {
-        case NavigationModelItem.Type.VOLUME:
+        case NavigationModelItemType.VOLUME:
           if (modelItem.volumeInfo.volumeType ===
               VolumeManagerCommon.VolumeType.DRIVE) {
             this.addAt(new DriveVolumeItem(modelItem, this), itemIndex);
@@ -993,10 +993,10 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
             this.addAt(new VolumeItem(modelItem, this), itemIndex);
           }
           break;
-        case NavigationModelItem.Type.SHORTCUT:
+        case NavigationModelItemType.SHORTCUT:
           this.addAt(new ShortcutItem(modelItem, this), itemIndex);
           break;
-        case NavigationModelItem.Type.COMMAND:
+        case NavigationModelItemType.COMMAND:
           this.addAt(new CommandItem(modelItem, this), itemIndex);
           break;
       }

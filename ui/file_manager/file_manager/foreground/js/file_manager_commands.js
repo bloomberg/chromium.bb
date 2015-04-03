@@ -77,10 +77,13 @@ CommandUtil.getCommandEntry = function(element) {
  * @private
  */
 CommandUtil.getEntryFromNavigationModelItem_ = function(item) {
-  if (item.isVolume)
-    return item.volumeInfo.displayRoot;
-  if (item.isShortcut)
-    return item.entry;
+  switch (item.type) {
+    case NavigationModelItemType.VOLUME:
+      return /** @type {!NavigationModelVolumeItem} */ (
+          item).volumeInfo.displayRoot;
+    case NavigationModelItemType.SHORTCUT:
+      return /** @type {!NavigationModelShortcutItem} */ (item).entry;
+  }
   return null;
 };
 

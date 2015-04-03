@@ -3,23 +3,30 @@
 // found in the LICENSE file.
 
 /**
- * Base item of NavigationListModel. Should not be created directly.
- * @param {string} label Label.
- * @constructor
- * @struct
+ * @enum {string}
  */
-function NavigationModelItem(label) {
-  this.label_ = label;
-}
-
-NavigationModelItem.Type = {
+var NavigationModelItemType = {
   SHORTCUT: 'shortcut',
   VOLUME: 'volume',
   COMMAND: 'command'
 };
 
-NavigationModelItem.prototype = {
-  get label() { return this.label_; }
+/**
+ * Base item of NavigationListModel. Should not be created directly.
+ * @param {string} label
+ * @param {NavigationModelItemType} type
+ * @constructor
+ * @suppress {checkStructDictInheritance}
+ * @struct
+ */
+function NavigationModelItem(label, type) {
+  this.label_ = label;
+  this.type_ = type;
+}
+
+NavigationModelItem.prototype = /** struct */ {
+  get label() { return this.label_; },
+  get type() { return this.type_; }
 };
 
 /**
@@ -29,17 +36,17 @@ NavigationModelItem.prototype = {
  * @param {!DirectoryEntry} entry Entry. Cannot be null.
  * @constructor
  * @extends {NavigationModelItem}
+ * @suppress {checkStructDictInheritance}
  * @struct
  */
 function NavigationModelShortcutItem(label, entry) {
-  NavigationModelItem.call(this, label);
+  NavigationModelItem.call(this, label, NavigationModelItemType.SHORTCUT);
   this.entry_ = entry;
 }
 
-NavigationModelShortcutItem.prototype = {
+NavigationModelShortcutItem.prototype = /** @struct */ {
   __proto__: NavigationModelItem.prototype,
-  get entry() { return this.entry_; },
-  get type() { return NavigationModelItem.Type.SHORTCUT; }
+  get entry() { return this.entry_; }
 };
 
 /**
@@ -49,10 +56,9 @@ NavigationModelShortcutItem.prototype = {
  * @param {!VolumeInfo} volumeInfo Volume info for the volume. Cannot be null.
  * @constructor
  * @extends {NavigationModelItem}
- * @struct
  */
 function NavigationModelVolumeItem(label, volumeInfo) {
-  NavigationModelItem.call(this, label);
+  NavigationModelItem.call(this, label, NavigationModelItemType.VOLUME);
   this.volumeInfo_ = volumeInfo;
   // Start resolving the display root because it is used
   // for determining executability of commands.
@@ -60,10 +66,9 @@ function NavigationModelVolumeItem(label, volumeInfo) {
       function() {}, function() {});
 }
 
-NavigationModelVolumeItem.prototype = {
+NavigationModelVolumeItem.prototype = /** @struct */ {
   __proto__: NavigationModelItem.prototype,
-  get volumeInfo() { return this.volumeInfo_; },
-  get type() { return NavigationModelItem.Type.VOLUME; }
+  get volumeInfo() { return this.volumeInfo_; }
 };
 
 /**
@@ -72,17 +77,18 @@ NavigationModelVolumeItem.prototype = {
  * @param {cr.ui.Command} command
  * @constructor
  * @extends {NavigationModelItem}
+ * @suppress {checkStructDictInheritance}
  * @struct
  */
 function NavigationModelCommandItem(command) {
-  NavigationModelItem.call(this, command.label);
+  NavigationModelItem.call(
+      this, command.label, NavigationModelItemType.COMMAND);
   this.command_ = command;
 }
 
-NavigationModelCommandItem.prototype = {
+NavigationModelCommandItem.prototype = /** @struct */ {
   __proto__: NavigationModelItem.prototype,
-  get command() { return this.command_; },
-  get type() { return NavigationModelItem.Type.COMMAND; }
+  get command() { return this.command_; }
 };
 
 /**
@@ -291,6 +297,6 @@ NavigationListModel.prototype.indexOf = function(modelItem, opt_fromIndex) {
  * @param {NavigationModelItem} modelItem The entry which is not found.
  */
 NavigationListModel.prototype.onItemNotFoundError = function(modelItem) {
-  if (modelItem.type ===  NavigationModelItem.Type.SHORTCUT)
+  if (modelItem.type ===  NavigationModelItemType.SHORTCUT)
     this.shortcutListModel_.onItemNotFoundError(modelItem.entry);
 };
