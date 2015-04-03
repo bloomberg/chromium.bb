@@ -174,8 +174,10 @@ class SdkCommand(command.CliCommand):
   def AddParser(cls, parser):
     super(cls, SdkCommand).AddParser(parser)
 
+    # Expanduser is used to get ~ expanaded for "--sdk-dir=~/foo".
     parser.add_argument(
-        '--sdk-dir', help='Force install to specific directory.')
+        '--sdk-dir', type='path',
+        help='Force install to specific directory.')
     parser.add_argument(
         '--update', help='Update the SDK to version 1.2.3, tot, latest')
 
