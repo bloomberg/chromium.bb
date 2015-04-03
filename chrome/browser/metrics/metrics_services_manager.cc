@@ -136,7 +136,7 @@ void MetricsServicesManager::UpdatePermissions(bool may_record,
   rappor::RecordingLevel recording_level = rappor::RECORDING_DISABLED;
 #if defined(GOOGLE_CHROME_BUILD)
   if (may_record)
-    recording_level = rappor::FINE_LEVEL
+    recording_level = rappor::FINE_LEVEL;
 #endif  // defined(GOOGLE_CHROME_BUILD)
   GetRapporService()->Update(recording_level, may_upload);
 }
