@@ -413,16 +413,10 @@ bool AXObject::isInertOrAriaHidden() const
 
 bool AXObject::computeIsInertOrAriaHidden() const
 {
-    if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "true"))
-        return true;
     if (node() && node()->isInert())
         return true;
 
-    AXObject* parent = parentObject();
-    if (parent)
-        return parent->isInertOrAriaHidden();
-
-    return false;
+    return ariaHiddenRoot() != 0;
 }
 
 bool AXObject::isDescendantOfBarrenParent() const
