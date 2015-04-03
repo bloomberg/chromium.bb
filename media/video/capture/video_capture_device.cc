@@ -88,8 +88,6 @@ const char* VideoCaptureDevice::Name::GetCaptureApiTypeString() const {
       return "Media Foundation";
     case DIRECT_SHOW:
       return "Direct Show";
-    case DIRECT_SHOW_WDM_CROSSBAR:
-      return "Direct Show WDM Crossbar";
     default:
       NOTREACHED() << "Unknown Video Capture API type!";
       return "Unknown API";

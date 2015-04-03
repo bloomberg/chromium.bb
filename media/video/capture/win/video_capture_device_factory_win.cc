@@ -127,10 +127,7 @@ static bool IsDeviceBlackListed(const std::string& name) {
   return false;
 }
 
-static void GetDeviceNamesDirectShow(
-    const CLSID& class_id,
-    const Name::CaptureApiType capture_api_type,
-    Names* device_names) {
+static void GetDeviceNamesDirectShow(Names* device_names) {
   DCHECK(device_names);
   DVLOG(1) << " GetDeviceNamesDirectShow";
 
@@ -141,7 +138,8 @@ static void GetDeviceNamesDirectShow(
     return;
 
   ScopedComPtr<IEnumMoniker> enum_moniker;
-  hr = dev_enum->CreateClassEnumerator(class_id, enum_moniker.Receive(), 0);
+  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
+                                       enum_moniker.Receive(), 0);
   // CreateClassEnumerator returns S_FALSE on some Windows OS
   // when no camera exist. Therefore the FAILED macro can't be used.
   if (hr != S_OK)
@@ -178,7 +176,7 @@ static void GetDeviceNamesDirectShow(
       DCHECK_EQ(name.type(), VT_BSTR);
       id = base::SysWideToUTF8(V_BSTR(name.ptr()));
     }
-    device_names->push_back(Name(device_name, id, capture_api_type));
+    device_names->push_back(Name(device_name, id, Name::DIRECT_SHOW));
   }
 }
 
@@ -390,7 +388,6 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin() {
       cmd_line->HasSwitch(switches::kForceMediaFoundationVideoCapture));
 }
 
-
 scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
     const Name& device_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -407,8 +404,7 @@ scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(
     if (!static_cast<VideoCaptureDeviceMFWin*>(device.get())->Init(source))
       device.reset();
   } else {
-    DCHECK(device_name.capture_api_type() == Name::DIRECT_SHOW ||
-           device_name.capture_api_type() == Name::DIRECT_SHOW_WDM_CROSSBAR);
+    DCHECK(device_name.capture_api_type() == Name::DIRECT_SHOW);
     device.reset(new VideoCaptureDeviceWin(device_name));
     DVLOG(1) << " DirectShow Device: " << device_name.name();
     if (!static_cast<VideoCaptureDeviceWin*>(device.get())->Init())
@@ -422,29 +418,7 @@ void VideoCaptureDeviceFactoryWin::GetDeviceNames(Names* device_names) {
   if (use_media_foundation_) {
     GetDeviceNamesMediaFoundation(device_names);
   } else {
-    GetDeviceNamesDirectShow(CLSID_VideoInputDeviceCategory,
-                             Name::DIRECT_SHOW,
-                             device_names);
-
-    Names crossbar_device_names;
-    GetDeviceNamesDirectShow(AM_KSCATEGORY_CROSSBAR,
-                             Name::DIRECT_SHOW_WDM_CROSSBAR,
-                             &crossbar_device_names);
-    // Search in the listed |device_names| to find a device with matching USB ID
-    // to each device in |crossbar_device_names|.
-    for (Names::iterator crossbar_device_it = crossbar_device_names.begin();
-         crossbar_device_it != crossbar_device_names.end();
-         ++crossbar_device_it) {
-      const std::string& crossbar_device_model = crossbar_device_it->GetModel();
-      for (Names::const_iterator device_it = device_names->begin();
-           device_it != device_names->end(); ++device_it) {
-        if (crossbar_device_model == device_it->GetModel()) {
-          crossbar_device_it->set_capabilities_id(device_it->id());
-          device_names->push_back(*crossbar_device_it);
-          break;
-        }
-      }
-    }
+    GetDeviceNamesDirectShow(device_names);
   }
 }
 

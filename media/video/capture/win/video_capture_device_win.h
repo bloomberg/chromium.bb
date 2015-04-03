@@ -87,8 +87,6 @@ class VideoCaptureDeviceWin
 
   bool CreateCapabilityMap();
   void SetAntiFlickerInCaptureFilter();
-  HRESULT InstantiateWDMFiltersAndPins();
-  HRESULT AddWDMCrossbarFilterToGraphAndConnect();
   void SetErrorState(const std::string& reason);
 
   Name device_name_;
@@ -96,16 +94,13 @@ class VideoCaptureDeviceWin
   scoped_ptr<VideoCaptureDevice::Client> client_;
 
   base::win::ScopedComPtr<IBaseFilter> capture_filter_;
+
   base::win::ScopedComPtr<IGraphBuilder> graph_builder_;
+  base::win::ScopedComPtr<ICaptureGraphBuilder2> capture_graph_builder_;
+
   base::win::ScopedComPtr<IMediaControl> media_control_;
   base::win::ScopedComPtr<IPin> input_sink_pin_;
   base::win::ScopedComPtr<IPin> output_capture_pin_;
-
-  // Used for WDM devices as specified by |device_name_|. These devices need a
-  // WDM Crossbar Filter upstream from the Capture filter.
-  base::win::ScopedComPtr<IBaseFilter> crossbar_filter_;
-  base::win::ScopedComPtr<IPin> crossbar_video_output_pin_;
-  base::win::ScopedComPtr<IPin> analog_video_input_pin_;
 
   scoped_refptr<SinkFilter> sink_filter_;
 

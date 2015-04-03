@@ -123,8 +123,6 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
 #elif defined(OS_WIN)
   m[VideoCaptureDeviceName::MEDIA_FOUNDATION] = "Media Foundation";
   m[VideoCaptureDeviceName::DIRECT_SHOW] = "Direct Show";
-  m[VideoCaptureDeviceName::DIRECT_SHOW_WDM_CROSSBAR] =
-      "Direct Show WDM Crossbar";
 #elif defined(OS_MACOSX)
   m[VideoCaptureDeviceName::AVFOUNDATION] = "AV Foundation";
   m[VideoCaptureDeviceName::QTKIT] = "QTKit";

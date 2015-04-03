@@ -53,7 +53,6 @@ class MEDIA_EXPORT VideoCaptureDevice {
     enum CaptureApiType {
       MEDIA_FOUNDATION,
       DIRECT_SHOW,
-      DIRECT_SHOW_WDM_CROSSBAR,
       API_TYPE_UNKNOWN
     };
 #elif defined(OS_MACOSX)
