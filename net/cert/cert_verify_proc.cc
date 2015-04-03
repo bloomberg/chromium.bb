@@ -17,6 +17,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/cert_verify_proc_whitelist.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/x509_certificate.h"
@@ -232,6 +233,12 @@ int CertVerifyProc::Verify(X509Certificate* cert,
                                   dns_names,
                                   ip_addrs)) {
     verify_result->cert_status |= CERT_STATUS_NAME_CONSTRAINT_VIOLATION;
+    rv = MapCertStatusToNetError(verify_result->cert_status);
+  }
+
+  if (IsNonWhitelistedCertificate(*verify_result->verified_cert,
+                                  verify_result->public_key_hashes)) {
+    verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
     rv = MapCertStatusToNetError(verify_result->cert_status);
   }
 
