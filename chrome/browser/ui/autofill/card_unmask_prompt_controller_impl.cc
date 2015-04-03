@@ -193,14 +193,13 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
   }
   if (CanStoreLocally()) {
     pending_response_.should_store_pan = should_store_pan;
+    // Remember the last choice the user made (on this device).
+    user_prefs::UserPrefs::Get(web_contents_->GetBrowserContext())->SetBoolean(
+        prefs::kAutofillWalletImportStorageCheckboxState, should_store_pan);
   } else {
     DCHECK(!should_store_pan);
     pending_response_.should_store_pan = false;
   }
-
-  // Remember the last choice the user made (on this device).
-  user_prefs::UserPrefs::Get(web_contents_->GetBrowserContext())->SetBoolean(
-      prefs::kAutofillWalletImportStorageCheckboxState, should_store_pan);
 
   if (!pending_response_.risk_data.empty())
     delegate_->OnUnmaskResponse(pending_response_);

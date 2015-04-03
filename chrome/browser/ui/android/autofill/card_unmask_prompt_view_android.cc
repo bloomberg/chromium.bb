@@ -47,6 +47,7 @@ void CardUnmaskPromptViewAndroid::Show() {
       instructions.obj(),
       ResourceMapper::MapFromChromiumId(controller_->GetCvcImageRid()),
       controller_->ShouldRequestExpirationDate(),
+      controller_->CanStoreLocally(),
       controller_->GetStoreLocallyStartState(),
       view_android->GetWindowAndroid()->GetJavaObject().obj()));
 

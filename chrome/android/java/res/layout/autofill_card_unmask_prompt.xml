@@ -11,7 +11,7 @@
 
     <LinearLayout
         android:id="@+id/instructions_container"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/controls_container"
         android:layout_alignEnd="@+id/controls_container"
@@ -49,14 +49,13 @@
 
     <LinearLayout
         android:id="@+id/controls_container"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/instructions_container"
-        android:layout_marginBottom="16dp"
         android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
             android:orientation="horizontal">
@@ -127,8 +126,10 @@
             android:visibility="gone" />
 
         <RelativeLayout
+            android:id="@+id/store_locally_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:layout_marginTop="16dp">
 
             <!-- TODO(estade): Content description? -->
