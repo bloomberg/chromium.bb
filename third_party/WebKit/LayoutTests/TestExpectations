@@ -2049,3 +2049,7 @@ crbug.com/461041 fast/forms/calendar-picker/month-picker-ax.html [ Pass Timeout 
 crbug.com/473632 fast/dom/Geolocation/success-clear-watch.html [ Pass Timeout ]
 
 crbug.com/472905 inspector/elements/styles/page-reload-update-sidebar.html [ Pass Failure ]
+
+crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass Failure ]
+crbug.com/473722 [ XP ] http/tests/fetch/workers/stream-reader.html [ Slow ]
+crbug.com/473725 [ Linux ] virtual/slimmingpaint/fast/forms/submit-change-fragment.html [ Pass Timeout ]
