@@ -253,6 +253,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_GETDEVICE
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_SCALAR_XFERMODES
+#   define SK_SUPPORT_LEGACY_SCALAR_XFERMODES
+#endif
+
 #ifndef    SK_SUPPORT_LEGACY_PUBLIC_IMAGEINFO_FIELDS
 #   define SK_SUPPORT_LEGACY_PUBLIC_IMAGEINFO_FIELDS
 #endif
