@@ -320,6 +320,11 @@ int SSLConnectJob::DoSSLConnect() {
 }
 
 int SSLConnectJob::DoSSLConnectComplete(int result) {
+  // TODO(rvargas): Remove ScopedTracker below once crbug.com/462784 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "462784 SSLConnectJob::DoSSLConnectComplete"));
+
   connect_timing_.ssl_end = base::TimeTicks::Now();
 
   SSLClientSocket::NextProtoStatus status =

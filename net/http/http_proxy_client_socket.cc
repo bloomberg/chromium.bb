@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/auth.h"
@@ -545,6 +546,11 @@ int HttpProxyClientSocket::DoTCPRestart() {
 }
 
 int HttpProxyClientSocket::DoTCPRestartComplete(int result) {
+  // TODO(rvargas): Remove ScopedTracker below once crbug.com/462784 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "462784 HttpProxyClientSocket::DoTCPRestartComplete"));
+
   if (result != OK)
     return result;
 
