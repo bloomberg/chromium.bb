@@ -2300,6 +2300,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Duration of time taken to run Heap::collectGarbage().</summary>
 </histogram>
 
+<histogram name="BlinkGC.CommittedSize" units="MB">
+  <owner>haraken@chromium.org</owner>
+  <summary>
+    The committed memory size in Blink GC. The value is reported when we see the
+    highest memory usage we've ever seen in the renderer process.
+  </summary>
+</histogram>
+
 <histogram name="BlinkGC.CompleteSweep" units="milliseconds">
   <owner>haraken@chromium.org</owner>
   <summary>Duration of time taken to run ThreadState::completeSweep().</summary>
