@@ -509,13 +509,10 @@ class ServerKeyExchange(HandshakeMsg):
         self.srp_g = 0
         self.srp_s = bytearray(0)
         self.srp_B = 0
-        # DH params:
+        # Anon DH params:
         self.dh_p = 0
         self.dh_g = 0
         self.dh_Ys = 0
-        # ECDH params:
-        self.ecdhCurve = 0
-        self.ecdhPublic = bytearray(0)
         self.signature = bytearray(0)
 
     def createSRP(self, srp_N, srp_g, srp_s, srp_B):
@@ -529,11 +526,6 @@ class ServerKeyExchange(HandshakeMsg):
         self.dh_p = dh_p
         self.dh_g = dh_g
         self.dh_Ys = dh_Ys
-        return self
-
-    def createECDH(self, ecdhCurve, ecdhPublic):
-        self.ecdhCurve = ecdhCurve
-        self.ecdhPublic = ecdhPublic
         return self
 
     def parse(self, p):
@@ -563,10 +555,6 @@ class ServerKeyExchange(HandshakeMsg):
             w.addVarSeq(numberToByteArray(self.dh_p), 1, 2)
             w.addVarSeq(numberToByteArray(self.dh_g), 1, 2)
             w.addVarSeq(numberToByteArray(self.dh_Ys), 1, 2)
-        elif self.cipherSuite in CipherSuite.ecdhAllSuites:
-            w.add(ECCurveType.named_curve, 1)
-            w.add(self.ecdhCurve, 2)
-            w.addVarSeq(self.ecdhPublic, 1, 1)
         else:
             assert(False)
         return w.bytes
@@ -638,9 +626,7 @@ class ClientKeyExchange(HandshakeMsg):
             else:
                 raise AssertionError()
         elif self.cipherSuite in CipherSuite.dhAllSuites:
-            self.dh_Yc = bytesToNumber(p.getVarBytes(2))
-        elif self.cipherSuite in CipherSuite.ecdhAllSuites:
-            self.ecdh_Yc = p.getVarBytes(1)
+            self.dh_Yc = bytesToNumber(p.getVarBytes(2))            
         else:
             raise AssertionError()
         p.stopLengthCheck()

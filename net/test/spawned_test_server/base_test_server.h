@@ -79,11 +79,10 @@ class BaseTestServer {
       // Special value used to indicate that any algorithm the server supports
       // is acceptable. Preferred over explicitly OR-ing all key exchange
       // algorithms.
-      KEY_EXCHANGE_ANY = 0,
+      KEY_EXCHANGE_ANY     = 0,
 
-      KEY_EXCHANGE_RSA = (1 << 0),
+      KEY_EXCHANGE_RSA     = (1 << 0),
       KEY_EXCHANGE_DHE_RSA = (1 << 1),
-      KEY_EXCHANGE_ECDHE_RSA = (1 << 2),
     };
 
     // Bitmask of bulk encryption algorithms that the test server supports

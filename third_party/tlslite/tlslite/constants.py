@@ -76,14 +76,6 @@ class SignatureAlgorithm:
 class NameType:
     host_name = 0
 
-class ECCurveType:
-    explicit_prime = 1
-    explicit_char2 = 2
-    named_curve = 3
-
-class NamedCurve:
-    secp256r1 = 23
-
 class AlertLevel:
     warning = 1
     fatal = 2
@@ -186,19 +178,11 @@ class CipherSuite:
     TLS_RSA_WITH_AES_128_GCM_SHA256 = 0x009C
     TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 = 0x009E
 
-    TLS_ECDHE_RSA_WITH_RC4_128_SHA = 0xc011
-    TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA = 0xc012
-    TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA = 0xc013
-    TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA = 0xc014
-    TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 = 0xc027
-    TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 = 0xc02f
-
     tripleDESSuites = []
     tripleDESSuites.append(TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
     tripleDESSuites.append(TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA)
     tripleDESSuites.append(TLS_RSA_WITH_3DES_EDE_CBC_SHA)
     tripleDESSuites.append(TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA)
-    tripleDESSuites.append(TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA)
 
     aes128Suites = []
     aes128Suites.append(TLS_SRP_SHA_WITH_AES_128_CBC_SHA)
@@ -208,8 +192,6 @@ class CipherSuite:
     aes128Suites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
     aes128Suites.append(TLS_RSA_WITH_AES_128_CBC_SHA256)
     aes128Suites.append(TLS_DHE_RSA_WITH_AES_128_CBC_SHA256)
-    aes128Suites.append(TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA)
-    aes128Suites.append(TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256)
 
     aes256Suites = []
     aes256Suites.append(TLS_SRP_SHA_WITH_AES_256_CBC_SHA)
@@ -219,17 +201,14 @@ class CipherSuite:
     aes256Suites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA)
     aes256Suites.append(TLS_RSA_WITH_AES_256_CBC_SHA256)
     aes256Suites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA256)
-    aes256Suites.append(TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA)
 
     aes128GcmSuites = []
     aes128GcmSuites.append(TLS_RSA_WITH_AES_128_GCM_SHA256)
     aes128GcmSuites.append(TLS_DHE_RSA_WITH_AES_128_GCM_SHA256)
-    aes128GcmSuites.append(TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256)
 
     rc4Suites = []
     rc4Suites.append(TLS_RSA_WITH_RC4_128_SHA)
     rc4Suites.append(TLS_RSA_WITH_RC4_128_MD5)
-    rc4Suites.append(TLS_ECDHE_RSA_WITH_RC4_128_SHA)
     
     shaSuites = []
     shaSuites.append(TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA)
@@ -247,10 +226,6 @@ class CipherSuite:
     shaSuites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA)
     shaSuites.append(TLS_DH_ANON_WITH_AES_128_CBC_SHA)
     shaSuites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA)
-    shaSuites.append(TLS_ECDHE_RSA_WITH_RC4_128_SHA)
-    shaSuites.append(TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA)
-    shaSuites.append(TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA)
-    shaSuites.append(TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA)
     
     sha256Suites = []
     sha256Suites.append(TLS_RSA_WITH_AES_128_CBC_SHA256)
@@ -259,9 +234,6 @@ class CipherSuite:
     sha256Suites.append(TLS_DHE_RSA_WITH_AES_256_CBC_SHA256)
     sha256Suites.append(TLS_RSA_WITH_AES_128_GCM_SHA256)
     sha256Suites.append(TLS_DHE_RSA_WITH_AES_128_GCM_SHA256)
-    sha256Suites.append(TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256)
-    sha256Suites.append(TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256)
-
 
     aeadSuites = aes128GcmSuites
 
@@ -303,8 +275,6 @@ class CipherSuite:
             keyExchangeSuites += CipherSuite.certSuites
         if "dhe_rsa" in keyExchangeNames:
             keyExchangeSuites += CipherSuite.dheCertSuites
-        if "ecdhe_rsa" in keyExchangeNames:
-            keyExchangeSuites += CipherSuite.ecdheCertSuites
         if "srp_sha" in keyExchangeNames:
             keyExchangeSuites += CipherSuite.srpSuites
         if "srp_sha_rsa" in keyExchangeNames:
@@ -365,19 +335,7 @@ class CipherSuite:
     def getDheCertSuites(settings, version=None):
         return CipherSuite._filterSuites(CipherSuite.dheCertSuites, settings, version)
 
-    ecdheCertSuites = []
-    ecdheCertSuites.append(TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256)
-    ecdheCertSuites.append(TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256)
-    ecdheCertSuites.append(TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA)
-    ecdheCertSuites.append(TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA)
-    ecdheCertSuites.append(TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA)
-    ecdheCertSuites.append(TLS_ECDHE_RSA_WITH_RC4_128_SHA)
-
-    @staticmethod
-    def getEcdheCertSuites(settings, version=None):
-        return CipherSuite._filterSuites(CipherSuite.ecdheCertSuites, settings, version)
-
-    certAllSuites = srpCertSuites + certSuites + dheCertSuites + ecdheCertSuites
+    certAllSuites = srpCertSuites + certSuites + dheCertSuites
 
     anonSuites = []
     anonSuites.append(TLS_DH_ANON_WITH_AES_256_CBC_SHA)
@@ -388,7 +346,6 @@ class CipherSuite:
         return CipherSuite._filterSuites(CipherSuite.anonSuites, settings, version)
 
     dhAllSuites = dheCertSuites + anonSuites
-    ecdhAllSuites = ecdheCertSuites
 
     @staticmethod
     def canonicalCipherName(ciphersuite):

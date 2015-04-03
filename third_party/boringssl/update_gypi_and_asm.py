@@ -77,11 +77,9 @@ def FindCFiles(directory, filter_func):
 
   for (path, dirnames, filenames) in os.walk(directory):
     for filename in filenames:
-      if not filename.endswith('.c') and not filename.endswith('.cc'):
+      if filename.endswith('.c') and filter_func(filename, False):
+        cfiles.append(os.path.join(path, filename))
         continue
-      if not filter_func(filename, False):
-        continue
-      cfiles.append(os.path.join(path, filename))
 
     for (i, dirname) in enumerate(dirnames):
       if not filter_func(dirname, True):

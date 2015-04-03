@@ -2203,9 +2203,7 @@ TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
   // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml,
   // only disabling those cipher suites that the test server actually
   // implements.
-  const uint16 kCiphersToDisable[] = {
-      0x0005,  // TLS_RSA_WITH_RC4_128_SHA
-      0xc011,  // TLS_ECDHE_RSA_WITH_RC4_128_SHA
+  const uint16 kCiphersToDisable[] = {0x0005,  // TLS_RSA_WITH_RC4_128_SHA
   };
 
   SpawnedTestServer::SSLOptions ssl_options;
@@ -2883,10 +2881,10 @@ TEST_F(SSLClientSocketFalseStartTest, FalseStartEnabled) {
     return;
   }
 
-  // False Start requires NPN/ALPN, ECDHE, and an AEAD.
+  // False Start requires NPN/ALPN, perfect forward secrecy, and an AEAD.
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.enable_npn = true;
@@ -2905,7 +2903,7 @@ TEST_F(SSLClientSocketFalseStartTest, NoNPN) {
 
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   SSLConfig client_config;
@@ -2914,8 +2912,8 @@ TEST_F(SSLClientSocketFalseStartTest, NoNPN) {
       TestFalseStart(server_options, client_config, false));
 }
 
-// Test that False Start is disabled with plain RSA ciphers.
-TEST_F(SSLClientSocketFalseStartTest, RSA) {
+// Test that False Start is disabled without perfect forward secrecy.
+TEST_F(SSLClientSocketFalseStartTest, NoForwardSecrecy) {
   if (!SupportsAESGCM()) {
     LOG(WARNING) << "Skipping test because AES-GCM is not supported.";
     return;
@@ -2933,29 +2931,11 @@ TEST_F(SSLClientSocketFalseStartTest, RSA) {
       TestFalseStart(server_options, client_config, false));
 }
 
-// Test that False Start is disabled with DHE_RSA ciphers.
-TEST_F(SSLClientSocketFalseStartTest, DHE_RSA) {
-  if (!SupportsAESGCM()) {
-    LOG(WARNING) << "Skipping test because AES-GCM is not supported.";
-    return;
-  }
-
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
-  server_options.bulk_ciphers =
-      SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
-  server_options.enable_npn = true;
-  SSLConfig client_config;
-  client_config.next_protos.push_back(kProtoHTTP11);
-  ASSERT_NO_FATAL_FAILURE(TestFalseStart(server_options, client_config, false));
-}
-
 // Test that False Start is disabled without an AEAD.
 TEST_F(SSLClientSocketFalseStartTest, NoAEAD) {
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128;
   server_options.enable_npn = true;
@@ -2974,7 +2954,7 @@ TEST_F(SSLClientSocketFalseStartTest, SessionResumption) {
   // Start a server.
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.enable_npn = true;
@@ -3012,7 +2992,7 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBeforeFinish) {
   // Start a server.
   SpawnedTestServer::SSLOptions server_options;
   server_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
+      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
   server_options.bulk_ciphers =
       SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128GCM;
   server_options.enable_npn = true;
