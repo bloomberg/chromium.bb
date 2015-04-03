@@ -219,7 +219,7 @@ public:
     virtual void didDetectXSS(const KURL&, bool) override { }
     virtual void didDispatchPingLoader(const KURL&) override { }
     virtual void selectorMatchChanged(const Vector<String>&, const Vector<String>&) override { }
-    virtual PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const KURL&, const AtomicString&, HTMLFrameOwnerElement*, ContentSecurityPolicyDisposition) override;
+    virtual PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const FrameLoadRequest&, const AtomicString&, HTMLFrameOwnerElement*) override;
     virtual PassOwnPtrWillBeRawPtr<PluginPlaceholder> createPluginPlaceholder(Document&, const KURL&, const Vector<String>& paramNames, const Vector<String>& paramValues, const String& mimeType, bool loadManually) override;
     virtual PassRefPtrWillBeRawPtr<Widget> createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool, DetachedPluginPolicy) override;
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const override { return false; }

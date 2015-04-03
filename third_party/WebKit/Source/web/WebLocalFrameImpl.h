@@ -250,7 +250,7 @@ public:
 
     PassRefPtrWillBeRawPtr<LocalFrame> initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& fallbackName);
 
-    PassRefPtrWillBeRawPtr<LocalFrame> createChildFrame(const FrameLoadRequest&, HTMLFrameOwnerElement*);
+    PassRefPtrWillBeRawPtr<LocalFrame> createChildFrame(const FrameLoadRequest&, const AtomicString& name, HTMLFrameOwnerElement*);
 
     void didChangeContentsSize(const IntSize&);
 

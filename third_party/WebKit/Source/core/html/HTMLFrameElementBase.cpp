@@ -90,7 +90,7 @@ void HTMLFrameElementBase::openURL(bool lockBackForwardList)
         url = blankURL();
     }
 
-    if (!loadOrRedirectSubframe(url, m_frameName, lockBackForwardList, CheckContentSecurityPolicy))
+    if (!loadOrRedirectSubframe(url, m_frameName, lockBackForwardList))
         return;
     if (!contentFrame() || scriptURL.isEmpty() || !contentFrame()->isLocalFrame())
         return;

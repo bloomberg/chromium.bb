@@ -117,7 +117,7 @@ public:
     virtual WTF::String userAgent(const KURL&) override;
     virtual WTF::String doNotTrackValue() override;
     virtual void transitionToCommittedForNewPage() override;
-    virtual PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const KURL&, const WTF::AtomicString& name, HTMLFrameOwnerElement*, ContentSecurityPolicyDisposition) override;
+    virtual PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const FrameLoadRequest&, const WTF::AtomicString& name, HTMLFrameOwnerElement*) override;
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const;
     virtual PassOwnPtrWillBeRawPtr<PluginPlaceholder> createPluginPlaceholder(
         Document&, const KURL&,

@@ -696,13 +696,11 @@ void FrameLoaderClientImpl::transitionToCommittedForNewPage()
 }
 
 PassRefPtrWillBeRawPtr<LocalFrame> FrameLoaderClientImpl::createFrame(
-    const KURL& url,
+    const FrameLoadRequest& request,
     const AtomicString& name,
-    HTMLFrameOwnerElement* ownerElement,
-    ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
+    HTMLFrameOwnerElement* ownerElement)
 {
-    FrameLoadRequest frameRequest(m_webFrame->frame()->document(), url, name, shouldCheckContentSecurityPolicy);
-    return m_webFrame->createChildFrame(frameRequest, ownerElement);
+    return m_webFrame->createChildFrame(request, name, ownerElement);
 }
 
 bool FrameLoaderClientImpl::canCreatePluginWithoutRenderer(const String& mimeType) const
