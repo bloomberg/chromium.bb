@@ -125,6 +125,10 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // appropriate folder.
   void DeleteItem(const std::string& id);
 
+  // Wrapper around DeleteItem() which will also clean up if its parent folder
+  // has a single child left.
+  void DeleteUninstalledItem(const std::string& id);
+
   // Call OnExtensionPreferenceChanged() for all items in the model.
   void NotifyExtensionPreferenceChanged();
 

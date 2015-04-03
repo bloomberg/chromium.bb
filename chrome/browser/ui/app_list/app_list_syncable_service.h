@@ -68,6 +68,9 @@ class AppListSyncableService : public syncer::SyncableService,
   // Removes sync item matching |id|.
   void RemoveItem(const std::string& id);
 
+  // Removes sync item matching |id| after item uninstall.
+  void RemoveUninstalledItem(const std::string& id);
+
   // Called when properties of an item may have changed, e.g. default/oem state.
   void UpdateItem(AppListItem* app_item);
 

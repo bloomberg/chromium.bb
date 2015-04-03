@@ -476,6 +476,12 @@ void AppListSyncableService::RemoveItem(const std::string& id) {
   PruneEmptySyncFolders();
 }
 
+void AppListSyncableService::RemoveUninstalledItem(const std::string& id) {
+  RemoveSyncItem(id);
+  model_->DeleteUninstalledItem(id);
+  PruneEmptySyncFolders();
+}
+
 void AppListSyncableService::UpdateItem(AppListItem* app_item) {
   // Check to see if the item needs to be moved to/from the OEM folder.
   if (!app_list::switches::IsFolderUIEnabled())

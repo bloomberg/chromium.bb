@@ -206,10 +206,10 @@ void ExtensionAppModelBuilder::OnExtensionUninstalled(
   if (service_) {
     DVLOG(2) << service_ << ": OnExtensionUninstalled: "
              << extension->id().substr(0, 8);
-    service_->RemoveItem(extension->id());
+    service_->RemoveUninstalledItem(extension->id());
     return;
   }
-  model_->DeleteItem(extension->id());
+  model_->DeleteUninstalledItem(extension->id());
 }
 
 void ExtensionAppModelBuilder::OnDisabledExtensionUpdated(

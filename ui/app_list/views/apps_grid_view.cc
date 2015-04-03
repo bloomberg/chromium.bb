@@ -1624,7 +1624,9 @@ void AppsGridView::EndDragForReparentInHiddenFolderGridView() {
 
 void AppsGridView::OnFolderItemRemoved() {
   DCHECK(folder_delegate_);
-  item_list_ = NULL;
+  if (item_list_)
+    item_list_->RemoveObserver(this);
+  item_list_ = nullptr;
 }
 
 void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {

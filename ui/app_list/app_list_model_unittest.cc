@@ -438,6 +438,49 @@ TEST_F(AppListModelFolderTest, MoveItemFromFolderToFolder) {
   ASSERT_TRUE(folder2);
 }
 
+TEST_F(AppListModelFolderTest, UninstallFolderItems) {
+  AppListItem* item0 = model_.CreateAndAddItem("Item 0");
+  AppListItem* item1 = model_.CreateAndAddItem("Item 1");
+  AppListItem* item2 = model_.CreateAndAddItem("Item 2");
+  AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(model_.AddItem(
+      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL)));
+  EXPECT_EQ("Item 0,Item 1,Item 2,folder1", GetModelContents());
+
+  // Move all items to folder1.
+  model_.MoveItemToFolderAt(item0, folder1->id(), item0->position());
+  model_.MoveItemToFolderAt(item1, folder1->id(), item1->position());
+  model_.MoveItemToFolderAt(item2, folder1->id(), item2->position());
+  EXPECT_EQ("Item 0,Item 1,Item 2", GetItemListContents(folder1->item_list()));
+  EXPECT_EQ("folder1", GetModelContents());
+
+  // Delete Item 2 from folder.
+  model_.DeleteUninstalledItem("Item 2");
+  EXPECT_EQ("Item 0,Item 1", GetItemListContents(folder1->item_list()));
+  EXPECT_EQ("folder1", GetModelContents());
+
+  // Delete Item 1 from folder, should reparent Item 0 and delete folder1.
+  model_.DeleteUninstalledItem("Item 1");
+  EXPECT_EQ(nullptr, model_.FindItem("folder1"));
+  EXPECT_EQ("Item 0", GetModelContents());
+}
+
+TEST_F(AppListModelFolderTest, UninstallSingleItemFolderItem) {
+  AppListItem* item0 = model_.CreateAndAddItem("Item 0");
+  AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(model_.AddItem(
+      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL)));
+  EXPECT_EQ("Item 0,folder1", GetModelContents());
+
+  // Move item0 to folder1.
+  model_.MoveItemToFolderAt(item0, folder1->id(), item0->position());
+  EXPECT_EQ("Item 0", GetItemListContents(folder1->item_list()));
+  EXPECT_EQ("folder1", GetModelContents());
+
+  // Delete only item from folder, folder should also be removed.
+  model_.DeleteUninstalledItem("Item 0");
+  EXPECT_EQ(nullptr, model_.FindItem("folder1"));
+  EXPECT_EQ("", GetModelContents());
+}
+
 TEST_F(AppListModelFolderTest, FindItemInFolder) {
   AppListFolderItem* folder =
       new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
