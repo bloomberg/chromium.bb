@@ -871,6 +871,8 @@ base::TimeTicks ResourceProvider::EstimatedUploadCompletionTime(
 
 ResourceProvider::Resource* ResourceProvider::GetResource(ResourceId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // Try to differentiate GetResource with a bad id vs with no id.
+  CHECK(id);
   ResourceMap::iterator it = resources_.find(id);
   CHECK(it != resources_.end());
   return &it->second;
