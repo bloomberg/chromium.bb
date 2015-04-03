@@ -216,12 +216,16 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
 
   render_frame()->GetServiceRegistry()->ConnectToRemoteService(
       &presentation_service_);
+  // TODO(imcheng): Uncomment these once they are implemented on the browser
+  // side. (crbug.com/459006)
+  /*
   presentation_service_->ListenForDefaultSessionStart(base::Bind(
       &PresentationDispatcher::OnDefaultSessionStarted,
       base::Unretained(this)));
   presentation_service_->ListenForSessionStateChange(base::Bind(
       &PresentationDispatcher::OnSessionStateChange,
       base::Unretained(this)));
+  */
 }
 
 }  // namespace content

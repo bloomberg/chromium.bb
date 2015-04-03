@@ -39,8 +39,8 @@ class RenderFrameHost;
 // This class is instantiated on-demand via Mojo's ConnectToRemoteService
 // from the renderer when the first presentation API request is handled.
 class CONTENT_EXPORT PresentationServiceImpl
-    : public NON_EXPORTED_BASE(
-          mojo::InterfaceImpl<presentation::PresentationService>),
+    : public NON_EXPORTED_BASE(presentation::PresentationService),
+      public mojo::ErrorHandler,
       public WebContentsObserver,
       public PresentationServiceDelegate::Observer {
  public:
@@ -172,7 +172,10 @@ class CONTENT_EXPORT PresentationServiceImpl
   void ListenForSessionStateChange(
       const SessionStateCallback& callback) override;
 
-  // mojo::InterfaceImpl override.
+  // Creates a binding between this object and |request|.
+  void Bind(mojo::InterfaceRequest<presentation::PresentationService> request);
+
+  // mojo::ErrorHandler override.
   // Note that this is called when the RenderFrameHost is deleted.
   void OnConnectionError() override;
 
@@ -258,6 +261,10 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   int next_request_session_id_;
   base::hash_map<int, linked_ptr<NewSessionMojoCallback>> pending_session_cbs_;
+
+  // RAII binding of |this| to an Presentation interface request.
+  // The binding is removed when binding_ is cleared or goes out of scope.
+  scoped_ptr<mojo::Binding<presentation::PresentationService>> binding_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<PresentationServiceImpl> weak_factory_;

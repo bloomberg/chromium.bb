@@ -50,19 +50,27 @@ void PresentationServiceImpl::CreateMojoService(
       WebContents::FromRenderFrameHost(render_frame_host);
   DCHECK(web_contents);
 
-  mojo::BindToRequest(
-      new PresentationServiceImpl(
-          render_frame_host,
-          web_contents,
-          GetContentClient()->browser()->GetPresentationServiceDelegate(
-              web_contents)),
-          &request);
+  // This object will be deleted when the RenderFrameHost is about to be
+  // deleted (RenderFrameDeleted) or if a connection error occurred
+  // (OnConnectionError).
+  PresentationServiceImpl* impl = new PresentationServiceImpl(
+      render_frame_host,
+      web_contents,
+      GetContentClient()->browser()->GetPresentationServiceDelegate(
+          web_contents));
+  impl->Bind(request.Pass());
+}
+
+void PresentationServiceImpl::Bind(
+    mojo::InterfaceRequest<presentation::PresentationService> request) {
+  binding_.reset(new mojo::Binding<presentation::PresentationService>(
+      this, request.Pass()));
+  binding_->set_error_handler(this);
 }
 
 void PresentationServiceImpl::OnConnectionError() {
-  DVLOG(1) << "OnConnectionError: "
-           << render_frame_host_->GetProcess()->GetID() << ", "
-           << render_frame_host_->GetRoutingID();
+  DVLOG(1) << "OnConnectionError";
+  delete this;
 }
 
 PresentationServiceImpl::ScreenAvailabilityContext*
@@ -336,8 +344,11 @@ void PresentationServiceImpl::RenderFrameDeleted(
   if (render_frame_host_ != render_frame_host)
     return;
 
-  // RenderFrameDeleted means this object is getting deleted soon.
+  // RenderFrameDeleted means |render_frame_host_| is going to be deleted soon.
+  // This object should also be deleted.
   Reset();
+  render_frame_host_ = nullptr;
+  delete this;
 }
 
 void PresentationServiceImpl::Reset() {

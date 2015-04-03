@@ -74,19 +74,20 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
 
+    auto request = mojo::GetProxy(&service_ptr_);
     EXPECT_CALL(mock_delegate_, AddObserver(_)).Times(1);
-    service_impl_.reset(mojo::WeakBindToProxy(
-        new PresentationServiceImpl(
-            contents()->GetMainFrame(), contents(), &mock_delegate_),
-        &service_ptr_));
+    service_impl_.reset(new PresentationServiceImpl(
+        contents()->GetMainFrame(), contents(), &mock_delegate_));
+    service_impl_->Bind(request.Pass());
   }
 
   void TearDown() override {
     service_ptr_.reset();
-
-    EXPECT_CALL(mock_delegate_, RemoveObserver(Eq(service_impl_.get())))
-        .Times(1);
-    service_impl_.reset();
+    if (service_impl_.get()) {
+      EXPECT_CALL(mock_delegate_, RemoveObserver(Eq(service_impl_.get())))
+          .Times(1);
+      service_impl_.reset();
+    }
 
     RenderViewHostImplTestHarness::TearDown();
   }
@@ -290,8 +291,11 @@ TEST_F(PresentationServiceImplTest, ThisRenderFrameDeleted) {
       true);
 
   ExpectReset();
-  service_impl_->RenderFrameDeleted(contents()->GetMainFrame());
-  ExpectCleanState();
+
+  // Since the frame matched the service, |service_impl_| will be deleted.
+  PresentationServiceImpl* service = service_impl_.release();
+  EXPECT_CALL(mock_delegate_, RemoveObserver(Eq(service))).Times(1);
+  service->RenderFrameDeleted(contents()->GetMainFrame());
 }
 
 TEST_F(PresentationServiceImplTest, NotThisRenderFrameDeleted) {
