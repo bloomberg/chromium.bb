@@ -68,16 +68,16 @@ class NET_EXPORT SdchOwner : public net::SdchObserver,
   void OnPrefValueChanged(const std::string& key) override;
   void OnInitializationCompleted(bool succeeded) override;
 
-  // Implementation detail--this is the function callback by the callback
-  // passed to the fetcher through which the fetcher informs the SdchOwner
-  // that it's gotten the dictionary.  The first two arguments are
-  // bound locally.
+  // Implementation detail--this is the function callback by the callback passed
+  // to the fetcher through which the fetcher informs the SdchOwner that it's
+  // gotten the dictionary.  The first two arguments are bound locally.
   // Public for testing.
   void OnDictionaryFetched(base::Time last_used,
                            int use_count,
                            const std::string& dictionary_text,
                            const GURL& dictionary_url,
-                           const net::BoundNetLog& net_log);
+                           const net::BoundNetLog& net_log,
+                           bool was_from_cache);
 
   void SetClockForTesting(scoped_ptr<base::Clock> clock);
 

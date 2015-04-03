@@ -6,6 +6,7 @@
 #include "base/prefs/testing_pref_store.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "net/base/sdch_manager.h"
@@ -207,11 +208,13 @@ class MockSdchDictionaryFetcher : public SdchDictionaryFetcher {
 
   bool CompletePendingRequest(const GURL& dictionary_url,
                               const std::string& dictionary_text,
-                              const BoundNetLog& net_log) {
+                              const BoundNetLog& net_log,
+                              bool was_from_cache) {
     for (std::vector<PendingRequest>::iterator it = requests_.begin();
          it != requests_.end(); ++it) {
       if (it->url_ == dictionary_url) {
-        it->callback_.Run(dictionary_text, dictionary_url, net_log);
+        it->callback_.Run(dictionary_text, dictionary_url, net_log,
+                          was_from_cache);
         requests_.erase(it);
         return true;
       }
@@ -319,7 +322,7 @@ class SdchOwnerTest : public testing::Test {
     if (DictionaryPresentInManager(server_hash))
       return false;
     sdch_owner().OnDictionaryFetched(last_used_time, 0, dictionary_text,
-                                     dictionary_url, net_log_);
+                                     dictionary_url, net_log_, false);
     if (server_hash_p)
       *server_hash_p = server_hash;
     return DictionaryPresentInManager(server_hash);
@@ -356,8 +359,8 @@ TEST_F(SdchOwnerTest, OnGetDictionary_Fetching) {
   // Fetch generated when half full.
   GURL dict_url2(std::string(generic_url) + "/d2");
   std::string dictionary1(NewSdchDictionary(kMaxSizeForTesting / 2));
-  sdch_owner().OnDictionaryFetched(base::Time::Now(), 1, dictionary1, dict_url1,
-                                   bound_net_log());
+  sdch_owner().OnDictionaryFetched(base::Time::Now(), 1, dictionary1,
+                                   dict_url1, bound_net_log(), false);
   EXPECT_EQ(0, JobsRecentlyCreated());
   SignalGetDictionaryAndClearJobs(request_url, dict_url2);
   EXPECT_EQ(1, JobsRecentlyCreated());
@@ -366,8 +369,8 @@ TEST_F(SdchOwnerTest, OnGetDictionary_Fetching) {
   GURL dict_url3(std::string(generic_url) + "/d3");
   std::string dictionary2(NewSdchDictionary(
       (kMaxSizeForTesting / 2 - kMinFetchSpaceForTesting / 2)));
-  sdch_owner().OnDictionaryFetched(base::Time::Now(), 1, dictionary2, dict_url2,
-                                   bound_net_log());
+  sdch_owner().OnDictionaryFetched(base::Time::Now(), 1, dictionary2,
+                                   dict_url2, bound_net_log(), false);
   EXPECT_EQ(0, JobsRecentlyCreated());
   SignalGetDictionaryAndClearJobs(request_url, dict_url3);
   EXPECT_EQ(0, JobsRecentlyCreated());
@@ -696,12 +699,13 @@ class SdchOwnerPersistenceTest : public ::testing::Test {
   void InsertDictionaryForURL(const GURL& url, const std::string& nonce) {
     owner_->OnDictionaryFetched(base::Time::Now(), 1,
                                 CreateDictionary(url, nonce),
-                                url, net_log_);
+                                url, net_log_, false);
   }
 
-  bool CompleteLoadFromURL(const GURL& url, const std::string& nonce) {
+  bool CompleteLoadFromURL(const GURL& url, const std::string& nonce,
+                           bool was_from_cache) {
     return fetcher_->CompletePendingRequest(url, CreateDictionary(url, nonce),
-                                            net_log_);
+                                            net_log_, was_from_cache);
   }
 
   std::string CreateDictionary(const GURL& url, const std::string& nonce) {
@@ -767,7 +771,7 @@ TEST_F(SdchOwnerPersistenceTest, OneDict) {
 
   ResetOwner(false);
   EXPECT_EQ(0, owner_->GetDictionaryCountForTesting());
-  EXPECT_TRUE(CompleteLoadFromURL(url, "0"));
+  EXPECT_TRUE(CompleteLoadFromURL(url, "0", true));
   EXPECT_EQ(1, owner_->GetDictionaryCountForTesting());
 }
 
@@ -779,8 +783,8 @@ TEST_F(SdchOwnerPersistenceTest, TwoDicts) {
   InsertDictionaryForURL(url1, "1");
 
   ResetOwner(false);
-  EXPECT_TRUE(CompleteLoadFromURL(url0, "0"));
-  EXPECT_TRUE(CompleteLoadFromURL(url1, "1"));
+  EXPECT_TRUE(CompleteLoadFromURL(url0, "0", true));
+  EXPECT_TRUE(CompleteLoadFromURL(url1, "1", true));
   EXPECT_EQ(2, owner_->GetDictionaryCountForTesting());
   EXPECT_TRUE(owner_->HasDictionaryFromURLForTesting(url0));
   EXPECT_TRUE(owner_->HasDictionaryFromURLForTesting(url1));
@@ -802,8 +806,8 @@ TEST_F(SdchOwnerPersistenceTest, OneGoodDictOneBadDict) {
   dict->Remove("use_count", nullptr);
 
   ResetOwner(false);
-  EXPECT_TRUE(CompleteLoadFromURL(url0, "0"));
-  EXPECT_FALSE(CompleteLoadFromURL(url1, "1"));
+  EXPECT_TRUE(CompleteLoadFromURL(url0, "0", true));
+  EXPECT_FALSE(CompleteLoadFromURL(url1, "1", true));
   EXPECT_EQ(1, owner_->GetDictionaryCountForTesting());
   EXPECT_TRUE(owner_->HasDictionaryFromURLForTesting(url0));
   EXPECT_FALSE(owner_->HasDictionaryFromURLForTesting(url1));
@@ -824,7 +828,7 @@ TEST_F(SdchOwnerPersistenceTest, UsingDictionaryUpdatesUseCount) {
   }
 
   ResetOwner(false);
-  ASSERT_TRUE(CompleteLoadFromURL(url, "0"));
+  ASSERT_TRUE(CompleteLoadFromURL(url, "0", true));
   owner_->OnDictionaryUsed(manager_.get(), hash);
 
   int new_count;
@@ -849,8 +853,28 @@ TEST_F(SdchOwnerPersistenceTest, LoadingDictionaryMerges) {
   InsertDictionaryForURL(url0, "0");
   EXPECT_EQ(1, owner_->GetDictionaryCountForTesting());
   owner_->EnablePersistentStorage(pref_store_.get());
-  ASSERT_TRUE(CompleteLoadFromURL(url1, "1"));
+  ASSERT_TRUE(CompleteLoadFromURL(url1, "1", true));
   EXPECT_EQ(2, owner_->GetDictionaryCountForTesting());
+}
+
+TEST_F(SdchOwnerPersistenceTest, PersistenceMetrics) {
+  const GURL url0("http://www.example.com/dict0");
+  const GURL url1("http://www.example.com/dict1");
+  ResetOwner(false);
+
+  InsertDictionaryForURL(url0, "0");
+  InsertDictionaryForURL(url1, "1");
+
+  ResetOwner(false);
+
+  base::HistogramTester tester;
+
+  EXPECT_TRUE(CompleteLoadFromURL(url0, "0", true));
+  EXPECT_TRUE(CompleteLoadFromURL(url1, "1", false));
+
+  tester.ExpectTotalCount("Sdch3.NetworkBytesSpent", 1);
+  tester.ExpectUniqueSample("Sdch3.NetworkBytesSpent",
+                            CreateDictionary(url1, "1").size(), 1);
 }
 
 }  // namespace net

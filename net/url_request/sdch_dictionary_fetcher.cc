@@ -355,7 +355,8 @@ int SdchDictionaryFetcher::DoCompleteRequest(int rv) {
   // If the dictionary was successfully fetched, add it to the manager.
   if (rv == OK) {
     current_callback_.Run(dictionary_, current_request_->url(),
-                          current_request_->net_log());
+                          current_request_->net_log(),
+                          current_request_->was_cached());
   }
 
   ResetRequest();

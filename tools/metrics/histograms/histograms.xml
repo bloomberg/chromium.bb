@@ -34251,6 +34251,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sdch3.NetworkBytesSpent" units="bytes">
+  <owner>ellyjones@chromium.org</owner>
+  <summary>
+    Absolute sizes, in bytes, of SDCH dictionaries fetched over the network.
+    These are logged in SdchOwner when dictionary fetches complete.
+  </summary>
+</histogram>
+
 <histogram name="Sdch3.PartialBytesIn" units="bytes">
   <owner>rdsmith@chromium.org</owner>
   <summary>

@@ -345,7 +345,8 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
                                     int use_count,
                                     const std::string& dictionary_text,
                                     const GURL& dictionary_url,
-                                    const net::BoundNetLog& net_log) {
+                                    const net::BoundNetLog& net_log,
+                                    bool was_from_cache) {
   struct DictionaryItem {
     base::Time last_used;
     std::string server_hash;
@@ -373,6 +374,9 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
   CHECK_EQ(0u, destroyed_);
   CHECK(clock_.get());
 #endif
+
+  if (!was_from_cache)
+    UMA_HISTOGRAM_COUNTS("Sdch3.NetworkBytesSpent", dictionary_text.size());
 
   // Figure out if there is space for the incoming dictionary; evict
   // stale dictionaries if needed to make space.
@@ -770,7 +774,8 @@ bool SdchOwner::SchedulePersistedDictionaryLoads(
         dict_url, base::Bind(&SdchOwner::OnDictionaryFetched,
                              // SdchOwner will outlive its member variables.
                              base::Unretained(this),
-                             base::Time::FromDoubleT(last_used), use_count));
+                             base::Time::FromDoubleT(last_used),
+                             use_count));
   }
 
   return true;
