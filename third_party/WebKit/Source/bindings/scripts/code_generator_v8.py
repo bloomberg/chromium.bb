@@ -235,7 +235,10 @@ class CodeGeneratorV8(CodeGeneratorBase):
         header_template = self.jinja_env.get_template(header_template_filename)
         cpp_template = self.jinja_env.get_template(cpp_template_filename)
 
-        template_context = interface_context(interface, component)
+        template_context = interface_context(interface)
+        if not interface.is_partial:
+            template_context['header_includes'].add(self.info_provider.include_path_for_export)
+            template_context['exported'] = self.info_provider.specifier_for_export
         # Add the include for interface itself
         if IdlType(interface_name).is_typed_array:
             template_context['header_includes'].add('core/dom/DOMTypedArray.h')

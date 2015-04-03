@@ -22,15 +22,15 @@ namespace blink {
 
 class V8TestInterface5 {
 public:
-    static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+    MODULES_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
     static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
-    static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
+    MODULES_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterface5Implementation* toImpl(v8::Local<v8::Object> object)
     {
         return blink::toScriptWrappable(object)->toImpl<TestInterface5Implementation>();
     }
-    static TestInterface5Implementation* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    static const WrapperTypeInfo wrapperTypeInfo;
+    MODULES_EXPORT static TestInterface5Implementation* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+    MODULES_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappable*);
     static void derefObject(ScriptWrappable*);
     template<typename VisitorDispatcher>

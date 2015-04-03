@@ -20,10 +20,10 @@ namespace blink {
 
 class V8ArrayBufferView {
 public:
-    static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
-    static TestArrayBufferView* toImpl(v8::Local<v8::Object> object);
-    static TestArrayBufferView* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-    static const WrapperTypeInfo wrapperTypeInfo;
+    CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
+    CORE_EXPORT static TestArrayBufferView* toImpl(v8::Local<v8::Object> object);
+    CORE_EXPORT static TestArrayBufferView* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+    CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappable*);
     static void derefObject(ScriptWrappable*);
     template<typename VisitorDispatcher>

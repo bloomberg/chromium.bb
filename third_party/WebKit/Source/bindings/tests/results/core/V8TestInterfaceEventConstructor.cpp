@@ -282,7 +282,7 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceEventConst
     {"deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttribute", TestInterfaceEventConstructorV8Internal::deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts},
 };
 
-bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const v8::FunctionCallbackInfo<v8::Value>& info)
+CORE_EXPORT bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     Dictionary::ConversionContext conversionContext(exceptionState);
     if (!initializeEvent(eventInit, options, exceptionState, info))

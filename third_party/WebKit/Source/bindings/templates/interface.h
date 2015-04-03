@@ -53,7 +53,7 @@ public:
         return blink::toScriptWrappable(object)->toImpl<{{cpp_class}}>();
     }
     {% endif %}
-    static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+    {{exported}}static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     {% if has_partial_interface %}
     {{exported}}static WrapperTypeInfo wrapperTypeInfo;
     {% else %}

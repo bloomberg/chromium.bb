@@ -11,6 +11,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/tests/idls/core/TestCallbackInterface.h"
+#include "core/CoreExport.h"
 
 namespace blink {
 

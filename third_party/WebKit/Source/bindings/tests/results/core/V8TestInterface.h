@@ -36,7 +36,7 @@ public:
     {
         return blink::toScriptWrappable(object)->toImpl<TestInterfaceImplementation>();
     }
-    static TestInterfaceImplementation* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
+    CORE_EXPORT static TestInterfaceImplementation* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappable*);
     static void derefObject(ScriptWrappable*);
