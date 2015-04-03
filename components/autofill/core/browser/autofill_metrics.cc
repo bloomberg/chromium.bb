@@ -606,6 +606,12 @@ void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
   UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
 }
 
+void AutofillMetrics::LogPasswordFormQueryVolume(
+    PasswordFormQueryVolumeMetric metric) {
+  UMA_HISTOGRAM_ENUMERATION("Autofill.PasswordFormQueryVolume", metric,
+                            NUM_PASSWORD_FORM_QUERY_VOLUME_METRIC);
+}
+
 AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
     : is_for_credit_card_(is_for_credit_card),
       is_server_data_available_(false),

@@ -418,6 +418,14 @@ class AutofillMetrics {
     NUM_WALLET_REQUIRED_ACTIONS
   };
 
+  // For measuring the increased load on the Autofill server if the restriction
+  // on querying for password forms with fewer than 3 fields were omitted.
+  enum PasswordFormQueryVolumeMetric {
+    NEW_PASSWORD_QUERY,
+    CURRENT_QUERY,
+    NUM_PASSWORD_FORM_QUERY_VOLUME_METRIC,
+  };
+
   static void LogCreditCardInfoBarMetric(InfoBarMetric metric);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
 
@@ -550,6 +558,10 @@ class AutofillMetrics {
   // Log the number of Autofill suggestions presented to the user when filling a
   // form.
   static void LogAddressSuggestionsCount(size_t num_suggestions);
+
+  // Log password form query: current and if one-to-two fields password forms
+  // were allowed.
+  static void LogPasswordFormQueryVolume(PasswordFormQueryVolumeMetric metric);
 
   // Utility to autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.

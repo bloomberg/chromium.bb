@@ -1944,6 +1944,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Autofill.PasswordFormQueryVolume"
+    enum="PasswordFormQueryVolume">
+  <owner>dvadym@chromium.org</owner>
+  <owner>gcasto@chromium.org</owner>
+  <summary>
+    Tracks the increased load on the Autofill server if the restriction on
+    querying for password forms with fewer than 3 fields were omitted.
+  </summary>
+</histogram>
+
 <histogram name="AutoFill.ProfileCount">
   <obsolete>
     Deprecated as of 3/2011, replaced by Autofill.StoredProfileCount.
@@ -56724,6 +56734,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5"
       label="Opened automatically / Offering a credential to choose"/>
   <int value="6" label="Opened automatically / Auto-signin toast"/>
+</enum>
+
+<enum name="PasswordFormQueryVolume" type="int">
+  <int value="0" label="New password query"/>
+  <int value="1" label="Current query"/>
 </enum>
 
 <enum name="PasswordGenerationEvent" type="int">

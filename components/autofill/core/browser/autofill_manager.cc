@@ -1389,14 +1389,22 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   for (std::vector<FormData>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
     scoped_ptr<FormStructure> form_structure(new FormStructure(*iter));
-    if (!form_structure->ShouldBeParsed())
+
+    if (!form_structure->ShouldBeParsed()) {
+      if (form_structure->has_password_field()) {
+        AutofillMetrics::LogPasswordFormQueryVolume(
+            AutofillMetrics::NEW_PASSWORD_QUERY);
+      }
       continue;
+    }
 
     form_structure->DetermineHeuristicTypes();
 
-    if (form_structure->ShouldBeCrowdsourced())
+    if (form_structure->ShouldBeCrowdsourced()) {
+      AutofillMetrics::LogPasswordFormQueryVolume(
+          AutofillMetrics::CURRENT_QUERY);
       form_structures_.push_back(form_structure.release());
-    else
+    } else
       non_queryable_forms.push_back(form_structure.release());
   }
 
