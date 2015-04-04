@@ -242,7 +242,6 @@ void FrameLoader::clear()
 
     m_frame->editor().clear();
     m_frame->document()->cancelParsing();
-    m_frame->document()->prepareForDestruction();
     m_frame->document()->removeFocusedElementOfSubtree(m_frame->document());
     m_frame->selection().prepareForDestruction();
     m_frame->eventHandler().clear();
@@ -279,9 +278,11 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
     init.withNewRegistrationContext();
 
     stopAllLoaders();
+    m_frame->detachChildren();
+    m_frame->document()->prepareForDestruction();
     clear();
 
-    // clear() potentially detaches the frame from the document. The
+    // detachChildren() potentially detaches the frame from the document. The
     // loading cannot continue in that case.
     if (!m_frame->page())
         return;
@@ -964,12 +965,19 @@ void FrameLoader::commitProvisionalLoad()
         client()->dispatchWillClose();
         dispatchUnloadEvent();
     }
-    m_frame->detachChildren();
     if (pdl != m_provisionalDocumentLoader)
         return;
     if (m_documentLoader)
         m_documentLoader->detachFromFrame();
     m_documentLoader = m_provisionalDocumentLoader.release();
+    if (m_frame->document()) {
+        // Note that calling detachChildren() shouldn't be needed if there's no
+        // Document, since no child frames should be attached. The assert below
+        // enforces this invariant.
+        m_frame->detachChildren();
+        m_frame->document()->prepareForDestruction();
+    }
+    ASSERT(m_frame->tree().childCount() == 0);
 
     if (isLoadingMainFrame())
         m_frame->page()->chrome().client().needTouchEvents(false);

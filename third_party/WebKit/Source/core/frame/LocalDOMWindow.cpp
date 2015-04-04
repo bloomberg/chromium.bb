@@ -311,15 +311,7 @@ void LocalDOMWindow::clearDocument()
     if (!m_document)
         return;
 
-    if (m_document->isActive()) {
-        // FIXME: We don't call willRemove here. Why is that OK?
-        // This detach() call is also mostly redundant. Most of the calls to
-        // this function come via DocumentLoader::createWriterFor, which
-        // always detaches the previous Document first. Only XSLTProcessor
-        // depends on this detach() call, so it seems like there's some room
-        // for cleanup.
-        m_document->detach();
-    }
+    ASSERT(!m_document->isActive());
 
     // FIXME: This should be part of ActiveDOMObject shutdown
     clearEventQueue();
