@@ -38,7 +38,7 @@
         '--depends', '<@(depends)',
         '--externs', '<@(externs)',
         '--out_file', '<(out_file)',
-        # Add '--verbose', for glorious log spam.
+        # Add '--verbose' for make glorious log spam of Closure compiler.
       ],
       'message': 'Compiling <(source_file)',
     }

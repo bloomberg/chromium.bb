@@ -8548,7 +8548,7 @@ chrome.networkingPrivate.startDisconnect = function(guid, opt_callback) {};
  * @param {function()=} opt_callback
  */
 chrome.networkingPrivate.startActivate =
-  function(guid, opt_carrierOrCallback, opt_callback) {};
+    function(guid, opt_carrierOrCallback, opt_callback) {};
 
 
 /**

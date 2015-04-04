@@ -6,9 +6,9 @@ package com.google.javascript.jscomp;
 
 import java.util.List;
 
-public class ChromePassConfig extends DefaultPassConfig {
+public class ChromePassConfig extends PassConfig.PassConfigDelegate {
     public ChromePassConfig(CompilerOptions options) {
-        super(options);
+        super(new DefaultPassConfig(options));
     }
 
     @Override
@@ -18,7 +18,7 @@ public class ChromePassConfig extends DefaultPassConfig {
         return checks;
     }
 
-    final PassFactory chromePass = new PassFactory("chromePass", true) {
+    final static PassFactory chromePass = new PassFactory("chromePass", true) {
         @Override
         CompilerPass create(AbstractCompiler compiler) {
             return new ChromePass(compiler);
