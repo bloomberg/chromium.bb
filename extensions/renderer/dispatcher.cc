@@ -631,6 +631,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(
       std::make_pair("contextMenus", IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS));
   resources.push_back(
+      std::make_pair("contextMenusHandlers", IDR_CONTEXT_MENUS_HANDLERS_JS));
+  resources.push_back(
       std::make_pair("extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS));
   resources.push_back(std::make_pair("i18n", IDR_I18N_CUSTOM_BINDINGS_JS));
   resources.push_back(std::make_pair(

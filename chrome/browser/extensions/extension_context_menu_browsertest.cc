@@ -215,6 +215,54 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Simple) {
   ASSERT_TRUE(listener2.WaitUntilSatisfied());
 }
 
+// Tests that previous onclick is not fired after updating the menu's onclick,
+// and whether setting onclick to null removes the handler.
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, UpdateOnclick) {
+  ExtensionTestMessageListener listener_error1("onclick1-unexpected", false);
+  ExtensionTestMessageListener listener_error2("onclick2-unexpected", false);
+  ExtensionTestMessageListener listener_update1("update1", true);
+  ExtensionTestMessageListener listener_update2("update2", false);
+  ExtensionTestMessageListener listener_done("onclick2", false);
+
+  const extensions::Extension* extension =
+      LoadContextMenuExtension("onclick_null");
+  ASSERT_TRUE(extension);
+
+  // Wait till item has been created and updated.
+  ASSERT_TRUE(listener_update1.WaitUntilSatisfied());
+
+  GURL page_url("http://www.google.com");
+
+  // Create and build our test context menu.
+  scoped_ptr<TestRenderViewContextMenu> menu(TestRenderViewContextMenu::Create(
+      GetWebContents(), page_url, GURL(), GURL()));
+
+  // Look for the extension item in the menu, and execute it.
+  MenuItem::Id id(false, MenuItem::ExtensionKey(extension->id()));
+  id.string_uid = "id1";
+  int command_id = -1;
+  ASSERT_TRUE(FindCommandId(menu.get(), id, &command_id));
+  menu->ExecuteCommand(command_id, 0);
+
+  // Let the test proceed.
+  listener_update1.Reply("");
+
+  // Wait until the second context menu has been set up.
+  ASSERT_TRUE(listener_update2.WaitUntilSatisfied());
+
+  // Rebuild the context menu and click on the second extension item.
+  menu.reset(TestRenderViewContextMenu::Create(GetWebContents(), page_url,
+                                               GURL(), GURL()));
+  id.string_uid = "id2";
+  ASSERT_TRUE(FindCommandId(menu.get(), id, &command_id));
+  menu->ExecuteCommand(command_id, 0);
+  ASSERT_TRUE(listener_done.WaitUntilSatisfied());
+
+  // Upon completion, the replaced onclick callbacks should not have fired.
+  ASSERT_FALSE(listener_error1.was_satisfied());
+  ASSERT_FALSE(listener_error2.was_satisfied());
+}
+
 // Tests that setting "documentUrlPatterns" for an item properly restricts
 // those items to matching pages.
 IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Patterns) {

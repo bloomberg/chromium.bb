@@ -5,117 +5,22 @@
 // Custom binding for the contextMenus API.
 
 var binding = require('binding').Binding.create('contextMenus');
-
-var contextMenuNatives = requireNative('context_menus');
-var sendRequest = require('sendRequest').sendRequest;
-var Event = require('event_bindings').Event;
-var lastError = require('lastError');
+var contextMenusHandlers = require('contextMenusHandlers');
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  var contextMenus = {};
-  contextMenus.generatedIdHandlers = {};
-  contextMenus.stringIdHandlers = {};
-  var eventName = 'contextMenus';
-  contextMenus.event = new Event(eventName);
-  contextMenus.getIdFromCreateProperties = function(prop) {
-    if (typeof(prop.id) !== 'undefined')
-      return prop.id;
-    return prop.generatedId;
-  };
-  contextMenus.handlersForId = function(id) {
-    if (typeof(id) === 'number')
-      return contextMenus.generatedIdHandlers;
-    return contextMenus.stringIdHandlers;
-  };
-  contextMenus.ensureListenerSetup = function() {
-    if (contextMenus.listening) {
-      return;
-    }
-    contextMenus.listening = true;
-    contextMenus.event.addListener(function() {
-      // An extension context menu item has been clicked on - fire the onclick
-      // if there is one.
-      var id = arguments[0].menuItemId;
-      var onclick = contextMenus.handlersForId(id)[id];
-      if (onclick) {
-        $Function.apply(onclick, null, arguments);
-      }
-    });
-  };
+  var handlers = contextMenusHandlers.create(false /* isWebview */);
 
-  apiFunctions.setHandleRequest('create', function() {
-    var args = arguments;
-    var id = contextMenuNatives.GetNextContextMenuId();
-    args[0].generatedId = id;
-    var optArgs = {
-      customCallback: this.customCallback,
-    };
-    sendRequest(this.name, args, this.definition.parameters, optArgs);
-    return contextMenus.getIdFromCreateProperties(args[0]);
-  });
+  apiFunctions.setHandleRequest('create', handlers.requestHandlers.create);
 
-  apiFunctions.setCustomCallback('create',
-      function(name, request, callback, response) {
-    if (lastError.hasError(chrome)) {
-      if (callback)
-        callback();
-      return;
-    }
+  apiFunctions.setCustomCallback('create', handlers.callbacks.create);
 
-    var id = contextMenus.getIdFromCreateProperties(request.args[0]);
+  apiFunctions.setCustomCallback('remove', handlers.callbacks.remove);
 
-    // Set up the onclick handler if we were passed one in the request.
-    var onclick = request.args.length ? request.args[0].onclick : null;
-    if (onclick) {
-      contextMenus.ensureListenerSetup();
-      contextMenus.handlersForId(id)[id] = onclick;
-    }
-    if (callback)
-      callback();
-  });
+  apiFunctions.setCustomCallback('update', handlers.callbacks.update);
 
-  apiFunctions.setCustomCallback('remove',
-      function(name, request, callback, response) {
-    if (lastError.hasError(chrome)) {
-      if (callback)
-        callback();
-      return;
-    }
-    var id = request.args[0];
-    delete contextMenus.handlersForId(id)[id];
-    if (callback)
-      callback();
-  });
-
-  apiFunctions.setCustomCallback('update',
-      function(name, request, callback, response) {
-    if (lastError.hasError(chrome)) {
-      if (callback)
-        callback();
-      return;
-    }
-    var id = request.args[0];
-    if (request.args[1].onclick) {
-      contextMenus.handlersForId(id)[id] = request.args[1].onclick;
-    }
-    if (callback)
-      callback();
-  });
-
-  apiFunctions.setCustomCallback('removeAll',
-      function(name, request, callback, response) {
-    if (lastError.hasError(chrome)) {
-      if (callback)
-        callback();
-      return;
-    }
-    contextMenus.generatedIdHandlers = {};
-    contextMenus.stringIdHandlers = {};
-    if (callback)
-      callback();
-  });
+  apiFunctions.setCustomCallback('removeAll', handlers.callbacks.removeAll);
 });
 
 exports.binding = binding.generate();
