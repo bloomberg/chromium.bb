@@ -339,8 +339,7 @@ class CC_EXPORT ResourceProvider {
                       ResourceProvider::ResourceId resource_id);
     ~ScopedWriteLockGr();
 
-    void InitSkSurface(bool use_worker_context,
-                       bool use_distance_field_text,
+    void InitSkSurface(bool use_distance_field_text,
                        bool can_use_lcd_text,
                        int msaa_sample_count);
     void ReleaseSkSurface();

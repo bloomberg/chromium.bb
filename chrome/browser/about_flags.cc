@@ -779,15 +779,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kEnableGpuRasterizationChoices)
   },
   {
-    "enable-threaded-gpu-rasterization",
-    IDS_FLAGS_ENABLE_THREADED_GPU_RASTERIZATION_NAME,
-    IDS_FLAGS_ENABLE_THREADED_GPU_RASTERIZATION_DESCRIPTION,
-    kOsAll,
-    ENABLE_DISABLE_VALUE_TYPE(
-        switches::kEnableThreadedGpuRasterization,
-        switches::kDisableThreadedGpuRasterization)
-  },
-  {
     "gpu-rasterization-msaa-sample-count",
     IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_NAME,
     IDS_FLAGS_GPU_RASTERIZATION_MSAA_SAMPLE_COUNT_DESCRIPTION,

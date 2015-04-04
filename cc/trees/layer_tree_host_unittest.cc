@@ -6078,80 +6078,14 @@ class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
 
 MULTI_THREAD_IMPL_TEST_F(RasterizeWithGpuRasterizationCreatesResources);
 
-class SynchronousGpuRasterizationRasterizesVisibleOnly
-    : public LayerTreeHostTest {
+class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
  protected:
-  SynchronousGpuRasterizationRasterizesVisibleOnly()
-      : viewport_size_(1024, 2048) {}
+  GpuRasterizationRasterizesBorderTiles() : viewport_size_(1024, 2048) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->impl_side_painting = true;
     settings->gpu_rasterization_enabled = true;
     settings->gpu_rasterization_forced = true;
-    settings->threaded_gpu_rasterization_enabled = false;
-  }
-
-  void SetupTree() override {
-    client_.set_fill_with_nonsolid_color(true);
-
-    scoped_ptr<FakePicturePile> pile(
-        new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
-                            ImplSidePaintingSettings().default_tile_grid_size));
-    scoped_refptr<FakePictureLayer> root =
-        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
-    root->SetBounds(gfx::Size(viewport_size_.width(), 10000));
-    root->SetContentsOpaque(true);
-
-    layer_tree_host()->SetRootLayer(root);
-    LayerTreeHostTest::SetupTree();
-    layer_tree_host()->SetViewportSize(viewport_size_);
-  }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                   LayerTreeHostImpl::FrameData* frame_data,
-                                   DrawResult draw_result) override {
-    EXPECT_EQ(4u, host_impl->resource_provider()->num_resources());
-
-    // Verify which tiles got resources using an eviction iterator, which has to
-    // return all tiles that have resources.
-    scoped_ptr<EvictionTilePriorityQueue> eviction_queue(
-        host_impl->BuildEvictionQueue(SAME_PRIORITY_FOR_BOTH_TREES));
-    int tile_count = 0;
-    for (; !eviction_queue->IsEmpty(); eviction_queue->Pop()) {
-      Tile* tile = eviction_queue->Top();
-      // Ensure this tile is within the viewport.
-      EXPECT_TRUE(tile->content_rect().Intersects(gfx::Rect(viewport_size_)));
-      // Ensure that the tile is 1/4 of the viewport tall (plus padding).
-      EXPECT_EQ(tile->content_rect().height(),
-                (viewport_size_.height() / 4) + 2);
-      ++tile_count;
-    }
-    EXPECT_EQ(4, tile_count);
-    EndTest();
-    return draw_result;
-  }
-
-  void AfterTest() override {}
-
- private:
-  FakeContentLayerClient client_;
-  gfx::Size viewport_size_;
-};
-
-MULTI_THREAD_IMPL_TEST_F(SynchronousGpuRasterizationRasterizesVisibleOnly);
-
-class ThreadedGpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
- protected:
-  ThreadedGpuRasterizationRasterizesBorderTiles()
-      : viewport_size_(1024, 2048) {}
-
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->impl_side_painting = true;
-    settings->gpu_rasterization_enabled = true;
-    settings->gpu_rasterization_forced = true;
-    settings->threaded_gpu_rasterization_enabled = true;
   }
 
   void SetupTree() override {
@@ -6187,7 +6121,7 @@ class ThreadedGpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
   gfx::Size viewport_size_;
 };
 
-MULTI_THREAD_IMPL_TEST_F(ThreadedGpuRasterizationRasterizesBorderTiles);
+MULTI_THREAD_IMPL_TEST_F(GpuRasterizationRasterizesBorderTiles);
 
 class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     : public LayerTreeHostTest {

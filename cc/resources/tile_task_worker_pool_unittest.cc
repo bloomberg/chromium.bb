@@ -164,11 +164,9 @@ class TileTaskWorkerPoolTest
         break;
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
-        rasterizer_ = GpuRasterizer::Create(
-            context_provider_.get(), resource_provider_.get(), false, false, 0);
         tile_task_worker_pool_ = GpuTileTaskWorkerPool::Create(
             base::MessageLoopProxy::current().get(), &task_graph_runner_,
-            static_cast<GpuRasterizer*>(rasterizer_.get()));
+            context_provider_.get(), resource_provider_.get(), false, 0);
         break;
       case TILE_TASK_WORKER_POOL_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();
@@ -323,7 +321,6 @@ class TileTaskWorkerPoolTest
  protected:
   scoped_refptr<TestContextProvider> context_provider_;
   scoped_refptr<TestContextProvider> worker_context_provider_;
-  scoped_ptr<Rasterizer> rasterizer_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;

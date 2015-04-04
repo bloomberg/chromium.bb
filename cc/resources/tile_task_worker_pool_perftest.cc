@@ -232,7 +232,6 @@ class TileTaskWorkerPoolPerfTestBase {
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<Rasterizer> rasterizer_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_ptr<TaskGraphRunner> task_graph_runner_;
   LapTimer timer_;
@@ -270,11 +269,9 @@ class TileTaskWorkerPoolPerfTest
         break;
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
-        rasterizer_ = GpuRasterizer::Create(
-            context_provider_.get(), resource_provider_.get(), false, false, 0);
         tile_task_worker_pool_ = GpuTileTaskWorkerPool::Create(
             task_runner_.get(), task_graph_runner_.get(),
-            static_cast<GpuRasterizer*>(rasterizer_.get()));
+            context_provider_.get(), resource_provider_.get(), false, 0);
         break;
       case TILE_TASK_WORKER_POOL_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();

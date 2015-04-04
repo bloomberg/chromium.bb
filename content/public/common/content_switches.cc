@@ -521,14 +521,6 @@ const char kForceGpuRasterization[]        = "force-gpu-rasterization";
 const char kGpuRasterizationMSAASampleCount[] =
     "gpu-rasterization-msaa-sample-count";
 
-// Enable threaded GPU rasterization.
-const char kEnableThreadedGpuRasterization[] =
-    "enable-threaded-gpu-rasterization";
-
-// Disable threaded GPU rasterization.  Overrides enable.
-const char kDisableThreadedGpuRasterization[] =
-    "disable-threaded-gpu-rasterization";
-
 // Force renderer accessibility to be on instead of enabling it on demand when
 // a screen reader is detected. The disable-renderer-accessibility switch
 // overrides this if present.

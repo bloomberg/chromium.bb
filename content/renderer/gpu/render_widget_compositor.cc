@@ -266,11 +266,6 @@ void RenderWidgetCompositor::Initialize() {
   settings.gpu_rasterization_enabled =
       compositor_deps_->IsGpuRasterizationEnabled();
 
-  if (compositor_deps_->IsThreadedGpuRasterizationEnabled()) {
-    settings.threaded_gpu_rasterization_enabled = true;
-    settings.gpu_rasterization_skewport_target_time_in_seconds = 0.2f;
-  }
-
   settings.can_use_lcd_text = compositor_deps_->IsLcdTextEnabled();
   settings.use_distance_field_text =
       compositor_deps_->IsDistanceFieldTextEnabled();

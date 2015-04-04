@@ -10,7 +10,9 @@
 #include "cc/resources/tile_task_worker_pool.h"
 
 namespace cc {
+class ContextProvider;
 class GpuRasterizer;
+class ResourceProvider;
 
 class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
                                         public TileTaskRunner,
@@ -21,7 +23,10 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
   static scoped_ptr<TileTaskWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
       TaskGraphRunner* task_graph_runner,
-      GpuRasterizer* rasterizer);
+      ContextProvider* context_provider,
+      ResourceProvider* resource_provider,
+      bool use_distance_field_text,
+      int gpu_rasterization_msaa_sample_count);
 
   // Overridden from TileTaskWorkerPool:
   TileTaskRunner* AsTileTaskRunner() override;
@@ -41,7 +46,10 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
  private:
   GpuTileTaskWorkerPool(base::SequencedTaskRunner* task_runner,
                         TaskGraphRunner* task_graph_runner,
-                        GpuRasterizer* rasterizer);
+                        ContextProvider* context_provider,
+                        ResourceProvider* resource_provider,
+                        bool use_distance_field_text,
+                        int gpu_rasterization_msaa_sample_count);
 
   void OnTaskSetFinished(TaskSet task_set);
   void CompleteTasks(const Task::Vector& tasks);
@@ -50,7 +58,7 @@ class CC_EXPORT GpuTileTaskWorkerPool : public TileTaskWorkerPool,
   TaskGraphRunner* task_graph_runner_;
   const NamespaceToken namespace_token_;
   TileTaskRunnerClient* client_;
-  GpuRasterizer* rasterizer_;
+  scoped_ptr<GpuRasterizer> rasterizer_;
 
   TaskSetCollection tasks_pending_;
 

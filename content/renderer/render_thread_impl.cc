@@ -618,8 +618,6 @@ void RenderThreadImpl::Init() {
   } else {
     gpu_rasterization_msaa_sample_count_ = 0;
   }
-  is_threaded_gpu_rasterization_enabled_ =
-      command_line.HasSwitch(switches::kEnableThreadedGpuRasterization);
 
   if (command_line.HasSwitch(switches::kDisableDistanceFieldText)) {
     is_distance_field_text_enabled_ = false;
@@ -1374,10 +1372,6 @@ bool RenderThreadImpl::IsGpuRasterizationForced() {
 
 bool RenderThreadImpl::IsGpuRasterizationEnabled() {
   return is_gpu_rasterization_enabled_;
-}
-
-bool RenderThreadImpl::IsThreadedGpuRasterizationEnabled() {
-  return is_threaded_gpu_rasterization_enabled_;
 }
 
 int RenderThreadImpl::GetGpuRasterizationMSAASampleCount() {

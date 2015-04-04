@@ -184,7 +184,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsImplSidePaintingEnabled() override;
   bool IsGpuRasterizationForced() override;
   bool IsGpuRasterizationEnabled() override;
-  bool IsThreadedGpuRasterizationEnabled() override;
   int GetGpuRasterizationMSAASampleCount() override;
   bool IsLcdTextEnabled() override;
   bool IsDistanceFieldTextEnabled() override;
@@ -604,7 +603,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_gpu_rasterization_enabled_;
   bool is_gpu_rasterization_forced_;
   int gpu_rasterization_msaa_sample_count_;
-  bool is_threaded_gpu_rasterization_enabled_;
   bool is_impl_side_painting_enabled_;
   bool is_lcd_text_enabled_;
   bool is_distance_field_text_enabled_;

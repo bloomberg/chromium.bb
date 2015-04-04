@@ -150,8 +150,6 @@ CONTENT_EXPORT extern const char kExtraPluginDir[];
 CONTENT_EXPORT extern const char kForceDisplayList2dCanvas[];
 CONTENT_EXPORT extern const char kForceFieldTrials[];
 CONTENT_EXPORT extern const char kForceGpuRasterization[];
-CONTENT_EXPORT extern const char kEnableThreadedGpuRasterization[];
-CONTENT_EXPORT extern const char kDisableThreadedGpuRasterization[];
 CONTENT_EXPORT extern const char kForceRendererAccessibility[];
 CONTENT_EXPORT extern const char kForceTextBlobs[];
 extern const char kGpuDeviceID[];

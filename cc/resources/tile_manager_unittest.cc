@@ -1353,27 +1353,5 @@ TEST_F(TileManagerTilePriorityQueueTest,
   host_impl_.resource_pool()->ReleaseResource(resource.Pass());
 }
 
-TEST_F(TileManagerTilePriorityQueueTest,
-       SetIsLikelyToRequireADrawOnSynchronousRaster) {
-  const gfx::Size layer_bounds(1000, 1000);
-  host_impl_.SetViewportSize(layer_bounds);
-  host_impl_.SetUseGpuRasterization(true);
-  EXPECT_EQ(host_impl_.rasterizer()->GetPrepareTilesMode(),
-            PrepareTilesMode::PREPARE_NONE);
-  SetupDefaultTrees(layer_bounds);
-
-  // Verify that the queue has a required for draw tile at Top.
-  scoped_ptr<RasterTilePriorityQueue> queue(host_impl_.BuildRasterQueue(
-      SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
-  EXPECT_FALSE(queue->IsEmpty());
-  EXPECT_TRUE(queue->Top()->required_for_draw());
-
-  host_impl_.SetIsLikelyToRequireADraw(true);
-
-  EXPECT_TRUE(host_impl_.is_likely_to_require_a_draw());
-  host_impl_.tile_manager()->UpdateVisibleTiles(host_impl_.global_tile_state());
-  EXPECT_FALSE(host_impl_.is_likely_to_require_a_draw());
-}
-
 }  // namespace
 }  // namespace cc

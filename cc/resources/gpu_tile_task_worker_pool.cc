@@ -45,7 +45,7 @@ class RasterBufferImpl : public RasterBuffer {
     context_provider->DetachFromThread();
 
     // Rasterize source into resource.
-    rasterizer_->RasterizeSource(true, &lock_, raster_source, rect, scale);
+    rasterizer_->RasterizeSource(&lock_, raster_source, rect, scale);
 
     // Barrier to sync worker context output to cc context.
     context_provider->ContextGL()->OrderingBarrierCHROMIUM();
@@ -68,19 +68,29 @@ class RasterBufferImpl : public RasterBuffer {
 scoped_ptr<TileTaskWorkerPool> GpuTileTaskWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
-    GpuRasterizer* rasterizer) {
-  return make_scoped_ptr<TileTaskWorkerPool>(
-      new GpuTileTaskWorkerPool(task_runner, task_graph_runner, rasterizer));
+    ContextProvider* context_provider,
+    ResourceProvider* resource_provider,
+    bool use_distance_field_text,
+    int gpu_rasterization_msaa_sample_count) {
+  return make_scoped_ptr<TileTaskWorkerPool>(new GpuTileTaskWorkerPool(
+      task_runner, task_graph_runner, context_provider, resource_provider,
+      use_distance_field_text, gpu_rasterization_msaa_sample_count));
 }
 
 GpuTileTaskWorkerPool::GpuTileTaskWorkerPool(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
-    GpuRasterizer* rasterizer)
+    ContextProvider* context_provider,
+    ResourceProvider* resource_provider,
+    bool use_distance_field_text,
+    int gpu_rasterization_msaa_sample_count)
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner_->GetNamespaceToken()),
-      rasterizer_(rasterizer),
+      rasterizer_(new GpuRasterizer(context_provider,
+                                    resource_provider,
+                                    use_distance_field_text,
+                                    gpu_rasterization_msaa_sample_count)),
       task_set_finished_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
 }
@@ -199,7 +209,7 @@ void GpuTileTaskWorkerPool::CompleteTasks(const Task::Vector& tasks) {
 scoped_ptr<RasterBuffer> GpuTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
   return make_scoped_ptr<RasterBuffer>(
-      new RasterBufferImpl(rasterizer_, resource));
+      new RasterBufferImpl(rasterizer_.get(), resource));
 }
 
 void GpuTileTaskWorkerPool::ReleaseBufferForRaster(

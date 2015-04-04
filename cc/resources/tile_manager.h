@@ -34,7 +34,6 @@ class TracedValue;
 
 namespace cc {
 class PictureLayerImpl;
-class Rasterizer;
 class ResourceProvider;
 
 class CC_EXPORT TileManagerClient {
@@ -96,7 +95,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
     // PixelBufferTileTaskWorkerPool depends on ALL being last.
     ALL
     // Adding additional values requires increasing kNumberOfTaskSets in
-    // rasterizer.h
+    // tile_task_runner.h
   };
 
   static_assert(NamedTaskSet::ALL == (kNumberOfTaskSets - 1),
@@ -107,7 +106,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
                                         base::SequencedTaskRunner* task_runner,
                                         ResourcePool* resource_pool,
                                         TileTaskRunner* tile_task_runner,
-                                        Rasterizer* rasterizer,
                                         size_t scheduled_raster_task_limit);
   ~TileManager() override;
 
@@ -189,7 +187,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
               const scoped_refptr<base::SequencedTaskRunner>& task_runner,
               ResourcePool* resource_pool,
               TileTaskRunner* tile_task_runner,
-              Rasterizer* rasterizer,
               size_t scheduled_raster_task_limit);
 
   void FreeResourcesForReleasedTiles();
@@ -213,9 +210,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
   void AssignGpuMemoryToTiles(RasterTilePriorityQueue* raster_priority_queue,
                               size_t scheduled_raser_task_limit,
                               TileVector* tiles_that_need_to_be_rasterized);
-
-  void SynchronouslyRasterizeTiles(
-      const GlobalStateThatImpactsTilePriority& state);
 
  private:
   class MemoryUsage {
@@ -278,7 +272,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   ResourcePool* resource_pool_;
   TileTaskRunner* tile_task_runner_;
-  Rasterizer* rasterizer_;
   GlobalStateThatImpactsTilePriority global_state_;
   size_t scheduled_raster_task_limit_;
 
@@ -308,8 +301,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient,
 
   std::vector<scoped_refptr<RasterTask>> orphan_raster_tasks_;
 
-  UniqueNotifier ready_to_activate_notifier_;
-  UniqueNotifier ready_to_draw_notifier_;
   UniqueNotifier ready_to_activate_check_notifier_;
   UniqueNotifier ready_to_draw_check_notifier_;
   UniqueNotifier more_tiles_need_prepare_check_notifier_;

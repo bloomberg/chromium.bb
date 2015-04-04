@@ -46,10 +46,6 @@ CONTENT_EXPORT int GpuRasterizationMSAASampleCount();
 // Returns true if force-gpu-rasterization is on (via flags) for the renderer.
 CONTENT_EXPORT bool IsForceGpuRasterizationEnabled();
 
-// Returns true if threaded GPU rasterization is on (via flags) for the
-// renderer.
-CONTENT_EXPORT bool IsThreadedGpuRasterizationEnabled();
-
 // Returns the number of raster threads to use for compositing.
 CONTENT_EXPORT int NumberOfRendererRasterThreads();
 

@@ -1115,9 +1115,6 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   if (IsGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kEnableGpuRasterization);
 
-  if (IsThreadedGpuRasterizationEnabled())
-    command_line->AppendSwitch(switches::kEnableThreadedGpuRasterization);
-
   int msaa_sample_count = GpuRasterizationMSAASampleCount();
   if (msaa_sample_count > 0) {
     command_line->AppendSwitchASCII(

@@ -1131,7 +1131,6 @@ ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
 }
 
 void ResourceProvider::ScopedWriteLockGr::InitSkSurface(
-    bool use_worker_context,
     bool use_distance_field_text,
     bool can_use_lcd_text,
     int msaa_sample_count) {
@@ -1146,6 +1145,7 @@ void ResourceProvider::ScopedWriteLockGr::InitSkSurface(
   desc.fTextureHandle = resource_->gl_id;
   desc.fSampleCnt = msaa_sample_count;
 
+  bool use_worker_context = true;
   class GrContext* gr_context =
       resource_provider_->GrContext(use_worker_context);
   skia::RefPtr<GrTexture> gr_texture =

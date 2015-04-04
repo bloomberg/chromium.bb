@@ -47,11 +47,6 @@ DrawResult TestHooks::PrepareToDrawOnThread(
   return draw_result;
 }
 
-scoped_ptr<Rasterizer> TestHooks::CreateRasterizer(
-    LayerTreeHostImpl* host_impl) {
-  return host_impl->LayerTreeHostImpl::CreateRasterizer();
-}
-
 void TestHooks::CreateResourceAndTileTaskWorkerPool(
     LayerTreeHostImpl* host_impl,
     scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
@@ -243,10 +238,6 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
         test_hooks_(test_hooks),
         block_notify_ready_to_activate_for_testing_(false),
         notify_ready_to_activate_was_blocked_(false) {}
-
-  scoped_ptr<Rasterizer> CreateRasterizer() override {
-    return test_hooks_->CreateRasterizer(this);
-  }
 
   void CreateResourceAndTileTaskWorkerPool(
       scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
