@@ -24,6 +24,7 @@ import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -34,7 +35,7 @@ public class CastShellActivity extends Activity {
     private static final boolean DEBUG = false;
 
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
-    private static final int DEFAULT_HEIGHT_PIXELS = 1080;
+    private static final int DEFAULT_HEIGHT_PIXELS = 720;
     public static final String ACTION_EXTRA_RESOLUTION_HEIGHT =
             "org.chromium.chromecast.shell.intent.extra.RESOLUTION_HEIGHT";
 
@@ -245,16 +246,26 @@ public class CastShellActivity extends Activity {
     }
 
     private void setResolution() {
-        int requestedHeight = getIntent().getIntExtra(
-                ACTION_EXTRA_RESOLUTION_HEIGHT, DEFAULT_HEIGHT_PIXELS);
+        CommandLine commandLine = CommandLine.getInstance();
+        int defaultHeight = DEFAULT_HEIGHT_PIXELS;
+        if (commandLine.hasSwitch(CastSwitches.DEFAULT_RESOLUTION_HEIGHT)) {
+            String commandLineHeightString =
+                    commandLine.getSwitchValue(CastSwitches.DEFAULT_RESOLUTION_HEIGHT);
+            try {
+                defaultHeight = Integer.parseInt(commandLineHeightString);
+            } catch (NumberFormatException e) {
+                Log.w(TAG, "Ignored invalid height: " + commandLineHeightString);
+            }
+        }
+        int requestedHeight =
+                getIntent().getIntExtra(ACTION_EXTRA_RESOLUTION_HEIGHT, defaultHeight);
         int displayHeight = getResources().getDisplayMetrics().heightPixels;
-        // Clamp within [DEFAULT_HEIGHT_PIXELS, displayHeight]
-        int desiredHeight =
-                Math.min(displayHeight, Math.max(DEFAULT_HEIGHT_PIXELS, requestedHeight));
+        // Clamp within [defaultHeight, displayHeight]
+        int desiredHeight = Math.min(displayHeight, Math.max(defaultHeight, requestedHeight));
         double deviceScaleFactor = ((double) displayHeight) / desiredHeight;
         Log.d(TAG, "Using scale factor " + deviceScaleFactor + " to set height " + desiredHeight);
-        CommandLine.getInstance().appendSwitchWithValue("force-device-scale-factor",
-                String.valueOf(deviceScaleFactor));
+        commandLine.appendSwitchWithValue(
+                ContentSwitches.FORCE_DEVICE_SCALE_FACTOR, String.valueOf(deviceScaleFactor));
     }
 
     private void exitIfUrlMissing() {
