@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/mac/foundation_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -77,6 +78,11 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
     return bubble ? [bubble->controller_ window] : nil;
   }
 
+  ManagePasswordsIconCocoa* icon() {
+    return static_cast<ManagePasswordsIconCocoa*>(
+      ManagePasswordsBubbleCocoa::instance()->icon_);
+  }
+
  private:
   scoped_refptr<content::SiteInstance> siteInstance_;
   content::WebContents* test_web_contents_;  // weak
@@ -123,4 +129,15 @@ TEST_F(ManagePasswordsBubbleCocoaTest, ShowBubbleOnInactiveTabShouldDoNothing) {
   // Try to show the bubble on the inactive tab. Nothing should happen.
   ShowBubble();
   EXPECT_FALSE(ManagePasswordsBubbleCocoa::instance());
+}
+
+TEST_F(ManagePasswordsBubbleCocoaTest, HideBubbleOnChangedState) {
+  ShowBubble();
+  EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
+  EXPECT_TRUE([bubbleWindow() isVisible]);
+  EXPECT_TRUE(icon()->active());
+
+  icon()->OnChangingState();
+  EXPECT_FALSE(ManagePasswordsBubbleCocoa::instance());
+  EXPECT_FALSE([bubbleWindow() isVisible]);
 }

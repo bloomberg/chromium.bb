@@ -193,11 +193,12 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
   SetupAutomaticPassword();
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
   ManagePasswordsBubbleView::CloseBubble();
+  content::RunAllPendingInMessageLoop();
   // Re-opening should count as manual.
   ExecuteManagePasswordsCommand();
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
 
- scoped_ptr<base::HistogramSamples> samples(
+  scoped_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));
   EXPECT_EQ(
       1,
@@ -241,6 +242,15 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnKey) {
   EXPECT_TRUE(web_contents->GetRenderViewHost()->IsFocusedElementEditable());
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_K,
       false, false, false, false));
+  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnChangedState) {
+  SetupPendingPassword();
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  // User navigated very fast and landed on another page with an autofilled
+  // password. The save password bubble should disappear.
+  SetupManagingPasswords();
   EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
 }
 

@@ -23,6 +23,7 @@ class ManagePasswordsIconCocoa : public ManagePasswordsIcon {
   ManagePasswordsIconCocoa(ManagePasswordsDecoration* decoration);
   virtual ~ManagePasswordsIconCocoa();
   void UpdateVisibleUI() override;
+  void OnChangingState() override;
 
   int icon_id() { return icon_id_; }
   int tooltip_text_id() { return tooltip_text_id_; }
@@ -47,6 +48,9 @@ class ManagePasswordsDecoration : public ImageDecoration {
 
   // Updates the decoration according to icon state changes.
   void UpdateVisibleUI();
+
+  // Closes the bubble if it's currently displayed.
+  void HideBubble();
 
   // Accessor for the platform-independent interface.
   ManagePasswordsIconCocoa* icon() { return icon_.get(); }

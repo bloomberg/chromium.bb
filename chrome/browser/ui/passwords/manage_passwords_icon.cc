@@ -28,6 +28,7 @@ void ManagePasswordsIcon::SetActive(bool active) {
 void ManagePasswordsIcon::SetState(password_manager::ui::State state) {
   if (state_ == state)
     return;
+  OnChangingState();
   state_ = state;
   UpdateIDs();
   UpdateVisibleUI();

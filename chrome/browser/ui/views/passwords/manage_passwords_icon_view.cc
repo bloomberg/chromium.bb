@@ -23,8 +23,6 @@ ManagePasswordsIconView::~ManagePasswordsIconView() {}
 void ManagePasswordsIconView::UpdateVisibleUI() {
   if (state() == password_manager::ui::INACTIVE_STATE) {
     SetVisible(false);
-    if (ManagePasswordsBubbleView::IsShowing())
-      ManagePasswordsBubbleView::CloseBubble();
     return;
   }
 
@@ -36,6 +34,12 @@ void ManagePasswordsIconView::UpdateVisibleUI() {
   // Force layout of the icon's parent now; the bubble will be incorrectly
   // positioned otherwise, as the icon won't have been drawn into position.
   parent()->Layout();
+}
+
+void ManagePasswordsIconView::OnChangingState() {
+  // If there is an opened bubble for the current icon it should go away.
+  if (active())
+    ManagePasswordsBubbleView::CloseBubble();
 }
 
 bool ManagePasswordsIconView::IsBubbleShowing() const {

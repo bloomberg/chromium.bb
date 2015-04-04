@@ -12,3 +12,6 @@ ManagePasswordsIconMock::~ManagePasswordsIconMock() {
 
 void ManagePasswordsIconMock::UpdateVisibleUI() {
 }
+
+void ManagePasswordsIconMock::OnChangingState() {
+}

@@ -218,11 +218,8 @@ void ManagePasswordsUIController::ChooseCredential(
 void ManagePasswordsUIController::SavePasswordInternal() {
   password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
-  // TODO(vasilii): it's not OK to call SavePassword() when |form_manager| is 0.
-  // If this is a cause of http://crbug.com/468474 then we should hide the
-  // bubble when ManagePasswordsUIController changes its internal state.
-  if (form_manager)
-    form_manager->Save();
+  DCHECK(form_manager);
+  form_manager->Save();
 }
 
 void ManagePasswordsUIController::NeverSavePassword() {

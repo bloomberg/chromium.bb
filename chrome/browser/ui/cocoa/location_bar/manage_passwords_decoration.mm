@@ -25,6 +25,10 @@ void ManagePasswordsIconCocoa::UpdateVisibleUI() {
   decoration_->UpdateVisibleUI();
 }
 
+void ManagePasswordsIconCocoa::OnChangingState() {
+  decoration_->HideBubble();
+}
+
 // ManagePasswordsDecoration
 
 ManagePasswordsDecoration::ManagePasswordsDecoration(
@@ -75,8 +79,6 @@ void ManagePasswordsDecoration::UpdateUIState() {
   if (icon_->state() == password_manager::ui::INACTIVE_STATE) {
     SetVisible(false);
     SetImage(nil);
-    if (ManagePasswordsBubbleCocoa::instance())
-      ManagePasswordsBubbleCocoa::instance()->Close();
     return;
   }
   SetVisible(true);
@@ -86,4 +88,9 @@ void ManagePasswordsDecoration::UpdateUIState() {
 void ManagePasswordsDecoration::UpdateVisibleUI() {
   UpdateUIState();
   OnChange();
+}
+
+void ManagePasswordsDecoration::HideBubble() {
+  if (icon()->active() && ManagePasswordsBubbleCocoa::instance())
+    ManagePasswordsBubbleCocoa::instance()->Close();
 }
