@@ -60,6 +60,9 @@ class StartupWarmBlankPage(_StartupWarm):
 
 @benchmark.Enabled('has tabs')
 @benchmark.Enabled('win', 'linux', 'mac')
+# TODO(erikchen): Investigate source of 30s browser hang on startup.
+# http://crbug.com/473827
+@benchmark.Disabled
 class StartupLargeProfileColdBlankPage(_StartupCold):
   """Measures cold startup time with a large profile."""
   tag = 'cold'
@@ -76,6 +79,9 @@ class StartupLargeProfileColdBlankPage(_StartupCold):
 
 @benchmark.Enabled('has tabs')
 @benchmark.Enabled('win', 'linux', 'mac')
+# TODO(erikchen): Investigate source of 30s browser hang on startup.
+# http://crbug.com/473827
+@benchmark.Disabled
 class StartupLargeProfileWarmBlankPage(_StartupWarm):
   """Measures warm startup time with a large profile."""
   tag = 'warm'
