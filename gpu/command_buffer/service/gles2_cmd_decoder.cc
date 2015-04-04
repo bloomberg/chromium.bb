@@ -967,6 +967,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void ProduceTextureRef(std::string func_name, TextureRef* texture_ref,
       GLenum target, const GLbyte* data);
 
+  void EnsureTextureForClientId(GLenum target, GLuint client_id);
   void DoConsumeTextureCHROMIUM(GLenum target, const GLbyte* key);
   void DoCreateAndConsumeTextureCHROMIUM(GLenum target, const GLbyte* key,
     GLuint client_id);
@@ -11679,6 +11680,24 @@ void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
   }
 }
 
+void GLES2DecoderImpl::EnsureTextureForClientId(
+    GLenum target,
+    GLuint client_id) {
+  TextureRef* texture_ref = GetTexture(client_id);
+  if (!texture_ref) {
+    GLuint service_id;
+    glGenTextures(1, &service_id);
+    DCHECK_NE(0u, service_id);
+    texture_ref = CreateTexture(client_id, service_id);
+    texture_manager()->SetTarget(texture_ref, target);
+    glBindTexture(target, service_id);
+    RestoreCurrentTextureBindings(&state_, target);
+  }
+}
+
+// If CreateAndConsumeTexture fails we still need to ensure that the client_id
+// provided is associated with a service_id/TextureRef for consistency, even if
+// the resulting texture is incomplete.
 error::Error GLES2DecoderImpl::HandleCreateAndConsumeTextureCHROMIUMImmediate(
     uint32_t immediate_data_size,
     const void* cmd_data) {
@@ -11721,6 +11740,8 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureCHROMIUM(GLenum target,
 
   TextureRef* texture_ref = GetTexture(client_id);
   if (texture_ref) {
+    // No need to call EnsureTextureForClientId here, the client_id already has
+    // an associated texture.
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glCreateAndConsumeTextureCHROMIUM", "client id already in use");
@@ -11728,12 +11749,15 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureCHROMIUM(GLenum target,
   }
   Texture* texture = group_->mailbox_manager()->ConsumeTexture(mailbox);
   if (!texture) {
+    EnsureTextureForClientId(target, client_id);
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glCreateAndConsumeTextureCHROMIUM", "invalid mailbox name");
     return;
   }
+
   if (texture->target() != target) {
+    EnsureTextureForClientId(target, client_id);
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glCreateAndConsumeTextureCHROMIUM", "invalid target");

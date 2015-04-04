@@ -2039,6 +2039,95 @@ TEST_P(GLES2DecoderTest, ProduceTextureCHROMIUMInvalidTarget) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_P(GLES2DecoderTest, CreateAndConsumeTextureCHROMIUMInvalidMailbox) {
+  // Attempt to consume the mailbox when no texture has been produced with it.
+  Mailbox mailbox = Mailbox::Generate();
+  GLuint new_texture_id = kNewClientId;
+
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+        .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+        .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, _))
+        .Times(2)
+        .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  CreateAndConsumeTextureCHROMIUMImmediate& consume_cmd =
+      *GetImmediateAs<CreateAndConsumeTextureCHROMIUMImmediate>();
+  consume_cmd.Init(GL_TEXTURE_2D, new_texture_id, mailbox.name);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(consume_cmd, sizeof(mailbox.name)));
+
+  // CreateAndConsumeTexture should fail if the mailbox isn't associated with a
+  // texture.
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Make sure the new client_id is associated with a texture ref even though
+  // CreateAndConsumeTexture failed.
+  TextureRef* texture_ref =
+      group().texture_manager()->GetTexture(new_texture_id);
+  ASSERT_TRUE(texture_ref != NULL);
+  Texture* texture = texture_ref->texture();
+  // New texture should have the correct target type.
+  EXPECT_TRUE(texture->target() == GL_TEXTURE_2D);
+  // New texture should have a valid service_id.
+  EXPECT_EQ(kNewServiceId, texture->service_id());
+}
+
+TEST_P(GLES2DecoderTest, CreateAndConsumeTextureCHROMIUMInvalidTarget) {
+  Mailbox mailbox = Mailbox::Generate();
+
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  TextureRef* texture_ref =
+      group().texture_manager()->GetTexture(client_texture_id_);
+  ASSERT_TRUE(texture_ref != NULL);
+
+  ProduceTextureDirectCHROMIUMImmediate& produce_cmd =
+      *GetImmediateAs<ProduceTextureDirectCHROMIUMImmediate>();
+  produce_cmd.Init(client_texture_id_, GL_TEXTURE_2D, mailbox.name);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(produce_cmd, sizeof(mailbox.name)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+        .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+        .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_CUBE_MAP, _))
+        .Times(2)
+        .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
+        .Times(1)
+        .RetiresOnSaturation();
+
+  // Attempt to consume the mailbox with a different target.
+  GLuint new_texture_id = kNewClientId;
+  CreateAndConsumeTextureCHROMIUMImmediate& consume_cmd =
+      *GetImmediateAs<CreateAndConsumeTextureCHROMIUMImmediate>();
+  consume_cmd.Init(GL_TEXTURE_CUBE_MAP, new_texture_id, mailbox.name);
+  EXPECT_EQ(error::kNoError,
+            ExecuteImmediateCmd(consume_cmd, sizeof(mailbox.name)));
+
+  // CreateAndConsumeTexture should fail if the produced texture had a different
+  // target.
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Make sure the new client_id is associated with a texture ref even though
+  // CreateAndConsumeTexture failed.
+  texture_ref = group().texture_manager()->GetTexture(new_texture_id);
+  ASSERT_TRUE(texture_ref != NULL);
+  Texture* texture = texture_ref->texture();
+  // New texture should have the correct target type.
+  EXPECT_TRUE(texture->target() == GL_TEXTURE_CUBE_MAP);
+  // New texture should have a valid service_id.
+  EXPECT_EQ(kNewServiceId, texture->service_id());
+
+  // Make sure the client_id did not become associated with the produced texture
+  // service_id.
+  EXPECT_NE(kServiceTextureId, texture->service_id());
+}
+
 TEST_P(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
   InitState init;
   init.extensions = "GL_ANGLE_depth_texture";
