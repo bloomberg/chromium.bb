@@ -4,7 +4,6 @@
 
 #include "cc/output/static_geometry_binding.h"
 
-#include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -47,17 +46,16 @@ StaticGeometryBinding::StaticGeometryBinding(gpu::gles2::GLES2Interface* gl,
     quad_indices[i] = y;
   }
 
-  GLC(gl_, gl_->GenBuffers(1, &quad_vertices_vbo_));
-  GLC(gl_, gl_->GenBuffers(1, &quad_elements_vbo_));
+  gl_->GenBuffers(1, &quad_vertices_vbo_);
+  gl_->GenBuffers(1, &quad_elements_vbo_);
 
-  GLC(gl_, gl_->BindBuffer(GL_ARRAY_BUFFER, quad_vertices_vbo_));
-  GLC(gl_, gl_->BufferData(GL_ARRAY_BUFFER, sizeof(GeometryBindingQuad) * 8,
-                           quads, GL_STATIC_DRAW));
+  gl_->BindBuffer(GL_ARRAY_BUFFER, quad_vertices_vbo_);
+  gl_->BufferData(GL_ARRAY_BUFFER, sizeof(GeometryBindingQuad) * 8, quads,
+                  GL_STATIC_DRAW);
 
-  GLC(gl_, gl_->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, quad_elements_vbo_));
-  GLC(gl_, gl_->BufferData(GL_ELEMENT_ARRAY_BUFFER,
-                           sizeof(GeometryBindingQuadIndex) * 8, &quad_indices,
-                           GL_STATIC_DRAW));
+  gl_->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, quad_elements_vbo_);
+  gl_->BufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GeometryBindingQuadIndex) * 8,
+                  &quad_indices, GL_STATIC_DRAW);
 }
 
 StaticGeometryBinding::~StaticGeometryBinding() {

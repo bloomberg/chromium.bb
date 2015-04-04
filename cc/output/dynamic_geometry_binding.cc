@@ -4,8 +4,8 @@
 
 #include "cc/output/dynamic_geometry_binding.h"
 
-#include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace cc {
@@ -20,17 +20,16 @@ DynamicGeometryBinding::DynamicGeometryBinding(gpu::gles2::GLES2Interface* gl)
   static_assert(sizeof(GeometryBindingQuadIndex) == 6 * sizeof(uint16_t),
                 "struct QuadIndex should be densely packed");
 
-  GLC(gl_, gl_->GenBuffers(1, &quad_vertices_vbo_));
-  GLC(gl_, gl_->GenBuffers(1, &quad_elements_vbo_));
+  gl_->GenBuffers(1, &quad_vertices_vbo_);
+  gl_->GenBuffers(1, &quad_elements_vbo_);
 
-  GLC(gl_, gl_->BindBuffer(GL_ARRAY_BUFFER, quad_vertices_vbo_));
-  GLC(gl_, gl_->BufferData(GL_ARRAY_BUFFER, sizeof(GeometryBindingQuad) * 1,
-                           quads, GL_DYNAMIC_DRAW));
+  gl_->BindBuffer(GL_ARRAY_BUFFER, quad_vertices_vbo_);
+  gl_->BufferData(GL_ARRAY_BUFFER, sizeof(GeometryBindingQuad) * 1, quads,
+                  GL_DYNAMIC_DRAW);
 
-  GLC(gl_, gl_->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, quad_elements_vbo_));
-  GLC(gl_, gl_->BufferData(GL_ELEMENT_ARRAY_BUFFER,
-                           sizeof(GeometryBindingQuadIndex) * 1, &quad_indices,
-                           GL_DYNAMIC_DRAW));
+  gl_->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, quad_elements_vbo_);
+  gl_->BufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GeometryBindingQuadIndex) * 1,
+                  &quad_indices, GL_DYNAMIC_DRAW);
 }
 
 void DynamicGeometryBinding::InitializeCustomQuad(const gfx::QuadF& quad) {
@@ -54,10 +53,10 @@ void DynamicGeometryBinding::InitializeCustomQuadWithUVs(const gfx::QuadF& quad,
       static_cast<uint16>(0), static_cast<uint16>(1), static_cast<uint16>(2),
       static_cast<uint16>(3), static_cast<uint16>(0), static_cast<uint16>(2));
 
-  GLC(gl_, gl_->BufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GeometryBindingQuad),
-                              &local_quad));
-  GLC(gl_, gl_->BufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,
-                              sizeof(GeometryBindingQuadIndex), &quad_index));
+  gl_->BufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GeometryBindingQuad),
+                     &local_quad);
+  gl_->BufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0,
+                     sizeof(GeometryBindingQuadIndex), &quad_index);
 }
 
 void DynamicGeometryBinding::PrepareForDraw() {

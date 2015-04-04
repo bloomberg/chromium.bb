@@ -6,7 +6,6 @@
 #define CC_OUTPUT_GEOMETRY_BINDING_H_
 
 #include "base/basictypes.h"
-#include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"

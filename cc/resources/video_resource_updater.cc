@@ -29,11 +29,9 @@ class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
  public:
   explicit SyncPointClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
   ~SyncPointClientImpl() override {}
-  uint32 InsertSyncPoint() override {
-    return GLC(gl_, gl_->InsertSyncPointCHROMIUM());
-  }
+  uint32 InsertSyncPoint() override { return gl_->InsertSyncPointCHROMIUM(); }
   void WaitSyncPoint(uint32 sync_point) override {
-    GLC(gl_, gl_->WaitSyncPointCHROMIUM(sync_point));
+    gl_->WaitSyncPointCHROMIUM(sync_point);
   }
 
  private:
@@ -108,10 +106,10 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
 
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
 
-    GLC(gl, gl->GenMailboxCHROMIUM(mailbox.name));
+    gl->GenMailboxCHROMIUM(mailbox.name);
     ResourceProvider::ScopedWriteLockGL lock(resource_provider_, resource_id);
-    GLC(gl, gl->ProduceTextureDirectCHROMIUM(lock.texture_id(), GL_TEXTURE_2D,
-                                             mailbox.name));
+    gl->ProduceTextureDirectCHROMIUM(lock.texture_id(), GL_TEXTURE_2D,
+                                     mailbox.name);
   }
   all_resources_.push_front(
       PlaneResource(resource_id, plane_size, format, mailbox));
@@ -447,8 +445,7 @@ void VideoResourceUpdater::RecycleResource(
 
   ContextProvider* context_provider = updater->context_provider_;
   if (context_provider && sync_point) {
-    GLC(context_provider->ContextGL(),
-        context_provider->ContextGL()->WaitSyncPointCHROMIUM(sync_point));
+    context_provider->ContextGL()->WaitSyncPointCHROMIUM(sync_point);
   }
 
   if (lost_resource) {

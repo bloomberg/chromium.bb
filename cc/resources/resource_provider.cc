@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/util.h"
-#include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "cc/resources/platform_color.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/shared_bitmap_manager.h"
@@ -141,13 +140,13 @@ class ScopedSetActiveTexture {
     DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(gl_));
 
     if (unit_ != GL_TEXTURE0)
-      GLC(gl_, gl_->ActiveTexture(unit_));
+      gl_->ActiveTexture(unit_);
   }
 
   ~ScopedSetActiveTexture() {
     // Active unit being GL_TEXTURE0 is effectively the ground state.
     if (unit_ != GL_TEXTURE0)
-      GLC(gl_, gl_->ActiveTexture(GL_TEXTURE0));
+      gl_->ActiveTexture(GL_TEXTURE0);
   }
 
  private:
@@ -642,25 +641,25 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     DCHECK(resource->origin == Resource::INTERNAL);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
-    GLC(gl, gl->DestroyImageCHROMIUM(resource->image_id));
+    gl->DestroyImageCHROMIUM(resource->image_id);
   }
   if (resource->gl_upload_query_id) {
     DCHECK(resource->origin == Resource::INTERNAL);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
-    GLC(gl, gl->DeleteQueriesEXT(1, &resource->gl_upload_query_id));
+    gl->DeleteQueriesEXT(1, &resource->gl_upload_query_id);
   }
   if (resource->gl_read_lock_query_id) {
     DCHECK(resource->origin == Resource::INTERNAL);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
-    GLC(gl, gl->DeleteQueriesEXT(1, &resource->gl_read_lock_query_id));
+    gl->DeleteQueriesEXT(1, &resource->gl_read_lock_query_id);
   }
   if (resource->gl_pixel_buffer_id) {
     DCHECK(resource->origin == Resource::INTERNAL);
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
-    GLC(gl, gl->DeleteBuffers(1, &resource->gl_pixel_buffer_id));
+    gl->DeleteBuffers(1, &resource->gl_pixel_buffer_id);
   }
   if (resource->origin == Resource::EXTERNAL) {
     DCHECK(resource->mailbox.IsValid());
@@ -671,7 +670,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
       GLES2Interface* gl = ContextGL();
       DCHECK(gl);
       if (resource->gl_id) {
-        GLC(gl, gl->DeleteTextures(1, &resource->gl_id));
+        gl->DeleteTextures(1, &resource->gl_id);
         resource->gl_id = 0;
         if (!lost_resource)
           sync_point = gl->InsertSyncPointCHROMIUM();
@@ -687,7 +686,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   if (resource->gl_id) {
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
-    GLC(gl, gl->DeleteTextures(1, &resource->gl_id));
+    gl->DeleteTextures(1, &resource->gl_id);
     resource->gl_id = 0;
   }
   if (resource->shared_bitmap) {
@@ -900,9 +899,8 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
 
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
-    resource->gl_id =
-        GLC(gl, gl->CreateAndConsumeTextureCHROMIUM(resource->mailbox.target(),
-                                                    resource->mailbox.name()));
+    resource->gl_id = gl->CreateAndConsumeTextureCHROMIUM(
+        resource->mailbox.target(), resource->mailbox.name());
   }
 
   if (!resource->pixels && resource->has_shared_bitmap_id &&
@@ -1269,7 +1267,7 @@ void ResourceProvider::InitializeGL() {
 
   texture_uploader_ = TextureUploader::Create(gl);
   max_texture_size_ = 0;  // Context expects cleared value.
-  GLC(gl, gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_));
+  gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
   best_texture_format_ = PlatformColor::BestTextureFormat(use_bgra);
 
   texture_id_allocator_.reset(
@@ -1530,7 +1528,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
       DCHECK(!resource->has_shared_bitmap_id);
       if (resource->origin == Resource::INTERNAL) {
         DCHECK(resource->gl_id);
-        GLC(gl, gl->WaitSyncPointCHROMIUM(returned.sync_point));
+        gl->WaitSyncPointCHROMIUM(returned.sync_point);
       } else {
         DCHECK(!resource->gl_id);
         resource->mailbox.set_sync_point(returned.sync_point);
@@ -1601,10 +1599,10 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
     }
     // This is a resource allocated by the compositor, we need to produce it.
     // Don't set a sync point, the caller will do it.
-    GLC(gl, gl->GenMailboxCHROMIUM(resource->mailbox_holder.mailbox.name));
-    GLC(gl, gl->ProduceTextureDirectCHROMIUM(
-                source->gl_id, resource->mailbox_holder.texture_target,
-                resource->mailbox_holder.mailbox.name));
+    gl->GenMailboxCHROMIUM(resource->mailbox_holder.mailbox.name);
+    gl->ProduceTextureDirectCHROMIUM(source->gl_id,
+                                     resource->mailbox_holder.texture_target,
+                                     resource->mailbox_holder.mailbox.name);
 
     source->mailbox = TextureMailbox(resource->mailbox_holder);
   } else {
@@ -1612,9 +1610,7 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
     if (source->image_id && source->dirty_image) {
       DCHECK(source->gl_id);
       DCHECK(source->origin == Resource::INTERNAL);
-      GLC(gl,
-          gl->BindTexture(resource->mailbox_holder.texture_target,
-                          source->gl_id));
+      gl->BindTexture(resource->mailbox_holder.texture_target, source->gl_id);
       BindImageForSampling(source);
     }
     // This is either an external resource, or a compositor resource that we
@@ -1674,15 +1670,11 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
       DCHECK(resource.target);
       DCHECK(resource.gl_id);
 
-      GLC(gl, gl->BindTexture(resource.target, resource.gl_id));
-      GLC(gl,
-          gl->TexParameteri(resource.target,
-                            GL_TEXTURE_MIN_FILTER,
-                            resource.original_filter));
-      GLC(gl,
-          gl->TexParameteri(resource.target,
-                            GL_TEXTURE_MAG_FILTER,
-                            resource.original_filter));
+      gl->BindTexture(resource.target, resource.gl_id);
+      gl->TexParameteri(resource.target, GL_TEXTURE_MIN_FILTER,
+                        resource.original_filter);
+      gl->TexParameteri(resource.target, GL_TEXTURE_MAG_FILTER,
+                        resource.original_filter);
     }
 
     ReturnedResource returned;
@@ -1834,10 +1826,10 @@ GLenum ResourceProvider::BindForSampling(ResourceId resource_id,
 
   ScopedSetActiveTexture scoped_active_tex(gl, unit);
   GLenum target = resource->target;
-  GLC(gl, gl->BindTexture(target, resource->gl_id));
+  gl->BindTexture(target, resource->gl_id);
   if (filter != resource->filter) {
-    GLC(gl, gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, filter));
-    GLC(gl, gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, filter));
+    gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
+    gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
     resource->filter = filter;
   }
 
@@ -1917,9 +1909,9 @@ void ResourceProvider::ForceSetPixelsToComplete(ResourceId id) {
 
   if (resource->gl_id) {
     GLES2Interface* gl = ContextGL();
-    GLC(gl, gl->BindTexture(GL_TEXTURE_2D, resource->gl_id));
-    GLC(gl, gl->WaitAsyncTexImage2DCHROMIUM(GL_TEXTURE_2D));
-    GLC(gl, gl->BindTexture(GL_TEXTURE_2D, 0));
+    gl->BindTexture(GL_TEXTURE_2D, resource->gl_id);
+    gl->WaitAsyncTexImage2DCHROMIUM(GL_TEXTURE_2D);
+    gl->BindTexture(GL_TEXTURE_2D, 0);
   }
 
   resource->set_pixels_completion_forced = true;
@@ -1982,27 +1974,18 @@ void ResourceProvider::LazyCreate(Resource* resource) {
   DCHECK(gl);
 
   // Create and set texture properties. Allocation is delayed until needed.
-  GLC(gl, gl->BindTexture(resource->target, resource->gl_id));
-  GLC(gl,
-      gl->TexParameteri(
-          resource->target, GL_TEXTURE_MIN_FILTER, resource->original_filter));
-  GLC(gl,
-      gl->TexParameteri(
-          resource->target, GL_TEXTURE_MAG_FILTER, resource->original_filter));
-  GLC(gl,
-      gl->TexParameteri(
-          resource->target, GL_TEXTURE_WRAP_S, resource->wrap_mode));
-  GLC(gl,
-      gl->TexParameteri(
-          resource->target, GL_TEXTURE_WRAP_T, resource->wrap_mode));
-  GLC(gl,
-      gl->TexParameteri(
-          resource->target, GL_TEXTURE_POOL_CHROMIUM, resource->texture_pool));
+  gl->BindTexture(resource->target, resource->gl_id);
+  gl->TexParameteri(resource->target, GL_TEXTURE_MIN_FILTER,
+                    resource->original_filter);
+  gl->TexParameteri(resource->target, GL_TEXTURE_MAG_FILTER,
+                    resource->original_filter);
+  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_S, resource->wrap_mode);
+  gl->TexParameteri(resource->target, GL_TEXTURE_WRAP_T, resource->wrap_mode);
+  gl->TexParameteri(resource->target, GL_TEXTURE_POOL_CHROMIUM,
+                    resource->texture_pool);
   if (use_texture_usage_hint_ && (resource->hint & TEXTURE_HINT_FRAMEBUFFER)) {
-    GLC(gl,
-        gl->TexParameteri(resource->target,
-                          GL_TEXTURE_USAGE_ANGLE,
-                          GL_FRAMEBUFFER_ATTACHMENT_ANGLE));
+    gl->TexParameteri(resource->target, GL_TEXTURE_USAGE_ANGLE,
+                      GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
   }
 }
 
@@ -2022,27 +2005,19 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   gfx::Size& size = resource->size;
   DCHECK_EQ(resource->target, static_cast<GLenum>(GL_TEXTURE_2D));
   ResourceFormat format = resource->format;
-  GLC(gl, gl->BindTexture(GL_TEXTURE_2D, resource->gl_id));
+  gl->BindTexture(GL_TEXTURE_2D, resource->gl_id);
   if (use_texture_storage_ext_ &&
       IsFormatSupportedForStorage(format, use_texture_format_bgra_) &&
       (resource->hint & TEXTURE_HINT_IMMUTABLE)) {
     GLenum storage_format = TextureToStorageFormat(format);
-    GLC(gl,
-        gl->TexStorage2DEXT(
-            GL_TEXTURE_2D, 1, storage_format, size.width(), size.height()));
+    gl->TexStorage2DEXT(GL_TEXTURE_2D, 1, storage_format, size.width(),
+                        size.height());
   } else {
     // ETC1 does not support preallocation.
     if (format != ETC1) {
-      GLC(gl,
-          gl->TexImage2D(GL_TEXTURE_2D,
-                         0,
-                         GLInternalFormat(format),
-                         size.width(),
-                         size.height(),
-                         0,
-                         GLDataFormat(format),
-                         GLDataType(format),
-                         NULL));
+      gl->TexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(format), size.width(),
+                     size.height(), 0, GLDataFormat(format), GLDataType(format),
+                     NULL);
     }
   }
 }
@@ -2140,7 +2115,7 @@ void ResourceProvider::WaitSyncPointIfNeeded(ResourceId id) {
   DCHECK(resource->mailbox.IsValid());
   GLES2Interface* gl = ContextGL();
   DCHECK(gl);
-  GLC(gl, gl->WaitSyncPointCHROMIUM(resource->mailbox.sync_point()));
+  gl->WaitSyncPointCHROMIUM(resource->mailbox.sync_point());
   resource->mailbox.set_sync_point(0);
 }
 

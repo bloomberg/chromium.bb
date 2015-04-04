@@ -68,11 +68,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   virtual bool IsContextLost();
 
-  static void DebugGLCall(gpu::gles2::GLES2Interface* gl,
-                          const char* command,
-                          const char* file,
-                          int line);
-
  protected:
   GLRenderer(RendererClient* client,
              const RendererSettings* settings,
@@ -516,18 +511,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   BoundGeometry bound_geometry_;
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };
-
-// Setting DEBUG_GL_CALLS to 1 will call glGetError() after almost every GL
-// call made by the compositor. Useful for debugging rendering issues but
-// will significantly degrade performance.
-#define DEBUG_GL_CALLS 0
-
-#if DEBUG_GL_CALLS && !defined(NDEBUG)
-#define GLC(context, x)                                                        \
-  (x, GLRenderer::DebugGLCall(&* context, #x, __FILE__, __LINE__))
-#else
-#define GLC(context, x) (x)
-#endif
 
 }  // namespace cc
 

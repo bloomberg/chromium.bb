@@ -382,17 +382,6 @@ const RendererCapabilitiesImpl& GLRenderer::Capabilities() const {
   return capabilities_;
 }
 
-void GLRenderer::DebugGLCall(GLES2Interface* gl,
-                             const char* command,
-                             const char* file,
-                             int line) {
-  GLuint error = gl->GetError();
-  if (error != GL_NO_ERROR)
-    LOG(ERROR) << "GL command failed: File: " << file << "\n\tLine " << line
-               << "\n\tcommand: " << command << ", error "
-               << static_cast<int>(error) << "\n";
-}
-
 void GLRenderer::DidChangeVisibility() {
   EnforceMemoryPolicy();
 
@@ -439,9 +428,9 @@ void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
   // On DEBUG builds, opaque render passes are cleared to blue to easily see
   // regions that were not drawn on the screen.
   if (frame->current_render_pass->has_transparent_background)
-    GLC(gl_, gl_->ClearColor(0, 0, 0, 0));
+    gl_->ClearColor(0, 0, 0, 0);
   else
-    GLC(gl_, gl_->ClearColor(0, 0, 1, 1));
+    gl_->ClearColor(0, 0, 1, 1);
 
   bool always_clear = false;
 #ifndef NDEBUG
@@ -509,8 +498,8 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
 }
 
 void GLRenderer::DoNoOp() {
-  GLC(gl_, gl_->BindFramebuffer(GL_FRAMEBUFFER, 0));
-  GLC(gl_, gl_->Flush());
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  gl_->Flush();
 }
 
 void GLRenderer::DoDrawQuad(DrawingFrame* frame,
@@ -587,12 +576,10 @@ void GLRenderer::DrawCheckerboardQuad(const DrawingFrame* frame,
   SetUseProgram(program->program());
 
   SkColor color = quad->color;
-  GLC(gl_,
-      gl_->Uniform4f(program->fragment_shader().color_location(),
-                     SkColorGetR(color) * (1.0f / 255.0f),
-                     SkColorGetG(color) * (1.0f / 255.0f),
-                     SkColorGetB(color) * (1.0f / 255.0f),
-                     1));
+  gl_->Uniform4f(program->fragment_shader().color_location(),
+                 SkColorGetR(color) * (1.0f / 255.0f),
+                 SkColorGetG(color) * (1.0f / 255.0f),
+                 SkColorGetB(color) * (1.0f / 255.0f), 1);
 
   const int kCheckerboardWidth = 16;
   float frequency = 1.0f / kCheckerboardWidth;
@@ -604,16 +591,10 @@ void GLRenderer::DrawCheckerboardQuad(const DrawingFrame* frame,
       static_cast<int>(tile_rect.y() / quad->scale) % kCheckerboardWidth;
   float tex_scale_x = tile_rect.width() / quad->scale;
   float tex_scale_y = tile_rect.height() / quad->scale;
-  GLC(gl_,
-      gl_->Uniform4f(program->fragment_shader().tex_transform_location(),
-                     tex_offset_x,
-                     tex_offset_y,
-                     tex_scale_x,
-                     tex_scale_y));
+  gl_->Uniform4f(program->fragment_shader().tex_transform_location(),
+                 tex_offset_x, tex_offset_y, tex_scale_x, tex_scale_y);
 
-  GLC(gl_,
-      gl_->Uniform1f(program->fragment_shader().frequency_location(),
-                     frequency));
+  gl_->Uniform1f(program->fragment_shader().frequency_location(), frequency);
 
   SetShaderOpacity(quad->opacity(),
                    program->fragment_shader().alpha_location());
@@ -642,25 +623,22 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
   QuadRectTransform(&render_matrix, quad->quadTransform(), layer_rect);
   GLRenderer::ToGLMatrix(&gl_matrix[0],
                          frame->projection_matrix * render_matrix);
-  GLC(gl_,
-      gl_->UniformMatrix4fv(
-          program->vertex_shader().matrix_location(), 1, false, &gl_matrix[0]));
+  gl_->UniformMatrix4fv(program->vertex_shader().matrix_location(), 1, false,
+                        &gl_matrix[0]);
 
   SkColor color = quad->color;
   float alpha = SkColorGetA(color) * (1.0f / 255.0f);
 
-  GLC(gl_,
-      gl_->Uniform4f(program->fragment_shader().color_location(),
-                     (SkColorGetR(color) * (1.0f / 255.0f)) * alpha,
-                     (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
-                     (SkColorGetB(color) * (1.0f / 255.0f)) * alpha,
-                     alpha));
+  gl_->Uniform4f(program->fragment_shader().color_location(),
+                 (SkColorGetR(color) * (1.0f / 255.0f)) * alpha,
+                 (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
+                 (SkColorGetB(color) * (1.0f / 255.0f)) * alpha, alpha);
 
-  GLC(gl_, gl_->LineWidth(quad->width));
+  gl_->LineWidth(quad->width);
 
   // The indices for the line are stored in the same array as the triangle
   // indices.
-  GLC(gl_, gl_->DrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0));
+  gl_->DrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0);
 }
 
 static skia::RefPtr<SkImage> ApplyImageFilter(
@@ -820,10 +798,10 @@ void GLRenderer::ApplyBlendModeUsingBlendFunc(SkXfermode::Mode blend_mode) {
         return;
     }
 
-    GLC(gl_, gl_->BlendEquation(equation));
+    gl_->BlendEquation(equation);
   } else {
     if (blend_mode == SkXfermode::kScreen_Mode) {
-      GLC(gl_, gl_->BlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE));
+      gl_->BlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
     }
   }
 }
@@ -833,9 +811,9 @@ void GLRenderer::RestoreBlendFuncToDefault(SkXfermode::Mode blend_mode) {
     return;
 
   if (use_blend_equation_advanced_) {
-    GLC(gl_, gl_->BlendEquation(GL_FUNC_ADD));
+    gl_->BlendEquation(GL_FUNC_ADD);
   } else {
-    GLC(gl_, gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
+    gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   }
 }
 
@@ -1093,7 +1071,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   if (!use_shaders_for_blending) {
     if (!use_blend_equation_advanced_coherent_ && use_blend_equation_advanced_)
-      GLC(gl_, gl_->BlendBarrierKHR());
+      gl_->BlendBarrierKHR();
 
     ApplyBlendModeUsingBlendFunc(blend_mode);
   }
@@ -1118,7 +1096,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
-    GLC(gl_, gl_->Uniform1i(locations.sampler, 0));
+    gl_->Uniform1i(locations.sampler, 0);
   } else if (!use_aa && mask_texture_id && !use_color_matrix) {
     const RenderPassMaskProgram* program = GetRenderPassMaskProgram(
         tex_coord_precision, mask_sampler,
@@ -1126,14 +1104,14 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
-    GLC(gl_, gl_->Uniform1i(locations.sampler, 0));
+    gl_->Uniform1i(locations.sampler, 0);
   } else if (use_aa && !mask_texture_id && !use_color_matrix) {
     const RenderPassProgramAA* program =
         GetRenderPassProgramAA(tex_coord_precision, shader_blend_mode);
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
-    GLC(gl_, gl_->Uniform1i(locations.sampler, 0));
+    gl_->Uniform1i(locations.sampler, 0);
   } else if (use_aa && mask_texture_id && use_color_matrix) {
     const RenderPassMaskColorMatrixProgramAA* program =
         GetRenderPassMaskColorMatrixProgramAA(
@@ -1142,7 +1120,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
-    GLC(gl_, gl_->Uniform1i(locations.sampler, 0));
+    gl_->Uniform1i(locations.sampler, 0);
   } else if (use_aa && !mask_texture_id && use_color_matrix) {
     const RenderPassColorMatrixProgramAA* program =
         GetRenderPassColorMatrixProgramAA(tex_coord_precision,
@@ -1150,7 +1128,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
-    GLC(gl_, gl_->Uniform1i(locations.sampler, 0));
+    gl_->Uniform1i(locations.sampler, 0);
   } else if (!use_aa && mask_texture_id && use_color_matrix) {
     const RenderPassMaskColorMatrixProgram* program =
         GetRenderPassMaskColorMatrixProgram(
@@ -1159,21 +1137,21 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
-    GLC(gl_, gl_->Uniform1i(locations.sampler, 0));
+    gl_->Uniform1i(locations.sampler, 0);
   } else if (!use_aa && !mask_texture_id && use_color_matrix) {
     const RenderPassColorMatrixProgram* program =
         GetRenderPassColorMatrixProgram(tex_coord_precision, shader_blend_mode);
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
-    GLC(gl_, gl_->Uniform1i(locations.sampler, 0));
+    gl_->Uniform1i(locations.sampler, 0);
   } else {
     const RenderPassProgram* program =
         GetRenderPassProgram(tex_coord_precision, shader_blend_mode);
     SetUseProgram(program->program());
     program->vertex_shader().FillLocations(&locations);
     program->fragment_shader().FillLocations(&locations);
-    GLC(gl_, gl_->Uniform1i(locations.sampler, 0));
+    gl_->Uniform1i(locations.sampler, 0);
   }
   float tex_scale_x =
       quad->rect.width() / static_cast<float>(contents_texture->size().width());
@@ -1186,18 +1164,14 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   // Flip the content vertically in the shader, as the RenderPass input
   // texture is already oriented the same way as the framebuffer, but the
   // projection transform does a flip.
-  GLC(gl_,
-      gl_->Uniform4f(locations.tex_transform,
-                     0.0f,
-                     tex_scale_y,
-                     tex_scale_x,
-                     -tex_scale_y));
+  gl_->Uniform4f(locations.tex_transform, 0.0f, tex_scale_y, tex_scale_x,
+                 -tex_scale_y);
 
   GLint last_texture_unit = 0;
   if (locations.mask_sampler != -1) {
     DCHECK_NE(locations.mask_tex_coord_scale, 1);
     DCHECK_NE(locations.mask_tex_coord_offset, 1);
-    GLC(gl_, gl_->Uniform1i(locations.mask_sampler, 1));
+    gl_->Uniform1i(locations.mask_sampler, 1);
 
     gfx::RectF mask_uv_rect = quad->MaskUVRect();
     if (mask_sampler != SAMPLER_TYPE_2D) {
@@ -1208,20 +1182,17 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     // Mask textures are oriented vertically flipped relative to the framebuffer
     // and the RenderPass contents texture, so we flip the tex coords from the
     // RenderPass texture to find the mask texture coords.
-    GLC(gl_,
-        gl_->Uniform2f(locations.mask_tex_coord_offset,
-                       mask_uv_rect.x(),
-                       mask_uv_rect.bottom()));
-    GLC(gl_,
-        gl_->Uniform2f(locations.mask_tex_coord_scale,
-                       mask_uv_rect.width() / tex_scale_x,
-                       -mask_uv_rect.height() / tex_scale_y));
+    gl_->Uniform2f(locations.mask_tex_coord_offset, mask_uv_rect.x(),
+                   mask_uv_rect.bottom());
+    gl_->Uniform2f(locations.mask_tex_coord_scale,
+                   mask_uv_rect.width() / tex_scale_x,
+                   -mask_uv_rect.height() / tex_scale_y);
 
     last_texture_unit = 1;
   }
 
   if (locations.edge != -1)
-    GLC(gl_, gl_->Uniform3fv(locations.edge, 8, edge));
+    gl_->Uniform3fv(locations.edge, 8, edge);
 
   if (locations.viewport != -1) {
     float viewport[4] = {
@@ -1230,7 +1201,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         static_cast<float>(current_window_space_viewport_.width()),
         static_cast<float>(current_window_space_viewport_.height()),
     };
-    GLC(gl_, gl_->Uniform4fv(locations.viewport, 1, viewport));
+    gl_->Uniform4fv(locations.viewport, 1, viewport);
   }
 
   if (locations.color_matrix != -1) {
@@ -1239,8 +1210,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       for (int j = 0; j < 4; ++j)
         matrix[i * 4 + j] = SkScalarToFloat(color_matrix[j * 5 + i]);
     }
-    GLC(gl_,
-        gl_->UniformMatrix4fv(locations.color_matrix, 1, false, matrix));
+    gl_->UniformMatrix4fv(locations.color_matrix, 1, false, matrix);
   }
   static const float kScale = 1.0f / 255.0f;
   if (locations.color_offset != -1) {
@@ -1248,7 +1218,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     for (int i = 0; i < 4; ++i)
       offset[i] = SkScalarToFloat(color_matrix[i * 5 + 4]) * kScale;
 
-    GLC(gl_, gl_->Uniform4fv(locations.color_offset, 1, offset));
+    gl_->Uniform4fv(locations.color_offset, 1, offset);
   }
 
   scoped_ptr<ResourceProvider::ScopedSamplerGL> shader_background_sampler_lock;
@@ -1257,23 +1227,19 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     DCHECK_NE(locations.backdrop, 0);
     DCHECK_NE(locations.backdrop_rect, 0);
 
-    GLC(gl_, gl_->Uniform1i(locations.backdrop, ++last_texture_unit));
+    gl_->Uniform1i(locations.backdrop, ++last_texture_unit);
 
-    GLC(gl_,
-        gl_->Uniform4f(locations.backdrop_rect,
-                       background_rect.x(),
-                       background_rect.y(),
-                       background_rect.width(),
-                       background_rect.height()));
+    gl_->Uniform4f(locations.backdrop_rect, background_rect.x(),
+                   background_rect.y(), background_rect.width(),
+                   background_rect.height());
 
     if (background_image) {
       GrTexture* texture = background_image->getTexture();
-      GLC(gl_, gl_->ActiveTexture(GL_TEXTURE0 + last_texture_unit));
+      gl_->ActiveTexture(GL_TEXTURE0 + last_texture_unit);
       gl_->BindTexture(GL_TEXTURE_2D, texture->getTextureHandle());
-      GLC(gl_, gl_->ActiveTexture(GL_TEXTURE0));
+      gl_->ActiveTexture(GL_TEXTURE0);
       if (mask_for_background)
-        GLC(gl_, gl_->Uniform1i(locations.original_backdrop,
-                                ++last_texture_unit));
+        gl_->Uniform1i(locations.original_backdrop, ++last_texture_unit);
     }
     if (background_texture) {
       shader_background_sampler_lock = make_scoped_ptr(
@@ -1294,7 +1260,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   // Flush the compositor context before the filter bitmap goes out of
   // scope, so the draw gets processed before the filter texture gets deleted.
   if (filter_image)
-    GLC(gl_, gl_->Flush());
+    gl_->Flush();
 
   if (!use_shaders_for_blending)
     RestoreBlendFuncToDefault(blend_mode);
@@ -1607,12 +1573,10 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   }
   SetUseProgram(uniforms.program);
 
-  GLC(gl_,
-      gl_->Uniform4f(uniforms.color_location,
-                     (SkColorGetR(color) * (1.0f / 255.0f)) * alpha,
-                     (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
-                     (SkColorGetB(color) * (1.0f / 255.0f)) * alpha,
-                     alpha));
+  gl_->Uniform4f(uniforms.color_location,
+                 (SkColorGetR(color) * (1.0f / 255.0f)) * alpha,
+                 (SkColorGetG(color) * (1.0f / 255.0f)) * alpha,
+                 (SkColorGetB(color) * (1.0f / 255.0f)) * alpha, alpha);
   if (use_aa) {
     float viewport[4] = {
         static_cast<float>(current_window_space_viewport_.x()),
@@ -1620,8 +1584,8 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
         static_cast<float>(current_window_space_viewport_.width()),
         static_cast<float>(current_window_space_viewport_.height()),
     };
-    GLC(gl_, gl_->Uniform4fv(uniforms.viewport_location, 1, viewport));
-    GLC(gl_, gl_->Uniform3fv(uniforms.edge_location, 8, edge));
+    gl_->Uniform4fv(uniforms.viewport_location, 1, viewport);
+    gl_->Uniform3fv(uniforms.edge_location, 8, edge);
   }
 
   // Enable blending when the quad properties require it or if we decided
@@ -1780,7 +1744,7 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
   }
 
   SetUseProgram(uniforms.program);
-  GLC(gl_, gl_->Uniform1i(uniforms.sampler_location, 0));
+  gl_->Uniform1i(uniforms.sampler_location, 0);
 
   float viewport[4] = {
       static_cast<float>(current_window_space_viewport_.x()),
@@ -1788,21 +1752,15 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
       static_cast<float>(current_window_space_viewport_.width()),
       static_cast<float>(current_window_space_viewport_.height()),
   };
-  GLC(gl_, gl_->Uniform4fv(uniforms.viewport_location, 1, viewport));
-  GLC(gl_, gl_->Uniform3fv(uniforms.edge_location, 8, edge));
+  gl_->Uniform4fv(uniforms.viewport_location, 1, viewport);
+  gl_->Uniform3fv(uniforms.edge_location, 8, edge);
 
-  GLC(gl_,
-      gl_->Uniform4f(uniforms.vertex_tex_transform_location,
-                     vertex_tex_translate_x,
-                     vertex_tex_translate_y,
-                     vertex_tex_scale_x,
-                     vertex_tex_scale_y));
-  GLC(gl_,
-      gl_->Uniform4f(uniforms.fragment_tex_transform_location,
-                     fragment_tex_translate_x,
-                     fragment_tex_translate_y,
-                     fragment_tex_scale_x,
-                     fragment_tex_scale_y));
+  gl_->Uniform4f(uniforms.vertex_tex_transform_location, vertex_tex_translate_x,
+                 vertex_tex_translate_y, vertex_tex_scale_x,
+                 vertex_tex_scale_y);
+  gl_->Uniform4f(uniforms.fragment_tex_transform_location,
+                 fragment_tex_translate_x, fragment_tex_translate_y,
+                 fragment_tex_scale_x, fragment_tex_scale_y);
 
   // Blending is required for antialiasing.
   SetBlendEnabled(true);
@@ -1884,14 +1842,11 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
   }
 
   SetUseProgram(uniforms.program);
-  GLC(gl_, gl_->Uniform1i(uniforms.sampler_location, 0));
+  gl_->Uniform1i(uniforms.sampler_location, 0);
 
-  GLC(gl_,
-      gl_->Uniform4f(uniforms.vertex_tex_transform_location,
-                     vertex_tex_translate_x,
-                     vertex_tex_translate_y,
-                     vertex_tex_scale_x,
-                     vertex_tex_scale_y));
+  gl_->Uniform4f(uniforms.vertex_tex_transform_location, vertex_tex_translate_x,
+                 vertex_tex_translate_y, vertex_tex_scale_x,
+                 vertex_tex_scale_y);
 
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
@@ -1933,14 +1888,13 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
       tile_rect.p3().x(),
       tile_rect.p3().y(),
   };
-  GLC(gl_, gl_->Uniform2fv(uniforms.quad_location, 4, gl_quad));
+  gl_->Uniform2fv(uniforms.quad_location, 4, gl_quad);
 
   static float gl_matrix[16];
   ToGLMatrix(&gl_matrix[0], frame->projection_matrix * quad->quadTransform());
-  GLC(gl_,
-      gl_->UniformMatrix4fv(uniforms.matrix_location, 1, false, &gl_matrix[0]));
+  gl_->UniformMatrix4fv(uniforms.matrix_location, 1, false, &gl_matrix[0]);
 
-  GLC(gl_, gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0));
+  gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
 
 void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
@@ -2021,14 +1975,10 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     alpha_location = program->fragment_shader().alpha_location();
   }
 
-  GLC(gl_,
-      gl_->Uniform2f(tex_scale_location,
-                     quad->tex_coord_rect.width(),
-                     quad->tex_coord_rect.height()));
-  GLC(gl_,
-      gl_->Uniform2f(tex_offset_location,
-                     quad->tex_coord_rect.x(),
-                     quad->tex_coord_rect.y()));
+  gl_->Uniform2f(tex_scale_location, quad->tex_coord_rect.width(),
+                 quad->tex_coord_rect.height());
+  gl_->Uniform2f(tex_offset_location, quad->tex_coord_rect.x(),
+                 quad->tex_coord_rect.y());
   // Clamping to half a texel inside the tex coord rect prevents bilinear
   // filtering from filtering outside the tex coord rect.
   gfx::RectF ya_clamp_rect(quad->tex_coord_rect);
@@ -2042,18 +1992,16 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     uv_clamp_rect.Inset(0.5f / quad->uv_tex_size.width(),
                         0.5f / quad->uv_tex_size.height());
   }
-  GLC(gl_, gl_->Uniform4f(ya_clamp_rect_location, ya_clamp_rect.x(),
-                          ya_clamp_rect.y(), ya_clamp_rect.right(),
-                          ya_clamp_rect.bottom()));
-  GLC(gl_, gl_->Uniform4f(uv_clamp_rect_location, uv_clamp_rect.x(),
-                          uv_clamp_rect.y(), uv_clamp_rect.right(),
-                          uv_clamp_rect.bottom()));
+  gl_->Uniform4f(ya_clamp_rect_location, ya_clamp_rect.x(), ya_clamp_rect.y(),
+                 ya_clamp_rect.right(), ya_clamp_rect.bottom());
+  gl_->Uniform4f(uv_clamp_rect_location, uv_clamp_rect.x(), uv_clamp_rect.y(),
+                 uv_clamp_rect.right(), uv_clamp_rect.bottom());
 
-  GLC(gl_, gl_->Uniform1i(y_texture_location, 1));
-  GLC(gl_, gl_->Uniform1i(u_texture_location, 2));
-  GLC(gl_, gl_->Uniform1i(v_texture_location, 3));
+  gl_->Uniform1i(y_texture_location, 1);
+  gl_->Uniform1i(u_texture_location, 2);
+  gl_->Uniform1i(v_texture_location, 3);
   if (use_alpha_plane)
-    GLC(gl_, gl_->Uniform1i(a_texture_location, 4));
+    gl_->Uniform1i(a_texture_location, 4);
 
   // These values are magic numbers that are used in the transformation from YUV
   // to RGB color values.  They are taken from the following webpage:
@@ -2106,8 +2054,8 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   // quad passed in via uniform is the actual geometry that gets used to draw
   // it. This is why this centered rect is used and not the original quad_rect.
   gfx::RectF tile_rect = quad->rect;
-  GLC(gl_, gl_->UniformMatrix3fv(yuv_matrix_location, 1, 0, yuv_to_rgb));
-  GLC(gl_, gl_->Uniform3fv(yuv_adj_location, 1, yuv_adjust));
+  gl_->UniformMatrix3fv(yuv_matrix_location, 1, 0, yuv_to_rgb);
+  gl_->Uniform3fv(yuv_adj_location, 1, yuv_adjust);
 
   SetShaderOpacity(quad->opacity(), alpha_location);
   if (!clip_region) {
@@ -2143,16 +2091,15 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
   SetUseProgram(program->program());
 
   ToGLMatrix(&gl_matrix[0], quad->matrix);
-  GLC(gl_,
-      gl_->UniformMatrix4fv(
-          program->vertex_shader().tex_matrix_location(), 1, false, gl_matrix));
+  gl_->UniformMatrix4fv(program->vertex_shader().tex_matrix_location(), 1,
+                        false, gl_matrix);
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                           quad->resource_id);
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
-  GLC(gl_, gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id()));
+  gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id());
 
-  GLC(gl_, gl_->Uniform1i(program->fragment_shader().sampler_location(), 0));
+  gl_->Uniform1i(program->fragment_shader().sampler_location(), 0);
 
   SetShaderOpacity(quad->opacity(),
                    program->fragment_shader().alpha_location());
@@ -2214,7 +2161,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   SetUseProgram(draw_cache_.program_id);
 
   // Bind the correct texture sampler location.
-  GLC(gl_, gl_->Uniform1i(draw_cache_.sampler_location, 0));
+  gl_->Uniform1i(draw_cache_.sampler_location, 0);
 
   // Assume the current active textures is 0.
   ResourceProvider::ScopedSamplerGL locked_quad(
@@ -2222,7 +2169,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
       draw_cache_.resource_id,
       draw_cache_.nearest_neighbor ? GL_NEAREST : GL_LINEAR);
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
-  GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, locked_quad.texture_id()));
+  gl_->BindTexture(GL_TEXTURE_2D, locked_quad.texture_id());
 
   static_assert(sizeof(Float4) == 4 * sizeof(float),
                 "Float4 struct should be densely packed");
@@ -2230,37 +2177,28 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
                 "Float16 struct should be densely packed");
 
   // Upload the tranforms for both points and uvs.
-  GLC(gl_,
-      gl_->UniformMatrix4fv(
-          static_cast<int>(draw_cache_.matrix_location),
-          static_cast<int>(draw_cache_.matrix_data.size()),
-          false,
-          reinterpret_cast<float*>(&draw_cache_.matrix_data.front())));
-  GLC(gl_,
-      gl_->Uniform4fv(
-          static_cast<int>(draw_cache_.uv_xform_location),
-          static_cast<int>(draw_cache_.uv_xform_data.size()),
-          reinterpret_cast<float*>(&draw_cache_.uv_xform_data.front())));
+  gl_->UniformMatrix4fv(
+      static_cast<int>(draw_cache_.matrix_location),
+      static_cast<int>(draw_cache_.matrix_data.size()), false,
+      reinterpret_cast<float*>(&draw_cache_.matrix_data.front()));
+  gl_->Uniform4fv(static_cast<int>(draw_cache_.uv_xform_location),
+                  static_cast<int>(draw_cache_.uv_xform_data.size()),
+                  reinterpret_cast<float*>(&draw_cache_.uv_xform_data.front()));
 
   if (draw_cache_.background_color != SK_ColorTRANSPARENT) {
     Float4 background_color = PremultipliedColor(draw_cache_.background_color);
-    GLC(gl_,
-        gl_->Uniform4fv(
-            draw_cache_.background_color_location, 1, background_color.data));
+    gl_->Uniform4fv(draw_cache_.background_color_location, 1,
+                    background_color.data);
   }
 
-  GLC(gl_,
-      gl_->Uniform1fv(
-          static_cast<int>(draw_cache_.vertex_opacity_location),
-          static_cast<int>(draw_cache_.vertex_opacity_data.size()),
-          static_cast<float*>(&draw_cache_.vertex_opacity_data.front())));
+  gl_->Uniform1fv(
+      static_cast<int>(draw_cache_.vertex_opacity_location),
+      static_cast<int>(draw_cache_.vertex_opacity_data.size()),
+      static_cast<float*>(&draw_cache_.vertex_opacity_data.front()));
 
   // Draw the quads!
-  GLC(gl_,
-      gl_->DrawElements(GL_TRIANGLES,
-                        6 * draw_cache_.matrix_data.size(),
-                        GL_UNSIGNED_SHORT,
-                        0));
+  gl_->DrawElements(GL_TRIANGLES, 6 * draw_cache_.matrix_data.size(),
+                    GL_UNSIGNED_SHORT, 0);
 
   // Clear the cache.
   draw_cache_.program_id = -1;
@@ -2393,31 +2331,25 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
   binding.Set(GetTextureIOSurfaceProgram(tex_coord_precision));
 
   SetUseProgram(binding.program_id);
-  GLC(gl_, gl_->Uniform1i(binding.sampler_location, 0));
+  gl_->Uniform1i(binding.sampler_location, 0);
   if (quad->orientation == IOSurfaceDrawQuad::FLIPPED) {
-    GLC(gl_,
-        gl_->Uniform4f(binding.tex_transform_location,
-                       0,
-                       quad->io_surface_size.height(),
-                       quad->io_surface_size.width(),
-                       quad->io_surface_size.height() * -1.0f));
+    gl_->Uniform4f(
+        binding.tex_transform_location, 0, quad->io_surface_size.height(),
+        quad->io_surface_size.width(), quad->io_surface_size.height() * -1.0f);
   } else {
-    GLC(gl_,
-        gl_->Uniform4f(binding.tex_transform_location,
-                       0,
-                       0,
-                       quad->io_surface_size.width(),
-                       quad->io_surface_size.height()));
+    gl_->Uniform4f(binding.tex_transform_location, 0, 0,
+                   quad->io_surface_size.width(),
+                   quad->io_surface_size.height());
   }
 
   const float vertex_opacity[] = {quad->opacity(), quad->opacity(),
                                   quad->opacity(), quad->opacity()};
-  GLC(gl_, gl_->Uniform1fv(binding.vertex_opacity_location, 4, vertex_opacity));
+  gl_->Uniform1fv(binding.vertex_opacity_location, 4, vertex_opacity);
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                           quad->io_surface_resource_id);
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
-  GLC(gl_, gl_->BindTexture(GL_TEXTURE_RECTANGLE_ARB, lock.texture_id()));
+  gl_->BindTexture(GL_TEXTURE_RECTANGLE_ARB, lock.texture_id());
 
   if (!clip_region) {
     DrawQuadGeometry(frame, quad->quadTransform(), quad->rect,
@@ -2429,7 +2361,7 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
                                    *clip_region, binding.matrix_location, uvs);
   }
 
-  GLC(gl_, gl_->BindTexture(GL_TEXTURE_RECTANGLE_ARB, 0));
+  gl_->BindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
 }
 
 void GLRenderer::FinishDrawingFrame(DrawingFrame* frame) {
@@ -2442,7 +2374,7 @@ void GLRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   current_framebuffer_lock_ = nullptr;
   swap_buffer_rect_.Union(gfx::ToEnclosingRect(frame->root_damage_rect));
 
-  GLC(gl_, gl_->Disable(GL_BLEND));
+  gl_->Disable(GL_BLEND);
   blend_shadow_ = false;
 
   ScheduleOverlays(frame);
@@ -2468,7 +2400,7 @@ void GLRenderer::EnsureScissorTestEnabled() {
     return;
 
   FlushTextureQuadCache(SHARED_BINDING);
-  GLC(gl_, gl_->Enable(GL_SCISSOR_TEST));
+  gl_->Enable(GL_SCISSOR_TEST);
   is_scissor_enabled_ = true;
 }
 
@@ -2477,7 +2409,7 @@ void GLRenderer::EnsureScissorTestDisabled() {
     return;
 
   FlushTextureQuadCache(SHARED_BINDING);
-  GLC(gl_, gl_->Disable(GL_SCISSOR_TEST));
+  gl_->Disable(GL_SCISSOR_TEST);
   is_scissor_enabled_ = false;
 }
 
@@ -2508,12 +2440,12 @@ void GLRenderer::SetShaderQuadF(const gfx::QuadF& quad, int quad_location) {
   gl_quad[5] = quad.p3().y();
   gl_quad[6] = quad.p4().x();
   gl_quad[7] = quad.p4().y();
-  GLC(gl_, gl_->Uniform2fv(quad_location, 4, gl_quad));
+  gl_->Uniform2fv(quad_location, 4, gl_quad);
 }
 
 void GLRenderer::SetShaderOpacity(float opacity, int alpha_location) {
   if (alpha_location != -1)
-    GLC(gl_, gl_->Uniform1f(alpha_location, opacity));
+    gl_->Uniform1f(alpha_location, opacity);
 }
 
 void GLRenderer::SetStencilEnabled(bool enabled) {
@@ -2521,9 +2453,9 @@ void GLRenderer::SetStencilEnabled(bool enabled) {
     return;
 
   if (enabled)
-    GLC(gl_, gl_->Enable(GL_STENCIL_TEST));
+    gl_->Enable(GL_STENCIL_TEST);
   else
-    GLC(gl_, gl_->Disable(GL_STENCIL_TEST));
+    gl_->Disable(GL_STENCIL_TEST);
   stencil_shadow_ = enabled;
 }
 
@@ -2532,9 +2464,9 @@ void GLRenderer::SetBlendEnabled(bool enabled) {
     return;
 
   if (enabled)
-    GLC(gl_, gl_->Enable(GL_BLEND));
+    gl_->Enable(GL_BLEND);
   else
-    GLC(gl_, gl_->Disable(GL_BLEND));
+    gl_->Disable(GL_BLEND);
   blend_shadow_ = enabled;
 }
 
@@ -2562,10 +2494,10 @@ void GLRenderer::DrawQuadGeometryClippedByQuadF(
   QuadRectTransform(&quad_rect_matrix, draw_transform, quad_rect);
   static float gl_matrix[16];
   ToGLMatrix(&gl_matrix[0], frame->projection_matrix * quad_rect_matrix);
-  GLC(gl_, gl_->UniformMatrix4fv(matrix_location, 1, false, &gl_matrix[0]));
+  gl_->UniformMatrix4fv(matrix_location, 1, false, &gl_matrix[0]);
 
-  GLC(gl_, gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT,
-                             reinterpret_cast<const void*>(0)));
+  gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT,
+                    reinterpret_cast<const void*>(0));
 }
 
 void GLRenderer::DrawQuadGeometry(const DrawingFrame* frame,
@@ -2577,14 +2509,14 @@ void GLRenderer::DrawQuadGeometry(const DrawingFrame* frame,
   QuadRectTransform(&quad_rect_matrix, draw_transform, quad_rect);
   static float gl_matrix[16];
   ToGLMatrix(&gl_matrix[0], frame->projection_matrix * quad_rect_matrix);
-  GLC(gl_, gl_->UniformMatrix4fv(matrix_location, 1, false, &gl_matrix[0]));
+  gl_->UniformMatrix4fv(matrix_location, 1, false, &gl_matrix[0]);
 
-  GLC(gl_, gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0));
+  gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
 
 void GLRenderer::Finish() {
   TRACE_EVENT0("cc", "GLRenderer::Finish");
-  GLC(gl_, gl_->Finish());
+  gl_->Finish();
 }
 
 void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
@@ -2633,7 +2565,7 @@ void GLRenderer::EnforceMemoryPolicy() {
     DiscardBackbuffer();
     resource_provider_->ReleaseCachedData();
     output_surface_->context_provider()->DeleteCachedResources();
-    GLC(gl_, gl_->Flush());
+    gl_->Flush();
   }
   PrepareGeometry(NO_BINDING);
 }
@@ -2680,21 +2612,15 @@ void GLRenderer::GetFramebufferPixelsAsync(
     GLuint texture_id = 0;
     gpu::Mailbox mailbox;
     if (own_mailbox) {
-      GLC(gl_, gl_->GenMailboxCHROMIUM(mailbox.name));
+      gl_->GenMailboxCHROMIUM(mailbox.name);
       gl_->GenTextures(1, &texture_id);
-      GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, texture_id));
+      gl_->BindTexture(GL_TEXTURE_2D, texture_id);
 
-      GLC(gl_,
-          gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-      GLC(gl_,
-          gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-      GLC(gl_,
-          gl_->TexParameteri(
-              GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-      GLC(gl_,
-          gl_->TexParameteri(
-              GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-      GLC(gl_, gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
+      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     } else {
       mailbox = request->texture_mailbox().mailbox();
       DCHECK_EQ(static_cast<unsigned>(GL_TEXTURE_2D),
@@ -2702,11 +2628,10 @@ void GLRenderer::GetFramebufferPixelsAsync(
       DCHECK(!mailbox.IsZero());
       unsigned incoming_sync_point = request->texture_mailbox().sync_point();
       if (incoming_sync_point)
-        GLC(gl_, gl_->WaitSyncPointCHROMIUM(incoming_sync_point));
+        gl_->WaitSyncPointCHROMIUM(incoming_sync_point);
 
-      texture_id = GLC(
-          gl_,
-          gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
+      texture_id =
+          gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     }
     GetFramebufferTexture(texture_id, RGBA_8888, window_rect);
 
@@ -2715,7 +2640,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
 
     scoped_ptr<SingleReleaseCallback> release_callback;
     if (own_mailbox) {
-      GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, 0));
+      gl_->BindTexture(GL_TEXTURE_2D, 0);
       release_callback = texture_mailbox_deleter_->GetReleaseCallback(
           output_surface_->context_provider(), texture_id);
     } else {
@@ -2747,28 +2672,20 @@ void GLRenderer::GetFramebufferPixelsAsync(
     // http://crbug.com/99393. <rdar://problem/10949687>
 
     gl_->GenTextures(1, &temporary_texture);
-    GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, temporary_texture));
-    GLC(gl_,
-        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GLC(gl_,
-        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    GLC(gl_,
-        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-    GLC(gl_,
-        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    gl_->BindTexture(GL_TEXTURE_2D, temporary_texture);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // Copy the contents of the current (IOSurface-backed) framebuffer into a
     // temporary texture.
     GetFramebufferTexture(
         temporary_texture, RGBA_8888, gfx::Rect(current_surface_size_));
     gl_->GenFramebuffers(1, &temporary_fbo);
     // Attach this texture to an FBO, and perform the readback from that FBO.
-    GLC(gl_, gl_->BindFramebuffer(GL_FRAMEBUFFER, temporary_fbo));
-    GLC(gl_,
-        gl_->FramebufferTexture2D(GL_FRAMEBUFFER,
-                                  GL_COLOR_ATTACHMENT0,
-                                  GL_TEXTURE_2D,
-                                  temporary_texture,
-                                  0));
+    gl_->BindFramebuffer(GL_FRAMEBUFFER, temporary_fbo);
+    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D, temporary_texture, 0);
 
     DCHECK_EQ(static_cast<unsigned>(GL_FRAMEBUFFER_COMPLETE),
               gl_->CheckFramebufferStatus(GL_FRAMEBUFFER));
@@ -2776,34 +2693,25 @@ void GLRenderer::GetFramebufferPixelsAsync(
 
   GLuint buffer = 0;
   gl_->GenBuffers(1, &buffer);
-  GLC(gl_, gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, buffer));
-  GLC(gl_,
-      gl_->BufferData(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
-                      4 * window_rect.size().GetArea(),
-                      NULL,
-                      GL_STREAM_READ));
+  gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, buffer);
+  gl_->BufferData(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
+                  4 * window_rect.size().GetArea(), NULL, GL_STREAM_READ);
 
   GLuint query = 0;
   gl_->GenQueriesEXT(1, &query);
-  GLC(gl_, gl_->BeginQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, query));
+  gl_->BeginQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, query);
 
-  GLC(gl_,
-      gl_->ReadPixels(window_rect.x(),
-                      window_rect.y(),
-                      window_rect.width(),
-                      window_rect.height(),
-                      GL_RGBA,
-                      GL_UNSIGNED_BYTE,
-                      NULL));
+  gl_->ReadPixels(window_rect.x(), window_rect.y(), window_rect.width(),
+                  window_rect.height(), GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-  GLC(gl_, gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0));
+  gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
 
   if (do_workaround) {
     // Clean up.
-    GLC(gl_, gl_->BindFramebuffer(GL_FRAMEBUFFER, 0));
-    GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, 0));
-    GLC(gl_, gl_->DeleteFramebuffers(1, &temporary_fbo));
-    GLC(gl_, gl_->DeleteTextures(1, &temporary_texture));
+    gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
+    gl_->BindTexture(GL_TEXTURE_2D, 0);
+    gl_->DeleteFramebuffers(1, &temporary_fbo);
+    gl_->DeleteTextures(1, &temporary_texture);
   }
 
   base::Closure finished_callback = base::Bind(&GLRenderer::FinishedReadback,
@@ -2821,7 +2729,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
   // Save the buffer to verify the callbacks happen in the expected order.
   pending_async_read_pixels_.front()->buffer = buffer;
 
-  GLC(gl_, gl_->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM));
+  gl_->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM);
   context_support_->SignalQuery(query, cancelable_callback);
 
   EnforceMemoryPolicy();
@@ -2833,7 +2741,7 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
   DCHECK(!pending_async_read_pixels_.empty());
 
   if (query != 0) {
-    GLC(gl_, gl_->DeleteQueriesEXT(1, &query));
+    gl_->DeleteQueriesEXT(1, &query);
   }
 
   PendingAsyncReadPixels* current_read = pending_async_read_pixels_.back();
@@ -2844,8 +2752,7 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
   scoped_ptr<SkBitmap> bitmap;
 
   if (source_buffer != 0) {
-    GLC(gl_,
-        gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, source_buffer));
+    gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, source_buffer);
     src_pixels = static_cast<uint8*>(gl_->MapBufferCHROMIUM(
         GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, GL_READ_ONLY));
 
@@ -2874,11 +2781,10 @@ void GLRenderer::FinishedReadback(unsigned source_buffer,
         }
       }
 
-      GLC(gl_,
-          gl_->UnmapBufferCHROMIUM(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM));
+      gl_->UnmapBufferCHROMIUM(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM);
     }
-    GLC(gl_, gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0));
-    GLC(gl_, gl_->DeleteBuffers(1, &source_buffer));
+    gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
+    gl_->DeleteBuffers(1, &source_buffer);
   }
 
   if (bitmap)
@@ -2895,17 +2801,11 @@ void GLRenderer::GetFramebufferTexture(unsigned texture_id,
   DCHECK_LE(window_rect.right(), current_surface_size_.width());
   DCHECK_LE(window_rect.bottom(), current_surface_size_.height());
 
-  GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, texture_id));
-  GLC(gl_,
-      gl_->CopyTexImage2D(GL_TEXTURE_2D,
-                          0,
-                          GLDataFormat(texture_format),
-                          window_rect.x(),
-                          window_rect.y(),
-                          window_rect.width(),
-                          window_rect.height(),
-                          0));
-  GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, 0));
+  gl_->BindTexture(GL_TEXTURE_2D, texture_id);
+  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, GLDataFormat(texture_format),
+                      window_rect.x(), window_rect.y(), window_rect.width(),
+                      window_rect.height(), 0);
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
 }
 
 bool GLRenderer::UseScopedTexture(DrawingFrame* frame,
@@ -2924,7 +2824,7 @@ void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
 
   if (output_surface_->HasExternalStencilTest()) {
     SetStencilEnabled(true);
-    GLC(gl_, gl_->StencilFunc(GL_EQUAL, 1, 1));
+    gl_->StencilFunc(GL_EQUAL, 1, 1);
   } else {
     SetStencilEnabled(false);
   }
@@ -2940,14 +2840,13 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
   current_framebuffer_lock_ = nullptr;
 
   SetStencilEnabled(false);
-  GLC(gl_, gl_->BindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_));
+  gl_->BindFramebuffer(GL_FRAMEBUFFER, offscreen_framebuffer_id_);
   current_framebuffer_lock_ =
       make_scoped_ptr(new ResourceProvider::ScopedWriteLockGL(
           resource_provider_, texture->id()));
   unsigned texture_id = current_framebuffer_lock_->texture_id();
-  GLC(gl_,
-      gl_->FramebufferTexture2D(
-          GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id, 0));
+  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                            texture_id, 0);
 
   DCHECK(gl_->CheckFramebufferStatus(GL_FRAMEBUFFER) ==
              GL_FRAMEBUFFER_COMPLETE ||
@@ -2965,27 +2864,24 @@ void GLRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
 
   scissor_rect_ = scissor_rect;
   FlushTextureQuadCache(SHARED_BINDING);
-  GLC(gl_,
-      gl_->Scissor(scissor_rect.x(),
-                   scissor_rect.y(),
-                   scissor_rect.width(),
-                   scissor_rect.height()));
+  gl_->Scissor(scissor_rect.x(), scissor_rect.y(), scissor_rect.width(),
+               scissor_rect.height());
 
   scissor_rect_needs_reset_ = false;
 }
 
 void GLRenderer::SetViewport() {
-  GLC(gl_, gl_->Viewport(current_window_space_viewport_.x(),
-                         current_window_space_viewport_.y(),
-                         current_window_space_viewport_.width(),
-                         current_window_space_viewport_.height()));
+  gl_->Viewport(current_window_space_viewport_.x(),
+                current_window_space_viewport_.y(),
+                current_window_space_viewport_.width(),
+                current_window_space_viewport_.height());
 }
 
 void GLRenderer::InitializeSharedObjects() {
   TRACE_EVENT0("cc", "GLRenderer::InitializeSharedObjects");
 
   // Create an FBO for doing offscreen rendering.
-  GLC(gl_, gl_->GenFramebuffers(1, &offscreen_framebuffer_id_));
+  gl_->GenFramebuffers(1, &offscreen_framebuffer_id_);
 
   shared_geometry_ =
       make_scoped_ptr(new StaticGeometryBinding(gl_, QuadVertexRect()));
@@ -3467,7 +3363,7 @@ void GLRenderer::CleanupSharedObjects() {
   solid_color_program_aa_.Cleanup(gl_);
 
   if (offscreen_framebuffer_id_)
-    GLC(gl_, gl_->DeleteFramebuffers(1, &offscreen_framebuffer_id_));
+    gl_->DeleteFramebuffers(1, &offscreen_framebuffer_id_);
 
   if (on_demand_tile_raster_resource_id_)
     resource_provider_->DeleteResource(on_demand_tile_raster_resource_id_);
@@ -3490,34 +3386,31 @@ void GLRenderer::RestoreGLState() {
   bound_geometry_ = NO_BINDING;
   PrepareGeometry(SHARED_BINDING);
 
-  GLC(gl_, gl_->Disable(GL_DEPTH_TEST));
-  GLC(gl_, gl_->Disable(GL_CULL_FACE));
-  GLC(gl_, gl_->ColorMask(true, true, true, true));
-  GLC(gl_, gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
-  GLC(gl_, gl_->ActiveTexture(GL_TEXTURE0));
+  gl_->Disable(GL_DEPTH_TEST);
+  gl_->Disable(GL_CULL_FACE);
+  gl_->ColorMask(true, true, true, true);
+  gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  gl_->ActiveTexture(GL_TEXTURE0);
 
   if (program_shadow_)
     gl_->UseProgram(program_shadow_);
 
   if (stencil_shadow_)
-    GLC(gl_, gl_->Enable(GL_STENCIL_TEST));
+    gl_->Enable(GL_STENCIL_TEST);
   else
-    GLC(gl_, gl_->Disable(GL_STENCIL_TEST));
+    gl_->Disable(GL_STENCIL_TEST);
 
   if (blend_shadow_)
-    GLC(gl_, gl_->Enable(GL_BLEND));
+    gl_->Enable(GL_BLEND);
   else
-    GLC(gl_, gl_->Disable(GL_BLEND));
+    gl_->Disable(GL_BLEND);
 
   if (is_scissor_enabled_) {
-    GLC(gl_, gl_->Enable(GL_SCISSOR_TEST));
-    GLC(gl_,
-        gl_->Scissor(scissor_rect_.x(),
-                     scissor_rect_.y(),
-                     scissor_rect_.width(),
-                     scissor_rect_.height()));
+    gl_->Enable(GL_SCISSOR_TEST);
+    gl_->Scissor(scissor_rect_.x(), scissor_rect_.y(), scissor_rect_.width(),
+                 scissor_rect_.height());
   } else {
-    GLC(gl_, gl_->Disable(GL_SCISSOR_TEST));
+    gl_->Disable(GL_SCISSOR_TEST);
   }
 }
 

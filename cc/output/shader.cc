@@ -8,8 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
 
 template <size_t size>
 std::string StripLambda(const char(&shader)[size]) {
@@ -96,9 +97,8 @@ TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
     // everywhere.
     GLint range[2] = {14, 14};
     GLint precision = 10;
-    GLC(context,
-        context->GetShaderPrecisionFormat(
-            GL_FRAGMENT_SHADER, GL_MEDIUM_FLOAT, range, &precision));
+    context->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_MEDIUM_FLOAT,
+                                      range, &precision);
     *highp_threshold_cache = 1 << precision;
   }
 
