@@ -476,7 +476,7 @@ are declared in build/common.gypi.
       </message>
 
       <message name="IDS_PERMISSIONS_BUBBLE_PROMPT" desc="The label that is used to introduce permission request details to the user in a papup.">
-        <ph name="SITE_NAME">$1<ex>google.com</ex></ph> would like to use your:
+        <ph name="SITE_NAME">$1<ex>google.com</ex></ph> wants to:
       </message>
       <message name="IDS_PERMISSION_ALLOW" desc="Label on button to allow a permissions request.">
         Allow
@@ -13084,8 +13084,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_NOTIFICATION_PERMISSIONS" desc="Text requesting permission for Web Notifications.">
           <ph name="site">$1<ex>mail.google.com</ex></ph> wants to send you notifications.
         </message>
-        <message name="IDS_NOTIFICATION_PERMISSIONS_FRAGMENT" desc="Permission sentence fragment to show following the prompt 'This site would like to:' in a permissions request">
-          Notifications
+        <message name="IDS_NOTIFICATION_PERMISSIONS_FRAGMENT" desc="Permission sentence fragment to show following the prompt 'This site wants to:' in a permissions request">
+          Send notifications
         </message>
         <message name="IDS_NOTIFICATION_PERMISSION_YES" desc="The label of the 'allow' button on the notification permission infobar.">
           Allow
@@ -13521,8 +13521,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
           </ph> wants to use your device's location.
         </message>
       </if>
-      <message name="IDS_GEOLOCATION_INFOBAR_PERMISSION_FRAGMENT" desc="Permission fragment used in the permission bubble, after 'This site would like to:' asking for permission to access the user's physical location.">
-        Location
+      <message name="IDS_GEOLOCATION_INFOBAR_PERMISSION_FRAGMENT" desc="Permission fragment used in the permission bubble, after 'This site wants to:' asking for permission to access the user's physical location.">
+        Know your location
       </message>
       <message name="IDS_GEOLOCATION_ALLOW_BUTTON" desc="A button in geolocation infobar for allowing access to geolocation for a given domain.">
         Allow
@@ -13584,7 +13584,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </ph> wants to get full control of your MIDI devices.
       </message>
       <message name="IDS_MIDI_SYSEX_PERMISSION_FRAGMENT" desc="Permission asked in the permission bubble when a URL wants to access MIDI devices with system exclusive messages, along with other permissions requests. Preceded by the prompt 'This site would like to:'">
-        MIDI (sound) devices
+        Use your MIDI devices
       </message>
       <message name="IDS_MIDI_SYSEX_ALLOW_BUTTON" desc="A button in MIDI access infobar for allowing full access to MIDI devices for a given domain.">
         Allow
@@ -13648,7 +13648,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <!-- Proteced media identifier permission infobar -->
       <if expr="is_android or chromeos">
         <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's protected media identifier.">
-          Protected content identifier.
+          Know your unique device identifier
         </message>
         <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION" desc="Question asked on the infobar whenever URL wants to access protected media identifier. It shows the origin of the URL.">
           <ph name="URL">$1<ex>https://www.youtube.com</ex></ph> needs to uniquely identify your device to play premium content.
@@ -13957,10 +13957,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to open all <ph name="PROTOCOL">$2<ex>search</ex></ph> links instead of <ph name="REPLACED_HANDLER_TITLE">$3<ex>Elgoog Search</ex></ph>?
       </message>
       <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_FRAGMENT" desc="The permission fragment to display when asking a user to confirm the registration of a protocol handler in a permission bubble. Follows a prompt 'This site would like to:'.">
-        <ph name="PROTOCOL">$3<ex>search</ex></ph> links
+        Open <ph name="PROTOCOL">$3<ex>search</ex></ph> links
       </message>
       <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE_FRAGMENT" desc="The permission fragment to display when asking a user to confirm the registration of a protocol handler. Follows a prompt 'This site would like to:'.">
-        <ph name="PROTOCOL">$3<ex>search</ex></ph> links instead of <ph name="REPLACED_HANDLER_TITLE">$4<ex>Elgoog Search</ex></ph>
+        Open <ph name="PROTOCOL">$3<ex>search</ex></ph> links instead of <ph name="REPLACED_HANDLER_TITLE">$4<ex>Elgoog Search</ex></ph>
       </message>
       <message name="IDS_REGISTER_PROTOCOL_HANDLER_ACCEPT" desc="Text to show for the accept button for the register protocol handler request infobar.">
         Allow
@@ -14031,13 +14031,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera.
       </message>
       <message name="IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's microphone and camera.">
-        Camera and microphone
+        Use your camera and microphone
       </message>
       <message name="IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's microphone.">
-        Microphone
+        Use your microphone
       </message>
       <message name="IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's camera.">
-        Camera
+        Use your camera
       </message>
       <message name="IDS_MEDIA_CAPTURE_ALLOW" desc="Label for a button that grants access to a web page, so they can use a camera and/or a microphone.">
         Allow
@@ -14072,7 +14072,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
       <message name="IDS_REQUEST_QUOTA_PERMISSION_FRAGMENT" desc="Permission fragment presented in the permission bubble when the webapp requests new larger quota to persistently store data on the device. Follows a 'This site would like to:' prompt.">
-        Local data storage
+        Store files on this device
       </message>
 
       <!-- Android does not support multiple profiles and supervised users -->
@@ -15397,7 +15397,7 @@ Do you accept?
         Do not allow any sites to send push messages
       </message>
       <message name="IDS_PUSH_MESSAGES_BUBBLE_FRAGMENT" desc="Question asked on the info bar whenever a domain wants to send push messages">
-          Push notifications
+          Receive push messages
       </message>
       <if expr="enable_notifications">
         <message name="IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY" desc="Body text of an auto-generated notification informing the user that the site may have received an update in the background, in case the site did not satisfy the visible notification requirement itself.">
