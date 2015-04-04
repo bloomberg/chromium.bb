@@ -2308,13 +2308,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableMediaRouter)
   },
-  {
-    "enable-cert-collection",
-    IDS_ENABLE_INVALID_CERT_COLLECTION,
-    IDS_ENABLE_INVALID_CERT_COLLECTION_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableInvalidCertCollection)
-  },
 // Since kEnableLauncherSearchProviderApi is not available when app list is
 // disabled, flag guard enable-launcher-search-provider-api.
 #if defined(ENABLE_APP_LIST)
@@ -2335,7 +2328,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableMtpWriteSupport)
   },
 #endif  // defined(OS_CHROMEOS)
-
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -16,6 +16,12 @@
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
+// Constants for the HTTPSErrorReporter Finch experiment
+extern const char kHTTPSErrorReporterFinchExperimentName[];
+extern const char kHTTPSErrorReporterFinchGroupShowPossiblySend[];
+extern const char kHTTPSErrorReporterFinchGroupDontShowDontSend[];
+extern const char kHTTPSErrorReporterFinchParamName[];
+
 #if defined(ENABLE_EXTENSIONS)
 namespace extensions {
 class ExperienceSamplingEvent;

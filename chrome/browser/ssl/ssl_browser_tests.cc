@@ -6,6 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -31,6 +32,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/variations/variations_associated_data.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
@@ -73,6 +75,10 @@ using web_modal::WebContentsModalDialogManager;
 
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
+
+// Const for the Finch group DontShowDontSend
+const char kHTTPSErrorReporterFinchGroupDontShowDontSend[] =
+    "DontShowAndDontSend";
 
 namespace {
 
@@ -473,6 +479,24 @@ class SSLUITest : public InProcessBrowserTest {
     }
   }
 
+  // Helper function to set the Finch options
+  void SetCertReportingFinchConfig(const std::string& group_name,
+                                   const std::string& param_value) {
+    base::FieldTrialList::CreateFieldTrial(
+        kHTTPSErrorReporterFinchExperimentName, group_name);
+    if (!param_value.empty()) {
+      std::map<std::string, std::string> params;
+      params[kHTTPSErrorReporterFinchParamName] = param_value;
+      variations::AssociateVariationParams(
+          kHTTPSErrorReporterFinchExperimentName, group_name, params);
+    }
+  }
+
+  // Helper function to set the Finch options in case we have no parameter
+  void SetCertReportingFinchConfig(const std::string& group_name) {
+    SetCertReportingFinchConfig(group_name, std::string());
+  }
+
   net::SpawnedTestServer https_server_;
   net::SpawnedTestServer https_server_expired_;
   net::SpawnedTestServer https_server_mismatched_;
@@ -518,12 +542,6 @@ class SSLUITestIgnoreLocalhostCertErrors : public SSLUITest {
 class SSLUITestWithExtendedReporting : public SSLUITest {
  public:
   SSLUITestWithExtendedReporting() : SSLUITest() {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Enable a checkbox on SSL interstitials that allows users to opt
-    // in to reporting invalid certificate chains.
-    command_line->AppendSwitch(switches::kEnableInvalidCertCollection);
-  }
 };
 
 // Visits a regular page over http.
@@ -1123,71 +1141,114 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestDisplaysInsecureContent) {
                           AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
-// Test that when the checkbox is checked and the user proceeds through
-// the interstitial, the FraudulentCertificateReporter sees a request to
-// send a report.
-IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
-                       TestBrokenHTTPSProceedWithReporting) {
+// User proceeds, checkbox is shown and checked, Finch parameter is set
+// -> we expect a report.
+IN_PROC_BROWSER_TEST_F(
+    SSLUITestWithExtendedReporting,
+    TestBrokenHTTPSProceedWithShowYesCheckYesParamYesReportYes) {
+  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
+                              "1.0");
   TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
                            CertificateReporting::SSL_INTERSTITIAL_PROCEED,
                            CertificateReporting::CERT_REPORT_EXPECTED,
                            browser());
 }
 
-// Test that when the checkbox is checked and the user goes back (does
-// not proceed through the interstitial), the
-// FraudulentCertificateReporter sees a request to send a report.
-IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
-                       TestBrokenHTTPSGoBackWithReporting) {
+// User goes back, checkbox is shown and checked, Finch parameter is set
+// -> we expect a report.
+IN_PROC_BROWSER_TEST_F(
+    SSLUITestWithExtendedReporting,
+    TestBrokenHTTPSGoBackWithShowYesCheckYesParamYesReportYes) {
+  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
+                              "1.0");
   TestBrokenHTTPSReporting(
       CertificateReporting::EXTENDED_REPORTING_OPT_IN,
       CertificateReporting::SSL_INTERSTITIAL_DO_NOT_PROCEED,
       CertificateReporting::CERT_REPORT_EXPECTED, browser());
 }
 
-// Test that when the checkbox is not checked and the user proceeds
-// through the interstitial, the FraudulentCertificateReporter does not
-// see a request to send a report.
-IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
-                       TestBrokenHTTPSProceedWithNoReporting) {
+// User proceeds, checkbox is shown but unchecked, Finch parameter is set
+// -> we expect no report.
+IN_PROC_BROWSER_TEST_F(
+    SSLUITestWithExtendedReporting,
+    TestBrokenHTTPSProceedWithShowYesCheckNoParamYesReportNo) {
+  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
+                              "1.0");
   TestBrokenHTTPSReporting(
       CertificateReporting::EXTENDED_REPORTING_DO_NOT_OPT_IN,
       CertificateReporting::SSL_INTERSTITIAL_PROCEED,
       CertificateReporting::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
-// Test that when the checkbox is not checked and the user does not proceed
-// through the interstitial, the FraudulentCertificateReporter does not
-// see a request to send a report.
+// User goes back, checkbox is shown but unchecked, Finch parameter is set
+// -> we expect no report.
 IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
-                       TestBrokenHTTPSGoBackWithNoReporting) {
+                       TestBrokenHTTPSGoBackShowYesCheckNoParamYesReportNo) {
+  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
+                              "1.0");
   TestBrokenHTTPSReporting(
       CertificateReporting::EXTENDED_REPORTING_DO_NOT_OPT_IN,
       CertificateReporting::SSL_INTERSTITIAL_DO_NOT_PROCEED,
       CertificateReporting::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
-// Test that when the command-line switch for reporting invalid cert
-// chains is not enabled, reports don't get sent, even if the opt-in
-// preference is set. (i.e. if a user enables invalid cert collection in
-// chrome://flags, checks the box on an interstitial, and then disables
-// the flag in chrome://flags, reports shouldn't be sent on the next
-// interstitial).
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSNoReportingWithoutSwitch) {
+// User proceeds, checkbox is shown and checked, Finch parameter is not
+// set -> we expect no report.
+IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
+                       TestBrokenHTTPSProceedShowYesCheckYesParamNoReportNo) {
+  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
+                              "-1.0");
   TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
                            CertificateReporting::SSL_INTERSTITIAL_PROCEED,
                            CertificateReporting::CERT_REPORT_NOT_EXPECTED,
                            browser());
 }
 
-// Test that reports don't get sent in incognito mode even if the opt-in
-// preference is set and the command-line switch is enabled.
+// User goes back, checkbox is shown and checked, Finch parameter is not set
+// -> we expect no report.
 IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
-                       TestBrokenHTTPSNoReportingInIncognito) {
+                       TestBrokenHTTPSGoBackShowYesCheckYesParamNoReportNo) {
+  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
+                              "-1.0");
+  TestBrokenHTTPSReporting(
+      CertificateReporting::EXTENDED_REPORTING_OPT_IN,
+      CertificateReporting::SSL_INTERSTITIAL_DO_NOT_PROCEED,
+      CertificateReporting::CERT_REPORT_NOT_EXPECTED, browser());
+}
+
+// User proceeds, checkbox is not shown but checked -> we expect no report
+IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
+                       TestBrokenHTTPSProceedShowNoCheckYesReportNo) {
+  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupDontShowDontSend);
+  TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
+                           CertificateReporting::SSL_INTERSTITIAL_PROCEED,
+                           CertificateReporting::CERT_REPORT_NOT_EXPECTED,
+                           browser());
+}
+
+// Browser is incognito, user proceeds, checkbox is shown and checked, Finch
+// parameter is set -> we expect no report
+IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
+                       TestBrokenHTTPSInIncognitoReportNo) {
+  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
+                              "1.0");
   TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
                            CertificateReporting::SSL_INTERSTITIAL_PROCEED,
                            CertificateReporting::CERT_REPORT_NOT_EXPECTED,
                            CreateIncognitoBrowser());
+}
+
+// User proceeds, checkbox is shown and checked, Finch parameter is invalid
+// -> we expect no report.
+IN_PROC_BROWSER_TEST_F(
+    SSLUITestWithExtendedReporting,
+    TestBrokenHTTPSProceedWithShowYesCheckYesParamInvalidReportNo) {
+  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
+                              "abcdef");
+  TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
+                           CertificateReporting::SSL_INTERSTITIAL_PROCEED,
+                           CertificateReporting::CERT_REPORT_NOT_EXPECTED,
+                           browser());
 }
 
 // Visits a page that runs insecure content and tries to suppress the insecure

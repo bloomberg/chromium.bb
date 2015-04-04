@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/launch.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -35,6 +36,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page.h"
@@ -78,6 +80,12 @@ using content::InterstitialPageDelegate;
 using content::NavigationController;
 using content::NavigationEntry;
 
+// Constants for the HTTPSErrorReporter Finch experiment
+const char kHTTPSErrorReporterFinchExperimentName[] = "ReportCertificateErrors";
+const char kHTTPSErrorReporterFinchGroupShowPossiblySend[] =
+    "ShowAndPossiblySend";
+const char kHTTPSErrorReporterFinchParamName[] = "sendingThreshold";
+
 namespace {
 
 // URL for help page.
@@ -99,6 +107,35 @@ enum SSLExpirationAndDecision {
 
 // Rappor prefix
 const char kSSLRapporPrefix[] = "ssl";
+
+// Check whether to show the certificate reporter checkbox
+bool ShouldShowCertificateReporterCheckbox(bool in_incognito) {
+  // Only show the checkbox iff the user is part of the respective Finch group
+  // and the window is not incognito.
+  return base::FieldTrialList::FindFullName(
+             kHTTPSErrorReporterFinchExperimentName) ==
+             kHTTPSErrorReporterFinchGroupShowPossiblySend &&
+         !in_incognito;
+}
+
+// Check whether to report certificate verification errors to Google
+bool ShouldReportCertificateErrors(bool in_incognito) {
+  DCHECK(ShouldShowCertificateReporterCheckbox(in_incognito));
+  // Even in case the checkbox was shown, we don't send error reports
+  // for all of these users. Check the Finch configuration for a sending
+  // threshold and only send reports in case the threshold isn't exceeded.
+  const std::string param =
+      variations::GetVariationParamValue(kHTTPSErrorReporterFinchExperimentName,
+                                         kHTTPSErrorReporterFinchParamName);
+  if (!param.empty()) {
+    double sendingThreshold;
+    if (base::StringToDouble(param, &sendingThreshold)) {
+      if (sendingThreshold >= 0.0 && sendingThreshold <= 1.0)
+        return base::RandDouble() <= sendingThreshold;
+    }
+  }
+  return false;
+}
 
 void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
                                        bool proceed,
@@ -455,11 +492,10 @@ void SSLBlockingPage::PopulateInterstitialStrings(
 
 void SSLBlockingPage::PopulateExtendedReportingOption(
     base::DictionaryValue* load_time_data) {
-  // Only show the checkbox if not off-the-record and if the
-  // command-line option is set.
-  const bool show = !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
-                    base::CommandLine::ForCurrentProcess()->HasSwitch(
-                        switches::kEnableInvalidCertCollection);
+  // Only show the checkbox if not off-the-record and if this client is
+  // part of the respective Finch group.
+  const bool show = ShouldShowCertificateReporterCheckbox(
+      web_contents()->GetBrowserContext()->IsOffTheRecord());
 
   load_time_data->SetBoolean(interstitials::kDisplayCheckBox, show);
   if (!show)
@@ -645,9 +681,8 @@ void SSLBlockingPage::FinishCertCollection() {
   base::ScopedClosureRunner scoped_callback(
       certificate_report_callback_for_testing_);
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInvalidCertCollection) ||
-      web_contents()->GetBrowserContext()->IsOffTheRecord()) {
+  if (!ShouldShowCertificateReporterCheckbox(
+          web_contents()->GetBrowserContext()->IsOffTheRecord())) {
     return;
   }
 
@@ -660,11 +695,13 @@ void SSLBlockingPage::FinishCertCollection() {
   metrics_helper()->RecordUserInteraction(
       SecurityInterstitialMetricsHelper::EXTENDED_REPORTING_IS_ENABLED);
 
-  if (certificate_report_callback_for_testing_.is_null())
-    scoped_callback.Reset(base::Bind(&base::DoNothing));
-
-  safe_browsing_ui_manager_->ReportInvalidCertificateChain(
-      request_url().host(), ssl_info_, scoped_callback.Release());
+  if (ShouldReportCertificateErrors(
+          web_contents()->GetBrowserContext()->IsOffTheRecord())) {
+    if (certificate_report_callback_for_testing_.is_null())
+      scoped_callback.Reset(base::Bind(&base::DoNothing));
+    safe_browsing_ui_manager_->ReportInvalidCertificateChain(
+        request_url().host(), ssl_info_, scoped_callback.Release());
+  }
 }
 
 // static

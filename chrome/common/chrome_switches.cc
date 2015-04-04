@@ -463,9 +463,6 @@ const char kEnableExtensionActivityLogTesting[] =
 // crbug.com/142458 .
 const char kEnableFastUnload[]         = "enable-fast-unload";
 
-// Enable opt-in for the collection of invalid TLS/SSL certificate chains.
-const char kEnableInvalidCertCollection[] = "enable-invalid-cert-collection";
-
 // Enables IPv6 support, even if probes suggest that it may not be fully
 // supported. Some probes may require internet connections, and this flag will
 // allow support independent of application testing. This flag overrides
