@@ -80,6 +80,9 @@ DummyPageHolder::~DummyPageHolder()
 {
     m_page->willBeDestroyed();
     m_page.clear();
+#if !ENABLE(OILPAN)
+    ASSERT(m_frame->hasOneRef());
+#endif
     m_frame.clear();
 }
 

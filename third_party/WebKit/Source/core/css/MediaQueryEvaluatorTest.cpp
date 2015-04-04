@@ -152,12 +152,13 @@ TEST(MediaQueryEvaluatorTest, Dynamic)
 TEST(MediaQueryEvaluatorTest, DynamicNoView)
 {
     OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(500, 500));
-    RefPtrWillBeRawPtr<LocalFrame> frame = &pageHolder->frame();
-    pageHolder.clear();
-    ASSERT_EQ(nullptr, frame->view());
-    MediaQueryEvaluator mediaQueryEvaluator(frame.get());
-    RefPtrWillBeRawPtr<MediaQuerySet> querySet = MediaQuerySet::create("foobar");
-    EXPECT_FALSE(mediaQueryEvaluator.eval(querySet.get()));
+    RefPtrWillBePersistent<FrameView> view = pageHolder->frame().view();
+    pageHolder->frame().setView(nullptr);
+    MediaQueryEvaluator mediaQueryEvaluator(&pageHolder->frame());
+    RefPtrWillBePersistent<MediaQuerySet> querySet = MediaQuerySet::create("foobar");
+    bool output = false;
+    ASSERT_EQ(output, mediaQueryEvaluator.eval(querySet.get()));
+    pageHolder->frame().setView(view);
 }
 
 } // namespace

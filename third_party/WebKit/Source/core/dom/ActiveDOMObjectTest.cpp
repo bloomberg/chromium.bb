@@ -104,7 +104,7 @@ TEST_F(ActiveDOMObjectTest, MoveToSuspendedDocument)
 
 TEST_F(ActiveDOMObjectTest, MoveToStoppedDocument)
 {
-    destDocument().prepareForDestruction();
+    destDocument().detach();
 
     EXPECT_CALL(activeDOMObject(), stop());
     activeDOMObject().didMoveToNewExecutionContext(&destDocument());

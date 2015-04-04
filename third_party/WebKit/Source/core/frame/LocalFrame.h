@@ -189,6 +189,8 @@ namespace blink {
 
         String localLayerTreeAsText(unsigned flags) const;
 
+        void detachView();
+
         // Paints the area for the given rect into a DragImage, with the given displayItemClient id attached.
         // The rect is in the coordinate space of the frame.
         PassOwnPtr<DragImage> paintIntoDragImage(const DisplayItemClientWrapper&, DisplayItem::Type, RespectImageOrientationEnum shouldRespectImageOrientation, IntRect paintingRect);

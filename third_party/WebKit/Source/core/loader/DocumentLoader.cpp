@@ -748,8 +748,8 @@ PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(const Doc
 {
     LocalFrame* frame = init.frame();
 
-    ASSERT(!frame->document() || !frame->document()->isActive());
-    ASSERT(frame->tree().childCount() == 0);
+    if (frame->document())
+        frame->document()->prepareForDestruction();
 
     if (!init.shouldReuseDefaultView())
         frame->setDOMWindow(LocalDOMWindow::create(*frame));

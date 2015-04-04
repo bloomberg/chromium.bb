@@ -40,7 +40,6 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
-#include "public/web/WebRemoteFrame.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
 #include "web/WebLocalFrameImpl.h"
@@ -319,18 +318,6 @@ void TestWebFrameClient::waitForLoadToComplete()
 
         Platform::current()->yieldCurrentThread();
     }
-}
-
-TestWebRemoteFrameClient::TestWebRemoteFrameClient()
-    : m_frame(WebRemoteFrame::create(this))
-{
-}
-
-void TestWebRemoteFrameClient::frameDetached()
-{
-    if (m_frame->parent())
-        m_frame->parent()->removeChild(m_frame);
-    m_frame->close();
 }
 
 void TestWebViewClient::initializeLayerTreeView()

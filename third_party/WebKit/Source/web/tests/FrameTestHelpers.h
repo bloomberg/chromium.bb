@@ -114,20 +114,12 @@ private:
 // frames and need further specialization of WebFrameClient behavior should subclass this.
 class TestWebRemoteFrameClient : public WebRemoteFrameClient {
 public:
-    TestWebRemoteFrameClient();
-
-    WebRemoteFrame* frame() const { return m_frame; }
-
-    // WebRemoteFrameClient overrides:
-    void frameDetached() override;
-    void postMessageEvent(
+    // Notifies the embedder that a postMessage was issued to a remote frame.
+    virtual void postMessageEvent(
         WebLocalFrame* sourceFrame,
         WebRemoteFrame* targetFrame,
         WebSecurityOrigin targetOrigin,
-        WebDOMMessageEvent) override { }
-
-private:
-    WebRemoteFrame* const m_frame;
+        WebDOMMessageEvent) { }
 };
 
 class TestWebViewClient : public WebViewClient {
