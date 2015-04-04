@@ -82,7 +82,6 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine&
 void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine& engine, DocumentStyleSheetCollector& collector)
 {
     ASSERT(&document().styleEngine() == &engine);
-    collector.appendActiveStyleSheets(engine.injectedAuthorStyleSheets());
     collector.appendActiveStyleSheets(engine.documentAuthorStyleSheets());
     collectStyleSheetsFromCandidates(engine, collector);
 }

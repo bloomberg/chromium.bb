@@ -1759,8 +1759,6 @@
             'page/EventWithHitTestResults.h',
             'page/FocusController.cpp',
             'page/FrameTree.cpp',
-            'page/InjectedStyleSheets.cpp',
-            'page/InjectedStyleSheets.h',
             'page/NetworkStateNotifier.cpp',
             'page/NetworkStateNotifier.h',
             'page/Page.cpp',

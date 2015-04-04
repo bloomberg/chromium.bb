@@ -78,7 +78,6 @@ public:
     const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& activeAuthorStyleSheets() const;
 
     const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& documentAuthorStyleSheets() const { return m_authorStyleSheets; }
-    const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& injectedAuthorStyleSheets() const;
 
     const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>> activeStyleSheetsForInspector() const;
 
@@ -88,11 +87,6 @@ public:
     void removeStyleSheetCandidateNode(Node*, TreeScope&);
     void modifiedStyleSheetCandidateNode(Node*);
     void setExitTransitionStylesheetsEnabled(bool);
-
-    void invalidateInjectedStyleSheetCache();
-    void updateInjectedStyleSheetCache() const;
-
-    void compatibilityModeChanged();
 
     void addAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> authorSheet);
 
@@ -266,9 +260,6 @@ private:
     // We use this count of pending sheets to detect when we can begin attaching
     // elements and when it is safe to execute scripts.
     int m_pendingStylesheets;
-
-    mutable WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>> m_injectedAuthorStyleSheets;
-    mutable bool m_injectedStyleSheetCacheValid;
 
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>> m_authorStyleSheets;
 

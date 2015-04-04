@@ -81,7 +81,6 @@
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
-#include "core/page/InjectedStyleSheets.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
 #include "core/page/PointerLockController.h"
@@ -3907,20 +3906,6 @@ void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
     LayoutThemeDefault::setSelectionColors(activeBackgroundColor, activeForegroundColor, inactiveBackgroundColor, inactiveForegroundColor);
     LayoutTheme::theme().platformColorsDidChange();
 #endif
-}
-
-void WebView::injectStyleSheet(const WebString& sourceCode, const WebVector<WebString>& patternsIn, WebView::StyleInjectionTarget injectIn)
-{
-    Vector<String> patterns;
-    for (size_t i = 0; i < patternsIn.size(); ++i)
-        patterns.append(patternsIn[i]);
-
-    InjectedStyleSheets::instance().add(sourceCode, patterns, static_cast<blink::StyleInjectionTarget>(injectIn));
-}
-
-void WebView::removeInjectedStyleSheets()
-{
-    InjectedStyleSheets::instance().removeAll();
 }
 
 void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPage)

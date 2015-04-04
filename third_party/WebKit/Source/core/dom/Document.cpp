@@ -675,13 +675,8 @@ void Document::setCompatibilityMode(CompatibilityMode mode)
 {
     if (m_compatibilityModeLocked || mode == m_compatibilityMode)
         return;
-    bool wasInQuirksMode = inQuirksMode();
     m_compatibilityMode = mode;
     selectorQueryCache().invalidate();
-    if (inQuirksMode() != wasInQuirksMode) {
-        // All injected stylesheets have to reparse using the different mode.
-        m_styleEngine->compatibilityModeChanged();
-    }
 }
 
 String Document::compatMode() const

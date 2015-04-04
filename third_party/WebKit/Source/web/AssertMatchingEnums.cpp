@@ -52,7 +52,6 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/page/InjectedStyleSheets.h"
 #include "core/page/PageVisibilityState.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/geolocation/GeolocationError.h"
@@ -499,9 +498,6 @@ STATIC_ASSERT_MATCHING_ENUM(WebSettings::EditingBehaviorAndroid, EditingAndroidB
 
 STATIC_ASSERT_MATCHING_ENUM(WebTextAffinityUpstream, UPSTREAM);
 STATIC_ASSERT_MATCHING_ENUM(WebTextAffinityDownstream, DOWNSTREAM);
-
-STATIC_ASSERT_MATCHING_ENUM(WebView::InjectStyleInAllFrames, InjectStyleInAllFrames);
-STATIC_ASSERT_MATCHING_ENUM(WebView::InjectStyleInTopFrameOnly, InjectStyleInTopFrameOnly);
 
 STATIC_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionUnknownError, UnknownError);
 STATIC_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionConstraintError, ConstraintError);

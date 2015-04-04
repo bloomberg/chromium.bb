@@ -44,10 +44,8 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/page/InjectedStyleSheets.h"
 #include "core/page/Page.h"
 #include "core/svg/SVGStyleElement.h"
-#include "platform/URLPatternMatcher.h"
 
 namespace blink {
 
@@ -57,7 +55,6 @@ StyleEngine::StyleEngine(Document& document)
     : m_document(&document)
     , m_isMaster(!document.importsController() || document.importsController()->master() == &document)
     , m_pendingStylesheets(0)
-    , m_injectedStyleSheetCacheValid(false)
     , m_documentStyleSheetCollection(DocumentStyleSheetCollection::create(document))
     , m_documentScopeDirty(true)
     , m_usesSiblingRules(false)
@@ -91,8 +88,6 @@ void StyleEngine::detachFromDocument()
     // Cleanup is performed eagerly when the StyleEngine is removed from the
     // document. The StyleEngine is unreachable after this, since only the
     // document has a reference to it.
-    for (unsigned i = 0; i < m_injectedAuthorStyleSheets.size(); ++i)
-        m_injectedAuthorStyleSheets[i]->clearOwnerNode();
     for (unsigned i = 0; i < m_authorStyleSheets.size(); ++i)
         m_authorStyleSheets[i]->clearOwnerNode();
 
@@ -229,51 +224,6 @@ void StyleEngine::resetCSSFeatureFlags(const RuleFeatureSet& features)
     m_usesFirstLineRules = features.usesFirstLineRules();
     m_usesWindowInactiveSelector = features.usesWindowInactiveSelector();
     m_maxDirectAdjacentSelectors = features.maxDirectAdjacentSelectors();
-}
-
-const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& StyleEngine::injectedAuthorStyleSheets() const
-{
-    updateInjectedStyleSheetCache();
-    return m_injectedAuthorStyleSheets;
-}
-
-void StyleEngine::updateInjectedStyleSheetCache() const
-{
-    if (m_injectedStyleSheetCacheValid)
-        return;
-    m_injectedStyleSheetCacheValid = true;
-    m_injectedAuthorStyleSheets.clear();
-
-    Page* owningPage = document().page();
-    if (!owningPage)
-        return;
-
-    const InjectedStyleSheetEntryVector& entries = InjectedStyleSheets::instance().entries();
-    for (unsigned i = 0; i < entries.size(); ++i) {
-        const InjectedStyleSheetEntry* entry = entries[i].get();
-        if (entry->injectedFrames() == InjectStyleInTopFrameOnly && document().ownerElement())
-            continue;
-        if (!URLPatternMatcher::matchesPatterns(document().url(), entry->whitelist()))
-            continue;
-        RefPtrWillBeRawPtr<CSSStyleSheet> groupSheet = CSSStyleSheet::createInline(m_document, KURL());
-        m_injectedAuthorStyleSheets.append(groupSheet);
-        groupSheet->contents()->parseString(entry->source());
-    }
-}
-
-void StyleEngine::invalidateInjectedStyleSheetCache()
-{
-    m_injectedStyleSheetCacheValid = false;
-    markDocumentDirty();
-    // FIXME: updateInjectedStyleSheetCache is called inside StyleSheetCollection::updateActiveStyleSheets
-    // and batch updates lots of sheets so we can't call addedStyleSheet() or removedStyleSheet().
-    document().styleResolverChanged();
-}
-
-void StyleEngine::compatibilityModeChanged()
-{
-    if (!m_injectedAuthorStyleSheets.isEmpty())
-        invalidateInjectedStyleSheetCache();
 }
 
 void StyleEngine::addAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> authorSheet)

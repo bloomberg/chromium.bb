@@ -426,13 +426,6 @@ public:
                                     unsigned inactiveBackgroundColor,
                                     unsigned inactiveForegroundColor) = 0;
 
-    // Injected style ------------------------------------------------------
-
-    // Treats |sourceCode| as a CSS author style sheet and injects it into all Documents whose URLs match |patterns|,
-    // in the frames specified by the last argument.
-    BLINK_EXPORT static void injectStyleSheet(const WebString& sourceCode, const WebVector<WebString>& patterns, StyleInjectionTarget);
-    BLINK_EXPORT static void removeInjectedStyleSheets();
-
     // Modal dialog support ------------------------------------------------
 
     // Call these methods before and after running a nested, modal event loop

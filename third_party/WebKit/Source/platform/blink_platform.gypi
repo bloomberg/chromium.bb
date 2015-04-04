@@ -131,8 +131,6 @@
       'TraceEvent.h',
       'TracedValue.cpp',
       'TracedValue.h',
-      'URLPatternMatcher.cpp',
-      'URLPatternMatcher.h',
       'UUID.cpp',
       'UUID.h',
       'UserGestureIndicator.cpp',
