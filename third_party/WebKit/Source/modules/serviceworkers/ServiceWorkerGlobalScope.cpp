@@ -43,8 +43,9 @@
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
+#include "modules/cachestorage/CacheStorage.h"
+#include "modules/cachestorage/InspectorCacheStorageAgent.h"
 #include "modules/fetch/GlobalFetch.h"
-#include "modules/serviceworkers/InspectorServiceWorkerCacheAgent.h"
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -98,7 +99,7 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String
     , m_scriptTotalSize(0)
     , m_scriptCachedMetadataTotalSize(0)
 {
-    workerInspectorController()->registerModuleAgent(InspectorServiceWorkerCacheAgent::create(this));
+    workerInspectorController()->registerModuleAgent(InspectorCacheStorageAgent::create(this));
 }
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()

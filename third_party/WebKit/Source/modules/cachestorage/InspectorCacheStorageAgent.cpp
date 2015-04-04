@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/serviceworkers/InspectorServiceWorkerCacheAgent.h"
+#include "modules/cachestorage/InspectorCacheStorageAgent.h"
 
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorTypeBuilder.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/DatabaseIdentifier.h"
@@ -290,20 +289,20 @@ private:
 
 } // namespace
 
-InspectorServiceWorkerCacheAgent::InspectorServiceWorkerCacheAgent(ServiceWorkerGlobalScope* scope)
-    : InspectorBaseAgent<blink::InspectorServiceWorkerCacheAgent, InspectorFrontend::ServiceWorkerCache>("ServiceWorkerCache")
+InspectorCacheStorageAgent::InspectorCacheStorageAgent(ServiceWorkerGlobalScope* scope)
+    : InspectorBaseAgent<blink::InspectorCacheStorageAgent, InspectorFrontend::ServiceWorkerCache>("ServiceWorkerCache")
     , m_globalScope(scope)
 {
 }
 
-InspectorServiceWorkerCacheAgent::~InspectorServiceWorkerCacheAgent() { }
+InspectorCacheStorageAgent::~InspectorCacheStorageAgent() { }
 
-DEFINE_TRACE(InspectorServiceWorkerCacheAgent)
+DEFINE_TRACE(InspectorCacheStorageAgent)
 {
     InspectorBaseAgent::trace(visitor);
 }
 
-void InspectorServiceWorkerCacheAgent::requestCacheNames(ErrorString* errorString, PassRefPtrWillBeRawPtr<RequestCacheNamesCallback> callback)
+void InspectorCacheStorageAgent::requestCacheNames(ErrorString* errorString, PassRefPtrWillBeRawPtr<RequestCacheNamesCallback> callback)
 {
     OwnPtr<WebServiceWorkerCacheStorage> cache = assertCacheStorage(errorString, m_globalScope);
     if (!cache) {
@@ -314,7 +313,7 @@ void InspectorServiceWorkerCacheAgent::requestCacheNames(ErrorString* errorStrin
 }
 
 
-void InspectorServiceWorkerCacheAgent::requestEntries(ErrorString* errorString, const String& cacheName, int skipCount, int pageSize, PassRefPtrWillBeRawPtr<RequestEntriesCallback> callback)
+void InspectorCacheStorageAgent::requestEntries(ErrorString* errorString, const String& cacheName, int skipCount, int pageSize, PassRefPtrWillBeRawPtr<RequestEntriesCallback> callback)
 {
     OwnPtr<WebServiceWorkerCacheStorage> cache = assertCacheStorage(errorString, m_globalScope);
     if (!cache) {
@@ -328,7 +327,7 @@ void InspectorServiceWorkerCacheAgent::requestEntries(ErrorString* errorString, 
     cache->dispatchOpen(new GetCacheForRequestData(params, callback), WebString(cacheName));
 }
 
-void InspectorServiceWorkerCacheAgent::deleteCache(ErrorString* errorString, const String& cacheName, PassRefPtrWillBeRawPtr<DeleteCacheCallback> callback)
+void InspectorCacheStorageAgent::deleteCache(ErrorString* errorString, const String& cacheName, PassRefPtrWillBeRawPtr<DeleteCacheCallback> callback)
 {
     OwnPtr<WebServiceWorkerCacheStorage> cache = assertCacheStorage(errorString, m_globalScope);
     if (!cache) {

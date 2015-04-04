@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/serviceworkers/Cache.h"
+#include "modules/cachestorage/Cache.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptFunction.h"
@@ -152,9 +152,9 @@ public:
     NotImplementedErrorCache() : ErrorWebCacheForTests(WebServiceWorkerCacheErrorNotImplemented) { }
 };
 
-class ServiceWorkerCacheTest : public ::testing::Test {
+class CacheStorageTest : public ::testing::Test {
 public:
-    ServiceWorkerCacheTest()
+    CacheStorageTest()
         : m_page(DummyPageHolder::create(IntSize(1, 1))) { }
 
     ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
@@ -280,7 +280,7 @@ RequestInfo requestToRequestInfo(Request* value)
     return info;
 }
 
-TEST_F(ServiceWorkerCacheTest, Basics)
+TEST_F(CacheStorageTest, Basics)
 {
     ErrorWebCacheForTests* testCache;
     Cache* cache = Cache::create(testCache = new NotImplementedErrorCache());
@@ -304,7 +304,7 @@ TEST_F(ServiceWorkerCacheTest, Basics)
 
 // Tests that arguments are faithfully passed on calls to Cache methods, except for methods which use batch operations,
 // which are tested later.
-TEST_F(ServiceWorkerCacheTest, BasicArguments)
+TEST_F(CacheStorageTest, BasicArguments)
 {
     ErrorWebCacheForTests* testCache;
     Cache* cache = Cache::create(testCache = new NotImplementedErrorCache());
@@ -358,7 +358,7 @@ TEST_F(ServiceWorkerCacheTest, BasicArguments)
 }
 
 // Tests that arguments are faithfully passed to API calls that degrade to batch operations.
-TEST_F(ServiceWorkerCacheTest, BatchOperationArguments)
+TEST_F(CacheStorageTest, BatchOperationArguments)
 {
     ErrorWebCacheForTests* testCache;
     Cache* cache = Cache::create(testCache = new NotImplementedErrorCache());
@@ -436,7 +436,7 @@ private:
     WebServiceWorkerResponse& m_response;
 };
 
-TEST_F(ServiceWorkerCacheTest, MatchResponseTest)
+TEST_F(CacheStorageTest, MatchResponseTest)
 {
     const String requestUrl = "http://request.url/";
     const String responseUrl = "http://match.response.test/";
@@ -470,7 +470,7 @@ private:
     WebVector<WebServiceWorkerRequest>& m_requests;
 };
 
-TEST_F(ServiceWorkerCacheTest, KeysResponseTest)
+TEST_F(CacheStorageTest, KeysResponseTest)
 {
     const String url1 = "http://first.request/";
     const String url2 = "http://second.request/";
@@ -519,7 +519,7 @@ private:
     WebVector<WebServiceWorkerResponse>& m_responses;
 };
 
-TEST_F(ServiceWorkerCacheTest, MatchAllAndBatchResponseTest)
+TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest)
 {
     const String url1 = "http://first.response/";
     const String url2 = "http://second.response/";

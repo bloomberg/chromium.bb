@@ -9,7 +9,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/dom/DOMException.h"
-#include "modules/serviceworkers/CacheQueryOptions.h"
+#include "modules/cachestorage/CacheQueryOptions.h"
 #include "public/platform/WebServiceWorkerCache.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "wtf/Forward.h"

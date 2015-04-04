@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/serviceworkers/GlobalCacheStorage.h"
+#include "modules/cachestorage/GlobalCacheStorage.h"
 
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "modules/serviceworkers/CacheStorage.h"
+#include "modules/cachestorage/CacheStorage.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/DatabaseIdentifier.h"

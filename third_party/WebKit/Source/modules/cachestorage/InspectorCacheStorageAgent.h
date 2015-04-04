@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InspectorServiceWorkerCacheAgent_h
-#define InspectorServiceWorkerCacheAgent_h
+#ifndef InspectorCacheStorageAgent_h
+#define InspectorCacheStorageAgent_h
 
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
@@ -16,16 +16,16 @@ typedef String ErrorString;
 
 class ServiceWorkerGlobalScope;
 
-class InspectorServiceWorkerCacheAgent final : public InspectorBaseAgent<InspectorServiceWorkerCacheAgent, InspectorFrontend::ServiceWorkerCache>, public InspectorBackendDispatcher::ServiceWorkerCacheCommandHandler {
-    WTF_MAKE_NONCOPYABLE(InspectorServiceWorkerCacheAgent);
+class InspectorCacheStorageAgent final : public InspectorBaseAgent<InspectorCacheStorageAgent, InspectorFrontend::ServiceWorkerCache>, public InspectorBackendDispatcher::ServiceWorkerCacheCommandHandler {
+    WTF_MAKE_NONCOPYABLE(InspectorCacheStorageAgent);
 
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorServiceWorkerCacheAgent> create(ServiceWorkerGlobalScope* workerGlobalScope)
+    static PassOwnPtrWillBeRawPtr<InspectorCacheStorageAgent> create(ServiceWorkerGlobalScope* workerGlobalScope)
     {
-        return adoptPtrWillBeNoop(new InspectorServiceWorkerCacheAgent(workerGlobalScope));
+        return adoptPtrWillBeNoop(new InspectorCacheStorageAgent(workerGlobalScope));
     }
 
-    virtual ~InspectorServiceWorkerCacheAgent();
+    virtual ~InspectorCacheStorageAgent();
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -34,11 +34,11 @@ public:
     virtual void deleteCache(ErrorString*, const String& cacheName, PassRefPtrWillBeRawPtr<DeleteCacheCallback>) override;
 
 private:
-    explicit InspectorServiceWorkerCacheAgent(ServiceWorkerGlobalScope*);
+    explicit InspectorCacheStorageAgent(ServiceWorkerGlobalScope*);
 
     ServiceWorkerGlobalScope* m_globalScope;
 };
 
 } // namespace blink
 
-#endif // InspectorServiceWorkerCacheAgent_h
+#endif // InspectorCacheStorageAgent_h
