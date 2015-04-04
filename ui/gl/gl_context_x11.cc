@@ -35,8 +35,7 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
 
       return context;
     }
-    case kGLImplementationDesktopGL:
-    case kGLImplementationDesktopGLCoreProfile: {
+    case kGLImplementationDesktopGL: {
       scoped_refptr<GLContext> context(new GLContextGLX(share_group));
       if (!context->Initialize(compatible_surface, gpu_preference))
         return NULL;

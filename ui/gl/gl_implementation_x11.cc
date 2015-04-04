@@ -43,10 +43,6 @@ const char kEGLLibraryName[] = "libEGL.so.1";
 }  // namespace
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUnsafeES3APIs)) {
-    impls->push_back(kGLImplementationDesktopGLCoreProfile);
-  }
   impls->push_back(kGLImplementationDesktopGL);
   impls->push_back(kGLImplementationEGLGLES2);
   impls->push_back(kGLImplementationOSMesaGL);
@@ -67,8 +63,7 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
   switch (implementation) {
     case kGLImplementationOSMesaGL:
       return InitializeStaticGLBindingsOSMesaGL();
-    case kGLImplementationDesktopGL:
-    case kGLImplementationDesktopGLCoreProfile: {
+    case kGLImplementationDesktopGL: {
       base::NativeLibrary library = NULL;
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();
@@ -96,7 +91,7 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
 
       SetGLGetProcAddressProc(get_proc_address);
       AddGLNativeLibrary(library);
-      SetGLImplementation(implementation);
+      SetGLImplementation(kGLImplementationDesktopGL);
 
       InitializeStaticGLBindingsGL();
       InitializeStaticGLBindingsGLX();
@@ -156,8 +151,7 @@ bool InitializeDynamicGLBindings(GLImplementation implementation,
     GLContext* context) {
   switch (implementation) {
     case kGLImplementationOSMesaGL:
-    case kGLImplementationDesktopGL:
-    case kGLImplementationDesktopGLCoreProfile:
+   case kGLImplementationDesktopGL:
     case kGLImplementationEGLGLES2:
       InitializeDynamicGLBindingsGL(context);
       break;
@@ -197,7 +191,6 @@ void ClearGLBindings() {
 bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
-    case kGLImplementationDesktopGLCoreProfile:
       return GetGLWindowSystemBindingInfoGLX(info);
     case kGLImplementationEGLGLES2:
       return GetGLWindowSystemBindingInfoEGL(info);

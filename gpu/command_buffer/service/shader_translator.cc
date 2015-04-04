@@ -117,20 +117,19 @@ bool ShaderTranslator::Init(
 
   g_translator_initializer.Get();
 
-  ShShaderOutput shader_output = SH_ESSL_OUTPUT;
-  switch (glsl_implementation_type) {
-    case kGlsl:
-      shader_output = SH_GLSL_COMPATIBILITY_OUTPUT;
-      break;
-    case kGlslCoreProfile:
+  ShShaderOutput shader_output;
+  if (glsl_implementation_type == kGlslES) {
+    shader_output = SH_ESSL_OUTPUT;
+  } else {
+    // TODO(kbr): clean up the tests of shader_spec and
+    // gfx::GetGLImplementation(). crbug.com/471960
+    if (shader_spec == SH_WEBGL2_SPEC ||
+        gfx::GetGLImplementation() ==
+            gfx::kGLImplementationDesktopGLCoreProfile) {
       shader_output = SH_GLSL_CORE_OUTPUT;
-      break;
-    case kGlslES:
-      // Handled in initialization above.
-      break;
-    default:
-      NOTREACHED();
-      break;
+    } else {
+      shader_output = SH_GLSL_COMPATIBILITY_OUTPUT;
+    }
   }
 
   {

@@ -52,7 +52,6 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
 bool GLSurface::InitializeOneOffInternal() {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
-    case kGLImplementationDesktopGLCoreProfile:
       if (!GLSurfaceGLX::InitializeOneOff()) {
         LOG(ERROR) << "GLSurfaceGLX::InitializeOneOff failed.";
         return false;
@@ -284,8 +283,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 
       return surface;
     }
-    case kGLImplementationDesktopGL:
-    case kGLImplementationDesktopGLCoreProfile: {
+    case kGLImplementationDesktopGL: {
       scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceGLX(window));
       if (!surface->Initialize())
         return NULL;
@@ -320,8 +318,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
 
       return surface;
     }
-    case kGLImplementationDesktopGL:
-    case kGLImplementationDesktopGLCoreProfile: {
+    case kGLImplementationDesktopGL: {
       scoped_refptr<GLSurface> surface(new PbufferGLSurfaceGLX(size));
       if (!surface->Initialize())
         return NULL;

@@ -1691,10 +1691,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return feature_info_->workarounds();
   }
 
-  const gfx::GLVersionInfo& gl_version() const {
-    return feature_info_->gl_version_info();
-  }
-
   bool ShouldDeferDraws() {
     return !offscreen_target_frame_buffer_.get() &&
            framebuffer_state_.bound_draw_framebuffer.get() == NULL &&
@@ -2744,7 +2740,7 @@ bool GLES2DecoderImpl::Initialize(
 
       bool default_fb = (GetBackbufferServiceId() == 0);
 
-      if (gl_version().is_desktop_core_profile) {
+      if (feature_info_->gl_version_info().is_desktop_core_profile) {
         glGetFramebufferAttachmentParameterivEXT(
             GL_FRAMEBUFFER,
             default_fb ? GL_BACK_LEFT : GL_COLOR_ATTACHMENT0,
@@ -2783,7 +2779,7 @@ bool GLES2DecoderImpl::Initialize(
   // mailing list archives. It also implicitly enables the desktop GL
   // capability GL_POINT_SPRITE to provide access to the gl_PointCoord
   // variable in fragment shaders.
-  if (!gl_version().BehavesLikeGLES()) {
+  if (!feature_info_->gl_version_info().BehavesLikeGLES()) {
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     glEnable(GL_POINT_SPRITE);
   }
@@ -3021,11 +3017,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   else
     resources.HashFunction = NULL;
   ShaderTranslatorInterface::GlslImplementationType implementation_type =
-      ShaderTranslatorInterface::kGlsl;
-  if (gl_version().is_es)
-    implementation_type = ShaderTranslatorInterface::kGlslES;
-  else if (gl_version().is_desktop_core_profile)
-    implementation_type = ShaderTranslatorInterface::kGlslCoreProfile;
+      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 ?
+          ShaderTranslatorInterface::kGlslES : ShaderTranslatorInterface::kGlsl;
   int driver_bug_workarounds = 0;
   if (workarounds().needs_glsl_built_in_function_emulation)
     driver_bug_workarounds |= SH_EMULATE_BUILT_IN_FUNCTIONS;
@@ -4597,7 +4590,7 @@ void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
   }
 
   ScopedRenderTo do_render(framebuffer);
-  if (gl_version().is_es3) {
+  if (feature_info_->gl_version_info().is_es3) {
     glInvalidateFramebuffer(
         target, numAttachments, translated_attachments.get());
   } else {
@@ -4779,7 +4772,7 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        if (gl_version().is_desktop_core_profile) {
+        if (feature_info_->gl_version_info().is_desktop_core_profile) {
           Framebuffer* framebuffer =
               GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
           if (framebuffer) {
@@ -4800,7 +4793,7 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        if (gl_version().is_desktop_core_profile) {
+        if (feature_info_->gl_version_info().is_desktop_core_profile) {
           Framebuffer* framebuffer =
               GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
           if (framebuffer) {
@@ -4822,7 +4815,7 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        if (gl_version().is_desktop_core_profile) {
+        if (feature_info_->gl_version_info().is_desktop_core_profile) {
           Framebuffer* framebuffer =
               GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
           if (framebuffer) {
@@ -4853,7 +4846,7 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        if (gl_version().is_desktop_core_profile) {
+        if (feature_info_->gl_version_info().is_desktop_core_profile) {
           Framebuffer* framebuffer =
               GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
           if (framebuffer) {
@@ -5697,7 +5690,7 @@ void GLES2DecoderImpl::BlitFramebufferHelper(GLint srcX0,
                                              GLenum filter) {
   // TODO(sievers): This could be resolved at the GL binding level, but the
   // binding process is currently a bit too 'brute force'.
-  if (gl_version().is_angle) {
+  if (feature_info_->gl_version_info().is_angle) {
     glBlitFramebufferANGLE(
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
   } else if (feature_info_->feature_flags().use_core_framebuffer_multisample) {
@@ -6712,7 +6705,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   DCHECK(simulated);
   *simulated = false;
 
-  if (gl_version().BehavesLikeGLES())
+  if (feature_info_->gl_version_info().BehavesLikeGLES())
     return true;
 
   const VertexAttrib* attrib =
@@ -8069,7 +8062,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
       glGenBuffersARB(1, &buffer);
       glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, buffer);
       // For ANGLE client version 2, GL_STREAM_READ is not available.
-      const GLenum usage_hint = gl_version().is_angle ?
+      const GLenum usage_hint = feature_info_->gl_version_info().is_angle ?
           GL_STATIC_DRAW : GL_STREAM_READ;
       glBufferData(GL_PIXEL_PACK_BUFFER_ARB, pixels_size, NULL, usage_hint);
       GLenum error = glGetError();
@@ -10301,7 +10294,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
       // Ensure the side effects of the copy are visible to the parent
       // context. There is no need to do this for ANGLE because it uses a
       // single D3D device for all contexts.
-      if (!gl_version().is_angle)
+      if (!feature_info_->gl_version_info().is_angle)
         glFlush();
     }
   } else {
