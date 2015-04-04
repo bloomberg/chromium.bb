@@ -1111,7 +1111,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void UpdateChildLayerBounds(const gfx::Vector2d& offset);
 
   // Overridden from ui::LayerDelegate:
-  void OnPaintLayer(gfx::Canvas* canvas) override;
+  void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
   base::Closure PrepareForLayerBoundsChange() override;

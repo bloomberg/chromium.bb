@@ -55,7 +55,7 @@ class TestWindowDelegate : public WindowDelegate {
       const gfx::Point& location) override;
   bool CanFocus() override;
   void OnCaptureLost() override;
-  void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(const ui::PaintContext& context) override;
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
   void OnWindowDestroying(Window* window) override;
   void OnWindowDestroyed(Window* window) override;
@@ -86,7 +86,7 @@ class ColorTestWindowDelegate : public TestWindowDelegate {
   // Overridden from TestWindowDelegate:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnWindowDestroyed(Window* window) override;
-  void OnPaint(gfx::Canvas* canvas) override;
+  void OnPaint(const ui::PaintContext& context) override;
 
  private:
   SkColor color_;

@@ -31,6 +31,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/test_layers.h"
@@ -2859,7 +2860,8 @@ class PaintWindowDelegate : public TestWindowDelegate {
   int paint_count() const { return paint_count_; }
 
   // TestWindowDelegate::
-  void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(const ui::PaintContext& context) override {
+    gfx::Canvas* canvas = context.canvas();
     paint_count_++;
     canvas->GetClipBounds(&most_recent_paint_clip_bounds_);
     const SkMatrix& matrix = canvas->sk_canvas()->getTotalMatrix();

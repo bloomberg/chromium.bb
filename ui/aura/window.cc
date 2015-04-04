@@ -30,6 +30,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
@@ -921,9 +922,9 @@ void Window::SchedulePaint() {
   SchedulePaintInRect(gfx::Rect(0, 0, bounds().width(), bounds().height()));
 }
 
-void Window::Paint(gfx::Canvas* canvas) {
+void Window::Paint(const ui::PaintContext& context) {
   if (delegate_)
-    delegate_->OnPaint(canvas);
+    delegate_->OnPaint(context);
 }
 
 Window* Window::GetWindowForPoint(const gfx::Point& local_point,
@@ -1321,8 +1322,8 @@ bool Window::CleanupGestureState() {
   return state_modified;
 }
 
-void Window::OnPaintLayer(gfx::Canvas* canvas) {
-  Paint(canvas);
+void Window::OnPaintLayer(const ui::PaintContext& context) {
+  Paint(context);
 }
 
 void Window::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {

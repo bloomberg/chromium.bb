@@ -362,11 +362,6 @@ class COMPOSITOR_EXPORT Layer
   void SetForceRenderSurface(bool force);
   bool force_render_surface() const { return force_render_surface_; }
 
-  // TODO(danakj): Plumb this to the LayerDelegate::OnPaintLayer instead of
-  // providing it here. For more win, use the full damage region instead of a
-  // bounding rect.
-  gfx::Rect PaintRect() const;
-
   // LayerClient
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo()
       override;
@@ -533,9 +528,6 @@ class COMPOSITOR_EXPORT Layer
   // The size of the frame or texture in DIP, set when SetShowDelegatedContent
   // or SetTextureMailbox was called.
   gfx::Size frame_size_in_dip_;
-
-  bool inside_paint_;
-  gfx::Rect paint_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

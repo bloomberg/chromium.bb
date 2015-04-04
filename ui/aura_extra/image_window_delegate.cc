@@ -7,6 +7,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -69,7 +70,8 @@ bool ImageWindowDelegate::CanFocus() {
 void ImageWindowDelegate::OnCaptureLost() {
 }
 
-void ImageWindowDelegate::OnPaint(gfx::Canvas* canvas) {
+void ImageWindowDelegate::OnPaint(const ui::PaintContext& context) {
+  gfx::Canvas* canvas = context.canvas();
   if (background_color_ != SK_ColorTRANSPARENT &&
       (image_.IsEmpty() || size_mismatch_ || !offset_.IsZero())) {
     canvas->DrawColor(background_color_);

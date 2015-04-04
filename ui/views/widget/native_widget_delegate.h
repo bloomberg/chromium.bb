@@ -22,8 +22,9 @@ class GestureEvent;
 class KeyEvent;
 class Layer;
 class MouseEvent;
-class TouchEvent;
+class PaintContext;
 class ScrollEvent;
+class TouchEvent;
 }
 
 namespace views {
@@ -110,9 +111,9 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual bool OnNativeWidgetPaintAccelerated(
       const gfx::Rect& dirty_region) = 0;
 
-  // Paints the rootview in the canvas. This will also refresh the compositor
-  // tree if necessary when accelerated painting is enabled.
-  virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) = 0;
+  // Paints the rootview in the context. This will also refresh the compositor
+  // tree if necessary.
+  virtual void OnNativeWidgetPaint(const ui::PaintContext& context) = 0;
 
   // Returns the non-client component (see ui/base/hit_test.h) containing
   // |point|, in client coordinates.

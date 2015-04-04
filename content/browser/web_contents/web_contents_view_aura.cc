@@ -1477,7 +1477,7 @@ bool WebContentsViewAura::CanFocus() {
 void WebContentsViewAura::OnCaptureLost() {
 }
 
-void WebContentsViewAura::OnPaint(gfx::Canvas* canvas) {
+void WebContentsViewAura::OnPaint(const ui::PaintContext& context) {
 }
 
 void WebContentsViewAura::OnDeviceScaleFactorChanged(

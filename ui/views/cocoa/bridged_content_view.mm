@@ -8,6 +8,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/compositor/paint_context.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/events/keycodes/dom3/dom_code.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
@@ -284,7 +285,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
     return;
 
   gfx::CanvasSkiaPaint canvas(dirtyRect, false /* opaque */);
-  hostedView_->GetWidget()->OnNativeWidgetPaint(&canvas);
+  hostedView_->GetWidget()->OnNativeWidgetPaint(ui::PaintContext(&canvas));
 }
 
 - (NSTextInputContext*)inputContext {

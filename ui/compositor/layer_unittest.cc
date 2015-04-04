@@ -27,6 +27,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/compositor/test/test_compositor_host.h"
@@ -62,7 +63,9 @@ class ColoredLayer : public Layer, public LayerDelegate {
   ~ColoredLayer() override {}
 
   // Overridden from LayerDelegate:
-  void OnPaintLayer(gfx::Canvas* canvas) override { canvas->DrawColor(color_); }
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    context.canvas()->DrawColor(color_);
+  }
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
 
@@ -225,8 +228,8 @@ class TestLayerDelegate : public LayerDelegate {
   }
 
   // Overridden from LayerDelegate:
-  void OnPaintLayer(gfx::Canvas* canvas) override {
-    canvas->DrawColor(colors_[color_index_]);
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    context.canvas()->DrawColor(colors_[color_index_]);
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
   }
 
@@ -267,9 +270,9 @@ class DrawTreeLayerDelegate : public LayerDelegate {
 
  private:
   // Overridden from LayerDelegate:
-  void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(const ui::PaintContext& context) override {
     painted_ = true;
-    canvas->DrawColor(SK_ColorWHITE);
+    context.canvas()->DrawColor(SK_ColorWHITE);
   }
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
@@ -290,7 +293,7 @@ class NullLayerDelegate : public LayerDelegate {
 
  private:
   // Overridden from LayerDelegate:
-  void OnPaintLayer(gfx::Canvas* canvas) override {}
+  void OnPaintLayer(const ui::PaintContext& context) override {}
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
   base::Closure PrepareForLayerBoundsChange() override {
@@ -1207,7 +1210,8 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
 
  private:
   // Overridden from LayerDelegate:
-  void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    gfx::Canvas* canvas = context.canvas();
     paint_count_++;
     if (!schedule_paint_rect_.IsEmpty()) {
       layer_->SchedulePaint(schedule_paint_rect_);

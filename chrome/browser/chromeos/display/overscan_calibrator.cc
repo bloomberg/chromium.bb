@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 
 namespace chromeos {
@@ -115,7 +116,8 @@ void OverscanCalibrator::UpdateInsets(const gfx::Insets& insets) {
   calibration_layer_->SchedulePaint(calibration_layer_->bounds());
 }
 
-void OverscanCalibrator::OnPaintLayer(gfx::Canvas* canvas) {
+void OverscanCalibrator::OnPaintLayer(const ui::PaintContext& context) {
+  gfx::Canvas* canvas = context.canvas();
   static const SkColor kTransparent = SkColorSetARGB(0, 0, 0, 0);
   gfx::Rect full_bounds = calibration_layer_->bounds();
   gfx::Rect inner_bounds = full_bounds;

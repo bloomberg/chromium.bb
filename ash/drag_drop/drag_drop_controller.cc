@@ -105,7 +105,7 @@ class DragDropTrackerDelegate : public aura::WindowDelegate {
     if (drag_drop_controller_->IsDragDropInProgress())
       drag_drop_controller_->DragCancel();
   }
-  void OnPaint(gfx::Canvas* canvas) override {}
+  void OnPaint(const ui::PaintContext& context) override {}
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override {}

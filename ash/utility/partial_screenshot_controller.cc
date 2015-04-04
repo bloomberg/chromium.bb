@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "base/stl_util.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -56,10 +57,11 @@ class PartialScreenshotController::PartialScreenshotLayer
 
  private:
   // ui::LayerDelegate:
-  void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(const ui::PaintContext& context) override {
     if (region_.IsEmpty())
       return;
 
+    gfx::Canvas* canvas = context.canvas();
     // Screenshot area representation: black rectangle with white
     // rectangle inside.  To avoid capturing these rectangles when mouse
     // release, they should be outside of the actual capturing area.

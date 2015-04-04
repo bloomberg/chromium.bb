@@ -1180,12 +1180,12 @@ bool Widget::OnNativeWidgetPaintAccelerated(const gfx::Rect& dirty_region) {
   return true;
 }
 
-void Widget::OnNativeWidgetPaint(gfx::Canvas* canvas) {
+void Widget::OnNativeWidgetPaint(const ui::PaintContext& context) {
   // On Linux Aura, we can get here during Init() because of the
   // SetInitialBounds call.
   if (!native_widget_initialized_)
     return;
-  GetRootView()->Paint(ui::PaintContext(canvas, GetLayer()->PaintRect()));
+  GetRootView()->Paint(context);
 }
 
 int Widget::GetNonClientComponent(const gfx::Point& point) {

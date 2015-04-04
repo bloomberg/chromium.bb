@@ -29,6 +29,7 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/debug_utils.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -60,9 +61,9 @@ class ColoredLayer : public Layer, public LayerDelegate {
   ~ColoredLayer() override {}
 
   // Overridden from LayerDelegate:
-  void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(const ui::PaintContext& context) override {
     if (draw_) {
-      canvas->DrawColor(color_);
+      context.canvas()->DrawColor(color_);
     }
   }
 

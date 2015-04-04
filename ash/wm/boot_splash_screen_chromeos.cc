@@ -10,6 +10,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 
@@ -26,7 +27,7 @@ class BootSplashScreen::CopyHostContentLayerDelegate
   ~CopyHostContentLayerDelegate() override {}
 
   // ui::LayerDelegate overrides:
-  void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(const ui::PaintContext& context) override {
     // It'd be safer to copy the area to a canvas in the constructor and then
     // copy from that canvas to this one here, but this appears to work (i.e. we
     // only call this before we draw our first frame) and it saves us an extra
@@ -35,8 +36,8 @@ class BootSplashScreen::CopyHostContentLayerDelegate
     // to create a zero-copy texture (when possible):
     // https://codereview.chromium.org/10543125
 #if defined(USE_X11)
-    ui::CopyAreaToCanvas(host_->GetAcceleratedWidget(),
-        host_->GetBounds(), gfx::Point(), canvas);
+    ui::CopyAreaToCanvas(host_->GetAcceleratedWidget(), host_->GetBounds(),
+                         gfx::Point(), context.canvas());
 #else
     // TODO(spang): Figure out what to do here.
     NOTIMPLEMENTED();

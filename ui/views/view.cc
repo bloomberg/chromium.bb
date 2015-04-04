@@ -1447,12 +1447,12 @@ void View::UpdateChildLayerBounds(const gfx::Vector2d& offset) {
   }
 }
 
-void View::OnPaintLayer(gfx::Canvas* canvas) {
+void View::OnPaintLayer(const ui::PaintContext& context) {
   if (!layer()->fills_bounds_opaquely())
-    canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+    context.canvas()->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
   if (!visible_)
     return;
-  Paint(ui::PaintContext(canvas, layer()->PaintRect()));
+  Paint(context);
 }
 
 void View::OnDelegatedFrameDamage(

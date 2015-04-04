@@ -8,6 +8,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 
@@ -33,7 +34,7 @@ ShadowLayerDelegate::ShadowLayerDelegate(ui::Layer* shadow_for)
 ShadowLayerDelegate::~ShadowLayerDelegate() {
 }
 
-void ShadowLayerDelegate::OnPaintLayer(gfx::Canvas* canvas) {
+void ShadowLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
   SkPoint points[2];
   const SkColor kShadowColors[2] = { kShadowLightColor, kShadowDarkColor };
 
@@ -48,7 +49,7 @@ void ShadowLayerDelegate::OnPaintLayer(gfx::Canvas* canvas) {
                                    layer_->bounds().height());
   SkPaint paint;
   paint.setShader(shader.get());
-  canvas->sk_canvas()->drawRect(gfx::RectToSkRect(paint_rect), paint);
+  context.canvas()->sk_canvas()->drawRect(gfx::RectToSkRect(paint_rect), paint);
 }
 
 void ShadowLayerDelegate::OnDelegatedFrameDamage(

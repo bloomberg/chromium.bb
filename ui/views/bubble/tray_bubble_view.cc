@@ -15,6 +15,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
@@ -182,7 +183,7 @@ class TrayBubbleContentMask : public ui::LayerDelegate {
   ui::Layer* layer() { return &layer_; }
 
   // Overridden from LayerDelegate.
-  void OnPaintLayer(gfx::Canvas* canvas) override;
+  void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
   base::Closure PrepareForLayerBoundsChange() override;
@@ -204,12 +205,12 @@ TrayBubbleContentMask::~TrayBubbleContentMask() {
   layer_.set_delegate(NULL);
 }
 
-void TrayBubbleContentMask::OnPaintLayer(gfx::Canvas* canvas) {
+void TrayBubbleContentMask::OnPaintLayer(const ui::PaintContext& context) {
   SkPaint paint;
   paint.setAlpha(255);
   paint.setStyle(SkPaint::kFill_Style);
   gfx::Rect rect(layer()->bounds().size());
-  canvas->DrawRoundRect(rect, corner_radius_, paint);
+  context.canvas()->DrawRoundRect(rect, corner_radius_, paint);
 }
 
 void TrayBubbleContentMask::OnDeviceScaleFactorChanged(

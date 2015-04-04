@@ -137,7 +137,7 @@ class WM_EXPORT ImageGrid {
     void SetClipRect(const gfx::Rect& clip_rect, ui::Layer* layer);
 
     // ui::LayerDelegate implementation:
-    void OnPaintLayer(gfx::Canvas* canvas) override;
+    void OnPaintLayer(const ui::PaintContext& context) override;
     void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
     void OnDeviceScaleFactorChanged(float device_scale_factor) override;
     base::Closure PrepareForLayerBoundsChange() override;

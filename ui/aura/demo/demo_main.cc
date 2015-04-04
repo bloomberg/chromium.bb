@@ -19,6 +19,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -62,7 +63,8 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   }
   bool CanFocus() override { return true; }
   void OnCaptureLost() override {}
-  void OnPaint(gfx::Canvas* canvas) override {
+  void OnPaint(const ui::PaintContext& context) override {
+    gfx::Canvas* canvas = context.canvas();
     canvas->DrawColor(color_, SkXfermode::kSrc_Mode);
     gfx::Rect r;
     canvas->GetClipBounds(&r);

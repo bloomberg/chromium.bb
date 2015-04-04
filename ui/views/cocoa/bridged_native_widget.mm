@@ -594,9 +594,9 @@ void BridgedNativeWidget::OnDidChangeFocus(View* focused_before,
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidget, LayerDelegate:
 
-void BridgedNativeWidget::OnPaintLayer(gfx::Canvas* canvas) {
+void BridgedNativeWidget::OnPaintLayer(const ui::PaintContext& context) {
   DCHECK(window_visible_);
-  native_widget_mac_->GetWidget()->OnNativeWidgetPaint(canvas);
+  native_widget_mac_->GetWidget()->OnNativeWidgetPaint(context);
 }
 
 void BridgedNativeWidget::OnDelegatedFrameDamage(

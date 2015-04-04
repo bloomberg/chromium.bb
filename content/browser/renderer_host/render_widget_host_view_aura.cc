@@ -1771,7 +1771,7 @@ void RenderWidgetHostViewAura::OnCaptureLost() {
     touch_editing_client_->EndTouchEditing(false);
 }
 
-void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
+void RenderWidgetHostViewAura::OnPaint(const ui::PaintContext& context) {
   NOTREACHED();
 }
 

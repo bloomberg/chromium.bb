@@ -1299,12 +1299,12 @@ class DesktopAuraTestValidPaintWidget : public views::Widget {
     views::Widget::Hide();
   }
 
-  void OnNativeWidgetPaint(gfx::Canvas* canvas) override {
+  void OnNativeWidgetPaint(const ui::PaintContext& context) override {
     received_paint_ = true;
     EXPECT_TRUE(expect_paint_);
     if (!expect_paint_)
       received_paint_while_hidden_ = true;
-    views::Widget::OnNativeWidgetPaint(canvas);
+    views::Widget::OnNativeWidgetPaint(context);
   }
 
   bool ReadReceivedPaintAndReset() {

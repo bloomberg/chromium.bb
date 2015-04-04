@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 
 namespace chromeos {
@@ -109,13 +110,16 @@ void AccessibilityFocusRingLayer::Set(const AccessibilityFocusRing& ring) {
   layer()->SetBounds(bounds);
 }
 
-void AccessibilityFocusRingLayer::OnPaintLayer(gfx::Canvas* canvas) {
+void AccessibilityFocusRingLayer::OnPaintLayer(
+    const ui::PaintContext& context) {
   gfx::Vector2d offset = layer()->bounds().OffsetFromOrigin();
 
   SkPaint paint;
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(2);
+
+  gfx::Canvas* canvas = context.canvas();
 
   SkPath path;
   const int w = kGradientWidth;

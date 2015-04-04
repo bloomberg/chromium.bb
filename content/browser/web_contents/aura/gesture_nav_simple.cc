@@ -16,6 +16,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_delegate.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
@@ -84,12 +85,13 @@ class ArrowLayerDelegate : public ui::LayerDelegate {
 
  private:
   // ui::LayerDelegate:
-  void OnPaintLayer(gfx::Canvas* canvas) override {
+  void OnPaintLayer(const ui::PaintContext& context) override {
     SkPaint paint;
     paint.setColor(SkColorSetARGB(0xa0, 0, 0, 0));
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
 
+    gfx::Canvas* canvas = context.canvas();
     canvas->DrawCircle(
         gfx::Point(left_arrow_ ? 0 : kArrowWidth, kArrowHeight / 2),
         kArrowWidth,

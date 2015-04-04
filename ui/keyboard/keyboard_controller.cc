@@ -109,7 +109,7 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
   }
   bool CanFocus() override { return false; }
   void OnCaptureLost() override {}
-  void OnPaint(gfx::Canvas* canvas) override {}
+  void OnPaint(const ui::PaintContext& context) override {}
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override { delete this; }

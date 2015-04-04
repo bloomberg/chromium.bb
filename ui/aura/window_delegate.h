@@ -25,6 +25,7 @@ class GestureEvent;
 class KeyEvent;
 class Layer;
 class MouseEvent;
+class PaintContext;
 class TextInputClient;
 class Texture;
 class TouchEvent;
@@ -69,8 +70,8 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   // Invoked when mouse capture is lost on the window.
   virtual void OnCaptureLost() = 0;
 
-  // Asks the delegate to paint window contents into the supplied canvas.
-  virtual void OnPaint(gfx::Canvas* canvas) = 0;
+  // Asks the delegate to paint window contents into the supplied context.
+  virtual void OnPaint(const ui::PaintContext& context) = 0;
 
   // Called when the window's device scale factor has changed.
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) = 0;

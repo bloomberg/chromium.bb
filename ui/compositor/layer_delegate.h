@@ -14,13 +14,13 @@ class Rect;
 }
 
 namespace ui {
+class PaintContext;
 
 // A delegate interface implemented by an object that renders to a Layer.
 class COMPOSITOR_EXPORT LayerDelegate {
  public:
-  // Paint content for the layer to the specified canvas. It has already been
-  // clipped to the Layer's invalid rect.
-  virtual void OnPaintLayer(gfx::Canvas* canvas) = 0;
+  // Paint content for the layer to the specified context.
+  virtual void OnPaintLayer(const PaintContext& context) = 0;
 
   // A notification that this layer has had a delegated frame swap and
   // will be repainted.
