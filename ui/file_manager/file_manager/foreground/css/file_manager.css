@@ -1863,18 +1863,29 @@ list.autocomplete-suggestions > [lead] {
 
 #suggest-app-dialog #buttons > #webstore-button {
   -webkit-padding-end: 10px;
-  -webkit-padding-start: 36px;
-  background-image: -webkit-image-set(
-    url(chrome://theme/IDR_WEBSTORE_ICON_16) 1x,
-    url(chrome://theme/IDR_WEBSTORE_ICON_16@2x) 2x);
-  background-position: 12px center;
-  background-repeat: no-repeat;
+  -webkit-padding-start: 12px;
   color: #00f;
   cursor: pointer;
-  display: inline-block;
+  display: flex;
   height: 16px;
   padding-bottom: 10px;
   padding-top: 10px;
+}
+
+#suggest-app-dialog #buttons > #webstore-button > #webstore-button-icon {
+  -webkit-margin-end: 8px;
+  background-image: -webkit-image-set(
+    url(chrome://theme/IDR_WEBSTORE_ICON_16) 1x,
+    url(chrome://theme/IDR_WEBSTORE_ICON_16@2x) 2x);
+  background-repeat: no-repeat;
+  display: inline-block;
+  height: 16px;
+  width: 16px;
+}
+
+#suggest-app-dialog #buttons > #webstore-button > #webstore-button-label {
+  flex: 1;
+  line-height: 16px;
 }
 
 .cr-dialog-frame.error-dialog-frame {

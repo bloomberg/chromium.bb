@@ -65,9 +65,23 @@ function SuggestAppsDialog(parentNode, state) {
   this.webstoreButton_ = this.document_.createElement('div');
   this.webstoreButton_.hidden = true;
   this.webstoreButton_.id = 'webstore-button';
-  this.webstoreButton_.innerHTML = str('SUGGEST_DIALOG_LINK_TO_WEBSTORE');
+  this.webstoreButton_.setAttribute('role', 'button');
+  this.webstoreButton_.tabIndex = 0;
+
+  var webstoreButtonIcon = this.document_.createElement('span');
+  webstoreButtonIcon.id = 'webstore-button-icon';
+  this.webstoreButton_.appendChild(webstoreButtonIcon);
+
+  var webstoreButtonLabel = this.document_.createElement('span');
+  webstoreButtonLabel.id = 'webstore-button-label';
+  webstoreButtonLabel.textContent = str('SUGGEST_DIALOG_LINK_TO_WEBSTORE');
+  this.webstoreButton_.appendChild(webstoreButtonLabel);;
+
   this.webstoreButton_.addEventListener(
-      'click', this.onWebstoreLinkClicked_.bind(this));
+      'click', this.onWebstoreLinkActivated_.bind(this));
+  this.webstoreButton_.addEventListener(
+      'keydown', this.onWebstoreLinkKeyDown_.bind(this));
+
   this.buttons_.appendChild(this.webstoreButton_);
 
   this.initialFocusElement_ = this.webviewContainer_;
@@ -302,16 +316,29 @@ SuggestAppsDialog.prototype.showInternal_ =
 };
 
 /**
- * Called when the 'See more...' link is clicked to be navigated to Webstore.
- * @param {Event} e Event.
+ * Called when the 'See more...' link is activated to be navigated to Webstore.
+ * @param {Event} e The event that activated the link. Either mouse click or
+ *     key down event.
  * @private
  */
-SuggestAppsDialog.prototype.onWebstoreLinkClicked_ = function(e) {
+SuggestAppsDialog.prototype.onWebstoreLinkActivated_ = function(e) {
   if (!this.webStoreUrl_)
     return;
   util.visitURL(this.webStoreUrl_);
   this.state_ = SuggestAppsDialog.State.OPENING_WEBSTORE_CLOSING;
   this.hide();
+};
+
+/**
+ * Key down event handler for webstore link element. If the key is enter, it
+ * activates the link.
+ * @param {Event} e The event
+ * @private
+ */
+SuggestAppsDialog.prototype.onWebstoreLinkKeyDown_ = function(e) {
+  if (e.keyCode != 13 /* Enter */)
+    return;
+  this.onWebstoreLinkActivated_(e);
 };
 
 /**
