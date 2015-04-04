@@ -34,6 +34,7 @@
           '<(PRODUCT_DIR)/nacl_helper',
           '<(PRODUCT_DIR)/nacl_helper_bootstrap',
           '<(PRODUCT_DIR)/pnacl/',
+          '../../remoting/internal/config/',
         ],
       },
     }],
