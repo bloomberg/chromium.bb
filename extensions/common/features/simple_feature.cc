@@ -16,9 +16,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/switches.h"
+
+using crx_file::id_util::HashedIdInHex;
 
 namespace extensions {
 
@@ -205,12 +208,6 @@ std::string ListDisplayNames(const std::vector<EnumType>& enum_types) {
     }
   }
   return display_name_list;
-}
-
-std::string HashExtensionId(const std::string& extension_id) {
-  const std::string id_hash = base::SHA1HashString(extension_id);
-  DCHECK_EQ(base::kSHA1Length, id_hash.length());
-  return base::HexEncode(id_hash.c_str(), id_hash.length());
 }
 
 bool IsCommandLineSwitchEnabled(const std::string& switch_name) {
@@ -568,7 +565,7 @@ bool SimpleFeature::IsIdInArray(const std::string& extension_id,
   const char* const* end = array + array_length;
 
   return ((std::find(start, end, extension_id) != end) ||
-          (std::find(start, end, HashExtensionId(extension_id)) != end));
+          (std::find(start, end, HashedIdInHex(extension_id)) != end));
 }
 
 // static
@@ -578,7 +575,7 @@ bool SimpleFeature::IsIdInList(const std::string& extension_id,
     return false;
 
   return (ContainsValue(list, extension_id) ||
-          ContainsValue(list, HashExtensionId(extension_id)));
+          ContainsValue(list, HashedIdInHex(extension_id)));
 }
 
 bool SimpleFeature::MatchesManifestLocation(
