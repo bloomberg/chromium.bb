@@ -26,14 +26,6 @@
         shouldBeEqualToString("internals.pageProperty('margin-left', 3)", "auto");
         shouldBeEqualToString("internals.pageProperty('margin-left', 4)", "auto");
 
-        debug("Set margin to 200px via user style sheet.");
-        testRunner.injectStyleSheet("@page { margin:200px; }", true);
-        shouldBeEqualToString("internals.pageProperty('margin-left', 0)", "200");
-        shouldBeEqualToString("internals.pageProperty('margin-left', 1)", "200");
-        shouldBeEqualToString("internals.pageProperty('margin-left', 2)", "200");
-        shouldBeEqualToString("internals.pageProperty('margin-left', 3)", "200");
-        shouldBeEqualToString("internals.pageProperty('margin-left', 4)", "200");
-
         debug("Set margin to 100px.");
         appendStyle("@page { margin:100px; }");
         shouldBeEqualToString("internals.pageProperty('margin-left', 0)", "100");

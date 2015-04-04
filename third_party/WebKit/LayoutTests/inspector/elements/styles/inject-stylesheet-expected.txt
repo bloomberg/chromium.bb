@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 9: iframe loaded
+CONSOLE MESSAGE: line 10: iframe loaded
 Tests that injected user stylesheets are reflected in the Styles pane.
 
 

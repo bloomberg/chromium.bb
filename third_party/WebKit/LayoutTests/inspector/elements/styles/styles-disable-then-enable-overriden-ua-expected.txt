@@ -6,12 +6,9 @@ element.style  { ()
   margin: 10px;
 
 [expanded] 
-#container  { (injected stylesheet)
-/-- overloaded --/   margin: 8px;
-
-[expanded] 
-div  { (user agent stylesheet)
+body  { (user agent stylesheet)
   display: block;
+/-- overloaded --/   margin: 8px;
 
 After disable
 [expanded] 
@@ -19,12 +16,9 @@ element.style  { ()
 /-- overloaded --/ /-- disabled --/   /* margin: 10px; */
 
 [expanded] 
-#container  { (injected stylesheet)
-  margin: 8px;
-
-[expanded] 
-div  { (user agent stylesheet)
+body  { (user agent stylesheet)
   display: block;
+  margin: 8px;
 
 After enable
 [expanded] 
@@ -32,11 +26,8 @@ element.style  { ()
   margin: 10px;
 
 [expanded] 
-#container  { (injected stylesheet)
-/-- overloaded --/   margin: 8px;
-
-[expanded] 
-div  { (user agent stylesheet)
+body  { (user agent stylesheet)
   display: block;
+/-- overloaded --/   margin: 8px;
 
 
