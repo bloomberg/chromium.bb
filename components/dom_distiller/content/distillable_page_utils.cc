@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/dom_distiller/core/distillable_page_detector.h"
+#include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/page_features.h"
 #include "content/public/browser/render_frame_host.h"
 #include "grit/components_resources.h"
@@ -49,8 +50,19 @@ void IsOpenGraphArticle(content::WebContents* web_contents,
 
 void IsDistillablePage(content::WebContents* web_contents,
                        base::Callback<void(bool)> callback) {
-  IsDistillablePageForDetector(web_contents,
-                               DistillablePageDetector::GetDefault(), callback);
+  switch (GetDistillerHeuristicsType()) {
+    case DistillerHeuristicsType::NONE:
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+                                             base::Bind(callback, false));
+      return;
+    case DistillerHeuristicsType::OG_ARTICLE:
+      IsOpenGraphArticle(web_contents, callback);
+      return;
+    case DistillerHeuristicsType::ADABOOST_MODEL:
+      IsDistillablePageForDetector(
+          web_contents, DistillablePageDetector::GetDefault(), callback);
+      return;
+  }
 }
 
 void IsDistillablePageForDetector(content::WebContents* web_contents,

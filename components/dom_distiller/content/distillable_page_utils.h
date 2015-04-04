@@ -12,11 +12,18 @@ namespace dom_distiller {
 
 class DistillablePageDetector;
 
-void IsOpenGraphArticle(content::WebContents* web_contents,
-                        base::Callback<void(bool)> callback);
+// Checks if the page appears to be distillable based on whichever heuristics
+// are configured to be used (see dom_distiller::GetDistillerHeuristicsType).
 void IsDistillablePage(content::WebContents* web_contents,
                        base::Callback<void(bool)> callback);
-// The passed detector must be alive until after the callback is called.
+
+// Checks if the web_contents is has opengraph type=article markup.
+void IsOpenGraphArticle(content::WebContents* web_contents,
+                        base::Callback<void(bool)> callback);
+
+// Uses the provided DistillablePageDetector to detect if the page is
+// distillable. The passed detector must be alive until after the callback is
+// called.
 void IsDistillablePageForDetector(content::WebContents* web_contents,
                                   const DistillablePageDetector* detector,
                                   base::Callback<void(bool)> callback);
