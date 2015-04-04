@@ -698,7 +698,6 @@ DEFINE_TRACE(StyleEngine)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_document);
-    visitor->trace(m_injectedAuthorStyleSheets);
     visitor->trace(m_authorStyleSheets);
     visitor->trace(m_documentStyleSheetCollection);
     visitor->trace(m_styleSheetCollectionMap);
