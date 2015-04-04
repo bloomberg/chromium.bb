@@ -243,10 +243,6 @@ class TestRunner : public WebTestRunner,
   // Forces the selection colors for testing under Linux.
   void ForceRedSelectionColors();
 
-  // Adds a style sheet to be injected into new documents.
-  // TODO(dcheng): This will be removed in a followup patch.
-  void InjectStyleSheet(const std::string& source_code, bool all_frames);
-
   // Add |source_code| as an injected stylesheet to the active document of the
   // window of the current V8 context.
   void InsertStyleSheet(const std::string& source_code);

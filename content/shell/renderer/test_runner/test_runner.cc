@@ -187,7 +187,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                         bool allow_destination_subdomains);
   bool HasCustomPageSizeStyle(int page_index);
   void ForceRedSelectionColors();
-  void InjectStyleSheet(const std::string& source_code, bool all_frames);
   void InsertStyleSheet(const std::string& source_code);
   bool FindString(const std::string& search_text,
                   const std::vector<std::string>& options_array);
@@ -395,7 +394,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::HasCustomPageSizeStyle)
       .SetMethod("forceRedSelectionColors",
                  &TestRunnerBindings::ForceRedSelectionColors)
-      .SetMethod("injectStyleSheet", &TestRunnerBindings::InjectStyleSheet)
       .SetMethod("insertStyleSheet", &TestRunnerBindings::InsertStyleSheet)
       .SetMethod("findString", &TestRunnerBindings::FindString)
       .SetMethod("selectionAsMarkup", &TestRunnerBindings::SelectionAsMarkup)
@@ -795,12 +793,6 @@ bool TestRunnerBindings::HasCustomPageSizeStyle(int page_index) {
 void TestRunnerBindings::ForceRedSelectionColors() {
   if (runner_)
     runner_->ForceRedSelectionColors();
-}
-
-void TestRunnerBindings::InjectStyleSheet(const std::string& source_code,
-                                          bool all_frames) {
-  if (runner_)
-    runner_->InjectStyleSheet(source_code, all_frames);
 }
 
 void TestRunnerBindings::InsertStyleSheet(const std::string& source_code) {
@@ -1621,7 +1613,6 @@ void TestRunner::Reset() {
     web_view_->setSelectionColors(
         0xff1e90ff, 0xff000000, 0xffc8c8c8, 0xff323232);
 #endif
-    web_view_->removeInjectedStyleSheets();
     web_view_->setVisibilityState(WebPageVisibilityStateVisible, true);
     web_view_->mainFrame()->enableViewSourceMode(false);
 
@@ -2271,15 +2262,6 @@ bool TestRunner::HasCustomPageSizeStyle(int page_index) {
 
 void TestRunner::ForceRedSelectionColors() {
   web_view_->setSelectionColors(0xffee0000, 0xff00ee00, 0xff000000, 0xffc0c0c0);
-}
-
-void TestRunner::InjectStyleSheet(const std::string& source_code,
-                                  bool all_frames) {
-  WebView::injectStyleSheet(
-      WebString::fromUTF8(source_code),
-      WebVector<WebString>(),
-      all_frames ? WebView::InjectStyleInAllFrames
-                 : WebView::InjectStyleInTopFrameOnly);
 }
 
 void TestRunner::InsertStyleSheet(const std::string& source_code) {
