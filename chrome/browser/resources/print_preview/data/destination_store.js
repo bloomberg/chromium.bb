@@ -221,7 +221,7 @@ cr.define('print_preview', function() {
    * @const
    * @private
    */
-  DestinationStore.PRIVET_SEARCH_DURATION_ = 2000;
+  DestinationStore.PRIVET_SEARCH_DURATION_ = 5000;
 
   /**
    * Maximum amount of time spent searching for extension destinations, in
