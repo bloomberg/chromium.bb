@@ -242,36 +242,13 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
   Dispatcher* dispatcher_;
 };
 
-class CloseChannelSender {
- public:
-  CloseChannelSender(int target_port_id)
-      : port_created_(false), target_port_id_(target_port_id) {}
-
-  void notify_port_created() { port_created_ = true; }
-
-  ~CloseChannelSender() {
-    if (!port_created_) {
-      // If we didn't create a port, notify the other end of the channel (treat
-      // it as a disconnect).
-      content::RenderThread::Get()->Send(new ExtensionHostMsg_CloseChannel(
-          target_port_id_, kReceivingEndDoesntExistError));
-    }
-  }
-
- private:
-  bool port_created_;
-  int target_port_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloseChannelSender);
-};
-
 void DispatchOnConnectToScriptContext(
     int target_port_id,
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo* source,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id,
-    CloseChannelSender* close_channel_sender,
+    bool* port_created,
     ScriptContext* script_context) {
   // Only dispatch the events if this is the requested target frame (0 = main
   // frame; positive = child frame).
@@ -351,24 +328,15 @@ void DispatchOnConnectToScriptContext(
 
   if (!retval.IsEmpty()) {
     CHECK(retval->IsBoolean());
-    if (retval->BooleanValue())
-      close_channel_sender->notify_port_created();
+    *port_created |= retval->BooleanValue();
   } else {
     LOG(ERROR) << "Empty return value from dispatchOnConnect.";
   }
 }
 
 void DeliverMessageToScriptContext(const std::string& message_data,
-                                   bool user_gesture,
                                    int target_port_id,
                                    ScriptContext* script_context) {
-  scoped_ptr<blink::WebScopedUserGesture> web_user_gesture;
-  scoped_ptr<blink::WebScopedWindowFocusAllowedIndicator> allow_window_focus;
-  if (user_gesture) {
-    web_user_gesture.reset(new blink::WebScopedUserGesture);
-    allow_window_focus.reset(new blink::WebScopedWindowFocusAllowedIndicator);
-  }
-
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
 
@@ -429,16 +397,22 @@ void MessagingBindings::DispatchOnConnect(
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id,
     content::RenderFrame* restrict_to_render_frame) {
-  scoped_ptr<ExtensionMsg_TabConnectionInfo> source_copy(
-      new ExtensionMsg_TabConnectionInfo());
-  source_copy->tab.Swap(source.tab.DeepCopy());
-  source_copy->frame_id = source.frame_id;
-  context_set.RequestRunForEach(
-      info.target_id, restrict_to_render_frame,
+  // TODO(robwu): ScriptContextSet.ForEach should accept RenderFrame*.
+  content::RenderView* restrict_to_render_view =
+      restrict_to_render_frame ? restrict_to_render_frame->GetRenderView()
+                               : NULL;
+  bool port_created = false;
+  context_set.ForEach(
+      info.target_id, restrict_to_render_view,
       base::Bind(&DispatchOnConnectToScriptContext, target_port_id,
-                 channel_name, base::Owned(source_copy.release()), info,
-                 tls_channel_id,
-                 base::Owned(new CloseChannelSender(target_port_id))));
+                 channel_name, &source, info, tls_channel_id, &port_created));
+
+  // If we didn't create a port, notify the other end of the channel (treat it
+  // as a disconnect).
+  if (!port_created) {
+    content::RenderThread::Get()->Send(new ExtensionHostMsg_CloseChannel(
+        target_port_id, kReceivingEndDoesntExistError));
+  }
 }
 
 // static
@@ -447,10 +421,20 @@ void MessagingBindings::DeliverMessage(
     int target_port_id,
     const Message& message,
     content::RenderFrame* restrict_to_render_frame) {
-  context_set.RequestRunForEach(
-      restrict_to_render_frame,
-      base::Bind(&DeliverMessageToScriptContext, message.data,
-                 message.user_gesture, target_port_id));
+  scoped_ptr<blink::WebScopedUserGesture> web_user_gesture;
+  scoped_ptr<blink::WebScopedWindowFocusAllowedIndicator> allow_window_focus;
+  if (message.user_gesture) {
+    web_user_gesture.reset(new blink::WebScopedUserGesture);
+    allow_window_focus.reset(new blink::WebScopedWindowFocusAllowedIndicator);
+  }
+
+  // TODO(robwu): ScriptContextSet.ForEach should accept RenderFrame*.
+  content::RenderView* restrict_to_render_view =
+      restrict_to_render_frame ? restrict_to_render_frame->GetRenderView()
+                               : NULL;
+  context_set.ForEach(
+      restrict_to_render_view,
+      base::Bind(&DeliverMessageToScriptContext, message.data, target_port_id));
 }
 
 // static
@@ -459,8 +443,12 @@ void MessagingBindings::DispatchOnDisconnect(
     int port_id,
     const std::string& error_message,
     content::RenderFrame* restrict_to_render_frame) {
-  context_set.RequestRunForEach(
-      restrict_to_render_frame,
+  // TODO(robwu): ScriptContextSet.ForEach should accept RenderFrame*.
+  content::RenderView* restrict_to_render_view =
+      restrict_to_render_frame ? restrict_to_render_frame->GetRenderView()
+                               : NULL;
+  context_set.ForEach(
+      restrict_to_render_view,
       base::Bind(&DispatchOnDisconnectToScriptContext, port_id, error_message));
 }
 

@@ -20,7 +20,6 @@
 
 namespace blink {
 class WebFrame;
-class WebLocalFrame;
 }
 
 namespace content {
@@ -30,26 +29,17 @@ class RenderView;
 
 namespace extensions {
 class Extension;
-class ExtensionSet;
 
 // Extensions wrapper for a v8 context.
 class ScriptContext : public RequestSender::Source {
  public:
   ScriptContext(const v8::Handle<v8::Context>& context,
-                blink::WebLocalFrame* frame,
+                blink::WebFrame* frame,
                 const Extension* extension,
                 Feature::Context context_type,
                 const Extension* effective_extension,
                 Feature::Context effective_context_type);
   ~ScriptContext() override;
-
-  // Returns whether |url| is sandboxed (as declared in any Extension in
-  // |extension_set| as sandboxed).
-  //
-  // Declared in ScriptContext for lack of a better place, but this should
-  // become unnecessary at some point as crbug.com/466373 is worked on.
-  static bool IsSandboxedPage(const ExtensionSet& extension_set,
-                              const GURL& url);
 
   // Clears the WebFrame for this contexts and invalidates the associated
   // ModuleSystem.
@@ -69,7 +59,7 @@ class ScriptContext : public RequestSender::Source {
     return effective_extension_.get();
   }
 
-  blink::WebLocalFrame* web_frame() const { return web_frame_; }
+  blink::WebFrame* web_frame() const { return web_frame_; }
 
   Feature::Context context_type() const { return context_type_; }
 
@@ -124,14 +114,6 @@ class ScriptContext : public RequestSender::Source {
   v8::Isolate* isolate() const { return isolate_; }
 
   // Get the URL of this context's web frame.
-  //
-  // TODO(kalman): Remove this and replace with a GetOrigin() call which reads
-  // of WebDocument::securityOrigin():
-  //  - The URL can change (e.g. pushState) but the origin cannot. Luckily it
-  //    appears as though callers don't make security decisions based on the
-  //    result of GetURL() so it's not a problem... yet.
-  //  - Origin is the correct check to be making.
-  //  - It might let us remove the about:blank resolving?
   GURL GetURL() const;
 
   // Returns whether the API |api| or any part of the API could be
@@ -175,9 +157,9 @@ class ScriptContext : public RequestSender::Source {
  private:
   class Runner;
 
-  // The WebLocalFrame associated with this context. This can be NULL because
-  // this object can outlive is destroyed asynchronously.
-  blink::WebLocalFrame* web_frame_;
+  // The WebFrame associated with this context. This can be NULL because this
+  // object can outlive is destroyed asynchronously.
+  blink::WebFrame* web_frame_;
 
   // The extension associated with this context, or NULL if there is none. This
   // might be a hosted app in the case that this context is hosting a web URL.
