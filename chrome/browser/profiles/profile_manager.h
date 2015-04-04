@@ -237,8 +237,6 @@ class ProfileManager : public base::NonThreadSafe,
     scoped_ptr<Profile> profile;
     // Whether profile has been fully loaded (created and initialized).
     bool created;
-    // Whether or not this profile should have a shortcut.
-    bool create_shortcut;
     // List of callbacks to run when profile initialization is done. Note, when
     // profile is fully loaded this vector will be empty.
     std::vector<CreateCallback> callbacks;

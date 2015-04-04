@@ -114,7 +114,7 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
 
   scoped_ptr<base::CommandLine> cmd_line(CreateServiceProcessCommandLine());
   // And then start the process asynchronously.
-  launcher_ = new Launcher(this, cmd_line.Pass());
+  launcher_ = new Launcher(cmd_line.Pass());
   launcher_->Run(base::Bind(&ServiceProcessControl::OnProcessLaunched,
                             base::Unretained(this)));
 }
@@ -318,10 +318,8 @@ ServiceProcessControl* ServiceProcessControl::GetInstance() {
 }
 
 ServiceProcessControl::Launcher::Launcher(
-    ServiceProcessControl* process,
     scoped_ptr<base::CommandLine> cmd_line)
-    : process_control_(process),
-      cmd_line_(cmd_line.Pass()),
+    : cmd_line_(cmd_line.Pass()),
       launched_(false),
       retry_count_(0) {
 }

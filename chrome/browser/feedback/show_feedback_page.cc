@@ -38,8 +38,6 @@ GURL GetTargetTabUrl(int session_id, int index) {
 
 namespace chrome {
 
-extern const char kAppLauncherCategoryTag[] = "AppLauncher";
-
 void ShowFeedbackPage(Browser* browser,
                       const std::string& description_template,
                       const std::string& category_tag) {

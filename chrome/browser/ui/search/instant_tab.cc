@@ -10,7 +10,7 @@
 
 InstantTab::InstantTab(InstantPage::Delegate* delegate,
                        Profile* profile)
-    : InstantPage(delegate, "", profile, profile->IsOffTheRecord()) {
+    : InstantPage(delegate, "", profile) {
 }
 
 InstantTab::~InstantTab() {

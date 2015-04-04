@@ -127,7 +127,6 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       malware_details_proceed_delay_ms_(
           kMalwareDetailsProceedDelayMilliSeconds),
       ui_manager_(ui_manager),
-      report_loop_(NULL),
       is_main_frame_load_blocked_(IsMainPageLoadBlocked(unsafe_resources)),
       unsafe_resources_(unsafe_resources),
       proceeded_(false) {

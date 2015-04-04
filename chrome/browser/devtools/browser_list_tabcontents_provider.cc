@@ -14,9 +14,7 @@
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-BrowserListTabContentsProvider::BrowserListTabContentsProvider(
-    chrome::HostDesktopType host_desktop_type)
-    : host_desktop_type_(host_desktop_type) {
+BrowserListTabContentsProvider::BrowserListTabContentsProvider() {
 }
 
 BrowserListTabContentsProvider::~BrowserListTabContentsProvider() {

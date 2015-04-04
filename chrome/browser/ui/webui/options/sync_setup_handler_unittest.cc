@@ -227,6 +227,7 @@ class TestWebUI : public content::WebUI {
     base::Value* arg2;
   };
   const std::vector<CallData>& call_data() { return call_data_; }
+
  private:
   std::vector<CallData> call_data_;
   base::string16 temp_string_;
@@ -235,8 +236,7 @@ class TestWebUI : public content::WebUI {
 class TestingSyncSetupHandler : public SyncSetupHandler {
  public:
   TestingSyncSetupHandler(content::WebUI* web_ui, Profile* profile)
-      : SyncSetupHandler(NULL),
-        profile_(profile) {
+      : profile_(profile) {
     set_web_ui(web_ui);
   }
   ~TestingSyncSetupHandler() override { set_web_ui(NULL); }

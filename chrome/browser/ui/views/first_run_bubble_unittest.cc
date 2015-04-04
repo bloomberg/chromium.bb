@@ -25,12 +25,11 @@ class FirstRunBubbleTest : public views::ViewsTestBase {
 
  private:
   TestingProfile profile_;
-  TemplateURL* default_t_url_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleTest);
 };
 
-FirstRunBubbleTest::FirstRunBubbleTest() : default_t_url_(NULL) {}
+FirstRunBubbleTest::FirstRunBubbleTest() {}
 FirstRunBubbleTest::~FirstRunBubbleTest() {}
 
 void FirstRunBubbleTest::SetUp() {

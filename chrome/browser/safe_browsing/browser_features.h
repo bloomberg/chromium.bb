@@ -67,9 +67,6 @@ extern const char kRedirect[];
 // so we don't leak any SSL sites.
 extern const char kSecureRedirectValue[];
 
-// Resource was fetched from a known bad IP address.
-extern const char kBadIpFetch[];
-
 // The HTTP status code for the main document.
 extern const char kHttpStatusCode[];
 

@@ -268,8 +268,6 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   // DataHandler (depending on the current request being made).
   JSONDataHandler next_json_data_handler_;
   DataHandler next_data_handler_;
-  // The number of consecutive times that connecting to the server failed.
-  int server_error_count_;
   // The thread on which the actual print operation happens
   base::Thread print_thread_;
   // The Job spooler object. This is only non-NULL during a print operation.
@@ -289,9 +287,6 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   // Flags that specify various pending server updates
   bool job_check_pending_;
   bool printer_update_pending_;
-
-  // Number of seconds between XMPP pings (for server registration)
-  int xmpp_ping_interval_;
 
   // Some task in the state machine is in progress.
   bool task_in_progress_;

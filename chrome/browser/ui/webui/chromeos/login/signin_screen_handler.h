@@ -443,7 +443,6 @@ class SigninScreenHandler
   NetworkErrorModel* network_error_model_;
   CoreOobeActor* core_oobe_actor_;
 
-  bool is_first_update_state_call_ = false;
   bool offline_login_active_ = false;
   NetworkStateInformer::State last_network_state_ =
       NetworkStateInformer::UNKNOWN;

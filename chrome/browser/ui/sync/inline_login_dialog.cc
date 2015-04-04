@@ -12,11 +12,10 @@
 
 // static
 void InlineLoginDialog::Show(Profile* profile) {
-  chrome::ShowWebDialog(NULL, profile, new InlineLoginDialog(profile));
+  chrome::ShowWebDialog(NULL, profile, new InlineLoginDialog());
 }
 
-InlineLoginDialog::InlineLoginDialog(Profile* profile)
-    : profile_(profile) {
+InlineLoginDialog::InlineLoginDialog() {
 }
 
 ui::ModalType InlineLoginDialog::GetDialogModalType() const {

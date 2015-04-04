@@ -71,7 +71,6 @@ PrinterJobHandler::PrinterJobHandler(
       local_job_id_(-1),
       next_json_data_handler_(NULL),
       next_data_handler_(NULL),
-      server_error_count_(0),
       print_thread_("Chrome_CloudPrintJobPrintThread"),
       job_handler_message_loop_proxy_(
           base::MessageLoopProxy::current()),

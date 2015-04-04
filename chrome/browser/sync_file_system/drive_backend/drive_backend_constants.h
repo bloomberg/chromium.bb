@@ -11,7 +11,6 @@ namespace sync_file_system {
 namespace drive_backend {
 
 extern const char kSyncRootFolderTitle[];
-extern const char kSyncRootFolderTitleDev[];
 extern const char kMimeTypeOctetStream[];
 
 extern const base::FilePath::CharType kDatabaseName[];

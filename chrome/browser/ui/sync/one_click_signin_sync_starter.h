@@ -223,7 +223,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   scoped_ptr<SigninTracker> signin_tracker_;
   StartSyncMode start_mode_;
   chrome::HostDesktopType desktop_type_;
-  bool force_same_tab_navigation_;
   ConfirmationRequired confirmation_required_;
   GURL continue_url_;
 

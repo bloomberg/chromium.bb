@@ -253,8 +253,6 @@ class ProfileImpl : public Profile {
   scoped_ptr<chromeos::Preferences> chromeos_preferences_;
 
   scoped_ptr<chromeos::LocaleChangeGuard> locale_change_guard_;
-
-  bool is_login_profile_;
 #endif
 
   scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;

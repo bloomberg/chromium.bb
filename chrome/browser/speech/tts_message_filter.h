@@ -23,8 +23,7 @@ class TtsMessageFilter
       public UtteranceEventDelegate,
       public VoicesChangedDelegate {
  public:
-  explicit TtsMessageFilter(int render_process_id,
-      content::BrowserContext* browser_context);
+  explicit TtsMessageFilter(content::BrowserContext* browser_context);
 
   // content::BrowserMessageFilter implementation.
   void OverrideThreadForMessage(const IPC::Message& message,
@@ -67,7 +66,6 @@ class TtsMessageFilter
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  int render_process_id_;
   content::BrowserContext* browser_context_;
   mutable base::Lock mutex_;
   mutable bool valid_;

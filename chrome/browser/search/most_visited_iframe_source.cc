@@ -35,10 +35,6 @@ MostVisitedIframeSource::MostVisitedIframeSource() {
 MostVisitedIframeSource::~MostVisitedIframeSource() {
 }
 
-const int MostVisitedIframeSource::kNumMostVisited = 8;
-const char MostVisitedIframeSource::kMostVisitedHistogramName[] =
-    "NewTabPage.MostVisited";
-
 std::string MostVisitedIframeSource::GetSource() const {
   return chrome::kChromeSearchMostVisitedHost;
 }

@@ -397,7 +397,6 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
 
   policy::PolicyService* GetPolicyService() const;
 
-  bool initialized_;
   std::string device_domain_;
 
   // Providers that supply status dictionaries for user and device policy,
@@ -525,8 +524,7 @@ void DeviceLocalAccountPolicyStatusProvider::OnDeviceLocalAccountsChanged() {
 #endif
 
 PolicyUIHandler::PolicyUIHandler()
-    : initialized_(false),
-      weak_factory_(this) {
+    : weak_factory_(this) {
 }
 
 PolicyUIHandler::~PolicyUIHandler() {

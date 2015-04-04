@@ -208,10 +208,8 @@ void HeapStatisticsCollector::SendStatsToBrowser(int round_id) {
 
 bool ChromeRenderProcessObserver::is_incognito_process_ = false;
 
-ChromeRenderProcessObserver::ChromeRenderProcessObserver(
-    ChromeContentRendererClient* client)
-    : client_(client),
-      webkit_initialized_(false) {
+ChromeRenderProcessObserver::ChromeRenderProcessObserver()
+    : webkit_initialized_(false) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 

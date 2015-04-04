@@ -43,12 +43,12 @@ bool InstantPage::IsLocal() const {
       web_contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
 }
 
-InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url,
-                         Profile* profile, bool is_incognito)
+InstantPage::InstantPage(Delegate* delegate,
+                         const std::string& instant_url,
+                         Profile* profile)
     : profile_(profile),
       delegate_(delegate),
-      instant_url_(instant_url),
-      is_incognito_(is_incognito) {
+      instant_url_(instant_url) {
 }
 
 void InstantPage::SetContents(content::WebContents* new_web_contents) {

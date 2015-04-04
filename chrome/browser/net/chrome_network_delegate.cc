@@ -294,8 +294,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       domain_reliability_monitor_(NULL),
       experimental_web_platform_features_enabled_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalWebPlatformFeatures)),
-      first_request_(true) {
+              switches::kEnableExperimentalWebPlatformFeatures)) {
   DCHECK(enable_referrers);
   extensions_delegate_.reset(
       ChromeExtensionsNetworkDelegate::Create(event_router));

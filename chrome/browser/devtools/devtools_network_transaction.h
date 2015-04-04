@@ -125,9 +125,6 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
 
   const net::HttpRequestInfo* request_;
 
-  // True if Start was already invoked.
-  bool started_;
-
   // True if Fail was already invoked.
   bool failed_;
 

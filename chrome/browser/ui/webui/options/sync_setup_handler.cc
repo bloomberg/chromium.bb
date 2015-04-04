@@ -21,7 +21,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_header_helper.h"
@@ -153,9 +152,8 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
 
 }  // namespace
 
-SyncSetupHandler::SyncSetupHandler(ProfileManager* profile_manager)
-    : configuring_sync_(false),
-      profile_manager_(profile_manager) {
+SyncSetupHandler::SyncSetupHandler()
+    : configuring_sync_(false) {
 }
 
 SyncSetupHandler::~SyncSetupHandler() {

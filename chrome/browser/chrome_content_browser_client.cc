@@ -811,7 +811,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #endif
   host->AddFilter(new ChromeNetBenchmarkingMessageFilter(profile, context));
   host->AddFilter(new prerender::PrerenderMessageFilter(id, profile));
-  host->AddFilter(new TtsMessageFilter(id, host->GetBrowserContext()));
+  host->AddFilter(new TtsMessageFilter(host->GetBrowserContext()));
 #if defined(ENABLE_WEBRTC)
   WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
       new WebRtcLoggingHandlerHost(profile);

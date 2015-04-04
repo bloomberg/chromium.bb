@@ -17,11 +17,6 @@ class MostVisitedIframeSource : public IframeSource {
   MostVisitedIframeSource();
   ~MostVisitedIframeSource() override;
 
-  // Number of Most Visited elements on the NTP for logging purposes.
-  static const int kNumMostVisited;
-  // Name of the histogram keeping track of Most Visited clicks.
-  static const char kMostVisitedHistogramName[];
-
   // Overridden from IframeSource. Public for testing.
   void StartDataRequest(
       const std::string& path_and_query,

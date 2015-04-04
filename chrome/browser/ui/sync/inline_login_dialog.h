@@ -22,7 +22,7 @@ class InlineLoginDialog : public ui::WebDialogDelegate {
   static void Show(Profile* profile);
 
  private:
-  explicit InlineLoginDialog(Profile* profile);
+  InlineLoginDialog();
 
   // ui::WebDialogDelegate overrides:
   ui::ModalType GetDialogModalType() const override;
@@ -37,8 +37,6 @@ class InlineLoginDialog : public ui::WebDialogDelegate {
                        bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
-
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(InlineLoginDialog);
 };

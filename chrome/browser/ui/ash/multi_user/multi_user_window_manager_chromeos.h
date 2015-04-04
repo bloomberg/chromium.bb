@@ -254,10 +254,6 @@ class MultiUserWindowManagerChromeOS
   // Suppress changes to the visibility flag while we are changing it ourselves.
   bool suppress_visibility_changes_;
 
-  // Caching the current multi profile mode since the detection which mode is
-  // used is quite expensive.
-  static MultiProfileMode multi_user_mode_;
-
   // The speed which is used to perform any animations.
   AnimationSpeed animation_speed_;
 

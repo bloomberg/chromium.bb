@@ -6,14 +6,13 @@
 
 #include "base/logging.h"
 #include "content/public/renderer/render_thread.h"
-#include "extensions/renderer/script_context.h"
 
 using content::RenderThread;
 
 namespace extensions {
 
-ChromeV8ExtensionHandler::ChromeV8ExtensionHandler(ScriptContext* context)
-    : context_(context), routing_id_(MSG_ROUTING_NONE) {
+ChromeV8ExtensionHandler::ChromeV8ExtensionHandler()
+    : routing_id_(MSG_ROUTING_NONE) {
 }
 
 ChromeV8ExtensionHandler::~ChromeV8ExtensionHandler() {

@@ -19,8 +19,6 @@ extern const char kRecordHistory[];
 extern const char kSigninAllowed[];
 extern const char kUserName[];
 
-extern const char kUserPasswordRecord[];
-
 // A pseudo-email address for systems that expect well-formed email addresses
 // (like Sync), even though we're not signed in.
 extern const char kSupervisedUserPseudoEmail[];

@@ -28,7 +28,6 @@ class CryptoModulePasswordDialogViewTest : public testing::Test {
         kCryptoModulePasswordKeygen, "server", callback));
   }
 
-  CryptoModulePasswordCallback* callback_;
   std::string text_;
   scoped_ptr<CryptoModulePasswordDialogView> dialog_;
 };

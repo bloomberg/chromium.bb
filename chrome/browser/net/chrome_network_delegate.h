@@ -220,8 +220,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
 
   bool experimental_web_platform_features_enabled_;
 
-  bool first_request_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };
 

@@ -88,7 +88,7 @@ RemoteDebuggingServer::RemoteDebuggingServer(
   devtools_http_handler_.reset(content::DevToolsHttpHandler::Start(
       make_scoped_ptr(new TCPServerSocketFactory(ip, port)),
       std::string(),
-      new BrowserListTabContentsProvider(host_desktop_type),
+      new BrowserListTabContentsProvider(),
       output_dir));
 }
 

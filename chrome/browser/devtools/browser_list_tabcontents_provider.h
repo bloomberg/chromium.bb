@@ -11,8 +11,7 @@
 class BrowserListTabContentsProvider
     : public content::DevToolsHttpHandlerDelegate {
  public:
-  explicit BrowserListTabContentsProvider(
-      chrome::HostDesktopType host_desktop_type);
+  BrowserListTabContentsProvider();
   ~BrowserListTabContentsProvider() override;
 
   // DevToolsHttpHandlerDelegate implementation.
@@ -21,7 +20,6 @@ class BrowserListTabContentsProvider
   base::FilePath GetDebugFrontendDir() override;
 
  private:
-  chrome::HostDesktopType host_desktop_type_;
   DISALLOW_COPY_AND_ASSIGN(BrowserListTabContentsProvider);
 };
 

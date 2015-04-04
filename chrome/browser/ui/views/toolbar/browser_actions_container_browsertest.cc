@@ -259,9 +259,6 @@ class BrowserActionsContainerOverflowTest
   // Owned by the |overflow_parent_|.
   BrowserActionsContainer* overflow_bar_;
 
-  // The associated toolbar model.
-  extensions::ExtensionToolbarModel* model_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainerOverflowTest);
 };
 

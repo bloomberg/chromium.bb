@@ -45,9 +45,6 @@
 #include "chrome/browser/ui/webui/options/reset_profile_settings_handler.h"
 #include "chrome/browser/ui/webui/options/search_engine_manager_handler.h"
 #include "chrome/browser/ui/webui/options/startup_pages_handler.h"
-#include "chrome/browser/ui/webui/options/supervised_user_create_confirm_handler.h"
-#include "chrome/browser/ui/webui/options/supervised_user_import_handler.h"
-#include "chrome/browser/ui/webui/options/supervised_user_learn_more_handler.h"
 #include "chrome/browser/ui/webui/options/sync_setup_handler.h"
 #include "chrome/browser/ui/webui/options/website_settings_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -311,8 +308,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings,
                           new SupervisedUserLearnMoreHandler());
 #endif
-  AddOptionsPageUIHandler(localized_strings, new SyncSetupHandler(
-      g_browser_process->profile_manager()));
+  AddOptionsPageUIHandler(localized_strings, new SyncSetupHandler());
   AddOptionsPageUIHandler(localized_strings, new WebsiteSettingsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings,

@@ -62,7 +62,6 @@ class SuggestionsSearchProviderTest : public AppListTestBase {
     TestingPrefServiceSyncable* pref_service =
         profile_->GetTestingPrefService();
     suggestions_store_.reset(new SuggestionsStore(pref_service));
-
   }
 
   void TearDown() override {
@@ -97,9 +96,6 @@ class SuggestionsSearchProviderTest : public AppListTestBase {
  private:
   // Under test.
   scoped_ptr<SuggestionsSearchProvider> suggestions_search_;
-
-  // Helpers.
-  ProfileSyncServiceMock* mock_pss_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsSearchProviderTest);
 };

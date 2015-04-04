@@ -22,8 +22,7 @@ class PortForwardingController {
   typedef DevToolsAndroidBridge::BrowserStatus BrowserStatus;
   typedef DevToolsAndroidBridge::ForwardingStatus ForwardingStatus;
 
-  explicit PortForwardingController(Profile* profile,
-                                    DevToolsAndroidBridge* bridge);
+  PortForwardingController(Profile* profile, DevToolsAndroidBridge* bridge);
 
   virtual ~PortForwardingController();
 
@@ -38,7 +37,6 @@ class PortForwardingController {
 
   void UpdateConnections();
 
-  Profile* profile_;
   DevToolsAndroidBridge* bridge_;
   PrefService* pref_service_;
   PrefChangeRegistrar pref_change_registrar_;

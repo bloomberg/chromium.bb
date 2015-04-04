@@ -174,8 +174,6 @@ class BaseScreenHandler : public content::WebUIMessageHandler,
 
   BaseScreen* base_screen_;
 
-  base::DictionaryValue* localized_values_;
-
   // Full name of the corresponding JS screen object. Can be empty, if
   // there are no corresponding screen object or several different
   // objects.

@@ -28,8 +28,7 @@ namespace {
 
 class InterstitialHTMLSource : public content::URLDataSource {
  public:
-  InterstitialHTMLSource(Profile* profile,
-                         content::WebContents* web_contents);
+  explicit InterstitialHTMLSource(content::WebContents* web_contents);
   ~InterstitialHTMLSource() override;
 
   // content::URLDataSource:
@@ -43,7 +42,6 @@ class InterstitialHTMLSource : public content::URLDataSource {
       const content::URLDataSource::GotDataCallback& callback) override;
 
  private:
-  Profile* profile_;
   content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(InterstitialHTMLSource);
 };
@@ -145,10 +143,9 @@ SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
 
 InterstitialUI::InterstitialUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  Profile* profile = Profile::FromWebUI(web_ui);
   scoped_ptr<InterstitialHTMLSource> html_source(
-      new InterstitialHTMLSource(profile->GetOriginalProfile(),
-                                 web_ui->GetWebContents()));
+      new InterstitialHTMLSource(web_ui->GetWebContents()));
+  Profile* profile = Profile::FromWebUI(web_ui);
   content::URLDataSource::Add(profile, html_source.release());
 }
 
@@ -158,10 +155,8 @@ InterstitialUI::~InterstitialUI() {
 // InterstitialHTMLSource
 
 InterstitialHTMLSource::InterstitialHTMLSource(
-    Profile* profile,
     content::WebContents* web_contents)
-    : profile_(profile),
-      web_contents_(web_contents) {
+    : web_contents_(web_contents) {
 }
 
 InterstitialHTMLSource::~InterstitialHTMLSource() {

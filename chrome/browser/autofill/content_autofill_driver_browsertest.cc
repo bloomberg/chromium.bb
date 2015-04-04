@@ -77,7 +77,7 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
   ContentAutofillDriverBrowserTest() {}
   virtual ~ContentAutofillDriverBrowserTest() {}
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents != NULL);
@@ -92,20 +92,18 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
         AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
   }
 
-  virtual void WasHidden() override {
+  void WasHidden() override {
     if (!web_contents_hidden_callback_.is_null())
       web_contents_hidden_callback_.Run();
   }
 
-  virtual void NavigationEntryCommitted(
+  void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override {
     if (!nav_entry_committed_callback_.is_null())
       nav_entry_committed_callback_.Run();
   }
 
  protected:
-  content::WebContents* web_contents_;
-
   base::Closure web_contents_hidden_callback_;
   base::Closure nav_entry_committed_callback_;
 

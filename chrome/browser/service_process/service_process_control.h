@@ -145,8 +145,7 @@ class ServiceProcessControl : public IPC::Sender,
   class Launcher
       : public base::RefCountedThreadSafe<ServiceProcessControl::Launcher> {
    public:
-    Launcher(ServiceProcessControl* process,
-             scoped_ptr<base::CommandLine> cmd_line);
+    explicit Launcher(scoped_ptr<base::CommandLine> cmd_line);
     // Execute the command line to start the process asynchronously. After the
     // command is executed |task| is called with the process handle on the UI
     // thread.
@@ -164,7 +163,6 @@ class ServiceProcessControl : public IPC::Sender,
 
     void DoRun();
     void Notify();
-    ServiceProcessControl* process_control_;
     scoped_ptr<base::CommandLine> cmd_line_;
     base::Closure notify_task_;
     bool launched_;

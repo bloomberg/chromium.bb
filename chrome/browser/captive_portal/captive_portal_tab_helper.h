@@ -137,8 +137,6 @@ class CaptivePortalTabHelper
   scoped_ptr<CaptivePortalTabReloader> tab_reloader_;
   scoped_ptr<CaptivePortalLoginDetector> login_detector_;
 
-  content::WebContents* web_contents_;
-
   // If a provisional load has failed, and the tab is loading an error page, the
   // error code associated with the error page we're loading.
   // net::OK, otherwise.

@@ -220,13 +220,7 @@ class MockPrefHashStore : public PrefHashStore {
   std::map<std::string, ValuePtrStrategyPair> checked_values_;
   std::map<std::string, ValuePtrStrategyPair> stored_values_;
 
-  // Number of transactions that are expected to be performed in the scope of
-  // this test (defaults to 1).
-  size_t transactions_expected_;
-
   // Number of transactions that were performed via this MockPrefHashStore.
-  // Verified to match |transactions_expected_| when this MockPrefHashStore is
-  // deleted.
   size_t transactions_performed_;
 
   // Whether a transaction is currently active (only one transaction should be
@@ -370,7 +364,6 @@ class PrefHashFilterTest
  public:
   PrefHashFilterTest() : mock_pref_hash_store_(NULL),
                          pref_store_contents_(new base::DictionaryValue),
-                         last_filter_on_load_modified_prefs_(false),
                          reset_recorded_(false) {}
 
   void SetUp() override {
@@ -423,7 +416,6 @@ class PrefHashFilterTest
 
   MockPrefHashStore* mock_pref_hash_store_;
   scoped_ptr<base::DictionaryValue> pref_store_contents_;
-  bool last_filter_on_load_modified_prefs_;
   MockValidationDelegate mock_validation_delegate_;
   scoped_ptr<PrefHashFilter> pref_hash_filter_;
 

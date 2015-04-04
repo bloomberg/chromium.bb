@@ -127,8 +127,6 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
 
   sql::MetaTable meta_table_;
 
-  static const base::FilePath::CharType kShortcutsDatabaseName[];
-
   DISALLOW_COPY_AND_ASSIGN(ShortcutsDatabase);
 };
 

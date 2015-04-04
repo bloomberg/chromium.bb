@@ -183,7 +183,6 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
   PermissionBubbleViewViews* owner_;
   views::Button* allow_;
   views::Button* deny_;
-  views::Combobox* allow_combobox_;
   base::string16 hostname_;
   scoped_ptr<PermissionMenuModel> menu_button_model_;
   std::vector<PermissionCombobox*> customize_comboboxes_;
@@ -201,8 +200,7 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
     : views::BubbleDelegateView(anchor_view, anchor_arrow),
       owner_(owner),
       allow_(nullptr),
-      deny_(nullptr),
-      allow_combobox_(nullptr) {
+      deny_(nullptr) {
   DCHECK(!requests.empty());
 
   RemoveAllChildViews(true);

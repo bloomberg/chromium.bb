@@ -112,9 +112,6 @@ class EnrollmentScreenHandler
   // The enrollment configuration.
   policy::EnrollmentConfig config_;
 
-  // Whether an enrollment attempt has failed.
-  bool enrollment_failed_once_;
-
   // Latest enrollment frame error.
   net::Error frame_error_;
 

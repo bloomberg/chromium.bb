@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/time/clock.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -24,7 +23,6 @@ static const int kMinTokenRefreshDelaySeconds = 300;  // 5 minutes
 
 SpeechAuthHelper::SpeechAuthHelper(Profile* profile, base::Clock* clock)
     : OAuth2TokenService::Consumer(kAuthScope),
-      profile_(profile),
       clock_(clock),
       token_service_(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
       weak_factory_(this) {
@@ -114,12 +112,12 @@ void SpeechAuthHelper::FetchAuthToken() {
       this);
 }
 
-std::string SpeechAuthHelper::GetToken() {
+std::string SpeechAuthHelper::GetToken() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return auth_token_;
 }
 
-std::string SpeechAuthHelper::GetScope() {
+std::string SpeechAuthHelper::GetScope() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return kAuthScope;
 }

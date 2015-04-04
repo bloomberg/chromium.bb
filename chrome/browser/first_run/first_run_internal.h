@@ -26,9 +26,6 @@ enum FirstRunState {
   FIRST_RUN_FALSE,
 };
 
-// This variable should only be accessed through IsChromeFirstRun().
-extern FirstRunState first_run_;
-
 // Sets up master preferences by preferences passed by installer.
 void SetupMasterPrefsFromInstallPrefs(
     const installer::MasterPreferences& install_prefs,

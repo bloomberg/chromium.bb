@@ -17,8 +17,6 @@ const char kRecordHistory[] = "RecordHistory";
 const char kSigninAllowed[] = "SigninAllowed";
 const char kUserName[] = "UserName";
 
-const char kUserPasswordRecord[] = "UserPasswordRecord";
-
 const char kSupervisedUserPseudoEmail[] = "managed_user@localhost";
 
 const char kChildAccountSUID[] = "ChildAccountSUID";

@@ -54,9 +54,8 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   MOCK_METHOD1(SetSyncEnabled, void(bool enabled));
   MOCK_METHOD1(PromoteDemotedChanges, void(const base::Closure& callback));
 
-  virtual void DumpFiles(const GURL& origin,
-                         const ListCallback& callback) override;
-  virtual void DumpDatabase(const ListCallback& callback) override;
+  void DumpFiles(const GURL& origin, const ListCallback& callback) override;
+  void DumpDatabase(const ListCallback& callback) override;
 
   void SetServiceState(RemoteServiceState state);
 
@@ -88,8 +87,6 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
 
   ObserverList<Observer> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;
-
-  ConflictResolutionPolicy conflict_resolution_policy_;
 
   RemoteServiceState state_;
 

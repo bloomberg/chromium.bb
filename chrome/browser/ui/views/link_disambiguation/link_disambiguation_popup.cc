@@ -22,7 +22,6 @@ class LinkDisambiguationPopup::ZoomBubbleView
   ZoomBubbleView(views::Widget* top_level_widget,
                  const gfx::Rect& target_rect,
                  const gfx::ImageSkia* zoomed_skia_image,
-                 const aura::Window* content,
                  LinkDisambiguationPopup* popup,
                  const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
                  const base::Callback<void(ui::MouseEvent*)>& mouse_cb);
@@ -39,7 +38,6 @@ class LinkDisambiguationPopup::ZoomBubbleView
   void OnWidgetClosing(views::Widget* widget) override;
 
   const float scale_;
-  const aura::Window* content_;
   const base::Callback<void(ui::GestureEvent*)> gesture_cb_;
   const base::Callback<void(ui::MouseEvent*)> mouse_cb_;
   LinkDisambiguationPopup* popup_;
@@ -52,7 +50,6 @@ LinkDisambiguationPopup::ZoomBubbleView::ZoomBubbleView(
     views::Widget* top_level_widget,
     const gfx::Rect& target_rect,
     const gfx::ImageSkia* zoomed_skia_image,
-    const aura::Window* content,
     LinkDisambiguationPopup* popup,
     const base::Callback<void(ui::GestureEvent*)>& gesture_cb,
     const base::Callback<void(ui::MouseEvent*)>& mouse_cb)
@@ -61,7 +58,6 @@ LinkDisambiguationPopup::ZoomBubbleView::ZoomBubbleView(
           views::BubbleBorder::FLOAT),
       scale_(static_cast<float>(zoomed_skia_image->width()) /
           static_cast<float>(target_rect.width())),
-      content_(content),
       gesture_cb_(gesture_cb),
       mouse_cb_(mouse_cb),
       popup_(popup),
@@ -166,7 +162,6 @@ void LinkDisambiguationPopup::Show(
       top_level_widget,
       target_rect,
       gfx::Image::CreateFrom1xBitmap(zoomed_bitmap).ToImageSkia(),
-      content_,
       this,
       gesture_cb,
       mouse_cb);

@@ -496,8 +496,7 @@ void PortForwardingController::Connection::OnFrameRead(
 PortForwardingController::PortForwardingController(
     Profile* profile,
     DevToolsAndroidBridge* bridge)
-    : profile_(profile),
-      bridge_(bridge),
+    : bridge_(bridge),
       pref_service_(profile->GetPrefs()) {
   pref_change_registrar_.Init(pref_service_);
   base::Closure callback = base::Bind(

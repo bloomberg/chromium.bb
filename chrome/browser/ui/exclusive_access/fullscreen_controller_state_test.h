@@ -76,7 +76,6 @@ class FullscreenControllerStateTest {
   };
 
   static const int kMaxStateNameLength = 39;
-  static const int kMaxEventNameLength = 24;
 
   FullscreenControllerStateTest();
   virtual ~FullscreenControllerStateTest();

@@ -71,8 +71,9 @@ class InstantPage : public content::WebContentsObserver,
   virtual bool IsLocal() const;
 
  protected:
-  InstantPage(Delegate* delegate, const std::string& instant_url,
-              Profile* profile, bool is_incognito);
+  InstantPage(Delegate* delegate,
+              const std::string& instant_url,
+              Profile* profile);
 
   // Sets |web_contents| as the page to communicate with. |web_contents| may be
   // NULL, which effectively stops all communication.
@@ -119,7 +120,6 @@ class InstantPage : public content::WebContentsObserver,
 
   Delegate* const delegate_;
   const std::string instant_url_;
-  const bool is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantPage);
 };

@@ -49,9 +49,6 @@ class ThumbnailSource : public content::URLDataSource {
   // ThumbnailService.
   scoped_refptr<thumbnails::ThumbnailService> thumbnail_service_;
 
-  // Only used when servicing requests on the UI thread.
-  Profile* const profile_;
-
   // Indicate that, when a URL for which we don't have a thumbnail is requested
   // from this source, then Chrome should capture a thumbnail next time it
   // navigates to this URL. This is useful when the thumbnail URLs are generated

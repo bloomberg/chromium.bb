@@ -14,7 +14,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/renderer/render_process_observer.h"
 
-class ChromeContentRendererClient;
 class GURL;
 struct ContentSettings;
 
@@ -29,8 +28,7 @@ class ResourceDispatcherDelegate;
 class ChromeRenderProcessObserver : public content::RenderProcessObserver,
                                     public base::FieldTrialList::Observer {
  public:
-  explicit ChromeRenderProcessObserver(
-      ChromeContentRendererClient* client);
+  ChromeRenderProcessObserver();
   ~ChromeRenderProcessObserver() override;
 
   static bool is_incognito_process() { return is_incognito_process_; }
@@ -60,9 +58,6 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver,
 
   static bool is_incognito_process_;
   scoped_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
-  ChromeContentRendererClient* client_;
-  // If true, the web cache shall be cleared before the next navigation event.
-  bool clear_cache_pending_;
   RendererContentSettingRules content_setting_rules_;
 
   bool webkit_initialized_;

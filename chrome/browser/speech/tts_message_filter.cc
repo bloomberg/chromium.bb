@@ -14,10 +14,8 @@
 
 using content::BrowserThread;
 
-TtsMessageFilter::TtsMessageFilter(int render_process_id,
-                                   content::BrowserContext* browser_context)
+TtsMessageFilter::TtsMessageFilter(content::BrowserContext* browser_context)
     : BrowserMessageFilter(TtsMsgStart),
-      render_process_id_(render_process_id),
       browser_context_(browser_context),
       valid_(true) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

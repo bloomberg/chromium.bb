@@ -21,8 +21,6 @@ class FilePath;
 
 namespace local_discovery {
 
-const int kPrivetHTTPCodeInternalFailure = -1;
-
 // Privet-specific URLFetcher adapter. Currently supports only the subset
 // of HTTP features required by Privet for GCP 1.5
 // (/privet/info and /privet/register).

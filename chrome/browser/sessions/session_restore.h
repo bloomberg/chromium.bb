@@ -98,10 +98,6 @@ class SessionRestore {
   static CallbackSubscription RegisterOnSessionRestoredCallback(
       const base::Callback<void(int)>& callback);
 
-  // The max number of non-selected tabs SessionRestore loads when restoring
-  // a session. A value of 0 indicates all tabs are loaded at once.
-  static size_t num_tabs_to_load_;
-
  private:
   SessionRestore();
 

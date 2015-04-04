@@ -605,9 +605,6 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   // If true, incoming pinned state changes should be ignored.
   bool ignore_persist_pinned_state_change_;
 
-  // True if each user has an own desktop.
-  bool multi_profile_desktop_separation_;
-
   // The list of running & un-pinned applications for different users on hidden
   // desktops.
   typedef std::vector<std::string> RunningAppListIds;

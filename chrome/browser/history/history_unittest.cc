@@ -978,9 +978,7 @@ TEST_F(HistoryBackendDBTest,
 
 class HistoryTest : public testing::Test {
  public:
-  HistoryTest()
-      : got_thumbnail_callback_(false),
-        query_url_success_(false) {
+  HistoryTest() : query_url_success_(false) {
   }
 
   ~HistoryTest() override {}
@@ -1094,11 +1092,6 @@ class HistoryTest : public testing::Test {
 
   // names of the database files
   base::FilePath history_dir_;
-
-  // Set by the thumbnail callback when we get data, you should be sure to
-  // clear this before issuing a thumbnail request.
-  bool got_thumbnail_callback_;
-  std::vector<unsigned char> thumbnail_data_;
 
   // Set by the redirect callback when we get data. You should be sure to
   // clear this before issuing a redirect request.

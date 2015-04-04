@@ -42,8 +42,7 @@ class ZoomChangedWatcher : public ZoomObserver {
   ZoomChangedWatcher(
       content::WebContents* web_contents,
       const ZoomController::ZoomChangedEventData& expected_event_data)
-      : web_contents_(web_contents),
-        expected_event_data_(expected_event_data),
+      : expected_event_data_(expected_event_data),
         message_loop_runner_(new content::MessageLoopRunner) {
     ZoomController::FromWebContents(web_contents)->AddObserver(this);
   }
@@ -58,7 +57,6 @@ class ZoomChangedWatcher : public ZoomObserver {
   }
 
  private:
-  content::WebContents* web_contents_;
   ZoomController::ZoomChangedEventData expected_event_data_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 

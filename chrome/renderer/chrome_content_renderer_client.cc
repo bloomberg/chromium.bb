@@ -361,7 +361,7 @@ ChromeContentRendererClient::~ChromeContentRendererClient() {
 void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
 
-  chrome_observer_.reset(new ChromeRenderProcessObserver(this));
+  chrome_observer_.reset(new ChromeRenderProcessObserver());
   web_cache_observer_.reset(new web_cache::WebCacheRenderProcessObserver());
 
 #if defined(ENABLE_EXTENSIONS)

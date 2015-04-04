@@ -50,7 +50,7 @@ int g_next_install_id = 0;
 } // anonymous namespace
 
 WebstoreBindings::WebstoreBindings(ScriptContext* context)
-    : ObjectBackedNativeHandler(context), ChromeV8ExtensionHandler(context) {
+    : ObjectBackedNativeHandler(context) {
   RouteFunction("Install",
                 base::Bind(&WebstoreBindings::Install, base::Unretained(this)));
 }

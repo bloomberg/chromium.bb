@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
 class LoginUIService;
-class ProfileManager;
 class ProfileSyncService;
 class SigninManagerBase;
 
@@ -25,8 +24,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
                          public SyncStartupTracker::Observer,
                          public LoginUIService::LoginUI {
  public:
-  // Constructs a new SyncSetupHandler. |profile_manager| may be NULL.
-  explicit SyncSetupHandler(ProfileManager* profile_manager);
+  SyncSetupHandler();
   ~SyncSetupHandler() override;
 
   // OptionsPageUIHandler implementation.
@@ -151,9 +149,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // what stage of the setup wizard the user was in and to update the UMA
   // histograms in the case that the user cancels out.
   bool configuring_sync_;
-
-  // Weak reference to the profile manager.
-  ProfileManager* const profile_manager_;
 
   // The OneShotTimer object used to timeout of starting the sync backend
   // service.
