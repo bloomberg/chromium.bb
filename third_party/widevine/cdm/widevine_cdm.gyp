@@ -4,6 +4,11 @@
 
 {
   'variables': {
+    # Allow widevinecdmadapter to be built in Chromium.
+    'variables': {
+      'enable_widevine%': 0,
+    },
+    'enable_widevine%': '<(enable_widevine)',
     'widevine_cdm_version_h_file%': 'widevine_cdm_version.h',
     'widevine_cdm_binary_files%': [],
     'conditions': [
@@ -43,6 +48,13 @@
       [ 'OS == "android"', {
         'widevine_cdm_version_h_file%':
             'android/widevine_cdm_version.h',
+      }],
+      [ 'branding != "Chrome" and OS != "android" and enable_widevine == 1', {
+        # If enable_widevine==1 then create a dummy widevinecdm. On Win/Mac
+        # the component updater will get the latest version and use it.
+        # Other systems are not currently supported.
+        'widevine_cdm_version_h_file%':
+            'stub/widevine_cdm_version.h',
       }],
     ],
   },
@@ -86,12 +98,12 @@
       'target_name': 'widevinecdmadapter',
       'type': 'none',
       'conditions': [
-        [ 'branding == "Chrome" and enable_pepper_cdms==1', {
+        [ '(branding == "Chrome" or enable_widevine == 1) and enable_pepper_cdms == 1', {
           'dependencies': [
             '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
             '<(DEPTH)/media/media_cdm_adapter.gyp:cdmadapter',
             'widevine_cdm_version_h',
-            'widevine_cdm_binaries',
+            'widevinecdm',
             'widevinecdmadapter_resources',
           ],
           'sources': [
@@ -101,19 +113,19 @@
             [ 'os_posix == 1 and OS != "mac"', {
               'libraries': [
                 '-lrt',
-                # Copied by widevine_cdm_binaries.
+                # Copied/created by widevinecdm.
                 '<(PRODUCT_DIR)/libwidevinecdm.so',
               ],
             }],
             [ 'OS == "win"', {
               'libraries': [
-                # Copied by widevine_cdm_binaries.
+                # Copied/created by widevinecdm.
                 '<(PRODUCT_DIR)/widevinecdm.dll.lib',
               ],
             }],
             [ 'OS == "mac"', {
               'libraries': [
-                # Copied by widevine_cdm_binaries.
+                # Copied/created by widevinecdm.
                 '<(PRODUCT_DIR)/libwidevinecdm.dylib',
               ],
             }],
@@ -132,21 +144,51 @@
     },
     {
       # GN version: //third_party/widevine/cdm:binaries
-      'target_name': 'widevine_cdm_binaries',
+      'target_name': 'widevinecdm',
       'type': 'none',
       'conditions': [
-        [ 'OS=="mac"', {
-          'xcode_settings': {
-            'COPY_PHASE_STRIP': 'NO',
-          }
+        [ 'branding == "Chrome"', {
+          'conditions': [
+            [ 'OS=="mac"', {
+              'xcode_settings': {
+                'COPY_PHASE_STRIP': 'NO',
+              }
+            }],
+          ],
+          'copies': [{
+            # TODO(ddorwin): Do we need a sub-directory? We either need a
+            # sub-directory or to rename manifest.json before we can copy it.
+            'destination': '<(PRODUCT_DIR)',
+            'files': [ '<@(widevine_cdm_binary_files)' ],
+          }],
+        }],
+        [ 'branding != "Chrome" and enable_widevine == 1', {
+          'conditions': [
+            ['os_posix == 1 and OS != "mac"', {
+              'type': 'loadable_module',
+              # Note that this causes the binary to be put in PRODUCT_DIR
+              # instead of lib/. This matches what happens in the copy step
+              # above.
+            }],
+            ['OS == "mac" or OS == "win"', {
+              'type': 'shared_library',
+            }],
+            ['OS == "mac"', {
+              'xcode_settings': {
+                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+              },
+            }],
+          ],
+          'defines': ['CDM_IMPLEMENTATION'],
+          'dependencies': [
+            '<(DEPTH)/base/base.gyp:base',
+          ],
+          'sources': [
+            '<(DEPTH)/media/cdm/stub/stub_cdm.cc',
+            '<(DEPTH)/media/cdm/stub/stub_cdm.h',
+          ],
         }],
       ],
-      'copies': [{
-        # TODO(ddorwin): Do we need a sub-directory? We either need a
-        # sub-directory or to rename manifest.json before we can copy it.
-        'destination': '<(PRODUCT_DIR)',
-        'files': [ '<@(widevine_cdm_binary_files)' ],
-      }],
     },
     {
       'target_name': 'widevine_test_license_server',
