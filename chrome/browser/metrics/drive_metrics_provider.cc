@@ -40,15 +40,6 @@ void DriveMetricsProvider::GetDriveMetrics(const base::Closure& done) {
 DriveMetricsProvider::SeekPenaltyResponse::SeekPenaltyResponse()
     : success(false) {}
 
-#if !(defined(OS_WIN) || defined(OS_ANDROID) || defined(OS_IOS))
-// static
-bool DriveMetricsProvider::HasSeekPenalty(const base::FilePath& path,
-                                          bool* has_seek_penalty) {
-  // TODO(dbeam): implement on more platforms.
-  return false;
-}
-#endif
-
 // static
 DriveMetricsProvider::DriveMetrics
 DriveMetricsProvider::GetDriveMetricsOnFileThread() {

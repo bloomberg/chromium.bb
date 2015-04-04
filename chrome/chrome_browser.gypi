@@ -1735,6 +1735,8 @@
       'browser/metrics/drive_metrics_provider.cc',
       'browser/metrics/drive_metrics_provider_android.cc',
       'browser/metrics/drive_metrics_provider_ios.mm',
+      'browser/metrics/drive_metrics_provider_linux.cc',
+      'browser/metrics/drive_metrics_provider_mac.mm',
       'browser/metrics/drive_metrics_provider_win.cc',
       'browser/metrics/drive_metrics_provider.h',
       'browser/metrics/field_trial_synchronizer.cc',
