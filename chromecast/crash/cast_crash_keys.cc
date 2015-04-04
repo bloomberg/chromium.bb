@@ -37,12 +37,12 @@ size_t RegisterCastCrashKeys() {
     { kLastApp, kSmallSize },
     { kCurrentApp, kSmallSize },
     { kPreviousApp, kSmallSize },
-    // base/:
-    { "dm-usage", kSmallSize },
-    { "total-dm-usage", kSmallSize },
     // content/:
+    { "discardable-memory-allocated", kSmallSize },
+    { "discardable-memory-free", kSmallSize },
     { "ppapi_path", kMediumSize },
     { "subresource_url", kLargeSize },
+    { "total-discardable-memory-allocated", kSmallSize },
   };
 
   return base::debug::InitCrashKeys(fixed_keys, arraysize(fixed_keys),
