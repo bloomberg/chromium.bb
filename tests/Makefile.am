@@ -29,15 +29,15 @@ LDADD = $(top_builddir)/libdrm.la
 
 check_PROGRAMS = \
 	dristat \
-	drmstat \
-	hash
+	drmstat
 
 if HAVE_NOUVEAU
 SUBDIRS += nouveau
 endif
 
 TESTS = \
-	drmsl
+	drmsl \
+	hash
 
 if HAVE_LIBUDEV
 

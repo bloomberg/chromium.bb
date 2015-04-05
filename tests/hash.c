@@ -121,8 +121,8 @@ static void compute_dist(HashTablePtr table)
     }
 }
 
-static void check_table(HashTablePtr table,
-                        unsigned long key, void * value)
+static int check_table(HashTablePtr table,
+                       unsigned long key, void * value)
 {
     void *retval;
     int   retcode = drmHashLookup(table, key, &retval);
@@ -138,28 +138,32 @@ static void check_table(HashTablePtr table,
                key, value, retval);
         break;
     case 0:
-        if (value != retval)
+        if (value != retval) {
             printf("Bad value: key = %lu, expected = %p, returned = %p\n",
                    key, value, retval);
+            retcode = -1;
+        }
         break;
     default:
         printf("Bad retcode = %d: key = %lu, expected = %p, returned = %p\n",
                retcode, key, value, retval);
         break;
     }
+    return retcode;
 }
 
 int main(void)
 {
     HashTablePtr  table;
     unsigned long i;
+    int           ret = 0;
 
     printf("\n***** 256 consecutive integers ****\n");
     table = drmHashCreate();
     for (i = 0; i < 256; i++)
         drmHashInsert(table, i, (void *)(i << 16 | i));
     for (i = 0; i < 256; i++)
-        check_table(table, i, (void *)(i << 16 | i));
+        ret |= check_table(table, i, (void *)(i << 16 | i));
     compute_dist(table);
     drmHashDestroy(table);
 
@@ -168,7 +172,7 @@ int main(void)
     for (i = 0; i < 1024; i++)
         drmHashInsert(table, i, (void *)(i << 16 | i));
     for (i = 0; i < 1024; i++)
-        check_table(table, i, (void *)(i << 16 | i));
+        ret |= check_table(table, i, (void *)(i << 16 | i));
     compute_dist(table);
     drmHashDestroy(table);
 
@@ -177,7 +181,7 @@ int main(void)
     for (i = 0; i < 1024; i++)
         drmHashInsert(table, i*4096, (void *)(i << 16 | i));
     for (i = 0; i < 1024; i++)
-        check_table(table, i*4096, (void *)(i << 16 | i));
+        ret |= check_table(table, i*4096, (void *)(i << 16 | i));
     compute_dist(table);
     drmHashDestroy(table);
 
@@ -188,10 +192,10 @@ int main(void)
         drmHashInsert(table, random(), (void *)(i << 16 | i));
     srandom(0xbeefbeef);
     for (i = 0; i < 1024; i++)
-        check_table(table, random(), (void *)(i << 16 | i));
+        ret |= check_table(table, random(), (void *)(i << 16 | i));
     srandom(0xbeefbeef);
     for (i = 0; i < 1024; i++)
-        check_table(table, random(), (void *)(i << 16 | i));
+        ret |= check_table(table, random(), (void *)(i << 16 | i));
     compute_dist(table);
     drmHashDestroy(table);
 
@@ -202,12 +206,12 @@ int main(void)
         drmHashInsert(table, random(), (void *)(i << 16 | i));
     srandom(0xbeefbeef);
     for (i = 0; i < 5000; i++)
-        check_table(table, random(), (void *)(i << 16 | i));
+        ret |= check_table(table, random(), (void *)(i << 16 | i));
     srandom(0xbeefbeef);
     for (i = 0; i < 5000; i++)
-        check_table(table, random(), (void *)(i << 16 | i));
+        ret |= check_table(table, random(), (void *)(i << 16 | i));
     compute_dist(table);
     drmHashDestroy(table);
 
-    return 0;
+    return ret;
 }
