@@ -60,15 +60,15 @@ crbug.com/469454 [ Mac ] virtual/slimmingpaint/fast/repaint/fixed-element-repain
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ Pass ImageOnlyFailure ]
 
 crbug.com/450725 virtual/slimmingpaint/svg/text/remove-tspan-from-text.html [ ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/450725 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ Crash NeedsManualRebaseline ]
+crbug.com/450725 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ Crash Timeout NeedsManualRebaseline ]
 crbug.com/450725 virtual/slimmingpaint/svg/text/text-text-05-t.svg [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/450725 virtual/slimmingpaint/css3/filters/blur-filter-page-scroll-parents.html [ ImageOnlyFailure ]
 crbug.com/450725 virtual/slimmingpaint/css3/filters/blur-filter-page-scroll-self.html [ ImageOnlyFailure ]
 crbug.com/450725 virtual/slimmingpaint/css3/filters/blur-filter-page-scroll.html [ ImageOnlyFailure ]
 
 # Slimming Paint printing failures
-crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Crash Pass ]
-crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing.html [ Crash Pass ]
+crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Crash Timeout Pass ]
+crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing.html [ Crash Timeout Pass ]
 
 # Some slimming paint reftest fail when the reference is run with slimming paint disabled.
 crbug.com/454866 virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ ImageOnlyFailure ]
@@ -375,8 +375,8 @@ crbug.com/443379 imported/web-platform-tests/gamepad/idlharness.html [ Failure T
 
 crbug.com/443382 imported/web-platform-tests/subresource-integrity/subresource-integrity.html [ Failure ]
 
-crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Crash ]
-crbug.com/389648 virtual/slimmingpaint/fast/text-autosizing/table-inflation-crash.html [ Pass Crash ]
+crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Timeout Crash ]
+crbug.com/389648 virtual/slimmingpaint/fast/text-autosizing/table-inflation-crash.html [ Pass Timeout Crash ]
 
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
@@ -435,7 +435,7 @@ crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-fl
 # crbug.com/331583 [ Mac ] fast/text/whitespace/018.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-block-formatting-context-001.htm [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-block-003.htm [ Pass ImageOnlyFailure ]
-crbug.com/452018 [ Mavericks ] http/tests/navigation/anchor-basic.html [ Crash Timeout Pass ]
+crbug.com/452018 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash Timeout Pass ]
 
 crbug.com/365340 editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
 
