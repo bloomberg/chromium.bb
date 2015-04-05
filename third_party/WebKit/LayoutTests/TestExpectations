@@ -37,6 +37,7 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/018.html [ P
 
 # These baselines need to be reviewed and perhaps updated after crbug.com/452967
 crbug.com/452967 compositing/color-matching/pdf-image-match.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/452967 virtual/slimmingpaint/compositing/color-matching/pdf-image-match.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-005.htm [ Pass Failure ImageOnlyFailure ]
 crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-007.htm [ Pass Failure ImageOnlyFailure ]
 crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-008.htm [ Pass Failure ImageOnlyFailure ]
@@ -595,6 +596,7 @@ crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnly
 crbug.com/265650 compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
+crbug.com/266754 virtual/slimmingpaint/fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
 crbug.com/267206 [ Lion MountainLion Retina ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
@@ -787,6 +789,7 @@ crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 
 crbug.com/310323 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
 crbug.com/469190 [ XP Release ] fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
+crbug.com/469190 [ XP Release ] virtual/slimmingpaint/fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
 crbug.com/469190 [ XP Release ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure Failure ]
 crbug.com/469190 [ XP Release ] svg/as-background-image/svg-as-background-4.html [ Pass ImageOnlyFailure Failure ]
 crbug.com/469190 [ XP ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ ImageOnlyFailure ]
@@ -873,6 +876,7 @@ crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass
 
 crbug.com/460633 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 crbug.com/460633 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
+crbug.com/460633 virtual/slimmingpaint/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
@@ -1094,6 +1098,7 @@ crbug.com/453940 fast/dom/HTMLImageElement/image-sizes-2x.html [ Pass Failure ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
+crbug.com/306222 virtual/slimmingpaint/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
 crbug.com/362434 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
 
@@ -1859,6 +1864,7 @@ crbug.com/447425 [ Win Mac Linux ] fast/dynamic/011.html [ Pass Failure ]
 crbug.com/448641 [ Debug ] web-animations-api/timeline-updates-players.html [ Crash Pass ]
 crbug.com/448931 permissionclient/image-permissions.html [ Pass Failure ]
 crbug.com/448980 fast/forms/select/styling-option-checked.html [ Pass ImageOnlyFailure ]
+crbug.com/448980 virtual/slimmingpaint/fast/forms/select/styling-option-checked.html [ Pass ImageOnlyFailure ]
 
 crbug.com/449021 http/tests/misc/script-after-slow-stylesheet-removed.html [ Pass Failure ]
 

@@ -52,6 +52,7 @@ crbug.com/301515 fast/workers/worker-terminate.html [ Leak ]
 crbug.com/327574 permissionclient/image-permissions.html [ Leak ]
 crbug.com/327574 http/tests/permissionclient/image-permissions.html [ Leak ]
 crbug.com/327574 fast/loader/data-images-with-images-disabled.html [ Leak ]
+crbug.com/327574 virtual/slimmingpaint/fast/loader/data-images-with-images-disabled.html [ Leak ]
 
 # -----------------------------------------------------------------
 # Untriaged but known leaks which may be false positives.
