@@ -38,7 +38,7 @@
 
 #include <sys/ioctl.h>
 #include "xf86drm.h"
-#include "libdrm.h"
+#include "libdrm_macros.h"
 
 #include "i915_drm.h"
 

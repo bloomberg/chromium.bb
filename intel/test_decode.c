@@ -34,7 +34,7 @@
 #include <sys/stat.h>
 #include <err.h>
 
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "intel_bufmgr.h"
 #include "intel_chipset.h"
 

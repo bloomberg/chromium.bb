@@ -33,7 +33,7 @@
 #include "config.h"
 #endif
 
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "libkms.h"
 
 struct kms_driver

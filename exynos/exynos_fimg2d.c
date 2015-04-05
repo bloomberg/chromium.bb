@@ -24,7 +24,7 @@
 
 #include <xf86drm.h>
 
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "exynos_drm.h"
 #include "fimg2d_reg.h"
 #include "exynos_fimg2d.h"

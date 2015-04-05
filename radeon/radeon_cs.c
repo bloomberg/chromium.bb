@@ -1,7 +1,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include <stdio.h>
 #include "radeon_cs.h"
 #include "radeon_cs_int.h"

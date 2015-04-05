@@ -31,7 +31,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "radeon_cs.h"
 #include "radeon_bo_int.h"
 #include "radeon_cs_int.h"

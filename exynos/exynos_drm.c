@@ -38,7 +38,7 @@
 
 #include <xf86drm.h>
 
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "exynos_drm.h"
 #include "exynos_drmif.h"
 

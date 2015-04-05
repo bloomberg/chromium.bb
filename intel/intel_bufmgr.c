@@ -37,7 +37,7 @@
 #include <drm.h>
 #include <i915_drm.h>
 #include <pciaccess.h>
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
 #include "xf86drm.h"

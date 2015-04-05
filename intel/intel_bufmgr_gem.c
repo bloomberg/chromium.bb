@@ -56,7 +56,7 @@
 #ifndef ETIME
 #define ETIME ETIMEDOUT
 #endif
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "libdrm_lists.h"
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"

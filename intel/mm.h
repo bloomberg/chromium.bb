@@ -33,7 +33,7 @@
 #include "config.h"
 #endif
 
-#include "libdrm.h"
+#include "libdrm_macros.h"
 
 struct mem_block {
 	struct mem_block *next, *prev;

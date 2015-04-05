@@ -37,7 +37,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include "drm.h"
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "xf86drm.h"
 #include "radeon_drm.h"
 #include "radeon_surface.h"
@@ -785,7 +785,7 @@ static int eg_surface_init_1d_miptrees(struct radeon_surface_manager *surf_man,
 {
     unsigned zs_flags = RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER;
     int r, is_depth_stencil = (surf->flags & zs_flags) == zs_flags;
-    /* Old libdrm headers didn't have stencil_level in it. This prevents crashes. */
+    /* Old libdrm_macros.headers didn't have stencil_level in it. This prevents crashes. */
     struct radeon_surface_level tmp[RADEON_SURF_MAX_LEVEL];
     struct radeon_surface_level *stencil_level =
         (surf->flags & RADEON_SURF_HAS_SBUFFER_MIPTREE) ? surf->stencil_level : tmp;
@@ -807,7 +807,7 @@ static int eg_surface_init_2d_miptrees(struct radeon_surface_manager *surf_man,
 {
     unsigned zs_flags = RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER;
     int r, is_depth_stencil = (surf->flags & zs_flags) == zs_flags;
-    /* Old libdrm headers didn't have stencil_level in it. This prevents crashes. */
+    /* Old libdrm_macros.headers didn't have stencil_level in it. This prevents crashes. */
     struct radeon_surface_level tmp[RADEON_SURF_MAX_LEVEL];
     struct radeon_surface_level *stencil_level =
         (surf->flags & RADEON_SURF_HAS_SBUFFER_MIPTREE) ? surf->stencil_level : tmp;

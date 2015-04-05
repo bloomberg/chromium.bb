@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "internal.h"
 
 int kms_create(int fd, struct kms_driver **out)

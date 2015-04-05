@@ -37,7 +37,7 @@
 
 #include <xf86drm.h>
 #include <xf86atomic.h>
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "libdrm_lists.h"
 #include "nouveau_drm.h"
 

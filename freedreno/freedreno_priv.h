@@ -44,7 +44,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "xf86drm.h"
 #include "xf86atomic.h"
 

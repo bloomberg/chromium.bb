@@ -30,7 +30,7 @@
 #include <assert.h>
 
 #include "xf86drm.h"
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "mm.h"
 
 drm_private void mmDumpMemInfo(const struct mem_block *heap)

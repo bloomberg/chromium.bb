@@ -49,7 +49,7 @@
 #include "drm.h"
 #include "i915_drm.h"
 #include "mm.h"
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "libdrm_lists.h"
 
 /* Support gcc's __FUNCTION__ for people using other compilers */

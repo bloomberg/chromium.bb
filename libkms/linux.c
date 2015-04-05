@@ -41,7 +41,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "internal.h"
 
 #define PATH_SIZE 512

@@ -33,7 +33,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "xf86drm.h"
 #include "intel_chipset.h"
 #include "intel_bufmgr.h"

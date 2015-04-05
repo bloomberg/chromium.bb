@@ -28,7 +28,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <libdrm.h>
+#include <libdrm_macros.h>
 #include <xf86atomic.h>
 
 #include "tegra.h"

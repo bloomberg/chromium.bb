@@ -39,7 +39,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include <libdrm.h>
+#include <libdrm_macros.h>
 #include <xf86drm.h>
 #include <xf86atomic.h>
 

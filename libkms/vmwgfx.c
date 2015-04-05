@@ -36,7 +36,7 @@
 #include "internal.h"
 
 #include "xf86drm.h"
-#include "libdrm.h"
+#include "libdrm_macros.h"
 #include "vmwgfx_drm.h"
 
 struct vmwgfx_bo
