@@ -134,7 +134,6 @@ void CollectModuleVerificationData(
         module_state(
             new ClientIncidentReport_EnvironmentData_Process_ModuleState());
 
-    int new_verifier_bytes_modified = 0;
     VerificationResult result = NewVerifyModule(modules_to_verify[i],
                                                 module_state.get());
 
@@ -147,7 +146,7 @@ void CollectModuleVerificationData(
     if (result.state == MODULE_STATE_MODIFIED) {
       UMA_HISTOGRAM_COUNTS_10000(
           "ModuleIntegrityVerification.BytesModified.WithoutByteSet",
-          new_verifier_bytes_modified);
+          result.num_bytes_different);
     }
 
     if (modified == MODULE_STATE_MODIFIED) {
@@ -158,13 +157,13 @@ void CollectModuleVerificationData(
 
     if (modified == MODULE_STATE_MODIFIED ||
         result.state == MODULE_STATE_MODIFIED) {
-      int difference = abs(new_verifier_bytes_modified - num_bytes);
+      int difference = abs(result.num_bytes_different - num_bytes);
 
-      if (new_verifier_bytes_modified > num_bytes) {
+      if (result.num_bytes_different > num_bytes) {
         UMA_HISTOGRAM_COUNTS_10000(
             "ModuleIntegrityVerification.Difference.WithoutByteSet",
             difference);
-      } else if (num_bytes > new_verifier_bytes_modified) {
+      } else if (num_bytes > result.num_bytes_different) {
         UMA_HISTOGRAM_COUNTS_10000(
             "ModuleIntegrityVerification.Difference.WithByteSet",
             difference);
