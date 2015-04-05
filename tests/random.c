@@ -98,15 +98,17 @@ int main(void)
 {
     RandomState   *state;
     int           i;
+    int           ret;
     unsigned long rand;
 
     state = drmRandomCreate(1);
     for (i = 0; i < 10000; i++) {
 	rand = drmRandom(state);
     }
+    ret = rand != state->check;
     printf("After 10000 iterations: %lu (%lu expected): %s\n",
 	   rand, state->check,
-	   rand - state->check ? "*INCORRECT*" : "CORRECT");
+	   ret ? "*INCORRECT*" : "CORRECT");
     drmRandomDestroy(state);
 
     printf("Checking periods...\n");
@@ -114,5 +116,5 @@ int main(void)
     check_period(2);
     check_period(31415926);
     
-    return 0;
+    return ret;
 }
