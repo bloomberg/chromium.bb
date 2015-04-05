@@ -43,7 +43,6 @@ class SpeedometerMeasurement(page_test.PageTest):
 
   def CustomizeBrowserOptions(self, options):
     keychain_metric.KeychainMetric.CustomizeBrowserOptions(options)
-    options.AppendExtraBrowserArgs(['--js-flags=--expose_gc'])
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
@@ -59,11 +58,6 @@ class SpeedometerMeasurement(page_test.PageTest):
         benchmarkClient.didRunSuites = function(measuredValues) {
           benchmarkClient._measuredValues.push(measuredValues);
           benchmarkClient._timeValues.push(measuredValues.total);
-        };
-        benchmarkClient.willRunTest = function(suite, test) {
-          for (var i = 0; i < 5; i++) {
-            gc();
-          }
         };
         benchmarkClient.iterationCount = %d;
         startTest();
