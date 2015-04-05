@@ -8,6 +8,7 @@
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
 #include "gin/public/isolate_holder.h"
+#include "gin/v8_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
@@ -25,7 +26,7 @@ TEST(RunnerTest, Run) {
   std::string source = "this.result = 'PASS';\n";
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-  gin::IsolateHolder::LoadV8Snapshot();
+  gin::V8Initializer::LoadV8Snapshot();
 #endif
 
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,

@@ -73,6 +73,8 @@
         'shell_runner.h',
         'try_catch.cc',
         'try_catch.h',
+        'v8_initializer.h',
+        'v8_initializer.cc',
         'v8_platform.cc',
         'wrappable.cc',
         'wrappable.h',

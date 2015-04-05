@@ -31,9 +31,10 @@ class GIN_EXPORT IsolateHolder {
   ~IsolateHolder();
 
   // Should be invoked once before creating IsolateHolder instances to
-  // initialize V8 and Gin. In case V8_USE_EXTERNAL_STARTUP_DATA is defined,
-  // V8's initial snapshot should be loaded (by calling LoadV8Snapshot or
-  // LoadV8SnapshotFd) before calling Initialize.
+  // initialize V8 and Gin. In case V8_USE_EXTERNAL_STARTUP_DATA is
+  // defined, V8's initial snapshot should be loaded (by calling
+  // V8Initializer::LoadV8SnapshotFromFD or
+  // V8Initializer::LoadV8Snapshot) before calling this method.
   static void Initialize(ScriptMode mode,
                          v8::ArrayBuffer::Allocator* allocator);
 
@@ -52,22 +53,13 @@ class GIN_EXPORT IsolateHolder {
   void RemoveRunMicrotasksObserver();
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  static const int kV8SnapshotBasePathKey;
-  static const char kNativesFileName[];
-  static const char kSnapshotFileName[];
 
-  static bool LoadV8SnapshotFd(int natives_fd,
-                               int64 natives_offset,
-                               int64 natives_size,
-                               int snapshot_fd,
-                               int64 snapshot_offset,
-                               int64 snapshot_size);
+  // Deprecated and to be removed: Use gin::V8Initializer::LoadV8Snapshot()
+  // Load V8 snapshot from default resources. Returns true on success or
+  // snapshot is already loaded, false otherwise.
   static bool LoadV8Snapshot();
+
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
-  static void GetV8ExternalSnapshotData(const char** natives_data_out,
-                                        int* natives_size_out,
-                                        const char** snapshot_data_out,
-                                        int* snapshot_size_out);
 
  private:
   v8::Isolate* isolate_;

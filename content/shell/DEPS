@@ -1,5 +1,6 @@
 include_rules = [
   "+gin/public",
+  "+gin/v8_initializer.h",
   "+v8/include",
 
   # For chromeos build config

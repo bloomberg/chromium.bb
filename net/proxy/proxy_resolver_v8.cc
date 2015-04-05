@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
+#include "gin/v8_initializer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/log/net_log.h"
@@ -365,7 +366,7 @@ class SharedIsolateFactory {
       // Do one-time initialization for V8.
       if (!has_initialized_v8_) {
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-        gin::IsolateHolder::LoadV8Snapshot();
+        gin::V8Initializer::LoadV8Snapshot();
 #endif
 
         gin::IsolateHolder::Initialize(

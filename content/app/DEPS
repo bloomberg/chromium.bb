@@ -5,5 +5,6 @@ include_rules = [
   # For loading V8's initial snapshot from external files.
   "+gin/public/isolate_holder.h",
   "+gin/public/snapshot_fd_data.h",
+  "+gin/v8_initializer.h",
   "+media/base",  # For initializing media library.
 ]

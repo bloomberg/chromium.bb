@@ -117,7 +117,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "gin/public/isolate_holder.h"
+#include "gin/v8_initializer.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
@@ -2185,14 +2185,14 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (v8_snapshot_fd_.get() == -1 && v8_natives_fd_.get() == -1) {
     base::FilePath v8_data_path;
-    PathService::Get(gin::IsolateHolder::kV8SnapshotBasePathKey, &v8_data_path);
+    PathService::Get(gin::V8Initializer::kV8SnapshotBasePathKey, &v8_data_path);
     DCHECK(!v8_data_path.empty());
 
     int file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
     base::FilePath v8_natives_data_path =
-        v8_data_path.AppendASCII(gin::IsolateHolder::kNativesFileName);
+        v8_data_path.AppendASCII(gin::V8Initializer::kNativesFileName);
     base::FilePath v8_snapshot_data_path =
-        v8_data_path.AppendASCII(gin::IsolateHolder::kSnapshotFileName);
+        v8_data_path.AppendASCII(gin::V8Initializer::kSnapshotFileName);
     base::File v8_natives_data_file(v8_natives_data_path, file_flags);
     base::File v8_snapshot_data_file(v8_snapshot_data_path, file_flags);
     DCHECK(v8_natives_data_file.IsValid());

@@ -51,7 +51,7 @@
 #include "ui/base/ui_base_switches.h"
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#include "gin/public/isolate_holder.h"
+#include "gin/v8_initializer.h"
 #endif
 
 #if defined(USE_TCMALLOC)
@@ -718,14 +718,14 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     if (v8_natives_fd != -1 && v8_snapshot_fd != -1) {
       auto v8_natives_region = g_fds->GetRegion(kV8NativesDataDescriptor);
       auto v8_snapshot_region = g_fds->GetRegion(kV8SnapshotDataDescriptor);
-      CHECK(gin::IsolateHolder::LoadV8SnapshotFd(
+      CHECK(gin::V8Initializer::LoadV8SnapshotFromFD(
           v8_natives_fd, v8_natives_region.offset, v8_natives_region.size,
           v8_snapshot_fd, v8_snapshot_region.offset, v8_snapshot_region.size));
     } else {
-      CHECK(gin::IsolateHolder::LoadV8Snapshot());
+      CHECK(gin::V8Initializer::LoadV8Snapshot());
     }
 #else
-    CHECK(gin::IsolateHolder::LoadV8Snapshot());
+    CHECK(gin::V8Initializer::LoadV8Snapshot());
 #endif  // OS_POSIX && !OS_MACOSX
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 

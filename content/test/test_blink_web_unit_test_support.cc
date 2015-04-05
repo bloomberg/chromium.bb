@@ -39,7 +39,7 @@
 #endif
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#include "gin/public/isolate_holder.h"
+#include "gin/v8_initializer.h"
 #endif
 
 namespace content {
@@ -53,7 +53,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   mock_clipboard_.reset(new MockWebClipboardImpl());
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-  gin::IsolateHolder::LoadV8Snapshot();
+  gin::V8Initializer::LoadV8Snapshot();
 #endif
 
   if (base::MessageLoopProxy::current()) {

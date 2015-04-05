@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#include "gin/public/isolate_holder.h"
+#include "gin/v8_initializer.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -57,7 +57,7 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
     base::i18n::InitializeICU();
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-    gin::IsolateHolder::LoadV8Snapshot();
+    gin::V8Initializer::LoadV8Snapshot();
 #endif
 
     // This needs to be done before base::TestSuite::Initialize() is called,
