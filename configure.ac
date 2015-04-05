@@ -36,6 +36,11 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Check for programs
 AC_PROG_CC
+AC_PROG_CC_C99
+
+if test "x$ac_cv_prog_cc_c99" = xno; then
+	AC_MSG_ERROR([Building libdrm requires C99 enabled compiler])
+fi
 
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE

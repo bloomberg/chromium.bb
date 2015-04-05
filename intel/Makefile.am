@@ -42,8 +42,6 @@ libdrm_intel_la_LIBADD = ../libdrm.la \
 
 libdrm_intel_la_SOURCES = $(LIBDRM_INTEL_FILES)
 
-intel_bufmgr_gem_o_CFLAGS = $(AM_CFLAGS) -c99
-
 libdrm_intelincludedir = ${includedir}/libdrm
 libdrm_intelinclude_HEADERS = $(LIBDRM_INTEL_H_FILES)
 
