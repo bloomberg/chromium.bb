@@ -2051,6 +2051,9 @@ crbug.com/467386 http/tests/security/xss-exception.html [ NeedsManualRebaseline 
 
 crbug.com/472904 virtual/deferred/inspector/tracing/worker-events.html [ Pass Crash ]
 
+crbug.com/472902 paint/invalidation/animated-gif-transformed-offscreen.html [ NeedsRebaseline ]
+crbug.com/472902 virtual/slimmingpaint/paint/invalidation/animated-gif-transformed-offscreen.html [ NeedsRebaseline ]
+
 crbug.com/473532 http/tests/inspector/stacktraces/csp-inline-warning-contains-stacktrace.html [ Pass Failure ]
 crbug.com/473532 http/tests/inspector/stacktraces/csp-setInterval-warning-contains-stacktrace.html [ Pass Failure ]
 crbug.com/473532 http/tests/inspector/stacktraces/csp-setTimeout-warning-contains-stacktrace.html [ Pass Failure ]
