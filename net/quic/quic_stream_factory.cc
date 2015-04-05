@@ -790,7 +790,8 @@ bool QuicStreamFactory::OnHandshakeConfirmed(QuicClientSession* session,
   }
 
   // We abandon the connection if packet loss rate is too bad.
-  session->CloseSessionOnError(ERR_ABORTED, QUIC_BAD_PACKET_LOSS_RATE);
+  session->CloseSessionOnErrorAndNotifyFactoryLater(ERR_ABORTED,
+                                                    QUIC_BAD_PACKET_LOSS_RATE);
 
   if (IsQuicDisabled(port))
     return true;  // Exit if Quic is already disabled for this port.

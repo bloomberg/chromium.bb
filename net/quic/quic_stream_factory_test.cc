@@ -1746,6 +1746,7 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
   // Set packet_loss_rate to a lower value than packet_loss_threshold.
   EXPECT_FALSE(
       factory_.OnHandshakeConfirmed(session, /*packet_loss_rate=*/0.9f));
+  EXPECT_TRUE(session->connection()->connected());
   EXPECT_TRUE(QuicStreamFactoryPeer::HasActiveSession(
       &factory_, host_port_pair_, is_https_));
   EXPECT_FALSE(
@@ -1793,6 +1794,7 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
       factory_.OnHandshakeConfirmed(session2, /*packet_loss_rate=*/1.0f));
   EXPECT_EQ(1, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    &factory_, server2.port()));
+  EXPECT_FALSE(session2->connection()->connected());
   EXPECT_FALSE(
       QuicStreamFactoryPeer::IsQuicDisabled(&factory_, server2.port()));
   EXPECT_FALSE(
@@ -1814,6 +1816,7 @@ TEST_P(QuicStreamFactoryTest, BadPacketLoss) {
       factory_.OnHandshakeConfirmed(session3, /*packet_loss_rate=*/1.0f));
   EXPECT_EQ(2, QuicStreamFactoryPeer::GetNumberOfLossyConnections(
                    &factory_, server3.port()));
+  EXPECT_FALSE(session2->connection()->connected());
   EXPECT_TRUE(QuicStreamFactoryPeer::IsQuicDisabled(&factory_, server3.port()));
   EXPECT_FALSE(
       QuicStreamFactoryPeer::HasActiveSession(&factory_, server3, is_https_));

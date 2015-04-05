@@ -780,9 +780,21 @@ void QuicClientSession::StartReading() {
 
 void QuicClientSession::CloseSessionOnError(int error,
                                             QuicErrorCode quic_error) {
+  RecordAndCloseSessionOnError(error, quic_error);
+  NotifyFactoryOfSessionClosed();
+}
+
+void QuicClientSession::CloseSessionOnErrorAndNotifyFactoryLater(
+    int error,
+    QuicErrorCode quic_error) {
+  RecordAndCloseSessionOnError(error, quic_error);
+  NotifyFactoryOfSessionClosedLater();
+}
+
+void QuicClientSession::RecordAndCloseSessionOnError(int error,
+                                                     QuicErrorCode quic_error) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CloseSessionOnError", -error);
   CloseSessionOnErrorInner(error, quic_error);
-  NotifyFactoryOfSessionClosed();
 }
 
 void QuicClientSession::CloseSessionOnErrorInner(int net_error,

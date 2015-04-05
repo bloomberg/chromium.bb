@@ -173,6 +173,11 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
   // that this session has been closed, which will delete the session.
   void CloseSessionOnError(int error, QuicErrorCode quic_error);
 
+  // Close the session because of |error| and notifies the factory later that
+  // this session has been closed, which will delete the session.
+  void CloseSessionOnErrorAndNotifyFactoryLater(int error,
+                                                QuicErrorCode quic_error);
+
   base::Value* GetInfoAsValue(const std::set<HostPortPair>& aliases);
 
   const BoundNetLog& net_log() const { return net_log_; }
@@ -206,6 +211,9 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
   void OnReadComplete(int result);
 
   void OnClosedStream();
+
+  // Close the session because of |error| and records it in UMA histogram.
+  void RecordAndCloseSessionOnError(int error, QuicErrorCode quic_error);
 
   // A Session may be closed via any of three methods:
   // OnConnectionClosed - called by the connection when the connection has been
