@@ -324,6 +324,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_CONSUMER_MANAGEMENT_ENROLLMENT);
   builder->Add("backButton", IDS_ACCNAME_BACK);
   builder->Add("closeButton", IDS_CLOSE);
+  builder->Add("gaiaLoadingNewGaia", IDS_LOGIN_GAIA_LOADING_MESSAGE);
 
   // Strings used by the SAML fatal error dialog.
   builder->Add("fatalErrorMessageNoAccountDetails",

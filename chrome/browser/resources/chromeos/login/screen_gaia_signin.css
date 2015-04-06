@@ -18,6 +18,18 @@
   width: 522px;
 }
 
+.new-gaia-flow .throbber {
+  display: none;
+}
+
+throbber-notice {
+  display: none;
+}
+
+.new-gaia-flow throbber-notice {
+  display: block;
+}
+
 #gaia-signin.full-width {
   padding: 75px 0 0;
 }
@@ -67,6 +79,10 @@ html[dir=rtl] #close-button-item {
 
 .loading #close-button-item {
   background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON_ON_WHITE);
+}
+
+.loading.auth-completed #close-button-item {
+  display: none;
 }
 
 #close-button-item:disabled {

@@ -194,6 +194,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('enterprise-info-container').hidden = show;
       $('gaia-signin-divider').hidden = show;
       this.classList.toggle('loading', show);
+      if (!show)
+        this.classList.remove('auth-completed');
     },
 
     /**
@@ -614,6 +616,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       }
 
       this.loading = true;
+      this.classList.add('auth-completed');
       // Now that we're in logged in state header should be hidden.
       Oobe.getInstance().headerHidden = true;
       // Clear any error messages that were shown before login.
