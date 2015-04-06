@@ -54,11 +54,12 @@ const FieldTranslationEntry xauth_fields[] = {
     {NULL}};
 
 const FieldTranslationEntry l2tp_fields[] = {
-    {::onc::vpn::kPassword, shill::kL2tpIpsecPasswordProperty},
+    {::onc::l2tp::kPassword, shill::kL2tpIpsecPasswordProperty},
     // We don't synchronize l2tp's SaveCredentials field for now, as Shill
     // doesn't support separate settings for ipsec and l2tp.
-    // { ::onc::vpn::kSaveCredentials, &kBoolSignature },
-    {::onc::vpn::kUsername, shill::kL2tpIpsecUserProperty},
+    // { ::onc::l2tp::kSaveCredentials, &kBoolSignature },
+    {::onc::l2tp::kUsername, shill::kL2tpIpsecUserProperty},
+    {::onc::l2tp::kLcpEchoDisabled, shill::kL2tpIpsecLcpEchoDisabledProperty},
     {NULL}};
 
 const FieldTranslationEntry openvpn_fields[] = {

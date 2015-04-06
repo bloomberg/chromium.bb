@@ -29,7 +29,8 @@
       },
       "L2TP": {
           "Username": "some username",
-          "Password": "some password"
+          "Password": "some password",
+          "LcpEchoDisabled": true
       }
   }
 }

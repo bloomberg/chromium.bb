@@ -314,6 +314,13 @@ const char kServerCARefs[] = "ServerCARefs";
 const char kXAUTH[] = "XAUTH";
 }  // namespace ipsec
 
+namespace l2tp {
+const char kLcpEchoDisabled[] = "LcpEchoDisabled";
+const char kPassword[] = "Password";
+const char kSaveCredentials[] = "SaveCredentials";
+const char kUsername[] = "Username";
+}  // namespace l2tp
+
 namespace openvpn {
 const char kAuthNoCache[] = "AuthNoCache";
 const char kAuthRetry[] = "AuthRetry";

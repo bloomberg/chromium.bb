@@ -95,9 +95,10 @@ const OncFieldSignature xauth_fields[] = {
 
 const OncFieldSignature l2tp_fields[] = {
     {::onc::kRecommended, &kRecommendedSignature},
-    {::onc::vpn::kPassword, &kStringSignature},
-    {::onc::vpn::kSaveCredentials, &kBoolSignature},
-    {::onc::vpn::kUsername, &kStringSignature},
+    {::onc::l2tp::kPassword, &kStringSignature},
+    {::onc::l2tp::kSaveCredentials, &kBoolSignature},
+    {::onc::l2tp::kUsername, &kStringSignature},
+    {::onc::l2tp::kLcpEchoDisabled, &kBoolSignature},
     {NULL}};
 
 const OncFieldSignature openvpn_fields[] = {

@@ -332,6 +332,13 @@ ONC_EXPORT extern const char kServerCARefs[];
 ONC_EXPORT extern const char kXAUTH[];
 }  // namespace ipsec
 
+namespace l2tp {
+ONC_EXPORT extern const char kLcpEchoDisabled[];
+ONC_EXPORT extern const char kPassword[];
+ONC_EXPORT extern const char kSaveCredentials[];
+ONC_EXPORT extern const char kUsername[];
+}  // namespace l2tp
+
 namespace openvpn {
 ONC_EXPORT extern const char kAuthNoCache[];
 ONC_EXPORT extern const char kAuthRetry[];
