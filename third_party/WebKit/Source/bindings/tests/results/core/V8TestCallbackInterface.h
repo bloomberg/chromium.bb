@@ -39,7 +39,7 @@ public:
     virtual void voidMethodWillBeGarbageCollectedSequenceArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected>>& sequenceArg) override;
     virtual void voidMethodWillBeGarbageCollectedArrayArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected>>& arrayArg) override;
 private:
-    V8TestCallbackInterface(v8::Local<v8::Function>, ScriptState*);
+    CORE_EXPORT V8TestCallbackInterface(v8::Local<v8::Function>, ScriptState*);
 
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<ScriptState> m_scriptState;

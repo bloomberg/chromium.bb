@@ -30,7 +30,7 @@ public:
     virtual {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) override;
 {% endfor %}
 private:
-    {{v8_class}}(v8::Local<v8::Function>, ScriptState*);
+    {{exported}}{{v8_class}}(v8::Local<v8::Function>, ScriptState*);
 
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<ScriptState> m_scriptState;
