@@ -19,11 +19,8 @@ int main(int argc, char** argv) {
 
   if (command_line.HasSwitch(switches::kChildProcess)) {
     base::AtExitManager at_exit;
-    scoped_ptr<mojo::shell::ChildProcess> child_process =
-        mojo::shell::ChildProcess::Create(command_line);
-    CHECK(child_process);
-    child_process->Main();
-    return 0;
+
+    return mojo::shell::ChildProcessMain();
   }
 
   base::TestSuite test_suite(argc, argv);

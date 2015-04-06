@@ -20,10 +20,6 @@ group("shell") {
     ":tests",
   ]
 
-  if (!is_win) {
-    deps += [ ":mojo_launcher" ]
-  }
-
   if (is_android) {
     deps += [
       ":mojo_shell_apk",
@@ -58,7 +54,11 @@ executable("mojo_shell") {
   ]
 
   if (!is_android) {
-    sources += [ "desktop/main.cc" ]
+    sources += [
+      "desktop/launcher_process.cc",
+      "desktop/launcher_process.h",
+      "desktop/main.cc",
+    ]
   } else {
     sources += [
       "android/library_loader.cc",
@@ -77,23 +77,6 @@ executable("mojo_shell") {
       "//ui/gl",
     ]
   }
-}
-
-executable("mojo_launcher") {
-  sources = [
-    "launcher_main.cc",
-  ]
-
-  deps = [
-    ":init",
-    ":in_process_native_runner",
-    "//base",
-    "//build/config/sanitizers:deps",
-    "//mojo/common",
-    "//third_party/mojo/src/mojo/edk/system",
-    "//mojo/environment:chromium",
-    "//url",
-  ]
 }
 
 source_set("init") {
@@ -125,8 +108,6 @@ source_set("in_process_native_runner") {
 
 source_set("lib") {
   sources = [
-    "app_child_process.cc",
-    "app_child_process.h",
     "app_child_process_host.cc",
     "app_child_process_host.h",
     "child_process.cc",
@@ -463,8 +444,9 @@ mojo_native_application("apptests") {
     "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
     "//third_party/mojo/src/mojo/public/cpp/environment",
     "//third_party/mojo/src/mojo/public/cpp/system:system",
-  #  "//mojo/services/http_server/public/cpp",
-   # "//mojo/services/http_server/public/interfaces",
+
+    #"//mojo/services/http_server/public/cpp",
+    #"//mojo/services/http_server/public/interfaces",
     "//mojo/services/network/public/interfaces",
     "//mojo/shell/test:bindings",
   ]
