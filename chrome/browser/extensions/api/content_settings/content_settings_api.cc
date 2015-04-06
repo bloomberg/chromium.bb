@@ -70,7 +70,7 @@ bool ContentSettingsContentSettingClearFunction::RunSync() {
   ExtensionPrefsScope scope = kExtensionPrefsScopeRegular;
   bool incognito = false;
   if (params->details.scope ==
-          Clear::Params::Details::SCOPE_INCOGNITO_SESSION_ONLY) {
+      api::content_settings::SCOPE_INCOGNITO_SESSION_ONLY) {
     scope = kExtensionPrefsScopeIncognitoSessionOnly;
     incognito = true;
   }
@@ -212,7 +212,7 @@ bool ContentSettingsContentSettingSetFunction::RunSync() {
   ExtensionPrefsScope scope = kExtensionPrefsScopeRegular;
   bool incognito = false;
   if (params->details.scope ==
-          Set::Params::Details::SCOPE_INCOGNITO_SESSION_ONLY) {
+      api::content_settings::SCOPE_INCOGNITO_SESSION_ONLY) {
     scope = kExtensionPrefsScopeIncognitoSessionOnly;
     incognito = true;
   }

@@ -109,10 +109,10 @@ scoped_ptr<tabs::Tab> CreateTabModelHelper(
 }
 
 scoped_ptr<windows::Window> CreateWindowModelHelper(
-    scoped_ptr<std::vector<linked_ptr<tabs::Tab> > > tabs,
+    scoped_ptr<std::vector<linked_ptr<tabs::Tab>>> tabs,
     const std::string& session_id,
-    const windows::Window::Type& type,
-    const windows::Window::State& state) {
+    const windows::WindowType& type,
+    const windows::WindowState& state) {
   scoped_ptr<windows::Window> window_struct(new windows::Window);
   window_struct->tabs = tabs.Pass();
   window_struct->session_id.reset(new std::string(session_id));
@@ -172,10 +172,9 @@ scoped_ptr<windows::Window>
                        window.selected_tab_index).release()));
   }
 
-  return CreateWindowModelHelper(tabs.Pass(),
-                                 base::IntToString(session_id),
-                                 windows::Window::TYPE_NORMAL,
-                                 windows::Window::STATE_NORMAL);
+  return CreateWindowModelHelper(tabs.Pass(), base::IntToString(session_id),
+                                 windows::WINDOW_TYPE_NORMAL,
+                                 windows::WINDOW_STATE_NORMAL);
 }
 
 scoped_ptr<api::sessions::Session>
@@ -288,29 +287,29 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
   std::string session_id =
       SessionId(session_tag, window.window_id.id()).ToString();
 
-  windows::Window::Type type = windows::Window::TYPE_NONE;
+  windows::WindowType type = windows::WINDOW_TYPE_NONE;
   switch (window.type) {
     case sessions::SessionWindow::TYPE_TABBED:
-      type = windows::Window::TYPE_NORMAL;
+      type = windows::WINDOW_TYPE_NORMAL;
       break;
     case sessions::SessionWindow::TYPE_POPUP:
-      type = windows::Window::TYPE_POPUP;
+      type = windows::WINDOW_TYPE_POPUP;
       break;
   }
 
-  windows::Window::State state = windows::Window::STATE_NONE;
+  windows::WindowState state = windows::WINDOW_STATE_NONE;
   switch (window.show_state) {
     case ui::SHOW_STATE_NORMAL:
-      state = windows::Window::STATE_NORMAL;
+      state = windows::WINDOW_STATE_NORMAL;
       break;
     case ui::SHOW_STATE_MINIMIZED:
-      state = windows::Window::STATE_MINIMIZED;
+      state = windows::WINDOW_STATE_MINIMIZED;
       break;
     case ui::SHOW_STATE_MAXIMIZED:
-      state = windows::Window::STATE_MAXIMIZED;
+      state = windows::WINDOW_STATE_MAXIMIZED;
       break;
     case ui::SHOW_STATE_FULLSCREEN:
-      state = windows::Window::STATE_FULLSCREEN;
+      state = windows::WINDOW_STATE_FULLSCREEN;
       break;
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_INACTIVE:

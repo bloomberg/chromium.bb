@@ -142,7 +142,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
           GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
               base::SequencedWorkerPool::BLOCK_SHUTDOWN);
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
-      set_wallpaper::Params::Details::ToString(params_->details.layout));
+      extensions::api::wallpaper::ToString(params_->details.layout));
   bool update_wallpaper =
       user_id_ == user_manager::UserManager::Get()->GetActiveUser()->email();
   wallpaper_manager->SetCustomWallpaper(user_id_,

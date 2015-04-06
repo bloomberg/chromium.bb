@@ -9,12 +9,16 @@
         "enum": ["one", "two", "three"]
       },
       {
+        "id": "OtherEnumeration",
+        "type": "string",
+        "enum": ["spam", "ham", "eggs"]
+      },
+      {
         "id": "EnumType",
         "type": "object",
         "properties": {
           "type": {
-            "type": "string",
-            "enum": ["one", "two", "three"]
+            "$ref": "Enumeration"
           }
         }
       },
@@ -32,13 +36,9 @@
         }
       },
       {
-        "id": "InlineAndReferenceEnum",
+        "id": "ReferenceEnum",
         "type": "object",
         "properties": {
-          "inline_enum": {
-            "type": "string",
-            "enum": ["test1", "test2", "test3"]
-          },
           "reference_enum": {
             "$ref": "Enumeration"
           }
@@ -49,8 +49,7 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": "string",
-            "enum": ["one", "two", "three"],
+            "$ref": "Enumeration",
             "optional": true
           }
         }
@@ -64,8 +63,7 @@
         "parameters": [
           {
             "name": "state",
-            "type": "string",
-            "enum": ["foo", "bar", "baz"]
+            "$ref": "Enumeration"
           },
           {
             "name": "callback",
@@ -83,8 +81,7 @@
             "name": "values",
             "type": "array",
             "items": {
-              "type": "string",
-              "enum": ["foo", "bar", "baz"]
+              "$ref": "Enumeration"
             }
           },
           {
@@ -140,8 +137,7 @@
             "parameters": [
               {
                 "name": "state",
-                "type": "string",
-                "enum": ["foo", "bar", "baz"]
+                "$ref": "Enumeration"
               }
             ]
           }
@@ -175,13 +171,11 @@
             "parameters": [
               {
                 "name": "firstState",
-                "type": "string",
-                "enum": ["foo", "bar", "baz"]
+                "$ref": "Enumeration"
               },
               {
                 "name": "secondState",
-                "type": "string",
-                "enum": ["spam", "ham", "eggs"]
+                "$ref": "OtherEnumeration"
               }
             ]
           }
@@ -194,8 +188,7 @@
         "parameters": [
           {
             "name": "state",
-            "type": "string",
-            "enum": ["foo", "bar", "baz"],
+            "$ref": "Enumeration",
             "optional": true
           },
           {
@@ -212,14 +205,12 @@
         "parameters": [
           {
             "name": "state",
-            "type": "string",
-            "enum": ["foo", "bar", "baz"],
+            "$ref": "Enumeration",
             "optional": true
           },
           {
             "name": "type",
-            "type": "string",
-            "enum": ["foo", "ding", "dong"],
+            "$ref": "OtherEnumeration",
             "optional": true
           },
           {
@@ -238,8 +229,7 @@
         "parameters": [
           {
             "name": "someEnum",
-            "type": "string",
-            "enum": ["foo", "bar", "baz"]
+            "$ref": "Enumeration"
           }
         ]
       },
@@ -250,13 +240,11 @@
         "parameters": [
           {
             "name": "firstEnum",
-            "type": "string",
-            "enum": ["foo", "bar", "baz"]
+            "$ref": "Enumeration"
           },
           {
             "name": "secondEnum",
-            "type": "string",
-            "enum": ["spam", "ham", "eggs"]
+            "$ref": "OtherEnumeration"
           }
         ]
       }

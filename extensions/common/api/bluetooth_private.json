@@ -220,14 +220,18 @@
         }
       },
       {
+        "id": "TransportType",
+        "type": "string",
+        "enum": [ "le", "bredr", "dual"]
+      },
+      {
         "type": "object",
         "id": "DiscoveryFilter",
         "properties": {
           "transport": {
+            "$ref": "TransportType",
             "optional": true,
             "name": "transport",
-            "type": "string",
-            "enum": [ "le", "bredr", "dual"],
             "description": "Transport type."
           },
           "uuids": {

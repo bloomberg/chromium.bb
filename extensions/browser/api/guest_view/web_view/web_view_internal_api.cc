@@ -445,13 +445,13 @@ bool WebViewInternalStopFindingFunction::RunAsyncSafe(WebViewGuest* guest) {
   // Set the StopFindAction.
   content::StopFindAction action;
   switch (params->action) {
-    case web_view_internal::StopFinding::Params::ACTION_CLEAR:
+    case web_view_internal::STOP_FINDING_ACTION_CLEAR:
       action = content::STOP_FIND_ACTION_CLEAR_SELECTION;
       break;
-    case web_view_internal::StopFinding::Params::ACTION_KEEP:
+    case web_view_internal::STOP_FINDING_ACTION_KEEP:
       action = content::STOP_FIND_ACTION_KEEP_SELECTION;
       break;
-    case web_view_internal::StopFinding::Params::ACTION_ACTIVATE:
+    case web_view_internal::STOP_FINDING_ACTION_ACTIVATE:
       action = content::STOP_FIND_ACTION_ACTIVATE_SELECTION;
       break;
     default:
@@ -529,13 +529,13 @@ bool WebViewInternalSetPermissionFunction::RunAsyncSafe(WebViewGuest* guest) {
   WebViewPermissionHelper::PermissionResponseAction action =
       WebViewPermissionHelper::DEFAULT;
   switch (params->action) {
-    case Params::ACTION_ALLOW:
+    case core_api::web_view_internal::SET_PERMISSION_ACTION_ALLOW:
       action = WebViewPermissionHelper::ALLOW;
       break;
-    case Params::ACTION_DENY:
+    case core_api::web_view_internal::SET_PERMISSION_ACTION_DENY:
       action = WebViewPermissionHelper::DENY;
       break;
-    case Params::ACTION_DEFAULT:
+    case core_api::web_view_internal::SET_PERMISSION_ACTION_DEFAULT:
       break;
     default:
       NOTREACHED();

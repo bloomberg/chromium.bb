@@ -82,6 +82,17 @@
             "description": "Disables all zooming in the webview. The content will revert to the default zoom level, and all attempted zoom changes will be ignored."
           }
         ]
+      },
+      {
+        "id": "StopFindingAction",
+        "type": "string",
+        "description": "Determines what to do with the active match after the find session has ended. 'clear' will clear the highlighting over the active match; 'keep' will keep the active match highlighted; 'activate' will keep the active match highlighted and simulate a user click on that match.",
+        "enum": ["clear", "keep", "activate"]
+      },
+      {
+        "id": "SetPermissionAction",
+        "type": "string",
+        "enum": ["allow", "deny", "default"]
       }
     ],
     "functions": [
@@ -335,11 +346,10 @@
             "description": "The instance ID of the guest <webview> process."
           },
           {
-            "type": "string",
+            "$ref": "StopFindingAction",
             "name": "action",
-            "description": "Determines what to do with the active match after the find session has ended. 'clear' will clear the highlighting over the active match; 'keep' will keep the active match highlighted; 'activate' will keep the active match highlighted and simulate a user click on that match.",
-            "optional": true,
-            "enum": ["clear", "keep", "activate"]
+            "description": "Determines what to do with the active match after the find session has ended.",
+            "optional": true
           }
         ]
       },
@@ -482,9 +492,8 @@
             "name": "requestId"
           },
           {
-            "type": "string",
-            "name": "action",
-            "enum": ["allow", "deny", "default"]
+            "$ref": "SetPermissionAction",
+            "name": "action"
           },
           {
             "type": "string",

@@ -32,6 +32,12 @@
           "id": {"type": "string", "description": "The unique identifier for the cookie store."},
           "tabIds": {"type": "array", "items": {"type": "integer"}, "description": "Identifiers of all the browser tabs that share this cookie store."}
         }
+      },
+      {
+        "id": "OnChangedCause",
+        "type": "string",
+        "enum": ["evicted", "expired", "explicit", "expired_overwrite", "overwrite"],
+        "description": "The underlying reason behind the cookie's change. If a cookie was inserted, or removed via an explicit call to \"chrome.cookies.remove\", \"cause\" will be \"explicit\". If a cookie was automatically removed due to expiry, \"cause\" will be \"expired\". If a cookie was removed due to being overwritten with an already-expired expiration date, \"cause\" will be set to \"expired_overwrite\".  If a cookie was automatically removed due to garbage collection, \"cause\" will be \"evicted\".  If a cookie was automatically removed due to a \"set\" call that overwrote it, \"cause\" will be \"overwrite\". Plan your response accordingly."
       }
     ],
     "functions": [
@@ -190,7 +196,7 @@
             "properties": {
               "removed": {"type": "boolean", "description": "True if a cookie was removed."},
               "cookie": {"$ref": "Cookie", "description": "Information about the cookie that was set or removed."},
-              "cause": {"min_version": "12.0.707.0", "type": "string", "enum": ["evicted", "expired", "explicit", "expired_overwrite", "overwrite"], "description": "The underlying reason behind the cookie's change. If a cookie was inserted, or removed via an explicit call to \"chrome.cookies.remove\", \"cause\" will be \"explicit\". If a cookie was automatically removed due to expiry, \"cause\" will be \"expired\". If a cookie was removed due to being overwritten with an already-expired expiration date, \"cause\" will be set to \"expired_overwrite\".  If a cookie was automatically removed due to garbage collection, \"cause\" will be \"evicted\".  If a cookie was automatically removed due to a \"set\" call that overwrote it, \"cause\" will be \"overwrite\". Plan your response accordingly."}
+              "cause": {"min_version": "12.0.707.0", "$ref": "OnChangedCause", "description": "The underlying reason behind the cookie's change."}
             }
           }
         ]

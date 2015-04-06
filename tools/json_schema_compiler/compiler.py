@@ -57,7 +57,7 @@ def GenerateSchema(generator_name,
       api_def = json_schema.DeleteNodes(api_def, 'nocompile')
     api_defs.extend(api_def)
 
-  api_model = Model()
+  api_model = Model(allow_inline_enums=False)
 
   # For single-schema compilation make sure that the first (i.e. only) schema
   # is the default one.

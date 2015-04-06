@@ -23,7 +23,7 @@
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 
-namespace SetMode = extensions::core_api::virtual_keyboard_private::SetMode;
+namespace keyboard_api = extensions::core_api::virtual_keyboard_private;
 
 namespace {
 
@@ -37,13 +37,13 @@ std::string GenerateFeatureFlag(std::string feature, bool enabled) {
   return feature + (enabled ? "-enabled" : "-disabled");
 }
 
-keyboard::KeyboardMode getKeyboardModeEnum(SetMode::Params::Mode mode) {
+keyboard::KeyboardMode getKeyboardModeEnum(keyboard_api::KeyboardMode mode) {
   switch (mode) {
-    case SetMode::Params::MODE_NONE:
+    case keyboard_api::KEYBOARD_MODE_NONE:
       return keyboard::NONE;
-    case SetMode::Params::MODE_FULL_WIDTH:
+    case keyboard_api::KEYBOARD_MODE_FULL_WIDTH:
       return keyboard::FULL_WIDTH;
-    case SetMode::Params::MODE_FLOATING:
+    case keyboard_api::KEYBOARD_MODE_FLOATING:
       return keyboard::FLOATING;
   }
   return keyboard::NONE;
@@ -152,7 +152,7 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
 
 bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(int mode_enum) {
   keyboard::KeyboardMode keyboard_mode =
-      getKeyboardModeEnum(static_cast<SetMode::Params::Mode>(mode_enum));
+      getKeyboardModeEnum(static_cast<keyboard_api::KeyboardMode>(mode_enum));
   keyboard::KeyboardController* controller =
       keyboard::KeyboardController::GetInstance();
   if (!controller)

@@ -36,22 +36,23 @@ namespace {
 
 const char* kVirtualKeyboardExtensionID = "mppnpdlheglhdfmldimlhpnegondlapf";
 
-Context::Type TextInputTypeToGeneratedInputTypeEnum(ui::TextInputType type) {
+virtual_keyboard_private::OnTextInputBoxFocusedType
+TextInputTypeToGeneratedInputTypeEnum(ui::TextInputType type) {
   switch (type) {
     case ui::TEXT_INPUT_TYPE_NONE:
-      return Context::TYPE_NONE;
+      return virtual_keyboard_private::ON_TEXT_INPUT_BOX_FOCUSED_TYPE_NONE;
     case ui::TEXT_INPUT_TYPE_PASSWORD:
-      return Context::TYPE_PASSWORD;
+      return virtual_keyboard_private::ON_TEXT_INPUT_BOX_FOCUSED_TYPE_PASSWORD;
     case ui::TEXT_INPUT_TYPE_EMAIL:
-      return Context::TYPE_EMAIL;
+      return virtual_keyboard_private::ON_TEXT_INPUT_BOX_FOCUSED_TYPE_EMAIL;
     case ui::TEXT_INPUT_TYPE_NUMBER:
-      return Context::TYPE_NUMBER;
+      return virtual_keyboard_private::ON_TEXT_INPUT_BOX_FOCUSED_TYPE_NUMBER;
     case ui::TEXT_INPUT_TYPE_TELEPHONE:
-      return Context::TYPE_TEL;
+      return virtual_keyboard_private::ON_TEXT_INPUT_BOX_FOCUSED_TYPE_TEL;
     case ui::TEXT_INPUT_TYPE_URL:
-      return Context::TYPE_URL;
+      return virtual_keyboard_private::ON_TEXT_INPUT_BOX_FOCUSED_TYPE_URL;
     case ui::TEXT_INPUT_TYPE_DATE:
-      return Context::TYPE_DATE;
+      return virtual_keyboard_private::ON_TEXT_INPUT_BOX_FOCUSED_TYPE_DATE;
     case ui::TEXT_INPUT_TYPE_TEXT:
     case ui::TEXT_INPUT_TYPE_SEARCH:
     case ui::TEXT_INPUT_TYPE_DATE_TIME:
@@ -62,10 +63,10 @@ Context::Type TextInputTypeToGeneratedInputTypeEnum(ui::TextInputType type) {
     case ui::TEXT_INPUT_TYPE_TEXT_AREA:
     case ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE:
     case ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD:
-      return Context::TYPE_TEXT;
+      return virtual_keyboard_private::ON_TEXT_INPUT_BOX_FOCUSED_TYPE_TEXT;
   }
   NOTREACHED();
-  return Context::TYPE_NONE;
+  return virtual_keyboard_private::ON_TEXT_INPUT_BOX_FOCUSED_TYPE_NONE;
 }
 
 }  // namespace
@@ -171,7 +172,8 @@ void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
   scoped_ptr<base::ListValue> event_args(new base::ListValue());
   scoped_ptr<base::DictionaryValue> input_context(new base::DictionaryValue());
   input_context->SetString("type",
-      Context::ToString(TextInputTypeToGeneratedInputTypeEnum(type)));
+                           virtual_keyboard_private::ToString(
+                               TextInputTypeToGeneratedInputTypeEnum(type)));
   event_args->Append(input_context.release());
 
   scoped_ptr<extensions::Event> event(new extensions::Event(

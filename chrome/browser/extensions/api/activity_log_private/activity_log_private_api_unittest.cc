@@ -34,7 +34,8 @@ TEST_F(ActivityLogApiUnitTest, ConvertChromeApiAction) {
                                           kApiCall));
   action->set_args(args.Pass());
   scoped_ptr<ExtensionActivity> result = action->ConvertToExtensionActivity();
-  ASSERT_EQ(ExtensionActivity::ACTIVITY_TYPE_API_CALL, result->activity_type);
+  ASSERT_EQ(api::activity_log_private::EXTENSION_ACTIVITY_TYPE_API_CALL,
+            result->activity_type);
   ASSERT_EQ(kExtensionId, *(result->extension_id.get()));
   ASSERT_EQ(kApiCall, *(result->api_call.get()));
   ASSERT_EQ(kArgs, *(result->args.get()));
@@ -64,7 +65,8 @@ TEST_F(ActivityLogApiUnitTest, ConvertDomAction) {
   ASSERT_EQ(kApiCall, *(result->api_call.get()));
   ASSERT_EQ(kArgs, *(result->args.get()));
   scoped_ptr<ExtensionActivity::Other> other(result->other.Pass());
-  ASSERT_EQ(ExtensionActivity::Other::DOM_VERB_INSERTED, other->dom_verb);
+  ASSERT_EQ(api::activity_log_private::EXTENSION_ACTIVITY_DOM_VERB_INSERTED,
+            other->dom_verb);
   ASSERT_TRUE(other->prerender.get());
   ASSERT_EQ("12345", *(result->activity_id.get()));
 }

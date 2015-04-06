@@ -51,5 +51,73 @@ MenuItem* GetParent(MenuItem::Id parent_id,
   return parent;
 }
 
+MenuItem::ContextList GetContexts(const std::vector<
+    extensions::api::context_menus::ContextType>& in_contexts) {
+  MenuItem::ContextList contexts;
+  for (size_t i = 0; i < in_contexts.size(); ++i) {
+    switch (in_contexts[i]) {
+      case extensions::api::context_menus::CONTEXT_TYPE_ALL:
+        contexts.Add(extensions::MenuItem::ALL);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_PAGE:
+        contexts.Add(extensions::MenuItem::PAGE);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_SELECTION:
+        contexts.Add(extensions::MenuItem::SELECTION);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_LINK:
+        contexts.Add(extensions::MenuItem::LINK);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_EDITABLE:
+        contexts.Add(extensions::MenuItem::EDITABLE);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_IMAGE:
+        contexts.Add(extensions::MenuItem::IMAGE);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_VIDEO:
+        contexts.Add(extensions::MenuItem::VIDEO);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_AUDIO:
+        contexts.Add(extensions::MenuItem::AUDIO);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_FRAME:
+        contexts.Add(extensions::MenuItem::FRAME);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_LAUNCHER:
+        // Not available for <webview>.
+        contexts.Add(extensions::MenuItem::LAUNCHER);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_BROWSER_ACTION:
+        // Not available for <webview>.
+        contexts.Add(extensions::MenuItem::BROWSER_ACTION);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_PAGE_ACTION:
+        // Not available for <webview>.
+        contexts.Add(extensions::MenuItem::PAGE_ACTION);
+        break;
+      case extensions::api::context_menus::CONTEXT_TYPE_NONE:
+        NOTREACHED();
+    }
+  }
+  return contexts;
+}
+
+MenuItem::Type GetType(extensions::api::context_menus::ItemType type,
+                       MenuItem::Type default_type) {
+  switch (type) {
+    case extensions::api::context_menus::ITEM_TYPE_NONE:
+      return default_type;
+    case extensions::api::context_menus::ITEM_TYPE_NORMAL:
+      return extensions::MenuItem::NORMAL;
+    case extensions::api::context_menus::ITEM_TYPE_CHECKBOX:
+      return extensions::MenuItem::CHECKBOX;
+    case extensions::api::context_menus::ITEM_TYPE_RADIO:
+      return extensions::MenuItem::RADIO;
+    case extensions::api::context_menus::ITEM_TYPE_SEPARATOR:
+      return extensions::MenuItem::SEPARATOR;
+  }
+  return extensions::MenuItem::NORMAL;
+}
+
 }  // namespace context_menus_api_helpers
 }  // namespace extensions

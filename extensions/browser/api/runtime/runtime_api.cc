@@ -371,7 +371,7 @@ void RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
 void RuntimeEventRouter::DispatchOnRestartRequiredEvent(
     content::BrowserContext* context,
     const std::string& app_id,
-    core_api::runtime::OnRestartRequired::Reason reason) {
+    core_api::runtime::OnRestartRequiredReason reason) {
   ExtensionSystem* system = ExtensionSystem::Get(context);
   if (!system)
     return;

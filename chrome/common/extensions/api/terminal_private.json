@@ -9,6 +9,14 @@
       "implemented_in": "chrome/browser/extensions/api/terminal/terminal_private_api.h"
     },
     "description": "none",
+    "types": [
+      {
+        "id": "OutputType",
+        "type": "string",
+        "enum": ["stdout", "stderr", "exit"],
+        "description": "Type of the output stream from which output came. When process exits, output type will be set to exit"
+      }
+    ],
     "functions": [
       {
         "name": "openTerminalProcess",
@@ -136,9 +144,8 @@
           },
           {
             "name": "type",
-            "type": "string",
-            "description": "Type of the output stream from which output came. When process exits, output type will be set to exit",
-            "enum": ["stdout", "stderr", "exit"]
+            "$ref": "OutputType",
+            "description": "Type of the output stream from which output came. When process exits, output type will be set to exit"
           },
           {
             "name": "text",

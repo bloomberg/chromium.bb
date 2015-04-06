@@ -8,6 +8,18 @@
     "description": "The <code>chrome.types</code> API contains type declarations for Chrome.",
     "types": [
       {
+        "id": "ChromeSettingScope",
+        "type": "string",
+        "enum": ["regular", "regular_only", "incognito_persistent", "incognito_session_only"],
+        "description": "The scope of the ChromeSetting. One of<ul><li><var>regular</var>: setting for the regular profile (which is inherited by the incognito profile if not overridden elsewhere),</li><li><var>regular_only</var>: setting for the regular profile only (not inherited by the incognito profile),</li><li><var>incognito_persistent</var>: setting for the incognito profile that survives browser restarts (overrides regular preferences),</li><li><var>incognito_session_only</var>: setting for the incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</li></ul>"
+      },
+      {
+        "id": "LevelOfControl",
+        "type": "string",
+        "enum": ["not_controllable", "controlled_by_other_extensions", "controllable_by_this_extension", "controlled_by_this_extension"],
+        "description": "One of<ul><li><var>not_controllable</var>: cannot be controlled by any extension</li><li><var>controlled_by_other_extensions</var>: controlled by extensions with higher precedence</li><li><var>controllable_by_this_extension</var>: can be controlled by this extension</li><li><var>controlled_by_this_extension</var>: controlled by this extension</li></ul>"
+      },
+      {
         "id": "ChromeSetting",
         "type": "object",
         "js_module": "ChromeSetting",
@@ -46,9 +58,8 @@
                         "type": "any"
                       },
                       "levelOfControl": {
-                        "description": "One of<ul><li><var>not_controllable</var>: cannot be controlled by any extension</li><li><var>controlled_by_other_extensions</var>: controlled by extensions with higher precedence</li><li><var>controllable_by_this_extension</var>: can be controlled by this extension</li><li><var>controlled_by_this_extension</var>: controlled by this extension</li></ul>",
-                        "type": "string",
-                        "enum": ["not_controllable", "controlled_by_other_extensions", "controllable_by_this_extension", "controlled_by_this_extension"]
+                        "$ref": "LevelOfControl",
+                        "description": "The level of control of the setting."
                       },
                       "incognitoSpecific": {
                         "description": "Whether the effective value is specific to the incognito session.<br/>This property will <em>only</em> be present if the <var>incognito</var> property in the <var>details</var> parameter of <code>get()</code> was true.",
@@ -77,10 +88,9 @@
                     "type": "any"
                   },
                   "scope": {
-                    "type": "string",
-                    "enum": ["regular", "regular_only", "incognito_persistent", "incognito_session_only"],
+                    "$ref": "ChromeSettingScope",
                     "optional": true,
-                    "description": "Where to set the setting (default: regular). One of<ul><li><var>regular</var>: setting for the regular profile (which is inherited by the incognito profile if not overridden elsewhere),</li><li><var>regular_only</var>: setting for the regular profile only (not inherited by the incognito profile),</li><li><var>incognito_persistent</var>: setting for the incognito profile that survives browser restarts (overrides regular preferences),</li><li><var>incognito_session_only</var>: setting for the incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</li></ul>"
+                    "description": "Where to set the setting (default: regular)."
                   }
                 }
               },
@@ -105,10 +115,9 @@
                 "description": "Which setting to clear.",
                 "properties": {
                   "scope": {
-                    "type": "string",
-                    "enum": ["regular", "regular_only", "incognito_persistent", "incognito_session_only"],
+                    "$ref": "ChromeSettingScope",
                     "optional": true,
-                    "description": "Where to clear the setting (default: regular). One of<ul><li><var>regular</var>: setting for the regular profile (which is inherited by the incognito profile if not overridden elsewhere),</li><li><var>regular_only</var>: setting for the regular profile only (not inherited by the incognito profile),</li><li><var>incognito_persistent</var>: setting for the incognito profile that survives browser restarts (overrides regular preferences),</li><li><var>incognito_session_only</var>: setting for the incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</li></ul>"
+                    "description": "Where to clear the setting (default: regular)."
                   }
                 }
               },
@@ -136,9 +145,8 @@
                     "type": "any"
                   },
                   "levelOfControl": {
-                    "description": "One of<ul><li><var>not_controllable</var>: cannot be controlled by any extension</li><li><var>controlled_by_other_extensions</var>: controlled by extensions with higher precedence</li><li><var>controllable_by_this_extension</var>: can be controlled by this extension</li><li><var>controlled_by_this_extension</var>: controlled by this extension</li></ul>",
-                    "type": "string",
-                    "enum": ["not_controllable", "controlled_by_other_extensions", "controllable_by_this_extension", "controlled_by_this_extension"]
+                    "$ref": "LevelOfControl",
+                    "description": "The level of control of the setting."
                   },
                   "incognitoSpecific": {
                     "description": "Whether the value that has changed is specific to the incognito session.<br/>This property will <em>only</em> be present if the user has enabled the extension in incognito mode.",

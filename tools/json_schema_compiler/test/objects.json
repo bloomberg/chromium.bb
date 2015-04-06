@@ -2,7 +2,18 @@
   {
     "namespace": "objects",
     "description": "The objects API.",
-    "types": [],
+    "types": [
+      {
+        "id": "firstState",
+        "type": "string",
+        "enum": ["foo", "bar", "baz"]
+      },
+      {
+        "id": "secondState",
+        "type": "string",
+        "enum": ["spam", "ham", "eggs"]
+      }
+    ],
     "functions": [
       {
         "name": "objectParam",
@@ -46,8 +57,7 @@
                 "type": "object",
                 "properties": {
                   "state": {
-                    "type": "string",
-                    "enum": ["foo", "bar", "baz"]
+                    "$ref": "firstState"
                   }
                 }
               }
@@ -69,8 +79,7 @@
                 "type": "object",
                 "properties": {
                   "state": {
-                    "type": "string",
-                    "enum": ["foo", "bar", "baz"]
+                    "$ref": "firstState"
                   }
                 }
               },
@@ -79,8 +88,7 @@
                 "type": "object",
                 "properties": {
                   "state": {
-                    "type": "string",
-                    "enum": ["spam", "ham", "eggs"]
+                    "$ref": "secondState"
                   }
                 }
               }
@@ -100,8 +108,7 @@
             "type": "object",
             "properties": {
               "state": {
-                "type": "string",
-                "enum": ["foo", "bar", "baz"]
+                "$ref": "firstState"
               }
             }
           }
@@ -117,8 +124,7 @@
             "type": "object",
             "properties": {
               "state": {
-                "type": "string",
-                "enum": ["foo", "bar", "baz"]
+                "$ref": "firstState"
               }
             }
           },
@@ -127,8 +133,7 @@
             "type": "object",
             "properties": {
               "state": {
-                "type": "string",
-                "enum": ["spam", "ham", "eggs"]
+                "$ref": "secondState"
               }
             }
           }

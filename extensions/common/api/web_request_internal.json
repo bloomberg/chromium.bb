@@ -9,6 +9,13 @@
     "compiler_options": {
       "implemented_in": "extensions/browser/api/web_request/web_request_api.h"
     },
+    "types": [
+      {
+        "id": "AddEventListenerOptions",
+        "type": "string",
+        "enum": ["requestHeaders", "responseHeaders", "blocking", "asyncBlocking", "requestBody"]
+      }
+    ],
     "functions": [
       {
         "name": "addEventListener",
@@ -27,8 +34,7 @@
             "name": "extraInfoSpec",
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
-              "type": "string",
-              "enum": ["requestHeaders", "responseHeaders", "blocking", "asyncBlocking", "requestBody"]
+              "$ref": "AddEventListenerOptions"
             }
           },
           {"type": "string", "name": "eventName"},

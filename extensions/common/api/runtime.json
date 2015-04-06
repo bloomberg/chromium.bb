@@ -44,26 +44,59 @@
         }
       },
       {
+        "id": "PlatformOs",
+        "type": "string",
+        "description": "The operating system chrome is running on.",
+        "enum": ["mac", "win", "android", "cros", "linux", "openbsd"]
+      },
+      {
+        "id": "PlatformArch",
+        "type": "string",
+        "enum": ["arm", "x86-32", "x86-64"],
+        "description": "The machine's processor architecture."
+      },
+      {
+        "id": "PlatformNaclArch",
+        "description": "The native client architecture. This may be different from arch on some platforms.",
+        "type": "string",
+        "enum": ["arm", "x86-32", "x86-64"]
+      },
+      {
         "id": "PlatformInfo",
         "type": "object",
         "description": "An object containing information about the current platform.",
         "properties": {
           "os": {
-            "type": "string",
-            "description": "The operating system chrome is running on.",
-            "enum": ["mac", "win", "android", "cros", "linux", "openbsd"]
+            "$ref": "PlatformOs",
+            "description": "The operating system chrome is running on."
           },
           "arch": {
-            "type": "string",
-            "enum": ["arm", "x86-32", "x86-64"],
+            "$ref": "PlatformArch",
             "description": "The machine's processor architecture."
           },
           "nacl_arch" : {
             "description": "The native client architecture. This may be different from arch on some platforms.",
-            "type": "string",
-            "enum": ["arm", "x86-32", "x86-64"]
+            "$ref": "PlatformNaclArch"
           }
         }
+      },
+      {
+        "id": "RequestUpdateCheckStatus",
+        "type": "string",
+        "enum": ["throttled", "no_update", "update_available"],
+        "description": "Result of the update check."
+      },
+      {
+        "id": "OnInstalledReason",
+        "type": "string",
+        "enum": ["install", "update", "chrome_update", "shared_module_update"],
+        "description": "The reason that this event is being dispatched."
+      },
+      {
+        "id": "OnRestartRequiredReason",
+        "type": "string",
+        "description": "The reason that the event is being dispatched. 'app_update' is used when the restart is needed because the application is updated to a newer version. 'os_update' is used when the restart is needed because the browser/OS is updated to a newer version. 'periodic' is used when the system runs for more than the permitted uptime set in the enterprise policy.",
+        "enum": ["app_update", "os_update", "periodic"]
       }
     ],
     "properties": {
@@ -178,8 +211,7 @@
             "parameters": [
               {
                 "name": "status",
-                "type": "string",
-                "enum": ["throttled", "no_update", "update_available"],
+                "$ref": "RequestUpdateCheckStatus",
                 "description": "Result of the update check."
               },
               {
@@ -364,8 +396,7 @@
             "name": "details",
             "properties": {
               "reason": {
-                "type": "string",
-                "enum": ["install", "update", "chrome_update", "shared_module_update"],
+                "$ref": "OnInstalledReason",
                 "description": "The reason that this event is being dispatched."
               },
               "previousVersion": {
@@ -482,10 +513,9 @@
         "description": "Fired when an app or the device that it runs on needs to be restarted. The app should close all its windows at its earliest convenient time to let the restart to happen. If the app does nothing, a restart will be enforced after a 24-hour grace period has passed. Currently, this event is only fired for Chrome OS kiosk apps.",
         "parameters": [
           {
-            "type": "string",
+            "$ref": "OnRestartRequiredReason",
             "name": "reason",
-            "description": "The reason that the event is being dispatched. 'app_update' is used when the restart is needed because the application is updated to a newer version. 'os_update' is used when the restart is needed because the browser/OS is updated to a newer version. 'periodic' is used when the system runs for more than the permitted uptime set in the enterprise policy.",
-            "enum": ["app_update", "os_update", "periodic"]
+            "description": "The reason that the event is being dispatched."
           }
         ]
       }

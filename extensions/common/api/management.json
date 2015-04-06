@@ -23,6 +23,24 @@
         "description": "These are all possible app launch types."
       },
       {
+        "id": "ExtensionDisabledReason",
+        "description": "A reason the item is disabled.",
+        "type": "string",
+        "enum": ["unknown", "permissions_increase"]
+      },
+      {
+        "id": "ExtensionType",
+        "description": "The type of this extension, app, or theme.",
+        "type": "string",
+        "enum": ["extension", "hosted_app", "packaged_app", "legacy_packaged_app", "theme"]
+      },
+      {
+        "id": "ExtensionInstallType",
+        "description": "How the extension was installed. One of<br><var>admin</var>: The extension was installed because of an administrative policy,<br><var>development</var>: The extension was loaded unpacked in developer mode,<br><var>normal</var>: The extension was installed normally via a .crx file,<br><var>sideload</var>: The extension was installed by other software on the machine,<br><var>other</var>: The extension was installed by other means.",
+        "type": "string",
+        "enum": ["admin", "development", "normal", "sideload", "other"]
+      },
+      {
         "id": "ExtensionInfo",
         "description": "Information about an installed extension, app, or theme.",
         "type": "object",
@@ -57,8 +75,7 @@
           },
           "disabledReason": {
             "description": "A reason the item is disabled.",
-            "type": "string",
-            "enum": ["unknown", "permissions_increase"],
+            "$ref": "ExtensionDisabledReason",
             "optional": true
           },
           "isApp": {
@@ -68,8 +85,7 @@
           },
           "type": {
             "description": "The type of this extension, app, or theme.",
-            "type": "string",
-            "enum": ["extension", "hosted_app", "packaged_app", "legacy_packaged_app", "theme"]
+            "$ref": "ExtensionType"
           },
           "appLaunchUrl": {
             "description": "The launch url (only present for apps).",
@@ -117,9 +133,8 @@
             }
           },
           "installType": {
-            "description": "How the extension was installed. One of<br><var>admin</var>: The extension was installed because of an administrative policy,<br><var>development</var>: The extension was loaded unpacked in developer mode,<br><var>normal</var>: The extension was installed normally via a .crx file,<br><var>sideload</var>: The extension was installed by other software on the machine,<br><var>other</var>: The extension was installed by other means.",
-            "type": "string",
-            "enum": ["admin", "development", "normal", "sideload", "other"]
+            "description": "How the extension was installed.",
+            "$ref": "ExtensionInstallType"
           },
           "launchType": {
             "description": "The app launch type (only present for apps).",

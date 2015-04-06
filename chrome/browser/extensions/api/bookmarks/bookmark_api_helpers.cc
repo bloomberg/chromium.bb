@@ -78,7 +78,8 @@ BookmarkTreeNode* GetBookmarkTreeNode(ChromeBookmarkClient* client,
 
   if (bookmarks::IsDescendantOf(node, client->managed_node()) ||
       bookmarks::IsDescendantOf(node, client->supervised_node())) {
-    bookmark_tree_node->unmodifiable = BookmarkTreeNode::UNMODIFIABLE_MANAGED;
+    bookmark_tree_node->unmodifiable =
+        api::bookmarks::BOOKMARK_TREE_NODE_UNMODIFIABLE_MANAGED;
   }
 
   if (recurse && node->is_folder()) {

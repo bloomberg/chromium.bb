@@ -8,15 +8,19 @@
     "description": "none",
     "types": [
       {
+        "id": "MetricTypeType",
+        "type": "string",
+        "enum": ["histogram-log", "histogram-linear"],
+        "description": "The type of metric, such as 'histogram-log' or 'histogram-linear'."
+      },
+      {
         "id": "MetricType",
         "type":  "object",
         "description": "Describes the type of metric that is to be collected.",
         "properties": {
           "metricName": {"type": "string", "description": "A unique name within the extension for the metric."},
           "type": {
-            "type": "string",
-            "enum": ["histogram-log", "histogram-linear"],
-            "description": "The type of metric, such as 'histogram-log' or 'histogram-linear'."
+            "$ref": "MetricTypeType"
           },
           "min": {"type": "integer", "description": "The minimum sample value to be recoded.  Must be greater than zero."},
           "max": {"type": "integer", "description": "The maximum sample value to be recoded."},

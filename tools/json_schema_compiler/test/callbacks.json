@@ -2,7 +2,13 @@
   {
     "namespace": "callbacks",
     "description": "The callbacks API.",
-    "types": [],
+    "types": [
+      {
+        "id": "Enumeration",
+        "type": "string",
+        "enum": ["foo", "bar", "baz"]
+      }
+    ],
     "functions": [
       {
         "name": "returnsNothing",
@@ -30,8 +36,7 @@
                 "type": "object",
                 "properties": {
                   "state": {
-                    "type": "string",
-                    "enum": ["foo", "bar", "baz"]
+                    "$ref": "Enumeration"
                   }
                 }
               }
@@ -57,8 +62,7 @@
                 "type": "object",
                 "properties": {
                   "state": {
-                    "type": "string",
-                    "enum": ["foo", "bar", "baz"]
+                    "$ref": "Enumeration"
                   }
                 }
               }

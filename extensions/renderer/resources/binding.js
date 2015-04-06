@@ -289,17 +289,17 @@ Binding.prototype = {
         if (enumValues) {
           // Type IDs are qualified with the namespace during compilation,
           // unfortunately, so remove it here.
-          logging.DCHECK(
-              t.id.substr(0, schema.namespace.length) == schema.namespace);
+          logging.DCHECK($String.substr(t.id, 0, schema.namespace.length) ==
+                             schema.namespace);
           // Note: + 1 because it ends in a '.', e.g., 'fooApi.Type'.
-          var id = t.id.substr(schema.namespace.length + 1);
+          var id = $String.substr(t.id, schema.namespace.length + 1);
           mod[id] = {};
           $Array.forEach(enumValues, function(enumValue) {
             // Note: enums can be declared either as a list of strings
             // ['foo', 'bar'] or as a list of objects
             // [{'name': 'foo'}, {'name': 'bar'}].
-            enumValue =
-                enumValue.hasOwnProperty('name') ? enumValue.name : enumValue;
+            enumValue = $Object.hasOwnProperty(enumValue, 'name') ?
+                enumValue.name : enumValue;
             if (enumValue)  // Avoid setting any empty enums.
               mod[id][enumValue] = enumValue;
           });

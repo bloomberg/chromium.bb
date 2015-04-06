@@ -124,7 +124,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
       PendingRequests;
   PendingRequests pending_requests_;
   infobars::InfoBar* infobar_;
-  OnDetach::Reason detach_reason_;
+  api::debugger::DetachReason detach_reason_;
 
   // Listen to extension unloaded notification.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
@@ -311,7 +311,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
       extension_id_(extension_id),
       last_request_id_(0),
       infobar_(infobar),
-      detach_reason_(OnDetach::REASON_TARGET_CLOSED),
+      detach_reason_(api::debugger::DETACH_REASON_TARGET_CLOSED),
       extension_registry_observer_(this) {
   CopyDebuggee(&debuggee_, debuggee);
 
@@ -361,7 +361,7 @@ void ExtensionDevToolsClientHost::AgentHostClosed(
     DevToolsAgentHost* agent_host, bool replaced_with_another_client) {
   DCHECK(agent_host == agent_host_.get());
   if (replaced_with_another_client)
-    detach_reason_ = OnDetach::REASON_REPLACED_WITH_DEVTOOLS;
+    detach_reason_ = api::debugger::DETACH_REASON_REPLACED_WITH_DEVTOOLS;
   SendDetachedEvent();
   delete this;
 }
@@ -391,7 +391,7 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
 }
 
 void ExtensionDevToolsClientHost::MarkAsDismissed() {
-  detach_reason_ = OnDetach::REASON_CANCELED_BY_USER;
+  detach_reason_ = api::debugger::DETACH_REASON_CANCELED_BY_USER;
 }
 
 void ExtensionDevToolsClientHost::SendDetachedEvent() {

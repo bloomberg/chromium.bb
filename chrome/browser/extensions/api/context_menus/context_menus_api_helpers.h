@@ -9,6 +9,7 @@
 
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/context_menus.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 
@@ -54,74 +55,11 @@ MenuItem* GetParent(MenuItem::Id parent_id,
                     const MenuManager* menu_manager,
                     std::string* error);
 
-template<typename PropertyWithEnumT>
-MenuItem::ContextList GetContexts(const PropertyWithEnumT& property) {
-  MenuItem::ContextList contexts;
-  for (size_t i = 0; i < property.contexts->size(); ++i) {
-    switch (property.contexts->at(i)) {
-      case PropertyWithEnumT::CONTEXTS_TYPE_ALL:
-        contexts.Add(extensions::MenuItem::ALL);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_PAGE:
-        contexts.Add(extensions::MenuItem::PAGE);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_SELECTION:
-        contexts.Add(extensions::MenuItem::SELECTION);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_LINK:
-        contexts.Add(extensions::MenuItem::LINK);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_EDITABLE:
-        contexts.Add(extensions::MenuItem::EDITABLE);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_IMAGE:
-        contexts.Add(extensions::MenuItem::IMAGE);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_VIDEO:
-        contexts.Add(extensions::MenuItem::VIDEO);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_AUDIO:
-        contexts.Add(extensions::MenuItem::AUDIO);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_FRAME:
-        contexts.Add(extensions::MenuItem::FRAME);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_LAUNCHER:
-        // Not available for <webview>.
-        contexts.Add(extensions::MenuItem::LAUNCHER);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_BROWSER_ACTION:
-        // Not available for <webview>.
-        contexts.Add(extensions::MenuItem::BROWSER_ACTION);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_PAGE_ACTION:
-        // Not available for <webview>.
-        contexts.Add(extensions::MenuItem::PAGE_ACTION);
-        break;
-      case PropertyWithEnumT::CONTEXTS_TYPE_NONE:
-        NOTREACHED();
-    }
-  }
-  return contexts;
-}
+MenuItem::ContextList GetContexts(const std::vector<
+    extensions::api::context_menus::ContextType>& in_contexts);
 
-template<typename PropertyWithEnumT>
-MenuItem::Type GetType(const PropertyWithEnumT& property,
-                       MenuItem::Type default_type) {
-  switch (property.type) {
-    case PropertyWithEnumT::TYPE_NONE:
-      return default_type;
-    case PropertyWithEnumT::TYPE_NORMAL:
-      return extensions::MenuItem::NORMAL;
-    case PropertyWithEnumT::TYPE_CHECKBOX:
-      return extensions::MenuItem::CHECKBOX;
-    case PropertyWithEnumT::TYPE_RADIO:
-      return extensions::MenuItem::RADIO;
-    case PropertyWithEnumT::TYPE_SEPARATOR:
-      return extensions::MenuItem::SEPARATOR;
-  }
-  return extensions::MenuItem::NORMAL;
-}
+MenuItem::Type GetType(extensions::api::context_menus::ItemType type,
+                       MenuItem::Type default_type);
 
 // Creates and adds a menu item from |create_properties|.
 template<typename PropertyWithEnumT>
@@ -148,7 +86,7 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
   // Contexts.
   MenuItem::ContextList contexts;
   if (create_properties.contexts.get())
-    contexts = GetContexts(create_properties);
+    contexts = GetContexts(*create_properties.contexts);
   else
     contexts.Add(MenuItem::PAGE);
 
@@ -174,7 +112,7 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
   if (create_properties.title.get())
     title = *create_properties.title;
 
-  MenuItem::Type type = GetType(create_properties, MenuItem::NORMAL);
+  MenuItem::Type type = GetType(create_properties.type, MenuItem::NORMAL);
   if (title.empty() && type != MenuItem::SEPARATOR) {
     *error = kTitleNeededError;
     return false;
@@ -240,7 +178,7 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
   }
 
   // Type.
-  MenuItem::Type type = GetType(update_properties, item->type());
+  MenuItem::Type type = GetType(update_properties.type, item->type());
 
   if (type != item->type()) {
     if (type == MenuItem::RADIO || item->type() == MenuItem::RADIO)
@@ -283,7 +221,7 @@ bool UpdateMenuItem(const PropertyWithEnumT& update_properties,
   // Contexts.
   MenuItem::ContextList contexts;
   if (update_properties.contexts.get()) {
-    contexts = GetContexts(update_properties);
+    contexts = GetContexts(*update_properties.contexts);
 
     if (contexts.Contains(MenuItem::LAUNCHER)) {
       // Launcher item is not allowed for <webview>.

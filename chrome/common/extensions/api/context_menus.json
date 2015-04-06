@@ -12,6 +12,20 @@
         "description": "The maximum number of top level extension items that can be added to an extension action context menu. Any items beyond this limit will be ignored."
       }
     },
+    "types": [
+      {
+        "id": "ContextType",
+        "type": "string",
+        "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher", "browser_action", "page_action"],
+        "description": "The different contexts a menu can appear in. Specifying ['all'] is equivalent to the combination of all other contexts except for 'launcher'. The 'launcher' context is only supported by apps and is used to add menu items to the context menu that appears when clicking on the app icon in the launcher/taskbar/dock/etc. Different platforms might put limitations on what is actually supported in a launcher context menu."
+      },
+      {
+        "id": "ItemType",
+        "type": "string",
+        "enum": ["normal", "checkbox", "radio", "separator"],
+        "description": "The type of menu item."
+      }
+    ],
     "functions": [
       {
         "name": "create",
@@ -30,8 +44,7 @@
             "name": "createProperties",
             "properties": {
               "type": {
-                "type": "string",
-                "enum": ["normal", "checkbox", "radio", "separator"],
+                "$ref": "ItemType",
                 "optional": true,
                 "description": "The type of menu item. Defaults to 'normal' if not specified."
               },
@@ -53,12 +66,11 @@
               "contexts": {
                 "type": "array",
                 "items": {
-                  "type": "string",
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher", "browser_action", "page_action"]
+                  "$ref": "ContextType"
                 },
                 "minItems": 1,
                 "optional": true,
-                "description": "List of contexts this menu item will appear in. Defaults to ['page'] if not specified. Specifying ['all'] is equivalent to the combination of all other contexts except for 'launcher'. The 'launcher' context is only supported by apps and is used to add menu items to the context menu that appears when clicking on the app icon in the launcher/taskbar/dock/etc. Different platforms might put limitations on what is actually supported in a launcher context menu."
+                "description": "List of contexts this menu item will appear in. Defaults to ['page'] if not specified."
               },
               "onclick": {
                 "type": "function",
@@ -133,8 +145,7 @@
             "description": "The properties to update. Accepts the same values as the create function.",
             "properties": {
               "type": {
-                "type": "string",
-                "enum": ["normal", "checkbox", "radio", "separator"],
+                "$ref": "ItemType",
                 "optional": true
               },
               "title": {
@@ -148,8 +159,7 @@
               "contexts": {
                 "type": "array",
                 "items": {
-                  "type": "string",
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher", "browser_action", "page_action"]
+                  "$ref": "ContextType"
                 },
                 "minItems": 1,
                 "optional": true

@@ -112,27 +112,27 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   info->is_app = extension.is_app();
   if (info->is_app) {
     if (extension.is_legacy_packaged_app())
-      info->type = management::ExtensionInfo::TYPE_LEGACY_PACKAGED_APP;
+      info->type = management::EXTENSION_TYPE_LEGACY_PACKAGED_APP;
     else if (extension.is_hosted_app())
-      info->type = management::ExtensionInfo::TYPE_HOSTED_APP;
+      info->type = management::EXTENSION_TYPE_HOSTED_APP;
     else
-      info->type = management::ExtensionInfo::TYPE_PACKAGED_APP;
+      info->type = management::EXTENSION_TYPE_PACKAGED_APP;
   } else if (extension.is_theme()) {
-    info->type = management::ExtensionInfo::TYPE_THEME;
+    info->type = management::EXTENSION_TYPE_THEME;
   } else {
-    info->type = management::ExtensionInfo::TYPE_EXTENSION;
+    info->type = management::EXTENSION_TYPE_EXTENSION;
   }
 
   if (info->enabled) {
-    info->disabled_reason = management::ExtensionInfo::DISABLED_REASON_NONE;
+    info->disabled_reason = management::EXTENSION_DISABLED_REASON_NONE;
   } else {
     ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
     if (prefs->DidExtensionEscalatePermissions(extension.id())) {
       info->disabled_reason =
-          management::ExtensionInfo::DISABLED_REASON_PERMISSIONS_INCREASE;
+          management::EXTENSION_DISABLED_REASON_PERMISSIONS_INCREASE;
     } else {
       info->disabled_reason =
-          management::ExtensionInfo::DISABLED_REASON_UNKNOWN;
+          management::EXTENSION_DISABLED_REASON_UNKNOWN;
     }
   }
 
@@ -184,27 +184,27 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
 
   switch (extension.location()) {
     case Manifest::INTERNAL:
-      info->install_type = management::ExtensionInfo::INSTALL_TYPE_NORMAL;
+      info->install_type = management::EXTENSION_INSTALL_TYPE_NORMAL;
       break;
     case Manifest::UNPACKED:
     case Manifest::COMMAND_LINE:
-      info->install_type = management::ExtensionInfo::INSTALL_TYPE_DEVELOPMENT;
+      info->install_type = management::EXTENSION_INSTALL_TYPE_DEVELOPMENT;
       break;
     case Manifest::EXTERNAL_PREF:
     case Manifest::EXTERNAL_REGISTRY:
     case Manifest::EXTERNAL_PREF_DOWNLOAD:
-      info->install_type = management::ExtensionInfo::INSTALL_TYPE_SIDELOAD;
+      info->install_type = management::EXTENSION_INSTALL_TYPE_SIDELOAD;
       break;
     case Manifest::EXTERNAL_POLICY:
     case Manifest::EXTERNAL_POLICY_DOWNLOAD:
-      info->install_type = management::ExtensionInfo::INSTALL_TYPE_ADMIN;
+      info->install_type = management::EXTENSION_INSTALL_TYPE_ADMIN;
       break;
     case Manifest::NUM_LOCATIONS:
       NOTREACHED();
     case Manifest::INVALID_LOCATION:
     case Manifest::COMPONENT:
     case Manifest::EXTERNAL_COMPONENT:
-      info->install_type = management::ExtensionInfo::INSTALL_TYPE_OTHER;
+      info->install_type = management::EXTENSION_INSTALL_TYPE_OTHER;
       break;
   }
 

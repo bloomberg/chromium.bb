@@ -6,7 +6,13 @@
   {
     "namespace": "idle",
     "description": "Use the <code>chrome.idle</code> API to detect when the machine's idle state changes.",
-    "types": [],
+    "types": [
+      {
+        "id": "IdleState",
+        "type": "string",
+        "enum": ["active", "idle", "locked"]
+      }
+    ],
     "functions": [
       {
         "name": "queryState",
@@ -25,8 +31,7 @@
             "parameters": [
               {
                 "name": "newState",
-                "type": "string",
-                "enum": ["active", "idle", "locked"]
+                "$ref": "IdleState"
               }
             ]
           }
@@ -54,8 +59,7 @@
         "parameters": [
           {
             "name": "newState",
-            "type": "string",
-            "enum": ["active", "idle", "locked"]
+            "$ref": "IdleState"
           }
         ]
       }

@@ -187,15 +187,15 @@ void ChromeRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {
 bool ChromeRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
   const char* os = update_client::UpdateQueryParams::GetOS();
   if (strcmp(os, "mac") == 0) {
-    info->os = PlatformInfo::OS_MAC_;
+    info->os = extensions::core_api::runtime::PLATFORM_OS_MAC;
   } else if (strcmp(os, "win") == 0) {
-    info->os = PlatformInfo::OS_WIN_;
+    info->os = extensions::core_api::runtime::PLATFORM_OS_WIN;
   } else if (strcmp(os, "cros") == 0) {
-    info->os = PlatformInfo::OS_CROS_;
+    info->os = extensions::core_api::runtime::PLATFORM_OS_CROS;
   } else if (strcmp(os, "linux") == 0) {
-    info->os = PlatformInfo::OS_LINUX_;
+    info->os = extensions::core_api::runtime::PLATFORM_OS_LINUX;
   } else if (strcmp(os, "openbsd") == 0) {
-    info->os = PlatformInfo::OS_OPENBSD_;
+    info->os = extensions::core_api::runtime::PLATFORM_OS_OPENBSD;
   } else {
     NOTREACHED();
     return false;
@@ -203,11 +203,11 @@ bool ChromeRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
 
   const char* arch = update_client::UpdateQueryParams::GetArch();
   if (strcmp(arch, "arm") == 0) {
-    info->arch = PlatformInfo::ARCH_ARM;
+    info->arch = extensions::core_api::runtime::PLATFORM_ARCH_ARM;
   } else if (strcmp(arch, "x86") == 0) {
-    info->arch = PlatformInfo::ARCH_X86_32;
+    info->arch = extensions::core_api::runtime::PLATFORM_ARCH_X86_32;
   } else if (strcmp(arch, "x64") == 0) {
-    info->arch = PlatformInfo::ARCH_X86_64;
+    info->arch = extensions::core_api::runtime::PLATFORM_ARCH_X86_64;
   } else {
     NOTREACHED();
     return false;
@@ -215,11 +215,14 @@ bool ChromeRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
 
   const char* nacl_arch = update_client::UpdateQueryParams::GetNaclArch();
   if (strcmp(nacl_arch, "arm") == 0) {
-    info->nacl_arch = PlatformInfo::NACL_ARCH_ARM;
+    info->nacl_arch =
+        extensions::core_api::runtime::PLATFORM_NACL_ARCH_ARM;
   } else if (strcmp(nacl_arch, "x86-32") == 0) {
-    info->nacl_arch = PlatformInfo::NACL_ARCH_X86_32;
+    info->nacl_arch =
+        extensions::core_api::runtime::PLATFORM_NACL_ARCH_X86_32;
   } else if (strcmp(nacl_arch, "x86-64") == 0) {
-    info->nacl_arch = PlatformInfo::NACL_ARCH_X86_64;
+    info->nacl_arch =
+        extensions::core_api::runtime::PLATFORM_NACL_ARCH_X86_64;
   } else {
     NOTREACHED();
     return false;

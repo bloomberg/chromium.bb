@@ -8,6 +8,18 @@
     "description": "The omnibox API allows you to register a keyword with Google Chrome's address bar, which is also known as the omnibox.",
     "types": [
       {
+        "id": "DescriptionStyleType",
+        "type": "string",
+        "description": "The style type.",
+        "enum": ["url", "match", "dim"]
+      },
+      {
+        "id": "OnInputEnteredDisposition",
+        "type": "string",
+        "enum": ["currentTab", "newForegroundTab", "newBackgroundTab"],
+        "description": "The window disposition for the omnibox query. This is the recommended context to display results. For example, if the omnibox command is to navigate to a certain URL, a disposition of 'newForegroundTab' means the navigation should take place in a new selected tab."
+      },
+      {
         "id": "SuggestResult",
         "type": "object",
         "description": "A suggest result.",
@@ -33,7 +45,7 @@
               "description": "The style ranges for the description, as provided by the extension.",
               "properties": {
                 "offset": { "type": "integer" },
-                "type": { "description": "The style type", "type": "string", "enum": ["url", "match", "dim"]},
+                "type": { "description": "The style type", "$ref": "DescriptionStyleType"},
                 "length": { "type": "integer", "optional": true }
               }
             }
@@ -77,7 +89,7 @@
               "description": "The style ranges for the description, as provided by the extension.",
               "properties": {
                 "offset": { "type": "integer" },
-                "type": { "description": "The style type", "type": "string", "enum": ["url", "match", "dim"]},
+                "type": { "description": "The style type", "$ref": "DescriptionStyleType"},
                 "length": { "type": "integer", "optional": true }
               }
             }
@@ -175,9 +187,7 @@
           },
           {
             "name": "disposition",
-            "type": "string",
-            "enum": ["currentTab", "newForegroundTab", "newBackgroundTab"],
-            "description": "The window disposition for the omnibox query. This is the recommended context to display results. For example, if the omnibox command is to navigate to a certain URL, a disposition of 'newForegroundTab' means the navigation should take place in a new selected tab."
+            "$ref": "OnInputEnteredDisposition"
           }
         ]
       },

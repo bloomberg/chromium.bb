@@ -9,6 +9,15 @@
       "implemented_in": "chrome/browser/chromeos/extensions/wallpaper_api.h"
     },
     "description": "Use the <code>chrome.wallpaper</code> API to change the ChromeOS wallpaper.",
+    "types":
+    [
+      {
+        "id": "WallpaperLayout",
+        "type": "string",
+        "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ],
+        "description": "The supported wallpaper layouts."
+      }
+    ],
     "functions": [
     {
       "name": "setWallpaper",
@@ -30,8 +39,7 @@
               "description": "The URL of the wallpaper to be set."
             },
             "layout": {
-              "type": "string",
-              "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ],
+              "$ref": "WallpaperLayout",
               "description": "The supported wallpaper layouts."
             },
             "filename": {

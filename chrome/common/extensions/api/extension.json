@@ -24,6 +24,14 @@
         "description": "True for content scripts running inside incognito tabs, and for extension pages running inside an incognito process. The latter only applies to extensions with 'split' incognito_behavior."
       }
     },
+    "types": [
+      {
+        "id": "ViewType",
+        "type": "string",
+        "enum": ["tab", "notification", "popup"],
+        "description": "The type of extension view."
+      }
+    ],
     "functions": [
       {
         "name": "sendRequest",
@@ -78,8 +86,7 @@
             "optional": true,
             "properties": {
               "type": {
-                "type": "string",
-                "enum": ["tab", "notification", "popup"],
+                "$ref": "ViewType",
                 "optional": true,
                 "description": "The type of view to get. If omitted, returns all views (including background pages and tabs). Valid values: 'tab', 'notification', 'popup'."
               },

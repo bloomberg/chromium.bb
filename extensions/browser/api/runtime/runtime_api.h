@@ -142,7 +142,7 @@ class RuntimeEventRouter {
   static void DispatchOnRestartRequiredEvent(
       content::BrowserContext* context,
       const std::string& app_id,
-      core_api::runtime::OnRestartRequired::Reason reason);
+      core_api::runtime::OnRestartRequiredReason reason);
 
   // Does any work needed at extension uninstall (e.g. load uninstall url).
   static void OnExtensionUninstalled(content::BrowserContext* context,

@@ -52,35 +52,6 @@ TEST(JsonSchemaCompilerArrayTest, BasicArrayType) {
   }
 }
 
-TEST(JsonSchemaCompilerArrayTest, EnumArrayType) {
-  // { "types": ["one", "two", "three"] }
-  base::ListValue* types = new base::ListValue();
-  types->AppendString("one");
-  types->AppendString("two");
-  types->AppendString("three");
-  base::DictionaryValue value;
-  value.Set("types", types);
-
-  EnumArrayType enum_array_type;
-
-  // Test Populate.
-  ASSERT_TRUE(EnumArrayType::Populate(value, &enum_array_type));
-  {
-    EnumArrayType::TypesType enums[] = {
-      EnumArrayType::TYPES_TYPE_ONE,
-      EnumArrayType::TYPES_TYPE_TWO,
-      EnumArrayType::TYPES_TYPE_THREE,
-    };
-    std::vector<EnumArrayType::TypesType> enums_vector(
-        enums, enums + arraysize(enums));
-    EXPECT_EQ(enums_vector, enum_array_type.types);
-  }
-
-  // Test ToValue.
-  scoped_ptr<base::Value> as_value(enum_array_type.ToValue());
-  EXPECT_TRUE(value.Equals(as_value.get())) << value << " != " << *as_value;
-}
-
 TEST(JsonSchemaCompilerArrayTest, EnumArrayReference) {
   // { "types": ["one", "two", "three"] }
   base::ListValue* types = new base::ListValue();
@@ -108,11 +79,6 @@ TEST(JsonSchemaCompilerArrayTest, EnumArrayReference) {
 
 TEST(JsonSchemaCompilerArrayTest, EnumArrayMixed) {
   // { "types": ["one", "two", "three"] }
-  base::ListValue* inline_enums = new base::ListValue();
-  inline_enums->AppendString("one");
-  inline_enums->AppendString("two");
-  inline_enums->AppendString("three");
-
   base::ListValue* infile_enums = new base::ListValue();
   infile_enums->AppendString("one");
   infile_enums->AppendString("two");
@@ -124,7 +90,6 @@ TEST(JsonSchemaCompilerArrayTest, EnumArrayMixed) {
   external_enums->AppendString("three");
 
   base::DictionaryValue value;
-  value.Set("inline_enums", inline_enums);
   value.Set("infile_enums", infile_enums);
   value.Set("external_enums", external_enums);
 
@@ -132,15 +97,6 @@ TEST(JsonSchemaCompilerArrayTest, EnumArrayMixed) {
 
   // Test Populate.
   ASSERT_TRUE(EnumArrayMixed::Populate(value, &enum_array_mixed));
-
-  EnumArrayMixed::Inline_enumsType expected_inline_types[] = {
-      EnumArrayMixed::INLINE_ENUMS_TYPE_ONE,
-      EnumArrayMixed::INLINE_ENUMS_TYPE_TWO,
-      EnumArrayMixed::INLINE_ENUMS_TYPE_THREE};
-  EXPECT_EQ(std::vector<EnumArrayMixed::Inline_enumsType>(
-                expected_inline_types,
-                expected_inline_types + arraysize(expected_inline_types)),
-            enum_array_mixed.inline_enums);
 
   Enumeration expected_infile_types[] = {ENUMERATION_ONE, ENUMERATION_TWO,
                                          ENUMERATION_THREE};
@@ -164,16 +120,14 @@ TEST(JsonSchemaCompilerArrayTest, EnumArrayMixed) {
 
 TEST(JsonSchemaCompilerArrayTest, OptionalEnumArrayType) {
   {
-    std::vector<OptionalEnumArrayType::TypesType> enums;
-    enums.push_back(OptionalEnumArrayType::TYPES_TYPE_ONE);
-    enums.push_back(OptionalEnumArrayType::TYPES_TYPE_TWO);
-    enums.push_back(OptionalEnumArrayType::TYPES_TYPE_THREE);
+    std::vector<Enumeration> enums;
+    enums.push_back(ENUMERATION_ONE);
+    enums.push_back(ENUMERATION_TWO);
+    enums.push_back(ENUMERATION_THREE);
 
     scoped_ptr<base::ListValue> types(new base::ListValue());
-    for (size_t i = 0; i < enums.size(); ++i) {
-      types->Append(new base::StringValue(
-          OptionalEnumArrayType::ToString(enums[i])));
-    }
+    for (size_t i = 0; i < enums.size(); ++i)
+      types->Append(new base::StringValue(ToString(enums[i])));
 
     base::DictionaryValue value;
     value.Set("types", types.release());

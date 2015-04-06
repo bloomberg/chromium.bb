@@ -148,9 +148,12 @@ class _Generator(object):
 
       real_t = self._type_helper.FollowRef(t)
       if real_t.property_type == PropertyType.ENUM:
-        items.append('%s(%s)' % (
-            prop.unix_name,
-            self._type_helper.GetEnumNoneValue(t)))
+        namespace_prefix = ('%s::' % real_t.namespace.unix_name
+                            if real_t.namespace != self._namespace
+                            else '')
+        items.append('%s(%s%s)' % (prop.unix_name,
+                                   namespace_prefix,
+                                   self._type_helper.GetEnumNoneValue(t)))
       elif prop.optional:
         continue
       elif t.property_type == PropertyType.INTEGER:
@@ -289,9 +292,13 @@ class _Generator(object):
             prop, value_var, dst, 'false')))
       underlying_type = self._type_helper.FollowRef(prop.type_)
       if underlying_type.property_type == PropertyType.ENUM:
+        namespace_prefix = ('%s::' % underlying_type.namespace.unix_name
+                            if underlying_type.namespace != self._namespace
+                            else '')
         (c.Append('} else {')
-          .Append('%%(dst)s->%%(name)s = %s;' %
-              self._type_helper.GetEnumNoneValue(prop.type_)))
+          .Append('%%(dst)s->%%(name)s = %s%s;' %
+             (namespace_prefix,
+              self._type_helper.GetEnumNoneValue(prop.type_))))
       c.Eblock('}')
     else:
       (c.Sblock(
@@ -1027,9 +1034,13 @@ class _Generator(object):
     underlying_type = self._type_helper.FollowRef(prop.type_)
     if (underlying_type.property_type == PropertyType.ENUM and
         prop.optional):
-      c.Append('%s->%s = %s;' % (
+      namespace_prefix = ('%s::' % underlying_type.namespace.unix_name
+                          if underlying_type.namespace != self._namespace
+                          else '')
+      c.Append('%s->%s = %s%s;' % (
         dst,
         prop.unix_name,
+        namespace_prefix,
         self._type_helper.GetEnumNoneValue(prop.type_)))
     return c
 

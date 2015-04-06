@@ -9,6 +9,22 @@
     "compiler_options": {
       "implemented_in": "chrome/browser/chromeos/extensions/info_private_api.h"
     },
+    "types": [
+      {
+        "id": "PropertyName",
+        "type": "string",
+        "enum": ["timezone",
+                 "a11yLargeCursorEnabled",
+                 "a11yStickyKeysEnabled",
+                 "a11ySpokenFeedbackEnabled",
+                 "a11yHighContrastEnabled",
+                 "a11yScreenMagnifierEnabled",
+                 "a11yAutoClickEnabled",
+                 "a11yVirtualKeyboardEnabled",
+                 "sendFunctionKeys"],
+        "description": "Chrome OS system property name"
+      }
+    ],
     "functions": [
       {
         "name": "get",
@@ -68,16 +84,7 @@
         "parameters": [
           {
             "name": "propertyName",
-            "type": "string",
-            "enum": ["timezone",
-                     "a11yLargeCursorEnabled",
-                     "a11yStickyKeysEnabled",
-                     "a11ySpokenFeedbackEnabled",
-                     "a11yHighContrastEnabled",
-                     "a11yScreenMagnifierEnabled",
-                     "a11yAutoClickEnabled",
-                     "a11yVirtualKeyboardEnabled",
-                     "sendFunctionKeys"],
+            "$ref": "PropertyName",
             "description": "Chrome OS system property name"
           },
           {

@@ -74,7 +74,7 @@ const char kScript[] =
     "            ['concat', 'forEach', 'indexOf', 'join', 'push', 'slice',\n"
     "             'splice', 'map', 'filter']);\n"
     "saveBuiltin(String,\n"
-    "            ['indexOf', 'slice', 'split']);\n"
+    "            ['indexOf', 'slice', 'split', 'substr']);\n"
     "saveBuiltin(RegExp,\n"
     "            ['test']);\n"
     "saveBuiltin(Error,\n"

@@ -4,19 +4,6 @@
     "description": "The arrays API.",
     "types": [
       {
-        "id": "EnumArrayType",
-        "type": "object",
-        "properties": {
-          "types": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": ["one", "two", "three"]
-            }
-          }
-        }
-      },
-      {
         "id": "Enumeration",
         "type": "string",
         "enum": ["one", "two", "three"]
@@ -37,13 +24,6 @@
         "id": "EnumArrayMixed",
         "type": "object",
         "properties": {
-          "inline_enums": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": ["one", "two", "three"]
-            }
-          },
           "infile_enums": {
             "type": "array",
             "items": {
@@ -65,8 +45,7 @@
           "types": {
             "type": "array",
             "items": {
-              "type": "string",
-              "enum": ["one", "two", "three"]
+              "$ref": "Enumeration"
             },
             "optional": true
           }

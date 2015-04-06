@@ -46,9 +46,9 @@ void ShellRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {
 
 bool ShellRuntimeAPIDelegate::GetPlatformInfo(PlatformInfo* info) {
 #if defined(OS_CHROMEOS)
-  info->os = PlatformInfo::OS_CROS_;
+  info->os = core_api::runtime::PLATFORM_OS_CROS;
 #elif defined(OS_LINUX)
-  info->os = PlatformInfo::OS_LINUX_;
+  info->os = core_api::runtime::PLATFORM_OS_LINUX;
 #endif
   return true;
 }

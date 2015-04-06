@@ -23,6 +23,8 @@ using content::WebContents;
 
 namespace extensions {
 
+using core_api::extension_types::ImageDetails;
+
 bool CaptureWebContentsFunction::HasPermission() {
   return true;
 }
@@ -48,14 +50,16 @@ bool CaptureWebContentsFunction::RunAsync() {
     return false;
 
   // The default format and quality setting used when encoding jpegs.
-  const ImageDetails::Format kDefaultFormat = ImageDetails::FORMAT_JPEG;
+  const core_api::extension_types::ImageFormat kDefaultFormat =
+      core_api::extension_types::IMAGE_FORMAT_JPEG;
   const int kDefaultQuality = 90;
 
   image_format_ = kDefaultFormat;
   image_quality_ = kDefaultQuality;
 
   if (image_details) {
-    if (image_details->format != ImageDetails::FORMAT_NONE)
+    if (image_details->format !=
+        core_api::extension_types::IMAGE_FORMAT_NONE)
       image_format_ = image_details->format;
     if (image_details->quality.get())
       image_quality_ = *image_details->quality;
@@ -106,7 +110,7 @@ void CaptureWebContentsFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
   bool encoded = false;
   std::string mime_type;
   switch (image_format_) {
-    case ImageDetails::FORMAT_JPEG:
+    case core_api::extension_types::IMAGE_FORMAT_JPEG:
       encoded = gfx::JPEGCodec::Encode(
           reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
           gfx::JPEGCodec::FORMAT_SkBitmap,
@@ -117,7 +121,7 @@ void CaptureWebContentsFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
           &data);
       mime_type = kMimeTypeJpeg;
       break;
-    case ImageDetails::FORMAT_PNG:
+    case core_api::extension_types::IMAGE_FORMAT_PNG:
       encoded =
           gfx::PNGCodec::EncodeBGRASkBitmap(bitmap,
                                             true,  // Discard transparency.

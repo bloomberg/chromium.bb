@@ -48,7 +48,7 @@ TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
 
 TEST(JsonSchemaCompilerObjectsTest, ReturnsObjectResultCreate) {
   ReturnsObject::Results::Info info;
-  info.state = ReturnsObject::Results::Info::STATE_FOO;
+  info.state = FIRST_STATE_FOO;
   scoped_ptr<base::ListValue> results = ReturnsObject::Results::Create(info);
 
   base::DictionaryValue expected;
@@ -60,7 +60,7 @@ TEST(JsonSchemaCompilerObjectsTest, ReturnsObjectResultCreate) {
 
 TEST(JsonSchemaCompilerObjectsTest, OnObjectFiredCreate) {
   OnObjectFired::SomeObject object;
-  object.state = OnObjectFired::SomeObject::STATE_BAR;
+  object.state = FIRST_STATE_BAR;
   scoped_ptr<base::ListValue> results(OnObjectFired::Create(object));
 
   base::DictionaryValue expected;

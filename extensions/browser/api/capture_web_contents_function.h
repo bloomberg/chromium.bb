@@ -41,7 +41,6 @@ class CaptureWebContentsFunction : public AsyncExtensionFunction {
   virtual void OnCaptureFailure(FailureReason reason) = 0;
 
  private:
-  typedef core_api::extension_types::ImageDetails ImageDetails;
 
   void CopyFromBackingStoreComplete(const SkBitmap& bitmap,
                                     content::ReadbackResponse response);
@@ -54,7 +53,7 @@ class CaptureWebContentsFunction : public AsyncExtensionFunction {
   int context_id_;
 
   // The format (JPEG vs PNG) of the resulting image.  Set in RunAsync().
-  ImageDetails::Format image_format_;
+  core_api::extension_types::ImageFormat image_format_;
 
   // Quality setting to use when encoding jpegs.  Set in RunAsync().
   int image_quality_;

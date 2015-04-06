@@ -82,40 +82,40 @@ scoped_ptr<VisitItem> GetVisitItem(const history::VisitRow& row) {
       new double(MilliSecondsFromTime(row.visit_time)));
   visit_item->referring_visit_id = base::Int64ToString(row.referring_visit);
 
-  VisitItem::Transition transition = VisitItem::TRANSITION_LINK;
+  api::history::TransitionType transition = api::history::TRANSITION_TYPE_LINK;
   switch (row.transition & ui::PAGE_TRANSITION_CORE_MASK) {
     case ui::PAGE_TRANSITION_LINK:
-      transition = VisitItem::TRANSITION_LINK;
+      transition = api::history::TRANSITION_TYPE_LINK;
       break;
     case ui::PAGE_TRANSITION_TYPED:
-      transition = VisitItem::TRANSITION_TYPED;
+      transition = api::history::TRANSITION_TYPE_TYPED;
       break;
     case ui::PAGE_TRANSITION_AUTO_BOOKMARK:
-      transition = VisitItem::TRANSITION_AUTO_BOOKMARK;
+      transition = api::history::TRANSITION_TYPE_AUTO_BOOKMARK;
       break;
     case ui::PAGE_TRANSITION_AUTO_SUBFRAME:
-      transition = VisitItem::TRANSITION_AUTO_SUBFRAME;
+      transition = api::history::TRANSITION_TYPE_AUTO_SUBFRAME;
       break;
     case ui::PAGE_TRANSITION_MANUAL_SUBFRAME:
-      transition = VisitItem::TRANSITION_MANUAL_SUBFRAME;
+      transition = api::history::TRANSITION_TYPE_MANUAL_SUBFRAME;
       break;
     case ui::PAGE_TRANSITION_GENERATED:
-      transition = VisitItem::TRANSITION_GENERATED;
+      transition = api::history::TRANSITION_TYPE_GENERATED;
       break;
     case ui::PAGE_TRANSITION_AUTO_TOPLEVEL:
-      transition = VisitItem::TRANSITION_AUTO_TOPLEVEL;
+      transition = api::history::TRANSITION_TYPE_AUTO_TOPLEVEL;
       break;
     case ui::PAGE_TRANSITION_FORM_SUBMIT:
-      transition = VisitItem::TRANSITION_FORM_SUBMIT;
+      transition = api::history::TRANSITION_TYPE_FORM_SUBMIT;
       break;
     case ui::PAGE_TRANSITION_RELOAD:
-      transition = VisitItem::TRANSITION_RELOAD;
+      transition = api::history::TRANSITION_TYPE_RELOAD;
       break;
     case ui::PAGE_TRANSITION_KEYWORD:
-      transition = VisitItem::TRANSITION_KEYWORD;
+      transition = api::history::TRANSITION_TYPE_KEYWORD;
       break;
     case ui::PAGE_TRANSITION_KEYWORD_GENERATED:
-      transition = VisitItem::TRANSITION_KEYWORD_GENERATED;
+      transition = api::history::TRANSITION_TYPE_KEYWORD_GENERATED;
       break;
     default:
       DCHECK(false);

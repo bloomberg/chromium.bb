@@ -8,6 +8,12 @@
     "description": "Use the <code>chrome.history</code> API to interact with the browser's record of visited pages. You can add, remove, and query for URLs in the browser's history. To override the history page with your own version, see <a href='override'>Override Pages</a>.",
     "types": [
       {
+        "id": "TransitionType",
+        "type": "string",
+        "enum": ["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "auto_toplevel", "form_submit", "reload", "keyword", "keyword_generated"],
+        "description": "The <a href='#transition_types'>transition type</a> for this visit from its referrer."
+      },
+      {
         "id": "HistoryItem",
         "type": "object",
         "description": "An object encapsulating one result of a history query.",
@@ -30,8 +36,7 @@
           "visitTime": {"type": "number", "optional": true, "description": "When this visit occurred, represented in milliseconds since the epoch."},
           "referringVisitId": {"type": "string", "description": "The visit ID of the referrer."},
           "transition": {
-            "type": "string",
-            "enum": ["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "auto_toplevel", "form_submit", "reload", "keyword", "keyword_generated"],
+            "$ref": "TransitionType",
             "description": "The <a href='#transition_types'>transition type</a> for this visit from its referrer."
           }
         }

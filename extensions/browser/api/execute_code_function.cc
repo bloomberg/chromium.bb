@@ -149,14 +149,14 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
 
   UserScript::RunLocation run_at = UserScript::UNDEFINED;
   switch (details_->run_at) {
-    case InjectDetails::RUN_AT_NONE:
-    case InjectDetails::RUN_AT_DOCUMENT_IDLE:
+    case core_api::extension_types::RUN_AT_NONE:
+    case core_api::extension_types::RUN_AT_DOCUMENT_IDLE:
       run_at = UserScript::DOCUMENT_IDLE;
       break;
-    case InjectDetails::RUN_AT_DOCUMENT_START:
+    case core_api::extension_types::RUN_AT_DOCUMENT_START:
       run_at = UserScript::DOCUMENT_START;
       break;
-    case InjectDetails::RUN_AT_DOCUMENT_END:
+    case core_api::extension_types::RUN_AT_DOCUMENT_END:
       run_at = UserScript::DOCUMENT_END;
       break;
   }

@@ -11,9 +11,9 @@
     "description": "none",
     "types": [
       {
-        "id": "WallpaperLayout",
+        "id": "WallpaperSource",
         "type": "string",
-        "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED" ]
+        "enum": [ "ONLINE", "OEM" ]
       }
     ],
     "functions": [
@@ -67,7 +67,7 @@
           },
           {
             "name": "layout",
-            "$ref": "WallpaperLayout"
+            "$ref": "wallpaper.WallpaperLayout"
           },
           {
             "type": "function",
@@ -93,7 +93,7 @@
           },
           {
             "name": "layout",
-            "$ref": "WallpaperLayout"
+            "$ref": "wallpaper.WallpaperLayout"
           },
           {
             "type": "string",
@@ -125,7 +125,7 @@
           },
           {
             "name": "layout",
-            "$ref": "WallpaperLayout"
+            "$ref": "wallpaper.WallpaperLayout"
           },
           {
             "type": "boolean",
@@ -157,7 +157,7 @@
         "parameters": [
           {
             "name": "layout",
-            "$ref": "WallpaperLayout"
+            "$ref": "wallpaper.WallpaperLayout"
           },
           {
             "type": "function",
@@ -193,8 +193,7 @@
           },
           {
             "name": "source",
-            "type": "string",
-            "enum": [ "ONLINE", "OEM" ]
+            "$ref": "WallpaperSource"
           },
           {
             "type": "function",

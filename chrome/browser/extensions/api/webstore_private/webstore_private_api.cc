@@ -769,8 +769,8 @@ ExtensionFunction::ResponseAction WebstorePrivateGetWebGLStatusFunction::Run() {
 
 void WebstorePrivateGetWebGLStatusFunction::OnFeatureCheck(
     bool feature_allowed) {
-  Respond(ArgumentList(GetWebGLStatus::Results::Create(
-      GetWebGLStatus::Results::ParseWebgl_status(
+  Respond(ArgumentList(
+      GetWebGLStatus::Results::Create(api::webstore_private::ParseWebGlStatus(
           feature_allowed ? "webgl_allowed" : "webgl_blocked"))));
 }
 

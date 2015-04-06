@@ -188,20 +188,20 @@ void ZoomModeToZoomSettings(ZoomController::ZoomMode zoom_mode,
   DCHECK(zoom_settings);
   switch (zoom_mode) {
     case ZoomController::ZOOM_MODE_DEFAULT:
-      zoom_settings->mode = api::tabs::ZoomSettings::MODE_AUTOMATIC;
-      zoom_settings->scope = api::tabs::ZoomSettings::SCOPE_PER_ORIGIN;
+      zoom_settings->mode = api::tabs::ZOOM_SETTINGS_MODE_AUTOMATIC;
+      zoom_settings->scope = api::tabs::ZOOM_SETTINGS_SCOPE_PER_ORIGIN;
       break;
     case ZoomController::ZOOM_MODE_ISOLATED:
-      zoom_settings->mode = api::tabs::ZoomSettings::MODE_AUTOMATIC;
-      zoom_settings->scope = api::tabs::ZoomSettings::SCOPE_PER_TAB;
+      zoom_settings->mode = api::tabs::ZOOM_SETTINGS_MODE_AUTOMATIC;
+      zoom_settings->scope = api::tabs::ZOOM_SETTINGS_SCOPE_PER_TAB;
       break;
     case ZoomController::ZOOM_MODE_MANUAL:
-      zoom_settings->mode = api::tabs::ZoomSettings::MODE_MANUAL;
-      zoom_settings->scope = api::tabs::ZoomSettings::SCOPE_PER_TAB;
+      zoom_settings->mode = api::tabs::ZOOM_SETTINGS_MODE_MANUAL;
+      zoom_settings->scope = api::tabs::ZOOM_SETTINGS_SCOPE_PER_TAB;
       break;
     case ZoomController::ZOOM_MODE_DISABLED:
-      zoom_settings->mode = api::tabs::ZoomSettings::MODE_DISABLED;
-      zoom_settings->scope = api::tabs::ZoomSettings::SCOPE_PER_TAB;
+      zoom_settings->mode = api::tabs::ZOOM_SETTINGS_MODE_DISABLED;
+      zoom_settings->scope = api::tabs::ZOOM_SETTINGS_SCOPE_PER_TAB;
       break;
   }
 }
@@ -432,20 +432,19 @@ bool WindowsCreateFunction::RunSync() {
     // Figure out window type before figuring out bounds so that default
     // bounds can be set according to the window type.
     switch (create_data->type) {
-      case windows::Create::Params::CreateData::TYPE_POPUP:
+      case windows::CREATE_TYPE_POPUP:
         window_type = Browser::TYPE_POPUP;
         extension_id = extension()->id();
         break;
-      case windows::Create::Params::CreateData::TYPE_PANEL:
-      case windows::Create::Params::CreateData::TYPE_DETACHED_PANEL: {
+      case windows::CREATE_TYPE_PANEL:
+      case windows::CREATE_TYPE_DETACHED_PANEL: {
         extension_id = extension()->id();
         bool use_panels = PanelManager::ShouldUsePanels(extension_id);
         if (use_panels) {
           create_panel = true;
           // Non-ash supports both docked and detached panel types.
           if (chrome::GetActiveDesktop() != chrome::HOST_DESKTOP_TYPE_ASH &&
-              create_data->type ==
-              windows::Create::Params::CreateData::TYPE_DETACHED_PANEL) {
+              create_data->type == windows::CREATE_TYPE_DETACHED_PANEL) {
             panel_create_mode = PanelManager::CREATE_AS_DETACHED;
           }
         } else {
@@ -453,8 +452,8 @@ bool WindowsCreateFunction::RunSync() {
         }
         break;
       }
-      case windows::Create::Params::CreateData::TYPE_NONE:
-      case windows::Create::Params::CreateData::TYPE_NORMAL:
+      case windows::CREATE_TYPE_NONE:
+      case windows::CREATE_TYPE_NORMAL:
         break;
       default:
         error_ = keys::kInvalidWindowTypeError;
@@ -626,19 +625,19 @@ bool WindowsUpdateFunction::RunSync() {
 
   ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;  // No change.
   switch (params->update_info.state) {
-    case windows::Update::Params::UpdateInfo::STATE_NORMAL:
+    case windows::WINDOW_STATE_NORMAL:
       show_state = ui::SHOW_STATE_NORMAL;
       break;
-    case windows::Update::Params::UpdateInfo::STATE_MINIMIZED:
+    case windows::WINDOW_STATE_MINIMIZED:
       show_state = ui::SHOW_STATE_MINIMIZED;
       break;
-    case windows::Update::Params::UpdateInfo::STATE_MAXIMIZED:
+    case windows::WINDOW_STATE_MAXIMIZED:
       show_state = ui::SHOW_STATE_MAXIMIZED;
       break;
-    case windows::Update::Params::UpdateInfo::STATE_FULLSCREEN:
+    case windows::WINDOW_STATE_FULLSCREEN:
       show_state = ui::SHOW_STATE_FULLSCREEN;
       break;
-    case windows::Update::Params::UpdateInfo::STATE_NONE:
+    case windows::WINDOW_STATE_NONE:
       break;
     default:
       error_ = keys::kInvalidWindowStateError;
@@ -803,10 +802,8 @@ bool TabsQueryFunction::RunSync() {
   scoped_ptr<tabs::Query::Params> params(tabs::Query::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  bool loading_status_set = params->query_info.status !=
-      tabs::Query::Params::QueryInfo::STATUS_NONE;
-  bool loading = params->query_info.status ==
-      tabs::Query::Params::QueryInfo::STATUS_LOADING;
+  bool loading_status_set = params->query_info.status != tabs::TAB_STATUS_NONE;
+  bool loading = params->query_info.status == tabs::TAB_STATUS_LOADING;
 
   URLPatternSet url_patterns;
   if (params->query_info.url.get()) {
@@ -837,11 +834,8 @@ bool TabsQueryFunction::RunSync() {
     index = *params->query_info.index;
 
   std::string window_type;
-  if (params->query_info.window_type !=
-      tabs::Query::Params::QueryInfo::WINDOW_TYPE_NONE) {
-    window_type = tabs::Query::Params::QueryInfo::ToString(
-        params->query_info.window_type);
-  }
+  if (params->query_info.window_type != tabs::WINDOW_TYPE_NONE)
+    window_type = tabs::ToString(params->query_info.window_type);
 
   base::ListValue* result = new base::ListValue();
   Browser* last_active_browser = chrome::FindAnyBrowser(
@@ -1905,9 +1899,9 @@ bool TabsSetZoomSettingsFunction::RunAsync() {
     return false;
 
   // "per-origin" scope is only available in "automatic" mode.
-  if (params->zoom_settings.scope == ZoomSettings::SCOPE_PER_ORIGIN &&
-      params->zoom_settings.mode != ZoomSettings::MODE_AUTOMATIC &&
-      params->zoom_settings.mode != ZoomSettings::MODE_NONE) {
+  if (params->zoom_settings.scope == tabs::ZOOM_SETTINGS_SCOPE_PER_ORIGIN &&
+      params->zoom_settings.mode != tabs::ZOOM_SETTINGS_MODE_AUTOMATIC &&
+      params->zoom_settings.mode != tabs::ZOOM_SETTINGS_MODE_NONE) {
     error_ = keys::kPerOriginOnlyInAutomaticError;
     return false;
   }
@@ -1916,21 +1910,21 @@ bool TabsSetZoomSettingsFunction::RunAsync() {
   // user-specified |zoom_settings|.
   ZoomController::ZoomMode zoom_mode = ZoomController::ZOOM_MODE_DEFAULT;
   switch (params->zoom_settings.mode) {
-    case ZoomSettings::MODE_NONE:
-    case ZoomSettings::MODE_AUTOMATIC:
+    case tabs::ZOOM_SETTINGS_MODE_NONE:
+    case tabs::ZOOM_SETTINGS_MODE_AUTOMATIC:
       switch (params->zoom_settings.scope) {
-        case ZoomSettings::SCOPE_NONE:
-        case ZoomSettings::SCOPE_PER_ORIGIN:
+        case tabs::ZOOM_SETTINGS_SCOPE_NONE:
+        case tabs::ZOOM_SETTINGS_SCOPE_PER_ORIGIN:
           zoom_mode = ZoomController::ZOOM_MODE_DEFAULT;
           break;
-        case ZoomSettings::SCOPE_PER_TAB:
+        case tabs::ZOOM_SETTINGS_SCOPE_PER_TAB:
           zoom_mode = ZoomController::ZOOM_MODE_ISOLATED;
       }
       break;
-    case ZoomSettings::MODE_MANUAL:
+    case tabs::ZOOM_SETTINGS_MODE_MANUAL:
       zoom_mode = ZoomController::ZOOM_MODE_MANUAL;
       break;
-    case ZoomSettings::MODE_DISABLED:
+    case tabs::ZOOM_SETTINGS_MODE_DISABLED:
       zoom_mode = ZoomController::ZOOM_MODE_DISABLED;
   }
 

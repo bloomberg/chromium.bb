@@ -10,7 +10,7 @@ using namespace test::api::callbacks;
 
 TEST(JsonSchemaCompilerCallbacksTest, ReturnsObjectResultCreate) {
   ReturnsObject::Results::SomeObject some_object;
-  some_object.state = ReturnsObject::Results::SomeObject::STATE_FOO;
+  some_object.state = ENUMERATION_FOO;
   scoped_ptr<base::ListValue> results =
       ReturnsObject::Results::Create(some_object);
 
@@ -23,7 +23,7 @@ TEST(JsonSchemaCompilerCallbacksTest, ReturnsObjectResultCreate) {
 
 TEST(JsonSchemaCompilerCallbacksTest, ReturnsMultipleResultCreate) {
   ReturnsMultiple::Results::SomeObject some_object;
-  some_object.state = ReturnsMultiple::Results::SomeObject::STATE_FOO;
+  some_object.state = ENUMERATION_FOO;
   scoped_ptr<base::ListValue> results =
       ReturnsMultiple::Results::Create(5, some_object);
 

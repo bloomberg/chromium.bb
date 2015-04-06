@@ -48,6 +48,7 @@
 using base::BinaryValue;
 using content::BrowserThread;
 
+namespace wallpaper_base = extensions::api::wallpaper;
 namespace wallpaper_private = extensions::api::wallpaper_private;
 namespace set_wallpaper_if_exists = wallpaper_private::SetWallpaperIfExists;
 namespace set_wallpaper = wallpaper_private::SetWallpaper;
@@ -361,7 +362,7 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
   CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
                          &wallpaper_path));
   fallback_path = wallpaper_path.Append(file_name);
-  if (params->layout != wallpaper_private::WALLPAPER_LAYOUT_STRETCH &&
+  if (params->layout != wallpaper_base::WALLPAPER_LAYOUT_STRETCH &&
       resolution == chromeos::WallpaperManager::WALLPAPER_RESOLUTION_SMALL) {
     file_name = base::FilePath(file_name)
                     .InsertBeforeExtension(wallpaper::kSmallWallpaperSuffix)
@@ -420,7 +421,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
-      wallpaper_private::ToString(params->layout));
+      wallpaper_base::ToString(params->layout));
 
   bool update_wallpaper =
       user_id_ == user_manager::UserManager::Get()->GetActiveUser()->email();
@@ -530,7 +531,7 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
       chromeos::WallpaperManager::Get();
 
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
-      wallpaper_private::ToString(params->layout));
+      wallpaper_base::ToString(params->layout));
 
   bool update_wallpaper =
       user_id_ == user_manager::UserManager::Get()->GetActiveUser()->email();
@@ -620,7 +621,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
               base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
-      wallpaper_private::ToString(params->layout));
+      wallpaper_base::ToString(params->layout));
 
   bool update_wallpaper =
       user_id_ == user_manager::UserManager::Get()->GetActiveUser()->email();
@@ -702,7 +703,7 @@ bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunAsync() {
     return false;
   }
   info.layout = wallpaper_api_util::GetLayoutEnum(
-      wallpaper_private::ToString(params->layout));
+      wallpaper_base::ToString(params->layout));
 
   std::string email =
       user_manager::UserManager::Get()->GetActiveUser()->email();
@@ -758,7 +759,7 @@ bool WallpaperPrivateGetThumbnailFunction::RunAsync() {
   base::FilePath thumbnail_path;
   std::string email =
       user_manager::UserManager::Get()->GetActiveUser()->email();
-  if (params->source == get_thumbnail::Params::SOURCE_ONLINE) {
+  if (params->source == wallpaper_private::WALLPAPER_SOURCE_ONLINE) {
     std::string file_name = GURL(params->url_or_file).ExtractFileName();
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS,
                            &thumbnail_path));

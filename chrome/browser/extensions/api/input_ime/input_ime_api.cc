@@ -59,7 +59,7 @@ void SetMenuItemToMenu(const input_ime::MenuItem& input,
     out->label = *input.label;
   }
 
-  if (input.style != input_ime::MenuItem::STYLE_NONE) {
+  if (input.style != input_ime::MENU_ITEM_STYLE_NONE) {
     out->modified |= InputMethodEngineInterface::MENU_ITEM_MODIFIED_STYLE;
     out->style = static_cast<InputMethodEngineInterface::MenuItemStyle>(
         input.style);
@@ -135,7 +135,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
     scoped_ptr<base::ListValue> args(input_ime::OnActivate::Create(
         component_id,
-        input_ime::OnActivate::ParseScreen(GetCurrentScreenType())));
+        input_ime::ParseScreenType(GetCurrentScreenType())));
 
     DispatchEventToExtension(
         extension_id_, input_ime::OnActivate::kEventName, args.Pass());
@@ -160,7 +160,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
     input_ime::InputContext context_value;
     context_value.context_id = context.id;
-    context_value.type = input_ime::InputContext::ParseType(context.type);
+    context_value.type = input_ime::ParseInputContextType(context.type);
     context_value.auto_correct = context.auto_correct;
     context_value.auto_complete = context.auto_complete;
     context_value.spell_check = context.spell_check;
@@ -189,7 +189,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
     input_ime::InputContext context_value;
     context_value.context_id = context.id;
-    context_value.type = input_ime::InputContext::ParseType(context.type);
+    context_value.type = input_ime::ParseInputContextType(context.type);
 
     scoped_ptr<base::ListValue> args(
         input_ime::OnInputContextUpdate::Create(context_value));
@@ -221,7 +221,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         ime_event_router->AddRequest(component_id, key_data);
 
     input_ime::KeyboardEvent key_data_value;
-    key_data_value.type = input_ime::KeyboardEvent::ParseType(event.type);
+    key_data_value.type = input_ime::ParseKeyboardEventType(event.type);
     key_data_value.request_id = request_id;
     if (!event.extension_id.empty())
       key_data_value.extension_id.reset(new std::string(event.extension_id));
@@ -247,21 +247,20 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
         !HasListener(input_ime::OnCandidateClicked::kEventName))
       return;
 
-    input_ime::OnCandidateClicked::Button button_enum =
-        input_ime::OnCandidateClicked::BUTTON_NONE;
+    input_ime::MouseButton button_enum = input_ime::MOUSE_BUTTON_NONE;
     switch (button) {
       case InputMethodEngineInterface::MOUSE_BUTTON_MIDDLE:
-        button_enum = input_ime::OnCandidateClicked::BUTTON_MIDDLE;
+        button_enum = input_ime::MOUSE_BUTTON_MIDDLE;
         break;
 
       case InputMethodEngineInterface::MOUSE_BUTTON_RIGHT:
-        button_enum = input_ime::OnCandidateClicked::BUTTON_RIGHT;
+        button_enum = input_ime::MOUSE_BUTTON_RIGHT;
         break;
 
       case InputMethodEngineInterface::MOUSE_BUTTON_LEFT:
       // Default to left.
       default:
-        button_enum = input_ime::OnCandidateClicked::BUTTON_LEFT;
+        button_enum = input_ime::MOUSE_BUTTON_LEFT;
         break;
     }
 
@@ -551,17 +550,16 @@ bool InputImeSetCompositionFunction::RunSync() {
     for (size_t i = 0; i < segments_args.size(); ++i) {
       EXTENSION_FUNCTION_VALIDATE(
           segments_args[i]->style !=
-          SetComposition::Params::Parameters::SegmentsType::STYLE_NONE);
+          input_ime::UNDERLINE_STYLE_NONE);
       segments.push_back(InputMethodEngineInterface::SegmentInfo());
       segments.back().start = segments_args[i]->start;
       segments.back().end = segments_args[i]->end;
       if (segments_args[i]->style ==
-          SetComposition::Params::Parameters::SegmentsType::STYLE_UNDERLINE) {
+          input_ime::UNDERLINE_STYLE_UNDERLINE) {
         segments.back().style =
             InputMethodEngineInterface::SEGMENT_STYLE_UNDERLINE;
       } else if (segments_args[i]->style ==
-                 SetComposition::Params::Parameters::SegmentsType::
-                     STYLE_DOUBLEUNDERLINE) {
+                 input_ime::UNDERLINE_STYLE_DOUBLEUNDERLINE) {
         segments.back().style =
             InputMethodEngineInterface::SEGMENT_STYLE_DOUBLE_UNDERLINE;
       } else {
@@ -648,7 +646,7 @@ bool InputImeSendKeyEventsFunction::RunAsync() {
 
   for (size_t i = 0; i < key_data.size(); ++i) {
     chromeos::InputMethodEngineInterface::KeyboardEvent event;
-    event.type = input_ime::KeyboardEvent::ToString(key_data[i]->type);
+    event.type = input_ime::ToString(key_data[i]->type);
     event.key = key_data[i]->key;
     event.code = key_data[i]->code;
     event.key_code = key_data[i]->key_code.get() ? *(key_data[i]->key_code) : 0;
@@ -710,14 +708,10 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunSync() {
     modified = true;
   }
 
-  if (properties.window_position ==
-      SetCandidateWindowProperties::Params::Parameters::Properties::
-          WINDOW_POSITION_COMPOSITION) {
+  if (properties.window_position == input_ime::WINDOW_POSITION_COMPOSITION) {
     properties_out.show_window_at_composition = true;
     modified = true;
-  } else if (properties.window_position ==
-             SetCandidateWindowProperties::Params::Parameters::Properties::
-                 WINDOW_POSITION_CURSOR) {
+  } else if (properties.window_position == input_ime::WINDOW_POSITION_CURSOR) {
     properties_out.show_window_at_composition = false;
     modified = true;
   }

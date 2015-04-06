@@ -9,7 +9,7 @@
     "compiler_options": {
       "implemented_in": "chrome/browser/extensions/api/web_view/chrome_web_view_internal_api.h"
     },
-    "dependencies": ["contextMenusInternal"],
+    "dependencies": ["contextMenusInternal", "contextMenus"],
     "types": [
       {
         "id": "ContextMenuItem",
@@ -50,8 +50,7 @@
             "name": "createProperties",
             "properties": {
               "type": {
-                "type": "string",
-                "enum": ["normal", "checkbox", "radio", "separator"],
+                "$ref": "contextMenus.ItemType",
                 "optional": true,
                 "description": "The type of menu item. Defaults to 'normal' if not specified."
               },
@@ -73,13 +72,12 @@
               "contexts": {
                 "type": "array",
                 "items": {
-                  "type": "string",
                   // |launcher| isn't actually supported, this is listed here so that we can build |contexts| using the same code from chrome.contextMenus API.
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher", "browser_action", "page_action"]
+                  "$ref": "contextMenus.ContextType"
                 },
                 "minItems": 1,
                 "optional": true,
-                "description": "List of contexts this menu item will appear in. Defaults to ['page'] if not specified. Specifying ['all'] is equivalent to the combination of all other contexts except for 'launcher'. The 'launcher' context is not supported for <webview>."
+                "description": "List of contexts this menu item will appear in. Defaults to ['page'] if not specified."
               },
               "onclick": {
                 "type": "function",
@@ -152,8 +150,7 @@
             "description": "The properties to update. Accepts the same values as the create function.",
             "properties": {
               "type": {
-                "type": "string",
-                "enum": ["normal", "checkbox", "radio", "separator"],
+                "$ref": "contextMenus.ItemType",
                 "optional": true
               },
               "title": {
@@ -167,13 +164,12 @@
               "contexts": {
                 "type": "array",
                 "items": {
-                  "type": "string",
                   // |launcher| isn't actually supported, this is listed here so that we can build |contexts| using the same code from chrome.contextMenus API.
-                  "enum": ["all", "page", "frame", "selection", "link", "editable", "image", "video", "audio", "launcher", "browser_action", "page_action"]
+                  "$ref": "contextMenus.ContextType"
                 },
                 "minItems": 1,
                 "optional": true,
-                "description": "List of contexts this menu item will appear in. Defaults to ['page'] if not specified. Specifying ['all'] is equivalent to the combination of all other contexts except for 'launcher'. The 'launcher' context is not supported for <webview>."
+                "description": "List of contexts this menu item will appear in. Defaults to ['page'] if not specified."
               },
               "onclick": {
                 "type": "function",

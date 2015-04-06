@@ -328,13 +328,13 @@ ACMatchClassifications StyleTypesToACMatchClassifications(
 
       int type_class;
       switch (style->type) {
-        case omnibox::SuggestResult::DescriptionStylesType::TYPE_URL:
+        case omnibox::DESCRIPTION_STYLE_TYPE_URL:
           type_class = AutocompleteMatch::ACMatchClassification::URL;
           break;
-        case omnibox::SuggestResult::DescriptionStylesType::TYPE_MATCH:
+        case omnibox::DESCRIPTION_STYLE_TYPE_MATCH:
           type_class = AutocompleteMatch::ACMatchClassification::MATCH;
           break;
-        case omnibox::SuggestResult::DescriptionStylesType::TYPE_DIM:
+        case omnibox::DESCRIPTION_STYLE_TYPE_DIM:
           type_class = AutocompleteMatch::ACMatchClassification::DIM;
           break;
         default:

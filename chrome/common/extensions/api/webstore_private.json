@@ -66,6 +66,11 @@
           "description": "The extension is already installed"
         }],
         "description": "Whether the API call succeeded, or the reason for failure."
+      },
+      {
+        "id": "WebGlStatus",
+        "type": "string",
+        "enum": ["webgl_allowed", "webgl_blocked"]
       }
     ],
     "functions": [
@@ -366,8 +371,7 @@
             "parameters": [
               {
                 "name": "webgl_status",
-                "type": "string",
-                "enum": ["webgl_allowed", "webgl_blocked"]
+                "$ref": "WebGlStatus"
               }
             ]
           }

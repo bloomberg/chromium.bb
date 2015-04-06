@@ -8,13 +8,29 @@
     "description": "none",
     "types": [
       {
+        "id": "ExtensionActivityType",
+        "type": "string",
+        "enum": ["api_call", "api_event", "content_script", "dom_access", "dom_event", "web_request"]
+      },
+      {
+        "id": "ExtensionActivityFilter",
+        "type": "string",
+        "enum": ["api_call", "api_event", "content_script", "dom_access", "dom_event", "web_request", "any"],
+        "description": "Exact match or any"
+      },
+      {
+        "id": "ExtensionActivityDomVerb",
+        "type": "string",
+        "enum": ["getter", "setter", "method", "inserted", "xhr", "webrequest", "modified"]
+      },
+      {
         "id": "ExtensionActivity",
         "type": "object",
         "description": "This corresponds to a row from the ActivityLog database. Fields will be blank if they were specified precisely in a lookup filter.",
         "properties": {
           "activityId": {"type": "string", "optional": true, "description": "An ID of a row in the ActivityLog database that corresponds to the activity. ID is set only on activities retrieved from the database."},
           "extensionId": {"type": "string", "optional": true},
-          "activityType": {"type": "string", "enum": ["api_call", "api_event", "content_script", "dom_access", "dom_event", "web_request"]},
+          "activityType": {"$ref": "ExtensionActivityType"},
           "time": {"type": "number", "optional": true},
           "apiCall": {"type": "string", "optional": true},
           "args": {"type": "string", "optional": true},
@@ -27,7 +43,7 @@
             "optional": true,
             "properties": {
               "prerender": {"type": "boolean", "optional": true},
-              "domVerb": {"type": "string", "enum": ["getter", "setter", "method", "inserted", "xhr", "webrequest", "modified"], "optional": true},
+              "domVerb": {"$ref": "ExtensionActivityDomVerb", "optional": true},
               "webRequest": {"type": "string", "optional": true},
               "extra": {"type": "string", "optional": true}
             }
@@ -40,7 +56,7 @@
         "description": "Used to specify values for a lookup.",
         "properties": {
           "extensionId": {"type": "string", "optional": true, "description": "Exact match"},
-          "activityType": {"type": "string", "enum": ["api_call", "api_event", "content_script", "dom_access", "dom_event", "web_request", "any"], "description": "Exact match or any"},
+          "activityType": {"$ref": "ExtensionActivityFilter"},
           "apiCall": {"type": "string", "optional": true, "description": "Exact match"},
           "pageUrl": {"type": "string", "optional": true, "description": "Treated as a prefix"},
           "argUrl": {"type": "string", "optional": true, "description": "Treated as a prefix"},

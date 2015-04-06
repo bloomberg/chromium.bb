@@ -116,8 +116,7 @@ bool MetricsPrivateRecordValueFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Get the histogram parameters from the metric type object.
-  std::string type = api::metrics_private::MetricType::ToString(
-      params->metric.type);
+  std::string type = api::metrics_private::ToString(params->metric.type);
 
   base::HistogramType histogram_type(type == "histogram-linear" ?
       base::LINEAR_HISTOGRAM : base::HISTOGRAM);
