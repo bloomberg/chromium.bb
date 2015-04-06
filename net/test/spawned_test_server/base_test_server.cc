@@ -29,11 +29,17 @@ namespace {
 
 std::string GetHostname(BaseTestServer::Type type,
                         const BaseTestServer::SSLOptions& options) {
-  if (BaseTestServer::UsingSSL(type) &&
-      options.server_certificate ==
-          BaseTestServer::SSLOptions::CERT_MISMATCHED_NAME) {
-    // Return a different hostname string that resolves to the same hostname.
-    return "localhost";
+  if (BaseTestServer::UsingSSL(type)) {
+    if (options.server_certificate ==
+            BaseTestServer::SSLOptions::CERT_MISMATCHED_NAME ||
+        options.server_certificate ==
+            BaseTestServer::SSLOptions::CERT_OK_FOR_LOCALHOST) {
+      // For |CERT_MISMATCHED_NAME|, return a different hostname string
+      // that resolves to the same hostname. For
+      // |CERT_OK_FOR_LOCALHOST|, the certificate is issued for
+      // "localhost" instead of "127.0.0.1".
+      return "localhost";
+    }
   }
 
   // Use the 127.0.0.1 as default.
@@ -135,6 +141,8 @@ base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
     case CERT_OK:
     case CERT_MISMATCHED_NAME:
       return base::FilePath(FILE_PATH_LITERAL("ok_cert.pem"));
+    case CERT_OK_FOR_LOCALHOST:
+      return base::FilePath(FILE_PATH_LITERAL("localhost_cert.pem"));
     case CERT_EXPIRED:
       return base::FilePath(FILE_PATH_LITERAL("expired_cert.pem"));
     case CERT_CHAIN_WRONG_ROOT:

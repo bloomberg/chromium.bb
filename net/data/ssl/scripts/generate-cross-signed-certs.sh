@@ -19,12 +19,7 @@
 # MD5root, or leaf -> MD5root -> SHA256root
 
 try() {
-  echo "$@"
-  "$@" || exit 1
-}
-
-quiet_try() {
-    "$@" || exit 1
+  "$@" || (e=$?; echo "$@" > /dev/stderr; exit $e)
 }
 
 try rm -rf out
@@ -85,9 +80,9 @@ CA_COMMON_NAME="Test Dup-Hash Root CA" \
     -out out/ok_cert.pem \
     -config ca.cnf
 
-quiet_try openssl x509 -text \
+try openssl x509 -text \
     -in out/2048-md5-root.pem > ../certificates/cross-signed-root-md5.pem
-quiet_try openssl x509 -text \
+try openssl x509 -text \
     -in out/2048-sha256-root.pem > ../certificates/cross-signed-root-sha256.pem
-quiet_try openssl x509 -text \
+try openssl x509 -text \
     -in out/ok_cert.pem > ../certificates/cross-signed-leaf.pem

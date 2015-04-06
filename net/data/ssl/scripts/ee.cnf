@@ -25,11 +25,21 @@ CN = Duplicate
 O  = Bar
 CN = Duplicate
 
+[req_localhost_cn]
+C  = US
+ST = California
+L  = Mountain View
+O  = Test CA
+CN = localhost
+
 [req_punycode_dn]
 CN = xn--wgv71a119e.com
 
 [req_extensions]
 subjectAltName = IP:127.0.0.1
+
+[req_localhost_san]
+subjectAltName = DNS:localhost
 
 [req_punycode]
 basicConstraints = critical, CA:true

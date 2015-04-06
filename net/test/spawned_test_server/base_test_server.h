@@ -49,6 +49,9 @@ class BaseTestServer {
   struct SSLOptions {
     enum ServerCertificate {
       CERT_OK,
+      // Causes the testserver to use a hostname that is a domain
+      // instead of an IP.
+      CERT_OK_FOR_LOCALHOST,
 
       // CERT_AUTO causes the testserver to generate a test certificate issued
       // by "Testing CA" (see net/data/ssl/certificates/ocsp-test-root.pem).
