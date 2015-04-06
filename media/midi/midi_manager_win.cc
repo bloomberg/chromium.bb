@@ -291,8 +291,10 @@ struct MidiDeviceInfo final {
 };
 
 std::string GetManufacturerName(const MidiDeviceInfo& info) {
-  if (info.is_usb_device)
-    return device::UsbIds::GetVendorName(info.usb_vendor_id);
+  if (info.is_usb_device) {
+    const char* name = device::UsbIds::GetVendorName(info.usb_vendor_id);
+    return std::string(name ? name : "");
+  }
 
   switch (info.manufacturer_id) {
     case MM_MICROSOFT:
