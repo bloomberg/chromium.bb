@@ -132,7 +132,6 @@
             android:layout_marginBottom="16dp"
             android:layout_marginTop="16dp">
 
-            <!-- TODO(estade): Content description? -->
             <ImageView
                 android:id="@+id/store_locally_tooltip_icon"
                 android:layout_width="wrap_content"
@@ -142,7 +141,7 @@
                 android:layout_centerVertical="true"
                 android:padding="12dp"
                 android:src="@drawable/help_outline"
-                android:contentDescription="@null" />
+                android:contentDescription="@string/learn_more" />
 
            <CheckBox
                 android:id="@+id/store_locally_checkbox"
@@ -180,7 +179,6 @@
             android:layout_marginBottom="8dp"
             android:visibility="gone" />
 
-        <!--  TODO(estade): add a real content description for this image. -->
         <ImageView
             android:id="@+id/verification_success"
             android:layout_width="wrap_content"

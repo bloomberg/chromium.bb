@@ -266,6 +266,7 @@ public class CardUnmaskPrompt
         });
         mStoreLocallyTooltipPopup.showAsDropDown(mStoreLocallyCheckbox,
                 ViewCompat.getPaddingStart(mStoreLocallyCheckbox), 0);
+        ApiCompatibilityUtils.announceForAccessibility(text, text.getText());
     }
 
     private void setInitialFocus() {
