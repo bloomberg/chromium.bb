@@ -422,8 +422,8 @@ int SSLClientSocketOpenSSL::ExportKeyingMaterial(
 
   int rv = SSL_export_keying_material(
       ssl_, out, outlen, label.data(), label.size(),
-      reinterpret_cast<const unsigned char*>(context.data()),
-      context.length(), context.length() > 0);
+      reinterpret_cast<const unsigned char*>(context.data()), context.length(),
+      has_context ? 1 : 0);
 
   if (rv != 1) {
     int ssl_error = SSL_get_error(ssl_, rv);
