@@ -32,7 +32,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/htmlediting.h"
@@ -189,14 +188,15 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
     appendCloseTag(out, element);
 }
 
+template<typename Strategy>
 Node* StyledMarkupAccumulator::serializeNodes(Node* startNode, Node* pastEnd)
 {
     if (!m_highestNodeToBeSerialized) {
-        Node* lastClosed = traverseNodesForSerialization(startNode, pastEnd, DoNotEmitString);
+        Node* lastClosed = traverseNodesForSerialization<Strategy>(startNode, pastEnd, DoNotEmitString);
         m_highestNodeToBeSerialized = lastClosed;
     }
 
-    if (m_highestNodeToBeSerialized && m_highestNodeToBeSerialized->parentNode()) {
+    if (m_highestNodeToBeSerialized && Strategy::parent(*m_highestNodeToBeSerialized)) {
         m_wrappingStyle = EditingStyle::wrappingStyleForSerialization(m_highestNodeToBeSerialized->parentNode(), shouldAnnotate());
         if (m_shouldAnnotate == AnnotateForNavigationTransition) {
             m_wrappingStyle->style()->removeProperty(CSSPropertyBackgroundColor);
@@ -205,9 +205,10 @@ Node* StyledMarkupAccumulator::serializeNodes(Node* startNode, Node* pastEnd)
     }
 
 
-    return traverseNodesForSerialization(startNode, pastEnd, EmitString);
+    return traverseNodesForSerialization<Strategy>(startNode, pastEnd, EmitString);
 }
 
+template<typename Strategy>
 Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode traversalMode)
 {
     const bool shouldEmit = traversalMode == EmitString;
@@ -223,7 +224,7 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
         if (!n)
             break;
 
-        next = NodeTraversal::next(*n);
+        next = Strategy::next(*n);
         bool openedTag = false;
 
         if (isBlock(n) && canHaveChildrenForEditing(n) && next == pastEnd) {
@@ -232,9 +233,9 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
         }
 
         if (!n->layoutObject() && !enclosingElementWithTag(firstPositionInOrBeforeNode(n), selectTag) && m_shouldAnnotate != AnnotateForNavigationTransition) {
-            next = NodeTraversal::nextSkippingChildren(*n);
+            next = Strategy::nextSkippingChildren(*n);
             // Don't skip over pastEnd.
-            if (pastEnd && pastEnd->isDescendantOf(n))
+            if (pastEnd && Strategy::isDescendantOf(*pastEnd, *n))
                 next = pastEnd;
         } else {
             // Add the node to the markup if we're not skipping the descendants
@@ -242,7 +243,7 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
                 appendStartTag(*n);
 
             // If node has no children, close the tag now.
-            if (n->isContainerNode() && toContainerNode(n)->hasChildren()) {
+            if (Strategy::hasChildren(*n)) {
                 openedTag = true;
                 ancestorsToClose.append(toContainerNode(n));
             } else {
@@ -254,12 +255,12 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
 
         // If we didn't insert open tag and there's no more siblings or we're at the end of the traversal, take care of ancestors.
         // FIXME: What happens if we just inserted open tag and reached the end?
-        if (!openedTag && (!n->nextSibling() || next == pastEnd)) {
+        if (!openedTag && (!Strategy::nextSibling(*n) || next == pastEnd)) {
             // Close up the ancestors.
             while (!ancestorsToClose.isEmpty()) {
                 ContainerNode* ancestor = ancestorsToClose.last();
                 ASSERT(ancestor);
-                if (next != pastEnd && next->isDescendantOf(ancestor))
+                if (next != pastEnd && Strategy::isDescendantOf(*next, *ancestor))
                     break;
                 // Not at the end of the range, close ancestors up to sibling of next node.
                 if (shouldEmit && ancestor->isElementNode())
@@ -269,15 +270,17 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
             }
 
             // Surround the currently accumulated markup with markup for ancestors we never opened as we leave the subtree(s) rooted at those ancestors.
-            ContainerNode* nextParent = next ? next->parentNode() : 0;
+            ContainerNode* nextParent = next ? Strategy::parent(*next) : nullptr;
             if (next != pastEnd && n != nextParent) {
-                Node* lastAncestorClosedOrSelf = n->isDescendantOf(lastClosed) ? lastClosed : n;
-                for (ContainerNode* parent = lastAncestorClosedOrSelf->parentNode(); parent && parent != nextParent; parent = parent->parentNode()) {
+                ASSERT(n);
+                Node* lastAncestorClosedOrSelf = Strategy::isDescendantOf(*n, *lastClosed) ? lastClosed : n;
+                for (ContainerNode* parent = Strategy::parent(*lastAncestorClosedOrSelf); parent && parent != nextParent; parent = Strategy::parent(*parent)) {
                     // All ancestors that aren't in the ancestorsToClose list should either be a) unrendered:
                     if (!parent->layoutObject())
                         continue;
                     // or b) ancestors that we never encountered during a pre-order traversal starting at startNode:
-                    ASSERT(startNode->isDescendantOf(parent));
+                    ASSERT(startNode);
+                    ASSERT(Strategy::isDescendantOf(*startNode, *parent));
                     if (shouldEmit)
                         wrapWithNode(*parent);
                     lastClosed = parent;
@@ -288,5 +291,7 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
 
     return lastClosed;
 }
+
+template Node* StyledMarkupAccumulator::serializeNodes<EditingStrategy>(Node* startNode, Node* endNode);
 
 } // namespace blink

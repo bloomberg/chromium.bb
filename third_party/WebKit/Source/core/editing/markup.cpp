@@ -45,6 +45,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
+#include "core/editing/EditingStrategy.h"
 #include "core/editing/Editor.h"
 #include "core/editing/StyledMarkupAccumulator.h"
 #include "core/editing/VisibleSelection.h"
@@ -284,7 +285,7 @@ static String createMarkupInternal(Document& document, const Range* range, const
             return interchangeNewlineString;
     }
 
-    Node* lastClosed = accumulator.serializeNodes(startNode, pastEnd);
+    Node* lastClosed = accumulator.serializeNodes<EditingStrategy>(startNode, pastEnd);
 
     if (specialCommonAncestor && lastClosed) {
         // Also include all of the ancestors of lastClosed up to this special ancestor.
@@ -770,7 +771,7 @@ String createStyledMarkupForNavigationTransition(Node* node)
     node->document().updateLayoutIgnorePendingStylesheets();
 
     StyledMarkupAccumulator accumulator(ResolveAllURLs, AnnotateForNavigationTransition, Position(), Position(), 0);
-    accumulator.serializeNodes(node, NodeTraversal::nextSkippingChildren(*node));
+    accumulator.serializeNodes<EditingStrategy>(node, NodeTraversal::nextSkippingChildren(*node));
 
     static const char* documentMarkup = "<!DOCTYPE html><meta name=\"viewport\" content=\"width=device-width, user-scalable=0\">";
     return documentMarkup + accumulator.takeResults();

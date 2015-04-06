@@ -29,6 +29,8 @@
 #ifndef StyledMarkupAccumulator_h
 #define StyledMarkupAccumulator_h
 
+#include "core/dom/NodeTraversal.h"
+#include "core/editing/EditingStrategy.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/MarkupAccumulator.h"
 #include "wtf/Forward.h"
@@ -44,6 +46,8 @@ public:
     enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
 
     StyledMarkupAccumulator(EAbsoluteURLs, EAnnotateForInterchange, const Position& start, const Position& end, Node* highestNodeToBeSerialized = nullptr);
+
+    template<typename Strategy>
     Node* serializeNodes(Node* startNode, Node* pastEnd);
     void appendString(const String& s) { return MarkupAccumulator::appendString(s); }
     void wrapWithNode(ContainerNode&, bool convertBlocksToInlines = false, RangeFullySelectsNode = DoesFullySelectNode);
@@ -58,6 +62,8 @@ private:
     virtual void appendElement(StringBuilder& out, Element& element, Namespaces*) override { appendElement(out, element, false, DoesFullySelectNode); }
 
     enum NodeTraversalMode { EmitString, DoNotEmitString };
+
+    template<typename Strategy>
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode);
 
     bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange || m_shouldAnnotate == AnnotateForNavigationTransition; }
@@ -72,6 +78,8 @@ private:
     RawPtrWillBeMember<Node> m_highestNodeToBeSerialized;
     RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
 };
+
+extern template Node* StyledMarkupAccumulator::serializeNodes<EditingStrategy>(Node* startNode, Node* endNode);
 
 } // namespace blink
 
