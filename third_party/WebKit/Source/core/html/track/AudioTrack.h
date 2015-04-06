@@ -6,11 +6,12 @@
 #define AudioTrack_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/html/track/TrackBase.h"
 
 namespace blink {
 
-class AudioTrack final : public NoBaseWillBeGarbageCollectedFinalized<AudioTrack>, public TrackBase, public ScriptWrappable {
+class CORE_EXPORT AudioTrack final : public NoBaseWillBeGarbageCollectedFinalized<AudioTrack>, public TrackBase, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioTrack);
 public:

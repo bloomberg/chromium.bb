@@ -27,6 +27,7 @@
 #ifndef TextTrack_h
 #define TextTrack_h
 
+#include "core/CoreExport.h"
 #include "core/events/EventTarget.h"
 #include "core/html/track/TrackBase.h"
 #include "platform/heap/Handle.h"
@@ -44,7 +45,7 @@ class TextTrackList;
 class VTTRegion;
 class VTTRegionList;
 
-class TextTrack : public EventTargetWithInlineData, public TrackBase {
+class CORE_EXPORT TextTrack : public EventTargetWithInlineData, public TrackBase {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(TrackBase);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrack);

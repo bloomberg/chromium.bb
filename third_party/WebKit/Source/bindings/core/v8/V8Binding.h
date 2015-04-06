@@ -860,7 +860,7 @@ struct NativeValueTraits<Vector<T>> {
 using JSONValuePtr = PassRefPtr<JSONValue>;
 template <>
 struct NativeValueTraits<JSONValuePtr> {
-    static JSONValuePtr nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&, int maxDepth = JSONValue::maxDepth);
+    CORE_EXPORT static JSONValuePtr nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&, int maxDepth = JSONValue::maxDepth);
 };
 
 CORE_EXPORT v8::Isolate* toIsolate(ExecutionContext*);

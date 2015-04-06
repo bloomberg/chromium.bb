@@ -5,11 +5,13 @@
 #ifndef DOMNodeIds_h
 #define DOMNodeIds_h
 
+#include "core/CoreExport.h"
+
 namespace blink {
 
 class Node;
 
-class DOMNodeIds {
+class CORE_EXPORT DOMNodeIds {
 public:
     static int idForNode(Node*);
     static Node* nodeForId(int);
