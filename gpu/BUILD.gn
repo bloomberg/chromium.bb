@@ -40,12 +40,12 @@ config("gpu_implementation") {
 
 component("gpu") {
   public_deps = [
-    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:client_sources",
     "//gpu/command_buffer/client:gles2_cmd_helper_sources",
-    "//gpu/command_buffer/common",
-    "//gpu/command_buffer/service",
-    "//gpu/config",
-    "//gpu/ipc",
+    "//gpu/command_buffer/common:common_sources",
+    "//gpu/command_buffer/service:service_sources",
+    "//gpu/config:config_sources",
+    "//gpu/ipc:ipc_sources",
   ]
 }
 

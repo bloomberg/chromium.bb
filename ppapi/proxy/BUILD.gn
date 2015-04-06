@@ -272,7 +272,7 @@ component("proxy") {
     "//ipc",
     "//media:shared_memory_support",
     "//ppapi/c",
-    "//ppapi/proxy:ipc",
+    "//ppapi/proxy:ipc_sources",
     "//ppapi/shared_impl",
     "//third_party/icu",
   ]
@@ -293,7 +293,19 @@ component("proxy") {
   }
 }
 
-source_set("ipc") {
+group("ipc") {
+  if (is_component_build) {
+    public_deps = [
+      "//ppapi/proxy",
+    ]
+  } else {
+    public_deps = [
+      ":ipc_sources",
+    ]
+  }
+}
+
+source_set("ipc_sources") {
   sources = [
     "nacl_message_scanner.cc",
     "nacl_message_scanner.h",

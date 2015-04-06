@@ -2,7 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("ipc") {
+group("ipc") {
+  if (is_component_build) {
+    public_deps = [
+      "//gpu",
+    ]
+  } else {
+    public_deps = [
+      ":ipc_sources",
+    ]
+  }
+}
+
+source_set("ipc_sources") {
+  visibility = [ "//gpu/*" ]
+
   sources = [
     "gpu_command_buffer_traits.cc",
     "gpu_command_buffer_traits.h",
@@ -14,7 +28,7 @@ source_set("ipc") {
   ]
 
   deps = [
-    "//gpu/command_buffer/common",
+    "//gpu/command_buffer/common:common_sources",
     "//ipc",
   ]
 }

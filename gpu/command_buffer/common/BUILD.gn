@@ -2,7 +2,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("common") {
+# The files here go into the "gpu" component in a component build (with
+# "command_buffer_common" just forwarding) and goes into a static library in
+# non-component build. This needs to match the GYP build which was likely an
+# attempt to make larger components to help with loading.
+group("common") {
+  if (is_component_build) {
+    public_deps = [
+      "//gpu",
+    ]
+  } else {
+    public_deps = [
+      ":common_sources",
+    ]
+  }
+}
+
+source_set("common_sources") {
+  visibility = [ "//gpu/*" ]
+
   sources = [
     "bitfield_helpers.h",
     "buffer.cc",

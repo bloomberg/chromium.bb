@@ -144,6 +144,7 @@ source_set("common") {
     "//build/util:webkit_version",
     "//components/tracing",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common:gles2_utils",
     "//net",
     "//skia",
     "//third_party/icu",
@@ -279,8 +280,10 @@ source_set("common") {
   }
 
   if (use_x11) {
-    include_dirs += [ "//third_party/khronos" ]
-    configs += [ "//build/config/linux:xcomposite" ]
+    configs += [
+      "//build/config/linux:xcomposite",
+      "//third_party/khronos:khronos_headers",
+    ]
 
     if (current_cpu != "arm" || !is_chromeos) {
       sources += [ "gpu/x_util.h" ]
@@ -403,7 +406,7 @@ source_set("common") {
       "gpu/media/dxva_video_decode_accelerator.cc",
       "gpu/media/dxva_video_decode_accelerator.h",
     ]
-    include_dirs += [ "//third_party/khronos" ]
+    configs += [ "//third_party/khronos:khronos_headers" ]
     deps += [ "//ui/gl" ]
     libs += [
       "d3d9.lib",

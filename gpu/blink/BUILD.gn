@@ -24,6 +24,7 @@ component("blink") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//gpu/command_buffer/common",
+    "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/service",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
