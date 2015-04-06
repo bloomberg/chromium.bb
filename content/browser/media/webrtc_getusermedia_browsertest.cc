@@ -595,8 +595,8 @@ IN_PROC_BROWSER_TEST_F(
     TraceVideoCaptureControllerPerformanceDuringGetUserMedia) {
   RunGetUserMediaAndCollectMeasures(
       10,
-      "VideoCaptureController::OnIncomingCapturedData",
-      "VideoCaptureController");
+      "VideoCaptureDeviceClient::OnIncomingCapturedData",
+      "VideoCaptureDeviceClient");
 }
 
 // Test fails under MSan, http://crbug.com/445745

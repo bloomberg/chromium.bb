@@ -62,7 +62,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     const VideoCaptureFormat& frame_format,
     int rotation,
     const base::TimeTicks& timestamp) {
-  TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedData");
+  TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedData");
 
   if (last_captured_pixel_format_ != frame_format.pixel_format) {
     OnLog("Pixel format: " + media::VideoCaptureFormat::PixelFormatToString(
@@ -239,7 +239,7 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
     const VideoCaptureFormat& frame_format,
     int clockwise_rotation,
     const base::TimeTicks& timestamp) {
-  TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedYuvData");
+  TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedYuvData");
   DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_I420);
   DCHECK_EQ(clockwise_rotation, 0) << "Rotation not supported";
 
