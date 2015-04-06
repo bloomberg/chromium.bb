@@ -59,8 +59,8 @@ protected:
         dummyPageHolder->page().setDeviceScaleFactor(1.0);
         documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest("http://www.example.com"), SubstituteData());
         document = toHTMLDocument(&dummyPageHolder->document());
-        fetchContext = &static_cast<FrameFetchContext&>(documentLoader->fetcher()->context());
-        fetchContext->setDocument(document.get());
+        fetchContext = &documentLoader->fetcher()->context();
+        FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     }
 
     void expectUpgrade(const char* input, const char* expected)
@@ -110,7 +110,7 @@ protected:
     // as the ResourceFetcher and Document live due to indirect usage.
     RefPtr<DocumentLoader> documentLoader;
     RefPtrWillBePersistent<Document> document;
-    FrameFetchContext* fetchContext;
+    FetchContext* fetchContext;
 };
 
 TEST_F(FrameFetchContextUpgradeTest, UpgradeInsecureResourceRequests)
@@ -211,8 +211,8 @@ protected:
         dummyPageHolder->page().setDeviceScaleFactor(1.0);
         documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest("http://www.example.com"), SubstituteData());
         document = toHTMLDocument(&dummyPageHolder->document());
-        fetchContext = &static_cast<FrameFetchContext&>(documentLoader->fetcher()->context());
-        fetchContext->setDocument(document.get());
+        fetchContext = &documentLoader->fetcher()->context();
+        FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     }
 
     void expectHeader(const char* input, const char* headerName, bool isPresent, const char* headerValue)
@@ -230,7 +230,7 @@ protected:
     // as the ResourceFetcher and Document live due to indirect usage.
     RefPtr<DocumentLoader> documentLoader;
     RefPtrWillBePersistent<Document> document;
-    FrameFetchContext* fetchContext;
+    FetchContext* fetchContext;
 };
 
 TEST_F(FrameFetchContextHintsTest, MonitorDPRHints)
