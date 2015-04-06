@@ -333,7 +333,7 @@ AccessibilityRole AXNodeObject::determineAccessibilityRoleUtil()
         return selectElement.multiple() ? ListBoxRole : PopUpButtonRole;
     }
     if (isHTMLTextAreaElement(*node()))
-        return TextAreaRole;
+        return TextFieldRole;
     if (headingLevel())
         return HeadingRole;
     if (isHTMLDivElement(*node()))
@@ -399,9 +399,6 @@ AccessibilityRole AXNodeObject::determineAriaRoleAttribute() const
 
     if (role == ButtonRole)
         role = buttonRoleType();
-
-    if (role == TextAreaRole && !ariaIsMultiline())
-        role = TextFieldRole;
 
     role = remapAriaRoleDueToParent(role);
 
@@ -757,7 +754,7 @@ bool AXNodeObject::isPasswordField() const
         return false;
 
     AccessibilityRole ariaRole = ariaRoleAttribute();
-    if (ariaRole != TextFieldRole && ariaRole != TextAreaRole && ariaRole != UnknownRole)
+    if (ariaRole != TextFieldRole && ariaRole != UnknownRole)
         return false;
 
     return toHTMLInputElement(node)->type() == InputTypeNames::password;
@@ -1047,7 +1044,7 @@ unsigned AXNodeObject::hierarchicalLevel() const
 
 String AXNodeObject::ariaAutoComplete() const
 {
-    if (roleValue() != ComboBoxRole && roleValue() != TextAreaRole)
+    if (roleValue() != ComboBoxRole)
         return String();
 
     const AtomicString& ariaAutoComplete = getAttribute(aria_autocompleteAttr).lower();
