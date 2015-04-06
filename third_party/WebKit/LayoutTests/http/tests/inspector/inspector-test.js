@@ -465,7 +465,7 @@ InspectorTest.textContentWithLineBreaks = function(node)
     {
         var result = 0;
         while (currentNode && currentNode !== node) {
-            if (currentNode.nodeName === "OL")
+            if (currentNode.nodeName === "OL" && !(currentNode.classList && currentNode.classList.contains("object-properties-section")))
                 ++result;
             currentNode = currentNode.parentNode;
         }
@@ -474,16 +474,22 @@ InspectorTest.textContentWithLineBreaks = function(node)
 
     var buffer = "";
     var currentNode = node;
+    var ignoreFirst = false;
     while (currentNode = currentNode.traverseNextNode(node)) {
         if (currentNode.nodeType === Node.TEXT_NODE) {
             buffer += currentNode.nodeValue;
         } else if (currentNode.nodeName === "LI" || currentNode.nodeName === "TR") {
-            buffer += "\n" + padding(currentNode);
+            if (!ignoreFirst)
+                buffer += "\n" + padding(currentNode);
+            else
+                ignoreFirst = false;
         } else if (currentNode.nodeName === "STYLE") {
             currentNode = currentNode.traverseNextNode(node);
             continue;
         } else if (currentNode.classList && currentNode.classList.contains("console-message")) {
             buffer += "\n\n";
+        } else if (currentNode.classList && currentNode.classList.contains("object-properties-section")) {
+            ignoreFirst = true;
         }
     }
     return buffer;

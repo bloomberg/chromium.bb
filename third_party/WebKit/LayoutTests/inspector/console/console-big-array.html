@@ -88,7 +88,7 @@ function test()
     function expandRecursively()
     {
         for (var i = 0; i < sections.length; ++i) {
-            var children = sections[i].propertiesTreeOutline.rootElement().children();
+            var children = sections[i].rootElement().children();
             for (var j = 0; j < children.length; ++j) {
                 for (var treeElement = children[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(true, null, true)) {
                     if (treeElement.listItemElement.textContent.indexOf("__proto__") === -1)

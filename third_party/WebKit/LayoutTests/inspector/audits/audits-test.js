@@ -36,7 +36,9 @@ InspectorTest.collectTextContent = function(element, indent)
 
     var nonTextTags = { "STYLE": 1, "SCRIPT": 1 };
     while (child) {
-        if (child.nodeType === Node.TEXT_NODE) {
+        if (child.nodeName === "CONTENT") {
+            InspectorTest.collectTextContent(child.getDistributedNodes()[0], indent);
+        } else if (child.nodeType === Node.TEXT_NODE) {
             if (!nonTextTags[child.parentElement.nodeName])
                 nodeOutput += child.nodeValue.replace("\u200B", "");
         } else if (child.nodeType === Node.ELEMENT_NODE || child.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {

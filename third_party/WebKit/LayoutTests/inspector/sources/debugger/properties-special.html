@@ -15,7 +15,7 @@ function onload()
 
 function test()
 {
-    InspectorTest.expandConsoleMessages(dumpConsoleMessages, function(e) { console.error("ee:" + e); return true; });
+    InspectorTest.expandConsoleMessages(dumpConsoleMessages);
 
     function dumpConsoleMessages()
     {

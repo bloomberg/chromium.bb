@@ -6,13 +6,13 @@ RUNNING TEST: extension_testAudits
  Extension audits
       [severity warning] Rule with details subtree (1)
         Test Formatters
-             main world object
-              whereAmI
-              : 
-              "main world"
-              __proto__
-              : 
-              Object
+              main world object
+                whereAmI
+                : 
+                "main world"
+                __proto__
+                : 
+                Object
                  <
                   span
                   
@@ -25,13 +25,13 @@ RUNNING TEST: extension_testAudits
                  <
                   /span
                  >
-             content script object
-              whereAmI
-              : 
-              "brave new world"
-              __proto__
-              : 
-              Object
+              content script object
+                whereAmI
+                : 
+                "brave new world"
+                __proto__
+                : 
+                Object
                  <
                   span
                   

@@ -110,7 +110,7 @@ function test()
 
         function onRemoteObjectsLoaded()
         {
-            InspectorTest.expandConsoleMessages(finish, undefined, function(section) { return section.titleElement.textContent !== "#text"; });
+            InspectorTest.expandConsoleMessages(finish, undefined, function(section) { return section.element.firstChild.textContent !== "#text"; });
         }
 
         function finish()

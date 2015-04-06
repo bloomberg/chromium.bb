@@ -19,7 +19,7 @@ function testFunction()
     debugger;
 }
 
-var test = function()
+function test()
 {
     InspectorTest.startDebuggerTest(step1);
 
@@ -31,7 +31,7 @@ var test = function()
     function step2(callFrames)
     {
         var sections = WebInspector.inspectorView.currentPanel().sidebarPanes.scopechain._sections;
-        var localScope = sections[0].propertiesTreeOutline;
+        var localScope = sections[0].objectTreeElement();
         var properties = [
             localScope, ["o", "__proto__", "__proto__"],
             localScope, ["d", "__proto__", "__proto__", "__proto__", "__proto__", "__proto__"]

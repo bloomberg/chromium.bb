@@ -403,7 +403,7 @@ InspectorTest.dumpScopeVariablesSidebarPane = function()
         var text = InspectorTest.clearSpecificInfoFromStackFrames(textContent);
         if (text.length > 0)
             InspectorTest.addResult(text);
-        if (!sections[i].expanded)
+        if (!sections[i].objectTreeElement().expanded)
             InspectorTest.addResult("    <section collapsed>");
     }
 };
@@ -426,7 +426,7 @@ InspectorTest.expandProperties = function(properties, callback)
             InspectorTest.safeWrap(callback)();
             return;
         }
-        var parentTreeElement = properties[index++].rootElement();
+        var parentTreeElement = properties[index++];
         var path = properties[index++];
         InspectorTest._expandProperty(parentTreeElement, path, 0, expandNextPath);
     }

@@ -26,7 +26,7 @@ function test()
             var node = message.contentElement();
             for (var node = message.contentElement(); node; node = node.traverseNextNode(message.contentElement())) {
                 if (node.treeElement) {
-                    onTreeElement(node.treeElement);
+                    onTreeElement(node.treeElement.firstChild());
                     return;
                 }
             }
