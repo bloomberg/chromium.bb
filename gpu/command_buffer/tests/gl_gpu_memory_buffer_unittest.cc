@@ -33,9 +33,9 @@ namespace gles2 {
 
 static const int kImageWidth = 32;
 static const int kImageHeight = 32;
-static const int kImageBytesPerPixel = 4;
 
-class GpuMemoryBufferTest : public testing::Test {
+class GpuMemoryBufferTest
+    : public testing::TestWithParam<gfx::GpuMemoryBuffer::Format> {
  protected:
   void SetUp() override {
     gl_.Initialize(GLManager::Options());
@@ -70,12 +70,88 @@ class GpuMemoryBufferTest : public testing::Test {
   GLuint framebuffer_id_;
 };
 
-// An end to end test that tests the whole GpuMemoryBuffer lifecycle.
-TEST_F(GpuMemoryBufferTest, Lifecycle) {
-  uint8 pixels[1 * 4] = { 255u, 0u, 0u, 255u };
+namespace {
 
+std::vector<uint8> GetTexturePixel(const gfx::GpuMemoryBuffer::Format format) {
+  std::vector<uint8> pixel;
+  switch (format) {
+    case gfx::GpuMemoryBuffer::RGBA_8888:
+      pixel.push_back(255u);
+      pixel.push_back(0u);
+      pixel.push_back(0u);
+      pixel.push_back(255u);
+      return pixel;
+    case gfx::GpuMemoryBuffer::BGRA_8888:
+      pixel.push_back(0u);
+      pixel.push_back(0u);
+      pixel.push_back(255u);
+      pixel.push_back(255u);
+      return pixel;
+    case gfx::GpuMemoryBuffer::ATC:
+    case gfx::GpuMemoryBuffer::ATCIA:
+    case gfx::GpuMemoryBuffer::DXT1:
+    case gfx::GpuMemoryBuffer::DXT5:
+    case gfx::GpuMemoryBuffer::ETC1:
+    case gfx::GpuMemoryBuffer::RGBX_8888:
+      NOTREACHED();
+      return std::vector<uint8>();
+  }
+
+  NOTREACHED();
+  return std::vector<uint8>();
+}
+
+std::vector<uint8> GetFramebufferPixel(
+    const gfx::GpuMemoryBuffer::Format format) {
+  std::vector<uint8> pixel;
+  switch (format) {
+    case gfx::GpuMemoryBuffer::RGBA_8888:
+    case gfx::GpuMemoryBuffer::BGRA_8888:
+      pixel.push_back(255u);
+      pixel.push_back(0u);
+      pixel.push_back(0u);
+      pixel.push_back(255u);
+      return pixel;
+    case gfx::GpuMemoryBuffer::ATC:
+    case gfx::GpuMemoryBuffer::ATCIA:
+    case gfx::GpuMemoryBuffer::DXT1:
+    case gfx::GpuMemoryBuffer::DXT5:
+    case gfx::GpuMemoryBuffer::ETC1:
+    case gfx::GpuMemoryBuffer::RGBX_8888:
+      NOTREACHED();
+      return std::vector<uint8>();
+  }
+
+  NOTREACHED();
+  return std::vector<uint8>();
+}
+
+GLenum TextureFormat(gfx::GpuMemoryBuffer::Format format) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::RGBA_8888:
+      return GL_RGBA;
+    case gfx::GpuMemoryBuffer::BGRA_8888:
+      return GL_BGRA_EXT;
+    case gfx::GpuMemoryBuffer::ATC:
+    case gfx::GpuMemoryBuffer::ATCIA:
+    case gfx::GpuMemoryBuffer::DXT1:
+    case gfx::GpuMemoryBuffer::DXT5:
+    case gfx::GpuMemoryBuffer::ETC1:
+    case gfx::GpuMemoryBuffer::RGBX_8888:
+      NOTREACHED();
+      return 0;
+  }
+
+  NOTREACHED();
+  return 0;
+}
+
+}  // namespace
+
+// An end to end test that tests the whole GpuMemoryBuffer lifecycle.
+TEST_P(GpuMemoryBufferTest, Lifecycle) {
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(gl_.CreateGpuMemoryBuffer(
-      gfx::Size(kImageWidth, kImageHeight), gfx::GpuMemoryBuffer::RGBA_8888));
+      gfx::Size(kImageWidth, kImageHeight), GetParam()));
 
   // Map buffer for writing.
   void* data;
@@ -86,13 +162,14 @@ TEST_F(GpuMemoryBufferTest, Lifecycle) {
   ASSERT_TRUE(mapped_buffer != NULL);
 
   // Assign a value to each pixel.
-  int stride = kImageWidth * kImageBytesPerPixel;
-  for (int x = 0; x < kImageWidth; ++x) {
-    for (int y = 0; y < kImageHeight; ++y) {
-      mapped_buffer[y * stride + x * kImageBytesPerPixel + 0] = pixels[0];
-      mapped_buffer[y * stride + x * kImageBytesPerPixel + 1] = pixels[1];
-      mapped_buffer[y * stride + x * kImageBytesPerPixel + 2] = pixels[2];
-      mapped_buffer[y * stride + x * kImageBytesPerPixel + 3] = pixels[3];
+  uint32 stride = 0;
+  buffer->GetStride(&stride);
+  ASSERT_NE(stride, 0u);
+  std::vector<uint8> pixel = GetTexturePixel(GetParam());
+  for (int y = 0; y < kImageHeight; ++y) {
+    for (int x = 0; x < kImageWidth; ++x) {
+      std::copy(pixel.begin(), pixel.end(),
+                mapped_buffer + y * stride + x * pixel.size());
     }
   }
 
@@ -110,15 +187,13 @@ TEST_F(GpuMemoryBufferTest, Lifecycle) {
   glBindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
 
   // Copy texture so we can verify result using CheckPixels.
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D,
-                        texture_ids_[0],
-                        texture_ids_[1],
-                        GL_RGBA,
-                        GL_UNSIGNED_BYTE);
+  glCopyTextureCHROMIUM(GL_TEXTURE_2D, texture_ids_[0], texture_ids_[1],
+                        TextureFormat(GetParam()), GL_UNSIGNED_BYTE);
   EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
   // Check if pixels match the values that were assigned to the mapped buffer.
-  GLTestHelper::CheckPixels(0, 0, kImageWidth, kImageHeight, 0, pixels);
+  GLTestHelper::CheckPixels(0, 0, kImageWidth, kImageHeight, 0,
+                            &GetFramebufferPixel(GetParam()).front());
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 
   // Release the image.
@@ -127,6 +202,11 @@ TEST_F(GpuMemoryBufferTest, Lifecycle) {
   // Destroy the image.
   glDestroyImageCHROMIUM(image_id);
 }
+
+INSTANTIATE_TEST_CASE_P(GpuMemoryBufferTests,
+                        GpuMemoryBufferTest,
+                        ::testing::Values(gfx::GpuMemoryBuffer::RGBA_8888,
+                                          gfx::GpuMemoryBuffer::BGRA_8888));
 
 }  // namespace gles2
 }  // namespace gpu
