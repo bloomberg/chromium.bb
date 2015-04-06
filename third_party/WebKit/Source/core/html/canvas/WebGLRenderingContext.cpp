@@ -77,6 +77,7 @@ PassOwnPtrWillBeRawPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTML
     }
 
     OwnPtrWillBeRawPtr<WebGLRenderingContext> renderingContext = adoptPtrWillBeNoop(new WebGLRenderingContext(canvas, context.release(), attributes));
+    renderingContext->initializeNewContext();
     renderingContext->registerContextExtensions();
 
     if (!renderingContext->drawingBuffer()) {

@@ -112,6 +112,8 @@ public:
     virtual String contextName() const = 0;
     virtual void registerContextExtensions() = 0;
 
+    virtual void initializeNewContext();
+
     static unsigned getWebGLVersion(const CanvasRenderingContext*);
 
     static PassOwnPtr<blink::WebGraphicsContext3D> createWebGraphicsContext3D(HTMLCanvasElement*, WebGLContextAttributes, unsigned webGLVersion);
@@ -124,7 +126,7 @@ public:
     void attachShader(WebGLProgram*, WebGLShader*);
     void bindAttribLocation(WebGLProgram*, GLuint index, const String& name);
     void bindBuffer(GLenum target, WebGLBuffer*);
-    void bindFramebuffer(GLenum target, WebGLFramebuffer*);
+    virtual void bindFramebuffer(GLenum target, WebGLFramebuffer*);
     void bindRenderbuffer(GLenum target, WebGLRenderbuffer*);
     void bindTexture(GLenum target, WebGLTexture*);
     void blendColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
@@ -200,7 +202,7 @@ public:
     GLenum getError();
     ScriptValue getExtension(ScriptState*, const String& name);
     ScriptValue getFramebufferAttachmentParameter(ScriptState*, GLenum target, GLenum attachment, GLenum pname);
-    ScriptValue getParameter(ScriptState*, GLenum pname);
+    virtual ScriptValue getParameter(ScriptState*, GLenum pname);
     ScriptValue getProgramParameter(ScriptState*, WebGLProgram*, GLenum pname);
     String getProgramInfoLog(WebGLProgram*);
     ScriptValue getRenderbufferParameter(ScriptState*, GLenum target, GLenum pname);
@@ -405,7 +407,6 @@ protected:
 
     WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, const WebGLContextAttributes&);
     PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D>);
-    void initializeNewContext();
     void setupFlags();
 
 #if ENABLE(OILPAN)
@@ -961,6 +962,7 @@ protected:
     GLint maxColorAttachments();
 
     void setBackDrawBuffer(GLenum);
+    void setFramebuffer(GLenum, WebGLFramebuffer*);
 
     void restoreCurrentFramebuffer();
     void restoreCurrentTexture2D();

@@ -46,7 +46,18 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passed
 
 WebGL2RenderingContextBase::~WebGL2RenderingContextBase()
 {
+#if !ENABLE(OILPAN)
+    m_readFramebufferBinding = nullptr;
+#endif
+}
 
+void WebGL2RenderingContextBase::initializeNewContext()
+{
+    ASSERT(!isContextLost());
+
+    m_readFramebufferBinding = nullptr;
+
+    WebGLRenderingContextBase::initializeNewContext();
 }
 
 void WebGL2RenderingContextBase::copyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)
@@ -1229,6 +1240,153 @@ void WebGL2RenderingContextBase::bindVertexArray(WebGLVertexArrayObjectOES* vert
     }
 }
 
+void WebGL2RenderingContextBase::bindFramebuffer(GLenum target, WebGLFramebuffer* buffer)
+{
+    bool deleted;
+    if (!checkObjectToBeBound("bindFramebuffer", buffer, deleted))
+        return;
+
+    if (deleted)
+        buffer = 0;
+
+    switch (target) {
+    case GL_DRAW_FRAMEBUFFER:
+        break;
+    case GL_FRAMEBUFFER:
+    case GL_READ_FRAMEBUFFER:
+        m_readFramebufferBinding = buffer;
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "bindFramebuffer", "invalid target");
+        return;
+    }
+
+    setFramebuffer(target, buffer);
+}
+
+ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, GLenum pname)
+{
+    if (isContextLost())
+        return ScriptValue::createNull(scriptState);
+    switch (pname) {
+    case GL_SHADING_LANGUAGE_VERSION:
+        return WebGLAny(scriptState, "WebGL GLSL ES 2.0 (" + String(webContext()->getString(GL_SHADING_LANGUAGE_VERSION)) + ")");
+    case GL_VERSION:
+        return WebGLAny(scriptState, "WebGL 2.0 (" + String(webContext()->getString(GL_VERSION)) + ")");
+
+    // case GL_COPY_READ_BUFFER_BINDING    WebGLBuffer
+    // case GL_COPY_WRITE_BUFFER_BINDING   WebGLBuffer
+    case GL_DRAW_FRAMEBUFFER_BINDING:
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_framebufferBinding.get()));
+    case GL_FRAGMENT_SHADER_DERIVATIVE_HINT:
+        return getUnsignedIntParameter(scriptState, pname);
+    case GL_MAX_3D_TEXTURE_SIZE:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_ARRAY_TEXTURE_LAYERS:
+        return getIntParameter(scriptState, pname);
+    case GC3D_MAX_CLIENT_WAIT_TIMEOUT_WEBGL:
+        return WebGLAny(scriptState, 0u);
+    case GL_MAX_COLOR_ATTACHMENTS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_COMBINED_FRAGMENT_UNIFORM_COMPONENTS:
+        return getInt64Parameter(scriptState, pname);
+    case GL_MAX_COMBINED_UNIFORM_BLOCKS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS:
+        return getInt64Parameter(scriptState, pname);
+    case GL_MAX_DRAW_BUFFERS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_ELEMENT_INDEX:
+        return getInt64Parameter(scriptState, pname);
+    case GL_MAX_ELEMENTS_INDICES:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_ELEMENTS_VERTICES:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_FRAGMENT_INPUT_COMPONENTS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_FRAGMENT_UNIFORM_BLOCKS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_FRAGMENT_UNIFORM_COMPONENTS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_PROGRAM_TEXEL_OFFSET:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_SAMPLES:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_SERVER_WAIT_TIMEOUT:
+        return getInt64Parameter(scriptState, pname);
+    case GL_MAX_TEXTURE_LOD_BIAS:
+        return getFloatParameter(scriptState, pname);
+    case GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_UNIFORM_BLOCK_SIZE:
+        return getInt64Parameter(scriptState, pname);
+    case GL_MAX_UNIFORM_BUFFER_BINDINGS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_VARYING_COMPONENTS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_VERTEX_OUTPUT_COMPONENTS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_VERTEX_UNIFORM_BLOCKS:
+        return getIntParameter(scriptState, pname);
+    case GL_MAX_VERTEX_UNIFORM_COMPONENTS:
+        return getIntParameter(scriptState, pname);
+    case GL_MIN_PROGRAM_TEXEL_OFFSET:
+        return getIntParameter(scriptState, pname);
+    case GL_PACK_ROW_LENGTH:
+        return getIntParameter(scriptState, pname);
+    case GL_PACK_SKIP_PIXELS:
+        return getIntParameter(scriptState, pname);
+    case GL_PACK_SKIP_ROWS:
+        return getIntParameter(scriptState, pname);
+    // case GL_PIXEL_PACK_BUFFER_BINDING   WebGLBuffer
+    // case GL_PIXEL_UNPACK_BUFFER_BINDING WebGLBuffer
+    case GL_RASTERIZER_DISCARD:
+        return getBooleanParameter(scriptState, pname);
+    case GL_READ_BUFFER:
+        return getUnsignedIntParameter(scriptState, pname);
+    case GL_READ_FRAMEBUFFER_BINDING:
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_readFramebufferBinding.get()));
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+        return getBooleanParameter(scriptState, pname);
+    case GL_SAMPLE_COVERAGE:
+        return getBooleanParameter(scriptState, pname);
+    // case GL_SAMPLER_BINDING WebGLSampler
+    // case GL_TEXTURE_BINDING_2D_ARRAY    WebGLTexture
+    // case GL_TEXTURE_BINDING_3D  WebGLTexture
+    case GL_TRANSFORM_FEEDBACK_ACTIVE:
+        return getBooleanParameter(scriptState, pname);
+    case GL_TRANSFORM_FEEDBACK_PAUSED:
+        return getBooleanParameter(scriptState, pname);
+    case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT:
+        return getIntParameter(scriptState, pname);
+    case GL_UNPACK_IMAGE_HEIGHT:
+        return getIntParameter(scriptState, pname);
+    case GL_UNPACK_ROW_LENGTH:
+        return getIntParameter(scriptState, pname);
+    case GL_UNPACK_SKIP_IMAGES:
+        return getBooleanParameter(scriptState, pname);
+    case GL_UNPACK_SKIP_PIXELS:
+        return getBooleanParameter(scriptState, pname);
+    case GL_UNPACK_SKIP_ROWS:
+        return getBooleanParameter(scriptState, pname);
+
+    default:
+        return WebGLRenderingContextBase::getParameter(scriptState, pname);
+    }
+}
+
+ScriptValue WebGL2RenderingContextBase::getInt64Parameter(ScriptState* scriptState, GLenum pname)
+{
+    GLint64 value = 0;
+    if (!isContextLost())
+        webContext()->getInteger64v(pname, &value);
+    return WebGLAny(scriptState, value);
+}
+
 bool WebGL2RenderingContextBase::validateCapability(const char* functionName, GLenum cap)
 {
     switch (cap) {
@@ -1271,6 +1429,7 @@ bool WebGL2RenderingContextBase::validateAndUpdateBufferBindTarget(const char* f
 
 DEFINE_TRACE(WebGL2RenderingContextBase)
 {
+    visitor->trace(m_readFramebufferBinding);
     WebGLRenderingContextBase::trace(visitor);
 }
 

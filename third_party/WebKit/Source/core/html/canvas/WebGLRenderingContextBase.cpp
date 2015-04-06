@@ -654,7 +654,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
 
     drawingBuffer()->bind();
     setupFlags();
-    initializeNewContext();
 }
 
 PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D> context)
@@ -1165,23 +1164,16 @@ void WebGLRenderingContextBase::bindFramebuffer(GLenum target, WebGLFramebuffer*
     bool deleted;
     if (!checkObjectToBeBound("bindFramebuffer", buffer, deleted))
         return;
+
     if (deleted)
         buffer = 0;
+
     if (target != GL_FRAMEBUFFER) {
         synthesizeGLError(GL_INVALID_ENUM, "bindFramebuffer", "invalid target");
         return;
     }
-    m_framebufferBinding = buffer;
-    drawingBuffer()->setFramebufferBinding(objectOrZero(m_framebufferBinding.get()));
-    if (!m_framebufferBinding) {
-        // Instead of binding fb 0, bind the drawing buffer.
-        drawingBuffer()->bind();
-    } else {
-        webContext()->bindFramebuffer(target, objectOrZero(buffer));
-    }
-    if (buffer)
-        buffer->setHasEverBeenBound();
-    applyStencilTest();
+
+    setFramebuffer(target, buffer);
 }
 
 void WebGLRenderingContextBase::bindRenderbuffer(GLenum target, WebGLRenderbuffer* renderBuffer)
@@ -5925,6 +5917,28 @@ GLint WebGLRenderingContextBase::maxColorAttachments()
 void WebGLRenderingContextBase::setBackDrawBuffer(GLenum buf)
 {
     m_backDrawBuffer = buf;
+}
+
+void WebGLRenderingContextBase::setFramebuffer(GLenum target, WebGLFramebuffer* buffer)
+{
+    if (buffer)
+        buffer->setHasEverBeenBound();
+
+    if (target == GL_FRAMEBUFFER || target == GL_DRAW_FRAMEBUFFER) {
+        m_framebufferBinding = buffer;
+        drawingBuffer()->setFramebufferBinding(objectOrZero(m_framebufferBinding.get()));
+
+        if (!m_framebufferBinding) {
+            // Instead of binding fb 0, bind the drawing buffer.
+            drawingBuffer()->bind();
+        } else {
+            webContext()->bindFramebuffer(target, objectOrZero(buffer));
+        }
+
+        applyStencilTest();
+    } else {
+        webContext()->bindFramebuffer(target, objectOrZero(buffer));
+    }
 }
 
 void WebGLRenderingContextBase::restoreCurrentFramebuffer()

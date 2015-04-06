@@ -159,6 +159,11 @@ public:
     GLboolean isVertexArray(WebGLVertexArrayObjectOES*);
     void bindVertexArray(WebGLVertexArrayObjectOES*);
 
+    /* WebGLRenderingContextBase overrides */
+    void initializeNewContext() override;
+    void bindFramebuffer(GLenum target, WebGLFramebuffer*) override;
+    ScriptValue getParameter(ScriptState*, GLenum pname) override;
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -166,9 +171,13 @@ protected:
 
     bool validateClearBuffer(const char* functionName, GLenum buffer, GLsizei length);
 
+    ScriptValue getInt64Parameter(ScriptState*, GLenum);
+
     /* WebGLRenderingContextBase overrides */
     bool validateCapability(const char* functionName, GLenum) override;
     bool validateAndUpdateBufferBindTarget(const char* functionName, GLenum, WebGLBuffer*) override;
+
+    RefPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase, CanvasRenderingContext, context,
