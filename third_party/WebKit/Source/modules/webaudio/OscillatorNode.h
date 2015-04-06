@@ -52,7 +52,7 @@ public:
         CUSTOM = 4
     };
 
-    OscillatorHandler(AudioNode&, float sampleRate);
+    OscillatorHandler(AudioNode&, float sampleRate, AudioParamHandler& frequency, AudioParamHandler& detune);
     virtual ~OscillatorHandler();
 
     // AudioHandler
@@ -60,11 +60,7 @@ public:
     virtual void process(size_t framesToProcess) override;
 
     String type() const;
-
     void setType(const String&);
-
-    AudioParam* frequency() { return m_frequency.get(); }
-    AudioParam* detune() { return m_detune.get(); }
 
     void setPeriodicWave(PeriodicWave*);
 
@@ -82,10 +78,10 @@ private:
     unsigned short m_type;
 
     // Frequency value in Hertz.
-    Member<AudioParam> m_frequency;
+    RefPtr<AudioParamHandler> m_frequency;
 
     // Detune value (deviating from the frequency) in Cents.
-    Member<AudioParam> m_detune;
+    RefPtr<AudioParamHandler> m_detune;
 
     bool m_firstRender;
 
@@ -107,6 +103,7 @@ class OscillatorNode final : public AudioScheduledSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static OscillatorNode* create(AudioContext*, float sampleRate);
+    DECLARE_VIRTUAL_TRACE();
 
     String type() const;
     void setType(const String&);
@@ -117,6 +114,9 @@ public:
 private:
     OscillatorNode(AudioContext&, float sampleRate);
     OscillatorHandler& oscillatorHandler() const;
+
+    Member<AudioParam> m_frequency;
+    Member<AudioParam> m_detune;
 };
 
 } // namespace blink
