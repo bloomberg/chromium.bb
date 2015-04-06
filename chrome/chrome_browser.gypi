@@ -2850,6 +2850,18 @@
       'browser/sync/sync_type_preference_provider.h',
     ],
     'chrome_browser_task_manager_sources': [
+      # New Task Manager Sources:
+      'browser/task_management/providers/browser_process_task_provider.cc',
+      'browser/task_management/providers/browser_process_task_provider.h',
+      'browser/task_management/providers/browser_process_task.cc',
+      'browser/task_management/providers/browser_process_task.h',
+      'browser/task_management/providers/task_provider_observer.h',
+      'browser/task_management/providers/task_provider.cc',
+      'browser/task_management/providers/task_provider.h',
+      'browser/task_management/providers/task.cc',
+      'browser/task_management/providers/task.h',
+      
+      # Old Task Manager Sources:
       'browser/task_manager/background_information.cc',
       'browser/task_manager/background_information.h',
       'browser/task_manager/browser_process_resource_provider.cc',
