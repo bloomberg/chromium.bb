@@ -1205,12 +1205,12 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayout
 
         // FIXME: Detect properly if start/end is auto for inexistent named grid lines.
         bool columnStartIsAuto = child->style()->gridColumnStart().isAuto();
-        LayoutUnit columnOffset = LayoutUnit(0);
-        LayoutUnit columnBreadth = LayoutUnit(0);
+        LayoutUnit columnOffset = LayoutUnit();
+        LayoutUnit columnBreadth = LayoutUnit();
         offsetAndBreadthForPositionedChild(*child, ForColumns, columnStartIsAuto, child->style()->gridColumnEnd().isAuto(), columnOffset, columnBreadth);
         bool rowStartIsAuto = child->style()->gridRowStart().isAuto();
-        LayoutUnit rowOffset = LayoutUnit(0);
-        LayoutUnit rowBreadth = LayoutUnit(0);
+        LayoutUnit rowOffset = LayoutUnit();
+        LayoutUnit rowBreadth = LayoutUnit();
         offsetAndBreadthForPositionedChild(*child, ForRows, rowStartIsAuto, child->style()->gridRowEnd().isAuto(), rowOffset, rowBreadth);
 
         child->setOverrideContainingBlockContentLogicalWidth(columnBreadth);
@@ -1241,7 +1241,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
 
     OwnPtr<GridSpan> positions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), child, direction);
     if (!positions) {
-        offset = LayoutUnit(0);
+        offset = LayoutUnit();
         breadth = (direction == ForColumns) ? clientLogicalWidth() : clientLogicalHeight();
         return;
     }
@@ -1255,7 +1255,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
     initialPosition = std::min<GridResolvedPosition>(initialPosition, lastPosition);
     finalPosition = std::min<GridResolvedPosition>(finalPosition, lastPosition);
 
-    LayoutUnit start = startIsAuto ? LayoutUnit(0) : (direction == ForColumns) ?  m_columnPositions[initialPosition.toInt()] : m_rowPositions[initialPosition.toInt()];
+    LayoutUnit start = startIsAuto ? LayoutUnit() : (direction == ForColumns) ?  m_columnPositions[initialPosition.toInt()] : m_rowPositions[initialPosition.toInt()];
     LayoutUnit end = endIsAuto ? (direction == ForColumns) ? logicalWidth() : logicalHeight() : (direction == ForColumns) ?  m_columnPositions[finalPosition.next().toInt()] : m_rowPositions[finalPosition.next().toInt()];
 
     breadth = end - start;
@@ -1656,12 +1656,12 @@ ContentPosition static resolveContentDistributionFallback(ContentDistributionTyp
 
 static inline LayoutUnit offsetToStartEdge(bool isLeftToRight, LayoutUnit availableSpace)
 {
-    return isLeftToRight ? LayoutUnit(0) : availableSpace;
+    return isLeftToRight ? LayoutUnit() : availableSpace;
 }
 
 static inline LayoutUnit offsetToEndEdge(bool isLeftToRight, LayoutUnit availableSpace)
 {
-    return !isLeftToRight ? LayoutUnit(0) : availableSpace;
+    return !isLeftToRight ? LayoutUnit() : availableSpace;
 }
 
 LayoutUnit LayoutGrid::contentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, ContentPosition position, ContentDistributionType distribution, OverflowAlignment overflow, unsigned numberOfGridTracks) const

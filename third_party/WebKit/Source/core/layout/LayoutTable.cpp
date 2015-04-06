@@ -269,7 +269,7 @@ void LayoutTable::updateLogicalWidth()
 
     LayoutBlock* cb = containingBlock();
 
-    LayoutUnit availableLogicalWidth = containingBlockLogicalWidthForContent() + (isOutOfFlowPositioned() ? cb->paddingLogicalWidth() : LayoutUnit(0));
+    LayoutUnit availableLogicalWidth = containingBlockLogicalWidthForContent() + (isOutOfFlowPositioned() ? cb->paddingLogicalWidth() : LayoutUnit());
     bool hasPerpendicularContainingBlock = cb->style()->isHorizontalWritingMode() != style()->isHorizontalWritingMode();
     LayoutUnit containerWidthInInlineDirection = hasPerpendicularContainingBlock ? perpendicularContainingBlockLogicalHeight() : availableLogicalWidth;
 

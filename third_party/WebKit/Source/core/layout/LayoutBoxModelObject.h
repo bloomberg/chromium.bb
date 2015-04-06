@@ -146,7 +146,7 @@ public:
 
     LayoutUnit borderAndPaddingHeight() const { return borderTop() + borderBottom() + paddingTop() + paddingBottom(); }
     LayoutUnit borderAndPaddingWidth() const { return borderLeft() + borderRight() + paddingLeft() + paddingRight(); }
-    LayoutUnit borderAndPaddingLogicalHeight() const { return hasBorderOrPadding() ? borderAndPaddingBefore() + borderAndPaddingAfter() : LayoutUnit(0); }
+    LayoutUnit borderAndPaddingLogicalHeight() const { return hasBorderOrPadding() ? borderAndPaddingBefore() + borderAndPaddingAfter() : LayoutUnit(); }
     LayoutUnit borderAndPaddingLogicalWidth() const { return borderStart() + borderEnd() + paddingStart() + paddingEnd(); }
     LayoutUnit borderAndPaddingLogicalLeft() const { return style()->isHorizontalWritingMode() ? borderLeft() + paddingLeft() : borderTop() + paddingTop(); }
 

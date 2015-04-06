@@ -403,7 +403,7 @@ LayoutUnit LayoutFlexibleBox::mainAxisContentExtent(LayoutUnit contentLogicalHei
         computeLogicalHeight(borderBoxLogicalHeight, logicalTop(), computedValues);
         if (computedValues.m_extent == LayoutUnit::max())
             return computedValues.m_extent;
-        return std::max(LayoutUnit(0), computedValues.m_extent - borderPaddingAndScrollbar);
+        return std::max(LayoutUnit(), computedValues.m_extent - borderPaddingAndScrollbar);
     }
     return contentLogicalWidth();
 }
@@ -630,7 +630,7 @@ LayoutUnit LayoutFlexibleBox::preferredMainAxisContentExtentForChild(LayoutBox& 
         ASSERT(mainAxisExtent - mainAxisBorderAndPaddingExtentForChild(child) >= 0);
         return mainAxisExtent - mainAxisBorderAndPaddingExtentForChild(child);
     }
-    return std::max(LayoutUnit(0), computeMainAxisExtentForChild(child, MainOrPreferredSize, flexBasis));
+    return std::max(LayoutUnit(), computeMainAxisExtentForChild(child, MainOrPreferredSize, flexBasis));
 }
 
 void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren)
@@ -849,7 +849,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, Layo
         minExtent = computeMainAxisExtentForChild(child, MinSize, min);
         // computeMainAxisExtentForChild can return -1 when the child has a percentage
         // min size, but we have an indefinite size in that axis.
-        minExtent = std::max(LayoutUnit(0), minExtent);
+        minExtent = std::max(LayoutUnit(), minExtent);
     }
     return std::max(childSize, minExtent);
 }
@@ -1277,7 +1277,7 @@ void LayoutFlexibleBox::alignChildren(const Vector<LineContext>& lineContexts)
                 continue;
             }
 
-            if (updateAutoMarginsInCrossAxis(*child, std::max(LayoutUnit(0), availableAlignmentSpaceForChild(lineCrossAxisExtent, *child))))
+            if (updateAutoMarginsInCrossAxis(*child, std::max(LayoutUnit(), availableAlignmentSpaceForChild(lineCrossAxisExtent, *child))))
                 continue;
 
             switch (alignmentForChild(*child)) {
