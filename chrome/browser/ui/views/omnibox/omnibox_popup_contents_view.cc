@@ -12,7 +12,9 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "ui/base/theme_provider.h"
+#include "ui/compositor/clip_transform_recorder.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
@@ -420,13 +422,15 @@ void OmniboxPopupContentsView::PaintChildren(const ui::PaintContext& context) {
   contents_bounds.Inset(0, views::NonClientFrameView::kClientEdgeThickness, 0,
                         bottom_shadow_->height() - kBorderInterior);
 
-  gfx::Canvas* canvas = context.canvas();
-  canvas->Save();
-  canvas->ClipRect(contents_bounds);
-  canvas->DrawColor(result_view_at(0)->GetColor(OmniboxResultView::NORMAL,
-                                                OmniboxResultView::BACKGROUND));
+  ui::ClipTransformRecorder clip_transform_recorder(context);
+  clip_transform_recorder.ClipRect(contents_bounds);
+  {
+    ui::PaintRecorder recorder(context);
+    SkColor background_color = result_view_at(0)->GetColor(
+        OmniboxResultView::NORMAL, OmniboxResultView::BACKGROUND);
+    recorder.canvas()->DrawColor(background_color);
+  }
   View::PaintChildren(context);
-  canvas->Restore();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

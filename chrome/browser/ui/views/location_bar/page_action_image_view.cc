@@ -14,6 +14,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -112,9 +113,9 @@ void PageActionImageView::PaintChildren(const ui::PaintContext& context) {
   View::PaintChildren(context);
   int tab_id = SessionTabHelper::IdForTab(GetCurrentWebContents());
   if (tab_id >= 0) {
-    gfx::Canvas* canvas = context.canvas();
-    view_controller_->extension_action()->PaintBadge(
-        canvas, GetLocalBounds(), tab_id);
+    ui::PaintRecorder recorder(context);
+    view_controller_->extension_action()->PaintBadge(recorder.canvas(),
+                                                     GetLocalBounds(), tab_id);
   }
 }
 

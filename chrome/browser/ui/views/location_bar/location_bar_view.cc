@@ -75,6 +75,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
@@ -1221,21 +1222,22 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 void LocationBarView::PaintChildren(const ui::PaintContext& context) {
   View::PaintChildren(context);
 
-  gfx::Canvas* canvas = context.canvas();
+  ui::PaintRecorder recorder(context);
 
   // For non-InstantExtendedAPI cases, if necessary, show focus rect. As we need
   // the focus rect to appear on top of children we paint here rather than
   // OnPaint().
   // Note: |Canvas::DrawFocusRect| paints a dashed rect with gray color.
   if (show_focus_rect_ && HasFocus())
-    canvas->DrawFocusRect(omnibox_view_->bounds());
+    recorder.canvas()->DrawFocusRect(omnibox_view_->bounds());
 
   // Maximized popup windows don't draw the horizontal edges.  We implement this
   // by simply expanding the paint area outside the view by the edge thickness.
   gfx::Rect border_rect(GetContentsBounds());
   if (is_popup_mode_ && (GetHorizontalEdgeThickness() == 0))
     border_rect.Inset(-kPopupEdgeThickness, 0);
-  views::Painter::PaintPainterAt(canvas, border_painter_.get(), border_rect);
+  views::Painter::PaintPainterAt(recorder.canvas(), border_painter_.get(),
+                                 border_rect);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

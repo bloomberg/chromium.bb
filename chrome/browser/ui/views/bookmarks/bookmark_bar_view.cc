@@ -73,6 +73,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/text_constants.h"
@@ -1011,9 +1012,9 @@ void BookmarkBarView::PaintChildren(const ui::PaintContext& context) {
                                h);
     indicator_bounds.set_x(GetMirroredXForRect(indicator_bounds));
 
-    gfx::Canvas* canvas = context.canvas();
+    ui::PaintRecorder recorder(context);
     // TODO(sky/glen): make me pretty!
-    canvas->FillRect(indicator_bounds, kDropIndicatorColor);
+    recorder.canvas()->FillRect(indicator_bounds, kDropIndicatorColor);
   }
 }
 

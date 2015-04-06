@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/compositing_recorder.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
@@ -465,10 +466,8 @@ void CardUnmaskPromptViews::FadeOutView::PaintChildren(
   if (opacity_ > 0.99)
     return views::View::PaintChildren(context);
 
-  gfx::Canvas* canvas = context.canvas();
-  canvas->SaveLayerAlpha(0xff * opacity_);
+  ui::CompositingRecorder recorder(context, opacity_);
   views::View::PaintChildren(context);
-  canvas->Restore();
 }
 
 void CardUnmaskPromptViews::FadeOutView::OnPaint(gfx::Canvas* canvas) {

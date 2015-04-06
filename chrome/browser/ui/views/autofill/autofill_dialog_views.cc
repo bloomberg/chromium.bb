@@ -31,6 +31,7 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
@@ -756,10 +757,10 @@ const char* AutofillDialogViews::NotificationArea::GetClassName() const {
 void AutofillDialogViews::NotificationArea::PaintChildren(
     const ui::PaintContext& context) {
   views::View::PaintChildren(context);
-  gfx::Canvas* canvas = context.canvas();
   if (HasArrow()) {
+    ui::PaintRecorder recorder(context);
     DrawArrow(
-        canvas,
+        recorder.canvas(),
         GetMirroredXInView(width() - arrow_centering_anchor_->width() / 2.0f),
         notifications_[0].GetBackgroundColor(),
         notifications_[0].GetBorderColor());

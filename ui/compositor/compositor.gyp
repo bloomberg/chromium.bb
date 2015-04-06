@@ -29,6 +29,8 @@
         'clip_transform_recorder.h',
         'closure_animation_observer.cc',
         'closure_animation_observer.h',
+        'compositing_recorder.cc',
+        'compositing_recorder.h',
         'compositor.cc',
         'compositor.h',
         'compositor_animation_observer.h',

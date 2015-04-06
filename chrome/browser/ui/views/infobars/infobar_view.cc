@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/clip_transform_recorder.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -241,9 +242,6 @@ void InfoBarView::ViewHierarchyChanged(
 }
 
 void InfoBarView::PaintChildren(const ui::PaintContext& context) {
-  gfx::Canvas* canvas = context.canvas();
-  canvas->Save();
-
   // TODO(scr): This really should be the |fill_path_|, but the clipPath seems
   // broken on non-Windows platforms (crbug.com/75154). For now, just clip to
   // the bar bounds.
@@ -251,9 +249,10 @@ void InfoBarView::PaintChildren(const ui::PaintContext& context) {
   // canvas->sk_canvas()->clipPath(fill_path_);
   DCHECK_EQ(total_height(), height())
       << "Infobar piecewise heights do not match overall height";
-  canvas->ClipRect(gfx::Rect(0, arrow_height(), width(), bar_height()));
+  ui::ClipTransformRecorder clip_transform_recorder(context);
+  clip_transform_recorder.ClipRect(
+      gfx::Rect(0, arrow_height(), width(), bar_height()));
   views::View::PaintChildren(context);
-  canvas->Restore();
 }
 
 void InfoBarView::ButtonPressed(views::Button* sender,
