@@ -2166,13 +2166,19 @@ void Document::detach(const AttachContext& context)
 
 void Document::prepareForDestruction()
 {
-    m_markers->prepareForDestruction();
-    disconnectDescendantFrames();
+    ASSERT(!m_frame || m_frame->tree().childCount() == 0);
 
-    // The process of disconnecting descendant frames could have already detached us.
     if (!isActive())
         return;
 
+    ScriptForbiddenScope forbidScript;
+    // We detach the FrameView's custom scroll bars as early as
+    // possible to prevent detach() from messing with the view
+    // such that its scroll bars won't be torn down.
+    //
+    // FIXME: We should revisit this.
+    view()->prepareForDetach();
+    m_markers->prepareForDestruction();
     if (LocalDOMWindow* window = this->domWindow())
         window->willDetachDocumentFromFrame();
     detach();

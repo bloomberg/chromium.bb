@@ -132,15 +132,7 @@ PassRefPtrWillBeRawPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client,
 void LocalFrame::setView(PassRefPtrWillBeRawPtr<FrameView> view)
 {
     ASSERT(!m_view || m_view != view);
-    detachView();
-
-    // Prepare for destruction now, so any unload event handlers get run and the LocalDOMWindow is
-    // notified. If we wait until the view is destroyed, then things won't be hooked up enough for
-    // these calls to work.
-    if (!view && document() && document()->isActive()) {
-        // FIXME: We don't call willRemove here. Why is that OK?
-        document()->prepareForDestruction();
-    }
+    ASSERT(!document() || !document()->isActive());
 
     eventHandler().clear();
 
@@ -267,6 +259,8 @@ void LocalFrame::detach()
     // handlers might start a new subresource load in this frame.
     m_loader.stopAllLoaders();
     m_loader.detach();
+    document()->prepareForDestruction();
+    m_loader.clear();
     if (!client())
         return;
 
@@ -279,10 +273,6 @@ void LocalFrame::detach()
     willDetachFrameHost();
     InspectorInstrumentation::frameDetachedFromParent(this);
     Frame::detach();
-    // Clear the FrameLoader right here rather than during
-    // finalization. Too late to access various heap objects at that
-    // stage.
-    m_loader.clear();
 
     // Signal frame destruction here rather than in the destructor.
     // Main motivation is to avoid being dependent on its exact timing (Oilpan.)
@@ -832,17 +822,6 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
         m_instrumentingAgents = InstrumentingAgents::create();
     else
         m_instrumentingAgents = localFrameRoot()->m_instrumentingAgents;
-}
-
-void LocalFrame::detachView()
-{
-    // We detach the FrameView's custom scroll bars as early as
-    // possible to prevent m_doc->detach() from messing with the view
-    // such that its scroll bars won't be torn down.
-    //
-    // FIXME: We should revisit this.
-    if (m_view)
-        m_view->prepareForDetach();
 }
 
 } // namespace blink

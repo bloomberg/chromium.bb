@@ -6580,7 +6580,7 @@ TEST_F(WebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame)
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
     WebView* view = WebView::create(&viewClient);
-    view->setMainFrame(WebRemoteFrame::create(&remoteClient));
+    view->setMainFrame(remoteClient.frame());
     FrameTestHelpers::TestWebFrameClient childFrameClient;
     WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild("", WebSandboxFlags::None, &childFrameClient);
 
@@ -6794,7 +6794,8 @@ TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext)
     ASSERT_TRUE(originalWindow->IsObject());
 
     // Make sure window reference stays the same when swapping to a remote frame.
-    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebRemoteFrame* remoteFrame = remoteClient.frame();
     WebFrame* targetFrame = mainFrame()->firstChild()->nextSibling();
     targetFrame->swap(remoteFrame);
     // FIXME: This cleanup should be unnecessary, but the interaction between frame detach
@@ -6841,7 +6842,8 @@ TEST_F(WebFrameSwapTest, RemoteFramesAreIndexable)
 {
     v8::HandleScope scope(v8::Isolate::GetCurrent());
 
-    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebRemoteFrame* remoteFrame = remoteClient.frame();
     mainFrame()->lastChild()->swap(remoteFrame);
     remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
     v8::Local<v8::Value> remoteWindow = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window[2]"));
@@ -6850,19 +6852,24 @@ TEST_F(WebFrameSwapTest, RemoteFramesAreIndexable)
     ASSERT_TRUE(windowLength->IsNumber());
     v8::Local<v8::Integer> windowLengthInteger = windowLength->ToInteger();
     EXPECT_EQ(3, windowLengthInteger->Value());
+
+    reset();
 }
 
 TEST_F(WebFrameSwapTest, RemoteFrameLengthAccess)
 {
     v8::HandleScope scope(v8::Isolate::GetCurrent());
 
-    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebRemoteFrame* remoteFrame = remoteClient.frame();
     mainFrame()->lastChild()->swap(remoteFrame);
     remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
     v8::Local<v8::Value> remoteWindowLength = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window[2].length"));
     ASSERT_TRUE(remoteWindowLength->IsNumber());
     v8::Local<v8::Integer> remoteWindowLengthInteger = remoteWindowLength->ToInteger();
     EXPECT_EQ(0, remoteWindowLengthInteger->Value());
+
+    reset();
 }
 
 TEST_F(WebFrameSwapTest, RemoteWindowNamedAccess)
@@ -6872,11 +6879,14 @@ TEST_F(WebFrameSwapTest, RemoteWindowNamedAccess)
     // FIXME: Once OOPIF unit test infrastructure is in place, test that named
     // window access on a remote window works. For now, just test that accessing
     // a named property doesn't crash.
-    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(nullptr);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebRemoteFrame* remoteFrame = remoteClient.frame();
     mainFrame()->lastChild()->swap(remoteFrame);
     remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
     v8::Local<v8::Value> remoteWindowProperty = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window[2].foo"));
     EXPECT_TRUE(remoteWindowProperty.IsEmpty());
+
+    reset();
 }
 
 // TODO(alexmos, dcheng): This test and some other OOPIF tests use
@@ -6886,7 +6896,8 @@ TEST_F(WebFrameSwapTest, FramesOfRemoteParentAreIndexable)
 {
     v8::HandleScope scope(v8::Isolate::GetCurrent());
 
-    WebRemoteFrame* remoteParentFrame = WebRemoteFrame::create(nullptr);
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebRemoteFrame* remoteParentFrame = remoteClient.frame();
     mainFrame()->swap(remoteParentFrame);
     remoteParentFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
 
@@ -6904,10 +6915,8 @@ TEST_F(WebFrameSwapTest, FramesOfRemoteParentAreIndexable)
     v8::Local<v8::Integer> windowLengthInteger = windowLength->ToInteger();
     EXPECT_EQ(1, windowLengthInteger->Value());
 
-    // Manually reset to break WebViewHelper's dependency on the stack allocated
-    // TestWebFrameClient.
+    // Manually reset to break WebViewHelper's dependency on the stack allocated clients.
     reset();
-    remoteParentFrame->close();
 }
 
 class RemoteToLocalSwapWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
@@ -6967,7 +6976,7 @@ private:
 TEST_F(WebFrameSwapTest, NavigateRemoteFrameViaLocation)
 {
     RemoteNavigationClient client;
-    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(&client);
+    WebRemoteFrame* remoteFrame = client.frame();
     WebFrame* targetFrame = mainFrame()->firstChild();
     ASSERT_TRUE(targetFrame);
     targetFrame->swap(remoteFrame);
@@ -6983,7 +6992,6 @@ TEST_F(WebFrameSwapTest, NavigateRemoteFrameViaLocation)
     // Manually reset to break WebViewHelper's dependency on the stack allocated
     // TestWebFrameClient.
     reset();
-    remoteFrame->close();
 }
 
 class MockDocumentThreadableLoaderClient : public DocumentThreadableLoaderClient {
@@ -7101,7 +7109,7 @@ TEST_F(WebFrameTest, DetachRemoteFrame)
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
     WebView* view = WebView::create(&viewClient);
-    view->setMainFrame(WebRemoteFrame::create(&remoteClient));
+    view->setMainFrame(remoteClient.frame());
     FrameTestHelpers::TestWebRemoteFrameClient childFrameClient;
     WebRemoteFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createRemoteChild("", WebSandboxFlags::None, &childFrameClient);
     childFrame->detach();

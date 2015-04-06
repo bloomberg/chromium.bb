@@ -186,6 +186,8 @@ void FrameView::dispose()
     if (m_didScrollTimer.isActive())
         m_didScrollTimer.stop();
 
+    // TODO(dcheng): Figure out why the dispose() method is virtual, and why it needs to
+    // call removeFromAXObjectCache() again.
     removeFromAXObjectCache();
 
     // Custom scrollbars should already be destroyed at this point
