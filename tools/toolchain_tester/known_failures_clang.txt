@@ -30,6 +30,7 @@ pr34971.c
 # This uses __builtin_return_address(1) and it segfaults because of an
 # uninit frame pointer (must force fp on?).
 20010122-1.c arm,O3
+20010122-1.c x86-64,O3
 # ======================================================================
 # failures in phase translate
 # ======================================================================
@@ -42,14 +43,6 @@ va-arg-pack-1.c
 # DCE not performed at -O0 (wontfix?)
 medce-1.c O0
 fp-cmp-7.c O0
-# With clang -O3 | llc -O0 on x86-64, the inline asm causes an llc
-# assertion failure.  It appears that a zero-extension operation on
-# the argument to the asm function is not being handled by the
-# target-independent isel, causing the assertion failure.  This
-# zero-extension is probably a result of the ILP32 model in
-# PNaCl x86-64.  Since this kind of inline asm is invalid in PNaCl,
-# we disable the test for now.
-pr40657.c x86-64,O0b
 # ======================================================================
 # failures in phase compile-bc
 # ======================================================================
@@ -135,9 +128,13 @@ pr22061-4.c
 20061220-1.c
 
 
-# Failures specific to nacl-clang (untriaged)
+# Failures specific to nacl-clang
+
+# divsc3 compiler-rt function needs libm
 complex-5.c
-20021127-1.c O0
-pr49218.c x86-64
+# Passing struct of floats as va_arg
+pr44575.c x86-64,O0
+# https://code.google.com/p/nativeclient/issues/detail?id=4141
 ipa-sra-2.c arm,O0
+# Bogus pointer to array of structs passed as argument
 921113-1.c arm,O0

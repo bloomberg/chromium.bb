@@ -50,14 +50,6 @@ fp-cmp-7.c O0f
 # packed volatile structs, fail when promoting volatile to atomic
 # we could fix this by being clever
 20010518-2.c
-# With clang -O3 | llc -O0 on x86-64, the inline asm causes an llc
-# assertion failure.  It appears that a zero-extension operation on
-# the argument to the asm function is not being handled by the
-# target-independent isel, causing the assertion failure.  This
-# zero-extension is probably a result of the ILP32 model in
-# PNaCl x86-64.  Since this kind of inline asm is invalid in PNaCl,
-# we disable the test for now.
-pr40657.c x86-64,O0b
 # ======================================================================
 # failures in phase compile-bc
 # ======================================================================
