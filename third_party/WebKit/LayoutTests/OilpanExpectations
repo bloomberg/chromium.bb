@@ -48,3 +48,5 @@ crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [
 crbug.com/456357 [ Mac Debug ] virtual/slimmingpaint/fast/overflow/line-clamp.html [ Timeout ]
 
 crbug.com/344239 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Pass Timeout ]
+
+crbug.com/356742 [ Win ] svg/as-image/animated-svg-animation-control.html

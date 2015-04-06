@@ -263,8 +263,6 @@ crbug.com/330083 imported/web-platform-tests/custom-elements/instantiating-custo
 
 crbug.com/330083 imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
 
-crbug.com/377944 svg/animations/smil-leak-dynamically-added-element-instances.svg [ Failure Pass ]
-
 crbug.com/377950 svg/repaint/image-animation-with-zoom.html [ Failure Pass ]
 
 crbug.com/377960 fast/css/font-load-while-styleresolver-missing.html  [ Pass ImageOnlyFailure ]
@@ -1015,7 +1013,6 @@ crbug.com/350543 [ Linux ] svg/animations/reset-animation-crash.html [ Crash Pas
 crbug.com/350828 svg/custom/animate-initial-pause-unpause.html [ Failure Pass ]
 crbug.com/377660 svg/custom/repaint-moving-svg-and-div.xhtml [ Failure Pass ]
 crbug.com/350543 [ Linux ] svg/as-image/image-change-with-equal-sizes.html [ Crash Pass ]
-crbug.com/356742 svg/as-image/animated-svg-animation-control.html [ Pass ImageOnlyFailure ]
 crbug.com/350829 [ Linux ] virtual/threaded/animations/missing-keyframe-properties-repeating.html [ Timeout Pass ]
 crbug.com/350829 [ Win Debug ] virtual/threaded/animations/missing-keyframe-properties-repeating.html [ Timeout Pass ]
 crbug.com/350829 [ Linux ] virtual/threaded/animations/missing-keyframe-properties-timing-function.html [ Timeout Pass ]
@@ -1847,9 +1844,8 @@ crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overf
 
 crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 
-crbug.com/444020 fast/dom/shadow/import-rule-in-shadow-tree-needs-document-style-recalc.html [ Pass ImageOnlyFailure ]
-crbug.com/444022 svg/wicd/test-scalable-background-image1.xhtml [ Pass Failure ImageOnlyFailure ]
-crbug.com/444095 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ImageOnlyFailure ]
+crbug.com/444022 svg/wicd/test-scalable-background-image1.xhtml [ NeedsRebaseline ]
+crbug.com/444095 svg/wicd/test-rightsizing-b.xhtml [ NeedsRebaseline ]
 
 crbug.com/445889 virtual/slimmingpaint/fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
 crbug.com/445889 fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
