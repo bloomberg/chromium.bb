@@ -1532,7 +1532,6 @@ const NonUniqueNameTestData kNonUniqueNameTestData[] = {
     { false, "host.intranet.example" },
     // gTLDs under discussion, but not yet assigned.
     { false, "intranet.corp" },
-    { false, "example.tech" },
     { false, "intranet.internal" },
     // Invalid host names are treated as unique - but expected to be
     // filtered out before then.
