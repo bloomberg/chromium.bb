@@ -2060,3 +2060,5 @@ crbug.com/472905 inspector/elements/styles/page-reload-update-sidebar.html [ Pas
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass Failure ]
 crbug.com/473722 [ XP ] http/tests/fetch/workers/stream-reader.html [ Slow ]
 crbug.com/473725 [ Linux ] virtual/slimmingpaint/fast/forms/submit-change-fragment.html [ Pass Timeout ]
+
+crbug.com/474224 [ Mac ] inspector-protocol/input/dispatchKeyEvent-focus.html [ Failure ]
