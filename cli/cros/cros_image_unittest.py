@@ -71,6 +71,25 @@ class ImageCommandTest(cros_test_lib.MockTempDirTestCase,
                      '--enable_rootfs_verification', '--loglevel=7']
     self.rc_mock.assertCommandContains(expected_args)
 
+  def testOutputRootInWorkspace(self):
+    """Tests running the image command with an output root in the workspace."""
+    self.CreateBrick(name='brick1', main_package='brick/foo')
+    self.CreateBrick(name='bsp1', main_package='bsp/baz')
+    self.CreateBlueprint(blueprint_name='bar.json', bricks=['//brick1'],
+                         bsp='//bsp1', main_package='virtual/target-os')
+
+    args = ['--blueprint=//bar.json', '--output_root=//images']
+    self.SetupCommandMock(args)
+    self.cmd_mock.inst.Run()
+
+    expected_args = [os.path.join(constants.CROSUTILS_DIR, 'build_image'),
+                     '--extra_packages=brick/foo bsp/baz',
+                     '--board=brick1', '--noenable_bootcache',
+                     '--enable_rootfs_verification',
+                     '--output_root=%s' % os.path.join(self.tempdir, 'images'),
+                     '--loglevel=7']
+    self.rc_mock.assertCommandContains(expected_args)
+
 
 class ImageCommandParserTest(cros_test_lib.TestCase):
   """Test class for our ImageCommand's parser."""
@@ -89,7 +108,7 @@ class ImageCommandParserTest(cros_test_lib.TestCase):
     self.assertEqual(instance.options.boot_args, None)
     self.assertFalse(instance.options.enable_bootcache, False)
     self.assertTrue(instance.options.enable_rootfs_verification, True)
-    self.assertEqual(instance.options.output_root, None)
+    self.assertEqual(instance.options.output_root, '//build/images')
     self.assertEqual(instance.options.disk_layout, None)
     self.assertEqual(instance.options.enable_serial, None)
     self.assertEqual(instance.options.kernel_log_level, 7)
@@ -138,7 +157,7 @@ class ImageCommandParserTest(cros_test_lib.TestCase):
                                       '--boot_args=bar',
                                       '--enable_bootcache=False',
                                       '--enable_rootfs_verification=True',
-                                      '--output_root=/foo/bar/baz',
+                                      '--output_root=//build/images',
                                       '--disk_layout=fooboard/layout.conf',
                                       '--enable_serial=ttyS0',
                                       '--kernel_log_level=7',
@@ -149,7 +168,7 @@ class ImageCommandParserTest(cros_test_lib.TestCase):
     self.assertEqual(instance.options.boot_args, 'bar')
     self.assertFalse(instance.options.enable_bootcache)
     self.assertTrue(instance.options.enable_rootfs_verification)
-    self.assertEqual(instance.options.output_root, '/foo/bar/baz')
+    self.assertEqual(instance.options.output_root, '//build/images')
     self.assertEqual(instance.options.disk_layout, 'fooboard/layout.conf')
     self.assertEqual(instance.options.enable_serial, 'ttyS0')
     self.assertEqual(instance.options.kernel_log_level, 7)

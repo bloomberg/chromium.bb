@@ -14,6 +14,7 @@ from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import workspace_lib
 
 
 IMAGE_TYPES = ['base', 'dev', 'test', 'factory_test', 'factory_install', []]
@@ -44,8 +45,9 @@ class ImageCommand(command.CliCommand):
     parser.add_argument('--enable_rootfs_verification', default=True,
                         type='bool', help="Default all bootloaders to use "
                         "kernel-based root fs integrity checking.")
-    parser.add_argument('--output_root', type='path', help="Directory in which "
-                        "to place image result directories (named by version)")
+    parser.add_argument('--output_root', default='//build/images',
+                        help="Directory in which to place image result "
+                        "directories (named by version)")
     parser.add_argument('--disk_layout',
                         help="The disk layout type to use for this image.")
     parser.add_argument('--enable_serial', help="Enable serial port for "
@@ -98,7 +100,11 @@ class ImageCommand(command.CliCommand):
       cmd.append('--noenable_rootfs_verification')
 
     if self.options.output_root:
-      cmd.append('--output_root=%s' % self.options.output_root)
+      if workspace_lib.IsLocator(self.options.output_root):
+        path = workspace_lib.LocatorToPath(self.options.output_root)
+      else:
+        path = self.options.output_root
+      cmd.append('--output_root=%s' % path)
 
     if self.options.disk_layout:
       cmd.append('--disk_layout=%s' % self.options.disk_layout)
