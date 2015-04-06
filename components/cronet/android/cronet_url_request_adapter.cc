@@ -8,65 +8,231 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
-#include "components/cronet/android/wrapped_channel_upload_element_reader.h"
+#include "jni/CronetUrlRequest_jni.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
+
+using base::android::ConvertUTF8ToJavaString;
 
 namespace cronet {
 
 static const int kReadBufferSize = 32768;
 
+// Explicitly register static JNI functions.
+bool CronetUrlRequestAdapterRegisterJni(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
+static jlong CreateRequestAdapter(JNIEnv* env,
+                                  jobject jurl_request,
+                                  jlong jurl_request_context_adapter,
+                                  jstring jurl_string,
+                                  jint jpriority) {
+  CronetURLRequestContextAdapter* context_adapter =
+      reinterpret_cast<CronetURLRequestContextAdapter*>(
+          jurl_request_context_adapter);
+  DCHECK(context_adapter);
+
+  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl_string));
+
+  VLOG(1) << "New chromium network request_adapter: "
+          << url.possibly_invalid_spec();
+
+  CronetURLRequestAdapter* adapter =
+      new CronetURLRequestAdapter(context_adapter, env, jurl_request, url,
+                                  static_cast<net::RequestPriority>(jpriority));
+
+  return reinterpret_cast<jlong>(adapter);
+}
+
 CronetURLRequestAdapter::CronetURLRequestAdapter(
     CronetURLRequestContextAdapter* context,
-    scoped_ptr<CronetURLRequestAdapterDelegate> delegate,
+    JNIEnv* env,
+    jobject jurl_request,
     const GURL& url,
     net::RequestPriority priority)
     : context_(context),
-      delegate_(delegate.Pass()),
       initial_url_(url),
       initial_priority_(priority),
       initial_method_("GET"),
       load_flags_(context->default_load_flags()) {
+  DCHECK(!context_->IsOnNetworkThread());
+  owner_.Reset(env, jurl_request);
 }
 
 CronetURLRequestAdapter::~CronetURLRequestAdapter() {
-  DCHECK(IsOnNetworkThread());
+  DCHECK(context_->IsOnNetworkThread());
 }
 
-void CronetURLRequestAdapter::AddRequestHeader(const std::string& name,
-                                               const std::string& value) {
-  DCHECK(!IsOnNetworkThread());
+jboolean CronetURLRequestAdapter::SetHttpMethod(JNIEnv* env,
+                                                jobject jcaller,
+                                                jstring jmethod) {
+  DCHECK(!context_->IsOnNetworkThread());
+  std::string method(base::android::ConvertJavaStringToUTF8(env, jmethod));
+  // Http method is a token, just as header name.
+  if (!net::HttpUtil::IsValidHeaderName(method))
+    return JNI_FALSE;
+  initial_method_ = method;
+  return JNI_TRUE;
+}
+
+jboolean CronetURLRequestAdapter::AddRequestHeader(JNIEnv* env,
+                                                   jobject jcaller,
+                                                   jstring jname,
+                                                   jstring jvalue) {
+  DCHECK(!context_->IsOnNetworkThread());
+  std::string name(base::android::ConvertJavaStringToUTF8(env, jname));
+  std::string value(base::android::ConvertJavaStringToUTF8(env, jvalue));
+  if (!net::HttpUtil::IsValidHeaderName(name) ||
+      !net::HttpUtil::IsValidHeaderValue(value)) {
+    return JNI_FALSE;
+  }
   initial_request_headers_.SetHeader(name, value);
+  return JNI_TRUE;
 }
 
-void CronetURLRequestAdapter::DisableCache() {
-  DCHECK(!IsOnNetworkThread());
+void CronetURLRequestAdapter::DisableCache(JNIEnv* env, jobject jcaller) {
+  DCHECK(!context_->IsOnNetworkThread());
   load_flags_ |= net::LOAD_DISABLE_CACHE;
-}
-
-void CronetURLRequestAdapter::PostTaskToNetworkThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  DCHECK(!IsOnNetworkThread());
-  context_->PostTaskToNetworkThread(from_here, task);
-}
-
-bool CronetURLRequestAdapter::IsOnNetworkThread() const {
-  return context_->IsOnNetworkThread();
 }
 
 void CronetURLRequestAdapter::SetUpload(
     scoped_ptr<net::UploadDataStream> upload) {
-  DCHECK(!IsOnNetworkThread());
+  DCHECK(!context_->IsOnNetworkThread());
   DCHECK(!upload_);
   upload_ = upload.Pass();
 }
 
-void CronetURLRequestAdapter::Start() {
-  DCHECK(IsOnNetworkThread());
+void CronetURLRequestAdapter::Start(JNIEnv* env, jobject jcaller) {
+  DCHECK(!context_->IsOnNetworkThread());
+  context_->PostTaskToNetworkThread(
+      FROM_HERE, base::Bind(&CronetURLRequestAdapter::StartOnNetworkThread,
+                            base::Unretained(this)));
+}
+
+void CronetURLRequestAdapter::FollowDeferredRedirect(JNIEnv* env,
+                                                     jobject jcaller) {
+  DCHECK(!context_->IsOnNetworkThread());
+  context_->PostTaskToNetworkThread(
+      FROM_HERE,
+      base::Bind(
+          &CronetURLRequestAdapter::FollowDeferredRedirectOnNetworkThread,
+          base::Unretained(this)));
+}
+
+void CronetURLRequestAdapter::ReadData(JNIEnv* env, jobject jcaller) {
+  DCHECK(!context_->IsOnNetworkThread());
+  context_->PostTaskToNetworkThread(
+      FROM_HERE, base::Bind(&CronetURLRequestAdapter::ReadDataOnNetworkThread,
+                            base::Unretained(this)));
+}
+
+void CronetURLRequestAdapter::Destroy(JNIEnv* env, jobject jcaller) {
+  DCHECK(!context_->IsOnNetworkThread());
+  context_->PostTaskToNetworkThread(
+      FROM_HERE, base::Bind(&CronetURLRequestAdapter::DestroyOnNetworkThread,
+                            base::Unretained(this)));
+}
+
+void CronetURLRequestAdapter::PopulateResponseHeaders(JNIEnv* env,
+                                                      jobject jurl_request,
+                                                      jobject jheaders_list) {
+  DCHECK(context_->IsOnNetworkThread());
+  const net::HttpResponseHeaders* headers = url_request_->response_headers();
+  if (headers == nullptr)
+    return;
+
+  void* iter = nullptr;
+  std::string header_name;
+  std::string header_value;
+  while (headers->EnumerateHeaderLines(&iter, &header_name, &header_value)) {
+    base::android::ScopedJavaLocalRef<jstring> name =
+        ConvertUTF8ToJavaString(env, header_name);
+    base::android::ScopedJavaLocalRef<jstring> value =
+        ConvertUTF8ToJavaString(env, header_value);
+    Java_CronetUrlRequest_onAppendResponseHeader(
+        env, jurl_request, jheaders_list, name.obj(), value.obj());
+  }
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+CronetURLRequestAdapter::GetHttpStatusText(JNIEnv* env, jobject jcaller) const {
+  DCHECK(context_->IsOnNetworkThread());
+  const net::HttpResponseHeaders* headers = url_request_->response_headers();
+  return ConvertUTF8ToJavaString(env, headers->GetStatusText());
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+CronetURLRequestAdapter::GetNegotiatedProtocol(JNIEnv* env,
+                                               jobject jcaller) const {
+  DCHECK(context_->IsOnNetworkThread());
+  return ConvertUTF8ToJavaString(
+      env, url_request_->response_info().npn_negotiated_protocol);
+}
+
+jboolean CronetURLRequestAdapter::GetWasCached(JNIEnv* env,
+                                               jobject jcaller) const {
+  DCHECK(context_->IsOnNetworkThread());
+  return url_request_->response_info().was_cached;
+}
+
+int64 CronetURLRequestAdapter::GetTotalReceivedBytes(JNIEnv* env,
+                                                     jobject jcaller) const {
+  DCHECK(context_->IsOnNetworkThread());
+  return url_request_->GetTotalReceivedBytes();
+}
+
+// net::URLRequest::Delegate overrides (called on network thread).
+
+void CronetURLRequestAdapter::OnReceivedRedirect(
+    net::URLRequest* request,
+    const net::RedirectInfo& redirect_info,
+    bool* defer_redirect) {
+  DCHECK(context_->IsOnNetworkThread());
+  DCHECK(request->status().is_success());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  cronet::Java_CronetUrlRequest_onRedirect(
+      env, owner_.obj(),
+      ConvertUTF8ToJavaString(env, redirect_info.new_url.spec()).obj(),
+      redirect_info.status_code);
+  *defer_redirect = true;
+}
+
+void CronetURLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
+  DCHECK(context_->IsOnNetworkThread());
+  if (MaybeReportError(request))
+    return;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  cronet::Java_CronetUrlRequest_onResponseStarted(env, owner_.obj(),
+                                                  request->GetResponseCode());
+}
+
+void CronetURLRequestAdapter::OnReadCompleted(net::URLRequest* request,
+                                              int bytes_read) {
+  DCHECK(context_->IsOnNetworkThread());
+  if (MaybeReportError(request))
+    return;
+  if (bytes_read != 0) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    base::android::ScopedJavaLocalRef<jobject> java_buffer(
+        env, env->NewDirectByteBuffer(read_buffer_->data(), bytes_read));
+    cronet::Java_CronetUrlRequest_onDataReceived(env, owner_.obj(),
+                                                 java_buffer.obj());
+  } else {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    cronet::Java_CronetUrlRequest_onSucceeded(env, owner_.obj());
+  }
+}
+
+void CronetURLRequestAdapter::StartOnNetworkThread() {
+  DCHECK(context_->IsOnNetworkThread());
   VLOG(1) << "Starting chromium request: "
           << initial_url_.possibly_invalid_spec().c_str()
           << " priority: " << RequestPriorityToString(initial_priority_);
@@ -81,14 +247,13 @@ void CronetURLRequestAdapter::Start() {
   url_request_->Start();
 }
 
-void CronetURLRequestAdapter::FollowDeferredRedirect() {
-  DCHECK(IsOnNetworkThread());
-
+void CronetURLRequestAdapter::FollowDeferredRedirectOnNetworkThread() {
+  DCHECK(context_->IsOnNetworkThread());
   url_request_->FollowDeferredRedirect();
 }
 
-void CronetURLRequestAdapter::ReadData() {
-  DCHECK(IsOnNetworkThread());
+void CronetURLRequestAdapter::ReadDataOnNetworkThread() {
+  DCHECK(context_->IsOnNetworkThread());
   if (!read_buffer_.get())
     read_buffer_ = new net::IOBufferWithSize(kReadBufferSize);
 
@@ -101,62 +266,9 @@ void CronetURLRequestAdapter::ReadData() {
   OnReadCompleted(url_request_.get(), bytes_read);
 }
 
-void CronetURLRequestAdapter::Destroy() {
-  DCHECK(IsOnNetworkThread());
+void CronetURLRequestAdapter::DestroyOnNetworkThread() {
+  DCHECK(context_->IsOnNetworkThread());
   delete this;
-}
-
-const net::HttpResponseHeaders*
-CronetURLRequestAdapter::GetResponseHeaders() const {
-  DCHECK(IsOnNetworkThread());
-  return url_request_->response_headers();
-}
-
-const std::string& CronetURLRequestAdapter::GetNegotiatedProtocol() const {
-  DCHECK(IsOnNetworkThread());
-  return url_request_->response_info().npn_negotiated_protocol;
-}
-
-bool CronetURLRequestAdapter::GetWasCached() const {
-  DCHECK(IsOnNetworkThread());
-  return url_request_->response_info().was_cached;
-}
-
-int64 CronetURLRequestAdapter::GetTotalReceivedBytes() const {
-  DCHECK(IsOnNetworkThread());
-  return url_request_->GetTotalReceivedBytes();
-}
-
-// net::URLRequest::Delegate overrides (called on network thread).
-
-void CronetURLRequestAdapter::OnReceivedRedirect(
-    net::URLRequest* request,
-    const net::RedirectInfo& redirect_info,
-    bool* defer_redirect) {
-  DCHECK(IsOnNetworkThread());
-  DCHECK(request->status().is_success());
-  delegate_->OnRedirect(redirect_info.new_url, redirect_info.status_code);
-  *defer_redirect = true;
-}
-
-void CronetURLRequestAdapter::OnResponseStarted(net::URLRequest* request) {
-  DCHECK(IsOnNetworkThread());
-  if (MaybeReportError(request))
-    return;
-  delegate_->OnResponseStarted(request->GetResponseCode());
-}
-
-void CronetURLRequestAdapter::OnReadCompleted(net::URLRequest* request,
-                                              int bytes_read) {
-  DCHECK(IsOnNetworkThread());
-  if (MaybeReportError(request))
-    return;
-  if (bytes_read != 0) {
-    delegate_->OnBytesRead(
-        reinterpret_cast<unsigned char*>(read_buffer_->data()), bytes_read);
-  } else {
-    delegate_->OnRequestFinished();
-  }
 }
 
 bool CronetURLRequestAdapter::MaybeReportError(net::URLRequest* request) const {
@@ -164,9 +276,13 @@ bool CronetURLRequestAdapter::MaybeReportError(net::URLRequest* request) const {
   DCHECK_EQ(request, url_request_);
   if (url_request_->status().is_success())
     return false;
-  VLOG(1) << "Error " << url_request_->status().error()
+  int net_error = url_request_->status().error();
+  VLOG(1) << "Error " << net::ErrorToString(net_error)
           << " on chromium request: " << initial_url_.possibly_invalid_spec();
-  delegate_->OnError(url_request_->status().error());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  cronet::Java_CronetUrlRequest_onError(
+      env, owner_.obj(), net_error,
+      ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj());
   return true;
 }
 

@@ -29,8 +29,6 @@
     'android/cronet_upload_data_stream_adapter.h',
     'android/cronet_upload_data_stream_delegate.cc',
     'android/cronet_upload_data_stream_delegate.h',
-    'android/cronet_url_request.cc',
-    'android/cronet_url_request.h',
     'android/cronet_url_request_adapter.cc',
     'android/cronet_url_request_adapter.h',
     'android/cronet_url_request_context_adapter.cc',

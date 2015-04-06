@@ -9,6 +9,7 @@ import android.util.Pair;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.NativeClassQualifiedName;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -99,7 +100,7 @@ final class CronetUrlRequest implements UrlRequest {
                         destroyRequestAdapter();
                         return;
                     }
-                    nativeReceiveData(mUrlRequestAdapter);
+                    nativeReadData(mUrlRequestAdapter);
                 }
             } catch (Exception e) {
                 synchronized (mUrlRequestAdapterLock) {
@@ -291,7 +292,7 @@ final class CronetUrlRequest implements UrlRequest {
                             && !header.second.isEmpty()) {
                         hasContentType = true;
                     }
-                    if (!nativeAddHeader(mUrlRequestAdapter, header.first, header.second)) {
+                    if (!nativeAddRequestHeader(mUrlRequestAdapter, header.first, header.second)) {
                         destroyRequestAdapter();
                         throw new IllegalArgumentException(
                                 "Invalid header " + header.first + "=" + header.second);
@@ -423,7 +424,7 @@ final class CronetUrlRequest implements UrlRequest {
             if (mUrlRequestAdapter == 0) {
                 return;
             }
-            nativeDestroyRequestAdapter(mUrlRequestAdapter);
+            nativeDestroy(mUrlRequestAdapter);
             mRequestContext.onRequestDestroyed(this);
             mUrlRequestAdapter = 0;
         }
@@ -540,7 +541,7 @@ final class CronetUrlRequest implements UrlRequest {
                         if (isCanceled()) {
                             return;
                         }
-                        nativeReceiveData(mUrlRequestAdapter);
+                        nativeReadData(mUrlRequestAdapter);
                     }
                 } catch (Exception e) {
                     onListenerException(e);
@@ -657,30 +658,39 @@ final class CronetUrlRequest implements UrlRequest {
     private native long nativeCreateRequestAdapter(
             long urlRequestContextAdapter, String url, int priority);
 
-    private native boolean nativeAddHeader(long urlRequestAdapter, String name,
-            String value);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native boolean nativeSetHttpMethod(long nativePtr, String method);
 
-    private native boolean nativeSetHttpMethod(long urlRequestAdapter,
-            String method);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native boolean nativeAddRequestHeader(long nativePtr, String name, String value);
 
-    private native void nativeStart(long urlRequestAdapter);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native void nativeDisableCache(long nativePtr);
 
-    private native void nativeDestroyRequestAdapter(long urlRequestAdapter);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native void nativeStart(long nativePtr);
 
-    private native void nativeFollowDeferredRedirect(long urlRequestAdapter);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native void nativeFollowDeferredRedirect(long nativePtr);
 
-    private native void nativeReceiveData(long urlRequestAdapter);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native void nativeReadData(long nativePtr);
 
-    private native void nativePopulateResponseHeaders(long urlRequestAdapter,
-            HeadersList headers);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native void nativeDestroy(long nativePtr);
 
-    private native String nativeGetNegotiatedProtocol(long urlRequestAdapter);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native void nativePopulateResponseHeaders(long nativePtr, HeadersList headers);
 
-    private native String nativeGetHttpStatusText(long urlRequestAdapter);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native String nativeGetHttpStatusText(long nativePtr);
 
-    private native boolean nativeGetWasCached(long urlRequestAdapter);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native String nativeGetNegotiatedProtocol(long nativePtr);
 
-    private native long nativeGetTotalReceivedBytes(long urlRequestAdapter);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native boolean nativeGetWasCached(long nativePtr);
 
-    private native void nativeDisableCache(long urlRequestAdapter);
+    @NativeClassQualifiedName("CronetURLRequestAdapter")
+    private native long nativeGetTotalReceivedBytes(long nativePtr);
 }
