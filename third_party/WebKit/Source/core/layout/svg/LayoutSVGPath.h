@@ -44,6 +44,7 @@ public:
 
 private:
     virtual void updateShapeFromElement() override;
+    virtual FloatRect hitTestStrokeBoundingBox() const override;
     FloatRect calculateUpdatedStrokeBoundingBox() const;
 
     virtual bool shapeDependentStrokeContains(const FloatPoint&) override;

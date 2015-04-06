@@ -34,6 +34,7 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/SVGSubpathData.h"
 #include "core/svg/SVGGraphicsElement.h"
+#include "wtf/MathExtras.h"
 
 namespace blink {
 
@@ -53,6 +54,41 @@ void LayoutSVGPath::updateShapeFromElement()
     updateZeroLengthSubpaths();
 
     m_strokeBoundingBox = calculateUpdatedStrokeBoundingBox();
+}
+
+FloatRect LayoutSVGPath::hitTestStrokeBoundingBox() const
+{
+    const SVGComputedStyle& svgStyle = style()->svgStyle();
+    if (svgStyle.hasStroke())
+        return m_strokeBoundingBox;
+
+    // Implementation of http://dev.w3.org/fxtf/css-masking-1/#compute-stroke-bounding-box
+    // except that we ignore whether the stroke is none.
+
+    FloatRect box = m_fillBoundingBox;
+
+    const float strokeWidth = this->strokeWidth();
+    if (strokeWidth <= 0)
+        return box;
+
+    float delta = strokeWidth / 2;
+
+    if (svgStyle.hasMiterJoinStyle()) {
+        const float miter = svgStyle.strokeMiterLimit();
+        if (miter < M_SQRT2 && svgStyle.hasSquareCapStyle())
+            delta *= M_SQRT2;
+        else
+            delta *= miter;
+    } else if (svgStyle.hasSquareCapStyle()) {
+        delta *= M_SQRT2;
+    }
+
+    box.inflate(delta);
+
+    for (size_t i = 0; i < m_zeroLengthLinecapLocations.size(); ++i)
+        box.unite(zeroLengthSubpathRect(m_zeroLengthLinecapLocations[i], strokeWidth));
+
+    return box;
 }
 
 FloatRect LayoutSVGPath::calculateUpdatedStrokeBoundingBox() const
@@ -78,9 +114,9 @@ bool LayoutSVGPath::shapeDependentStrokeContains(const FloatPoint& point)
         return true;
 
     const SVGComputedStyle& svgStyle = style()->svgStyle();
+    const float strokeWidth = this->strokeWidth();
     for (size_t i = 0; i < m_zeroLengthLinecapLocations.size(); ++i) {
         ASSERT(svgStyle.hasStroke());
-        float strokeWidth = this->strokeWidth();
         if (svgStyle.capStyle() == SquareCap) {
             if (zeroLengthSubpathRect(m_zeroLengthLinecapLocations[i], strokeWidth).contains(point))
                 return true;

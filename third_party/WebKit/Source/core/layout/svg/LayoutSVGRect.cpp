@@ -29,6 +29,7 @@
 #include "core/layout/svg/LayoutSVGRect.h"
 
 #include "core/svg/SVGRectElement.h"
+#include "wtf/MathExtras.h"
 
 namespace blink {
 
@@ -47,8 +48,7 @@ void LayoutSVGRect::updateShapeFromElement()
     // Before creating a new object we need to clear the cached bounding box
     // to avoid using garbage.
     m_fillBoundingBox = FloatRect();
-    m_innerStrokeRect = FloatRect();
-    m_outerStrokeRect = FloatRect();
+    m_strokeBoundingBox = FloatRect();
     m_usePathFallback = false;
     SVGRectElement* rect = toSVGRectElement(element());
     ASSERT(rect);
@@ -81,19 +81,9 @@ void LayoutSVGRect::updateShapeFromElement()
             lengthContext.valueForLength(styleRef().svgStyle().x(), styleRef(), SVGLengthMode::Width),
             lengthContext.valueForLength(styleRef().svgStyle().y(), styleRef(), SVGLengthMode::Height)),
         boundingBoxSize);
-
-    // To decide if the stroke contains a point we create two rects which represent the inner and
-    // the outer stroke borders. A stroke contains the point, if the point is between them.
-    m_innerStrokeRect = m_fillBoundingBox;
-    m_outerStrokeRect = m_fillBoundingBox;
-
-    if (style()->svgStyle().hasStroke()) {
-        float strokeWidth = this->strokeWidth();
-        m_innerStrokeRect.inflate(-strokeWidth / 2);
-        m_outerStrokeRect.inflate(strokeWidth / 2);
-    }
-
-    m_strokeBoundingBox = m_outerStrokeRect;
+    m_strokeBoundingBox = m_fillBoundingBox;
+    if (style()->svgStyle().hasStroke())
+        m_strokeBoundingBox.inflate(strokeWidth() / 2);
 }
 
 bool LayoutSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
@@ -106,7 +96,19 @@ bool LayoutSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
         return LayoutSVGShape::shapeDependentStrokeContains(point);
     }
 
-    return m_outerStrokeRect.contains(point, FloatRect::InsideOrOnStroke) && !m_innerStrokeRect.contains(point, FloatRect::InsideButNotOnStroke);
+    const float halfStrokeWidth = strokeWidth() / 2;
+    const float halfWidth = m_fillBoundingBox.width() / 2;
+    const float halfHeight = m_fillBoundingBox.height() / 2;
+
+    const FloatPoint fillBoundingBoxCenter = FloatPoint(m_fillBoundingBox.x() + halfWidth, m_fillBoundingBox.y() + halfHeight);
+    const float absDeltaX = std::abs(point.x() - fillBoundingBoxCenter.x());
+    const float absDeltaY = std::abs(point.y() - fillBoundingBoxCenter.y());
+
+    if (!(absDeltaX <= halfWidth + halfStrokeWidth && absDeltaY <= halfHeight + halfStrokeWidth))
+        return false;
+
+    return (halfWidth - halfStrokeWidth <= absDeltaX)
+        || (halfHeight - halfStrokeWidth <= absDeltaY);
 }
 
 bool LayoutSVGRect::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const

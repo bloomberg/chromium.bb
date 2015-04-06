@@ -86,6 +86,11 @@ protected:
     void createPath();
 
     virtual void updateShapeFromElement();
+    // Calculates an inclusive bounding box of this shape as if this shape has
+    // a stroke. If this shape has a stroke, then m_strokeBoundingBox is returned;
+    // otherwise, estimates a bounding box (not necessarily tight) that would
+    // include this shape's stroke bounding box if it had a stroke.
+    virtual FloatRect hitTestStrokeBoundingBox() const;
     virtual bool shapeDependentStrokeContains(const FloatPoint&);
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const;
 

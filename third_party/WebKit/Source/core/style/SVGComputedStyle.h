@@ -372,6 +372,8 @@ public:
     bool hasMarkers() const { return !markerStartResource().isEmpty() || !markerMidResource().isEmpty() || !markerEndResource().isEmpty(); }
     bool hasStroke() const { return strokePaintType() != SVG_PAINTTYPE_NONE; }
     bool hasVisibleStroke() const { return hasStroke() && !strokeWidth().isZero(); }
+    bool hasSquareCapStyle() const { return capStyle() == SquareCap; }
+    bool hasMiterJoinStyle() const { return joinStyle() == MiterJoin; }
     bool hasFill() const { return fillPaintType() != SVG_PAINTTYPE_NONE; }
     bool isVerticalWritingMode() const { return writingMode() == WM_TBRL || writingMode() == WM_TB; }
 
