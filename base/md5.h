@@ -5,6 +5,8 @@
 #ifndef BASE_MD5_H_
 #define BASE_MD5_H_
 
+#include <stdint.h>
+
 #include "base/base_export.h"
 #include "base/strings/string_piece.h"
 
@@ -35,7 +37,7 @@ namespace base {
 
 // The output of an MD5 operation.
 struct MD5Digest {
-  unsigned char a[16];
+  uint8_t a[16];
 };
 
 // Used for storing intermediate data during an MD5 computation. Callers

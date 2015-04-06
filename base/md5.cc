@@ -24,20 +24,19 @@
 #include "base/md5.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 namespace {
 
 struct Context {
   uint32_t buf[4];
   uint32_t bits[2];
-  unsigned char in[64];
+  uint8_t in[64];
 };
 
 /*
  * Note: this code is harmless on little-endian machines.
  */
-void byteReverse(unsigned char *buf, unsigned longs) {
+void byteReverse(uint8_t* buf, unsigned longs) {
   uint32_t t;
   do {
     t = (uint32_t)((unsigned)buf[3] << 8 | buf[2]) << 16 |
@@ -169,10 +168,10 @@ void MD5Init(MD5Context* context) {
  * of bytes.
  */
 void MD5Update(MD5Context* context, const StringPiece& data) {
-  const unsigned char* inbuf = (const unsigned char*)data.data();
+  const uint8_t* inbuf = (const uint8_t*)data.data();
   size_t len = data.size();
   struct Context* ctx = (struct Context*)context;
-  const unsigned char* buf = (const unsigned char*)inbuf;
+  const uint8_t* buf = (const uint8_t*)inbuf;
   uint32_t t;
 
   /* Update bitcount */
@@ -187,7 +186,7 @@ void MD5Update(MD5Context* context, const StringPiece& data) {
   /* Handle any leading odd-sized chunks */
 
   if (t) {
-    unsigned char* p = (unsigned char*)ctx->in + t;
+    uint8_t* p = (uint8_t*)ctx->in + t;
 
     t = 64 - t;
     if (len < t) {
@@ -223,7 +222,7 @@ void MD5Update(MD5Context* context, const StringPiece& data) {
 void MD5Final(MD5Digest* digest, MD5Context* context) {
   struct Context* ctx = (struct Context*)context;
   unsigned count;
-  unsigned char* p;
+  uint8_t* p;
 
   /* Compute number of bytes mod 64 */
   count = (ctx->bits[0] >> 3) & 0x3F;
@@ -258,7 +257,7 @@ void MD5Final(MD5Digest* digest, MD5Context* context) {
          sizeof(ctx->bits[1]));
 
   MD5Transform(ctx->buf, (uint32_t*)ctx->in);
-  byteReverse((unsigned char*)ctx->buf, 4);
+  byteReverse((uint8_t*)ctx->buf, 4);
   memcpy(digest->a, ctx->buf, 16);
   memset(ctx, 0, sizeof(*ctx)); /* In case it's sensitive */
 }
