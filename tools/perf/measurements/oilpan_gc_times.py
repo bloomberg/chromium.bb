@@ -21,29 +21,29 @@ from telemetry.value import trace
 
 _CR_RENDERER_MAIN = 'CrRendererMain'
 _RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
-_GC_REASONS = ['precise', 'conservative', 'idle', 'forced']
-_GC_STAGES = ['mark', 'lazy_sweep', 'complete_sweep']
-
-
-def _GetGcReason(args):
-  # Old style
-  if 'precise' in args:
-    if args['forced']:
-      return 'forced'
-    return 'precise' if args['precise'] else 'conservative'
-
-  if args['gcReason'] == 'ConservativeGC':
-    return 'conservative'
-  if args['gcReason'] == 'PreciseGC':
-    return 'precise'
-  if args['gcReason'] == 'ForcedGCForTesting':
-    return 'forced'
-  if args['gcReason'] == 'IdleGC':
-    return 'idle'
-  return None  # Unknown
 
 
 def _AddTracingResults(events, results):
+  _GC_REASONS = ['precise', 'conservative', 'idle', 'forced']
+  _GC_STAGES = ['mark', 'lazy_sweep', 'complete_sweep']
+
+  def GetGcReason(args):
+    # Old format
+    if 'precise' in args:
+      if args['forced']:
+        return 'forced'
+      return 'precise' if args['precise'] else 'conservative'
+
+    if args['gcReason'] == 'ConservativeGC':
+      return 'conservative'
+    if args['gcReason'] == 'PreciseGC':
+      return 'precise'
+    if args['gcReason'] == 'ForcedGCForTesting':
+      return 'forced'
+    if args['gcReason'] == 'IdleGC':
+      return 'idle'
+    return None  # Unknown
+
   def DumpMetric(page, name, values, unit, results):
     if values[name]:
       results.AddValue(list_of_scalar_values.ListOfScalarValues(
@@ -59,7 +59,7 @@ def _AddTracingResults(events, results):
     for stage in _GC_STAGES:
       values['oilpan_%s_%s' % (reason, stage)] = []
 
-  # Parse in time line
+  # Parse trace events
   reason = None
   mark_time = 0
   lazy_sweep_time = 0
@@ -75,7 +75,7 @@ def _AddTracingResults(events, results):
         values['oilpan_%s_lazy_sweep' % reason].append(lazy_sweep_time)
         values['oilpan_%s_complete_sweep' % reason].append(complete_sweep_time)
 
-      reason = _GetGcReason(event.args)
+      reason = GetGcReason(event.args)
       mark_time = duration
       lazy_sweep_time = 0
       complete_sweep_time = 0
