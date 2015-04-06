@@ -25,6 +25,8 @@
         'COMPOSITOR_IMPLEMENTATION',
       ],
       'sources': [
+        'clip_transform_recorder.cc',
+        'clip_transform_recorder.h',
         'closure_animation_observer.cc',
         'closure_animation_observer.h',
         'compositor.cc',
@@ -62,6 +64,8 @@
         'layer_tree_owner.h',
         'layer_type.h',
         'paint_context.h',
+        'paint_recorder.cc',
+        'paint_recorder.h',
         'reflector.cc',
         'reflector.h',
         'scoped_animation_duration_scale_mode.cc',

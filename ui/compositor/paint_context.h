@@ -13,6 +13,7 @@ class Canvas;
 }
 
 namespace ui {
+class PaintRecorder;
 
 class PaintContext {
  public:
@@ -67,6 +68,11 @@ class PaintContext {
 #endif
 
  private:
+  // The PaintRecorder needs access to the internal canvas and friends, but we
+  // don't want to expose them on this class so that people must go through the
+  // recorder to access them.
+  friend class PaintRecorder;
+
   // Clone a PaintContext with an additional |offset|.
   PaintContext(const PaintContext& other, const gfx::Vector2d& offset)
       : canvas_(other.canvas_),

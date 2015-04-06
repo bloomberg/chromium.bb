@@ -19,11 +19,13 @@
 #include "ui/accessibility/ax_enums.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/compositor/clip_transform_recorder.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -774,35 +776,42 @@ void View::Paint(const ui::PaintContext& parent_context) {
 
   TRACE_EVENT1("views", "View::Paint", "class", GetClassName());
 
-  gfx::Canvas* canvas = context.canvas();
-  gfx::ScopedCanvas scoped_canvas(canvas);
-
   // If the view is backed by a layer, it should paint with itself as the origin
   // rather than relative to its parent.
+  scoped_ptr<ui::ClipTransformRecorder> clip_transform_recorder;
   if (!layer()) {
     // Set the clip rect to the bounds of this View. Note that the X (or left)
     // position we pass to ClipRect takes into consideration whether or not the
     // View uses a right-to-left layout so that we paint the View in its
     // mirrored position if need be.
-    gfx::Rect clip_rect = bounds();
-    clip_rect.Inset(clip_insets_);
+    gfx::Rect clip_rect_in_parent = bounds();
+    clip_rect_in_parent.Inset(clip_insets_);
     if (parent_)
-      clip_rect.set_x(parent_->GetMirroredXForRect(clip_rect));
-    canvas->ClipRect(clip_rect);
+      clip_rect_in_parent.set_x(
+          parent_->GetMirroredXForRect(clip_rect_in_parent));
 
     // Translate the graphics such that 0,0 corresponds to where
     // this View is located relative to its parent.
-    canvas->Translate(GetMirroredPosition().OffsetFromOrigin());
-    canvas->Transform(GetTransform());
+    gfx::Transform transform_from_parent;
+    gfx::Vector2d offset_from_parent = GetMirroredPosition().OffsetFromOrigin();
+    transform_from_parent.Translate(offset_from_parent.x(),
+                                    offset_from_parent.y());
+    transform_from_parent.PreconcatTransform(GetTransform());
+
+    clip_transform_recorder = make_scoped_ptr(new ui::ClipTransformRecorder(
+        context, clip_rect_in_parent, transform_from_parent));
   }
 
   {
+    ui::PaintRecorder recorder(context);
+    gfx::Canvas* canvas = recorder.canvas();
+    gfx::ScopedCanvas scoped_canvas(canvas);
+
     // If the View we are about to paint requested the canvas to be flipped, we
     // should change the transform appropriately.
     // The canvas mirroring is undone once the View is done painting so that we
     // don't pass the canvas with the mirrored transform to Views that didn't
     // request the canvas to be flipped.
-    gfx::ScopedCanvas scoped(canvas);
     if (FlipCanvasOnPaintForRTLUI()) {
       canvas->Translate(gfx::Vector2d(width(), 0));
       canvas->Scale(-1, 1);
@@ -812,6 +821,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
     OnPaint(canvas);
   }
 
+  // View::Paint() recursion over the subtree.
   PaintChildren(context);
 }
 
