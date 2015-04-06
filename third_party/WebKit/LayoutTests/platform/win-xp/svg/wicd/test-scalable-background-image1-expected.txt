@@ -4,8 +4,8 @@ layer at (0,0) size 800x321
   LayoutBlockFlow {html} at (0,0) size 800x320.86
     LayoutBlockFlow {body} at (48,8) size 772x304.86
       LayoutBlockFlow {h1} at (10,40.72) size 691.83x31
-        LayoutText {#text} at (0,0) size 307x30
-          text run at (0,0) width 307: "scalable CSS background"
+        LayoutText {#text} at (0,0) size 317x30
+          text run at (0,0) width 317: "scalable CSS background"
       LayoutBlockFlow {h4} at (10,71.72) size 752x16
         LayoutText {#text} at (0,0) size 125x16
           text run at (0,0) width 125: "WICD Core 1.0 #11"

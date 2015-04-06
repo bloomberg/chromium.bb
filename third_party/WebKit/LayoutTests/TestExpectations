@@ -1838,9 +1838,6 @@ crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overf
 
 crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 
-crbug.com/444022 svg/wicd/test-scalable-background-image1.xhtml [ NeedsRebaseline ]
-crbug.com/444095 svg/wicd/test-rightsizing-b.xhtml [ NeedsRebaseline ]
-
 crbug.com/445889 virtual/slimmingpaint/fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
 crbug.com/445889 fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
 crbug.com/445955 [ Mac ] web-animations-api/player-cancel-finishes.html [ Pass Failure ]
