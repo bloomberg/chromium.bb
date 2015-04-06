@@ -47249,6 +47249,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="9" label="SpringPowerSupply.Original.Low"/>
   <int value="10" label="SpringPowerSupply.ChargerIdle"/>
   <int value="11" label="TPM.NonZeroDictionaryAttackCounter"/>
+  <int value="12" label="TPM.EarlyResetDuringCommand"/>
 </enum>
 
 <enum name="CrosFirstRunTutorialCompletionType" type="int">
