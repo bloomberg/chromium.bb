@@ -27,11 +27,6 @@ cr.define('cr.ui', function() {
     contextElement: null,
 
     /**
-     * Selector for children which are menu items.
-     */
-    menuItemSelector: '*',
-
-    /**
      * Initializes the menu element.
      */
     decorate: function() {
@@ -119,7 +114,7 @@ cr.define('cr.ui', function() {
     },
 
     get menuItems() {
-      return this.querySelectorAll(this.menuItemSelector);
+      return this.querySelectorAll(this.menuItemSelector || '*');
     },
 
     /**
@@ -271,6 +266,11 @@ cr.define('cr.ui', function() {
    */
   cr.defineProperty(Menu, 'selectedIndex', cr.PropertyKind.JS,
       selectedIndexChanged);
+
+  /**
+   * Selector for children which are menu items.
+   */
+  cr.defineProperty(Menu, 'menuItemSelector', cr.PropertyKind.ATTR);
 
   // Export
   return {

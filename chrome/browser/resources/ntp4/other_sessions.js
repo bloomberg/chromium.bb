@@ -72,8 +72,8 @@ cr.define('ntp', function() {
     decorate: function() {
       MenuButton.prototype.decorate.call(this);
       this.menu = new Menu;
+      this.menu.menuItemSelector = '[role=menuitem]';  // before decoration
       cr.ui.decorate(this.menu, Menu);
-      this.menu.menuItemSelector = '[role=menuitem]';
       this.menu.classList.add('footer-menu');
       this.menu.addEventListener('contextmenu',
                                  this.onContextMenu_.bind(this), true);
