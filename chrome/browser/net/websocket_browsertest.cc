@@ -300,25 +300,20 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SSLConnectionLimit) {
 IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketAppliesHSTS) {
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS,
-      net::SpawnedTestServer::SSLOptions(
-          net::SpawnedTestServer::SSLOptions::CERT_OK_FOR_LOCALHOST),
+      net::SpawnedTestServer::SSLOptions(),
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  net::SpawnedTestServer wss_server(
-      net::SpawnedTestServer::TYPE_WSS,
-      net::SpawnedTestServer::SSLOptions(
-          net::SpawnedTestServer::SSLOptions::CERT_OK_FOR_LOCALHOST),
-      net::GetWebSocketTestDataDirectory());
-  // This test sets HSTS on localhost. To avoid being redirected to https, start
-  // the http server on 127.0.0.1 instead.
+  // This test sets HSTS on 127.0.0.1. To avoid being redirected to https, start
+  // the http server on "localhost" instead.
   net::SpawnedTestServer http_server(
-      net::SpawnedTestServer::TYPE_HTTP, net::SpawnedTestServer::kLocalhost,
+      net::SpawnedTestServer::TYPE_HTTP,
+      "localhost",
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.StartInBackground());
   ASSERT_TRUE(http_server.StartInBackground());
-  ASSERT_TRUE(wss_server.StartInBackground());
+  ASSERT_TRUE(wss_server_.StartInBackground());
   ASSERT_TRUE(https_server.BlockUntilStarted());
 
-  // Set HSTS on localhost.
+  // Set HSTS on 127.0.0.1.
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(),
       base::ASCIIToUTF16("SET"));
@@ -328,8 +323,8 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketAppliesHSTS) {
   EXPECT_TRUE(EqualsASCII(result, "SET"));
 
   // Verify that it applies to WebSockets.
-  ASSERT_TRUE(wss_server.BlockUntilStarted());
-  GURL wss_url = wss_server.GetURL("echo-with-no-extension");
+  ASSERT_TRUE(wss_server_.BlockUntilStarted());
+  GURL wss_url = wss_server_.GetURL("echo-with-no-extension");
   std::string scheme("ws");
   GURL::Replacements scheme_replacement;
   scheme_replacement.SetSchemeStr(scheme);

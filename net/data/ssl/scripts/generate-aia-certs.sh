@@ -8,7 +8,8 @@
 # certificates that can be used to test fetching of an intermediate via AIA.
 
 try() {
-  "$@" || (e=$?; echo "$@" > /dev/stderr; exit $e)
+  echo "$@"
+  "$@" || exit 1
 }
 
 try rm -rf out

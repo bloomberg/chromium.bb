@@ -8,7 +8,8 @@
 # certificates that can be used to test fetching of an intermediate via AIA.
 
 try() {
-  "$@" || (e=$?; echo "$@" > /dev/stderr; exit $e)
+  echo "$@"
+  "$@" || exit 1
 }
 
 try rm -rf out
@@ -32,10 +33,11 @@ CA_COMMON_NAME="Test Root CA" \
   try openssl x509 \
     -req -days 3650 \
     -in out/2048-sha256-root.req \
+    -out out/2048-sha256-root.pem \
     -signkey out/2048-sha256-root.key \
     -extfile ca.cnf \
     -extensions ca_cert \
-    -text > out/2048-sha256-root.pem
+    -text
 
 # Generate the leaf certificate requests
 try openssl req \
@@ -48,14 +50,6 @@ try openssl req \
   -new \
   -keyout out/ok_cert.key \
   -out out/ok_cert.req \
-  -config ee.cnf
-
-SUBJECT_NAME=req_localhost_cn \
-try openssl req \
-  -new \
-  -keyout out/localhost_cert.key \
-  -out out/localhost_cert.req \
-  -reqexts req_localhost_san \
   -config ee.cnf
 
 # Generate the leaf certificates
@@ -98,19 +92,8 @@ CA_COMMON_NAME="Test Root CA" \
     -out out/name_constraint_good.pem \
     -config ca.cnf
 
-CA_COMMON_NAME="Test Root CA" \
-  try openssl ca \
-    -batch \
-    -extensions user_cert \
-    -days 3650 \
-    -in out/localhost_cert.req \
-    -out out/localhost_cert.pem \
-    -config ca.cnf
-
 try /bin/sh -c "cat out/ok_cert.key out/ok_cert.pem \
     > ../certificates/ok_cert.pem"
-try /bin/sh -c "cat out/localhost_cert.key out/localhost_cert.pem \
-    > ../certificates/localhost_cert.pem"
 try /bin/sh -c "cat out/expired_cert.key out/expired_cert.pem \
     > ../certificates/expired_cert.pem"
 try /bin/sh -c "cat out/2048-sha256-root.key out/2048-sha256-root.pem \
@@ -125,7 +108,7 @@ try /bin/sh -c "cat out/ok_cert.key out/name_constraint_good.pem \
 try openssl req -x509 -days 3650 \
     -config ../scripts/ee.cnf -newkey rsa:2048 -text \
     -sha256 \
-    -out ../certificates/sha256.pem
+    -out sha256.pem
 
 ## Self-signed cert for SPDY/QUIC/HTTP2 pooling testing
 try openssl req -x509 -days 3650 -extensions req_spdy_pooling \

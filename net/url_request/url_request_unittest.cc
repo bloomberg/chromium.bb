@@ -2574,7 +2574,7 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesEnabled) {
     TestDelegate d;
     scoped_ptr<URLRequest> req(default_context_.CreateRequest(
         test_server.GetURL("echoheader?Cookie"), DEFAULT_PRIORITY, &d));
-    req->set_first_party_for_cookies(test_server.GetURL(std::string()));
+    req->set_first_party_for_cookies(test_server.GetURL(""));
     req->Start();
     base::RunLoop().Run();
 
@@ -2634,7 +2634,7 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesDisabled) {
     TestDelegate d;
     scoped_ptr<URLRequest> req(default_context_.CreateRequest(
         test_server.GetURL("echoheader?Cookie"), DEFAULT_PRIORITY, &d));
-    req->set_first_party_for_cookies(test_server.GetURL(std::string()));
+    req->set_first_party_for_cookies(test_server.GetURL(""));
     req->Start();
     base::RunLoop().Run();
 
@@ -5258,16 +5258,12 @@ TEST_F(URLRequestTestHTTP, ResponseHeadersTest) {
 }
 
 TEST_F(URLRequestTestHTTP, ProcessSTS) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK_FOR_LOCALHOST);
+  SpawnedTestServer::SSLOptions ssl_options;
   SpawnedTestServer https_test_server(
       SpawnedTestServer::TYPE_HTTPS,
       ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(https_test_server.Start());
-
-  std::string test_server_hostname =
-      https_test_server.GetURL(std::string()).host();
 
   TestDelegate d;
   scoped_ptr<URLRequest> request(default_context_.CreateRequest(
@@ -5279,8 +5275,8 @@ TEST_F(URLRequestTestHTTP, ProcessSTS) {
   TransportSecurityState* security_state =
       default_context_.transport_security_state();
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(security_state->GetDynamicDomainState(test_server_hostname,
-                                                    &domain_state));
+  EXPECT_TRUE(security_state->GetDynamicDomainState(
+      SpawnedTestServer::kLocalhost, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.sts.upgrade_mode);
   EXPECT_TRUE(domain_state.sts.include_subdomains);
@@ -5290,32 +5286,6 @@ TEST_F(URLRequestTestHTTP, ProcessSTS) {
 #else
   EXPECT_FALSE(domain_state.HasPublicKeyPins());
 #endif
-}
-
-TEST_F(URLRequestTestHTTP, STSNotProcessedOnIP) {
-  SpawnedTestServer https_test_server(
-      SpawnedTestServer::TYPE_HTTPS, SpawnedTestServer::SSLOptions(),
-      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
-  ASSERT_TRUE(https_test_server.Start());
-
-  // Make sure this test fails if the test server is changed to not
-  // listen on an IP by default.
-  ASSERT_TRUE(https_test_server.GetURL(std::string()).HostIsIPAddress());
-  std::string test_server_hostname =
-      https_test_server.GetURL(std::string()).host();
-
-  TestDelegate d;
-  scoped_ptr<URLRequest> request(default_context_.CreateRequest(
-      https_test_server.GetURL("files/hsts-headers.html"), DEFAULT_PRIORITY,
-      &d));
-  request->Start();
-  base::RunLoop().Run();
-
-  TransportSecurityState* security_state =
-      default_context_.transport_security_state();
-  TransportSecurityState::DomainState domain_state;
-  EXPECT_FALSE(security_state->GetDynamicDomainState(test_server_hostname,
-                                                     &domain_state));
 }
 
 // Android's CertVerifyProc does not (yet) handle pins. Therefore, it will
@@ -5330,16 +5300,12 @@ TEST_F(URLRequestTestHTTP, STSNotProcessedOnIP) {
 // Tests that enabling HPKP on a domain does not affect the HSTS
 // validity/expiration.
 TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKP) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK_FOR_LOCALHOST);
+  SpawnedTestServer::SSLOptions ssl_options;
   SpawnedTestServer https_test_server(
       SpawnedTestServer::TYPE_HTTPS,
       ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(https_test_server.Start());
-
-  std::string test_server_hostname =
-      https_test_server.GetURL(std::string()).host();
 
   TestDelegate d;
   scoped_ptr<URLRequest> request(default_context_.CreateRequest(
@@ -5351,8 +5317,8 @@ TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKP) {
   TransportSecurityState* security_state =
       default_context_.transport_security_state();
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(security_state->GetDynamicDomainState(test_server_hostname,
-                                                    &domain_state));
+  EXPECT_TRUE(security_state->GetDynamicDomainState(
+      SpawnedTestServer::kLocalhost, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_DEFAULT,
             domain_state.sts.upgrade_mode);
   EXPECT_FALSE(domain_state.sts.include_subdomains);
@@ -5361,42 +5327,13 @@ TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKP) {
   EXPECT_NE(domain_state.sts.expiry, domain_state.pkp.expiry);
 }
 
-TEST_F(URLRequestTestHTTP, PKPNotProcessedOnIP) {
-  SpawnedTestServer https_test_server(
-      SpawnedTestServer::TYPE_HTTPS, SpawnedTestServer::SSLOptions(),
-      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
-  ASSERT_TRUE(https_test_server.Start());
-  // Make sure this test fails if the test server is changed to not
-  // listen on an IP by default.
-  ASSERT_TRUE(https_test_server.GetURL(std::string()).HostIsIPAddress());
-  std::string test_server_hostname =
-      https_test_server.GetURL(std::string()).host();
-
-  TestDelegate d;
-  scoped_ptr<URLRequest> request(default_context_.CreateRequest(
-      https_test_server.GetURL("files/hpkp-headers.html"), DEFAULT_PRIORITY,
-      &d));
-  request->Start();
-  base::RunLoop().Run();
-
-  TransportSecurityState* security_state =
-      default_context_.transport_security_state();
-  TransportSecurityState::DomainState domain_state;
-  EXPECT_FALSE(security_state->GetDynamicDomainState(test_server_hostname,
-                                                     &domain_state));
-}
-
 TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK_FOR_LOCALHOST);
+  SpawnedTestServer::SSLOptions ssl_options;
   SpawnedTestServer https_test_server(
       SpawnedTestServer::TYPE_HTTPS,
       ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(https_test_server.Start());
-
-  std::string test_server_hostname =
-      https_test_server.GetURL(std::string()).host();
 
   TestDelegate d;
   scoped_ptr<URLRequest> request(default_context_.CreateRequest(
@@ -5409,8 +5346,8 @@ TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
   TransportSecurityState* security_state =
       default_context_.transport_security_state();
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(security_state->GetDynamicDomainState(test_server_hostname,
-                                                    &domain_state));
+  EXPECT_TRUE(security_state->GetDynamicDomainState(
+      SpawnedTestServer::kLocalhost, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.sts.upgrade_mode);
   EXPECT_FALSE(domain_state.sts.include_subdomains);
@@ -5418,16 +5355,12 @@ TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
 }
 
 TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK_FOR_LOCALHOST);
+  SpawnedTestServer::SSLOptions ssl_options;
   SpawnedTestServer https_test_server(
       SpawnedTestServer::TYPE_HTTPS,
       ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(https_test_server.Start());
-
-  std::string test_server_hostname =
-      https_test_server.GetURL(std::string()).host();
 
   TestDelegate d;
   scoped_ptr<URLRequest> request(default_context_.CreateRequest(
@@ -5440,8 +5373,8 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
   TransportSecurityState* security_state =
       default_context_.transport_security_state();
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(security_state->GetDynamicDomainState(test_server_hostname,
-                                                    &domain_state));
+  EXPECT_TRUE(security_state->GetDynamicDomainState(
+      SpawnedTestServer::kLocalhost, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.sts.upgrade_mode);
 #if defined(OS_ANDROID)
@@ -5461,16 +5394,12 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
 // Tests that when multiple HPKP headers are present, asserting different
 // policies, that only the first such policy is processed.
 TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP2) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK_FOR_LOCALHOST);
+  SpawnedTestServer::SSLOptions ssl_options;
   SpawnedTestServer https_test_server(
       SpawnedTestServer::TYPE_HTTPS,
       ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(https_test_server.Start());
-
-  std::string test_server_hostname =
-      https_test_server.GetURL(std::string()).host();
 
   TestDelegate d;
   scoped_ptr<URLRequest> request(default_context_.CreateRequest(
@@ -5482,8 +5411,8 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP2) {
   TransportSecurityState* security_state =
       default_context_.transport_security_state();
   TransportSecurityState::DomainState domain_state;
-  EXPECT_TRUE(security_state->GetDynamicDomainState(test_server_hostname,
-                                                    &domain_state));
+  EXPECT_TRUE(security_state->GetDynamicDomainState(
+      SpawnedTestServer::kLocalhost, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.sts.upgrade_mode);
 #if defined(OS_ANDROID)
