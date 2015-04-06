@@ -422,9 +422,7 @@ void OmniboxPopupContentsView::PaintChildren(const ui::PaintContext& context) {
 
   gfx::Canvas* canvas = context.canvas();
   canvas->Save();
-  canvas->sk_canvas()->clipRect(gfx::RectToSkRect(contents_bounds),
-                                SkRegion::kIntersect_Op,
-                                true /* doAntialias */);
+  canvas->ClipRect(contents_bounds);
   canvas->DrawColor(result_view_at(0)->GetColor(OmniboxResultView::NORMAL,
                                                 OmniboxResultView::BACKGROUND));
   View::PaintChildren(context);
