@@ -1192,6 +1192,11 @@ long long BlinkPlatformImpl::databaseGetSpaceAvailableForOrigin(
   return 0;
 }
 
+bool BlinkPlatformImpl::databaseSetFileSize(
+    const blink::WebString& vfs_file_name, long long size) {
+  return false;
+}
+
 blink::WebString BlinkPlatformImpl::signedPublicKeyAndChallengeString(
     unsigned key_size_index,
     const blink::WebString& challenge,

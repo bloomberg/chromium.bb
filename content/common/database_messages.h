@@ -61,6 +61,12 @@ IPC_SYNC_MESSAGE_CONTROL1_1(DatabaseHostMsg_GetSpaceAvailable,
                             std::string /* origin identifier */,
                             int64 /* remaining space available */)
 
+// Asks the browser set the size of a DB file
+IPC_SYNC_MESSAGE_CONTROL2_1(DatabaseHostMsg_SetFileSize,
+                            base::string16 /* vfs file name */,
+                            int64 /* expected size of the given DB file */,
+                            bool /* indicates success */)
+
 // Notifies the browser process that a new database has been opened
 IPC_MESSAGE_CONTROL4(DatabaseHostMsg_Opened,
                      std::string /* origin identifier */,

@@ -89,16 +89,15 @@ void DatabaseMessageFilter::OverrideThreadForMessage(
 bool DatabaseMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DatabaseMessageFilter, message)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(DatabaseHostMsg_OpenFile,
-                                    OnDatabaseOpenFile)
+    IPC_MESSAGE_HANDLER(DatabaseHostMsg_OpenFile, OnDatabaseOpenFile)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(DatabaseHostMsg_DeleteFile,
                                     OnDatabaseDeleteFile)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(DatabaseHostMsg_GetFileAttributes,
-                                    OnDatabaseGetFileAttributes)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(DatabaseHostMsg_GetFileSize,
-                                    OnDatabaseGetFileSize)
+    IPC_MESSAGE_HANDLER(DatabaseHostMsg_GetFileAttributes,
+                        OnDatabaseGetFileAttributes)
+    IPC_MESSAGE_HANDLER(DatabaseHostMsg_GetFileSize, OnDatabaseGetFileSize)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(DatabaseHostMsg_GetSpaceAvailable,
                                     OnDatabaseGetSpaceAvailable)
+    IPC_MESSAGE_HANDLER(DatabaseHostMsg_SetFileSize, OnDatabaseSetFileSize)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Opened, OnDatabaseOpened)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Modified, OnDatabaseModified)
     IPC_MESSAGE_HANDLER(DatabaseHostMsg_Closed, OnDatabaseClosed)
@@ -114,7 +113,7 @@ DatabaseMessageFilter::~DatabaseMessageFilter() {
 void DatabaseMessageFilter::OnDatabaseOpenFile(
     const base::string16& vfs_file_name,
     int desired_flags,
-    IPC::Message* reply_msg) {
+    IPC::PlatformFileForTransit* handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::File file;
   const base::File* tracked_file = NULL;
@@ -156,19 +155,15 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(
   // Then we duplicate the file handle to make it useable in the renderer
   // process. The original handle is closed, unless we saved it in the
   // database tracker.
-  IPC::PlatformFileForTransit target_handle =
-      IPC::InvalidPlatformFileForTransit();
+  *handle = IPC::InvalidPlatformFileForTransit();
   if (file.IsValid()) {
-    target_handle = IPC::TakeFileHandleForProcess(file.Pass(), PeerHandle());
+    *handle = IPC::TakeFileHandleForProcess(file.Pass(), PeerHandle());
   } else if (tracked_file) {
     DCHECK(tracked_file->IsValid());
-    target_handle =
+    *handle =
         IPC::GetFileHandleForProcess(tracked_file->GetPlatformFile(),
                                      PeerHandle(), false);
   }
-
-  DatabaseHostMsg_OpenFile::WriteReplyParams(reply_msg, target_handle);
-  Send(reply_msg);
 }
 
 void DatabaseMessageFilter::OnDatabaseDeleteFile(
@@ -228,30 +223,24 @@ void DatabaseMessageFilter::DatabaseDeleteFile(
 
 void DatabaseMessageFilter::OnDatabaseGetFileAttributes(
     const base::string16& vfs_file_name,
-    IPC::Message* reply_msg) {
+    int32* attributes) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  int32 attributes = -1;
+  *attributes = -1;
   base::FilePath db_file =
       DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_.get(), vfs_file_name);
   if (!db_file.empty())
-    attributes = VfsBackend::GetFileAttributes(db_file);
-
-  DatabaseHostMsg_GetFileAttributes::WriteReplyParams(
-      reply_msg, attributes);
-  Send(reply_msg);
+    *attributes = VfsBackend::GetFileAttributes(db_file);
 }
 
 void DatabaseMessageFilter::OnDatabaseGetFileSize(
-    const base::string16& vfs_file_name, IPC::Message* reply_msg) {
+    const base::string16& vfs_file_name,
+    int64* size) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  int64 size = 0;
+  *size = 0;
   base::FilePath db_file =
       DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_.get(), vfs_file_name);
   if (!db_file.empty())
-    size = VfsBackend::GetFileSize(db_file);
-
-  DatabaseHostMsg_GetFileSize::WriteReplyParams(reply_msg, size);
-  Send(reply_msg);
+    *size = VfsBackend::GetFileSize(db_file);
 }
 
 void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
@@ -286,6 +275,16 @@ void DatabaseMessageFilter::OnDatabaseGetUsageAndQuota(
     available = quota - usage;
   DatabaseHostMsg_GetSpaceAvailable::WriteReplyParams(reply_msg, available);
   Send(reply_msg);
+}
+
+void DatabaseMessageFilter::OnDatabaseSetFileSize(
+    const base::string16& vfs_file_name, int64 size, bool* success) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  *success = false;
+  base::FilePath db_file =
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_.get(), vfs_file_name);
+  if (!db_file.empty())
+    *success = VfsBackend::SetFileSize(db_file, size);
 }
 
 void DatabaseMessageFilter::OnDatabaseOpened(

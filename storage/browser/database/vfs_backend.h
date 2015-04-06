@@ -30,6 +30,8 @@ class STORAGE_EXPORT VfsBackend {
 
   static int64 GetFileSize(const base::FilePath& file_path);
 
+  static bool SetFileSize(const base::FilePath& file_path, int64 size);
+
   // Used to make decisions in the DatabaseDispatcherHost.
   static bool OpenTypeIsReadWrite(int desired_flags);
 

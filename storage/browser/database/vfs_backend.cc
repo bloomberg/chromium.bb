@@ -155,4 +155,16 @@ int64 VfsBackend::GetFileSize(const base::FilePath& file_path) {
   return (base::GetFileSize(file_path, &size) ? size : 0);
 }
 
+// static
+bool VfsBackend::SetFileSize(const base::FilePath& file_path, int64 size) {
+  int flags = 0;
+  flags |= base::File::FLAG_READ;
+  flags |= base::File::FLAG_WRITE;
+  flags |= base::File::FLAG_OPEN;
+  base::File file = base::File(file_path, flags);
+  if (!file.IsValid())
+    return false;
+  return file.SetLength(size);
+}
+
 }  // namespace storage

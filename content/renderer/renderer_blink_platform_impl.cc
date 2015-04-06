@@ -623,6 +623,12 @@ long long RendererBlinkPlatformImpl::databaseGetSpaceAvailableForOrigin(
                                                  sync_message_filter_.get());
 }
 
+bool RendererBlinkPlatformImpl::databaseSetFileSize(
+    const WebString& vfs_file_name, long long size) {
+  return DatabaseUtil::DatabaseSetFileSize(
+      vfs_file_name, size, sync_message_filter_.get());
+}
+
 bool RendererBlinkPlatformImpl::canAccelerate2dCanvas() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   GpuChannelHost* host = thread->EstablishGpuChannelSync(

@@ -8,6 +8,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "ipc/ipc_platform_file.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/common/database/database_connections.h"
 #include "storage/common/quota/quota_types.h"
@@ -40,14 +41,17 @@ class DatabaseMessageFilter : public BrowserMessageFilter,
   // VFS message handlers (file thread)
   void OnDatabaseOpenFile(const base::string16& vfs_file_name,
                           int desired_flags,
-                          IPC::Message* reply_msg);
+                          IPC::PlatformFileForTransit* handle);
   void OnDatabaseDeleteFile(const base::string16& vfs_file_name,
                             const bool& sync_dir,
                             IPC::Message* reply_msg);
   void OnDatabaseGetFileAttributes(const base::string16& vfs_file_name,
-                                   IPC::Message* reply_msg);
+                                   int32* attributes);
   void OnDatabaseGetFileSize(const base::string16& vfs_file_name,
-                             IPC::Message* reply_msg);
+                             int64* size);
+  void OnDatabaseSetFileSize(const base::string16& vfs_file_name,
+                             int64 size,
+                             bool* success);
 
   // Quota message handler (io thread)
   void OnDatabaseGetSpaceAvailable(const std::string& origin_identifier,

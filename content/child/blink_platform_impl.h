@@ -61,6 +61,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual long long databaseGetFileSize(const blink::WebString& vfs_file_name);
   virtual long long databaseGetSpaceAvailableForOrigin(
       const blink::WebString& origin_identifier);
+  virtual bool databaseSetFileSize(
+      const blink::WebString& vfs_file_name, long long size);
   virtual blink::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index, const blink::WebString& challenge,
       const blink::WebURL& url);

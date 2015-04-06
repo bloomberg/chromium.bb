@@ -34,6 +34,10 @@ class DatabaseUtil {
   static long long DatabaseGetSpaceAvailable(
       const blink::WebString& origin_identifier,
       IPC::SyncMessageFilter* sync_message_filter);
+  static bool DatabaseSetFileSize(
+      const blink::WebString& vfs_file_name,
+      int64 size,
+      IPC::SyncMessageFilter* sync_message_filter);
 };
 
 }  // namespace content
