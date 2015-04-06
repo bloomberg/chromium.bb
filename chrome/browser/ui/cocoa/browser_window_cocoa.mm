@@ -363,10 +363,7 @@ gfx::Rect BrowserWindowCocoa::GetBounds() const {
 }
 
 bool BrowserWindowCocoa::IsMaximized() const {
-  // -isZoomed returns YES if the window's frame equals the rect returned by
-  // -windowWillUseStandardFrame:defaultFrame:, even if the window is in the
-  // dock, so have to explicitly check for miniaturization state first.
-  return ![window() isMiniaturized] && [window() isZoomed];
+  return [window() isZoomed];
 }
 
 bool BrowserWindowCocoa::IsMinimized() const {
