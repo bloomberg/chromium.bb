@@ -6,6 +6,7 @@
 #define V8ObjectBuilder_h
 
 #include "bindings/core/v8/ToV8.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
@@ -15,7 +16,7 @@ namespace blink {
 class ScriptState;
 class ScriptValue;
 
-class V8ObjectBuilder final {
+class CORE_EXPORT V8ObjectBuilder final {
     STACK_ALLOCATED();
 public:
     explicit V8ObjectBuilder(ScriptState*);

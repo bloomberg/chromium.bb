@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/V8PersistentValueMap.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
+#include "core/CoreExport.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/gin_embedders.h"
 #include "wtf/HashMap.h"
@@ -57,7 +58,7 @@ enum V8ContextEmbedderDataField {
     v8ContextPerContextDataIndex = static_cast<int>(gin::kPerContextDataStartIndex + gin::kEmbedderBlink),
 };
 
-class V8PerContextData {
+class CORE_EXPORT V8PerContextData final {
 public:
     static PassOwnPtr<V8PerContextData> create(v8::Handle<v8::Context>);
 

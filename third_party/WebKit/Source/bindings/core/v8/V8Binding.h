@@ -405,7 +405,7 @@ int16_t toInt16(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfigurat
 // Convert a value to a 16-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-unsigned-short
-uint16_t toUInt16(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT uint16_t toUInt16(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 
 // Convert a value to a 32-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
@@ -919,8 +919,8 @@ template<class Collection> static void indexedPropertyEnumerator(const v8::Prope
     v8SetReturnValue(info, properties);
 }
 
-bool isValidEnum(const String value, const char** validValues, size_t length, const String interfaceName, ExceptionState&);
-bool isValidEnum(const Vector<String>& values, const char** validValues, size_t length, const String interfaceName, ExceptionState&);
+CORE_EXPORT bool isValidEnum(const String value, const char** validValues, size_t length, const String interfaceName, ExceptionState&);
+CORE_EXPORT bool isValidEnum(const Vector<String>& values, const char** validValues, size_t length, const String interfaceName, ExceptionState&);
 
 // These methods store hidden values into an array that is stored in the internal field of a DOM wrapper.
 void addHiddenValueToArray(v8::Isolate*, v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex);

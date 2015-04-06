@@ -31,11 +31,12 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
+#include "core/CoreExport.h"
 #include <v8.h>
 
 namespace blink {
 
-class V8DOMConfiguration {
+class CORE_EXPORT V8DOMConfiguration final {
 public:
     // The following Configuration structs and install methods are used for
     // setting multiple properties on an ObjectTemplate, used from the

@@ -5,6 +5,7 @@
 #ifndef OnStackObjectChecker_h
 #define OnStackObjectChecker_h
 
+#include "core/CoreExport.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 
@@ -19,7 +20,7 @@ class Dictionary;
 // (e.g. Dictionary) for performance reason. This checker is for such objects.
 // The C++ objects to be checked must call add() on creation, and remove() on
 // destruction, respectively.
-class OnStackObjectChecker final {
+class CORE_EXPORT OnStackObjectChecker final {
     WTF_MAKE_NONCOPYABLE(OnStackObjectChecker);
 public:
     OnStackObjectChecker() { }

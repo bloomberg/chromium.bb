@@ -27,6 +27,7 @@
 #define V8ScriptRunner_h
 
 #include "bindings/core/v8/V8CacheOptions.h"
+#include "core/CoreExport.h"
 #include "core/fetch/AccessControlStatus.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"
@@ -42,7 +43,7 @@ class ScriptSourceCode;
 class ExecutionContext;
 class ScriptStreamer;
 
-class V8ScriptRunner {
+class CORE_EXPORT V8ScriptRunner final {
 public:
     // For the following methods, the caller sites have to hold
     // a HandleScope and a ContextScope.

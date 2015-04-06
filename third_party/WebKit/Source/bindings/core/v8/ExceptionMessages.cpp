@@ -160,13 +160,13 @@ String ExceptionMessages::readOnly(const char* detail)
 }
 
 template <>
-String ExceptionMessages::formatNumber<float>(float number)
+CORE_EXPORT String ExceptionMessages::formatNumber<float>(float number)
 {
     return formatPotentiallyNonFiniteNumber(number);
 }
 
 template <>
-String ExceptionMessages::formatNumber<double>(double number)
+CORE_EXPORT String ExceptionMessages::formatNumber<double>(double number)
 {
     return formatPotentiallyNonFiniteNumber(number);
 }

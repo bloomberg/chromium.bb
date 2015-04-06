@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include <v8.h>
@@ -47,7 +48,7 @@ inline v8::Handle<v8::Value> toV8(Node* impl, v8::Handle<v8::Object> creationCon
 // [Custom=ToV8]
 
 v8::Handle<v8::Value> toV8(DOMWindow*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-v8::Handle<v8::Value> toV8(EventTarget*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+CORE_EXPORT v8::Handle<v8::Value> toV8(EventTarget*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 v8::Handle<v8::Value> toV8(WorkerGlobalScope*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 // PassRefPtr, RawPtr and RefPtr
