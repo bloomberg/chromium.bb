@@ -100,10 +100,12 @@ AttributedStringCoder::FontAttribute::FontAttribute()
 AttributedStringCoder::FontAttribute::~FontAttribute() {
 }
 
-NSDictionary* AttributedStringCoder::FontAttribute::ToAttributesDictionary(
-    void) const {
+NSDictionary*
+AttributedStringCoder::FontAttribute::ToAttributesDictionary() const {
   DCHECK(ShouldEncode());
   NSFont* font = font_descriptor_.ToNSFont();
+  if (!font)
+    return [NSDictionary dictionary];
   return [NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName];
 }
 

@@ -21,7 +21,9 @@ struct CONTENT_EXPORT FontDescriptor {
 
   FontDescriptor() : font_point_size(0) {}
 
-  // Return an autoreleased NSFont corresponding to the font description.
+  // Return an autoreleased NSFont corresponding to the font description. Note
+  // that this will return nil if the font specified isn't available in this
+  // process.
   NSFont* ToNSFont() const;
 
   // Name of the font.
