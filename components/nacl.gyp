@@ -227,6 +227,7 @@
               ],
               'dependencies': [
                 'nacl_linux',
+                '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
               ],
               'cflags': ['-fPIE'],
               'ldflags!': [

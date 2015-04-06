@@ -1452,17 +1452,17 @@ class MojoPPAPITest : public InProcessBrowserTest {
   std::string result_;
 };
 
-#if defined(OS_POSIX)
-#define MAYBE_MOJO(test_name) test_name
-#else
-#define MAYBE_MOJO(test_name) DISABLED_##test_name
-#endif
-
-IN_PROC_BROWSER_TEST_F(MojoPPAPITest, MAYBE_MOJO(Mojo)) {
+IN_PROC_BROWSER_TEST_F(MojoPPAPITest, Mojo) {
   RunTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MojoPPAPITest, MAYBE_MOJO(MojoFailsWithoutFlag)) {
+#if defined(OS_WIN)
+#define MAYBE_MojoFailsWithoutFlag DISABLED_MojoFailsWithoutFlag
+#else
+#define MAYBE_MojoFailsWithoutFlag MojoFailsWithoutFlag
+#endif
+
+IN_PROC_BROWSER_TEST_F(MojoPPAPITest, MAYBE_MojoFailsWithoutFlag) {
   RunTestWithoutFlag();
 }
 #endif
