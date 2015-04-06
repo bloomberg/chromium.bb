@@ -26,7 +26,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/CustomFontData.h"
-#include "platform/fonts/FixedPitchFontType.h"
 #include "platform/fonts/FontBaseline.h"
 #include "platform/fonts/FontData.h"
 #include "platform/fonts/FontMetrics.h"
@@ -120,9 +119,6 @@ public:
 
     Glyph glyphForCharacter(UChar32) const;
 
-    void determinePitch();
-    FixedPitchFontType pitch() const { return m_pitch; }
-
     virtual bool isCustomFont() const override { return m_customFontData; }
     virtual bool isLoading() const override { return m_customFontData ? m_customFontData->isLoading() : false; }
     virtual bool isLoadingFallback() const override { return m_customFontData ? m_customFontData->isLoadingFallback() : false; }
@@ -159,8 +155,6 @@ private:
 
     mutable OwnPtr<GlyphMetricsMap<FloatRect>> m_glyphToBoundsMap;
     mutable GlyphMetricsMap<float> m_glyphToWidthMap;
-
-    FixedPitchFontType m_pitch;
 
     bool m_isTextOrientationFallback;
     bool m_isBrokenIdeographFallback;

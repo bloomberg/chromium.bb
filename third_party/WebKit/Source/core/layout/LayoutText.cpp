@@ -716,48 +716,6 @@ ALWAYS_INLINE float LayoutText::widthFromCache(const Font& f, int start, int len
             return combineText->combinedTextWidth(f);
     }
 
-    if (f.isFixedPitch() && f.fontDescription().variant() == FontVariantNormal && m_isAllASCII && (!glyphOverflow || !glyphOverflow->computeBounds)) {
-        bool missingGlyph = false;
-        float monospaceCharacterWidth = f.spaceWidth();
-        float w = 0;
-        bool isSpace;
-        ASSERT(m_text);
-        StringImpl& text = *m_text.impl();
-        const ComputedStyle& computedStyle = styleRef();
-        for (int i = start; i < start + len; i++) {
-            char c = text[i];
-            // If glyph is not present in primary font then we cannot calculate width based on primary
-            // font property, we need to call "width" method of Font Object.
-            if (!f.primaryFontHasGlyphForCharacter(text[i])) {
-                missingGlyph = true;
-                break;
-            }
-            if (c <= space) {
-                if (c == space || c == newlineCharacter) {
-                    w += monospaceCharacterWidth;
-                    isSpace = true;
-                } else if (c == characterTabulation) {
-                    if (computedStyle.collapseWhiteSpace()) {
-                        w += monospaceCharacterWidth;
-                        isSpace = true;
-                    } else {
-                        w += f.tabWidth(computedStyle.tabSize(), xPos + w);
-                        isSpace = false;
-                    }
-                } else {
-                    isSpace = false;
-                }
-            } else {
-                w += monospaceCharacterWidth;
-                isSpace = false;
-            }
-            if (isSpace && i > start)
-                w += f.fontDescription().wordSpacing();
-        }
-        if (!missingGlyph)
-            return w;
-    }
-
     TextRun run = constructTextRun(const_cast<LayoutText*>(this), f, this, start, len, styleRef(), textDirection);
     run.setCharactersLength(textLength() - start);
     ASSERT(run.charactersLength() >= run.length());

@@ -23,7 +23,6 @@
 #define FontSize_h
 
 #include "core/CSSValueKeywords.h"
-#include "platform/fonts/FixedPitchFontType.h"
 
 namespace blink {
 
@@ -52,10 +51,10 @@ public:
 
     // Given a keyword size in the range (1 to 8), this function will return
     // the correct font size scaled relative to the user's default (4).
-    static float fontSizeForKeyword(const Document*, unsigned keyword, FixedPitchFontType);
+    static float fontSizeForKeyword(const Document*, unsigned keyword, bool isMonospace);
 
     // Given a font size in pixel, this function will return legacy font size between 1 and 7.
-    static int legacyFontSize(const Document*, int pixelFontSize, FixedPitchFontType);
+    static int legacyFontSize(const Document*, int pixelFontSize, bool isMonospace);
 };
 
 } // namespace blink

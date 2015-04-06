@@ -346,7 +346,6 @@
       'fonts/Character.cpp',
       'fonts/Character.h',
       'fonts/CustomFontData.h',
-      'fonts/FixedPitchFontType.h',
       'fonts/Font.cpp',
       'fonts/Font.h',
       'fonts/FontBaseline.h',

@@ -442,16 +442,16 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValu
     return zoomAdjustedPixelValue(style->fontDescription().computedPixelSize(), *style);
 }
 
-FixedPitchFontType CSSComputedStyleDeclaration::fixedPitchFontType() const
+bool CSSComputedStyleDeclaration::isMonospaceFont() const
 {
     if (!m_node)
-        return VariablePitchFont;
+        return false;
 
     const ComputedStyle* style = m_node->ensureComputedStyle(m_pseudoElementSpecifier);
     if (!style)
-        return VariablePitchFont;
+        return false;
 
-    return style->fontDescription().fixedPitchFontType();
+    return style->fontDescription().isMonospace();
 }
 
 static void logUnimplementedPropertyID(CSSPropertyID propertyID)

@@ -109,8 +109,6 @@ public:
     int offsetForPosition(const TextRun&, float position, bool includePartialGlyphs) const;
     FloatRect selectionRectForText(const TextRun&, const FloatPoint&, int h, int from = 0, int to = -1, bool accountForGlyphBounds = false) const;
 
-    bool isFixedPitch() const;
-
     // Metrics that we query the FontFallbackList for.
     const FontMetrics& fontMetrics() const { return primaryFont()->fontMetrics(); }
     float spaceWidth() const { return primaryFont()->spaceWidth() + fontDescription().letterSpacing(); }
@@ -187,12 +185,6 @@ inline const FontData* Font::fontDataAt(unsigned index) const
 {
     ASSERT(m_fontFallbackList);
     return m_fontFallbackList->fontDataAt(m_fontDescription, index);
-}
-
-inline bool Font::isFixedPitch() const
-{
-    ASSERT(m_fontFallbackList);
-    return m_fontFallbackList->isFixedPitch(m_fontDescription);
 }
 
 inline FontSelector* Font::fontSelector() const

@@ -120,15 +120,15 @@ static const int strictFontSizeTable[fontSizeTableMax - fontSizeTableMin + 1][to
 // factors for each keyword value.
 static const float fontSizeFactors[totalKeywords] = { 0.60f, 0.75f, 0.89f, 1.0f, 1.2f, 1.5f, 2.0f, 3.0f };
 
-static int inline rowFromMediumFontSizeInRange(const Settings* settings, bool quirksMode, FixedPitchFontType fixedPitchFontType, int& mediumSize)
+static int inline rowFromMediumFontSizeInRange(const Settings* settings, bool quirksMode, bool isMonospace, int& mediumSize)
 {
-    mediumSize = fixedPitchFontType == FixedPitchFont ? settings->defaultFixedFontSize() : settings->defaultFontSize();
+    mediumSize = isMonospace ? settings->defaultFixedFontSize() : settings->defaultFontSize();
     if (mediumSize >= fontSizeTableMin && mediumSize <= fontSizeTableMax)
         return mediumSize - fontSizeTableMin;
     return -1;
 }
 
-float FontSize::fontSizeForKeyword(const Document* document, unsigned keyword, FixedPitchFontType fixedPitchFontType)
+float FontSize::fontSizeForKeyword(const Document* document, unsigned keyword, bool isMonospace)
 {
     ASSERT(keyword >= 1 && keyword <= 8);
     const Settings* settings = document->settings();
@@ -137,7 +137,7 @@ float FontSize::fontSizeForKeyword(const Document* document, unsigned keyword, F
 
     bool quirksMode = document->inQuirksMode();
     int mediumSize = 0;
-    int row = rowFromMediumFontSizeInRange(settings, quirksMode, fixedPitchFontType, mediumSize);
+    int row = rowFromMediumFontSizeInRange(settings, quirksMode, isMonospace, mediumSize);
     if (row >= 0) {
         int col = (keyword - 1);
         return quirksMode ? quirksFontSizeTable[row][col] : strictFontSizeTable[row][col];
@@ -161,7 +161,7 @@ static int findNearestLegacyFontSize(int pixelFontSize, const T* table, int mult
     return totalKeywords - 1;
 }
 
-int FontSize::legacyFontSize(const Document* document, int pixelFontSize, FixedPitchFontType fixedPitchFontType)
+int FontSize::legacyFontSize(const Document* document, int pixelFontSize, bool isMonospace)
 {
     const Settings* settings = document->settings();
     if (!settings)
@@ -169,7 +169,7 @@ int FontSize::legacyFontSize(const Document* document, int pixelFontSize, FixedP
 
     bool quirksMode = document->inQuirksMode();
     int mediumSize = 0;
-    int row = rowFromMediumFontSizeInRange(settings, quirksMode, fixedPitchFontType, mediumSize);
+    int row = rowFromMediumFontSizeInRange(settings, quirksMode, isMonospace, mediumSize);
     if (row >= 0)
         return findNearestLegacyFontSize<int>(pixelFontSize, quirksMode ? quirksFontSizeTable[row] : strictFontSizeTable[row], 1);
 

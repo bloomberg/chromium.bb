@@ -57,7 +57,6 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtr<
     : m_maxCharWidth(-1)
     , m_avgCharWidth(-1)
     , m_platformData(platformData)
-    , m_pitch(UnknownPitchFont)
     , m_isTextOrientationFallback(isTextOrientationFallback)
     , m_isBrokenIdeographFallback(false)
     , m_verticalData(nullptr)
@@ -74,7 +73,6 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtr<
 
 SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic)
     : m_platformData(FontPlatformData(fontSize, syntheticBold, syntheticItalic))
-    , m_pitch(UnknownPitchFont)
     , m_isTextOrientationFallback(false)
     , m_isBrokenIdeographFallback(false)
     , m_verticalData(nullptr)
@@ -254,7 +252,6 @@ void SimpleFontData::platformGlyphInit()
         m_spaceGlyph = 0;
         m_spaceWidth = 0;
         m_zeroGlyph = 0;
-        determinePitch();
         m_zeroWidthSpaceGlyph = 0;
         m_missingGlyphData.fontData = this;
         m_missingGlyphData.glyph = 0;
@@ -271,7 +268,6 @@ void SimpleFontData::platformGlyphInit()
     m_spaceWidth = width;
     m_zeroGlyph = glyphPageZero->glyphForCharacter('0');
     m_fontMetrics.setZeroWidth(widthForGlyph(m_zeroGlyph));
-    determinePitch();
 
     // Force the glyph for ZERO WIDTH SPACE to have zero width, unless it is shared with SPACE.
     // Helvetica is an example of a non-zero width ZERO WIDTH SPACE glyph.
@@ -395,11 +391,6 @@ PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const Fo
 {
     const float scaledSize = lroundf(fontDescription.computedSize() * scaleFactor);
     return SimpleFontData::create(FontPlatformData(m_platformData, scaledSize), isCustomFont() ? CustomFontData::create() : nullptr);
-}
-
-void SimpleFontData::determinePitch()
-{
-    m_pitch = platformData().isFixedPitch() ? FixedPitchFont : VariablePitchFont;
 }
 
 static inline void getSkiaBoundsForGlyph(SkPaint& paint, Glyph glyph, SkRect& bounds)

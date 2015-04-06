@@ -26,7 +26,6 @@
 #define FontDescription_h
 
 #include "platform/FontFamilyNames.h"
-#include "platform/fonts/FixedPitchFontType.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFamily.h"
 #include "platform/fonts/FontFeatureSettings.h"
@@ -149,11 +148,9 @@ public:
     GenericFamilyType genericFamily() const { return static_cast<GenericFamilyType>(m_genericFamily); }
 
     // only use fixed default size when there is only one font family, and that family is "monospace"
-    FixedPitchFontType fixedPitchFontType() const
+    bool isMonospace() const
     {
-        if (genericFamily() == MonospaceFamily && !family().next() && family().family() == FontFamilyNames::webkit_monospace)
-            return FixedPitchFont;
-        return VariablePitchFont;
+        return genericFamily() == MonospaceFamily && !family().next() && family().family() == FontFamilyNames::webkit_monospace;
     }
     Kerning kerning() const { return static_cast<Kerning>(m_kerning); }
     VariantLigatures variantLigatures() const;

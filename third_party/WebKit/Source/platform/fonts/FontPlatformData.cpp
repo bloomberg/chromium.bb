@@ -255,11 +255,6 @@ String FontPlatformData::fontFamilyName() const
     return String(localizedString.fString.c_str());
 }
 
-bool FontPlatformData::isFixedPitch() const
-{
-    return typeface() && typeface()->isFixedPitch();
-}
-
 SkTypeface* FontPlatformData::typeface() const
 {
     return m_typeface.get();

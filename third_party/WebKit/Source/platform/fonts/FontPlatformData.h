@@ -90,7 +90,6 @@ public:
 
     String fontFamilyName() const;
     float size() const { return m_textSize; }
-    bool isFixedPitch() const;
     bool syntheticBold() const { return m_syntheticBold; }
     bool syntheticItalic() const { return m_syntheticItalic; }
 
