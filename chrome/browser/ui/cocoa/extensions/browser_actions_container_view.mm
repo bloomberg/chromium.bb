@@ -120,7 +120,6 @@ const CGFloat kMinimumContainerWidth = 3.0;
       !NSMouseInRect(initialDragPoint_, grippyRect_, [self isFlipped]))
     return;
 
-  lastXPos_ = [self frame].origin.x;
   userIsResizing_ = YES;
 
   [[self appropriateCursorForGrippy] push];
@@ -180,8 +179,6 @@ const CGFloat kMinimumContainerWidth = 3.0;
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionGrippyDraggingNotification
                     object:self];
-
-  lastXPos_ += dX;
 }
 
 - (ViewID)viewID {
@@ -198,7 +195,6 @@ const CGFloat kMinimumContainerWidth = 3.0;
   CGFloat maxAllowedWidth = [self maxAllowedWidth];
   width = std::min(maxAllowedWidth, width);
 
-  lastXPos_ = frame.origin.x;
   CGFloat dX = frame.size.width - width;
   frame.size.width = width;
   NSRect newFrame = NSOffsetRect(frame, dX, 0);
@@ -223,10 +219,6 @@ const CGFloat kMinimumContainerWidth = 3.0;
     [self setFrame:newFrame];
     [self setNeedsDisplay:YES];
   }
-}
-
-- (CGFloat)resizeDeltaX {
-  return [self frame].origin.x - lastXPos_;
 }
 
 - (NSRect)animationEndFrame {

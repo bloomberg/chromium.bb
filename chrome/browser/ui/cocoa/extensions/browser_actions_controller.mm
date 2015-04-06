@@ -514,7 +514,10 @@ void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(
       }
       // We need to set the alpha value in case the container has resized.
       [button setAlphaValue:1.0];
-    } else if ([button superview] == containerView_) {
+    } else if ([button superview] == containerView_ &&
+               ![containerView_ userIsResizing]) {
+      // If the user is resizing, all buttons are (and should be) on the
+      // container view.
       [button removeFromSuperview];
       [button setAlphaValue:0.0];
     }

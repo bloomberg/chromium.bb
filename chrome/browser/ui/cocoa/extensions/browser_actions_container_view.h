@@ -46,9 +46,6 @@ class BrowserActionsContainerViewSizeDelegate {
   // drag.
   NSPoint initialDragPoint_;
 
-  // Used to cache the previous x-pos of the frame rect for resizing purposes.
-  CGFloat lastXPos_;
-
   // The maximum width the container could want; i.e., the width required to
   // display all the icons.
   CGFloat maxDesiredWidth_;
@@ -89,14 +86,8 @@ class BrowserActionsContainerViewSizeDelegate {
 // Sets whether or not tracking (for mouseEntered events) is enabled.
 - (void)setTrackingEnabled:(BOOL)enabled;
 
-// Resizes the container to the given ideal width, adjusting the |lastXPos_| so
-// that |resizeDeltaX| is accurate.
+// Resizes the container to the given ideal width, optionally animating.
 - (void)resizeToWidth:(CGFloat)width animate:(BOOL)animate;
-
-// Returns the change in the x-pos of the frame rect during resizing. Meant to
-// be queried when a NSViewFrameDidChangeNotification is fired to determine
-// placement of surrounding elements.
-- (CGFloat)resizeDeltaX;
 
 // Returns the frame of the container after the running animation has finished.
 // If no animation is running, returns the container's current frame.

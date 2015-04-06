@@ -654,10 +654,8 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
                name:NSWindowDidBecomeKeyNotification
              object:[[self view] window]];
   }
-  CGFloat containerWidth = [browserActionsContainerView_ isHidden] ? 0.0 :
-      NSWidth([browserActionsContainerView_ frame]);
-  if (containerWidth > 0.0)
-    [self adjustLocationSizeBy:(containerWidth * -1) animate:NO];
+  if (![browserActionsContainerView_ isHidden])
+    [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
 }
 
 - (void)adjustBrowserActionsContainerForNewWindow:
@@ -670,10 +668,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 }
 
 - (void)browserActionsContainerDragged:(NSNotification*)notification {
-  CGFloat locationBarWidth = NSWidth([locationBar_ frame]);
-  locationBarAtMinSize_ = locationBarWidth <= kMinimumLocationBarWidth;
-  [self adjustLocationSizeBy:
-      [browserActionsContainerView_ resizeDeltaX] animate:NO];
+  [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
 }
 
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification {

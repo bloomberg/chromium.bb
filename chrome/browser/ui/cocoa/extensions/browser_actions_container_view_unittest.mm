@@ -49,17 +49,12 @@ TEST_F(BrowserActionsContainerViewTest, SetWidthTests) {
   [view_ resizeToWidth:kMinimumContainerWidth - 1 animate:NO];
   EXPECT_EQ(kMinimumContainerWidth, NSWidth([view_ frame])) << "Frame width is "
       << "less than the minimum allowed.";
-  // Since the frame expands to the left, the x-position delta value will be
-  // negative.
-  EXPECT_EQ(-kMinimumContainerWidth, [view_ resizeDeltaX]);
 
   [view_ resizeToWidth:35.0 animate:NO];
   EXPECT_EQ(35.0, NSWidth([view_ frame]));
-  EXPECT_EQ(kMinimumContainerWidth - 35.0, [view_ resizeDeltaX]);
 
   [view_ resizeToWidth:20.0 animate:NO];
   EXPECT_EQ(20.0, NSWidth([view_ frame]));
-  EXPECT_EQ(15.0, [view_ resizeDeltaX]);
 
   // Resize the view with animation. It shouldn't immediately take the new
   // value, but the animationEndFrame should reflect the pending change.
