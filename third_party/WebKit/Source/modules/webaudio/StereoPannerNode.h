@@ -16,7 +16,7 @@ namespace blink {
 // specifically designed for equal-power stereo panning.
 class StereoPannerHandler final : public AudioHandler {
 public:
-    StereoPannerHandler(AudioNode&, float sampleRate);
+    StereoPannerHandler(AudioNode&, float sampleRate, AudioParamHandler& pan);
     virtual ~StereoPannerHandler();
 
     virtual void dispose() override;
@@ -27,13 +27,9 @@ public:
     virtual void setChannelCount(unsigned long, ExceptionState&) final;
     virtual void setChannelCountMode(const String&, ExceptionState&) final;
 
-    DECLARE_VIRTUAL_TRACE();
-
-    AudioParam* pan() { return m_pan.get(); }
-
 private:
     OwnPtr<Spatializer> m_stereoPanner;
-    Member<AudioParam> m_pan;
+    RefPtr<AudioParamHandler> m_pan;
 
     AudioFloatArray m_sampleAccuratePanValues;
 };
@@ -42,11 +38,14 @@ class StereoPannerNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static StereoPannerNode* create(AudioContext*, float sampleRate);
+    DECLARE_VIRTUAL_TRACE();
 
     AudioParam* pan() const;
 
 private:
     StereoPannerNode(AudioContext&, float sampleRate);
+
+    Member<AudioParam> m_pan;
 };
 
 } // namespace blink
