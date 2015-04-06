@@ -41,10 +41,11 @@ testcase.searchBoxFocus = function() {
     // Check that the file list has the focus.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
+      remoteCall.checkNextTabFocus(appId, 'file-list').then(this.next);
     },
     // Check for errors.
-    function(element) {
+    function(result) {
+      chrome.test.assertTrue(result);
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -67,10 +68,7 @@ testcase.tabindexFocus = function() {
     },
     // Press the Tab key.
     function(element) {
-      remoteCall.callRemoteTestUtil('getActiveElement',
-                                    appId,
-                                    [],
-                                    this.next);
+      remoteCall.callRemoteTestUtil('getActiveElement', appId, [], this.next);
     }, function(element) {
       chrome.test.assertEq('list', element.attributes['class']);
       remoteCall.checkNextTabFocus(appId, 'search-button').then(this.next);
@@ -114,10 +112,7 @@ testcase.tabindexFocusDownloads = function() {
     },
     // Press the Tab key.
     function(element) {
-      remoteCall.callRemoteTestUtil('getActiveElement',
-                                    appId,
-                                    [],
-                                    this.next);
+      remoteCall.callRemoteTestUtil('getActiveElement', appId, [], this.next);
     }, function(element) {
       chrome.test.assertEq('list', element.attributes['class']);
       remoteCall.checkNextTabFocus(appId, 'search-button').then(this.next);
@@ -157,10 +152,7 @@ testcase.tabindexFocusDirectorySelected = function() {
     },
     // Press the Tab key.
     function(element) {
-      remoteCall.callRemoteTestUtil('getActiveElement',
-                                    appId,
-                                    [],
-                                    this.next);
+      remoteCall.callRemoteTestUtil('getActiveElement', appId, [], this.next);
     }, function(element) {
       chrome.test.assertEq('list', element.attributes['class']);
       // Select the directory named 'photos'.

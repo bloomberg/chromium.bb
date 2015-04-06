@@ -259,6 +259,19 @@ function FileManagerUI(element, launchParam) {
   // Initialize attributes.
   this.element.setAttribute('type', this.dialogType_);
 
+  // Hack: make menuitems focusable. Since the menuitems in Files.app is not
+  // button so it doesn't have a tabfocus in nature. It prevents Chromevox from
+  // speeaching because the opened menu is closed when the non-focusable object
+  // tries to get the focus.
+  var menuitems = document.querySelectorAll('cr-menu.chrome-menu > :not(hr)');
+  for (var i = 0; i < menuitems.length; i++) {
+    // Make menuitems focusable. The value can be any non-negative value,
+    // because pressing 'Tab' key on menu is handled and we don't need to mind
+    // the taborder and the destination of tabfocus.
+    if (!menuitems[i].hasAttribute('tabindex'))
+      menuitems[i].setAttribute('tabindex', '0');
+  }
+
   // Modify UI default behavior.
   this.element.addEventListener('click', this.onExternalLinkClick_.bind(this));
   this.element.addEventListener('drop', function(e) {
@@ -301,10 +314,23 @@ FileManagerUI.prototype.initAdditionalUI = function(
 
   // Add handlers.
   document.defaultView.addEventListener('resize', this.relayout.bind(this));
-  document.addEventListener('focusout', this.onFocusOut_.bind(this));
 
-  // Set the initial focus.
-  this.onFocusOut_();
+  // Set the initial focus. When there is no focus, the active element is the
+  // <body>.
+  setTimeout(function() {
+    if (document.activeElement === document.body) {
+      var targetElement = null;
+      if (this.dialogType_ == DialogType.SELECT_SAVEAS_FILE) {
+        targetElement = this.dialogFooter.filenameInput;
+      } else if (this.listContainer.currentListType !=
+                 ListContainer.ListType.UNINITIALIZED) {
+        targetElement = this.listContainer.currentList;
+      }
+
+      if (targetElement)
+        targetElement.focus();
+    }
+  }.bind(this), 0);
 };
 
 /**
@@ -385,36 +411,6 @@ FileManagerUI.prototype.onExternalLinkClick_ = function(event) {
 
   if (this.dialogType_ != DialogType.FULL_PAGE)
     this.dialogFooter.cancelButton.click();
-};
-
-/**
- * Re-focuses an element.
- * @private
- */
-FileManagerUI.prototype.onFocusOut_ = function() {
-  setTimeout(function() {
-    // When there is no focus, the active element is the <body>
-    if (document.activeElement !== document.body)
-      return;
-
-    var targetElement;
-    if (this.dialogType_ == DialogType.SELECT_SAVEAS_FILE) {
-      targetElement = this.dialogFooter.filenameInput;
-    } else if (this.listContainer.currentListType !=
-               ListContainer.ListType.UNINITIALIZED) {
-      targetElement = this.listContainer.currentList;
-    } else {
-      return;
-    }
-
-    // Hack: if the tabIndex is disabled, we can assume a modal dialog is
-    // shown. Focus to a button on the dialog instead.
-    if (!targetElement.hasAttribute('tabIndex') || targetElement.tabIndex == -1)
-      targetElement = document.querySelector('button:not([tabIndex="-1"])');
-
-    if (targetElement)
-      targetElement.focus();
-  }.bind(this), 0);
 };
 
 /**

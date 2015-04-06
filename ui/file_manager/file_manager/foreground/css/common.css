@@ -146,6 +146,7 @@ cr-menu.chrome-menu > :not(hr) {
   background-position: right 10px center;
   background-repeat: no-repeat;
   line-height: 32px;
+  outline: none;
   padding: 0 12px;
 }
 
