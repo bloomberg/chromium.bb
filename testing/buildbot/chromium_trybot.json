@@ -155,6 +155,11 @@
     },
     "gcm_unit_tests",
     {
+      "chromium_configs": [
+        "chromium_chromeos",
+        "chromium_chromeos_clang",
+        "chromium_chromeos_ozone"
+      ],
       "swarming": {
         "can_use_on_swarming_builders": true
       },
