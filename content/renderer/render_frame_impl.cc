@@ -3789,6 +3789,10 @@ void RenderFrameImpl::WasShown() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WasShown());
 }
 
+void RenderFrameImpl::WidgetWillClose() {
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WidgetWillClose());
+}
+
 bool RenderFrameImpl::IsHidden() {
   return GetRenderWidget()->is_hidden();
 }

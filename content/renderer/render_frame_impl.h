@@ -185,6 +185,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetRenderWidget();
 
+  DevToolsAgent* devtools_agent() { return devtools_agent_; }
+
   // This is called right after creation with the WebLocalFrame for this
   // RenderFrame. It must be called before Initialize.
   void SetWebFrame(blink::WebLocalFrame* web_frame);
@@ -197,6 +199,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Notifications from RenderWidget.
   void WasHidden();
   void WasShown();
+  void WidgetWillClose();
 
   // Start/Stop loading notifications.
   // TODO(nasko): Those are page-level methods at this time and come from
