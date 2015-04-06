@@ -583,10 +583,12 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   void MoveToPendingDeleteHosts(
       scoped_ptr<RenderFrameHostImpl> render_frame_host);
 
-  // Shutdown all RenderFrameProxyHosts in a SiteInstance. This is called to
-  // shutdown frames when all the frames in a SiteInstance are confirmed to be
-  // swapped out.
-  void ShutdownRenderFrameProxyHostsInSiteInstance(int32 site_instance_id);
+  // If |render_frame_host| is the last remaining active frame in its
+  // SiteInstance, this will shutdown all the RenderFrameProxyHosts in the
+  // SiteInstance. This is appropriate if |render_frame_host| is about to be
+  // destroyed.
+  void ShutdownProxiesIfLastActiveFrameInSiteInstance(
+      RenderFrameHostImpl* render_frame_host);
 
   // Helper method to terminate the pending RenderFrameHost. The frame may be
   // deleted immediately, or it may be kept around in hopes of later reuse.

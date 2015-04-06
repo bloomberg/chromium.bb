@@ -68,17 +68,17 @@ RenderFrameHostManager::RenderFrameHostManager(
 }
 
 RenderFrameHostManager::~RenderFrameHostManager() {
-  if (pending_render_frame_host_)
-    UnsetPendingRenderFrameHost();
-
-  if (speculative_render_frame_host_)
-    UnsetSpeculativeRenderFrameHost();
-
-  if (render_frame_host_ &&
-      render_frame_host_->GetSiteInstance()->active_frame_count() <= 1U) {
-    ShutdownRenderFrameProxyHostsInSiteInstance(
-        render_frame_host_->GetSiteInstance()->GetId());
+  if (pending_render_frame_host_) {
+    scoped_ptr<RenderFrameHostImpl> relic = UnsetPendingRenderFrameHost();
+    ShutdownProxiesIfLastActiveFrameInSiteInstance(relic.get());
   }
+
+  if (speculative_render_frame_host_) {
+    scoped_ptr<RenderFrameHostImpl> relic = UnsetSpeculativeRenderFrameHost();
+    ShutdownProxiesIfLastActiveFrameInSiteInstance(relic.get());
+  }
+
+  ShutdownProxiesIfLastActiveFrameInSiteInstance(render_frame_host_.get());
 
   // Delete any RenderFrameProxyHosts and swapped out RenderFrameHosts.
   // It is important to delete those prior to deleting the current
@@ -604,7 +604,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
   int32 old_site_instance_id =
       old_render_frame_host->GetSiteInstance()->GetId();
   if (!old_render_frame_host->IsRenderFrameLive()) {
-    ShutdownRenderFrameProxyHostsInSiteInstance(old_site_instance_id);
+    ShutdownProxiesIfLastActiveFrameInSiteInstance(old_render_frame_host.get());
     return;
   }
 
@@ -620,8 +620,7 @@ void RenderFrameHostManager::SwapOutOldFrame(
 
     // Also clear out any proxies from this SiteInstance, in case this was the
     // last one keeping other proxies alive.
-    ShutdownRenderFrameProxyHostsInSiteInstance(old_site_instance_id);
-
+    ShutdownProxiesIfLastActiveFrameInSiteInstance(old_render_frame_host.get());
     return;
   }
 
@@ -683,6 +682,7 @@ void RenderFrameHostManager::DiscardUnusedFrame(
       proxy->TakeFrameHostOwnership(render_frame_host.Pass());
   } else {
     // We won't be coming back, so delete this one.
+    ShutdownProxiesIfLastActiveFrameInSiteInstance(render_frame_host.get());
     render_frame_host.reset();
   }
 }
@@ -1761,9 +1761,21 @@ void RenderFrameHostManager::CommitPending() {
         proxy_hosts_.end());
 }
 
-void RenderFrameHostManager::ShutdownRenderFrameProxyHostsInSiteInstance(
-    int32 site_instance_id) {
-  // First remove any swapped out RFH for this SiteInstance from our own list.
+void RenderFrameHostManager::ShutdownProxiesIfLastActiveFrameInSiteInstance(
+    RenderFrameHostImpl* render_frame_host) {
+  if (!render_frame_host)
+    return;
+  if (!RenderFrameHostImpl::IsRFHStateActive(render_frame_host->rfh_state()))
+    return;
+  if (render_frame_host->GetSiteInstance()->active_frame_count() > 1U)
+    return;
+
+  // After |render_frame_host| goes away, there will be no active frames left in
+  // its SiteInstance, so we can delete all proxies created in that SiteInstance
+  // on behalf of frames anywhere in the BrowsingInstance.
+  int32 site_instance_id = render_frame_host->GetSiteInstance()->GetId();
+
+  // First remove any proxies for this SiteInstance from our own list.
   ClearProxiesInSiteInstance(site_instance_id, frame_tree_node_);
 
   // Use the safe RenderWidgetHost iterator for now to find all RenderViewHosts

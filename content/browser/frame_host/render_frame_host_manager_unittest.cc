@@ -401,6 +401,24 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     return manager->pending_frame_host();
   }
 
+  void CrashFrame(TestRenderFrameHost* frame) {
+    // TODO(nick): Standardize how we simulate crashes in content unittests. The
+    // test method |set_render_view_created| should probably be eliminated
+    // altogether, and maybe there should be a CrashProcess() method on
+    // MockRenderProcessHost.
+    ASSERT_TRUE(frame->IsRenderFrameLive());
+    frame->OnMessageReceived(FrameHostMsg_RenderProcessGone(
+        0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
+    RenderProcessHost::RendererClosedDetails details(
+        base::TERMINATION_STATUS_PROCESS_CRASHED, 0);
+    NotificationService::current()->Notify(
+        NOTIFICATION_RENDERER_PROCESS_CLOSED,
+        Source<RenderProcessHost>(frame->GetProcess()),
+        Details<RenderProcessHost::RendererClosedDetails>(&details));
+    frame->GetRenderViewHost()->set_render_view_created(false);
+    ASSERT_FALSE(frame->IsRenderFrameLive());
+  }
+
  private:
   RenderFrameHostManagerTestWebUIControllerFactory factory_;
 };
@@ -963,7 +981,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
   EXPECT_EQ(host, manager->current_frame_host());
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
-  // It's important that the site instance get set on the Web UI page as soon
+  // It's important that the SiteInstance get set on the Web UI page as soon
   // as the navigation starts, rather than lazily after it commits, so we don't
   // try to re-use the SiteInstance/process for non Web UI things that may
   // get loaded in between.
@@ -1401,11 +1419,11 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
-  TestRenderViewHost* rvh1 = test_rvh();
+  TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
 
   // Create a new tab as an opener for the main tab.
   scoped_ptr<TestWebContents> opener1(
-      TestWebContents::Create(browser_context(), rvh1->GetSiteInstance()));
+      TestWebContents::Create(browser_context(), rfh1->GetSiteInstance()));
   RenderFrameHostManager* opener1_manager =
       opener1->GetRenderManagerForTesting();
   contents()->SetOpener(opener1.get());
@@ -1417,43 +1435,33 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   EXPECT_TRUE(opener1_manager->current_frame_host()->IsRenderFrameLive());
 
   // Use a cross-process navigation in the opener to swap out the old RVH.
-  EXPECT_FALSE(opener1_manager->GetSwappedOutRenderViewHost(
-      rvh1->GetSiteInstance()));
+  EXPECT_FALSE(
+      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance()));
   opener1->NavigateAndCommit(kUrl2);
-  EXPECT_TRUE(opener1_manager->GetSwappedOutRenderViewHost(
-      rvh1->GetSiteInstance()));
+  EXPECT_TRUE(
+      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance()));
 
   // Fake a process crash.
-  RenderProcessHost::RendererClosedDetails details(
-      base::TERMINATION_STATUS_PROCESS_CRASHED,
-      0);
-  // TODO(nasko): Investigate whether this test can be made more realistic by
-  // not faking the notification and just doing the RenderProcessGone. This
-  // should also get rid of faking |set_render_view_created()| call below.
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      Source<RenderProcessHost>(rvh1->GetProcess()),
-      Details<RenderProcessHost::RendererClosedDetails>(&details));
-  rvh1->set_render_view_created(false);
+  CrashFrame(rfh1);
 
   // Ensure that the RenderFrameProxyHost stays around and the RenderFrameProxy
   // is deleted.
   RenderFrameProxyHost* render_frame_proxy_host =
-      opener1_manager->GetRenderFrameProxyHost(rvh1->GetSiteInstance());
+      opener1_manager->GetRenderFrameProxyHost(rfh1->GetSiteInstance());
   EXPECT_TRUE(render_frame_proxy_host);
   EXPECT_FALSE(render_frame_proxy_host->is_render_frame_proxy_live());
 
   // Expect the swapped out RVH to exist.
-  EXPECT_TRUE(opener1_manager->GetSwappedOutRenderViewHost(
-                  rvh1->GetSiteInstance()));
+  EXPECT_TRUE(
+      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance()));
 
   // Reload the initial tab. This should recreate the opener's swapped out RVH
   // in the original SiteInstance.
   contents()->GetController().Reload(true);
   contents()->GetMainFrame()->PrepareForCommit();
   EXPECT_EQ(opener1_manager->GetSwappedOutRenderViewHost(
-                rvh1->GetSiteInstance())->GetRoutingID(),
-            test_rvh()->opener_route_id());
+                                 rfh1->GetSiteInstance())->GetRoutingID(),
+            contents()->GetMainFrame()->GetRenderViewHost()->opener_route_id());
 }
 
 // Test that RenderViewHosts created for WebUI navigations are properly
@@ -1833,85 +1841,187 @@ TEST_F(RenderFrameHostManagerTest,
 }
 
 // Test that a pending RenderFrameHost in a non-root frame tree node is properly
-// deleted when the node is detached. Motivated by http://crbug.com/441357
+// deleted when the node is detached. Motivated by http://crbug.com/441357 and
+// http://crbug.com/444955.
 TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSitePerProcess);
+
+  const GURL kUrlA("http://www.google.com/");
+  const GURL kUrlB("http://webkit.org/");
+
+  // Create a page with two child frames.
+  contents()->NavigateAndCommit(kUrlA);
+  contents()->GetMainFrame()->OnCreateChildFrame(
+      contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
+      std::string("frame_name"), SandboxFlags::NONE);
+  contents()->GetMainFrame()->OnCreateChildFrame(
+      contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
+      std::string("frame_name"), SandboxFlags::NONE);
+  RenderFrameHostManager* root_manager =
+      contents()->GetFrameTree()->root()->render_manager();
+  RenderFrameHostManager* iframe1 =
+      contents()->GetFrameTree()->root()->child_at(0)->render_manager();
+  RenderFrameHostManager* iframe2 =
+      contents()->GetFrameTree()->root()->child_at(1)->render_manager();
+
+  // 1) The first navigation.
+  NavigationEntryImpl entryA(NULL /* instance */, -1 /* page_id */, kUrlA,
+                             Referrer(), base::string16() /* title */,
+                             ui::PAGE_TRANSITION_TYPED,
+                             false /* is_renderer_init */);
+  RenderFrameHostImpl* host1 = GetFrameHostForNavigation(iframe1, entryA);
+
+  // The RenderFrameHost created in Init will be reused.
+  EXPECT_TRUE(host1 == iframe1->current_frame_host());
+  EXPECT_FALSE(GetPendingFrameHost(iframe1));
+
+  // Commit.
+  iframe1->DidNavigateFrame(host1, true);
+  // Commit to SiteInstance should be delayed until RenderFrame commit.
+  EXPECT_TRUE(host1 == iframe1->current_frame_host());
+  ASSERT_TRUE(host1);
+  EXPECT_TRUE(host1->GetSiteInstance()->HasSite());
+
+  // 2) Cross-site navigate both frames to next site.
+  NavigationEntryImpl entryB(NULL /* instance */, -1 /* page_id */, kUrlB,
+                             Referrer(kUrlA, blink::WebReferrerPolicyDefault),
+                             base::string16() /* title */,
+                             ui::PAGE_TRANSITION_LINK,
+                             false /* is_renderer_init */);
+  host1 = GetFrameHostForNavigation(iframe1, entryB);
+  RenderFrameHostImpl* host2 = GetFrameHostForNavigation(iframe2, entryB);
+
+  // A new, pending RenderFrameHost should be created in each FrameTreeNode.
+  EXPECT_TRUE(GetPendingFrameHost(iframe1));
+  EXPECT_TRUE(GetPendingFrameHost(iframe2));
+  EXPECT_EQ(host1, GetPendingFrameHost(iframe1));
+  EXPECT_EQ(host2, GetPendingFrameHost(iframe2));
+  EXPECT_TRUE(RenderFrameHostImpl::IsRFHStateActive(
+      GetPendingFrameHost(iframe1)->rfh_state()));
+  EXPECT_TRUE(RenderFrameHostImpl::IsRFHStateActive(
+      GetPendingFrameHost(iframe2)->rfh_state()));
+  EXPECT_NE(GetPendingFrameHost(iframe1), GetPendingFrameHost(iframe2));
+  EXPECT_EQ(GetPendingFrameHost(iframe1)->GetSiteInstance(),
+            GetPendingFrameHost(iframe2)->GetSiteInstance());
+  EXPECT_NE(iframe1->current_frame_host(), GetPendingFrameHost(iframe1));
+  EXPECT_NE(iframe2->current_frame_host(), GetPendingFrameHost(iframe2));
+  EXPECT_FALSE(contents()->cross_navigation_pending())
+      << "There should be no top-level pending navigation.";
+
+  RenderFrameHostDeletedObserver delete_watcher1(GetPendingFrameHost(iframe1));
+  RenderFrameHostDeletedObserver delete_watcher2(GetPendingFrameHost(iframe2));
+  EXPECT_FALSE(delete_watcher1.deleted());
+  EXPECT_FALSE(delete_watcher2.deleted());
+
+  // Keep the SiteInstance alive for testing.
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      GetPendingFrameHost(iframe1)->GetSiteInstance();
+  EXPECT_TRUE(site_instance->HasSite());
+  EXPECT_NE(site_instance, contents()->GetSiteInstance());
+  EXPECT_EQ(2U, site_instance->active_frame_count());
+
+  // Proxies should exist.
+  EXPECT_NE(nullptr,
+            root_manager->GetRenderFrameProxyHost(site_instance.get()));
+  EXPECT_NE(nullptr,
+            iframe1->GetRenderFrameProxyHost(site_instance.get()));
+  EXPECT_NE(nullptr,
+            iframe2->GetRenderFrameProxyHost(site_instance.get()));
+
+  // Detach the first child FrameTreeNode. This should kill the pending host but
+  // not yet destroy proxies in |site_instance| since the other child remains.
+  iframe1->current_frame_host()->OnMessageReceived(
+      FrameHostMsg_Detach(iframe1->current_frame_host()->GetRoutingID()));
+  iframe1 = NULL;  // Was just destroyed.
+
+  EXPECT_TRUE(delete_watcher1.deleted());
+  EXPECT_FALSE(delete_watcher2.deleted());
+  EXPECT_EQ(1U, site_instance->active_frame_count());
+
+  // Proxies should still exist.
+  EXPECT_NE(nullptr,
+            root_manager->GetRenderFrameProxyHost(site_instance.get()));
+  EXPECT_NE(nullptr,
+            iframe2->GetRenderFrameProxyHost(site_instance.get()));
+
+  // Detach the second child FrameTreeNode. This should trigger cleanup of
+  // RenderFrameProxyHosts in |site_instance|.
+  iframe2->current_frame_host()->OnMessageReceived(
+      FrameHostMsg_Detach(iframe2->current_frame_host()->GetRoutingID()));
+  iframe2 = NULL;  // Was just destroyed.
+
+  EXPECT_TRUE(delete_watcher1.deleted());
+  EXPECT_TRUE(delete_watcher2.deleted());
+
+  EXPECT_EQ(0U, site_instance->active_frame_count());
+  EXPECT_EQ(nullptr,
+            root_manager->GetRenderFrameProxyHost(site_instance.get()))
+      << "Proxies should have been cleaned up";
+  EXPECT_TRUE(site_instance->HasOneRef())
+      << "This SiteInstance should be destroyable now.";
+}
+
+// Two tabs in the same process crash. The first tab is reloaded, and the second
+// tab navigates away without reloading. The second tab's navigation shouldn't
+// mess with the first tab's content. Motivated by http://crbug.com/473714.
+TEST_F(RenderFrameHostManagerTest, TwoTabsCrashOneReloadsOneLeaves) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kSitePerProcess);
 
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://webkit.org/");
+  const GURL kUrl3("http://whatwg.org/");
 
-  RenderFrameHostImpl* host = NULL;
+  // |contents1| and |contents2| navigate to the same page and then crash.
+  TestWebContents* contents1 = contents();
+  scoped_ptr<TestWebContents> contents2(
+      TestWebContents::Create(browser_context(), contents1->GetSiteInstance()));
+  contents1->NavigateAndCommit(kUrl1);
+  contents2->NavigateAndCommit(kUrl1);
+  CrashFrame(contents1->GetMainFrame());
+  CrashFrame(contents2->GetMainFrame());
 
-  contents()->NavigateAndCommit(kUrl1);
-  contents()->GetMainFrame()->OnCreateChildFrame(
-      contents()->GetMainFrame()->GetProcess()->GetNextRoutingID(),
+  EXPECT_EQ(contents1->GetSiteInstance(), contents2->GetSiteInstance());
+
+  // Reload |contents1|.
+  contents1->NavigateAndCommit(kUrl1);
+  EXPECT_TRUE(contents1->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_FALSE(contents2->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_EQ(contents1->GetSiteInstance(), contents2->GetSiteInstance());
+
+  // |contents1| creates an out of process iframe.
+  contents1->GetMainFrame()->OnCreateChildFrame(
+      contents1->GetMainFrame()->GetProcess()->GetNextRoutingID(),
       std::string("frame_name"), SandboxFlags::NONE);
-  RenderFrameHostManager* manager =
+  RenderFrameHostManager* iframe =
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
+  NavigationEntryImpl entry(NULL /* instance */, -1 /* page_id */, kUrl2,
+                            Referrer(kUrl1, blink::WebReferrerPolicyDefault),
+                            base::string16() /* title */,
+                            ui::PAGE_TRANSITION_LINK,
+                            false /* is_renderer_init */);
+  RenderFrameHostImpl* cross_site = GetFrameHostForNavigation(iframe, entry);
+  iframe->DidNavigateFrame(cross_site, true);
 
-  // 1) The first navigation. --------------------------
-  NavigationEntryImpl entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
-                             Referrer(), base::string16() /* title */,
-                             ui::PAGE_TRANSITION_TYPED,
-                             false /* is_renderer_init */);
-  host = GetFrameHostForNavigation(manager, entry1);
+  // A proxy to the iframe should now exist in the SiteInstance of the main
+  // frames.
+  EXPECT_NE(cross_site->GetSiteInstance(), contents1->GetSiteInstance());
+  EXPECT_NE(nullptr,
+            iframe->GetRenderFrameProxyHost(contents1->GetSiteInstance()));
+  EXPECT_NE(nullptr,
+            iframe->GetRenderFrameProxyHost(contents2->GetSiteInstance()));
 
-  // The RenderFrameHost created in Init will be reused.
-  EXPECT_TRUE(host == manager->current_frame_host());
-  EXPECT_FALSE(GetPendingFrameHost(manager));
-
-  // Commit.
-  manager->DidNavigateFrame(host, true);
-  // Commit to SiteInstance should be delayed until RenderFrame commit.
-  EXPECT_TRUE(host == manager->current_frame_host());
-  ASSERT_TRUE(host);
-  EXPECT_TRUE(host->GetSiteInstance()->HasSite());
-
-  // 2) Cross-site navigate to next site. --------------
-  NavigationEntryImpl entry2(NULL /* instance */, -1 /* page_id */, kUrl2,
-                             Referrer(kUrl1, blink::WebReferrerPolicyDefault),
-                             base::string16() /* title */,
-                             ui::PAGE_TRANSITION_LINK,
-                             false /* is_renderer_init */);
-  host = GetFrameHostForNavigation(manager, entry2);
-
-  // A new RenderFrameHost should be created.
-  EXPECT_TRUE(GetPendingFrameHost(manager));
-  ASSERT_EQ(host, GetPendingFrameHost(manager));
-  ASSERT_NE(manager->current_frame_host(), GetPendingFrameHost(manager));
-  EXPECT_FALSE(contents()->cross_navigation_pending())
-      << "There should be no top-level pending navigation.";
-
-  RenderFrameHostDeletedObserver delete_watcher(GetPendingFrameHost(manager));
-  EXPECT_FALSE(delete_watcher.deleted());
-
-  // Extend the lifetime of the child frame's SiteInstance, pretending
-  // that there is another reference to it.
-  scoped_refptr<SiteInstanceImpl> site_instance =
-      GetPendingFrameHost(manager)->GetSiteInstance();
-  EXPECT_TRUE(site_instance->HasSite());
-  EXPECT_NE(site_instance, contents()->GetSiteInstance());
-  EXPECT_EQ(1U, site_instance->active_frame_count());
-  site_instance->increment_active_frame_count();
-  EXPECT_EQ(2U, site_instance->active_frame_count());
-
-  // Now detach the child FrameTreeNode. This should kill the pending host.
-  manager->current_frame_host()->OnMessageReceived(
-      FrameHostMsg_Detach(manager->current_frame_host()->GetRoutingID()));
-
-  EXPECT_TRUE(delete_watcher.deleted());
-
-  EXPECT_EQ(1U, site_instance->active_frame_count());
-  site_instance->decrement_active_frame_count();
-
-#if 0
-  // TODO(nick): Currently a proxy to the removed frame lingers in the parent.
-  // Enable this assert below once the proxies to the subframe are correctly
-  // cleaned up after detach. http://crbug.com/444955.
-  ASSERT_TRUE(site_instance->HasOneRef())
-      << "This SiteInstance should be destroyable now.";
-#endif
+  // Navigate |contents2| away from the sad tab (and thus away from the
+  // SiteInstance of |contents1|). This should not destroy the proxies needed by
+  // |contents1| -- that was http://crbug.com/473714.
+  EXPECT_FALSE(contents2->GetMainFrame()->IsRenderFrameLive());
+  contents2->NavigateAndCommit(kUrl3);
+  EXPECT_TRUE(contents2->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_NE(nullptr,
+            iframe->GetRenderFrameProxyHost(contents1->GetSiteInstance()));
+  EXPECT_EQ(nullptr,
+            iframe->GetRenderFrameProxyHost(contents2->GetSiteInstance()));
 }
 
 }  // namespace content
