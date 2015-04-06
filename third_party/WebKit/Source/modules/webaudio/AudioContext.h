@@ -297,6 +297,7 @@ public:
     void derefFinishedSourceNodes();
 
     void registerLiveNode(AudioNode&);
+    void unregisterLiveNode(AudioNode&);
 
     // Keeps track of the number of connections made.
     void incrementConnectionCount()
@@ -417,15 +418,12 @@ private:
     // excessive number of times.
     bool m_isResolvingResumePromises;
 
-    class AudioNodeDisposer {
-    public:
-        explicit AudioNodeDisposer(AudioNode& node) : m_node(node) { }
-        ~AudioNodeDisposer();
-
-    private:
-        AudioNode& m_node;
-    };
-    HeapHashMap<WeakMember<AudioNode>, OwnPtr<AudioNodeDisposer>> m_liveNodes;
+    // Conceptually, this should be HeapHashSet<WeakMember<AudioNode>>. However
+    // AudioNode also registers its pre-finalizer to the GC system, and having
+    // another weak set would make the GC system slower. The AudioNode
+    // pre-finalizer removes a member of this HashSet.
+    GC_PLUGIN_IGNORE("http://crbug.com/404527")
+    HashSet<AudioNode*> m_liveNodes;
 
     unsigned m_connectionCount;
 

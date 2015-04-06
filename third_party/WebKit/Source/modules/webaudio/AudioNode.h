@@ -264,6 +264,7 @@ protected:
 class AudioNode : public RefCountedGarbageCollectedEventTargetWithInlineData<AudioNode> {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioNode>);
     DEFINE_WRAPPERTYPEINFO();
+    USING_PRE_FINALIZER(AudioNode, dispose);
 public:
     DECLARE_VIRTUAL_TRACE();
     AudioHandler& handler() const;
@@ -297,6 +298,8 @@ protected:
     void setHandler(AudioHandler*);
 
 private:
+    void dispose();
+
     Member<AudioContext> m_context;
     Member<AudioHandler> m_handler;
 };

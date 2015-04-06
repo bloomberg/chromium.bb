@@ -1001,14 +1001,13 @@ void DeferredTaskHandler::breakConnections()
 void AudioContext::registerLiveNode(AudioNode& node)
 {
     ASSERT(isMainThread());
-    m_liveNodes.add(&node, adoptPtr(new AudioNodeDisposer(node)));
+    m_liveNodes.add(&node);
 }
 
-AudioContext::AudioNodeDisposer::~AudioNodeDisposer()
+void AudioContext::unregisterLiveNode(AudioNode& node)
 {
     ASSERT(isMainThread());
-    AudioContext::AutoLocker locker(m_node.context());
-    m_node.handler().dispose();
+    m_liveNodes.remove(&node);
 }
 
 void DeferredTaskHandler::disposeOutputs(AudioHandler& node)
@@ -1261,7 +1260,6 @@ DEFINE_TRACE(AudioContext)
     }
     visitor->trace(m_resumeResolvers);
     visitor->trace(m_suspendResolvers);
-    visitor->trace(m_liveNodes);
     RefCountedGarbageCollectedEventTargetWithInlineData<AudioContext>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
@@ -1320,7 +1318,7 @@ ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
     // Before closing the context go and disconnect all nodes, allowing them to be collected. This
     // will also break any connections to the destination node. Any unfinished sourced nodes will
     // get stopped when the context is unitialized.
-    for (auto& node : m_liveNodes.keys()) {
+    for (auto& node : m_liveNodes) {
         if (node) {
             for (unsigned k = 0; k < node->numberOfOutputs(); ++k)
                 node->handler().disconnectWithoutException(k);

@@ -60,7 +60,6 @@ AudioHandler::AudioHandler(NodeType nodeType, AudioNode& node, float sampleRate)
 {
     setNodeType(nodeType);
 
-    m_context->registerLiveNode(node);
 #if DEBUG_AUDIONODE_REFERENCES
     if (!s_isNodeCountInitialized) {
         s_isNodeCountInitialized = true;
@@ -847,6 +846,16 @@ AudioNode::AudioNode(AudioContext& context)
     : m_context(context)
     , m_handler(nullptr)
 {
+    m_context->registerLiveNode(*this);
+    ThreadState::current()->registerPreFinalizer(*this);
+}
+
+void AudioNode::dispose()
+{
+    ASSERT(isMainThread());
+    context()->unregisterLiveNode(*this);
+    AudioContext::AutoLocker locker(context());
+    handler().dispose();
 }
 
 void AudioNode::setHandler(AudioHandler* handler)
