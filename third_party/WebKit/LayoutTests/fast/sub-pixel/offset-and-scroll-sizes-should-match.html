@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<style>
+#test {
+    width: 200.5px;
+    height: 200.5px;
+}
+</style>
+<body>
+<div id="test"></div>
+<script>
+var test = document.getElementById("test");
+shouldBeTrue("test.scrollWidth == test.offsetWidth");
+shouldBeTrue("test.scrollHeight == test.offsetHeight");
+</script>

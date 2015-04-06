@@ -799,7 +799,7 @@ int Element::scrollWidth()
 {
     document().updateLayoutIgnorePendingStylesheets();
     if (LayoutBox* box = layoutBox())
-        return adjustLayoutUnitForAbsoluteZoom(box->scrollWidth(), *box).toDouble();
+        return adjustLayoutUnitForAbsoluteZoom(box->scrollWidth(), *box).round();
     return 0;
 }
 
@@ -807,7 +807,7 @@ int Element::scrollHeight()
 {
     document().updateLayoutIgnorePendingStylesheets();
     if (LayoutBox* box = layoutBox())
-        return adjustLayoutUnitForAbsoluteZoom(box->scrollHeight(), *box).toDouble();
+        return adjustLayoutUnitForAbsoluteZoom(box->scrollHeight(), *box).round();
     return 0;
 }
 
