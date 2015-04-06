@@ -4,10 +4,7 @@
     {
       "bounds": [2008, 2016],
       "contentsOpaque": true,
-      "drawsContent": true,
-      "repaintRects": [
-        [8, 8, 50, 50]
-      ]
+      "drawsContent": true
     }
   ]
 }

@@ -188,9 +188,6 @@ bool LayoutImage::intersectsVisibleViewport()
 
 PaintInvalidationReason LayoutImage::invalidatePaintIfNeeded(PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return LayoutReplaced::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
-
     if (!imageResource() || !imageResource()->image() || !imageResource()->image()->maybeAnimated()
         || intersectsVisibleViewport()) {
         return LayoutReplaced::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
