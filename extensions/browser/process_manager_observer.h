@@ -13,6 +13,7 @@ class RenderFrameHost;
 
 namespace extensions {
 class Extension;
+class ExtensionHost;
 
 class ProcessManagerObserver {
  public:
