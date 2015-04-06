@@ -891,7 +891,7 @@ bool Position::isCandidate() const
     if (isHTMLHtmlElement(*m_anchorNode))
         return false;
 
-    if (renderer->isLayoutBlockFlow() || renderer->isFlexibleBox() || renderer->isLayoutGrid()) {
+    if (renderer->isLayoutBlockFlow() || renderer->isLayoutGrid()) {
         if (toLayoutBlock(renderer)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
             if (!Position::hasRenderedNonAnonymousDescendantsWithHeight(renderer))
                 return atFirstEditingPositionForNode() && !Position::nodeIsUserSelectNone(deprecatedNode());
