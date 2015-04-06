@@ -552,7 +552,7 @@ void DOMWebSocket::setBinaryType(const String& binaryType)
         m_binaryType = BinaryTypeArrayBuffer;
         return;
     }
-    ASSERT_NOT_REACHED();
+    logError("'" + binaryType + "' is not a valid value for binaryType; binaryType remains unchanged.");
 }
 
 const AtomicString& DOMWebSocket::interfaceName() const
