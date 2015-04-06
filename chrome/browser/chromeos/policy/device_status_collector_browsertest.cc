@@ -866,7 +866,8 @@ TEST_F(DeviceStatusCollectorTest, TestAvailableMemory) {
   EXPECT_GT(status_.system_ram_total(), 0);
 }
 
-TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
+// Test is disabled because it is flaky on Asan bot (See crbug.com/474325)
+TEST_F(DeviceStatusCollectorTest, DISABLED_TestCPUSamples) {
   // Mock 100% CPU usage.
   std::string full_cpu_usage("cpu  500 0 500 0 0 0 0");
   RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
