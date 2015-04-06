@@ -17,9 +17,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (229,18) size 5x18
           text run at (229,18) width 5: "."
       LayoutBlockFlow {P} at (0,52) size 784x18
-        LayoutText {#text} at (0,0) size 761x18
-          text run at (0,0) width 317: "There should not be scroll bars below the popup. "
-          text run at (316,0) width 445: "There should be scrollbars below the button (see crbug.com/465429)."
+        LayoutText {#text} at (0,0) size 408x18
+          text run at (0,0) width 408: "There should not be scroll bars below the popup and the button."
 layer at (8,94) size 100x50
   LayoutBlockFlow {DIV} at (0,86) size 100x50
     LayoutMenuList {SELECT} at (0,0) size 80x18 [bgcolor=#F8F8F8]
@@ -27,7 +26,7 @@ layer at (8,94) size 100x50
         LayoutText at (8,2) size 148x13
           text run at (8,2) width 148: "Lorem ipsum dolor sit amet"
     LayoutText {#text} at (0,0) size 0x0
-layer at (8,164) size 100x50 clip at (8,164) size 100x35 scrollWidth 156
+layer at (8,164) size 100x50
   LayoutBlockFlow {DIV} at (0,156) size 100x50
     LayoutButton {BUTTON} at (0,0) size 80x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
       LayoutBlockFlow (anonymous) at (8,2) size 64x13

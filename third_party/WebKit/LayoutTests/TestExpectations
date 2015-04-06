@@ -239,12 +239,6 @@ crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/med
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-idl.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-removetrack.html [ Skip ]
 
-
-crbug.com/465429 fast/forms/control-clip-overflow.html [ NeedsRebaseline ]
-crbug.com/465429 fast/forms/control-clip.html [ NeedsRebaseline ]
-crbug.com/465429 virtual/slimmingpaint/fast/forms/control-clip-overflow.html [ NeedsRebaseline ]
-crbug.com/465429 virtual/slimmingpaint/fast/forms/control-clip.html [ NeedsRebaseline ]
-
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-optional-constraint.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-trivial-constraint.html [ Failure ]
