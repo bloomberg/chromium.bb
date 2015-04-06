@@ -290,11 +290,11 @@ TEST(SecurityTest, MAYBE_NewOverflow) {
 // Call calloc(), eventually free the memory and return whether or not
 // calloc() did succeed.
 bool CallocReturnsNull(size_t nmemb, size_t size) {
+  // We need the two calls to HideValueFromCompiler(): we have seen LLVM
+  // optimize away the call to calloc() entirely and assume the pointer to not
+  // be NULL.
   scoped_ptr<char, base::FreeDeleter> array_pointer(
-      static_cast<char*>(calloc(nmemb, size)));
-  // We need the call to HideValueFromCompiler(): we have seen LLVM
-  // optimize away the call to calloc() entirely and assume
-  // the pointer to not be NULL.
+      static_cast<char*>(HideValueFromCompiler(calloc(nmemb, size))));
   return HideValueFromCompiler(array_pointer.get()) == NULL;
 }
 
