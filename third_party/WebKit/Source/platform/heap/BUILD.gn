@@ -15,6 +15,7 @@ source_set("heap") {
     "Heap.cpp",
     "Heap.h",
     "InlinedGlobalMarkingVisitor.h",
+    "MarkingVisitor.h",
     "MarkingVisitorImpl.h",
     "StackFrameDepth.cpp",
     "StackFrameDepth.h",

@@ -40,6 +40,7 @@
       'Heap.cpp',
       'Heap.h',
       'InlinedGlobalMarkingVisitor.h',
+      'MarkingVisitor.h',
       'MarkingVisitorImpl.h',
       'SafePoint.cpp',
       'SafePoint.h',
