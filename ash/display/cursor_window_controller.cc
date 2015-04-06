@@ -17,6 +17,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/image/image_skia.h"
@@ -49,7 +50,9 @@ class CursorWindowDelegate : public aura::WindowDelegate {
   bool CanFocus() override { return false; }
   void OnCaptureLost() override {}
   void OnPaint(const ui::PaintContext& context) override {
-    context.canvas()->DrawImageInt(cursor_image_, 0, 0);
+    // No need to cache the output here, the CursorWindow is not invalidated.
+    ui::PaintRecorder recorder(context);
+    recorder.canvas()->DrawImageInt(cursor_image_, 0, 0);
   }
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
   void OnWindowDestroying(aura::Window* window) override {}
