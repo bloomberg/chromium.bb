@@ -1380,13 +1380,24 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * TODO(dtrainor): Remove after method is no longer used downstream.
      * Used to get a list of Android {@link View}s that represent both the normal content as well as
-     * overlays.
+     * overlays.  This does not return {@link View}s for {@link NativePage}s.
      * @param content A {@link List} that will be populated with {@link View}s that represent all of
      *                the content in this {@link Tab}.
      */
     public void getAllViews(List<View> content) {
-        content.add(getView());
+        getAllContentViews(content);
+    }
+
+    /**
+     * Used to get a list of Android {@link View}s that represent both the normal content as well as
+     * overlays.  This does not return {@link View}s for {@link NativePage}s.
+     * @param content A {@link List} that will be populated with {@link View}s that represent all of
+     *                the content in this {@link Tab}.
+     */
+    public void getAllContentViews(List<View> content) {
+        if (!isNativePage()) content.add(getView());
         for (int i = 0; i < mOverlayContentViewCores.size(); i++) {
             content.add(mOverlayContentViewCores.get(i).getContainerView());
         }

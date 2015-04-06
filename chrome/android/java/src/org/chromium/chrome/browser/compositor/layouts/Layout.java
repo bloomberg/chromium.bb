@@ -221,15 +221,26 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
+     * TODO(dtrainor): Remove after method is no longer used downstream.
      * Used to get a list of Android {@link View}s that represent both the normal content as well as
      * overlays.
      * @param views A {@link List} that will be populated with {@link View}s that represent all of
      *                the content in this {@link Layout}.
      */
     public void getAllViews(List<View> views) {
+        getAllContentViews(views);
+    }
+
+    /**
+     * Used to get a list of Android {@link View}s that represent both the normal content as well as
+     * overlays.
+     * @param views A {@link List} that will be populated with {@link View}s that represent all of
+     *                the content in this {@link Layout}.
+     */
+    public void getAllContentViews(List<View> views) {
         Tab tab = mTabModelSelector.getCurrentTab();
         if (tab == null) return;
-        tab.getAllViews(views);
+        tab.getAllContentViews(views);
     }
 
     /**
