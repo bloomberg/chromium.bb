@@ -5,14 +5,21 @@
 #include "ash/shell/content_client/shell_content_browser_client.h"
 
 #include "ash/shell/content_client/shell_browser_main_parts.h"
+#include "content/public/common/content_descriptors.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "gin/v8_initializer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace ash {
 namespace shell {
 
 ShellContentBrowserClient::ShellContentBrowserClient()
-    : shell_browser_main_parts_(NULL) {
+    :
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+      v8_natives_fd_(-1),
+      v8_snapshot_fd_(-1),
+#endif  // OS_POSIX && !OS_MACOSX
+      shell_browser_main_parts_(nullptr) {
 }
 
 ShellContentBrowserClient::~ShellContentBrowserClient() {
@@ -33,6 +40,28 @@ net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
   return shell_context->CreateRequestContext(protocol_handlers,
                                              request_interceptors.Pass());
 }
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
+    const base::CommandLine& command_line,
+    int child_process_id,
+    content::FileDescriptorInfo* mappings) {
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  if (v8_natives_fd_.get() == -1 || v8_snapshot_fd_.get() == -1) {
+    int v8_natives_fd = -1;
+    int v8_snapshot_fd = -1;
+    if (gin::V8Initializer::OpenV8FilesForChildProcesses(&v8_natives_fd,
+                                                         &v8_snapshot_fd)) {
+      v8_natives_fd_.reset(v8_natives_fd);
+      v8_snapshot_fd_.reset(v8_snapshot_fd);
+    }
+  }
+  DCHECK(v8_natives_fd_.get() != -1 && v8_snapshot_fd_.get() != -1);
+  mappings->Share(kV8NativesDataDescriptor, v8_natives_fd_.get());
+  mappings->Share(kV8SnapshotDataDescriptor, v8_snapshot_fd_.get());
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+}
+#endif  // OS_POSIX && !OS_MACOSX
 
 content::ShellBrowserContext* ShellContentBrowserClient::browser_context() {
   return shell_browser_main_parts_->browser_context();

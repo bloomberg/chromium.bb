@@ -49,6 +49,12 @@ class GIN_EXPORT V8Initializer {
   // snapshot is already loaded, false otherwise.
   static bool LoadV8Snapshot();
 
+  // Opens the V8 snapshot data files and returns open file descriptors to these
+  // files in |natives_fd_out| and |snapshot_fd_out|, which can be passed to
+  // child processes.
+  static bool OpenV8FilesForChildProcesses(base::PlatformFile* natives_fd_out,
+                                           base::PlatformFile* snapshot_fd_out);
+
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 };
 

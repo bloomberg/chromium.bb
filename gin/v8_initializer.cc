@@ -24,15 +24,47 @@ namespace gin {
 
 namespace {
 
-bool GenerateEntropy(unsigned char* buffer, size_t amount) {
-  base::RandBytes(buffer, amount);
-  return true;
-}
-
 base::MemoryMappedFile* g_mapped_natives = nullptr;
 base::MemoryMappedFile* g_mapped_snapshot = nullptr;
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#if !defined(OS_MACOSX)
+const int kV8SnapshotBasePathKey =
+#if defined(OS_ANDROID)
+    base::DIR_ANDROID_APP_DATA;
+#elif defined(OS_POSIX)
+    base::DIR_EXE;
+#elif defined(OS_WIN)
+    base::DIR_MODULE;
+#endif  // OS_ANDROID
+#endif  // !OS_MACOSX
+
+const char kNativesFileName[] = "natives_blob.bin";
+const char kSnapshotFileName[] = "snapshot_blob.bin";
+
+void GetV8FilePaths(base::FilePath* natives_path_out,
+                    base::FilePath* snapshot_path_out) {
+#if !defined(OS_MACOSX)
+  base::FilePath data_path;
+  PathService::Get(kV8SnapshotBasePathKey, &data_path);
+  DCHECK(!data_path.empty());
+
+  *natives_path_out = data_path.AppendASCII(kNativesFileName);
+  *snapshot_path_out = data_path.AppendASCII(kSnapshotFileName);
+#else   // !defined(OS_MACOSX)
+  base::ScopedCFTypeRef<CFStringRef> natives_file_name(
+      base::SysUTF8ToCFStringRef(kNativesFileName));
+  *natives_path_out =
+      base::mac::PathForFrameworkBundleResource(natives_file_name);
+  base::ScopedCFTypeRef<CFStringRef> snapshot_file_name(
+      base::SysUTF8ToCFStringRef(kSnapshotFileName));
+  *snapshot_path_out =
+      base::mac::PathForFrameworkBundleResource(snapshot_file_name);
+  DCHECK(!natives_path_out->empty());
+  DCHECK(!snapshot_path_out->empty());
+#endif  // !defined(OS_MACOSX)
+}
+
 bool MapV8Files(base::File natives_file,
                 base::File snapshot_file,
                 base::MemoryMappedFile::Region natives_region =
@@ -75,58 +107,32 @@ bool VerifyV8SnapshotFile(base::MemoryMappedFile* snapshot_file,
 #endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
+bool GenerateEntropy(unsigned char* buffer, size_t amount) {
+  base::RandBytes(buffer, amount);
+  return true;
+}
+
 }  // namespace
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-
 #if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
 // Defined in gen/gin/v8_snapshot_fingerprint.cc
 extern const unsigned char g_natives_fingerprint[];
 extern const unsigned char g_snapshot_fingerprint[];
 #endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
 
-#if !defined(OS_MACOSX)
-const int V8Initializer::kV8SnapshotBasePathKey =
-#if defined(OS_ANDROID)
-    base::DIR_ANDROID_APP_DATA;
-#elif defined(OS_POSIX)
-    base::DIR_EXE;
-#elif defined(OS_WIN)
-    base::DIR_MODULE;
-#endif  // OS_ANDROID
-#endif  // !OS_MACOSX
-
-const char V8Initializer::kNativesFileName[] = "natives_blob.bin";
-const char V8Initializer::kSnapshotFileName[] = "snapshot_blob.bin";
-
 // static
 bool V8Initializer::LoadV8Snapshot() {
   if (g_mapped_natives && g_mapped_snapshot)
     return true;
 
-#if !defined(OS_MACOSX)
-  base::FilePath data_path;
-  PathService::Get(kV8SnapshotBasePathKey, &data_path);
-  DCHECK(!data_path.empty());
-
-  base::FilePath natives_path = data_path.AppendASCII(kNativesFileName);
-  base::FilePath snapshot_path = data_path.AppendASCII(kSnapshotFileName);
-#else   // !defined(OS_MACOSX)
-  base::ScopedCFTypeRef<CFStringRef> natives_file_name(
-      base::SysUTF8ToCFStringRef(kNativesFileName));
-  base::FilePath natives_path =
-      base::mac::PathForFrameworkBundleResource(natives_file_name);
-  base::ScopedCFTypeRef<CFStringRef> snapshot_file_name(
-      base::SysUTF8ToCFStringRef(kSnapshotFileName));
-  base::FilePath snapshot_path =
-      base::mac::PathForFrameworkBundleResource(snapshot_file_name);
-  DCHECK(!natives_path.empty());
-  DCHECK(!snapshot_path.empty());
-#endif  // !defined(OS_MACOSX)
+  base::FilePath natives_data_path;
+  base::FilePath snapshot_data_path;
+  GetV8FilePaths(&natives_data_path, &snapshot_data_path);
 
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-  if (!MapV8Files(base::File(natives_path, flags),
-                  base::File(snapshot_path, flags)))
+  if (!MapV8Files(base::File(natives_data_path, flags),
+                  base::File(snapshot_data_path, flags)))
     return false;
 
 #if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
@@ -163,6 +169,26 @@ bool V8Initializer::LoadV8SnapshotFromFD(base::PlatformFile natives_pf,
 
   return MapV8Files(base::File(natives_pf), base::File(snapshot_pf),
                     natives_region, snapshot_region);
+}
+
+// static
+bool V8Initializer::OpenV8FilesForChildProcesses(
+    base::PlatformFile* natives_fd_out,
+    base::PlatformFile* snapshot_fd_out) {
+  base::FilePath natives_data_path;
+  base::FilePath snapshot_data_path;
+  GetV8FilePaths(&natives_data_path, &snapshot_data_path);
+
+  int file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+  base::File natives_data_file(natives_data_path, file_flags);
+  base::File snapshot_data_file(snapshot_data_path, file_flags);
+
+  if (!natives_data_file.IsValid() || !snapshot_data_file.IsValid())
+    return false;
+
+  *natives_fd_out = natives_data_file.TakePlatformFile();
+  *snapshot_fd_out = snapshot_data_file.TakePlatformFile();
+  return true;
 }
 
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA

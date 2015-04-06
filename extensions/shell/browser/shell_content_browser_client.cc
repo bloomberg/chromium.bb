@@ -8,6 +8,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -26,6 +27,7 @@
 #include "extensions/shell/browser/shell_browser_main_parts.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/browser/shell_speech_recognition_manager_delegate.h"
+#include "gin/v8_initializer.h"
 #include "url/gurl.h"
 
 #if !defined(DISABLE_NACL)
@@ -45,19 +47,25 @@ using content::BrowserThread;
 namespace extensions {
 namespace {
 
-ShellContentBrowserClient* g_instance = NULL;
+ShellContentBrowserClient* g_instance = nullptr;
 
 }  // namespace
 
 ShellContentBrowserClient::ShellContentBrowserClient(
     ShellBrowserMainDelegate* browser_main_delegate)
-    : browser_main_parts_(NULL), browser_main_delegate_(browser_main_delegate) {
+    :
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+      v8_natives_fd_(-1),
+      v8_snapshot_fd_(-1),
+#endif  // OS_POSIX && !OS_MACOSX
+      browser_main_parts_(nullptr),
+      browser_main_delegate_(browser_main_delegate) {
   DCHECK(!g_instance);
   g_instance = this;
 }
 
 ShellContentBrowserClient::~ShellContentBrowserClient() {
-  g_instance = NULL;
+  g_instance = nullptr;
 }
 
 // static
@@ -219,7 +227,7 @@ ShellContentBrowserClient::GetExternalBrowserPpapiHost(int plugin_process_id) {
     ++iter;
   }
 #endif
-  return NULL;
+  return nullptr;
 }
 
 void ShellContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
@@ -228,6 +236,28 @@ void ShellContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
       additional_allowed_schemes);
   additional_allowed_schemes->push_back(kExtensionScheme);
 }
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
+    const base::CommandLine& command_line,
+    int child_process_id,
+    content::FileDescriptorInfo* mappings) {
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  if (v8_natives_fd_.get() == -1 || v8_snapshot_fd_.get() == -1) {
+    int v8_natives_fd = -1;
+    int v8_snapshot_fd = -1;
+    if (gin::V8Initializer::OpenV8FilesForChildProcesses(&v8_natives_fd,
+                                                         &v8_snapshot_fd)) {
+      v8_natives_fd_.reset(v8_natives_fd);
+      v8_snapshot_fd_.reset(v8_snapshot_fd);
+    }
+  }
+  DCHECK(v8_natives_fd_.get() != -1 && v8_snapshot_fd_.get() != -1);
+  mappings->Share(kV8NativesDataDescriptor, v8_natives_fd_.get());
+  mappings->Share(kV8SnapshotDataDescriptor, v8_snapshot_fd_.get());
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+}
+#endif  // OS_POSIX && !OS_MACOSX
 
 content::DevToolsManagerDelegate*
 ShellContentBrowserClient::GetDevToolsManagerDelegate() {

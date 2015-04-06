@@ -21,6 +21,8 @@ include_rules = [
   "+device/hid",
   "+device/usb",
 
+  "+gin",
+
   "+google_apis/gaia",
 
   "+net",

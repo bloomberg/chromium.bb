@@ -2183,23 +2183,16 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     int child_process_id,
     FileDescriptorInfo* mappings) {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  if (v8_snapshot_fd_.get() == -1 && v8_natives_fd_.get() == -1) {
-    base::FilePath v8_data_path;
-    PathService::Get(gin::V8Initializer::kV8SnapshotBasePathKey, &v8_data_path);
-    DCHECK(!v8_data_path.empty());
-
-    int file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-    base::FilePath v8_natives_data_path =
-        v8_data_path.AppendASCII(gin::V8Initializer::kNativesFileName);
-    base::FilePath v8_snapshot_data_path =
-        v8_data_path.AppendASCII(gin::V8Initializer::kSnapshotFileName);
-    base::File v8_natives_data_file(v8_natives_data_path, file_flags);
-    base::File v8_snapshot_data_file(v8_snapshot_data_path, file_flags);
-    DCHECK(v8_natives_data_file.IsValid());
-    DCHECK(v8_snapshot_data_file.IsValid());
-    v8_natives_fd_.reset(v8_natives_data_file.TakePlatformFile());
-    v8_snapshot_fd_.reset(v8_snapshot_data_file.TakePlatformFile());
+  if (v8_natives_fd_.get() == -1 || v8_snapshot_fd_.get() == -1) {
+    int v8_natives_fd = -1;
+    int v8_snapshot_fd = -1;
+    if (gin::V8Initializer::OpenV8FilesForChildProcesses(&v8_natives_fd,
+                                                         &v8_snapshot_fd)) {
+      v8_natives_fd_.reset(v8_natives_fd);
+      v8_snapshot_fd_.reset(v8_snapshot_fd);
+    }
   }
+  DCHECK(v8_natives_fd_.get() != -1 && v8_snapshot_fd_.get() != -1);
   mappings->Share(kV8NativesDataDescriptor, v8_natives_fd_.get());
   mappings->Share(kV8SnapshotDataDescriptor, v8_snapshot_fd_.get());
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
