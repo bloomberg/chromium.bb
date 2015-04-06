@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/ozone/platform_window_cast.h"
+#include "ui/ozone/platform/cast/platform_window_cast.h"
 
 #include "ui/platform_window/platform_window_delegate.h"
 
-namespace chromecast {
-namespace ozone {
+namespace ui {
 
-PlatformWindowCast::PlatformWindowCast(ui::PlatformWindowDelegate* delegate,
+PlatformWindowCast::PlatformWindowCast(PlatformWindowDelegate* delegate,
                                        const gfx::Rect& bounds)
     : delegate_(delegate), bounds_(bounds) {
   widget_ = (bounds.width() << 16) + bounds.height();
@@ -25,5 +24,4 @@ void PlatformWindowCast::SetBounds(const gfx::Rect& bounds) {
   delegate_->OnBoundsChanged(bounds);
 }
 
-}  // namespace ozone
-}  // namespace chromecast
+}  // namespace ui

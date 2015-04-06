@@ -10,6 +10,8 @@
     'chromium_code': 1,
     'chromecast_branding%': 'Chromium',
     'disable_display%': 0,
+    'enable_default_cast_graphics%': 1,
+    'ozone_platform_cast%': 0,
     'use_chromecast_webui%': 0,
   },
   'includes': [
@@ -31,6 +33,8 @@
       'target_name': 'cast_public_api',
       'type': '<(component)',
       'sources': [
+        'public/cast_egl_platform.h',
+        'public/cast_egl_platform_shlib.h',
         'public/chromecast_export.h',
       ],
     },
@@ -87,22 +91,6 @@
         'net/connectivity_checker.h',
         'net/net_switches.cc',
         'net/net_switches.h',
-      ],
-    },
-    {
-      'target_name': 'cast_ozone',
-      'type': '<(component)',
-      'sources': [
-        'ozone/gpu_platform_support_cast.cc',
-        'ozone/gpu_platform_support_cast.h',
-        'ozone/ozone_platform_cast.cc',
-        'ozone/ozone_platform_cast.h',
-        'ozone/platform_window_cast.cc',
-        'ozone/platform_window_cast.h',
-        'ozone/surface_factory_cast.cc',
-        'ozone/surface_factory_cast.h',
-        'ozone/surface_ozone_egl_cast.cc',
-        'ozone/surface_ozone_egl_cast.h',
       ],
     },
     {
@@ -546,7 +534,6 @@
           'target_name': 'cast_shell_core',
           'type': '<(component)',
           'dependencies': [
-            'cast_ozone',
             'cast_shell_media',
             'cast_shell_common',
             'media/media.gyp:cast_media',
@@ -580,6 +567,20 @@
           ],
         },
       ],  # end of targets
+    }],
+    ['enable_default_cast_graphics==1', {
+      'targets': [
+        {
+          'target_name': 'libcast_graphics_1.0',
+          'type': 'shared_library',
+          'dependencies': [
+            'cast_public_api'
+          ],
+          'sources': [
+            'graphics/cast_egl_platform_default.cc'
+          ],
+        }
+      ]
     }],
   ],  # end of conditions
 }

@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_PLATFORM_WINDOW_CAST_H_
-#define CHROMECAST_PLATFORM_WINDOW_CAST_H_
+#ifndef UI_OZONE_PLATFORM_CAST_PLATFORM_WINDOW_CAST_H_
+#define UI_OZONE_PLATFORM_CAST_PLATFORM_WINDOW_CAST_H_
 
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window.h"
 
-namespace chromecast {
-namespace ozone {
+namespace ui {
 
-class PlatformWindowCast : public ui::PlatformWindow {
+class PlatformWindowCast : public PlatformWindow {
  public:
-  PlatformWindowCast(ui::PlatformWindowDelegate* delegate,
-                     const gfx::Rect& bounds);
+  PlatformWindowCast(PlatformWindowDelegate* delegate, const gfx::Rect& bounds);
   ~PlatformWindowCast() override {}
 
   // PlatformWindow implementation:
@@ -30,19 +28,18 @@ class PlatformWindowCast : public ui::PlatformWindow {
   void Maximize() override {}
   void Minimize() override {}
   void Restore() override {}
-  void SetCursor(ui::PlatformCursor cursor) override {}
+  void SetCursor(PlatformCursor cursor) override {}
   void MoveCursorTo(const gfx::Point& location) override {}
   void ConfineCursorToBounds(const gfx::Rect& bounds) override {}
 
  private:
-  ui::PlatformWindowDelegate* delegate_;
+  PlatformWindowDelegate* delegate_;
   gfx::Rect bounds_;
   gfx::AcceleratedWidget widget_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformWindowCast);
 };
 
-}  // namespace ozone
-}  // namespace chromecast
+}  // namespace ui
 
-#endif  // CHROMECAST_PLATFORM_WINDOW_CAST_H_
+#endif  // UI_OZONE_PLATFORM_CAST_PLATFORM_WINDOW_CAST_H_

@@ -32,6 +32,10 @@ MediaOzonePlatform* CreateMediaOzonePlatformCaca() {
   return new MediaOzonePlatformStub;
 }
 
+MediaOzonePlatform* CreateMediaOzonePlatformCast() {
+  return new MediaOzonePlatformStub;
+}
+
 MediaOzonePlatform* CreateMediaOzonePlatformDri() {
   return new MediaOzonePlatformStub;
 }

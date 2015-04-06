@@ -2,21 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/ozone/surface_factory_cast.h"
+#include "ui/ozone/platform/cast/surface_factory_cast.h"
 
 #include "base/callback_helpers.h"
-#include "chromecast/ozone/cast_egl_platform.h"
-#include "chromecast/ozone/surface_ozone_egl_cast.h"
+#include "chromecast/public/cast_egl_platform.h"
+#include "ui/ozone/platform/cast/surface_ozone_egl_cast.h"
 
-namespace chromecast {
-namespace ozone {
+using chromecast::CastEglPlatform;
+
+namespace ui {
+namespace {
+CastEglPlatform::Size FromGfxSize(const gfx::Size& size) {
+  return CastEglPlatform::Size(size.width(), size.height());
+}
+gfx::Size ToGfxSize(const CastEglPlatform::Size& size) {
+  return gfx::Size(size.width, size.height);
+}
+}
 
 SurfaceFactoryCast::SurfaceFactoryCast(scoped_ptr<CastEglPlatform> egl_platform)
     : state_(kUninitialized),
       destroy_window_pending_state_(kNoDestroyPending),
       display_type_(0),
       window_(0),
-      default_display_size_(egl_platform->GetDefaultDisplaySize()),
+      default_display_size_(ToGfxSize(egl_platform->GetDefaultDisplaySize())),
       display_size_(default_display_size_),
       new_display_size_(default_display_size_),
       egl_platform_(egl_platform.Pass()) {
@@ -63,9 +72,10 @@ void SurfaceFactoryCast::CreateDisplayTypeAndWindowIfNeeded() {
   }
   DCHECK_EQ(state_, kInitialized);
   if (!display_type_) {
-    display_type_ = egl_platform_->CreateDisplayType(display_size_);
+    CastEglPlatform::Size create_size = FromGfxSize(display_size_);
+    display_type_ = egl_platform_->CreateDisplayType(create_size);
     if (display_type_) {
-      window_ = egl_platform_->CreateWindow(display_type_, display_size_);
+      window_ = egl_platform_->CreateWindow(display_type_, create_size);
       if (!window_) {
         DestroyDisplayTypeAndWindow();
         state_ = kFailed;
@@ -82,7 +92,7 @@ void SurfaceFactoryCast::CreateDisplayTypeAndWindowIfNeeded() {
 
 intptr_t SurfaceFactoryCast::GetNativeWindow() {
   CreateDisplayTypeAndWindowIfNeeded();
-  return window_;
+  return reinterpret_cast<intptr_t>(window_);
 }
 
 bool SurfaceFactoryCast::ResizeDisplay(gfx::Size size) {
@@ -106,13 +116,13 @@ void SurfaceFactoryCast::DestroyDisplayTypeAndWindow() {
   }
 }
 
-scoped_ptr<ui::SurfaceOzoneEGL> SurfaceFactoryCast::CreateEGLSurfaceForWidget(
+scoped_ptr<SurfaceOzoneEGL> SurfaceFactoryCast::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   new_display_size_ = gfx::Size(widget >> 16, widget & 0xFFFF);
   new_display_size_.SetToMax(default_display_size_);
   destroy_window_pending_state_ = kSurfaceExists;
   SendRelinquishResponse();
-  return make_scoped_ptr<ui::SurfaceOzoneEGL>(new SurfaceOzoneEglCast(this));
+  return make_scoped_ptr<SurfaceOzoneEGL>(new SurfaceOzoneEglCast(this));
 }
 
 void SurfaceFactoryCast::SetToRelinquishDisplay(const base::Closure& callback) {
@@ -168,9 +178,17 @@ bool SurfaceFactoryCast::LoadEGLGLES2Bindings(
     }
   }
 
-  return egl_platform_->LoadEGLGLES2Bindings(add_gl_library,
-                                             set_gl_get_proc_address);
+  void* lib_egl = egl_platform_->GetEglLibrary();
+  void* lib_gles2 = egl_platform_->GetGles2Library();
+  GLGetProcAddressProc gl_proc = egl_platform_->GetGLProcAddressProc();
+  if (!lib_egl || !lib_gles2 || !gl_proc) {
+    return false;
+  }
+
+  set_gl_get_proc_address.Run(gl_proc);
+  add_gl_library.Run(lib_egl);
+  add_gl_library.Run(lib_gles2);
+  return true;
 }
 
-}  // namespace ozone
-}  // namespace chromecast
+}  // namespace ui

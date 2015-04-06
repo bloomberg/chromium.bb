@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_OZONE_SURFACE_FACTORY_CAST_H_
-#define CHROMECAST_OZONE_SURFACE_FACTORY_CAST_H_
+#ifndef UI_OZONE_PLATFORM_CAST_SURFACE_FACTORY_CAST_H_
+#define UI_OZONE_PLATFORM_CAST_SURFACE_FACTORY_CAST_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -11,19 +11,21 @@
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace chromecast {
-namespace ozone {
-
 class CastEglPlatform;
+}
+
+namespace ui {
 
 // SurfaceFactoryOzone implementation for OzonePlatformCast.
-class SurfaceFactoryCast : public ui::SurfaceFactoryOzone {
+class SurfaceFactoryCast : public SurfaceFactoryOzone {
  public:
-  explicit SurfaceFactoryCast(scoped_ptr<CastEglPlatform> egl_platform);
+  explicit SurfaceFactoryCast(
+      scoped_ptr<chromecast::CastEglPlatform> egl_platform);
   ~SurfaceFactoryCast() override;
 
-  // ui::SurfaceFactoryOzone implementation:
+  // SurfaceFactoryOzone implementation:
   intptr_t GetNativeDisplay() override;
-  scoped_ptr<ui::SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
+  scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) override;
   const int32* GetEGLSurfaceProperties(const int32* desired_list) override;
   bool LoadEGLGLES2Bindings(
@@ -58,17 +60,16 @@ class SurfaceFactoryCast : public ui::SurfaceFactoryOzone {
   HardwareState state_;
   DestroyWindowPendingState destroy_window_pending_state_;
   base::Closure relinquish_display_callback_;
-  intptr_t display_type_;
-  intptr_t window_;
+  void* display_type_;
+  void* window_;
   const gfx::Size default_display_size_;
   gfx::Size display_size_;
   gfx::Size new_display_size_;
-  scoped_ptr<CastEglPlatform> egl_platform_;
+  scoped_ptr<chromecast::CastEglPlatform> egl_platform_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceFactoryCast);
 };
 
-}  // namespace ozone
-}  // namespace chromecast
+}  // namespace ui
 
-#endif  // CHROMECAST_OZONE_SURFACE_FACTORY_CAST_H_
+#endif  // UI_OZONE_PLATFORM_CAST_SURFACE_FACTORY_CAST_H_

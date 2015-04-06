@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_OZONE_GPU_PLATFORM_SUPPORT_CAST_H_
-#define CHROMECAST_OZONE_GPU_PLATFORM_SUPPORT_CAST_H_
+#ifndef UI_OZONE_PLATFORM_CAST_GPU_PLATFORM_SUPPORT_CAST_H_
+#define UI_OZONE_PLATFORM_CAST_GPU_PLATFORM_SUPPORT_CAST_H_
 
 #include "ui/ozone/public/gpu_platform_support.h"
 
-namespace chromecast {
-namespace ozone {
+namespace ui {
 
 class SurfaceFactoryCast;
 
 // GpuPlatformSupport implementation for use with OzonePlatformCast.
-class GpuPlatformSupportCast : public ui::GpuPlatformSupport {
+class GpuPlatformSupportCast : public GpuPlatformSupport {
  public:
   explicit GpuPlatformSupportCast(SurfaceFactoryCast* parent)
       : parent_(parent) {}
@@ -30,7 +29,6 @@ class GpuPlatformSupportCast : public ui::GpuPlatformSupport {
   DISALLOW_COPY_AND_ASSIGN(GpuPlatformSupportCast);
 };
 
-}  // namespace ozone
-}  // namespace chromecast
+}  // namespace ui
 
-#endif  // CHROMECAST_OZONE_GPU_PLATFORM_SUPPORT_CAST_H_
+#endif  // UI_OZONE_PLATFORM_CAST_GPU_PLATFORM_SUPPORT_CAST_H_

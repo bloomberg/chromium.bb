@@ -1516,6 +1516,7 @@
 
     # Ozone platforms to include in the build.
     'ozone_platform_caca%': 0,
+    'ozone_platform_cast%': 0,
     'ozone_platform_dri%': 0,
     'ozone_platform_drm%': 0,
     'ozone_platform_egltest%': 0,
@@ -1849,6 +1850,9 @@
             'video_hole%': 1,
           }],
         ],
+      }],
+      ['chromecast==1 and OS!="android"', {
+        'ozone_platform_cast%': 1
       }],
       ['OS=="linux" and target_arch!="mipsel"', {
         'clang%': 1,

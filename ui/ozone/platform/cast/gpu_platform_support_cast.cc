@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/ozone/gpu_platform_support_cast.h"
+#include "ui/ozone/platform/cast/gpu_platform_support_cast.h"
 
-#include "chromecast/ozone/surface_factory_cast.h"
+#include "ui/ozone/platform/cast/surface_factory_cast.h"
 
-namespace chromecast {
-namespace ozone {
+namespace ui {
 
 bool GpuPlatformSupportCast::OnMessageReceived(const IPC::Message& msg) {
   return false;
@@ -22,5 +21,4 @@ IPC::MessageFilter* GpuPlatformSupportCast::GetMessageFilter() {
   return nullptr;
 }
 
-}  // namespace ozone
-}  // namespace chromecast
+}  // namespace ui

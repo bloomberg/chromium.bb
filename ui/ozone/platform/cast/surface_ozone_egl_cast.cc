@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/ozone/surface_ozone_egl_cast.h"
+#include "ui/ozone/platform/cast/surface_ozone_egl_cast.h"
 
-#include "chromecast/ozone/surface_factory_cast.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/ozone/platform/cast/surface_factory_cast.h"
 
-namespace chromecast {
-namespace ozone {
+namespace ui {
 
 SurfaceOzoneEglCast::~SurfaceOzoneEglCast() {
   parent_->ChildDestroyed();
@@ -33,8 +32,7 @@ bool SurfaceOzoneEglCast::ResizeNativeWindow(const gfx::Size& viewport_size) {
 }
 
 scoped_ptr<gfx::VSyncProvider> SurfaceOzoneEglCast::CreateVSyncProvider() {
-  return scoped_ptr<gfx::VSyncProvider>();
+  return nullptr;
 }
 
-}  // namespace ozone
-}  // namespace chromecast
+}  // namespace ui

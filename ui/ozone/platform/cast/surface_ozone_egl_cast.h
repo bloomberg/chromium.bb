@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_OZONE_SURFACE_OZONE_EGL_CAST_H_
-#define CHROMECAST_OZONE_SURFACE_OZONE_EGL_CAST_H_
+#ifndef UI_OZONE_PLATFORM_CAST_SURFACE_OZONE_EGL_CAST_H_
+#define UI_OZONE_PLATFORM_CAST_SURFACE_OZONE_EGL_CAST_H_
 
 #include "ui/ozone/public/surface_ozone_egl.h"
 
-namespace chromecast {
-namespace ozone {
+namespace ui {
 
 class SurfaceFactoryCast;
 
 // EGL surface wrapper for OzonePlatformCast.
-class SurfaceOzoneEglCast : public ui::SurfaceOzoneEGL {
+class SurfaceOzoneEglCast : public SurfaceOzoneEGL {
  public:
   explicit SurfaceOzoneEglCast(SurfaceFactoryCast* parent) : parent_(parent) {}
   ~SurfaceOzoneEglCast() override;
@@ -31,7 +30,6 @@ class SurfaceOzoneEglCast : public ui::SurfaceOzoneEGL {
   DISALLOW_COPY_AND_ASSIGN(SurfaceOzoneEglCast);
 };
 
-}  // namespace ozone
-}  // namespace chromecast
+}  // namespace ui
 
-#endif  // CHROMECAST_OZONE_SURFACE_OZONE_EGL_CAST_H_
+#endif  // UI_OZONE_PLATFORM_CAST_SURFACE_OZONE_EGL_CAST_H_
