@@ -303,28 +303,26 @@ input[type='checkbox']:checked {
 }
 
 .gallery .filename-spacer .namebox {
-  height: 22px;
-  top: 15px;
-}
-
-.gallery[editing] .filename-spacer .namebox {
-  height: 21px;
-  top: 5px;
-}
-
-.gallery .filename-spacer .namebox {
   background-color: transparent;
   border: none;
   box-sizing: border-box;
   cursor: pointer;
   display: block;
   font-size: 120%;
+  height: 22px;
   outline: none;
   overflow: hidden;
   padding: 0 3px;
   position: absolute;
   text-overflow: ellipsis;
+  top: 15px;
   white-space: nowrap;
+  width: 100%;
+}
+
+.gallery[editing] .filename-spacer .namebox {
+  height: 21px;
+  top: 5px;
 }
 
 .gallery .filename-spacer .namebox[disabled] {
