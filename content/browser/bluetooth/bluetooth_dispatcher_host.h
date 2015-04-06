@@ -38,6 +38,7 @@ class BluetoothDispatcherHost : public BrowserMessageFilter,
 
   // IPC Handlers, see definitions in bluetooth_messages.h.
   void OnRequestDevice(int thread_id, int request_id);
+  void OnRequestDeviceOnUI(int thread_id, int request_id);
   void OnSetBluetoothMockDataSetForTesting(const std::string& name);
 
   // A BluetoothAdapter instance representing an adapter of the system.
