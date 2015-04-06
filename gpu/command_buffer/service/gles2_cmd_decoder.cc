@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <queue>
 #include <stack>
 #include <string>
 #include <vector>
@@ -99,7 +100,7 @@ static bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
 
 static void GetShaderPrecisionFormatImpl(GLenum shader_type,
                                          GLenum precision_type,
-                                         GLint *range, GLint *precision) {
+                                         GLint* range, GLint* precision) {
   switch (precision_type) {
     case GL_LOW_INT:
     case GL_MEDIUM_INT:
@@ -503,7 +504,7 @@ class BackFramebuffer {
 };
 
 struct FenceCallback {
-  explicit FenceCallback()
+  FenceCallback()
       : fence(gfx::GLFence::Create()) {
     DCHECK(fence);
   }
@@ -4325,9 +4326,9 @@ void GLES2DecoderImpl::ClearAllAttributes() const {
     glBindVertexArrayOES(0);
 
   for (uint32 i = 0; i < group_->max_vertex_attribs(); ++i) {
-    if (i != 0) // Never disable attribute 0
+    if (i != 0)  // Never disable attribute 0
       glDisableVertexAttribArray(i);
-    if(features().angle_instanced_arrays)
+    if (features().angle_instanced_arrays)
       glVertexAttribDivisorANGLE(i, 0);
   }
 }
@@ -5768,7 +5769,6 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisampleCHROMIUM(
   GLenum error =
       LOCAL_PEEK_GL_ERROR("glRenderbufferStorageMultisampleCHROMIUM");
   if (error == GL_NO_ERROR) {
-
     if (workarounds().validate_multisample_buffer_allocation) {
       if (!VerifyMultisampleRenderbufferIntegrity(
           renderbuffer->service_id(), impl_format)) {
@@ -5836,7 +5836,7 @@ bool GLES2DecoderImpl::VerifyMultisampleRenderbufferIntegrity(
   // These formats have been selected because they are very common or are known
   // to be used by the WebGL backbuffer. If problems are observed with other
   // color formats they can be added here.
-  switch(format) {
+  switch (format) {
     case GL_RGB:
     case GL_RGB8:
     case GL_RGBA:
@@ -6002,7 +6002,7 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
   // LinkProgram can be very slow.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
   ExitCommandProcessingEarly();
-};
+}
 
 void GLES2DecoderImpl::DoSamplerParameterfv(
     GLuint sampler, GLenum pname, const GLfloat* params) {
@@ -7792,7 +7792,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribDivisorANGLE(
 
 template <typename pixel_data_type>
 static void WriteAlphaData(
-    void *pixels, uint32 row_count, uint32 channel_count,
+    void* pixels, uint32 row_count, uint32 channel_count,
     uint32 alpha_channel_index, uint32 unpadded_row_size,
     uint32 padded_row_size, pixel_data_type alpha_value) {
   DCHECK_GT(channel_count, 0U);
@@ -10309,8 +10309,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
   ExitCommandProcessingEarly();
 }
 
-void GLES2DecoderImpl::DoSwapInterval(int interval)
-{
+void GLES2DecoderImpl::DoSwapInterval(int interval) {
   context_->SetSwapInterval(interval);
 }
 

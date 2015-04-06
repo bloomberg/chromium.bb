@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"

@@ -126,7 +126,7 @@ class NativeImageBufferEGL : public NativeImageBuffer {
   base::Lock lock_;
 
   struct ClientInfo {
-    ClientInfo(gfx::GLImage* client);
+    explicit ClientInfo(gfx::GLImage* client);
     ~ClientInfo();
 
     gfx::GLImage* client;
@@ -154,7 +154,7 @@ scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
   const EGLint egl_attrib_list[] = {
       EGL_GL_TEXTURE_LEVEL_KHR, 0, EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
   EGLClientBuffer egl_buffer = reinterpret_cast<EGLClientBuffer>(texture_id);
-  EGLenum egl_target = EGL_GL_TEXTURE_2D_KHR; // TODO
+  EGLenum egl_target = EGL_GL_TEXTURE_2D_KHR;
 
   EGLImageKHR egl_image = eglCreateImageKHR(
       egl_display, egl_context, egl_target, egl_buffer, egl_attrib_list);

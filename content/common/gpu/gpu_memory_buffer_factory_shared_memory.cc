@@ -4,6 +4,8 @@
 
 #include "content/common/gpu/gpu_memory_buffer_factory_shared_memory.h"
 
+#include <vector>
+
 #include "base/logging.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "ui/gl/gl_image.h"

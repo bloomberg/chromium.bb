@@ -124,7 +124,7 @@ base::LazyInstance<GpuInProcessThreadHolder> g_default_service =
 
 class ScopedEvent {
  public:
-  ScopedEvent(base::WaitableEvent* event) : event_(event) {}
+  explicit ScopedEvent(base::WaitableEvent* event) : event_(event) {}
   ~ScopedEvent() { event_->Signal(); }
 
  private:

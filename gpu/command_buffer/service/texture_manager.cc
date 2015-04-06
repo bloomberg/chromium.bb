@@ -1644,8 +1644,8 @@ void TextureManager::ValidateAndDoTexImage2D(
 }
 
 GLenum TextureManager::AdjustTexFormat(GLenum format) const {
-  // TODO: GLES 3 allows for internal format and format to differ. This logic
-  // may need to change as a result.
+  // TODO(bajones): GLES 3 allows for internal format and format to differ.
+  // This logic may need to change as a result.
   if (gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
     if (format == GL_SRGB_EXT)
       return GL_RGB;

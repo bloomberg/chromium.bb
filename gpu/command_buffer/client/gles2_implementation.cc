@@ -2421,7 +2421,7 @@ bool GLES2Implementation::GetActiveUniformBlockNameHelper(
     } else if (length || name) {
       std::vector<int8> str;
       GetBucketContents(kResultBucketId, &str);
-      DCHECK(str.size() > 0);
+      DCHECK_GT(str.size(), 0u);
       GLsizei max_size =
           std::min(bufsize, static_cast<GLsizei>(str.size())) - 1;
       if (length) {
