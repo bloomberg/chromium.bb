@@ -55,17 +55,27 @@ const char kUploadResponseLocation[] = "location";
 const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadResponseRange[] = "range";
 
-// The prefix of multipart/related mime type.
-const char kMultipartMimeTypePrefix[] = "multipart/related; boundary=";
+// Mime type of JSON.
+const char kJsonMimeType[] = "application/json";
 
-// Template for multipart request body.
-const char kMessageFormatBeforeFile[] =
-    "--%s\nContent-Type: %s\n\n%s\n--%s\nContent-Type: %s\n\n";
-const char kMessageFormatAfterFile[] = "\n--%s--";
+// Mime type of multipart related.
+const char kMultipartRelatedMimeTypePrefix[] =
+    "multipart/related; boundary=";
+
+// Mime type of multipart mixed.
+const char kMultipartMixedMimeTypePrefix[] =
+    "multipart/mixed; boundary=";
+
+// Header for each item in a multipart message.
+const char kMultipartItemHeaderFormat[] = "--%s\nContent-Type: %s\n\n";
+
+// Footer for whole multipart message.
+const char kMultipartFooterFormat[] = "--%s--";
 
 // Characters to be used for multipart/related boundary.
 const char kBoundaryCharacters[] =
     "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
 // Size of multipart/related's boundary.
 const char kBoundarySize = 70;
 
@@ -102,10 +112,6 @@ std::string GetResponseHeadersAsString(const URLFetcher* url_fetcher) {
   return headers;
 }
 
-bool IsSuccessfulResponseCode(int response_code) {
-  return 200 <= response_code && response_code <= 299;
-}
-
 // Obtains the multipart body for the metadata string and file contents. If
 // predetermined_boundary is empty, the function generates the boundary string.
 bool GetMultipartContent(const std::string& predetermined_boundary,
@@ -114,36 +120,18 @@ bool GetMultipartContent(const std::string& predetermined_boundary,
                          const base::FilePath& path,
                          std::string* upload_content_type,
                          std::string* upload_content_data) {
-  std::string file_content;
-  if (!ReadFileToString(path, &file_content))
+  std::vector<google_apis::ContentTypeAndData> parts(2);
+  parts[0].type = kJsonMimeType;
+  parts[0].data = metadata_json;
+  parts[1].type = content_type;
+  if (!ReadFileToString(path, &parts[1].data))
     return false;
 
-  std::string boundary;
-  if (predetermined_boundary.empty()) {
-    while (true) {
-      boundary.resize(kBoundarySize);
-      for (int i = 0; i < kBoundarySize; ++i) {
-        // Subtract 2 from the array size to exclude '\0', and to turn the size
-        // into the last index.
-        const int last_char_index = arraysize(kBoundaryCharacters) - 2;
-        boundary[i] = kBoundaryCharacters[base::RandInt(0,  last_char_index)];
-      }
-      if (metadata_json.find(boundary, 0) == std::string::npos &&
-          file_content.find(boundary, 0) == std::string::npos) {
-        break;
-      }
-    }
-  } else {
-    boundary = predetermined_boundary;
-  }
-  const std::string body_before_file = base::StringPrintf(
-      kMessageFormatBeforeFile, boundary.c_str(), "application/json",
-      metadata_json.c_str(), boundary.c_str(), content_type.c_str());
-  const std::string body_after_file =
-      base::StringPrintf(kMessageFormatAfterFile, boundary.c_str());
-
-  *upload_content_type = kMultipartMimeTypePrefix + boundary;
-  *upload_content_data = body_before_file + file_content + body_after_file;
+  google_apis::ContentTypeAndData output;
+  GenerateMultipartBody(
+      google_apis::MULTIPART_RELATED, predetermined_boundary, parts, &output);
+  upload_content_type->swap(output.type);
+  upload_content_data->swap(output.data);
   return true;
 }
 
@@ -173,6 +161,55 @@ scoped_ptr<base::Value> ParseJson(const std::string& json) {
                  << ", code: " << error_code << ", json:\n" << trimmed_json;
   }
   return value.Pass();
+}
+
+void GenerateMultipartBody(MultipartType multipart_type,
+                           const std::string& predetermined_boundary,
+                           const std::vector<ContentTypeAndData>& parts,
+                           ContentTypeAndData* output) {
+  std::string boundary;
+  // Generate random boundary.
+  if (predetermined_boundary.empty()) {
+    while (true) {
+      boundary.resize(kBoundarySize);
+      for (int i = 0; i < kBoundarySize; ++i) {
+        // Subtract 2 from the array size to exclude '\0', and to turn the size
+        // into the last index.
+        const int last_char_index = arraysize(kBoundaryCharacters) - 2;
+        boundary[i] = kBoundaryCharacters[base::RandInt(0,  last_char_index)];
+      }
+      bool conflict_with_content = false;
+      for (auto& part : parts) {
+        if (part.data.find(boundary, 0) != std::string::npos) {
+          conflict_with_content = true;
+          break;
+        }
+      }
+      if (!conflict_with_content)
+        break;
+    }
+  } else {
+    boundary = predetermined_boundary;
+  }
+
+  switch (multipart_type) {
+    case MULTIPART_RELATED:
+      output->type = kMultipartRelatedMimeTypePrefix + boundary;
+      break;
+    case MULTIPART_MIXED:
+      output->type = kMultipartMixedMimeTypePrefix + boundary;
+      break;
+  }
+
+  output->data.clear();
+  for (auto& part : parts) {
+    output->data.append(base::StringPrintf(
+        kMultipartItemHeaderFormat, boundary.c_str(), part.type.c_str()));
+    output->data.append(part.data);
+    output->data.append("\n");
+  }
+  output->data.append(
+      base::StringPrintf(kMultipartFooterFormat, boundary.c_str()));
 }
 
 //=========================== ResponseWriter ==================================
@@ -294,7 +331,7 @@ void UrlFetchRequestBase::StartAfterPrepare(
 
   const GURL url = GetURL();
   DriveApiErrorCode error_code;
-  if (code != HTTP_SUCCESS && code != HTTP_CREATED && code != HTTP_NO_CONTENT)
+  if (IsSuccessfulDriveApiErrorCode(code))
     error_code = code;
   else if (url.is_empty())
     error_code = DRIVE_OTHER_ERROR;
@@ -449,7 +486,7 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
 
   // The server may return detailed error status in JSON.
   // See https://developers.google.com/drive/handle-errors
-  if (!IsSuccessfulResponseCode(error_code_)) {
+  if (!IsSuccessfulDriveApiErrorCode(error_code_)) {
     DVLOG(1) << response_writer_->data();
 
     const char kErrorKey[] = "error";

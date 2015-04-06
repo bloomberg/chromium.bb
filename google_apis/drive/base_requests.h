@@ -30,6 +30,18 @@ namespace google_apis {
 class FileResource;
 class RequestSender;
 
+// Content type for multipart body.
+enum MultipartType {
+  MULTIPART_RELATED,
+  MULTIPART_MIXED
+};
+
+// Pair of content type and data.
+struct ContentTypeAndData {
+  std::string type;
+  std::string data;
+};
+
 typedef base::Callback<void(DriveApiErrorCode)> PrepareCallback;
 
 // Callback used for requests that the server returns FileResource data
@@ -48,6 +60,14 @@ typedef base::Callback<void(
 
 // Parses JSON passed in |json|. Returns NULL on failure.
 scoped_ptr<base::Value> ParseJson(const std::string& json);
+
+// Generate multipart body. If |predetermined_boundary| is not empty, it uses
+// the string as boundary. Otherwise it generates random boundary that does not
+// conflict with |parts|.
+void GenerateMultipartBody(MultipartType multipart_type,
+                           const std::string& predetermined_boundary,
+                           const std::vector<ContentTypeAndData>& parts,
+                           ContentTypeAndData* output);
 
 //======================= AuthenticatedRequestInterface ======================
 

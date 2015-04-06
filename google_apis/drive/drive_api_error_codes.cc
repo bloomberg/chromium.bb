@@ -90,4 +90,8 @@ std::string DriveApiErrorCodeToString(DriveApiErrorCode error) {
   return "UNKNOWN_ERROR_" + base::IntToString(error);
 }
 
+bool IsSuccessfulDriveApiErrorCode(DriveApiErrorCode error) {
+  return 200 <= error && error <= 299;
+}
+
 }  // namespace google_apis

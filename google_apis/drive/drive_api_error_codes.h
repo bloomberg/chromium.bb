@@ -41,6 +41,9 @@ enum DriveApiErrorCode {
 // Returns a string representation of DriveApiErrorCode.
 std::string DriveApiErrorCodeToString(DriveApiErrorCode error);
 
+// Checks if the error code represents success.
+bool IsSuccessfulDriveApiErrorCode(DriveApiErrorCode error);
+
 }  // namespace google_apis
 
 #endif  // GOOGLE_APIS_DRIVE_DRIVE_API_ERROR_CODES_H_
