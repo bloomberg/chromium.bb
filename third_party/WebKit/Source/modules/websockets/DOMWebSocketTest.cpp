@@ -666,21 +666,26 @@ TEST_F(DOMWebSocketTest, binaryType)
 {
     EXPECT_EQ("blob", m_websocket->binaryType());
 
-    m_websocket->setBinaryType("hoge");
-
-    EXPECT_EQ("blob", m_websocket->binaryType());
-
     m_websocket->setBinaryType("arraybuffer");
-
-    EXPECT_EQ("arraybuffer", m_websocket->binaryType());
-
-    m_websocket->setBinaryType("fuga");
 
     EXPECT_EQ("arraybuffer", m_websocket->binaryType());
 
     m_websocket->setBinaryType("blob");
 
     EXPECT_EQ("blob", m_websocket->binaryType());
+}
+
+class DOMWebSocketDeathTest : public DOMWebSocketTestBase, public ::testing::Test {
+public:
+};
+
+TEST_F(DOMWebSocketDeathTest, binaryType)
+{
+    m_websocket->setBinaryType("arraybuffer");
+
+    EXPECT_EQ("arraybuffer", m_websocket->binaryType());
+    EXPECT_DEATH(m_websocket->setBinaryType("hoge"), "");
+    EXPECT_EQ("arraybuffer", m_websocket->binaryType());
 }
 
 // FIXME: We should add tests for suspend / resume.
