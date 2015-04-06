@@ -224,7 +224,12 @@ NSColor* IdentityVerifiedTextColor() {
                        /*flipped=*/ YES);
 
   // Call the superclass method to trigger drawing of the tab labels.
-  [self drawInteriorWithFrame:cellFrame inView:controlView];
+  NSRect interiorFrame = cellFrame;
+  interiorFrame.size.width = 0;
+  for (NSInteger i = 0; i < [self segmentCount]; ++i)
+    interiorFrame.size.width += [self widthForSegment:i];
+  [self drawInteriorWithFrame:interiorFrame inView:controlView];
+
   if ([[controlView window] firstResponder] == controlView)
     [self drawFocusRect];
 }
@@ -236,33 +241,36 @@ NSColor* IdentityVerifiedTextColor() {
   NSFrameRect([self hitRectForSegment:keySegment_]);
 }
 
+// Returns the segment number for the left-most positioned segment.
+// On Right-to-Left languages, segment 0 is on the right.
+- (NSInteger)leftSegment {
+  BOOL isRTL = [self userInterfaceLayoutDirection] ==
+                   NSUserInterfaceLayoutDirectionRightToLeft;
+  return isRTL ? [self segmentCount] - 1 : 0;
+}
+
 // Return the hit rect (i.e., the visual bounds of the tab) for
 // the given segment.
 - (NSRect)hitRectForSegment:(NSInteger)segment {
   CGFloat tabstripHeight = [tabCenterImage_ size].height;
   DCHECK_GT(tabstripHeight, kTabHeight);
-
-  NSRect rect = NSMakeRect(0, tabstripHeight - kTabHeight,
-                           [self widthForSegment:segment], kTabHeight);
-  for (NSInteger i = 0; i < segment; ++i) {
-    rect.origin.x += [self widthForSegment:i];
-  }
-  int xAdjust = segment == 0 ? kTabStripXPadding : 0;
-  rect.size.width = std::floor(
-      [self widthForSegment:segment] - kTabSpacing - xAdjust);
-  rect.origin.x = std::floor(rect.origin.x + kTabSpacing / 2 + xAdjust);
-
-  return rect;
+  DCHECK([self segmentCount] == 2);  // Assume 2 segments to keep things simple.
+  NSInteger leftSegment = [self leftSegment];
+  CGFloat xOrigin = segment == leftSegment ? kTabStripXPadding
+                                           : [self widthForSegment:leftSegment];
+  NSRect rect = NSMakeRect(xOrigin, tabstripHeight - kTabHeight,
+                           [self widthForSegment:segment] - kTabStripXPadding,
+                           kTabHeight);
+  return NSInsetRect(rect, kTabSpacing / 2, 0);
 }
 
 - (void)drawSegment:(NSInteger)segment
             inFrame:(NSRect)tabFrame
            withView:(NSView*)controlView {
   // Adjust the tab's frame so that the label appears centered in the tab.
-  if (segment == 0) {
+  if (segment == [self leftSegment])
     tabFrame.origin.x += kTabStripXPadding;
-    tabFrame.size.width -= kTabStripXPadding;
-  }
+  tabFrame.size.width -= kTabStripXPadding;
   tabFrame.origin.y += kTabLabelTopPadding;
   tabFrame.size.height -= kTabLabelTopPadding;
 
@@ -464,7 +472,7 @@ NSColor* IdentityVerifiedTextColor() {
                       textSize.width + 2 * kTabLabelXPadding);
   [segmentedControl_ setWidth:tabWidth + kTabStripXPadding
                    forSegment:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
-  [segmentedControl_ setWidth:tabWidth
+  [segmentedControl_ setWidth:tabWidth + kTabStripXPadding
                    forSegment:WebsiteSettingsUI::TAB_ID_CONNECTION];
 
   [segmentedControl_ setFont:[textAttributes objectForKey:NSFontAttributeName]];
