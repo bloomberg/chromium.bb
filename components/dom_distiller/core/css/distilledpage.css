@@ -345,6 +345,23 @@ pre {
   }
 }
 
+/* Iframe sizing. */
+.youtubeContainer {
+  height: 0px;
+  /* This is the perecnt height of a standard HD video. */
+  padding-bottom: 56.25%;
+  position: relative;
+  width: 100%;
+}
+
+.youtubeIframe {
+  height: 100%;
+  left: 0px;
+  position: absolute;
+  top: 0px;
+  width: 100%;
+}
+
 /* Loading Indicator. */
 #loader {
   height: 22px;

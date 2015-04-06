@@ -375,4 +375,8 @@ std::string DomDistillerViewerSource::GetContentSecurityPolicyObjectSrc()
   return "object-src 'none'; style-src 'self' https://fonts.googleapis.com;";
 }
 
+std::string DomDistillerViewerSource::GetContentSecurityPolicyFrameSrc() const {
+  return "frame-src *;";
+}
+
 }  // namespace dom_distiller

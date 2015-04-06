@@ -39,6 +39,7 @@ class DomDistillerViewerSource : public content::URLDataSource {
   void WillServiceRequest(const net::URLRequest* request,
                           std::string* path) const override;
   std::string GetContentSecurityPolicyObjectSrc() const override;
+  std::string GetContentSecurityPolicyFrameSrc() const override;
 
  private:
   friend class DomDistillerViewerSourceTest;

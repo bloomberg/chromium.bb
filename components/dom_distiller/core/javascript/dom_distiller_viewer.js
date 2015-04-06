@@ -6,6 +6,32 @@ function addToPage(html) {
   var div = document.createElement('div');
   div.innerHTML = html;
   document.getElementById('content').appendChild(div);
+  fillYouTubePlaceholders();
+}
+
+function fillYouTubePlaceholders() {
+  var placeholders = document.getElementsByClassName('embed-placeholder');
+  for (var i = 0; i < placeholders.length; i++) {
+    if (!placeholders[i].hasAttribute('data-type') ||
+        placeholders[i].getAttribute('data-type') != 'youtube' ||
+        !placeholders[i].hasAttribute('data-id')) {
+      continue;
+    }
+    var embed = document.createElement('iframe');
+    var url = 'http://www.youtube.com/embed/' +
+        placeholders[i].getAttribute('data-id');
+    embed.setAttribute('class', 'youtubeIframe');
+    embed.setAttribute('src', url);
+    embed.setAttribute('type', 'text/html');
+    embed.setAttribute('frameborder', '0');
+
+    var parent = placeholders[i].parentElement;
+    var container = document.createElement('div');
+    container.setAttribute('class', 'youtubeContainer');
+    container.appendChild(embed);
+
+    parent.replaceChild(container, placeholders[i]);
+  }
 }
 
 function showLoadingIndicator(isLastPage) {
