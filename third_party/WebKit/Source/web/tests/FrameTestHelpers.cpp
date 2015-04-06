@@ -270,7 +270,7 @@ WebViewImpl* WebViewHelper::initializeAndLoad(const std::string& url, bool enabl
 void WebViewHelper::reset()
 {
     if (m_webView) {
-        ASSERT(!testClientForFrame(m_webView->mainFrame())->isLoading());
+        ASSERT(m_webView->mainFrame()->isWebRemoteFrame() || !testClientForFrame(m_webView->mainFrame())->isLoading());
         m_webView->close();
         m_webView = 0;
     }

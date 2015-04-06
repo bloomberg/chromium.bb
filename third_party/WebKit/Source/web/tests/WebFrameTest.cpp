@@ -6879,6 +6879,37 @@ TEST_F(WebFrameSwapTest, RemoteWindowNamedAccess)
     EXPECT_TRUE(remoteWindowProperty.IsEmpty());
 }
 
+// TODO(alexmos, dcheng): This test and some other OOPIF tests use
+// very little of the test fixture support in WebFrameSwapTest.  We should
+// clean these tests up.
+TEST_F(WebFrameSwapTest, FramesOfRemoteParentAreIndexable)
+{
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+
+    WebRemoteFrame* remoteParentFrame = WebRemoteFrame::create(nullptr);
+    mainFrame()->swap(remoteParentFrame);
+    remoteParentFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
+
+    FrameTestHelpers::TestWebFrameClient childFrameClient;
+    WebLocalFrame* childFrame = remoteParentFrame->createLocalChild("", WebSandboxFlags::None, &childFrameClient);
+    FrameTestHelpers::loadFrame(childFrame, m_baseURL + "subframe-hello.html");
+
+    v8::Local<v8::Value> window = childFrame->executeScriptAndReturnValue(WebScriptSource("window"));
+    v8::Local<v8::Value> childOfRemoteParent = childFrame->executeScriptAndReturnValue(WebScriptSource("parent.frames[0]"));
+    EXPECT_TRUE(childOfRemoteParent->IsObject());
+    EXPECT_TRUE(window->StrictEquals(childOfRemoteParent));
+
+    v8::Local<v8::Value> windowLength = childFrame->executeScriptAndReturnValue(WebScriptSource("parent.frames.length"));
+    ASSERT_TRUE(windowLength->IsNumber());
+    v8::Local<v8::Integer> windowLengthInteger = windowLength->ToInteger();
+    EXPECT_EQ(1, windowLengthInteger->Value());
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated
+    // TestWebFrameClient.
+    reset();
+    remoteParentFrame->close();
+}
+
 class RemoteToLocalSwapWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     explicit RemoteToLocalSwapWebFrameClient(WebRemoteFrame* remoteFrame)
