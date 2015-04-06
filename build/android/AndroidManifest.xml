@@ -15,6 +15,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dummy.package">
 
-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="21" />
+    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />
 
 </manifest>
