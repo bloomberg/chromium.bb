@@ -778,7 +778,7 @@ public:
             // calls from HashTable weak processing. Remove the condition once
             // it is refactored.
 #if !defined(ADDRESS_SANITIZER)
-            ASSERT(visitor->canTraceEagerly() || visitor->isMarked(t));
+            ASSERT(Visitor::canTraceEagerly() || visitor->isMarked(t));
 #endif
             if (LIKELY(Visitor::canTraceEagerly())) {
                 if (visitor->ensureMarked(t)) {
