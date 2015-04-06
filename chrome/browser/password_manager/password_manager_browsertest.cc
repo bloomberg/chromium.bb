@@ -670,10 +670,10 @@ IN_PROC_BROWSER_TEST_F(
       "var frame_doc = first_frame.contentDocument;"
       "frame_doc.getElementById('username_failed').value = 'temp';"
       "frame_doc.getElementById('password_failed').value = 'random';"
-      "frame_doc.getElementById('submit_failed').click();"
-      "window.parent.location.href = 'multi_frames.html';";
+      "frame_doc.getElementById('submit_failed').click();";
 
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.SetPathToWaitFor("/password/failed.html");
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
 }
