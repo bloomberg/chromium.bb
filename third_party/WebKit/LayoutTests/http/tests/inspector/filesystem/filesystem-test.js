@@ -1,5 +1,7 @@
 var initialize_FileSystemTest = function()
 {
+    InspectorTest.preloadPanel("resources");
+
     var nextCallbackId = 0;
     var callbacks = {};
 
