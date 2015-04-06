@@ -793,7 +793,7 @@ void LocalFrame::clearWeakMembers(Visitor* visitor)
 {
     Vector<HTMLPlugInElement*> deadPlugins;
     for (const auto& pluginElement : m_pluginElements) {
-        if (!visitor->isAlive(pluginElement)) {
+        if (!visitor->isHeapObjectAlive(pluginElement)) {
             pluginElement->shouldDisposePlugin();
             deadPlugins.append(pluginElement);
         }

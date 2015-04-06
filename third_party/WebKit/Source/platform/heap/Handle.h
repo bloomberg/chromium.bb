@@ -90,11 +90,11 @@ public:
     {
     }
 
-    bool isAlive() { return m_trace; }
+    bool isHeapObjectAlive() { return m_trace; }
 
     virtual ~PersistentNode()
     {
-        ASSERT(isAlive());
+        ASSERT(isHeapObjectAlive());
         m_trace = nullptr;
     }
 
@@ -165,9 +165,9 @@ public:
     {
         typename RootsAccessor::Lock lock;
         ASSERT(m_roots == RootsAccessor::roots()); // Check that the thread is using the same roots list.
-        ASSERT(isAlive());
-        ASSERT(m_next->isAlive());
-        ASSERT(m_prev->isAlive());
+        ASSERT(isHeapObjectAlive());
+        ASSERT(m_next->isHeapObjectAlive());
+        ASSERT(m_prev->isHeapObjectAlive());
         m_next->m_prev = m_prev;
         m_prev->m_next = m_next;
     }
@@ -1096,7 +1096,7 @@ template<typename T> struct HashTraits<blink::WeakMember<T>> : SimpleClassHashTr
             visitor->trace(weakMember.get()); // Strongified visit.
             return false;
         }
-        return !visitor->isAlive(weakMember);
+        return !visitor->isHeapObjectAlive(weakMember);
     }
 };
 

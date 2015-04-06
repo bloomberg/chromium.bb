@@ -1235,7 +1235,7 @@ template<typename Key, typename Value, typename Extractor, typename HashFunction
                 // This is run as part of weak processing after full
                 // marking. The backing store is therefore marked if
                 // we get here.
-                ASSERT(visitor->isAlive(table->m_table));
+                ASSERT(visitor->isHeapObjectAlive(table->m_table));
                 // Now perform weak processing (this is a no-op if the backing
                 // was accessible through an iterator and was already marked
                 // strongly).
@@ -1300,7 +1300,7 @@ template<typename Key, typename Value, typename Extractor, typename HashFunction
         // and/or weak callback then we are done. This optimization does not
         // happen for ListHashSet since its iterator does not point at the
         // backing.
-        if (!m_table || visitor->isAlive(m_table))
+        if (!m_table || visitor->isHeapObjectAlive(m_table))
             return;
         // Normally, we mark the backing store without performing trace. This
         // means it is marked live, but the pointers inside it are not marked.

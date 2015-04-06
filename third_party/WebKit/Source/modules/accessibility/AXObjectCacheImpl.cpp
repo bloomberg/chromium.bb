@@ -557,7 +557,7 @@ void AXObjectCacheImpl::clearWeakMembers(Visitor* visitor)
 {
     Vector<Node*> deadNodes;
     for (HashMap<Node*, AXID>::iterator it = m_nodeObjectMapping.begin(); it != m_nodeObjectMapping.end(); ++it) {
-        if (!visitor->isAlive(it->key))
+        if (!visitor->isHeapObjectAlive(it->key))
             deadNodes.append(it->key);
     }
     for (unsigned i = 0; i < deadNodes.size(); ++i)
@@ -566,7 +566,7 @@ void AXObjectCacheImpl::clearWeakMembers(Visitor* visitor)
     Vector<Widget*> deadWidgets;
     for (HashMap<Widget*, AXID>::iterator it = m_widgetObjectMapping.begin();
         it != m_widgetObjectMapping.end(); ++it) {
-        if (!visitor->isAlive(it->key))
+        if (!visitor->isHeapObjectAlive(it->key))
             deadWidgets.append(it->key);
     }
     for (unsigned i = 0; i < deadWidgets.size(); ++i)

@@ -142,11 +142,11 @@ public:
     bool traceInCollection(VisitorDispatcher visitor, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
     {
         visitor->traceInCollection(second, strongify);
-        if (!visitor->isAlive(second))
+        if (!visitor->isHeapObjectAlive(second))
             return true;
         // FIXME: traceInCollection is also called from WeakProcessing to check if the entry is dead.
         // The below if avoids calling trace in that case by only calling trace when |first| is not yet marked.
-        if (!visitor->isAlive(first))
+        if (!visitor->isHeapObjectAlive(first))
             visitor->trace(first);
         return false;
     }
@@ -1078,7 +1078,7 @@ private:
 
     void zapWeakMembers(Visitor* visitor)
     {
-        if (!visitor->isAlive(m_weakBar))
+        if (!visitor->isHeapObjectAlive(m_weakBar))
             m_weakBar = 0;
     }
 
@@ -1190,7 +1190,7 @@ private:
     static void zapWeakMembers(Visitor* visitor, void* self)
     {
         FinalizationObserver* o = reinterpret_cast<FinalizationObserver*>(self);
-        if (o->m_data && !visitor->isAlive(o->m_data)) {
+        if (o->m_data && !visitor->isHeapObjectAlive(o->m_data)) {
             o->m_data->willFinalize();
             o->m_data = nullptr;
             o->m_didCallWillFinalize = true;
@@ -4484,7 +4484,7 @@ struct EmptyClearingHashSetTraits : HashTraits<WeakSet> {
         bool liveEntriesFound = false;
         WeakSet::iterator end = set.end();
         for (WeakSet::iterator it = set.begin(); it != end; ++it) {
-            if (visitor->isAlive(*it)) {
+            if (visitor->isHeapObjectAlive(*it)) {
                 liveEntriesFound = true;
                 break;
             }

@@ -153,7 +153,7 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
         static bool invokePreFinalizer(void* object, Visitor& visitor)   \
         { \
             Class* self = reinterpret_cast<Class*>(object); \
-            if (visitor.isAlive(self)) \
+            if (visitor.isHeapObjectAlive(self)) \
                 return false; \
             self->method(); \
             return true; \

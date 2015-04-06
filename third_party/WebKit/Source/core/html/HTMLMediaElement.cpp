@@ -3666,7 +3666,7 @@ void HTMLMediaElement::selectInitialTracksIfNecessary()
 #if ENABLE(WEB_AUDIO)
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor)
 {
-    if (!visitor->isAlive(m_audioSourceNode) && audioSourceProvider())
+    if (!visitor->isHeapObjectAlive(m_audioSourceNode) && audioSourceProvider())
         audioSourceProvider()->setClient(nullptr);
 }
 #endif

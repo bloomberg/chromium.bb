@@ -551,7 +551,7 @@ public:
         Derived::fromHelper(this)->registerWeakMembers(object, object, callback);
     }
 
-    template<typename T> inline bool isAlive(T* obj)
+    template<typename T> inline bool isHeapObjectAlive(T* obj)
     {
         // Check that we actually know the definition of T when tracing.
         static_assert(sizeof(T), "T must be fully defined");
@@ -564,13 +564,13 @@ public:
             return true;
         return ObjectAliveTrait<T>::isHeapObjectAlive(Derived::fromHelper(this), obj);
     }
-    template<typename T> inline bool isAlive(const Member<T>& member)
+    template<typename T> inline bool isHeapObjectAlive(const Member<T>& member)
     {
-        return isAlive(member.get());
+        return isHeapObjectAlive(member.get());
     }
-    template<typename T> inline bool isAlive(RawPtr<T> ptr)
+    template<typename T> inline bool isHeapObjectAlive(RawPtr<T> ptr)
     {
-        return isAlive(ptr.get());
+        return isHeapObjectAlive(ptr.get());
     }
 
 private:
@@ -715,7 +715,7 @@ template <typename T>
 void VisitorHelper<Derived>::handleWeakCell(Visitor* self, void* obj)
 {
     T** cell = reinterpret_cast<T**>(obj);
-    if (*cell && !self->isAlive(*cell))
+    if (*cell && !self->isHeapObjectAlive(*cell))
         *cell = nullptr;
 }
 
@@ -911,7 +911,7 @@ public:                                                                         
     }                                                                                                                                   \
     virtual bool isHeapObjectAlive(VISITOR visitor) const override                                                                      \
     {                                                                                                                                   \
-        return visitor->isAlive(this);                                                                                                  \
+        return visitor->isHeapObjectAlive(this);                                                                                                  \
     }                                                                                                                                   \
 private:
 

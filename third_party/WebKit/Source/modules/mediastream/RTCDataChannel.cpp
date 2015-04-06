@@ -326,7 +326,7 @@ void RTCDataChannel::scheduledEventTimerFired(Timer<RTCDataChannel>*)
 
 void RTCDataChannel::clearWeakMembers(Visitor* visitor)
 {
-    if (visitor->isAlive(m_connection))
+    if (visitor->isHeapObjectAlive(m_connection))
         return;
     stop();
     m_connection = nullptr;

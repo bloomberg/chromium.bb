@@ -116,13 +116,13 @@ private:
 template<typename T, bool = IsGarbageCollectedType<T>::value>
 class TimerIsObjectAliveTrait {
 public:
-    static bool isAlive(T*) { return true; }
+    static bool isHeapObjectAlive(T*) { return true; }
 };
 
 template<typename T>
 class TimerIsObjectAliveTrait<T, true> {
 public:
-    static bool isAlive(T* objectPointer)
+    static bool isHeapObjectAlive(T* objectPointer)
     {
         // Oilpan: if a timer fires while Oilpan heaps are being lazily
         // swept, it is not safe to proceed if the object is about to
@@ -142,7 +142,7 @@ public:
 private:
     virtual void fired() override
     {
-        if (!TimerIsObjectAliveTrait<TimerFiredClass>::isAlive(m_object))
+        if (!TimerIsObjectAliveTrait<TimerFiredClass>::isHeapObjectAlive(m_object))
             return;
         (m_object->*m_function)(this);
     }

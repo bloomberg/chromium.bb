@@ -300,9 +300,9 @@ ALWAYS_INLINE bool WebFrame::isFrameAliveImpl(VisitorDispatcher visitor, const W
         return true;
 
     if (frame->isWebLocalFrame())
-        return visitor->isAlive(toWebLocalFrameImpl(frame));
+        return visitor->isHeapObjectAlive(toWebLocalFrameImpl(frame));
 
-    return visitor->isAlive(toWebRemoteFrameImpl(frame));
+    return visitor->isHeapObjectAlive(toWebRemoteFrameImpl(frame));
 }
 
 template <typename VisitorDispatcher>
