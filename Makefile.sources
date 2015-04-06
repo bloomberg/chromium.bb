@@ -34,6 +34,7 @@ LIBDRM_INCLUDE_H_FILES := \
 	include/drm/sis_drm.h \
 	include/drm/tegra_drm.h \
 	include/drm/vc4_drm.h \
+	include/drm/vgem_drm.h \
 	include/drm/via_drm.h \
 	include/drm/virtgpu_drm.h
 
