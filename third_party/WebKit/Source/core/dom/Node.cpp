@@ -665,6 +665,19 @@ inline static Node& rootInTreeOfTrees(Node& node)
     return *root;
 }
 
+#if ENABLE(ASSERT)
+bool Node::needsDistributionRecalc() const
+{
+    // TODO(hayato): If we can prove that this->childNeedsDistributionRecalc()
+    // is enough for either case, in a document, not in a document, remove this
+    // function after renaming Node::childNeedsDistributionRecalc() to a more
+    // appropriate name.
+    if (inDocument())
+        return document().childNeedsDistributionRecalc();
+    return childNeedsDistributionRecalc();
+}
+#endif
+
 void Node::updateDistribution()
 {
     TRACE_EVENT0("blink", "Node::updateDistribution");

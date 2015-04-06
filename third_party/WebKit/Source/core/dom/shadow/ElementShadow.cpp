@@ -240,7 +240,7 @@ bool ElementShadow::hasSameStyles(const ElementShadow* other) const
 
 const InsertionPoint* ElementShadow::finalDestinationInsertionPointFor(const Node* key) const
 {
-    ASSERT(key && !key->document().childNeedsDistributionRecalc());
+    ASSERT(key && !key->needsDistributionRecalc());
     NodeToDestinationInsertionPoints::const_iterator it = m_nodeToInsertionPoints.find(key);
 #if ENABLE(OILPAN)
     return it == m_nodeToInsertionPoints.end() ? nullptr : it->value->last().get();
@@ -251,7 +251,7 @@ const InsertionPoint* ElementShadow::finalDestinationInsertionPointFor(const Nod
 
 const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(const Node* key) const
 {
-    ASSERT(key && !key->document().childNeedsDistributionRecalc());
+    ASSERT(key && !key->needsDistributionRecalc());
     NodeToDestinationInsertionPoints::const_iterator it = m_nodeToInsertionPoints.find(key);
 #if ENABLE(OILPAN)
     return it == m_nodeToInsertionPoints.end() ? nullptr : it->value.get();
