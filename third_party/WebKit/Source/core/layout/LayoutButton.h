@@ -45,7 +45,7 @@ public:
     virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override { }
     virtual bool createsAnonymousWrapper() const override { return true; }
 
-    virtual bool hasControlClip() const override { return true; }
+    virtual bool hasControlClip() const override;
     virtual LayoutRect controlClipRect(const LayoutPoint&) const override;
 
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode) const override;

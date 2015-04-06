@@ -103,4 +103,10 @@ int LayoutButton::baselinePosition(FontBaseline baseline, bool firstLine, LineDi
     return LayoutFlexibleBox::baselinePosition(baseline, firstLine, direction, linePositionMode);
 }
 
+
+// For compatibility with IE/FF we only clip overflow on input elements.
+bool LayoutButton::hasControlClip() const
+{
+    return !isHTMLButtonElement(node());
+}
 } // namespace blink
