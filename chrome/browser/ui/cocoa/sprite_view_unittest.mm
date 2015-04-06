@@ -13,6 +13,20 @@
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
 
+@interface SpriteView (ExposedForTesting)
+
+- (BOOL)isAnimating;
+
+@end
+
+@implementation SpriteView (ExposedForTesting)
+
+- (BOOL)isAnimating {
+  return [imageLayer_ animationForKey:[spriteAnimation_ keyPath]] != nil;
+}
+
+@end
+
 namespace {
 
 class SpriteViewTest : public CocoaTest {
@@ -39,6 +53,27 @@ TEST_F(SpriteViewTest, TestViewFrame) {
   EXPECT_EQ(0.0, frame.origin.y);
   EXPECT_EQ(imageSize.height, NSWidth(frame));
   EXPECT_EQ(imageSize.height, NSHeight(frame));
+}
+
+TEST_F(SpriteViewTest, StopAnimationOnMiniaturize) {
+  EXPECT_TRUE([view_ isAnimating]);
+
+  [test_window() miniaturize:nil];
+  EXPECT_FALSE([view_ isAnimating]);
+
+  [test_window() deminiaturize:nil];
+  EXPECT_TRUE([view_ isAnimating]);
+}
+
+TEST_F(SpriteViewTest,
+       StopAnimationOnRemoveFromSuperview) {
+  EXPECT_TRUE([view_ isAnimating]);
+
+  [view_ removeFromSuperview];
+  EXPECT_FALSE([view_ isAnimating]);
+
+  [[test_window() contentView] addSubview:view_];
+  EXPECT_TRUE([view_ isAnimating]);
 }
 
 }  // namespace

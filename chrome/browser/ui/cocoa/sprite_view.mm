@@ -73,10 +73,13 @@ static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
     // Only animate the sprites if we are attached to a window, and that window
     // is not currently minimized or in the middle of a minimize animation.
     // http://crbug.com/350329
-    if ([self window] && ![[self window] isMiniaturized]) {
-      if ([imageLayer_ animationForKey:[spriteAnimation_ keyPath]] == nil)
+    if ([self window] && ![[self window] isMiniaturized] &&
+        ![[notification name] isEqualToString:
+             NSWindowWillMiniaturizeNotification]) {
+      if ([imageLayer_ animationForKey:[spriteAnimation_ keyPath]] == nil) {
         [imageLayer_ addAnimation:spriteAnimation_.get()
                      forKey:[spriteAnimation_ keyPath]];
+      }
     } else {
       [imageLayer_ removeAnimationForKey:[spriteAnimation_ keyPath]];
     }
