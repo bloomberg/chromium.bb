@@ -305,7 +305,7 @@ void ScriptInjection::OnJsInjectionCompleted(
   bool expects_results = injector_->ExpectsResults();
   if (expects_results) {
     scoped_ptr<base::Value> result;
-    if (!results.isEmpty()) {
+    if (!results.isEmpty() && !results[0].IsEmpty()) {
       // Right now, we only support returning single results (per frame).
       scoped_ptr<content::V8ValueConverter> v8_converter(
           content::V8ValueConverter::create());
