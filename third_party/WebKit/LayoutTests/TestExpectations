@@ -1914,9 +1914,6 @@ crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-con
 crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-vertical-lr.html [ Skip ]
 crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-vertical-rl.html [ Skip ]
 crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/flipped-blocks-inline-map-local-to-container.html [ Skip ]
-Bug(senorblanco) virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
-Bug(senorblanco) css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
-Bug(senorblanco) virtual/slimmingpaint/css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
 
 crbug.com/453781 fast/hidpi/image-srcset-change-dynamically-from-js-1x.html [ Pass Failure ]
 crbug.com/453781 fast/hidpi/image-srcset-change-dynamically-from-js-2x.html [ Pass Failure ]
