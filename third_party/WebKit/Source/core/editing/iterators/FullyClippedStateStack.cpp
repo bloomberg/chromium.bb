@@ -3,24 +3,15 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "FullyClippedStateStack.h"
+#include "core/editing/iterators/FullyClippedStateStack.h"
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
+#include "core/editing/iterators/TextIteratorStrategy.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
-
-#if ENABLE(ASSERT)
-static unsigned depthCrossingShadowBoundaries(Node* node)
-{
-    unsigned depth = 0;
-    for (ContainerNode* parent = node->parentOrShadowHostNode(); parent; parent = parent->parentOrShadowHostNode())
-        ++depth;
-    return depth;
-}
-#endif
 
 static inline bool fullyClipsContents(Node* node)
 {
@@ -38,17 +29,20 @@ static inline bool ignoresContainerClip(Node* node)
     return renderer->style()->hasOutOfFlowPosition();
 }
 
-FullyClippedStateStack::FullyClippedStateStack()
+template<typename Strategy>
+FullyClippedStateStackAlgorithm<Strategy>::FullyClippedStateStackAlgorithm()
 {
 }
 
-FullyClippedStateStack::~FullyClippedStateStack()
+template<typename Strategy>
+FullyClippedStateStackAlgorithm<Strategy>::~FullyClippedStateStackAlgorithm()
 {
 }
 
-void FullyClippedStateStack::pushFullyClippedState(Node* node)
+template<typename Strategy>
+void FullyClippedStateStackAlgorithm<Strategy>::pushFullyClippedState(Node* node)
 {
-    ASSERT(size() == depthCrossingShadowBoundaries(node));
+    ASSERT(size() == Strategy::depthCrossingShadowBoundaries(*node));
 
     // FIXME: m_fullyClippedStack was added in response to <https://bugs.webkit.org/show_bug.cgi?id=26364>
     // ("Search can find text that's hidden by overflow:hidden"), but the logic here will not work correctly if
@@ -64,11 +58,12 @@ void FullyClippedStateStack::pushFullyClippedState(Node* node)
     push(fullyClipsContents(node) || (top() && !ignoresContainerClip(node)));
 }
 
-void FullyClippedStateStack::setUpFullyClippedStack(Node* node)
+template<typename Strategy>
+void FullyClippedStateStackAlgorithm<Strategy>::setUpFullyClippedStack(Node* node)
 {
     // Put the nodes in a vector so we can iterate in reverse order.
     WillBeHeapVector<RawPtrWillBeMember<ContainerNode>, 100> ancestry;
-    for (ContainerNode* parent = node->parentOrShadowHostNode(); parent; parent = parent->parentOrShadowHostNode())
+    for (ContainerNode* parent = Strategy::parentOrShadowHostNode(*node); parent; parent = Strategy::parentOrShadowHostNode(*parent))
         ancestry.append(parent);
 
     // Call pushFullyClippedState on each node starting with the earliest ancestor.
@@ -77,7 +72,9 @@ void FullyClippedStateStack::setUpFullyClippedStack(Node* node)
         pushFullyClippedState(ancestry[ancestrySize - i - 1]);
     pushFullyClippedState(node);
 
-    ASSERT(size() == 1 + depthCrossingShadowBoundaries(node));
+    ASSERT(size() == 1 + Strategy::depthCrossingShadowBoundaries(*node));
 }
+
+template class FullyClippedStateStackAlgorithm<TextIteratorStrategy>;
 
 } // namespace blink

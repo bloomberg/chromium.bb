@@ -31,12 +31,13 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/FirstLetterPseudoElement.h"
-#include "core/dom/NodeTraversal.h"
+#include "core/dom/Position.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/iterators/CharacterIterator.h"
+#include "core/editing/iterators/TextIteratorStrategy.h"
 #include "core/editing/iterators/WordAwareIterator.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"
@@ -59,38 +60,25 @@ namespace blink {
 
 using namespace HTMLNames;
 
-// This function is like Range::pastLastNode, except for the fact that it can climb up out of shadow trees.
-static Node* nextInPreOrderCrossingShadowBoundaries(Node* rangeEndContainer, int rangeEndOffset)
-{
-    if (!rangeEndContainer)
-        return 0;
-    if (rangeEndOffset >= 0 && !rangeEndContainer->offsetInCharacters()) {
-        if (Node* next = NodeTraversal::childAt(*rangeEndContainer, rangeEndOffset))
-            return next;
-    }
-    for (Node* node = rangeEndContainer; node; node = node->parentOrShadowHostNode()) {
-        if (Node* next = node->nextSibling())
-            return next;
-    }
-    return 0;
-}
-
-// --------
-
-TextIterator::TextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
-    : m_startContainer(nullptr)
+template<typename Strategy>
+TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, TextIteratorBehaviorFlags behavior)
+    : m_offset(0)
+    , m_startContainer(nullptr)
     , m_startOffset(0)
     , m_endContainer(nullptr)
     , m_endOffset(0)
     , m_positionNode(nullptr)
+    , m_positionStartOffset(0)
+    , m_positionEndOffset(0)
     , m_textLength(0)
     , m_needsAnotherNewline(false)
-    , m_textBox(0)
-    , m_remainingTextBox(0)
+    , m_textBox(nullptr)
+    , m_remainingTextBox(nullptr)
     , m_firstLetterText(nullptr)
     , m_lastTextNode(nullptr)
     , m_lastTextNodeEndedWithCollapsedSpace(false)
     , m_lastCharacter(0)
+    , m_singleCharacterBuffer(0)
     , m_sortedTextBoxesPosition(0)
     , m_hasEmitted(false)
     , m_behavior(behavior)
@@ -99,22 +87,18 @@ TextIterator::TextIterator(const Position& start, const Position& end, TextItera
 {
     ASSERT(start.isNotNull());
     ASSERT(end.isNotNull());
-    initialize(start, end);
+    if (comparePositions(start, end) > 0) {
+        initialize(end.containerNode(), end.computeOffsetInContainerNode(), start.containerNode(), start.computeOffsetInContainerNode());
+        return;
+    }
+    initialize(start.containerNode(), start.computeOffsetInContainerNode(), end.containerNode(), end.computeOffsetInContainerNode());
 }
 
-void TextIterator::initialize(const Position& start, const Position& end)
+template<typename Strategy>
+void TextIteratorAlgorithm<Strategy>::initialize(Node* startContainer, int startOffset, Node* endContainer, int endOffset)
 {
-    ASSERT(comparePositions(start, end) <= 0);
-
-    // Get and validate |start| and |end|.
-    Node* startContainer = start.containerNode();
-    if (!startContainer)
-        return;
-    int startOffset = start.computeOffsetInContainerNode();
-    Node* endContainer = end.containerNode();
-    if (!endContainer)
-        return;
-    int endOffset = end.computeOffsetInContainerNode();
+    ASSERT(startContainer);
+    ASSERT(endContainer);
 
     // Remember the range - this does not change.
     m_startContainer = startContainer;
@@ -122,23 +106,17 @@ void TextIterator::initialize(const Position& start, const Position& end)
     m_endContainer = endContainer;
     m_endOffset = endOffset;
 
-    // Figure out the initial value of m_shadowDepth: the depth of startContainer's tree scope from
-    // the common ancestor tree scope.
-    const TreeScope* commonAncestorTreeScope = startContainer->treeScope().commonAncestorTreeScope(endContainer->treeScope());
-    ASSERT(commonAncestorTreeScope);
-    m_shadowDepth = 0;
-    for (const TreeScope* treeScope = &startContainer->treeScope(); treeScope != commonAncestorTreeScope; treeScope = treeScope->parentTreeScope())
-        ++m_shadowDepth;
+    m_shadowDepth = Strategy::shadowDepthOf(*startContainer, *endContainer);
 
     // Set up the current node for processing.
     if (startContainer->offsetInCharacters())
         m_node = startContainer;
-    else if (Node* child = NodeTraversal::childAt(*startContainer, startOffset))
+    else if (Node* child = Strategy::childAt(*startContainer, startOffset))
         m_node = child;
     else if (!startOffset)
         m_node = startContainer;
     else
-        m_node = NodeTraversal::nextSkippingChildren(*startContainer);
+        m_node = Strategy::nextSkippingChildren(*startContainer);
 
     if (!m_node)
         return;
@@ -150,17 +128,19 @@ void TextIterator::initialize(const Position& start, const Position& end)
     m_iterationProgress = HandledNone;
 
     // Calculate first out of bounds node.
-    m_pastEndNode = nextInPreOrderCrossingShadowBoundaries(endContainer, endOffset);
+    m_pastEndNode = endContainer? Strategy::pastLastNode(*endContainer, endOffset) : nullptr;
 
     // Identify the first run.
     advance();
 }
 
-TextIterator::~TextIterator()
+template<typename Strategy>
+TextIteratorAlgorithm<Strategy>::~TextIteratorAlgorithm()
 {
 }
 
-bool TextIterator::isInsideReplacedElement() const
+template<typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::isInsideReplacedElement() const
 {
     if (atEnd() || length() != 1 || !m_node)
         return false;
@@ -169,7 +149,8 @@ bool TextIterator::isInsideReplacedElement() const
     return renderer && renderer->isReplaced();
 }
 
-void TextIterator::advance()
+template<typename Strategy>
+void TextIteratorAlgorithm<Strategy>::advance()
 {
     if (m_shouldStop)
         return;
@@ -188,8 +169,9 @@ void TextIterator::advance()
         // break begins.
         // FIXME: It would be cleaner if we emitted two newlines during the last
         // iteration, instead of using m_needsAnotherNewline.
-        Node* baseNode = m_node->lastChild() ? m_node->lastChild() : m_node.get();
-        emitCharacter('\n', baseNode->parentNode(), baseNode, 1, 1);
+        Node* lastChild = Strategy::lastChild(*m_node);
+        Node* baseNode = lastChild ? lastChild : m_node.get();
+        emitCharacter('\n', Strategy::parent(*baseNode), baseNode, 1, 1);
         m_needsAnotherNewline = false;
         return;
     }
@@ -263,7 +245,8 @@ void TextIterator::advance()
             if (m_iterationProgress < HandledNode) {
                 bool handledNode = false;
                 if (renderer->isText() && m_node->nodeType() == Node::TEXT_NODE) { // FIXME: What about CDATA_SECTION_NODE?
-                    handledNode = handleTextNode();
+                    if (!m_fullyClippedStack.top() || ignoresStyleVisibility())
+                        handledNode = handleTextNode();
                 } else if (renderer && (renderer->isImage() || renderer->isLayoutPart()
                     || (m_node && m_node->isHTMLElement()
                     && (isHTMLFormControlElement(toHTMLElement(*m_node))
@@ -286,29 +269,31 @@ void TextIterator::advance()
         // calling exitNode() as we come back thru a parent node.
         //
         // 1. Iterate over child nodes, if we haven't done yet.
-        Node* next = m_iterationProgress < HandledChildren ? m_node->firstChild() : 0;
+        // To support |TextIteratorEmitsImageAltText|, we don't traversal child
+        // nodes, in composed tree.
+        Node* next = m_iterationProgress < HandledChildren && !isHTMLImageElement(*m_node) ? Strategy::firstChild(*m_node) : nullptr;
         m_offset = 0;
         if (!next) {
             // 2. If we've already iterated children or they are not available, go to the next sibling node.
-            next = m_node->nextSibling();
+            next = Strategy::nextSibling(*m_node);
             if (!next) {
                 // 3. If we are at the last child, go up the node tree until we find a next sibling.
-                bool pastEnd = NodeTraversal::next(*m_node) == m_pastEndNode;
-                ContainerNode* parentNode = m_node->parentNode();
+                bool pastEnd = Strategy::next(*m_node) == m_pastEndNode;
+                ContainerNode* parentNode = Strategy::parent(*m_node);
                 while (!next && parentNode) {
-                    if ((pastEnd && parentNode == m_endContainer) || m_endContainer->isDescendantOf(parentNode))
+                    if ((pastEnd && parentNode == m_endContainer) || Strategy::isDescendantOf(*m_endContainer, *parentNode))
                         return;
                     bool haveRenderer = m_node->layoutObject();
                     m_node = parentNode;
                     m_fullyClippedStack.pop();
-                    parentNode = m_node->parentNode();
+                    parentNode = Strategy::parent(*m_node);
                     if (haveRenderer)
                         exitNode();
                     if (m_positionNode) {
                         m_iterationProgress = HandledChildren;
                         return;
                     }
-                    next = m_node->nextSibling();
+                    next = Strategy::nextSibling(*m_node);
                 }
 
                 if (!next && !parentNode && m_shadowDepth > 0) {
@@ -360,7 +345,8 @@ void TextIterator::advance()
     }
 }
 
-UChar TextIterator::characterAt(unsigned index) const
+template<typename Strategy>
+UChar TextIteratorAlgorithm<Strategy>::characterAt(unsigned index) const
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < static_cast<unsigned>(length()));
     if (!(index < static_cast<unsigned>(length())))
@@ -372,10 +358,11 @@ UChar TextIterator::characterAt(unsigned index) const
         return m_singleCharacterBuffer;
     }
 
-    return string()[positionStartOffset() + index];
+    return string()[m_positionStartOffset + index];
 }
 
-String TextIterator::substring(unsigned position, unsigned length) const
+template<typename Strategy>
+String TextIteratorAlgorithm<Strategy>::substring(unsigned position, unsigned length) const
 {
     ASSERT_WITH_SECURITY_IMPLICATION(position <= static_cast<unsigned>(this->length()));
     ASSERT_WITH_SECURITY_IMPLICATION(position + length <= static_cast<unsigned>(this->length()));
@@ -386,10 +373,11 @@ String TextIterator::substring(unsigned position, unsigned length) const
         ASSERT(length == 1);
         return String(&m_singleCharacterBuffer, 1);
     }
-    return string().substring(positionStartOffset() + position, length);
+    return string().substring(m_positionStartOffset + position, length);
 }
 
-void TextIterator::appendTextToStringBuilder(StringBuilder& builder, unsigned position, unsigned maxLength) const
+template<typename Strategy>
+void TextIteratorAlgorithm<Strategy>::appendTextToStringBuilder(StringBuilder& builder, unsigned position, unsigned maxLength) const
 {
     unsigned lengthToAppend = std::min(static_cast<unsigned>(length()) - position, maxLength);
     if (!lengthToAppend)
@@ -398,7 +386,7 @@ void TextIterator::appendTextToStringBuilder(StringBuilder& builder, unsigned po
         ASSERT(!position);
         builder.append(m_singleCharacterBuffer);
     } else {
-        builder.append(string(), positionStartOffset() + position, lengthToAppend);
+        builder.append(string(), m_positionStartOffset + position, lengthToAppend);
     }
 }
 
@@ -419,11 +407,9 @@ static bool hasVisibleTextNode(LayoutText* renderer)
     return pseudoElementRenderer && pseudoElementRenderer->style()->visibility() == VISIBLE;
 }
 
-bool TextIterator::handleTextNode()
+template<typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::handleTextNode()
 {
-    if (m_fullyClippedStack.top() && !ignoresStyleVisibility())
-        return false;
-
     Text* textNode = toText(m_node);
     LayoutText* renderer = textNode->layoutObject();
 
@@ -492,12 +478,13 @@ bool TextIterator::handleTextNode()
     return true;
 }
 
-void TextIterator::handleTextBox()
+template<typename Strategy>
+void TextIteratorAlgorithm<Strategy>::handleTextBox()
 {
     LayoutText* renderer = m_firstLetterText ? m_firstLetterText.get() : toLayoutText(m_node->layoutObject());
 
     if (renderer->style()->visibility() != VISIBLE && !ignoresStyleVisibility()) {
-        m_textBox = 0;
+        m_textBox = nullptr;
     } else {
         String str = renderer->text();
         unsigned start = m_offset;
@@ -591,7 +578,8 @@ void TextIterator::handleTextBox()
     }
 }
 
-void TextIterator::handleTextNodeFirstLetter(LayoutTextFragment* renderer)
+template<typename Strategy>
+void TextIteratorAlgorithm<Strategy>::handleTextNodeFirstLetter(LayoutTextFragment* renderer)
 {
     m_handledFirstLetter = true;
 
@@ -615,21 +603,23 @@ void TextIterator::handleTextNodeFirstLetter(LayoutTextFragment* renderer)
     m_firstLetterText = toLayoutText(firstLetter);
 }
 
-bool TextIterator::supportsAltText(Node* m_node)
+template<typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::supportsAltText(Node* node)
 {
-    if (!m_node->isHTMLElement())
+    if (!node->isHTMLElement())
         return false;
-    HTMLElement& element = toHTMLElement(*m_node);
+    HTMLElement& element = toHTMLElement(*node);
 
     // FIXME: Add isSVGImageElement.
     if (isHTMLImageElement(element))
         return true;
-    if (isHTMLInputElement(toHTMLElement(*m_node)) && toHTMLInputElement(*m_node).isImage())
+    if (isHTMLInputElement(toHTMLElement(*node)) && toHTMLInputElement(*node).isImage())
         return true;
     return false;
 }
 
-bool TextIterator::handleReplacedElement()
+template<typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::handleReplacedElement()
 {
     if (m_fullyClippedStack.top())
         return false;
@@ -639,12 +629,12 @@ bool TextIterator::handleReplacedElement()
         return false;
 
     if (emitsObjectReplacementCharacter()) {
-        emitCharacter(objectReplacementCharacter, m_node->parentNode(), m_node, 0, 1);
+        emitCharacter(objectReplacementCharacter, Strategy::parent(*m_node), m_node, 0, 1);
         return true;
     }
 
     if (m_lastTextNodeEndedWithCollapsedSpace) {
-        emitCharacter(space, m_lastTextNode->parentNode(), m_lastTextNode, 1, 1);
+        emitCharacter(space, Strategy::parent(*m_lastTextNode), m_lastTextNode, 1, 1);
         return false;
     }
 
@@ -659,11 +649,11 @@ bool TextIterator::handleReplacedElement()
         // We want replaced elements to behave like punctuation for boundary
         // finding, and to simply take up space for the selection preservation
         // code in moveParagraphs, so we use a comma.
-        emitCharacter(',', m_node->parentNode(), m_node, 0, 1);
+        emitCharacter(',', Strategy::parent(*m_node), m_node, 0, 1);
         return true;
     }
 
-    m_positionNode = m_node->parentNode();
+    m_positionNode = Strategy::parent(*m_node);
     m_positionOffsetBaseNode = m_node;
     m_positionStartOffset = 0;
     m_positionEndOffset = 1;
@@ -684,7 +674,8 @@ bool TextIterator::handleReplacedElement()
     return true;
 }
 
-bool TextIterator::shouldEmitTabBeforeNode(Node* node)
+template<typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::shouldEmitTabBeforeNode(Node* node)
 {
     LayoutObject* r = node->layoutObject();
 
@@ -698,7 +689,8 @@ bool TextIterator::shouldEmitTabBeforeNode(Node* node)
     return t && (t->cellBefore(rc) || t->cellAbove(rc));
 }
 
-bool TextIterator::shouldEmitNewlineForNode(Node* node, bool emitsOriginalText)
+template<typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::shouldEmitNewlineForNode(Node* node, bool emitsOriginalText)
 {
     LayoutObject* renderer = node->layoutObject();
 
@@ -756,7 +748,8 @@ static bool shouldEmitNewlinesBeforeAndAfterNode(Node& node)
         && !r->isFloatingOrOutOfFlowPositioned() && !r->isBody() && !r->isRubyText();
 }
 
-bool TextIterator::shouldEmitNewlineAfterNode(Node& node)
+template<typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::shouldEmitNewlineAfterNode(Node& node)
 {
     // FIXME: It should be better but slower to create a VisiblePosition here.
     if (!shouldEmitNewlinesBeforeAndAfterNode(node))
@@ -765,14 +758,15 @@ bool TextIterator::shouldEmitNewlineAfterNode(Node& node)
     // If so, then we should not emit a newline.
     Node* next = &node;
     do {
-        next = NodeTraversal::nextSkippingChildren(*next);
+        next = Strategy::nextSkippingChildren(*next);
         if (next && next->layoutObject())
             return true;
     } while (next);
     return false;
 }
 
-bool TextIterator::shouldEmitNewlineBeforeNode(Node& node)
+template<typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::shouldEmitNewlineBeforeNode(Node& node)
 {
     return shouldEmitNewlinesBeforeAndAfterNode(node);
 }
@@ -809,7 +803,8 @@ static bool shouldEmitExtraNewlineForNode(Node* node)
 }
 
 // Whether or not we should emit a character as we enter m_node (if it's a container) or as we hit it (if it's atomic).
-bool TextIterator::shouldRepresentNodeOffsetZero()
+template<typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero()
 {
     if (emitsCharactersBetweenAllVisiblePositions() && isRenderedTableElement(m_node))
         return true;
@@ -837,7 +832,7 @@ bool TextIterator::shouldRepresentNodeOffsetZero()
 
     // If we are outside the start container's subtree, assume we need to emit.
     // FIXME: m_startContainer could be an inline block
-    if (!m_node->isDescendantOf(m_startContainer))
+    if (!Strategy::isDescendantOf(*m_node, *m_startContainer))
         return true;
 
     // If we started as m_startContainer offset 0 and the current node is a descendant of
@@ -865,12 +860,14 @@ bool TextIterator::shouldRepresentNodeOffsetZero()
     return startPos.isNotNull() && currPos.isNotNull() && !inSameLine(startPos, currPos);
 }
 
-bool TextIterator::shouldEmitSpaceBeforeAndAfterNode(Node* node)
+template<typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::shouldEmitSpaceBeforeAndAfterNode(Node* node)
 {
     return isRenderedTableElement(node) && (node->layoutObject()->isInline() || emitsCharactersBetweenAllVisiblePositions());
 }
 
-void TextIterator::representNodeOffsetZero()
+template<typename Strategy>
+void TextIteratorAlgorithm<Strategy>::representNodeOffsetZero()
 {
     // Emit a character to show the positioning of m_node.
 
@@ -880,39 +877,43 @@ void TextIterator::representNodeOffsetZero()
     // before encountering shouldRepresentNodeOffsetZero()s worse case behavior.
     if (shouldEmitTabBeforeNode(m_node)) {
         if (shouldRepresentNodeOffsetZero())
-            emitCharacter('\t', m_node->parentNode(), m_node, 0, 0);
+            emitCharacter('\t', Strategy::parent(*m_node), m_node, 0, 0);
     } else if (shouldEmitNewlineBeforeNode(*m_node)) {
         if (shouldRepresentNodeOffsetZero())
-            emitCharacter('\n', m_node->parentNode(), m_node, 0, 0);
+            emitCharacter('\n', Strategy::parent(*m_node), m_node, 0, 0);
     } else if (shouldEmitSpaceBeforeAndAfterNode(m_node)) {
         if (shouldRepresentNodeOffsetZero())
-            emitCharacter(space, m_node->parentNode(), m_node, 0, 0);
+            emitCharacter(space, Strategy::parent(*m_node), m_node, 0, 0);
     }
 }
 
-bool TextIterator::handleNonTextNode()
+
+template<typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::handleNonTextNode()
 {
     if (shouldEmitNewlineForNode(m_node, emitsOriginalText()))
-        emitCharacter('\n', m_node->parentNode(), m_node, 0, 1);
+        emitCharacter('\n', Strategy::parent(*m_node), m_node, 0, 1);
     else if (emitsCharactersBetweenAllVisiblePositions() && m_node->layoutObject() && m_node->layoutObject()->isHR())
-        emitCharacter(space, m_node->parentNode(), m_node, 0, 1);
+        emitCharacter(space, Strategy::parent(*m_node), m_node, 0, 1);
     else
         representNodeOffsetZero();
 
     return true;
 }
 
-void TextIterator::flushPositionOffsets() const
+template<typename Strategy>
+void TextIteratorAlgorithm<Strategy>::flushPositionOffsets() const
 {
     if (!m_positionOffsetBaseNode)
         return;
-    int index = m_positionOffsetBaseNode->nodeIndex();
+    int index = Strategy::index(*m_positionOffsetBaseNode);
     m_positionStartOffset += index;
     m_positionEndOffset += index;
     m_positionOffsetBaseNode = nullptr;
 }
 
-void TextIterator::exitNode()
+template<typename Strategy>
+void TextIteratorAlgorithm<Strategy>::exitNode()
 {
     // prevent emitting a newline when exiting a collapsed block at beginning of the range
     // FIXME: !m_hasEmitted does not necessarily mean there was a collapsed block... it could
@@ -924,7 +925,8 @@ void TextIterator::exitNode()
     // Emit with a position *inside* m_node, after m_node's contents, in
     // case it is a block, because the run should start where the
     // emitted character is positioned visually.
-    Node* baseNode = m_node->lastChild() ? m_node->lastChild() : m_node.get();
+    Node* lastChild = Strategy::lastChild(*m_node);
+    Node* baseNode = lastChild ? lastChild : m_node.get();
     // FIXME: This shouldn't require the m_lastTextNode to be true, but we can't change that without making
     // the logic in _web_attributedStringFromRange match. We'll get that for free when we switch to use
     // TextIterator in _web_attributedStringFromRange.
@@ -937,22 +939,23 @@ void TextIterator::exitNode()
         // contain a VisiblePosition when doing selection preservation.
         if (m_lastCharacter != '\n') {
             // insert a newline with a position following this block's contents.
-            emitCharacter('\n', baseNode->parentNode(), baseNode, 1, 1);
+            emitCharacter('\n', Strategy::parent(*baseNode), baseNode, 1, 1);
             // remember whether to later add a newline for the current node
             ASSERT(!m_needsAnotherNewline);
             m_needsAnotherNewline = addNewline;
         } else if (addNewline) {
             // insert a newline with a position following this block's contents.
-            emitCharacter('\n', baseNode->parentNode(), baseNode, 1, 1);
+            emitCharacter('\n', Strategy::parent(*baseNode), baseNode, 1, 1);
         }
     }
 
     // If nothing was emitted, see if we need to emit a space.
     if (!m_positionNode && shouldEmitSpaceBeforeAndAfterNode(m_node))
-        emitCharacter(space, baseNode->parentNode(), baseNode, 1, 1);
+        emitCharacter(space, Strategy::parent(*baseNode), baseNode, 1, 1);
 }
 
-void TextIterator::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset)
+template<typename Strategy>
+void TextIteratorAlgorithm<Strategy>::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset)
 {
     m_hasEmitted = true;
 
@@ -973,7 +976,8 @@ void TextIterator::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, 
     m_lastCharacter = c;
 }
 
-void TextIterator::emitText(Node* textNode, LayoutText* renderer, int textStartOffset, int textEndOffset)
+template<typename Strategy>
+void TextIteratorAlgorithm<Strategy>::emitText(Node* textNode, LayoutText* renderer, int textStartOffset, int textEndOffset)
 {
     m_text = emitsOriginalText() ? renderer->originalText() : renderer->text();
     ASSERT(!m_text.isEmpty());
@@ -993,7 +997,8 @@ void TextIterator::emitText(Node* textNode, LayoutText* renderer, int textStartO
     m_hasEmitted = true;
 }
 
-PassRefPtrWillBeRawPtr<Range> TextIterator::createRange() const
+template<typename Strategy>
+PassRefPtrWillBeRawPtr<Range> TextIteratorAlgorithm<Strategy>::createRange() const
 {
     // use the current run information, if we have it
     if (m_positionNode) {
@@ -1008,7 +1013,8 @@ PassRefPtrWillBeRawPtr<Range> TextIterator::createRange() const
     return nullptr;
 }
 
-Document* TextIterator::ownerDocument() const
+template<typename Strategy>
+Document* TextIteratorAlgorithm<Strategy>::ownerDocument() const
 {
     if (m_positionNode)
         return &m_positionNode->document();
@@ -1017,18 +1023,20 @@ Document* TextIterator::ownerDocument() const
     return 0;
 }
 
-Node* TextIterator::node() const
+template<typename Strategy>
+Node* TextIteratorAlgorithm<Strategy>::node() const
 {
     if (m_positionNode || m_endContainer) {
         Node* node = currentContainer();
         if (node->offsetInCharacters())
             return node;
-        return NodeTraversal::childAt(*node, startOffsetInCurrentContainer());
+        return Strategy::childAt(*node, startOffsetInCurrentContainer());
     }
     return 0;
 }
 
-int TextIterator::startOffsetInCurrentContainer() const
+template<typename Strategy>
+int TextIteratorAlgorithm<Strategy>::startOffsetInCurrentContainer() const
 {
     if (m_positionNode) {
         flushPositionOffsets();
@@ -1038,7 +1046,8 @@ int TextIterator::startOffsetInCurrentContainer() const
     return m_endOffset;
 }
 
-int TextIterator::endOffsetInCurrentContainer() const
+template<typename Strategy>
+int TextIteratorAlgorithm<Strategy>::endOffsetInCurrentContainer() const
 {
     if (m_positionNode) {
         flushPositionOffsets();
@@ -1048,7 +1057,8 @@ int TextIterator::endOffsetInCurrentContainer() const
     return m_endOffset;
 }
 
-Node* TextIterator::currentContainer() const
+template<typename Strategy>
+Node* TextIteratorAlgorithm<Strategy>::currentContainer() const
 {
     if (m_positionNode) {
         return m_positionNode;
@@ -1057,29 +1067,33 @@ Node* TextIterator::currentContainer() const
     return m_endContainer;
 }
 
-Position TextIterator::startPositionInCurrentContainer() const
+template<typename Strategy>
+typename Strategy::PositionType TextIteratorAlgorithm<Strategy>::startPositionInCurrentContainer() const
 {
-    return createLegacyEditingPosition(currentContainer(), startOffsetInCurrentContainer());
+    return Strategy::createLegacyEditingPosition(currentContainer(), startOffsetInCurrentContainer());
 }
 
-Position TextIterator::endPositionInCurrentContainer() const
+template<typename Strategy>
+typename Strategy::PositionType TextIteratorAlgorithm<Strategy>::endPositionInCurrentContainer() const
 {
-    return createLegacyEditingPosition(currentContainer(), endOffsetInCurrentContainer());
+    return Strategy::createLegacyEditingPosition(currentContainer(), endOffsetInCurrentContainer());
 }
 
-int TextIterator::rangeLength(const Position& start, const Position& end, bool forSelectionPreservation)
+template<typename Strategy>
+int TextIteratorAlgorithm<Strategy>::rangeLength(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, bool forSelectionPreservation)
 {
     int length = 0;
     TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
     if (forSelectionPreservation)
         behaviorFlags |= TextIteratorEmitsCharactersBetweenAllVisiblePositions;
-    for (TextIterator it(start, end, behaviorFlags); !it.atEnd(); it.advance())
+    for (TextIteratorAlgorithm<Strategy> it(start, end, behaviorFlags); !it.atEnd(); it.advance())
         length += it.length();
 
     return length;
 }
 
-PassRefPtrWillBeRawPtr<Range> TextIterator::subrange(Range* entireRange, int characterOffset, int characterCount)
+template<typename Strategy>
+PassRefPtrWillBeRawPtr<Range> TextIteratorAlgorithm<Strategy>::subrange(Range* entireRange, int characterOffset, int characterCount)
 {
     CharacterIterator entireRangeIterator(entireRange, TextIteratorEmitsObjectReplacementCharacter);
     Position start;
@@ -1088,7 +1102,8 @@ PassRefPtrWillBeRawPtr<Range> TextIterator::subrange(Range* entireRange, int cha
     return Range::create(entireRange->ownerDocument(), start, end);
 }
 
-void TextIterator::subrange(Position& start, Position& end, int characterOffset, int characterCount)
+template<typename Strategy>
+void TextIteratorAlgorithm<Strategy>::subrange(Position& start, Position& end, int characterOffset, int characterCount)
 {
     CharacterIterator entireRangeIterator(start, end, TextIteratorEmitsObjectReplacementCharacter);
     entireRangeIterator.calculateCharacterSubrange(characterOffset, characterCount, start, end);
@@ -1128,4 +1143,6 @@ String plainText(const Position& start, const Position& end, TextIteratorBehavio
     return createPlainText(it);
 }
 
-}
+template class CORE_EXPORT TextIteratorAlgorithm<TextIteratorStrategy>;
+
+} // namespace blink

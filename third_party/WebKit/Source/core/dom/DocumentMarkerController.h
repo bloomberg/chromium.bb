@@ -28,6 +28,7 @@
 #define DocumentMarkerController_h
 
 #include "core/dom/DocumentMarker.h"
+#include "core/editing/iterators/TextIterator.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
@@ -42,7 +43,6 @@ class Position;
 class Range;
 class RenderedDocumentMarker;
 class Text;
-class TextIterator;
 
 class MarkerRemoverPredicate final {
 public:

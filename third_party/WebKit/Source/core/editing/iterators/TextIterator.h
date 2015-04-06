@@ -49,12 +49,13 @@ void findPlainText(const Position& inputStart, const Position& inputEnd, const S
 // at points where replaced elements break up the text flow.  The text comes back in
 // chunks so as to optimize for performance of the iteration.
 
-class CORE_EXPORT TextIterator {
+template<typename Strategy>
+class CORE_EXPORT TextIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
     // [start, end] indicates the document range that the iteration should take place within (both ends inclusive).
-    TextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-    ~TextIterator();
+    TextIteratorAlgorithm(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    ~TextIteratorAlgorithm();
 
     bool atEnd() const { return !m_positionNode || m_shouldStop; }
     void advance();
@@ -88,8 +89,8 @@ public:
     Node* currentContainer() const;
     int startOffsetInCurrentContainer() const;
     int endOffsetInCurrentContainer() const;
-    Position startPositionInCurrentContainer() const;
-    Position endPositionInCurrentContainer() const;
+    typename Strategy::PositionType startPositionInCurrentContainer() const;
+    typename Strategy::PositionType endPositionInCurrentContainer() const;
 
     bool breaksAtReplacedElement() { return !(m_behavior & TextIteratorDoesNotBreakAtReplacedElement); }
 
@@ -98,7 +99,7 @@ public:
     // replaced elements. When |forSelectionPreservation| is set to true, it
     // also emits spaces for other non-text nodes using the
     // |TextIteratorEmitsCharactersBetweenAllVisiblePosition| mode.
-    static int rangeLength(const Position& start, const Position& end, bool forSelectionPreservation = false);
+    static int rangeLength(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, bool forSelectionPreservation = false);
     static PassRefPtrWillBeRawPtr<Range> subrange(Range* entireRange, int characterOffset, int characterCount);
     static void subrange(Position& start, Position& end, int characterOffset, int characterCount);
 
@@ -118,7 +119,7 @@ private:
         HandledChildren
     };
 
-    void initialize(const Position& start, const Position& end);
+    void initialize(Node* startContainer, int startOffset, Node* endContainer, int endOffset);
 
     void flushPositionOffsets() const;
     int positionStartOffset() const { return m_positionStartOffset; }
@@ -163,7 +164,7 @@ private:
     RawPtrWillBeMember<Node> m_node;
     int m_offset;
     IterationProgress m_iterationProgress;
-    FullyClippedStateStack m_fullyClippedStack;
+    FullyClippedStateStackAlgorithm<Strategy> m_fullyClippedStack;
     int m_shadowDepth;
 
     // The range.
@@ -214,6 +215,10 @@ private:
     // Used when stopsOnFormControls() is true to determine if the iterator should keep advancing.
     bool m_shouldStop;
 };
+
+extern template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<TextIteratorStrategy>;
+
+using TextIterator = TextIteratorAlgorithm<TextIteratorStrategy>;
 
 } // namespace blink
 
