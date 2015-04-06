@@ -772,6 +772,10 @@ html[dir='rtl'] #search-box .clear {
   display: none;
 }
 
+.progressable .preparing-label {
+  -webkit-margin-start: 20px;
+}
+
 .progressable .progress-bar {
   -webkit-margin-end: 20px;
   -webkit-margin-start: 20px;
@@ -1515,6 +1519,7 @@ body.check-select #list-container list li[selected] .detail-thumbnail
 }
 
 #filename-input-box {
+  -webkit-margin-start: 30px;
   align-items: center;
   display: flex;
   flex: auto;
@@ -1741,7 +1746,6 @@ body[drive='error'] #unmounted-panel > .error,
 
 #new-folder-button {
   flex: none;
-  margin-right: 30px;
 }
 
 #default-action-dialog {
