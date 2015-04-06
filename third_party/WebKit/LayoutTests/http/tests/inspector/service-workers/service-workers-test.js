@@ -5,6 +5,16 @@ InspectorTest.registerServiceWorker = function(script, scope)
     return new Promise(function(resolve, reject){
         var args = {script: script, scope: scope};
         var jsonArgs = JSON.stringify(args).replace(/\"/g, "\\\"");
+        function innerCallback(msg)
+        {
+            if (msg.messageText.indexOf("registerServiceWorker success") !== -1)
+                resolve();
+            else if (msg.messageText.indexOf("registerServiceWorker fail") !== -1)
+                reject();
+            else
+                InspectorTest.addConsoleSniffer(innerCallback);
+        }
+        InspectorTest.addConsoleSniffer(innerCallback);
         InspectorTest.evaluateInPage("registerServiceWorker(\"" + jsonArgs + "\")");
     });
 }
@@ -14,6 +24,16 @@ InspectorTest.unregisterServiceWorker = function(scope)
     return new Promise(function(resolve, reject){
         var args = {scope: scope};
         var jsonArgs = JSON.stringify(args).replace(/\"/g, "\\\"");
+        function innerCallback(msg)
+        {
+            if (msg.messageText.indexOf("unregisterServiceWorker success") !== -1)
+                resolve();
+            else if (msg.messageText.indexOf("unregisterServiceWorker fail") !== -1)
+                reject();
+            else
+                InspectorTest.addConsoleSniffer(innerCallback);
+        }
+        InspectorTest.addConsoleSniffer(innerCallback);
         InspectorTest.evaluateInPage("unregisterServiceWorker(\"" + jsonArgs + "\")");
     });
 }

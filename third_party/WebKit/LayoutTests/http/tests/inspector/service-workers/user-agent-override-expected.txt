@@ -1,6 +1,6 @@
-CONSOLE MESSAGE: line 78: registerServiceWorker success
-CONSOLE MESSAGE: line 78: registerServiceWorker success
-CONSOLE MESSAGE: line 95: unregisterServiceWorker success
+CONSOLE MESSAGE: line 98: registerServiceWorker success
+CONSOLE MESSAGE: line 98: registerServiceWorker success
+CONSOLE MESSAGE: line 115: unregisterServiceWorker success
 Tests that User-Agent override works for requests from Service Workers.
 
 Enable emulation and set User-Agent override

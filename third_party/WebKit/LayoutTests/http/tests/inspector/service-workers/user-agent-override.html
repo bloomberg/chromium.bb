@@ -47,10 +47,11 @@ function test()
             var expected = 'HTTP_USER_AGENT: ' + originalUserAgent;
             InspectorTest.assertEquals(expected, msg.messageText, "User-Agent without override");
 
-            InspectorTest.unregisterServiceWorker(scope);
-
-            InspectorTest.addResult("Test complete");
-            InspectorTest.completeTest();
+            InspectorTest.unregisterServiceWorker(scope)
+                .then(function() {
+                    InspectorTest.addResult("Test complete");
+                    InspectorTest.completeTest();
+                });
         }).catch(function(err) {
             console.log(err);
             InspectorTest.completeTest();
