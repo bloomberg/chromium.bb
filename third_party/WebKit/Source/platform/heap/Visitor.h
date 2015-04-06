@@ -532,9 +532,8 @@ public:
     template<typename T, void (T::*method)(Visitor*)>
     void registerWeakMembers(const T* obj)
     {
-        Derived::fromHelper(this)->registerWeakMembers(obj, &TraceMethodDelegate<T, method>::trampoline);
+        registerWeakMembers(obj, &TraceMethodDelegate<T, method>::trampoline);
     }
-
     void registerWeakMembers(const void* object, WeakPointerCallback callback)
     {
         Derived::fromHelper(this)->registerWeakMembers(object, object, callback);
@@ -781,7 +780,7 @@ public:
 #if !defined(ADDRESS_SANITIZER)
             ASSERT(visitor->canTraceEagerly() || visitor->isMarked(t));
 #endif
-            if (LIKELY(visitor->canTraceEagerly())) {
+            if (LIKELY(Visitor::canTraceEagerly())) {
                 if (visitor->ensureMarked(t)) {
                     TraceTrait<T>::trace(visitor, const_cast<T*>(t));
                 }

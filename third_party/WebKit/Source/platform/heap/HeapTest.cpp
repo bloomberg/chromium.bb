@@ -1057,12 +1057,13 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_strongBar);
-        visitor->registerWeakMembers(this, zapWeakMembers);
+        visitor->template registerWeakMembers<Weak, &Weak::zapWeakMembers>(this);
     }
 
-    static void zapWeakMembers(Visitor* visitor, void* self)
+    void zapWeakMembers(Visitor* visitor)
     {
-        reinterpret_cast<Weak*>(self)->zapWeakMembers(visitor);
+        if (!visitor->isHeapObjectAlive(m_weakBar))
+            m_weakBar = 0;
     }
 
     bool strongIsThere() { return !!m_strongBar; }
@@ -1074,12 +1075,6 @@ private:
         , m_strongBar(strongBar)
         , m_weakBar(weakBar)
     {
-    }
-
-    void zapWeakMembers(Visitor* visitor)
-    {
-        if (!visitor->isHeapObjectAlive(m_weakBar))
-            m_weakBar = 0;
     }
 
     Member<Bar> m_strongBar;
@@ -1177,7 +1172,16 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-        visitor->registerWeakMembers(this, zapWeakMembers);
+        visitor->template registerWeakMembers<FinalizationObserver<T>, &FinalizationObserver<T>::zapWeakMembers>(this);
+    }
+
+    void zapWeakMembers(Visitor* visitor)
+    {
+        if (m_data && !visitor->isHeapObjectAlive(m_data)) {
+            m_data->willFinalize();
+            m_data = nullptr;
+            m_didCallWillFinalize = true;
+        }
     }
 
 private:
@@ -1185,16 +1189,6 @@ private:
         : m_data(data)
         , m_didCallWillFinalize(false)
     {
-    }
-
-    static void zapWeakMembers(Visitor* visitor, void* self)
-    {
-        FinalizationObserver* o = reinterpret_cast<FinalizationObserver*>(self);
-        if (o->m_data && !visitor->isHeapObjectAlive(o->m_data)) {
-            o->m_data->willFinalize();
-            o->m_data = nullptr;
-            o->m_didCallWillFinalize = true;
-        }
     }
 
     WeakMember<T> m_data;
