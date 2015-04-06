@@ -1,0 +1,18 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [208, 38, 50, 50],
+        [8, 38, 100, 50]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV class='sizedToGridArea'"
+      ]
+    }
+  ]
+}
+

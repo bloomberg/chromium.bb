@@ -325,7 +325,6 @@ crbug.com/382491 virtual/slimmingpaint/fast/clip/nestedTransparencyClip.html [ S
 crbug.com/472806 virtual/slimmingpaint/fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Skip ]
 crbug.com/472806 virtual/slimmingpaint/fast/dom/Window/Plug-ins.html [ Skip ]
 crbug.com/472806 virtual/slimmingpaint/fast/dom/vertical-scrollbar-in-rtl.html [ Skip ]
-crbug.com/470713 virtual/slimmingpaint/fast/dynamic/anonymous-block-layer-lost.html [ NeedsRebaseline ]
 crbug.com/472812 virtual/slimmingpaint/fast/js/getOwnPropertyDescriptor.html [ Skip ]
 crbug.com/472812 virtual/slimmingpaint/fast/js/mozilla/strict/15.3.5.1.html [ Skip ]
 crbug.com/472812 virtual/slimmingpaint/fast/js/mozilla/strict/assign-to-callee-name.html [ Skip ]
@@ -993,11 +992,6 @@ crbug.com/452135 virtual/slimmingpaint/fast/repaint/quotes.html [ Pass Failure N
 crbug.com/446408 [ Win Debug ] virtual/display_list_2d_canvas/fast/canvas/webgl/read-pixels-test.html [ Pass Timeout ]
 crbug.com/446408 [ Linux Debug ] virtual/display_list_2d_canvas/fast/canvas/webgl/read-pixels-test.html [ Pass Timeout ]
 
-crbug.com/470713 virtual/slimmingpaint/fast/css-grid-layout/grid-element-change-columns-repaint.html [ NeedsRebaseline ]
-crbug.com/470713 virtual/slimmingpaint/fast/css-grid-layout/grid-element-change-rows-repaint.html [ NeedsRebaseline ]
-crbug.com/470713 virtual/slimmingpaint/fast/css-grid-layout/grid-item-change-column-repaint.html [ NeedsRebaseline ]
-crbug.com/470713 virtual/slimmingpaint/fast/css-grid-layout/grid-item-change-row-repaint.html [ NeedsRebaseline ]
-crbug.com/470713 virtual/slimmingpaint/fast/css-grid-layout/grid-item-z-index-change-repaint.html [ NeedsRebaseline ]
 crbug.com/470713 virtual/slimmingpaint/fast/block/float/float-not-removed-from-next-sibling4.html [ Skip ]
 
 # Heap buffer overflow failures on Linux ASAN
