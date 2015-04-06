@@ -727,6 +727,8 @@ using content::WebContents;
 // browsers' behaviour, and is desirable in multi-tab situations. Note, however,
 // that the "toggle" behaviour means that the window can still be "unzoomed" to
 // the user size.
+// Note: this method is also called from -isZoomed. If the returned zoomed rect
+// equals the current window's frame, -isZoomed returns YES.
 - (NSRect)windowWillUseStandardFrame:(NSWindow*)window
                         defaultFrame:(NSRect)frame {
   // Forget that we grew the window up (if we in fact did).

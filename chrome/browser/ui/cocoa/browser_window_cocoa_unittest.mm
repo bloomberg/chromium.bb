@@ -48,6 +48,24 @@ TEST_F(BrowserWindowCocoaTest, TestBookmarkBarVisible) {
   EXPECT_EQ(before, bwc->IsBookmarkBarVisible());
 }
 
+// Test that IsMaximized() returns false when the browser window goes from
+// maximized to minimized state - http://crbug/452976.
+TEST_F(BrowserWindowCocoaTest, TestMinimizeState) {
+  scoped_ptr<BrowserWindowCocoa> bwc(
+      new BrowserWindowCocoa(browser(), controller_));
+
+  EXPECT_FALSE(bwc->IsMinimized());
+  bwc->Maximize();
+  EXPECT_TRUE(bwc->IsMaximized());
+  EXPECT_FALSE(bwc->IsMinimized());
+  bwc->Minimize();
+  EXPECT_FALSE(bwc->IsMaximized());
+  EXPECT_TRUE(bwc->IsMinimized());
+  bwc->Restore();
+  EXPECT_TRUE(bwc->IsMaximized());
+  EXPECT_FALSE(bwc->IsMinimized());
+}
+
 // Tests that BrowserWindowCocoa::Close mimics the behavior of
 // -[NSWindow performClose:].
 class BrowserWindowCocoaCloseTest : public CocoaProfileTest {
