@@ -59111,6 +59111,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="65" label="CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE"/>
   <int value="66" label="TOO_MANY_UNFINISHED_STREAMS"/>
   <int value="67" label="CONNECTION_OVERALL_TIMED_OUT"/>
+  <int value="68" label="QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS"/>
+  <int value="69" label="QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS"/>
+  <int value="70" label="QUIC_CONNECTION_CANCELLED"/>
+  <int value="71" label="QUIC_BAD_PACKET_LOSS_RATE"/>
 </enum>
 
 <enum name="QuicHandshakeFailureReason" type="int">
