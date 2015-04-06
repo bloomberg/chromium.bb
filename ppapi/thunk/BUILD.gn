@@ -3,12 +3,6 @@
 # found in the LICENSE file.
 
 source_set("thunk") {
-  # In GYP this is the same target as shared_impl. In GN these are split apart
-  # for clarity but to get component builds correct, targets must only depend
-  # on these via the shared_impl component.
-  # TODO(brettw) separate these when GYP compat is no longer required.
-  visibility = [ "//ppapi/shared_impl" ]
-
   sources = [
     "enter.cc",
     "enter.h",
@@ -195,11 +189,5 @@ source_set("thunk") {
     ]
   }
 
-  defines = [
-    # This target goes in the same library as shared_impl (in GYP they are the
-    # same).
-    "PPAPI_SHARED_IMPLEMENTATION",
-
-    "PPAPI_THUNK_IMPLEMENTATION",
-  ]
+  defines = [ "PPAPI_THUNK_IMPLEMENTATION" ]
 }

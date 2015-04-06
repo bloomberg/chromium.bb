@@ -146,6 +146,7 @@ if (enable_nacl) {
       "//ppapi/c",
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
+      "//ppapi/thunk",
       "//third_party/WebKit/public:blink",
       "//third_party/jsoncpp",
     ]

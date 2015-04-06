@@ -5,21 +5,7 @@
 import("//build/config/ui.gni")
 import("//third_party/protobuf/proto_library.gni")
 
-group("service") {
-  if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
-  } else {
-    public_deps = [
-      ":service_sources",
-    ]
-  }
-}
-
-source_set("service_sources") {
-  visibility = [ "//gpu/*" ]
-
+source_set("service") {
   sources = [
     "async_pixel_transfer_delegate.cc",
     "async_pixel_transfer_delegate.h",
@@ -142,7 +128,7 @@ source_set("service_sources") {
   include_dirs = [ "//third_party/mesa/src/include" ]
 
   public_deps = [
-    "//gpu/command_buffer/common:common_sources",
+    "//gpu/command_buffer/common",
   ]
   deps = [
     ":disk_cache_proto",
@@ -157,6 +143,10 @@ source_set("service_sources") {
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
+
+  if (ui_compositor_image_transport) {
+    include_dirs += [ "//third_party/khronos" ]
+  }
 
   if (is_win || is_android || (is_linux && use_x11)) {
     sources += [

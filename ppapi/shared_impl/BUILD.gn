@@ -156,7 +156,7 @@ component("shared_impl") {
   defines = [
     "PPAPI_SHARED_IMPLEMENTATION",
 
-    # This target goes in the same library as thunk (in GYP they are the same).
+    # This target also implements some thunk functions.
     "PPAPI_THUNK_IMPLEMENTATION",
   ]
 

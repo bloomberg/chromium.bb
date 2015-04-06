@@ -378,7 +378,6 @@ source_set("unittests") {
   deps = [
     ":base",
     ":test_support",
-    "//gpu/command_buffer/common",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

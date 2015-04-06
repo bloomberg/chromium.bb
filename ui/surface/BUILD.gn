@@ -15,8 +15,6 @@ component("surface") {
     "transport_dib_win.cc",
   ]
 
-  configs += [ "//third_party/khronos:khronos_headers" ]
-
   defines = [ "SURFACE_IMPLEMENTATION" ]
 
   deps = [
@@ -27,4 +25,8 @@ component("surface") {
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
+
+  if (use_x11) {
+    include_dirs = [ "//third_party/khronos" ]
+  }
 }

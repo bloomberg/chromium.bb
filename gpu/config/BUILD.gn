@@ -9,21 +9,7 @@ declare_args() {
   use_libpci = true
 }
 
-group("config") {
-  if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
-  } else {
-    public_deps = [
-      ":config_sources",
-    ]
-  }
-}
-
-source_set("config_sources") {
-  visibility = [ "//gpu/*" ]
-
+source_set("config") {
   sources = [
     "dx_diag_node.cc",
     "dx_diag_node.h",
@@ -66,7 +52,7 @@ source_set("config_sources") {
 
   deps = [
     "//base",
-    "//gpu/command_buffer/service:service_sources",
+    "//gpu/command_buffer/service",
     "//third_party/re2",
     "//ui/gl",
   ]

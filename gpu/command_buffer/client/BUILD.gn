@@ -2,38 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# The files here go into the "gpu" component in a component build (with
-# "command_buffer_client" and "gles2_cmd_helper" just forwarding) and goes into
-# separate static libraries in non-component build. This needs to match the
-# GYP build which was likely an attempt to make larger components to help with
-# loading.
-group("client") {
-  if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
-  } else {
-    public_deps = [
-      ":client_sources",
-    ]
-  }
-}
-
-group("gles2_cmd_helper") {
-  if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
-  } else {
-    public_deps = [
-      ":gles2_cmd_helper_sources",
-    ]
-  }
-}
-
-source_set("client_sources") {
-  visibility = [ "//gpu/*" ]
-
+source_set("client") {
   sources = [
     "cmd_buffer_helper.cc",
     "cmd_buffer_helper.h",
@@ -59,12 +28,27 @@ source_set("client_sources") {
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
 
   deps = [
-    "//gpu/command_buffer/common:common_sources",
+    "//gpu/command_buffer/common",
   ]
 }
 
+group("gles2_cmd_helper") {
+  if (is_component_build) {
+    deps = [
+      "//gpu",
+    ]
+  } else {
+    deps = [
+      ":gles2_cmd_helper_sources",
+    ]
+  }
+}
+
 source_set("gles2_cmd_helper_sources") {
-  visibility = [ "//gpu/*" ]
+  visibility = [
+    ":gles2_cmd_helper",
+    "//gpu",
+  ]
   sources = [
     "gles2_cmd_helper.cc",
     "gles2_cmd_helper.h",
@@ -78,7 +62,7 @@ source_set("gles2_cmd_helper_sources") {
   ]
 
   deps = [
-    ":client_sources",
+    ":client",
   ]
 }
 
