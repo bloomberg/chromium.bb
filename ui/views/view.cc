@@ -780,6 +780,8 @@ void View::Paint(const ui::PaintContext& parent_context) {
   // rather than relative to its parent.
   scoped_ptr<ui::ClipTransformRecorder> clip_transform_recorder;
   if (!layer()) {
+    clip_transform_recorder.reset(new ui::ClipTransformRecorder(context));
+
     // Set the clip rect to the bounds of this View. Note that the X (or left)
     // position we pass to ClipRect takes into consideration whether or not the
     // View uses a right-to-left layout so that we paint the View in its
@@ -789,6 +791,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
     if (parent_)
       clip_rect_in_parent.set_x(
           parent_->GetMirroredXForRect(clip_rect_in_parent));
+    clip_transform_recorder->ClipRect(clip_rect_in_parent);
 
     // Translate the graphics such that 0,0 corresponds to where
     // this View is located relative to its parent.
@@ -797,9 +800,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
     transform_from_parent.Translate(offset_from_parent.x(),
                                     offset_from_parent.y());
     transform_from_parent.PreconcatTransform(GetTransform());
-
-    clip_transform_recorder = make_scoped_ptr(new ui::ClipTransformRecorder(
-        context, clip_rect_in_parent, transform_from_parent));
+    clip_transform_recorder->Transform(transform_from_parent);
   }
 
   {

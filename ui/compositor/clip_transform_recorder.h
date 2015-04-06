@@ -10,6 +10,7 @@
 
 namespace gfx {
 class Canvas;
+class Path;
 class Rect;
 class Transform;
 }
@@ -24,14 +25,13 @@ class PaintContext;
 // be clipped/transformed.
 class COMPOSITOR_EXPORT ClipTransformRecorder {
  public:
-  ClipTransformRecorder(const PaintContext& context,
-                        const gfx::Rect& clip_rect);
-  ClipTransformRecorder(const PaintContext& context,
-                        const gfx::Transform& transform);
-  ClipTransformRecorder(const PaintContext& context,
-                        const gfx::Rect& clip_rect,
-                        const gfx::Transform& transform);
+  explicit ClipTransformRecorder(const PaintContext& context);
   ~ClipTransformRecorder();
+
+  void ClipRect(const gfx::Rect& clip_rect);
+  void ClipPath(const gfx::Path& clip_path);
+  void ClipPathWithAntiAliasing(const gfx::Path& clip_path);
+  void Transform(const gfx::Transform& transform);
 
  private:
   gfx::Canvas* canvas_;
