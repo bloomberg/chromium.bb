@@ -20200,6 +20200,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.TooManyOpenStream" enum="BooleanTooMany">
+  <owner>rch@chromium.org</owner>
+  <obsolete>
+    Deprecated 04/2015. Tracked as Net.QuicSession.TooManyOpenStreams.
+  </obsolete>
+  <summary>
+    True if more than 100 streams are open when a new stream is activated.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.TooManyOpenStreams" enum="BooleanTooMany">
   <owner>rch@chromium.org</owner>
   <summary>
