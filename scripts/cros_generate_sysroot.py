@@ -70,8 +70,8 @@ class GenerateSysroot(object):
 
   def _InstallToolchain(self):
     # Create the sysroot's config.
-    config = sysroot_lib.GenerateBoardConfig(self.sysroot, self.options.board)
-    sysroot_lib.WriteSysrootConfig(self.sysroot, config)
+    sysroot = sysroot_lib.Sysroot(self.sysroot)
+    sysroot.WriteConfig(sysroot.GenerateBoardConfig(self.options.board))
     cros_build_lib.RunCommand(
         [os.path.join(constants.CROSUTILS_DIR, 'install_toolchain'),
          '--noconfigure', '--sysroot', self.sysroot])

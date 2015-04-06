@@ -15,14 +15,14 @@ class SysrootLibTest(cros_test_lib.TempDirTestCase):
 
   def testGetStandardField(self):
     """Tests that standard field can be fetched correctly."""
-    sysroot_lib.WriteSysrootConfig(self.tempdir, 'FOO="bar"')
-    self.assertEqual('bar', sysroot_lib.GetStandardField(self.tempdir, 'FOO'))
+    sysroot = sysroot_lib.Sysroot(self.tempdir)
+    sysroot.WriteConfig('FOO="bar"')
+    self.assertEqual('bar', sysroot.GetStandardField('FOO'))
 
     # Works with multiline strings
     multiline = """foo
 bar
 baz
 """
-    sysroot_lib.WriteSysrootConfig(self.tempdir, 'TEST="%s"' % multiline)
-    self.assertEqual(multiline,
-                     sysroot_lib.GetStandardField(self.tempdir, 'TEST'))
+    sysroot.WriteConfig('TEST="%s"' % multiline)
+    self.assertEqual(multiline, sysroot.GetStandardField('TEST'))

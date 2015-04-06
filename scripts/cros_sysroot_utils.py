@@ -28,7 +28,6 @@ def ParseArgs(argv):
   wrapper = subparser.add_parser('create-wrappers')
   wrapper.add_argument('--sysroot', help='Path to the sysroot.', required=True)
   wrapper.add_argument('--friendlyname', help='Name to append to the commands.')
-  wrapper.add_argument('--toolchain', help='Toolchain used in this sysroot.')
   wrapper.set_defaults(command='create-wrappers')
 
   config = subparser.add_parser('generate-config')
@@ -81,21 +80,18 @@ def main(argv):
   if opts.out_file:
     output = open(opts.out_file, 'w')
 
+  sysroot = sysroot_lib.Sysroot(opts.sysroot)
   if opts.command == 'create-wrappers':
-    sysroot_lib.CreateAllWrappers(opts.sysroot, opts.toolchain,
-                                  opts.friendlyname)
+    sysroot.CreateAllWrappers(opts.friendlyname)
   elif opts.command == 'generate-config':
     if opts.brick:
-      config = sysroot_lib.GenerateBrickConfig(
-          opts.sysroot, brick=brick_lib.Brick(opts.brick))
+      config = sysroot.GenerateBrickConfig(brick_lib.Brick(opts.brick))
     else:
-      config = sysroot_lib.GenerateBoardConfig(opts.sysroot, board=opts.board)
+      config = sysroot.GenerateBoardConfig(opts.board)
 
     output.write('\n' + config)
   elif opts.command == 'generate-make-conf':
-    output.write('\n' + sysroot_lib.GenerateMakeConf(opts.sysroot,
-                                                     opts.accepted_licenses))
+    output.write('\n' + sysroot.GenerateMakeConf(opts.accepted_licenses))
   elif opts.command == 'generate-binhosts':
-    output.write('\n' + sysroot_lib.GenerateBinhostConf(opts.sysroot,
-                                                        opts.chrome_only,
-                                                        opts.local_only))
+    output.write('\n' + sysroot.GenerateBinhostConf(opts.chrome_only,
+                                                    opts.local_only))
