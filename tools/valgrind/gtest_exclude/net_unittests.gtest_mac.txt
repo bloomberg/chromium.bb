@@ -4,3 +4,6 @@ KeygenHandlerTest.SmokeTest
 # These tests fail under Valgrind on Mac, see http://crbug.com/62314
 SSLClientSocketTest.*
 HTTPSRequestTest.*
+
+# crbug.com/474316
+WebSocketEndToEndTest.HstsHttpsToWebSocket
