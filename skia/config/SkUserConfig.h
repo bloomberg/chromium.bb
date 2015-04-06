@@ -281,10 +281,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_INT_COLORMATRIX
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_PATHOP_ENUMS
-#   define SK_SUPPORT_LEGACY_PATHOP_ENUMS
-#endif
-
 #ifndef    SK_LEGACY_STROKE_CURVES
 #   define SK_LEGACY_STROKE_CURVES
 #endif
