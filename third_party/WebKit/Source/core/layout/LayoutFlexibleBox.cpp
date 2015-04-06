@@ -845,8 +845,12 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(LayoutBox& child, Layo
 
     Length min = isHorizontalFlow() ? child.style()->minWidth() : child.style()->minHeight();
     LayoutUnit minExtent = 0;
-    if (min.isSpecifiedOrIntrinsic())
+    if (min.isSpecifiedOrIntrinsic()) {
         minExtent = computeMainAxisExtentForChild(child, MinSize, min);
+        // computeMainAxisExtentForChild can return -1 when the child has a percentage
+        // min size, but we have an indefinite size in that axis.
+        minExtent = std::max(LayoutUnit(0), minExtent);
+    }
     return std::max(childSize, minExtent);
 }
 
@@ -932,6 +936,7 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedF
                 childSize += LayoutUnit::fromFloatRound(extraSpace);
 
             LayoutUnit adjustedChildSize = adjustChildSizeForMinAndMax(*child, childSize);
+            ASSERT(adjustedChildSize >= 0);
             childSizes.append(adjustedChildSize);
             usedFreeSpace += adjustedChildSize - preferredChildSize;
 
