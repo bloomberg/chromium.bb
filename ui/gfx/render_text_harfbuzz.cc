@@ -1364,7 +1364,7 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
 
     fallback_fonts.insert(family);
 
-    FontRenderParamsQuery query(false);
+    FontRenderParamsQuery query;
     query.families.push_back(family);
     query.pixel_size = run->font_size;
     query.style = run->font_style;

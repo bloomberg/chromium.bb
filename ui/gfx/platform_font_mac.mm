@@ -170,7 +170,7 @@ void PlatformFontMac::CalculateMetricsAndInitRenderParams() {
   average_width_ =
       NSWidth([font boundingRectForGlyph:[font glyphWithName:@"x"]]);
 
-  FontRenderParamsQuery query(false);
+  FontRenderParamsQuery query;
   query.families.push_back(font_name_);
   query.pixel_size = font_size_;
   query.style = font_style_;

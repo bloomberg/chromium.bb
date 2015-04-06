@@ -107,7 +107,7 @@ TEST_F(FontRenderParamsTest, Default) {
       kFontconfigFileFooter));
 
   FontRenderParams params = GetFontRenderParams(
-      FontRenderParamsQuery(true), NULL);
+      FontRenderParamsQuery(), NULL);
   EXPECT_TRUE(params.antialiasing);
   EXPECT_TRUE(params.autohinter);
   EXPECT_TRUE(params.use_bitmaps);
@@ -140,7 +140,7 @@ TEST_F(FontRenderParamsTest, Size) {
 
   // The defaults should be used when the supplied size isn't matched by the
   // second or third blocks.
-  FontRenderParamsQuery query(false);
+  FontRenderParamsQuery query;
   query.pixel_size = 12;
   FontRenderParams params = GetFontRenderParams(query, NULL);
   EXPECT_TRUE(params.antialiasing);
@@ -186,7 +186,7 @@ TEST_F(FontRenderParamsTest, Style) {
       kFontconfigMatchFooter +
       kFontconfigFileFooter));
 
-  FontRenderParamsQuery query(false);
+  FontRenderParamsQuery query;
   query.style = Font::NORMAL;
   FontRenderParams params = GetFontRenderParams(query, NULL);
   EXPECT_EQ(FontRenderParams::HINTING_SLIGHT, params.hinting);
@@ -227,7 +227,7 @@ TEST_F(FontRenderParamsTest, Scalable) {
 
   // Check that we specifically ask how scalable fonts should be rendered.
   FontRenderParams params = GetFontRenderParams(
-      FontRenderParamsQuery(false), NULL);
+      FontRenderParamsQuery(), NULL);
   EXPECT_TRUE(params.antialiasing);
 }
 
@@ -245,7 +245,7 @@ TEST_F(FontRenderParamsTest, UseBitmaps) {
       kFontconfigMatchFooter +
       kFontconfigFileFooter));
 
-  FontRenderParamsQuery query(false);
+  FontRenderParamsQuery query;
   FontRenderParams params = GetFontRenderParams(query, NULL);
   EXPECT_FALSE(params.use_bitmaps);
 
@@ -270,7 +270,7 @@ TEST_F(FontRenderParamsTest, ForceFullHintingWhenAntialiasingIsDisabled) {
   // Full hinting should be forced. See the comment in GetFontRenderParams() for
   // more information.
   FontRenderParams params = GetFontRenderParams(
-      FontRenderParamsQuery(false), NULL);
+      FontRenderParamsQuery(), NULL);
   EXPECT_FALSE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_NONE,
@@ -282,7 +282,7 @@ TEST_F(FontRenderParamsTest, ForceFullHintingWhenAntialiasingIsDisabled) {
 TEST_F(FontRenderParamsTest, ForceSubpixelPositioning) {
   {
     FontRenderParams params =
-        GetFontRenderParams(FontRenderParamsQuery(false), NULL);
+        GetFontRenderParams(FontRenderParamsQuery(), NULL);
     EXPECT_TRUE(params.antialiasing);
     EXPECT_FALSE(params.subpixel_positioning);
     SetFontRenderParamsDeviceScaleFactor(1.0f);
@@ -292,7 +292,7 @@ TEST_F(FontRenderParamsTest, ForceSubpixelPositioning) {
   // Subpixel positioning should be forced.
   {
     FontRenderParams params =
-        GetFontRenderParams(FontRenderParamsQuery(false), NULL);
+        GetFontRenderParams(FontRenderParamsQuery(), NULL);
     EXPECT_TRUE(params.antialiasing);
     EXPECT_TRUE(params.subpixel_positioning);
     SetFontRenderParamsDeviceScaleFactor(1.0f);
@@ -318,7 +318,7 @@ TEST_F(FontRenderParamsTest, OnlySetConfiguredValues) {
 
   // The subpixel rendering setting from the delegate should make it through.
   FontRenderParams params = GetFontRenderParams(
-      FontRenderParamsQuery(false), NULL);
+      FontRenderParamsQuery(), NULL);
   EXPECT_EQ(system_params.subpixel_rendering, params.subpixel_rendering);
 }
 
@@ -330,7 +330,7 @@ TEST_F(FontRenderParamsTest, NoFontconfigMatch) {
   system_params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_RGB;
   test_font_delegate_.set_params(system_params);
 
-  FontRenderParamsQuery query(false);
+  FontRenderParamsQuery query;
   query.families.push_back("Arial");
   query.families.push_back("Times New Roman");
   query.pixel_size = 10;
@@ -349,7 +349,7 @@ TEST_F(FontRenderParamsTest, MissingFamily) {
   // Verdana and check that Arial is returned.
   ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
   ASSERT_TRUE(LoadSystemFontIntoFontconfig("verdana.ttf"));
-  FontRenderParamsQuery query(false);
+  FontRenderParamsQuery query;
   query.families.push_back("Helvetica");
   query.families.push_back("Arial");
   query.families.push_back("Verdana");
@@ -371,7 +371,7 @@ TEST_F(FontRenderParamsTest, SubstituteFamily) {
       kFontconfigMatchFooter +
       kFontconfigFileFooter));
 
-  FontRenderParamsQuery query(false);
+  FontRenderParamsQuery query;
   query.families.push_back("Helvetica");
   std::string suggested_family;
   GetFontRenderParams(query, &suggested_family);

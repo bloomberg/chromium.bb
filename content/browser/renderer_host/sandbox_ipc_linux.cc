@@ -297,7 +297,7 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
 
   EnsureWebKitInitialized();
 
-  gfx::FontRenderParamsQuery query(true);
+  gfx::FontRenderParamsQuery query;
   query.families.push_back(family);
   query.pixel_size = pixel_size;
   query.style = gfx::Font::NORMAL |

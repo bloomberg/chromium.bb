@@ -1526,13 +1526,13 @@ class FontTestHelper : public test::AshTestBase {
 
 bool IsTextSubpixelPositioningEnabled() {
   gfx::FontRenderParams params =
-      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(false), NULL);
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL);
   return params.subpixel_positioning;
 }
 
 gfx::FontRenderParams::Hinting GetFontHintingParams() {
   gfx::FontRenderParams params =
-      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(false), NULL);
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL);
   return params.hinting;
 }
 

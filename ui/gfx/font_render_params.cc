@@ -54,9 +54,8 @@ FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
   return SkFontHost::kHorizontal_LCDOrientation;
 }
 
-FontRenderParamsQuery::FontRenderParamsQuery(bool for_web_contents)
-    : for_web_contents(for_web_contents),
-      pixel_size(0),
+FontRenderParamsQuery::FontRenderParamsQuery()
+    : pixel_size(0),
       point_size(0),
       style(-1),
       device_scale_factor(0) {

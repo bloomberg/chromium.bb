@@ -36,7 +36,7 @@ void PopulateFixedRendererPreferences(RendererPreferences* prefs) {
 
   // TODO(boliu): Deduplicate with chrome/ code.
   CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params,
-      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(true), NULL)));
+      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL)));
   prefs->should_antialias_text = params.antialiasing;
   prefs->use_subpixel_positioning = params.subpixel_positioning;
   prefs->hinting = params.hinting;

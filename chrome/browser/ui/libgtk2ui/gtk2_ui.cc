@@ -1375,7 +1375,7 @@ void Gtk2UI::ClearAllThemeData() {
 void Gtk2UI::UpdateDefaultFont(const PangoFontDescription* desc) {
   // Use gfx::FontRenderParams to select a family and determine the rendering
   // settings.
-  gfx::FontRenderParamsQuery query(false /* for_web_contents */);
+  gfx::FontRenderParamsQuery query;
   base::SplitString(pango_font_description_get_family(desc), ',',
                     &query.families);
 

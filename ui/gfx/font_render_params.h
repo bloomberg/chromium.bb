@@ -67,17 +67,12 @@ struct GFX_EXPORT FontRenderParams {
 
 // A query used to determine the appropriate FontRenderParams.
 struct GFX_EXPORT FontRenderParamsQuery {
-  explicit FontRenderParamsQuery(bool for_web_contents);
+  FontRenderParamsQuery();
   ~FontRenderParamsQuery();
 
   bool is_empty() const {
     return families.empty() && pixel_size <= 0 && point_size <= 0 && style < 0;
   }
-
-  // True if rendering text for the web.
-  // TODO(derat): Remove this once FontRenderParams::subpixel_positioning is
-  // gone: http://crbug.com/396659
-  bool for_web_contents;
 
   // Requested font families, or empty if unset.
   std::vector<std::string> families;

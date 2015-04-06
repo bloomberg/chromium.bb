@@ -108,7 +108,7 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
   CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params,
-      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(true), NULL)));
+      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL)));
   prefs->should_antialias_text = params.antialiasing;
   prefs->use_subpixel_positioning = params.subpixel_positioning;
   prefs->hinting = params.hinting;

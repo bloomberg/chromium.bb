@@ -79,7 +79,7 @@ PlatformFontLinux::PlatformFontLinux() {
     // On Chrome OS, a FontList font description string is stored as a
     // translatable resource and passed in via SetDefaultFontDescription().
     if (default_font_description_) {
-      FontRenderParamsQuery query(false /* for_web_contents */);
+      FontRenderParamsQuery query;
       CHECK(FontList::ParseDescription(*default_font_description_,
                                        &query.families, &query.style,
                                        &query.pixel_size))
@@ -107,7 +107,7 @@ PlatformFontLinux::PlatformFontLinux() {
 
 PlatformFontLinux::PlatformFontLinux(const std::string& font_name,
                                      int font_size_pixels) {
-  FontRenderParamsQuery query(false);
+  FontRenderParamsQuery query;
   query.families.push_back(font_name);
   query.pixel_size = font_size_pixels;
   query.style = Font::NORMAL;
@@ -143,7 +143,7 @@ Font PlatformFontLinux::DeriveFont(int size_delta, int style) const {
   skia::RefPtr<SkTypeface> typeface =
       (style == style_) ? typeface_ : CreateSkTypeface(style, &new_family);
 
-  FontRenderParamsQuery query(false);
+  FontRenderParamsQuery query;
   query.families.push_back(new_family);
   query.pixel_size = new_size;
   query.style = style;
@@ -190,7 +190,7 @@ const FontRenderParams& PlatformFontLinux::GetFontRenderParams() {
 #if defined(OS_CHROMEOS)
   float current_scale_factor = GetFontRenderParamsDeviceScaleFactor();
   if (current_scale_factor != device_scale_factor_) {
-    FontRenderParamsQuery query(false);
+    FontRenderParamsQuery query;
     query.families.push_back(font_family_);
     query.pixel_size = font_size_pixels_;
     query.style = style_;

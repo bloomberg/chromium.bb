@@ -322,7 +322,7 @@ int PlatformFontWin::GetFontSize() const {
 
 const FontRenderParams& PlatformFontWin::GetFontRenderParams() {
   CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params,
-      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(false), NULL)));
+      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL)));
   return params;
 }
 
@@ -489,7 +489,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
                               static_cast<SkTypeface::Style>(skia_style)));
 
   gfx::FontRenderParams font_params =
-      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(false), nullptr);
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
   SkFontHost::SetSubpixelOrder(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
           font_params.subpixel_rendering));
