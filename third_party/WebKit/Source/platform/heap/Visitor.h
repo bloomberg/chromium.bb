@@ -366,10 +366,26 @@ public:                                          \
 template<typename Collection>
 struct OffHeapCollectionTraceTrait;
 
+template<typename T, bool = NeedsAdjustAndMark<T>::value> class ObjectAliveTrait;
+
 template<typename T>
-struct ObjectAliveTrait {
+class ObjectAliveTrait<T, false> {
+public:
     template<typename VisitorDispatcher>
-    static bool isHeapObjectAlive(VisitorDispatcher, T*);
+    static bool isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
+    {
+        return visitor->isMarked(obj);
+    }
+};
+
+template<typename T>
+class ObjectAliveTrait<T, true> {
+public:
+    template<typename VisitorDispatcher>
+    static bool isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
+    {
+        return obj->isHeapObjectAlive(visitor);
+    }
 };
 
 // VisitorHelper contains common implementation of Visitor helper methods.
@@ -832,35 +848,6 @@ public:
     static void checkGCInfo(const T*) { }
 #endif
 };
-
-template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultObjectAliveTrait;
-
-template<typename T>
-class DefaultObjectAliveTrait<T, false> {
-public:
-    template<typename VisitorDispatcher>
-    static bool isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
-    {
-        return visitor->isMarked(obj);
-    }
-};
-
-template<typename T>
-class DefaultObjectAliveTrait<T, true> {
-public:
-    template<typename VisitorDispatcher>
-    static bool isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
-    {
-        return obj->isHeapObjectAlive(visitor);
-    }
-};
-
-template<typename T>
-template<typename VisitorDispatcher>
-bool ObjectAliveTrait<T>::isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
-{
-    return DefaultObjectAliveTrait<T>::isHeapObjectAlive(visitor, obj);
-}
 
 // The GarbageCollectedMixin interface and helper macro
 // USING_GARBAGE_COLLECTED_MIXIN can be used to automatically define
