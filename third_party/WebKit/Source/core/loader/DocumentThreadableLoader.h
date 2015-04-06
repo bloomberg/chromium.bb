@@ -133,8 +133,12 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
         bool m_forceDoNotAllowStoredCredentials;
         RefPtr<SecurityOrigin> m_securityOrigin;
 
+        // True while the initial URL and all the URLs of the redirects
+        // this object has followed, if any, are same-origin to
+        // securityOrigin().
         bool m_sameOriginRequest;
-        bool m_simpleRequest;
+        // Set to true if the current request is cross-origin and not simple.
+        bool m_crossOriginNonSimpleRequest;
 
         const bool m_async;
 

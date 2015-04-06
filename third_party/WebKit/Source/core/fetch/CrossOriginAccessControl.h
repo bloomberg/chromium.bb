@@ -45,6 +45,9 @@ class SecurityOrigin;
 
 class CrossOriginAccessControl {
 public:
+    // Given the new request URL, returns true if
+    // - the URL has a CORS supported scheme and
+    // - the URL does not contain the userinfo production.
     static bool isLegalRedirectLocation(const KURL&, String& errorDescription);
     static bool handleRedirect(SecurityOrigin*, ResourceRequest&, const ResourceResponse&, StoredCredentials, ResourceLoaderOptions&, String&);
 };

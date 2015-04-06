@@ -87,7 +87,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_forceDoNotAllowStoredCredentials(false)
     , m_securityOrigin(m_resourceLoaderOptions.securityOrigin)
     , m_sameOriginRequest(securityOrigin()->canRequest(request.url()))
-    , m_simpleRequest(true)
+    , m_crossOriginNonSimpleRequest(false)
     , m_async(blockingBehavior == LoadAsynchronously)
     , m_requestContext(request.requestContext())
     , m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout)
@@ -177,7 +177,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
         updateRequestForAccessControl(crossOriginRequest, securityOrigin(), effectiveAllowCredentials());
         loadRequest(crossOriginRequest, crossOriginOptions);
     } else {
-        m_simpleRequest = false;
+        m_crossOriginNonSimpleRequest = true;
 
         OwnPtr<ResourceRequest> crossOriginRequest = adoptPtr(new ResourceRequest(request));
         OwnPtr<ResourceLoaderOptions> crossOriginOptions = adoptPtr(new ResourceLoaderOptions(m_resourceLoaderOptions));
@@ -285,9 +285,6 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         return;
     }
 
-    // When using access control, only simple cross origin requests are allowed to redirect. The new request URL must have a supported
-    // scheme and not contain the userinfo production. In addition, the redirect response must pass the access control check if the
-    // original request was not same-origin.
     if (m_corsRedirectLimit <= 0) {
         m_client->didFailRedirectCheck();
     } else if (m_options.crossOriginRequestPolicy == UseAccessControl) {
@@ -298,11 +295,15 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         bool allowRedirect = false;
         String accessControlErrorDescription;
 
-        if (m_simpleRequest) {
+        // Non-simple cross origin requests (both preflight and actual one) are
+        // not allowed to follow redirect.
+        if (m_crossOriginNonSimpleRequest) {
+            accessControlErrorDescription = "The request was redirected to '"+ request.url().string() + "', which is disallowed for cross-origin requests that require preflight.";
+        } else {
+            // The redirect response must pass the access control check if the
+            // original request was not same-origin.
             allowRedirect = CrossOriginAccessControl::isLegalRedirectLocation(request.url(), accessControlErrorDescription)
                 && (m_sameOriginRequest || passesAccessControlCheck(redirectResponse, effectiveAllowCredentials(), securityOrigin(), accessControlErrorDescription));
-        } else {
-            accessControlErrorDescription = "The request was redirected to '"+ request.url().string() + "', which is disallowed for cross-origin requests that require preflight.";
         }
 
         if (allowRedirect) {
