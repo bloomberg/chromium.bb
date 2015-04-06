@@ -309,32 +309,46 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
     // The host may be a real IP address, or something that looks a bit like it
     // (e.g. "1.2" or "3232235521").  We check whether it was convertible to an
     // IP with a non-zero first octet; IPs with first octet zero are "source
-    // IPs" and are never navigable as destination addresses.
+    // IPs" and are almost never navigable as destination addresses.
+    //
+    // The one exception to this is 0.0.0.0; on many systems, attempting to
+    // navigate to this IP actually navigates to localhost.  To support this
+    // case, when the converted IP is 0.0.0.0, we go ahead and run the "did the
+    // user actually type four components" test in the conditional below, so
+    // that we'll allow explicit attempts to navigate to "0.0.0.0".  If the
+    // input was anything else (e.g. "0"), we'll fall through to returning QUERY
+    // afterwards.
+    if ((host_info.address[0] != 0) ||
+        ((host_info.address[1] == 0) && (host_info.address[2] == 0) &&
+         (host_info.address[3] == 0))) {
+      // This is theoretically a navigable IP.  We have four cases.  The first
+      // three are:
+      // * If the user typed four distinct components, this is an IP for sure.
+      // * If the user typed two or three components, this is almost certainly a
+      //   query, especially for two components (as in "13.5/7.25"), but we'll
+      //   allow navigation for an explicit scheme or trailing slash below.
+      // * If the user typed one component, this is likely a query, but could be
+      //   a non-dotted-quad version of an IP address.
+      // Unfortunately, since we called CanonicalizeHost() on the
+      // already-canonicalized host, all of these cases will have been changed
+      // to have four components (e.g. 13.2 -> 13.0.0.2), so we have to call
+      // CanonicalizeHost() again, this time on the original input, so that we
+      // can get the correct number of IP components.
+      //
+      // The fourth case is that the user typed something ambiguous like ".1.2"
+      // that fixup converted to an IP address ("1.0.0.2").  In this case the
+      // call to CanonicalizeHost() will return NEUTRAL here.  Since it's not
+      // clear what the user intended, we fall back to our other heuristics.
+      net::CanonicalizeHost(base::UTF16ToUTF8(original_host), &host_info);
+      if ((host_info.family == url::CanonHostInfo::IPV4) &&
+          (host_info.num_ipv4_components == 4))
+        return metrics::OmniboxInputType::URL;
+    }
+
+    // By this point, if we have an "IP" with first octet zero, we know it
+    // wasn't "0.0.0.0", so mark it as non-navigable.
     if (host_info.address[0] == 0)
       return metrics::OmniboxInputType::QUERY;
-
-    // This is theoretically a navigable IP.  We have four cases.  The first
-    // three are:
-    // * If the user typed four distinct components, this is an IP for sure.
-    // * If the user typed two or three components, this is almost certainly a
-    //   query, especially for two components (as in "13.5/7.25"), but we'll
-    //   allow navigation for an explicit scheme or trailing slash below.
-    // * If the user typed one component, this is likely a query, but could be
-    //   a non-dotted-quad version of an IP address.
-    // Unfortunately, since we called CanonicalizeHost() on the
-    // already-canonicalized host, all of these cases will have been changed to
-    // have four components (e.g. 13.2 -> 13.0.0.2), so we have to call
-    // CanonicalizeHost() again, this time on the original input, so that we can
-    // get the correct number of IP components.
-    //
-    // The fourth case is that the user typed something ambiguous like ".1.2"
-    // that fixup converted to an IP address ("1.0.0.2").  In this case the call
-    // to CanonicalizeHost() will return NEUTRAL here.  Since it's not clear
-    // what the user intended, we fall back to our other heuristics.
-    net::CanonicalizeHost(base::UTF16ToUTF8(original_host), &host_info);
-    if ((host_info.family == url::CanonHostInfo::IPV4) &&
-        (host_info.num_ipv4_components == 4))
-      return metrics::OmniboxInputType::URL;
   }
 
   // Now that we've ruled out all schemes other than http or https and done a
