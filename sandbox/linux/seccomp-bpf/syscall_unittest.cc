@@ -13,7 +13,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
