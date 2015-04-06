@@ -92,7 +92,7 @@ def Emerge(packages, brick=None, board=None, host=False, with_deps=True,
   cros_build_lib.SudoRunCommand(cmd + packages)
 
 
-def UpdateChroot():
+def UpdateChroot(brick=None, board=None):
   """Update the chroot."""
   # Run chroot update hooks.
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'run_chroot_version_hooks')]
@@ -100,6 +100,10 @@ def UpdateChroot():
 
   # Update toolchains.
   cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_setup_toolchains')]
+  if brick:
+    cmd += ['--targets=bricks', '--include-bricks=%s' % brick.brick_locator]
+  elif board:
+    cmd += ['--targets=boards', '--include-boards=%s' % board]
   cros_build_lib.SudoRunCommand(cmd, debug_level=logging.DEBUG)
 
   # Update the host before updating the board.
@@ -112,17 +116,23 @@ def UpdateChroot():
                                 debug_level=logging.DEBUG)
 
 
-def SetupBoard(brick=None, board=None, use_binary=True):
+def SetupBoard(brick=None, board=None, update_chroot=True, use_binary=True):
   """Set up a sysroot for |brick| or |board| (either must be provided).
+
+  This invokes UpdateChroot() with the given brick/board values, unless
+  otherwise instructed.
 
   Args:
     brick: Brick object we need to set up a sysroot for.
     board: Board name to set up a sysroot for. Ignored if |brick| is provided.
+    update_chroot: Whether we should update the chroot first.
     use_binary: If okay to use binary packages during the update.
   """
+  if update_chroot:
+    UpdateChroot(brick=brick, board=board)
+
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'setup_board'),
          '--skip_toolchain_update', '--skip_chroot_upgrade']
-
   if brick:
     brick.GeneratePortageConfig()
     cmd.append('--brick=%s' % brick.brick_locator)

@@ -24,7 +24,7 @@ class MockBuildCommand(command_unittest.MockCommand):
     super(MockBuildCommand, self).__init__(*args, **kwargs)
     self.chroot_update_called = 0
 
-  def OnChrootUpdate(self):
+  def OnChrootUpdate(self, *_args, **_kwargs):
     self.chroot_update_called += 1
 
   def Run(self, inst):

@@ -152,9 +152,8 @@ To just build a single package:
 
     # Set up board if not building for host.
     if not self.host:
-      if self.chroot_update:
-        chroot_util.UpdateChroot()
       chroot_util.SetupBoard(brick=self.brick, board=self.board,
+                             update_chroot=self.chroot_update,
                              use_binary=self.options.binary)
 
     if not self.options.init_only:
