@@ -7,9 +7,25 @@ var model;
 var fileSystem;
 var item;
 
+/**
+ * Mock thumbnail model.
+ */
+function ThumbnailModel() {
+}
+
+ThumbnailModel.prototype.get = function(entries) {
+  return Promise.resolve(entries.map(function() {
+    return {};
+  }));
+};
+
 function setUp() {
   model = new GalleryDataModel(
-      /* Mock MetadataModel */{},
+      /* Mock MetadataModel */{
+        get: function() {
+          return Promise.resolve([{}]);
+        }
+      },
       /* Mock EntryListWatcher */{});
   fileSystem = new MockFileSystem('volumeId');
   item = new Gallery.Item(

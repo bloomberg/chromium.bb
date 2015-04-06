@@ -524,9 +524,12 @@ Mosaic.prototype.onSplice_ = function(event) {
 
   if (event.added.length) {
     var newTiles = [];
-    for (var t = 0; t !== event.added.length; t++)
-      newTiles.push(new Mosaic.Tile(this,
-            assertInstanceof(this.dataModel_.item(index + t), Gallery.Item)));
+    for (var t = 0; t !== event.added.length; t++) {
+      newTiles.push(new Mosaic.Tile(
+          this,
+          assertInstanceof(this.dataModel_.item(index + t),
+          Gallery.Item)));
+    }
 
     this.tiles_.splice.apply(this.tiles_, [index, 0].concat(newTiles));
     this.initTiles_(newTiles);
@@ -551,9 +554,6 @@ Mosaic.prototype.onContentChange_ = function(event) {
     return; // Thumbnail unchanged, nothing to do.
 
   var index = this.dataModel_.indexOf(event.item);
-  if (index !== this.selectionModel_.selectedIndex)
-    console.error('Content changed for unselected item');
-
   this.layoutModel_.invalidateFromTile_(index);
   this.tiles_[index].init();
   this.tiles_[index].unload();
@@ -2060,34 +2060,36 @@ Mosaic.Tile.prototype.init = function() {
   // Set higher priority for the selected elements to load them first.
   var priority = this.getAttribute('selected') ? 2 : 3;
 
-  // Use embedded thumbnails on Drive, since they have higher resolution.
-  this.thumbnailLoader_ = new ThumbnailLoader(
-      this.getItem().getEntry(),
-      ThumbnailLoader.LoaderType.CANVAS,
-      this.getItem().getThumbnailMetadataItem(),
-      undefined,  // Media type.
-      [
-        ThumbnailLoader.LoadTarget.EXTERNAL_METADATA,
-        ThumbnailLoader.LoadTarget.FILE_ENTRY
-      ]);
-
-  // If no hidpi embedded thumbnail available, then use the low resolution
-  // for preloading.
-  if (this.thumbnailLoader_.getLoadTarget() ===
-      ThumbnailLoader.LoadTarget.FILE_ENTRY) {
-    this.thumbnailPreloader_ = new ThumbnailLoader(
+  if (this.getItem().getThumbnailMetadataItem()) {
+    // Use embedded thumbnails on Drive, since they have higher resolution.
+    this.thumbnailLoader_ = new ThumbnailLoader(
         this.getItem().getEntry(),
         ThumbnailLoader.LoaderType.CANVAS,
         this.getItem().getThumbnailMetadataItem(),
         undefined,  // Media type.
         [
-          ThumbnailLoader.LoadTarget.CONTENT_METADATA
-        ],
-        // Preloaders have always higher priotity, so the preload images
-        // are loaded as soon as possible.
-        2);
-    if (!this.thumbnailPreloader_.getLoadTarget())
-      this.thumbnailPreloader_ = null;
+          ThumbnailLoader.LoadTarget.EXTERNAL_METADATA,
+          ThumbnailLoader.LoadTarget.FILE_ENTRY
+        ]);
+
+    // If no hidpi embedded thumbnail available, then use the low resolution
+    // for preloading.
+    if (this.thumbnailLoader_.getLoadTarget() ===
+        ThumbnailLoader.LoadTarget.FILE_ENTRY) {
+      this.thumbnailPreloader_ = new ThumbnailLoader(
+          this.getItem().getEntry(),
+          ThumbnailLoader.LoaderType.CANVAS,
+          this.getItem().getThumbnailMetadataItem(),
+          undefined,  // Media type.
+          [
+            ThumbnailLoader.LoadTarget.CONTENT_METADATA
+          ],
+          // Preloaders have always higher priotity, so the preload images
+          // are loaded as soon as possible.
+          2);
+      if (!this.thumbnailPreloader_.getLoadTarget())
+        this.thumbnailPreloader_ = null;
+    }
   }
 
   // Dimensions are always acquired from the metadata. For local files, it is
@@ -2097,7 +2099,7 @@ Mosaic.Tile.prototype.init = function() {
   var metadataItem = this.getItem().getMetadataItem();
   var width;
   var height;
-  if (metadataItem.imageWidth && metadataItem.imageHeight) {
+  if (metadataItem && metadataItem.imageWidth && metadataItem.imageHeight) {
     width = metadataItem.imageWidth;
     height = metadataItem.imageHeight;
   } else {
@@ -2147,24 +2149,26 @@ Mosaic.Tile.prototype.load = function(loadMode, onImageLoaded) {
         this.wrapper_.classList.add('animated');
       else
         this.wrapper_.classList.remove('animated');
+
+      // Add debug mode classes.
+      this.wrapper_.classList.remove('load-target-content-metadata');
+      this.wrapper_.classList.remove('load-target-external-metadata');
+      this.wrapper_.classList.remove('load-target-file-entry');
+      switch (loader.getLoadTarget()) {
+        case ThumbnailLoader.LoadTarget.CONTENT_METADATA:
+          this.wrapper_.classList.add('load-target-content-metadata');
+          break;
+        case ThumbnailLoader.LoadTarget.EXTERNAL_METADATA:
+          this.wrapper_.classList.add('load-target-external-metadata');
+          break;
+        case ThumbnailLoader.LoadTarget.FILE_ENTRY:
+          this.wrapper_.classList.add('load-target-file-entry');
+              break;
+      }
+
+      loader.attachImage(this.wrapper_, ThumbnailLoader.FillMode.OVER_FILL);
     }
 
-    // Add debug mode classes.
-    this.wrapper_.classList.remove('load-target-content-metadata');
-    this.wrapper_.classList.remove('load-target-external-metadata');
-    this.wrapper_.classList.remove('load-target-file-entry');
-    switch (loader.getLoadTarget()) {
-      case ThumbnailLoader.LoadTarget.CONTENT_METADATA:
-        this.wrapper_.classList.add('load-target-content-metadata');
-        break;
-      case ThumbnailLoader.LoadTarget.EXTERNAL_METADATA:
-        this.wrapper_.classList.add('load-target-external-metadata');
-        break;
-      case ThumbnailLoader.LoadTarget.FILE_ENTRY:
-        this.wrapper_.classList.add('load-target-file-entry');
-        break;
-    }
-    loader.attachImage(this.wrapper_, ThumbnailLoader.FillMode.OVER_FILL);
     onImageLoaded(success);
 
     switch (mode) {
@@ -2195,7 +2199,7 @@ Mosaic.Tile.prototype.load = function(loadMode, onImageLoaded) {
 
   // Load the high-dpi image only when it is requested, or the low-dpi is not
   // available.
-  if (!this.imageLoading_ &&
+  if (!this.imageLoading_ && this.thumbnailLoader_ &&
       (loadMode === Mosaic.Tile.LoadMode.HIGH_DPI || !this.imagePreloading_)) {
     this.imageLoading_ = true;
     this.thumbnailLoader_.loadDetachedImage(function(success) {
@@ -2213,14 +2217,16 @@ Mosaic.Tile.prototype.load = function(loadMode, onImageLoaded) {
  * Unloads an image from the tile.
  */
 Mosaic.Tile.prototype.unload = function() {
-  this.thumbnailLoader_.cancel();
+  if (this.thumbnailLoader_)
+    this.thumbnailLoader_.cancel();
   if (this.thumbnailPreloader_)
     this.thumbnailPreloader_.cancel();
   this.imagePreloaded_ = false;
   this.imageLoaded_ = false;
   this.imagePreloading_ = false;
   this.imageLoading_ = false;
-  this.wrapper_.innerText = '';
+  if (this.wrapper_)
+    this.wrapper_.innerText = '';
 };
 
 /**

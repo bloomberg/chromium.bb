@@ -443,7 +443,7 @@ ThumbnailLoader.prototype.renderMedia_ = function() {
 
 /**
  * Attach the image to a given element.
- * @param {Element} container Parent element.
+ * @param {!Element} container Parent element.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  */
 ThumbnailLoader.prototype.attachImage = function(container, fillMode) {

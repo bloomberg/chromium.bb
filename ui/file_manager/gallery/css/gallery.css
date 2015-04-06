@@ -441,6 +441,7 @@ input[type='checkbox']:checked {
   height: 100%;
   overflow: hidden;
   transition: opacity 180ms linear, visibility 0ms linear;
+  white-space: nowrap;
   z-index: 0;
 }
 
@@ -455,7 +456,7 @@ input[type='checkbox']:checked {
   cursor: pointer;
   display: inline-block;
   height: 47px;
-  margin: 2px;
+  margin: 2px 2px 2px 0;
   overflow: hidden;
   transition: all 180ms linear;
   width: 47px;

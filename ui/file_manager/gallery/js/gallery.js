@@ -291,11 +291,42 @@ Gallery.prototype.load = function(selectedEntries) {
 /**
  * Loads the content.
  *
- * @param {!Array.<!Entry>} entries Array of entries.
- * @param {!Array.<!Entry>} selectedEntries Array of selected entries.
+ * @param {!Array.<!FileEntry>} entries Array of entries.
+ * @param {!Array.<!FileEntry>} selectedEntries Array of selected entries.
  * @private
  */
 Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
+  // Add the entries to data model.
+  var items = [];
+  for (var i = 0; i < entries.length; i++) {
+    var locationInfo = this.volumeManager_.getLocationInfo(entries[i]);
+    if (!locationInfo)  // Skip the item, since gone.
+      return;
+    items.push(new Gallery.Item(
+        entries[i],
+        locationInfo,
+        null,
+        null,
+        true));
+  }
+  this.dataModel_.splice(0, this.dataModel_.length);
+  this.updateThumbnails_();  // Remove the caches.
+
+  GalleryDataModel.prototype.splice.apply(
+      this.dataModel_, [0, 0].concat(items));
+
+  // Apply the selection.
+  var selectedSet = {};
+  for (var i = 0; i < selectedEntries.length; i++) {
+    selectedSet[selectedEntries[i].toURL()] = true;
+  }
+  for (var i = 0; i < items.length; i++) {
+    if (!selectedSet[items[i].getEntry().toURL()])
+      continue;
+    this.selectionModel_.setIndexSelected(i, true);
+  }
+  this.onSelection_();
+
   // Obtains max chank size.
   var maxChunkSize = 20;
   var volumeInfo = this.volumeManager_.getVolumeInfo(entries[0]);
@@ -306,38 +337,8 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
       this.context_.readonlyDirName = volumeInfo.label;
   }
 
-  // Make loading list.
-  var entrySet = {};
-  for (var i = 0; i < entries.length; i++) {
-    var entry = entries[i];
-    entrySet[entry.toURL()] = {
-      entry: entry,
-      selected: false,
-      index: i
-    };
-  }
-  for (var i = 0; i < selectedEntries.length; i++) {
-    var entry = selectedEntries[i];
-    entrySet[entry.toURL()] = {
-      entry: entry,
-      selected: true,
-      index: i
-    };
-  }
-  var loadingList = [];
-  for (var url in entrySet) {
-    loadingList.push(entrySet[url]);
-  }
-  loadingList = loadingList.sort(function(a, b) {
-    if (a.selected && !b.selected)
-      return -1;
-    else if (!a.selected && b.selected)
-      return 1;
-    else
-      return a.index - b.index;
-  });
-
-  if (loadingList.length === 0) {
+  // If items are empty, stop initialization.
+  if (items.length === 0) {
     this.dataModel_.splice(0, this.dataModel_.length);
     return;
   }
@@ -348,53 +349,30 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
   var thumbnailModel = new ThumbnailModel(this.metadataModel_);
   var loadChunk = function(firstChunk) {
     // Extract chunk.
-    var chunk = loadingList.splice(0, maxChunkSize);
+    var chunk = items.splice(0, maxChunkSize);
     if (!chunk.length)
       return;
     var entries = chunk.map(function(chunkItem) {
-      return chunkItem.entry;
+      return chunkItem.getEntry();
     });
     var metadataPromise = self.metadataModel_.get(
         entries, Gallery.PREFETCH_PROPERTY_NAMES);
     var thumbnailPromise = thumbnailModel.get(entries);
     return Promise.all([metadataPromise, thumbnailPromise]).then(
         function(metadataLists) {
-      // Remove all the previous items if it's the first chunk.
-      // Do it here because prevent a flicker between removing all the items
-      // and adding new ones.
-      if (firstChunk) {
-        self.dataModel_.splice(0, self.dataModel_.length);
-        self.updateThumbnails_();  // Remove the caches.
-      }
-
       // Add items to the model.
-      var items = [];
       chunk.forEach(function(chunkItem, index) {
-        var locationInfo = self.volumeManager_.getLocationInfo(chunkItem.entry);
-        if (!locationInfo)  // Skip the item, since gone.
-          return;
-        items.push(new Gallery.Item(
-            chunkItem.entry,
-            locationInfo,
-            metadataLists[0][index],
-            metadataLists[1][index],
-            /* original */ true));
-      });
-      self.dataModel_.push.apply(self.dataModel_, items);
+        chunkItem.setMetadataItem(metadataLists[0][index]);
+        chunkItem.setThumbnailMetadataItem(metadataLists[1][index]);
 
-      // Apply the selection.
-      var selectionUpdated = false;
-      for (var i = 0; i < chunk.length; i++) {
-        if (!chunk[i].selected)
-          continue;
-        var index = self.dataModel_.indexOf(items[i]);
-        if (index < 0)
-          continue;
-        self.selectionModel_.setIndexSelected(index, true);
-        selectionUpdated = true;
-      }
-      if (selectionUpdated)
-        self.onSelection_();
+        if (!firstChunk || self.initialized_) {
+          var event = new Event('content');
+          event.item = chunkItem;
+          event.oldEntry = chunkItem.getEntry();
+          event.thumbnailChanged = true;
+          self.dataModel_.dispatchEvent(event);
+        }
+      });
 
       // Init modes after the first chunk is loaded.
       if (firstChunk && !self.initialized_) {
@@ -673,9 +651,6 @@ Gallery.prototype.onSplice_ = function() {
  * @private
 */
 Gallery.prototype.onContentChange_ = function(event) {
-  var index = this.dataModel_.indexOf(event.item);
-  if (index !== this.selectionModel_.selectedIndex)
-    console.error('Content changed for unselected item');
   this.updateSelectionAndState_();
 };
 

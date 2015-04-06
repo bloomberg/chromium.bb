@@ -64,8 +64,6 @@ GalleryDataModel.prototype = {
 GalleryDataModel.prototype.saveItem = function(
     volumeManager, item, canvas, overwrite) {
   var oldEntry = item.getEntry();
-  var oldMetadataItem = item.getMetadataItem();
-  var oldThumbnailMetadataItem = item.getThumbnailMetadataItem();
   var oldLocationInfo = item.getLocationInfo();
   return new Promise(function(fulfill, reject) {
     item.saveToFile(
@@ -89,22 +87,28 @@ GalleryDataModel.prototype.saveItem = function(
           this.dispatchEvent(event);
 
           if (!util.isSameEntry(oldEntry, item.getEntry())) {
-            // New entry is added and the item now tracks it.
-            // Add another item for the old entry.
-            var anotherItem = new Gallery.Item(
-                oldEntry,
-                oldLocationInfo,
-                oldMetadataItem,
-                oldThumbnailMetadataItem,
-                item.isOriginal());
-            // The item must be added behind the existing item so that it does
-            // not change the index of the existing item.
-            // TODO(hirono): Update the item index of the selection model
-            // correctly.
-            this.splice(this.indexOf(item) + 1, 0, anotherItem);
+            Promise.all([
+              this.metadataModel_.get(
+                  [oldEntry], Gallery.PREFETCH_PROPERTY_NAMES),
+              new ThumbnailModel(this.metadataModel_).get([oldEntry])
+            ]).then(function(itemLists) {
+              // New entry is added and the item now tracks it.
+              // Add another item for the old entry.
+              var anotherItem = new Gallery.Item(
+                  oldEntry,
+                  oldLocationInfo,
+                  itemLists[0][0],
+                  itemLists[1][0],
+                  item.isOriginal());
+              // The item must be added behind the existing item so that it does
+              // not change the index of the existing item.
+              // TODO(hirono): Update the item index of the selection model
+              // correctly.
+              this.splice(this.indexOf(item) + 1, 0, anotherItem);
+            }.bind(this)).then(fulfill, reject);
+          } else {
+            fulfill();
           }
-
-          fulfill();
         }.bind(this));
   }.bind(this));
 };

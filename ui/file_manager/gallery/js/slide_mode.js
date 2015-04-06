@@ -992,8 +992,11 @@ SlideMode.prototype.itemLoaded_ = function(
     return Math.round(number / (1000 * 1000));
   };
 
-  ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
-      toMillions(item.getMetadataItem().size));
+  var metadata = item.getMetadataItem();
+  if (metadata) {
+    ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MB'),
+        toMillions(metadata.size));
+  }
 
   var canvas = this.imageView_.getCanvas();
   ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),

@@ -7,8 +7,8 @@
  *
  * @param {!FileEntry} entry Image entry.
  * @param {!EntryLocation} locationInfo Entry location information.
- * @param {!MetadataItem} metadataItem
- * @param {!ThumbnailMetadataItem} thumbnailMetadataItem
+ * @param {MetadataItem} metadataItem
+ * @param {ThumbnailMetadataItem} thumbnailMetadataItem
  * @param {boolean} original Whether the entry is original or edited.
  * @constructor
  * @struct
@@ -26,12 +26,12 @@ Gallery.Item = function(
   this.locationInfo_ = locationInfo;
 
   /**
-   * @private {!MetadataItem}
+   * @private {MetadataItem}
    */
   this.metadataItem_ = metadataItem;
 
   /**
-   * @private {!ThumbnailMetadataItem}
+   * @private {ThumbnailMetadataItem}
    */
   this.thumbnailMetadataItem_ = metadataItem;
 
@@ -81,17 +81,31 @@ Gallery.Item.prototype.getLocationInfo = function() {
 };
 
 /**
- * @return {!MetadataItem} Metadata.
+ * @return {MetadataItem} Metadata.
  */
 Gallery.Item.prototype.getMetadataItem = function() {
   return this.metadataItem_;
 };
 
 /**
- * @return {!ThumbnailMetadataItem} Thumbnail metadata item.
+ * @param {!MetadataItem} metadata
+ */
+Gallery.Item.prototype.setMetadataItem = function(metadata) {
+  this.metadataItem_ = metadata;
+};
+
+/**
+ * @return {ThumbnailMetadataItem} Thumbnail metadata item.
  */
 Gallery.Item.prototype.getThumbnailMetadataItem = function() {
   return this.thumbnailMetadataItem_;
+};
+
+/**
+ * @param {!ThumbnailMetadataItem} item Thumbnail metadata item.
+ */
+Gallery.Item.prototype.setThumbnailMetadataItem = function(item) {
+  this.thumbnailMetadataItem_ = item;
 };
 
 /**

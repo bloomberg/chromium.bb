@@ -189,12 +189,14 @@ Ribbon.prototype.onSplice_ = function(event) {
         firstNode.previousSibling.removeAttribute('vanishing');
       } else {
         // Push a new item at the left end.
-        var newThumbnail = this.renderThumbnail_(this.firstVisibleIndex_);
-        newThumbnail.style.marginLeft = -(this.clientHeight - 2) + 'px';
-        this.insertBefore(newThumbnail, this.firstChild);
-        setTimeout(function() {
-          newThumbnail.style.marginLeft = '0';
-        }, 0);
+        if (this.firstVisibleIndex_ < this.dataModel_.length) {
+          var newThumbnail = this.renderThumbnail_(this.firstVisibleIndex_);
+          newThumbnail.style.marginLeft = -(this.clientHeight - 2) + 'px';
+          this.insertBefore(newThumbnail, this.firstChild);
+          setTimeout(function() {
+            newThumbnail.style.marginLeft = '0';
+          }, 0);
+        }
       }
     }
   }
@@ -396,6 +398,8 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
  * @private
  */
 Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
+  if (!item.getThumbnailMetadataItem())
+    return;
   this.thumbnailModel_.get([item.getEntry()]).then(function(metadataList) {
     var loader = new ThumbnailLoader(
         item.getEntry(),
