@@ -10,6 +10,7 @@
       'callback_interface.h',
       'constants.cpp',
       'conversions.cpp',
+      'copyright_block.txt',
       'dictionary_impl.cpp',
       'dictionary_impl.h',
       'dictionary_v8.cpp',
