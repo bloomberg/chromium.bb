@@ -246,3 +246,24 @@ class BatteryUtils(object):
       yield
     finally:
       self.EnableBatteryUpdates(timeout=timeout, retries=retries)
+
+  def ChargeDeviceToLevel(self, level, wait_period=60):
+    """Enables charging and waits for device to be charged to given level.
+
+    Args:
+      level: level of charge to wait for.
+      wait_period: time in seconds to wait between checking.
+    """
+    self.SetCharging(True)
+
+    def device_charged():
+      battery_level = self.GetBatteryInfo().get('level')
+      if battery_level is None:
+        logging.warning('Unable to find current battery level.')
+        battery_level = 100
+      else:
+        logging.info('current battery level: %s', battery_level)
+        battery_level = int(battery_level)
+      return battery_level >= level
+
+    timeout_retry.WaitFor(device_charged, wait_period=wait_period)

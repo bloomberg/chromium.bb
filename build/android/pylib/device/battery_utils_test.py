@@ -141,6 +141,17 @@ class BatteryUtilsGetPowerData(BatteryUtilsTest):
       self.assertEqual(data, {'uid': '1001', 'data': [2.0]})
 
 
+class BatteryUtilsChargeDevice(BatteryUtilsTest):
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testChargeDeviceToLevel(self):
+    with self.assertCalls(
+        (self.call.battery.SetCharging(True)),
+        (self.call.battery.GetBatteryInfo(), {'level': '50'}),
+        (self.call.battery.GetBatteryInfo(), {'level': '100'})):
+      self.battery.ChargeDeviceToLevel(95)
+
+
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.DEBUG)
   unittest.main(verbosity=2)

@@ -22,6 +22,7 @@ import time
 from pylib import android_commands
 from pylib import constants
 from pylib import device_settings
+from pylib.device import battery_utils
 from pylib.device import device_blacklist
 from pylib.device import device_errors
 from pylib.device import device_utils
@@ -163,20 +164,6 @@ def WipeDeviceIfPossible(device, timeout, options):
     pass
 
 
-def ChargeDeviceToLevel(device, level):
-  def device_charged():
-    battery_level = device.GetBatteryInfo().get('level')
-    if battery_level is None:
-      logging.warning('Unable to find current battery level.')
-      battery_level = 100
-    else:
-      logging.info('current battery level: %d', battery_level)
-      battery_level = int(battery_level)
-    return battery_level >= level
-
-  timeout_retry.WaitFor(device_charged, wait_period=60)
-
-
 def ProvisionDevice(device, options):
   if options.reboot_timeout:
     reboot_timeout = options.reboot_timeout
@@ -208,8 +195,8 @@ def ProvisionDevice(device, options):
           device, device_settings.NETWORK_DISABLED_SETTINGS)
     if options.min_battery_level is not None:
       try:
-        device.SetCharging(True)
-        ChargeDeviceToLevel(device, options.min_battery_level)
+        battery = battery_utils.BatteryUtils(device)
+        battery.ChargeDeviceToLevel(options.min_battery_level)
       except device_errors.CommandFailedError as e:
         logging.exception('Unable to charge device to specified level.')
 
