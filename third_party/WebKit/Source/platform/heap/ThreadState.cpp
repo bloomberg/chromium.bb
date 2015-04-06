@@ -90,7 +90,6 @@ ThreadState::ThreadState()
     , m_safePointScopeMarker(nullptr)
     , m_atSafePoint(false)
     , m_interruptors()
-    , m_didV8GCAfterLastGC(false)
     , m_sweepForbidden(false)
     , m_noAllocationCount(0)
     , m_gcForbiddenCount(0)
@@ -98,7 +97,6 @@ ThreadState::ThreadState()
     , m_currentHeapAges(0)
     , m_isTerminating(false)
     , m_shouldFlushHeapDoesNotContainCache(false)
-    , m_collectionRate(1.0)
     , m_gcState(NoGCScheduled)
     , m_traceDOMWrappers(nullptr)
 #if defined(ADDRESS_SANITIZER)
@@ -508,10 +506,15 @@ bool ThreadState::shouldScheduleIdleGC()
     if (gcState() != NoGCScheduled)
         return false;
 #if ENABLE(OILPAN)
-    // Trigger garbage collection on a 50% increase in size since the last GC,
-    // but not for less than 512 KB.
-    size_t newSize = Heap::allocatedObjectSize();
-    return newSize >= 512 * 1024 && newSize > Heap::markedObjectSize() / 2;
+    // The estimated size is updated when the main thread finishes lazy
+    // sweeping. If this thread reaches here before the main thread finishes
+    // lazy sweeping, the thread will use the estimated size of the last GC.
+    size_t estimatedLiveObjectSize = Heap::estimatedLiveObjectSize();
+    // Schedule an idle GC if more than 512 KB has been allocated since
+    // the last GC and the current memory usage (=allocated + estimated)
+    // is >50% larger than the estimated live memory usage.
+    size_t allocatedObjectSize = Heap::allocatedObjectSize();
+    return allocatedObjectSize >= 512 * 1024 && allocatedObjectSize > estimatedLiveObjectSize / 2;
 #else
     return false;
 #endif
@@ -526,10 +529,15 @@ bool ThreadState::shouldSchedulePreciseGC()
 #if ENABLE(OILPAN)
     return false;
 #else
-    // Trigger garbage collection on a 50% increase in size since the last GC,
-    // but not for less than 512 KB.
-    size_t newSize = Heap::allocatedObjectSize();
-    return newSize >= 512 * 1024 && newSize > Heap::markedObjectSize() / 2;
+    // The estimated size is updated when the main thread finishes lazy
+    // sweeping. If this thread reaches here before the main thread finishes
+    // lazy sweeping, the thread will use the estimated size of the last GC.
+    size_t estimatedLiveObjectSize = Heap::estimatedLiveObjectSize();
+    // Schedule a precise GC if more than 512 KB has been allocated since
+    // the last GC and the current memory usage (=allocated + estimated)
+    // is >50% larger than the estimated live memory usage.
+    size_t allocatedObjectSize = Heap::allocatedObjectSize();
+    return allocatedObjectSize >= 512 * 1024 && allocatedObjectSize > estimatedLiveObjectSize / 2;
 #endif
 }
 
@@ -543,24 +551,20 @@ bool ThreadState::shouldForceConservativeGC()
     if (Heap::isUrgentGCRequested())
         return true;
 
-    size_t newSize = Heap::allocatedObjectSize();
-    if (newSize >= 300 * 1024 * 1024) {
+    // The estimated size is updated when the main thread finishes lazy
+    // sweeping. If this thread reaches here before the main thread finishes
+    // lazy sweeping, the thread will use the estimated size of the last GC.
+    size_t estimatedLiveObjectSize = Heap::estimatedLiveObjectSize();
+    size_t allocatedObjectSize = Heap::allocatedObjectSize();
+    if (allocatedObjectSize >= 300 * 1024 * 1024) {
         // If we consume too much memory, trigger a conservative GC
-        // on a 50% increase in size since the last GC. This is a safe guard
-        // to avoid OOM.
-        return newSize > Heap::markedObjectSize() / 2;
+        // aggressively. This is a safe guard to avoid OOM.
+        return allocatedObjectSize > estimatedLiveObjectSize / 2;
     }
-    if (m_didV8GCAfterLastGC && m_collectionRate > 0.5) {
-        // If we had a V8 GC after the last Oilpan GC and the last collection
-        // rate was higher than 50%, trigger a conservative GC on a 200%
-        // increase in size since the last GC, but not for less than 4 MB.
-        return newSize >= 4 * 1024 * 1024 && newSize > 2 * Heap::markedObjectSize();
-    }
-    // Otherwise, trigger a conservative GC on a 400% increase in size since
-    // the last GC, but not for less than 32 MB. We set the higher limit in
-    // this case because Oilpan GC is unlikely to collect a lot of objects
-    // without having a V8 GC.
-    return newSize >= 32 * 1024 * 1024 && newSize > 4 * Heap::markedObjectSize();
+    // Schedule a precise GC if more than 32 MB has been allocated since
+    // the last GC and the current memory usage (=allocated + estimated)
+    // is >500% larger than the estimated live memory usage.
+    return allocatedObjectSize >= 32 * 1024 * 1024 && allocatedObjectSize > 4 * estimatedLiveObjectSize;
 }
 
 void ThreadState::scheduleGCIfNeeded()
@@ -768,7 +772,12 @@ ThreadState::GCState ThreadState::gcState() const
 void ThreadState::didV8GC()
 {
     checkThread();
-    m_didV8GCAfterLastGC = true;
+    if (isMainThread()) {
+        // Lower the estimated live object size because the V8 major GC is
+        // expected to have collected a lot of DOM wrappers and dropped
+        // references to their DOM objects.
+        Heap::setEstimatedLiveObjectSize(Heap::estimatedLiveObjectSize() / 2);
+    }
 }
 
 void ThreadState::runScheduledGC(StackState stackState)
@@ -836,28 +845,8 @@ void ThreadState::completeSweep()
 
 void ThreadState::postSweep()
 {
-    if (isMainThread() && m_allocatedObjectSizeBeforeGC) {
-        // FIXME: Heap::markedObjectSize() may not be accurate because other
-        // threads may not have finished sweeping.
-        m_collectionRate = 1.0 * Heap::markedObjectSize() / m_allocatedObjectSizeBeforeGC;
-        ASSERT(m_collectionRate >= 0);
-
-        // The main thread might be at a safe point, with other
-        // threads leaving theirs and accumulating marked object size
-        // while continuing to sweep. That accumulated size might end up
-        // exceeding what the main thread sampled in preGC() (recorded
-        // in m_allocatedObjectSizeBeforeGC), resulting in a non-sensical
-        // > 1.0 rate.
-        //
-        // This is rare (cf. HeapTest.Threading for a case though);
-        // reset the invalid rate if encountered.
-        //
-        if (m_collectionRate > 1.0)
-            m_collectionRate = 1.0;
-    } else {
-        // FIXME: We should make m_collectionRate available in non-main threads.
-        m_collectionRate = 1.0;
-    }
+    if (isMainThread())
+        Heap::setEstimatedLiveObjectSize(Heap::markedObjectSize());
 
     switch (gcState()) {
     case Sweeping:
@@ -1063,8 +1052,6 @@ void ThreadState::preSweep()
     checkThread();
     if (gcState() != EagerSweepScheduled && gcState() != LazySweepScheduled)
         return;
-
-    m_didV8GCAfterLastGC = false;
 
     {
         if (isMainThread())

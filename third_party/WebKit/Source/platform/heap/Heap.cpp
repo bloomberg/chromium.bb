@@ -2161,10 +2161,7 @@ void Heap::init()
     s_allocatedObjectSize = 0;
     s_allocatedSpace = 0;
     s_markedObjectSize = 0;
-
-    // Use 8ms as initial estimated marking time.
-    // 8ms is long enough for low-end mobile devices to mark common real-world object graphs.
-    s_markingTimeInLastGC = 0.008;
+    s_estimatedMarkingTimePerByte = 0.0;
 
     GCInfoTable::init();
 }
@@ -2453,6 +2450,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     s_markingVisitor->configureEagerTraceLimit();
     ASSERT(s_markingVisitor->canTraceEagerly());
 
+    size_t totalObjectSize = Heap::allocatedObjectSize() + Heap::markedObjectSize();
     Heap::resetHeapCounters();
 
     // 1. Trace persistent roots.
@@ -2487,7 +2485,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
 #endif
 
     double markingTimeInMilliseconds = WTF::currentTimeMS() - timeStamp;
-    s_markingTimeInLastGC = markingTimeInMilliseconds / 1000;
+    s_estimatedMarkingTimePerByte = totalObjectSize ? (markingTimeInMilliseconds / 1000 / totalObjectSize) : 0;
 
     if (Platform::current()) {
         Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", markingTimeInMilliseconds, 0, 10 * 1000, 50);
@@ -2603,20 +2601,15 @@ double Heap::estimatedMarkingTime()
 {
     ASSERT(ThreadState::current()->isMainThread());
 
-    // Marking algorithm takes O(N_live_objs), so the next marking time can be estimated as:
-    //        ~             N_live_objs
-    // t_next = t_last * ------------------
-    //                    N_last_live_objs
-    // By estimating N_{,last}_live_objs ratio using object size ratio, we get:
-    //        ~           (Size_new_objs + Size_last_marked_objs) * Rate_alive
-    // t_next = t_last * ------------------------------------------------------
-    //                                     Size_last_marked_objs
+    // Use 8 ms as initial estimated marking time.
+    // 8 ms is long enough for low-end mobile devices to mark common
+    // real-world object graphs.
+    if (s_estimatedMarkingTimePerByte == 0)
+        return 0.008;
 
-    double estimatedObjectCountIncreaseRatio = 1.0;
-    if (Heap::markedObjectSize() > 0)
-        estimatedObjectCountIncreaseRatio = (Heap::allocatedObjectSize() + Heap::markedObjectSize()) * ThreadState::current()->collectionRate() / Heap::markedObjectSize();
-
-    return s_markingTimeInLastGC * estimatedObjectCountIncreaseRatio;
+    // Assuming that the collection rate of this GC will be mostly equal to
+    // the collection rate of the last GC, estimate the marking time of this GC.
+    return s_estimatedMarkingTimePerByte * (Heap::allocatedObjectSize() + Heap::markedObjectSize());
 }
 
 void Heap::reportMemoryUsage()
@@ -2895,10 +2888,13 @@ Heap::RegionTree* Heap::s_regionTree = nullptr;
 size_t Heap::s_allocatedObjectSize = 0;
 size_t Heap::s_allocatedSpace = 0;
 size_t Heap::s_markedObjectSize = 0;
+// We don't want to use 0 KB for the initial value because it may end up
+// triggering the first GC of some thread too prematurely.
+size_t Heap::s_estimatedLiveObjectSize = 512 * 1024;
 
 size_t Heap::s_externallyAllocatedBytes = 0;
 size_t Heap::s_externallyAllocatedBytesAlive = 0;
 unsigned Heap::s_requestedUrgentGC = false;
-double Heap::s_markingTimeInLastGC = 0.0;
+double Heap::s_estimatedMarkingTimePerByte = 0.0;
 
 } // namespace blink

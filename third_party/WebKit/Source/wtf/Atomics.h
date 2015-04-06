@@ -143,6 +143,18 @@ ALWAYS_INLINE void releaseStore(volatile unsigned* ptr, unsigned value)
 {
     __tsan_atomic32_store(reinterpret_cast<volatile int*>(ptr), static_cast<int>(value), __tsan_memory_order_release);
 }
+ALWAYS_INLINE void releaseStore(volatile unsigned long* ptr, unsigned long value)
+{
+#if CPU(64BIT)
+    __tsan_atomic64_store(reinterpret_cast<volatile long*>(ptr), static_cast<long>(value), __tsan_memory_order_release);
+#else
+    __tsan_atomic32_store(reinterpret_cast<volatile long*>(ptr), static_cast<long>(value), __tsan_memory_order_release);
+#endif
+}
+ALWAYS_INLINE void releaseStore(volatile unsigned long long* ptr, unsigned long long value)
+{
+    __tsan_atomic64_store(reinterpret_cast<volatile long long*>(ptr), static_cast<long long>(value), __tsan_memory_order_release);
+}
 ALWAYS_INLINE void releaseStore(void* volatile* ptr, void* value)
 {
 #if CPU(64BIT)
@@ -211,6 +223,16 @@ ALWAYS_INLINE void releaseStore(volatile int* ptr, int value)
     *ptr = value;
 }
 ALWAYS_INLINE void releaseStore(volatile unsigned* ptr, unsigned value)
+{
+    MEMORY_BARRIER();
+    *ptr = value;
+}
+ALWAYS_INLINE void releaseStore(volatile unsigned long* ptr, unsigned long value)
+{
+    MEMORY_BARRIER();
+    *ptr = value;
+}
+ALWAYS_INLINE void releaseStore(volatile unsigned long long* ptr, unsigned long long value)
 {
     MEMORY_BARRIER();
     *ptr = value;

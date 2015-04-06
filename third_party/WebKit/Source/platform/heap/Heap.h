@@ -1030,6 +1030,8 @@ public:
         // only when we see the highest memory usage we've ever seen.
     }
     static size_t allocatedSpace() { return acquireLoad(&s_allocatedSpace); }
+    static size_t estimatedLiveObjectSize() { return acquireLoad(&s_estimatedLiveObjectSize); }
+    static void setEstimatedLiveObjectSize(size_t size) { releaseStore(&s_estimatedLiveObjectSize, size); }
 
     static double estimatedMarkingTime();
     static void reportMemoryUsage();
@@ -1087,10 +1089,11 @@ private:
     static size_t s_allocatedSpace;
     static size_t s_allocatedObjectSize;
     static size_t s_markedObjectSize;
+    static size_t s_estimatedLiveObjectSize;
     static size_t s_externallyAllocatedBytes;
     static size_t s_externallyAllocatedBytesAlive;
     static unsigned s_requestedUrgentGC;
-    static double s_markingTimeInLastGC;
+    static double s_estimatedMarkingTimePerByte;
 
     friend class ThreadState;
 };

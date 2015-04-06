@@ -582,8 +582,6 @@ public:
         m_traceDOMWrappers = traceDOMWrappers;
     }
 
-    double collectionRate() const { return m_collectionRate; }
-
     // By entering a gc-forbidden scope, conservative GCs will not
     // be allowed while handling an out-of-line allocation request.
     // Intended used when constructing subclasses of GC mixins, where
@@ -725,7 +723,6 @@ private:
     Vector<Address> m_safePointStackCopy;
     bool m_atSafePoint;
     Vector<Interruptor*> m_interruptors;
-    bool m_didV8GCAfterLastGC;
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
     size_t m_gcForbiddenCount;
@@ -739,7 +736,6 @@ private:
     bool m_isTerminating;
 
     bool m_shouldFlushHeapDoesNotContainCache;
-    double m_collectionRate;
     GCState m_gcState;
 
     CallbackStack* m_weakCallbackStack;
