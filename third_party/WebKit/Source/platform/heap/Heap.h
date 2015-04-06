@@ -33,6 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/AddressSanitizer.h"
+#include "platform/heap/GCInfo.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "public/platform/WebThread.h"

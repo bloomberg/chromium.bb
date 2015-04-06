@@ -34,6 +34,8 @@
       'AddressSanitizer.h',
       'CallbackStack.cpp',
       'CallbackStack.h',
+      'GCInfo.cpp',
+      'GCInfo.h',
       'Handle.h',
       'Heap.cpp',
       'Heap.h',

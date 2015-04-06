@@ -75,31 +75,6 @@ struct TraceMethodDelegate {
     static void trampoline(Visitor* visitor, void* self) { (reinterpret_cast<T*>(self)->*method)(visitor); }
 };
 
-// GCInfo contains meta-data associated with objects allocated in the
-// Blink heap. This meta-data consists of a function pointer used to
-// trace the pointers in the object during garbage collection, an
-// indication of whether or not the object needs a finalization
-// callback, and a function pointer used to finalize the object when
-// the garbage collector determines that the object is no longer
-// reachable. There is a GCInfo struct for each class that directly
-// inherits from GarbageCollected or GarbageCollectedFinalized.
-struct GCInfo {
-    bool hasFinalizer() const { return m_nonTrivialFinalizer; }
-    bool hasVTable() const { return m_hasVTable; }
-    TraceCallback m_trace;
-    FinalizationCallback m_finalize;
-    bool m_nonTrivialFinalizer;
-    bool m_hasVTable;
-#if ENABLE(GC_PROFILING)
-    // |m_className| is held as a reference to prevent dtor being called at exit.
-    const String& m_className;
-#endif
-};
-
-#if ENABLE(ASSERT)
-PLATFORM_EXPORT void assertObjectHasGCInfo(const void*, size_t gcInfoIndex);
-#endif
-
 // The FinalizerTraitImpl specifies how to finalize objects. Object
 // that inherit from GarbageCollectedFinalized are finalized by
 // calling their 'finalize' method which by default will call the
@@ -146,10 +121,6 @@ private:
 public:
     static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
 };
-
-// Trait to get the GCInfo structure for types that have their
-// instances allocated in the Blink garbage-collected heap.
-template<typename T> struct GCInfoTrait;
 
 template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> class NeedsAdjustAndMark;
 
@@ -775,6 +746,8 @@ public:
     static void finalize(void* pointer);
 };
 
+template<typename T> struct GCInfoTrait;
+
 template<typename T>
 class DefaultTraceTrait<T, false> {
 public:
@@ -1078,80 +1051,6 @@ struct TypenameStringTrait {
     }
 };
 #endif
-
-// s_gcInfoTable holds the per-class GCInfo descriptors; each heap
-// object header keeps its index into this table.
-extern PLATFORM_EXPORT GCInfo const** s_gcInfoTable;
-
-class GCInfoTable {
-public:
-    PLATFORM_EXPORT static void ensureGCInfoIndex(const GCInfo*, size_t*);
-
-    static void init();
-    static void shutdown();
-
-    // The (max + 1) GCInfo index supported.
-    // We assume that 14 bits is enough to represent all possible types: during
-    // telemetry runs, we see about 1000 different types, looking at the output
-    // of the oilpan gc clang plugin, there appear to be at most about 6000
-    // types, so 14 bits should be more than twice as many bits as we will ever
-    // encounter.
-    static const size_t maxIndex = 1 << 14;
-
-private:
-    static void resize();
-
-    static int s_gcInfoIndex;
-    static size_t s_gcInfoTableSize;
-};
-
-// This macro should be used when returning a unique 14 bit integer
-// for a given gcInfo.
-#define RETURN_GCINFO_INDEX()                                  \
-    static size_t gcInfoIndex = 0;                             \
-    ASSERT(s_gcInfoTable);                                     \
-    if (!acquireLoad(&gcInfoIndex))                            \
-        GCInfoTable::ensureGCInfoIndex(&gcInfo, &gcInfoIndex); \
-    ASSERT(gcInfoIndex >= 1);                                  \
-    ASSERT(gcInfoIndex < GCInfoTable::maxIndex);               \
-    return gcInfoIndex;
-
-template<typename T>
-struct GCInfoAtBase {
-    static size_t index()
-    {
-        static const GCInfo gcInfo = {
-            TraceTrait<T>::trace,
-            FinalizerTrait<T>::finalize,
-            FinalizerTrait<T>::nonTrivialFinalizer,
-            WTF::IsPolymorphic<T>::value,
-#if ENABLE(GC_PROFILING)
-            TypenameStringTrait<T>::get()
-#endif
-        };
-        RETURN_GCINFO_INDEX();
-    }
-};
-
-template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> struct GetGarbageCollectedBase;
-
-template<typename T>
-struct GetGarbageCollectedBase<T, true> {
-    typedef typename T::GarbageCollectedBase type;
-};
-
-template<typename T>
-struct GetGarbageCollectedBase<T, false> {
-    typedef T type;
-};
-
-template<typename T>
-struct GCInfoTrait {
-    static size_t index()
-    {
-        return GCInfoAtBase<typename GetGarbageCollectedBase<T>::type>::index();
-    }
-};
 
 } // namespace blink
 
