@@ -373,6 +373,8 @@ public:
     template<typename T>
     void mark(T* t)
     {
+        // Check that we actually know the definition of T when tracing.
+        static_assert(sizeof(T), "T must be fully defined");
         if (!t)
             return;
 #if ENABLE(ASSERT)
@@ -388,7 +390,7 @@ public:
     template<typename T>
     void trace(const Member<T>& t)
     {
-        Derived::fromHelper(this)->mark(t.get());
+        mark(t.get());
     }
 
     // Fallback method used only when we need to trace raw pointers of T.
@@ -396,13 +398,12 @@ public:
     template<typename T>
     void trace(const T* t)
     {
-        Derived::fromHelper(this)->mark(const_cast<T*>(t));
+        mark(const_cast<T*>(t));
     }
-
     template<typename T>
     void trace(T* t)
     {
-        Derived::fromHelper(this)->mark(t);
+        mark(t);
     }
 
     // WeakMember version of the templated trace method. It doesn't keep
@@ -437,27 +438,14 @@ public:
     template<typename T>
     void trace(const T& t)
     {
+        // Check that we actually know the definition of T when tracing.
+        static_assert(sizeof(T), "T must be fully defined");
         if (WTF::IsPolymorphic<T>::value) {
             intptr_t vtable = *reinterpret_cast<const intptr_t*>(&t);
             if (!vtable)
                 return;
         }
         TraceCompatibilityAdaptor<T>::trace(Derived::fromHelper(this), &const_cast<T&>(t));
-    }
-
-    // For simple cases where you just want to zero out a cell when the thing
-    // it is pointing at is garbage, you can use this. This will register a
-    // callback for each cell that needs to be zeroed, so if you have a lot of
-    // weak cells in your object you should still consider using
-    // registerWeakMembers above.
-    //
-    // In contrast to registerWeakMembers, the weak cell callbacks are
-    // run on the thread performing garbage collection. Therefore, all
-    // threads are stopped during weak cell callbacks.
-    template<typename T>
-    void registerWeakCell(T** cell)
-    {
-        Derived::fromHelper(this)->registerWeakCellWithCallback(reinterpret_cast<void**>(cell), &handleWeakCell<T>);
     }
 
     // The following trace methods are for off-heap collections.
@@ -525,7 +513,21 @@ public:
 
     void markNoTracing(const void* pointer) { Derived::fromHelper(this)->mark(pointer, reinterpret_cast<TraceCallback>(0)); }
     void markHeaderNoTracing(HeapObjectHeader* header) { Derived::fromHelper(this)->markHeader(header, reinterpret_cast<TraceCallback>(0)); }
-    template<typename T> void markNoTracing(const T* pointer) { Derived::fromHelper(this)->mark(pointer, reinterpret_cast<TraceCallback>(0)); }
+
+    // For simple cases where you just want to zero out a cell when the thing
+    // it is pointing at is garbage, you can use this. This will register a
+    // callback for each cell that needs to be zeroed, so if you have a lot of
+    // weak cells in your object you should still consider using
+    // registerWeakMembers above.
+    //
+    // In contrast to registerWeakMembers, the weak cell callbacks are
+    // run on the thread performing garbage collection. Therefore, all
+    // threads are stopped during weak cell callbacks.
+    template<typename T>
+    void registerWeakCell(T** cell)
+    {
+        Derived::fromHelper(this)->registerWeakCellWithCallback(reinterpret_cast<void**>(cell), &handleWeakCell<T>);
+    }
 
     template<typename T, void (T::*method)(Visitor*)>
     void registerWeakMembers(const T* obj)
