@@ -39,7 +39,7 @@ class AudioContext;
 
 class GainHandler final : public AudioHandler {
 public:
-    GainHandler(AudioNode&, float sampleRate);
+    GainHandler(AudioNode&, float sampleRate, AudioParamHandler& gain);
 
     // AudioHandler
     virtual void process(size_t framesToProcess) override;
@@ -47,27 +47,25 @@ public:
     // Called in the main thread when the number of channels for the input may have changed.
     virtual void checkNumberOfChannelsForInput(AudioNodeInput*) override;
 
-    // JavaScript interface
-    AudioParam* gain() { return m_gain.get(); }
-
-    DECLARE_VIRTUAL_TRACE();
-
 private:
     float m_lastGain; // for de-zippering
-    Member<AudioParam> m_gain;
+    RefPtr<AudioParamHandler> m_gain;
 
     AudioFloatArray m_sampleAccurateGainValues;
 };
 
-class GainNode : public AudioNode {
+class GainNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static GainNode* create(AudioContext*, float sampleRate);
+    DECLARE_VIRTUAL_TRACE();
 
     AudioParam* gain() const;
 
 private:
-    GainNode(AudioContext&, float sampelRate);
+    GainNode(AudioContext&, float sampleRate);
+
+    Member<AudioParam> m_gain;
 };
 
 } // namespace blink
