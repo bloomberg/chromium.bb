@@ -73,6 +73,12 @@ if HAVE_TEGRA
 TEGRA_SUBDIR = tegra
 endif
 
+if BUILD_MANPAGES
+if HAVE_MANPAGES_STYLESHEET
+MAN_SUBDIR = man
+endif
+endif
+
 SUBDIRS = \
 	. \
 	$(LIBKMS_SUBDIR) \
@@ -84,7 +90,7 @@ SUBDIRS = \
 	$(FREEDRENO_SUBDIR) \
 	$(TEGRA_SUBDIR) \
 	tests \
-	man
+	$(MAN_SUBDIR)
 
 libdrm_la_LTLIBRARIES = libdrm.la
 libdrm_ladir = $(libdir)

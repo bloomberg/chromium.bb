@@ -29,6 +29,13 @@ AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 
+# Require xorg-macros minimum of 1.12 for XORG_WITH_XSLTPROC
+m4_ifndef([XORG_MACROS_VERSION],
+          [m4_fatal([must install xorg-macros 1.12 or later before running autoconf/autogen])])
+XORG_MACROS_VERSION(1.12)
+XORG_WITH_XSLTPROC
+XORG_MANPAGE_SECTIONS
+
 AM_INIT_AUTOMAKE([1.10 foreign dist-bzip2])
 
 # Enable quiet compiles on automake 1.11.
@@ -378,9 +385,8 @@ AM_CONDITIONAL(HAVE_LIBUDEV, [test "x$HAVE_LIBUDEV" = xyes])
 
 # xsltproc for docbook manpages
 AC_ARG_ENABLE([manpages],
-              AS_HELP_STRING([--disable-manpages], [disable manpages @<:@default=enabled@:>@]),
+              AS_HELP_STRING([--enable-manpages], [enable manpages @<:@default=auto@:>@]),
               [MANS=$enableval], [MANS=auto])
-AC_PATH_PROG(XSLTPROC, xsltproc)
 AM_CONDITIONAL([BUILD_MANPAGES], [test "x$XSLTPROC" != "x" -a "x$MANS" != "xno"])
 
 # check for offline man-pages stylesheet
