@@ -79,7 +79,6 @@ private:
     virtual void computePreferredLogicalWidths() override final;
     virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override final { }
     virtual bool avoidsFloats() const override final { return true; }
-    virtual bool canHaveGeneratedChildren() const override final { return false; }
 
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override final;
 

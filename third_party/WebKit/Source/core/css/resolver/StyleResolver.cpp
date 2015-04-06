@@ -80,6 +80,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/layout/GeneratedChildren.h"
 #include "core/layout/LayoutView.h"
 #include "core/style/KeyframeList.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -734,7 +735,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     if (pseudoId == FIRST_LETTER && (parent.isSVGElement() || !FirstLetterPseudoElement::firstLetterTextRenderer(parent)))
         return nullptr;
 
-    if (!parentRenderer->canHaveGeneratedChildren())
+    if (!canHaveGeneratedChildren(*parentRenderer))
         return nullptr;
 
     ComputedStyle* parentStyle = parentRenderer->mutableStyle();

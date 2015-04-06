@@ -3060,15 +3060,6 @@ bool LayoutObject::canUpdateSelectionOnRootLineBoxes() const
     return containingBlock ? !containingBlock->needsLayout() : false;
 }
 
-// We only create "generated" child renderers like one for first-letter if:
-// - the firstLetterBlock can have children in the DOM and
-// - the block doesn't have any special assumption on its text children.
-// This correctly prevents form controls from having such renderers.
-bool LayoutObject::canHaveGeneratedChildren() const
-{
-    return canHaveChildren();
-}
-
 void LayoutObject::setNeedsBoundariesUpdate()
 {
     if (LayoutObject* renderer = parent())

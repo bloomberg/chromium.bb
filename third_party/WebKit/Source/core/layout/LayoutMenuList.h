@@ -70,7 +70,6 @@ private:
 
     virtual LayoutRect controlClipRect(const LayoutPoint&) const override;
     virtual bool hasControlClip() const override { return true; }
-    virtual bool canHaveGeneratedChildren() const override { return false; }
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
 

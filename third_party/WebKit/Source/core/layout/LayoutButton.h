@@ -45,7 +45,6 @@ public:
     virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override { }
     virtual bool createsAnonymousWrapper() const override { return true; }
 
-    virtual bool canHaveGeneratedChildren() const override;
     virtual bool hasControlClip() const override { return true; }
     virtual LayoutRect controlClipRect(const LayoutPoint&) const override;
 

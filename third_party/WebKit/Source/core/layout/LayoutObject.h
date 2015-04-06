@@ -281,7 +281,6 @@ public:
     // LayoutObject tree manipulation
     //////////////////////////////////////////
     virtual bool canHaveChildren() const { return virtualChildren(); }
-    virtual bool canHaveGeneratedChildren() const;
     virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const { return true; }
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0);
     virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = 0) { return addChild(newChild, beforeChild); }

@@ -62,9 +62,6 @@ private:
 
     virtual DeprecatedPaintLayerType layerTypeRequired() const override { return NormalDeprecatedPaintLayer; }
 
-    // FIXME: LayoutMedia::layout makes assumptions about what children are allowed
-    // so we can't support generated content.
-    virtual bool canHaveGeneratedChildren() const override final { return false; }
     virtual bool canHaveChildren() const override final { return true; }
     virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override final;
 

@@ -25,6 +25,7 @@
 #include "core/dom/FirstLetterPseudoElement.h"
 
 #include "core/dom/Element.h"
+#include "core/layout/GeneratedChildren.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutText.h"
@@ -107,7 +108,7 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextRenderer(const Element& e
 
     if (!parentRenderer
         || !parentRenderer->style()->hasPseudoStyle(FIRST_LETTER)
-        || !parentRenderer->canHaveGeneratedChildren()
+        || !canHaveGeneratedChildren(*parentRenderer)
         || !(parentRenderer->isLayoutBlockFlow() || parentRenderer->isLayoutButton()))
         return nullptr;
 
@@ -142,7 +143,7 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextRenderer(const Element& e
         } else if (firstLetterTextRenderer->isFlexibleBoxIncludingDeprecated() || firstLetterTextRenderer->isLayoutGrid()) {
             firstLetterTextRenderer = firstLetterTextRenderer->nextSibling();
         } else if (firstLetterTextRenderer->style()->hasPseudoStyle(FIRST_LETTER)
-            && firstLetterTextRenderer->canHaveGeneratedChildren())  {
+            && canHaveGeneratedChildren(*firstLetterTextRenderer)) {
             // There is a renderer further down the tree which has FIRST_LETTER set. When that node
             // is attached we will handle setting up the first letter then.
             return nullptr;

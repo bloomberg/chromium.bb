@@ -555,6 +555,7 @@
             'layout/FilterEffectRenderer.h',
             'layout/FloatingObjects.cpp',
             'layout/FloatingObjects.h',
+            'layout/GeneratedChildren.h',
             'layout/HitTestLocation.cpp',
             'layout/HitTestLocation.h',
             'layout/HitTestResult.cpp',

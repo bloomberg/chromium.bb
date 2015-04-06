@@ -77,14 +77,6 @@ void LayoutButton::updateAnonymousChildStyle(const LayoutObject& child, Computed
     childStyle.setAlignContent(style()->alignContent());
 }
 
-bool LayoutButton::canHaveGeneratedChildren() const
-{
-    // Input elements can't have generated children, but button elements can. We'll
-    // write the code assuming any other button types that might emerge in the future
-    // can also have children.
-    return !isHTMLInputElement(*node());
-}
-
 LayoutRect LayoutButton::controlClipRect(const LayoutPoint& additionalOffset) const
 {
     // Clip to the padding box to at least give content the extra padding space.

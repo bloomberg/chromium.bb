@@ -62,7 +62,6 @@ public:
     virtual LayoutUnit pageLogicalHeight() const;
 
     virtual bool canHaveChildren() const override final { return false; }
-    virtual bool canHaveGeneratedChildren() const override final { return true; }
 
     virtual const char* name() const override { return "LayoutRegion"; }
 
