@@ -75,6 +75,14 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 void AddDownloadsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "downloadsPageTitle", IDS_MD_SETTINGS_DOWNLOADS_PAGE_TITLE);
+  html_source->AddLocalizedString(
+      "downloadsLocationLabel", IDS_SETTINGS_DOWNLOADS_LOCATION_LABEL);
+  html_source->AddLocalizedString(
+      "downloadsChangeLocationButton",
+      IDS_SETTINGS_DOWNLOADS_CHANGE_LOCATION_BUTTON);
+  html_source->AddLocalizedString(
+      "downloadsPromptForDownloadLabel",
+      IDS_SETTINGS_DOWNLOADS_PROMPT_FOR_DOWNLOAD_LABEL);
 }
 
 }  // namespace

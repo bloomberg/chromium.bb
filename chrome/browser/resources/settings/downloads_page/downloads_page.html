@@ -14,17 +14,18 @@
       <cr-settings-page-header page="{{}}"></cr-settings-page-header>
       <div horizontal layout center>
         <core-label horizontal layout center>
-          <span class="location-label">Download location:</span>
+          <span class="location-label" i18n-content="downloadsLocationLabel"></span>
           <cr-input id="downloadsPath" floatingLabel="false"
               value="{{prefs.settings.download.default_directory.value}}" readonly for>
           </cr-input>
         </core-label>
-        <cr-button id="changeDownloadsPath"
-            on-click="{{selectDownloadLocation}}">Change</cr-button>
+        <cr-button id="changeDownloadsPath" on-click="{{selectDownloadLocation}}"
+            i18n-content="downloadsChangeLocationButton">
+        </cr-button>
       </div>
       <cr-settings-checkbox
           pref="{{prefs.settings.download.prompt_for_download}}"
-          label="Ask where to save each file before downloading">
+          i18n-values="label:downloadsPromptForDownloadLabel">
       </cr-settings-checkbox>
     </paper-shadow>
   </template>

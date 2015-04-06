@@ -64,4 +64,13 @@
   <message name="IDS_MD_SETTINGS_DOWNLOADS_PAGE_TITLE" desc="Name of the settings page which displays download preferences.">
     Downloads
   </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_LOCATION_LABEL" desc="Label for the input which allows the user to specify the default download directory.">
+    Download location:
+  </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_CHANGE_LOCATION_BUTTON" desc="Text for the button which allows the user to change the default download directory.">
+    Change
+  </message>
+  <message name="IDS_SETTINGS_DOWNLOADS_PROMPT_FOR_DOWNLOAD_LABEL" desc="Label for the checkbox which enables a prompt for the user to choose a download location for each download instead of using the default.">
+    Ask where to save each file before downloading
+  </message>
 </grit-part>
