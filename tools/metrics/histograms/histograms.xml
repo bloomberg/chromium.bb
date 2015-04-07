@@ -23369,6 +23369,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Wifi.UnreliableLinkSignalStrength">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the signal strength (0-100) of the wifi
+    network when it becomes unreliable (experiencing multiple link failures in a
+    short period of time).
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiFi.UserInitiatedConnectionFailureReason"
     enum="ConnectionFailureReason">
   <owner>zqiu@chromium.org</owner>
