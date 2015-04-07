@@ -8,10 +8,24 @@ option optimize_for = LITE_RUNTIME;
 
 package content;
 
+enum SyncNetworkState {
+  NETWORK_STATE_ANY = 0;
+  NETWORK_STATE_AVOID_CELLULAR = 1;
+  NETWORK_STATE_ONLINE = 2;
+}
+
+enum SyncPowerState {
+  POWER_STATE_AUTO = 0;
+  POWER_STATE_AVOID_DRAINING = 1;
+}
+
 message BackgroundSyncRegistrationProto {
   required int64 id = 1;
   required string name = 2;
-  optional int64 min_period = 3;
+  required bool fire_once = 3;
+  required int64 min_period = 4;
+  required SyncNetworkState network_state = 5;
+  required SyncPowerState power_state = 6;
 }
 
 message BackgroundSyncRegistrationsProto {

@@ -6,7 +6,6 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "content/browser/background_sync/background_sync.pb.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/public/browser/browser_thread.h"
@@ -194,12 +193,15 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
           break;
         }
 
-        BackgroundSyncRegistration registration(registration_proto.id(),
-                                                registration_proto.name());
-        if (registration_proto.has_min_period())
-          registration.min_period = registration_proto.min_period();
-        registrations->name_to_registration_map[registration_proto.name()] =
-            registration;
+        BackgroundSyncRegistration* registration =
+            &registrations->name_to_registration_map[registration_proto.name()];
+
+        registration->id = registration_proto.id();
+        registration->name = registration_proto.name();
+        registration->fire_once = registration_proto.fire_once();
+        registration->min_period = registration_proto.min_period();
+        registration->network_state = registration_proto.network_state();
+        registration->power_state = registration_proto.power_state();
       }
     }
 
@@ -342,8 +344,10 @@ void BackgroundSyncManager::StoreRegistrations(
         registrations_proto.add_registration();
     registration_proto->set_id(registration.id);
     registration_proto->set_name(registration.name);
-    if (registration.min_period != 0)
-      registration_proto->set_min_period(registration.min_period);
+    registration_proto->set_fire_once(registration.fire_once);
+    registration_proto->set_min_period(registration.min_period);
+    registration_proto->set_network_state(registration.network_state);
+    registration_proto->set_power_state(registration.power_state);
   }
   std::string serialized;
   bool success = registrations_proto.SerializeToString(&serialized);

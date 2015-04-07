@@ -137,10 +137,13 @@ class BackgroundSyncManagerTest : public testing::Test {
  public:
   BackgroundSyncManagerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        sync_reg_1_(BackgroundSyncManager::BackgroundSyncRegistration("foo")),
-        sync_reg_2_(BackgroundSyncManager::BackgroundSyncRegistration("bar")),
+        sync_reg_1_(BackgroundSyncManager::BackgroundSyncRegistration()),
+        sync_reg_2_(BackgroundSyncManager::BackgroundSyncRegistration()),
         callback_error_(BackgroundSyncManager::ERROR_TYPE_OK),
-        callback_sw_status_code_(SERVICE_WORKER_OK) {}
+        callback_sw_status_code_(SERVICE_WORKER_OK) {
+    sync_reg_1_.name = "foo";
+    sync_reg_2_.name = "bar";
+  }
 
   void SetUp() override {
     helper_.reset(
@@ -617,6 +620,79 @@ TEST_F(BackgroundSyncManagerTest, DisabledManagerWorksAfterDeleteAndStartOver) {
   EXPECT_TRUE(Register(sync_reg_2_));
   EXPECT_FALSE(GetRegistration(sync_reg_1_.name));
   EXPECT_TRUE(GetRegistration(sync_reg_2_.name));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegistrationEqualsId) {
+  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
+  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+
+  EXPECT_TRUE(reg_1.Equals(reg_2));
+  reg_2.id = reg_1.id + 1;
+  EXPECT_TRUE(reg_1.Equals(reg_2));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegistrationEqualsName) {
+  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
+  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+  EXPECT_TRUE(reg_1.Equals(reg_2));
+  reg_2.name = "bar";
+  EXPECT_FALSE(reg_1.Equals(reg_2));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegistrationEqualsFireOnce) {
+  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
+  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+  EXPECT_TRUE(reg_1.Equals(reg_2));
+  reg_2.fire_once = !reg_1.fire_once;
+  EXPECT_FALSE(reg_1.Equals(reg_2));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegistrationEqualsMinPeriod) {
+  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
+  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+  EXPECT_TRUE(reg_1.Equals(reg_2));
+  reg_2.min_period = reg_1.min_period + 1;
+  EXPECT_FALSE(reg_1.Equals(reg_2));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegistrationEqualsNetworkState) {
+  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
+  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+  EXPECT_TRUE(reg_1.Equals(reg_2));
+  reg_1.network_state = NETWORK_STATE_ANY;
+  reg_2.network_state = NETWORK_STATE_ONLINE;
+  EXPECT_FALSE(reg_1.Equals(reg_2));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegistrationEqualsPowerState) {
+  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
+  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+  EXPECT_TRUE(reg_1.Equals(reg_2));
+  reg_1.power_state = POWER_STATE_AUTO;
+  reg_2.power_state = POWER_STATE_AVOID_DRAINING;
+  EXPECT_FALSE(reg_1.Equals(reg_2));
+}
+
+TEST_F(BackgroundSyncManagerTest, StoreAndRetrievePreservesValues) {
+  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
+  // Set non-default values for each field.
+  reg_1.name = "foo";
+  reg_1.fire_once = !reg_1.fire_once;
+  reg_1.min_period += 1;
+  EXPECT_NE(NETWORK_STATE_ANY, reg_1.network_state);
+  reg_1.network_state = NETWORK_STATE_ANY;
+  EXPECT_NE(POWER_STATE_AUTO, reg_1.power_state);
+  reg_1.power_state = POWER_STATE_AUTO;
+
+  // Store the registration.
+  EXPECT_TRUE(Register(reg_1));
+
+  // Simulate restarting the sync manager, forcing the next read to come from
+  // disk.
+  UseTestBackgroundSyncManager();
+
+  EXPECT_TRUE(GetRegistration(reg_1.name));
+  EXPECT_TRUE(reg_1.Equals(callback_registration_));
 }
 
 }  // namespace content
