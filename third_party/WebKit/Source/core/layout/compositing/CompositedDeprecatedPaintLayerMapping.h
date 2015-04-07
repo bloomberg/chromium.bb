@@ -109,12 +109,11 @@ public:
     GraphicsLayer* parentForSublayers() const;
     GraphicsLayer* childForSuperlayers() const;
 
+    bool hasChildTransformLayer() const { return m_childTransformLayer; }
     GraphicsLayer* childTransformLayer() const { return m_childTransformLayer.get(); }
 
     GraphicsLayer* squashingContainmentLayer() const { return m_squashingContainmentLayer.get(); }
     GraphicsLayer* squashingLayer() const { return m_squashingLayer.get(); }
-    // Contains the bottommost layer in the hierarchy that can contain the children transform.
-    GraphicsLayer* layerForChildrenTransform() const;
 
     void setSquashingContentsNeedDisplay();
     void setContentsNeedDisplay();
@@ -300,16 +299,16 @@ private:
     // The hierarchy of layers that is maintained by the CompositedDeprecatedPaintLayerMapping looks like this:
     //
     //  + m_ancestorClippingLayer [OPTIONAL]
-    //     + m_graphicsLayer
-    //        + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL] <-OR-> m_childTransformLayer
-    //        |                                            + m_scrollingContentsLayer [Present iff m_scrollingLayer is present]
-    //        |                                               + m_scrollingBlockSelectionLayer [Present iff m_scrollingLayer is present]
-    //        |
-    //        + m_overflowControlsClippingLayer [OPTIONAL] // *The overflow controls may need to be repositioned in the
-    //          + m_overflowControlsHostLayer              //  graphics layer tree by the RLC to ensure that they stack
-    //            + m_layerForVerticalScrollbar            //  above scrolling content.
-    //            + m_layerForHorizontalScrollbar
-    //            + m_layerForScrollCorner
+    //    + m_graphicsLayer
+    //      + m_childTransformLayer [OPTIONAL]
+    //      | + m_childContainmentLayer [OPTIONAL] <-OR-> m_scrollingLayer [OPTIONAL]
+    //      |                                             + m_scrollingContentsLayer [Present iff m_scrollingLayer is present]
+    //      |                                               + m_scrollingBlockSelectionLayer [Present iff m_scrollingLayer is present]
+    //      + m_overflowControlsClippingLayer [OPTIONAL] // *The overflow controls may need to be repositioned in the
+    //        + m_overflowControlsHostLayer [OPTIONAL]   //  graphics layer tree by the RLC to ensure that they stack
+    //          + m_layerForVerticalScrollbar [OPTIONAL] //  above scrolling content.
+    //          + m_layerForHorizontalScrollbar [OPTIONAL]
+    //          + m_layerForScrollCorner [OPTIONAL]
     //
     // We need an ancestor clipping layer if our clipping ancestor is not our ancestor in the
     // clipping tree. Here's what that might look like.
@@ -334,7 +333,7 @@ private:
     OwnPtr<GraphicsLayer> m_ancestorClippingLayer; // Only used if we are clipped by an ancestor which is not a stacking context.
     OwnPtr<GraphicsLayer> m_graphicsLayer;
     OwnPtr<GraphicsLayer> m_childContainmentLayer; // Only used if we have clipping on a stacking context with compositing children.
-    OwnPtr<GraphicsLayer> m_childTransformLayer; // Only used if we have perspective and no m_childContainmentLayer.
+    OwnPtr<GraphicsLayer> m_childTransformLayer; // Only used if we have perspective.
     OwnPtr<GraphicsLayer> m_scrollingLayer; // Only used if the layer is using composited scrolling.
     OwnPtr<GraphicsLayer> m_scrollingContentsLayer; // Only used if the layer is using composited scrolling.
     OwnPtr<GraphicsLayer> m_scrollingBlockSelectionLayer; // Only used if the layer is using composited scrolling, but has no scrolling contents apart from block selection gaps.

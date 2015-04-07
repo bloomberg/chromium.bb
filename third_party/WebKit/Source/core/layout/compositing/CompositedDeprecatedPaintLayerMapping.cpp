@@ -452,7 +452,7 @@ bool CompositedDeprecatedPaintLayerMapping::updateGraphicsLayerConfiguration()
     // FIXME: Can |style| be really null that late in the DocumentCycle?
     if (const ComputedStyle* style = renderer->style())
         hasPerspective = style->hasPerspective();
-    bool needsChildTransformLayer = hasPerspective && (layerForChildrenTransform() == m_childTransformLayer.get()) && renderer->isBox();
+    bool needsChildTransformLayer = hasPerspective && renderer->isBox();
     if (updateChildTransformLayer(needsChildTransformLayer))
         layerConfigChanged = true;
 
@@ -1060,34 +1060,23 @@ void CompositedDeprecatedPaintLayerMapping::updateInternalHierarchy()
     if (m_ancestorClippingLayer)
         m_ancestorClippingLayer->addChild(m_graphicsLayer.get());
 
-    if (m_childContainmentLayer)
-        m_graphicsLayer->addChild(m_childContainmentLayer.get());
-    else if (m_childTransformLayer)
-        m_graphicsLayer->addChild(m_childTransformLayer.get());
+    // Layer to which children should be attached as we build the hierarchy.
+    GraphicsLayer* bottomLayer = m_graphicsLayer.get();
+    auto updateBottomLayer = [&bottomLayer](GraphicsLayer* layer) {
+        if (layer) {
+            bottomLayer->addChild(layer);
+            bottomLayer = layer;
+        }
+    };
 
-    if (m_scrollingLayer) {
-        GraphicsLayer* superLayer = m_graphicsLayer.get();
+    updateBottomLayer(m_childTransformLayer.get());
+    updateBottomLayer(m_childContainmentLayer.get());
+    updateBottomLayer(m_scrollingLayer.get());
 
-        if (m_childContainmentLayer)
-            superLayer = m_childContainmentLayer.get();
-
-        if (m_childTransformLayer)
-            superLayer = m_childTransformLayer.get();
-
-        superLayer->addChild(m_scrollingLayer.get());
-    }
-
-    // The clip for child layers does not include space for overflow controls, so they exist as
-    // siblings of the clipping layer if we have one. Normal children of this layer are set as
-    // children of the clipping layer.
-    if (m_overflowControlsClippingLayer) {
-        ASSERT(m_overflowControlsHostLayer);
-        m_graphicsLayer->addChild(m_overflowControlsClippingLayer.get());
-        m_overflowControlsClippingLayer->addChild(m_overflowControlsHostLayer.get());
-    } else if (m_overflowControlsHostLayer) {
-        m_graphicsLayer->addChild(m_overflowControlsHostLayer.get());
-    }
-
+    // Now constructing the subtree for the overflow controls.
+    bottomLayer = m_graphicsLayer.get();
+    updateBottomLayer(m_overflowControlsClippingLayer.get());
+    updateBottomLayer(m_overflowControlsHostLayer.get());
     if (m_layerForHorizontalScrollbar)
         m_overflowControlsHostLayer->addChild(m_layerForHorizontalScrollbar.get());
     if (m_layerForVerticalScrollbar)
@@ -1233,9 +1222,9 @@ void CompositedDeprecatedPaintLayerMapping::updateDrawsContent()
 
 void CompositedDeprecatedPaintLayerMapping::updateChildrenTransform()
 {
-    if (GraphicsLayer* childTransformLayer = layerForChildrenTransform()) {
+    if (GraphicsLayer* childTransformLayer = this->childTransformLayer()) {
         childTransformLayer->setTransform(owningLayer().perspectiveTransform());
-        childTransformLayer->setTransformOrigin(FloatPoint3D(childTransformLayer->size().width() * 0.5f, childTransformLayer->size().height() * 0.5f, 0.f));
+        childTransformLayer->setTransformOrigin(owningLayer().perspectiveOrigin());
     }
 
     updateShouldFlattenTransform();
@@ -1390,6 +1379,7 @@ enum ApplyToGraphicsLayersModeFlags {
     ApplyToBackgroundLayer = (1 << 3),
     ApplyToMaskLayers = (1 << 4),
     ApplyToContentLayers = (1 << 5),
+    ApplyToChildContainingLayers = (1 << 6), // layers between m_graphicsLayer and children
     ApplyToAllGraphicsLayers = (ApplyToSquashingLayer | ApplyToScrollbarLayers | ApplyToBackgroundLayer | ApplyToMaskLayers | ApplyToLayersAffectedByPreserve3D | ApplyToContentLayers)
 };
 typedef unsigned ApplyToGraphicsLayersMode;
@@ -1403,16 +1393,19 @@ static void ApplyToGraphicsLayers(const CompositedDeprecatedPaintLayerMapping* m
         f(mapping->childTransformLayer());
     if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers)) && mapping->mainGraphicsLayer())
         f(mapping->mainGraphicsLayer());
-    if ((mode & ApplyToLayersAffectedByPreserve3D) && mapping->clippingLayer())
+    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToChildContainingLayers)) && mapping->clippingLayer())
         f(mapping->clippingLayer());
-    if ((mode & ApplyToLayersAffectedByPreserve3D) && mapping->scrollingLayer())
+    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToChildContainingLayers)) && mapping->scrollingLayer())
         f(mapping->scrollingLayer());
-    if ((mode & ApplyToLayersAffectedByPreserve3D) && mapping->scrollingBlockSelectionLayer())
+    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToChildContainingLayers)) && mapping->scrollingBlockSelectionLayer())
         f(mapping->scrollingBlockSelectionLayer());
-    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers)) && mapping->scrollingContentsLayer())
+    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers) || (mode & ApplyToChildContainingLayers)) && mapping->scrollingContentsLayer())
         f(mapping->scrollingContentsLayer());
     if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers)) && mapping->foregroundLayer())
         f(mapping->foregroundLayer());
+
+    if ((mode & ApplyToChildContainingLayers) && mapping->childTransformLayer())
+        f(mapping->childTransformLayer());
 
     if ((mode & ApplyToSquashingLayer) && mapping->squashingLayer())
         f(mapping->squashingLayer());
@@ -1477,23 +1470,10 @@ void CompositedDeprecatedPaintLayerMapping::updateShouldFlattenTransform()
 
     // Note, if we apply perspective, we have to set should flatten differently
     // so that the transform propagates to child layers correctly.
-    if (GraphicsLayer* childTransformLayer = layerForChildrenTransform()) {
-        bool hasPerspective = false;
-        // FIXME: Can |style| be really null here?
-        if (const ComputedStyle* style = m_owningLayer.layoutObject()->style())
-            hasPerspective = style->hasPerspective();
-        if (hasPerspective)
-            childTransformLayer->setShouldFlattenTransform(false);
-
-        // Note, if the target is the scrolling layer, we need to ensure that the
-        // scrolling content layer doesn't flatten the transform. (It would be nice
-        // if we could apply transform to the scrolling content layer, but that's
-        // too late, we need the children transform to be applied _before_ the
-        // scrolling offset.)
-        if (childTransformLayer == m_scrollingLayer.get()) {
-            m_scrollingContentsLayer->setShouldFlattenTransform(false);
-            m_scrollingBlockSelectionLayer->setShouldFlattenTransform(false);
-        }
+    if (hasChildTransformLayer()) {
+        ApplyToGraphicsLayers(this, [](GraphicsLayer* layer) {
+            layer->setShouldFlattenTransform(false);
+        }, ApplyToChildContainingLayers);
     }
 }
 
@@ -1990,15 +1970,6 @@ GraphicsLayer* CompositedDeprecatedPaintLayerMapping::childForSuperlayers() cons
         return m_ancestorClippingLayer.get();
 
     return m_graphicsLayer.get();
-}
-
-GraphicsLayer* CompositedDeprecatedPaintLayerMapping::layerForChildrenTransform() const
-{
-    if (GraphicsLayer* clipLayer = clippingLayer())
-        return clipLayer;
-    if (m_scrollingLayer)
-        return m_scrollingLayer.get();
-    return m_childTransformLayer.get();
 }
 
 void CompositedDeprecatedPaintLayerMapping::setBlendMode(WebBlendMode blendMode)

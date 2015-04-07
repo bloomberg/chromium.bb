@@ -913,24 +913,8 @@ TransformationMatrix DeprecatedPaintLayer::perspectiveTransform() const
     if (!style.hasPerspective())
         return TransformationMatrix();
 
-    // Maybe fetch the perspective from the backing?
-    const IntRect borderBox = toLayoutBox(layoutObject())->pixelSnappedBorderBoxRect();
-    const float boxWidth = borderBox.width();
-    const float boxHeight = borderBox.height();
-
-    float perspectiveOriginX = floatValueForLength(style.perspectiveOriginX(), boxWidth);
-    float perspectiveOriginY = floatValueForLength(style.perspectiveOriginY(), boxHeight);
-
-    // A perspective origin of 0,0 makes the vanishing point in the center of the element.
-    // We want it to be in the top-left, so subtract half the height and width.
-    perspectiveOriginX -= boxWidth / 2.0f;
-    perspectiveOriginY -= boxHeight / 2.0f;
-
     TransformationMatrix t;
-    t.translate(perspectiveOriginX, perspectiveOriginY);
     t.applyPerspective(style.perspective());
-    t.translate(-perspectiveOriginX, -perspectiveOriginY);
-
     return t;
 }
 
