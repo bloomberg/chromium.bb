@@ -23,6 +23,11 @@
 
 namespace blink {
 
+DOMWindow::DOMWindow()
+    : m_windowIsClosing(false)
+{
+}
+
 DOMWindow::~DOMWindow()
 {
 }
@@ -36,7 +41,7 @@ Location* DOMWindow::location() const
 
 bool DOMWindow::closed() const
 {
-    return !frame() || !frame()->host();
+    return m_windowIsClosing || !frame() || !frame()->host();
 }
 
 unsigned DOMWindow::length() const

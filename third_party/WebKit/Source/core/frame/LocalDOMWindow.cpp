@@ -809,6 +809,11 @@ void LocalDOMWindow::close(ExecutionContext* context)
     InspectorInstrumentation::willCloseWindow(context);
 
     page->chrome().closeWindowSoon();
+    // So as to make window.closed return the expected result
+    // after window.close(), separately record the to-be-closed
+    // state of this window. Scripts may access window.closed
+    // before the deferred close operation has gone ahead.
+    m_windowIsClosing = true;
 }
 
 void LocalDOMWindow::print()

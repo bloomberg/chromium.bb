@@ -214,6 +214,16 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
 
+protected:
+    DOMWindow();
+
+    // Set to true when close() has been called. Needed for
+    // |window.closed| determinism; having it return 'true'
+    // only after the render widget's deferred window close
+    // operation has been performed, exposes (confusing)
+    // implementation details to scripts.
+    bool m_windowIsClosing;
+
 private:
     mutable RefPtrWillBeMember<Location> m_location;
 };
