@@ -397,9 +397,10 @@ class AbstractRpcServer(object):
           e = exc
       if e:
         print >> sys.stderr, ''
+        error_message = e.reason
         if error_map:
-          e.reason = error_map.get(e.reason, e.reason)
-        if e.reason == "BadAuthentication":
+          error_message = error_map.get(error_message, error_message)
+        if error_message == "BadAuthentication":
           if e.info == "InvalidSecondFactor":
             print >> sys.stderr, (
                 "Use an application-specific password instead "
@@ -408,26 +409,26 @@ class AbstractRpcServer(object):
                 "support/accounts/bin/answer.py?answer=185833")
           else:
             print >> sys.stderr, "Invalid username or password."
-        elif e.reason == "CaptchaRequired":
+        elif error_message == "CaptchaRequired":
           print >> sys.stderr, (
               "Please go to\n"
               "https://www.google.com/accounts/DisplayUnlockCaptcha\n"
               "and verify you are a human.  Then try again.\n"
               "If you are using a Google Apps account the URL is:\n"
               "https://www.google.com/a/yourdomain.com/UnlockCaptcha")
-        elif e.reason == "NotVerified":
+        elif error_message == "NotVerified":
           print >> sys.stderr, "Account not verified."
-        elif e.reason == "TermsNotAgreed":
+        elif error_message == "TermsNotAgreed":
           print >> sys.stderr, "User has not agreed to TOS."
-        elif e.reason == "AccountDeleted":
+        elif error_message == "AccountDeleted":
           print >> sys.stderr, "The user account has been deleted."
-        elif e.reason == "AccountDisabled":
+        elif error_message == "AccountDisabled":
           print >> sys.stderr, "The user account has been disabled."
           break
-        elif e.reason == "ServiceDisabled":
+        elif error_message == "ServiceDisabled":
           print >> sys.stderr, ("The user's access to the service has been "
                                "disabled.")
-        elif e.reason == "ServiceUnavailable":
+        elif error_message == "ServiceUnavailable":
           print >> sys.stderr, "The service is not available; try again later."
         else:
           # Unknown error.
