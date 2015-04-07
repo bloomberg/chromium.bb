@@ -328,18 +328,28 @@ static NEVER_INLINE void partitionOutOfMemory(const PartitionRootBase* root)
     IMMEDIATE_CRASH();
 }
 
+static void partitionIncreaseCommittedPages(PartitionRootBase* root, size_t len)
+{
+    root->totalSizeOfCommittedPages += len;
+    ASSERT(root->totalSizeOfCommittedPages <= root->totalSizeOfSuperPages + root->totalSizeOfDirectMappedPages);
+}
+
+static void partitionDecreaseCommittedPages(PartitionRootBase* root, size_t len)
+{
+    root->totalSizeOfCommittedPages -= len;
+    ASSERT(root->totalSizeOfCommittedPages <= root->totalSizeOfSuperPages + root->totalSizeOfDirectMappedPages);
+}
+
 static ALWAYS_INLINE void partitionDecommitSystemPages(PartitionRootBase* root, void* addr, size_t len)
 {
     decommitSystemPages(addr, len);
-    ASSERT(root->totalSizeOfCommittedPages >= len);
-    root->totalSizeOfCommittedPages -= len;
+    partitionDecreaseCommittedPages(root, len);
 }
 
 static ALWAYS_INLINE void partitionRecommitSystemPages(PartitionRootBase* root, void* addr, size_t len)
 {
     recommitSystemPages(addr, len);
-    root->totalSizeOfCommittedPages += len;
-    ASSERT(root->totalSizeOfCommittedPages <= root->totalSizeOfSuperPages + root->totalSizeOfDirectMappedPages);
+    partitionIncreaseCommittedPages(root, len);
 }
 
 static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root, int flags, uint16_t numPartitionPages)
@@ -354,8 +364,7 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
         // allocation.
         char* ret = root->nextPartitionPage;
         root->nextPartitionPage += totalSize;
-        root->totalSizeOfCommittedPages += totalSize;
-        ASSERT(root->totalSizeOfCommittedPages <= root->totalSizeOfSuperPages + root->totalSizeOfDirectMappedPages);
+        partitionIncreaseCommittedPages(root, totalSize);
         return ret;
     }
 
@@ -368,8 +377,7 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
         return 0;
 
     root->totalSizeOfSuperPages += kSuperPageSize;
-    root->totalSizeOfCommittedPages += totalSize;
-    ASSERT(root->totalSizeOfCommittedPages <= root->totalSizeOfSuperPages + root->totalSizeOfDirectMappedPages);
+    partitionIncreaseCommittedPages(root, totalSize);
 
     root->nextSuperPage = superPage + kSuperPageSize;
     char* ret = superPage + kPartitionPageSize;
@@ -612,9 +620,8 @@ static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags
     mapSize &= kPageAllocationGranularityBaseMask;
 
     size_t committedPageSize = size + kSystemPageSize;
-    root->totalSizeOfCommittedPages += committedPageSize;
     root->totalSizeOfDirectMappedPages += committedPageSize;
-    ASSERT(root->totalSizeOfCommittedPages <= root->totalSizeOfSuperPages + root->totalSizeOfDirectMappedPages);
+    partitionIncreaseCommittedPages(root, committedPageSize);
 
     // TODO: we may want to let the operating system place these allocations
     // where it pleases. On 32-bit, this might limit address space
@@ -677,8 +684,7 @@ static ALWAYS_INLINE void partitionDirectUnmap(PartitionPage* page)
 
     PartitionRootBase* root = partitionPageToRoot(page);
     size_t uncommittedPageSize = page->bucket->slotSize + kSystemPageSize;
-    ASSERT(root->totalSizeOfCommittedPages >= uncommittedPageSize);
-    root->totalSizeOfCommittedPages -= uncommittedPageSize;
+    partitionDecreaseCommittedPages(root, uncommittedPageSize);
     ASSERT(root->totalSizeOfDirectMappedPages >= uncommittedPageSize);
     root->totalSizeOfDirectMappedPages -= uncommittedPageSize;
 

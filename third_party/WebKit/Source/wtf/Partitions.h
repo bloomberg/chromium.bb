@@ -32,13 +32,14 @@
 #define Partitions_h
 
 #include "wtf/PartitionAlloc.h"
+#include "wtf/WTF.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {
 
 class WTF_EXPORT Partitions {
 public:
-    static void initialize();
+    static void initialize(HistogramEnumerationFunction = nullptr);
     static void shutdown();
     ALWAYS_INLINE static PartitionRootGeneric* getBufferPartition()
     {
@@ -87,12 +88,15 @@ public:
         return totalSize;
     }
 
+    static void reportMemoryUsageHistogram();
+
 private:
     static bool s_initialized;
     static PartitionAllocatorGeneric m_fastMallocAllocator;
     static PartitionAllocatorGeneric m_bufferAllocator;
     static SizeSpecificPartitionAllocator<3328> m_objectModelAllocator;
     static SizeSpecificPartitionAllocator<1024> m_renderingAllocator;
+    static HistogramEnumerationFunction m_histogramEnumeration;
 };
 
 } // namespace WTF

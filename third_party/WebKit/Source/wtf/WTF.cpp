@@ -42,7 +42,7 @@ extern void initializeThreading();
 bool s_initialized;
 bool s_shutdown;
 
-void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction)
+void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction, HistogramEnumerationFunction histogramEnumerationFunction)
 {
     // WTF, and Blink in general, cannot handle being re-initialized, even if shutdown first.
     // Make that explicit here.
@@ -51,7 +51,7 @@ void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncr
     s_initialized = true;
     setCurrentTimeFunction(currentTimeFunction);
     setMonotonicallyIncreasingTimeFunction(monotonicallyIncreasingTimeFunction);
-    Partitions::initialize();
+    Partitions::initialize(histogramEnumerationFunction);
     initializeThreading();
 }
 

@@ -44,6 +44,7 @@
 #include "wtf/LeakAnnotations.h"
 #include "wtf/MainThread.h"
 #include "wtf/PageAllocator.h"
+#include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"
 #if ENABLE(GC_PROFILING)
 #include "platform/TracedValue.h"
@@ -2292,6 +2293,8 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
         Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", Heap::allocatedObjectSize() / 1024, 0, 4 * 1024 * 1024, 50);
         Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", Heap::allocatedSpace() / 1024, 0, 4 * 1024 * 1024, 50);
         Platform::current()->histogramEnumeration("BlinkGC.GCReason", reason, NumberOfGCReason);
+        Heap::reportMemoryUsageHistogram();
+        WTF::Partitions::reportMemoryUsageHistogram();
     }
 
     if (state->isMainThread())
@@ -2412,7 +2415,7 @@ double Heap::estimatedMarkingTime()
     return s_estimatedMarkingTimePerByte * (Heap::allocatedObjectSize() + Heap::markedObjectSize());
 }
 
-void Heap::reportMemoryUsage()
+void Heap::reportMemoryUsageHistogram()
 {
     static size_t supportedMaxSizeInMB = 4 * 1024;
     static size_t observedMaxSizeInMB = 0;

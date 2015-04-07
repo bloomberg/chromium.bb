@@ -33,6 +33,7 @@
 
 #include "wtf/DefaultAllocator.h"
 #include "wtf/FastMalloc.h"
+#include "wtf/MainThread.h"
 
 namespace WTF {
 
@@ -42,8 +43,9 @@ PartitionAllocatorGeneric Partitions::m_fastMallocAllocator;
 PartitionAllocatorGeneric Partitions::m_bufferAllocator;
 SizeSpecificPartitionAllocator<3328> Partitions::m_objectModelAllocator;
 SizeSpecificPartitionAllocator<1024> Partitions::m_renderingAllocator;
+HistogramEnumerationFunction Partitions::m_histogramEnumeration = nullptr;
 
-void Partitions::initialize()
+void Partitions::initialize(HistogramEnumerationFunction histogramEnumeration)
 {
     static int lock = 0;
     // Guard against two threads hitting here in parallel.
@@ -53,6 +55,7 @@ void Partitions::initialize()
         m_bufferAllocator.init();
         m_objectModelAllocator.init();
         m_renderingAllocator.init();
+        m_histogramEnumeration = histogramEnumeration;
         s_initialized = true;
     }
     spinLockUnlock(&lock);
@@ -67,6 +70,28 @@ void Partitions::shutdown()
     (void) m_objectModelAllocator.shutdown();
     (void) m_bufferAllocator.shutdown();
     (void) m_fastMallocAllocator.shutdown();
+}
+
+void Partitions::reportMemoryUsageHistogram()
+{
+    static size_t supportedMaxSizeInMB = 4 * 1024;
+    static size_t observedMaxSizeInMB = 0;
+
+    if (!m_histogramEnumeration)
+        return;
+    // We only report the memory in the main thread.
+    if (!isMainThread())
+        return;
+    // +1 is for rounding up the sizeInMB.
+    size_t sizeInMB = Partitions::totalSizeOfCommittedPages() / 1024 / 1024 + 1;
+    if (sizeInMB >= supportedMaxSizeInMB)
+        sizeInMB = supportedMaxSizeInMB - 1;
+    if (sizeInMB > observedMaxSizeInMB) {
+        // Send a UseCounter only when we see the highest memory usage
+        // we've ever seen.
+        m_histogramEnumeration("PartitionAlloc.CommittedSize", sizeInMB, supportedMaxSizeInMB);
+        observedMaxSizeInMB = sizeInMB;
+    }
 }
 
 } // namespace WTF
