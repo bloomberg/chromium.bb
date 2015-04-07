@@ -54,6 +54,53 @@ QUnit.test('deepCopy(obj) should copy primitive types recursively',
     assert.deepEqual(base.deepCopy([1, [2, [3]]]), [1, [2, [3]]]);
 });
 
+QUnit.test('copyWithoutNullFields returns a new object',
+  function(assert) {
+    var obj = {
+      a: 'foo',
+      b: 42
+    };
+    var copy = base.copyWithoutNullFields(obj);
+    assert.notEqual(obj, copy);
+    assert.deepEqual(obj, copy);
+});
+
+QUnit.test('copyWithoutNullFields removes null and undefined fields',
+  function(assert) {
+    /** @const */
+    var obj = {
+      a: 'foo',
+      b: 42,
+      zero: 0,
+      emptyString: '',
+      nullField: null,
+      undefinedField: undefined
+    };
+    var copy = base.copyWithoutNullFields(obj);
+    assert.equal(copy['a'], obj['a']);
+    assert.equal(copy['b'], obj['b']);
+    assert.equal(copy['zero'], 0);
+    assert.equal(copy['emptyString'], '');
+    assert.ok(!('nullField' in copy));
+    assert.ok(!('undefinedField' in copy));
+});
+
+QUnit.test('copyWithoutNullFields(null) returns a new empty bject',
+  function(assert) {
+    assert.deepEqual(
+        base.copyWithoutNullFields(null),
+        {});
+    assert.notEqual(
+        base.copyWithoutNullFields(null),
+        base.copyWithoutNullFields(null));
+    assert.deepEqual(
+        base.copyWithoutNullFields(undefined),
+        {});
+    assert.notEqual(
+        base.copyWithoutNullFields(undefined),
+        base.copyWithoutNullFields(undefined));
+});
+
 QUnit.test('modify the original after deepCopy(obj) should not affect the copy',
   function(assert) {
     var original = [1, 2, 3, 4];

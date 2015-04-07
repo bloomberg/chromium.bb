@@ -215,6 +215,28 @@ base.deepCopy = function(value) {
 };
 
 /**
+ * Returns a copy of the input object with all null/undefined fields
+ * removed.  Returns an empty object for a null/undefined input.
+ *
+ * @param {Object<string,?T>|undefined} input
+ * @return {!Object<string,T>}
+ * @template T
+ */
+base.copyWithoutNullFields = function(input) {
+  /** @const {!Object} */
+  var result = {};
+  if (input) {
+    for (var field in input) {
+      var value = /** @type {*} */ (input[field]);
+      if (value != null) {
+        result[field] = value;
+      }
+    }
+  }
+  return result;
+};
+
+/**
  * @type {boolean|undefined}
  * @private
  */

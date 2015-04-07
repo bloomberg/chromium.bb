@@ -5,6 +5,8 @@
 /**
  * @fileoverview
  * Utility class for making XHRs more pleasant.
+ *
+ * Note: a mock version of this API exists in mock_xhr.js.
  */
 
 'use strict';
@@ -26,7 +28,7 @@ remoting.Xhr = function(params) {
     parameterString = params.urlParams;
   } else if (typeof(params.urlParams) === 'object') {
     parameterString = remoting.Xhr.urlencodeParamHash(
-        remoting.Xhr.removeNullFields_(params.urlParams));
+        base.copyWithoutNullFields(params.urlParams));
   }
   if (parameterString) {
     url += '?' + parameterString;
@@ -34,7 +36,7 @@ remoting.Xhr = function(params) {
 
   // Prepare the build modified headers.
   /** @const */
-  this.headers_ = remoting.Xhr.removeNullFields_(params.headers);
+  this.headers_ = base.copyWithoutNullFields(params.headers);
 
   // Convert the content fields to a single text content variable.
   /** @private {?string} */
@@ -160,6 +162,7 @@ remoting.Xhr.prototype.start = function() {
 /**
  * @param {remoting.Xhr.Params} params
  * @throws {Error} if params are invalid
+ * @private
  */
 remoting.Xhr.checkParams_ = function(params) {
   if (params.urlParams) {
@@ -234,7 +237,8 @@ remoting.Xhr.prototype.maybeSetHeader_ = function(key, value) {
 /** @private */
 remoting.Xhr.prototype.sendXhr_ = function() {
   for (var key in this.headers_) {
-    this.nativeXhr_.setRequestHeader(key, this.headers_[key]);
+    this.nativeXhr_.setRequestHeader(
+        key, /** @type {string} */ (this.headers_[key]));
   }
   this.nativeXhr_.send(this.content_);
   this.content_ = null;  // for gc
@@ -247,7 +251,7 @@ remoting.Xhr.prototype.onReadyStateChange_ = function() {
   var xhr = this.nativeXhr_;
   if (xhr.readyState == 4) {
     // See comments at remoting.Xhr.Response.
-    this.deferred_.resolve(new remoting.Xhr.Response(
+    this.deferred_.resolve(remoting.Xhr.Response.fromXhr_(
         xhr, this.acceptJson_));
   }
 };
@@ -261,36 +265,54 @@ remoting.Xhr.prototype.onReadyStateChange_ = function() {
  * API.
  *
  * @constructor
- * @param {!XMLHttpRequest} xhr
+ * @param {number} status
+ * @param {string} statusText
+ * @param {?string} url
+ * @param {string} text
  * @param {boolean} allowJson
  */
-remoting.Xhr.Response = function(xhr, allowJson) {
-  /** @private @const */
-  this.allowJson_ = allowJson;
-
+remoting.Xhr.Response = function(
+    status, statusText, url, text, allowJson) {
   /**
    * The HTTP status code.
    * @const {number}
    */
-  this.status = xhr.status;
+  this.status = status;
 
   /**
    * The HTTP status description.
    * @const {string}
    */
-  this.statusText = xhr.statusText;
+  this.statusText = statusText;
 
   /**
    * The response URL, if any.
    * @const {?string}
    */
-  this.url = xhr.responseURL;
+  this.url = url;
 
   /** @private {string} */
-  this.text_ = xhr.responseText || '';
+  this.text_ = text;
+
+  /** @private @const */
+  this.allowJson_ = allowJson;
 
   /** @private {*|undefined}  */
   this.json_ = undefined;
+};
+
+/**
+ * @param {!XMLHttpRequest} xhr
+ * @param {boolean} allowJson
+ * @return {!remoting.Xhr.Response}
+ */
+remoting.Xhr.Response.fromXhr_ = function(xhr, allowJson) {
+  return new remoting.Xhr.Response(
+      xhr.status,
+      xhr.statusText,
+      xhr.responseURL,
+      xhr.responseText || '',
+      allowJson);
 };
 
 /**
@@ -322,28 +344,6 @@ remoting.Xhr.Response.prototype.getJson = function() {
 };
 
 /**
- * Returns a copy of the input object with all null or undefined
- * fields removed.
- *
- * @param {Object<string,?string>|undefined} input
- * @return {!Object<string,string>}
- * @private
- */
-remoting.Xhr.removeNullFields_ = function(input) {
-  /** @type {!Object<string,string>} */
-  var result = {};
-  if (input) {
-    for (var field in input) {
-      var value = input[field];
-      if (value != null) {
-        result[field] = value;
-      }
-    }
-  }
-  return result;
-};
-
-/**
  * Takes an associative array of parameters and urlencodes it.
  *
  * @param {Object<string,string>} paramHash The parameter key/value pairs.
@@ -352,8 +352,11 @@ remoting.Xhr.removeNullFields_ = function(input) {
 remoting.Xhr.urlencodeParamHash = function(paramHash) {
   var paramArray = [];
   for (var key in paramHash) {
-    paramArray.push(encodeURIComponent(key) +
-                     '=' + encodeURIComponent(paramHash[key]));
+    var value = paramHash[key];
+    if (value != null) {
+      paramArray.push(encodeURIComponent(key) +
+                      '=' + encodeURIComponent(value));
+    }
   }
   if (paramArray.length > 0) {
     return paramArray.join('&');

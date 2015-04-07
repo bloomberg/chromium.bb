@@ -75,10 +75,12 @@
       'webapp/crd/js/error_unittest.js',
       'webapp/crd/js/fallback_signal_strategy_unittest.js',
       'webapp/crd/js/gcd_client_unittest.js',
+      'webapp/crd/js/gcd_client_with_mock_xhr_unittest.js',
       'webapp/crd/js/host_table_entry_unittest.js',
       'webapp/crd/js/identity_unittest.js',
       'webapp/crd/js/l10n_unittest.js',
       'webapp/crd/js/menu_button_unittest.js',
+      'webapp/crd/js/mock_xhr_unittest.js',
       'webapp/crd/js/typecheck_unittest.js',
       'webapp/crd/js/xhr_unittest.js',
       'webapp/crd/js/xmpp_connection_unittest.js',
@@ -92,6 +94,7 @@
       'webapp/js_proto/chrome_proto.js',
       'webapp/js_proto/chrome_mocks.js',
       'webapp/unittests/sinon_helpers.js',
+      'webapp/crd/js/mock_xhr.js',
     ],
     # Prototypes for objects that are not mocked.
     'remoting_webapp_unittests_js_proto_files': [
