@@ -654,6 +654,9 @@ group.add_option("--target_ref", action="store", dest="target_ref",
                  default=None,
                  help="The target ref that is transitively tracked by the "
                  "local branch this patch comes from.")
+parser.add_option("--cq_dry_run", action="store_true",
+                  help="Send the patchset to do a CQ dry run right after "
+                       "upload.")
 group.add_option("--download_base", action="store_true",
                  dest="download_base", default=False,
                  help="Base files will be downloaded by the server "
@@ -2611,6 +2614,9 @@ def RealMain(argv, data=None):
     form_fields.append(("project", options.project))
   if options.target_ref:
     form_fields.append(("target_ref", options.target_ref))
+  if options.cq_dry_run:
+    form_fields.append(("cq_dry_run", "1"))
+    form_fields.append(("commit", "1"))
 
   # Process --message, --title and --file.
   message = options.message or ""

@@ -1942,6 +1942,9 @@ def RietveldUpload(options, args, cl, change):
   if project:
     upload_args.extend(['--project', project])
 
+  if options.cq_dry_run:
+    upload_args.extend(['--cq_dry_run'])
+
   try:
     upload_args = ['upload'] + upload_args + args
     logging.info('upload.RealMain(%s)', upload_args)
@@ -2022,6 +2025,9 @@ def CMDupload(parser, args):
                     help='email address to use to connect to Rietveld')
   parser.add_option('--tbr-owners', dest='tbr_owners', action='store_true',
                     help='add a set of OWNERS to TBR')
+  parser.add_option('--cq-dry-run', dest='cq_dry_run', action='store_true',
+                    help='Send the patchset to do a CQ dry run right after '
+                         'upload.')
 
   add_git_similarity(parser)
   (options, args) = parser.parse_args(args)
