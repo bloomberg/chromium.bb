@@ -20,11 +20,10 @@
                   "children": [
                     {
                       "bounds": [85, 144],
-                      "shouldFlattenTransform": false,
                       "drawsContent": true,
                       "children": [
                         {
-                          "shouldFlattenTransform": false
+
                         }
                       ]
                     }
@@ -84,11 +83,10 @@
               "children": [
                 {
                   "bounds": [105, 144],
-                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
-                      "shouldFlattenTransform": false
+
                     }
                   ]
                 }
@@ -144,10 +142,9 @@
                   "children": [
                     {
                       "bounds": [85, 144],
-                      "shouldFlattenTransform": false,
                       "children": [
                         {
-                          "shouldFlattenTransform": false
+
                         }
                       ]
                     }
@@ -210,11 +207,10 @@
                   "children": [
                     {
                       "bounds": [85, 144],
-                      "shouldFlattenTransform": false,
                       "drawsContent": true,
                       "children": [
                         {
-                          "shouldFlattenTransform": false
+
                         }
                       ]
                     }
@@ -274,11 +270,10 @@
               "children": [
                 {
                   "bounds": [105, 144],
-                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
-                      "shouldFlattenTransform": false
+
                     }
                   ]
                 }
@@ -334,10 +329,9 @@
                   "children": [
                     {
                       "bounds": [85, 144],
-                      "shouldFlattenTransform": false,
                       "children": [
                         {
-                          "shouldFlattenTransform": false
+
                         }
                       ]
                     }
@@ -397,10 +391,9 @@
               "children": [
                 {
                   "bounds": [105, 144],
-                  "shouldFlattenTransform": false,
                   "children": [
                     {
-                      "shouldFlattenTransform": false
+
                     }
                   ]
                 }
@@ -453,10 +446,9 @@
               "children": [
                 {
                   "bounds": [105, 144],
-                  "shouldFlattenTransform": false,
                   "children": [
                     {
-                      "shouldFlattenTransform": false
+
                     }
                   ]
                 }
@@ -509,11 +501,10 @@
               "children": [
                 {
                   "bounds": [85, 144],
-                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
-                      "shouldFlattenTransform": false
+
                     }
                   ]
                 }
@@ -573,10 +564,9 @@
               "children": [
                 {
                   "bounds": [85, 144],
-                  "shouldFlattenTransform": false,
                   "children": [
                     {
-                      "shouldFlattenTransform": false
+
                     }
                   ]
                 }
@@ -636,11 +626,10 @@
               "children": [
                 {
                   "bounds": [85, 144],
-                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "children": [
                     {
-                      "shouldFlattenTransform": false
+
                     }
                   ]
                 }
@@ -700,10 +689,9 @@
               "children": [
                 {
                   "bounds": [85, 144],
-                  "shouldFlattenTransform": false,
                   "children": [
                     {
-                      "shouldFlattenTransform": false
+
                     }
                   ]
                 }

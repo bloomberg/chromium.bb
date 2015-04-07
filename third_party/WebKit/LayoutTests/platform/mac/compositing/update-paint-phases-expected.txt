@@ -37,7 +37,6 @@
               "children": [
                 {
                   "bounds": [85, 120],
-                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "paintingPhases": [
                     "GraphicsLayerPaintForeground",
@@ -46,7 +45,6 @@
                   ],
                   "children": [
                     {
-                      "shouldFlattenTransform": false,
                       "paintingPhases": [
                         "GraphicsLayerPaintForeground",
                         "GraphicsLayerPaintOverflowContents",

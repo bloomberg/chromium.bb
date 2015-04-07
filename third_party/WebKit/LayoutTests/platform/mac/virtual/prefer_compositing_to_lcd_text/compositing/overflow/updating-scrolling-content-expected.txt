@@ -20,7 +20,6 @@
               "children": [
                 {
                   "bounds": [185, 1200],
-                  "shouldFlattenTransform": false,
                   "drawsContent": true,
                   "repaintRects": [
                     [0, 0, 185, 200],
@@ -28,7 +27,7 @@
                   ],
                   "children": [
                     {
-                      "shouldFlattenTransform": false
+
                     }
                   ]
                 }

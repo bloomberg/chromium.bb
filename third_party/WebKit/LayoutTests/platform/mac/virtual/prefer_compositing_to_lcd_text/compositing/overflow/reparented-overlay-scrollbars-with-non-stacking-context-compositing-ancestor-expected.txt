@@ -62,8 +62,7 @@
               "children": [
                 {
                   "position": [1193, 0],
-                  "bounds": [7, 1000],
-                  "drawsContent": true
+                  "bounds": [7, 1000]
                 }
               ]
             }
