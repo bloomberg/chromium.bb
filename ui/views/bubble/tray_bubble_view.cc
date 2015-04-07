@@ -15,7 +15,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
-#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
@@ -206,11 +206,12 @@ TrayBubbleContentMask::~TrayBubbleContentMask() {
 }
 
 void TrayBubbleContentMask::OnPaintLayer(const ui::PaintContext& context) {
+  ui::PaintRecorder recorder(context);
   SkPaint paint;
   paint.setAlpha(255);
   paint.setStyle(SkPaint::kFill_Style);
   gfx::Rect rect(layer()->bounds().size());
-  context.canvas()->DrawRoundRect(rect, corner_radius_, paint);
+  recorder.canvas()->DrawRoundRect(rect, corner_radius_, paint);
 }
 
 void TrayBubbleContentMask::OnDeviceScaleFactorChanged(

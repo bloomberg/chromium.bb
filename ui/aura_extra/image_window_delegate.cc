@@ -7,7 +7,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -71,13 +71,15 @@ void ImageWindowDelegate::OnCaptureLost() {
 }
 
 void ImageWindowDelegate::OnPaint(const ui::PaintContext& context) {
-  gfx::Canvas* canvas = context.canvas();
+  ui::PaintRecorder recorder(context);
   if (background_color_ != SK_ColorTRANSPARENT &&
       (image_.IsEmpty() || size_mismatch_ || !offset_.IsZero())) {
-    canvas->DrawColor(background_color_);
+    recorder.canvas()->DrawColor(background_color_);
   }
-  if (!image_.IsEmpty())
-    canvas->DrawImageInt(image_.AsImageSkia(), offset_.x(), offset_.y());
+  if (!image_.IsEmpty()) {
+    recorder.canvas()->DrawImageInt(image_.AsImageSkia(), offset_.x(),
+                                    offset_.y());
+  }
 }
 
 void ImageWindowDelegate::OnDeviceScaleFactorChanged(float scale_factor) {

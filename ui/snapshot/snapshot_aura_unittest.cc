@@ -15,7 +15,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/gfx/canvas.h"
@@ -44,10 +44,11 @@ class TestPaintingWindowDelegate : public aura::test::TestWindowDelegate {
   ~TestPaintingWindowDelegate() override {}
 
   void OnPaint(const ui::PaintContext& context) override {
+    ui::PaintRecorder recorder(context);
     for (int y = 0; y < window_size_.height(); ++y) {
       for (int x = 0; x < window_size_.width(); ++x) {
-        context.canvas()->FillRect(gfx::Rect(x, y, 1, 1),
-                                   GetExpectedColorForPoint(x, y));
+        recorder.canvas()->FillRect(gfx::Rect(x, y, 1, 1),
+                                    GetExpectedColorForPoint(x, y));
       }
     }
   }

@@ -16,6 +16,7 @@
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
         '../base/ui_base.gyp:ui_base',
+        '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',

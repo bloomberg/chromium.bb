@@ -7,7 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
-#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
@@ -122,7 +122,8 @@ void ColorTestWindowDelegate::OnWindowDestroyed(Window* window) {
 }
 
 void ColorTestWindowDelegate::OnPaint(const ui::PaintContext& context) {
-  context.canvas()->DrawColor(color_, SkXfermode::kSrc_Mode);
+  ui::PaintRecorder recorder(context);
+  recorder.canvas()->DrawColor(color_, SkXfermode::kSrc_Mode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
