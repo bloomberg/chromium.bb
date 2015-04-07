@@ -314,6 +314,7 @@ private:
 
     // Masks/offsets for the color values for non-palette formats. These are
     // bitwise, with array entries 0, 1, 2, 3 corresponding to R, G, B, A.
+    // These are uninitialized (and ignored) for images with less than 16bpp.
     uint32_t m_bitMasks[4];
 
     // Right shift values, meant to be applied after the masks. We need to shift

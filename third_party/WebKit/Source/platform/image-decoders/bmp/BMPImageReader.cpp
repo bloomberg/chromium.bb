@@ -82,9 +82,6 @@ BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffs
     , m_isInICO(isInICO)
     , m_decodingAndMask(false)
 {
-    for (size_t i = 0; i < arraysize(m_bitMasks); i++)
-        m_bitMasks[i] = 0;
-
     // Clue-in decodeBMP() that we need to detect the correct info header size.
     memset(&m_infoHeader, 0, sizeof(m_infoHeader));
 }
@@ -142,7 +139,7 @@ bool BMPImageReader::decodeBMP(bool onlySize)
 
     // If the image has an AND mask and there was no alpha data, process the
     // mask.
-    if (m_isInICO && !m_decodingAndMask && (!m_bitMasks[3] || !m_seenNonZeroAlphaPixel)) {
+    if (m_isInICO && !m_decodingAndMask && ((m_infoHeader.biBitCount < 16) || !m_bitMasks[3] || !m_seenNonZeroAlphaPixel)) {
         // Reset decoding coordinates to start of image.
         m_coord.setX(0);
         m_coord.setY(m_isTopDown ? 0 : (m_parent->size().height() - 1));
