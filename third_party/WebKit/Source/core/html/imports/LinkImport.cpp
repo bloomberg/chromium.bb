@@ -128,7 +128,9 @@ HTMLLinkElement* LinkImport::link()
 
 bool LinkImport::hasLoaded() const
 {
-    return m_owner && m_child && m_child->hasFinishedLoading() && !m_child->loader()->hasError();
+    // Should never be called after importChildWasDestroyed was called.
+    ASSERT(m_owner);
+    return m_child && m_child->hasFinishedLoading() && !m_child->loader()->hasError();
 }
 
 void LinkImport::ownerInserted()

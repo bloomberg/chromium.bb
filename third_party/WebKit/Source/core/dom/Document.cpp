@@ -481,13 +481,11 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         provideContextFeaturesToDocumentFrom(*this, *m_frame->page());
 
         m_fetcher = m_frame->loader().documentLoader()->fetcher();
-        FrameFetchContext::provideDocumentToContext(m_fetcher->context(), this);
-    } else if (m_importsController) {
-        m_fetcher = FrameFetchContext::createContextAndFetcher(nullptr);
-        FrameFetchContext::provideDocumentToContext(m_fetcher->context(), this);
-    } else {
-        m_fetcher = ResourceFetcher::create(nullptr);
     }
+
+    if (!m_fetcher)
+        m_fetcher = FrameFetchContext::createContextAndFetcher(nullptr);
+    static_cast<FrameFetchContext&>(m_fetcher->context()).setDocument(this);
 
     // We depend on the url getting immediately set in subframes, but we
     // also depend on the url NOT getting immediately set in opened windows.
@@ -532,7 +530,6 @@ Document::~Document()
 #if !ENABLE(OILPAN)
     ASSERT(m_ranges.isEmpty());
     ASSERT(!hasGuardRefCount());
-    ASSERT(!m_importsController);
     // With Oilpan, either the document outlives the visibility observers
     // or the visibility observers and the document die in the same GC round.
     // When they die in the same GC round, the list of visibility observers
@@ -567,6 +564,9 @@ Document::~Document()
     if (m_styleSheetList)
         m_styleSheetList->detachFromDocument();
 
+    if (m_importsController)
+        HTMLImportsController::removeFrom(*this);
+
     m_timeline->detachFromDocument();
 
     // We need to destroy CSSFontSelector before destroying m_fetcher.
@@ -574,6 +574,13 @@ Document::~Document()
 
     if (m_elemSheet)
         m_elemSheet->clearOwnerNode();
+
+    // It's possible for multiple Documents to end up referencing the same ResourceFetcher (e.g., SVGImages
+    // load the initial empty document and the SVGDocument with the same DocumentLoader).
+    FrameFetchContext& context = static_cast<FrameFetchContext&>(m_fetcher->context());
+    if (context.document() == this)
+        context.setDocument(nullptr);
+    m_fetcher.clear();
 
     // We must call clearRareData() here since a Document class inherits TreeScope
     // as well as Node. See a comment on TreeScope.h for the reason.
@@ -613,6 +620,9 @@ void Document::dispose()
     detachParser();
 
     m_registrationContext.clear();
+
+    if (m_importsController)
+        HTMLImportsController::removeFrom(*this);
 
     // removeDetachedChildren() doesn't always unregister IDs,
     // so tear down scope information upfront to avoid having stale references in the map.
@@ -822,8 +832,6 @@ void Document::setImportsController(HTMLImportsController* controller)
 {
     ASSERT(!m_importsController || !controller);
     m_importsController = controller;
-    if (!m_importsController)
-        m_fetcher->clearContext();
 }
 
 HTMLImportLoader* Document::importLoader() const
@@ -2127,19 +2135,6 @@ void Document::detach(const AttachContext& context)
     styleEngine().didDetach();
 
     frameHost()->eventHandlerRegistry().documentDetached(*this);
-
-    // If this Document is associated with a live DocumentLoader, the
-    // DocumentLoader will take care of clearing the FetchContext. Deferring
-    // to the DocumentLoader when possible also prevents prematurely clearing
-    // the context in the case where multiple Documents end up associated with
-    // a single DocumentLoader (e.g., navigating to a javascript: url).
-    if (!loader())
-        m_fetcher->clearContext();
-    // If this document is the master for an HTMLImportsController, sever that
-    // relationship. This ensures that we don't leave import loads in flight,
-    // thinking they should have access to a valid frame when they don't.
-    if (m_importsController)
-        HTMLImportsController::removeFrom(*this);
 
     // This is required, as our LocalFrame might delete itself as soon as it detaches
     // us. However, this violates Node::detach() semantics, as it's never

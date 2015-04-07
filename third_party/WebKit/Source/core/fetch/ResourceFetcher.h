@@ -103,8 +103,7 @@ public:
 
     bool shouldDeferImageLoad(const KURL&) const;
 
-    FetchContext& context() const { return m_context ? *m_context.get() : FetchContext::nullInstance(); }
-    void clearContext() { m_context.clear(); }
+    FetchContext& context() const { return *m_context.get(); }
 
     void garbageCollectDocumentResources();
 
