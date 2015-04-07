@@ -27,7 +27,6 @@ class FakeUIResourceLayerTreeHostImpl : public FakeLayerTreeHostImpl {
   bool IsUIResourceOpaque(UIResourceId uid) const override;
 
  private:
-  ResourceProvider::ResourceId fake_next_resource_id_;
   typedef base::hash_map<UIResourceId, LayerTreeHostImpl::UIResourceData>
       UIResourceMap;
   UIResourceMap fake_ui_resource_map_;

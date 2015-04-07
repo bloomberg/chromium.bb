@@ -77,6 +77,9 @@ void IOSurfaceLayerImpl::AppendQuads(
   if (visible_quad_rect.IsEmpty())
     return;
 
+  // TODO(danakj): crbug.com/455931
+  layer_tree_impl()->resource_provider()->ValidateResource(
+      io_surface_resource_id_);
   IOSurfaceDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
   quad->SetNew(shared_quad_state,

@@ -435,6 +435,8 @@ class CC_EXPORT ResourceProvider {
 
   OutputSurface* output_surface() { return output_surface_; }
 
+  void ValidateResource(ResourceId id);
+
  private:
   struct Resource {
     enum Origin { INTERNAL, EXTERNAL, DELEGATED };

@@ -870,7 +870,7 @@ base::TimeTicks ResourceProvider::EstimatedUploadCompletionTime(
 
 ResourceProvider::Resource* ResourceProvider::GetResource(ResourceId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Try to differentiate GetResource with a bad id vs with no id.
+  // TODO(danakj): crbug.com/455931
   CHECK(id);
   ResourceMap::iterator it = resources_.find(id);
   CHECK(it != resources_.end());
@@ -2130,6 +2130,13 @@ GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {
   GLint active_unit = 0;
   gl->GetIntegerv(GL_ACTIVE_TEXTURE, &active_unit);
   return active_unit;
+}
+
+void ResourceProvider::ValidateResource(ResourceId id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(id);
+  ResourceMap::iterator it = resources_.find(id);
+  CHECK(it != resources_.end());
 }
 
 GLES2Interface* ResourceProvider::ContextGL() const {

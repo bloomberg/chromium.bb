@@ -9,6 +9,7 @@
 #include "cc/resources/layer_tiling_data.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -21,7 +22,9 @@ namespace {
 class TiledLayerImplTest : public testing::Test {
  public:
   TiledLayerImplTest()
-      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {}
+      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {
+    host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
+  }
 
   scoped_ptr<TiledLayerImpl> CreateLayerNoTiles(
       const gfx::Size& tile_size,
@@ -53,10 +56,14 @@ class TiledLayerImplTest : public testing::Test {
     scoped_ptr<TiledLayerImpl> layer =
         CreateLayerNoTiles(tile_size, layer_size, border_texels);
 
-    ResourceProvider::ResourceId resource_id = 1;
     for (int i = 0; i < layer->TilingForTesting()->num_tiles_x(); ++i) {
-      for (int j = 0; j < layer->TilingForTesting()->num_tiles_y(); ++j)
-        layer->PushTileProperties(i, j, resource_id++, false);
+      for (int j = 0; j < layer->TilingForTesting()->num_tiles_y(); ++j) {
+        ResourceProvider::ResourceId resource_id =
+            host_impl_.resource_provider()->CreateResource(
+                gfx::Size(1, 1), GL_CLAMP_TO_EDGE,
+                ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+        layer->PushTileProperties(i, j, resource_id, false);
+      }
     }
 
     return layer.Pass();
@@ -333,10 +340,14 @@ TEST_F(TiledLayerImplTest, Occlusion) {
   tiler->SetTilingSize(layer_bounds);
   tiled_layer->SetTilingData(*tiler);
 
-  ResourceProvider::ResourceId resource_id = 1;
   for (int i = 0; i < tiled_layer->TilingForTesting()->num_tiles_x(); ++i) {
-    for (int j = 0; j < tiled_layer->TilingForTesting()->num_tiles_y(); ++j)
-      tiled_layer->PushTileProperties(i, j, resource_id++, false);
+    for (int j = 0; j < tiled_layer->TilingForTesting()->num_tiles_y(); ++j) {
+      ResourceProvider::ResourceId resource_id =
+          impl.resource_provider()->CreateResource(
+              gfx::Size(1, 1), GL_CLAMP_TO_EDGE,
+              ResourceProvider::TEXTURE_HINT_IMMUTABLE, RGBA_8888);
+      tiled_layer->PushTileProperties(i, j, resource_id, false);
+    }
   }
 
   impl.CalcDrawProps(viewport_size);

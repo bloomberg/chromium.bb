@@ -394,6 +394,14 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
   }
 }
 
+// TODO(danakj): crbug.com/455931
+static ResourceProvider::ResourceId ValidateResource(
+    ResourceProvider* provider,
+    ResourceProvider::ResourceId id) {
+  provider->ValidateResource(id);
+  return id;
+}
+
 void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     RenderPass* render_pass,
     const RenderPass* delegated_render_pass,
@@ -488,6 +496,10 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
         output_quad->visible_rect = quad_visible_rect;
       }
     }
+
+    // TODO(danakj): crbug.com/455931
+    render_pass->quad_list.back()->IterateResources(
+        base::Bind(&ValidateResource, layer_tree_impl()->resource_provider()));
   }
 }
 

@@ -22,6 +22,10 @@ TEST(IOSurfaceLayerImplTest, Occlusion) {
   io_surface_layer_impl->SetContentBounds(layer_size);
   io_surface_layer_impl->SetDrawsContent(true);
 
+  io_surface_layer_impl->SetIOSurfaceProperties(1, gfx::Size(1, 1));
+  io_surface_layer_impl->WillDraw(DRAW_MODE_HARDWARE, impl.resource_provider());
+  io_surface_layer_impl->DidDraw(impl.resource_provider());
+
   impl.CalcDrawProps(viewport_size);
 
   {

@@ -201,6 +201,9 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       bool nearest_neighbor = false;
+      // TODO(danakj): crbug.com/455931
+      layer_tree_impl()->resource_provider()->ValidateResource(
+          software_resources_[0]);
       TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
       texture_quad->SetNew(shared_quad_state,
@@ -240,6 +243,17 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
                    frame_->format(), media::VideoFrame::kAPlane, coded_size));
       }
 
+      // TODO(danakj): crbug.com/455931
+      layer_tree_impl()->resource_provider()->ValidateResource(
+          frame_resources_[0]);
+      layer_tree_impl()->resource_provider()->ValidateResource(
+          frame_resources_[1]);
+      layer_tree_impl()->resource_provider()->ValidateResource(
+          frame_resources_[2]);
+      if (frame_resources_.size() > 3) {
+        layer_tree_impl()->resource_provider()->ValidateResource(
+            frame_resources_[3]);
+      }
       gfx::RectF tex_coord_rect(
           tex_x_offset, tex_y_offset, tex_width_scale, tex_height_scale);
       YUVVideoDrawQuad* yuv_video_quad =
@@ -261,6 +275,9 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       bool nearest_neighbor = false;
+      // TODO(danakj): crbug.com/455931
+      layer_tree_impl()->resource_provider()->ValidateResource(
+          frame_resources_[0]);
       TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
       texture_quad->SetNew(shared_quad_state,
@@ -281,6 +298,9 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       DCHECK_EQ(frame_resources_.size(), 1u);
       if (frame_resources_.size() < 1u)
         break;
+      // TODO(danakj): crbug.com/455931
+      layer_tree_impl()->resource_provider()->ValidateResource(
+          frame_resources_[0]);
       gfx::Transform scale;
       scale.Scale(tex_width_scale, tex_height_scale);
       StreamVideoDrawQuad* stream_video_quad =
@@ -295,6 +315,9 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       DCHECK_EQ(frame_resources_.size(), 1u);
       if (frame_resources_.size() < 1u)
         break;
+      // TODO(danakj): crbug.com/455931
+      layer_tree_impl()->resource_provider()->ValidateResource(
+          frame_resources_[0]);
       IOSurfaceDrawQuad* io_surface_quad =
           render_pass->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
       io_surface_quad->SetNew(shared_quad_state,

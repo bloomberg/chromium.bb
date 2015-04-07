@@ -16,6 +16,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/layer_tiling_data.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -259,6 +260,9 @@ void TiledLayerImpl::AppendQuads(RenderPass* render_pass,
       float tile_height = static_cast<float>(tiler_->tile_size().height());
       gfx::Size texture_size(tile_width, tile_height);
 
+      // TODO(danakj): crbug.com/455931
+      layer_tree_impl()->resource_provider()->ValidateResource(
+          tile->resource_id());
       TileDrawQuad* quad = render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
       quad->SetNew(shared_quad_state,
                    tile_rect,

@@ -305,6 +305,9 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
             append_quads_data->num_incomplete_tiles++;
           }
 
+          // TODO(danakj): crbug.com/455931
+          layer_tree_impl()->resource_provider()->ValidateResource(
+              draw_info.resource_id());
           TileDrawQuad* quad =
               render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
           quad->SetNew(shared_quad_state, geometry_rect, opaque_rect,

@@ -9,6 +9,7 @@
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_ui_resource_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
@@ -45,6 +46,8 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
   FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
+
   scoped_ptr<NinePatchLayerImpl> layer =
       NinePatchLayerImpl::Create(host_impl.active_tree(), 1);
   layer->draw_properties().visible_content_rect = visible_content_rect;
