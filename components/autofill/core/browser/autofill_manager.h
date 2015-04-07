@@ -167,8 +167,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void OnQueryFormFieldAutofill(int query_id,
                                 const FormData& form,
                                 const FormFieldData& field,
-                                const gfx::RectF& bounding_box,
-                                bool display_warning);
+                                const gfx::RectF& bounding_box);
   void OnDidEndTextFieldEditing();
   void OnHidePopup();
   void OnSetDataList(const std::vector<base::string16>& values,
@@ -470,9 +469,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            FormSubmittedAutocompleteEnabled);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           AutocompleteOffRespected);
-  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
-                           AutocompleteOffRespectedWithFlag);
+                           AutocompleteOffRespectedForAutocomplete);
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };
 

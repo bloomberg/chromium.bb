@@ -80,13 +80,11 @@ const base::string16 GetFormIdentifier(const blink::WebFormElement& form);
 
 // Returns all the auto-fillable form control elements in |control_elements|.
 std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(
-    const blink::WebVector<blink::WebFormControlElement>& control_elements,
-    RequirementsMask requirements);
+    const blink::WebVector<blink::WebFormControlElement>& control_elements);
 
 // Returns all the auto-fillable form control elements in |form_element|.
 std::vector<blink::WebFormControlElement> ExtractAutofillableElementsInForm(
-    const blink::WebFormElement& form_element,
-    RequirementsMask requirements);
+    const blink::WebFormElement& form_element);
 
 // Fills out a FormField object from a given WebFormControlElement.
 // |extract_mask|: See the enum ExtractMask above for details.
@@ -97,15 +95,12 @@ void WebFormControlElementToFormField(
 
 // Fills |form| with the FormData object corresponding to the |form_element|.
 // If |field| is non-NULL, also fills |field| with the FormField object
-// corresponding to the |form_control_element|.
-// |extract_mask| controls what data is extracted.
-// Returns true if |form| is filled out; it's possible that the |form_element|
-// won't meet the |requirements|.  Also returns false if there are no fields or
-// too many fields in the |form|.
+// corresponding to the |form_control_element|. |extract_mask| controls what
+// data is extracted. Returns true if |form| is filled out.  Also returns false
+// if there are no fields or too many fields in the |form|.
 bool WebFormElementToFormData(
     const blink::WebFormElement& form_element,
     const blink::WebFormControlElement& form_control_element,
-    RequirementsMask requirements,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field);
@@ -128,7 +123,6 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const blink::WebFormControlElement* element,
     const GURL& origin,
-    RequirementsMask requirements,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field);
@@ -139,8 +133,7 @@ bool UnownedFormElementsAndFieldSetsToFormData(
 bool FindFormAndFieldForFormControlElement(
     const blink::WebFormControlElement& element,
     FormData* form,
-    FormFieldData* field,
-    RequirementsMask requirements);
+    FormFieldData* field);
 
 // Fills the form represented by |form|.  |element| is the input element that
 // initiated the auto-fill process.

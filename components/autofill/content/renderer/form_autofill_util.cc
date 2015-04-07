@@ -63,13 +63,6 @@ enum FieldFilterMask {
                                      FILTER_NON_FOCUSABLE_ELEMENTS,
 };
 
-RequirementsMask ExtractionRequirements() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kRespectAutocompleteOffForAutofill)
-             ? REQUIRE_AUTOCOMPLETE
-             : REQUIRE_NONE;
-}
-
 void TruncateString(base::string16* str, size_t max_length) {
   if (str->length() > max_length)
     str->resize(max_length);
@@ -142,11 +135,6 @@ bool IsTraversableContainerElement(const WebNode& node) {
           tag_name == "LI" ||
           tag_name == "TD" ||
           tag_name == "TABLE");
-}
-
-// Check whether the given field satisfies the REQUIRE_AUTOCOMPLETE requirement.
-bool SatisfiesRequireAutocomplete(const WebInputElement& input_element) {
-  return input_element.autoComplete();
 }
 
 // Returns the colspan for a <td> / <th>. Defaults to 1.
@@ -789,7 +777,7 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
                               bool force_override,
                               const Callback& callback) {
   std::vector<WebFormControlElement> control_elements =
-      ExtractAutofillableElementsInForm(form_element, ExtractionRequirements());
+      ExtractAutofillableElementsInForm(form_element);
   ForEachMatchingFormFieldCommon(&control_elements, initiating_element, data,
                                  filters, force_override, callback);
 }
@@ -911,7 +899,6 @@ bool IsWebNodeVisibleImpl(const blink::WebNode& node, const int depth) {
 
 bool ExtractFieldsFromControlElements(
     const WebVector<WebFormControlElement>& control_elements,
-    RequirementsMask requirements,
     ExtractMask extract_mask,
     ScopedVector<FormFieldData>* form_fields,
     std::vector<bool>* fields_extracted,
@@ -920,12 +907,6 @@ bool ExtractFieldsFromControlElements(
     const WebFormControlElement& control_element = control_elements[i];
 
     if (!IsAutofillableElement(control_element))
-      continue;
-
-    const WebInputElement* input_element = toWebInputElement(&control_element);
-    if (requirements & REQUIRE_AUTOCOMPLETE &&
-        IsAutofillableInputElement(input_element) &&
-        !SatisfiesRequireAutocomplete(*input_element))
       continue;
 
     // Create a new FormFieldData, fill it out and map it to the field's name.
@@ -1016,7 +997,6 @@ bool FormOrFieldsetsToFormData(
     const blink::WebFormControlElement* form_control_element,
     const std::vector<blink::WebElement>& fieldsets,
     const WebVector<WebFormControlElement>& control_elements,
-    RequirementsMask requirements,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
@@ -1038,9 +1018,9 @@ bool FormOrFieldsetsToFormData(
   // requirements and thus will be in the resulting |form|.
   std::vector<bool> fields_extracted(control_elements.size(), false);
 
-  if (!ExtractFieldsFromControlElements(control_elements, requirements,
-                                        extract_mask, &form_fields,
-                                        &fields_extracted, &element_map)) {
+  if (!ExtractFieldsFromControlElements(control_elements, extract_mask,
+                                        &form_fields, &fields_extracted,
+                                        &element_map)) {
     return false;
   }
 
@@ -1149,23 +1129,12 @@ bool IsWebNodeVisible(const blink::WebNode& node) {
 }
 
 std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(
-    const WebVector<WebFormControlElement>& control_elements,
-    RequirementsMask requirements) {
+    const WebVector<WebFormControlElement>& control_elements) {
   std::vector<blink::WebFormControlElement> autofillable_elements;
   for (size_t i = 0; i < control_elements.size(); ++i) {
     WebFormControlElement element = control_elements[i];
     if (!IsAutofillableElement(element))
       continue;
-
-    if (requirements & REQUIRE_AUTOCOMPLETE) {
-      // TODO(isherman): WebKit currently doesn't handle the autocomplete
-      // attribute for select or textarea elements, but it probably should.
-      const WebInputElement* input_element =
-          toWebInputElement(&control_elements[i]);
-      if (IsAutofillableInputElement(input_element) &&
-          !SatisfiesRequireAutocomplete(*input_element))
-        continue;
-    }
 
     autofillable_elements.push_back(element);
   }
@@ -1173,12 +1142,11 @@ std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(
 }
 
 std::vector<WebFormControlElement> ExtractAutofillableElementsInForm(
-    const WebFormElement& form_element,
-    RequirementsMask requirements) {
+    const WebFormElement& form_element) {
   WebVector<WebFormControlElement> control_elements;
   form_element.getFormControlElements(control_elements);
 
-  return ExtractAutofillableElementsFromSet(control_elements, requirements);
+  return ExtractAutofillableElementsFromSet(control_elements);
 }
 
 void WebFormControlElementToFormField(const WebFormControlElement& element,
@@ -1266,15 +1234,11 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
 bool WebFormElementToFormData(
     const blink::WebFormElement& form_element,
     const blink::WebFormControlElement& form_control_element,
-    RequirementsMask requirements,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
   const WebFrame* frame = form_element.document().frame();
   if (!frame)
-    return false;
-
-  if (requirements & REQUIRE_AUTOCOMPLETE && !form_element.autoComplete())
     return false;
 
   form->name = GetFormIdentifier(form_element);
@@ -1293,7 +1257,7 @@ bool WebFormElementToFormData(
   std::vector<blink::WebElement> dummy_fieldset;
   return FormOrFieldsetsToFormData(&form_element, &form_control_element,
                                    dummy_fieldset, control_elements,
-                                   requirements, extract_mask, form, field);
+                                   extract_mask, form, field);
 }
 
 std::vector<WebFormControlElement>
@@ -1315,8 +1279,7 @@ GetUnownedAutofillableFormFieldElements(
       fieldsets->push_back(element);
     }
   }
-  return ExtractAutofillableElementsFromSet(unowned_fieldset_children,
-                                            REQUIRE_NONE);
+  return ExtractAutofillableElementsFromSet(unowned_fieldset_children);
 }
 
 bool UnownedFormElementsAndFieldSetsToFormData(
@@ -1324,7 +1287,6 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const blink::WebFormControlElement* element,
     const GURL& origin,
-    RequirementsMask requirements,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
@@ -1333,14 +1295,12 @@ bool UnownedFormElementsAndFieldSetsToFormData(
   form->is_form_tag = false;
 
   return FormOrFieldsetsToFormData(nullptr, element, fieldsets,
-                                   control_elements, requirements, extract_mask,
-                                   form, field);
+                                   control_elements, extract_mask, form, field);
 }
 
 bool FindFormAndFieldForFormControlElement(const WebFormControlElement& element,
                                            FormData* form,
-                                           FormFieldData* field,
-                                           RequirementsMask requirements) {
+                                           FormFieldData* field) {
   if (!IsAutofillableElement(element))
     return false;
 
@@ -1354,13 +1314,12 @@ bool FindFormAndFieldForFormControlElement(const WebFormControlElement& element,
     std::vector<WebFormControlElement> control_elements =
         GetUnownedAutofillableFormFieldElements(document.all(), &fieldsets);
     return UnownedFormElementsAndFieldSetsToFormData(
-        fieldsets, control_elements, &element, document.url(), requirements,
-        extract_mask, form, field);
+        fieldsets, control_elements, &element, document.url(), extract_mask,
+        form, field);
   }
 
   return WebFormElementToFormData(form_element,
                                   element,
-                                  requirements,
                                   extract_mask,
                                   form,
                                   field);
@@ -1431,8 +1390,7 @@ bool ClearPreviewedFormWithElement(const WebFormControlElement& element,
     if (!IsElementInControlElementSet(element, control_elements))
       return false;
   } else {
-    control_elements = ExtractAutofillableElementsInForm(
-        form_element, ExtractionRequirements());
+    control_elements = ExtractAutofillableElementsInForm(form_element);
   }
 
   for (size_t i = 0; i < control_elements.size(); ++i) {

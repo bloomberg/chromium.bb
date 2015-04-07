@@ -16,7 +16,7 @@ void GenerateTestAutofillPopup(
   field.is_focusable = true;
   field.should_autocomplete = true;
   gfx::RectF bounds(100.f, 100.f);
-  autofill_external_delegate->OnQuery(query_id, form, field, bounds, false);
+  autofill_external_delegate->OnQuery(query_id, form, field, bounds);
 
   std::vector<Suggestion> suggestions;
   suggestions.push_back(Suggestion());

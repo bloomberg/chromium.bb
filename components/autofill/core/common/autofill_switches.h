@@ -24,7 +24,6 @@ extern const char kEnablePasswordSaveOnInPageNavigation[];
 extern const char kEnableSingleClickAutofill[];
 extern const char kIgnoreAutocompleteOffForAutofill[];
 extern const char kLocalHeuristicsOnlyForPasswordGeneration[];
-extern const char kRespectAutocompleteOffForAutofill[];
 extern const char kShowAutofillTypePredictions[];
 extern const char kWalletSecureServiceUrl[];
 extern const char kWalletServiceUrl[];

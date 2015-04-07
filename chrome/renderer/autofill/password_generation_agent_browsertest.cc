@@ -55,7 +55,6 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
     autofill::FormData form_data;
     WebFormElementToFormData(web_forms[form_index],
                              blink::WebFormControlElement(),
-                             REQUIRE_NONE,
                              EXTRACT_NONE,
                              &form_data,
                              NULL /* FormFieldData */);

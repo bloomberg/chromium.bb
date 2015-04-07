@@ -534,8 +534,7 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   void OnQuery(int query_id,
                const FormData& form,
                const FormFieldData& field,
-               const gfx::RectF& bounds,
-               bool display_warning) override {
+               const gfx::RectF& bounds) override {
     on_query_seen_ = true;
     on_suggestions_returned_seen_ = false;
   }
@@ -652,11 +651,8 @@ class AutofillManagerTest : public testing::Test {
   void GetAutofillSuggestions(int query_id,
                               const FormData& form,
                               const FormFieldData& field) {
-    autofill_manager_->OnQueryFormFieldAutofill(query_id,
-                                                form,
-                                                field,
-                                                gfx::Rect(),
-                                                false);
+    autofill_manager_->OnQueryFormFieldAutofill(query_id, form, field,
+                                                gfx::Rect());
   }
 
   void GetAutofillSuggestions(const FormData& form,
@@ -2448,40 +2444,7 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestionsWhenAutofillDisabled) {
       Suggestion("Jason", "", "", 0));
 }
 
-// Duplicate of the below test with the respect-autocomplete-off-autofill
-// switch.
-TEST_F(AutofillManagerTest, AutocompleteOffRespected) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kRespectAutocompleteOffForAutofill);
-
-  TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, NULL));
-  autofill_manager_->set_autofill_enabled(false);
-  autofill_manager_->SetExternalDelegate(external_delegate_.get());
-
-  scoped_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager;
-  autocomplete_history_manager.reset(
-      new MockAutocompleteHistoryManager(autofill_driver_.get(), &client));
-  autofill_manager_->autocomplete_history_manager_ =
-      autocomplete_history_manager.Pass();
-  MockAutocompleteHistoryManager* m = static_cast<
-      MockAutocompleteHistoryManager*>(
-          autofill_manager_->autocomplete_history_manager_.get());
-  EXPECT_CALL(*m,
-      OnGetAutocompleteSuggestions(_, _, _, _, _)).Times(0);
-
-  // Set up our form data.
-  FormData form;
-  test::CreateTestAddressFormData(&form);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  FormFieldData* field = &form.fields[0];
-  field->should_autocomplete = false;
-  GetAutofillSuggestions(form, *field);
-}
-
-TEST_F(AutofillManagerTest, AutocompleteOffRespectedWithFlag) {
+TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
   TestAutofillClient client;
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, NULL));

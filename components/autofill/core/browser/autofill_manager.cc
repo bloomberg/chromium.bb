@@ -458,18 +458,13 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
 void AutofillManager::OnQueryFormFieldAutofill(int query_id,
                                                const FormData& form,
                                                const FormFieldData& field,
-                                               const gfx::RectF& bounding_box,
-                                               bool display_warning) {
+                                               const gfx::RectF& bounding_box) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
   std::vector<Suggestion> suggestions;
 
-  external_delegate_->OnQuery(query_id,
-                              form,
-                              field,
-                              bounding_box,
-                              display_warning);
+  external_delegate_->OnQuery(query_id, form, field, bounding_box);
 
   // Need to refresh models before using the form_event_loggers.
   bool is_autofill_possible = RefreshDataModels();
@@ -501,15 +496,11 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
           GetProfileSuggestions(*form_structure, field, *autofill_field);
     }
     if (!suggestions.empty()) {
-      // Don't provide Autofill suggestions when Autofill is disabled, and don't
-      // provide credit card suggestions for non-HTTPS pages. However, provide a
-      // warning to the user in these cases.
-      int warning = 0;
+      // Don't provide credit card suggestions for non-HTTPS pages. However,
+      // do provide a warning to the user.
       if (is_filling_credit_card && !FormIsHTTPS(*form_structure)) {
-        warning = IDS_AUTOFILL_WARNING_INSECURE_CONNECTION;
-      }
-      if (warning) {
-        Suggestion warning_suggestion(l10n_util::GetStringUTF16(warning));
+        Suggestion warning_suggestion(l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
         warning_suggestion.frontend_id = POPUP_ITEM_ID_WARNING_MESSAGE;
         suggestions.assign(1, warning_suggestion);
       } else {

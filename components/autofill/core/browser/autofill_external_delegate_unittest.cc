@@ -134,7 +134,7 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
     field.should_autocomplete = true;
     const gfx::RectF element_bounds;
 
-    external_delegate_->OnQuery(query_id, form, field, element_bounds, true);
+    external_delegate_->OnQuery(query_id, form, field, element_bounds);
   }
 
   void IssueOnSuggestionsReturned() {
@@ -310,34 +310,6 @@ TEST_F(AutofillExternalDelegateUnitTest, AutofillWarnings) {
   external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item);
 }
 
-// Test that the Autofill popup doesn't display a warning explaining why
-// Autofill is disabled for a website when there are no Autofill suggestions.
-// Regression test for http://crbug.com/105636
-TEST_F(AutofillExternalDelegateUnitTest, NoAutofillWarningsWithoutSuggestions) {
-  // This test only makes sense if we're respecting autocomplete="off".
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRespectAutocompleteOffForAutofill))
-    return;
-
-  const FormData form;
-  FormFieldData field;
-  field.is_focusable = true;
-  field.should_autocomplete = false;
-  const gfx::RectF element_bounds;
-
-  external_delegate_->OnQuery(kQueryId, form, field, element_bounds, true);
-
-  EXPECT_CALL(autofill_client_, ShowAutofillPopup(_, _, _, _))
-      .Times(0);
-  EXPECT_CALL(autofill_client_, HideAutofillPopup()).Times(1);
-
-  // This should not call ShowAutofillPopup.
-  std::vector<Suggestion> autofill_item;
-  autofill_item.push_back(Suggestion());
-  autofill_item[0].frontend_id = POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY;
-  external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item);
-}
-
 // Test that the Autofill delegate doesn't try and fill a form with a
 // negative unique id.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
@@ -488,30 +460,6 @@ TEST_F(AutofillExternalDelegateUnitTest, FillCreditCardForm) {
                                           expiration_year);
 }
 
-TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideWarning) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kRespectAutocompleteOffForAutofill);
-
-  // Set up a field that shouldn't get autocompleted or display warnings.
-  const FormData form;
-  FormFieldData field;
-  field.is_focusable = true;
-  field.should_autocomplete = false;
-  const gfx::RectF element_bounds;
-
-  external_delegate_->OnQuery(kQueryId, form, field, element_bounds, false);
-
-  std::vector<Suggestion> autofill_items;
-  autofill_items.push_back(Suggestion());
-  autofill_items[0].frontend_id = POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY;
-
-  // Ensure the popup tries to hide itself, since it is not allowed to show
-  // anything.
-  EXPECT_CALL(autofill_client_, HideAutofillPopup());
-
-  external_delegate_->OnSuggestionsReturned(kQueryId, autofill_items);
-}
-
 TEST_F(AutofillExternalDelegateUnitTest, IgnoreAutocompleteOffForAutofill) {
   const FormData form;
   FormFieldData field;
@@ -519,7 +467,7 @@ TEST_F(AutofillExternalDelegateUnitTest, IgnoreAutocompleteOffForAutofill) {
   field.should_autocomplete = false;
   const gfx::RectF element_bounds;
 
-  external_delegate_->OnQuery(kQueryId, form, field, element_bounds, false);
+  external_delegate_->OnQuery(kQueryId, form, field, element_bounds);
 
   std::vector<Suggestion> autofill_items;
   autofill_items.push_back(Suggestion());

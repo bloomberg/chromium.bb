@@ -1264,8 +1264,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
 
   FormData form;
   FormFieldData field;
-  FindFormAndFieldForFormControlElement(
-      user_input, &form, &field, REQUIRE_NONE);
+  FindFormAndFieldForFormControlElement(user_input, &form, &field);
 
   blink::WebInputElement selected_element = user_input;
   if (show_on_password_field && !selected_element.isPasswordField()) {

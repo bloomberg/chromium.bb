@@ -36,11 +36,8 @@ using blink::WebVector;
 
 namespace autofill {
 
-typedef Tuple<int,
-              autofill::FormData,
-              autofill::FormFieldData,
-              gfx::RectF,
-              bool> AutofillQueryParam;
+typedef Tuple<int, autofill::FormData, autofill::FormFieldData, gfx::RectF>
+    AutofillQueryParam;
 
 class AutofillRendererTest : public ChromeRenderViewTest {
  public:
@@ -185,54 +182,6 @@ TEST_F(AutofillRendererTest, EnsureNoFormSeenIfTooFewFields) {
   AutofillHostMsg_FormsSeen::Read(message, &params);
   const std::vector<FormData>& forms = get<0>(params);
   ASSERT_EQ(0UL, forms.size());
-}
-
-TEST_F(AutofillRendererTest, ShowAutofillWarning) {
-  LoadHTML("<form method='POST' autocomplete='Off'>"
-           "  <input id='firstname' autocomplete='OFF'/>"
-           "  <input id='middlename'/>"
-           "  <input id='lastname'/>"
-           "</form>");
-
-  // Verify that "QueryFormFieldAutofill" isn't sent prior to a user
-  // interaction.
-  const IPC::Message* message0 = render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_QueryFormFieldAutofill::ID);
-  EXPECT_EQ(nullptr, message0);
-
-  WebFrame* web_frame = GetMainFrame();
-  WebDocument document = web_frame->document();
-  WebInputElement firstname =
-      document.getElementById("firstname").to<WebInputElement>();
-  WebInputElement middlename =
-      document.getElementById("middlename").to<WebInputElement>();
-
-  // Simulate attempting to Autofill the form from the first element, which
-  // specifies autocomplete="off".  This should still trigger an IPC which
-  // shouldn't display warnings.
-  static_cast<PageClickListener*>(autofill_agent_)
-      ->FormControlElementClicked(firstname, true);
-  const IPC::Message* message1 = render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_QueryFormFieldAutofill::ID);
-  EXPECT_NE(nullptr, message1);
-
-  AutofillQueryParam query_param;
-  AutofillHostMsg_QueryFormFieldAutofill::Read(message1, &query_param);
-  EXPECT_FALSE(get<4>(query_param));
-  render_thread_->sink().ClearMessages();
-
-  // Simulate attempting to Autofill the form from the second element, which
-  // does not specify autocomplete="off".  This should trigger an IPC that will
-  // show warnings, as we *do* show warnings for elements that don't themselves
-  // set autocomplete="off", but for which the form does.
-  static_cast<PageClickListener*>(autofill_agent_)
-      ->FormControlElementClicked(middlename, true);
-  const IPC::Message* message2 = render_thread_->sink().GetFirstMessageMatching(
-      AutofillHostMsg_QueryFormFieldAutofill::ID);
-  ASSERT_NE(nullptr, message2);
-
-  AutofillHostMsg_QueryFormFieldAutofill::Read(message2, &query_param);
-  EXPECT_TRUE(get<4>(query_param));
 }
 
 // Regression test for [ http://crbug.com/346010 ].

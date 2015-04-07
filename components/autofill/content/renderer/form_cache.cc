@@ -96,7 +96,7 @@ std::vector<FormData> FormCache::ExtractNewForms() {
     const WebFormElement& form_element = web_forms[i];
 
     std::vector<WebFormControlElement> control_elements =
-        ExtractAutofillableElementsInForm(form_element, REQUIRE_NONE);
+        ExtractAutofillableElementsInForm(form_element);
     size_t num_editable_elements =
         ScanFormControlElements(control_elements, log_deprecation_messages);
 
@@ -105,7 +105,7 @@ std::vector<FormData> FormCache::ExtractNewForms() {
 
     FormData form;
     if (!WebFormElementToFormData(form_element, WebFormControlElement(),
-                                  REQUIRE_NONE, extract_mask, &form, nullptr)) {
+                                  extract_mask, &form, nullptr)) {
       continue;
     }
 
@@ -132,10 +132,9 @@ std::vector<FormData> FormCache::ExtractNewForms() {
     return forms;
 
   FormData synthetic_form;
-  if (!UnownedFormElementsAndFieldSetsToFormData(fieldsets, control_elements,
-                                                 nullptr, document.url(),
-                                                 REQUIRE_NONE, extract_mask,
-                                                 &synthetic_form, nullptr)) {
+  if (!UnownedFormElementsAndFieldSetsToFormData(
+          fieldsets, control_elements, nullptr, document.url(), extract_mask,
+          &synthetic_form, nullptr)) {
     return forms;
   }
 
@@ -166,8 +165,7 @@ bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
     control_elements = GetUnownedAutofillableFormFieldElements(
         element.document().all(), nullptr);
   } else {
-    control_elements = ExtractAutofillableElementsInForm(
-        form_element, REQUIRE_NONE);
+    control_elements = ExtractAutofillableElementsInForm(form_element);
   }
   for (size_t i = 0; i < control_elements.size(); ++i) {
     WebFormControlElement control_element = control_elements[i];
@@ -252,8 +250,7 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
       GURL action(form_element.document().completeURL(form_element.action()));
       if (element_name == form.data.name && action == form.data.action) {
         found_form = true;
-        control_elements =
-            ExtractAutofillableElementsInForm(form_element, REQUIRE_NONE);
+        control_elements = ExtractAutofillableElementsInForm(form_element);
         break;
       }
     }

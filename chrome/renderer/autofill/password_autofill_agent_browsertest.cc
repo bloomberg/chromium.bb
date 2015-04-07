@@ -1910,9 +1910,9 @@ TEST_F(PasswordAutofillAgentTest, FindingUsernameWithAutofillPredictions) {
   // Find FormData for visible password form.
   blink::WebFormElement form_element = username_element_.form();
   FormData form_data;
-  ASSERT_TRUE(WebFormElementToFormData(
-      form_element, blink::WebFormControlElement(), REQUIRE_NONE, EXTRACT_NONE,
-      &form_data, nullptr));
+  ASSERT_TRUE(WebFormElementToFormData(form_element,
+                                       blink::WebFormControlElement(),
+                                       EXTRACT_NONE, &form_data, nullptr));
   // Simulate Autofill predictions: the first field is username.
   std::map<autofill::FormData, autofill::FormFieldData> predictions;
   predictions[form_data] = form_data.fields[0];

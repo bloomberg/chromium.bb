@@ -92,11 +92,6 @@ class AutofillAgent : public content::RenderFrameObserver,
     // after the last character in the element.
     bool requires_caret_at_end;
 
-    // Specifies that a warning should be displayed to the user if Autofill has
-    // suggestions available, but cannot fill them because it is disabled (e.g.
-    // when trying to fill a credit card form on a non-secure website).
-    bool display_warning_if_disabled;
-
     // Specifies that all of <datalist> suggestions and no autofill suggestions
     // are shown. |autofill_on_empty_values| and |requires_caret_at_end| are
     // ignored if |datalist_only| is true.
@@ -190,7 +185,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Queries the browser for Autocomplete and Autofill suggestions for the given
   // |element|.
   void QueryAutofillSuggestions(const blink::WebFormControlElement& element,
-                                bool display_warning_if_disabled,
                                 bool datalist_only);
 
   // Sets the element value to reflect the selected |suggested_value|.
@@ -250,9 +244,6 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // The form element currently requesting an interactive autocomplete.
   blink::WebFormElement in_flight_request_form_;
-
-  // Should we display a warning if autofill is disabled?
-  bool display_warning_if_disabled_;
 
   // Was the query node autofilled prior to previewing the form?
   bool was_query_node_autofilled_;

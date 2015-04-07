@@ -47,16 +47,13 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
 
   // Records and associates a query_id with web form data.  Called
   // when the renderer posts an Autofill query to the browser. |bounds|
-  // is window relative. |display_warning_if_disabled| tells us if we should
-  // display warnings (such as autofill is disabled, but had suggestions).
-  // We might not want to display the warning if a website has disabled
-  // Autocomplete because they have their own popup, and showing our popup
-  // on to of theirs would be a poor user experience.
+  // is window relative. We might not want to display the warning if a website
+  // has disabled Autocomplete because they have their own popup, and showing
+  // our popup on to of theirs would be a poor user experience.
   virtual void OnQuery(int query_id,
                        const FormData& form,
                        const FormFieldData& field,
-                       const gfx::RectF& element_bounds,
-                       bool display_warning_if_disabled);
+                       const gfx::RectF& element_bounds);
 
   // Records query results and correctly formats them before sending them off
   // to be displayed.  Called when an Autofill query result is available.
@@ -131,9 +128,6 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
 
   // The bounds of the form field that user is interacting with.
   gfx::RectF element_bounds_;
-
-  // Should we display a warning if Autofill is disabled?
-  bool display_warning_if_disabled_;
 
   // Does the popup include any Autofill profile or credit card suggestions?
   bool has_suggestion_;

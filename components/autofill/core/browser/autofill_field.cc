@@ -488,10 +488,7 @@ std::string AutofillField::FieldSignature() const {
 }
 
 bool AutofillField::IsFieldFillable() const {
-  return (should_autocomplete ||
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kRespectAutocompleteOffForAutofill)) &&
-         !Type().IsUnknown();
+  return !Type().IsUnknown();
 }
 
 // static

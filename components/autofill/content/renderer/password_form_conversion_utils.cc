@@ -187,9 +187,10 @@ void FindPredictedUsernameElement(
     WebVector<WebFormControlElement>* control_elements,
     WebInputElement* predicted_username_element) {
   FormData form_data;
-  if (!WebFormElementToFormData(form, WebFormControlElement(), REQUIRE_NONE,
-                                EXTRACT_NONE, &form_data, nullptr))
+  if (!WebFormElementToFormData(form, WebFormControlElement(), EXTRACT_NONE,
+                                &form_data, nullptr)) {
     return;
+  }
 
   // Prediction forms are not user submitted, but |form| can be user submitted.
   // We don't care about this flag for finding predictions, so set it to false.
@@ -199,7 +200,7 @@ void FindPredictedUsernameElement(
     return;
 
   std::vector<blink::WebFormControlElement> autofillable_elements =
-      ExtractAutofillableElementsFromSet(*control_elements, REQUIRE_NONE);
+      ExtractAutofillableElementsFromSet(*control_elements);
   DCHECK_EQ(autofillable_elements.size(), form_data.fields.size());
 
   const autofill::FormFieldData& username_field = predictions_iterator->second;
@@ -441,7 +442,6 @@ scoped_ptr<PasswordForm> CreatePasswordForm(
 
   WebFormElementToFormData(web_form,
                            blink::WebFormControlElement(),
-                           REQUIRE_NONE,
                            EXTRACT_NONE,
                            &password_form->form_data,
                            NULL /* FormFieldData */);

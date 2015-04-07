@@ -1746,15 +1746,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kNumRasterThreadsChoices)
   },
   {
-    "ignore-autocomplete-off-autofill",
-    IDS_FLAGS_IGNORE_AUTOCOMPLETE_OFF_AUTOFILL_NAME,
-    IDS_FLAGS_IGNORE_AUTOCOMPLETE_OFF_AUTOFILL_DESCRIPTION,
-    kOsCrOS | kOsMac | kOsWin | kOsLinux,
-    ENABLE_DISABLE_VALUE_TYPE(
-        autofill::switches::kIgnoreAutocompleteOffForAutofill,
-        autofill::switches::kRespectAutocompleteOffForAutofill)
-  },
-  {
     "enable-single-click-autofill",
     IDS_FLAGS_ENABLE_SINGLE_CLICK_AUTOFILL_NAME,
     IDS_FLAGS_ENABLE_SINGLE_CLICK_AUTOFILL_DESCRIPTION,

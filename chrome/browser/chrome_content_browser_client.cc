@@ -1317,7 +1317,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       autofill::switches::kEnableSingleClickAutofill,
       autofill::switches::kIgnoreAutocompleteOffForAutofill,
       autofill::switches::kLocalHeuristicsOnlyForPasswordGeneration,
-      autofill::switches::kRespectAutocompleteOffForAutofill,
 #if defined(ENABLE_EXTENSIONS)
       extensions::switches::kAllowHTTPBackgroundPage,
       extensions::switches::kAllowLegacyExtensionManifests,

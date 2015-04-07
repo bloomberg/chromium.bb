@@ -123,7 +123,7 @@ void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
 // successful.
 bool ExtractFormDataOnSave(const WebFormElement& form_element, FormData* data) {
   return WebFormElementToFormData(
-      form_element, WebFormControlElement(), REQUIRE_NONE,
+      form_element, WebFormControlElement(),
       static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTION_TEXT), data,
       NULL);
 }
@@ -133,7 +133,6 @@ bool ExtractFormDataOnSave(const WebFormElement& form_element, FormData* data) {
 AutofillAgent::ShowSuggestionsOptions::ShowSuggestionsOptions()
     : autofill_on_empty_values(false),
       requires_caret_at_end(false),
-      display_warning_if_disabled(false),
       datalist_only(false),
       show_full_suggestion_list(false),
       show_password_suggestions_only(false) {
@@ -148,7 +147,6 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       password_generation_agent_(password_generation_agent),
       legacy_(render_frame->GetRenderView(), this),
       autofill_query_id_(0),
-      display_warning_if_disabled_(false),
       was_query_node_autofilled_(false),
       has_shown_autofill_popup_for_current_edit_(false),
       did_set_node_text_(false),
@@ -303,7 +301,6 @@ void AutofillAgent::didRequestAutocomplete(
         "must use a secure connection or --reduce-security-for-testing.";
   } else if (!WebFormElementToFormData(form,
                                        WebFormControlElement(),
-                                       REQUIRE_AUTOCOMPLETE,
                                        static_cast<ExtractMask>(
                                            EXTRACT_VALUE |
                                            EXTRACT_OPTION_TEXT |
@@ -349,7 +346,6 @@ void AutofillAgent::FormControlElementClicked(
 
   ShowSuggestionsOptions options;
   options.autofill_on_empty_values = true;
-  options.display_warning_if_disabled = true;
   options.show_full_suggestion_list = element.isAutofilled();
 
   // On Android, default to showing the dropdown on field focus.
@@ -431,10 +427,7 @@ void AutofillAgent::TextFieldDidChangeImpl(
 
   FormData form;
   FormFieldData field;
-  if (FindFormAndFieldForFormControlElement(element,
-                                            &form,
-                                            &field,
-                                            REQUIRE_NONE)) {
+  if (FindFormAndFieldForFormControlElement(element, &form, &field)) {
     Send(new AutofillHostMsg_TextFieldDidChange(routing_id(), form, field,
                                                 base::TimeTicks::Now()));
   }
@@ -452,7 +445,6 @@ void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
     ShowSuggestionsOptions options;
     options.autofill_on_empty_values = true;
     options.requires_caret_at_end = true;
-    options.display_warning_if_disabled = true;
     ShowSuggestions(element, options);
   }
 }
@@ -670,25 +662,11 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
   if (input_element && input_element->isPasswordField())
     return;
 
-  // If autocomplete is disabled at the field level, ensure that the native
-  // UI won't try to show a warning, since that may conflict with a custom
-  // popup. Note that we cannot use the WebKit method element.autoComplete()
-  // as it does not allow us to distinguish the case where autocomplete is
-  // disabled for *both* the element and for the form.
-  bool display_warning = options.display_warning_if_disabled;
-  if (display_warning) {
-    const base::string16 autocomplete_attribute =
-        element.getAttribute("autocomplete");
-    if (LowerCaseEqualsASCII(autocomplete_attribute, "off"))
-      display_warning = false;
-  }
-
-  QueryAutofillSuggestions(element, display_warning, options.datalist_only);
+  QueryAutofillSuggestions(element, options.datalist_only);
 }
 
 void AutofillAgent::QueryAutofillSuggestions(
     const WebFormControlElement& element,
-    bool display_warning_if_disabled,
     bool datalist_only) {
   if (!element.document().frame())
     return;
@@ -697,26 +675,10 @@ void AutofillAgent::QueryAutofillSuggestions(
 
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
-  display_warning_if_disabled_ = display_warning_if_disabled;
-
-  // If autocomplete is disabled at the form level, we want to see if there
-  // would have been any suggestions were it enabled, so that we can show a
-  // warning.  Otherwise, we want to ignore fields that disable autocomplete, so
-  // that the suggestions list does not include suggestions for these form
-  // fields -- see comment 1 on http://crbug.com/69914
-  RequirementsMask requirements =
-      element.autoComplete() ? REQUIRE_AUTOCOMPLETE : REQUIRE_NONE;
-
-  // If we're ignoring autocomplete="off", always extract everything.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRespectAutocompleteOffForAutofill)) {
-    requirements = REQUIRE_NONE;
-  }
 
   FormData form;
   FormFieldData field;
-  if (!FindFormAndFieldForFormControlElement(element, &form, &field,
-                                             requirements)) {
+  if (!FindFormAndFieldForFormControlElement(element, &form, &field)) {
     // If we didn't find the cached form, at least let autocomplete have a shot
     // at providing suggestions.
     WebFormControlElementToFormField(element, EXTRACT_VALUE, &field);
@@ -746,12 +708,8 @@ void AutofillAgent::QueryAutofillSuggestions(
                                        data_list_values,
                                        data_list_labels));
 
-  Send(new AutofillHostMsg_QueryFormFieldAutofill(routing_id(),
-                                                  autofill_query_id_,
-                                                  form,
-                                                  field,
-                                                  bounding_box_scaled,
-                                                  display_warning_if_disabled));
+  Send(new AutofillHostMsg_QueryFormFieldAutofill(
+      routing_id(), autofill_query_id_, form, field, bounding_box_scaled));
 }
 
 void AutofillAgent::FillFieldWithValue(const base::string16& value,

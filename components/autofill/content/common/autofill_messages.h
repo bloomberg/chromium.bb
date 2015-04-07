@@ -275,12 +275,11 @@ IPC_MESSAGE_ROUTED3(AutofillHostMsg_TextFieldDidChange,
                     base::TimeTicks /* timestamp */)
 
 // Queries the browser for Autofill suggestions for a form input field.
-IPC_MESSAGE_ROUTED5(AutofillHostMsg_QueryFormFieldAutofill,
+IPC_MESSAGE_ROUTED4(AutofillHostMsg_QueryFormFieldAutofill,
                     int /* id of this message */,
                     autofill::FormData /* the form */,
                     autofill::FormFieldData /* the form field */,
-                    gfx::RectF /* input field bounds, window-relative */,
-                    bool /* display warning if autofill disabled */)
+                    gfx::RectF /* input field bounds, window-relative */)
 
 // Sent when a form is previewed with Autofill suggestions.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidPreviewAutofillFormData)
