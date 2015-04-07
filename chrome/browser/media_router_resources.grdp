@@ -4,6 +4,9 @@
   <include name="IDR_CAST_MODE_PICKER_HTML" file="resources\media_router\elements\cast_mode_picker\cast_mode_picker.html" type="BINDATA" />
   <include name="IDR_CAST_MODE_PICKER_CSS" file="resources\media_router\elements\cast_mode_picker\cast_mode_picker.css" type="BINDATA" />
   <include name="IDR_CAST_MODE_PICKER_JS" file="resources\media_router\elements\cast_mode_picker\cast_mode_picker.js" type="BINDATA" />
+  <include name="IDR_DROP_DOWN_BUTTON_HTML" file="resources\media_router\elements\drop_down_button\drop_down_button.html" type="BINDATA" />
+  <include name="IDR_DROP_DOWN_BUTTON_CSS" file="resources\media_router\elements\drop_down_button\drop_down_button.css" type="BINDATA" />
+  <include name="IDR_DROP_DOWN_BUTTON_JS" file="resources\media_router\elements\drop_down_button\drop_down_button.js" type="BINDATA" />
   <include name="IDR_ISSUE_BANNER_HTML" file="resources\media_router\elements\issue_banner\issue_banner.html" type="BINDATA" />
   <include name="IDR_ISSUE_BANNER_JS" file="resources\media_router\elements\issue_banner\issue_banner.js" type="BINDATA" />
   <include name="IDR_ISSUE_BANNER_CSS" file="resources\media_router\elements\issue_banner\issue_banner.css" type="BINDATA" />
