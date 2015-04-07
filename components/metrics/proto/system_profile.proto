@@ -446,9 +446,8 @@ message SystemProfileProto {
     optional int32 renderer_crash_count = 3;
     optional int32 renderer_hang_count = 4;
 
-    // Number of renderer crashes that were for extensions.
-    // TODO(isherman): Figure out whether this is also counted in
-    // |renderer_crash_count|.
+    // Number of renderer crashes that were for extensions. These crashes are
+    // not counted in renderer_crash_count.
     optional int32 extension_renderer_crash_count = 5;
 
     // Number of non-renderer child process crashes.
