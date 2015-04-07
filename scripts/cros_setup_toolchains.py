@@ -504,30 +504,30 @@ def ExpandTargets(targets_wanted):
     targets_wanted: The targets specified by the user.
 
   Returns:
-    Full list of tuples with pseudo targets removed.
+    Dictionary of concrete targets and their toolchain tuples.
   """
-  alltargets = toolchain.GetAllTargets()
   targets_wanted = set(targets_wanted)
+  if targets_wanted in (set(['boards']), set(['bricks'])):
+    # Only pull targets from the included boards/bricks.
+    return {}
+
+  all_targets = toolchain.GetAllTargets()
   if targets_wanted == set(['all']):
-    targets = alltargets
-  elif targets_wanted == set(['sdk']):
+    return all_targets
+  if targets_wanted == set(['sdk']):
     # Filter out all the non-sdk toolchains as we don't want to mess
     # with those in all of our builds.
-    targets = toolchain.FilterToolchains(alltargets, 'sdk', True)
-  elif targets_wanted == set(['boards']):
-    # Only pull targets from the boards.
-    targets = {}
-  else:
-    # Verify user input.
-    nonexistent = targets_wanted.difference(alltargets)
-    if nonexistent:
-      raise ValueError('Invalid targets: %s', ','.join(nonexistent))
-    targets = dict((t, alltargets[t]) for t in targets_wanted)
-  return targets
+    return toolchain.FilterToolchains(all_targets, 'sdk', True)
+
+  # Verify user input.
+  nonexistent = targets_wanted.difference(all_targets)
+  if nonexistent:
+    raise ValueError('Invalid targets: %s', ','.join(nonexistent))
+  return {t: all_targets[t] for t in targets_wanted}
 
 
 def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
-                     targets_wanted, boards_wanted):
+                     targets_wanted, boards_wanted, bricks_wanted):
   """Performs all steps to create a synchronized toolchain enviroment.
 
   Args:
@@ -537,6 +537,7 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
     reconfig: Reload crossdev config and reselect toolchains
     targets_wanted: All the targets to update
     boards_wanted: Load targets from these boards
+    bricks_wanted: Load targets from these bricks
   """
   targets, crossdev_targets, reconfig_targets = {}, {}, {}
   if not hostonly:
@@ -544,10 +545,12 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
     # work on bare systems where this is useful.
     targets = ExpandTargets(targets_wanted)
 
-    # Now re-add any targets that might be from this board.  This is
-    # to allow unofficial boards to declare their own toolchains.
+    # Now re-add any targets that might be from this board/brick. This is to
+    # allow unofficial boards to declare their own toolchains.
     for board in boards_wanted:
       targets.update(toolchain.GetToolchainsForBoard(board))
+    for brick in bricks_wanted:
+      targets.update(toolchain.GetToolchainsForBrick(brick))
 
     # First check and initialize all cross targets that need to be.
     for target in targets:
@@ -994,12 +997,15 @@ def main(argv):
                       help='Unmerge deprecated packages')
   parser.add_argument('-t', '--targets',
                       dest='targets', default='sdk',
-                      help='Comma separated list of tuples. '
-                           'Special keyword \'host\' is allowed. Default: sdk')
-  parser.add_argument('--include-boards',
-                      dest='include_boards', default='',
-                      help='Comma separated list of boards whose toolchains we'
-                           ' will always include. Default: none')
+                      help="Comma separated list of tuples. Special keywords "
+                           "'host', 'sdk', 'boards', 'bricks' and 'all' are "
+                           "allowed. Defaults to 'sdk'.")
+  parser.add_argument('--include-boards', default='', metavar='BOARDS',
+                      help='Comma separated list of boards whose toolchains we '
+                           'will always include. Default: none')
+  parser.add_argument('--include-bricks', default='', metavar='BRICKS',
+                      help='Comma separated list of bricks whose toolchains we '
+                           'will always include. Default: none')
   parser.add_argument('--hostonly',
                       dest='hostonly', default=False, action='store_true',
                       help='Only setup the host toolchain. '
@@ -1022,16 +1028,18 @@ def main(argv):
   if options.cfg_name and options.create_packages:
     parser.error('conflicting options: create-packages & show-board-cfg')
 
-  targets = set(options.targets.split(','))
-  boards = (set(options.include_boards.split(',')) if options.include_boards
-            else set())
+  targets_wanted = set(options.targets.split(','))
+  boards_wanted = (set(options.include_boards.split(','))
+                   if options.include_boards else set())
+  bricks_wanted = (set(options.include_bricks.split(','))
+                   if options.include_bricks else set())
 
   if options.cfg_name:
     ShowConfig(options.cfg_name)
   elif options.create_packages:
     cros_build_lib.AssertInsideChroot()
     Crossdev.Load(False)
-    CreatePackages(targets, options.output_dir)
+    CreatePackages(targets_wanted, options.output_dir)
   else:
     cros_build_lib.AssertInsideChroot()
     # This has to be always run as root.
@@ -1040,7 +1048,8 @@ def main(argv):
 
     Crossdev.Load(options.reconfig)
     UpdateToolchains(options.usepkg, options.deleteold, options.hostonly,
-                     options.reconfig, targets, boards)
+                     options.reconfig, targets_wanted, boards_wanted,
+                     bricks_wanted)
     Crossdev.Save()
 
   return 0
