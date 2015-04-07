@@ -5,7 +5,6 @@
 #include "media/midi/midi_manager_win.h"
 
 #include <windows.h>
-#include <dbt.h>
 #include <ks.h>
 #include <ksmedia.h>
 #include <mmreg.h>
@@ -36,6 +35,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -49,16 +49,11 @@
 namespace media {
 namespace {
 
-const wchar_t kWindowClassName[] = L"ChromeMidiDeviceMonitorWindow";
-const int kOnDeviceArrivalDelayMilliSec = 500;
 static const size_t kBufferLength = 32 * 1024;
 
 // We assume that nullpter represents an invalid MIDI handle.
 const HMIDIIN kInvalidMidiInHandle = nullptr;
 const HMIDIOUT kInvalidMidiOutHandle = nullptr;
-
-// Note that |RegisterDeviceNotificationW| returns nullptr as an invalid handle.
-const HDEVNOTIFY kInvalidDeviceNotifyHandle = nullptr;
 
 std::string GetInErrorMessage(MMRESULT result) {
   wchar_t text[MAXERRORLENGTH];
@@ -310,67 +305,6 @@ using PortNumberCache = base::hash_map<
     std::priority_queue<uint32, std::vector<uint32>, std::greater<uint32>>,
     MidiDeviceInfo::Hasher>;
 
-class DeviceMonitorWindow final {
- public:
-  explicit DeviceMonitorWindow(base::Closure on_device_arrival)
-      : on_device_arrival_(on_device_arrival),
-        dev_notify_handle_(kInvalidDeviceNotifyHandle) {
-    window_.reset(new base::win::MessageWindow);
-    if (!window_->CreateNamed(base::Bind(&DeviceMonitorWindow::HandleMessage,
-                                         base::Unretained(this)),
-                              base::string16(kWindowClassName))) {
-      LOG(ERROR) << "Failed to create message window: " << kWindowClassName;
-      window_.reset();
-    }
-    DEV_BROADCAST_DEVICEINTERFACE kBloadcastRequest = {
-        sizeof(DEV_BROADCAST_DEVICEINTERFACE), DBT_DEVTYP_DEVICEINTERFACE,
-    };
-    dev_notify_handle_ = RegisterDeviceNotificationW(
-        window_->hwnd(), &kBloadcastRequest,
-        DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
-  }
-
-  ~DeviceMonitorWindow() {
-    if (dev_notify_handle_ != kInvalidDeviceNotifyHandle) {
-      BOOL result = UnregisterDeviceNotification(dev_notify_handle_);
-      if (!result) {
-        const DWORD last_error = GetLastError();
-        DLOG(ERROR) << "UnregisterDeviceNotification failed. error: "
-                    << last_error;
-      }
-      dev_notify_handle_ = kInvalidDeviceNotifyHandle;
-    }
-  }
-
- private:
-  bool HandleMessage(UINT message,
-                     WPARAM wparam,
-                     LPARAM lparam,
-                     LRESULT* result) {
-    if (message == WM_DEVICECHANGE) {
-      switch (wparam) {
-        case DBT_DEVICEARRIVAL: {
-          device_arrival_timer_.Stop();
-          device_arrival_timer_.Start(
-              FROM_HERE,
-              base::TimeDelta::FromMilliseconds(kOnDeviceArrivalDelayMilliSec),
-              on_device_arrival_);
-          break;
-        }
-      }
-    }
-    return false;
-  }
-
-  base::Closure on_device_arrival_;
-  base::OneShotTimer<DeviceMonitorWindow> device_arrival_timer_;
-  base::ThreadChecker thread_checker_;
-  scoped_ptr<base::win::MessageWindow> window_;
-  HDEVNOTIFY dev_notify_handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceMonitorWindow);
-};
-
 struct MidiInputDeviceState final : base::RefCounted<MidiInputDeviceState> {
   explicit MidiInputDeviceState(const MidiDeviceInfo& device_info)
       : device_info(device_info),
@@ -425,29 +359,27 @@ struct MidiOutputDeviceState final : base::RefCounted<MidiOutputDeviceState> {
 
 // The core logic of MIDI device handling for Windows. Basically this class is
 // shared among following 4 threads:
-//  1. Device Monitor Thread
+//  1. Chrome IO Thread
 //  2. OS Multimedia Thread
-//  3. Misc. Task Thread
+//  3. Task Thread
 //  4. Sender Thread
 //
-// Device Monitor Thread:
-//  This is a standalone UI thread that is dedicated for a message-only window
-//  which will receive WM_DEVICECHANGE Win32 message whose
-//  wParam == DBT_DEVICEARRIVAL. This event will be used as the trigger to open
-//  all the new MIDI devices. Note that in the current implementation we will
-//  try to open all the existing devices in practice. This is OK because trying
-//  to reopen a MIDI device that is already opened would simply fail, and there
-//  is no unwilling side effect. Note also that this thread isn't responsible
-//  for updating the device database. It will be handled by MIM_OPEN/MOM_OPEN
-//  events dispatched to OS Multimedia Thread.
+// Chrome IO Thread:
+//  MidiManager runs on Chrome IO thread. Device change notification is
+//  delivered to the thread through the SystemMonitor service.
+//  OnDevicesChanged() callback is invoked to update the MIDI device list.
+//  Note that in the current implementation we will try to open all the
+//  existing devices in practice. This is OK because trying to reopen a MIDI
+//  device that is already opened would simply fail, and there is no unwilling
+//  side effect.
 //
 // OS Multimedia Thread:
 //  This thread is maintained by the OS as a part of MIDI runtime, and
 //  responsible for receiving all the system initiated events such as device
-//  open and close. For performance reasons, most of potentially blocking
-//  operations will be dispatched into Misc. Task Thread.
+//  close, and receiving data. For performance reasons, most of potentially
+//  blocking operations will be dispatched into Task Thread.
 //
-// Misc. Task Thread:
+// Task Thread:
 //  This thread will be used to call back following methods of MidiManager.
 //  - MidiManager::CompleteInitialization
 //  - MidiManager::AddInputPort
@@ -458,28 +390,27 @@ struct MidiOutputDeviceState final : base::RefCounted<MidiOutputDeviceState> {
 //
 // Sender Thread:
 //  This thread will be used to call Win32 APIs to send MIDI message at the
-//  specified time. We don't want to call MIDI send APIs on Misc. Task Thread
+//  specified time. We don't want to call MIDI send APIs on Task Thread
 //  because those APIs could be performed synchronously, hence they could block
 //  the caller thread for a while. See the comment in
 //  SendLongMidiMessageInternal for details. Currently we expect that the
 //  blocking time would be less than 1 second.
-class MidiServiceWinImpl : public MidiServiceWin {
+class MidiServiceWinImpl : public MidiServiceWin,
+                           public base::SystemMonitor::DevicesChangedObserver {
  public:
   MidiServiceWinImpl()
       : delegate_(nullptr),
-        monitor_thread_("Windows MIDI device monitor thread"),
         sender_thread_("Windows MIDI sender thread"),
         task_thread_("Windows MIDI task thread"),
         destructor_started(false) {}
 
   ~MidiServiceWinImpl() final {
+    // Start() and Stop() of the threads, and AddDevicesChangeObserver() and
+    // RemoveDevicesChangeObserver() should be called on the same thread.
+    CHECK(thread_checker_.CalledOnValidThread());
+
     destructor_started = true;
-    if (monitor_thread_.IsRunning()) {
-      monitor_thread_.message_loop()->PostTask(
-          FROM_HERE,
-          base::Bind(&MidiServiceWinImpl::StopDeviceMonitorOnMonitorThreadSync,
-                     base::Unretained(this)));
-    }
+    base::SystemMonitor::Get()->RemoveDevicesChangedObserver(this);
     {
       std::vector<HMIDIIN> input_devices;
       {
@@ -522,23 +453,32 @@ class MidiServiceWinImpl : public MidiServiceWin {
         }
       }
     }
-    monitor_thread_.Stop();
     sender_thread_.Stop();
     task_thread_.Stop();
   }
 
   // MidiServiceWin overrides:
   void InitializeAsync(MidiServiceWinDelegate* delegate) final {
+    // Start() and Stop() of the threads, and AddDevicesChangeObserver() and
+    // RemoveDevicesChangeObserver() should be called on the same thread.
+    CHECK(thread_checker_.CalledOnValidThread());
+
     delegate_ = delegate;
-    sender_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    task_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    monitor_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_UI, 0));
-    monitor_thread_.message_loop()->PostTask(
-        FROM_HERE, base::Bind(&MidiServiceWinImpl::InitializeOnMonitorThread,
-                              base::Unretained(this)));
+
+    sender_thread_.Start();
+    task_thread_.Start();
+
+    // Start monitoring device changes. This should start before the
+    // following UpdateDeviceList() call not to miss the event happening
+    // between the call and the observer registration.
+    base::SystemMonitor::Get()->AddDevicesChangedObserver(this);
+
+    UpdateDeviceList();
+
+    task_thread_.message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&MidiServiceWinImpl::CompleteInitializationOnTaskThread,
+                   base::Unretained(this), MIDI_OK));
   }
 
   void SendMidiDataAsync(uint32 port_number,
@@ -576,6 +516,25 @@ class MidiServiceWinImpl : public MidiServiceWin {
     }
   }
 
+  // base::SystemMonitor::DevicesChangedObserver overrides:
+  void OnDevicesChanged(base::SystemMonitor::DeviceType device_type) final {
+    CHECK(thread_checker_.CalledOnValidThread());
+    if (destructor_started)
+      return;
+
+    switch (device_type) {
+      case base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE:
+      case base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE:
+        // Add case of other unrelated device types here.
+        return;
+      case base::SystemMonitor::DEVTYPE_UNKNOWN:
+        // Interested in MIDI devices. Try updating the device list.
+        UpdateDeviceList();
+        break;
+        // No default here to capture new DeviceType by compile time.
+    }
+  }
+
  private:
   scoped_refptr<MidiInputDeviceState> GetInputDeviceFromHandle(
       HMIDIIN midi_handle) {
@@ -599,21 +558,28 @@ class MidiServiceWinImpl : public MidiServiceWin {
     return output_ports_[port_number];
   }
 
+  void UpdateDeviceList() {
+    task_thread_.message_loop()->PostTask(
+        FROM_HERE, base::Bind(&MidiServiceWinImpl::UpdateDeviceListOnTaskThread,
+                              base::Unretained(this)));
+  }
+
   /////////////////////////////////////////////////////////////////////////////
   // Callbacks on the OS multimedia thread.
   /////////////////////////////////////////////////////////////////////////////
 
-  static void CALLBACK OnMidiInEventOnMultimediaThread(HMIDIIN midi_in_handle,
-                                                       UINT message,
-                                                       DWORD_PTR instance,
-                                                       DWORD_PTR param1,
-                                                       DWORD_PTR param2) {
+  static void CALLBACK
+  OnMidiInEventOnMainlyMultimediaThread(HMIDIIN midi_in_handle,
+                                        UINT message,
+                                        DWORD_PTR instance,
+                                        DWORD_PTR param1,
+                                        DWORD_PTR param2) {
     MidiServiceWinImpl* self = reinterpret_cast<MidiServiceWinImpl*>(instance);
     if (!self)
       return;
     switch (message) {
       case MIM_OPEN:
-        self->OnMidiInOpenOnMultimediaThread(midi_in_handle);
+        self->OnMidiInOpen(midi_in_handle);
         break;
       case MIM_DATA:
         self->OnMidiInDataOnMultimediaThread(midi_in_handle, param1, param2);
@@ -628,7 +594,7 @@ class MidiServiceWinImpl : public MidiServiceWin {
     }
   }
 
-  void OnMidiInOpenOnMultimediaThread(HMIDIIN midi_in_handle) {
+  void OnMidiInOpen(HMIDIIN midi_in_handle) {
     UINT device_id = 0;
     MMRESULT result = midiInGetID(midi_in_handle, &device_id);
     if (result != MMSYSERR_NOERROR) {
@@ -787,17 +753,17 @@ class MidiServiceWinImpl : public MidiServiceWin {
   }
 
   static void CALLBACK
-  OnMidiOutEventOnMultimediaThread(HMIDIOUT midi_out_handle,
-                                   UINT message,
-                                   DWORD_PTR instance,
-                                   DWORD_PTR param1,
-                                   DWORD_PTR param2) {
+  OnMidiOutEventOnMainlyMultimediaThread(HMIDIOUT midi_out_handle,
+                                         UINT message,
+                                         DWORD_PTR instance,
+                                         DWORD_PTR param1,
+                                         DWORD_PTR param2) {
     MidiServiceWinImpl* self = reinterpret_cast<MidiServiceWinImpl*>(instance);
     if (!self)
       return;
     switch (message) {
       case MOM_OPEN:
-        self->OnMidiOutOpenOnMultimediaThread(midi_out_handle, param1, param2);
+        self->OnMidiOutOpen(midi_out_handle, param1, param2);
         break;
       case MOM_DONE:
         self->OnMidiOutDoneOnMultimediaThread(midi_out_handle, param1);
@@ -808,9 +774,9 @@ class MidiServiceWinImpl : public MidiServiceWin {
     }
   }
 
-  void OnMidiOutOpenOnMultimediaThread(HMIDIOUT midi_out_handle,
-                                       DWORD_PTR param1,
-                                       DWORD_PTR param2) {
+  void OnMidiOutOpen(HMIDIOUT midi_out_handle,
+                     DWORD_PTR param1,
+                     DWORD_PTR param2) {
     UINT device_id = 0;
     MMRESULT result = midiOutGetID(midi_out_handle, &device_id);
     if (result != MMSYSERR_NOERROR) {
@@ -908,95 +874,6 @@ class MidiServiceWinImpl : public MidiServiceWin {
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  // Callbacks on the monitor thread.
-  /////////////////////////////////////////////////////////////////////////////
-
-  void AssertOnMonitorThread() {
-    DCHECK_EQ(monitor_thread_.thread_id(), base::PlatformThread::CurrentId());
-  }
-
-  void InitializeOnMonitorThread() {
-    AssertOnMonitorThread();
-    // Synchronously open all the existing MIDI devices.
-    TryOpenAllDevicesOnMonitorThreadSync();
-    // Since |TryOpenAllDevicesOnMonitorThreadSync()| is a blocking call, it is
-    // guaranteed that all the initial MIDI ports are already opened here, and
-    // corresponding tasks to call |AddInputPortOnTaskThread()| and
-    // |AddOutputPortOnTaskThread()| are already queued in the Misc. Task
-    // Thread.  This means that the following task to call
-    // |CompleteInitializationOnTaskThread()| are always called after all the
-    // pending tasks to call |AddInputPortOnTaskThread()| and
-    // |AddOutputPortOnTaskThread()| are completed.
-    task_thread_.message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&MidiServiceWinImpl::CompleteInitializationOnTaskThread,
-                   base::Unretained(this), MIDI_OK));
-    // Start monitoring based on notifications generated by
-    // RegisterDeviceNotificationW API.
-    device_monitor_window_.reset(new DeviceMonitorWindow(
-        base::Bind(&MidiServiceWinImpl::TryOpenAllDevicesOnMonitorThreadSync,
-                   base::Unretained(this))));
-  }
-
-  void StopDeviceMonitorOnMonitorThreadSync() {
-    device_monitor_window_.reset();
-  }
-
-  // Note that this is a blocking method.
-  void TryOpenAllDevicesOnMonitorThreadSync() {
-    AssertOnMonitorThread();
-    const UINT num_in_devices = midiInGetNumDevs();
-    for (UINT device_id = 0; device_id < num_in_devices; ++device_id) {
-      // Here we use |CALLBACK_FUNCTION| to subscribe MIM_DATA, MIM_LONGDATA,
-      // MIM_OPEN, and MIM_CLOSE events.
-      // - MIM_DATA: This is the only way to get a short MIDI message with
-      //     timestamp information.
-      // - MIM_LONGDATA: This is the only way to get a long MIDI message with
-      //     timestamp information.
-      // - MIM_OPEN: This event is sent the input device is opened.
-      // - MIM_CLOSE: This event is sent when 1) midiInClose() is called, or 2)
-      //     the MIDI device becomes unavailable for some reasons, e.g., the
-      //     cable is disconnected. As for the former case, HMIDIOUT will be
-      //     invalidated soon after the callback is finished. As for the later
-      //     case, however, HMIDIOUT continues to be valid until midiInClose()
-      //     is called.
-      HMIDIIN midi_handle = kInvalidMidiInHandle;
-      const MMRESULT result = midiInOpen(
-          &midi_handle, device_id,
-          reinterpret_cast<DWORD_PTR>(&OnMidiInEventOnMultimediaThread),
-          reinterpret_cast<DWORD_PTR>(this), CALLBACK_FUNCTION);
-      DLOG_IF(ERROR, result != MMSYSERR_NOERROR && result != MMSYSERR_ALLOCATED)
-          << "Failed to open output device. "
-          << " id: " << device_id << " message: " << GetInErrorMessage(result);
-    }
-
-    const UINT num_out_devices = midiOutGetNumDevs();
-    for (UINT device_id = 0; device_id < num_out_devices; ++device_id) {
-      // Here we use |CALLBACK_FUNCTION| to subscribe MOM_DONE, MOM_OPEN, and
-      // MOM_CLOSE events.
-      // - MOM_DONE: SendLongMidiMessageInternal() relies on this event to clean
-      //     up the backing store where a long MIDI message is stored.
-      // - MOM_OPEN: This event is sent the output device is opened.
-      // - MOM_CLOSE: This event is sent when 1) midiOutClose() is called, or 2)
-      //     the MIDI device becomes unavailable for some reasons, e.g., the
-      //     cable is disconnected. As for the former case, HMIDIOUT will be
-      //     invalidated soon after the callback is finished. As for the later
-      //     case, however, HMIDIOUT continues to be valid until midiOutClose()
-      //     is called.
-      HMIDIOUT midi_handle = kInvalidMidiOutHandle;
-      const MMRESULT result = midiOutOpen(
-          &midi_handle, device_id,
-          reinterpret_cast<DWORD_PTR>(&OnMidiOutEventOnMultimediaThread),
-          reinterpret_cast<DWORD_PTR>(this), CALLBACK_FUNCTION);
-      if (result != MMSYSERR_NOERROR && result != MMSYSERR_ALLOCATED) {
-        DLOG(ERROR) << "Failed to open output device. "
-                    << " id: " << device_id
-                    << " message: " << GetOutErrorMessage(result);
-      }
-    }
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
   // Callbacks on the sender thread.
   /////////////////////////////////////////////////////////////////////////////
 
@@ -1058,6 +935,59 @@ class MidiServiceWinImpl : public MidiServiceWin {
 
   void AssertOnTaskThread() {
     DCHECK_EQ(task_thread_.thread_id(), base::PlatformThread::CurrentId());
+  }
+
+  void UpdateDeviceListOnTaskThread() {
+    AssertOnTaskThread();
+    const UINT num_in_devices = midiInGetNumDevs();
+    for (UINT device_id = 0; device_id < num_in_devices; ++device_id) {
+      // Here we use |CALLBACK_FUNCTION| to subscribe MIM_DATA, MIM_LONGDATA,
+      // MIM_OPEN, and MIM_CLOSE events.
+      // - MIM_DATA: This is the only way to get a short MIDI message with
+      //     timestamp information.
+      // - MIM_LONGDATA: This is the only way to get a long MIDI message with
+      //     timestamp information.
+      // - MIM_OPEN: This event is sent the input device is opened. Note that
+      //     this message is called on the caller thread.
+      // - MIM_CLOSE: This event is sent when 1) midiInClose() is called, or 2)
+      //     the MIDI device becomes unavailable for some reasons, e.g., the
+      //     cable is disconnected. As for the former case, HMIDIOUT will be
+      //     invalidated soon after the callback is finished. As for the later
+      //     case, however, HMIDIOUT continues to be valid until midiInClose()
+      //     is called.
+      HMIDIIN midi_handle = kInvalidMidiInHandle;
+      const MMRESULT result = midiInOpen(
+          &midi_handle, device_id,
+          reinterpret_cast<DWORD_PTR>(&OnMidiInEventOnMainlyMultimediaThread),
+          reinterpret_cast<DWORD_PTR>(this), CALLBACK_FUNCTION);
+      DLOG_IF(ERROR, result != MMSYSERR_NOERROR && result != MMSYSERR_ALLOCATED)
+          << "Failed to open output device. "
+          << " id: " << device_id << " message: " << GetInErrorMessage(result);
+    }
+
+    const UINT num_out_devices = midiOutGetNumDevs();
+    for (UINT device_id = 0; device_id < num_out_devices; ++device_id) {
+      // Here we use |CALLBACK_FUNCTION| to subscribe MOM_DONE, MOM_OPEN, and
+      // MOM_CLOSE events.
+      // - MOM_DONE: SendLongMidiMessageInternal() relies on this event to clean
+      //     up the backing store where a long MIDI message is stored.
+      // - MOM_OPEN: This event is sent the output device is opened. Note that
+      //     this message is called on the caller thread.
+      // - MOM_CLOSE: This event is sent when 1) midiOutClose() is called, or 2)
+      //     the MIDI device becomes unavailable for some reasons, e.g., the
+      //     cable is disconnected. As for the former case, HMIDIOUT will be
+      //     invalidated soon after the callback is finished. As for the later
+      //     case, however, HMIDIOUT continues to be valid until midiOutClose()
+      //     is called.
+      HMIDIOUT midi_handle = kInvalidMidiOutHandle;
+      const MMRESULT result = midiOutOpen(
+          &midi_handle, device_id,
+          reinterpret_cast<DWORD_PTR>(&OnMidiOutEventOnMainlyMultimediaThread),
+          reinterpret_cast<DWORD_PTR>(this), CALLBACK_FUNCTION);
+      DLOG_IF(ERROR, result != MMSYSERR_NOERROR && result != MMSYSERR_ALLOCATED)
+          << "Failed to open output device. "
+          << " id: " << device_id << " message: " << GetOutErrorMessage(result);
+    }
   }
 
   void StartInputDeviceOnTaskThread(HMIDIIN midi_in_handle) {
@@ -1129,11 +1059,10 @@ class MidiServiceWinImpl : public MidiServiceWin {
   // Does not take ownership.
   MidiServiceWinDelegate* delegate_;
 
-  base::Thread monitor_thread_;
+  base::ThreadChecker thread_checker_;
+
   base::Thread sender_thread_;
   base::Thread task_thread_;
-
-  scoped_ptr<DeviceMonitorWindow> device_monitor_window_;
 
   base::Lock input_ports_lock_;
   base::hash_map<HMIDIIN, scoped_refptr<MidiInputDeviceState>>
@@ -1153,7 +1082,7 @@ class MidiServiceWinImpl : public MidiServiceWin {
 
   // True if one thread reached MidiServiceWinImpl::~MidiServiceWinImpl(). Note
   // that MidiServiceWinImpl::~MidiServiceWinImpl() is blocked until
-  // |monitor_thread_|, |sender_thread_|, and |task_thread_| are stopped.
+  // |sender_thread_|, and |task_thread_| are stopped.
   // This flag can be used as the signal that when background tasks must be
   // interrupted.
   // TODO(toyoshim): Use std::atomic<bool> when it is allowed.

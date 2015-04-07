@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/system_monitor/system_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -245,6 +246,9 @@ TEST_F(MidiManagerTest, AbortSession) {
 }
 
 TEST_F(MidiManagerTest, CreateMidiManager) {
+  // SystemMonitor is needed on Windows.
+  base::SystemMonitor system_monitor;
+
   scoped_ptr<FakeMidiManagerClient> client;
   client.reset(new FakeMidiManagerClient);
 
