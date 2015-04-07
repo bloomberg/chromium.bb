@@ -137,9 +137,9 @@
     ],
     "versions": [
       {
-        "version": "16.0.0.305",
+        "version": "17.0.0.134",
         "status": "requires_authorization",
-        "reference": "https://helpx.adobe.com/security/products/flash-player/apsb15-04.html"
+        "reference": "https://helpx.adobe.com/security/products/flash-player/apsb15-05.html"
       }
     ],
     "lang": "en-US",
