@@ -83,7 +83,7 @@ namespace fileSystem {
     boolean? acceptsMultiple;
   };
 
-  dictionary RequestFileSystemOptions {
+  [nodoc] dictionary RequestFileSystemOptions {
     // The ID of the requested volume.
     DOMString volumeId;
 
@@ -92,7 +92,14 @@ namespace fileSystem {
     boolean? writable;
   };
 
-// Change to an entry within a tracked directory.
+  // Represents a mounted volume, which can be accessed via <code>chrome.
+  // fileSystem.requestFileSystem</code>.
+  [nodoc] dictionary Volume {
+    DOMString volumeId;
+    boolean writable;
+  };
+
+  // Change to an entry within a tracked directory.
   [nodoc] dictionary ChildChange {
     [instanceOf=Entry] object entry;
     ChildChangeType type;
@@ -124,7 +131,8 @@ namespace fileSystem {
   [nodoc] callback GetObservedEntriesCallback = void (
       [instanceOf=Entry] object[] entries);
   [nodoc] callback RequestFileSystemCallback = void(
-      [instanceOf=FileSystem] optional object fileSystem);
+      [instanceOf=FileSystem] object fileSystem);
+  [nodoc] callback GetVolumeListCallback = void(Volume[] volumes);
 
   interface Functions {
     // Get the display path of an Entry object. The display path is based on
@@ -174,6 +182,11 @@ namespace fileSystem {
     // confirmation dialog will be shown on top of the active app window.
     [nodoc] static void requestFileSystem(RequestFileSystemOptions options,
                                           RequestFileSystemCallback callback);
+
+    // Returns a list of volumes available for <code>requestFileSystem()</code>.
+    // The <code>"fileSystem": {"requestFileSystem"}</code> manifest permission
+    // is required. Available to kiosk apps running in the kiosk session only.
+    [nodoc] static void getVolumeList(GetVolumeListCallback callback);
 
     // Observes a directory entry. Emits an event if the tracked directory is
     // changed (including the list of files on it), or removed. If <code>

@@ -111,6 +111,13 @@ const char kTestOfflineEnabledKioskApp[] = "ajoggoflpgplnnjkjamcmbepjdjdnpdp";
 //       detail/bmbpicmpniaclbbpdkfglgipkkebnbjf
 const char kTestLocalFsKioskApp[] = "bmbpicmpniaclbbpdkfglgipkkebnbjf";
 
+// An app to test local access to file systems via the
+// chrome.fileSystem.requestFileSystem API.
+// Webstore data json is in
+//   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
+//       detail/aaedpojejpghjkedenggihopfhfijcko
+const char kTestGetVolumeListKioskApp[] = "aaedpojejpghjkedenggihopfhfijcko";
+
 // Fake usb stick mount path.
 const char kFakeUsbMountPathUpdatePass[] =
     "chromeos/app_mode/external_update/update_pass";
@@ -1250,6 +1257,17 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoConsumerAutoLaunchWhenUntrusted) {
 
   // Check that the attempt to auto-launch a kiosk app fails with an error.
   OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
+}
+
+// Verifies available volumes for kiosk apps in kiosk session.
+IN_PROC_BROWSER_TEST_F(KioskTest, GetVolumeList) {
+  set_test_app_id(kTestGetVolumeListKioskApp);
+  set_test_app_version("0.1");
+  set_test_crx_file(test_app_id() + ".crx");
+
+  extensions::ResultCatcher catcher;
+  StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 // Verifies that an enterprise device does not auto-launch kiosk mode when cros

@@ -5,12 +5,14 @@
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 
 #include <set>
+#include <vector>
 
 #include "apps/saved_files_service.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -350,6 +352,70 @@ void ConsentProvider::DialogResultToConsent(const ConsentCallback& callback,
       break;
   }
 }
+
+ConsentProviderDelegate::ConsentProviderDelegate(Profile* profile,
+                                                 content::RenderViewHost* host)
+    : profile_(profile), host_(host) {
+  DCHECK(profile_);
+  DCHECK(host_);
+}
+
+ConsentProviderDelegate::~ConsentProviderDelegate() {
+}
+
+// static
+void ConsentProviderDelegate::SetAutoDialogButtonForTest(
+    ui::DialogButton button) {
+  g_auto_dialog_button_for_test = button;
+}
+
+void ConsentProviderDelegate::ShowDialog(
+    const extensions::Extension& extension,
+    base::WeakPtr<file_manager::Volume> volume,
+    bool writable,
+    const file_system_api::ConsentProvider::ShowDialogCallback& callback) {
+  content::WebContents* const foreground_contents =
+      GetWebContentsForRenderViewHost(profile_, host_);
+  // If there is no web contents handle, then the method is most probably
+  // executed from a background page. Find an app window to host the dialog.
+  content::WebContents* const web_contents =
+      foreground_contents ? foreground_contents
+                          : GetWebContentsForAppId(profile_, extension.id());
+  if (!web_contents) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, ui::DIALOG_BUTTON_NONE));
+    return;
+  }
+
+  // Short circuit the user consent dialog for tests. This is far from a pretty
+  // code design.
+  if (g_auto_dialog_button_for_test != ui::DIALOG_BUTTON_NONE) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, g_auto_dialog_button_for_test /* result */));
+    return;
+  }
+
+  RequestFileSystemDialogView::ShowDialog(web_contents, extension, volume,
+                                          writable, base::Bind(callback));
+}
+
+bool ConsentProviderDelegate::IsAutoLaunched(
+    const extensions::Extension& extension) {
+  chromeos::KioskAppManager::App app_info;
+  return chromeos::KioskAppManager::Get()->GetApp(extension.id(), &app_info) &&
+         app_info.was_auto_launched_with_zero_delay;
+}
+
+bool ConsentProviderDelegate::IsWhitelistedComponent(
+    const extensions::Extension& extension) {
+  for (const auto& whitelisted_id : kRequestFileSystemComponentWhitelist) {
+    if (extension.id().compare(whitelisted_id) == 0)
+      return true;
+  }
+  return false;
+}
+
 #endif
 
 }  // namespace file_system_api
@@ -1135,9 +1201,14 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   return RespondNow(Error(kNotSupportedOnCurrentPlatformError));
 }
 
+ExtensionFunction::ResponseAction FileSystemGetVolumeListFunction::Run() {
+  NOTIMPLEMENTED();
+  return RespondNow(Error(kNotSupportedOnCurrentPlatformError));
+}
 #else
+
 FileSystemRequestFileSystemFunction::FileSystemRequestFileSystemFunction()
-    : chrome_details_(this), consent_provider_(this) {
+    : chrome_details_(this) {
 }
 
 FileSystemRequestFileSystemFunction::~FileSystemRequestFileSystemFunction() {
@@ -1149,8 +1220,12 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Only kiosk apps in kiosk sessions can use this API.
-  // Additionally whitelisted component extensions and apps.
-  if (!consent_provider_.IsGrantable(*extension()))
+  // Additionally it is enabled for whitelisted component extensions and apps.
+  file_system_api::ConsentProviderDelegate consent_provider_delegate(
+      chrome_details_.GetProfile(), render_view_host());
+  file_system_api::ConsentProvider consent_provider(&consent_provider_delegate);
+
+  if (!consent_provider.IsGrantable(*extension()))
     return RespondNow(Error(kNotSupportedOnNonKioskSessionError));
 
   using file_manager::VolumeManager;
@@ -1187,66 +1262,11 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   if (writable && (volume->is_read_only()))
     return RespondNow(Error(kSecurityError));
 
-  consent_provider_.RequestConsent(
+  consent_provider.RequestConsent(
       *extension(), volume, writable,
       base::Bind(&FileSystemRequestFileSystemFunction::OnConsentReceived, this,
                  volume, writable));
   return RespondLater();
-}
-
-// static
-void FileSystemRequestFileSystemFunction::SetAutoDialogButtonForTest(
-    ui::DialogButton button) {
-  g_auto_dialog_button_for_test = button;
-}
-
-void FileSystemRequestFileSystemFunction::ShowDialog(
-    const extensions::Extension& extension,
-    base::WeakPtr<file_manager::Volume> volume,
-    bool writable,
-    const file_system_api::ConsentProvider::ShowDialogCallback& callback) {
-  content::WebContents* const foreground_contents =
-      GetWebContentsForRenderViewHost(chrome_details_.GetProfile(),
-                                      render_view_host());
-  // If there is no web contents handle, then the method is most probably
-  // executed from a background page. Find an app window to host the dialog.
-  content::WebContents* const web_contents =
-      foreground_contents ? foreground_contents
-                          : GetWebContentsForAppId(chrome_details_.GetProfile(),
-                                                   extension_id());
-  if (!web_contents) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ui::DIALOG_BUTTON_NONE));
-    return;
-  }
-
-  // Short circuit the user consent dialog for tests. This is far from a pretty
-  // code design.
-  if (g_auto_dialog_button_for_test != ui::DIALOG_BUTTON_NONE) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, g_auto_dialog_button_for_test /* result */));
-    return;
-  }
-
-  RequestFileSystemDialogView::ShowDialog(web_contents, extension, volume,
-                                          writable, base::Bind(callback));
-}
-
-bool FileSystemRequestFileSystemFunction::IsAutoLaunched(
-    const extensions::Extension& extension) {
-  chromeos::KioskAppManager::App app_info;
-  return chromeos::KioskAppManager::Get()->GetApp(extension.id(), &app_info) &&
-         app_info.was_auto_launched_with_zero_delay;
-}
-
-bool FileSystemRequestFileSystemFunction::IsWhitelistedComponent(
-    const extensions::Extension& extension) {
-  for (const auto& whitelisted_id : kRequestFileSystemComponentWhitelist) {
-    if (extension.id().compare(whitelisted_id) == 0)
-      return true;
-  }
-  return false;
 }
 
 void FileSystemRequestFileSystemFunction::OnConsentReceived(
@@ -1350,6 +1370,44 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
 
   SetResult(dict);
   SendResponse(true);
+}
+
+FileSystemGetVolumeListFunction::FileSystemGetVolumeListFunction()
+    : chrome_details_(this) {
+}
+
+FileSystemGetVolumeListFunction::~FileSystemGetVolumeListFunction() {
+}
+
+ExtensionFunction::ResponseAction FileSystemGetVolumeListFunction::Run() {
+  // Only kiosk apps in kiosk sessions can use this API.
+  // Additionally it is enabled for whitelisted component extensions and apps.
+  file_system_api::ConsentProviderDelegate consent_provider_delegate(
+      chrome_details_.GetProfile(), render_view_host());
+  file_system_api::ConsentProvider consent_provider(&consent_provider_delegate);
+
+  if (!consent_provider.IsGrantable(*extension()))
+    return RespondNow(Error(kNotSupportedOnNonKioskSessionError));
+
+  using file_manager::VolumeManager;
+  VolumeManager* const volume_manager =
+      VolumeManager::Get(chrome_details_.GetProfile());
+  DCHECK(volume_manager);
+
+  using extensions::api::file_system::Volume;
+  const auto& volume_list = volume_manager->GetVolumeList();
+  std::vector<linked_ptr<Volume>> result_volume_list;
+  // Convert volume_list to result_volume_list.
+  for (const auto& volume : volume_list) {
+    const linked_ptr<Volume> result_volume(new Volume);
+    result_volume->volume_id = volume->volume_id();
+    result_volume->writable = !volume->is_read_only();
+    result_volume_list.push_back(result_volume);
+  }
+
+  return RespondNow(
+      ArgumentList(extensions::api::file_system::GetVolumeList::Results::Create(
+                       result_volume_list).Pass()));
 }
 #endif
 

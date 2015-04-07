@@ -94,6 +94,16 @@ binding.registerCustomHook(function(bindingsAPI) {
         [fileSystem]);
   });
 
+  apiFunctions.setCustomCallback('getVolumeList',
+      function(name, request, callback, response) {
+    var volumeList = response || null;
+    sendRequest.safeCallbackApply(
+        'fileSystem.getVolumeList',
+        request,
+        callback,
+        [volumeList]);
+  });
+
   // TODO(benwells): Remove these deprecated versions of the functions.
   fileSystem.getWritableFileEntry = function() {
     console.log("chrome.fileSystem.getWritableFileEntry is deprecated");

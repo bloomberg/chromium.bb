@@ -44,10 +44,11 @@ const char kChildDirectory[] = "child-dir";
 class ScopedSkipRequestFileSystemDialog {
  public:
   explicit ScopedSkipRequestFileSystemDialog(ui::DialogButton button) {
-    FileSystemRequestFileSystemFunction::SetAutoDialogButtonForTest(button);
+    file_system_api::ConsentProviderDelegate::SetAutoDialogButtonForTest(
+        button);
   }
   ~ScopedSkipRequestFileSystemDialog() {
-    FileSystemRequestFileSystemFunction::SetAutoDialogButtonForTest(
+    file_system_api::ConsentProviderDelegate::SetAutoDialogButtonForTest(
         ui::DIALOG_BUTTON_NONE);
   }
 
@@ -410,6 +411,19 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
   ASSERT_TRUE(RunPlatformAppTestWithFlags(
       "api_test/file_system/request_file_system_not_whitelisted_component",
       kFlagLoadAsComponent))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem, GetVolumeList) {
+  EnterKioskSession();
+  ASSERT_TRUE(RunPlatformAppTest("api_test/file_system/get_volume_list"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTestForRequestFileSystem,
+                       GetVolumeList_NotKioskSession) {
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/file_system/get_volume_list_not_kiosk_session"))
       << message_;
 }
 
