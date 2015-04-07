@@ -35,6 +35,7 @@
 
 #include "core/CoreExport.h"
 #include "core/events/RegisteredEventListener.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/AtomicStringHash.h"
 
@@ -45,6 +46,7 @@ class EventTarget;
 typedef Vector<RegisteredEventListener, 1> EventListenerVector;
 
 class CORE_EXPORT EventListenerMap {
+    WTF_MAKE_NONCOPYABLE(EventListenerMap);
 public:
     EventListenerMap();
 

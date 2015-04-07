@@ -50,7 +50,7 @@ void findPlainText(const Position& inputStart, const Position& inputEnd, const S
 // chunks so as to optimize for performance of the iteration.
 
 template<typename Strategy>
-class CORE_EXPORT TextIteratorAlgorithm {
+class TextIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
     // [start, end] indicates the document range that the iteration should take place within (both ends inclusive).
