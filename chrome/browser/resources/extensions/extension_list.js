@@ -218,7 +218,8 @@ cr.define('extensions', function() {
       // consider passing in the full object from the ExtensionSettings.
       this.incognitoAvailable_ = incognitoAvailable;
       this.enableAppInfoDialog_ = enableAppInfoDialog;
-      return new Promise(function(resolve, reject) {
+      /** @private {Promise} */
+      this.extensionsUpdated_ = new Promise(function(resolve, reject) {
         chrome.developerPrivate.getExtensionsInfo(
             {includeDisabled: true, includeTerminated: true},
             function(extensions) {
@@ -241,6 +242,7 @@ cr.define('extensions', function() {
           resolve();
         }.bind(this));
       }.bind(this));
+      return this.extensionsUpdated_;
     },
 
     /** @return {number} The number of extensions being displayed. */

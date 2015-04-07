@@ -32,12 +32,18 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
 
   void InstallErrorsExtension();
 
+  void InstallSharedModule();
+
+  void InstallPackagedApp();
+
   void AddManagedPolicyProvider();
+
+  void SetAutoConfirmUninstall();
 
  private:
   bool WaitForExtensionViewsToLoad();
   const extensions::Extension* InstallUnpackedExtension(
-      const base::FilePath& path, const char* id);
+      const base::FilePath& path);
   const extensions::Extension* InstallExtension(const base::FilePath& path);
 
   scoped_ptr<ExtensionTestNotificationObserver> observer_;
@@ -47,6 +53,8 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
 
   // Used to simulate managed extensions (by being registered as a provider).
   extensions::TestManagementPolicyProvider policy_provider_;
+
+  base::FilePath test_data_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsUIBrowserTest);
 };
