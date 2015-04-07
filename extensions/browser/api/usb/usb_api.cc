@@ -242,7 +242,6 @@ const char* ConvertTransferStatusToApi(const UsbTransferStatus status) {
   }
 }
 
-#if defined(OS_CHROMEOS)
 void RequestUsbDevicesAccessHelper(
     ScopedDeviceVector devices,
     std::vector<scoped_refptr<UsbDevice> >::iterator i,
@@ -282,7 +281,6 @@ void RequestUsbDevicesAccess(
                                     interface_id,
                                     callback));
 }
-#endif  // OS_CHROMEOS
 
 base::DictionaryValue* CreateTransferInfo(UsbTransferStatus status,
                                           scoped_refptr<net::IOBuffer> data,
@@ -600,14 +598,10 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
     }
   }
 
-#if defined(OS_CHROMEOS)
   RequestUsbDevicesAccess(
       devices.Pass(),
       interface_id,
       base::Bind(&UsbFindDevicesFunction::OpenDevices, this));
-#else
-  OpenDevices(devices.Pass());
-#endif  // OS_CHROMEOS
 }
 
 void UsbFindDevicesFunction::OpenDevices(ScopedDeviceVector devices) {
@@ -792,13 +786,9 @@ void UsbOpenDeviceFunction::AsyncWorkStart() {
     return;
   }
 
-#if defined(OS_CHROMEOS)
   device_->RequestUsbAccess(
       -1, /* any interface, unused by the permission broker */
       base::Bind(&UsbOpenDeviceFunction::OnRequestAccessComplete, this));
-#else
-  OnRequestAccessComplete(true);
-#endif  // OS_CHROMEOS
 }
 
 void UsbOpenDeviceFunction::OnRequestAccessComplete(bool success) {

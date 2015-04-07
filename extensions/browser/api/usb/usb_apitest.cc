@@ -39,11 +39,6 @@ ACTION_TEMPLATE(InvokeUsbTransferCallback,
   ::std::tr1::get<k>(args).Run(p1, io_buffer, 1);
 }
 
-void RequestUsbAccess(int interface_id,
-                      const base::Callback<void(bool success)>& callback) {
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
-}
-
 class TestDevicePermissionsPrompt
     : public DevicePermissionsPrompt,
       public DevicePermissionsPrompt::Prompt::Observer {
@@ -145,7 +140,6 @@ class MockUsbDevice : public UsbDevice {
   MockUsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)
       : UsbDevice(vendor_id, product_id, unique_id) {}
 
-  MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
   MOCK_METHOD0(Open, scoped_refptr<UsbDeviceHandle>());
   MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
   MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor*());
@@ -200,8 +194,6 @@ class UsbApiTest : public ShellApiTest {
 
     mock_device_handle_ = new MockUsbDeviceHandle();
     mock_device_handle_->set_device(mock_device_.get());
-    EXPECT_CALL(*mock_device_.get(), RequestUsbAccess(_, _))
-        .WillRepeatedly(Invoke(RequestUsbAccess));
     EXPECT_CALL(*mock_device_.get(), Open())
         .WillRepeatedly(Return(mock_device_handle_));
 

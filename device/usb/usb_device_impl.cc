@@ -21,7 +21,6 @@
 #include "third_party/libusb/src/libusb/libusb.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #endif  // defined(OS_CHROMEOS)
@@ -35,12 +34,14 @@ namespace device {
 namespace {
 
 #if defined(OS_CHROMEOS)
-void OnRequestUsbAccessReplied(
+
+void PostResultOnTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::Callback<void(bool success)>& callback,
     bool success) {
   task_runner->PostTask(FROM_HERE, base::Bind(callback, success));
 }
+
 #endif  // defined(OS_CHROMEOS)
 
 UsbEndpointDirection GetDirection(
@@ -179,35 +180,35 @@ UsbDeviceImpl::~UsbDeviceImpl() {
 
 #if defined(OS_CHROMEOS)
 
-void UsbDeviceImpl::RequestUsbAccess(
-    int interface_id,
-    const base::Callback<void(bool success)>& callback) {
+void UsbDeviceImpl::CheckUsbAccess(const ResultCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // ChromeOS builds on non-ChromeOS machines (dev) should not attempt to
-  // use permission broker.
-  if (base::SysInfo::IsRunningOnChromeOS()) {
-    chromeos::PermissionBrokerClient* client =
-        chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-    DCHECK(client) << "Could not get permission broker client.";
-    if (!client) {
-      callback.Run(false);
-      return;
-    }
+  chromeos::PermissionBrokerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
+  DCHECK(client) << "Could not get permission broker client.";
 
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&chromeos::PermissionBrokerClient::RequestPathAccess,
-                   base::Unretained(client),
-                   devnode_,
-                   interface_id,
-                   base::Bind(&OnRequestUsbAccessReplied,
-                              base::ThreadTaskRunnerHandle::Get(),
-                              callback)));
-  } else {
-    // Not really running on Chrome OS, declare success.
-    callback.Run(true);
-  }
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&chromeos::PermissionBrokerClient::CheckPathAccess,
+                 base::Unretained(client), devnode_,
+                 base::Bind(&PostResultOnTaskRunner,
+                            base::ThreadTaskRunnerHandle::Get(), callback)));
+}
+
+void UsbDeviceImpl::RequestUsbAccess(int interface_id,
+                                     const ResultCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  chromeos::PermissionBrokerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
+  DCHECK(client) << "Could not get permission broker client.";
+
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&chromeos::PermissionBrokerClient::RequestPathAccess,
+                 base::Unretained(client), devnode_, interface_id,
+                 base::Bind(&PostResultOnTaskRunner,
+                            base::ThreadTaskRunnerHandle::Get(), callback)));
 }
 
 #endif

@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/device_permissions_prompt.h"
 
+#include "base/barrier_closure.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
@@ -17,6 +18,7 @@
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserThread;
 using device::UsbDevice;
 using device::UsbDeviceFilter;
 using device::UsbService;
@@ -81,8 +83,8 @@ void DevicePermissionsPrompt::Prompt::SetObserver(Observer* observer) {
   observer_ = observer;
 
   if (observer_) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         base::Bind(&DevicePermissionsPrompt::Prompt::DoDeviceQuery, this));
   }
 }
@@ -136,24 +138,55 @@ void DevicePermissionsPrompt::Prompt::DoDeviceQuery() {
   std::vector<scoped_refptr<UsbDevice>> devices;
   service->GetDevices(&devices);
 
-  std::vector<DeviceInfo> device_info;
-  for (const auto& device : devices) {
-    if (!(filters_.empty() || UsbDeviceFilter::MatchesAny(device, filters_))) {
-      continue;
-    }
-
-    device_info.push_back(DeviceInfo(device));
-  }
-
   if (!usb_service_observer_.IsObserving(service)) {
     usb_service_observer_.Add(service);
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &DevicePermissionsPrompt::Prompt::SetDevices, this, device_info));
+  std::vector<DeviceInfo>* device_info = new std::vector<DeviceInfo>();
+  base::Closure barrier = base::BarrierClosure(
+      devices.size(),
+      base::Bind(&DevicePermissionsPrompt::Prompt::DeviceQueryComplete, this,
+                 base::Owned(device_info)));
+
+  for (const auto& device : devices) {
+    if (filters_.empty() || UsbDeviceFilter::MatchesAny(device, filters_)) {
+      device->CheckUsbAccess(
+          base::Bind(&DevicePermissionsPrompt::Prompt::AppendCheckedUsbDevice,
+                     this, device_info, device, barrier));
+    } else {
+      barrier.Run();
+    }
+  }
+}
+
+void DevicePermissionsPrompt::Prompt::AppendCheckedUsbDevice(
+    std::vector<DeviceInfo>* device_info,
+    scoped_refptr<UsbDevice> device,
+    const base::Closure& callback,
+    bool allowed) {
+  if (allowed) {
+    device_info->push_back(DeviceInfo(device));
+  }
+  callback.Run();
+}
+
+void DevicePermissionsPrompt::Prompt::AddCheckedUsbDevice(
+    scoped_refptr<UsbDevice> device,
+    bool allowed) {
+  if (allowed) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DevicePermissionsPrompt::Prompt::AddDevice, this,
+                   DeviceInfo(device)));
+  }
+}
+
+void DevicePermissionsPrompt::Prompt::DeviceQueryComplete(
+    std::vector<DeviceInfo>* device_info) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DevicePermissionsPrompt::Prompt::SetDevices, this,
+                 *device_info));
 }
 
 void DevicePermissionsPrompt::Prompt::SetDevices(
@@ -193,16 +226,14 @@ void DevicePermissionsPrompt::Prompt::OnDeviceAdded(
     return;
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&DevicePermissionsPrompt::Prompt::AddDevice, this,
-                 DeviceInfo(device)));
+  device->CheckUsbAccess(base::Bind(
+      &DevicePermissionsPrompt::Prompt::AddCheckedUsbDevice, this, device));
 }
 
 void DevicePermissionsPrompt::Prompt::OnDeviceRemoved(
     scoped_refptr<UsbDevice> device) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&DevicePermissionsPrompt::Prompt::RemoveDevice, this, device));
 }
 

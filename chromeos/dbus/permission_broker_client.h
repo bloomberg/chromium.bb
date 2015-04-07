@@ -36,6 +36,13 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
 
   static PermissionBrokerClient* Create();
 
+  // CheckPathAccess requests a hint from the permission broker about whether
+  // a later call to RequestPathAccess will be successful. It presumes that
+  // the |interface_id| value passed to RequestPathAccess will be
+  // UsbDevicePermissionsData::ANY_INTERFACE).
+  virtual void CheckPathAccess(const std::string& path,
+                               const ResultCallback& callback) = 0;
+
   // RequestPathAccess requests access to a single device node identified by
   // |path|. If |interface_id| value is passed (different than
   // UsbDevicePermissionData::ANY_INTERFACE), the request will check if a

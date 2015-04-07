@@ -433,18 +433,6 @@ class MockUsbDevice : public UsbDevice {
     return true;
   }
 
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, if an interface of a claimed device is not claimed, the
-  // permission broker can change the owner of the device so that the unclaimed
-  // interfaces can be used. If this argument is missing, permission broker will
-  // not be used and this method fails if the device is claimed.
-  virtual void RequestUsbAccess(
-      int interface_id,
-      const base::Callback<void(bool success)>& callback) override {
-    callback.Run(true);
-  }
-#endif  // OS_CHROMEOS
-
   std::set<int> claimed_interfaces_;
 
  protected:

@@ -11,6 +11,7 @@
 #include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+using permission_broker::kCheckPathAccess;
 using permission_broker::kPermissionBrokerInterface;
 using permission_broker::kPermissionBrokerServiceName;
 using permission_broker::kPermissionBrokerServicePath;
@@ -25,6 +26,16 @@ namespace chromeos {
 class PermissionBrokerClientImpl : public PermissionBrokerClient {
  public:
   PermissionBrokerClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
+
+  void CheckPathAccess(const std::string& path,
+                       const ResultCallback& callback) override {
+    dbus::MethodCall method_call(kPermissionBrokerInterface, kCheckPathAccess);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(path);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&PermissionBrokerClientImpl::OnResponse,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
+  }
 
   void RequestPathAccess(const std::string& path,
                          const int interface_id,

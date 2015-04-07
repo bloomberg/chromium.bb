@@ -265,14 +265,9 @@ static void EnumerateOnFileThread(
         continue;
       }
 
-      // Request permission on Chrome OS.
-#if defined(OS_CHROMEOS)
       device->RequestUsbAccess(
           j, base::Bind(&OpenAndroidDeviceOnFileThread, devices, rsa_key,
                         barrier, device, j));
-#else
-      OpenAndroidDeviceOnFileThread(devices, rsa_key, barrier, device, j, true);
-#endif  // defined(OS_CHROMEOS)
 
       has_android_interface = true;
       break;

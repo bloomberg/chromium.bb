@@ -32,9 +32,10 @@ class UsbDeviceImpl : public UsbDevice {
  public:
 // UsbDevice implementation:
 #if defined(OS_CHROMEOS)
-  void RequestUsbAccess(
-      int interface_id,
-      const base::Callback<void(bool success)>& callback) override;
+  // Only overridden on Chrome OS.
+  void CheckUsbAccess(const ResultCallback& callback) override;
+  void RequestUsbAccess(int interface_id,
+                        const ResultCallback& callback) override;
 #endif  // OS_CHROMEOS
   scoped_refptr<UsbDeviceHandle> Open() override;
   bool Close(scoped_refptr<UsbDeviceHandle> handle) override;

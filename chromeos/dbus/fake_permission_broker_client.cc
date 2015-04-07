@@ -16,11 +16,17 @@ FakePermissionBrokerClient::~FakePermissionBrokerClient() {}
 
 void FakePermissionBrokerClient::Init(dbus::Bus* bus) {}
 
+void FakePermissionBrokerClient::CheckPathAccess(
+    const std::string& path,
+    const ResultCallback& callback) {
+  callback.Run(true);
+}
+
 void FakePermissionBrokerClient::RequestPathAccess(
     const std::string& path,
     int interface_id,
     const ResultCallback& callback) {
-  callback.Run(false);
+  callback.Run(true);
 }
 
 void FakePermissionBrokerClient::RequestTcpPortAccess(

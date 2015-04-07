@@ -13,6 +13,7 @@ source_set("usb") {
     "usb_context.h",
     "usb_descriptors.cc",
     "usb_descriptors.h",
+    "usb_device.cc",
     "usb_device.h",
     "usb_device_filter.cc",
     "usb_device_filter.h",

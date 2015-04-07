@@ -106,6 +106,13 @@ class DevicePermissionsPrompt {
 
     // Querying for devices must be done asynchronously on the FILE thread.
     void DoDeviceQuery();
+    void AppendCheckedUsbDevice(std::vector<DeviceInfo>* device_info,
+                                scoped_refptr<device::UsbDevice> device,
+                                const base::Closure& callback,
+                                bool allowed);
+    void AddCheckedUsbDevice(scoped_refptr<device::UsbDevice> device,
+                             bool allowed);
+    void DeviceQueryComplete(std::vector<DeviceInfo>* device_info);
     void SetDevices(const std::vector<DeviceInfo>& devices);
     void AddDevice(const DeviceInfo& device);
     void RemoveDevice(scoped_refptr<device::UsbDevice> device);

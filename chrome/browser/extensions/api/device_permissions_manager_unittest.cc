@@ -80,7 +80,6 @@ class MockUsbDevice : public UsbDevice {
                   Return(true)));
   }
 
-  MOCK_METHOD2(RequestUsbAccess, void(int, const base::Callback<void(bool)>&));
   MOCK_METHOD0(Open, scoped_refptr<UsbDeviceHandle>());
   MOCK_METHOD1(Close, bool(scoped_refptr<UsbDeviceHandle>));
   MOCK_METHOD0(GetConfiguration, const device::UsbConfigDescriptor*());

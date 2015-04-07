@@ -25,6 +25,7 @@
         'usb_descriptors.h',
         'usb_device_impl.cc',
         'usb_device_impl.h',
+        'usb_device.cc',
         'usb_device.h',
         'usb_device_filter.cc',
         'usb_device_filter.h',

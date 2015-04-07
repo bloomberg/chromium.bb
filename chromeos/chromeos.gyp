@@ -579,6 +579,8 @@
         'dbus/mock_cryptohome_client.h',
         'dbus/mock_lorgnette_manager_client.cc',
         'dbus/mock_lorgnette_manager_client.h',
+        'dbus/mock_permission_broker_client.cc',
+        'dbus/mock_permission_broker_client.h',
         'dbus/mock_session_manager_client.cc',
         'dbus/mock_session_manager_client.h',
         'dbus/mock_shill_manager_client.cc',

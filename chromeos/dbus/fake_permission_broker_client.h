@@ -11,12 +11,15 @@
 
 namespace chromeos {
 
-class FakePermissionBrokerClient : public PermissionBrokerClient {
+class CHROMEOS_EXPORT FakePermissionBrokerClient
+    : public PermissionBrokerClient {
  public:
   FakePermissionBrokerClient();
   ~FakePermissionBrokerClient() override;
 
   void Init(dbus::Bus* bus) override;
+  void CheckPathAccess(const std::string& path,
+                       const ResultCallback& callback) override;
   void RequestPathAccess(const std::string& path,
                          int interface_id,
                          const ResultCallback& callback) override;

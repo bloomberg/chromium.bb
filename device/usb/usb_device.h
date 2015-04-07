@@ -20,20 +20,21 @@ struct UsbConfigDescriptor;
 // UsbDeviceHandle must be created from Open() method.
 class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
  public:
+  typedef base::Callback<void(bool success)> ResultCallback;
+
   // Accessors to basic information.
   uint16 vendor_id() const { return vendor_id_; }
   uint16 product_id() const { return product_id_; }
   uint32 unique_id() const { return unique_id_; }
 
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, if an interface of a claimed device is not claimed, the
-  // permission broker can change the owner of the device so that the unclaimed
-  // interfaces can be used. If this argument is missing, permission broker will
-  // not be used and this method fails if the device is claimed.
-  virtual void RequestUsbAccess(
-      int interface_id,
-      const base::Callback<void(bool success)>& callback) = 0;
-#endif  // OS_CHROMEOS
+  // On ChromeOS the permission_broker service is used to change the ownership
+  // of USB device nodes so that Chrome can open them. On other platforms these
+  // functions are no-ops and always return true.
+  virtual void CheckUsbAccess(const ResultCallback& callback);
+
+  // Like CheckUsbAccess but actually changes the ownership of the device node.
+  virtual void RequestUsbAccess(int interface_id,
+                                const ResultCallback& callback);
 
   // Creates a UsbDeviceHandle for further manipulation.
   // Blocking method. Must be called on FILE thread.
@@ -66,9 +67,8 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   virtual bool GetSerialNumber(base::string16* serial) = 0;
 
  protected:
-  UsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id)
-      : vendor_id_(vendor_id), product_id_(product_id), unique_id_(unique_id) {}
-  virtual ~UsbDevice() {}
+  UsbDevice(uint16 vendor_id, uint16 product_id, uint32 unique_id);
+  virtual ~UsbDevice();
 
  private:
   friend class base::RefCountedThreadSafe<UsbDevice>;
