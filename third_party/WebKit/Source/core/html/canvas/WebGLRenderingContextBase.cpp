@@ -2156,25 +2156,45 @@ GLint WebGLRenderingContextBase::getAttribLocation(WebGLProgram* program, const 
     return webContext()->getAttribLocation(objectOrZero(program), name.utf8().data());
 }
 
+bool WebGLRenderingContextBase::validateBufferTarget(const char* functionName, GLenum target)
+{
+    switch (target) {
+    case GL_ARRAY_BUFFER:
+    case GL_ELEMENT_ARRAY_BUFFER:
+        return true;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        return false;
+    }
+}
+
 ScriptValue WebGLRenderingContextBase::getBufferParameter(ScriptState* scriptState, GLenum target, GLenum pname)
 {
-    if (isContextLost())
+    if (isContextLost() || !validateBufferTarget("getBufferParameter", target))
         return ScriptValue::createNull(scriptState);
-    if (target != GL_ARRAY_BUFFER && target != GL_ELEMENT_ARRAY_BUFFER) {
-        synthesizeGLError(GL_INVALID_ENUM, "getBufferParameter", "invalid target");
-        return ScriptValue::createNull(scriptState);
-    }
 
-    if (pname != GL_BUFFER_SIZE && pname != GL_BUFFER_USAGE) {
+    switch (pname) {
+    case GL_BUFFER_USAGE:
+        {
+            GLint value = 0;
+            webContext()->getBufferParameteriv(target, pname, &value);
+            return WebGLAny(scriptState, static_cast<unsigned>(value));
+        }
+    case GL_BUFFER_SIZE:
+        if (!isWebGL2OrHigher()) {
+            GLint value = 0;
+            webContext()->getBufferParameteriv(target, pname, &value);
+            return WebGLAny(scriptState, value);
+        }
+        {
+            GLint64 value = 0;
+            webContext()->getBufferParameteri64v(target, pname, &value);
+            return WebGLAny(scriptState, static_cast<GLint64>(value));
+        }
+    default:
         synthesizeGLError(GL_INVALID_ENUM, "getBufferParameter", "invalid parameter name");
         return ScriptValue::createNull(scriptState);
     }
-
-    GLint value = 0;
-    webContext()->getBufferParameteriv(target, pname, &value);
-    if (pname == GL_BUFFER_SIZE)
-        return WebGLAny(scriptState, value);
-    return WebGLAny(scriptState, static_cast<unsigned>(value));
 }
 
 void WebGLRenderingContextBase::getContextAttributes(Nullable<WebGLContextAttributes>& result)

@@ -1397,6 +1397,24 @@ bool WebGL2RenderingContextBase::validateCapability(const char* functionName, GL
     }
 }
 
+bool WebGL2RenderingContextBase::validateBufferTarget(const char* functionName, GLenum target)
+{
+    switch (target) {
+    case GL_ARRAY_BUFFER:
+    case GL_COPY_READ_BUFFER:
+    case GL_COPY_WRITE_BUFFER:
+    case GL_ELEMENT_ARRAY_BUFFER:
+    case GL_PIXEL_PACK_BUFFER:
+    case GL_PIXEL_UNPACK_BUFFER:
+    case GL_TRANSFORM_FEEDBACK_BUFFER:
+    case GL_UNIFORM_BUFFER:
+        return true;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
+        return false;
+    }
+}
+
 bool WebGL2RenderingContextBase::validateAndUpdateBufferBindTarget(const char* functionName, GLenum target, WebGLBuffer* buffer)
 {
     if (buffer && buffer->getTarget() && (buffer->getTarget() == GL_ELEMENT_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER) && buffer->getTarget() != target) {

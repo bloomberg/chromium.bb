@@ -175,6 +175,7 @@ protected:
 
     /* WebGLRenderingContextBase overrides */
     bool validateCapability(const char* functionName, GLenum) override;
+    bool validateBufferTarget(const char* functionName, GLenum target) override;
     bool validateAndUpdateBufferBindTarget(const char* functionName, GLenum, WebGLBuffer*) override;
 
     RefPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;

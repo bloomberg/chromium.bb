@@ -888,6 +888,9 @@ protected:
     bool validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation*, GLboolean transpose, DOMFloat32Array*, GLsizei mod);
     bool validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation*, GLboolean transpose, void*, GLsizei, GLsizei mod);
 
+    // Helper function to validate the target for bufferData and getBufferParameter.
+    virtual bool validateBufferTarget(const char* functionName, GLenum target);
+
     // Helper function to validate the target for bufferData.
     // Return the current bound buffer to target, or 0 if the target is invalid.
     WebGLBuffer* validateBufferDataTarget(const char* functionName, GLenum target);

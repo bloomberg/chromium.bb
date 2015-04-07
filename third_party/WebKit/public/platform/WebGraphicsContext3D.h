@@ -505,6 +505,7 @@ public:
     virtual void getActiveUniformBlockName(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dchar *uniformBlockName) { }
     virtual void getActiveUniformBlockiv(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Denum pname, WGC3Dint *params) { }
     virtual void getActiveUniformsiv(WebGLId program, WGC3Dsizei uniformCount, const WGC3Duint *uniformIndices, WGC3Denum pname, WGC3Dint *params) { }
+    virtual void getBufferParameteri64v(WGC3Denum target, WGC3Denum pname, WGC3Dint64 *value) { }
     virtual WGC3Dint getFragDataLocation(WebGLId program, const WGC3Dchar *name) { return -1; }
     virtual void getInteger64v(WGC3Denum pname, WGC3Dint64 *data) { }
     virtual void getIntegeri_v(WGC3Denum target, WGC3Duint index, WGC3Dint *data) { }
