@@ -557,14 +557,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BackspaceInKeywordMode) {
             UTF16ToUTF8(omnibox_view->GetText()));
 }
 
-// http://crbug.com/158913
-#if defined(USE_AURA)
-#define MAYBE_Escape DISABLED_Escape
-#else
-#define MAYBE_Escape Escape
-#endif
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_Escape) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Escape) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIHistoryURL));
   chrome::FocusLocationBar(browser());
 
@@ -584,7 +577,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_Escape) {
   EXPECT_EQ(old_text, omnibox_view->GetText());
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 }
-#undef MAYBE_ESCAPE
 
 #if defined(OS_LINUX)
 #define MAYBE_DesiredTLD DISABLED_DesiredTLD

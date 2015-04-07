@@ -817,6 +817,8 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
        model()->popup_model()->IsOpen())) {
     return true;
   }
+  if (event.key_code() == ui::VKEY_ESCAPE)
+    return model()->WillHandleEscapeKey();
   return Textfield::SkipDefaultKeyEventProcessing(event);
 }
 
@@ -859,7 +861,16 @@ void OmniboxViewViews::OnBlur() {
 
   views::Textfield::OnBlur();
   model()->OnWillKillFocus();
-  CloseOmniboxPopup();
+
+  // If ZeroSuggest is active, we may have refused to show an update to the
+  // underlying permanent URL that happened while the popup was open, so
+  // revert to ensure that update is shown now.  Otherwise, make sure to call
+  // CloseOmniboxPopup() unconditionally, so that if ZeroSuggest is in the midst
+  // of running but hasn't yet opened the popup, it will be halted.
+  if (!model()->user_input_in_progress() && model()->popup_model()->IsOpen())
+    RevertAll();
+  else
+    CloseOmniboxPopup();
 
   // Tell the model to reset itself.
   model()->OnKillFocus();
