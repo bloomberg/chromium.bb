@@ -5,21 +5,16 @@
 # File containing *extra* flags to specify for PNaCl on a given test.
 
 # The following tests use vectors, which PNaCl's ABI checker rejects.
+# 8-byte and 4-byte vectors are not supported in the stable ABI.
 20050316-1.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 20050316-2.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 20050316-3.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 20050604-1.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 20050607-1.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
-20060420-1.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 simd-1.C,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
-simd-2.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 simd-4.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 simd-5.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 simd-6.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
-vector-shift.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
-vector-shift2.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
-vector-subscript-2.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
-vector-subscript-3.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input
 
 # These tests use llvm.{frame,return}address, which PNaCl's ABI checker rejects.
 20010122-1.c,CFLAGS:--pnacl-disable-abi-check,FINALIZE_FLAGS:--no-finalize,TRANSLATE_FLAGS:--allow-llvm-bitcode-input

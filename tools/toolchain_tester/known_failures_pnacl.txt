@@ -135,35 +135,15 @@ pr22061-4.c
 20061220-1.c
 
 # ======================================================================
-# wont fixes - complex va_arg (e.g. structs passed as va_args)
+# complex va_arg (e.g. structs passed as va_args)
 # ======================================================================
-# complex va_arg
-920625-1.c
-# complex va_arg
-920908-1.c
-# complex va_arg
-931004-10.c
-# complex va_arg
-931004-12.c
-# complex va_arg
-931004-14.c
-# complex va_arg
-931004-2.c
-# complex va_arg
-931004-4.c
-# complex va_arg
-931004-6.c
-# complex va_arg
-931004-8.c
-# complex va_arg
+
+# In some cases, PNaCl ABI simplification passes can expand out the
+# x = va_arg(list, struct X) instructions. E.g., simple flat structs.
+# However, some cases (structs with array elements), fail:
+# Function foo disallowed:
+# bad result type: [72 x i8]*   %a72.bc = bitcast i8* %a72 to [72 x i8]*
+# bad pointer:     store [72 x i8] %.field61, [72 x i8]* %a72.bc, align 1
 pr38151.c
-# complex va_arg
-stdarg-3.c
-# complex va_arg
-strct-stdarg-1.c
-# complex va_arg
-strct-varg-1.c
-# complex va_arg
 va-arg-22.c
-# complex va_arg
 pr44575.c
