@@ -18,7 +18,7 @@
     ['OS=="linux"', {
       'dependencies': [
         '../../remoting/remoting.gyp:remoting_me2me_host_archive',
-        '../../remoting/webapp/app_remoting/internal/app_remoting_all.gyp:app_remoting_all_apps',
+        '../../remoting/internal/app_remoting_all.gyp:app_remoting_all_apps',
       ],
     }],  # OS=="linux"
   ],
