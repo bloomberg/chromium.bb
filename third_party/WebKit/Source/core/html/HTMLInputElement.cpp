@@ -38,9 +38,7 @@
 #include "core/InputTypeNames.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/IdTargetObserver.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
@@ -50,7 +48,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/TouchEvent.h"
-#include "core/fileapi/FileList.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -63,14 +60,12 @@
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/ColorChooser.h"
-#include "core/html/forms/ColorInputType.h"
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/html/forms/FileInputType.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/forms/InputType.h"
 #include "core/html/forms/SearchInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
@@ -354,8 +349,9 @@ void HTMLInputElement::updateFocusAppearance(bool restorePreviousSelection)
             restoreCachedSelection();
         if (document().frame())
             document().frame()->selection().revealSelection();
-    } else
+    } else {
         HTMLTextFormControlElement::updateFocusAppearance(restorePreviousSelection);
+    }
 }
 
 void HTMLInputElement::beginEditing()
@@ -658,10 +654,11 @@ void HTMLInputElement::collectStyleForPresentationAttribute(const QualifiedName&
     } else if (name == heightAttr) {
         if (m_inputType->shouldRespectHeightAndWidthAttributes())
             addHTMLLengthToStyle(style, CSSPropertyHeight, value);
-    } else if (name == borderAttr && type() == InputTypeNames::image) // FIXME: Remove type check.
+    } else if (name == borderAttr && type() == InputTypeNames::image) { // FIXME: Remove type check.
         applyBorderAttributeToStyle(value, style);
-    else
+    } else {
         HTMLTextFormControlElement::collectStyleForPresentationAttribute(name, value, style);
+    }
 }
 
 void HTMLInputElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
@@ -691,17 +688,17 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         addToRadioButtonGroup();
         HTMLTextFormControlElement::parseAttribute(name, value);
     } else if (name == autocompleteAttr) {
-        if (equalIgnoringCase(value, "off"))
+        if (equalIgnoringCase(value, "off")) {
             m_autocomplete = Off;
-        else {
+        } else {
             if (value.isEmpty())
                 m_autocomplete = Uninitialized;
             else
                 m_autocomplete = On;
         }
-    } else if (name == typeAttr)
+    } else if (name == typeAttr) {
         updateType();
-    else if (name == valueAttr) {
+    } else if (name == valueAttr) {
         // We only need to setChanged if the form is looking at the default value right now.
         if (!hasDirtyValue()) {
             updatePlaceholderVisibility(false);
@@ -733,11 +730,11 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
             m_size = valueAsInteger;
         if (m_size != oldSize && layoutObject())
             layoutObject()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AttributeChanged);
-    } else if (name == altAttr)
+    } else if (name == altAttr) {
         m_inputTypeView->altAttributeChanged();
-    else if (name == srcAttr)
+    } else if (name == srcAttr) {
         m_inputTypeView->srcAttributeChanged();
-    else if (name == usemapAttr || name == accesskeyAttr) {
+    } else if (name == usemapAttr || name == accesskeyAttr) {
         // FIXME: ignore for the moment
     } else if (name == onsearchAttr) {
         // Search field and slider attributes all just cause updateFromElement to be called through style recalcing.
@@ -789,9 +786,9 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == webkitdirectoryAttr) {
         HTMLTextFormControlElement::parseAttribute(name, value);
         UseCounter::count(document(), UseCounter::PrefixedDirectoryAttribute);
-    }
-    else
+    } else {
         HTMLTextFormControlElement::parseAttribute(name, value);
+    }
     m_inputTypeView->attributeChanged();
 }
 
@@ -1834,9 +1831,9 @@ bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters&
     parameters.minimum = minimum();
     parameters.maximum = maximum();
     parameters.required = isRequired();
-    if (!RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
+    if (!RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled()) {
         parameters.locale = defaultLanguage();
-    else {
+    } else {
         AtomicString computedLocale = computeInheritedLanguage();
         parameters.locale = computedLocale.isEmpty() ? defaultLanguage() : computedLocale;
     }
