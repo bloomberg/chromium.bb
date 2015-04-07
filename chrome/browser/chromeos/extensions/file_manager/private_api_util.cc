@@ -207,10 +207,6 @@ void VolumeToVolumeMetadata(
     case VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
       volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_ARCHIVE;
       break;
-    case VOLUME_TYPE_CLOUD_DEVICE:
-      volume_metadata->volume_type =
-          file_manager_private::VOLUME_TYPE_CLOUD_DEVICE;
-      break;
     case VOLUME_TYPE_PROVIDED:
       volume_metadata->volume_type = file_manager_private::VOLUME_TYPE_PROVIDED;
       break;

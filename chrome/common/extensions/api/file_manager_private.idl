@@ -8,8 +8,8 @@
  implemented_in="chrome/browser/chromeos/extensions/file_manager/file_manager_private_api_functions.h"]
 namespace fileManagerPrivate {
 // Type of the mounted volume.
-enum VolumeType { drive, downloads, removable, archive, cloud_device, provided,
-                  mtp, testing };
+enum VolumeType { drive, downloads, removable, archive, provided, mtp,
+                  testing };
 
 // Device type. Available if this is removable volume.
 enum DeviceType { usb, sd, optical, mobile, unknown };
@@ -524,10 +524,6 @@ callback AddFileWatchCallback = void(optional boolean success);
 
 // |success| True when file watch is successfully removed.
 callback RemoveFileWatchCallback = void(optional boolean success);
-
-// |fileSystem| A DOMFileSystem instance for local file system access. null if
-// the caller has no appropriate permissions.
-callback RequestFileSystemCallback = void(optional object fileSystem);
 
 // |entryProperties| A dictionary containing properties of the requested
 // entries.

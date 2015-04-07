@@ -99,8 +99,6 @@ std::string VolumeTypeToString(VolumeType type) {
       return "removable";
     case VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
       return "archive";
-    case VOLUME_TYPE_CLOUD_DEVICE:
-      return "cloud_device";
     case VOLUME_TYPE_PROVIDED:
       return "provided";
     case VOLUME_TYPE_MTP:

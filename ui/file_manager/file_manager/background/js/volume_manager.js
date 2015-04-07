@@ -352,7 +352,6 @@ volumeManagerUtil.volumeListOrder_ = [
   VolumeManagerCommon.VolumeType.REMOVABLE,
   VolumeManagerCommon.VolumeType.MTP,
   VolumeManagerCommon.VolumeType.PROVIDED,
-  VolumeManagerCommon.VolumeType.CLOUD_DEVICE
 ];
 
 /**
@@ -914,9 +913,6 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
         break;
       case VolumeManagerCommon.VolumeType.ARCHIVE:
         rootType = VolumeManagerCommon.RootType.ARCHIVE;
-        break;
-      case VolumeManagerCommon.VolumeType.CLOUD_DEVICE:
-        rootType = VolumeManagerCommon.RootType.CLOUD_DEVICE;
         break;
       case VolumeManagerCommon.VolumeType.MTP:
         rootType = VolumeManagerCommon.RootType.MTP;
