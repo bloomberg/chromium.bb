@@ -110,7 +110,6 @@ CHROMEOS_EXPORT extern const char kTestMetronomeTimer[];
 CHROMEOS_EXPORT extern const char kWakeOnPackets[];
 CHROMEOS_EXPORT extern const char kDisableCaptivePortalBypassProxy[];
 CHROMEOS_EXPORT extern const char kDisableTimeZoneTrackingOption[];
-CHROMEOS_EXPORT extern const char kEnableOAuthTokenHandlers[];
 CHROMEOS_EXPORT extern const char kDisableWebviewSigninFlow[];
 
 CHROMEOS_EXPORT bool WakeOnWifiEnabled();

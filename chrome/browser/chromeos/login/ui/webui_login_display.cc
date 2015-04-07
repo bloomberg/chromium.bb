@@ -80,6 +80,10 @@ const user_manager::UserList& WebUILoginDisplay::GetUsers() const {
   return SignInScreenController::Get()->GetUsers();
 }
 
+void WebUILoginDisplay::CheckUserStatus(const std::string& user_id) {
+  SignInScreenController::Get()->CheckUserStatus(user_id);
+}
+
 // ---- Gaia screen methods
 
 // ---- Not yet classified methods

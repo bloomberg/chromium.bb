@@ -1236,6 +1236,8 @@ void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
   SetUserInputMethod(user_id, ime_state_.get());
   WallpaperManager::Get()->SetUserWallpaperDelayed(user_id);
   ScreenlockBridge::Get()->SetFocusedUser(user_id);
+  if (delegate_)
+    delegate_->CheckUserStatus(user_id);
   if (!test_focus_pod_callback_.is_null())
     test_focus_pod_callback_.Run();
 }

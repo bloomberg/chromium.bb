@@ -330,9 +330,6 @@ const char kDisableCaptivePortalBypassProxy[] =
 const char kDisableTimeZoneTrackingOption[] =
     "disable-timezone-tracking-option";
 
-// Enable OAuth token validation on sign in screen.
-const char kEnableOAuthTokenHandlers[] = "enable-oauth-token-handlers";
-
 // Disable new GAIA sign-in flow.
 const char kDisableWebviewSigninFlow[] = "disable-webview-signin-flow";
 

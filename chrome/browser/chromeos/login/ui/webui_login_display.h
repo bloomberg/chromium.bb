@@ -78,6 +78,7 @@ class WebUILoginDisplay : public LoginDisplay,
   void SetDisplayEmail(const std::string& email) override;
 
   void HandleGetUsers() override;
+  void CheckUserStatus(const std::string& user_id) override;
   const user_manager::UserList& GetUsers() const override;
 
   // ui::UserActivityDetector implementation:

@@ -219,4 +219,7 @@ void AppLaunchSigninScreen::HandleGetUsers() {
   webui_handler_->LoadUsers(users_list, false);
 }
 
+void AppLaunchSigninScreen::CheckUserStatus(const std::string& user_id) {
+}
+
 }  // namespace chromeos

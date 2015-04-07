@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -268,16 +269,17 @@ void OAuth2LoginManager::OnOAuth2TokensAvailable(
   DCHECK(refresh_token_.empty());
   refresh_token_.assign(oauth2_tokens.refresh_token);
   oauthlogin_access_token_ = oauth2_tokens.access_token;
-
-  auto user = chromeos::ProfileHelper::Get()->GetUserByProfile(user_profile_);
-  DCHECK(user);
-  if (user) {
-    token_handle_util_.reset(
-        new TokenHandleUtil(user_manager::UserManager::Get()));
-    token_handle_util_->GetTokenHandle(
-        user->GetUserID(), oauthlogin_access_token_,
-        base::Bind(&OAuth2LoginManager::OnTokenHandleComplete,
-                   weak_factory_.GetWeakPtr()));
+  if (StartupUtils::IsWebviewSigninEnabled()) {
+    auto user = chromeos::ProfileHelper::Get()->GetUserByProfile(user_profile_);
+    DCHECK(user);
+    if (user) {
+      token_handle_util_.reset(
+          new TokenHandleUtil(user_manager::UserManager::Get()));
+      token_handle_util_->GetTokenHandle(
+          user->GetUserID(), oauthlogin_access_token_,
+          base::Bind(&OAuth2LoginManager::OnTokenHandleComplete,
+                     weak_factory_.GetWeakPtr()));
+    }
   }
   StoreOAuth2Token();
 }

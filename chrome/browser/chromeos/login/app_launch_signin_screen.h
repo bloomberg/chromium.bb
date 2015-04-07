@@ -78,6 +78,7 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   void SetDisplayEmail(const std::string& email) override;
   void Signout() override;
   void HandleGetUsers() override;
+  void CheckUserStatus(const std::string& user_id) override;
 
   // AuthStatusConsumer implementation:
   void OnAuthFailure(const AuthFailure& error) override;

@@ -630,22 +630,6 @@ void LoginDisplayHostImpl::StartSignInScreen(
   SetStatusAreaVisible(true);
   existing_user_controller_->Init(users);
 
-  // Validate user OAuth tokens.
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOAuthTokenHandlers)) {
-    token_handle_util_.reset(
-        new TokenHandleUtil(user_manager::UserManager::Get()));
-    for (auto* user : users) {
-      auto user_id = user->GetUserID();
-      if (token_handle_util_->HasToken(user_id)) {
-        token_handle_util_->CheckToken(
-            user_id, base::Bind(&LoginDisplayHostImpl::OnTokenHandlerChecked,
-                                pointer_factory_.GetWeakPtr()));
-      }
-    }
-  }
-
   // We might be here after a reboot that was triggered after OOBE was complete,
   // so check for auto-enrollment again. This might catch a cached decision from
   // a previous oobe flow, or might start a new check with the server.
@@ -670,16 +654,6 @@ void LoginDisplayHostImpl::StartSignInScreen(
                                "WaitForScreenStateInitialize");
   BootTimesRecorder::Get()->RecordCurrentStats(
       "login-wait-for-signin-state-initialize");
-}
-
-void LoginDisplayHostImpl::OnTokenHandlerChecked(
-    const user_manager::UserID& user_id,
-    TokenHandleUtil::TokenHandleStatus token_status) {
-  if (token_status == TokenHandleUtil::INVALID) {
-    user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        user_id, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
-    token_handle_util_->DeleteToken(user_id);
-  }
 }
 
 void LoginDisplayHostImpl::OnPreferencesChanged() {

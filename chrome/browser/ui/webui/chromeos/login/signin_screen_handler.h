@@ -188,6 +188,9 @@ class SigninScreenHandlerDelegate {
   // Request to (re)load user list.
   virtual void HandleGetUsers() = 0;
 
+  // Runs an OAuth token validation check for user.
+  virtual void CheckUserStatus(const std::string& user_id) = 0;
+
  protected:
   virtual ~SigninScreenHandlerDelegate() {}
 };

@@ -12,10 +12,12 @@
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/models/user_board_model.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_id.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
 class EasyUnlockService;
@@ -52,6 +54,7 @@ class UserSelectionScreen : public ui::UserActivityObserver,
   void OnPasswordClearTimerExpired();
 
   void HandleGetUsers();
+  void CheckUserStatus(const std::string& user_id);
 
   // ui::UserActivityDetector implementation:
   void OnUserActivity(const ui::Event* event) override;
@@ -118,6 +121,9 @@ class UserSelectionScreen : public ui::UserActivityObserver,
   EasyUnlockService* GetEasyUnlockServiceForUser(
       const std::string& user_id) const;
 
+  void OnUserStatusChecked(const user_manager::UserID& user_id,
+                           TokenHandleUtil::TokenHandleStatus status);
+
   // Whether to show guest login.
   bool show_guest_;
 
@@ -134,6 +140,11 @@ class UserSelectionScreen : public ui::UserActivityObserver,
 
   // Timer for measuring idle state duration before password clear.
   base::OneShotTimer<UserSelectionScreen> password_clear_timer_;
+
+  // Token handler util for checking user OAuth token status.
+  scoped_ptr<TokenHandleUtil> token_handle_util_;
+
+  base::WeakPtrFactory<UserSelectionScreen> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserSelectionScreen);
 };

@@ -113,7 +113,8 @@ UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
     : handler_(nullptr),
       login_display_delegate_(nullptr),
       view_(nullptr),
-      display_type_(display_type) {
+      display_type_(display_type),
+      weak_factory_(this) {
 }
 
 UserSelectionScreen::~UserSelectionScreen() {
@@ -401,6 +402,34 @@ void UserSelectionScreen::SendUserList() {
 
 void UserSelectionScreen::HandleGetUsers() {
   SendUserList();
+}
+
+void UserSelectionScreen::CheckUserStatus(const std::string& user_id) {
+  // No checks on lock screen.
+  if (ScreenLocker::default_screen_locker())
+    return;
+
+  if (!token_handle_util_.get()) {
+    token_handle_util_.reset(
+        new TokenHandleUtil(user_manager::UserManager::Get()));
+  }
+
+  if (token_handle_util_->HasToken(user_id)) {
+    token_handle_util_->CheckToken(
+        user_id, base::Bind(&UserSelectionScreen::OnUserStatusChecked,
+                            weak_factory_.GetWeakPtr()));
+  }
+}
+
+void UserSelectionScreen::OnUserStatusChecked(
+    const user_manager::UserID& user_id,
+    TokenHandleUtil::TokenHandleStatus status) {
+  if (status == TokenHandleUtil::INVALID) {
+    user_manager::UserManager::Get()->SaveUserOAuthStatus(
+        user_id, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
+    token_handle_util_->DeleteToken(user_id);
+    SetAuthType(user_id, ONLINE_SIGN_IN, base::string16());
+  }
 }
 
 // EasyUnlock stuff
