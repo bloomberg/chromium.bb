@@ -289,26 +289,37 @@ void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
     return;
   }
 
+  std::string mime_type;
+  request.GetMimeType(&mime_type);
+  // MIME types are named by <media-type>/<subtype>. Check to see if the media
+  // type is audio or video in order to record audio/video bypasses separately
+  // for current bypasses and for the triggering requests of short bypasses.
+  if ((last_bypass_type_ == BYPASS_EVENT_TYPE_CURRENT ||
+       (triggering_request_ && last_bypass_type_ == BYPASS_EVENT_TYPE_SHORT)) &&
+      (mime_type.compare(0, 6, "audio/") == 0 ||
+       mime_type.compare(0, 6, "video/") == 0)) {
+    RecordBypassedBytes(last_bypass_type_,
+                        DataReductionProxyBypassStats::AUDIO_VIDEO,
+                        content_length);
+    triggering_request_ = false;
+    return;
+  }
+
+  // Report current bypasses of MIME type "application/octet-stream" separately.
+  if (last_bypass_type_ == BYPASS_EVENT_TYPE_CURRENT &&
+      mime_type.find("application/octet-stream") != std::string::npos) {
+    RecordBypassedBytes(last_bypass_type_,
+                        DataReductionProxyBypassStats::APPLICATION_OCTET_STREAM,
+                        content_length);
+    return;
+  }
+
   // Only record separate triggering request UMA for short, medium, and long
   // bypass events.
   if (triggering_request_ &&
      (last_bypass_type_ == BYPASS_EVENT_TYPE_SHORT ||
       last_bypass_type_ == BYPASS_EVENT_TYPE_MEDIUM ||
       last_bypass_type_ == BYPASS_EVENT_TYPE_LONG)) {
-    std::string mime_type;
-    request.GetMimeType(&mime_type);
-    // MIME types are named by <media-type>/<subtype>. Check to see if the
-    // media type is audio or video. Only record when triggered by short bypass,
-    // there isn't an audio or video bucket for medium or long bypasses.
-    if (last_bypass_type_ == BYPASS_EVENT_TYPE_SHORT &&
-        (mime_type.compare(0, 6, "audio/") == 0 ||
-         mime_type.compare(0, 6, "video/") == 0)) {
-      RecordBypassedBytes(last_bypass_type_,
-                          DataReductionProxyBypassStats::AUDIO_VIDEO,
-                          content_length);
-      return;
-    }
-
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyBypassStats::TRIGGERING_REQUEST,
                         content_length);
@@ -415,10 +426,30 @@ void DataReductionProxyBypassStats::RecordBypassedBytes(
           content_length);
       break;
     case DataReductionProxyBypassStats::AUDIO_VIDEO:
-      if (last_bypass_type_ == BYPASS_EVENT_TYPE_SHORT) {
-        UMA_HISTOGRAM_COUNTS(
-            "DataReductionProxy.BypassedBytes.ShortAudioVideo",
-            content_length);
+      switch (bypass_type) {
+        case BYPASS_EVENT_TYPE_CURRENT:
+          UMA_HISTOGRAM_COUNTS(
+              "DataReductionProxy.BypassedBytes.CurrentAudioVideo",
+              content_length);
+          break;
+        case BYPASS_EVENT_TYPE_SHORT:
+          UMA_HISTOGRAM_COUNTS(
+              "DataReductionProxy.BypassedBytes.ShortAudioVideo",
+              content_length);
+          break;
+        default:
+          NOTREACHED();
+      }
+      break;
+    case DataReductionProxyBypassStats::APPLICATION_OCTET_STREAM:
+      switch (bypass_type) {
+        case BYPASS_EVENT_TYPE_CURRENT:
+          UMA_HISTOGRAM_COUNTS(
+              "DataReductionProxy.BypassedBytes.CurrentApplicationOctetStream",
+              content_length);
+          break;
+        default:
+          NOTREACHED();
       }
       break;
     case DataReductionProxyBypassStats::TRIGGERING_REQUEST:

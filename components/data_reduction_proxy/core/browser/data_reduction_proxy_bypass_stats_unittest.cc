@@ -658,6 +658,8 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
         "DataReductionProxy.BypassedBytes.LocalBypassRules",
         "DataReductionProxy.BypassedBytes.ProxyOverridden",
         "DataReductionProxy.BypassedBytes.Current",
+        "DataReductionProxy.BypassedBytes.CurrentAudioVideo",
+        "DataReductionProxy.BypassedBytes.CurrentApplicationOctetStream",
         "DataReductionProxy.BypassedBytes.ShortAll",
         "DataReductionProxy.BypassedBytes.ShortTriggeringRequest",
         "DataReductionProxy.BypassedBytes.ShortAudioVideo",
@@ -765,18 +767,34 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
 
 TEST_F(DataReductionProxyBypassStatsEndToEndTest, BypassedBytesCurrent) {
   InitializeContext();
-  base::HistogramTester histogram_tester;
-  CreateAndExecuteRequest(GURL("http://foo.com"),
-                          "HTTP/1.1 502 Bad Gateway\r\n"
-                          "Via: 1.1 Chrome-Compression-Proxy\r\n"
-                          "Chrome-Proxy: block-once\r\n\r\n",
-                          kErrorBody.c_str(), "HTTP/1.1 200 OK\r\n\r\n",
-                          kBody.c_str());
+  struct TestCase {
+    const char* histogram_name;
+    const char* retry_response_headers;
+  };
+  const TestCase test_cases[] = {
+      {"DataReductionProxy.BypassedBytes.Current", "HTTP/1.1 200 OK\r\n\r\n"},
+      {"DataReductionProxy.BypassedBytes.CurrentAudioVideo",
+       "HTTP/1.1 200 OK\r\n"
+       "Content-Type: video/mp4\r\n\r\n"},
+      {"DataReductionProxy.BypassedBytes.CurrentApplicationOctetStream",
+       "HTTP/1.1 200 OK\r\n"
+       "Content-Type: application/octet-stream\r\n\r\n"},
+  };
+  for (const TestCase& test_case : test_cases) {
+    ClearBadProxies();
+    base::HistogramTester histogram_tester;
+    CreateAndExecuteRequest(GURL("http://foo.com"),
+                            "HTTP/1.1 502 Bad Gateway\r\n"
+                            "Via: 1.1 Chrome-Compression-Proxy\r\n"
+                            "Chrome-Proxy: block-once\r\n\r\n",
+                            kErrorBody.c_str(),
+                            test_case.retry_response_headers, kBody.c_str());
 
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.BypassedBytes.Current", kBody.size(), 1);
-  ExpectOtherBypassedBytesHistogramsEmpty(
-      histogram_tester, "DataReductionProxy.BypassedBytes.Current");
+    histogram_tester.ExpectUniqueSample(test_case.histogram_name, kBody.size(),
+                                        1);
+    ExpectOtherBypassedBytesHistogramsEmpty(histogram_tester,
+                                            test_case.histogram_name);
+  }
 }
 
 TEST_F(DataReductionProxyBypassStatsEndToEndTest,

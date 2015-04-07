@@ -63554,6 +63554,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ProxyOverridden"
       label="Bypass due to another proxy taking precedence"/>
   <suffix name="Current" label="Bypass due to explicit instruction"/>
+  <suffix name="CurrentAudioVideo"
+      label="Bypass due to explicit instruction for audio/video"/>
+  <suffix name="CurrentApplicationOctetStream"
+      label="Bypass due to explicit instruction for
+             'application/octet-stream' content type"/>
   <suffix name="ShortAll" label="Short bypass"/>
   <suffix name="ShortTriggeringRequest"
       label="Triggering request short bypass"/>

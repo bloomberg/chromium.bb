@@ -96,6 +96,7 @@ class DataReductionProxyBypassStats
     LOCAL_BYPASS_RULES,       /* Bypass due to client-side bypass rules. */
     PROXY_OVERRIDDEN,         /* Bypass due to a proxy taking precedence. */
     AUDIO_VIDEO,              /* Audio/Video bypass. */
+    APPLICATION_OCTET_STREAM, /* "application/octet-stream" content bypass. */
     TRIGGERING_REQUEST,       /* Triggering request bypass. */
     NETWORK_ERROR,            /* Network error. */
     BYPASSED_BYTES_TYPE_MAX   /* This must always be last.*/
