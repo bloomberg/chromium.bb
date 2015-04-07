@@ -39,40 +39,15 @@ blink::WebGraphicsContext3D::Attributes GetDefaultAttribs() {
   return attributes;
 }
 
-scoped_ptr<gpu::GLInProcessContext> CreateOffscreenContext(
-    const blink::WebGraphicsContext3D::Attributes& attributes) {
-  const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-
-  gpu::gles2::ContextCreationAttribHelper in_process_attribs;
-  WebGraphicsContext3DImpl::ConvertAttributes(
-      attributes, &in_process_attribs);
-  in_process_attribs.lose_context_when_out_of_memory = true;
-
-  scoped_ptr<gpu::GLInProcessContext> context(gpu::GLInProcessContext::Create(
-      NULL /* service */,
-      NULL /* surface */,
-      true /* is_offscreen */,
-      gfx::kNullAcceleratedWidget,
-      gfx::Size(1, 1),
-      NULL /* share_context */,
-      attributes.shareResources,
-      in_process_attribs,
-      gpu_preference,
-      gpu::GLInProcessContextSharedMemoryLimits(),
-      nullptr,
-      nullptr));
-  return context.Pass();
-}
-
-scoped_ptr<gpu::GLInProcessContext> CreateContext(
+scoped_ptr<gpu::GLInProcessContext> CreateContextHolder(
+    const blink::WebGraphicsContext3D::Attributes& attributes,
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
     const gpu::GLInProcessContextSharedMemoryLimits& mem_limits,
-    bool is_offscreen,
-    bool share_resources) {
+    bool is_offscreen) {
   const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+
   gpu::gles2::ContextCreationAttribHelper in_process_attribs;
-  WebGraphicsContext3DImpl::ConvertAttributes(
-      GetDefaultAttribs(), &in_process_attribs);
+  WebGraphicsContext3DImpl::ConvertAttributes(attributes, &in_process_attribs);
   in_process_attribs.lose_context_when_out_of_memory = true;
 
   scoped_ptr<gpu::GLInProcessContext> context(gpu::GLInProcessContext::Create(
@@ -82,7 +57,7 @@ scoped_ptr<gpu::GLInProcessContext> CreateContext(
       gfx::kNullAcceleratedWidget,
       gfx::Size(1, 1),
       NULL /* share_context */,
-      share_resources /* share_resources */,
+      attributes.shareResources,
       in_process_attribs,
       gpu_preference,
       mem_limits,
@@ -207,8 +182,8 @@ scoped_refptr<ContextProviderWebContext>
 SynchronousCompositorFactoryImpl::CreateOffscreenContextProvider(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     const std::string& debug_name) {
-  scoped_ptr<gpu::GLInProcessContext> context =
-      CreateOffscreenContext(attributes);
+  scoped_ptr<gpu::GLInProcessContext> context = CreateContextHolder(
+      attributes, nullptr, gpu::GLInProcessContextSharedMemoryLimits(), true);
   return webkit::gpu::ContextProviderInProcess::Create(
       WrapContext(context.Pass()), debug_name);
 }
@@ -222,7 +197,8 @@ SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor() {
   // pipeline is only one frame deep.
   mem_limits.mapped_memory_reclaim_limit = 6 * 1024 * 1024;
   return webkit::gpu::ContextProviderInProcess::Create(
-      WrapContext(CreateContext(nullptr, mem_limits, true, true)),
+      WrapContext(
+          CreateContextHolder(GetDefaultAttribs(), nullptr, mem_limits, true)),
       "Child-Compositor");
 }
 
@@ -240,8 +216,11 @@ SynchronousCompositorFactoryImpl::CreateStreamTextureFactory(int frame_id) {
 WebGraphicsContext3DInProcessCommandBufferImpl*
 SynchronousCompositorFactoryImpl::CreateOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes) {
-  return WrapContextWithAttributes(CreateOffscreenContext(attributes),
-                                   attributes).release();
+  return WrapContextWithAttributes(
+             CreateContextHolder(attributes, nullptr,
+                                 gpu::GLInProcessContextSharedMemoryLimits(),
+                                 true),
+             attributes).release();
 }
 
 void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw() {
@@ -291,10 +270,13 @@ SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
   if (!video_context_provider_.get()) {
     DCHECK(service_.get());
 
+    blink::WebGraphicsContext3D::Attributes attributes = GetDefaultAttribs();
+    attributes.shareResources = false;
     // This needs to run in on-screen |service_| context due to SurfaceTexture
     // limitations.
-    video_context_provider_ = new VideoContextProvider(CreateContext(
-        service_, gpu::GLInProcessContextSharedMemoryLimits(), false, false));
+    video_context_provider_ = new VideoContextProvider(CreateContextHolder(
+        attributes, service_, gpu::GLInProcessContextSharedMemoryLimits(),
+        false));
   }
   return video_context_provider_;
 }
