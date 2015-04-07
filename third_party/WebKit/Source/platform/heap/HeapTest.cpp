@@ -244,7 +244,7 @@ public:
         : Visitor(Visitor::ThreadLocalMarking)
         , m_count(0)
     {
-        StackFrameDepth::configureStackLimit();
+        configureEagerTraceLimit();
     }
 
     virtual void mark(const void* object, TraceCallback) override
