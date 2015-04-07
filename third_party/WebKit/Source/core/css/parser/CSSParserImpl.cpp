@@ -148,7 +148,7 @@ bool CSSParserImpl::supportsDeclaration(CSSParserTokenRange& range)
 
 static CSSParserImpl::AllowedRulesType computeNewAllowedRules(CSSParserImpl::AllowedRulesType allowedRules, StyleRuleBase* rule)
 {
-    if (!rule || allowedRules == CSSParserImpl::KeyframeRules)
+    if (!rule || allowedRules == CSSParserImpl::KeyframeRules || allowedRules == CSSParserImpl::NoRules)
         return allowedRules;
     ASSERT(allowedRules <= CSSParserImpl::RegularRules);
     if (rule->isCharsetRule() || rule->isImportRule())
@@ -235,6 +235,8 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
     CSSParserTokenRange block = range.consumeBlock();
     if (allowedRules == KeyframeRules)
         return nullptr; // Parse error, no at-rules supported inside @keyframes
+    if (allowedRules == NoRules)
+        return nullptr; // Parse error, no at-rules supported inside declaration lists
 
     ASSERT(allowedRules <= RegularRules);
 
@@ -516,8 +518,12 @@ void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, StyleRule:
             consumeDeclaration(range.makeSubRange(declarationStart, &range.peek()), ruleType);
             break;
         }
-        default: // Parser error
-            // FIXME: The spec allows at-rules in a declaration list
+        case AtKeywordToken: {
+            RefPtrWillBeRawPtr<StyleRuleBase> rule = consumeAtRule(range, NoRules);
+            ASSERT(!rule);
+            break;
+        }
+        default: // Parse error, unexpected token in declaration list
             while (!range.atEnd() && range.peek().type() != SemicolonToken)
                 range.consumeComponentValue();
             break;

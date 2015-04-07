@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<style>
+div {
+    margin: 10px;
+    border: 10px solid green;
+    width: 80px;
+    height: 80px;
+    background: red;
+}
+#a { @some at-rule; background: green; }
+#b { @at-rule yay { } background: green; }
+#c, #d {
+    background: green;
+    border-color: red;
+}
+#c {
+    not-an-at-rule { }
+    background: red;
+    border-color: green;
+}
+#d {
+    #also-not-an-at-rule { }
+    background: red;
+    border-color: green;
+}
+</style>
+
+<div id=a></div>
+<div id=b></div>
+<div id=c></div>
+<div id=d></div>
+<div id=e></div>
+
+<script>
+test(function(){
+    assert_equals(getComputedStyle(a).backgroundColor, "rgb(0, 128, 0)");
+}, "Declarations allowed after semicolon-terminated at-rules in declaration list");
+test(function(){
+    assert_equals(getComputedStyle(b).backgroundColor, "rgb(0, 128, 0)");
+}, "Declarations allowed after at-rules with an associated block in declaration list");
+test(function(){
+    assert_equals(getComputedStyle(c).backgroundColor, "rgb(0, 128, 0)");
+    assert_equals(getComputedStyle(c).borderColor, "rgb(0, 128, 0)");
+    assert_equals(getComputedStyle(d).backgroundColor, "rgb(0, 128, 0)");
+    assert_equals(getComputedStyle(d).borderColor, "rgb(0, 128, 0)");
+}, "Error recovery looks for semicolon and not block end");
+</script>

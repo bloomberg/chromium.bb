@@ -48,7 +48,8 @@ public:
         AllowImportRules,
         AllowNamespaceRules,
         RegularRules,
-        KeyframeRules
+        KeyframeRules,
+        NoRules, // For parsing at-rules inside declaration lists
     };
 
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
