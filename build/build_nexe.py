@@ -250,6 +250,11 @@ class Builder(CommandRunner):
     self.Log('Compile options: %s' % self.compile_options)
     self.Log('Linker options: %s' % self.link_options)
 
+  def IsGomaParallelBuild(self):
+    if self.gomacc and (self.goma_burst or self.goma_processes > 1):
+      return True
+    return False
+
   def GenNaClPath(self, path):
     """Helper which prepends path with the native client source directory."""
     return os.path.join(self.root_path, 'native_client', path)
@@ -639,11 +644,47 @@ class Builder(CommandRunner):
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
 
+  def VerifyArchive(self, archive_file, verbose=False):
+    """Check the object size from the result of 'ar tv foo.a'.
+
+    'ar tv foo.a' shows information like the following:
+    rw-r--r-- 0/0  1024 Jan  1 09:00 something1.o
+    rw-r--r-- 0/0 12023 Jan  1 09:00 something2.o
+    rw-r--r-- 0/0  1124 Jan  1 09:00 something3.o
+
+    the third column is the size of object file. We parse it, and verify
+    the object size is not 0.
+
+    Args:
+      archive_file: a path to archive file to be verified.
+      verbose: print information if True.
+
+    Returns:
+      True if succeeded. False if archive_file looks corrupted.
+    """
+
+    cmd_line = [self.GetAr(), 'tv', archive_file]
+    output = self.Run(cmd_line, get_output=True)
+
+    if verbose:
+      print output
+
+    for line in output.splitlines():
+      xs = line.split()
+      if len(xs) < 3:
+        raise Error('Unexpected string: %s' % line)
+
+      object_size = xs[2]
+      if object_size == '0':
+        return False
+    return True
+
   def Archive(self, srcs):
     """Archive these objects with predetermined options and output name."""
     out = self.ArchiveOutputName()
     self.Log('\nArchive %s' % out)
 
+    needs_verify = False
     if '-r' in self.link_options:
       bin_name = self.GetCXXCompiler()
       cmd_line = [bin_name, '-o', out, '-Wl,--as-needed']
@@ -655,12 +696,43 @@ class Builder(CommandRunner):
       cmd_line = [bin_name, '-rc', out]
       if not self.empty:
         cmd_line += srcs
+      if self.IsGomaParallelBuild() and pynacl.platform.IsWindows():
+        needs_verify = True
 
     MakeDir(os.path.dirname(out))
-    self.CleanOutput(out)
-    err = self.Run(cmd_line)
-    if err:
-      raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
+
+    def RunArchive():
+      self.CleanOutput(out)
+      err = self.Run(cmd_line)
+      if err:
+        raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
+
+    RunArchive()
+
+    # HACK(shinyak): Verifies archive file on Windows if goma is used.
+    # When using goma, archive sometimes contains 0 byte object on Windows,
+    # though object file itself is not 0 byte on disk. So, we'd like to verify
+    # the content of the archive. If the archive contains 0 byte object,
+    # we'd like to retry archiving. I'm not sure this fixes the problem,
+    # however, this might give us some hints.
+    # See also: http://crbug.com/390764
+    if needs_verify:
+      ok = False
+      for retry in xrange(3):
+        if self.VerifyArchive(out):
+          ok = True
+          break
+
+        time.sleep(1)
+        print ('WARNING: found 0 byte object in %s. re-archive. (try=%d)'
+               % (out, retry + 1))
+        RunArchive()
+
+      if not ok:
+        # Show the contents of archive if not ok.
+        self.VerifyArchive(out, verbose=True)
+        raise Error('ERROR: archive is corrupted : %s' % out)
+
     return out
 
   def Strip(self, src):
@@ -941,7 +1013,7 @@ def Main(argv):
       build.Translate(list(files)[0])
       return 0
 
-    if build.gomacc and (build.goma_burst or build.goma_processes > 1):
+    if build.IsGomaParallelBuild():
       inputs = multiprocessing.Queue()
       returns = multiprocessing.Queue()
 
