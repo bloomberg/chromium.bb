@@ -33,6 +33,7 @@ const PPB_View* g_view_interface;
 struct InstanceInfo {
   PP_Instance pp_instance;
   struct PP_Size last_size;
+  PP_Resource graphics;
 
   struct InstanceInfo* next;
 };
@@ -61,10 +62,17 @@ void FlushCompletionCallback(void* user_data, int32_t result) {
 }
 
 void Repaint(struct InstanceInfo* instance, const struct PP_Size* size) {
-  PP_Resource image, graphics;
+  PP_Resource image;
   struct PP_ImageDataDesc image_desc;
   uint32_t* image_data;
   int num_words, i;
+
+  /* Ensure the graphics 2d is ready. */
+  if (!instance->graphics) {
+    instance->graphics = MakeAndBindGraphics2D(instance->pp_instance, size);
+    if (!instance->graphics)
+      return;
+  }
 
   /* Create image data to paint into. */
   image = g_image_data_interface->Create(
@@ -83,18 +91,11 @@ void Repaint(struct InstanceInfo* instance, const struct PP_Size* size) {
   for (i = 0; i < num_words; i++)
     image_data[i] = 0xFF0000FF;
 
-  /* Create the graphics 2d and paint the image to it. */
-  graphics = MakeAndBindGraphics2D(instance->pp_instance, size);
-  if (!graphics) {
-    g_core_interface->ReleaseResource(image);
-    return;
-  }
-
-  g_graphics_2d_interface->ReplaceContents(graphics, image);
-  g_graphics_2d_interface->Flush(graphics,
+  /* Paint image to graphics 2d. */
+  g_graphics_2d_interface->ReplaceContents(instance->graphics, image);
+  g_graphics_2d_interface->Flush(instance->graphics,
       PP_MakeCompletionCallback(&FlushCompletionCallback, NULL));
 
-  g_core_interface->ReleaseResource(graphics);
   g_core_interface->ReleaseResource(image);
 }
 
@@ -118,6 +119,7 @@ PP_Bool Instance_DidCreate(PP_Instance instance,
   info->pp_instance = instance;
   info->last_size.width = 0;
   info->last_size.height = 0;
+  info->graphics = 0;
 
   /* Insert into linked list of live instances. */
   info->next = all_instances;
@@ -134,6 +136,7 @@ void Instance_DidDestroy(PP_Instance instance) {
   while (cur) {
     if (instance == cur->pp_instance) {
       *prev_ptr = cur->next;
+      g_core_interface->ReleaseResource(cur->graphics);
       free(cur);
       return;
     }
