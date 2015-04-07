@@ -166,12 +166,6 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
   void ChildPreferredSizeChanged(View* child) override;
 
  private:
-  // Paints the drop indicator. This is only invoked if item is non-NULL and
-  // position is not DROP_NONE.
-  void PaintDropIndicator(gfx::Canvas* canvas,
-                          MenuItemView* item,
-                          MenuDelegate::DropPosition position);
-
   void SchedulePaintForDropIndicator(MenuItemView* item,
                                      MenuDelegate::DropPosition position);
 

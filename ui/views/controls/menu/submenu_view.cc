@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -191,8 +192,25 @@ ui::TextInputClient* SubmenuView::GetTextInputClient() {
 void SubmenuView::PaintChildren(const ui::PaintContext& context) {
   View::PaintChildren(context);
 
-  if (drop_item_ && drop_position_ != MenuDelegate::DROP_ON)
-    PaintDropIndicator(context.canvas(), drop_item_, drop_position_);
+  bool paint_drop_indicator = false;
+  if (drop_item_) {
+    switch (drop_position_) {
+      case MenuDelegate::DROP_NONE:
+      case MenuDelegate::DROP_ON:
+        break;
+      case MenuDelegate::DROP_UNKNOWN:
+      case MenuDelegate::DROP_BEFORE:
+      case MenuDelegate::DROP_AFTER:
+        paint_drop_indicator = true;
+        break;
+    }
+  }
+
+  if (paint_drop_indicator) {
+    gfx::Rect bounds = CalculateDropIndicatorBounds(drop_item_, drop_position_);
+    ui::PaintRecorder recorder(context);
+    recorder.canvas()->FillRect(bounds, kDropIndicatorColor);
+  }
 }
 
 bool SubmenuView::GetDropFormats(
@@ -443,16 +461,6 @@ const char* SubmenuView::GetClassName() const {
 
 void SubmenuView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   SchedulePaint();
-}
-
-void SubmenuView::PaintDropIndicator(gfx::Canvas* canvas,
-                                     MenuItemView* item,
-                                     MenuDelegate::DropPosition position) {
-  if (position == MenuDelegate::DROP_NONE)
-    return;
-
-  gfx::Rect bounds = CalculateDropIndicatorBounds(item, position);
-  canvas->FillRect(bounds, kDropIndicatorColor);
 }
 
 void SubmenuView::SchedulePaintForDropIndicator(
