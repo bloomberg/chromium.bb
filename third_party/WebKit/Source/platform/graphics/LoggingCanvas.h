@@ -131,6 +131,10 @@ private:
     String stringForText(const void* text, size_t byteLength, const SkPaint&);
 };
 
+#ifndef NDEBUG
+void showSkPicture(const SkPicture*);
+#endif
+
 } // namespace blink
 
 #endif // LoggingCanvas_h

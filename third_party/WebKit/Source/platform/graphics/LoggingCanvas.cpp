@@ -845,4 +845,14 @@ String LoggingCanvas::stringForText(const void* text, size_t byteLength, const S
     }
 }
 
+#ifndef NDEBUG
+void showSkPicture(const SkPicture* picture)
+{
+    const SkIRect bounds = picture->cullRect().roundOut();
+    LoggingCanvas canvas(bounds.width(), bounds.height());
+    picture->playback(&canvas);
+    WTFLogAlways("%s\n", canvas.log()->toPrettyJSONString().utf8().data());
+}
+#endif
+
 } // namespace blink

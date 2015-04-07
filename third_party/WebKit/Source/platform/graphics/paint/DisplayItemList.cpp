@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkStream.h"
 
 #ifndef NDEBUG
+#include "platform/graphics/LoggingCanvas.h"
 #include "wtf/text/StringBuilder.h"
 #include <stdio.h>
 #endif
@@ -321,6 +322,12 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displ
     }
 
     showUnderInvalidationError("display item changed", displayItem);
+#ifndef NDEBUG
+    WTFLogAlways("old picture:\n");
+    showSkPicture(oldPicture.get());
+    WTFLogAlways("new picture:\n");
+    showSkPicture(newPicture.get());
+#endif
 }
 
 void DisplayItemList::checkNoRemainingCachedDisplayItems()
