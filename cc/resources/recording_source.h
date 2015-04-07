@@ -39,8 +39,6 @@ class CC_EXPORT RecordingSource {
                                            int frame_number,
                                            RecordingMode recording_mode) = 0;
 
-  virtual void DidMoveToNewCompositor() = 0;
-
   virtual scoped_refptr<RasterSource> CreateRasterSource(
       bool can_use_lcd_text) const = 0;
 

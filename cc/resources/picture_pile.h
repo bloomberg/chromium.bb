@@ -29,7 +29,6 @@ class CC_EXPORT PicturePile : public RecordingSource {
                                    const gfx::Rect& visible_layer_rect,
                                    int frame_number,
                                    RecordingMode recording_mode) override;
-  void DidMoveToNewCompositor() override;
   scoped_refptr<RasterSource> CreateRasterSource(
       bool can_use_lcd_text) const override;
   gfx::Size GetSize() const final;
@@ -42,36 +41,9 @@ class CC_EXPORT PicturePile : public RecordingSource {
   void SetUnsuitableForGpuRasterizationForTesting() override;
   gfx::Size GetTileGridSizeForTesting() const override;
 
- protected:
-  class CC_EXPORT PictureInfo {
-   public:
-    enum { INVALIDATION_FRAMES_TRACKED = 32 };
-
-    PictureInfo();
-    ~PictureInfo();
-
-    bool Invalidate(int frame_number);
-    bool NeedsRecording(int frame_number, int distance_to_visible);
-    void SetPicture(scoped_refptr<Picture> picture);
-    const Picture* GetPicture() const;
-
-    float GetInvalidationFrequencyForTesting() const {
-      return GetInvalidationFrequency();
-    }
-
-    void ResetInvalidationHistory();
-
-   private:
-    void AdvanceInvalidationHistory(int frame_number);
-    float GetInvalidationFrequency() const;
-
-    int last_frame_number_;
-    scoped_refptr<const Picture> picture_;
-    std::bitset<INVALIDATION_FRAMES_TRACKED> invalidation_history_;
-  };
-
   typedef std::pair<int, int> PictureMapKey;
-  typedef base::hash_map<PictureMapKey, PictureInfo> PictureMap;
+  typedef base::hash_map<PictureMapKey, scoped_refptr<const Picture>>
+      PictureMap;
 
   // An internal CanRaster check that goes to the picture_map rather than
   // using the recorded_viewport hint.

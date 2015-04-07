@@ -114,9 +114,7 @@ void FakePicturePileImpl::PlaybackToCanvas(SkCanvas* canvas,
 
 bool FakePicturePileImpl::HasRecordingAt(int x, int y) const {
   PictureMap::const_iterator found = picture_map_.find(PictureMapKey(x, y));
-  if (found == picture_map_.end())
-    return false;
-  return !!found->second.GetPicture();
+  return found != picture_map_.end();
 }
 
 }  // namespace cc

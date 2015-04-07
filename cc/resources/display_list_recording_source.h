@@ -24,7 +24,6 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
                                    const gfx::Rect& visible_layer_rect,
                                    int frame_number,
                                    RecordingMode recording_mode) override;
-  void DidMoveToNewCompositor() override;
   scoped_refptr<RasterSource> CreateRasterSource(
       bool can_use_lcd_text) const override;
   gfx::Size GetSize() const final;

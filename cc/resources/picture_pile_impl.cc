@@ -135,10 +135,8 @@ void PicturePileImpl::CoalesceRasters(const gfx::Rect& canvas_rect,
     PictureMap::const_iterator map_iter = picture_map_.find(tile_iter.index());
     if (map_iter == picture_map_.end())
       continue;
-    const PictureInfo& info = map_iter->second;
-    const Picture* picture = info.GetPicture();
-    if (!picture)
-      continue;
+    const Picture* picture = map_iter->second.get();
+    DCHECK(picture);
 
     // This is intentionally *enclosed* rect, so that the clip is aligned on
     // integral post-scale content pixels and does not extend past the edges
@@ -269,8 +267,8 @@ size_t PicturePileImpl::GetPictureMemoryUsage() const {
   size_t total_size = 0;
   std::set<const Picture*> pictures_seen;
   for (const auto& map_value : picture_map_) {
-    const Picture* picture = map_value.second.GetPicture();
-    if (picture && pictures_seen.insert(picture).second)
+    const Picture* picture = map_value.second.get();
+    if (pictures_seen.insert(picture).second)
       total_size += picture->ApproximateMemoryUsage();
   }
 
@@ -357,8 +355,6 @@ bool PicturePileImpl::CanRasterSlowTileCheck(
     PictureMap::const_iterator map_iter = picture_map_.find(tile_iter.index());
     if (map_iter == picture_map_.end())
       return false;
-    if (!map_iter->second.GetPicture())
-      return false;
   }
   return true;
 }
@@ -382,8 +378,8 @@ void PicturePileImpl::AsValueInto(
     if (map_iter == picture_map_.end())
       continue;
 
-    const Picture* picture = map_iter->second.GetPicture();
-    if (picture && (appended_pictures.count(picture) == 0)) {
+    const Picture* picture = map_iter->second.get();
+    if (appended_pictures.count(picture) == 0) {
       appended_pictures.insert(picture);
       TracedValue::AppendIDRef(picture, pictures);
     }
@@ -439,8 +435,8 @@ void PicturePileImpl::PixelRefIterator::AdvanceToTilePictureWithPixelRefs() {
     if (it == picture_pile_->picture_map_.end())
       continue;
 
-    const Picture* picture = it->second.GetPicture();
-    if (!picture || (processed_pictures_.count(picture) != 0) ||
+    const Picture* picture = it->second.get();
+    if ((processed_pictures_.count(picture) != 0) ||
         !picture->WillPlayBackBitmaps())
       continue;
 
@@ -454,8 +450,8 @@ void PicturePileImpl::PixelRefIterator::AdvanceToTilePictureWithPixelRefs() {
 void PicturePileImpl::DidBeginTracing() {
   std::set<const void*> processed_pictures;
   for (const auto& map_pair : picture_map_) {
-    const Picture* picture = map_pair.second.GetPicture();
-    if (picture && (processed_pictures.count(picture) == 0)) {
+    const Picture* picture = map_pair.second.get();
+    if (processed_pictures.count(picture) == 0) {
       picture->EmitTraceSnapshot();
       processed_pictures.insert(picture);
     }

@@ -151,17 +151,19 @@ TEST_F(PicturePileTest, SmallInvalidateInflated) {
   EXPECT_EQ(1, pile_.tiling().num_tiles_x());
   EXPECT_EQ(1, pile_.tiling().num_tiles_y());
 
-  FakePicturePile::PictureInfo& picture_info =
-      pile_.picture_map().find(FakePicturePile::PictureMapKey(0, 0))->second;
-  // We should have a picture.
-  EXPECT_TRUE(!!picture_info.GetPicture());
-  gfx::Rect picture_rect = gfx::ScaleToEnclosedRect(
-      picture_info.GetPicture()->LayerRect(), min_scale_);
+  PicturePile::PictureMapKey key = FakePicturePile::PictureMapKey(0, 0);
+  PicturePile::PictureMap::iterator it = pile_.picture_map().find(key);
+  EXPECT_TRUE(it != pile_.picture_map().end());
+  const Picture* picture = it->second.get();
+  EXPECT_TRUE(picture);
+
+  gfx::Rect picture_rect =
+      gfx::ScaleToEnclosedRect(picture->LayerRect(), min_scale_);
 
   // The the picture should be large enough that scaling it never makes a rect
   // smaller than 1 px wide or tall.
-  EXPECT_FALSE(picture_rect.IsEmpty()) << "Picture rect " <<
-      picture_rect.ToString();
+  EXPECT_FALSE(picture_rect.IsEmpty()) << "Picture rect "
+                                       << picture_rect.ToString();
 }
 
 TEST_F(PicturePileTest, LargeInvalidateInflated) {
@@ -173,174 +175,17 @@ TEST_F(PicturePileTest, LargeInvalidateInflated) {
   EXPECT_EQ(1, pile_.tiling().num_tiles_x());
   EXPECT_EQ(1, pile_.tiling().num_tiles_y());
 
-  FakePicturePile::PictureInfo& picture_info =
-      pile_.picture_map().find(FakePicturePile::PictureMapKey(0, 0))->second;
-  EXPECT_TRUE(!!picture_info.GetPicture());
+  PicturePile::PictureMapKey key = FakePicturePile::PictureMapKey(0, 0);
+  PicturePile::PictureMap::iterator it = pile_.picture_map().find(key);
+  EXPECT_TRUE(it != pile_.picture_map().end());
+  const Picture* picture = it->second.get();
+  EXPECT_TRUE(picture);
 
   int expected_inflation = pile_.buffer_pixels();
 
-  const Picture* base_picture = picture_info.GetPicture();
   gfx::Rect base_picture_rect(tiling_size());
   base_picture_rect.Inset(-expected_inflation, -expected_inflation);
-  EXPECT_EQ(base_picture_rect.ToString(),
-            base_picture->LayerRect().ToString());
-}
-
-TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
-  gfx::Size new_tiling_size =
-      gfx::ToCeiledSize(gfx::ScaleSize(tiling_size(), 2.f));
-  // This creates initial pictures.
-  SetTilingSize(new_tiling_size);
-
-  // Due to border pixels, we should have 3 tiles.
-  EXPECT_EQ(3, pile_.tiling().num_tiles_x());
-  EXPECT_EQ(3, pile_.tiling().num_tiles_y());
-
-  // We should have 1/.125 - 1 = 7 border pixels.
-  EXPECT_EQ(7, pile_.buffer_pixels());
-  EXPECT_EQ(7, pile_.tiling().border_texels());
-
-  // Invalidate everything to have a non zero invalidation frequency.
-  UpdateWholePile();
-
-  // Invalidate something just over a tile boundary by a single pixel.
-  // This will invalidate the tile (1, 1), as well as 1 row of pixels in (1, 0).
-  Region invalidate_rect(
-      gfx::Rect(pile_.tiling().TileBoundsWithBorder(0, 0).right(),
-                pile_.tiling().TileBoundsWithBorder(0, 0).bottom() - 1,
-                50,
-                50));
-  Region expected_invalidation = invalidate_rect;
-  UpdateAndExpandInvalidation(&invalidate_rect, tiling_size(), tiling_rect());
-  EXPECT_EQ(expected_invalidation.ToString(), invalidate_rect.ToString());
-
-  for (int i = 0; i < pile_.tiling().num_tiles_x(); ++i) {
-    for (int j = 0; j < pile_.tiling().num_tiles_y(); ++j) {
-      FakePicturePile::PictureInfo& picture_info =
-          pile_.picture_map()
-              .find(FakePicturePile::PictureMapKey(i, j))
-              ->second;
-
-      // Expect (1, 1) and (1, 0) to be invalidated once more
-      // than the rest of the tiles.
-      if (i == 1 && (j == 0 || j == 1)) {
-        EXPECT_FLOAT_EQ(
-            2.0f / FakePicturePile::PictureInfo::INVALIDATION_FRAMES_TRACKED,
-            picture_info.GetInvalidationFrequencyForTesting());
-      } else {
-        EXPECT_FLOAT_EQ(
-            1.0f / FakePicturePile::PictureInfo::INVALIDATION_FRAMES_TRACKED,
-            picture_info.GetInvalidationFrequencyForTesting());
-      }
-    }
-  }
-}
-
-TEST_F(PicturePileTest, InvalidateOnFullLayer) {
-  UpdateWholePile();
-
-  // Everything was invalidated once so far.
-  for (auto& it : pile_.picture_map()) {
-    EXPECT_FLOAT_EQ(
-        1.0f / FakePicturePile::PictureInfo::INVALIDATION_FRAMES_TRACKED,
-        it.second.GetInvalidationFrequencyForTesting());
-  }
-
-  // Invalidate everything,
-  Region invalidation = tiling_rect();
-  UpdateAndExpandInvalidation(&invalidation, tiling_size(), tiling_rect());
-
-  // Everything was invalidated again.
-  for (auto& it : pile_.picture_map()) {
-    EXPECT_FLOAT_EQ(
-        2.0f / FakePicturePile::PictureInfo::INVALIDATION_FRAMES_TRACKED,
-        it.second.GetInvalidationFrequencyForTesting());
-  }
-}
-
-TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
-  gfx::Size new_tiling_size =
-      gfx::ToCeiledSize(gfx::ScaleSize(tiling_size(), 4.f));
-  SetTilingSize(new_tiling_size);
-
-  gfx::Rect viewport(tiling_size().width(), 1);
-
-  // Update the whole pile until the invalidation frequency is high.
-  for (int frame = 0; frame < 33; ++frame) {
-    UpdateWholePile();
-  }
-
-  // Make sure we have a high invalidation frequency.
-  for (int i = 0; i < pile_.tiling().num_tiles_x(); ++i) {
-    for (int j = 0; j < pile_.tiling().num_tiles_y(); ++j) {
-      FakePicturePile::PictureInfo& picture_info =
-          pile_.picture_map()
-              .find(FakePicturePile::PictureMapKey(i, j))
-              ->second;
-      EXPECT_FLOAT_EQ(1.0f, picture_info.GetInvalidationFrequencyForTesting())
-          << "i " << i << " j " << j;
-    }
-  }
-
-  // Update once more with a small viewport.
-  Region invalidation(tiling_rect());
-  UpdateAndExpandInvalidation(&invalidation, tiling_size(), viewport);
-  EXPECT_EQ(tiling_rect().ToString(), invalidation.ToString());
-
-  bool had_tiles_with_no_pictures = false;
-  for (int i = 0; i < pile_.tiling().num_tiles_x(); ++i) {
-    for (int j = 0; j < pile_.tiling().num_tiles_y(); ++j) {
-      FakePicturePile::PictureInfo& picture_info =
-          pile_.picture_map()
-              .find(FakePicturePile::PictureMapKey(i, j))
-              ->second;
-      EXPECT_FLOAT_EQ(1.0f, picture_info.GetInvalidationFrequencyForTesting());
-
-      // If the y far enough away we expect to find no picture (no re-recording
-      // happened). For close y, the picture should change.
-      if (j >= 3) {
-        EXPECT_FALSE(picture_info.GetPicture()) << "i " << i << " j " << j;
-        had_tiles_with_no_pictures = true;
-      } else {
-        EXPECT_TRUE(picture_info.GetPicture()) << "i " << i << " j " << j;
-      }
-    }
-  }
-
-  EXPECT_TRUE(had_tiles_with_no_pictures);
-
-  // Update a partial tile that doesn't get recorded. We should expand the
-  // invalidation to the entire tiles that overlap it.
-  Region small_invalidation =
-      gfx::Rect(pile_.tiling().TileBounds(3, 4).x(),
-                pile_.tiling().TileBounds(3, 4).y() + 10,
-                1,
-                1);
-  UpdateAndExpandInvalidation(&small_invalidation, tiling_size(), viewport);
-  EXPECT_TRUE(small_invalidation.Contains(gfx::UnionRects(
-      pile_.tiling().TileBounds(2, 4), pile_.tiling().TileBounds(3, 4))))
-      << small_invalidation.ToString();
-
-  // Now update with no invalidation and full viewport
-  Region empty_invalidation;
-  UpdateAndExpandInvalidation(&empty_invalidation, tiling_size(),
-                              tiling_rect());
-  EXPECT_EQ(Region().ToString(), empty_invalidation.ToString());
-
-  for (int i = 0; i < pile_.tiling().num_tiles_x(); ++i) {
-    for (int j = 0; j < pile_.tiling().num_tiles_y(); ++j) {
-      FakePicturePile::PictureInfo& picture_info =
-          pile_.picture_map()
-              .find(FakePicturePile::PictureMapKey(i, j))
-              ->second;
-      // Expect the invalidation frequency to be less than 1, since we just
-      // updated with no invalidations.
-      EXPECT_LT(picture_info.GetInvalidationFrequencyForTesting(), 1.f);
-
-      // We expect that there are pictures everywhere now.
-      EXPECT_TRUE(picture_info.GetPicture()) << "i " << i << " j " << j;
-    }
-  }
+  EXPECT_EQ(base_picture_rect.ToString(), picture->LayerRect().ToString());
 }
 
 TEST_F(PicturePileTest, ClearingInvalidatesRecordedRect) {
@@ -354,58 +199,6 @@ TEST_F(PicturePileTest, ClearingInvalidatesRecordedRect) {
   // check are both false after clearing.
   EXPECT_FALSE(pile_.CanRasterLayerRect(rect));
   EXPECT_FALSE(pile_.CanRasterSlowTileCheck(rect));
-}
-
-TEST_F(PicturePileTest, FrequentInvalidationCanRaster) {
-  // This test makes sure that if part of the page is frequently invalidated
-  // and doesn't get re-recorded, then CanRaster is not true for any
-  // tiles touching it, but is true for adjacent tiles, even if it
-  // overlaps on borders (edge case).
-  gfx::Size new_tiling_size =
-      gfx::ToCeiledSize(gfx::ScaleSize(tiling_size(), 4.f));
-  SetTilingSize(new_tiling_size);
-
-  gfx::Rect tile02_borders = pile_.tiling().TileBoundsWithBorder(0, 2);
-  gfx::Rect tile03_borders = pile_.tiling().TileBoundsWithBorder(0, 3);
-  gfx::Rect tile02_noborders = pile_.tiling().TileBounds(0, 2);
-  gfx::Rect tile03_noborders = pile_.tiling().TileBounds(0, 3);
-
-  // Sanity check these two tiles are overlapping with borders, since this is
-  // what the test is trying to repro.
-  EXPECT_TRUE(tile02_borders.Intersects(tile03_borders));
-  EXPECT_FALSE(tile02_noborders.Intersects(tile03_noborders));
-  UpdateWholePile();
-  EXPECT_TRUE(pile_.CanRasterLayerRect(tile02_noborders));
-  EXPECT_TRUE(pile_.CanRasterSlowTileCheck(tile02_noborders));
-  EXPECT_TRUE(pile_.CanRasterLayerRect(tile03_noborders));
-  EXPECT_TRUE(pile_.CanRasterSlowTileCheck(tile03_noborders));
-  // Sanity check that an initial paint goes down the fast path of having
-  // a valid recorded viewport.
-  EXPECT_TRUE(!pile_.recorded_viewport().IsEmpty());
-
-  // Update the whole layer until the invalidation frequency is high.
-  for (int frame = 0; frame < 33; ++frame) {
-    UpdateWholePile();
-  }
-
-  // Update once more with a small viewport.
-  gfx::Rect viewport(tiling_size().width(), 1);
-  Region invalidation(tiling_rect());
-  UpdateAndExpandInvalidation(&invalidation, tiling_size(), viewport);
-  EXPECT_EQ(tiling_rect().ToString(), invalidation.ToString());
-
-  // Sanity check some pictures exist and others don't.
-  EXPECT_TRUE(pile_.picture_map()
-                  .find(FakePicturePile::PictureMapKey(0, 2))
-                  ->second.GetPicture());
-  EXPECT_FALSE(pile_.picture_map()
-                   .find(FakePicturePile::PictureMapKey(0, 3))
-                   ->second.GetPicture());
-
-  EXPECT_TRUE(pile_.CanRasterLayerRect(tile02_noborders));
-  EXPECT_TRUE(pile_.CanRasterSlowTileCheck(tile02_noborders));
-  EXPECT_FALSE(pile_.CanRasterLayerRect(tile03_noborders));
-  EXPECT_FALSE(pile_.CanRasterSlowTileCheck(tile03_noborders));
 }
 
 TEST_F(PicturePileTest, NoInvalidationValidViewport) {
@@ -581,7 +374,7 @@ TEST_P(PicturePileResizeCornerTest, ResizePileOutsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -599,7 +392,7 @@ TEST_P(PicturePileResizeCornerTest, ResizePileOutsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_EQ(j < 5, it != map.end() && it->second.GetPicture());
+      EXPECT_EQ(j < 5, it != map.end() && it->second.get());
     }
   }
 
@@ -644,7 +437,7 @@ TEST_P(PicturePileResizeCornerTest, ResizePileOutsideInterestRect) {
           expect_tile = j < 5 || (j == 5 && i == 5);
           break;
       }
-      EXPECT_EQ(expect_tile, it != map.end() && it->second.GetPicture());
+      EXPECT_EQ(expect_tile, it != map.end() && it->second.get());
     }
   }
 
@@ -691,7 +484,7 @@ TEST_P(PicturePileResizeCornerTest, ResizePileOutsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_EQ(i < 5, it != map.end() && it->second.GetPicture());
+      EXPECT_EQ(i < 5, it != map.end() && it->second.get());
     }
   }
 
@@ -738,7 +531,7 @@ TEST_P(PicturePileResizeCornerTest, ResizePileOutsideInterestRect) {
           expect_tile = i < 5 || (j == 5 && i == 5);
           break;
       }
-      EXPECT_EQ(expect_tile, it != map.end() && it->second.GetPicture());
+      EXPECT_EQ(expect_tile, it != map.end() && it->second.get());
     }
   }
 
@@ -780,7 +573,7 @@ TEST_P(PicturePileResizeCornerTest, ResizePileOutsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_EQ(i < 5 && j < 5, it != map.end() && it->second.GetPicture());
+      EXPECT_EQ(i < 5 && j < 5, it != map.end() && it->second.get());
     }
   }
 
@@ -830,8 +623,8 @@ TEST_P(PicturePileResizeCornerTest, ResizePileOutsideInterestRect) {
           expect_tile = (i < 5 && j < 5) || (j == 5 && i == 5);
           break;
       }
-      EXPECT_EQ(expect_tile, it != map.end() && it->second.GetPicture())
-          << i << "," << j;
+      EXPECT_EQ(expect_tile, it != map.end() && it->second.get()) << i << ","
+                                                                  << j;
     }
   }
 
@@ -895,7 +688,7 @@ TEST_P(PicturePileResizeCornerTest, SmallResizePileOutsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -936,7 +729,7 @@ TEST_P(PicturePileResizeCornerTest, SmallResizePileOutsideInterestRect) {
             expect_tile = j < 5 || (j == 5 && i == 5);
             break;
         }
-        EXPECT_EQ(expect_tile, it != map.end() && it->second.GetPicture());
+        EXPECT_EQ(expect_tile, it != map.end() && it->second.get());
       }
     }
 
@@ -1002,7 +795,7 @@ TEST_P(PicturePileResizeCornerTest, SmallResizePileOutsideInterestRect) {
             expect_tile = i < 5 || (j == 5 && i == 5);
             break;
         }
-        EXPECT_EQ(expect_tile, it != map.end() && it->second.GetPicture());
+        EXPECT_EQ(expect_tile, it != map.end() && it->second.get());
       }
     }
 
@@ -1071,8 +864,8 @@ TEST_P(PicturePileResizeCornerTest, SmallResizePileOutsideInterestRect) {
             expect_tile = (i < 5 && j < 5) || (j == 5 && i == 5);
             break;
         }
-        EXPECT_EQ(expect_tile, it != map.end() && it->second.GetPicture())
-            << i << "," << j;
+        EXPECT_EQ(expect_tile, it != map.end() && it->second.get()) << i << ","
+                                                                    << j;
       }
     }
 
@@ -1152,7 +945,7 @@ TEST_F(PicturePileTest, ResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1167,7 +960,7 @@ TEST_F(PicturePileTest, ResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1193,7 +986,7 @@ TEST_F(PicturePileTest, ResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1216,7 +1009,7 @@ TEST_F(PicturePileTest, ResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1242,7 +1035,7 @@ TEST_F(PicturePileTest, ResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1265,7 +1058,7 @@ TEST_F(PicturePileTest, ResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1295,7 +1088,7 @@ TEST_F(PicturePileTest, ResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1333,7 +1126,7 @@ TEST_F(PicturePileTest, SmallResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1348,7 +1141,7 @@ TEST_F(PicturePileTest, SmallResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1369,7 +1162,7 @@ TEST_F(PicturePileTest, SmallResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1391,7 +1184,7 @@ TEST_F(PicturePileTest, SmallResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1412,7 +1205,7 @@ TEST_F(PicturePileTest, SmallResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1434,7 +1227,7 @@ TEST_F(PicturePileTest, SmallResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 
@@ -1455,7 +1248,7 @@ TEST_F(PicturePileTest, SmallResizePileInsideInterestRect) {
       FakePicturePile::PictureMapKey key(i, j);
       FakePicturePile::PictureMap& map = pile_.picture_map();
       FakePicturePile::PictureMap::iterator it = map.find(key);
-      EXPECT_TRUE(it != map.end() && it->second.GetPicture());
+      EXPECT_TRUE(it != map.end() && it->second.get());
     }
   }
 

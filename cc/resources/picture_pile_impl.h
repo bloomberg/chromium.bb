@@ -96,10 +96,8 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   friend class PicturePile;
   friend class PixelRefIterator;
 
-  // TODO(vmpstr): Change this when pictures are split from invalidation info.
   using PictureMapKey = PicturePile::PictureMapKey;
   using PictureMap = PicturePile::PictureMap;
-  using PictureInfo = PicturePile::PictureInfo;
 
   PicturePileImpl();
   explicit PicturePileImpl(const PicturePile* other, bool can_use_lcd_text);

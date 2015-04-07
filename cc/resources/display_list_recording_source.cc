@@ -123,10 +123,6 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
   return true;
 }
 
-void DisplayListRecordingSource::DidMoveToNewCompositor() {
-  // No invalidation history to worry about here.
-}
-
 gfx::Size DisplayListRecordingSource::GetSize() const {
   return size_;
 }

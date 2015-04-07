@@ -17,7 +17,6 @@ namespace cc {
 
 class FakePicturePile : public PicturePile {
  public:
-  using PictureInfo = PicturePile::PictureInfo;
   using PictureMapKey = PicturePile::PictureMapKey;
   using PictureMap = PicturePile::PictureMap;
 

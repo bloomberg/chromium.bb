@@ -25,16 +25,6 @@ const int kOpCountThatIsOkToAnalyze = 10;
 // the base picture in each tile.
 const int kBasePictureSize = 512;
 
-// Invalidation frequency settings. kInvalidationFrequencyThreshold is a value
-// between 0 and 1 meaning invalidation frequency between 0% and 100% that
-// indicates when to stop invalidating offscreen regions.
-// kFrequentInvalidationDistanceThreshold defines what it means to be
-// "offscreen" in terms of distance to visible in css pixels.
-// TODO(vmpstr): Remove invalidation frequency after frequently invalidated
-// content is not painted at a higher level.
-const float kInvalidationFrequencyThreshold = 0.75f;
-const int kFrequentInvalidationDistanceThreshold = 1024;
-
 // TODO(humper): The density threshold here is somewhat arbitrary; need a
 // way to set // this from the command line so we can write a benchmark
 // script and find a sweet spot.
@@ -216,11 +206,6 @@ bool PicturePile::UpdateAndExpandInvalidation(
   return true;
 }
 
-void PicturePile::DidMoveToNewCompositor() {
-  for (auto& map_pair : picture_map_)
-    map_pair.second.ResetInvalidationHistory();
-}
-
 bool PicturePile::ApplyInvalidationAndResize(const gfx::Rect& interest_rect,
                                              Region* invalidation,
                                              const gfx::Size& layer_size,
@@ -265,7 +250,7 @@ bool PicturePile::ApplyInvalidationAndResize(const gfx::Rect& interest_rect,
     for (const auto& key_picture_pair : picture_map_) {
       const PictureMapKey& key = key_picture_pair.first;
       if (key.first < min_toss_x && key.second < min_toss_y) {
-        has_any_recordings_ |= !!key_picture_pair.second.GetPicture();
+        has_any_recordings_ = true;
         continue;
       }
       to_erase.push_back(key);
@@ -437,8 +422,8 @@ bool PicturePile::ApplyInvalidationAndResize(const gfx::Rect& interest_rect,
   // can just drop/invalidate everything.
   if (invalidation->Contains(gfx::Rect(old_tiling_size)) ||
       invalidation->Contains(gfx::Rect(GetSize()))) {
-    for (auto& it : picture_map_)
-      updated = it.second.Invalidate(frame_number) || updated;
+    updated = !picture_map_.empty();
+    picture_map_.clear();
   } else {
     // Expand invalidation that is on tiles that aren't in the interest rect and
     // will not be re-recorded below. These tiles are no longer valid and should
@@ -478,8 +463,9 @@ bool PicturePile::ApplyInvalidationAndResize(const gfx::Rect& interest_rect,
         if (picture_it == picture_map_.end())
           continue;
 
-        // Inform the grid cell that it has been invalidated in this frame.
-        updated = picture_it->second.Invalidate(frame_number) || updated;
+        updated = true;
+        picture_map_.erase(key);
+
         // Invalidate drops the picture so the whole tile better be invalidated
         // if it won't be re-recorded below.
         DCHECK_IMPLIES(!tiling_.TileBounds(key.first, key.second)
@@ -506,29 +492,8 @@ void PicturePile::GetInvalidTileRects(const gfx::Rect& interest_rect,
   for (TilingData::Iterator it(&tiling_, interest_rect, include_borders); it;
        ++it) {
     const PictureMapKey& key = it.index();
-    PictureInfo& info = picture_map_[key];
-
-    gfx::Rect rect = PaddedRect(key);
-    int distance_to_visible =
-        rect.ManhattanInternalDistance(visible_layer_rect);
-
-    if (info.NeedsRecording(frame_number, distance_to_visible)) {
-      gfx::Rect tile = tiling_.TileBounds(key.first, key.second);
-      invalid_tiles->push_back(tile);
-    } else if (!info.GetPicture()) {
-      if (recorded_viewport_.Intersects(rect)) {
-        // Recorded viewport is just an optimization for a fully recorded
-        // interest rect.  In this case, a tile in that rect has declined
-        // to be recorded (probably due to frequent invalidations).
-        // TODO(enne): Shrink the recorded_viewport_ rather than clearing.
-        recorded_viewport_ = gfx::Rect();
-      }
-
-      // If a tile in the interest rect is not recorded, the entire tile needs
-      // to be considered invalid, so that we know not to keep around raster
-      // tiles that intersect this recording tile.
-      invalidation->Union(tiling_.TileBounds(it.index_x(), it.index_y()));
-    }
+    if (picture_map_.find(key) == picture_map_.end())
+      invalid_tiles->push_back(tiling_.TileBounds(key.first, key.second));
   }
 }
 
@@ -570,8 +535,7 @@ void PicturePile::CreatePictures(ContentLayerClient* painter,
       const PictureMapKey& key = it.index();
       gfx::Rect tile = PaddedRect(key);
       if (padded_record_rect.Contains(tile)) {
-        PictureInfo& info = picture_map_[key];
-        info.SetPicture(picture);
+        picture_map_[key] = picture;
         found_tile_for_recorded_picture = true;
       }
     }
@@ -657,8 +621,6 @@ bool PicturePile::CanRasterSlowTileCheck(const gfx::Rect& layer_rect) const {
     PictureMap::const_iterator map_iter = picture_map_.find(tile_iter.index());
     if (map_iter == picture_map_.end())
       return false;
-    if (!map_iter->second.GetPicture())
-      return false;
   }
   return true;
 }
@@ -672,7 +634,7 @@ void PicturePile::DetermineIfSolidColor() {
   }
 
   PictureMap::const_iterator it = picture_map_.begin();
-  const Picture* picture = it->second.GetPicture();
+  const Picture* picture = it->second.get();
 
   // Missing recordings due to frequent invalidations or being too far away
   // from the interest rect will cause the a null picture to exist.
@@ -685,7 +647,7 @@ void PicturePile::DetermineIfSolidColor() {
 
   // Make sure all of the mapped images point to the same picture.
   for (++it; it != picture_map_.end(); ++it) {
-    if (it->second.GetPicture() != picture)
+    if (it->second.get() != picture)
       return;
   }
 
@@ -715,67 +677,12 @@ void PicturePile::Clear() {
   is_solid_color_ = false;
 }
 
-PicturePile::PictureInfo::PictureInfo() : last_frame_number_(0) {
-}
-
-PicturePile::PictureInfo::~PictureInfo() {
-}
-
-void PicturePile::PictureInfo::AdvanceInvalidationHistory(int frame_number) {
-  DCHECK_GE(frame_number, last_frame_number_);
-  if (frame_number == last_frame_number_)
-    return;
-
-  invalidation_history_ <<= (frame_number - last_frame_number_);
-  last_frame_number_ = frame_number;
-}
-
-bool PicturePile::PictureInfo::Invalidate(int frame_number) {
-  AdvanceInvalidationHistory(frame_number);
-  invalidation_history_.set(0);
-
-  bool did_invalidate = !!picture_.get();
-  picture_ = NULL;
-  return did_invalidate;
-}
-
-bool PicturePile::PictureInfo::NeedsRecording(int frame_number,
-                                              int distance_to_visible) {
-  AdvanceInvalidationHistory(frame_number);
-
-  // We only need recording if we don't have a picture. Furthermore, we only
-  // need a recording if we're within frequent invalidation distance threshold
-  // or the invalidation is not frequent enough (below invalidation frequency
-  // threshold).
-  return !picture_.get() &&
-         ((distance_to_visible <= kFrequentInvalidationDistanceThreshold) ||
-          (GetInvalidationFrequency() < kInvalidationFrequencyThreshold));
-}
-
-void PicturePile::PictureInfo::ResetInvalidationHistory() {
-  invalidation_history_.reset();
-  last_frame_number_ = 0;
-}
-
 void PicturePile::SetBufferPixels(int new_buffer_pixels) {
   if (new_buffer_pixels == buffer_pixels())
     return;
 
   Clear();
   tiling_.SetBorderTexels(new_buffer_pixels);
-}
-
-void PicturePile::PictureInfo::SetPicture(scoped_refptr<Picture> picture) {
-  picture_ = picture;
-}
-
-const Picture* PicturePile::PictureInfo::GetPicture() const {
-  return picture_.get();
-}
-
-float PicturePile::PictureInfo::GetInvalidationFrequency() const {
-  return invalidation_history_.count() /
-         static_cast<float>(INVALIDATION_FRAMES_TRACKED);
 }
 
 }  // namespace cc
