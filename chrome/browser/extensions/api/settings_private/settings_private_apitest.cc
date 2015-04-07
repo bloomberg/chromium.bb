@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_delegate.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_delegate_factory.h"
@@ -16,14 +17,18 @@ namespace extensions {
 
 namespace {
 
-const char kTestPrefName[] = "test.foo_bar";
-const char kTestPrefValue[] = "baz";
+const char kTestPrefName[] = "download.default_directory";
+const char kTestPrefValue[] = "/Downloads";
 
 class TestDelegate : public SettingsPrivateDelegate {
  public:
   explicit TestDelegate(Profile* profile) : SettingsPrivateDelegate(profile) {}
 
   bool SetPref(const std::string& name, const base::Value* value) override {
+    // Write to the actual pref service, so that the SettingsPrivateEventRouter
+    // dispatches an onPrefsChanged event.
+    PrefService* pref_service = profile_->GetPrefs();
+    pref_service->Set(name.c_str(), *value);
     return true;
   }
 
@@ -108,6 +113,10 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetPref) {
 
 IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetAllPrefs) {
   EXPECT_TRUE(RunSettingsSubtest("getAllPrefs")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, OnPrefsChanged) {
+  EXPECT_TRUE(RunSettingsSubtest("onPrefsChanged")) << message_;
 }
 
 }  // namespace extensions

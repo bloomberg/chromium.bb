@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_function.h"
@@ -43,11 +42,10 @@ class SettingsPrivateDelegate : public KeyedService {
   // Gets the values of all whitelisted prefs.
   virtual scoped_ptr<base::Value> GetAllPrefs();
 
- private:
-  PrefService* FindServiceForPref(const std::string& pref_name);
-
+ protected:
   Profile* profile_;  // weak; not owned by us
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateDelegate);
 };
 

@@ -56,7 +56,7 @@ namespace settingsPrivate {
   interface Events {
     // Fired when a set of prefs has changed.
     //
-    // |callback|: Callback fired with a list of prefs that changed.
-    static void onPrefsChanged(GetAllPrefsCallback callback);
+    // |prefs| The prefs that changed.
+    static void onPrefsChanged(PrefObject[] prefs);
   };
 };

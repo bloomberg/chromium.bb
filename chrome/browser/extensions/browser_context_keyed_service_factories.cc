@@ -30,6 +30,7 @@
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/extensions/api/sessions/sessions_api.h"
 #include "chrome/browser/extensions/api/settings_overrides/settings_overrides_api.h"
+#include "chrome/browser/extensions/api/settings_private/settings_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_manager.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
@@ -125,6 +126,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::ScreenlockPrivateEventRouter::GetFactoryInstance();
   extensions::SessionsAPI::GetFactoryInstance();
+  extensions::SettingsPrivateEventRouterFactory::GetInstance();
   extensions::SettingsOverridesAPI::GetFactoryInstance();
   extensions::SignedInDevicesManager::GetFactoryInstance();
 #if defined(ENABLE_SPELLCHECK)

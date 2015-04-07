@@ -6,7 +6,8 @@
 // that callbacks are correctly invoked, expected parameters are correct,
 // and failures are detected.
 
-var kTestPrefName = 'test.foo_bar';
+var kTestPrefName = 'download.default_directory';
+var kTestPrefValue = '/Downloads';
 var kTestPageId = 'pageId';
 
 function callbackResult(result) {
@@ -20,7 +21,7 @@ var availableTests = [
   function setPref() {
     chrome.settingsPrivate.setPref(
         kTestPrefName,
-        true,
+        kTestPrefValue,
         kTestPageId,
         function(success) {
           callbackResult(success);
@@ -43,6 +44,21 @@ var availableTests = [
           callbackResult(true);
           chrome.test.succeed();
         });
+  },
+  function onPrefsChanged() {
+    chrome.settingsPrivate.onPrefsChanged.addListener(function(prefs) {
+      chrome.test.assertTrue(prefs.length > 0);
+      chrome.test.assertEq(kTestPrefName, prefs[0].key);
+      chrome.test.assertEq(kTestPrefValue, prefs[0].value);
+      callbackResult(true);
+      chrome.test.succeed();
+    });
+
+    chrome.settingsPrivate.setPref(
+        kTestPrefName,
+        kTestPrefValue,
+        kTestPageId,
+        function() {});
   },
 ];
 
