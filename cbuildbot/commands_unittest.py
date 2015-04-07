@@ -754,6 +754,25 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     self.assertEquals(path, ['a.zip'])
     self.assertExists(os.path.join(archive_dir, path[0]))
 
+  def testGceTarballGeneration(self):
+    """Verifies BuildGceTarball produces correct archives"""
+    image_dir = os.path.join(self.tempdir, 'inputs')
+    archive_dir = os.path.join(self.tempdir, 'outputs')
+    image = 'a.bin'
+    output = 'a-gce.tar.gz'
+
+    osutils.SafeMakedirs(image_dir)
+    osutils.SafeMakedirs(archive_dir)
+    osutils.Touch(os.path.join(image_dir, image))
+
+    commands.BuildGceTarball(archive_dir, image_dir, image, output)
+    output_path = os.path.join(archive_dir, output)
+
+    self.assertExists(output_path)
+
+    # GCE expects the tarball to be in a particular format.
+    cros_test_lib.VerifyTarball(output_path, ['disk.raw'])
+
 
 class ImageTestCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
   """Test commands related to ImageTest tests."""

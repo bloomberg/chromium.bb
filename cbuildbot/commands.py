@@ -1867,6 +1867,30 @@ def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
   return [filename]
 
 
+def BuildGceTarball(archive_dir, image_dir, image, output):
+  """Builds a tarball that can be converted into a GCE image.
+
+  GCE has some very specific requirements about the format of VM
+  images. The full list can be found at
+  https://cloud.google.com/compute/docs/tutorials/building-images#requirements
+
+  Args:
+    archive_dir: Directory to store the output tarball.
+    image_dir: Directory where raw disk file can be found.
+    image: Name of raw disk file.
+    output: Basename of the resulting tarball.
+  """
+  with osutils.TempDir() as tempdir:
+    temp_disk_raw = os.path.join(tempdir, 'disk.raw')
+    output_file = os.path.join(archive_dir, output)
+    os.symlink(os.path.join(image_dir, image), temp_disk_raw)
+
+    cros_build_lib.CreateTarball(
+        output_file, tempdir, inputs=['disk.raw'],
+        compression=cros_build_lib.COMP_GZIP, extra_args=['--dereference'])
+    return output_file
+
+
 def BuildFirmwareArchive(buildroot, board, archive_dir):
   """Build firmware_from_source.tar.bz2 in archive_dir from build root.
 
