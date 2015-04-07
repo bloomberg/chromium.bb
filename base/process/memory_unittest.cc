@@ -26,6 +26,7 @@
 #endif
 #if defined(OS_LINUX)
 #include <malloc.h>
+#include "base/test/malloc_wrapper.h"
 #endif
 
 #if defined(OS_WIN)
@@ -234,13 +235,11 @@ TEST_F(OutOfMemoryDeathTest, Memalign) {
 
 TEST_F(OutOfMemoryDeathTest, ViaSharedLibraries) {
   // This tests that the run-time symbol resolution is overriding malloc for
-  // shared libraries (including libc itself) as well as for our code.
-  std::string format = base::StringPrintf("%%%zud", test_size_);
-  char *value = NULL;
+  // shared libraries as well as for our code.
   ASSERT_DEATH({
-      SetUpInDeathAssert();
-      EXPECT_EQ(-1, asprintf(&value, format.c_str(), 0));
-    }, "");
+    SetUpInDeathAssert();
+    value_ = MallocWrapper(test_size_);
+  }, "");
 }
 #endif  // OS_LINUX
 

@@ -758,11 +758,17 @@
             'message_loop/message_pump_glib_unittest.cc',
           ]
         }],
-        ['OS == "linux" and use_allocator!="none"', {
-            'dependencies': [
-              'allocator/allocator.gyp:allocator',
-            ],
-          },
+        ['OS == "linux"', {
+          'dependencies': [
+            'malloc_wrapper',
+          ],
+          'conditions': [
+            ['use_allocator!="none"', {
+              'dependencies': [
+                'allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ]},
         ],
         ['OS == "win"', {
           'sources!': [
@@ -1325,6 +1331,20 @@
             '../build/android/increase_size_for_speed.gypi',
           ],
         },
+      ],
+    }],
+    ['OS == "linux"', {
+      'targets': [
+        {
+          'target_name': 'malloc_wrapper',
+          'type': 'shared_library',
+          'dependencies': [
+            'base',
+          ],
+          'sources': [
+            'test/malloc_wrapper.cc',
+          ],
+        }
       ],
     }],
     ['OS == "android"', {

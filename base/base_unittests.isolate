@@ -50,6 +50,13 @@
         'read_only': 1,
       },
     }],
+    ['OS=="linux"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/lib/libmalloc_wrapper.so',
+        ],
+      },
+    }],
     ['OS=="mac" and asan==1 and fastbuild==0', {
       'variables': {
         'files': [
