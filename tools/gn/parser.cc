@@ -388,9 +388,10 @@ scoped_ptr<ParseNode> Parser::BinaryOperator(scoped_ptr<ParseNode> left,
   scoped_ptr<ParseNode> right =
       ParseExpression(expressions_[token.type()].precedence + 1);
   if (!right) {
-    *err_ =
-        Err(token,
-            "Expected right hand side for '" + token.value().as_string() + "'");
+    if (!has_error()) {
+      *err_ = Err(token, "Expected right hand side for '" +
+                             token.value().as_string() + "'");
+    }
     return scoped_ptr<ParseNode>();
   }
   scoped_ptr<BinaryOpNode> binary_op(new BinaryOpNode);

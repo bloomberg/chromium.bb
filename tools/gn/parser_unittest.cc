@@ -204,7 +204,7 @@ TEST(Parser, List) {
       " LITERAL(3)\n"
       " LITERAL(4)\n");
 
-  DoExpressionErrorTest("[a, 2+,]", 1, 6);
+  DoExpressionErrorTest("[a, 2+,]", 1, 7);
   DoExpressionErrorTest("[,]", 1, 2);
   DoExpressionErrorTest("[a,,]", 1, 4);
 }
@@ -243,6 +243,9 @@ TEST(Parser, Accessor) {
                     "   LITERAL(2)\n");
   DoParserErrorTest("a = b.c.d", 1, 6);  // Can't nest accessors (currently).
   DoParserErrorTest("a.b = 5", 1, 1);  // Can't assign to accessors (currently).
+
+  // Error at the bad dot in the RHS, not the + operator (crbug.com/472038).
+  DoParserErrorTest("foo(a + b.c.d)", 1, 10);
 }
 
 TEST(Parser, Condition) {
