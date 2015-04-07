@@ -7,22 +7,42 @@
 #include "cc/resources/tiling_set_eviction_queue.h"
 
 namespace cc {
+namespace {
+
+bool IsSharedOutOfOrderTile(WhichTree tree, const Tile* tile) {
+  if (!tile->is_shared())
+    return false;
+
+  // The priority for tile priority of a shared tile will be a combined
+  // priority thus return shared tiles from a higher priority tree as
+  // it is out of order for a lower priority tree.
+  WhichTree twin_tree = tree == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
+  const TilePriority& priority = tile->priority(tree);
+  const TilePriority& twin_priority = tile->priority(twin_tree);
+  if (priority.priority_bin != twin_priority.priority_bin)
+    return priority.priority_bin > twin_priority.priority_bin;
+  const bool occluded = tile->is_occluded(tree);
+  const bool twin_occluded = tile->is_occluded(twin_tree);
+  if (occluded != twin_occluded)
+    return occluded;
+  if (priority.distance_to_visible != twin_priority.distance_to_visible)
+    return priority.distance_to_visible > twin_priority.distance_to_visible;
+
+  // If priorities are the same, it does not matter which tree returns
+  // the tile. Let's pick the pending tree.
+  return tree != PENDING_TREE;
+}
+
+}  // namespace
 
 TilingSetEvictionQueue::TilingSetEvictionQueue(
     PictureLayerTilingSet* tiling_set,
-    TreePriority tree_priority,
     bool skip_shared_out_of_order_tiles)
     : tiling_set_(tiling_set),
       tree_(tiling_set->client()->GetTree()),
-      tree_priority_(tree_priority),
-      skip_all_shared_tiles_(
-          skip_shared_out_of_order_tiles &&
-          tree_priority == (tree_ == ACTIVE_TREE ? NEW_CONTENT_TAKES_PRIORITY
-                                                 : SMOOTHNESS_TAKES_PRIORITY)),
       skip_shared_out_of_order_tiles_(skip_shared_out_of_order_tiles),
       processing_soon_border_rect_(false),
-      processing_tiling_with_required_for_activation_tiles_(false),
-      tiling_index_with_required_for_activation_tiles_(0u),
+      processing_required_for_activation_tiles_(false),
       current_priority_bin_(TilePriority::EVENTUALLY),
       current_tiling_index_(0u),
       current_tiling_range_type_(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES),
@@ -30,9 +50,6 @@ TilingSetEvictionQueue::TilingSetEvictionQueue(
   // Early out if the layer has no tilings.
   if (!tiling_set_->num_tilings())
     return;
-
-  tiling_index_with_required_for_activation_tiles_ =
-      TilingIndexWithRequiredForActivationTiles();
 
   current_tiling_index_ = CurrentTilingRange().start - 1u;
   AdvanceToNextValidTiling();
@@ -67,8 +84,7 @@ bool TilingSetEvictionQueue::AdvanceToNextEvictionTile() {
   // tiling. This is done while advancing to a new tiling and while popping
   // the current tile.
 
-  bool required_for_activation =
-      processing_tiling_with_required_for_activation_tiles_;
+  bool required_for_activation = processing_required_for_activation_tiles_;
 
   for (;;) {
     while (spiral_iterator_) {
@@ -77,13 +93,11 @@ bool TilingSetEvictionQueue::AdvanceToNextEvictionTile() {
       ++spiral_iterator_;
       if (!tile || !tile->HasResource())
         continue;
-      if (skip_all_shared_tiles_ && tile->is_shared())
-        continue;
       current_tiling_->UpdateTileAndTwinPriority(tile);
-      if (skip_shared_out_of_order_tiles_ && IsSharedOutOfOrderTile(tile))
+      if (skip_shared_out_of_order_tiles_ &&
+          IsSharedOutOfOrderTile(tree_, tile))
         continue;
-      if (tile->required_for_activation() != required_for_activation)
-        continue;
+      DCHECK_EQ(tile->required_for_activation(), required_for_activation);
       current_eviction_tile_ = tile;
       return true;
     }
@@ -110,8 +124,6 @@ bool TilingSetEvictionQueue::AdvanceToNextEvictionTile() {
     ++visible_iterator_;
     if (!tile || !tile->HasResource())
       continue;
-    if (skip_all_shared_tiles_ && tile->is_shared())
-      continue;
     // If the max tile priority is not NOW, updated priorities for tiles
     // returned by the visible iterator will not have NOW (but EVENTUALLY)
     // priority bin and cannot therefore be required for activation tiles nor
@@ -132,7 +144,7 @@ bool TilingSetEvictionQueue::AdvanceToNextEvictionTile() {
       }
     }
     current_tiling_->UpdateTileAndTwinPriority(tile);
-    if (skip_shared_out_of_order_tiles_ && IsSharedOutOfOrderTile(tile))
+    if (skip_shared_out_of_order_tiles_ && IsSharedOutOfOrderTile(tree_, tile))
       continue;
     if (tile->required_for_activation() != required_for_activation)
       continue;
@@ -150,7 +162,7 @@ bool TilingSetEvictionQueue::AdvanceToNextEvictionTile() {
     if (!tile->HasResource())
       continue;
     current_tiling_->UpdateTileAndTwinPriority(tile);
-    if (skip_shared_out_of_order_tiles_ && IsSharedOutOfOrderTile(tile))
+    if (skip_shared_out_of_order_tiles_ && IsSharedOutOfOrderTile(tree_, tile))
       continue;
     if (tile->required_for_activation() != required_for_activation)
       continue;
@@ -206,19 +218,13 @@ bool TilingSetEvictionQueue::AdvanceToNextTilingRangeType() {
       return true;
     case PictureLayerTilingSet::HIGH_RES:
       // Process required for activation tiles (unless that has already been
-      // done for the current priority bin) if there is a tiling with required
-      // for activation tiles and that tiling may have required for activation
-      // tiles having the current priority bin (in the pending tree only NOW
-      // tiles may be required for activation).
-      if (!processing_tiling_with_required_for_activation_tiles_ &&
-          tiling_index_with_required_for_activation_tiles_ <
-              tiling_set_->num_tilings() &&
-          (current_priority_bin_ == TilePriority::NOW ||
-           tree_ == ACTIVE_TREE)) {
-        processing_tiling_with_required_for_activation_tiles_ = true;
+      // done). Only pending tree NOW tiles may be required for activation.
+      if (!processing_required_for_activation_tiles_ &&
+          current_priority_bin_ == TilePriority::NOW && tree_ == PENDING_TREE) {
+        processing_required_for_activation_tiles_ = true;
         return true;
       }
-      processing_tiling_with_required_for_activation_tiles_ = false;
+      processing_required_for_activation_tiles_ = false;
 
       if (!AdvanceToNextPriorityBin())
         return false;
@@ -290,10 +296,6 @@ bool TilingSetEvictionQueue::AdvanceToNextValidTiling() {
 
 PictureLayerTilingSet::TilingRange
 TilingSetEvictionQueue::CurrentTilingRange() const {
-  if (processing_tiling_with_required_for_activation_tiles_)
-    return PictureLayerTilingSet::TilingRange(
-        tiling_index_with_required_for_activation_tiles_,
-        tiling_index_with_required_for_activation_tiles_ + 1);
   return tiling_set_->GetTilingRange(current_tiling_range_type_);
 }
 
@@ -315,76 +317,6 @@ size_t TilingSetEvictionQueue::CurrentTilingIndex() const {
   }
   NOTREACHED();
   return 0;
-}
-
-bool TilingSetEvictionQueue::IsSharedOutOfOrderTile(const Tile* tile) const {
-  if (!tile->is_shared())
-    return false;
-
-  switch (tree_priority_) {
-    case SMOOTHNESS_TAKES_PRIORITY:
-      DCHECK_EQ(ACTIVE_TREE, tree_);
-      return false;
-    case NEW_CONTENT_TAKES_PRIORITY:
-      DCHECK_EQ(PENDING_TREE, tree_);
-      return false;
-    case SAME_PRIORITY_FOR_BOTH_TREES:
-      break;
-  }
-
-  // The priority for tile priority of a shared tile will be a combined
-  // priority thus return shared tiles from a higher priority tree as
-  // it is out of order for a lower priority tree.
-  WhichTree twin_tree = tree_ == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
-  const TilePriority& priority = tile->priority(tree_);
-  const TilePriority& twin_priority = tile->priority(twin_tree);
-  if (priority.priority_bin != twin_priority.priority_bin)
-    return priority.priority_bin > twin_priority.priority_bin;
-  const bool occluded = tile->is_occluded(tree_);
-  const bool twin_occluded = tile->is_occluded(twin_tree);
-  if (occluded != twin_occluded)
-    return occluded;
-  if (priority.distance_to_visible != twin_priority.distance_to_visible)
-    return priority.distance_to_visible > twin_priority.distance_to_visible;
-
-  // If priorities are the same, it does not matter which tree returns
-  // the tile. Let's pick the pending tree.
-  return tree_ != PENDING_TREE;
-}
-
-size_t TilingSetEvictionQueue::TilingIndexWithRequiredForActivationTiles()
-    const {
-  // Returns the tiling index of the tiling with requuired for activation tiles.
-  // If no such tiling exists, returns the past-the-last index (num_tilings).
-  size_t num_tilings = tiling_set_->num_tilings();
-
-  if (tree_ == PENDING_TREE) {
-    // For the pending tree, the tiling with required for activation tiles is
-    // the high res one.
-    PictureLayerTilingSet::TilingRange high_res_tiling_range =
-        tiling_set_->GetTilingRange(PictureLayerTilingSet::HIGH_RES);
-    if (high_res_tiling_range.start != high_res_tiling_range.end)
-      return high_res_tiling_range.start;
-  } else {
-    DCHECK_EQ(ACTIVE_TREE, tree_);
-    // Only pending tree tiles can be required for activation. They can appear
-    // also in the active tree only if they are shared. If we skip all shared
-    // tiles, there is no need to find them as they will not be returned.
-    if (skip_all_shared_tiles_)
-      return num_tilings;
-
-    // For the active tree, the tiling with required for activation tiles is
-    // the one whose twin tiling is the high res pending tiling.
-    for (size_t i = 0; i < num_tilings; ++i) {
-      const PictureLayerTiling* tiling = tiling_set_->tiling_at(i);
-      const PictureLayerTiling* pending_tiling =
-          tiling_set_->client()->GetPendingOrActiveTwinTiling(tiling);
-      if (pending_tiling && pending_tiling->resolution() == HIGH_RESOLUTION)
-        return i;
-    }
-  }
-
-  return num_tilings;
 }
 
 }  // namespace cc

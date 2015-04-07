@@ -61,21 +61,13 @@ namespace cc {
 // true (like it should be when there is a twin layer with a twin tiling set),
 // eviction queue does not return shared which are out of order because their
 // priority for tree priority is lowered or raised by a twin layer.
-//  * If tree_priority is SAME_PRIORITY_FOR_BOTH_TREES, this happens for
-//    a tile specific lower priority tree eviction queue (because priority for
-//    tree priority is a merged priority).
-//  * If tree priority is NEW_CONTENT_TAKES_PRIORITY, this happens for
-//    an active tree eviction queue (because priority for tree priority is
-//    the pending priority).
-//  * If tree_priority is SMOOTHNESS_TAKES_PRIORITY, this happens for a pending
-//    tree eviction queue (because priority for tree priority is the active
-//    priority).
+// This happens for a tile specific lower priority tree eviction queue
+// (because eviction priority the combined priority).
 // Those skipped shared out of order tiles are when returned only by the twin
 // eviction queue.
 class CC_EXPORT TilingSetEvictionQueue {
  public:
   TilingSetEvictionQueue(PictureLayerTilingSet* tiling_set,
-                         TreePriority tree_priority,
                          bool skip_shared_out_of_order_tiles);
   ~TilingSetEvictionQueue();
 
@@ -92,17 +84,12 @@ class CC_EXPORT TilingSetEvictionQueue {
 
   PictureLayerTilingSet::TilingRange CurrentTilingRange() const;
   size_t CurrentTilingIndex() const;
-  bool IsSharedOutOfOrderTile(const Tile* tile) const;
-  size_t TilingIndexWithRequiredForActivationTiles() const;
 
   PictureLayerTilingSet* tiling_set_;
   WhichTree tree_;
-  TreePriority tree_priority_;
-  bool skip_all_shared_tiles_;
   bool skip_shared_out_of_order_tiles_;
   bool processing_soon_border_rect_;
-  bool processing_tiling_with_required_for_activation_tiles_;
-  size_t tiling_index_with_required_for_activation_tiles_;
+  bool processing_required_for_activation_tiles_;
 
   TilePriority::PriorityBin current_priority_bin_;
   PictureLayerTiling* current_tiling_;

@@ -20,8 +20,7 @@ class CC_EXPORT EvictionTilePriorityQueue {
  public:
   struct PairedTilingSetQueue {
     PairedTilingSetQueue();
-    PairedTilingSetQueue(const PictureLayerImpl::Pair& layer_pair,
-                         TreePriority tree_priority);
+    explicit PairedTilingSetQueue(const PictureLayerImpl::Pair& layer_pair);
     ~PairedTilingSetQueue();
 
     bool IsEmpty() const;

@@ -121,22 +121,16 @@ class PictureLayerImplPerfTest : public testing::Test {
     bool update_lcd_text = false;
     host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
-    TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
-                                 SMOOTHNESS_TAKES_PRIORITY,
-                                 NEW_CONTENT_TAKES_PRIORITY};
-    int priority_count = 0;
     timer_.Reset();
     do {
       int count = num_tiles;
-      scoped_ptr<TilingSetEvictionQueue> queue(
-          new TilingSetEvictionQueue(pending_layer_->picture_layer_tiling_set(),
-                                     priorities[priority_count], false));
+      scoped_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
+          pending_layer_->picture_layer_tiling_set(), false));
       while (count--) {
         ASSERT_TRUE(!queue->IsEmpty()) << "count: " << count;
         ASSERT_TRUE(queue->Top() != nullptr) << "count: " << count;
         queue->Pop();
       }
-      priority_count = (priority_count + 1) % arraysize(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -153,16 +147,10 @@ class PictureLayerImplPerfTest : public testing::Test {
     bool update_lcd_text = false;
     host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
 
-    TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
-                                 SMOOTHNESS_TAKES_PRIORITY,
-                                 NEW_CONTENT_TAKES_PRIORITY};
-    int priority_count = 0;
     timer_.Reset();
     do {
-      scoped_ptr<TilingSetEvictionQueue> queue(
-          new TilingSetEvictionQueue(pending_layer_->picture_layer_tiling_set(),
-                                     priorities[priority_count], false));
-      priority_count = (priority_count + 1) % arraysize(priorities);
+      scoped_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
+          pending_layer_->picture_layer_tiling_set(), false));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

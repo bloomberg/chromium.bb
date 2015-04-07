@@ -3125,9 +3125,8 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   EXPECT_GT(number_of_unmarked_tiles, 1u);
 
   // Tiles don't have resources yet.
-  scoped_ptr<TilingSetEvictionQueue> queue(
-      new TilingSetEvictionQueue(pending_layer_->picture_layer_tiling_set(),
-                                 SAME_PRIORITY_FOR_BOTH_TREES, false));
+  scoped_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
+      pending_layer_->picture_layer_tiling_set(), false));
   EXPECT_TRUE(queue->IsEmpty());
 
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
@@ -3139,9 +3138,8 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   Tile* last_tile = nullptr;
   size_t distance_decreasing = 0;
   size_t distance_increasing = 0;
-  queue.reset(
-      new TilingSetEvictionQueue(pending_layer_->picture_layer_tiling_set(),
-                                 SAME_PRIORITY_FOR_BOTH_TREES, false));
+  queue.reset(new TilingSetEvictionQueue(
+      pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
     if (!last_tile)
@@ -3922,113 +3920,83 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
                                         WhichTree tree,
                                         size_t expected_occluded_tile_count) {
     WhichTree twin_tree = tree == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
-    for (int priority_count = 0; priority_count <= LAST_TREE_PRIORITY;
-         ++priority_count) {
-      TreePriority tree_priority = static_cast<TreePriority>(priority_count);
-      size_t occluded_tile_count = 0u;
-      Tile* last_tile = nullptr;
-      std::set<Tile*> shared_tiles;
+    size_t occluded_tile_count = 0u;
+    Tile* last_tile = nullptr;
+    std::set<Tile*> shared_tiles;
 
-      scoped_ptr<TilingSetEvictionQueue> queue(
-          new TilingSetEvictionQueue(layer->picture_layer_tiling_set(),
-                                     tree_priority, layer && twin_layer));
-      while (!queue->IsEmpty()) {
-        Tile* tile = queue->Top();
-        if (!last_tile)
-          last_tile = tile;
-        if (tile->is_shared())
-          EXPECT_TRUE(shared_tiles.insert(tile).second);
-
-        // The only way we will encounter an occluded tile after an unoccluded
-        // tile is if the priorty bin decreased, the tile is required for
-        // activation, or the scale changed.
-        bool tile_is_occluded = tile->is_occluded(tree);
-        if (tile_is_occluded) {
-          occluded_tile_count++;
-
-          bool last_tile_is_occluded = last_tile->is_occluded(tree);
-          if (!last_tile_is_occluded) {
-            TilePriority::PriorityBin tile_priority_bin =
-                tile->priority(tree).priority_bin;
-            TilePriority::PriorityBin last_tile_priority_bin =
-                last_tile->priority(tree).priority_bin;
-
-            EXPECT_TRUE(
-                (tile_priority_bin < last_tile_priority_bin) ||
-                tile->required_for_activation() ||
-                (tile->contents_scale() != last_tile->contents_scale()));
-          }
-        }
+    scoped_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
+        layer->picture_layer_tiling_set(), layer && twin_layer));
+    while (!queue->IsEmpty()) {
+      Tile* tile = queue->Top();
+      if (!last_tile)
         last_tile = tile;
-        queue->Pop();
-      }
-      // Count also shared tiles which are occluded in the tree but which were
-      // not returned by the tiling set eviction queue. Those shared tiles
-      // shall be returned by the twin tiling set eviction queue.
-      queue.reset(
-          new TilingSetEvictionQueue(twin_layer->picture_layer_tiling_set(),
-                                     tree_priority, layer && twin_layer));
-      while (!queue->IsEmpty()) {
-        Tile* tile = queue->Top();
-        if (tile->is_shared()) {
-          EXPECT_TRUE(shared_tiles.insert(tile).second);
-          if (tile->is_occluded(tree))
-            ++occluded_tile_count;
-          // Check the reasons why the shared tile was not returned by
-          // the first tiling set eviction queue.
-          switch (tree_priority) {
-            case SAME_PRIORITY_FOR_BOTH_TREES: {
-              const TilePriority& priority = tile->priority(tree);
-              const TilePriority& priority_for_tree_priority =
-                  tile->priority_for_tree_priority(tree_priority);
-              const TilePriority& twin_priority = tile->priority(twin_tree);
-              // Check if the shared tile was not returned by the first tiling
-              // set eviction queue because it was out of order for the first
-              // tiling set eviction queue but not for the twin tiling set
-              // eviction queue.
-              if (priority.priority_bin != twin_priority.priority_bin) {
-                EXPECT_LT(priority_for_tree_priority.priority_bin,
-                          priority.priority_bin);
-                EXPECT_EQ(priority_for_tree_priority.priority_bin,
-                          twin_priority.priority_bin);
-                EXPECT_TRUE(priority_for_tree_priority.priority_bin <
-                            priority.priority_bin);
-              } else if (tile->is_occluded(tree) !=
-                         tile->is_occluded(twin_tree)) {
-                EXPECT_TRUE(tile->is_occluded(tree));
-                EXPECT_FALSE(tile->is_occluded(twin_tree));
-                EXPECT_FALSE(tile->is_occluded_combined());
-              } else if (priority.distance_to_visible !=
-                         twin_priority.distance_to_visible) {
-                EXPECT_LT(priority_for_tree_priority.distance_to_visible,
-                          priority.distance_to_visible);
-                EXPECT_EQ(priority_for_tree_priority.distance_to_visible,
-                          twin_priority.distance_to_visible);
-                EXPECT_TRUE(priority_for_tree_priority.distance_to_visible <
-                            priority.distance_to_visible);
-              } else {
-                // Shared tiles having the same active and pending priorities
-                // should be returned only by a pending tree eviction queue.
-                EXPECT_EQ(ACTIVE_TREE, tree);
-              }
-              break;
-            }
-            case SMOOTHNESS_TAKES_PRIORITY:
-              // Shared tiles should be returned only by an active tree
-              // eviction queue.
-              EXPECT_EQ(PENDING_TREE, tree);
-              break;
-            case NEW_CONTENT_TAKES_PRIORITY:
-              // Shared tiles should be returned only by a pending tree
-              // eviction queue.
-              EXPECT_EQ(ACTIVE_TREE, tree);
-              break;
-          }
+      if (tile->is_shared())
+        EXPECT_TRUE(shared_tiles.insert(tile).second);
+
+      // The only way we will encounter an occluded tile after an unoccluded
+      // tile is if the priorty bin decreased, the tile is required for
+      // activation, or the scale changed.
+      bool tile_is_occluded = tile->is_occluded(tree);
+      if (tile_is_occluded) {
+        occluded_tile_count++;
+
+        bool last_tile_is_occluded = last_tile->is_occluded(tree);
+        if (!last_tile_is_occluded) {
+          TilePriority::PriorityBin tile_priority_bin =
+              tile->priority(tree).priority_bin;
+          TilePriority::PriorityBin last_tile_priority_bin =
+              last_tile->priority(tree).priority_bin;
+
+          EXPECT_TRUE(tile_priority_bin < last_tile_priority_bin ||
+                      tile->required_for_activation() ||
+                      tile->contents_scale() != last_tile->contents_scale());
         }
-        queue->Pop();
       }
-      EXPECT_EQ(expected_occluded_tile_count, occluded_tile_count);
+      last_tile = tile;
+      queue->Pop();
     }
+    // Count also shared tiles which are occluded in the tree but which were
+    // not returned by the tiling set eviction queue. Those shared tiles
+    // shall be returned by the twin tiling set eviction queue.
+    queue.reset(new TilingSetEvictionQueue(
+        twin_layer->picture_layer_tiling_set(), layer && twin_layer));
+    while (!queue->IsEmpty()) {
+      Tile* tile = queue->Top();
+      if (tile->is_shared()) {
+        EXPECT_TRUE(shared_tiles.insert(tile).second);
+        if (tile->is_occluded(tree))
+          ++occluded_tile_count;
+        // Check the reasons why the shared tile was not returned by
+        // the first tiling set eviction queue.
+        const TilePriority& combined_priority = tile->combined_priority();
+        const TilePriority& priority = tile->priority(tree);
+        const TilePriority& twin_priority = tile->priority(twin_tree);
+        // Check if the shared tile was not returned by the first tiling
+        // set eviction queue because it was out of order for the first
+        // tiling set eviction queue but not for the twin tiling set
+        // eviction queue.
+        if (priority.priority_bin != twin_priority.priority_bin) {
+          EXPECT_LT(combined_priority.priority_bin, priority.priority_bin);
+          EXPECT_EQ(combined_priority.priority_bin, twin_priority.priority_bin);
+        } else if (tile->is_occluded(tree) != tile->is_occluded(twin_tree)) {
+          EXPECT_TRUE(tile->is_occluded(tree));
+          EXPECT_FALSE(tile->is_occluded(twin_tree));
+          EXPECT_FALSE(tile->is_occluded_combined());
+        } else if (priority.distance_to_visible !=
+                   twin_priority.distance_to_visible) {
+          EXPECT_LT(combined_priority.distance_to_visible,
+                    priority.distance_to_visible);
+          EXPECT_EQ(combined_priority.distance_to_visible,
+                    twin_priority.distance_to_visible);
+        } else {
+          // Shared tiles having the same active and pending priorities
+          // should be returned only by a pending tree eviction queue.
+          EXPECT_EQ(ACTIVE_TREE, tree);
+        }
+      }
+      queue->Pop();
+    }
+    EXPECT_EQ(expected_occluded_tile_count, occluded_tile_count);
   }
 };
 

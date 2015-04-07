@@ -89,10 +89,8 @@ void EvictionTilePriorityQueue::Build(
 
   for (std::vector<PictureLayerImpl::Pair>::const_iterator it =
            paired_layers.begin();
-       it != paired_layers.end();
-       ++it) {
-    paired_queues_.push_back(
-        make_scoped_ptr(new PairedTilingSetQueue(*it, tree_priority_)));
+       it != paired_layers.end(); ++it) {
+    paired_queues_.push_back(make_scoped_ptr(new PairedTilingSetQueue(*it)));
   }
 
   paired_queues_.make_heap(EvictionOrderComparator(tree_priority_));
@@ -120,17 +118,16 @@ EvictionTilePriorityQueue::PairedTilingSetQueue::PairedTilingSetQueue() {
 }
 
 EvictionTilePriorityQueue::PairedTilingSetQueue::PairedTilingSetQueue(
-    const PictureLayerImpl::Pair& layer_pair,
-    TreePriority tree_priority) {
+    const PictureLayerImpl::Pair& layer_pair) {
   bool skip_shared_out_of_order_tiles = layer_pair.active && layer_pair.pending;
   if (layer_pair.active) {
     active_queue = make_scoped_ptr(new TilingSetEvictionQueue(
-        layer_pair.active->picture_layer_tiling_set(), tree_priority,
+        layer_pair.active->picture_layer_tiling_set(),
         skip_shared_out_of_order_tiles));
   }
   if (layer_pair.pending) {
     pending_queue = make_scoped_ptr(new TilingSetEvictionQueue(
-        layer_pair.pending->picture_layer_tiling_set(), tree_priority,
+        layer_pair.pending->picture_layer_tiling_set(),
         skip_shared_out_of_order_tiles));
   }
 }
