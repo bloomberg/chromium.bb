@@ -67,17 +67,6 @@ scoped_ptr<gpu::GLInProcessContext> CreateContextHolder(
 }
 
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> WrapContext(
-    scoped_ptr<gpu::GLInProcessContext> context) {
-  if (!context.get())
-    return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
-
-  return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>(
-      WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
-          context.Pass(), GetDefaultAttribs()));
-}
-
-scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
-WrapContextWithAttributes(
     scoped_ptr<gpu::GLInProcessContext> context,
     const blink::WebGraphicsContext3D::Attributes& attributes) {
   if (!context.get())
@@ -96,9 +85,8 @@ class SynchronousCompositorFactoryImpl::VideoContextProvider
   VideoContextProvider(
       scoped_ptr<gpu::GLInProcessContext> gl_in_process_context)
       : gl_in_process_context_(gl_in_process_context.get()) {
-
     context_provider_ = webkit::gpu::ContextProviderInProcess::Create(
-        WrapContext(gl_in_process_context.Pass()),
+        WrapContext(gl_in_process_context.Pass(), GetDefaultAttribs()),
         "Video-Offscreen-main-thread");
     context_provider_->BindToCurrentThread();
   }
@@ -185,20 +173,21 @@ SynchronousCompositorFactoryImpl::CreateOffscreenContextProvider(
   scoped_ptr<gpu::GLInProcessContext> context = CreateContextHolder(
       attributes, nullptr, gpu::GLInProcessContextSharedMemoryLimits(), true);
   return webkit::gpu::ContextProviderInProcess::Create(
-      WrapContext(context.Pass()), debug_name);
+      WrapContext(context.Pass(), attributes), debug_name);
 }
 
 scoped_refptr<cc::ContextProvider>
 SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor() {
   DCHECK(service_.get());
 
+  blink::WebGraphicsContext3D::Attributes attributes = GetDefaultAttribs();
   gpu::GLInProcessContextSharedMemoryLimits mem_limits;
   // This is half of what RenderWidget uses because synchronous compositor
   // pipeline is only one frame deep.
   mem_limits.mapped_memory_reclaim_limit = 6 * 1024 * 1024;
   return webkit::gpu::ContextProviderInProcess::Create(
-      WrapContext(
-          CreateContextHolder(GetDefaultAttribs(), nullptr, mem_limits, true)),
+      WrapContext(CreateContextHolder(attributes, nullptr, mem_limits, true),
+                  attributes),
       "Child-Compositor");
 }
 
@@ -216,11 +205,10 @@ SynchronousCompositorFactoryImpl::CreateStreamTextureFactory(int frame_id) {
 WebGraphicsContext3DInProcessCommandBufferImpl*
 SynchronousCompositorFactoryImpl::CreateOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes) {
-  return WrapContextWithAttributes(
-             CreateContextHolder(attributes, nullptr,
-                                 gpu::GLInProcessContextSharedMemoryLimits(),
-                                 true),
-             attributes).release();
+  return WrapContext(CreateContextHolder(
+                         attributes, nullptr,
+                         gpu::GLInProcessContextSharedMemoryLimits(), true),
+                     attributes).release();
 }
 
 void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw() {
