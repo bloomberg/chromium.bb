@@ -17,7 +17,7 @@ void SessionRestoreDelegate::RestoreTabs(
   base::FieldTrial* trial =
       base::FieldTrialList::Find("SessionRestoreBackgroundLoading");
   bool active_only = true;
-  if (!trial || trial->group_name() != "Disabled") {
+  if (!trial || trial->group_name() == "Enabled") {
     TabLoader::RestoreTabs(tabs, restore_started);
     active_only = false;
   }
