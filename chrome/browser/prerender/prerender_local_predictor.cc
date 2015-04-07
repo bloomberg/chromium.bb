@@ -570,8 +570,7 @@ PrerenderLocalPredictor::PrerenderLocalPredictor(
 
 PrerenderLocalPredictor::~PrerenderLocalPredictor() {
   Shutdown();
-  for (int i = 0; i < static_cast<int>(issued_prerenders_.size()); i++) {
-    PrerenderProperties* p = issued_prerenders_[i];
+  for (PrerenderProperties* p : issued_prerenders_) {
     DCHECK(p != NULL);
     if (p->prerender_handle)
       p->prerender_handle->OnCancel();
