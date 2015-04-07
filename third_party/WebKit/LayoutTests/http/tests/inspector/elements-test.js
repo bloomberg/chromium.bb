@@ -234,6 +234,32 @@ InspectorTest.selectNodeAndWaitForStyles = function(idValue, callback)
     }
 }
 
+InspectorTest.selectPseudoElementAndWaitForStyles = function(parentId, pseudoType, callback)
+{
+    callback = InspectorTest.safeWrap(callback);
+
+    var targetNode;
+
+    waitForStylesRebuild(isPseudoElement, stylesUpdated, true);
+    InspectorTest.findNode(isPseudoElement, nodeFound)
+
+    function nodeFound(node)
+    {
+        targetNode = node;
+        WebInspector.Revealer.reveal(node);
+    }
+
+    function stylesUpdated()
+    {
+        callback(targetNode);
+    }
+
+    function isPseudoElement(node)
+    {
+        return node.parentNode && node.parentNode.getAttribute("id") === parentId && node.pseudoType() == pseudoType;
+    }
+}
+
 InspectorTest.selectNodeAndWaitForStylesWithComputed = function(idValue, callback)
 {
     callback = InspectorTest.safeWrap(callback);

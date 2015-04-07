@@ -22,60 +22,6 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-var initialize_PseudoElementsTest = function() {
-
-InspectorTest.selectIdNodeWithId = function(idValue, pseudoType, callback)
-{
-    callback = InspectorTest.safeWrap(callback);
-    function onNodeFound(node)
-    {
-        WebInspector.Revealer.reveal(node);
-        callback(node);
-    }
-
-    InspectorTest.findNode(nodeIdMatches, onNodeFound);
-    function nodeIdMatches(node)
-    {
-        return node.parentNode && node.pseudoType() === pseudoType && node.parentNode.getAttribute("id") === idValue;
-    }
-}
-
-InspectorTest.waitForPseudoIdNodeStyles = function(idValue, pseudoType, callback, requireRebuild)
-{
-    callback = InspectorTest.safeWrap(callback);
-
-    (function sniff(node, rebuild)
-    {
-        if ((rebuild || !requireRebuild) && node && node.parentNode && node.pseudoType() === pseudoType && node.parentNode.getAttribute("id") === idValue) {
-            callback();
-            return;
-        }
-        InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "_nodeStylesUpdatedForTest", sniff);
-    })(null);
-}
-
-InspectorTest.selectPseudoIdNodeAndWaitForStyles = function(idValue, pseudoType, callback)
-{
-    callback = InspectorTest.safeWrap(callback);
-
-    var targetNode;
-
-    InspectorTest.waitForPseudoIdNodeStyles(idValue, pseudoType, stylesUpdated, true);
-    InspectorTest.selectIdNodeWithId(idValue, pseudoType, nodeSelected);
-
-    function nodeSelected(node)
-    {
-        targetNode = node;
-    }
-
-    function stylesUpdated()
-    {
-        callback(targetNode);
-    }
-}
-
-};
-
 function removeLastRule()
 {
     document.styleSheets[0].deleteRule(document.styleSheets[0].cssRules.length - 1);
@@ -218,7 +164,7 @@ function test()
     function selectNodeAndDumpStyles(id, pseudoTypeName, callback)
     {
         if (pseudoTypeName)
-            InspectorTest.selectPseudoIdNodeAndWaitForStyles("inspected", pseudoTypeName, stylesCallback);
+            InspectorTest.selectPseudoElementAndWaitForStyles("inspected", pseudoTypeName, stylesCallback);
         else
             InspectorTest.selectNodeAndWaitForStyles("inspected", stylesCallback);
 
