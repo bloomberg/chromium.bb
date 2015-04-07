@@ -44,10 +44,13 @@ typedef struct usbi_cond_t_ usbi_cond_t;
 #if (!defined(HAVE_STRUCT_TIMESPEC) && !defined(_TIMESPEC_DEFINED))
 #define HAVE_STRUCT_TIMESPEC 1
 #define _TIMESPEC_DEFINED 1
+#if _MSC_VER < 1900
+// VS 2015 and above include <time.h> in stdlib.h
 struct timespec {
 		long tv_sec;
 		long tv_nsec;
 };
+#endif
 #endif /* HAVE_STRUCT_TIMESPEC | _TIMESPEC_DEFINED */
 
 // We *were* getting ETIMEDOUT from pthread.h:
