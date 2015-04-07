@@ -27,11 +27,10 @@ class JavaTestRunner(object):
   def RunTest(self, _test):
     """Runs junit tests from |self._test_suite|."""
     with tempfile.NamedTemporaryFile() as json_file:
-      command = ['java',
-                 '-Drobolectric.dependency.dir=%s' %
-                      os.path.join(constants.GetOutDirectory(), 'lib.java'),
-                 '-jar', os.path.join(constants.GetOutDirectory(), 'lib.java',
-                                      '%s.jar' % self._test_suite),
+      java_script = os.path.join(
+          constants.GetOutDirectory(), 'bin', self._test_suite)
+      command = [java_script,
+                 '-test-jars', self._test_suite + '.jar',
                  '-json-results-file', json_file.name]
       if self._test_filter:
         command.extend(['-gtest-filter', self._test_filter])

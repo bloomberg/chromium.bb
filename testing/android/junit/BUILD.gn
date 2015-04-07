@@ -14,16 +14,11 @@ java_library("junit_test_support") {
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//third_party/robolectric:robolectric_java",
+    "//third_party/robolectric:android-all-4.3_r2-robolectric-0",
   ]
 }
 
 # GYP: //testing/android/junit_test.gyp:junit_unit_tests
-java_binary("junit_unittests") {
-  testonly = true
-  deps = [
-    ":junit_test_support",
-    "//third_party/junit",
-  ]
-  main_class = "org.chromium.testing.local.JunitTestMain"
+junit_binary("junit_unittests") {
   DEPRECATED_java_in_dir = "javatests/src"
 }

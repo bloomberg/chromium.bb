@@ -8,12 +8,9 @@ import org.junit.runners.model.InitializationError;
 
 import org.robolectric.AndroidManifest;
 import org.robolectric.DependencyResolver;
-import org.robolectric.LocalDependencyResolver;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.SdkConfig;
 import org.robolectric.annotation.Config;
-
-import java.io.File;
 
 /**
  * A custom Robolectric Junit4 Test Runner. This test runner will load the
@@ -32,13 +29,7 @@ public class LocalRobolectricTestRunner extends RobolectricTestRunner {
 
     @Override
     protected final DependencyResolver getJarResolver() {
-        String dependencyDir = System.getProperty("robolectric.dependency.dir");
-        if (dependencyDir == null) {
-            throw new IllegalStateException("robolectric.dependency.dir not specified. Make sure"
-                    + " you are setting the robolectric.dependency.dir system property to the"
-                    + " directory containing Robolectric's runtime dependency jars.");
-        }
-        return new LocalDependencyResolver(new File(dependencyDir));
+        return new RobolectricClasspathDependencyResolver();
     }
 
     @Override

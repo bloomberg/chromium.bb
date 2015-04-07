@@ -9,8 +9,9 @@ import org.junit.runner.Request;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
@@ -32,10 +33,19 @@ public final class JunitTestMain {
     /**
      *  Finds all classes on the class path annotated with RunWith.
      */
-    public static Class[] findClassesFromClasspath() {
+    public static Class[] findClassesFromClasspath(String[] testJars) {
         String[] jarPaths = COLON.split(System.getProperty("java.class.path"));
-        LinkedList<Class> classes = new LinkedList<Class>();
-        for (String jp : jarPaths) {
+        List<String> testJarPaths = new ArrayList<String>(testJars.length);
+        for (String testJar: testJars) {
+            for (String jarPath: jarPaths) {
+                if (jarPath.endsWith(testJar)) {
+                    testJarPaths.add(jarPath);
+                    break;
+                }
+            }
+        }
+        List<Class> classes = new ArrayList<Class>();
+        for (String jp : testJarPaths) {
             try {
                 JarFile jf = new JarFile(jp);
                 for (Enumeration<JarEntry> eje = jf.entries(); eje.hasMoreElements();) {
@@ -48,7 +58,7 @@ public final class JunitTestMain {
                     cn = FORWARD_SLASH.matcher(cn).replaceAll(".");
                     Class<?> c = classOrNull(cn);
                     if (c != null && c.isAnnotationPresent(RunWith.class)) {
-                        classes.push(c);
+                        classes.add(c);
                     }
                 }
                 jf.close();
@@ -80,8 +90,9 @@ public final class JunitTestMain {
         core.addListener(new GtestListener(gtestLogger));
         JsonLogger jsonLogger = new JsonLogger(parser.getJsonOutputFile());
         core.addListener(new JsonListener(jsonLogger));
-        Class[] classes = findClassesFromClasspath();
+        Class[] classes = findClassesFromClasspath(parser.getTestJars());
         Request testRequest = Request.classes(new GtestComputer(gtestLogger), classes);
+
         for (String packageFilter : parser.getPackageFilters()) {
             testRequest = testRequest.filterWith(new PackageFilter(packageFilter));
         }

@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 # This file is meant to be included into a target to provide a rule to build
-# a JAR file for use on a host in a consistent manner.
+# a JAR file for use on a host in a consistent manner. If a main class is
+# specified, this file will also generate an executable to run the jar in the
+# output folder's /bin/ directory.
 #
 # To use this, create a gyp target with the following form:
 # {
@@ -69,9 +71,9 @@
             'java_sources!': ['<!@(find <@(excluded_src_paths) -name "*.java")']
           }],
           ['"<(jar_excluded_classes)" != ""', {
-            'extra_options': ['--excluded-classes=<(jar_excluded_classes)']
+            'extra_options': ['--jar-excluded-classes=<(jar_excluded_classes)']
           }],
-          ['">(main_class)" != ""', {
+          ['main_class != ""', {
             'extra_options': ['--main-class=>(main_class)']
           }]
         ],
@@ -97,6 +99,33 @@
         '^@(java_sources)',
       ],
     },
+  ],
+  'conditions': [
+    ['main_class != ""', {
+      'actions': [
+        {
+          'action_name': 'create_java_binary_script_<(_target_name)',
+          'message': 'Creating java binary script <(_target_name)',
+          'variables': {
+            'output': '<(PRODUCT_DIR)/bin/<(_target_name)',
+          },
+          'inputs': [
+            '<(DEPTH)/build/android/gyp/create_java_binary_script.py',
+            '<(jar_path)',
+          ],
+          'outputs': [
+            '<(output)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/gyp/create_java_binary_script.py',
+            '--classpath=>(input_jars_paths)',
+            '--jar-path=<(jar_path)',
+            '--output=<(output)',
+            '--main-class=>(main_class)',
+          ]
+        }
+      ]
+    }]
   ]
 }
 

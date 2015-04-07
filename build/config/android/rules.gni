@@ -776,6 +776,64 @@ template("java_binary") {
   }
 }
 
+# Declare a Junit executable target
+#
+# This target creates an executable from java code for running as a junit test
+# suite. The executable will be in the output folder's /bin/ directory.
+#
+# Variables
+#   deps: Specifies the dependencies of this target. Java targets in this list
+#     will be included in the executable (and the javac classpath).
+#
+#   java_files: List of .java files included in this library.
+#   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
+#     will be added to java_files and be included in this library.
+#   srcjars: List of srcjars to be included in this library, together with the
+#     ones obtained from srcjar_deps.
+#
+#   chromium_code: If true, extra analysis warning/errors will be enabled.
+#
+# Example
+#   junit_binary("foo") {
+#     java_files = [ "org/chromium/foo/FooTest.java" ]
+#     deps = [ ":bar_java" ]
+#   }
+template("junit_binary") {
+  set_sources_assignment_filter([])
+
+  java_binary(target_name) {
+    bypass_platform_checks = true
+    main_class = "org.chromium.testing.local.JunitTestMain"
+    testonly = true
+
+    if (defined(invoker.DEPRECATED_java_in_dir)) {
+      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
+    }
+    if (defined(invoker.chromium_code)) {
+      chromium_code = invoker.chromium_code
+    }
+    deps = [
+      "//testing/android/junit:junit_test_support",
+      "//third_party/junit",
+      "//third_party/mockito:mockito_java",
+      "//third_party/robolectric:robolectric_java",
+      "//third_party/robolectric:android-all-4.3_r2-robolectric-0",
+    ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    if (defined(invoker.java_files)) {
+      java_files = invoker.java_files
+    }
+    if (defined(invoker.srcjar_deps)) {
+      srcjar_deps = invoker.srcjar_deps
+    }
+    if (defined(invoker.srcjars)) {
+      srcjars = invoker.srcjars
+    }
+  }
+}
+
 # Declare an java library target
 #
 # Variables
