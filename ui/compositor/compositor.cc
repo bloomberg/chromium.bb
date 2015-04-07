@@ -98,10 +98,8 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   settings.main_frame_before_activation_enabled = false;
   settings.throttle_frame_production =
       !command_line->HasSwitch(switches::kDisableGpuVsync);
-#if !defined(OS_MACOSX)
   settings.renderer_settings.partial_swap_enabled =
       !command_line->HasSwitch(cc::switches::kUIDisablePartialSwap);
-#endif
 #if defined(OS_CHROMEOS)
   settings.per_tile_painting_enabled = true;
 #endif

@@ -209,7 +209,7 @@ bool ImageTransportSurfaceFBO::PostSubBuffer(
 }
 
 bool ImageTransportSurfaceFBO::SupportsPostSubBuffer() {
-  return true;
+  return false;
 }
 
 gfx::Size ImageTransportSurfaceFBO::GetSize() {
