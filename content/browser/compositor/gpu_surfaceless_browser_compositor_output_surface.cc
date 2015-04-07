@@ -30,12 +30,14 @@ GpuSurfacelessBrowserCompositorOutputSurface::
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
-  // TODO(alexst): Can't enable this on ARM since it hangs the device
-  // (crbug.com/470185). Alternatively remove this entirely once the compositor
-  // scheduling is optimized enough to work well with surfaceless.
-#if defined(ARCH_CPU_X86_FAMILY)
+  // Set |max_frames_pending| to 2 for surfaceless, which aligns scheduling
+  // more closely with the previous surfaced behavior.
+  // With a surface, swap buffer ack used to return early, before actually
+  // presenting the back buffer, enabling the browser compositor to run ahead.
+  // Surfaceless implementation acks at the time of actual buffer swap, which
+  // shifts the start of the new frame forward relative to the old
+  // implementation.
   capabilities_.max_frames_pending = 2;
-#endif
 
   gl_helper_.reset(new GLHelper(context_provider_->ContextGL(),
                                 context_provider_->ContextSupport()));
