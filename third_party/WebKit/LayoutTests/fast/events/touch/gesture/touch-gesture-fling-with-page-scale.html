@@ -54,7 +54,48 @@
               + 'the div it shouldn\'t scroll.');
   }
 
+  var scrollHandler = function() {
+    if (window.scrollY == 0 || window.scrollX == 0)
+      finishedTest();
+  }
+
+  var verticalContainerScrollHandler = function() {
+    if (verticalContainer.scrollTop < fullyScrolled)
+      finishedTest();
+  }
+
+  var horizontalContainerScrollHandler = function() {
+    if (horizontalContainer.scrollLeft < fullyScrolled)
+      finishedTest();
+  }
+
+  var setHorizontalContainerScrollsExpectation = function() {
+    horizontalContainer.addEventListener("scroll", horizontalContainerScrollHandler);
+    checkExpectation = function() {
+          shouldNotBe('horizontalContainer.scrollLeft', 'fullyScrolled');
+    }
+  }
+
+  var setVerticalContainerScrollsExpectation = function() {
+    verticalContainer.addEventListener("scroll", verticalContainerScrollHandler);
+    checkExpectation = function() {
+      shouldNotBe('verticalContainer.scrollTop', 'fullyScrolled');
+    }
+  }
+
+  var setContainerDoesntScrollExpectation = function() {
+    window.addEventListener("scroll", scrollHandler);
+    checkExpectation = function() {
+      shouldBe('verticalContainer.scrollTop', 'fullyScrolled');
+      shouldBe('horizontalContainer.scrollLeft', 'fullyScrolled');
+    }
+  }
+
   var reset = function() {
+    window.removeEventListener("scroll", scrollHandler);
+    horizontalContainer.removeEventListener("scroll", horizontalContainerScrollHandler);
+    verticalContainer.removeEventListener("scroll", verticalContainerScrollHandler);
+
     // Fully scroll both containers.
     verticalContainer.scrollTop = verticalContainer.scrollHeight;
     horizontalContainer.scrollLeft = horizontalContainer.scrollWidth;
@@ -74,10 +115,8 @@
   }
 
   var verticalFlingOverContainerTest = function() {
-    debug('Flinging vertically with mouse over container. Container should be scrolled to 0.');
-    checkExpectation = function() {
-      shouldBe('verticalContainer.scrollTop', '0');
-    }
+    debug('Flinging vertically with mouse over container. Container should be scrolled.');
+    setVerticalContainerScrollsExpectation();
     eventSender.gestureFlingCancel();
     eventSender.gestureFlingStart(
       startXInViewport,
@@ -89,10 +128,7 @@
 
   var verticalFlingNotOverContainerTest = function() {
     debug('Flinging vertically with mouse *not* over container. Container should not be scrolled at all.');
-
-    checkExpectation = function() {
-      shouldBe('verticalContainer.scrollTop', 'fullyScrolled');
-    }
+    setContainerDoesntScrollExpectation();
     eventSender.gestureFlingCancel();
     eventSender.gestureFlingStart(
       missXInViewport,
@@ -103,10 +139,8 @@
   };
 
   var horizontalFlingOverContainerTest = function() {
-    debug('Flinging horizontally with mouse over container. Container should be scrolled to 0.');
-    checkExpectation = function() {
-      shouldBe('horizontalContainer.scrollLeft', '0');
-    }
+    debug('Flinging horizontally with mouse over container. Container should be scrolled.');
+    setHorizontalContainerScrollsExpectation();
     eventSender.gestureFlingCancel();
     eventSender.gestureFlingStart(
       startXInViewport,
@@ -118,10 +152,7 @@
 
   var horizontalFlingNotOverContainerTest = function() {
     debug('Flinging horizontally with mouse *not* over container. Container should not be scrolled at all.');
-
-    checkExpectation = function() {
-      shouldBe('horizontalContainer.scrollLeft', 'fullyScrolled');
-    }
+    setContainerDoesntScrollExpectation();
     eventSender.gestureFlingCancel();
     eventSender.gestureFlingStart(
       missXInViewport,
@@ -146,19 +177,13 @@
       finishJSTest();
     } else {
       reset();
-      requestAnimationFrame(test);
+      test();
     }
   }
 
-  var scrollHandler = function() {
-    if (window.scrollY == 0 || window.scrollX == 0)
-      finishedTest();
-  }
-
   var runTest = function() {
-    window.addEventListener("scroll", scrollHandler);
     reset();
-    requestAnimationFrame(tests[currentTest]);
+    tests[currentTest]();
   }
 </script>
 

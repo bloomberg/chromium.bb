@@ -3,13 +3,15 @@ Tests that slow-path flings convert to the scaled coordinate space correctly. To
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-Flinging vertically with mouse over container. Container should be scrolled to 0.
-PASS verticalContainer.scrollTop is 0
+Flinging vertically with mouse over container. Container should be scrolled.
+PASS verticalContainer.scrollTop is not fullyScrolled
 Flinging vertically with mouse *not* over container. Container should not be scrolled at all.
 PASS verticalContainer.scrollTop is fullyScrolled
-Flinging horizontally with mouse over container. Container should be scrolled to 0.
-PASS horizontalContainer.scrollLeft is 0
+PASS horizontalContainer.scrollLeft is fullyScrolled
+Flinging horizontally with mouse over container. Container should be scrolled.
+PASS horizontalContainer.scrollLeft is not fullyScrolled
 Flinging horizontally with mouse *not* over container. Container should not be scrolled at all.
+PASS verticalContainer.scrollTop is fullyScrolled
 PASS horizontalContainer.scrollLeft is fullyScrolled
 PASS successfullyParsed is true
 
