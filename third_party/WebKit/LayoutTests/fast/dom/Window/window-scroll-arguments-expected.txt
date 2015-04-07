@@ -22,9 +22,9 @@ PASS window.scrollTo({ left: x, top: y, behavior: "auto" }) did not throw except
 PASS window.scrollTo({ left: x, top: y, behavior: "instant" }) did not throw exception.
 PASS window.scrollTo({ left: x, top: y, behavior: "smooth" }) did not throw exception.
 Testing - scrollTo with an invalid ScrollToOptions argument
-PASS window.scrollTo({ behavior: "" }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': The provided value '' is not a valid enum value of interface ScrollBehavior..
-PASS window.scrollTo({ left: x, top: y, behavior: "abcd" }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': The provided value 'abcd' is not a valid enum value of interface ScrollBehavior..
-PASS window.scrollTo({ left: x, top: y, behavior: 200 }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': The provided value '200' is not a valid enum value of interface ScrollBehavior..
+PASS window.scrollTo({ behavior: "" }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': The provided value '' is not a valid enum value of type ScrollBehavior..
+PASS window.scrollTo({ left: x, top: y, behavior: "abcd" }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': The provided value 'abcd' is not a valid enum value of type ScrollBehavior..
+PASS window.scrollTo({ left: x, top: y, behavior: 200 }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': The provided value '200' is not a valid enum value of type ScrollBehavior..
 
 window.scroll Tests
 
@@ -44,9 +44,9 @@ PASS window.scroll({ left: x, top: y, behavior: "auto" }) did not throw exceptio
 PASS window.scroll({ left: x, top: y, behavior: "instant" }) did not throw exception.
 PASS window.scroll({ left: x, top: y, behavior: "smooth" }) did not throw exception.
 Testing - scroll with an invalid ScrollToOptions argument
-PASS window.scroll({ behavior: "" }) threw exception TypeError: Failed to execute 'scroll' on 'Window': The provided value '' is not a valid enum value of interface ScrollBehavior..
-PASS window.scroll({ left: x, top: y, behavior: "abcd" }) threw exception TypeError: Failed to execute 'scroll' on 'Window': The provided value 'abcd' is not a valid enum value of interface ScrollBehavior..
-PASS window.scroll({ left: x, top: y, behavior: 200 }) threw exception TypeError: Failed to execute 'scroll' on 'Window': The provided value '200' is not a valid enum value of interface ScrollBehavior..
+PASS window.scroll({ behavior: "" }) threw exception TypeError: Failed to execute 'scroll' on 'Window': The provided value '' is not a valid enum value of type ScrollBehavior..
+PASS window.scroll({ left: x, top: y, behavior: "abcd" }) threw exception TypeError: Failed to execute 'scroll' on 'Window': The provided value 'abcd' is not a valid enum value of type ScrollBehavior..
+PASS window.scroll({ left: x, top: y, behavior: 200 }) threw exception TypeError: Failed to execute 'scroll' on 'Window': The provided value '200' is not a valid enum value of type ScrollBehavior..
 
 window.scrollBy Tests
 
@@ -66,9 +66,9 @@ PASS window.scrollBy({ left: x, top: y, behavior: "auto" }) did not throw except
 PASS window.scrollBy({ left: x, top: y, behavior: "instant" }) did not throw exception.
 PASS window.scrollBy({ left: x, top: y, behavior: "smooth" }) did not throw exception.
 Testing - scrollBy with an invalid ScrollOptions argument
-PASS window.scrollBy({ behavior: "" }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': The provided value '' is not a valid enum value of interface ScrollBehavior..
-PASS window.scrollBy({ left: x, top: y, behavior: "abcd" }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': The provided value 'abcd' is not a valid enum value of interface ScrollBehavior..
-PASS window.scrollBy({ left: x, top: y, behavior: 200 }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': The provided value '200' is not a valid enum value of interface ScrollBehavior..
+PASS window.scrollBy({ behavior: "" }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': The provided value '' is not a valid enum value of type ScrollBehavior..
+PASS window.scrollBy({ left: x, top: y, behavior: "abcd" }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': The provided value 'abcd' is not a valid enum value of type ScrollBehavior..
+PASS window.scrollBy({ left: x, top: y, behavior: 200 }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': The provided value '200' is not a valid enum value of type ScrollBehavior..
 PASS successfullyParsed is true
 
 TEST COMPLETE

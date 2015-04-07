@@ -1,4 +1,4 @@
-CONSOLE WARNING: The provided value '0' is not a valid enum value of interface OscillatorType.
+CONSOLE WARNING: The provided value '0' is not a valid enum value of type OscillatorType.
 Basic test of setting Oscillator node types.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

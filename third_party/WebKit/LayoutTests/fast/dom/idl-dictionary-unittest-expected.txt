@@ -102,8 +102,8 @@ PASS dictionaryTest.set({byteStringMember: 'Ā'}) threw exception TypeError: Fai
 Test for setting invalid USVString value
 PASS dict.usvStringMember is "_�_�_��_"
 Test for setting invalid enum value
-PASS dictionaryTest.set({enumMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'invalid' is not a valid enum value of interface InternalEnum..
-PASS dictionaryTest.set({enumArrayMember: ['foo', 'invalid', 'baz']}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'invalid' is not a valid enum value of interface InternalEnum..
+PASS dictionaryTest.set({enumMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'invalid' is not a valid enum value of type InternalEnum..
+PASS dictionaryTest.set({enumArrayMember: ['foo', 'invalid', 'baz']}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'invalid' is not a valid enum value of type InternalEnum..
 
 Test for setting invalid object value
 PASS dictionaryTest.set({objectMember: 42}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member objectMember is not an object..

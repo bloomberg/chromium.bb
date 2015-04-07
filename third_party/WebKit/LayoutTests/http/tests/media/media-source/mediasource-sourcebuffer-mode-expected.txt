@@ -1,7 +1,7 @@
-CONSOLE WARNING: The provided value 'invalidmode' is not a valid enum value of interface AppendMode.
-CONSOLE WARNING: The provided value 'null' is not a valid enum value of interface AppendMode.
-CONSOLE WARNING: The provided value '' is not a valid enum value of interface AppendMode.
-CONSOLE WARNING: The provided value 'Segments' is not a valid enum value of interface AppendMode.
+CONSOLE WARNING: The provided value 'invalidmode' is not a valid enum value of type AppendMode.
+CONSOLE WARNING: The provided value 'null' is not a valid enum value of type AppendMode.
+CONSOLE WARNING: The provided value '' is not a valid enum value of type AppendMode.
+CONSOLE WARNING: The provided value 'Segments' is not a valid enum value of type AppendMode.
  
 PASS Test initial value of SourceBuffer.mode is "segments" 
 PASS Test setting SourceBuffer.mode 

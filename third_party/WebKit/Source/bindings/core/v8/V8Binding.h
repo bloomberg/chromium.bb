@@ -919,8 +919,8 @@ template<class Collection> static void indexedPropertyEnumerator(const v8::Prope
     v8SetReturnValue(info, properties);
 }
 
-CORE_EXPORT bool isValidEnum(const String value, const char** validValues, size_t length, const String interfaceName, ExceptionState&);
-CORE_EXPORT bool isValidEnum(const Vector<String>& values, const char** validValues, size_t length, const String interfaceName, ExceptionState&);
+CORE_EXPORT bool isValidEnum(const String& value, const char** validValues, size_t length, const String& enumName, ExceptionState&);
+CORE_EXPORT bool isValidEnum(const Vector<String>& values, const char** validValues, size_t length, const String& enumName, ExceptionState&);
 
 // These methods store hidden values into an array that is stored in the internal field of a DOM wrapper.
 void addHiddenValueToArray(v8::Isolate*, v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
