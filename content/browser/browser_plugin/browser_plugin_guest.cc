@@ -179,10 +179,7 @@ void BrowserPluginGuest::SetFocus(RenderWidgetHost* rwh,
   // Restore the last seen state of text input to the view.
   RenderWidgetHostViewBase* rwhv = static_cast<RenderWidgetHostViewBase*>(
       rwh->GetView());
-  if (rwhv) {
-    rwhv->TextInputTypeChanged(last_text_input_type_, last_input_mode_,
-                               last_can_compose_inline_, last_input_flags_);
-  }
+  SendTextInputTypeChangedToView(rwhv);
 }
 
 void BrowserPluginGuest::SetTooltipText(const base::string16& tooltip_text) {
@@ -492,6 +489,23 @@ void BrowserPluginGuest::SendQueuedMessages() {
     pending_messages_.pop_front();
     SendMessageToEmbedder(message_ptr.release());
   }
+}
+
+void BrowserPluginGuest::SendTextInputTypeChangedToView(
+    RenderWidgetHostViewBase* guest_rwhv) {
+  if (!guest_rwhv)
+    return;
+
+  guest_rwhv->TextInputTypeChanged(last_text_input_type_, last_input_mode_,
+                                   last_can_compose_inline_, last_input_flags_);
+  // Enable input method for guest if it's enabled for the embedder.
+  if (!static_cast<RenderViewHostImpl*>(
+           owner_web_contents_->GetRenderViewHost())->input_method_active()) {
+    return;
+  }
+  RenderViewHostImpl* guest_rvh =
+      static_cast<RenderViewHostImpl*>(GetWebContents()->GetRenderViewHost());
+  guest_rvh->SetInputMethodActive(true);
 }
 
 void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
@@ -888,9 +902,9 @@ void BrowserPluginGuest::OnTextInputTypeChanged(ui::TextInputType type,
   last_input_flags_ = flags;
   last_can_compose_inline_ = can_compose_inline;
 
-  static_cast<RenderWidgetHostViewBase*>(
-      web_contents()->GetRenderWidgetHostView())->TextInputTypeChanged(
-          type, input_mode, can_compose_inline, flags);
+  SendTextInputTypeChangedToView(
+      static_cast<RenderWidgetHostViewBase*>(
+          web_contents()->GetRenderWidgetHostView()));
 }
 
 void BrowserPluginGuest::OnImeCancelComposition() {

@@ -63,6 +63,7 @@ class BrowserPluginGuestManager;
 class RenderViewHostImpl;
 class RenderWidgetHost;
 class RenderWidgetHostView;
+class RenderWidgetHostViewBase;
 class SiteInstance;
 struct DropData;
 
@@ -340,6 +341,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   // Forwards all messages from the |pending_messages_| queue to the embedder.
   void SendQueuedMessages();
+
+  void SendTextInputTypeChangedToView(RenderWidgetHostViewBase* guest_rwhv);
 
   // The last tooltip that was set with SetTooltipText().
   base::string16 current_tooltip_text_;
