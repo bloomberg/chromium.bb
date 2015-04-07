@@ -199,8 +199,9 @@ class CONTENT_EXPORT NavigationControllerImpl
   // that.
   void SetScreenshotManager(NavigationEntryScreenshotManager* manager);
 
-  // Discards only the pending entry.
-  void DiscardPendingEntry();
+  // Discards only the pending entry. |was_failure| should be set if the pending
+  // entry is being discarded because it failed to load.
+  void DiscardPendingEntry(bool was_failure);
 
  private:
   friend class RestoreHelper;
@@ -345,11 +346,23 @@ class CONTENT_EXPORT NavigationControllerImpl
   // the memory management.
   NavigationEntryImpl* pending_entry_;
 
-  // currently visible entry
+  // If a new entry fails loading, details about it are temporarily held here
+  // until the error page is shown. These variables are only valid if
+  // |failed_pending_entry_id_| is not 0.
+  //
+  // TODO(avi): We need a better way to handle the connection between failed
+  // loads and the subsequent load of the error page. This current approach has
+  // issues: 1. This might hang around longer than we'd like if there is no
+  // error page loaded, and 2. This doesn't work very well for frames.
+  // http://crbug.com/474261
+  int failed_pending_entry_id_;
+  bool failed_pending_entry_should_replace_;
+
+  // The index of the currently visible entry.
   int last_committed_entry_index_;
 
-  // index of pending entry if it is in entries_, or -1 if pending_entry_ is a
-  // new entry (created by LoadURL).
+  // The index of the pending entry if it is in entries_, or -1 if
+  // pending_entry_ is a new entry (created by LoadURL).
   int pending_entry_index_;
 
   // The index for the entry that is shown until a navigation occurs.  This is

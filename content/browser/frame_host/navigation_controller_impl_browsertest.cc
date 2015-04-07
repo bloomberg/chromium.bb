@@ -25,6 +25,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/url_request/url_request_failed_job.h"
 
 namespace content {
 
@@ -375,6 +376,84 @@ class LoadCommittedCapturer : public WebContentsObserver {
 };
 
 }  // namespace
+
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       ErrorPageReplacement) {
+  NavigationController& controller = shell()->web_contents()->GetController();
+  GURL error_url(
+      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_RESET));
+  net::URLRequestFailedJob::AddUrlHandler();
+
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_EQ(1, controller.GetEntryCount());
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  // Navigate to a page that fails to load. It must result in an error page, the
+  // NEW_PAGE navigation type, and an addition to the history list.
+  {
+    FrameNavigateParamsCapturer capturer(root);
+    NavigateFrameToURL(root, error_url);
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+    NavigationEntry* entry = controller.GetLastCommittedEntry();
+    EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+    EXPECT_EQ(2, controller.GetEntryCount());
+  }
+
+  // Navigate again to the page that fails to load. It must result in an error
+  // page, the EXISTING_PAGE navigation type, and no addition to the history
+  // list. We do not use SAME_PAGE here; that case only differs in that it
+  // clears the pending entry, and there is no pending entry after a load
+  // failure.
+  {
+    FrameNavigateParamsCapturer capturer(root);
+    NavigateFrameToURL(root, error_url);
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
+    NavigationEntry* entry = controller.GetLastCommittedEntry();
+    EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+    EXPECT_EQ(2, controller.GetEntryCount());
+  }
+
+  // Make a new entry ...
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_EQ(3, controller.GetEntryCount());
+
+  // ... and replace it with a failed load. (Note that when you set the
+  // should_replace_current_entry flag, the navigation is classified as NEW_PAGE
+  // because that is a classification of the renderer's behavior, and the flag
+  // is a browser-side flag.)
+  {
+    FrameNavigateParamsCapturer capturer(root);
+    NavigateToURLAndReplace(shell(), error_url);
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+    NavigationEntry* entry = controller.GetLastCommittedEntry();
+    EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+    EXPECT_EQ(3, controller.GetEntryCount());
+  }
+
+  // Make a new web ui page to force a process swap ...
+  GURL web_ui_page(std::string(kChromeUIScheme) + "://" +
+                   std::string(kChromeUIGpuHost));
+  NavigateToURL(shell(), web_ui_page);
+  EXPECT_EQ(4, controller.GetEntryCount());
+
+  // ... and replace it with a failed load. (It is NEW_PAGE for the reason noted
+  // above.)
+  {
+    FrameNavigateParamsCapturer capturer(root);
+    NavigateToURLAndReplace(shell(), error_url);
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+    NavigationEntry* entry = controller.GetLastCommittedEntry();
+    EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+    EXPECT_EQ(4, controller.GetEntryCount());
+  }
+}
 
 // Various tests for navigation type classifications. TODO(avi): It's rather
 // bogus that the same info is in two different enums; http://crbug.com/453555.

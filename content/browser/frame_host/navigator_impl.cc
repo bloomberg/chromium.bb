@@ -227,7 +227,7 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
       delegate_->ShouldPreserveAbortedURLs();
   if (controller_->GetPendingEntry() != controller_->GetVisibleEntry() ||
       !should_preserve_entry) {
-    controller_->DiscardPendingEntry();
+    controller_->DiscardPendingEntry(true);
 
     // Also force the UI to refresh.
     controller_->delegate()->NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);

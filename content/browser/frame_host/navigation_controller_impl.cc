@@ -226,6 +226,8 @@ NavigationControllerImpl::NavigationControllerImpl(
     BrowserContext* browser_context)
     : browser_context_(browser_context),
       pending_entry_(NULL),
+      failed_pending_entry_id_(0),
+      failed_pending_entry_should_replace_(false),
       last_committed_entry_index_(-1),
       pending_entry_index_(-1),
       transient_entry_index_(-1),
@@ -796,11 +798,18 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // If we are doing a cross-site reload, we need to replace the existing
   // navigation entry, not add another entry to the history. This has the side
-  // effect of removing forward browsing history, if such existed.
-  // Or if we are doing a cross-site redirect navigation,
-  // we will do a similar thing.
-  details->did_replace_entry =
-      pending_entry_ && pending_entry_->should_replace_entry();
+  // effect of removing forward browsing history, if such existed. Or if we are
+  // doing a cross-site redirect navigation, we will do a similar thing.
+  //
+  // If this is an error load, we may have already removed the pending entry
+  // when we got the notice of the load failure. If so, look at the copy of the
+  // pending parameters that were saved.
+  if (params.url_is_unreachable && failed_pending_entry_id_ != 0) {
+    details->did_replace_entry = failed_pending_entry_should_replace_;
+  } else {
+    details->did_replace_entry = pending_entry_ &&
+                                 pending_entry_->should_replace_entry();
+  }
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params);
@@ -1758,16 +1767,24 @@ void NavigationControllerImpl::FinishRestore(int selected_index,
 }
 
 void NavigationControllerImpl::DiscardNonCommittedEntriesInternal() {
-  DiscardPendingEntry();
+  DiscardPendingEntry(false);
   DiscardTransientEntry();
 }
 
-void NavigationControllerImpl::DiscardPendingEntry() {
+void NavigationControllerImpl::DiscardPendingEntry(bool was_failure) {
   // It is not safe to call DiscardPendingEntry while NavigateToEntry is in
   // progress, since this will cause a use-after-free.  (We only allow this
   // when the tab is being destroyed for shutdown, since it won't return to
   // NavigateToEntry in that case.)  http://crbug.com/347742.
   CHECK(!in_navigate_to_pending_entry_ || delegate_->IsBeingDestroyed());
+
+  if (was_failure && pending_entry_) {
+    failed_pending_entry_id_ = pending_entry_->GetUniqueID();
+    failed_pending_entry_should_replace_ =
+        pending_entry_->should_replace_entry();
+  } else {
+    failed_pending_entry_id_ = 0;
+  }
 
   if (pending_entry_index_ == -1)
     delete pending_entry_;

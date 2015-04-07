@@ -3906,7 +3906,7 @@ void WebContentsImpl::DidAccessInitialDocument() {
   // to let the user edit it and try again.  Clear it now that content might
   // show up underneath it.
   if (!IsLoading() && controller_.GetPendingEntry())
-    controller_.DiscardPendingEntry();
+    controller_.DiscardPendingEntry(false);
 
   // Update the URL display.
   NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);

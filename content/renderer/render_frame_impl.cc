@@ -2529,7 +2529,7 @@ void RenderFrameImpl::didFailProvisionalLoad(
       routing_id_, params));
 
   // Don't display an error page if this is simply a cancelled load.  Aside
-  // from being dumb, WebCore doesn't expect it and it will cause a crash.
+  // from being dumb, Blink doesn't expect it and it will cause a crash.
   if (error.reason == net::ERR_ABORTED)
     return;
 
@@ -2561,16 +2561,7 @@ void RenderFrameImpl::didFailProvisionalLoad(
   // 'replace' load.  This is necessary to avoid messing up session history.
   // Otherwise, we do a normal load, which simulates a 'go' navigation as far
   // as session history is concerned.
-  //
-  // AUTO_SUBFRAME loads should always be treated as loads that do not advance
-  // the page id.
-  //
-  // TODO(davidben): This should also take the failed navigation's replacement
-  // state into account, if a location.replace() failed.
-  bool replace =
-      navigation_state->request_params().page_id != -1 ||
-      ui::PageTransitionCoreTypeIs(navigation_state->GetTransitionType(),
-                                   ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  bool replace = commit_type != blink::WebStandardCommit;
 
   // If we failed on a browser initiated request, then make sure that our error
   // page load is regarded as the same browser initiated request.
