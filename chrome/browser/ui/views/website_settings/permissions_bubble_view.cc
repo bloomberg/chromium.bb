@@ -167,6 +167,7 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
   const gfx::FontList& GetTitleFontList() const override;
   base::string16 GetWindowTitle() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // ButtonListener:
   void ButtonPressed(views::Button* button, const ui::Event& event) override;
@@ -347,6 +348,11 @@ void PermissionsBubbleDelegateView::OnWidgetDestroying(views::Widget* widget) {
     owner_->Closing();
     owner_ = nullptr;
   }
+}
+
+void PermissionsBubbleDelegateView::GetAccessibleState(ui::AXViewState* state) {
+  views::BubbleDelegateView::GetAccessibleState(state);
+  state->role = ui::AX_ROLE_ALERT_DIALOG;
 }
 
 void PermissionsBubbleDelegateView::ButtonPressed(views::Button* button,
