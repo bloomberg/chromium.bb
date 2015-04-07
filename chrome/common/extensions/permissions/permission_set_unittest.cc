@@ -5,6 +5,8 @@
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -46,6 +48,77 @@ size_t IndexOf(const PermissionMessageStrings& warnings,
   }
 
   return warnings.size();
+}
+
+PermissionIDSet MakePermissionIDSet(APIPermission::ID id1,
+                                    APIPermission::ID id2) {
+  PermissionIDSet set;
+  set.insert(id1);
+  set.insert(id2);
+  return set;
+}
+
+PermissionIDSet MakePermissionIDSet(const APIPermissionSet& permissions) {
+  PermissionIDSet set;
+  for (const APIPermission* permission : permissions)
+    set.insert(permission->id());
+  return set;
+}
+
+std::string LegacyPermissionIDsToString(const PermissionMessageIDs& ids) {
+  std::vector<std::string> strs;
+  for (const PermissionMessage::ID& id : ids)
+    strs.push_back(base::IntToString(id));
+  return base::StringPrintf("[ %s ]", JoinString(strs, ", ").c_str());
+}
+
+std::string PermissionIDsToString(const PermissionIDSet& ids) {
+  std::vector<std::string> strs;
+  for (const PermissionID& id : ids)
+    strs.push_back(base::IntToString(id.id()));
+  return base::StringPrintf("[ %s ]", JoinString(strs, ", ").c_str());
+}
+
+std::string CoalescedPermissionIDsToString(
+    const CoalescedPermissionMessages& msgs) {
+  std::vector<std::string> strs;
+  for (const CoalescedPermissionMessage& msg : msgs)
+    strs.push_back(PermissionIDsToString(msg.permissions()));
+  return JoinString(strs, " ");
+}
+
+// Check that the given |permissions| produce a single warning message,
+// identified by |expected_legacy_id| in the old system, and by the set of
+// |expected_ids| in the new system.
+testing::AssertionResult PermissionSetProducesMessage(
+    const PermissionSet* permissions,
+    Manifest::Type extension_type,
+    PermissionMessage::ID expected_legacy_id,
+    const PermissionIDSet& expected_ids) {
+  const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
+  PermissionMessageIDs legacy_ids =
+      provider->GetLegacyPermissionMessageIDs(permissions, extension_type);
+  if (legacy_ids.size() != 1 || expected_legacy_id != legacy_ids[0]) {
+    return testing::AssertionFailure()
+           << "Expected single legacy permission ID " << expected_legacy_id
+           << " but got " << LegacyPermissionIDsToString(legacy_ids);
+  }
+
+  CoalescedPermissionMessages msgs = provider->GetCoalescedPermissionMessages(
+      provider->GetAllPermissionIDs(permissions, extension_type));
+  if (msgs.size() != 1) {
+    return testing::AssertionFailure()
+           << "Expected single permission message with IDs "
+           << PermissionIDsToString(expected_ids) << " but got " << msgs.size()
+           << " messages: " << CoalescedPermissionIDsToString(msgs);
+  }
+  if (!msgs.front().permissions().Equals(expected_ids)) {
+    return testing::AssertionFailure()
+           << "Expected permission IDs " << PermissionIDsToString(expected_ids)
+           << " but got " << PermissionIDsToString(msgs.front().permissions());
+  }
+
+  return testing::AssertionSuccess();
 }
 
 }  // namespace
@@ -799,11 +872,10 @@ TEST(PermissionsTest, FileSystemPermissionMessages) {
   scoped_refptr<PermissionSet> permissions(
       new PermissionSet(api_permissions, ManifestPermissionSet(),
                         URLPatternSet(), URLPatternSet()));
-  PermissionMessageIDs ids =
-      PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
-          permissions.get(), Manifest::TYPE_PLATFORM_APP);
-  ASSERT_EQ(1u, ids.size());
-  EXPECT_EQ(PermissionMessage::kFileSystemDirectory, ids[0]);
+  EXPECT_TRUE(PermissionSetProducesMessage(
+      permissions.get(), Manifest::TYPE_PLATFORM_APP,
+      PermissionMessage::kFileSystemDirectory,
+      MakePermissionIDSet(api_permissions)));
 }
 
 // The file system permissions have a special-case hack to show a warning for
@@ -846,11 +918,10 @@ TEST(PermissionsTest, HiddenFileSystemPermissionMessages) {
   scoped_refptr<PermissionSet> permissions(
       new PermissionSet(api_permissions, ManifestPermissionSet(),
                         URLPatternSet(), URLPatternSet()));
-  PermissionMessageIDs ids =
-      PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
-          permissions.get(), Manifest::TYPE_PLATFORM_APP);
-  ASSERT_EQ(1u, ids.size());
-  EXPECT_EQ(PermissionMessage::kFileSystemWriteDirectory, ids[0]);
+  EXPECT_TRUE(PermissionSetProducesMessage(
+      permissions.get(), Manifest::TYPE_PLATFORM_APP,
+      PermissionMessage::kFileSystemWriteDirectory,
+      MakePermissionIDSet(api_permissions)));
 }
 
 TEST(PermissionsTest, SuppressedPermissionMessages) {
@@ -864,11 +935,9 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     scoped_refptr<PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           hosts, URLPatternSet()));
-    PermissionMessageIDs ids =
-        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
-            permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, ids.size());
-    EXPECT_EQ(PermissionMessage::kTabs, ids[0]);
+    EXPECT_TRUE(PermissionSetProducesMessage(
+        permissions.get(), Manifest::TYPE_EXTENSION, PermissionMessage::kTabs,
+        MakePermissionIDSet(APIPermission::kTab, APIPermission::kFavicon)));
   }
   {
     // History warning suppresses favicon warning.
@@ -880,53 +949,51 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     scoped_refptr<PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           hosts, URLPatternSet()));
-    PermissionMessageIDs ids =
-        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
-            permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, ids.size());
-    EXPECT_EQ(PermissionMessage::kBrowsingHistory, ids[0]);
+    EXPECT_TRUE(PermissionSetProducesMessage(
+        permissions.get(), Manifest::TYPE_EXTENSION,
+        PermissionMessage::kBrowsingHistory,
+        MakePermissionIDSet(APIPermission::kHistory, APIPermission::kFavicon)));
   }
   {
     // All sites warning suppresses tabs warning.
     APIPermissionSet api_permissions;
+    api_permissions.insert(APIPermission::kTab);
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
-    api_permissions.insert(APIPermission::kTab);
     scoped_refptr<PermissionSet> permissions(new PermissionSet(
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
-    PermissionMessageIDs ids =
-        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
-            permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, ids.size());
-    EXPECT_EQ(PermissionMessage::kHostsAll, ids[0]);
+    EXPECT_TRUE(PermissionSetProducesMessage(
+        permissions.get(), Manifest::TYPE_EXTENSION,
+        PermissionMessage::kHostsAll,
+        MakePermissionIDSet(APIPermission::kHostsAll, APIPermission::kTab)));
   }
   {
     // All sites warning suppresses topSites warning.
     APIPermissionSet api_permissions;
+    api_permissions.insert(APIPermission::kTopSites);
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
-    api_permissions.insert(APIPermission::kTopSites);
     scoped_refptr<PermissionSet> permissions(new PermissionSet(
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
-    PermissionMessageIDs ids =
-        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
-            permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, ids.size());
-    EXPECT_EQ(PermissionMessage::kHostsAll, ids[0]);
+    EXPECT_TRUE(PermissionSetProducesMessage(
+        permissions.get(), Manifest::TYPE_EXTENSION,
+        PermissionMessage::kHostsAll,
+        MakePermissionIDSet(APIPermission::kHostsAll,
+                            APIPermission::kTopSites)));
   }
   {
     // All sites warning suppresses declarativeWebRequest warning.
     APIPermissionSet api_permissions;
+    api_permissions.insert(APIPermission::kDeclarativeWebRequest);
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
-    api_permissions.insert(APIPermission::kDeclarativeWebRequest);
     scoped_refptr<PermissionSet> permissions(new PermissionSet(
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
-    PermissionMessageIDs ids =
-        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
-            permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, ids.size());
-    EXPECT_EQ(PermissionMessage::kHostsAll, ids[0]);
+    EXPECT_TRUE(PermissionSetProducesMessage(
+        permissions.get(), Manifest::TYPE_EXTENSION,
+        PermissionMessage::kHostsAll,
+        MakePermissionIDSet(APIPermission::kHostsAll,
+                            APIPermission::kDeclarativeWebRequest)));
   }
   {
     // BrowsingHistory warning suppresses all history read/write warnings.
@@ -939,11 +1006,10 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     scoped_refptr<PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
-    PermissionMessageIDs ids =
-        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
-            permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, ids.size());
-    EXPECT_EQ(PermissionMessage::kBrowsingHistory, ids[0]);
+    EXPECT_TRUE(PermissionSetProducesMessage(
+        permissions.get(), Manifest::TYPE_EXTENSION,
+        PermissionMessage::kBrowsingHistory,
+        MakePermissionIDSet(api_permissions)));
   }
   {
     // Tabs warning suppresses all read-only history warnings.
@@ -955,11 +1021,9 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     scoped_refptr<PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
-    PermissionMessageIDs ids =
-        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
-            permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, ids.size());
-    EXPECT_EQ(PermissionMessage::kTabs, ids[0]);
+    EXPECT_TRUE(PermissionSetProducesMessage(
+        permissions.get(), Manifest::TYPE_EXTENSION, PermissionMessage::kTabs,
+        MakePermissionIDSet(api_permissions)));
   }
 }
 
@@ -1722,6 +1786,9 @@ TEST(PermissionsTest, ChromeURLs) {
                         allowed_hosts, URLPatternSet()));
   PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
       permissions.get(), Manifest::TYPE_EXTENSION);
+  PermissionMessageProvider::Get()->GetCoalescedPermissionMessages(
+      PermissionMessageProvider::Get()->GetAllPermissionIDs(
+          permissions.get(), Manifest::TYPE_EXTENSION));
 }
 
 TEST(PermissionsTest, IsPrivilegeIncrease_DeclarativeWebRequest) {

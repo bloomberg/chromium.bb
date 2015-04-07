@@ -255,6 +255,10 @@ bool PermissionIDSet::Includes(const PermissionIDSet& subset) const {
                                                    subset.permissions_);
 }
 
+bool PermissionIDSet::Equals(const PermissionIDSet& set) const {
+  return permissions_ == set.permissions_;
+}
+
 // static
 PermissionIDSet PermissionIDSet::Difference(const PermissionIDSet& set_1,
                                             const PermissionIDSet& set_2) {
@@ -284,7 +288,7 @@ bool PermissionIDSet::empty() const {
   return permissions_.empty();
 }
 
-PermissionIDSet::PermissionIDSet(std::set<PermissionID> permissions)
+PermissionIDSet::PermissionIDSet(const std::set<PermissionID>& permissions)
     : permissions_(permissions) {
 }
 

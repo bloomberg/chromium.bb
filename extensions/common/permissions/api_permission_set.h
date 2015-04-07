@@ -111,6 +111,8 @@ class PermissionID : public std::pair<APIPermission::ID, base::string16> {
 // instead of pointers and change this to extend BaseSetOperators<PermissionID>.
 class PermissionIDSet {
  public:
+  using const_iterator = std::set<PermissionID>::const_iterator;
+
   PermissionIDSet();
   virtual ~PermissionIDSet();
 
@@ -132,6 +134,7 @@ class PermissionIDSet {
 
   // Convenience functions that call their stl_util counterparts.
   bool Includes(const PermissionIDSet& subset) const;
+  bool Equals(const PermissionIDSet& set) const;
   static PermissionIDSet Difference(const PermissionIDSet& set_1,
                                     const PermissionIDSet& set_2);
   static PermissionIDSet Intersection(const PermissionIDSet& set_1,
@@ -142,8 +145,11 @@ class PermissionIDSet {
   size_t size() const;
   bool empty() const;
 
+  const_iterator begin() const { return permissions_.begin(); }
+  const_iterator end() const { return permissions_.end(); }
+
  private:
-  PermissionIDSet(std::set<PermissionID> permissions);
+  PermissionIDSet(const std::set<PermissionID>& permissions);
 
   // Check if the set contains a permission with the given ID.
   bool ContainsID(APIPermission::ID permission_id);

@@ -345,9 +345,9 @@ ChromePermissionMessageRule::GetAllRules() {
 
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE_AND_SESSIONS,
        {APIPermission::kSessions, APIPermission::kHistory},
-       {APIPermission::kTab,
-        APIPermission::kFavicon,
+       {APIPermission::kFavicon,
         APIPermission::kProcesses,
+        APIPermission::kTab,
         APIPermission::kTopSites,
         APIPermission::kWebNavigation}},
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ_AND_SESSIONS,
@@ -372,8 +372,10 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE,
        {APIPermission::kHistory},
        {APIPermission::kFavicon,
+        APIPermission::kProcesses,
         APIPermission::kTab,
-        APIPermission::kTopSites}},
+        APIPermission::kTopSites,
+        APIPermission::kWebNavigation}},
       // A special hack: If kFileSystemWriteDirectory would be displayed, hide
       // kFileSystemDirectory as the write directory message implies it.
       // TODO(sashab): Remove kFileSystemWriteDirectory; it's no longer needed
@@ -404,7 +406,10 @@ ChromePermissionMessageRule::GetAllRules() {
       // frequently visited sites.
       {IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ,
        {APIPermission::kTab},
-       {APIPermission::kFavicon, APIPermission::kTopSites}},
+       {APIPermission::kFavicon,
+        APIPermission::kProcesses,
+        APIPermission::kTopSites,
+        APIPermission::kWebNavigation}},
 
       // Individual message rules taken from
       // ChromeAPIPermissions::GetAllPermissions():
