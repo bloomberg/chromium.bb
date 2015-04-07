@@ -4,6 +4,8 @@
 
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
@@ -59,7 +61,9 @@ KeyboardEvdev::KeyboardEvdev(EventModifiersEvdev* modifiers,
       modifiers_(modifiers),
       keyboard_layout_engine_(keyboard_layout_engine),
       repeat_enabled_(true),
-      repeat_key_(KEY_RESERVED) {
+      repeat_key_(KEY_RESERVED),
+      repeat_sequence_(0),
+      weak_ptr_factory_(this) {
   repeat_delay_ = base::TimeDelta::FromMilliseconds(kRepeatDelayMs);
   repeat_interval_ = base::TimeDelta::FromMilliseconds(kRepeatIntervalMs);
 }
@@ -146,31 +150,30 @@ void KeyboardEvdev::UpdateKeyRepeat(unsigned int key, bool down) {
 
 void KeyboardEvdev::StartKeyRepeat(unsigned int key) {
   repeat_key_ = key;
-  repeat_delay_timer_.Start(
-      FROM_HERE, repeat_delay_,
-      base::Bind(&KeyboardEvdev::OnRepeatDelayTimeout, base::Unretained(this)));
-  repeat_interval_timer_.Stop();
+  repeat_sequence_++;
+
+  ScheduleKeyRepeat(repeat_delay_);
 }
 
 void KeyboardEvdev::StopKeyRepeat() {
-  repeat_key_ = KEY_RESERVED;
-  repeat_delay_timer_.Stop();
-  repeat_interval_timer_.Stop();
+  repeat_sequence_++;
 }
 
-void KeyboardEvdev::OnRepeatDelayTimeout() {
+void KeyboardEvdev::ScheduleKeyRepeat(const base::TimeDelta& delay) {
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&KeyboardEvdev::OnRepeatTimeout,
+                            weak_ptr_factory_.GetWeakPtr(), repeat_sequence_),
+      delay);
+}
+
+void KeyboardEvdev::OnRepeatTimeout(unsigned int sequence) {
+  if (repeat_sequence_ != sequence)
+    return;
+
   DispatchKey(repeat_key_, true /* down */, true /* repeat */,
               EventTimeForNow());
 
-  repeat_interval_timer_.Start(
-      FROM_HERE, repeat_interval_,
-      base::Bind(&KeyboardEvdev::OnRepeatIntervalTimeout,
-                 base::Unretained(this)));
-}
-
-void KeyboardEvdev::OnRepeatIntervalTimeout() {
-  DispatchKey(repeat_key_, true /* down */, true /* repeat */,
-              EventTimeForNow());
+  ScheduleKeyRepeat(repeat_interval_);
 }
 
 void KeyboardEvdev::DispatchKey(unsigned int key,

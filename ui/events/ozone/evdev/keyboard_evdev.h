@@ -53,8 +53,8 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   void UpdateKeyRepeat(unsigned int key, bool down);
   void StartKeyRepeat(unsigned int key);
   void StopKeyRepeat();
-  void OnRepeatDelayTimeout();
-  void OnRepeatIntervalTimeout();
+  void ScheduleKeyRepeat(const base::TimeDelta& delay);
+  void OnRepeatTimeout(unsigned int sequence);
   void DispatchKey(unsigned int key,
                    bool down,
                    bool repeat,
@@ -81,10 +81,11 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   // Key repeat state.
   bool repeat_enabled_;
   unsigned int repeat_key_;
+  unsigned int repeat_sequence_;
   base::TimeDelta repeat_delay_;
   base::TimeDelta repeat_interval_;
-  base::OneShotTimer<KeyboardEvdev> repeat_delay_timer_;
-  base::RepeatingTimer<KeyboardEvdev> repeat_interval_timer_;
+
+  base::WeakPtrFactory<KeyboardEvdev> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardEvdev);
 };
