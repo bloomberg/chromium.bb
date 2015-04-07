@@ -1524,10 +1524,15 @@ _x86_internal_release_boards = frozenset([
   'winky_freon',
   'wolf',
   'x86-alex',
+  'x86-alex_freon',
   'x86-alex_he',
+  'x86-alex_he-freon',
   'x86-mario',
+  'x86-mario_freon',
   'x86-zgb',
+  'x86-zgb_freon',
   'x86-zgb_he',
+  'x86-zgb_he-freon',
   'zako',
 ])
 
@@ -1697,6 +1702,11 @@ _freon_boards = frozenset([
   'veyron_rialto',
   'veyron_speedy',
   'wolf',
+  'x86-alex_freon',
+  'x86-alex_he-freon',
+  'x86-mario_freon',
+  'x86-zgb_freon',
+  'x86-zgb_he-freon',
   'zako',
 ])
 
@@ -2884,6 +2894,15 @@ _AddGroupConfig('pineview', 'x86-mario', (
 ), (
     'x86-alex_he',
     'x86-zgb_he',
+))
+
+# pineview chipset boards (freon variant)
+_AddGroupConfig('pineview-freon', 'x86-mario_freon', (
+    'x86-alex_freon',
+    'x86-zgb_freon',
+), (
+    'x86-alex_he-freon',
+    'x86-zgb_he-freon',
 ))
 
 # sandybridge chipset boards

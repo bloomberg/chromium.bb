@@ -43598,6 +43598,423 @@
             "smoke_suite"
         ]
     },
+    "pineview-freon-full-group": {
+        "child_configs": [
+            {
+                "archive_build_debug": true,
+                "boards": [
+                    "x86-mario_freon"
+                ],
+                "build_type": "full",
+                "chrome_sdk": true,
+                "chroot_replace": true,
+                "description": "Full Builds",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+                "git_sync": true,
+                "grouped": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "name": "x86-mario_freon-full",
+                "prebuilts": "public",
+                "trybot_list": true,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "usepkg_build_packages": false
+            },
+            {
+                "archive_build_debug": true,
+                "boards": [
+                    "x86-alex_freon"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "full",
+                "chrome_sdk": true,
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": true,
+                "description": "Full Builds",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+                "git_sync": true,
+                "grouped": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "name": "x86-alex_freon-full",
+                "prebuilts": "public",
+                "trybot_list": true,
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            },
+            {
+                "archive_build_debug": true,
+                "boards": [
+                    "x86-zgb_freon"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "full",
+                "chrome_sdk": true,
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": true,
+                "description": "Full Builds",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+                "git_sync": true,
+                "grouped": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "name": "x86-zgb_freon-full",
+                "prebuilts": "public",
+                "trybot_list": true,
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            },
+            {
+                "archive_build_debug": true,
+                "boards": [
+                    "x86-alex_he-freon"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "full",
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": true,
+                "description": "Full Builds",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+                "git_sync": true,
+                "grouped": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "name": "x86-alex_he-freon-full",
+                "prebuilts": "public",
+                "trybot_list": true,
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            },
+            {
+                "archive_build_debug": true,
+                "boards": [
+                    "x86-zgb_he-freon"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "full",
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": true,
+                "description": "Full Builds",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+                "git_sync": true,
+                "grouped": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "name": "x86-zgb_he-freon-full",
+                "prebuilts": "public",
+                "trybot_list": true,
+                "unittests": null,
+                "useflags": [
+                    "-chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            }
+        ],
+        "description": "Full Builds; Group config (boards: x86-mario_freon, x86-alex_freon, x86-zgb_freon, x86-alex_he-freon, x86-zgb_he-freon)",
+        "name": "pineview-freon-full-group"
+    },
+    "pineview-freon-release-group": {
+        "active_waterfall": "chromeos",
+        "child_configs": [
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-mario_freon"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "dev_installer_prebuilts": true,
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-mario_freon-release",
+                "overlays": "both",
+                "paygen": true,
+                "push_image": true,
+                "signer_tests": true,
+                "trybot_list": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-alex_freon"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chrome_sdk_build_chrome": false,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "dev_installer_prebuilts": true,
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-alex_freon-release",
+                "overlays": "both",
+                "paygen": true,
+                "push_image": true,
+                "signer_tests": true,
+                "trybot_list": true,
+                "unittests": null,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-zgb_freon"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chrome_sdk_build_chrome": false,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "dev_installer_prebuilts": true,
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-zgb_freon-release",
+                "overlays": "both",
+                "paygen": true,
+                "push_image": true,
+                "signer_tests": true,
+                "trybot_list": true,
+                "unittests": null,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-alex_he-freon"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "canary",
+                "chrome_sdk_build_chrome": false,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "dev_installer_prebuilts": true,
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-alex_he-freon-release",
+                "overlays": "both",
+                "paygen": true,
+                "push_image": true,
+                "signer_tests": true,
+                "trybot_list": true,
+                "unittests": null,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-zgb_he-freon"
+                ],
+                "build_packages_in_background": true,
+                "build_type": "canary",
+                "chrome_sdk_build_chrome": false,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "dev_installer_prebuilts": true,
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-zgb_he-freon-release",
+                "overlays": "both",
+                "paygen": true,
+                "push_image": true,
+                "signer_tests": true,
+                "trybot_list": true,
+                "unittests": null,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": []
+            }
+        ],
+        "description": "Release Builds (canary) (internal); Group config (boards: x86-mario_freon, x86-alex_freon, x86-zgb_freon, x86-alex_he-freon, x86-zgb_he-freon)",
+        "important": true,
+        "name": "pineview-freon-release-group"
+    },
     "pineview-full-group": {
         "child_configs": [
             {
@@ -71068,6 +71485,506 @@
             "smoke_suite"
         ]
     },
+    "x86-alex_freon-chrome-pfq": {
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_freon-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "x86-alex_freon-chromium-pfq": {
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_freon-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "x86-alex_freon-compile-only-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation only",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_freon-compile-only-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-alex_freon-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "x86-alex_freon-full",
+        "prebuilts": "public",
+        "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false
+    },
+    "x86-alex_freon-no-vmtest-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_freon-no-vmtest-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-alex_freon-paladin": {
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_freon-paladin",
+        "overlays": "both",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-alex_freon-payloads": {
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
+        "description": "Regenerate release payloads.",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_freon-payloads",
+        "overlays": "both",
+        "paygen": true,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "x86-alex_freon-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_freon-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "x86-alex_freon-release": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "dev_installer_prebuilts": true,
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_freon-release",
+        "overlays": "both",
+        "paygen": true,
+        "push_image": true,
+        "signer_tests": true,
+        "trybot_list": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-alex_freon-release-afdo": {
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-alex_freon"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-alex_freon-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-alex_freon"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-alex_freon-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            }
+        ],
+        "name": "x86-alex_freon-release-afdo"
+    },
+    "x86-alex_freon-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_freon-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-alex_freon-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_freon-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-alex_freon-tot-chrome-pfq-informational": {
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "x86-alex_freon-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "x86-alex_freon-tot-chromium-pfq-informational": {
+        "boards": [
+            "x86-alex_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "x86-alex_freon-tot-chromium-pfq-informational",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "x86-alex_he-chrome-pfq": {
         "boards": [
             "x86-alex_he"
@@ -71143,6 +72060,506 @@
             "chrome_internal"
         ],
         "vm_tests": []
+    },
+    "x86-alex_he-freon-chrome-pfq": {
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-freon-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "x86-alex_he-freon-chromium-pfq": {
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-freon-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "x86-alex_he-freon-compile-only-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation only",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-freon-compile-only-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-alex_he-freon-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "x86-alex_he-freon-full",
+        "prebuilts": "public",
+        "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false
+    },
+    "x86-alex_he-freon-no-vmtest-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-freon-no-vmtest-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-alex_he-freon-paladin": {
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-freon-paladin",
+        "overlays": "both",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-alex_he-freon-payloads": {
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
+        "description": "Regenerate release payloads.",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-freon-payloads",
+        "overlays": "both",
+        "paygen": true,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "x86-alex_he-freon-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-freon-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "x86-alex_he-freon-release": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "dev_installer_prebuilts": true,
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-freon-release",
+        "overlays": "both",
+        "paygen": true,
+        "push_image": true,
+        "signer_tests": true,
+        "trybot_list": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-alex_he-freon-release-afdo": {
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-alex_he-freon"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-alex_he-freon-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-alex_he-freon"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-alex_he-freon-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            }
+        ],
+        "name": "x86-alex_he-freon-release-afdo"
+    },
+    "x86-alex_he-freon-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-freon-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-alex_he-freon-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-freon-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-alex_he-freon-tot-chrome-pfq-informational": {
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "x86-alex_he-freon-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "x86-alex_he-freon-tot-chromium-pfq-informational": {
+        "boards": [
+            "x86-alex_he-freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "x86-alex_he-freon-tot-chromium-pfq-informational",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "x86-alex_he-full": {
         "archive_build_debug": true,
@@ -72465,6 +73882,506 @@
             "smoke_suite"
         ]
     },
+    "x86-mario_freon-chrome-pfq": {
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-mario_freon-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "x86-mario_freon-chromium-pfq": {
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-mario_freon-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "x86-mario_freon-compile-only-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation only",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-mario_freon-compile-only-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-mario_freon-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "x86-mario_freon-full",
+        "prebuilts": "public",
+        "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false
+    },
+    "x86-mario_freon-no-vmtest-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-mario_freon-no-vmtest-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-mario_freon-paladin": {
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-mario_freon-paladin",
+        "overlays": "both",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-mario_freon-payloads": {
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
+        "description": "Regenerate release payloads.",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-mario_freon-payloads",
+        "overlays": "both",
+        "paygen": true,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "x86-mario_freon-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-mario_freon-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "x86-mario_freon-release": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "dev_installer_prebuilts": true,
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-mario_freon-release",
+        "overlays": "both",
+        "paygen": true,
+        "push_image": true,
+        "signer_tests": true,
+        "trybot_list": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-mario_freon-release-afdo": {
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-mario_freon"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-mario_freon-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-mario_freon"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-mario_freon-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            }
+        ],
+        "name": "x86-mario_freon-release-afdo"
+    },
+    "x86-mario_freon-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-mario_freon-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-mario_freon-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-mario_freon-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-mario_freon-tot-chrome-pfq-informational": {
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "x86-mario_freon-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "x86-mario_freon-tot-chromium-pfq-informational": {
+        "boards": [
+            "x86-mario_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "x86-mario_freon-tot-chromium-pfq-informational",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "x86-webrtc-chromium-pfq-informational": {
         "archive_build_debug": true,
         "boards": [
@@ -73090,6 +75007,506 @@
             "smoke_suite"
         ]
     },
+    "x86-zgb_freon-chrome-pfq": {
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_freon-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "x86-zgb_freon-chromium-pfq": {
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_freon-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "x86-zgb_freon-compile-only-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation only",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_freon-compile-only-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-zgb_freon-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "x86-zgb_freon-full",
+        "prebuilts": "public",
+        "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false
+    },
+    "x86-zgb_freon-no-vmtest-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_freon-no-vmtest-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-zgb_freon-paladin": {
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_freon-paladin",
+        "overlays": "both",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-zgb_freon-payloads": {
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
+        "description": "Regenerate release payloads.",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_freon-payloads",
+        "overlays": "both",
+        "paygen": true,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "x86-zgb_freon-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_freon-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "x86-zgb_freon-release": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "dev_installer_prebuilts": true,
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_freon-release",
+        "overlays": "both",
+        "paygen": true,
+        "push_image": true,
+        "signer_tests": true,
+        "trybot_list": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-zgb_freon-release-afdo": {
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-zgb_freon"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-zgb_freon-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-zgb_freon"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-zgb_freon-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            }
+        ],
+        "name": "x86-zgb_freon-release-afdo"
+    },
+    "x86-zgb_freon-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_freon-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-zgb_freon-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_freon-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-zgb_freon-tot-chrome-pfq-informational": {
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "x86-zgb_freon-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "x86-zgb_freon-tot-chromium-pfq-informational": {
+        "boards": [
+            "x86-zgb_freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "x86-zgb_freon-tot-chromium-pfq-informational",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "x86-zgb_he-chrome-pfq": {
         "boards": [
             "x86-zgb_he"
@@ -73165,6 +75582,506 @@
             "chrome_internal"
         ],
         "vm_tests": []
+    },
+    "x86-zgb_he-freon-chrome-pfq": {
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Preflight Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-freon-chrome-pfq",
+        "overlays": "both",
+        "prebuilts": "private",
+        "uprev": false,
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "x86-zgb_he-freon-chromium-pfq": {
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "latest_release",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Preflight Chromium Uprev & Build (internal)",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-freon-chromium-pfq",
+        "overlays": "both",
+        "prebuilts": "public",
+        "uprev": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "x86-zgb_he-freon-compile-only-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation only",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-freon-compile-only-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-zgb_he-freon-full": {
+        "archive_build_debug": true,
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_type": "full",
+        "chrome_sdk": true,
+        "chroot_replace": true,
+        "description": "Full Builds",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "git_sync": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "name": "x86-zgb_he-freon-full",
+        "prebuilts": "public",
+        "trybot_list": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "usepkg_build_packages": false
+    },
+    "x86-zgb_he-freon-no-vmtest-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-freon-no-vmtest-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-zgb_he-freon-paladin": {
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_type": "paladin",
+        "chrome_sdk": true,
+        "chrome_sdk_build_chrome": false,
+        "description": "Commit Queue (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-freon-paladin",
+        "overlays": "both",
+        "prebuilts": "private",
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x86-zgb_he-freon-payloads": {
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_type": "payloads",
+        "builder_class_name": "release_builders.GeneratePayloadsBuilder",
+        "description": "Regenerate release payloads.",
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-freon-payloads",
+        "overlays": "both",
+        "paygen": true,
+        "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "x86-zgb_he-freon-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "health_threshold": 3,
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-freon-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "x86-zgb_he-freon-release": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "dev_installer_prebuilts": true,
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 4,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-freon-release",
+        "overlays": "both",
+        "paygen": true,
+        "push_image": true,
+        "signer_tests": true,
+        "trybot_list": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-zgb_he-freon-release-afdo": {
+        "child_configs": [
+            {
+                "afdo_generate_min": true,
+                "afdo_update_ebuild": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-zgb_he-freon"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-zgb_he-freon-release-afdo-generate",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            },
+            {
+                "afdo_use": true,
+                "archive_build_debug": true,
+                "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+                "binhost_bucket": "gs://chromeos-dev-installer",
+                "binhost_key": "RELEASE_BINHOST",
+                "boards": [
+                    "x86-zgb_he-freon"
+                ],
+                "build_type": "canary",
+                "chrome_sdk": true,
+                "chromeos_official": true,
+                "chroot_replace": true,
+                "description": "Release Builds (canary) (internal)",
+                "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+                "grouped": true,
+                "hw_tests": [
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+                    "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+                ],
+                "hwqual": true,
+                "image_test": true,
+                "images": [
+                    "base",
+                    "test",
+                    "factory_install"
+                ],
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "manifest_version": true,
+                "name": "x86-zgb_he-freon-release-afdo-use",
+                "overlays": "both",
+                "signer_tests": true,
+                "upload_symbols": true,
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal"
+                ],
+                "usepkg_build_packages": false,
+                "vm_tests": [
+                    "smoke_suite",
+                    "dev_mode_test",
+                    "cros_vm_test"
+                ]
+            }
+        ],
+        "name": "x86-zgb_he-freon-release-afdo"
+    },
+    "x86-zgb_he-freon-release-afdo-generate": {
+        "afdo_generate_min": true,
+        "afdo_update_ebuild": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-freon-release-afdo-generate",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-zgb_he-freon-release-afdo-use": {
+        "afdo_use": true,
+        "archive_build_debug": true,
+        "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
+        "binhost_bucket": "gs://chromeos-dev-installer",
+        "binhost_key": "RELEASE_BINHOST",
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_type": "canary",
+        "chrome_sdk": true,
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Release Builds (canary) (internal)",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"perf_v2\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}"
+        ],
+        "hwqual": true,
+        "image_test": true,
+        "images": [
+            "base",
+            "test",
+            "factory_install"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-freon-release-afdo-use",
+        "overlays": "both",
+        "signer_tests": true,
+        "upload_symbols": true,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal"
+        ],
+        "usepkg_build_packages": false,
+        "vm_tests": [
+            "smoke_suite",
+            "dev_mode_test",
+            "cros_vm_test"
+        ]
+    },
+    "x86-zgb_he-freon-tot-chrome-pfq-informational": {
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chromeos_official": true,
+        "chroot_replace": true,
+        "description": "Informational Chrome Uprev & Build (internal)",
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "name": "x86-zgb_he-freon-tot-chrome-pfq-informational",
+        "overlays": "both",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
+    "x86-zgb_he-freon-tot-chromium-pfq-informational": {
+        "boards": [
+            "x86-zgb_he-freon"
+        ],
+        "build_type": "chrome",
+        "chrome_rev": "tot",
+        "chroot_replace": true,
+        "description": "Informational Chromium Uprev & Build (public)",
+        "name": "x86-zgb_he-freon-tot-chromium-pfq-informational",
+        "uprev": false,
+        "use_lkgm": true,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "x86-zgb_he-full": {
         "archive_build_debug": true,
