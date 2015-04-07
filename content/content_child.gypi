@@ -361,8 +361,8 @@
       }
     ],
     ['OS=="android"', {
-      'includes': [
-        '../build/android/cpufeatures.gypi',
+      'dependencies': [
+        '../build/android/ndk.gyp:cpu_features',
       ],
     }],
     ['enable_plugins==0', {

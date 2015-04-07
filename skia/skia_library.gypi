@@ -210,8 +210,8 @@
       'sources': [
         '../third_party/skia/src/core/SkUtilsArm.cpp',
       ],
-      'includes': [
-        '../build/android/cpufeatures.gypi',
+      'dependencies': [
+        '../build/android/ndk.gyp:cpu_features',
       ],
     }],
     [ 'desktop_linux == 1 or chromeos == 1', {

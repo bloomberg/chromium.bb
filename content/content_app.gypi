@@ -50,11 +50,9 @@
       ],
       'dependencies': [
         'content.gyp:content_jni_headers',
+        '../build/android/ndk.gyp:cpu_features',
         '../skia/skia.gyp:skia',
         '../ui/android/ui_android.gyp:ui_android',
-      ],
-      'includes': [
-        '../build/android/cpufeatures.gypi',
       ],
     }],
     ['OS=="win"', {

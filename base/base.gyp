@@ -105,6 +105,7 @@
           'dependencies': [
             'base_java',
             'base_jni_headers',
+            '../build/android/ndk.gyp:cpu_features',
             '../third_party/ashmem/ashmem.gyp:ashmem',
           ],
           'link_settings': {
@@ -114,9 +115,6 @@
           },
           'sources!': [
             'debug/stack_trace_posix.cc',
-          ],
-          'includes': [
-            '../build/android/cpufeatures.gypi',
           ],
         }],
         ['os_bsd==1', {

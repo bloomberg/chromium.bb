@@ -764,10 +764,8 @@
         'renderer/external_popup_menu.h',
       ],
       'dependencies': [
+        '../build/android/ndk.gyp:cpu_features',
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
-      ],
-      'includes': [
-        '../build/android/cpufeatures.gypi',
       ],
     }, {
       'sources!': [
