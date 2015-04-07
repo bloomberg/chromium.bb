@@ -329,6 +329,8 @@
           'memory/manual_constructor.h',
           'memory/memory_pressure_listener.cc',
           'memory/memory_pressure_listener.h',
+          'memory/memory_pressure_monitor.cc',
+          'memory/memory_pressure_monitor.h',
           'memory/raw_scoped_refptr_mismatch_checker.h',
           'memory/ref_counted.cc',
           'memory/ref_counted.h',
