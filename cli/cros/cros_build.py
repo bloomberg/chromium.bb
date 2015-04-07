@@ -73,9 +73,6 @@ To just build a single package:
                         default=False, action='store_true')
     parser.add_argument('--no-binary', help="Don't use binary packages.",
                         default=True, dest='binary', action='store_false')
-    parser.add_argument('--no-chroot-update', help="Don't update chroot.",
-                        default=True, dest='chroot_update',
-                        action='store_false')
     parser.add_argument('--init-only', action='store_true',
                         help="Initialize build environment but don't build "
                         "anything.")
@@ -91,9 +88,17 @@ To just build a single package:
 
     # Advanced options.
     advanced = parser.add_argument_group('Advanced options')
+    advanced.add_argument('--no-host-packages-update',
+                          dest='host_packages_update', default=True,
+                          action='store_false',
+                          help="Don't update host packages during chroot "
+                          "update.")
+    advanced.add_argument('--no-chroot-update', default=True,
+                          dest='chroot_update', action='store_false',
+                          help="Don't update chroot at all.")
     advanced.add_argument('--jobs', default=None, type=int,
-                          help='Maximium job count to run in parallel '
-                               '(uses all available cores by default).')
+                          help='Maximum job count to run in parallel '
+                          '(uses all available cores by default).')
 
     # Legacy options, for backward compatibiltiy.
     legacy = parser.add_argument_group('Options for backward compatibility')
@@ -152,9 +157,10 @@ To just build a single package:
 
     # Set up board if not building for host.
     if not self.host:
-      chroot_util.SetupBoard(brick=self.brick, board=self.board,
-                             update_chroot=self.chroot_update,
-                             use_binary=self.options.binary)
+      chroot_util.SetupBoard(
+          brick=self.brick, board=self.board, update_chroot=self.chroot_update,
+          update_host_packages=self.options.host_packages_update,
+          use_binary=self.options.binary)
 
     if not self.options.init_only:
       parallel.RunParallelSteps([self._CheckDependencies, self._Build])

@@ -92,7 +92,7 @@ def Emerge(packages, brick=None, board=None, host=False, with_deps=True,
   cros_build_lib.SudoRunCommand(cmd + packages)
 
 
-def UpdateChroot(brick=None, board=None):
+def UpdateChroot(brick=None, board=None, update_host_packages=True):
   """Update the chroot."""
   # Run chroot update hooks.
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'run_chroot_version_hooks')]
@@ -107,7 +107,8 @@ def UpdateChroot(brick=None, board=None):
   cros_build_lib.SudoRunCommand(cmd, debug_level=logging.DEBUG)
 
   # Update the host before updating the board.
-  Emerge(list(_HOST_PKGS), host=True)
+  if update_host_packages:
+    Emerge(list(_HOST_PKGS), host=True)
 
   # Automatically discard all CONFIG_PROTECT'ed files. Those that are
   # protected should not be overwritten until the variable is changed.
@@ -116,7 +117,8 @@ def UpdateChroot(brick=None, board=None):
                                 debug_level=logging.DEBUG)
 
 
-def SetupBoard(brick=None, board=None, update_chroot=True, use_binary=True):
+def SetupBoard(brick=None, board=None, update_chroot=True,
+               update_host_packages=True, use_binary=True):
   """Set up a sysroot for |brick| or |board| (either must be provided).
 
   This invokes UpdateChroot() with the given brick/board values, unless
@@ -126,10 +128,12 @@ def SetupBoard(brick=None, board=None, update_chroot=True, use_binary=True):
     brick: Brick object we need to set up a sysroot for.
     board: Board name to set up a sysroot for. Ignored if |brick| is provided.
     update_chroot: Whether we should update the chroot first.
+    update_host_packages: Whether to update host packages in the chroot.
     use_binary: If okay to use binary packages during the update.
   """
   if update_chroot:
-    UpdateChroot(brick=brick, board=board)
+    UpdateChroot(brick=brick, board=board,
+                 update_host_packages=update_host_packages)
 
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'setup_board'),
          '--skip_toolchain_update', '--skip_chroot_upgrade']
