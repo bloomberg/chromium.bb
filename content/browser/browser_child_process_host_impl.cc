@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -254,6 +255,11 @@ void BrowserChildProcessHostImpl::OnBadMessageReceived(
   }
   LOG(ERROR) << "Terminating child process for bad IPC message of type "
       << message.type();
+
+  // Create a memory dump. This will contain enough stack frames to work out
+  // what the bad message was.
+  base::debug::DumpWithoutCrashing();
+
   child_process_->GetProcess().Terminate(RESULT_CODE_KILLED_BAD_MESSAGE, false);
 }
 
