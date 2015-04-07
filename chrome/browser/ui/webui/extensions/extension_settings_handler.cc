@@ -20,7 +20,6 @@
 #include "chrome/browser/background/background_contents.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -99,9 +98,7 @@ ExtensionSettingsHandler::ExtensionSettingsHandler()
       deleting_rph_id_(-1),
       registered_for_notifications_(false),
       warning_service_observer_(this),
-      error_console_observer_(this),
       extension_prefs_observer_(this),
-      extension_registry_observer_(this),
       extension_management_observer_(this) {
 }
 
@@ -367,10 +364,6 @@ void ExtensionSettingsHandler::RegisterMessages() {
                  AsWeakPtr()));
 }
 
-void ExtensionSettingsHandler::OnErrorAdded(const ExtensionError* error) {
-  MaybeUpdateAfterNotification();
-}
-
 void ExtensionSettingsHandler::Observe(
     int type,
     const content::NotificationSource& source,
@@ -422,26 +415,6 @@ void ExtensionSettingsHandler::Observe(
     default:
       NOTREACHED();
   }
-}
-
-void ExtensionSettingsHandler::OnExtensionLoaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension) {
-  MaybeUpdateAfterNotification();
-}
-
-void ExtensionSettingsHandler::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
-  MaybeUpdateAfterNotification();
-}
-
-void ExtensionSettingsHandler::OnExtensionUninstalled(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    extensions::UninstallReason reason) {
-  MaybeUpdateAfterNotification();
 }
 
 void ExtensionSettingsHandler::OnExtensionDisableReasonsChanged(
@@ -523,11 +496,12 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
   bool should_do_verification_check = false;
   for (const scoped_refptr<const Extension>& extension : *extensions) {
-    if (ui_util::ShouldDisplayInExtensionSettings(extension.get(), profile) &&
-        ((prefs->GetDisableReasons(extension->id()) &
-             Extension::DISABLE_NOT_VERIFIED) != 0)) {
-      should_do_verification_check = true;
-      break;
+    if (ui_util::ShouldDisplayInExtensionSettings(extension.get(), profile)) {
+      int disable_reasons = prefs->GetDisableReasons(extension->id());
+      if ((disable_reasons & Extension::DISABLE_NOT_VERIFIED)) {
+        should_do_verification_check = true;
+        break;
+      }
     }
   }
 
@@ -661,13 +635,9 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
                  content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
 
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
-
   content::WebContentsObserver::Observe(web_ui()->GetWebContents());
 
   warning_service_observer_.Add(WarningService::Get(profile));
-
-  error_console_observer_.Add(ErrorConsole::Get(profile));
 
   extension_management_observer_.Add(
       ExtensionManagementFactory::GetForBrowserContext(profile));

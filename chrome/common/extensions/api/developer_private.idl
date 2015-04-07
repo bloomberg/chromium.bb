@@ -296,6 +296,7 @@ namespace developerPrivate {
   dictionary EventData {
     EventType event_type;
     DOMString item_id;
+    ExtensionInfo? extensionInfo;
   };
 
   dictionary RequestFileSourceProperties {

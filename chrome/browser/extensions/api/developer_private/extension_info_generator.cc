@@ -71,8 +71,7 @@ developer::ExtensionType GetExtensionType(Manifest::Type manifest_type) {
 
 // Populates the common fields of an extension error.
 template <typename ErrorType>
-void PopulateErrorBase(const ExtensionError& error,
-                       ErrorType* out) {
+void PopulateErrorBase(const ExtensionError& error, ErrorType* out) {
   CHECK(out);
   out->type = error.type() == ExtensionError::MANIFEST_ERROR ?
       developer::ERROR_TYPE_MANIFEST : developer::ERROR_TYPE_RUNTIME;
@@ -363,6 +362,32 @@ ExtensionInfoGenerator::CreateExtensionInfo(const Extension& extension,
                       GetViewsForExtension(extension, is_enabled);
   }
   return info.Pass();
+}
+
+scoped_ptr<api::developer_private::ExtensionInfo>
+ExtensionInfoGenerator::CreateExtensionInfo(const std::string& id) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+
+  const Extension* enabled = registry->enabled_extensions().GetByID(id);
+  if (enabled &&
+      ui_util::ShouldDisplayInExtensionSettings(enabled, browser_context_)) {
+    return CreateExtensionInfo(*enabled, developer::EXTENSION_STATE_ENABLED);
+  }
+
+  const Extension* disabled = registry->disabled_extensions().GetByID(id);
+  if (disabled &&
+      ui_util::ShouldDisplayInExtensionSettings(disabled, browser_context_)) {
+    return CreateExtensionInfo(*disabled, developer::EXTENSION_STATE_DISABLED);
+  }
+
+  const Extension* terminated = registry->terminated_extensions().GetByID(id);
+  if (terminated &&
+      ui_util::ShouldDisplayInExtensionSettings(terminated, browser_context_)) {
+    return CreateExtensionInfo(*terminated,
+                               developer::EXTENSION_STATE_TERMINATED);
+  }
+
+  return scoped_ptr<api::developer_private::ExtensionInfo>();
 }
 
 ExtensionInfoGenerator::ExtensionInfoList

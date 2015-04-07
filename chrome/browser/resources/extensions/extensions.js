@@ -349,7 +349,6 @@ cr.define('extensions', function() {
       // be careful to remove the 'finished loading' timeout.
       if (this.loadingTimeout_)
         window.clearTimeout(this.loadingTimeout_);
-      document.documentElement.classList.add('loading');
       this.loadingTimeout_ = window.setTimeout(function() {
         document.documentElement.classList.remove('loading');
       }, 0);
@@ -471,5 +470,6 @@ cr.define('extensions', function() {
 });
 
 window.addEventListener('load', function(e) {
+  document.documentElement.classList.add('loading');
   extensions.ExtensionSettings.getInstance().initialize();
 });

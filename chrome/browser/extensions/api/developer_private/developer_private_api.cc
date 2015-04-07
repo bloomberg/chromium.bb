@@ -144,6 +144,8 @@ void BroadcastItemStateChanged(content::BrowserContext* browser_context,
   developer::EventData event_data;
   event_data.event_type = event_type;
   event_data.item_id = item_id;
+  event_data.extension_info =
+      ExtensionInfoGenerator(browser_context).CreateExtensionInfo(item_id);
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(event_data.ToValue().release());
@@ -378,26 +380,13 @@ DeveloperPrivateGetExtensionInfoFunction::Run() {
       developer::GetExtensionInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
-  developer::ExtensionState state = developer::EXTENSION_STATE_ENABLED;
-  const Extension* extension =
-      registry->enabled_extensions().GetByID(params->id);
-  if (!extension &&
-      (extension = registry->disabled_extensions().GetByID(params->id)) !=
-          nullptr) {
-    state = developer::EXTENSION_STATE_DISABLED;
-  } else if (!extension &&
-             (extension =
-                  registry->terminated_extensions().GetByID(params->id)) !=
-                  nullptr) {
-    state = developer::EXTENSION_STATE_TERMINATED;
-  }
+  scoped_ptr<developer::ExtensionInfo> info =
+      ExtensionInfoGenerator(browser_context()).CreateExtensionInfo(params->id);
 
-  if (!extension)
+  if (!info)
     return RespondNow(Error(kNoSuchExtensionError));
 
-  return RespondNow(OneArgument(ExtensionInfoGenerator(browser_context()).
-      CreateExtensionInfo(*extension, state)->ToValue().release()));
+  return RespondNow(OneArgument(info->ToValue().release()));
 }
 
 DeveloperPrivateGetItemsInfoFunction::DeveloperPrivateGetItemsInfoFunction() {}

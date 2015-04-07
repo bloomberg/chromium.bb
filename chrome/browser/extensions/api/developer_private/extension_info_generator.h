@@ -27,12 +27,16 @@ class ExtensionInfoGenerator {
   explicit ExtensionInfoGenerator(content::BrowserContext* context);
   ~ExtensionInfoGenerator();
 
-  // Return the ExtensionInfo for a given |extension| and |state|.
+  // Returns the ExtensionInfo for a given |extension| and |state|.
   scoped_ptr<api::developer_private::ExtensionInfo> CreateExtensionInfo(
       const Extension& extension,
       api::developer_private::ExtensionState state);
+  // Returns an ExtensionInfo for the given |extension_id|, if the extension
+  // can be found.
+  scoped_ptr<api::developer_private::ExtensionInfo> CreateExtensionInfo(
+      const std::string& id);
 
-  // Return a collection of ExtensionInfos, optionally including disabled and
+  // Returns a collection of ExtensionInfos, optionally including disabled and
   // terminated.
   ExtensionInfoList CreateExtensionsInfo(bool include_disabled,
                                          bool include_terminated);

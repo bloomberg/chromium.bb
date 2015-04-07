@@ -361,7 +361,8 @@ var ProjectInfo;
 /**
  * @typedef {{
  *   event_type: !chrome.developerPrivate.EventType,
- *   item_id: string
+ *   item_id: string,
+ *   extensionInfo: (ExtensionInfo|undefined)
  * }}
  */
 var EventData;

@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "content/public/browser/navigation_controller.h"
@@ -18,7 +17,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/browser/extension_prefs_observer.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/warning_service.h"
 
 class ExtensionService;
@@ -40,17 +38,14 @@ class PrefRegistrySyncable;
 namespace extensions {
 class Extension;
 class ExtensionPrefs;
-class ExtensionRegistry;
 
 // Extension Settings UI handler.
 class ExtensionSettingsHandler
     : public content::WebUIMessageHandler,
       public content::NotificationObserver,
       public content::WebContentsObserver,
-      public ErrorConsole::Observer,
       public ExtensionManagement::Observer,
       public ExtensionPrefsObserver,
-      public ExtensionRegistryObserver,
       public WarningService::Observer,
       public base::SupportsWeakPtr<ExtensionSettingsHandler> {
  public:
@@ -71,23 +66,10 @@ class ExtensionSettingsHandler
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
-  // ErrorConsole::Observer implementation.
-  void OnErrorAdded(const ExtensionError* error) override;
-
   // content::NotificationObserver implementation.
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
-
-  // ExtensionRegistryObserver implementation.
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const Extension* extension) override;
-  void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                           const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override;
-  void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                              const Extension* extension,
-                              extensions::UninstallReason reason) override;
 
   // ExtensionPrefsObserver implementation.
   void OnExtensionDisableReasonsChanged(const std::string& extension_id,
@@ -173,16 +155,10 @@ class ExtensionSettingsHandler
   ScopedObserver<WarningService, WarningService::Observer>
       warning_service_observer_;
 
-  // An observer to listen for when Extension errors are reported.
-  ScopedObserver<ErrorConsole, ErrorConsole::Observer> error_console_observer_;
-
   // An observer to listen for notable changes in the ExtensionPrefs, like
   // a change in Disable Reasons.
   ScopedObserver<ExtensionPrefs, ExtensionPrefsObserver>
       extension_prefs_observer_;
-
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
 
   ScopedObserver<ExtensionManagement, ExtensionManagement::Observer>
       extension_management_observer_;

@@ -91,48 +91,33 @@ BasicExtensionSettingsWebUITest.prototype = {
     extensionList.extensionsUpdated_.then(this.nextStep.bind(this));
   },
 
-  /**
-   * A silly hack because we re-fetch extension data after every event, which is
-   * asynchronous. This will be unneeded once we transition to observing events
-   * on the developerPrivate API.
-   * @param {Function} after The function to run after the pending requests.
-   * @protected
-   */
-  runPendingRequests: function(after) {
-    window.setTimeout(function() {
-      chrome.developerPrivate.getExtensionsInfo(after);
-    }, 0);
-  },
-
   /** @protected */
   verifyDisabledWorks: function() {
-    chrome.management.setEnabled(GOOD_CRX_ID, false,
-        this.runPendingRequests.bind(this, function() {
+    chrome.management.setEnabled(GOOD_CRX_ID, false, function() {
       var node = getRequiredElement(GOOD_CRX_ID);
       assertTrue(node.classList.contains('inactive-extension'));
       this.nextStep();
-    }.bind(this)));
+    }.bind(this));
   },
 
   /** @protected */
   verifyEnabledWorks: function() {
-    chrome.management.setEnabled(GOOD_CRX_ID, true,
-        this.runPendingRequests.bind(this, function() {
+    chrome.management.setEnabled(GOOD_CRX_ID, true, function() {
       var node = getRequiredElement(GOOD_CRX_ID);
       assertFalse(node.classList.contains('inactive-extension'));
       this.nextStep();
-    }.bind(this)));
+    }.bind(this));
   },
 
   /** @protected */
   verifyUninstallWorks: function() {
+    var next = this.nextStep.bind(this);
     chrome.test.runWithUserGesture(function() {
-      chrome.management.uninstall(GOOD_CRX_ID,
-          this.runPendingRequests.bind(this, function() {
+      chrome.management.uninstall(GOOD_CRX_ID, function() {
         assertEquals(null, $(GOOD_CRX_ID));
-        this.nextStep();
-      }.bind(this)));
-    }.bind(this));
+        next();
+      });
+    });
   },
 };
 
