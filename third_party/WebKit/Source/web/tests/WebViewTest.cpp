@@ -2380,7 +2380,7 @@ private:
     bool m_pageChanged = false;
 };
 
-TEST_F(WebViewTest, DISABLED_ShowUnhandledTapUIIfNeeded)
+TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded)
 {
     std::string testFile = "show_unhandled_tap.html";
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
