@@ -23,9 +23,9 @@ namespace blink {
 
 StereoPanner::StereoPanner(float sampleRate) : Spatializer(PanningModelEqualPower)
     , m_isFirstRender(true)
-    , m_gainL(0.5)
-    , m_gainR(0.5)
+    , m_pan(0.0)
 {
+    // Convert smoothing time (50ms) to a per-sample time value.
     m_smoothingConstant = AudioUtilities::discreteTimeConstantForSampleRate(SmoothingTimeConstant, sampleRate);
 }
 
@@ -55,19 +55,18 @@ void StereoPanner::panWithSampleAccurateValues(const AudioBus* inputBus, AudioBu
     if (!sourceL || !sourceR || !destinationL || !destinationR)
         return;
 
-    // Cache in local variables.
-    double gainL = m_gainL;
-    double gainR = m_gainR;
+    double gainL, gainR, panRadian;
 
     int n = framesToProcess;
 
     if (numberOfInputChannels == 1) { // For mono source case.
         while (n--) {
             float inputL = *sourceL++;
-            float panValue = clampTo(*panValues++, -1.0, 1.0);
-            double panPosition = (panValue * 0.5 + 0.5) * piOverTwoDouble;
-            gainL = std::cos(panPosition);
-            gainR = std::sin(panPosition);
+            m_pan = clampTo(*panValues++, -1.0, 1.0);
+            // Pan from left to right [-1; 1] will be normalized as [0; 1].
+            panRadian = (m_pan * 0.5 + 0.5) * piOverTwoDouble;
+            gainL = std::cos(panRadian);
+            gainR = std::sin(panRadian);
             *destinationL++ = static_cast<float>(inputL * gainL);
             *destinationR++ = static_cast<float>(inputL * gainR);
         }
@@ -75,12 +74,12 @@ void StereoPanner::panWithSampleAccurateValues(const AudioBus* inputBus, AudioBu
         while (n--) {
             float inputL = *sourceL++;
             float inputR = *sourceR++;
-            float panValue = clampTo(*panValues++, -1.0, 1.0);
-            double panPosition = panValue <= 0 ? panValue + 1 : panValue;
-            panPosition *= piOverTwoDouble;
-            gainL = std::cos(panPosition);
-            gainR = std::sin(panPosition);
-            if (panValue <= 0) {
+            m_pan = clampTo(*panValues++, -1.0, 1.0);
+            // Normalize [-1; 0] to [0; 1]. Do nothing when [0; 1].
+            panRadian = (m_pan <= 0 ? m_pan + 1 : m_pan) * piOverTwoDouble;
+            gainL = std::cos(panRadian);
+            gainR = std::sin(panRadian);
+            if (m_pan <= 0) {
                 *destinationL++ = static_cast<float>(inputL + inputR * gainL);
                 *destinationR++ = static_cast<float>(inputR * gainR);
             } else {
@@ -89,9 +88,6 @@ void StereoPanner::panWithSampleAccurateValues(const AudioBus* inputBus, AudioBu
             }
         }
     }
-
-    m_gainL = gainL;
-    m_gainR = gainR;
 }
 
 void StereoPanner::panToTargetValue(const AudioBus* inputBus, AudioBus* outputBus, float panValue, size_t framesToProcess)
@@ -120,76 +116,60 @@ void StereoPanner::panToTargetValue(const AudioBus* inputBus, AudioBus* outputBu
     if (!sourceL || !sourceR || !destinationL || !destinationR)
         return;
 
-    float panValueClamped = clampTo(panValue, -1.0, 1.0);
-    double panPosition;
-    // Normalize pan values to [0; 1] based on 1) channel type and the value
-    // polarity.
-    if (numberOfInputChannels == 1) { // For mono input source.
-        // Pan from left to right [-1; 1] will be normalized as [0; 1].
-        panPosition = panValueClamped * 0.5 + 0.5;
-    } else { // For stereo input source.
-        if (panValueClamped <= 0) { // Normalize [-1; 0] to [0; 1].
-            panPosition = panValueClamped + 1;
-        } else { // Do nothing when [0; 1].
-            panPosition = panValueClamped;
-        }
-    }
-    panPosition *= piOverTwoDouble;
-    double targetGainL = std::cos(panPosition);
-    double targetGainR = std::sin(panPosition);
+    float targetPan = clampTo(panValue, -1.0, 1.0);
 
     // Don't de-zipper on first render call.
     if (m_isFirstRender) {
         m_isFirstRender = false;
-        m_gainL = targetGainL;
-        m_gainR = targetGainR;
+        m_pan = targetPan;
     }
 
-    // Cache in local variables.
-    double gainL = m_gainL;
-    double gainR = m_gainR;
-
-    // Get local copy of smoothing constant.
-    const double SmoothingConstant = m_smoothingConstant;
+    double gainL, gainR, panRadian;
+    const double smoothingConstant = m_smoothingConstant;
 
     int n = framesToProcess;
 
     if (numberOfInputChannels == 1) { // For mono source case.
         while (n--) {
             float inputL = *sourceL++;
-            gainL += (targetGainL - gainL) * SmoothingConstant;
-            gainR += (targetGainR - gainR) * SmoothingConstant;
+            m_pan += (targetPan - m_pan) * smoothingConstant;
+
+            // Pan from left to right [-1; 1] will be normalized as [0; 1].
+            panRadian = (m_pan * 0.5 + 0.5) * piOverTwoDouble;
+
+            gainL = std::cos(panRadian);
+            gainR = std::sin(panRadian);
             *destinationL++ = static_cast<float>(inputL * gainL);
             *destinationR++ = static_cast<float>(inputL * gainR);
         }
     } else { // For stereo source case.
-        if (panValueClamped <= 0) {
-            // When [-1; 0], keep left channel intact and equal-power pan the
-            // right channel only.
-            while (n--) {
-                float inputL = *sourceL++;
-                float inputR = *sourceR++;
-                gainL += (targetGainL - gainL) * SmoothingConstant;
-                gainR += (targetGainR - gainR) * SmoothingConstant;
+        while (n--) {
+            float inputL = *sourceL++;
+            float inputR = *sourceR++;
+            m_pan += (targetPan - m_pan) * smoothingConstant;
+
+            // Normalize [-1; 0] to [0; 1] for the left pan position (<= 0), and
+            // do nothing when [0; 1].
+            panRadian = (m_pan <= 0 ? m_pan + 1 : m_pan) * piOverTwoDouble;
+
+            gainL = std::cos(panRadian);
+            gainR = std::sin(panRadian);
+
+            // The pan value should be checked every sample when de-zippering.
+            // See crbug.com/470559.
+            if (m_pan <= 0) {
+                // When [-1; 0], keep left channel intact and equal-power pan the
+                // right channel only.
                 *destinationL++ = static_cast<float>(inputL + inputR * gainL);
                 *destinationR++ = static_cast<float>(inputR * gainR);
-            }
-        } else {
-            // When [0; 1], keep right channel intact and equal-power pan the
-            // left channel only.
-            while (n--) {
-                float inputL = *sourceL++;
-                float inputR = *sourceR++;
-                gainL += (targetGainL - gainL) * SmoothingConstant;
-                gainR += (targetGainR - gainR) * SmoothingConstant;
+            } else {
+                // When [0; 1], keep right channel intact and equal-power pan the
+                // left channel only.
                 *destinationL++ = static_cast<float>(inputL * gainL);
                 *destinationR++ = static_cast<float>(inputR + inputL * gainR);
             }
         }
     }
-
-    m_gainL = gainL;
-    m_gainR = gainR;
 }
 
 } // namespace blink

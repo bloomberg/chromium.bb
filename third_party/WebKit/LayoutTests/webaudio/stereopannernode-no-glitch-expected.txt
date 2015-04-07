@@ -1,0 +1,19 @@
+Test if StereoPannerNode producing glitches by crossing zero.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Transition found. (length = 15679)
+PASS Channel #0 has no glitch above the threshold of 0.0005.
+PASS Channel #1 has no glitch above the threshold of 0.0005.
+PASS Channel #0 equals [1.156434465040231,1.1562937736154577,...] with an element-wise tolerance of 1e-7.
+PASS Channel #1 equals [0.9876883405951378,0.987710613656166,...] with an element-wise tolerance of 1e-7.
+PASS Transition found. (length = 15679)
+PASS Channel #0 has no glitch above the threshold of 0.0005.
+PASS Channel #1 has no glitch above the threshold of 0.0005.
+PASS Channel #0 equals [0.9876883405951378,0.987710613656166,...] with an element-wise tolerance of 1e-7.
+PASS Channel #1 equals [1.156434465040231,1.156293773615458,...] with an element-wise tolerance of 1e-7.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

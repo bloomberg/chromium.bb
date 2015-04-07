@@ -452,6 +452,50 @@ var Should = (function () {
         }
     };
 
+    // Check if |target| array is close to |expected| array element-wise within
+    // the range of |maxAllowedError|.
+    //
+    // Example:
+    // Should('My array', [0.11, 0.19]).beCloseToArray([0.1, 0.2], 0.02);
+    // Result:
+    // "PASS My array equals [0.1,0.2] within an element-wise tolerance of 0.02."
+    ShouldModel.prototype.beCloseToArray = function (array, maxAllowedError) {
+        // For the comparison, the target length must be bigger than the expected.
+        this._assert(this.target.length >= array.length,
+            'The target array length must be longer than ' + array.length +
+            ' but got ' + this.target.length + '.');
+
+        var mismatches = {};
+        for (var i = 0; i < array.length; i++) {
+            var diff = Math.abs(this.target[i] - array[i]);
+            if (diff > maxAllowedError)
+                mismatches[i] = diff;
+        }
+
+        var numberOfmismatches = Object.keys(mismatches).length;
+        var arrStr = (array.length > this.NUM_ARRAY_LOG) ?
+        array.slice(0, this.NUM_ARRAY_LOG).toString() + ',...' : array.toString();
+
+        if (numberOfmismatches === 0) {
+            this._testPassed('equals [' + arrStr +
+                '] with an element-wise tolerance of ' + maxAllowedError);
+        } else {
+            var counter = 0;
+            var failureMessage = 'does not equal [' + arrStr +
+                '] with an element-wise tolerance of ' + maxAllowedError;
+            for (var index in mismatches) {
+                failureMessage += '\n[' + index + '] : ' + mismatches[index];
+                if (++counter >= this.NUM_ERRORS_LOG) {
+                    failureMessage += '\nand ' + (numberOfmismatches - counter) +
+                    ' more differences...';
+                    break;
+                }
+            }
+
+            this._testFailed(failureMessage);
+        }
+    };
+
     // Check if |target| array contains a set of values in a certain order.
     //
     // Example:
@@ -475,6 +519,24 @@ var Should = (function () {
             this._testPassed('contains all the expected values in the correct order: [' +
             expected + ']');
         }
+    };
+
+    // Check if |target| array does not have any glitches. Note that |threshold|
+    // is not optional and is to define the desired threshold value.
+    //
+    // Example:
+    // Should('Channel #0', chanL).notGlitch(0.0005);
+    // Result:
+    // "PASS Channel #0 has no glitch above the threshold of 0.0005."
+    ShouldModel.prototype.notGlitch = function (threshold) {
+        for (var i = 1; i < this.target.length; i++) {
+            var diff = Math.abs(this.target[i-1] - this.target[i]);
+            if (diff >= threshold) {
+                this._testFailed('has a glitch at index ' + i + ' of size ' + diff);
+                return;
+            }
+        }
+        this._testPassed('has no glitch above the threshold of ' + threshold);
     };
 
     // Should() method.

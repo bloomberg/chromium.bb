@@ -28,8 +28,7 @@ private:
     bool m_isFirstRender;
     double m_smoothingConstant;
 
-    double m_gainL;
-    double m_gainR;
+    double m_pan;
 };
 
 } // namespace blink
