@@ -31,7 +31,6 @@
 
 // https://html.spec.whatwg.org/multipage/comms.html#the-websocket-interface
 
-// FIXME: use BinaryType in binaryType
 enum BinaryType { "blob", "arraybuffer" };
 
 [
@@ -67,7 +66,7 @@ enum BinaryType { "blob", "arraybuffer" };
 
     // messaging
     attribute EventHandler onmessage;
-    attribute DOMString binaryType;
+    attribute BinaryType binaryType;
     [RaisesException] void send(USVString data);
     [RaisesException] void send(Blob data);
     [RaisesException] void send(ArrayBuffer data);

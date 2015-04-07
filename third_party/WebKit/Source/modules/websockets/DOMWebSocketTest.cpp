@@ -666,15 +666,7 @@ TEST_F(DOMWebSocketTest, binaryType)
 {
     EXPECT_EQ("blob", m_websocket->binaryType());
 
-    m_websocket->setBinaryType("hoge");
-
-    EXPECT_EQ("blob", m_websocket->binaryType());
-
     m_websocket->setBinaryType("arraybuffer");
-
-    EXPECT_EQ("arraybuffer", m_websocket->binaryType());
-
-    m_websocket->setBinaryType("fuga");
 
     EXPECT_EQ("arraybuffer", m_websocket->binaryType());
 
