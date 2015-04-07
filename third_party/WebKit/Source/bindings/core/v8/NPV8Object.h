@@ -72,7 +72,7 @@ NPObject* v8ObjectToNPObject(v8::Local<v8::Object>);
 
 bool isWrappedNPObject(v8::Local<v8::Object>);
 
-V8NPObject* npObjectToV8NPObject(NPObject*);
+CORE_EXPORT V8NPObject* npObjectToV8NPObject(NPObject*);
 
 ScriptWrappable* npObjectToScriptWrappable(NPObject*);
 

@@ -31,6 +31,7 @@
 #ifndef V8NPObject_h
 #define V8NPObject_h
 
+#include "core/CoreExport.h"
 #include <v8.h>
 
 struct NPObject;
@@ -55,13 +56,13 @@ void npObjectInvokeDefaultHandler(const v8::FunctionCallbackInfo<v8::Value>&);
 // Get a wrapper for a NPObject.
 // If the object is already wrapped, the pre-existing wrapper will be returned. If the object is not wrapped, wrap it, and
 // give V8 a weak reference to the wrapper which will cleanup when there are no more JS references to the object.
-v8::Local<v8::Object> createV8ObjectForNPObject(v8::Isolate*, NPObject*, NPObject* root);
+CORE_EXPORT v8::Local<v8::Object> createV8ObjectForNPObject(v8::Isolate*, NPObject*, NPObject* root);
 
 // Tell V8 to forcibly remove an object.
 // This is used at plugin teardown so that the caller can aggressively unload the plugin library. After calling this
 // function, the persistent handle to the wrapper will be gone, and the wrapped NPObject will be removed so that it
 // cannot be referred to.
-void forgetV8ObjectForNPObject(NPObject*);
+CORE_EXPORT void forgetV8ObjectForNPObject(NPObject*);
 
 } // namespace blink
 

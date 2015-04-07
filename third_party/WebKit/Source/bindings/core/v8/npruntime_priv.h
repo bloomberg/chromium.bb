@@ -26,6 +26,7 @@
 #ifndef npruntime_priv_h
 #define npruntime_priv_h
 
+#include "core/CoreExport.h"
 #include <bindings/npruntime.h>
 
 #ifdef __cplusplus
@@ -36,7 +37,7 @@ extern "C" {
     _NPN_InitializeVariantWithStringCopy() will copy string data.  The string data
     will be deallocated by calls to NPReleaseVariantValue().
 */
-void _NPN_InitializeVariantWithStringCopy(NPVariant*, const NPString*);
+CORE_EXPORT void _NPN_InitializeVariantWithStringCopy(NPVariant*, const NPString*);
 void _NPN_DeallocateObject(NPObject*);
 
 // The following routines allow the browser to aggressively cleanup NPObjects
@@ -78,7 +79,7 @@ void _NPN_RegisterObject(NPObject*, NPObject* owner);
 
 // Unregister an NPObject with the runtime.  If obj is an owning
 // object, this call will also unregister all of the owned objects.
-void _NPN_UnregisterObject(NPObject*);
+CORE_EXPORT void _NPN_UnregisterObject(NPObject*);
 
 // Check to see if an object is registered with the runtime.
 // Return true if registered, false otherwise.
