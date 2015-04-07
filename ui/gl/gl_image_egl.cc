@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_image_egl.h"
 
+#include "ui/gl/egl_util.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gfx {
@@ -26,8 +27,7 @@ bool GLImageEGL::Initialize(EGLenum target,
                                  buffer,
                                  attrs);
   if (egl_image_ == EGL_NO_IMAGE_KHR) {
-    EGLint error = eglGetError();
-    LOG(ERROR) << "Error creating EGLImage: " << error;
+    DLOG(ERROR) << "Error creating EGLImage: " << ui::GetLastEGLErrorString();
     return false;
   }
 
@@ -36,7 +36,12 @@ bool GLImageEGL::Initialize(EGLenum target,
 
 void GLImageEGL::Destroy(bool have_context) {
   if (egl_image_ != EGL_NO_IMAGE_KHR) {
-    eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(), egl_image_);
+    EGLBoolean result =
+        eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(), egl_image_);
+    if (result == EGL_FALSE) {
+      DLOG(ERROR) << "Error destroying EGLImage: "
+                  << ui::GetLastEGLErrorString();
+    }
     egl_image_ = EGL_NO_IMAGE_KHR;
   }
 }
