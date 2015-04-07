@@ -20,16 +20,10 @@
 #ifndef SVGPathBlender_h
 #define SVGPathBlender_h
 
-#include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
-
-enum FloatBlendMode {
-    BlendHorizontal,
-    BlendVertical
-};
 
 struct PathSegmentData;
 class SVGPathConsumer;
@@ -46,36 +40,12 @@ public:
     DECLARE_TRACE();
 
 private:
-    PathSegmentData blendMoveToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    PathSegmentData blendLineToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    PathSegmentData blendLineToHorizontalSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    PathSegmentData blendLineToVerticalSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    PathSegmentData blendCurveToCubicSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    PathSegmentData blendCurveToCubicSmoothSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    PathSegmentData blendCurveToQuadraticSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    PathSegmentData blendCurveToQuadraticSmoothSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    PathSegmentData blendArcToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-    void blendSegments(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
-
-    float blendAnimatedDimensonalFloat(float, float, FloatBlendMode);
-    FloatPoint blendAnimatedFloatPoint(const FloatPoint& from, const FloatPoint& to);
-    FloatPoint blendAnimatedFloatPointSameCoordinates(const FloatPoint& from, const FloatPoint& to);
+    class BlendState;
+    bool blendAnimatedPath(BlendState&);
 
     RawPtrWillBeMember<SVGPathSource> m_fromSource;
     RawPtrWillBeMember<SVGPathSource> m_toSource;
     RawPtrWillBeMember<SVGPathConsumer> m_consumer;
-
-    FloatPoint m_fromCurrentPoint;
-    FloatPoint m_toCurrentPoint;
-
-    float m_progress;
-    unsigned m_addTypesCount;
-    bool m_isInFirstHalfOfAnimation;
-    // This is per-segment blend state corresponding to the 'from' and 'to'
-    // segments currently being blended, and only used within blendSegments().
-    bool m_typesAreEqual;
-    bool m_fromIsAbsolute;
-    bool m_toIsAbsolute;
 };
 
 } // namespace blink
