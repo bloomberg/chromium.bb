@@ -67,6 +67,8 @@ class PaintContext {
   const gfx::Vector2d& PaintOffset() const { return offset_; }
 #endif
 
+  const gfx::Rect& InvalidationForTesting() const { return invalidation_; }
+
  private:
   // The PaintRecorder needs access to the internal canvas and friends, but we
   // don't want to expose them on this class so that people must go through the

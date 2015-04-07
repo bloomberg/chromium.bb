@@ -28,6 +28,7 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/compositor/test/test_compositor_host.h"
@@ -64,7 +65,8 @@ class ColoredLayer : public Layer, public LayerDelegate {
 
   // Overridden from LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
-    context.canvas()->DrawColor(color_);
+    ui::PaintRecorder recorder(context);
+    recorder.canvas()->DrawColor(color_);
   }
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
@@ -229,7 +231,8 @@ class TestLayerDelegate : public LayerDelegate {
 
   // Overridden from LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
-    context.canvas()->DrawColor(colors_[color_index_]);
+    ui::PaintRecorder recorder(context);
+    recorder.canvas()->DrawColor(colors_[color_index_]);
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
   }
 
@@ -272,7 +275,8 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   // Overridden from LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
     painted_ = true;
-    context.canvas()->DrawColor(SK_ColorWHITE);
+    ui::PaintRecorder recorder(context);
+    recorder.canvas()->DrawColor(SK_ColorWHITE);
   }
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
@@ -1206,20 +1210,17 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
     return value;
   }
 
-  const gfx::RectF& last_clip_rect() const { return last_clip_rect_; }
+  const gfx::Rect& last_clip_rect() const { return last_clip_rect_; }
 
  private:
   // Overridden from LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
-    gfx::Canvas* canvas = context.canvas();
     paint_count_++;
     if (!schedule_paint_rect_.IsEmpty()) {
       layer_->SchedulePaint(schedule_paint_rect_);
       schedule_paint_rect_ = gfx::Rect();
     }
-    SkRect sk_clip_rect;
-    if (canvas->sk_canvas()->getClipBounds(&sk_clip_rect))
-      last_clip_rect_ = gfx::SkRectToRectF(sk_clip_rect);
+    last_clip_rect_ = context.InvalidationForTesting();
   }
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
@@ -1233,7 +1234,7 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
   int paint_count_;
   Layer* layer_;
   gfx::Rect schedule_paint_rect_;
-  gfx::RectF last_clip_rect_;
+  gfx::Rect last_clip_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulePaintLayerDelegate);
 };
