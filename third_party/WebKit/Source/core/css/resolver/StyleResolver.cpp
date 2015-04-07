@@ -1212,7 +1212,6 @@ static bool shouldIgnoreTextTrackAuthorStyle(Document& document)
 template <CSSPropertyPriority priority>
 void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allValue, bool inheritedOnly)
 {
-    bool isUnsetValue = !allValue->isInitialValue() && !allValue->isInheritedValue();
     unsigned startCSSProperty = CSSPropertyPriorityData<priority>::first();
     unsigned endCSSProperty = CSSPropertyPriorityData<priority>::last();
 
@@ -1237,16 +1236,7 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allVal
         if (inheritedOnly && !CSSPropertyMetadata::isInheritedProperty(propertyId))
             continue;
 
-        CSSValue* value;
-        if (!isUnsetValue) {
-            value = allValue;
-        } else {
-            if (CSSPropertyMetadata::isInheritedProperty(propertyId))
-                value = cssValuePool().createInheritedValue().get();
-            else
-                value = cssValuePool().createExplicitInitialValue().get();
-        }
-        StyleBuilder::applyProperty(propertyId, state, value);
+        StyleBuilder::applyProperty(propertyId, state, allValue);
     }
 }
 

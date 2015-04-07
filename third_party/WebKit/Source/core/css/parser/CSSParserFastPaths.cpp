@@ -177,7 +177,7 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
 
     switch (propertyId) {
     case CSSPropertyAll:
-        return valueID == CSSValueUnset;
+        return false; // Only accepts css-wide keywords
     case CSSPropertyBackgroundRepeatX: // repeat | no-repeat
     case CSSPropertyBackgroundRepeatY: // repeat | no-repeat
         return valueID == CSSValueRepeat || valueID == CSSValueNoRepeat;
