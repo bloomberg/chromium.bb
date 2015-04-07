@@ -39,9 +39,7 @@ class Rietveld(object):
   """Accesses rietveld."""
   def __init__(self, url, email, password, extra_headers=None, maxtries=None):
     self.url = url.rstrip('/')
-    # Email and password are accessed by commit queue, keep them.
-    self.email = email
-    self.password = password
+
     # TODO(maruel): It's not awesome but maybe necessary to retrieve the value.
     # It happens when the presubmit check is ran out of process, the cookie
     # needed to be recreated from the credentials. Instead, it should pass the
@@ -579,10 +577,6 @@ class JwtOAuth2Rietveld(Rietveld):
                extra_headers=None,
                maxtries=None):
 
-    # These attributes are accessed by commit queue. Keep them.
-    self.email = client_email
-    self.private_key_file = client_private_key_file
-
     if private_key_password is None:  # '' means 'empty password'
       private_key_password = 'notasecret'
 
@@ -677,14 +671,6 @@ class ReadOnlyRietveld(object):
   @property
   def url(self):
     return self._rietveld.url
-
-  @property
-  def email(self):
-    return self._rietveld.email
-
-  @property
-  def password(self):
-    return self._rietveld.password
 
   def get_pending_issues(self):
     pending_issues = self._rietveld.get_pending_issues()
