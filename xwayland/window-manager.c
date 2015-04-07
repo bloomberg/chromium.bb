@@ -459,10 +459,10 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		case TYPE_WM_PROTOCOLS:
 			atom = xcb_get_property_value(reply);
 			for (i = 0; i < reply->value_len; i++)
-				if (atom[i] == wm->atom.wm_delete_window)
+				if (atom[i] == wm->atom.wm_delete_window) {
 					window->delete_window = 1;
-			break;
-
+					break;
+				}
 			break;
 		case TYPE_WM_NORMAL_HINTS:
 			memcpy(&window->size_hints,
