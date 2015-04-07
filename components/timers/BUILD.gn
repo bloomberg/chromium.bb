@@ -4,8 +4,10 @@
 
 static_library("timers") {
   sources = [
-    "alarm_timer_chromeos.cc",
-    "alarm_timer_chromeos.h",
+    "alarm_timer.cc",
+    "alarm_timer.h",
+    "rtc_alarm.cc",
+    "rtc_alarm.h",
   ]
 
   deps = [
