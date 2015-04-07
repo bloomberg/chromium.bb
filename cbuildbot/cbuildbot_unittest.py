@@ -6,12 +6,11 @@
 
 from __future__ import print_function
 
+import argparse
 import copy
 import glob
-import mox
 import optparse
 import os
-import sys
 
 from chromite.cbuildbot import cbuildbot_config as config
 from chromite.cbuildbot import cbuildbot_run
@@ -21,6 +20,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.builders import simple_builders
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -50,20 +50,15 @@ class BuilderRunMock(partial_mock.PartialMock):
     return self.CHROME_VERSION
 
 
-class TestExitedException(Exception):
-  """Exception used by sys.exit() mock to halt execution."""
+class TestArgsparseError(Exception):
+  """Exception used by parser.error() mock to halt execution."""
 
 
 class TestHaltedException(Exception):
   """Exception used by mocks to halt execution without indicating failure."""
 
 
-class TestFailedException(Exception):
-  """Exception used by mocks to halt execution and indicate failure."""
-
-
-class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase,
-                         cros_test_lib.MockTestCase):
+class RunBuildStagesTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Test that cbuildbot runs the appropriate stages for a given config."""
 
   VERSION = '1234.5.6'
@@ -102,89 +97,36 @@ class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase,
 
     self.StartPatcher(BuilderRunMock())
 
+    self.rc.AddCmdResult(
+        [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
+        output=constants.REEXEC_API_VERSION)
+
   def tearDown(self):
     # Mimic exiting a 'with' statement.
-    self._manager.__exit__(None, None, None)
+    if hasattr(self, '_manager'):
+      self._manager.__exit__(None, None, None)
 
   def testChromeosOfficialSet(self):
     """Verify that CHROMEOS_OFFICIAL is set correctly."""
     self.build_config['chromeos_official'] = True
 
-    # Clean up before
-    if 'CHROMEOS_OFFICIAL' in os.environ:
-      del os.environ['CHROMEOS_OFFICIAL']
-
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-
     cidb.CIDBConnectionFactory.SetupNoCidb()
 
-    api = self.mox.CreateMock(cros_build_lib.CommandResult)
-    api.returncode = 0
-    api.output = constants.REEXEC_API_VERSION
-    cros_build_lib.RunCommand(
-        [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
-        cwd=self.buildroot, capture_output=True, error_code_ok=True
-        ).AndReturn(api)
-
-    result = self.mox.CreateMock(cros_build_lib.CommandResult)
-    result.returncode = 0
-    cros_build_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
-                              error_code_ok=True,
-                              kill_timeout=mox.IgnoreArg()).AndReturn(result)
-    self.mox.ReplayAll()
-
-    self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
-
+    # Clean up before.
+    os.environ.pop('CHROMEOS_OFFICIAL', None)
     simple_builders.SimpleBuilder(self.run).Run()
-
-    self.assertTrue('CHROMEOS_OFFICIAL' in os.environ)
-
-    self.mox.VerifyAll()
-
-    # Clean up after the test
-    if 'CHROMEOS_OFFICIAL' in os.environ:
-      del os.environ['CHROMEOS_OFFICIAL']
+    self.assertIn('CHROMEOS_OFFICIAL', os.environ)
 
   def testChromeosOfficialNotSet(self):
     """Verify that CHROMEOS_OFFICIAL is not always set."""
-
     self.build_config['chromeos_official'] = False
-
-    # Clean up before
-    if 'CHROMEOS_OFFICIAL' in os.environ:
-      del os.environ['CHROMEOS_OFFICIAL']
-
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     cidb.CIDBConnectionFactory.SetupNoCidb()
 
-    api = self.mox.CreateMock(cros_build_lib.CommandResult)
-    api.returncode = 0
-    api.output = constants.REEXEC_API_VERSION
-    cros_build_lib.RunCommand(
-        [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
-        cwd=self.buildroot, capture_output=True, error_code_ok=True
-        ).AndReturn(api)
-
-    result = self.mox.CreateMock(cros_build_lib.CommandResult)
-    result.returncode = 0
-    cros_build_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
-                              error_code_ok=True,
-                              kill_timeout=mox.IgnoreArg()).AndReturn(result)
-
-    self.mox.ReplayAll()
-
-    self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
-
+    # Clean up before.
+    os.environ.pop('CHROMEOS_OFFICIAL', None)
     simple_builders.SimpleBuilder(self.run).Run()
-
-    self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
-
-    self.mox.VerifyAll()
-
-    # Clean up after the test
-    if 'CHROMEOS_OFFICIAL' in os.environ:
-      del os.environ['CHROMEOS_OFFICIAL']
+    self.assertNotIn('CHROMEOS_OFFICIAL', os.environ)
 
 
 class LogTest(cros_test_lib.TempDirTestCase):
@@ -262,23 +204,23 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
     """Test that debug and buildbot flags are set by default."""
     args = ['--local', '-r', self._BUILD_ROOT, self._X86_PREFLIGHT]
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
-    self.assertEquals(options.debug, True)
-    self.assertEquals(options.buildbot, False)
+    self.assertTrue(options.debug)
+    self.assertFalse(options.buildbot)
 
   def testBuildBotOption(self):
     """Test that --buildbot option unsets debug flag."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', self._X86_PREFLIGHT]
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
-    self.assertEquals(options.debug, False)
-    self.assertEquals(options.buildbot, True)
+    self.assertFalse(options.debug)
+    self.assertTrue(options.buildbot)
 
   def testBuildBotWithDebugOption(self):
     """Test that --debug option overrides --buildbot option."""
     args = ['-r', self._BUILD_ROOT, '--buildbot', '--debug',
             self._X86_PREFLIGHT]
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
-    self.assertEquals(options.debug, True)
-    self.assertEquals(options.buildbot, True)
+    self.assertTrue(options.debug)
+    self.assertTrue(options.buildbot)
 
   def testLocalTrybotWithSpacesInPatches(self):
     """Test that we handle spaces in patch arguments."""
@@ -448,18 +390,16 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
         self.AssertLogsContain(logger, 'Cannot specify')
 
 
-class FullInterfaceTest(cros_test_lib.MoxTempDirTestCase):
+class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
   """Tests that run the cbuildbot.main() function directly.
 
   Note this explicitly suppresses automatic VerifyAll() calls; thus if you want
   that checked, you have to invoke it yourself.
   """
 
-  mox_suppress_verify_all = True
-
   def MakeTestRootDir(self, relpath):
     abspath = os.path.join(self.root, relpath)
-    os.makedirs(abspath)
+    osutils.SafeMakedirs(abspath)
     return abspath
 
   def setUp(self):
@@ -471,30 +411,20 @@ class FullInterfaceTest(cros_test_lib.MoxTempDirTestCase):
     self.external_marker = os.path.join(self.trybot_root, '.trybot')
     self.internal_marker = os.path.join(self.trybot_internal_root, '.trybot')
 
-    os.makedirs(os.path.join(self.sourceroot, '.repo', 'manifests'))
-    os.makedirs(os.path.join(self.sourceroot, '.repo', 'repo'))
-
-    # Create the parser before we stub out os.path.exists() - which the parser
-    # creation code actually uses.
-    parser = cbuildbot._CreateParser()
+    osutils.SafeMakedirs(os.path.join(self.sourceroot, '.repo', 'manifests'))
+    osutils.SafeMakedirs(os.path.join(self.sourceroot, '.repo', 'repo'))
 
     # Stub out all relevant methods regardless of whether they are called in the
-    # specific test case.  We can do this because we don't run VerifyAll() at
-    # the end of every test.
-    self.mox.StubOutWithMock(optparse.OptionParser, 'error')
-    self.mox.StubOutWithMock(cros_build_lib, 'IsInsideChroot')
-    self.mox.StubOutWithMock(cbuildbot, '_CreateParser')
-    self.mox.StubOutWithMock(sys, 'exit')
-    self.mox.StubOutWithMock(cros_build_lib, 'GetInput')
-    self.mox.StubOutWithMock(cbuildbot, '_RunBuildStagesWrapper')
-
-    parser.error(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
-    cros_build_lib.IsInsideChroot().InAnyOrder().AndReturn(False)
-    cbuildbot._CreateParser().InAnyOrder().AndReturn(parser)
-    sys.exit(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
-    cbuildbot._RunBuildStagesWrapper(
-        mox.IgnoreArg(),
-        mox.IgnoreArg()).InAnyOrder().AndReturn(True)
+    # specific test case.
+    self.PatchObject(optparse.OptionParser, 'error',
+                     side_effect=TestArgsparseError())
+    self.PatchObject(argparse.ArgumentParser, 'error',
+                     side_effect=TestArgsparseError())
+    self.inchroot_mock = self.PatchObject(cros_build_lib, 'IsInsideChroot',
+                                          return_value=False)
+    self.input_mock = self.PatchObject(cros_build_lib, 'GetInput',
+                                       side_effect=Exception())
+    self.PatchObject(cbuildbot, '_RunBuildStagesWrapper', return_value=True)
 
   def assertMain(self, args, common_options=True):
     if common_options:
@@ -507,13 +437,11 @@ class FullInterfaceTest(cros_test_lib.MoxTempDirTestCase):
 
   def testNullArgsStripped(self):
     """Test that null args are stripped out and don't cause error."""
-    self.mox.ReplayAll()
     self.assertMain(['--local', '-r', self.buildroot, '', '',
                      'x86-generic-paladin'])
 
   def testMultipleConfigsError(self):
     """Test that multiple configs cause error if --remote is not used."""
-    self.mox.ReplayAll()
     self.assertRaises(cros_build_lib.DieSystemExit, self.assertMain,
                       ['--local',
                        '-r', self.buildroot,
@@ -522,57 +450,38 @@ class FullInterfaceTest(cros_test_lib.MoxTempDirTestCase):
 
   def testDontInferBuildrootForBuildBotRuns(self):
     """Test that we don't infer buildroot if run with --buildbot option."""
-    self.mox.ReplayAll()
-    self.assertRaises(TestExitedException, self.assertMain,
+    self.assertRaises(TestArgsparseError, self.assertMain,
                       ['--buildbot', 'x86-generic-paladin'])
 
   def testInferExternalBuildRoot(self):
     """Test that we default to correct buildroot for external config."""
-    self.mox.StubOutWithMock(cbuildbot, '_ConfirmBuildRoot')
-    cbuildbot._ConfirmBuildRoot(mox.IgnoreArg()).InAnyOrder().AndRaise(
-        TestHaltedException())
-
-    self.mox.ReplayAll()
+    self.PatchObject(cbuildbot, '_ConfirmBuildRoot',
+                     side_effect=TestHaltedException())
     self.assertRaises(TestHaltedException, self.assertMain,
                       ['--local', 'x86-generic-paladin'])
 
   def testInferInternalBuildRoot(self):
     """Test that we default to correct buildroot for internal config."""
-    self.mox.StubOutWithMock(cbuildbot, '_ConfirmBuildRoot')
-    cbuildbot._ConfirmBuildRoot(mox.IgnoreArg()).InAnyOrder().AndRaise(
-        TestHaltedException())
-
-    self.mox.ReplayAll()
+    self.PatchObject(cbuildbot, '_ConfirmBuildRoot',
+                     side_effect=TestHaltedException())
     self.assertRaises(TestHaltedException, self.assertMain,
                       ['--local', 'x86-mario-paladin'])
 
   def testInferBuildRootPromptNo(self):
     """Test that a 'no' answer on the prompt halts execution."""
-    cros_build_lib.GetInput(mox.IgnoreArg()).InAnyOrder().AndReturn('no')
-
-    self.mox.ReplayAll()
-    self.assertRaises(TestExitedException, self.assertMain,
+    self.input_mock.side_effect = None
+    self.input_mock.return_value = 'no'
+    self.assertRaises(SystemExit, self.assertMain,
                       ['--local', 'x86-generic-paladin'])
 
   def testInferBuildRootExists(self):
     """Test that we don't prompt the user if buildroot already exists."""
-    cros_build_lib.RunCommand(['touch', self.external_marker],
-                              capture_output=True)
+    osutils.Touch(self.external_marker)
     os.utime(self.external_marker, None)
-    cros_build_lib.GetInput(mox.IgnoreArg()).InAnyOrder().AndRaise(
-        TestFailedException())
-
-    self.mox.ReplayAll()
     self.assertMain(['--local', 'x86-generic-paladin'])
 
   def testBuildbotDiesInChroot(self):
     """Buildbot should quit if run inside a chroot."""
-    # Need to do this since a cros_build_lib.IsInsideChroot() call is already
-    # queued up in setup() and we can't Reset() an individual mock.
-    # pylint: disable=not-callable
-    new_is_inside_chroot = self.mox.CreateMockAnything()
-    new_is_inside_chroot().InAnyOrder().AndReturn(True)
-    cros_build_lib.IsInsideChroot = new_is_inside_chroot
-    self.mox.ReplayAll()
+    self.inchroot_mock.return_value = True
     self.assertRaises(cros_build_lib.DieSystemExit, self.assertMain,
                       ['--local', '-r', self.buildroot, 'x86-generic-paladin'])
