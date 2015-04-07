@@ -9072,6 +9072,15 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32 immediate_data_size,
     }
   }
 
+  // For testing only. Allows us to stress the ability to respond to OOM errors.
+  if (workarounds().simulate_out_of_memory_on_large_textures &&
+      (width * height >= 4096 * 4096)) {
+    LOCAL_SET_GL_ERROR(
+        GL_OUT_OF_MEMORY,
+        "glTexImage2D", "synthetic out of memory");
+    return error::kNoError;
+  }
+
   TextureManager::DoTextImage2DArguments args = {
     target, level, internal_format, width, height, border, format, type,
     pixels, pixels_size};

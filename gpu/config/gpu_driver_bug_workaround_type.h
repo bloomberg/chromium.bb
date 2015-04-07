@@ -100,6 +100,8 @@
          scalarize_vec_and_mat_constructor_args)             \
   GPU_OP(SET_TEXTURE_FILTER_BEFORE_GENERATING_MIPMAP,        \
          set_texture_filter_before_generating_mipmap)        \
+  GPU_OP(SIMULATE_OUT_OF_MEMORY_ON_LARGE_TEXTURES,           \
+         simulate_out_of_memory_on_large_textures)           \
   GPU_OP(SWIZZLE_RGBA_FOR_ASYNC_READPIXELS,                  \
          swizzle_rgba_for_async_readpixels)                  \
   GPU_OP(TEXSUBIMAGE2D_FASTER_THAN_TEXIMAGE2D,               \
