@@ -4522,7 +4522,7 @@ void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
 void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
                                                GLsizei numAttachments,
                                                const GLenum* attachments) {
-  if (workarounds().disable_fbo_invalidations)
+  if (workarounds().disable_discard_framebuffer)
     return;
 
   Framebuffer* framebuffer =

@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.2",
+  "version": "10.3",
   "entries": [
     {
       "id": 1,
@@ -1152,20 +1152,6 @@ LONG_STRING_CONST(
         "type": "android"
       },
       "gl_renderer": "PowerVR SGX.*",
-      "features": [
-        "accelerated_2d_canvas",
-        "gpu_rasterization"
-      ]
-    },
-    {
-      "id": 106,
-      "description": "Canvas and GPU raster broken on particular Mali-400 models",
-      "cr_bugs": [451230],
-      "os": {
-        "type": "android"
-      },
-      "gl_renderer": "Mali-400.*",
-      "machine_model_name": [ "GT-I8190N", "GT-I9300", "SPH-L900", "SM-G800F" ],
       "features": [
         "accelerated_2d_canvas",
         "gpu_rasterization"

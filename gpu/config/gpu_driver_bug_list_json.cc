@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.20",
+  "version": "7.21",
   "entries": [
     {
       "id": 1,
@@ -502,7 +502,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "gl_vendor": "ARM.*",
       "features": [
-        "disable_ext_discard_framebuffer"
+        "disable_discard_framebuffer"
       ]
     },
     {
@@ -515,7 +515,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "gl_vendor": "Imagination.*",
       "gl_renderer": "PowerVR SGX 540",
       "features": [
-        "disable_ext_discard_framebuffer"
+        "disable_discard_framebuffer"
       ]
     },
     {
@@ -527,7 +527,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "gl_extensions": ".*GL_VIV_shader_binary.*",
       "features": [
-        "disable_ext_discard_framebuffer"
+        "disable_discard_framebuffer"
       ]
     },
     {
@@ -538,7 +538,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "type": "chromeos"
       },
       "features": [
-        "disable_ext_discard_framebuffer"
+        "disable_discard_framebuffer"
       ]
     },
     {
@@ -1187,7 +1187,7 @@ LONG_STRING_CONST(
       "gl_vendor": "Qualcomm.*",
       "gl_renderer": ".*420",
       "features": [
-        "disable_fbo_invalidations"
+        "disable_discard_framebuffer"
       ]
     },
     {
@@ -1204,6 +1204,18 @@ LONG_STRING_CONST(
       "gl_renderer": "PowerVR Rogue Han",
       "features": [
         "disable_ext_occlusion_query"
+      ]
+    },
+    {
+      "id": 105,
+      "cr_bugs": [449488,451230],
+      "description": "Framebuffer discarding causes corruption on Mali-4xx",
+      "gl_renderer": "Mali-4.*",
+      "os": {
+        "type": "android"
+      },
+      "features": [
+        "disable_discard_framebuffer"
       ]
     }
   ]
