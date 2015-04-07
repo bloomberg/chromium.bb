@@ -138,12 +138,6 @@ grit("resources") {
     "grit/blink_resources.h",
     "blink_resources.rc",
     "blink_resources.pak",
-
-    # TODO(erg): These two paks are incorrect; webkit_resources should only
-    # contain non-structured data; remove these once the chromium repository
-    # moves back to resources.pak.
-    "blink_resources_100_percent.pak",
-    "blink_resources_200_percent.pak",
   ]
 }
 
