@@ -793,8 +793,7 @@ bool FontCollectionLoader::LoadFontListFromRegistry() {
       // we will ignore all other registry entries.
       std::vector<base::FilePath::StringType> components;
       path.GetComponents(&components);
-      if ((components.size() == 1 &&
-           value.size() < kMaxFontFileNameLength - 1) ||
+      if (components.size() == 1 ||
           base::FilePath::CompareEqualIgnoreCase(system_font_path.value(),
                                                  path.DirName().value())) {
         bool should_ignore = false;
