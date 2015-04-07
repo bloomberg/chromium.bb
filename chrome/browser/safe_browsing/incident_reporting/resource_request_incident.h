@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_SCRIPT_REQUEST_INCIDENT_H_
-#define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_SCRIPT_REQUEST_INCIDENT_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_RESOURCE_REQUEST_INCIDENT_H_
+#define CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_RESOURCE_REQUEST_INCIDENT_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 
 namespace safe_browsing {
 
-class ClientIncidentReport_IncidentData_ScriptRequestIncident;
+class ClientIncidentReport_IncidentData_ResourceRequestIncident;
 
 // Represents a suspicious script detection incident.
-class ScriptRequestIncident : public Incident {
+class ResourceRequestIncident : public Incident {
  public:
-  explicit ScriptRequestIncident(
-      scoped_ptr<ClientIncidentReport_IncidentData_ScriptRequestIncident>
+  explicit ResourceRequestIncident(
+      scoped_ptr<ClientIncidentReport_IncidentData_ResourceRequestIncident>
           script_detection_incident);
-  ~ScriptRequestIncident() override;
+  ~ResourceRequestIncident() override;
 
   // Incident methods:
   IncidentType GetType() const override;
@@ -26,9 +26,9 @@ class ScriptRequestIncident : public Incident {
   uint32_t ComputeDigest() const override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ScriptRequestIncident);
+  DISALLOW_COPY_AND_ASSIGN(ResourceRequestIncident);
 };
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_SCRIPT_REQUEST_INCIDENT_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_INCIDENT_REPORTING_RESOURCE_REQUEST_INCIDENT_H_

@@ -389,9 +389,15 @@ message ClientIncidentReport {
     message VariationsSeedSignatureIncident {
       optional string variations_seed_signature = 1;
     }
-    message ScriptRequestIncident {
-      optional bytes script_digest = 1;
-      optional string inclusion_origin = 2;
+    message ResourceRequestIncident {
+      enum Type {
+        UNKNOWN = 0;
+        TYPE_SCRIPT = 1;
+        TYPE_DOMAIN = 2;
+      }
+      optional bytes digest = 1;
+      optional string origin = 2;
+      optional Type type = 3 [default = UNKNOWN];
     }
     optional int64 incident_time_msec = 1;
     optional TrackedPreferenceIncident tracked_preference = 2;
@@ -399,7 +405,7 @@ message ClientIncidentReport {
     optional BlacklistLoadIncident blacklist_load = 4;
     // Note: skip tag 5 because it was previously used.
     optional VariationsSeedSignatureIncident variations_seed_signature = 6;
-    optional ScriptRequestIncident script_request = 7;
+    optional ResourceRequestIncident resource_request = 7;
   }
 
   repeated IncidentData incident = 1;
