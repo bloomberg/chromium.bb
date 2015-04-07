@@ -341,12 +341,13 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
 
 bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
   DisableSensors(consumer_type);
-  SetBufferAvailableState(consumer_type, false);
   switch (consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
+      SetBufferAvailableState(consumer_type, false);
       orientation_buffer_ = nullptr;
       return true;
     case CONSUMER_TYPE_MOTION:
+      SetBufferAvailableState(consumer_type, false);
       motion_buffer_ = nullptr;
       return true;
     case CONSUMER_TYPE_LIGHT:
