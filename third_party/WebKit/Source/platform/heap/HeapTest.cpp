@@ -241,7 +241,7 @@ private:
 class CountingVisitor : public Visitor {
 public:
     CountingVisitor()
-        : Visitor(Visitor::GenericVisitorType)
+        : Visitor(Visitor::ThreadLocalMarking)
         , m_count(0)
     {
         configureEagerTraceLimit();

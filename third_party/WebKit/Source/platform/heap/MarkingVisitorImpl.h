@@ -20,7 +20,7 @@ namespace blink {
 template <typename Derived>
 class MarkingVisitorImpl {
 protected:
-    inline void visitHeader(HeapObjectHeader* header, const void* objectPointer, TraceCallback callback)
+    inline void markHeader(HeapObjectHeader* header, const void* objectPointer, TraceCallback callback)
     {
         ASSERT(header);
         ASSERT(objectPointer);
@@ -59,7 +59,7 @@ protected:
         if (!objectPointer)
             return;
         HeapObjectHeader* header = HeapObjectHeader::fromPayload(objectPointer);
-        visitHeader(header, header->payload(), callback);
+        markHeader(header, header->payload(), callback);
     }
 
     inline void registerDelayedMarkNoTracing(const void* objectPointer)

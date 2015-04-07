@@ -580,9 +580,9 @@ public:
     friend class VisitorHelper<Visitor>;
     friend class InlinedGlobalMarkingVisitor;
 
-    enum VisitorType {
-        GlobalMarkingVisitorType,
-        GenericVisitorType,
+    enum MarkingMode {
+        GlobalMarking,
+        ThreadLocalMarking,
     };
 
     virtual ~Visitor() { }
@@ -672,8 +672,8 @@ public:
     inline bool isGlobalMarkingVisitor() const { return m_isGlobalMarkingVisitor; }
 
 protected:
-    explicit Visitor(VisitorType type)
-        : m_isGlobalMarkingVisitor(type == GlobalMarkingVisitorType)
+    explicit Visitor(MarkingMode markingMode)
+        : m_isGlobalMarkingVisitor(markingMode == GlobalMarking)
     { }
 
     virtual void registerWeakCellWithCallback(void**, WeakPointerCallback) = 0;

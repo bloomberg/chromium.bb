@@ -1956,7 +1956,7 @@ void Heap::init()
     s_weakCallbackStack = new CallbackStack();
     s_ephemeronStack = new CallbackStack();
     s_heapDoesNotContainCache = new HeapDoesNotContainCache();
-    s_markingVisitor = new MarkingVisitor<GlobalMarking>();
+    s_markingVisitor = new MarkingVisitor<Visitor::GlobalMarking>();
     s_freePagePool = new FreePagePool();
     s_orphanedPagePool = new OrphanedPagePool();
     s_allocatedObjectSize = 0;
@@ -2059,7 +2059,7 @@ const GCInfo* Heap::findGCInfo(Address address)
 #if ENABLE(GC_PROFILING)
 void Heap::dumpPathToObjectOnNextGC(void* p)
 {
-    static_cast<MarkingVisitor<GlobalMarking>*>(s_markingVisitor)->dumpPathToObjectOnNextGC(p);
+    static_cast<MarkingVisitor<Visitor::GlobalMarking>*>(s_markingVisitor)->dumpPathToObjectOnNextGC(p);
 }
 
 String Heap::createBacktraceString()
@@ -2240,7 +2240,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
 #if ENABLE(GC_PROFILING)
-    static_cast<MarkingVisitor<GlobalMarking>*>(s_markingVisitor)->objectGraph().clear();
+    static_cast<MarkingVisitor<Visitor::GlobalMarking>*>(s_markingVisitor)->objectGraph().clear();
 #endif
 
     // Disallow allocation during garbage collection (but not during the
@@ -2282,7 +2282,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     postGC(gcType);
 
 #if ENABLE(GC_PROFILING)
-    static_cast<MarkingVisitor<GlobalMarking>*>(s_markingVisitor)->reportStats();
+    static_cast<MarkingVisitor<Visitor::GlobalMarking>*>(s_markingVisitor)->reportStats();
 #endif
 
     double markingTimeInMilliseconds = WTF::currentTimeMS() - timeStamp;
@@ -2307,7 +2307,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
     // garbage collection since we don't want to allow a global GC at the
     // same time as a thread local GC.
     {
-        MarkingVisitor<ThreadLocalMarking> markingVisitor;
+        MarkingVisitor<Visitor::ThreadLocalMarking> markingVisitor;
         ThreadState::NoAllocationScope noAllocationScope(state);
 
         state->preGC();

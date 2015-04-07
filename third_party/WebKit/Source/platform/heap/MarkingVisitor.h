@@ -9,12 +9,7 @@
 
 namespace blink {
 
-enum MarkingMode {
-    GlobalMarking,
-    ThreadLocalMarking,
-};
-
-template <MarkingMode Mode>
+template <Visitor::MarkingMode Mode>
 class MarkingVisitor final : public Visitor, public MarkingVisitorImpl<MarkingVisitor<Mode>> {
 public:
     using Impl = MarkingVisitorImpl<MarkingVisitor<Mode>>;
@@ -27,13 +22,13 @@ public:
 #endif
 
     MarkingVisitor()
-        : Visitor(Mode == GlobalMarking ? Visitor::GlobalMarkingVisitorType : Visitor::GenericVisitorType)
+        : Visitor(Mode)
     {
     }
 
     virtual void markHeader(HeapObjectHeader* header, TraceCallback callback) override
     {
-        Impl::visitHeader(header, header->payload(), callback);
+        Impl::markHeader(header, header->payload(), callback);
     }
 
     virtual void mark(const void* objectPointer, TraceCallback callback) override
