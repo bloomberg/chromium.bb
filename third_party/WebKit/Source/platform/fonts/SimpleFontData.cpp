@@ -452,19 +452,20 @@ bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters
 
     UErrorCode error = U_ZERO_ERROR;
     Vector<UChar, 4> normalizedCharacters(length);
-    int32_t normalizedLength = unorm_normalize(characters, length, UNORM_NFC, UNORM_UNICODE_3_2, &normalizedCharacters[0], length, &error);
+    size_t normalizedLength = unorm_normalize(characters, length, UNORM_NFC, UNORM_UNICODE_3_2, &normalizedCharacters[0], length, &error);
     // Can't render if we have an error or no composition occurred.
-    if (U_FAILURE(error) || (static_cast<size_t>(normalizedLength) == length))
+    if (U_FAILURE(error) || normalizedLength == length)
         return false;
 
-    SkPaint paint;
-    m_platformData.setupPaint(&paint);
-    paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-    if (paint.textToGlyphs(&normalizedCharacters[0], normalizedLength * 2, 0)) {
-        addResult.storedValue->value = true;
-        return true;
+    for (size_t offset = 0; offset < normalizedLength;) {
+        UChar32 character;
+        U16_NEXT(normalizedCharacters, offset, normalizedLength, character);
+        if (!glyphForCharacter(character))
+            return false;
     }
-    return false;
+
+    addResult.storedValue->value = true;
+    return true;
 }
 
 bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength) const

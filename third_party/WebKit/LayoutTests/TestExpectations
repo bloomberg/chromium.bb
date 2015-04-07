@@ -35,6 +35,9 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/013.html [ P
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/014.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/018.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 
+crbug.com/464148 fast/text/missing-glyph-in-combining-character-sequence.html [ NeedsRebaseline ]
+crbug.com/464148 virtual/antialiasedtext/fast/text/missing-glyph-in-combining-character-sequence.html [ NeedsRebaseline ]
+
 # These baselines need to be reviewed and perhaps updated after crbug.com/452967
 crbug.com/452967 compositing/color-matching/pdf-image-match.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/452967 virtual/slimmingpaint/compositing/color-matching/pdf-image-match.html [ Pass Failure ImageOnlyFailure ]
