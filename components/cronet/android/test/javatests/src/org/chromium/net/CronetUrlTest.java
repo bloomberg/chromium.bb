@@ -134,50 +134,6 @@ public class CronetUrlTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    public void disabled_testQuicLoadUrl() throws Exception {
-        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        // TODO(mef): Test Quic end-to-end using local QUIC server.
-        String quicURL = "https://www.google.com:443";
-        String quicNegotiatedProtocol = "quic/1+spdy/3";
-        config.enableQUIC(true);
-        config.addQuicHint("www.google.com", 443, 443);
-        config.setExperimentalQuicConnectionOptions("PACE,IW10,FOO,DEADBEEF");
-
-        String[] commandLineArgs = {
-                CronetTestActivity.CONFIG_KEY, config.toString() };
-        CronetTestActivity activity =
-                launchCronetTestAppWithUrlAndCommandLineArgs(null,
-                                                             commandLineArgs);
-        activity.startNetLog();
-
-        HashMap<String, String> headers = new HashMap<String, String>();
-        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
-
-        // Try several times as first request may not use QUIC.
-        // TODO(mef): Remove loop after adding http server properties manager.
-        for (int i = 0; i < 10; ++i) {
-            HttpUrlRequest request =
-                    activity.mRequestFactory.createRequest(
-                            quicURL,
-                            HttpUrlRequest.REQUEST_PRIORITY_MEDIUM,
-                            headers,
-                            listener);
-            request.start();
-            listener.blockForComplete();
-            assertEquals(200, listener.mHttpStatusCode);
-            if (listener.mNegotiatedProtocol.equals(quicNegotiatedProtocol)) {
-                break;
-            }
-            Thread.sleep(1000);
-            listener.resetComplete();
-        }
-
-        assertEquals(quicNegotiatedProtocol, listener.mNegotiatedProtocol);
-        activity.stopNetLog();
-    }
-
-    @SmallTest
-    @Feature({"Cronet"})
     public void testLegacyLoadUrl() throws Exception {
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
         config.enableLegacyMode(true);

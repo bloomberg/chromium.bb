@@ -9,9 +9,11 @@ import android.content.res.AssetManager;
 import android.util.Log;
 
 import org.chromium.base.PathUtils;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -30,14 +32,19 @@ public final class TestFilesInstaller {
         if (areFilesInstalled(context)) {
             return;
         }
-        install(context);
+        try {
+            install(context, TEST_FILE_ASSET_PATH);
+        } catch (IOException e) {
+            // Make the test app crash and fail early.
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Returns the installed path of the test files.
      */
     public static String getInstalledPath(Context context) {
-        return PathUtils.getDataDirectory(context) + "/test";
+        return PathUtils.getDataDirectory(context) + "/" + TEST_FILE_ASSET_PATH;
     }
 
     /**
@@ -51,34 +58,34 @@ public final class TestFilesInstaller {
     }
 
     /**
-     * Installs test files that are included in assets.
+     * Installs test files that are included in {@code path}.
      * @params context Application context
+     * @params path
      */
-    private static void install(Context context) {
+    private static void install(Context context, String path) throws IOException {
         AssetManager assetManager = context.getAssets();
-        try {
-            String[] files = assetManager.list(TEST_FILE_ASSET_PATH);
-            String destDir = getInstalledPath(context);
-            File destDirFile = new File(destDir);
-            if (!destDirFile.mkdir()) {
-                throw new IllegalStateException(
-                        "directory exists or it cannot be created.");
-            }
-            Log.i(TAG, "Begin loading " + files.length + " test files.");
-            for (String fileName : files) {
-                Log.i(TAG, "Loading " + fileName);
-                String destFilePath = destDir + "/" + fileName;
-                if (!copyTestFile(assetManager,
-                                 TEST_FILE_ASSET_PATH + "/" + fileName,
-                                 destFilePath)) {
-                    Log.e(TAG, "Loading " + fileName + " failed.");
+        String files[] = assetManager.list(path);
+        Log.i(TAG, "Loading " + path + " ...");
+        String root = PathUtils.getDataDirectory(context);
+        if (files.length == 0) {
+            // The path is a file, so copy the file now.
+            copyTestFile(assetManager, path, root + "/" + path);
+        } else {
+            // The path is a directory, so recursively handle its files, since
+            // the directory can contain subdirectories.
+            String fullPath = root + "/" + path;
+            File dir = new File(fullPath);
+            if (!dir.exists()) {
+                Log.i(TAG, "Creating directory " + fullPath + " ...");
+                if (!dir.mkdir()) {
+                    throw new IOException("Directory not created.");
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            for (int i = 0; i < files.length; i++) {
+                install(context, path + "/" + files[i]);
+            }
         }
     }
-
     /**
      * Copies a file from assets to the device's file system.
      * @param assetManager AssetManager of the application.
@@ -86,41 +93,24 @@ public final class TestFilesInstaller {
      * @param destFilePath the destination file path.
      * @throws IllegalStateException if the destination file already exists.
      */
-    private static boolean copyTestFile(AssetManager assetManager,
-                                        String srcFilePath,
-                                        String destFilePath) {
-        OutputStream out;
-        try {
-            File destFile = new File(destFilePath);
-            if (destFile.exists()) {
-                throw new IllegalStateException(srcFilePath
-                        + " already exists");
-            }
-            out = new FileOutputStream(destFilePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+    @SuppressFBWarnings("OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE")
+    private static void copyTestFile(AssetManager assetManager,
+                                     String srcFilePath,
+                                     String destFilePath) throws IOException {
+        File destFile = new File(destFilePath);
+        if (destFile.exists()) {
+            throw new IllegalStateException(srcFilePath + " already exists");
         }
-        try {
-            InputStream in = assetManager.open(srcFilePath);
+        OutputStream out = new FileOutputStream(destFilePath);
+        InputStream in = assetManager.open(srcFilePath);
 
-            byte[] buffer = new byte[1024];
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                out.write(buffer, 0, read);
-            }
-            in.close();
-            out.flush();
-            out.close();
-            return true;
-        } catch (Exception e) {
-            try {
-                out.close();
-            } catch (Exception closeException) {
-                closeException.printStackTrace();
-            }
-            e.printStackTrace();
-            return false;
+        byte[] buffer = new byte[1024];
+        int read;
+        while ((read = in.read(buffer)) != -1) {
+            out.write(buffer, 0, read);
         }
+        in.close();
+        out.flush();
+        out.close();
     }
 }
