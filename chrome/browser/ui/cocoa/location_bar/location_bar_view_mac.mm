@@ -202,6 +202,11 @@ void LocationBarViewMac::UpdateBookmarkStarVisibility() {
   star_decoration_->SetVisible(IsStarEnabled());
 }
 
+void LocationBarViewMac::UpdateLocationBarVisibility(bool visible,
+                                                     bool animate) {
+  // Not implemented on Mac.
+}
+
 bool LocationBarViewMac::ShowPageActionPopup(
     const extensions::Extension* extension, bool grant_active_tab) {
   for (ScopedVector<PageActionDecoration>::iterator iter =

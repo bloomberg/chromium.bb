@@ -476,6 +476,10 @@ void BrowserWindowCocoa::FocusToolbar() {
   // Not needed on the Mac.
 }
 
+void BrowserWindowCocoa::ToolbarSizeChanged(bool is_animating) {
+  // Not needed on the Mac.
+}
+
 void BrowserWindowCocoa::FocusAppMenu() {
   // Chrome uses the standard Mac OS X menu bar, so this isn't needed.
 }

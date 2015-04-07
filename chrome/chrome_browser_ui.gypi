@@ -2543,6 +2543,8 @@
       'browser/ui/extensions/app_launch_params.h',
       'browser/ui/extensions/application_launch.cc',
       'browser/ui/extensions/application_launch.h',
+      'browser/ui/extensions/bookmark_app_browser_controller.cc',
+      'browser/ui/extensions/bookmark_app_browser_controller.h',
       'browser/ui/extensions/extension_action_platform_delegate.h',
       'browser/ui/extensions/extension_action_view_controller.cc',
       'browser/ui/extensions/extension_action_view_controller.h',

@@ -81,6 +81,7 @@ class SessionStorageNamespace;
 }
 
 namespace extensions {
+class BookmarkAppBrowserController;
 class Extension;
 class ExtensionRegistry;
 class WindowController;
@@ -281,6 +282,9 @@ class Browser : public TabStripModelObserver,
   }
   BrowserInstantController* instant_controller() {
     return instant_controller_.get();
+  }
+  extensions::BookmarkAppBrowserController* bookmark_app_controller() {
+    return bookmark_app_controller_.get();
   }
 
   // Get the FindBarController for this browser, creating it if it does not
@@ -798,6 +802,10 @@ class Browser : public TabStripModelObserver,
   // Shared code between Reload() and ReloadIgnoringCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool ignore_cache);
 
+  // Returns true if the Browser window supports a location bar. Having support
+  // for the location bar does not mean it will be visible.
+  bool SupportsLocationBar() const;
+
   // Returns true if the Browser window should show the location bar.
   bool ShouldShowLocationBar() const;
 
@@ -954,6 +962,9 @@ class Browser : public TabStripModelObserver,
   scoped_ptr<BrowserSyncedWindowDelegate> synced_window_delegate_;
 
   scoped_ptr<BrowserInstantController> instant_controller_;
+
+  // Helper which handles bookmark app specific browser configuration.
+  scoped_ptr<extensions::BookmarkAppBrowserController> bookmark_app_controller_;
 
   BookmarkBar::State bookmark_bar_state_;
 

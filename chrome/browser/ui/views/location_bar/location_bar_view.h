@@ -22,6 +22,7 @@
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/ui/zoom/zoom_event_manager_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/button.h"
@@ -74,6 +75,7 @@ class LocationBarView : public LocationBar,
                         public views::View,
                         public views::ButtonListener,
                         public views::DragController,
+                        public gfx::AnimationDelegate,
                         public OmniboxEditController,
                         public DropdownBarHostDelegate,
                         public TemplateURLServiceObserver,
@@ -347,6 +349,7 @@ class LocationBarView : public LocationBar,
   void UpdateManagePasswordsIconAndBubble() override;
   void UpdatePageActions() override;
   void UpdateBookmarkStarVisibility() override;
+  void UpdateLocationBarVisibility(bool visible, bool animation) override;
   bool ShowPageActionPopup(const extensions::Extension* extension,
                            bool grant_active_tab) override;
   void UpdateOpenPDFInReaderPrompt() override;
@@ -381,6 +384,10 @@ class LocationBarView : public LocationBar,
   bool CanStartDragForView(View* sender,
                            const gfx::Point& press_pt,
                            const gfx::Point& p) override;
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
   // OmniboxEditController:
   void OnChanged() override;
@@ -466,6 +473,9 @@ class LocationBarView : public LocationBar,
 
   // The star.
   StarView* star_view_;
+
+  // Animation to control showing / hiding the location bar.
+  gfx::SlideAnimation size_animation_;
 
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.

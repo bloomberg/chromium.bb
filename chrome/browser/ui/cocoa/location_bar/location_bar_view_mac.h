@@ -67,6 +67,7 @@ class LocationBarViewMac : public LocationBar,
   void UpdateManagePasswordsIconAndBubble() override;
   void UpdatePageActions() override;
   void UpdateBookmarkStarVisibility() override;
+  void UpdateLocationBarVisibility(bool visible, bool animate) override;
   bool ShowPageActionPopup(const extensions::Extension* extension,
                            bool grant_active_tab) override;
   void UpdateOpenPDFInReaderPrompt() override;

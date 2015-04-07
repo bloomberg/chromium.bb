@@ -108,6 +108,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
+#include "chrome/browser/ui/extensions/bookmark_app_browser_controller.h"
 #include "chrome/browser/ui/fast_unload_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -140,7 +141,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
@@ -250,11 +250,6 @@ BrowserWindow* CreateBrowserWindow(Browser* browser) {
 bool IsFastTabUnloadEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableFastUnload);
-}
-
-bool IsWebAppFrameEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebAppFrame);
 }
 
 }  // namespace
@@ -417,11 +412,19 @@ Browser::Browser(const CreateParams& params)
   if (chrome::IsInstantExtendedAPIEnabled() && is_type_tabbed())
     instant_controller_.reset(new BrowserInstantController(this));
 
+  if (extensions::BookmarkAppBrowserController::IsForBookmarkApp(this)) {
+    bookmark_app_controller_.reset(
+        new extensions::BookmarkAppBrowserController(this));
+  }
+
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 
   ProfileMetrics::LogProfileLaunch(profile_);
 
   window_ = params.window ? params.window : CreateBrowserWindow(this);
+
+  if (bookmark_app_controller_)
+    bookmark_app_controller_->UpdateLocationBarVisibility(false);
 
   // Create the extension window controller before sending notifications.
   extension_window_controller_.reset(
@@ -1411,6 +1414,9 @@ void Browser::NavigationStateChanged(WebContents* source,
   if (changed_flags & (content::INVALIDATE_TYPE_URL |
                        content::INVALIDATE_TYPE_LOAD))
     command_controller_->TabStateChanged();
+
+  if (bookmark_app_controller_)
+    bookmark_app_controller_->UpdateLocationBarVisibility(true);
 }
 
 void Browser::VisibleSSLStateChanged(const WebContents* source) {
@@ -2405,7 +2411,7 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
   }
 }
 
-bool Browser::ShouldShowLocationBar() const {
+bool Browser::SupportsLocationBar() const {
   // Tabbed browser always show a location bar.
   if (is_type_tabbed())
     return true;
@@ -2415,34 +2421,22 @@ bool Browser::ShouldShowLocationBar() const {
   if (!is_app())
     return !is_trusted_source();
 
-  if (ShouldUseWebAppFrame())
-    return false;
+  if (bookmark_app_controller_)
+    return bookmark_app_controller_->SupportsLocationBar();
 
-  // Bookmark apps should show the location bar.
-  const std::string extension_id =
-      web_app::GetExtensionIdFromApplicationName(app_name());
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
-          extension_id, extensions::ExtensionRegistry::EVERYTHING);
-  return extensions::ui_util::ShouldShowLocationBar(
-      extension, tab_strip_model_->GetActiveWebContents());
+  return false;
 }
 
 bool Browser::ShouldUseWebAppFrame() const {
   // Only use the web app frame for apps in ash, and only if the web app frame
   // is enabled.
-  if (!is_app() || host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH ||
-      !IsWebAppFrameEnabled()) {
+  if (!is_app())
     return false;
-  }
 
-  // Use the web app frame for hosted apps.
-  const std::string extension_id =
-      web_app::GetExtensionIdFromApplicationName(app_name());
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
-          extension_id, extensions::ExtensionRegistry::EVERYTHING);
-  return extension && extension->from_bookmark();
+  if (bookmark_app_controller_)
+    return bookmark_app_controller_->should_use_web_app_frame();
+
+  return false;
 }
 
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
@@ -2464,7 +2458,7 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
     if (is_type_tabbed())
       features |= FEATURE_TOOLBAR;
 
-    if (ShouldShowLocationBar())
+    if (SupportsLocationBar())
       features |= FEATURE_LOCATIONBAR;
 
     if (ShouldUseWebAppFrame())

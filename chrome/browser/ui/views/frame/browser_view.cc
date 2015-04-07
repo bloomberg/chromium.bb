@@ -1035,44 +1035,6 @@ void BrowserView::FullscreenStateChanged() {
                     EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
 }
 
-void BrowserView::ToolbarSizeChanged(bool is_animating) {
-  // The call to SetMaxTopArrowHeight() below can result in reentrancy;
-  // |call_state| tracks whether we're reentrant.  We can't just early-return in
-  // this case because we need to layout again so the infobar container's bounds
-  // are set correctly.
-  static CallState call_state = NORMAL;
-
-  // A reentrant call can (and should) use the fast resize path unless both it
-  // and the normal call are both non-animating.
-  bool use_fast_resize =
-      is_animating || (call_state == REENTRANT_FORCE_FAST_RESIZE);
-  if (use_fast_resize)
-    contents_web_view_->SetFastResize(true);
-  UpdateUIForContents(GetActiveWebContents());
-  if (use_fast_resize)
-    contents_web_view_->SetFastResize(false);
-
-  // Inform the InfoBarContainer that the distance to the location icon may have
-  // changed.  We have to do this after the block above so that the toolbars are
-  // laid out correctly for calculating the maximum arrow height below.
-  {
-    base::AutoReset<CallState> resetter(&call_state,
-        is_animating ? REENTRANT_FORCE_FAST_RESIZE : REENTRANT);
-    SetMaxTopArrowHeight(GetMaxTopInfoBarArrowHeight(), infobar_container_);
-  }
-
-  // When transitioning from animating to not animating we need to make sure the
-  // contents_container_ gets layed out. If we don't do this and the bounds
-  // haven't changed contents_container_ won't get a Layout out and we'll end up
-  // with a gray rect because the clip wasn't updated.  Note that a reentrant
-  // call never needs to do this, because after it returns, the normal call
-  // wrapping it will do it.
-  if ((call_state == NORMAL) && !is_animating) {
-    contents_web_view_->InvalidateLayout();
-    contents_container_->Layout();
-  }
-}
-
 LocationBar* BrowserView::GetLocationBar() const {
   return GetLocationBarView();
 }
@@ -1137,6 +1099,44 @@ void BrowserView::FocusToolbar() {
   // Start the traversal within the main toolbar. SetPaneFocus stores
   // the current focused view before changing focus.
   toolbar_->SetPaneFocus(nullptr);
+}
+
+void BrowserView::ToolbarSizeChanged(bool is_animating) {
+  // The call to SetMaxTopArrowHeight() below can result in reentrancy;
+  // |call_state| tracks whether we're reentrant.  We can't just early-return in
+  // this case because we need to layout again so the infobar container's bounds
+  // are set correctly.
+  static CallState call_state = NORMAL;
+
+  // A reentrant call can (and should) use the fast resize path unless both it
+  // and the normal call are both non-animating.
+  bool use_fast_resize =
+      is_animating || (call_state == REENTRANT_FORCE_FAST_RESIZE);
+  if (use_fast_resize)
+    contents_web_view_->SetFastResize(true);
+  UpdateUIForContents(GetActiveWebContents());
+  if (use_fast_resize)
+    contents_web_view_->SetFastResize(false);
+
+  // Inform the InfoBarContainer that the distance to the location icon may have
+  // changed.  We have to do this after the block above so that the toolbars are
+  // laid out correctly for calculating the maximum arrow height below.
+  {
+    base::AutoReset<CallState> resetter(&call_state,
+        is_animating ? REENTRANT_FORCE_FAST_RESIZE : REENTRANT);
+    SetMaxTopArrowHeight(GetMaxTopInfoBarArrowHeight(), infobar_container_);
+  }
+
+  // When transitioning from animating to not animating we need to make sure the
+  // contents_container_ gets layed out. If we don't do this and the bounds
+  // haven't changed contents_container_ won't get a Layout out and we'll end up
+  // with a gray rect because the clip wasn't updated.  Note that a reentrant
+  // call never needs to do this, because after it returns, the normal call
+  // wrapping it will do it.
+  if ((call_state == NORMAL) && !is_animating) {
+    contents_web_view_->InvalidateLayout();
+    contents_container_->Layout();
+  }
 }
 
 void BrowserView::FocusBookmarksToolbar() {

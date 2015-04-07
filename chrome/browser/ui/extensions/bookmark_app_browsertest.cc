@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/extensions/bookmark_app_browser_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -39,7 +40,7 @@ void NavigateAndCheckForLocationBar(Browser* browser,
   GURL url(url_string);
   ui_test_utils::NavigateToURL(browser, url);
   EXPECT_EQ(expected_visibility,
-      browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+      browser->bookmark_app_controller()->ShouldShowLocationBar());
 }
 
 }  // namespace

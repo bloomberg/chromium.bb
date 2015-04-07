@@ -85,6 +85,7 @@ class TestBrowserWindow : public BrowserWindow {
   void UpdateToolbar(content::WebContents* contents) override {}
   void ResetToolbarTabState(content::WebContents* contents) override {}
   void FocusToolbar() override {}
+  void ToolbarSizeChanged(bool is_animating) override {}
   void FocusAppMenu() override {}
   void FocusBookmarksToolbar() override {}
   void FocusInfobars() override {}
@@ -172,6 +173,7 @@ class TestBrowserWindow : public BrowserWindow {
     void UpdateManagePasswordsIconAndBubble() override {}
     void UpdatePageActions() override {}
     void UpdateBookmarkStarVisibility() override {}
+    void UpdateLocationBarVisibility(bool visible, bool animate) override {}
     bool ShowPageActionPopup(const extensions::Extension* extension,
                              bool grant_active_tab) override;
     void UpdateOpenPDFInReaderPrompt() override {}

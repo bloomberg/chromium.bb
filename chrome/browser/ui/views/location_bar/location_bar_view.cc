@@ -143,6 +143,7 @@ LocationBarView::LocationBarView(Browser* browser,
       manage_passwords_icon_view_(NULL),
       translate_icon_view_(NULL),
       star_view_(NULL),
+      size_animation_(this),
       is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
@@ -305,6 +306,8 @@ void LocationBarView::Init() {
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.
   Update(NULL);
+
+  size_animation_.Reset(1);
 }
 
 bool LocationBarView::IsInitialized() const {
@@ -527,6 +530,8 @@ gfx::Size LocationBarView::GetPreferredSize() const {
   gfx::Size min_size(border_painter_->GetMinimumSize());
   if (!IsInitialized())
     return min_size;
+
+  min_size.set_height(min_size.height() * size_animation_.GetCurrentValue());
 
   // Compute width of omnibox-leading content.
   const int horizontal_edge_thickness = GetHorizontalEdgeThickness();
@@ -1066,6 +1071,18 @@ void LocationBarView::UpdateBookmarkStarVisibility() {
   }
 }
 
+void LocationBarView::UpdateLocationBarVisibility(bool visible, bool animate) {
+  if (!animate) {
+    size_animation_.Reset(visible ? 1 : 0);
+    return;
+  }
+
+  if (visible)
+    size_animation_.Show();
+  else
+    size_animation_.Hide();
+}
+
 bool LocationBarView::ShowPageActionPopup(
     const extensions::Extension* extension,
     bool grant_tab_permissions) {
@@ -1284,6 +1301,16 @@ bool LocationBarView::CanStartDragForView(View* sender,
                                           const gfx::Point& press_pt,
                                           const gfx::Point& p) {
   return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarView, private gfx::AnimationDelegate implementation:
+void LocationBarView::AnimationProgressed(const gfx::Animation* animation) {
+  browser_->window()->ToolbarSizeChanged(true);
+}
+
+void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
+  browser_->window()->ToolbarSizeChanged(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

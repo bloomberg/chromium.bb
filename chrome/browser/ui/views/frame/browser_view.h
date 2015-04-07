@@ -232,10 +232,6 @@ class BrowserView : public BrowserWindow,
   // Only exiting fullscreen in this way is currently supported.
   void FullscreenStateChanged();
 
-  // Called from BookmarkBarView/DownloadShelfView during their show/hide
-  // animations.
-  void ToolbarSizeChanged(bool is_animating);
-
   // Overridden from BrowserWindow:
   void Show() override;
   void ShowInactive() override;
@@ -293,6 +289,7 @@ class BrowserView : public BrowserWindow,
   void UpdateToolbar(content::WebContents* contents) override;
   void ResetToolbarTabState(content::WebContents* contents) override;
   void FocusToolbar() override;
+  void ToolbarSizeChanged(bool is_animating) override;
   void FocusAppMenu() override;
   void FocusBookmarksToolbar() override;
   void FocusInfobars() override;

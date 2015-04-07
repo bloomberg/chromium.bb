@@ -738,6 +738,13 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
         GetThemeProvider()->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
     size.SetToMax(
         gfx::Size(0, normal_background->height() - content_shadow_height()));
+  } else if (size.height() == 0) {
+    // Location mode with a 0 height location bar. If on ash, expand by one
+    // pixel to show a border in the title bar, otherwise leave the size as zero
+    // height.
+    const int kAshBorderSpacing = 1;
+    if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
+      size.Enlarge(0, kAshBorderSpacing);
   } else {
     const int kPopupBottomSpacingGlass = 1;
     const int kPopupBottomSpacingNonGlass = 2;
