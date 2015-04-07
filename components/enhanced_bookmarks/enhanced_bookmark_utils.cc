@@ -34,14 +34,6 @@ class BookmarkNameComparator : public std::binary_function<const BookmarkNode*,
   icu::Collator* collator_;
 };
 
-void SortBookmarksByName(std::vector<const BookmarkNode*>& nodes) {
-  UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
-  if (U_FAILURE(error))
-    collator.reset(NULL);
-  std::sort(nodes.begin(), nodes.end(), BookmarkNameComparator(collator.get()));
-}
-
 std::vector<const BookmarkNode*> PrimaryPermanentNodes(BookmarkModel* model) {
   DCHECK(model->loaded());
   std::vector<const BookmarkNode*> nodes;

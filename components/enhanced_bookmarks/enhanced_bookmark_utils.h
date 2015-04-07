@@ -16,8 +16,6 @@ class BookmarkNode;
 
 namespace enhanced_bookmarks {
 
-static const char kLaunchLocationUMA[] = "Stars.LaunchLocation";
-
 // Possible locations where a bookmark can be opened from.
 // Please sync with the corresponding histograms.xml.
 //
@@ -32,10 +30,6 @@ enum LaunchLocation {
   BOOKMARK_EDITOR = 5,
   COUNT = 6,
 };
-
-// The vector is sorted in place.
-// All of the bookmarks in |nodes| must be urls.
-void SortBookmarksByName(std::vector<const bookmarks::BookmarkNode*>& nodes);
 
 // Returns the permanent nodes whose url children are considered uncategorized
 // and whose folder children should be shown in the bookmark menu.
