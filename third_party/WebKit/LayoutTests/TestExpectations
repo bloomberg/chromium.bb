@@ -1821,6 +1821,10 @@ crbug.com/410929 virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ Pass Image
 crbug.com/410929 virtual/gpu/fast/canvas/shadow-offset-1.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/toDataURL-alpha-stability.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvasDrawingIntoSelf.html [ Pass ImageOnlyFailure ]
+crbug.com/410929 virtual/gpu/fast/canvas/canvas-size-change-after-layout.html [ Pass ImageOnlyFailure ]
+crbug.com/410929 virtual/gpu/fast/canvas/canvas-transform-non-invertible.html [ Pass ImageOnlyFailure ]
+crbug.com/410929 virtual/gpu/fast/canvas/canvas-state-stack-simple.html [ Pass ImageOnlyFailure ]
+crbug.com/410929 virtual/gpu/fast/canvas/canvas-measure-text-rtl.html [ Pass ImageOnlyFailure ]
 
 crbug.com/446420 [ Linux Win ] virtual/gpu/fast/canvas/canvas-transform-multiply.html [ Pass ImageOnlyFailure ]
 crbug.com/446420 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-transform-multiply.html [ Pass Crash ImageOnlyFailure ]
