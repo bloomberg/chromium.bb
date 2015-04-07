@@ -156,7 +156,6 @@ LayoutText::LayoutText(Node* node, PassRefPtr<StringImpl> str)
     if (node && node->isDocumentNode())
         setDocumentForAnonymous(toDocument(node));
 
-    m_isAllASCII = m_text.containsOnlyASCII();
     m_canUseSimpleFontCodePath = computeCanUseSimpleFontCodePath();
     setIsText();
 
@@ -1356,7 +1355,6 @@ void LayoutText::setTextInternal(PassRefPtr<StringImpl> text)
     ASSERT(m_text);
     ASSERT(!isBR() || (textLength() == 1 && m_text[0] == newlineCharacter));
 
-    m_isAllASCII = m_text.containsOnlyASCII();
     m_canUseSimpleFontCodePath = computeCanUseSimpleFontCodePath();
 }
 
@@ -1645,7 +1643,7 @@ unsigned LayoutText::renderedTextLength() const
 
 int LayoutText::previousOffset(int current) const
 {
-    if (isAllASCII() || m_text.is8Bit())
+    if (m_text.is8Bit())
         return current - 1;
 
     StringImpl* textImpl = m_text.impl();
@@ -1798,7 +1796,7 @@ int LayoutText::previousOffsetForBackwardDeletion(int current) const
 
 int LayoutText::nextOffset(int current) const
 {
-    if (isAllASCII() || m_text.is8Bit())
+    if (m_text.is8Bit())
         return current + 1;
 
     StringImpl* textImpl = m_text.impl();
@@ -1815,7 +1813,7 @@ int LayoutText::nextOffset(int current) const
 
 bool LayoutText::computeCanUseSimpleFontCodePath() const
 {
-    if (isAllASCII() || m_text.is8Bit())
+    if (m_text.is8Bit())
         return true;
     return Character::characterRangeCodePath(characters16(), length()) == SimplePath;
 }
