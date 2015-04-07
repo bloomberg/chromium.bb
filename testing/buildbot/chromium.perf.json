@@ -90,6 +90,10 @@
   "Android Nexus6 Perf": {
     "scripts": [
       {
+        "name": "host_info",
+        "script": "host_info.py"
+      },
+      {
         "args": [
           "cc_perftests"
         ],
@@ -123,6 +127,10 @@
   "Android Nexus9 Perf": {
     "scripts": [
       {
+        "name": "host_info",
+        "script": "host_info.py"
+      },
+      {
         "args": [
           "gpu_perftests"
         ],
@@ -139,7 +147,12 @@
     ]
   },
   "Android One Perf": {
-    "scripts": []
+    "scripts": [
+      {
+        "name": "host_info",
+        "script": "host_info.py"
+      }
+    ]
   },
   "Linux Perf (3)": {
     "scripts": [
