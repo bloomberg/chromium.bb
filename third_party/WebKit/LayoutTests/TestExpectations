@@ -51,6 +51,8 @@ crbug.com/435662 [ Mac ] virtual/slimmingpaint/fast/events/menu-key-context-menu
 
 crbug.com/461283 [ Mac ] fast/workers/worker-multi-startup.html [ Pass Crash ]
 
+crbug.com/474440 [ Mac ] plugins/destroy-reentry.html [ Pass Timeout ]
+
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
 crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.html [ ImageOnlyFailure NeedsManualRebaseline ]
@@ -58,6 +60,8 @@ crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.htm
 crbug.com/469454 [ Mac ] virtual/slimmingpaint/fast/repaint/fixed-element-repaint-after-compositing-update.html [ Pass Failure ]
 
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ Pass ImageOnlyFailure ]
+
+crbug.com/474422 inspector/console/console-native-function.html [ Pass Failure ]
 
 crbug.com/450725 virtual/slimmingpaint/svg/text/remove-tspan-from-text.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/450725 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ Crash Timeout NeedsManualRebaseline ]
@@ -377,6 +381,10 @@ crbug.com/389648 virtual/slimmingpaint/fast/text-autosizing/table-inflation-cras
 
 crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ ImageOnlyFailure ]
+
+crbug.com/433727 [ XP ] http/tests/cachestorage/window/cache-put.html [ Pass Timeout Failure ]
+crbug.com/433727 [ XP ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout Failure ]
+crbug.com/433727 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout Failure ]
 
 # Flaky tests under Linux Aura
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html [ ImageOnlyFailure Pass ]
@@ -1717,11 +1725,6 @@ crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failur
 
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 
-crbug.com/435864 http/tests/security/shape-image-cors-port.html [ Pass Crash ]
-crbug.com/435864 http/tests/security/shape-image-cors-same-origin.html [ Pass Crash ]
-crbug.com/435864 http/tests/security/shape-image-cors-data-url.html [ Pass Crash ]
-crbug.com/435864 http/tests/security/shape-image-cors-allow-origin.html [ Pass Crash ]
-crbug.com/435864 http/tests/security/shape-image-cors-disallow-origin.html [ Pass Crash ]
 crbug.com/431643 [ Win ] http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Pass Failure ]
 
 crbug.com/436436 fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Pass Failure ]
@@ -2010,7 +2013,7 @@ crbug.com/469657 virtual/slimmingpaint/fast/events/mouse-event-buttons-attribute
 crbug.com/469660 inspector/elements/elements-panel-shadow-selection-on-refresh.html [ Pass Failure ]
 
 crbug.com/469683 animations/responsive-neutral-keyframes.html [ Slow ]
-crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure ]
+crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure Timeout ]
 crbug.com/469767 webaudio/audiochannelmerger-disconnect.html [ Pass Failure ]
 
 crbug.com/472488 http/tests/inspector/service-workers/service-workers-redundant.html [ Pass Failure Timeout Crash ]
@@ -2054,4 +2057,4 @@ crbug.com/473722 [ XP ] http/tests/fetch/workers/stream-reader.html [ Slow ]
 crbug.com/473725 [ Linux ] virtual/slimmingpaint/fast/forms/submit-change-fragment.html [ Pass Timeout ]
 
 crbug.com/474224 [ Mac ] inspector-protocol/input/dispatchKeyEvent-focus.html [ Failure ]
-crbug.com/453822 [ Linux ] virtual/slimmingpaint/fast/forms/calendar-picker/datepicker-crash-after-keydown.html [ Crash Pass ]
+crbug.com/453822 virtual/slimmingpaint/fast/forms/calendar-picker/datepicker-crash-after-keydown.html [ Crash Pass Timeout ]
