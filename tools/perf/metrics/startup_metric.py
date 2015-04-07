@@ -15,6 +15,9 @@ from metrics import Metric
 class StartupMetric(Metric):
   "A metric for browser startup time."
 
+  # Seconds to wait for page loading complete.
+  DEFAULT_LOADING_TIMEOUT = 90
+
   HISTOGRAMS_TO_RECORD = {
     'messageloop_start_time' :
         'Startup.BrowserMessageLoopStartTimeFromMainEntry',
@@ -46,36 +49,34 @@ class StartupMetric(Metric):
 
   def _RecordTabLoadTimes(self, tab, browser_main_entry_time_ms, results):
     """Records the tab load times for the browser. """
-    tab_load_times = []
     TabLoadTime = collections.namedtuple(
         'TabLoadTime',
-        ['load_start_ms', 'load_duration_ms', 'request_start_ms'])
+        ['request_start_ms', 'load_end_ms'])
 
-    def RecordTabLoadTime(t):
+    def RecordOneTab(t):
+      def EvaluateInt(exp):
+        val = t.EvaluateJavaScript(exp)
+        if not val:
+          logging.warn('%s undefined' % exp)
+          return 0
+        return int(val)
+
       try:
-        t.WaitForDocumentReadyStateToBeComplete()
+        t.WaitForJavaScriptExpression(
+            'window.performance.timing["loadEventEnd"] > 0',
+            self.DEFAULT_LOADING_TIMEOUT)
 
-        result = t.EvaluateJavaScript(
-            'statsCollectionController.tabLoadTiming()')
-        result = json.loads(result)
+        # EvaluateJavaScript(window.performance.timing) doesn't guarantee to
+        # return the desired javascript object (crbug/472603). It may return an
+        # empty object. However getting individual field works.
+        # The behavior depends on Webkit implementation on different platforms.
+        load_event_end = EvaluateInt(
+            'window.performance.timing["loadEventEnd"]')
+        request_start = EvaluateInt(
+            'window.performance.timing["requestStart"]')
 
-        if 'load_start_ms' not in result or 'load_duration_ms' not in result:
-          raise Exception("Outdated Chrome version, "
-              "statsCollectionController.tabLoadTiming() not present")
-        if result['load_duration_ms'] is None:
-          tab_title = t.EvaluateJavaScript('document.title')
-          print "Page: ", tab_title, " didn't finish loading."
-          return
+        return TabLoadTime(request_start, load_event_end)
 
-        perf_timing = t.EvaluateJavaScript('window.performance.timing')
-        if 'requestStart' not in perf_timing:
-          perf_timing['requestStart'] = 0  # Exclude from benchmark results
-          print 'requestStart is not supported by this browser'
-
-        tab_load_times.append(TabLoadTime(
-            int(result['load_start_ms']),
-            int(result['load_duration_ms']),
-            int(perf_timing['requestStart'])))
       except exceptions.TimeoutException:
         # Low memory Android devices may not be able to load more than
         # one tab at a time, so may timeout when the test attempts to
@@ -87,19 +88,18 @@ class StartupMetric(Metric):
     # when the user switches to them, rather than during startup. In view of
     # this, to get the same measures on all platform, we only measure the
     # foreground tab on all platforms.
+    foreground_tab_stats = RecordOneTab(tab.browser.foreground_tab)
 
-    RecordTabLoadTime(tab.browser.foreground_tab)
-
-    foreground_tab_stats = tab_load_times[0]
-    foreground_tab_load_complete = ((foreground_tab_stats.load_start_ms +
-        foreground_tab_stats.load_duration_ms) - browser_main_entry_time_ms)
-    results.AddValue(scalar.ScalarValue(
-        results.current_page, 'foreground_tab_load_complete', 'ms',
-        foreground_tab_load_complete))
-    if (foreground_tab_stats.request_start_ms > 0):
+    if foreground_tab_stats:
+      foreground_tab_load_complete = (
+          foreground_tab_stats.load_end_ms - browser_main_entry_time_ms)
       results.AddValue(scalar.ScalarValue(
-          results.current_page, 'foreground_tab_request_start', 'ms',
-          foreground_tab_stats.request_start_ms - browser_main_entry_time_ms))
+          results.current_page, 'foreground_tab_load_complete', 'ms',
+          foreground_tab_load_complete))
+      if (foreground_tab_stats.request_start_ms > 0):
+        results.AddValue(scalar.ScalarValue(
+            results.current_page, 'foreground_tab_request_start', 'ms',
+            foreground_tab_stats.request_start_ms - browser_main_entry_time_ms))
 
   def AddResults(self, tab, results):
     get_histogram_js = 'statsCollectionController.getBrowserHistogram("%s")'
