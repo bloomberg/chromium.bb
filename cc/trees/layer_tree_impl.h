@@ -33,7 +33,8 @@ class ContextProvider;
 class DebugRectHistory;
 class FrameRateCounter;
 class HeadsUpDisplayLayerImpl;
-class LayerScrollOffsetDelegateProxy;
+class LayerExternalScrollOffsetListener;
+class LayerScrollOffsetDelegate;
 class LayerTreeDebugState;
 class LayerTreeImpl;
 class LayerTreeSettings;
@@ -263,9 +264,10 @@ class CC_EXPORT LayerTreeImpl {
 
   void SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate);
-  void OnRootLayerDelegatedScrollOffsetChanged();
-  void UpdateScrollOffsetDelegate();
-  gfx::ScrollOffset GetDelegatedScrollOffset(LayerImpl* layer);
+  void UpdateRootScrollOffsetDelegate();
+  // Distribute the rool scroll between outer and inner viewport scroll layer.
+  // The outer viewport scroll layer scrolls first.
+  void DistributeRootScrollOffset();
 
   // Call this function when you expect there to be a swap buffer.
   // See swap_promise.h for how to use SwapPromise.
@@ -334,6 +336,9 @@ class CC_EXPORT LayerTreeImpl {
 
   void GatherFrameTimingRequestIds(std::vector<int64_t>* request_ids);
 
+  bool IsExternalFlingActive() const;
+  void DidUpdateScrollOffset(int layer_id);
+
  protected:
   explicit LayerTreeImpl(
       LayerTreeHostImpl* layer_tree_host_impl,
@@ -355,10 +360,6 @@ class CC_EXPORT LayerTreeImpl {
   HeadsUpDisplayLayerImpl* hud_layer_;
   LayerImpl* currently_scrolling_layer_;
   LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;
-  scoped_ptr<LayerScrollOffsetDelegateProxy>
-      inner_viewport_scroll_delegate_proxy_;
-  scoped_ptr<LayerScrollOffsetDelegateProxy>
-      outer_viewport_scroll_delegate_proxy_;
   SkColor background_color_;
   bool has_transparent_background_;
 

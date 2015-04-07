@@ -16,7 +16,6 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/micro_benchmark_impl.h"
 #include "cc/debug/traced_value.h"
-#include "cc/input/layer_scroll_offset_delegate.h"
 #include "cc/layers/layer_utils.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/output/copy_output_request.h"
@@ -49,7 +48,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_id_(id),
       layer_tree_impl_(tree_impl),
       scroll_offset_(scroll_offset),
-      scroll_offset_delegate_(nullptr),
       scroll_clip_layer_(nullptr),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
@@ -163,9 +161,6 @@ bool LayerImpl::HasAncestor(const LayerImpl* ancestor) const {
 void LayerImpl::SetScrollParent(LayerImpl* parent) {
   if (scroll_parent_ == parent)
     return;
-
-  // Having both a scroll parent and a scroll offset delegate is unsupported.
-  DCHECK(!scroll_offset_delegate_);
 
   if (parent)
     DCHECK_EQ(layer_tree_impl()->LayerById(parent->id()), parent);
@@ -385,8 +380,6 @@ void LayerImpl::GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
 }
 
 gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
-  RefreshFromScrollDelegate();
-
   gfx::ScrollOffset adjusted_scroll(scroll);
   if (layer_tree_impl()->settings().use_pinch_virtual_viewport) {
     if (!user_scrollable_horizontal_)
@@ -1108,25 +1101,21 @@ void LayerImpl::SetContentsScale(float contents_scale_x,
   NoteLayerPropertyChanged();
 }
 
-void LayerImpl::SetScrollOffsetDelegate(
-    ScrollOffsetDelegate* scroll_offset_delegate) {
-  // Having both a scroll parent and a scroll offset delegate is unsupported.
-  DCHECK(!scroll_parent_);
-  RefreshFromScrollDelegate();
-  scroll_offset_delegate_ = scroll_offset_delegate;
-  if (scroll_offset_delegate_)
-    scroll_offset_delegate_->SetCurrentScrollOffset(CurrentScrollOffset());
-}
-
 bool LayerImpl::IsExternalFlingActive() const {
-  return scroll_offset_delegate_ &&
-         scroll_offset_delegate_->IsExternalFlingActive();
+  return layer_tree_impl_->IsExternalFlingActive();
 }
 
 void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsActive());
   if (scroll_offset_->SetCurrent(scroll_offset))
-    DidUpdateScrollOffset();
+    DidUpdateScrollOffset(false);
+}
+
+void LayerImpl::SetCurrentScrollOffsetFromDelegate(
+    const gfx::ScrollOffset& scroll_offset) {
+  DCHECK(IsActive());
+  if (scroll_offset_->SetCurrent(scroll_offset))
+    DidUpdateScrollOffset(true);
 }
 
 void LayerImpl::PushScrollOffsetFromMainThread(
@@ -1141,8 +1130,6 @@ void LayerImpl::PushScrollOffsetFromMainThreadAndClobberActiveValue(
 }
 
 gfx::ScrollOffset LayerImpl::PullDeltaForMainThread() {
-  RefreshFromScrollDelegate();
-
   // TODO(miletus): Remove all this temporary flooring machinery when
   // Blink fully supports fractional scrolls.
   gfx::ScrollOffset current_offset = CurrentScrollOffset();
@@ -1156,13 +1143,6 @@ gfx::ScrollOffset LayerImpl::PullDeltaForMainThread() {
   gfx::ScrollOffset delta = scroll_offset_->PullDeltaForMainThread();
   scroll_offset_->SetCurrent(current_offset);
   return delta;
-}
-
-void LayerImpl::RefreshFromScrollDelegate() {
-  if (scroll_offset_delegate_) {
-    SetCurrentScrollOffset(
-        gfx::ScrollOffset(scroll_offset_delegate_->GetCurrentScrollOffset()));
-  }
 }
 
 gfx::ScrollOffset LayerImpl::CurrentScrollOffset() const {
@@ -1203,16 +1183,12 @@ void LayerImpl::PushScrollOffset(const gfx::ScrollOffset* scroll_offset) {
   }
 
   if (changed)
-    DidUpdateScrollOffset();
+    DidUpdateScrollOffset(false);
 }
 
-void LayerImpl::DidUpdateScrollOffset() {
-  if (scroll_offset_delegate_) {
-    scroll_offset_delegate_->SetCurrentScrollOffset(CurrentScrollOffset());
-    scroll_offset_delegate_->Update();
-    RefreshFromScrollDelegate();
-  }
-
+void LayerImpl::DidUpdateScrollOffset(bool is_from_root_delegate) {
+  if (!is_from_root_delegate)
+    layer_tree_impl()->DidUpdateScrollOffset(id());
   NoteLayerPropertyChangedForSubtree();
   ScrollbarParametersDidChange(false);
 }

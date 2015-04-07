@@ -8,6 +8,7 @@
 #include <limits>
 #include <set>
 
+#include "base/auto_reset.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/keyframed_animation_curve.h"
@@ -19,6 +20,7 @@
 #include "cc/base/util.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
+#include "cc/input/layer_scroll_offset_delegate.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
@@ -34,44 +36,6 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
-// This class exists to split the LayerScrollOffsetDelegate between the
-// InnerViewportScrollLayer and the OuterViewportScrollLayer in a manner
-// that never requires the embedder or LayerImpl to know about.
-class LayerScrollOffsetDelegateProxy : public LayerImpl::ScrollOffsetDelegate {
- public:
-  LayerScrollOffsetDelegateProxy(LayerImpl* layer,
-                                 LayerScrollOffsetDelegate* delegate,
-                                 LayerTreeImpl* layer_tree)
-      : layer_(layer), delegate_(delegate), layer_tree_impl_(layer_tree) {}
-  virtual ~LayerScrollOffsetDelegateProxy() {}
-
-  gfx::ScrollOffset last_set_scroll_offset() const {
-    return last_set_scroll_offset_;
-  }
-
-  // LayerScrollOffsetDelegate implementation.
-  void SetCurrentScrollOffset(const gfx::ScrollOffset& new_offset) override {
-    last_set_scroll_offset_ = new_offset;
-  }
-
-  gfx::ScrollOffset GetCurrentScrollOffset() override {
-    return layer_tree_impl_->GetDelegatedScrollOffset(layer_);
-  }
-
-  bool IsExternalFlingActive() const override {
-    return delegate_->IsExternalFlingActive();
-  }
-
-  void Update() const override {
-    layer_tree_impl_->UpdateScrollOffsetDelegate();
-  }
-
- private:
-  LayerImpl* layer_;
-  LayerScrollOffsetDelegate* delegate_;
-  LayerTreeImpl* layer_tree_impl_;
-  gfx::ScrollOffset last_set_scroll_offset_;
-};
 
 LayerTreeImpl::LayerTreeImpl(
     LayerTreeHostImpl* layer_tree_host_impl,
@@ -148,14 +112,28 @@ void LayerTreeImpl::GatherFrameTimingRequestIds(
       });
 }
 
-void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
-  if (inner_viewport_scroll_layer_)
-    inner_viewport_scroll_layer_->SetScrollOffsetDelegate(NULL);
-  if (outer_viewport_scroll_layer_)
-    outer_viewport_scroll_layer_->SetScrollOffsetDelegate(NULL);
-  inner_viewport_scroll_delegate_proxy_ = nullptr;
-  outer_viewport_scroll_delegate_proxy_ = nullptr;
+bool LayerTreeImpl::IsExternalFlingActive() const {
+  return root_layer_scroll_offset_delegate_ &&
+         root_layer_scroll_offset_delegate_->IsExternalFlingActive();
+}
 
+void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {
+  int inner_layer_id = InnerViewportScrollLayer()
+                           ? InnerViewportScrollLayer()->id()
+                           : Layer::INVALID_ID;
+  int outer_layer_id = OuterViewportScrollLayer()
+                           ? OuterViewportScrollLayer()->id()
+                           : Layer::INVALID_ID;
+  if (layer_id != outer_layer_id && layer_id != inner_layer_id)
+    return;
+
+  if (!root_layer_scroll_offset_delegate_)
+    return;
+
+  UpdateRootScrollOffsetDelegate();
+}
+
+void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
   root_layer_ = layer.Pass();
   currently_scrolling_layer_ = NULL;
   inner_viewport_scroll_layer_ = NULL;
@@ -201,12 +179,6 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
   // Clear all data structures that have direct references to the layer tree.
   scrolling_layer_id_from_previous_tree_ =
     currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0;
-  if (inner_viewport_scroll_layer_)
-    inner_viewport_scroll_layer_->SetScrollOffsetDelegate(NULL);
-  if (outer_viewport_scroll_layer_)
-    outer_viewport_scroll_layer_->SetScrollOffsetDelegate(NULL);
-  inner_viewport_scroll_delegate_proxy_ = nullptr;
-  outer_viewport_scroll_delegate_proxy_ = nullptr;
   inner_viewport_scroll_layer_ = NULL;
   outer_viewport_scroll_layer_ = NULL;
   page_scale_layer_ = NULL;
@@ -531,17 +503,6 @@ void LayerTreeImpl::SetViewportLayersFromIds(
 
   if (!root_layer_scroll_offset_delegate_)
     return;
-
-  inner_viewport_scroll_delegate_proxy_ = make_scoped_ptr(
-      new LayerScrollOffsetDelegateProxy(inner_viewport_scroll_layer_,
-                                         root_layer_scroll_offset_delegate_,
-                                         this));
-
-  if (outer_viewport_scroll_layer_)
-    outer_viewport_scroll_delegate_proxy_ = make_scoped_ptr(
-        new LayerScrollOffsetDelegateProxy(outer_viewport_scroll_layer_,
-                                           root_layer_scroll_offset_delegate_,
-                                           this));
 }
 
 void LayerTreeImpl::ClearViewportLayers() {
@@ -1040,17 +1001,6 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
   if (root_layer_scroll_offset_delegate_ == root_layer_scroll_offset_delegate)
     return;
 
-  if (!root_layer_scroll_offset_delegate) {
-    // Make sure we remove the proxies from their layers before
-    // releasing them.
-    if (InnerViewportScrollLayer())
-      InnerViewportScrollLayer()->SetScrollOffsetDelegate(NULL);
-    if (OuterViewportScrollLayer())
-      OuterViewportScrollLayer()->SetScrollOffsetDelegate(NULL);
-    inner_viewport_scroll_delegate_proxy_ = nullptr;
-    outer_viewport_scroll_delegate_proxy_ = nullptr;
-  }
-
   root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;
 
   if (root_layer_scroll_offset_delegate_) {
@@ -1059,54 +1009,17 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
         current_page_scale_factor(), min_page_scale_factor(),
         max_page_scale_factor());
 
-    if (inner_viewport_scroll_layer_) {
-      inner_viewport_scroll_delegate_proxy_ = make_scoped_ptr(
-          new LayerScrollOffsetDelegateProxy(InnerViewportScrollLayer(),
-                                             root_layer_scroll_offset_delegate_,
-                                             this));
-      inner_viewport_scroll_layer_->SetScrollOffsetDelegate(
-          inner_viewport_scroll_delegate_proxy_.get());
-    }
-
-    if (outer_viewport_scroll_layer_) {
-      outer_viewport_scroll_delegate_proxy_ = make_scoped_ptr(
-          new LayerScrollOffsetDelegateProxy(OuterViewportScrollLayer(),
-                                             root_layer_scroll_offset_delegate_,
-                                             this));
-      outer_viewport_scroll_layer_->SetScrollOffsetDelegate(
-          outer_viewport_scroll_delegate_proxy_.get());
-    }
-
-    if (inner_viewport_scroll_layer_)
-      inner_viewport_scroll_layer_->RefreshFromScrollDelegate();
-    if (outer_viewport_scroll_layer_)
-      outer_viewport_scroll_layer_->RefreshFromScrollDelegate();
-
-    if (inner_viewport_scroll_layer_)
-      UpdateScrollOffsetDelegate();
+    DistributeRootScrollOffset();
   }
 }
 
-void LayerTreeImpl::OnRootLayerDelegatedScrollOffsetChanged() {
-  DCHECK(root_layer_scroll_offset_delegate_);
-  if (inner_viewport_scroll_layer_) {
-    inner_viewport_scroll_layer_->RefreshFromScrollDelegate();
-  }
-  if (outer_viewport_scroll_layer_) {
-    outer_viewport_scroll_layer_->RefreshFromScrollDelegate();
-  }
-}
-
-void LayerTreeImpl::UpdateScrollOffsetDelegate() {
-  DCHECK(InnerViewportScrollLayer());
-  DCHECK(!OuterViewportScrollLayer() || outer_viewport_scroll_delegate_proxy_);
+void LayerTreeImpl::UpdateRootScrollOffsetDelegate() {
   DCHECK(root_layer_scroll_offset_delegate_);
 
-  gfx::ScrollOffset offset =
-      inner_viewport_scroll_delegate_proxy_->last_set_scroll_offset();
+  gfx::ScrollOffset offset = InnerViewportScrollLayer()->CurrentScrollOffset();
 
   if (OuterViewportScrollLayer())
-    offset += outer_viewport_scroll_delegate_proxy_->last_set_scroll_offset();
+    offset += OuterViewportScrollLayer()->CurrentScrollOffset();
 
   root_layer_scroll_offset_delegate_->UpdateRootLayerState(
       offset, TotalMaxScrollOffset(), ScrollableSize(),
@@ -1114,44 +1027,43 @@ void LayerTreeImpl::UpdateScrollOffsetDelegate() {
       max_page_scale_factor());
 }
 
-gfx::ScrollOffset LayerTreeImpl::GetDelegatedScrollOffset(LayerImpl* layer) {
-  DCHECK(root_layer_scroll_offset_delegate_);
-  DCHECK(InnerViewportScrollLayer());
-  if (layer == InnerViewportScrollLayer() && !OuterViewportScrollLayer())
-    return root_layer_scroll_offset_delegate_->GetTotalScrollOffset();
+void LayerTreeImpl::DistributeRootScrollOffset() {
+  if (!root_layer_scroll_offset_delegate_)
+    return;
+
+  gfx::ScrollOffset root_offset =
+      root_layer_scroll_offset_delegate_->GetTotalScrollOffset();
+
+  if (!InnerViewportScrollLayer())
+    return;
+
+  DCHECK(OuterViewportScrollLayer());
 
   // If we get here, we have both inner/outer viewports, and need to distribute
   // the scroll offset between them.
-  DCHECK(inner_viewport_scroll_delegate_proxy_);
-  DCHECK(outer_viewport_scroll_delegate_proxy_);
   gfx::ScrollOffset inner_viewport_offset =
-      inner_viewport_scroll_delegate_proxy_->last_set_scroll_offset();
+      InnerViewportScrollLayer()->CurrentScrollOffset();
   gfx::ScrollOffset outer_viewport_offset =
-      outer_viewport_scroll_delegate_proxy_->last_set_scroll_offset();
+      OuterViewportScrollLayer()->CurrentScrollOffset();
 
   // It may be nothing has changed.
-  gfx::ScrollOffset delegate_offset =
-      root_layer_scroll_offset_delegate_->GetTotalScrollOffset();
-  if (inner_viewport_offset + outer_viewport_offset == delegate_offset) {
-    if (layer == InnerViewportScrollLayer())
-      return inner_viewport_offset;
-    else
-      return outer_viewport_offset;
-  }
+  if (inner_viewport_offset + outer_viewport_offset == root_offset)
+    return;
 
   gfx::ScrollOffset max_outer_viewport_scroll_offset =
       OuterViewportScrollLayer()->MaxScrollOffset();
 
-  outer_viewport_offset = delegate_offset - inner_viewport_offset;
+  outer_viewport_offset = root_offset - inner_viewport_offset;
   outer_viewport_offset.SetToMin(max_outer_viewport_scroll_offset);
   outer_viewport_offset.SetToMax(gfx::ScrollOffset());
 
-  if (layer == OuterViewportScrollLayer())
-    return outer_viewport_offset;
+  OuterViewportScrollLayer()->SetCurrentScrollOffsetFromDelegate(
+      outer_viewport_offset);
+  inner_viewport_offset = root_offset - outer_viewport_offset;
+  InnerViewportScrollLayer()->SetCurrentScrollOffsetFromDelegate(
+      inner_viewport_offset);
 
-  inner_viewport_offset = delegate_offset - outer_viewport_offset;
-
-  return inner_viewport_offset;
+  UpdateRootScrollOffsetDelegate();
 }
 
 void LayerTreeImpl::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {

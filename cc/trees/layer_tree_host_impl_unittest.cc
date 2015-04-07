@@ -224,9 +224,16 @@ class LayerTreeHostImplTest : public testing::Test,
 
   LayerImpl* CreateScrollAndContentsLayers(LayerTreeImpl* layer_tree_impl,
                                            const gfx::Size& content_size) {
+    // Create both an inner viewport scroll layer and an outer viewport scroll
+    // layer. The MaxScrollOffset of the outer viewport scroll layer will be
+    // 0x0, so the scrolls will be applied directly to the inner viewport.
+    const int kOuterViewportClipLayerId = 116;
+    const int kOuterViewportScrollLayerId = 117;
+    const int kContentLayerId = 118;
     const int kInnerViewportScrollLayerId = 2;
     const int kInnerViewportClipLayerId = 4;
     const int kPageScaleLayerId = 5;
+
     scoped_ptr<LayerImpl> root =
         LayerImpl::Create(layer_tree_impl, 1);
     root->SetBounds(content_size);
@@ -234,44 +241,58 @@ class LayerTreeHostImplTest : public testing::Test,
     root->SetPosition(gfx::PointF());
     root->SetHasRenderSurface(true);
 
-    scoped_ptr<LayerImpl> scroll =
+    scoped_ptr<LayerImpl> inner_scroll =
         LayerImpl::Create(layer_tree_impl, kInnerViewportScrollLayerId);
-    LayerImpl* scroll_layer = scroll.get();
-    scroll->SetIsContainerForFixedPositionLayers(true);
-    scroll->PushScrollOffsetFromMainThread(gfx::ScrollOffset());
+    inner_scroll->SetIsContainerForFixedPositionLayers(true);
+    inner_scroll->PushScrollOffsetFromMainThread(gfx::ScrollOffset());
 
-    scoped_ptr<LayerImpl> clip =
+    scoped_ptr<LayerImpl> inner_clip =
         LayerImpl::Create(layer_tree_impl, kInnerViewportClipLayerId);
-    clip->SetBounds(
+    inner_clip->SetBounds(
         gfx::Size(content_size.width() / 2, content_size.height() / 2));
 
     scoped_ptr<LayerImpl> page_scale =
         LayerImpl::Create(layer_tree_impl, kPageScaleLayerId);
 
-    scroll->SetScrollClipLayer(clip->id());
-    scroll->SetBounds(content_size);
-    scroll->SetContentBounds(content_size);
-    scroll->SetPosition(gfx::PointF());
-    scroll->SetIsContainerForFixedPositionLayers(true);
+    inner_scroll->SetScrollClipLayer(inner_clip->id());
+    inner_scroll->SetBounds(content_size);
+    inner_scroll->SetContentBounds(content_size);
+    inner_scroll->SetPosition(gfx::PointF());
+
+    scoped_ptr<LayerImpl> outer_clip =
+        LayerImpl::Create(layer_tree_impl, kOuterViewportClipLayerId);
+    outer_clip->SetBounds(content_size);
+    outer_clip->SetIsContainerForFixedPositionLayers(true);
+
+    scoped_ptr<LayerImpl> outer_scroll =
+        LayerImpl::Create(layer_tree_impl, kOuterViewportScrollLayerId);
+    outer_scroll->SetScrollClipLayer(outer_clip->id());
+    outer_scroll->PushScrollOffsetFromMainThread(gfx::ScrollOffset());
+    outer_scroll->SetBounds(content_size);
+    outer_scroll->SetContentBounds(content_size);
+    outer_scroll->SetPosition(gfx::PointF());
 
     scoped_ptr<LayerImpl> contents =
-        LayerImpl::Create(layer_tree_impl, 3);
+        LayerImpl::Create(layer_tree_impl, kContentLayerId);
     contents->SetDrawsContent(true);
     contents->SetBounds(content_size);
     contents->SetContentBounds(content_size);
     contents->SetPosition(gfx::PointF());
 
-    scroll->AddChild(contents.Pass());
-    page_scale->AddChild(scroll.Pass());
-    clip->AddChild(page_scale.Pass());
-    root->AddChild(clip.Pass());
+    outer_scroll->AddChild(contents.Pass());
+    outer_clip->AddChild(outer_scroll.Pass());
+    inner_scroll->AddChild(outer_clip.Pass());
+    page_scale->AddChild(inner_scroll.Pass());
+    inner_clip->AddChild(page_scale.Pass());
+    root->AddChild(inner_clip.Pass());
 
     layer_tree_impl->SetRootLayer(root.Pass());
     layer_tree_impl->SetViewportLayersFromIds(
         Layer::INVALID_ID, kPageScaleLayerId, kInnerViewportScrollLayerId,
-        Layer::INVALID_ID);
+        kOuterViewportScrollLayerId);
 
-    return scroll_layer;
+    layer_tree_impl->DidBecomeActive();
+    return layer_tree_impl->InnerViewportScrollLayer();
   }
 
   LayerImpl* SetupScrollAndContentsLayers(const gfx::Size& content_size) {
@@ -1847,10 +1868,11 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
   }
 
-  // Root "overflow: hidden" properties should be reflected.
+  // Root "overflow: hidden" properties should be reflected on the outer
+  // viewport scroll layer.
   {
     host_impl_->active_tree()
-        ->InnerViewportScrollLayer()
+        ->OuterViewportScrollLayer()
         ->set_user_scrollable_horizontal(false);
     CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
@@ -1858,7 +1880,7 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
 
     host_impl_->active_tree()
-        ->InnerViewportScrollLayer()
+        ->OuterViewportScrollLayer()
         ->set_user_scrollable_vertical(false);
     metadata = host_impl_->MakeCompositorFrameMetadata();
     EXPECT_TRUE(metadata.root_overflow_x_hidden);
@@ -3972,6 +3994,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   scroll_delegate.set_getter_return_value(current_offset);
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
+  host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
 
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
   EXPECT_EQ(ScrollOffsetWithDelta(current_offset, scroll_delta),
@@ -3979,11 +4002,13 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
 
   current_offset = gfx::ScrollOffset(42.f, 41.f);
   scroll_delegate.set_getter_return_value(current_offset);
+  host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
   EXPECT_EQ(current_offset + gfx::ScrollOffset(scroll_delta),
             scroll_delegate.last_set_scroll_offset());
   host_impl_->ScrollEnd();
   scroll_delegate.set_getter_return_value(gfx::ScrollOffset());
+  host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
 
   // Forces a full tree synchronization and ensures that the scroll delegate
   // sees the correct size of the new tree.
@@ -3997,6 +4022,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   // the root scrollable layer.
   current_offset = gfx::ScrollOffset(13.f, 12.f);
   scroll_delegate.set_getter_return_value(current_offset);
+  host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
   host_impl_->SetRootLayerScrollOffsetDelegate(NULL);
 
   EXPECT_EQ(current_offset.ToString(),
@@ -7865,6 +7891,41 @@ class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {
     host_impl_->active_tree()->DidBecomeActive();
   }
 };
+
+TEST_F(LayerTreeHostImplVirtualViewportTest, ScrollBothInnerAndOuterLayer) {
+  gfx::Size content_size = gfx::Size(100, 160);
+  gfx::Size outer_viewport = gfx::Size(50, 80);
+  gfx::Size inner_viewport = gfx::Size(25, 40);
+
+  SetupVirtualViewportLayers(content_size, outer_viewport, inner_viewport);
+
+  TestScrollOffsetDelegate scroll_delegate;
+  host_impl_->SetRootLayerScrollOffsetDelegate(&scroll_delegate);
+
+  LayerImpl* outer_scroll = host_impl_->OuterViewportScrollLayer();
+  LayerImpl* inner_scroll = host_impl_->InnerViewportScrollLayer();
+  DrawFrame();
+  {
+    gfx::ScrollOffset inner_expected;
+    gfx::ScrollOffset outer_expected;
+    EXPECT_EQ(inner_expected, inner_scroll->CurrentScrollOffset());
+    EXPECT_EQ(outer_expected, outer_scroll->CurrentScrollOffset());
+
+    gfx::ScrollOffset current_offset(70.f, 100.f);
+
+    scroll_delegate.set_getter_return_value(current_offset);
+    host_impl_->OnRootLayerDelegatedScrollOffsetChanged();
+    EXPECT_EQ(gfx::ScrollOffset(25.f, 40.f), inner_scroll->MaxScrollOffset());
+    EXPECT_EQ(gfx::ScrollOffset(50.f, 80.f), outer_scroll->MaxScrollOffset());
+
+    // Outer viewport scrolls first. Then the rest is applied to the inner
+    // viewport.
+    EXPECT_EQ(gfx::ScrollOffset(20.f, 20.f),
+              inner_scroll->CurrentScrollOffset());
+    EXPECT_EQ(gfx::ScrollOffset(50.f, 80.f),
+              outer_scroll->CurrentScrollOffset());
+  }
+}
 
 TEST_F(LayerTreeHostImplVirtualViewportTest, FlingScrollBubblesToInner) {
   gfx::Size content_size = gfx::Size(100, 160);
