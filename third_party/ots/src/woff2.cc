@@ -45,7 +45,7 @@ const size_t kCompositeGlyphBegin = 10;
 
 // Note that the byte order is big-endian, not the same as ots.cc
 #define TAG(a, b, c, d) ((a << 24) | (b << 16) | (c << 8) | d)
-#define UNTAG(t)         (t >> 24),  (t >> 16),  (t >> 8), (t >> 0)
+#define CHR(t)           (t >> 24),  (t >> 16),  (t >> 8), (t >> 0)
 
 const unsigned int kWoff2FlagsTransform = 1 << 5;
 
@@ -772,6 +772,17 @@ bool FixChecksums(const std::vector<Table>& tables, uint8_t* dst) {
   return true;
 }
 
+bool Woff2Uncompress(uint8_t* dst_buf, size_t dst_size,
+    const uint8_t* src_buf, size_t src_size) {
+  size_t uncompressed_size = dst_size;
+  int ok = BrotliDecompressBuffer(src_size, src_buf,
+                                  &uncompressed_size, dst_buf);
+  if (!ok || uncompressed_size != dst_size) {
+    return OTS_FAILURE();
+  }
+  return true;
+}
+
 bool ReadTableDirectory(ots::OpenTypeFile* file,
     ots::Buffer* buffer, std::vector<Table>* tables,
     size_t num_tables) {
@@ -801,16 +812,12 @@ bool ReadTableDirectory(ots::OpenTypeFile* file,
     }
     uint32_t dst_length;
     if (!ReadBase128(buffer, &dst_length)) {
-      return OTS_FAILURE_MSG("Failed to read 'origLength' for table '%c%c%c%c'", UNTAG(tag));
+      return OTS_FAILURE_MSG("Failed to read 'origLength' for table '%c%c%c%c'", CHR(tag));
     }
     uint32_t transform_length = dst_length;
     if ((flags & kWoff2FlagsTransform) != 0) {
       if (!ReadBase128(buffer, &transform_length)) {
-        return OTS_FAILURE_MSG("Failed to read 'transformLength' for table '%c%c%c%c'", UNTAG(tag));
-      }
-
-      if (tag == TAG('l', 'o', 'c', 'a') && transform_length != 0) {
-        return OTS_FAILURE_MSG("The 'transformLength' of 'loca' table must be zero: %d", transform_length);
+        return OTS_FAILURE_MSG("Failed to read 'transformLength' for table '%c%c%c%c'", CHR(tag));
       }
     }
     // Disallow huge numbers (> 1GB) for sanity.
@@ -1013,15 +1020,12 @@ bool ConvertWOFF2ToSFNT(ots::OpenTypeFile* file,
   if (total_size > 30 * 1024 * 1024) {
     return OTS_FAILURE();
   }
-  size_t uncompressed_size = static_cast<size_t>(total_size);
-  uncompressed_buf.resize(uncompressed_size);
-  const uint8_t* compressed_buf = data + compressed_offset;
-  if (!BrotliDecompressBuffer(compressed_length, compressed_buf,
-                              &uncompressed_size, &uncompressed_buf[0])) {
+  const size_t total_size_size_t = static_cast<size_t>(total_size);
+  uncompressed_buf.resize(total_size_size_t);
+  const uint8_t* src_buf = data + compressed_offset;
+  if (!Woff2Uncompress(&uncompressed_buf[0], total_size_size_t,
+      src_buf, compressed_length)) {
     return OTS_FAILURE_MSG("Failed to uncompress font data");
-  }
-  if (uncompressed_size != static_cast<size_t>(total_size)) {
-    return OTS_FAILURE_MSG("Decompressed font data size does not match the sum of 'origLength' and 'transformLength'");
   }
   transform_buf = &uncompressed_buf[0];
 
@@ -1043,7 +1047,7 @@ bool ConvertWOFF2ToSFNT(ots::OpenTypeFile* file,
     } else {
       if (!ReconstructTransformed(file, tables, table->tag,
             transform_buf, transform_length, result, result_length)) {
-        return OTS_FAILURE_MSG("Failed to reconstruct '%c%c%c%c' table", UNTAG(table->tag));
+        return OTS_FAILURE_MSG("Failed to reconstruct '%c%c%c%c' table", CHR(table->tag));
       }
     }
 
