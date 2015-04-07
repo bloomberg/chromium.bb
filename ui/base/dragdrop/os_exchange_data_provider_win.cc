@@ -531,6 +531,9 @@ void OSExchangeDataProviderWin::SetDownloadFileInfo(
       Clipboard::GetCFHDropFormatType().ToFormatEtc(), storage);
   info->downloader = download.downloader;
   data_->contents_.push_back(info);
+
+  // Adding a download file always enables async mode.
+  data_->SetAsyncMode(VARIANT_TRUE);
 }
 
 void OSExchangeDataProviderWin::SetDragImage(
@@ -820,17 +823,17 @@ HRESULT DataObjectImpl::EndOperation(
 }
 
 HRESULT DataObjectImpl::GetAsyncMode(BOOL* is_op_async) {
-  *is_op_async = in_async_mode_ ? TRUE : FALSE;
+  *is_op_async = in_async_mode_ ? VARIANT_TRUE : VARIANT_FALSE;
   return S_OK;
 }
 
 HRESULT DataObjectImpl::InOperation(BOOL* in_async_op) {
-  *in_async_op = async_operation_started_ ? TRUE : FALSE;
+  *in_async_op = async_operation_started_ ? VARIANT_TRUE : VARIANT_FALSE;
   return S_OK;
 }
 
 HRESULT DataObjectImpl::SetAsyncMode(BOOL do_op_async) {
-  in_async_mode_ = (do_op_async == TRUE);
+  in_async_mode_ = !!do_op_async;
   return S_OK;
 }
 
