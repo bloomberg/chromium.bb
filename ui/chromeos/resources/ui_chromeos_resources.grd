@@ -46,6 +46,7 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE" file="network/statusbar_network_vpn_badge.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_WIRED" file="network/statusbar_wired.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_3G" file="network/notification_3g.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_DATASAVER" file="network/notification_datasaver.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_LTE" file="network/notification_lte.png" />
 
       <!-- Default user profile images. -->

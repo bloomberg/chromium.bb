@@ -30,6 +30,7 @@ namespace extension_misc {
 const char kBookmarkManagerId[] = "eemcgdkfndhakfknompkggombfjjjeno";
 const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
 const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
+const char kDataSaverExtensionId[] = "pfmgfdlgomnbgkofeojodiodmgpgmkac";
 const char kEasyUnlockAppId[] = "mkaemigholebcgchlkbankmihknojeak";
 const char kEnterpriseWebStoreAppId[] = "afchcafgojfnemjkcbhfekplkmjaldaa";
 const char kGmailAppId[] = "pjkljhegncpnkpknbcohdijeoejaedia";

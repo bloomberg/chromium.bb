@@ -54061,12 +54061,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1341092934" label="enable-accelerated-overflow-scroll"/>
   <int value="-1340055960" label="enable-streamlined-hosted-apps"/>
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
+  <int value="-1322882747" label="disable-datasaver-prompt"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
   <int value="-1267958145" label="disable-pdf-material-ui"/>
   <int value="-1251411236" label="disable-new-md-input-view"/>
   <int value="-1241747717" label="enable-android-password-link"/>
+  <int value="-1235586511" label="enable-datasaver-prompt"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1216837777" label="clear-data-reduction-proxy-data-savings"/>
   <int value="-1212273428" label="enable-experimental-app-list"/>

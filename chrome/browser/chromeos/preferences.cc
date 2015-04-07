@@ -292,6 +292,12 @@ void Preferences::RegisterProfilePrefs(
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
+  // Number of times Data Saver prompt has been shown on 3G data network.
+  registry->RegisterIntegerPref(
+      prefs::kDataSaverPromptsShown,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
   // Initially all existing users would see "What's new" for current version
   // after update.
   registry->RegisterStringPref(prefs::kChromeOSReleaseNotesVersion,

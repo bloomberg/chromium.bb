@@ -342,6 +342,11 @@ const char kEnableFirewallHolePunching[] = "enable-firewall-hole-punching";
 // handle the plugged in printer.
 const char kEnablePrinterAppSearch[] = "enable-printer-app-search";
 
+// Switches and optional value for Data Saver prompt on cellular networks.
+const char kDisableDataSaverPrompt[] = "disable-datasaver-prompt";
+const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
+const char kDataSaverPromptDemoMode[] = "demo";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }

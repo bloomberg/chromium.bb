@@ -425,6 +425,19 @@ const Experiment::Choice kAshScreenRotationAnimationChoices[] = {
 };
 #endif
 
+#if defined(OS_CHROMEOS)
+const Experiment::Choice kDataSaverPromptChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    chromeos::switches::kDisableDataSaverPrompt, "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    chromeos::switches::kEnableDataSaverPrompt, "" },
+  { IDS_FLAGS_DATASAVER_PROMPT_DEMO_MODE,
+    chromeos::switches::kEnableDataSaverPrompt,
+    chromeos::switches::kDataSaverPromptDemoMode },
+};
+#endif
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -2317,6 +2330,15 @@ const Experiment kExperiments[] = {
     IDS_FLAG_ENABLE_MTP_WRITE_SUPPORT_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableMtpWriteSupport)
+  },
+#endif  // defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  {
+    "enable-datasaver-prompt",
+    IDS_FLAGS_DATASAVER_PROMPT_NAME,
+    IDS_FLAGS_DATASAVER_PROMPT_DESCRIPTION,
+    kOsCrOS,
+    MULTI_VALUE_TYPE(kDataSaverPromptChoices)
   },
 #endif  // defined(OS_CHROMEOS)
   // NOTE: Adding new command-line switches requires adding corresponding

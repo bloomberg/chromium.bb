@@ -6980,6 +6980,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables compositing with an addition of one hardware overlay when possible.
         </message>
       </if>
+      <message name="IDS_FLAGS_DATASAVER_PROMPT_NAME" desc="Title for the flag to enable a prompt to install Data Saver when a cellular network is detected.">
+        Enable cellular Data Saver Prompt.
+      </message>
+      <message name="IDS_FLAGS_DATASAVER_PROMPT_DESCRIPTION" desc="Decription for the flag to enable a prompt to install Data Saver when a cellular network is detected.">
+        Enables a prompt, which appears when a cellular network connection is detected, to take the user to the Data Saver extension page on Chrome Web Store.
+      </message>
+      <message name="IDS_FLAGS_DATASAVER_PROMPT_DEMO_MODE" desc="The value of the Data Saver prompt flag which always shows prompt on network properties change.">
+        Demo mode
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

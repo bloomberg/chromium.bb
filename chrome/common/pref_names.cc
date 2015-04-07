@@ -615,6 +615,10 @@ const char kShowPlanNotifications[] =
 const char kShow3gPromoNotification[] =
     "settings.internet.mobile.show_3g_promo_notification";
 
+// An integer pref counting times Data Saver prompt has been shown.
+const char kDataSaverPromptsShown[] =
+    "settings.internet.mobile.datasaver_prompts_shown";
+
 // A string pref that contains version where "What's new" promo was shown.
 const char kChromeOSReleaseNotesVersion[] = "settings.release_notes.version";
 

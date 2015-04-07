@@ -37,6 +37,9 @@ extern const char kChromeAppId[];
 // The extension id of the Cloud Print component application.
 extern const char kCloudPrintAppId[];
 
+// The extension id of the Data Saver extension.
+extern const char kDataSaverExtensionId[];
+
 // The extension id of the Easy Unlock component application.
 extern const char kEasyUnlockAppId[];
 
