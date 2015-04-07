@@ -221,13 +221,15 @@ class DepGraphGenerator(object):
     PrintDepsMap(deps_graph)
   """
 
-  __slots__ = ["board", "emerge", "package_db", "show_output", "unpack_only"]
+  __slots__ = ["board", "emerge", "package_db", "show_output", "sysroot",
+               "unpack_only"]
 
   def __init__(self):
     self.board = None
     self.emerge = EmergeData()
     self.package_db = {}
     self.show_output = False
+    self.sysroot = None
     self.unpack_only = False
 
   def ParseParallelEmergeArgs(self, argv):
@@ -249,6 +251,8 @@ class DepGraphGenerator(object):
       # pass through the rest.
       if arg.startswith("--board="):
         self.board = arg.replace("--board=", "")
+      elif arg.startswith("--sysroot="):
+        self.sysroot = arg.replace("--sysroot=", "")
       elif arg.startswith("--workon="):
         workon_str = arg.replace("--workon=", "")
         emerge_args.append("--reinstall-atoms=%s" % workon_str)
@@ -281,15 +285,21 @@ class DepGraphGenerator(object):
     # Parse and strip out args that are just intended for parallel_emerge.
     emerge_args = self.ParseParallelEmergeArgs(args)
 
+    if self.sysroot and self.board:
+      cros_build_lib.Die("--sysroot and --board are incompatible.")
+
     # Setup various environment variables based on our current board. These
     # variables are normally setup inside emerge-${BOARD}, but since we don't
     # call that script, we have to set it up here. These variables serve to
     # point our tools at /build/BOARD and to setup cross compiles to the
     # appropriate board as configured in toolchain.conf.
     if self.board:
-      sysroot = os.environ.get('SYSROOT', cros_build_lib.GetSysroot(self.board))
-      os.environ["PORTAGE_CONFIGROOT"] = sysroot
-      os.environ["SYSROOT"] = sysroot
+      self.sysroot = os.environ.get('SYSROOT',
+                                    cros_build_lib.GetSysroot(self.board))
+
+    if self.sysroot:
+      os.environ["PORTAGE_CONFIGROOT"] = self.sysroot
+      os.environ["SYSROOT"] = self.sysroot
 
       # Although CHROMEOS_ROOT isn't specific to boards, it's normally setup
       # inside emerge-${BOARD}, so we set it up here for compatibility. It
@@ -322,7 +332,7 @@ class DepGraphGenerator(object):
     # This is safe because we only run up to one instance of parallel_emerge in
     # parallel.
     # TODO(davidjames): Enable this for the host too.
-    if self.board:
+    if self.sysroot:
       os.environ.setdefault("PORTAGE_LOCKS", "false")
 
     # Now that we've setup the necessary environment variables, we can load the
@@ -338,7 +348,7 @@ class DepGraphGenerator(object):
 
     # If we're installing to the board, we want the --root-deps option so that
     # portage will install the build dependencies to that location as well.
-    if self.board:
+    if self.sysroot:
       opts.setdefault("--root-deps", True)
 
     # Check whether our portage tree is out of date. Typically, this happens
