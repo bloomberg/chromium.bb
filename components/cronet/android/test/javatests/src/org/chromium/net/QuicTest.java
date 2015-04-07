@@ -25,7 +25,7 @@ public class QuicTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    public void testQuicLoadUrl() throws Exception {
+    public void disabled_testQuicLoadUrl() throws Exception {
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
         config.enableQUIC(true);
