@@ -289,7 +289,7 @@ class AbstractRpcServer(object):
       req.add_header(key, value)
     return req
 
-  def _GetAuthToken(self, email, password):
+  def _GetAuthToken(self, email, password, internal=False):
     """Uses ClientLogin to authenticate the user, returning an auth token.
 
     Args:
@@ -307,8 +307,9 @@ class AbstractRpcServer(object):
     if self.host.endswith(".google.com"):
       # Needed for use inside Google.
       account_type = "HOSTED"
+    service = ('ClientLogin') if not internal else ('ClientAuth')
     req = self._CreateRequest(
-        url="https://www.google.com/accounts/ClientLogin",
+        url="https://www.google.com/accounts/%s" % (service,),
         data=urllib.urlencode({
             "Email": email,
             "Passwd": password,
@@ -371,12 +372,32 @@ class AbstractRpcServer(object):
     authentication cookie, it returns a 401 response (or a 302) and
     directs us to authenticate ourselves with ClientLogin.
     """
+    INTERNAL_ERROR_MAP = {
+        "badauth": "BadAuthentication",
+        "cr": "CaptchaRequired",
+        "adel": "AccountDeleted",
+        "adis": "AccountDisabled",
+        "sdis": "ServiceDisabled",
+        "ire": "ServiceUnavailable",
+    }
+
     for i in range(3):
       credentials = self.auth_function()
+
+      # Try external, then internal.
+      e = None
       try:
         auth_token = self._GetAuthToken(credentials[0], credentials[1])
-      except ClientLoginError, e:
+      except urllib2.HTTPError:
+        try:
+          auth_token = self._GetAuthToken(credentials[0], credentials[1],
+                                          internal=True)
+        except ClientLoginError, exc:
+          e = exc
+      if e:
         print >> sys.stderr, ''
+        if internal:
+          e.reason = INTERNAL_ERROR_MAP.get(e.reason, e.reason)
         if e.reason == "BadAuthentication":
           if e.info == "InvalidSecondFactor":
             print >> sys.stderr, (
@@ -409,7 +430,7 @@ class AbstractRpcServer(object):
           print >> sys.stderr, "The service is not available; try again later."
         else:
           # Unknown error.
-          raise
+          raise e
         print >> sys.stderr, ''
         continue
       self._GetAuthCookie(auth_token)
