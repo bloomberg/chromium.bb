@@ -1084,11 +1084,9 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
     DCHECK_EQ(gpu_memory_buffer_->GetHandle().type, gfx::SHARED_MEMORY_BUFFER);
 #endif
 
-    resource_->image_id =
-        gl->CreateImageCHROMIUM(gpu_memory_buffer_->AsClientBuffer(),
-                                size_.width(),
-                                size_.height(),
-                                GL_RGBA);
+    resource_->image_id = gl->CreateImageCHROMIUM(
+        gpu_memory_buffer_->AsClientBuffer(), size_.width(), size_.height(),
+        GLInternalFormat(resource_->format));
   }
 
   std::swap(resource_->gpu_memory_buffer, gpu_memory_buffer_);

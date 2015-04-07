@@ -23,6 +23,8 @@ gfx::GpuMemoryBuffer::Format ImageFactory::ImageFormatToGpuMemoryBufferFormat(
       return gfx::GpuMemoryBuffer::RGBX_8888;
     case GL_RGBA:
       return gfx::GpuMemoryBuffer::RGBA_8888;
+    case GL_BGRA_EXT:
+      return gfx::GpuMemoryBuffer::BGRA_8888;
     case GL_ATC_RGB_AMD:
       return gfx::GpuMemoryBuffer::ATC;
     case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
@@ -57,41 +59,7 @@ gfx::GpuMemoryBuffer::Usage ImageFactory::ImageUsageToGpuMemoryBufferUsage(
 bool ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     unsigned internalformat,
     gfx::GpuMemoryBuffer::Format format) {
-  switch (internalformat) {
-    case GL_RGB:
-      switch (format) {
-        case gfx::GpuMemoryBuffer::ATC:
-        case gfx::GpuMemoryBuffer::ATCIA:
-        case gfx::GpuMemoryBuffer::DXT1:
-        case gfx::GpuMemoryBuffer::DXT5:
-        case gfx::GpuMemoryBuffer::ETC1:
-        case gfx::GpuMemoryBuffer::RGBX_8888:
-          return true;
-        case gfx::GpuMemoryBuffer::RGBA_8888:
-        case gfx::GpuMemoryBuffer::BGRA_8888:
-          return false;
-      }
-      NOTREACHED();
-      return false;
-    case GL_RGBA:
-      switch (format) {
-        case gfx::GpuMemoryBuffer::RGBX_8888:
-          return false;
-        case gfx::GpuMemoryBuffer::ATC:
-        case gfx::GpuMemoryBuffer::ATCIA:
-        case gfx::GpuMemoryBuffer::DXT1:
-        case gfx::GpuMemoryBuffer::DXT5:
-        case gfx::GpuMemoryBuffer::ETC1:
-        case gfx::GpuMemoryBuffer::RGBA_8888:
-        case gfx::GpuMemoryBuffer::BGRA_8888:
-          return true;
-      }
-      NOTREACHED();
-      return false;
-    default:
-      NOTREACHED();
-      return false;
-  }
+  return ImageFormatToGpuMemoryBufferFormat(internalformat) == format;
 }
 
 // static

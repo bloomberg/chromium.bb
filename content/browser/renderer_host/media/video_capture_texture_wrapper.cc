@@ -20,6 +20,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 namespace content {
@@ -300,8 +301,7 @@ void VideoCaptureTextureWrapper::TextureWrapperDelegate::OnIncomingCapturedData(
   gpu::gles2::GLES2Interface* gl = capture_thread_context_->ContextGL();
   GLuint image_id = gl->CreateImageCHROMIUM(gpu_memory_buffer->AsClientBuffer(),
                                             frame_size.width(),
-                                            frame_size.height(),
-                                            GL_RGBA);
+                                            frame_size.height(), GL_BGRA_EXT);
   DCHECK(image_id);
 
   GLuint texture_id = gl_helper_->CreateTexture();

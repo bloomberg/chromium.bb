@@ -126,7 +126,7 @@ std::vector<uint8> GetFramebufferPixel(
   return std::vector<uint8>();
 }
 
-GLenum TextureFormat(gfx::GpuMemoryBuffer::Format format) {
+GLenum InternalFormat(gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
     case gfx::GpuMemoryBuffer::RGBA_8888:
       return GL_RGBA;
@@ -177,8 +177,9 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
   buffer->Unmap();
 
   // Create the image. This should add the image ID to the ImageManager.
-  GLuint image_id = glCreateImageCHROMIUM(
-      buffer->AsClientBuffer(), kImageWidth, kImageHeight, GL_RGBA);
+  GLuint image_id =
+      glCreateImageCHROMIUM(buffer->AsClientBuffer(), kImageWidth, kImageHeight,
+                            InternalFormat(GetParam()));
   EXPECT_NE(0u, image_id);
   EXPECT_TRUE(gl_.decoder()->GetImageManager()->LookupImage(image_id) != NULL);
 
@@ -188,7 +189,7 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
 
   // Copy texture so we can verify result using CheckPixels.
   glCopyTextureCHROMIUM(GL_TEXTURE_2D, texture_ids_[0], texture_ids_[1],
-                        TextureFormat(GetParam()), GL_UNSIGNED_BYTE);
+                        InternalFormat(GetParam()), GL_UNSIGNED_BYTE);
   EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
   // Check if pixels match the values that were assigned to the mapped buffer.

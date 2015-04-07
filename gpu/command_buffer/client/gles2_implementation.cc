@@ -4831,6 +4831,7 @@ bool ValidImageFormat(GLenum internalformat) {
   switch (internalformat) {
     case GL_RGB:
     case GL_RGBA:
+    case GL_BGRA_EXT:
       return true;
     default:
       return false;
