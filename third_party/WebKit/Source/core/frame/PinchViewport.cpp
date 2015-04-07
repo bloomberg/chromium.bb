@@ -215,13 +215,13 @@ void PinchViewport::setLocationInDocument(const DoublePoint& location)
     if (!mainFrame() || !mainFrame()->view())
         return;
 
-    FrameView* view = mainFrame()->view();
+    ScrollableArea* layoutViewport = mainFrame()->view()->scrollableArea();
 
-    DoublePoint currentLocation = visibleRectInDocument().location();
-    view->setScrollPosition(DoublePoint(location - currentLocation));
+    DoubleSize delta = location - visibleRectInDocument().location();
+    layoutViewport->setScrollPosition(layoutViewport->scrollPositionDouble() + delta);
 
-    currentLocation = visibleRectInDocument().location();
-    move(toFloatSize(location - currentLocation));
+    delta = location - visibleRectInDocument().location();
+    move(toFloatSize(delta));
 }
 
 void PinchViewport::setScale(float scale)

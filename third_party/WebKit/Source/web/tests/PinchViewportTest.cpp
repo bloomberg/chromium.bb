@@ -1640,6 +1640,43 @@ TEST_F(PinchViewportTest, AccessibilityHitTestWhileZoomedIn)
     EXPECT_EQ(std::string("Target4"), hitNode.title().utf8());
 }
 
+// Tests that the setLocationInDocument method works correctly.
+TEST_F(PinchViewportTest, TestSetLocationInDocument)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(500, 500));
+    registerMockedHttpURLLoad("content-width-1000.html");
+    navigateTo(m_baseURL + "content-width-1000.html");
+
+    PinchViewport& pinchViewport = webViewImpl()->page()->frameHost().pinchViewport();
+    ScrollableArea& rootFrame = *webViewImpl()->mainFrameImpl()->frameView()->scrollableArea();
+
+    pinchViewport.setScale(2);
+
+    // Ensure that the FrameView scrolls first.
+    pinchViewport.setLocationInDocument(DoublePoint(100, 100));
+    EXPECT_POINT_EQ(DoublePoint(0, 0), pinchViewport.location());
+    EXPECT_POINT_EQ(DoublePoint(100, 100), rootFrame.scrollPositionDouble());
+
+    // Scroll to the FrameView's extent, the pinch viewport should scroll the
+    // remainder.
+    pinchViewport.setLocationInDocument(DoublePoint(700, 1700));
+    EXPECT_POINT_EQ(DoublePoint(200, 200), pinchViewport.location());
+    EXPECT_POINT_EQ(DoublePoint(500, 1500), rootFrame.scrollPositionDouble());
+
+    // Only the PinchViewport should scroll further. Make sure it doesn't scroll
+    // out of bounds.
+    pinchViewport.setLocationInDocument(DoublePoint(780, 1780));
+    EXPECT_POINT_EQ(DoublePoint(250, 250), pinchViewport.location());
+    EXPECT_POINT_EQ(DoublePoint(500, 1500), rootFrame.scrollPositionDouble());
+
+    // Scroll all the way back.
+    pinchViewport.setLocationInDocument(DoublePoint(0, 0));
+    EXPECT_POINT_EQ(DoublePoint(0, 0), pinchViewport.location());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrame.scrollPositionDouble());
+}
+
+
 // Tests that the maximum scroll offset of the viewport can be fractional.
 TEST_F(PinchViewportTest, TestCoordinateTransforms)
 {
