@@ -266,6 +266,9 @@ public:
     virtual bool weakTableRegistered(const void*) override { return false; }
 #endif
     virtual void registerWeakCellWithCallback(void**, WeakPointerCallback) override { }
+#if ENABLE(GC_PROFILING)
+    virtual void recordObjectGraphEdge(const void*) override { }
+#endif
     virtual bool isMarked(const void*) override { return false; }
     virtual bool ensureMarked(const void* objectPointer) override
     {

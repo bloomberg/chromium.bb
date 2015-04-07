@@ -577,16 +577,6 @@ public:
 
     virtual ~Visitor() { }
 
-    // FIXME: This is a temporary hack to cheat old Blink GC plugin checks.
-    // Old GC Plugin doesn't accept calling VisitorHelper<Visitor>::trace
-    // as a valid mark. This manual redirect worksaround the issue by
-    // making the method declaration on Visitor class.
-    template<typename T>
-    void trace(const T& t)
-    {
-        VisitorHelper<Visitor>::trace(t);
-    }
-
     using VisitorHelper<Visitor>::mark;
 
     // This method marks an object and adds it to the set of objects
@@ -668,10 +658,7 @@ protected:
 
     virtual void registerWeakCellWithCallback(void**, WeakPointerCallback) = 0;
 #if ENABLE(GC_PROFILING)
-    virtual void recordObjectGraphEdge(const void*)
-    {
-        ASSERT_NOT_REACHED();
-    }
+    virtual void recordObjectGraphEdge(const void*) = 0;
 
     void* m_hostObject;
     String m_hostName;
