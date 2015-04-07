@@ -38,39 +38,44 @@ class GpuMemoryBufferTest
     : public testing::TestWithParam<gfx::GpuMemoryBuffer::Format> {
  protected:
   void SetUp() override {
-    gl_.Initialize(GLManager::Options());
+    GLManager::Options options;
+    options.size = gfx::Size(kImageWidth, kImageHeight);
+    gl_.Initialize(options);
     gl_.MakeCurrent();
-
-    glGenTextures(2, texture_ids_);
-    glBindTexture(GL_TEXTURE_2D, texture_ids_[1]);
-
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    glGenFramebuffers(1, &framebuffer_id_);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id_);
-    glFramebufferTexture2D(GL_FRAMEBUFFER,
-                           GL_COLOR_ATTACHMENT0,
-                           GL_TEXTURE_2D,
-                           texture_ids_[1],
-                           0);
   }
 
   void TearDown() override {
-    glDeleteTextures(2, texture_ids_);
-    glDeleteFramebuffers(1, &framebuffer_id_);
-
     gl_.Destroy();
   }
 
   GLManager gl_;
-  GLuint texture_ids_[2];
-  GLuint framebuffer_id_;
 };
 
 namespace {
+
+#define SHADER(Src) #Src
+
+// clang-format off
+const char kVertexShader[] =
+SHADER(
+  attribute vec4 a_position;
+  varying vec2 v_texCoord;
+  void main() {
+    gl_Position = a_position;
+    v_texCoord = vec2((a_position.x + 1.0) * 0.5, (a_position.y + 1.0) * 0.5);
+  }
+);
+
+const char* kFragmentShader =
+SHADER(
+  precision mediump float;
+  uniform sampler2D a_texture;
+  varying vec2 v_texCoord;
+  void main() {
+    gl_FragColor = texture2D(a_texture, v_texCoord);
+  }
+);
+// clang-format on
 
 std::vector<uint8> GetTexturePixel(const gfx::GpuMemoryBuffer::Format format) {
   std::vector<uint8> pixel;
@@ -150,6 +155,16 @@ GLenum InternalFormat(gfx::GpuMemoryBuffer::Format format) {
 
 // An end to end test that tests the whole GpuMemoryBuffer lifecycle.
 TEST_P(GpuMemoryBufferTest, Lifecycle) {
+  GLuint texture_id = 0;
+  glGenTextures(1, &texture_id);
+  ASSERT_NE(0u, texture_id);
+  glBindTexture(GL_TEXTURE_2D, texture_id);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+  // Create the gpu memory buffer.
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(gl_.CreateGpuMemoryBuffer(
       gfx::Size(kImageWidth, kImageHeight), GetParam()));
 
@@ -180,17 +195,31 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
   GLuint image_id =
       glCreateImageCHROMIUM(buffer->AsClientBuffer(), kImageWidth, kImageHeight,
                             InternalFormat(GetParam()));
-  EXPECT_NE(0u, image_id);
-  EXPECT_TRUE(gl_.decoder()->GetImageManager()->LookupImage(image_id) != NULL);
+  ASSERT_NE(0u, image_id);
+  ASSERT_TRUE(gl_.decoder()->GetImageManager()->LookupImage(image_id) != NULL);
 
-  // Bind the texture and the image.
-  glBindTexture(GL_TEXTURE_2D, texture_ids_[0]);
+  // Bind the image.
   glBindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
 
-  // Copy texture so we can verify result using CheckPixels.
-  glCopyTextureCHROMIUM(GL_TEXTURE_2D, texture_ids_[0], texture_ids_[1],
-                        InternalFormat(GetParam()), GL_UNSIGNED_BYTE);
-  EXPECT_TRUE(glGetError() == GL_NO_ERROR);
+  // Build program, buffers and draw the texture.
+  GLuint vertex_shader =
+      GLTestHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
+  GLuint fragment_shader =
+      GLTestHelper::LoadShader(GL_FRAGMENT_SHADER, kFragmentShader);
+  GLuint program = GLTestHelper::SetupProgram(vertex_shader, fragment_shader);
+  ASSERT_NE(0u, program);
+  glUseProgram(program);
+
+  GLint sampler_location = glGetUniformLocation(program, "a_texture");
+  ASSERT_NE(-1, sampler_location);
+  glUniform1i(sampler_location, 0);
+
+  GLuint vbo =
+      GLTestHelper::SetupUnitQuad(glGetAttribLocation(program, "a_position"));
+  ASSERT_NE(0u, vbo);
+  glViewport(0, 0, kImageWidth, kImageHeight);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  ASSERT_TRUE(glGetError() == GL_NO_ERROR);
 
   // Check if pixels match the values that were assigned to the mapped buffer.
   GLTestHelper::CheckPixels(0, 0, kImageWidth, kImageHeight, 0,
@@ -200,8 +229,13 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
   // Release the image.
   glReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
 
-  // Destroy the image.
+  // Clean up.
+  glDeleteProgram(program);
+  glDeleteShader(vertex_shader);
+  glDeleteShader(fragment_shader);
+  glDeleteBuffers(1, &vbo);
   glDestroyImageCHROMIUM(image_id);
+  glDeleteTextures(1, &texture_id);
 }
 
 INSTANTIATE_TEST_CASE_P(GpuMemoryBufferTests,
