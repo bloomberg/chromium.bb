@@ -102,7 +102,7 @@ private:
 class OscillatorNode final : public AudioScheduledSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static OscillatorNode* create(AudioContext*, float sampleRate);
+    static OscillatorNode* create(AudioContext&, float sampleRate);
     DECLARE_VIRTUAL_TRACE();
 
     String type() const;

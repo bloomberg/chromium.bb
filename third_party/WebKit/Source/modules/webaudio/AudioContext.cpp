@@ -294,7 +294,7 @@ AudioBufferSourceNode* AudioContext::createBufferSource(ExceptionState& exceptio
         return nullptr;
     }
 
-    AudioBufferSourceNode* node = AudioBufferSourceNode::create(this, sampleRate());
+    AudioBufferSourceNode* node = AudioBufferSourceNode::create(*this, sampleRate());
 
     // Do not add a reference to this source node now. The reference will be added when start() is
     // called.
@@ -326,7 +326,7 @@ MediaElementAudioSourceNode* AudioContext::createMediaElementSource(HTMLMediaEle
         return nullptr;
     }
 
-    MediaElementAudioSourceNode* node = MediaElementAudioSourceNode::create(this, mediaElement);
+    MediaElementAudioSourceNode* node = MediaElementAudioSourceNode::create(*this, *mediaElement);
 
     mediaElement->setAudioSourceNode(&node->mediaElementAudioSourceHandler());
 
@@ -361,7 +361,7 @@ MediaStreamAudioSourceNode* AudioContext::createMediaStreamSource(MediaStream* m
     // Use the first audio track in the media stream.
     MediaStreamTrack* audioTrack = audioTracks[0];
     OwnPtr<AudioSourceProvider> provider = audioTrack->createWebAudioSource();
-    MediaStreamAudioSourceNode* node = MediaStreamAudioSourceNode::create(this, mediaStream, audioTrack, provider.release());
+    MediaStreamAudioSourceNode* node = MediaStreamAudioSourceNode::create(*this, *mediaStream, audioTrack, provider.release());
 
     // FIXME: Only stereo streams are supported right now. We should be able to accept multi-channel streams.
     node->mediaStreamAudioSourceHandler().setFormat(2, sampleRate());
@@ -378,38 +378,23 @@ MediaStreamAudioDestinationNode* AudioContext::createMediaStreamDestination(Exce
     }
 
     // Set number of output channels to stereo by default.
-    return MediaStreamAudioDestinationNode::create(this, 2);
+    return MediaStreamAudioDestinationNode::create(*this, 2);
 }
 
 ScriptProcessorNode* AudioContext::createScriptProcessor(ExceptionState& exceptionState)
 {
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
     // Set number of input/output channels to stereo by default.
     return createScriptProcessor(0, 2, 2, exceptionState);
 }
 
 ScriptProcessorNode* AudioContext::createScriptProcessor(size_t bufferSize, ExceptionState& exceptionState)
 {
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
     // Set number of input/output channels to stereo by default.
     return createScriptProcessor(bufferSize, 2, 2, exceptionState);
 }
 
 ScriptProcessorNode* AudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState& exceptionState)
 {
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
     // Set number of output channels to stereo by default.
     return createScriptProcessor(bufferSize, numberOfInputChannels, 2, exceptionState);
 }
@@ -423,7 +408,7 @@ ScriptProcessorNode* AudioContext::createScriptProcessor(size_t bufferSize, size
         return nullptr;
     }
 
-    ScriptProcessorNode* node = ScriptProcessorNode::create(this, sampleRate(), bufferSize, numberOfInputChannels, numberOfOutputChannels);
+    ScriptProcessorNode* node = ScriptProcessorNode::create(*this, sampleRate(), bufferSize, numberOfInputChannels, numberOfOutputChannels);
 
     if (!node) {
         if (!numberOfInputChannels && !numberOfOutputChannels) {
@@ -463,7 +448,7 @@ StereoPannerNode* AudioContext::createStereoPanner(ExceptionState& exceptionStat
         return nullptr;
     }
 
-    return StereoPannerNode::create(this, sampleRate());
+    return StereoPannerNode::create(*this, sampleRate());
 }
 
 BiquadFilterNode* AudioContext::createBiquadFilter(ExceptionState& exceptionState)
@@ -474,7 +459,7 @@ BiquadFilterNode* AudioContext::createBiquadFilter(ExceptionState& exceptionStat
         return nullptr;
     }
 
-    return BiquadFilterNode::create(this, sampleRate());
+    return BiquadFilterNode::create(*this, sampleRate());
 }
 
 WaveShaperNode* AudioContext::createWaveShaper(ExceptionState& exceptionState)
@@ -485,7 +470,7 @@ WaveShaperNode* AudioContext::createWaveShaper(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    return WaveShaperNode::create(this);
+    return WaveShaperNode::create(*this);
 }
 
 PannerNode* AudioContext::createPanner(ExceptionState& exceptionState)
@@ -496,7 +481,7 @@ PannerNode* AudioContext::createPanner(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    return PannerNode::create(this, sampleRate());
+    return PannerNode::create(*this, sampleRate());
 }
 
 ConvolverNode* AudioContext::createConvolver(ExceptionState& exceptionState)
@@ -507,7 +492,7 @@ ConvolverNode* AudioContext::createConvolver(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    return ConvolverNode::create(this, sampleRate());
+    return ConvolverNode::create(*this, sampleRate());
 }
 
 DynamicsCompressorNode* AudioContext::createDynamicsCompressor(ExceptionState& exceptionState)
@@ -518,7 +503,7 @@ DynamicsCompressorNode* AudioContext::createDynamicsCompressor(ExceptionState& e
         return nullptr;
     }
 
-    return DynamicsCompressorNode::create(this, sampleRate());
+    return DynamicsCompressorNode::create(*this, sampleRate());
 }
 
 AnalyserNode* AudioContext::createAnalyser(ExceptionState& exceptionState)
@@ -529,7 +514,7 @@ AnalyserNode* AudioContext::createAnalyser(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    return AnalyserNode::create(this, sampleRate());
+    return AnalyserNode::create(*this, sampleRate());
 }
 
 GainNode* AudioContext::createGain(ExceptionState& exceptionState)
@@ -540,16 +525,11 @@ GainNode* AudioContext::createGain(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    return GainNode::create(this, sampleRate());
+    return GainNode::create(*this, sampleRate());
 }
 
 DelayNode* AudioContext::createDelay(ExceptionState& exceptionState)
 {
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
     const double defaultMaxDelayTime = 1;
     return createDelay(defaultMaxDelayTime, exceptionState);
 }
@@ -562,19 +542,11 @@ DelayNode* AudioContext::createDelay(double maxDelayTime, ExceptionState& except
         return nullptr;
     }
 
-    DelayNode* node = DelayNode::create(this, sampleRate(), maxDelayTime, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
-    return node;
+    return DelayNode::create(*this, sampleRate(), maxDelayTime, exceptionState);
 }
 
 ChannelSplitterNode* AudioContext::createChannelSplitter(ExceptionState& exceptionState)
 {
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
     const unsigned ChannelSplitterDefaultNumberOfOutputs = 6;
     return createChannelSplitter(ChannelSplitterDefaultNumberOfOutputs, exceptionState);
 }
@@ -588,7 +560,7 @@ ChannelSplitterNode* AudioContext::createChannelSplitter(size_t numberOfOutputs,
         return nullptr;
     }
 
-    ChannelSplitterNode* node = ChannelSplitterNode::create(this, sampleRate(), numberOfOutputs);
+    ChannelSplitterNode* node = ChannelSplitterNode::create(*this, sampleRate(), numberOfOutputs);
 
     if (!node) {
         exceptionState.throwDOMException(
@@ -604,11 +576,6 @@ ChannelSplitterNode* AudioContext::createChannelSplitter(size_t numberOfOutputs,
 
 ChannelMergerNode* AudioContext::createChannelMerger(ExceptionState& exceptionState)
 {
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
     const unsigned ChannelMergerDefaultNumberOfInputs = 6;
     return createChannelMerger(ChannelMergerDefaultNumberOfInputs, exceptionState);
 }
@@ -621,7 +588,7 @@ ChannelMergerNode* AudioContext::createChannelMerger(size_t numberOfInputs, Exce
         return nullptr;
     }
 
-    ChannelMergerNode* node = ChannelMergerNode::create(this, sampleRate(), numberOfInputs);
+    ChannelMergerNode* node = ChannelMergerNode::create(*this, sampleRate(), numberOfInputs);
 
     if (!node) {
         exceptionState.throwDOMException(
@@ -643,7 +610,7 @@ OscillatorNode* AudioContext::createOscillator(ExceptionState& exceptionState)
         return nullptr;
     }
 
-    OscillatorNode* node = OscillatorNode::create(this, sampleRate());
+    OscillatorNode* node = OscillatorNode::create(*this, sampleRate());
 
     // Do not add a reference to this source node now. The reference will be added when start() is
     // called.
@@ -1008,14 +975,6 @@ void AudioContext::unregisterLiveNode(AudioNode& node)
 {
     ASSERT(isMainThread());
     m_liveNodes.remove(&node);
-}
-
-void DeferredTaskHandler::disposeOutputs(AudioHandler& node)
-{
-    ASSERT(isGraphOwner());
-    ASSERT(isMainThread());
-    for (unsigned i = 0; i < node.numberOfOutputs(); ++i)
-        node.output(i)->dispose();
 }
 
 void DeferredTaskHandler::markSummingJunctionDirty(AudioSummingJunction* summingJunction)

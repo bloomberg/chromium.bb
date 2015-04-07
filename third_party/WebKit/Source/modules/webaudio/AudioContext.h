@@ -109,7 +109,6 @@ public:
 
     void markAudioNodeOutputDirty(AudioNodeOutput*);
     void removeMarkedAudioNodeOutput(AudioNodeOutput*);
-    void disposeOutputs(AudioHandler&);
 
     // In AudioNode::breakConnection() and deref(), a tryLock() is used for
     // calling actual processing, but if it fails keep track here.
@@ -174,13 +173,8 @@ private:
     HashSet<AudioHandler*> m_deferredCountModeChange;
 
     // These two HashSet must be accessed only when the graph lock is held.
-    // Oilpan: These HashSet should be HeapHashSet<WeakMember<AudioNodeOutput>>
-    // ideally. But it's difficult to lock them correctly during GC.
-    // Oilpan: Since items are added to these hash sets by the audio thread (not
-    // registered to Oilpan), we cannot use HeapHashSets.
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
+    // These raw pointers are safe because their destructors unregister them.
     HashSet<AudioSummingJunction*> m_dirtySummingJunctions;
-    GC_PLUGIN_IGNORE("http://crbug.com/404527")
     HashSet<AudioNodeOutput*> m_dirtyAudioNodeOutputs;
 
     // Only accessed in the audio thread.

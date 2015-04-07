@@ -75,11 +75,11 @@ ChannelSplitterNode::ChannelSplitterNode(AudioContext& context, float sampleRate
     setHandler(new ChannelSplitterHandler(*this, sampleRate, numberOfOutputs));
 }
 
-ChannelSplitterNode* ChannelSplitterNode::create(AudioContext* context, float sampleRate, unsigned numberOfOutputs)
+ChannelSplitterNode* ChannelSplitterNode::create(AudioContext& context, float sampleRate, unsigned numberOfOutputs)
 {
     if (!numberOfOutputs || numberOfOutputs > AudioContext::maxNumberOfChannels())
         return nullptr;
-    return new ChannelSplitterNode(*context, sampleRate, numberOfOutputs);
+    return new ChannelSplitterNode(context, sampleRate, numberOfOutputs);
 }
 
 } // namespace blink

@@ -343,16 +343,16 @@ DEFINE_TRACE(OscillatorHandler)
 OscillatorNode::OscillatorNode(AudioContext& context, float sampleRate)
     : AudioScheduledSourceNode(context)
     // Use musical pitch standard A440 as a default.
-    , m_frequency(AudioParam::create(&context, 440))
+    , m_frequency(AudioParam::create(context, 440))
     // Default to no detuning.
-    , m_detune(AudioParam::create(&context, 0))
+    , m_detune(AudioParam::create(context, 0))
 {
     setHandler(new OscillatorHandler(*this, sampleRate, m_frequency->handler(), m_detune->handler()));
 }
 
-OscillatorNode* OscillatorNode::create(AudioContext* context, float sampleRate)
+OscillatorNode* OscillatorNode::create(AudioContext& context, float sampleRate)
 {
-    return new OscillatorNode(*context, sampleRate);
+    return new OscillatorNode(context, sampleRate);
 }
 
 DEFINE_TRACE(OscillatorNode)

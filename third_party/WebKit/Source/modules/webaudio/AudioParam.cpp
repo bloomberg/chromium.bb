@@ -194,15 +194,14 @@ void AudioParamHandler::disconnect(AudioNodeOutput& output)
 
 // ----------------------------------------------------------------
 
-AudioParam::AudioParam(AudioContext* context, double defaultValue)
+AudioParam::AudioParam(AudioContext& context, double defaultValue)
     : m_handler(AudioParamHandler::create(context, defaultValue))
     , m_context(context)
 {
 }
 
-AudioParam* AudioParam::create(AudioContext* context, double defaultValue)
+AudioParam* AudioParam::create(AudioContext& context, double defaultValue)
 {
-    ASSERT(context);
     return new AudioParam(context, defaultValue);
 }
 

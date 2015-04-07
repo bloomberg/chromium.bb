@@ -68,7 +68,7 @@ private:
 class AnalyserNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AnalyserNode* create(AudioContext*, float sampleRate);
+    static AnalyserNode* create(AudioContext&, float sampleRate);
 
     unsigned fftSize() const;
     void setFftSize(unsigned size, ExceptionState&);

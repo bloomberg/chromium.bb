@@ -37,7 +37,7 @@ private:
 class StereoPannerNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static StereoPannerNode* create(AudioContext*, float sampleRate);
+    static StereoPannerNode* create(AudioContext&, float sampleRate);
     DECLARE_VIRTUAL_TRACE();
 
     AudioParam* pan() const;

@@ -123,9 +123,9 @@ AnalyserNode::AnalyserNode(AudioContext& context, float sampleRate)
     setHandler(new AnalyserHandler(*this, sampleRate));
 }
 
-AnalyserNode* AnalyserNode::create(AudioContext* context, float sampleRate)
+AnalyserNode* AnalyserNode::create(AudioContext& context, float sampleRate)
 {
-    return new AnalyserNode(*context, sampleRate);
+    return new AnalyserNode(context, sampleRate);
 }
 
 AnalyserHandler& AnalyserNode::analyserHandler() const

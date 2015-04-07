@@ -153,14 +153,14 @@ void StereoPannerHandler::setChannelCountMode(const String& mode, ExceptionState
 
 StereoPannerNode::StereoPannerNode(AudioContext& context, float sampleRate)
     : AudioNode(context)
-    , m_pan(AudioParam::create(&context, 0))
+    , m_pan(AudioParam::create(context, 0))
 {
     setHandler(new StereoPannerHandler(*this, sampleRate, m_pan->handler()));
 }
 
-StereoPannerNode* StereoPannerNode::create(AudioContext* context, float sampleRate)
+StereoPannerNode* StereoPannerNode::create(AudioContext& context, float sampleRate)
 {
-    return new StereoPannerNode(*context, sampleRate);
+    return new StereoPannerNode(context, sampleRate);
 }
 
 DEFINE_TRACE(StereoPannerNode)

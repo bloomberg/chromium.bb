@@ -153,7 +153,7 @@ private:
 class PannerNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PannerNode* create(AudioContext*, float sampleRate);
+    static PannerNode* create(AudioContext&, float sampleRate);
     PannerHandler& pannerHandler() const;
 
     String panningModel() const;

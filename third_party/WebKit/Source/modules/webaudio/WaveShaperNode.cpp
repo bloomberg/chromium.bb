@@ -33,10 +33,10 @@
 
 namespace blink {
 
-WaveShaperNode::WaveShaperNode(AudioContext* context)
-    : AudioNode(*context)
+WaveShaperNode::WaveShaperNode(AudioContext& context)
+    : AudioNode(context)
 {
-    setHandler(new AudioBasicProcessorHandler(AudioHandler::NodeTypeWaveShaper, *this, context->sampleRate(), adoptPtr(new WaveShaperProcessor(context->sampleRate(), 1))));
+    setHandler(new AudioBasicProcessorHandler(AudioHandler::NodeTypeWaveShaper, *this, context.sampleRate(), adoptPtr(new WaveShaperProcessor(context.sampleRate(), 1))));
 
     handler().initialize();
 }

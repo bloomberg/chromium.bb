@@ -30,7 +30,7 @@
 
 namespace blink {
 
-BiquadProcessor::BiquadProcessor(float sampleRate, size_t numberOfChannels, AudioParamHandler& frequency, AudioParamHandler& q, AudioParamHandler& gain, AudioParamHandler& detune, bool autoInitialize)
+BiquadProcessor::BiquadProcessor(float sampleRate, size_t numberOfChannels, AudioParamHandler& frequency, AudioParamHandler& q, AudioParamHandler& gain, AudioParamHandler& detune)
     : AudioDSPKernelProcessor(sampleRate, numberOfChannels)
     , m_type(LowPass)
     , m_parameter1(frequency)
@@ -40,8 +40,6 @@ BiquadProcessor::BiquadProcessor(float sampleRate, size_t numberOfChannels, Audi
     , m_filterCoefficientsDirty(true)
     , m_hasSampleAccurateValues(false)
 {
-    if (autoInitialize)
-        initialize();
 }
 
 BiquadProcessor::~BiquadProcessor()

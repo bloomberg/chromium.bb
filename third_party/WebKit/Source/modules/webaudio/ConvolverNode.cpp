@@ -195,9 +195,9 @@ ConvolverNode::ConvolverNode(AudioContext& context, float sampleRate)
     setHandler(new ConvolverHandler(*this, sampleRate));
 }
 
-ConvolverNode* ConvolverNode::create(AudioContext* context, float sampleRate)
+ConvolverNode* ConvolverNode::create(AudioContext& context, float sampleRate)
 {
-    return new ConvolverNode(*context, sampleRate);
+    return new ConvolverNode(context, sampleRate);
 }
 
 ConvolverHandler& ConvolverNode::convolverHandler() const

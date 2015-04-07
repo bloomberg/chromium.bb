@@ -130,11 +130,11 @@ ChannelMergerNode::ChannelMergerNode(AudioContext& context, float sampleRate, un
     setHandler(new ChannelMergerHandler(*this, sampleRate, numberOfInputs));
 }
 
-ChannelMergerNode* ChannelMergerNode::create(AudioContext* context, float sampleRate, unsigned numberOfInputs)
+ChannelMergerNode* ChannelMergerNode::create(AudioContext& context, float sampleRate, unsigned numberOfInputs)
 {
     if (!numberOfInputs || numberOfInputs > AudioContext::maxNumberOfChannels())
         return nullptr;
-    return new ChannelMergerNode(*context, sampleRate, numberOfInputs);
+    return new ChannelMergerNode(context, sampleRate, numberOfInputs);
 }
 
 } // namespace blink

@@ -82,9 +82,9 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext& c
     setHandler(new MediaStreamAudioDestinationHandler(*this, numberOfChannels));
 }
 
-MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::create(AudioContext* context, size_t numberOfChannels)
+MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::create(AudioContext& context, size_t numberOfChannels)
 {
-    return new MediaStreamAudioDestinationNode(*context, numberOfChannels);
+    return new MediaStreamAudioDestinationNode(context, numberOfChannels);
 }
 
 MediaStream* MediaStreamAudioDestinationNode::stream() const

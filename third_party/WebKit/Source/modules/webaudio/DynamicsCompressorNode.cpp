@@ -125,19 +125,19 @@ double DynamicsCompressorHandler::latencyTime() const
 
 DynamicsCompressorNode::DynamicsCompressorNode(AudioContext& context, float sampleRate)
     : AudioNode(context)
-    , m_threshold(AudioParam::create(&context, -24))
-    , m_knee(AudioParam::create(&context, 30))
-    , m_ratio(AudioParam::create(&context, 12))
-    , m_reduction(AudioParam::create(&context, 0))
-    , m_attack(AudioParam::create(&context, 0.003))
-    , m_release(AudioParam::create(&context, 0.250))
+    , m_threshold(AudioParam::create(context, -24))
+    , m_knee(AudioParam::create(context, 30))
+    , m_ratio(AudioParam::create(context, 12))
+    , m_reduction(AudioParam::create(context, 0))
+    , m_attack(AudioParam::create(context, 0.003))
+    , m_release(AudioParam::create(context, 0.250))
 {
     setHandler(new DynamicsCompressorHandler(*this, sampleRate, m_threshold->handler(), m_knee->handler(), m_ratio->handler(), m_reduction->handler(), m_attack->handler(), m_release->handler()));
 }
 
-DynamicsCompressorNode* DynamicsCompressorNode::create(AudioContext* context, float sampleRate)
+DynamicsCompressorNode* DynamicsCompressorNode::create(AudioContext& context, float sampleRate)
 {
-    return new DynamicsCompressorNode(*context, sampleRate);
+    return new DynamicsCompressorNode(context, sampleRate);
 }
 
 DEFINE_TRACE(DynamicsCompressorNode)

@@ -42,7 +42,7 @@ class HTMLMediaElement;
 class MediaElementAudioSourceHandler final : public AudioHandler, public AudioSourceProviderClient {
     USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceHandler);
 public:
-    MediaElementAudioSourceHandler(AudioNode&, HTMLMediaElement*);
+    MediaElementAudioSourceHandler(AudioNode&, HTMLMediaElement&);
     virtual ~MediaElementAudioSourceHandler();
 
     HTMLMediaElement* mediaElement() { return m_mediaElement.get(); }
@@ -77,13 +77,13 @@ private:
 class MediaElementAudioSourceNode final : public AudioSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MediaElementAudioSourceNode* create(AudioContext*, HTMLMediaElement*);
+    static MediaElementAudioSourceNode* create(AudioContext&, HTMLMediaElement&);
     MediaElementAudioSourceHandler& mediaElementAudioSourceHandler() const;
 
     HTMLMediaElement* mediaElement() const;
 
 private:
-    MediaElementAudioSourceNode(AudioContext&, HTMLMediaElement*);
+    MediaElementAudioSourceNode(AudioContext&, HTMLMediaElement&);
 };
 
 } // namespace blink

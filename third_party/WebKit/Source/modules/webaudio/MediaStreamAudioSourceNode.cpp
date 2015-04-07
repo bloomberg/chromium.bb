@@ -33,7 +33,7 @@
 
 namespace blink {
 
-MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(AudioNode& node, MediaStream* mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(AudioNode& node, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
     : AudioHandler(NodeTypeMediaStreamAudioSource, node, node.context()->sampleRate())
     , m_mediaStream(mediaStream)
     , m_audioTrack(audioTrack)
@@ -120,15 +120,15 @@ DEFINE_TRACE(MediaStreamAudioSourceHandler)
 
 // ----------------------------------------------------------------
 
-MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AudioContext& context, MediaStream* mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
     : AudioSourceNode(context)
 {
     setHandler(new MediaStreamAudioSourceHandler(*this, mediaStream, audioTrack, audioSourceProvider));
 }
 
-MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AudioContext* context, MediaStream* mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
 {
-    return new MediaStreamAudioSourceNode(*context, mediaStream, audioTrack, audioSourceProvider);
+    return new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, audioSourceProvider);
 }
 
 MediaStreamAudioSourceHandler& MediaStreamAudioSourceNode::mediaStreamAudioSourceHandler() const

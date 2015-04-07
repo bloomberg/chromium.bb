@@ -61,7 +61,7 @@ private:
 class DynamicsCompressorNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static DynamicsCompressorNode* create(AudioContext*, float sampleRate);
+    static DynamicsCompressorNode* create(AudioContext&, float sampleRate);
     DECLARE_VIRTUAL_TRACE();
 
     AudioParam* threshold() const;

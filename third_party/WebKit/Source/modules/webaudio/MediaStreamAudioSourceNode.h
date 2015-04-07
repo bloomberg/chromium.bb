@@ -42,7 +42,7 @@ class AudioContext;
 class MediaStreamAudioSourceHandler final : public AudioHandler, public AudioSourceProviderClient {
     USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceHandler);
 public:
-    MediaStreamAudioSourceHandler(AudioNode&, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
+    MediaStreamAudioSourceHandler(AudioNode&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
     virtual ~MediaStreamAudioSourceHandler();
 
     MediaStream* mediaStream() { return m_mediaStream.get(); }
@@ -74,13 +74,13 @@ private:
 class MediaStreamAudioSourceNode final : public AudioSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MediaStreamAudioSourceNode* create(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
+    static MediaStreamAudioSourceNode* create(AudioContext&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
     MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
 
     MediaStream* mediaStream() const;
 
 private:
-    MediaStreamAudioSourceNode(AudioContext&, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
+    MediaStreamAudioSourceNode(AudioContext&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
 };
 
 } // namespace blink

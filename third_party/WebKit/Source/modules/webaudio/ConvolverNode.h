@@ -73,7 +73,7 @@ private:
 class ConvolverNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ConvolverNode* create(AudioContext*, float sampleRate);
+    static ConvolverNode* create(AudioContext&, float sampleRate);
 
     AudioBuffer* buffer() const;
     void setBuffer(AudioBuffer*, ExceptionState&);

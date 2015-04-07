@@ -60,7 +60,6 @@ public:
     unsigned numberOfChannels();
 
     // Play-state
-    void start(ExceptionState& exceptionState) { start(0, exceptionState); }
     void start(double when, ExceptionState&);
     void start(double when, double grainOffset, ExceptionState&);
     void start(double when, double grainOffset, double grainDuration, ExceptionState&);
@@ -150,7 +149,7 @@ private:
 class AudioBufferSourceNode final : public AudioScheduledSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AudioBufferSourceNode* create(AudioContext*, float sampleRate);
+    static AudioBufferSourceNode* create(AudioContext&, float sampleRate);
     DECLARE_VIRTUAL_TRACE();
     AudioBufferSourceHandler& audioBufferSourceHandler() const;
 

@@ -49,7 +49,7 @@ public:
         Allpass = 7
     };
 
-    BiquadProcessor(float sampleRate, size_t numberOfChannels, AudioParamHandler& frequency, AudioParamHandler& q, AudioParamHandler& gain, AudioParamHandler& detune, bool autoInitialize);
+    BiquadProcessor(float sampleRate, size_t numberOfChannels, AudioParamHandler& frequency, AudioParamHandler& q, AudioParamHandler& gain, AudioParamHandler& detune);
     virtual ~BiquadProcessor();
 
     virtual PassOwnPtr<AudioDSPKernel> createKernel() override;

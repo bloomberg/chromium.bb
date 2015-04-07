@@ -43,7 +43,7 @@ public:
 class ChannelSplitterNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ChannelSplitterNode* create(AudioContext*, float sampleRate, unsigned numberOfOutputs);
+    static ChannelSplitterNode* create(AudioContext&, float sampleRate, unsigned numberOfOutputs);
 
 private:
     ChannelSplitterNode(AudioContext&, float sampleRate, unsigned numberOfOutputs);

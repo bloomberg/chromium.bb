@@ -108,14 +108,14 @@ void GainHandler::checkNumberOfChannelsForInput(AudioNodeInput* input)
 
 GainNode::GainNode(AudioContext& context, float sampleRate)
     : AudioNode(context)
-    , m_gain(AudioParam::create(&context, 1.0))
+    , m_gain(AudioParam::create(context, 1.0))
 {
     setHandler(new GainHandler(*this, sampleRate, m_gain->handler()));
 }
 
-GainNode* GainNode::create(AudioContext* context, float sampleRate)
+GainNode* GainNode::create(AudioContext& context, float sampleRate)
 {
-    return new GainNode(*context, sampleRate);
+    return new GainNode(context, sampleRate);
 }
 
 AudioParam* GainNode::gain() const

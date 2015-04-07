@@ -281,7 +281,7 @@ static size_t chooseBufferSize()
     return bufferSize;
 }
 
-ScriptProcessorNode* ScriptProcessorNode::create(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
+ScriptProcessorNode* ScriptProcessorNode::create(AudioContext& context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
 {
     // Check for valid buffer size.
     switch (bufferSize) {
@@ -309,7 +309,7 @@ ScriptProcessorNode* ScriptProcessorNode::create(AudioContext* context, float sa
     if (numberOfOutputChannels > AudioContext::maxNumberOfChannels())
         return nullptr;
 
-    return new ScriptProcessorNode(*context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels);
+    return new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels);
 }
 
 size_t ScriptProcessorNode::bufferSize() const

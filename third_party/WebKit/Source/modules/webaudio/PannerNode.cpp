@@ -589,9 +589,9 @@ PannerNode::PannerNode(AudioContext& context, float sampelRate)
     setHandler(new PannerHandler(*this, sampelRate));
 }
 
-PannerNode* PannerNode::create(AudioContext* context, float sampleRate)
+PannerNode* PannerNode::create(AudioContext& context, float sampleRate)
 {
-    return new PannerNode(*context, sampleRate);
+    return new PannerNode(context, sampleRate);
 }
 
 PannerHandler& PannerNode::pannerHandler() const

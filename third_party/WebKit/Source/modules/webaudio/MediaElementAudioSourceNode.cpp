@@ -37,7 +37,7 @@
 
 namespace blink {
 
-MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(AudioNode& node, HTMLMediaElement* mediaElement)
+MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(AudioNode& node, HTMLMediaElement& mediaElement)
     : AudioHandler(NodeTypeMediaElementAudioSource, node, node.context()->sampleRate())
     , m_mediaElement(mediaElement)
     , m_sourceNumberOfChannels(0)
@@ -164,15 +164,15 @@ DEFINE_TRACE(MediaElementAudioSourceHandler)
 
 // ----------------------------------------------------------------
 
-MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext& context, HTMLMediaElement* mediaElement)
+MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext& context, HTMLMediaElement& mediaElement)
     : AudioSourceNode(context)
 {
     setHandler(new MediaElementAudioSourceHandler(*this, mediaElement));
 }
 
-MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AudioContext* context, HTMLMediaElement* mediaElement)
+MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AudioContext& context, HTMLMediaElement& mediaElement)
 {
-    return new MediaElementAudioSourceNode(*context, mediaElement);
+    return new MediaElementAudioSourceNode(context, mediaElement);
 }
 
 MediaElementAudioSourceHandler& MediaElementAudioSourceNode::mediaElementAudioSourceHandler() const

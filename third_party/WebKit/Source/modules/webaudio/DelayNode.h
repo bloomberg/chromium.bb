@@ -36,12 +36,12 @@ class ExceptionState;
 class DelayNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static DelayNode* create(AudioContext*, float sampleRate, double maxDelayTime, ExceptionState&);
+    static DelayNode* create(AudioContext&, float sampleRate, double maxDelayTime, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
     AudioParam* delayTime();
 
 private:
-    DelayNode(AudioContext*, float sampleRate, double maxDelayTime);
+    DelayNode(AudioContext&, float sampleRate, double maxDelayTime);
 
     Member<AudioParam> m_delayTime;
 };

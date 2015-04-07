@@ -37,7 +37,7 @@ class ExceptionState;
 class WaveShaperNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static WaveShaperNode* create(AudioContext* context)
+    static WaveShaperNode* create(AudioContext& context)
     {
         return new WaveShaperNode(context);
     }
@@ -50,7 +50,7 @@ public:
     String oversample() const;
 
 private:
-    explicit WaveShaperNode(AudioContext*);
+    explicit WaveShaperNode(AudioContext&);
 
     WaveShaperProcessor* waveShaperProcessor() const;
 };

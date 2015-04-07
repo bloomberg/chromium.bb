@@ -57,7 +57,7 @@ private:
 class GainNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static GainNode* create(AudioContext*, float sampleRate);
+    static GainNode* create(AudioContext&, float sampleRate);
     DECLARE_VIRTUAL_TRACE();
 
     AudioParam* gain() const;

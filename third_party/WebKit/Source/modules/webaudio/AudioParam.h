@@ -54,7 +54,7 @@ public:
     static const double DefaultSmoothingConstant;
     static const double SnapThreshold;
 
-    static PassRefPtr<AudioParamHandler> create(AudioContext* context, double defaultValue)
+    static PassRefPtr<AudioParamHandler> create(AudioContext& context, double defaultValue)
     {
         return adoptRef(new AudioParamHandler(context, defaultValue));
     }
@@ -100,12 +100,12 @@ public:
     void disconnect(AudioNodeOutput&);
 
 private:
-    AudioParamHandler(AudioContext* context, double defaultValue)
-        : AudioSummingJunction(context->handler())
+    AudioParamHandler(AudioContext& context, double defaultValue)
+        : AudioSummingJunction(context.handler())
         , m_value(defaultValue)
         , m_defaultValue(defaultValue)
         , m_smoothedValue(defaultValue)
-        , m_context(*context) { }
+        , m_context(context) { }
 
     // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web Audio specification.
     void calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate);
@@ -128,7 +128,7 @@ private:
 class AudioParam final : public GarbageCollectedFinalized<AudioParam>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AudioParam* create(AudioContext*, double defaultValue);
+    static AudioParam* create(AudioContext&, double defaultValue);
     DECLARE_TRACE();
     // |handler| always returns a valid object.
     AudioParamHandler& handler() const { return *m_handler; }
@@ -146,7 +146,7 @@ public:
     void cancelScheduledValues(double startTime, ExceptionState&);
 
 private:
-    AudioParam(AudioContext*, double defaultValue);
+    AudioParam(AudioContext&, double defaultValue);
 
     RefPtr<AudioParamHandler> m_handler;
     Member<AudioContext> m_context;

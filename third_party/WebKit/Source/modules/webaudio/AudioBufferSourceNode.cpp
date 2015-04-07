@@ -567,14 +567,14 @@ DEFINE_TRACE(AudioBufferSourceHandler)
 // ----------------------------------------------------------------
 AudioBufferSourceNode::AudioBufferSourceNode(AudioContext& context, float sampleRate)
     : AudioScheduledSourceNode(context)
-    , m_playbackRate(AudioParam::create(&context, 1.0))
+    , m_playbackRate(AudioParam::create(context, 1.0))
 {
     setHandler(new AudioBufferSourceHandler(*this, sampleRate, m_playbackRate->handler()));
 }
 
-AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext* context, float sampleRate)
+AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext& context, float sampleRate)
 {
-    return new AudioBufferSourceNode(*context, sampleRate);
+    return new AudioBufferSourceNode(context, sampleRate);
 }
 
 DEFINE_TRACE(AudioBufferSourceNode)
@@ -635,7 +635,7 @@ void AudioBufferSourceNode::setLoopEnd(double loopEnd)
 
 void AudioBufferSourceNode::start(ExceptionState& exceptionState)
 {
-    audioBufferSourceHandler().start(exceptionState);
+    audioBufferSourceHandler().start(0, exceptionState);
 }
 
 void AudioBufferSourceNode::start(double when, ExceptionState& exceptionState)

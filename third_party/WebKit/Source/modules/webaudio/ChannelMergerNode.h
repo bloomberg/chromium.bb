@@ -48,7 +48,7 @@ public:
 class ChannelMergerNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ChannelMergerNode* create(AudioContext*, float sampleRate, unsigned numberOfInputs);
+    static ChannelMergerNode* create(AudioContext&, float sampleRate, unsigned numberOfInputs);
 
 private:
     ChannelMergerNode(AudioContext&, float sampleRate, unsigned numberOfInputs);
