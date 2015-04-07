@@ -54,6 +54,7 @@ private:
     virtual bool canSetFocusAttribute() const override;
 
     virtual void addChildren() override;
+    virtual void childrenChanged() override;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuList, isMenuList());

@@ -57,7 +57,7 @@ private:
     virtual bool isVisible() const override;
     virtual bool press() const override;
     virtual void addChildren() override;
-    virtual void updateChildrenIfNecessary() override;
+    virtual void childrenChanged() override;
     virtual bool computeAccessibilityIsIgnored() const override;
 
     AXMenuListOption* menuListOptionAXObject(HTMLElement*) const;

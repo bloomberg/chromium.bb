@@ -93,6 +93,15 @@ void AXMenuList::addChildren()
     list->addChildren();
 }
 
+void AXMenuList::childrenChanged()
+{
+    if (m_children.isEmpty())
+        return;
+
+    ASSERT(m_children.size() == 1);
+    m_children[0]->childrenChanged();
+}
+
 bool AXMenuList::isCollapsed() const
 {
     return !toLayoutMenuList(m_layoutObject)->popupIsVisible();

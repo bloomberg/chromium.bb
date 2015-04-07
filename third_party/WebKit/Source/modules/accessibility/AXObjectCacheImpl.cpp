@@ -203,19 +203,6 @@ AXObject* AXObjectCacheImpl::get(LayoutObject* layoutObject)
     return m_objects.get(axID);
 }
 
-// Returns true if |node| is an <option> element and its parent <select>
-// is a menu list (not a list box).
-static bool isMenuListOption(Node* node)
-{
-    if (!isHTMLOptionElement(node))
-        return false;
-    Element* parent = node->parentElement();
-    if (!isHTMLSelectElement(parent))
-        return false;
-    LayoutObject* layoutObject = toHTMLSelectElement(node->parentElement())->layoutObject();
-    return layoutObject && layoutObject->isMenuList();
-}
-
 AXObject* AXObjectCacheImpl::get(Node* node)
 {
     if (!node)
@@ -227,7 +214,7 @@ AXObject* AXObjectCacheImpl::get(Node* node)
     AXID nodeID = m_nodeObjectMapping.get(node);
     ASSERT(!HashTraits<AXID>::isDeletedValue(nodeID));
 
-    if (node->layoutObject() && nodeID && !layoutID && !isMenuListOption(node)) {
+    if (node->layoutObject() && nodeID && !layoutID) {
         // This can happen if an AXNodeObject is created for a node that's not
         // laid out, but later something changes and it gets a layoutObject (like if it's
         // reparented).
@@ -325,9 +312,6 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* layoutO
 
 PassRefPtr<AXObject> AXObjectCacheImpl::createFromNode(Node* node)
 {
-    if (isMenuListOption(node))
-        return AXMenuListOption::create(toHTMLOptionElement(node), this);
-
     return AXNodeObject::create(node, this);
 }
 
@@ -384,7 +368,7 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
     // Or if it's a hidden element, but we still want to expose it because of other ARIA attributes.
     bool inCanvasSubtree = node->parentElement()->isInCanvasSubtree();
     bool isHidden = !node->layoutObject() && isNodeAriaVisible(node);
-    if (!inCanvasSubtree && !isHidden && !isMenuListOption(node))
+    if (!inCanvasSubtree && !isHidden)
         return 0;
 
     RefPtr<AXObject> newObj = createFromNode(node);
@@ -476,6 +460,9 @@ AXObject* AXObjectCacheImpl::getOrCreate(AccessibilityRole role)
         break;
     case MenuListPopupRole:
         obj = AXMenuListPopup::create(this);
+        break;
+    case MenuListOptionRole:
+        obj = AXMenuListOption::create(this);
         break;
     case SpinButtonRole:
         obj = AXSpinButton::create(this);

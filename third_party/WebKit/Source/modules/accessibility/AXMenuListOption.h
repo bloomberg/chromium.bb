@@ -26,25 +26,24 @@
 #ifndef AXMenuListOption_h
 #define AXMenuListOption_h
 
-#include "core/html/HTMLOptionElement.h"
 #include "modules/accessibility/AXMockObject.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
+class HTMLElement;
 
 class AXMenuListOption final : public AXMockObject {
 public:
-    static PassRefPtr<AXMenuListOption> create(HTMLOptionElement* element, AXObjectCacheImpl* axObjectCache) { return adoptRef(new AXMenuListOption(element, axObjectCache)); }
+    static PassRefPtr<AXMenuListOption> create(AXObjectCacheImpl* axObjectCache) { return adoptRef(new AXMenuListOption(axObjectCache)); }
+
+    void setElement(HTMLElement*);
 
 private:
-    explicit AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl*);
+    explicit AXMenuListOption(AXObjectCacheImpl*);
 
     virtual bool isMenuListOption() const override { return true; }
 
-    virtual Node* node() const override { return m_element; }
-    virtual void detach() override;
-    virtual bool isDetached() const override { return !m_element; }
     virtual AccessibilityRole roleValue() const override { return MenuListOptionRole; }
     virtual bool canHaveChildren() const override { return false; }
 
@@ -59,7 +58,7 @@ private:
     virtual String stringValue() const override;
     virtual bool computeAccessibilityIsIgnored() const override;
 
-    HTMLOptionElement* m_element;
+    RefPtrWillBePersistent<HTMLElement> m_element;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuListOption, isMenuListOption());

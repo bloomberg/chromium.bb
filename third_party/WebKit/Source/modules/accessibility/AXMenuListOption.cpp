@@ -26,6 +26,7 @@
 #include "config.h"
 #include "modules/accessibility/AXMenuListOption.h"
 
+#include "core/html/HTMLOptionElement.h"
 #include "modules/accessibility/AXMenuListPopup.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
@@ -33,28 +34,27 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXMenuListOption::AXMenuListOption(HTMLOptionElement* element, AXObjectCacheImpl* axObjectCache)
+AXMenuListOption::AXMenuListOption(AXObjectCacheImpl* axObjectCache)
     : AXMockObject(axObjectCache)
-    , m_element(element)
 {
 }
 
-void AXMenuListOption::detach()
+void AXMenuListOption::setElement(HTMLElement* element)
 {
-    m_element = nullptr;
-    AXMockObject::detach();
+    ASSERT_ARG(element, isHTMLOptionElement(element));
+    m_element = element;
 }
 
 Element* AXMenuListOption::actionElement() const
 {
-    return m_element;
+    return m_element.get();
 }
 
 bool AXMenuListOption::isEnabled() const
 {
     // isDisabledFormControl() returns true if the parent <select> element is disabled,
     // which we don't want.
-    return !m_element->ownElementDisabled();
+    return !toHTMLOptionElement(m_element)->ownElementDisabled();
 }
 
 bool AXMenuListOption::isVisible() const
@@ -78,7 +78,7 @@ bool AXMenuListOption::isSelected() const
     AXMenuListPopup* parent = static_cast<AXMenuListPopup*>(parentObject());
     if (parent && !parent->isOffScreen())
         return parent->activeChild() == this;
-    return m_element->selected();
+    return toHTMLOptionElement(m_element)->selected();
 }
 
 void AXMenuListOption::setSelected(bool b)
@@ -86,7 +86,7 @@ void AXMenuListOption::setSelected(bool b)
     if (!canSetSelectedAttribute())
         return;
 
-    m_element->setSelected(b);
+    toHTMLOptionElement(m_element)->setSelected(b);
 }
 
 bool AXMenuListOption::canSetSelectedAttribute() const
@@ -112,7 +112,7 @@ LayoutRect AXMenuListOption::elementRect() const
 
 String AXMenuListOption::stringValue() const
 {
-    return m_element->text();
+    return toHTMLOptionElement(m_element)->text();
 }
 
 } // namespace blink

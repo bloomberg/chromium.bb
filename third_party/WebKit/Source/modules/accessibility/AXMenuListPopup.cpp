@@ -71,19 +71,17 @@ AXMenuListOption* AXMenuListPopup::menuListOptionAXObject(HTMLElement* element) 
     if (!isHTMLOptionElement(*element))
         return 0;
 
-    AXObject* object = axObjectCache()->getOrCreate(element);
-    if (!object)
-        return 0;
-
+    AXObject* object = axObjectCache()->getOrCreate(MenuListOptionRole);
     ASSERT_WITH_SECURITY_IMPLICATION(object->isMenuListOption());
-    return toAXMenuListOption(object);
+
+    AXMenuListOption* option = toAXMenuListOption(object);
+    option->setElement(element);
+
+    return option;
 }
 
 int AXMenuListPopup::getSelectedIndex() const
 {
-    if (!m_parent)
-        return -1;
-
     Node* selectNode = m_parent->node();
     if (!selectNode)
         return -1;
@@ -113,9 +111,7 @@ void AXMenuListPopup::addChildren()
     HTMLSelectElement* htmlSelectElement = toHTMLSelectElement(selectNode);
     m_haveChildren = true;
 
-    if (m_activeIndex == -1)
-        m_activeIndex = getSelectedIndex();
-
+    m_activeIndex = getSelectedIndex();
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = htmlSelectElement->listItems();
     unsigned length = listItems.size();
     for (unsigned i = 0; i < length; i++) {
@@ -127,18 +123,34 @@ void AXMenuListPopup::addChildren()
     }
 }
 
-void AXMenuListPopup::updateChildrenIfNecessary()
+void AXMenuListPopup::childrenChanged()
 {
-    if (m_haveChildren && m_parent && m_parent->needsToUpdateChildren())
-        clearChildren();
+    AXObjectCacheImpl* cache = axObjectCache();
+    if (!cache)
+        return;
+    for (size_t i = m_children.size(); i > 0 ; --i) {
+        AXObject* child = m_children[i - 1].get();
+        // FIXME: How could children end up in here that have no actionElement(), the check
+        // in menuListOptionAXObject would seem to prevent that.
+        if (child->actionElement()) {
+            child->detachFromParent();
+            cache->remove(child->axObjectID());
+        }
+    }
 
-    if (!m_haveChildren)
-        addChildren();
+    m_children.clear();
+    m_haveChildren = false;
 }
 
 void AXMenuListPopup::didUpdateActiveOption(int optionIndex)
 {
-    updateChildrenIfNecessary();
+    // We defer creation of the children until updating the active option so that we don't
+    // create AXObjects for <option> elements while they're in the middle of removal.
+    if (!m_haveChildren)
+        addChildren();
+
+    ASSERT_ARG(optionIndex, optionIndex >= 0);
+    ASSERT_ARG(optionIndex, optionIndex < static_cast<int>(m_children.size()));
 
     AXObjectCacheImpl* cache = axObjectCache();
     if (m_activeIndex != optionIndex && m_activeIndex >= 0 && m_activeIndex < static_cast<int>(m_children.size())) {
@@ -146,12 +158,9 @@ void AXMenuListPopup::didUpdateActiveOption(int optionIndex)
         cache->postNotification(previousChild.get(), AXObjectCacheImpl::AXMenuListItemUnselected);
     }
 
-    if (optionIndex >= 0 && optionIndex < static_cast<int>(m_children.size())) {
-        RefPtr<AXObject> child = m_children[optionIndex].get();
-        cache->postNotification(child.get(), AXObjectCacheImpl::AXFocusedUIElementChanged);
-        cache->postNotification(child.get(), AXObjectCacheImpl::AXMenuListItemSelected);
-    }
-
+    RefPtr<AXObject> child = m_children[optionIndex].get();
+    cache->postNotification(child.get(), AXObjectCacheImpl::AXFocusedUIElementChanged);
+    cache->postNotification(child.get(), AXObjectCacheImpl::AXMenuListItemSelected);
     m_activeIndex = optionIndex;
 }
 
