@@ -147,7 +147,6 @@ class BatteryUtils(object):
     """
     return self.GetPowerData().get(package)
 
-  # TODO(rnephew): Move implementation from device_utils when this is used.
   def GetBatteryInfo(self, timeout=None, retries=None):
     """Gets battery info for the device.
 
@@ -158,9 +157,21 @@ class BatteryUtils(object):
       A dict containing various battery information as reported by dumpsys
       battery.
     """
-    return self._device.GetBatteryInfo(timeout=None, retries=None)
+    result = {}
+    # Skip the first line, which is just a header.
+    for line in self._device.RunShellCommand(
+        ['dumpsys', 'battery'], check_return=True)[1:]:
+      # If usb charging has been disabled, an extra line of header exists.
+      if 'UPDATES STOPPED' in line:
+        logging.warning('Dumpsys battery not receiving updates. '
+                        'Run dumpsys battery reset if this is in error.')
+      elif ':' not in line:
+        logging.warning('Unknown line found in dumpsys battery: "%s"', line)
+      else:
+        k, v = line.split(':', 1)
+        result[k.strip()] = v.strip()
+    return result
 
-  # TODO(rnephew): Move implementation from device_utils when this is used.
   def GetCharging(self, timeout=None, retries=None):
     """Gets the charging state of the device.
 
@@ -170,9 +181,13 @@ class BatteryUtils(object):
     Returns:
       True if the device is charging, false otherwise.
     """
-    return self._device.GetCharging(timeout=None, retries=None)
+    battery_info = self.GetBatteryInfo()
+    for k in ('AC powered', 'USB powered', 'Wireless powered'):
+      if (k in battery_info and
+          battery_info[k].lower() in ('true', '1', 'yes')):
+        return True
+    return False
 
-  # TODO(rnephew): Move implementation from device_utils when this is used.
   def SetCharging(self, enabled, timeout=None, retries=None):
     """Enables or disables charging on the device.
 
@@ -186,9 +201,26 @@ class BatteryUtils(object):
       device_errors.CommandFailedError: If method of disabling charging cannot
         be determined.
     """
-    self._device.SetCharging(enabled, timeout=None, retries=None)
+    if 'charging_config' not in self._cache:
+      for c in _CONTROL_CHARGING_COMMANDS:
+        if self._device.FileExists(c['witness_file']):
+          self._cache['charging_config'] = c
+          break
+      else:
+        raise device_errors.CommandFailedError(
+            'Unable to find charging commands.')
 
-  # TODO(rnephew): Move implementation from device_utils when this is used.
+    if enabled:
+      command = self._cache['charging_config']['enable_command']
+    else:
+      command = self._cache['charging_config']['disable_command']
+
+    def set_and_verify_charging():
+      self._device.RunShellCommand(command, check_return=True)
+      return self.GetCharging() == enabled
+
+    timeout_retry.WaitFor(set_and_verify_charging, wait_period=1)
+
   # TODO(rnephew): Make private when all use cases can use the context manager.
   def DisableBatteryUpdates(self, timeout=None, retries=None):
     """ Resets battery data and makes device appear like it is not
@@ -202,9 +234,28 @@ class BatteryUtils(object):
       device_errors.CommandFailedError: When resetting batterystats fails to
         reset power values.
     """
-    self._device.DisableBatteryUpdates(timeout=None, retries=None)
+    def battery_updates_disabled():
+      return self.GetCharging() is False
 
-  # TODO(rnephew): Move implementation from device_utils when this is used.
+    self._device.RunShellCommand(
+        ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True)
+    self._device.RunShellCommand(
+        ['dumpsys', 'batterystats', '--reset'], check_return=True)
+    battery_data = self._device.RunShellCommand(
+        ['dumpsys', 'batterystats', '--charged', '--checkin'],
+        check_return=True)
+    ROW_TYPE_INDEX = 3
+    PWI_POWER_INDEX = 5
+    for line in battery_data:
+      l = line.split(',')
+      if (len(l) > PWI_POWER_INDEX and l[ROW_TYPE_INDEX] == 'pwi'
+          and l[PWI_POWER_INDEX] != 0):
+        raise device_errors.CommandFailedError(
+            'Non-zero pmi value found after reset.')
+    self._device.RunShellCommand(['dumpsys', 'battery', 'set', 'usb', '0'],
+                                 check_return=True)
+    timeout_retry.WaitFor(battery_updates_disabled, wait_period=1)
+
   # TODO(rnephew): Make private when all use cases can use the context manager.
   def EnableBatteryUpdates(self, timeout=None, retries=None):
     """ Restarts device charging so that dumpsys no longer collects power data.
@@ -213,7 +264,14 @@ class BatteryUtils(object):
       timeout: timeout in seconds
       retries: number of retries
     """
-    self._device.EnableBatteryUpdates(timeout=None, retries=None)
+    def battery_updates_enabled():
+      return self.GetCharging() is True
+
+    self._device.RunShellCommand(['dumpsys', 'battery', 'set', 'usb', '1'],
+                                 check_return=True)
+    self._device.RunShellCommand(['dumpsys', 'battery', 'reset'],
+                                 check_return=True)
+    timeout_retry.WaitFor(battery_updates_enabled, wait_period=1)
 
   @contextlib.contextmanager
   def BatteryMeasurement(self, timeout=None, retries=None):

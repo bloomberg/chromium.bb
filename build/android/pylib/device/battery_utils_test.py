@@ -64,16 +64,16 @@ class BatteryUtilsSetChargingTest(BatteryUtilsTest):
     with self.assertCalls(
         (self.call.device.FileExists(mock.ANY), True),
         (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
-        (self.call.device.GetCharging(), False),
+        (self.call.battery.GetCharging(), False),
         (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
-        (self.call.device.GetCharging(), True)):
+        (self.call.battery.GetCharging(), True)):
       self.battery.SetCharging(True)
 
   def testSetCharging_alreadyEnabled(self):
     with self.assertCalls(
         (self.call.device.FileExists(mock.ANY), True),
         (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
-        (self.call.device.GetCharging(), True)):
+        (self.call.battery.GetCharging(), True)):
       self.battery.SetCharging(True)
 
   @mock.patch('time.sleep', mock.Mock())
@@ -81,9 +81,9 @@ class BatteryUtilsSetChargingTest(BatteryUtilsTest):
     with self.assertCalls(
         (self.call.device.FileExists(mock.ANY), True),
         (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
-        (self.call.device.GetCharging(), True),
+        (self.call.battery.GetCharging(), True),
         (self.call.device.RunShellCommand(mock.ANY, check_return=True), []),
-        (self.call.device.GetCharging(), False)):
+        (self.call.battery.GetCharging(), False)):
       self.battery.SetCharging(False)
 
 
@@ -95,18 +95,20 @@ class BatteryUtilsSetBatteryMeasurementTest(BatteryUtilsTest):
             mock.ANY, retries=0, single_line=True,
             timeout=10, check_return=True), '22'),
         (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
+        (self.call.device.RunShellCommand(
             ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'batterystats', '--charged', '--checkin'],
             check_return=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'set', 'usb', '0'], check_return=True), []),
-        (self.call.device.GetCharging(), False),
+        (self.call.battery.GetCharging(), False),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'reset'], check_return=True), []),
-        (self.call.device.GetCharging(), True)):
+        (self.call.battery.GetCharging(), True)):
       with self.battery.BatteryMeasurement():
         pass
 
@@ -150,6 +152,63 @@ class BatteryUtilsChargeDevice(BatteryUtilsTest):
         (self.call.battery.GetBatteryInfo(), {'level': '50'}),
         (self.call.battery.GetBatteryInfo(), {'level': '100'})):
       self.battery.ChargeDeviceToLevel(95)
+
+
+class DeviceUtilsGetBatteryInfoTest(BatteryUtilsTest):
+
+  def testGetBatteryInfo_normal(self):
+    with self.assertCall(
+        self.call.device.RunShellCommand(
+            ['dumpsys', 'battery'], check_return=True),
+        [
+          'Current Battery Service state:',
+          '  AC powered: false',
+          '  USB powered: true',
+          '  level: 100',
+          '  temperature: 321',
+        ]):
+      self.assertEquals(
+          {
+            'AC powered': 'false',
+            'USB powered': 'true',
+            'level': '100',
+            'temperature': '321',
+          },
+          self.battery.GetBatteryInfo())
+
+  def testGetBatteryInfo_nothing(self):
+    with self.assertCall(
+        self.call.device.RunShellCommand(
+            ['dumpsys', 'battery'], check_return=True), []):
+      self.assertEquals({}, self.battery.GetBatteryInfo())
+
+
+class DeviceUtilsGetChargingTest(BatteryUtilsTest):
+
+  def testGetCharging_usb(self):
+    with self.assertCall(
+        self.call.battery.GetBatteryInfo(), {'USB powered': 'true'}):
+      self.assertTrue(self.battery.GetCharging())
+
+  def testGetCharging_usbFalse(self):
+    with self.assertCall(
+        self.call.battery.GetBatteryInfo(), {'USB powered': 'false'}):
+      self.assertFalse(self.battery.GetCharging())
+
+  def testGetCharging_ac(self):
+    with self.assertCall(
+        self.call.battery.GetBatteryInfo(), {'AC powered': 'true'}):
+      self.assertTrue(self.battery.GetCharging())
+
+  def testGetCharging_wireless(self):
+    with self.assertCall(
+        self.call.battery.GetBatteryInfo(), {'Wireless powered': 'true'}):
+      self.assertTrue(self.battery.GetCharging())
+
+  def testGetCharging_unknown(self):
+    with self.assertCall(
+        self.call.battery.GetBatteryInfo(), {'level': '42'}):
+      self.assertFalse(self.battery.GetCharging())
 
 
 if __name__ == '__main__':
