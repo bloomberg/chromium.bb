@@ -77,16 +77,14 @@ _ARCH_MAPPING = {
 }
 
 
-def _CreateWrapper(command_name, template, **kwargs):
+def _CreateWrapper(wrapper_path, template, **kwargs):
   """Creates a wrapper from a given template.
 
   Args:
-    command_name: name of the wrapper.
+    wrapper_path: path to the wrapper.
     template: wrapper template.
     kwargs: fields to be set in the template.
   """
-  wrapper_path = os.path.join(_wrapper_dir, command_name)
-
   osutils.WriteFile(wrapper_path, template.format(**kwargs), makedirs=True)
   os.chown(wrapper_path, 0, 0)
   os.chmod(wrapper_path, 0o755)
@@ -130,33 +128,59 @@ class Sysroot(object):
     return osutils.SourceEnvironment(self._config_file,
                                      [field], multiline=True).get(field)
 
-  def CreateAllWrappers(self, friendly_name):
+  def _WrapperPath(self, command, friendly_name=None):
+    """Returns the path to the wrapper for |command|.
+
+    Args:
+      command: command to wrap.
+      friendly_name: suffix to add to the command name. If None, the wrapper
+        will be created in the sysroot.
+    """
+    if friendly_name:
+      return os.path.join(_wrapper_dir, '%s-%s' % (command, friendly_name))
+    return os.path.join(self.path, 'build', 'bin', command)
+
+  def CreateAllWrappers(self, friendly_name=None):
     """Creates all the wrappers.
 
     Creates all portage tools wrappers, plus wrappers for gdb, cros_workon and
     pkg-config.
 
     Args:
-      friendly_name: suffix to add to the commands.
+      friendly_name: if not None, create friendly wrappers with |friendly_name|
+        added to the command.
     """
     chost = self.GetStandardField('CHOST')
     for cmd in ('ebuild', 'eclean', 'emaint', 'equery', 'portageq', 'qcheck',
                 'qdepends', 'qfile', 'qlist', 'qmerge', 'qsize'):
       args = {'sysroot': self.path, 'chost': chost, 'command': cmd,
               'source_root': constants.SOURCE_ROOT}
-      _CreateWrapper('%s-%s' % (cmd, friendly_name),
+      if friendly_name:
+        _CreateWrapper(self._WrapperPath(cmd, friendly_name),
+                       _PORTAGE_WRAPPER_TEMPLATE, **args)
+      _CreateWrapper(self._WrapperPath(cmd),
                      _PORTAGE_WRAPPER_TEMPLATE, **args)
 
-    _CreateWrapper('emerge-%s' % friendly_name, _PORTAGE_WRAPPER_TEMPLATE,
+    if friendly_name:
+      _CreateWrapper(self._WrapperPath('emerge', friendly_name),
+                     _PORTAGE_WRAPPER_TEMPLATE, sysroot=self.path, chost=chost,
+                     command='emerge --root-deps',
+                     source_root=constants.SOURCE_ROOT)
+
+      _CreateWrapper(self._WrapperPath('cros_workon', friendly_name),
+                     _BOARD_WRAPPER_TEMPLATE, board=friendly_name,
+                     command='cros_workon')
+      _CreateWrapper(self._WrapperPath('gdb', friendly_name),
+                     _BOARD_WRAPPER_TEMPLATE, board=friendly_name,
+                     command='cros_gdb')
+      _CreateWrapper(self._WrapperPath('pkg-config', friendly_name),
+                     _PKGCONFIG_WRAPPER_TEMPLATE, sysroot=self.path)
+
+    _CreateWrapper(self._WrapperPath('pkg-config'),
+                   _PKGCONFIG_WRAPPER_TEMPLATE, sysroot=self.path)
+    _CreateWrapper(self._WrapperPath('emerge'), _PORTAGE_WRAPPER_TEMPLATE,
                    sysroot=self.path, chost=chost, command='emerge --root-deps',
                    source_root=constants.SOURCE_ROOT)
-
-    _CreateWrapper('cros_workon-%s' % friendly_name, _BOARD_WRAPPER_TEMPLATE,
-                   board=friendly_name, command='cros_workon')
-    _CreateWrapper('cros_gdb-%s' % friendly_name, _BOARD_WRAPPER_TEMPLATE,
-                   board=friendly_name, command='gdb')
-    _CreateWrapper('pkg-config-%s' % friendly_name, _PKGCONFIG_WRAPPER_TEMPLATE,
-                   sysroot=self.path)
 
     # Create a link to the debug symbols in the chroot so that gdb can detect
     # them.
@@ -192,7 +216,7 @@ class Sysroot(object):
     config['MAKEOPTS'] = '-j%s' % str(multiprocessing.cpu_count())
     config['BOARD_USE'] = board
     config['ROOT'] = self.path + '/'
-    config['PKG_CONFIG'] = 'pkg-config-%s' % board
+    config['PKG_CONFIG'] = self._WrapperPath('pkg-config')
 
     header = "# Created by cros_sysroot_utils from --board=%s." % board
     return '\n'.join((header, _DictToKeyValue(config)))
@@ -219,7 +243,7 @@ class Sysroot(object):
     config['BOARD_OVERLAY'] = '\n'.join([b.OverlayDir() for b in brick_list])
     config['MAKEOPTS'] = '-j%s' % str(multiprocessing.cpu_count())
     config['ROOT'] = self.path + '/'
-    config['PKG_CONFIG'] = 'pkg-config-%s' % brick.FriendlyName()
+    config['PKG_CONFIG'] = self._WrapperPath('pkg-config')
 
     header = ("# Created by cros_sysroot_utils from --brick=%s."
               % brick.brick_locator)
