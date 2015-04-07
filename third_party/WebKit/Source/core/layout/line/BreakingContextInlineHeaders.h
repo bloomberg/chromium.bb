@@ -552,6 +552,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     bool breakWords = m_currentStyle->breakWords() && ((m_autoWrap && !m_width.committedWidth()) || m_currWS == PRE);
     bool midWordBreak = false;
     bool breakAll = m_currentStyle->wordBreak() == BreakAllWordBreak && m_autoWrap;
+    bool prohibitBreakInside = m_currentStyle->hasTextCombine() && renderText->isCombineText() && toLayoutTextCombine(renderText)->isCombined();
     float hyphenWidth = 0;
 
     if (isSVGText) {
@@ -765,6 +766,11 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             // Force creation of new InlineBoxes for each absolute positioned character (those that start new text chunks).
             if (toLayoutSVGInlineText(renderText)->characterStartsNewTextChunk(m_current.offset()))
                 m_lineMidpointState.ensureCharacterGetsLineBox(m_current);
+        }
+
+        if (prohibitBreakInside) {
+            m_current.setNextBreakablePosition(renderText->textLength());
+            prohibitBreakInside = false;
         }
 
         if (m_currentCharacterIsSpace && !previousCharacterIsSpace) {
