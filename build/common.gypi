@@ -1022,9 +1022,8 @@
           'optimize_jni_generation%': 0,
         }],
 
-        # TODO(rmcilroy): Enable v8_use_external_startup_data on ChromeOS
-        # http://crbug.com/421063
-        ['chromecast==0 and chromeos==0 and OS!="ios"', {
+        # TODO(rmcilroy): Remove ios check. http://crbug.com/421063.
+        ['OS!="ios"', {
           'v8_use_external_startup_data%': 1,
         }, {
           'v8_use_external_startup_data%': 0,
