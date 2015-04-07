@@ -36,6 +36,10 @@ namespace content {
 class NavigatorTestWithBrowserSideNavigation
     : public RenderViewHostImplTestHarness {
  public:
+  // Re-defines the private RenderFrameHostManager::SiteInstanceDescriptor here
+  // to allow access to it from tests.
+  typedef RenderFrameHostManager::SiteInstanceDescriptor SiteInstanceDescriptor;
+
   void SetUp() override {
     EnableBrowserSideNavigation();
     RenderViewHostImplTestHarness::SetUp();
@@ -89,6 +93,12 @@ class NavigatorTestWithBrowserSideNavigation
                 FrameMsg_CommitNavigation::ID));
     return commit_message &&
            rfh->GetRoutingID() == commit_message->routing_id();
+  }
+
+  SiteInstance* ConvertToSiteInstance(RenderFrameHostManager* rfhm,
+                                      const SiteInstanceDescriptor& descriptor,
+                                      SiteInstance* candidate_instance) {
+    return rfhm->ConvertToSiteInstance(descriptor, candidate_instance);
   }
 };
 
@@ -995,6 +1005,135 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, DataUrls) {
             navigation_request->state());
   EXPECT_FALSE(navigation_request->loader_for_testing());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
+}
+
+// Tests several cases for converting SiteInstanceDescriptors into
+// SiteInstances:
+// 1) Pointer to the current SiteInstance.
+// 2) Pointer to an unrelated SiteInstance.
+// 3) Same-site URL, related.
+// 4) Cross-site URL, related.
+// 5) Same-site URL, unrelated (with and without candidate SiteInstances).
+// 6) Cross-site URL, unrelated (with candidate SiteInstance).
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       SiteInstanceDescriptionConversion) {
+  // Navigate to set a current SiteInstance on the RenderFrameHost.
+  GURL kUrl1("http://a.com");
+  contents()->NavigateAndCommit(kUrl1);
+  SiteInstance* current_instance = main_test_rfh()->GetSiteInstance();
+  ASSERT_TRUE(current_instance);
+
+  // 1) Convert a descriptor pointing to the current instance.
+  RenderFrameHostManager* rfhm =
+      main_test_rfh()->frame_tree_node()->render_manager();
+  {
+    SiteInstanceDescriptor descriptor(current_instance);
+    SiteInstance* converted_instance =
+        ConvertToSiteInstance(rfhm, descriptor, nullptr);
+    EXPECT_EQ(current_instance, converted_instance);
+  }
+
+  // 2) Convert a descriptor pointing an instance unrelated to the current one,
+  // with a different site.
+  GURL kUrl2("http://b.com");
+  scoped_refptr<SiteInstance> unrelated_instance(
+      SiteInstance::CreateForURL(browser_context(), kUrl2));
+  EXPECT_FALSE(
+      current_instance->IsRelatedSiteInstance(unrelated_instance.get()));
+  {
+    SiteInstanceDescriptor descriptor(unrelated_instance.get());
+    SiteInstance* converted_instance =
+        ConvertToSiteInstance(rfhm, descriptor, nullptr);
+    EXPECT_EQ(unrelated_instance.get(), converted_instance);
+  }
+
+  // 3) Convert a descriptor of a related instance with the same site as the
+  // current one.
+  GURL kUrlSameSiteAs1("http://www.a.com/foo");
+  {
+    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs1, true);
+    SiteInstance* converted_instance =
+        ConvertToSiteInstance(rfhm, descriptor, nullptr);
+    EXPECT_EQ(current_instance, converted_instance);
+  }
+
+  // 4) Convert a descriptor of a related instance with a site different from
+  // the current one.
+  GURL kUrlSameSiteAs2("http://www.b.com/foo");
+  scoped_refptr<SiteInstance> related_instance;
+  {
+    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs2, true);
+    related_instance = ConvertToSiteInstance(rfhm, descriptor, nullptr);
+    // Should return a new instance, related to the current, set to the new site
+    // URL.
+    EXPECT_TRUE(
+        current_instance->IsRelatedSiteInstance(related_instance.get()));
+    EXPECT_NE(current_instance, related_instance.get());
+    EXPECT_NE(unrelated_instance.get(), related_instance.get());
+    EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrlSameSiteAs2),
+              related_instance->GetSiteURL());
+  }
+
+  // 5) Convert a descriptor of an unrelated instance with the same site as the
+  // current one, several times, with and without candidate sites.
+  {
+    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs1,
+                                      false);
+    scoped_refptr<SiteInstance> converted_instance_1 =
+        ConvertToSiteInstance(rfhm, descriptor, nullptr);
+    // Should return a new instance, unrelated to the current one, set to the
+    // provided site URL.
+    EXPECT_FALSE(
+        current_instance->IsRelatedSiteInstance(converted_instance_1.get()));
+    EXPECT_NE(current_instance, converted_instance_1.get());
+    EXPECT_NE(unrelated_instance.get(), converted_instance_1.get());
+    EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrlSameSiteAs1),
+              converted_instance_1->GetSiteURL());
+
+    // Does the same but this time using unrelated_instance as a candidate,
+    // which has a different site.
+    scoped_refptr<SiteInstance> converted_instance_2 =
+        ConvertToSiteInstance(rfhm, descriptor, unrelated_instance.get());
+    // Should return yet another new instance, unrelated to the current one, set
+    // to the same site URL.
+    EXPECT_FALSE(
+        current_instance->IsRelatedSiteInstance(converted_instance_2.get()));
+    EXPECT_NE(current_instance, converted_instance_2.get());
+    EXPECT_NE(unrelated_instance.get(), converted_instance_2.get());
+    EXPECT_NE(converted_instance_1.get(), converted_instance_2.get());
+    EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrlSameSiteAs1),
+              converted_instance_2->GetSiteURL());
+
+    // Converts once more but with |converted_instance_1| as a candidate.
+    SiteInstance* converted_instance_3 =
+        ConvertToSiteInstance(rfhm, descriptor, converted_instance_1.get());
+    // Should return |converted_instance_1| because its site matches and it is
+    // unrelated to the current SiteInstance.
+    EXPECT_EQ(converted_instance_1.get(), converted_instance_3);
+  }
+
+  // 6) Convert a descriptor of an unrelated instance with the same site of
+  // related_instance and using it as a candidate.
+  {
+    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs2,
+                                      false);
+    scoped_refptr<SiteInstance> converted_instance_1 =
+        ConvertToSiteInstance(rfhm, descriptor, related_instance.get());
+    // Should return a new instance, unrelated to the current, set to the
+    // provided site URL.
+    EXPECT_FALSE(
+        current_instance->IsRelatedSiteInstance(converted_instance_1.get()));
+    EXPECT_NE(related_instance.get(), converted_instance_1.get());
+    EXPECT_NE(unrelated_instance.get(), converted_instance_1.get());
+    EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrlSameSiteAs2),
+              converted_instance_1->GetSiteURL());
+
+    SiteInstance* converted_instance_2 =
+        ConvertToSiteInstance(rfhm, descriptor, unrelated_instance.get());
+    // Should return |unrelated_instance| because its site matches and it is
+    // unrelated to the current SiteInstance.
+    EXPECT_EQ(unrelated_instance.get(), converted_instance_2);
+  }
 }
 
 }  // namespace content

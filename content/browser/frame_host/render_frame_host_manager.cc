@@ -743,11 +743,18 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
   SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
 
+  SiteInstance* candidate_site_instance =
+      speculative_render_frame_host_
+          ? speculative_render_frame_host_->GetSiteInstance()
+          : nullptr;
+
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
       request.common_params().url, request.source_site_instance(),
-      request.dest_site_instance(), request.common_params().transition,
+      request.dest_site_instance(), candidate_site_instance,
+      request.common_params().transition,
       request.restore_type() != NavigationEntryImpl::RESTORE_NONE,
       request.is_view_source());
+
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;
 
@@ -893,6 +900,15 @@ void RenderFrameHostManager::Observe(
   }
 }
 
+RenderFrameHostManager::SiteInstanceDescriptor::SiteInstanceDescriptor(
+    BrowserContext* browser_context,
+    GURL dest_url,
+    bool related_to_current)
+    : existing_site_instance(nullptr),
+      new_is_related_to_current(related_to_current) {
+  new_site_url = SiteInstance::GetSiteForURL(browser_context, dest_url);
+}
+
 // static
 bool RenderFrameHostManager::ClearProxiesInSiteInstance(
     int32 site_instance_id,
@@ -1025,11 +1041,11 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
     const GURL& dest_url,
     SiteInstance* source_instance,
     SiteInstance* dest_instance,
+    SiteInstance* candidate_instance,
     ui::PageTransition transition,
     bool dest_is_restore,
     bool dest_is_view_source_mode) {
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
-  SiteInstance* new_instance = current_instance;
 
   // We do not currently swap processes for navigations in webview tag guests.
   if (current_instance->GetSiteURL().SchemeIs(kGuestScheme))
@@ -1057,21 +1073,28 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
       dest_instance,
       SiteInstanceImpl::GetEffectiveURL(browser_context, dest_url),
       dest_is_view_source_mode);
+  SiteInstanceDescriptor new_instance_descriptor =
+      SiteInstanceDescriptor(current_instance);
   if (ShouldTransitionCrossSite() || force_swap) {
-    new_instance = GetSiteInstanceForURL(
-        dest_url, source_instance, current_instance, dest_instance,
-        transition, dest_is_restore, dest_is_view_source_mode, force_swap);
+    new_instance_descriptor = DetermineSiteInstanceForURL(
+        dest_url, source_instance, current_instance, dest_instance, transition,
+        dest_is_restore, dest_is_view_source_mode, force_swap);
   }
 
-  // If force_swap is true, we must use a different SiteInstance.  If we didn't,
-  // we would have two RenderFrameHosts in the same SiteInstance and the same
-  // frame, resulting in page_id conflicts for their NavigationEntries.
+  SiteInstance* new_instance =
+      ConvertToSiteInstance(new_instance_descriptor, candidate_instance);
+
+  // If |force_swap| is true, we must use a different SiteInstance than the
+  // current one. If we didn't, we would have two RenderFrameHosts in the same
+  // SiteInstance and the same frame, resulting in page_id conflicts for their
+  // NavigationEntries.
   if (force_swap)
     CHECK_NE(new_instance, current_instance);
   return new_instance;
 }
 
-SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
+RenderFrameHostManager::SiteInstanceDescriptor
+RenderFrameHostManager::DetermineSiteInstanceForURL(
     const GURL& dest_url,
     SiteInstance* source_instance,
     SiteInstance* current_instance,
@@ -1080,6 +1103,8 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
     bool dest_is_restore,
     bool dest_is_view_source_mode,
     bool force_browsing_instance_swap) {
+  SiteInstanceImpl* current_instance_impl =
+      static_cast<SiteInstanceImpl*>(current_instance);
   NavigationControllerImpl& controller =
       delegate_->GetControllerForRenderManager();
   BrowserContext* browser_context = controller.GetBrowserContext();
@@ -1091,13 +1116,13 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
       CHECK(!dest_instance->IsRelatedSiteInstance(
                 render_frame_host_->GetSiteInstance()));
     }
-    return dest_instance;
+    return SiteInstanceDescriptor(dest_instance);
   }
 
   // If a swap is required, we need to force the SiteInstance AND
   // BrowsingInstance to be different ones, using CreateForURL.
   if (force_browsing_instance_swap)
-    return SiteInstance::CreateForURL(browser_context, dest_url);
+    return SiteInstanceDescriptor(browser_context, dest_url, false);
 
   // (UGLY) HEURISTIC, process-per-site only:
   //
@@ -1112,17 +1137,14 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kProcessPerSite) &&
       ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_GENERATED)) {
-    return current_instance;
+    return SiteInstanceDescriptor(current_instance_impl);
   }
-
-  SiteInstanceImpl* current_site_instance =
-      static_cast<SiteInstanceImpl*>(current_instance);
 
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
   // for this entry.  We won't commit the SiteInstance to this site until the
   // navigation commits (in DidNavigate), unless the navigation entry was
   // restored or it's a Web UI as described below.
-  if (!current_site_instance->HasSite()) {
+  if (!current_instance_impl->HasSite()) {
     // If we've already created a SiteInstance for our destination, we don't
     // want to use this unused SiteInstance; use the existing one.  (We don't
     // do this check if the current_instance has a site, because for now, we
@@ -1137,30 +1159,30 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
     bool use_process_per_site =
         RenderProcessHost::ShouldUseProcessPerSite(browser_context, dest_url) &&
         RenderProcessHostImpl::GetProcessHostForSite(browser_context, dest_url);
-    if (current_site_instance->HasRelatedSiteInstance(dest_url) ||
+    if (current_instance_impl->HasRelatedSiteInstance(dest_url) ||
         use_process_per_site) {
-      return current_site_instance->GetRelatedSiteInstance(dest_url);
+      return SiteInstanceDescriptor(browser_context, dest_url, true);
     }
 
     // For extensions, Web UI URLs (such as the new tab page), and apps we do
-    // not want to use the current_instance if it has no site, since it will
-    // have a RenderProcessHost of PRIV_NORMAL.  Create a new SiteInstance for
-    // this URL instead (with the correct process type).
-    if (current_site_instance->HasWrongProcessForURL(dest_url))
-      return current_site_instance->GetRelatedSiteInstance(dest_url);
+    // not want to use the |current_instance_impl| if it has no site, since it
+    // will have a RenderProcessHost of PRIV_NORMAL. Create a new SiteInstance
+    // for this URL instead (with the correct process type).
+    if (current_instance_impl->HasWrongProcessForURL(dest_url))
+      return SiteInstanceDescriptor(browser_context, dest_url, true);
 
     // View-source URLs must use a new SiteInstance and BrowsingInstance.
     // TODO(nasko): This is the same condition as later in the function. This
     // should be taken into account when refactoring this method as part of
     // http://crbug.com/123007.
     if (dest_is_view_source_mode)
-      return SiteInstance::CreateForURL(browser_context, dest_url);
+      return SiteInstanceDescriptor(browser_context, dest_url, false);
 
     // If we are navigating from a blank SiteInstance to a WebUI, make sure we
     // create a new SiteInstance.
     if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
             browser_context, dest_url)) {
-        return SiteInstance::CreateForURL(browser_context, dest_url);
+      return SiteInstanceDescriptor(browser_context, dest_url, false);
     }
 
     // Normally the "site" on the SiteInstance is set lazily when the load
@@ -1179,10 +1201,10 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
     // See http://crbug.com/386542.
     if (dest_is_restore &&
         GetContentClient()->browser()->ShouldAssignSiteForURL(dest_url)) {
-      current_site_instance->SetSite(dest_url);
+      current_instance_impl->SetSite(dest_url);
     }
 
-    return current_site_instance;
+    return SiteInstanceDescriptor(current_instance_impl);
   }
 
   // Otherwise, only create a new SiteInstance for a cross-site navigation.
@@ -1191,7 +1213,7 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
   // will be able to enforce that all entries in a SiteInstance actually have
   // the same site, and it will be safe to compare the URL against the
   // SiteInstance's site, as follows:
-  // const GURL& current_url = current_instance->site();
+  // const GURL& current_url = current_instance_impl->site();
   // For now, though, we're in a hybrid model where you only switch
   // SiteInstances if you type in a cross-site URL.  This means we have to
   // compare the entry's URL to the last committed entry's URL.
@@ -1210,7 +1232,7 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
   if (current_entry &&
       current_entry->IsViewSourceMode() != dest_is_view_source_mode &&
       !IsRendererDebugURL(dest_url)) {
-    return SiteInstance::CreateForURL(browser_context, dest_url);
+    return SiteInstanceDescriptor(browser_context, dest_url, false);
   }
 
   // Use the source SiteInstance in case of data URLs or about:blank pages,
@@ -1218,17 +1240,18 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
   // SiteInstance.
   GURL about_blank(url::kAboutBlankURL);
   if (source_instance &&
-      (dest_url == about_blank || dest_url.scheme() == url::kDataScheme))
-    return source_instance;
+      (dest_url == about_blank || dest_url.scheme() == url::kDataScheme)) {
+    return SiteInstanceDescriptor(source_instance);
+  }
 
   // Use the current SiteInstance for same site navigations, as long as the
   // process type is correct.  (The URL may have been installed as an app since
   // the last time we visited it.)
   const GURL& current_url =
-      GetCurrentURLForSiteInstance(current_instance, current_entry);
+      GetCurrentURLForSiteInstance(current_instance_impl, current_entry);
   if (SiteInstance::IsSameWebSite(browser_context, current_url, dest_url) &&
-      !current_site_instance->HasWrongProcessForURL(dest_url)) {
-    return current_instance;
+      !current_instance_impl->HasWrongProcessForURL(dest_url)) {
+    return SiteInstanceDescriptor(current_instance_impl);
   }
 
   // Start the new renderer in a new SiteInstance, but in the current
@@ -1236,7 +1259,36 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForURL(
   // SiteInstance to a RenderViewHost (if it is different than our current
   // SiteInstance), so that it is ref counted.  This will happen in
   // CreateRenderView.
-  return current_instance->GetRelatedSiteInstance(dest_url);
+  return SiteInstanceDescriptor(browser_context, dest_url, true);
+}
+
+SiteInstance* RenderFrameHostManager::ConvertToSiteInstance(
+    const SiteInstanceDescriptor& descriptor,
+    SiteInstance* candidate_instance) {
+  SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
+
+  // Note: If the |candidate_instance| matches the descriptor, it will already
+  // be set to |descriptor.existing_site_instance|.
+  if (descriptor.existing_site_instance)
+    return descriptor.existing_site_instance;
+
+  // Note: If the |candidate_instance| matches the descriptor,
+  // GetRelatedSiteInstance will return it.
+  if (descriptor.new_is_related_to_current)
+    return current_instance->GetRelatedSiteInstance(descriptor.new_site_url);
+
+  // At this point we know an unrelated site instance must be returned. First
+  // check if the candidate matches.
+  if (candidate_instance &&
+      !current_instance->IsRelatedSiteInstance(candidate_instance) &&
+      candidate_instance->GetSiteURL() == descriptor.new_site_url) {
+    return candidate_instance;
+  }
+
+  // Otherwise return a newly created one.
+  return SiteInstance::CreateForURL(
+      delegate_->GetControllerForRenderManager().GetBrowserContext(),
+      descriptor.new_site_url);
 }
 
 const GURL& RenderFrameHostManager::GetCurrentURLForSiteInstance(
@@ -1820,7 +1872,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
 
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
   scoped_refptr<SiteInstance> new_instance = GetSiteInstanceForNavigation(
-      dest_url, source_instance, dest_instance, transition,
+      dest_url, source_instance, dest_instance, nullptr, transition,
       dest_is_restore, dest_is_view_source_mode);
 
   const NavigationEntry* current_entry =

@@ -429,6 +429,30 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   FRIEND_TEST_ALL_PREFIXES(CrossProcessFrameTreeBrowserTest,
                            CreateCrossProcessSubframeProxies);
 
+  // Stores information regarding a SiteInstance targeted at a specific URL to
+  // allow for comparisons without having to actually create new instances. It
+  // can point to an existing one or store the details needed to create a new
+  // one.
+  struct CONTENT_EXPORT SiteInstanceDescriptor {
+    explicit SiteInstanceDescriptor(content::SiteInstance* site_instance)
+        : existing_site_instance(site_instance),
+          new_is_related_to_current(false) {}
+
+    SiteInstanceDescriptor(BrowserContext* browser_context,
+                           GURL dest_url,
+                           bool related_to_current);
+
+    // Set with an existing SiteInstance to be reused.
+    content::SiteInstance* existing_site_instance;
+
+    // In case |existing_site_instance| is null, specify a new site URL.
+    GURL new_site_url;
+
+    // In case |existing_site_instance| is null, specify if the new site should
+    // be created in a new BrowsingInstance or not.
+    bool new_is_related_to_current;
+  };
+
   // Used with FrameTree::ForEach to erase RenderFrameProxyHosts from a
   // FrameTreeNode's RenderFrameHostManager.
   static bool ClearProxiesInSiteInstance(int32 site_instance_id,
@@ -477,29 +501,40 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   SiteInstance* GetSiteInstanceForNavigation(const GURL& dest_url,
                                              SiteInstance* source_instance,
                                              SiteInstance* dest_instance,
+                                             SiteInstance* candidate_instance,
                                              ui::PageTransition transition,
                                              bool dest_is_restore,
                                              bool dest_is_view_source_mode);
 
-  // Returns an appropriate SiteInstance object for the given |dest_url|,
-  // possibly reusing the current SiteInstance.  If --process-per-tab is used,
-  // this is only called when ShouldSwapBrowsingInstancesForNavigation returns
-  // true. |source_instance| is the SiteInstance of the frame that initiated the
+  // Returns a descriptor of the appropriate SiteInstance object for the given
+  // |dest_url|, possibly reusing the current, source or destination
+  // SiteInstance. The actual SiteInstance can then be obtained calling
+  // ConvertToSiteInstance with the descriptor.
+  //
+  // |source_instance| is the SiteInstance of the frame that initiated the
   // navigation. |current_instance| is the SiteInstance of the frame that is
-  // currently navigating. |dest_instance|, is a predetermined SiteInstance
-  // that'll be used if not null.
+  // currently navigating. |dest_instance| is a predetermined SiteInstance that
+  // will be used if not null.
   // For example, if you have a parent frame A, which has a child frame B, and
   // A is trying to change the src attribute of B, this will cause a navigation
   // where the source SiteInstance is A and B is the current SiteInstance.
+  //
   // This is a helper function for GetSiteInstanceForNavigation.
-  SiteInstance* GetSiteInstanceForURL(const GURL& dest_url,
-                                      SiteInstance* source_instance,
-                                      SiteInstance* current_instance,
-                                      SiteInstance* dest_instance,
-                                      ui::PageTransition transition,
-                                      bool dest_is_restore,
-                                      bool dest_is_view_source_mode,
-                                      bool force_browsing_instance_swap);
+  SiteInstanceDescriptor DetermineSiteInstanceForURL(
+      const GURL& dest_url,
+      SiteInstance* source_instance,
+      SiteInstance* current_instance,
+      SiteInstance* dest_instance,
+      ui::PageTransition transition,
+      bool dest_is_restore,
+      bool dest_is_view_source_mode,
+      bool force_browsing_instance_swap);
+
+  // Converts a SiteInstanceDescriptor to the actual SiteInstance it describes.
+  // If a |candidate_instance| is provided (is not nullptr) and it matches the
+  // description, it is returned as is.
+  SiteInstance* ConvertToSiteInstance(const SiteInstanceDescriptor& descriptor,
+                                      SiteInstance* candidate_instance);
 
   // Determines the appropriate url to use as the current url for SiteInstance
   // selection.
