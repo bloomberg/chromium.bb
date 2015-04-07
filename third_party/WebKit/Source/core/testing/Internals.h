@@ -345,6 +345,8 @@ public:
     String selectedHTMLForClipboard();
     String selectedTextForClipboard();
 
+    void setVisualViewportOffset(int x, int y);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

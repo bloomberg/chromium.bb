@@ -2332,6 +2332,11 @@ String Internals::selectedTextForClipboard()
     return frame()->selection().selectedTextForClipboard();
 }
 
+void Internals::setVisualViewportOffset(int x, int y)
+{
+    frame()->host()->pinchViewport().setLocation(FloatPoint(x, y));
+}
+
 ValueIterable<int>::IterationSource* Internals::startIteration(ScriptState*, ExceptionState&)
 {
     return new InternalsIterationSource();

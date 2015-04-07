@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <script src="../../resources/js-test.js"></script>
 <style>
+    #spacer {
+        width: 1000px;
+        height: 1000px;
+    }
     #target {
         width: 100px;
         height: 100px;
@@ -17,15 +21,17 @@
 <script>
     var rect;
     var rectAfterScaleAndScroll;
+    var layoutXScroll = 20;
+    var layoutYScroll = 30;
     var xPos = 200;
     var yPos = 200;
-    var scrollX = 40;
-    var scrollY = 50;
-    var expectedX = xPos - scrollX;
-    var expectedY = yPos - scrollY;
+    var visualXScroll = 40;
+    var visualYScroll = 50;
+    var expectedX = xPos - layoutXScroll;
+    var expectedY = yPos - layoutYScroll;
 
     onload = function() {
-        description("This test ensures that getBoundingClientRect remains relative to the viewport under page scale.");
+        description("This test ensures that getBoundingClientRect remains relative to the layout viewport under page scale.");
 
         var target = document.getElementById('target');
         rect = target.getBoundingClientRect();
@@ -34,8 +40,10 @@
         shouldBe('rect.top', 'yPos');
 
         if (window.eventSender) {
+            window.scrollTo(layoutXScroll, layoutYScroll);
+
             window.eventSender.setPageScaleFactor(2.0, 0, 0);
-            window.scrollTo(scrollX, scrollY);
+            internals.setVisualViewportOffset(visualXScroll, visualYScroll);
         }
 
         debug(' ');
@@ -60,3 +68,4 @@
     }
 </script>
 <div id="target"></div>
+<div id="spacer"></div>
