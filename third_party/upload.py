@@ -372,32 +372,33 @@ class AbstractRpcServer(object):
     authentication cookie, it returns a 401 response (or a 302) and
     directs us to authenticate ourselves with ClientLogin.
     """
-    INTERNAL_ERROR_MAP = {
-        "badauth": "BadAuthentication",
-        "cr": "CaptchaRequired",
-        "adel": "AccountDeleted",
-        "adis": "AccountDisabled",
-        "sdis": "ServiceDisabled",
-        "ire": "ServiceUnavailable",
-    }
-
     for i in range(3):
       credentials = self.auth_function()
 
       # Try external, then internal.
       e = None
+      error_map = None
       try:
         auth_token = self._GetAuthToken(credentials[0], credentials[1])
       except urllib2.HTTPError:
         try:
+          # Try internal endpoint.
+          error_map = {
+              "badauth": "BadAuthentication",
+              "cr": "CaptchaRequired",
+              "adel": "AccountDeleted",
+              "adis": "AccountDisabled",
+              "sdis": "ServiceDisabled",
+              "ire": "ServiceUnavailable",
+          }
           auth_token = self._GetAuthToken(credentials[0], credentials[1],
                                           internal=True)
         except ClientLoginError, exc:
           e = exc
       if e:
         print >> sys.stderr, ''
-        if internal:
-          e.reason = INTERNAL_ERROR_MAP.get(e.reason, e.reason)
+        if error_map:
+          e.reason = error_map.get(e.reason, e.reason)
         if e.reason == "BadAuthentication":
           if e.info == "InvalidSecondFactor":
             print >> sys.stderr, (
