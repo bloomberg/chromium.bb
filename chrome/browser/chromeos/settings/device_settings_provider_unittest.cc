@@ -142,6 +142,26 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
                                     &expected_frequency_value));
   }
 
+  // Helper routine to set LoginScreenDomainAutoComplete policy.
+  void SetDomainAutoComplete(const std::string& domain) {
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+    em::LoginScreenDomainAutoCompleteProto* proto =
+        device_policy_.payload().mutable_login_screen_domain_auto_complete();
+    proto->set_login_screen_domain_auto_complete(domain);
+    device_policy_.Build();
+    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    ReloadDeviceSettings();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
+  // Helper routine to check value of the LoginScreenDomainAutoComplete policy.
+  void VerifyDomainAutoComplete(
+      const base::StringValue* const ptr_to_expected_value) {
+    EXPECT_TRUE(base::Value::Equals(
+        provider_->Get(kAccountsPrefLoginScreenDomainAutoComplete),
+        ptr_to_expected_value));
+  }
+
   ScopedTestingLocalState local_state_;
 
   scoped_ptr<DeviceSettingsProvider> provider_;
@@ -443,6 +463,21 @@ TEST_F(DeviceSettingsProviderTest, DecodeHeartbeatSettings) {
   // correctly.
   SetHeartbeatSettings(false, heartbeat_frequency);
   VerifyHeartbeatSettings(false, heartbeat_frequency);
+}
+
+TEST_F(DeviceSettingsProviderTest, DecodeDomainAutoComplete) {
+  // By default LoginScreenDomainAutoComplete policy should not be set.
+  VerifyDomainAutoComplete(nullptr);
+
+  // Empty string means that the policy is not set.
+  SetDomainAutoComplete("");
+  VerifyDomainAutoComplete(nullptr);
+
+  // Check some meaningful value. Policy should be set.
+  const std::string domain = "domain.test";
+  const base::StringValue domain_value(domain);
+  SetDomainAutoComplete(domain);
+  VerifyDomainAutoComplete(&domain_value);
 }
 
 } // namespace chromeos

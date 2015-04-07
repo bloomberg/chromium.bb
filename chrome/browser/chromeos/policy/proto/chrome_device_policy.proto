@@ -465,14 +465,6 @@ message AccessibilitySettingsProto {
   // shown. Users can enable or disable the on-screen keyboard anytime and its
   // status on the login screen is persisted between users.
   optional bool login_screen_default_virtual_keyboard_enabled = 5;
-
-  // If this policy is not configured or set to a blank string,
-  // no autocomplete option during user sign-in flow will be shown.
-  // If this policy is set to a string representing a domain name, an
-  // autocomplete option during user sign-in will be shown allowing the user
-  // to type in only his user name without the domain name extension. The user
-  // will be able to overwrite this domain name extension.
-  optional string login_screen_domain_auto_complete = 6;
 }
 
 message SupervisedUsersSettingsProto {
@@ -622,6 +614,16 @@ message ExtensionCacheSizeProto {
   optional int64 extension_cache_size = 1;
 }
 
+message LoginScreenDomainAutoCompleteProto {
+  // If this policy is not configured or set to a blank string,
+  // no autocomplete option during user sign-in flow will be shown.
+  // If this policy is set to a string representing a domain name, an
+  // autocomplete option during user sign-in will be shown allowing the user
+  // to type in only his user name without the domain name extension. The user
+  // will be able to overwrite this domain name extension.
+  optional string login_screen_domain_auto_complete = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -661,4 +663,6 @@ message ChromeDeviceSettingsProto {
   optional RebootOnShutdownProto reboot_on_shutdown = 34;
   optional DeviceHeartbeatSettingsProto device_heartbeat_settings = 35;
   optional ExtensionCacheSizeProto extension_cache_size = 36;
+  optional LoginScreenDomainAutoCompleteProto
+      login_screen_domain_auto_complete = 37;
 }

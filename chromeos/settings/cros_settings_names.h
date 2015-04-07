@@ -33,6 +33,7 @@ CHROMEOS_EXPORT extern const char
     kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline[];
 CHROMEOS_EXPORT extern const char kAccountsPrefSupervisedUsersEnabled[];
 CHROMEOS_EXPORT extern const char kAccountsPrefTransferSAMLCookies[];
+CHROMEOS_EXPORT extern const char kAccountsPrefLoginScreenDomainAutoComplete[];
 
 CHROMEOS_EXPORT extern const char kSignedDataRoamingEnabled[];
 
@@ -88,6 +89,7 @@ CHROMEOS_EXPORT extern const char kDeviceDisabledMessage[];
 CHROMEOS_EXPORT extern const char kRebootOnShutdown[];
 
 CHROMEOS_EXPORT extern const char kExtensionCacheSize[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

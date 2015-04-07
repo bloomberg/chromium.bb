@@ -51,6 +51,7 @@ const char* const kKnownSettings[] = {
     kAccountsPrefSupervisedUsersEnabled,
     kAccountsPrefTransferSAMLCookies,
     kAccountsPrefUsers,
+    kAccountsPrefLoginScreenDomainAutoComplete,
     kAllowRedeemChromeOsRegistrationOffers,
     kAllowedConnectionTypesForUpdate,
     kAttestationForContentProtectionEnabled,
@@ -245,6 +246,20 @@ void DecodeLoginPolicies(
     new_values_cache->SetBoolean(
         kAccountsPrefTransferSAMLCookies,
         policy.saml_settings().transfer_saml_cookies());
+  }
+
+  // The behavior when policy is not set and when it is set to an empty string
+  // is the same. Thus lets add policy only if it is set and its value is not
+  // an empty string.
+  if (policy.has_login_screen_domain_auto_complete() &&
+      policy.login_screen_domain_auto_complete()
+          .has_login_screen_domain_auto_complete() &&
+      !policy.login_screen_domain_auto_complete()
+           .login_screen_domain_auto_complete()
+           .empty()) {
+    new_values_cache->SetString(kAccountsPrefLoginScreenDomainAutoComplete,
+                                policy.login_screen_domain_auto_complete()
+                                    .login_screen_domain_auto_complete());
   }
 }
 

@@ -595,18 +595,6 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
               container.login_screen_default_virtual_keyboard_enabled()),
           NULL);
     }
-
-    // The behavior when policy is not set and when it is set to an empty string
-    // is the same. Thus lets add policy to the map only if it is set and its
-    // value is not an empty string.
-    if (container.has_login_screen_domain_auto_complete() &&
-        !container.login_screen_domain_auto_complete().empty()) {
-      policies->Set(
-          key::kDeviceLoginScreenDomainAutoComplete, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE,
-          new base::StringValue(container.login_screen_domain_auto_complete()),
-          nullptr);
-    }
   }
 }
 
@@ -769,6 +757,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           DecodeIntegerValue(container.extension_cache_size()).release(),
           nullptr);
     }
+  }
+
+  if (policy.has_login_screen_domain_auto_complete()) {
+    const em::LoginScreenDomainAutoCompleteProto& container(
+        policy.login_screen_domain_auto_complete());
+    policies->Set(
+        key::kDeviceLoginScreenDomainAutoComplete, POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        new base::StringValue(container.login_screen_domain_auto_complete()),
+        nullptr);
   }
 }
 

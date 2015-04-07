@@ -39,6 +39,11 @@ const char kAccountsPrefSupervisedUsersEnabled[] =
 const char kAccountsPrefTransferSAMLCookies[] =
     "cros.accounts.transferSAMLCookies";
 
+// A string pref that specifies a domain name for the autocomplete option during
+// user sign-in flow.
+const char kAccountsPrefLoginScreenDomainAutoComplete[] =
+    "cros.accounts.login_screen_domain_auto_complete";
+
 // All cros.signed.* settings are stored in SignedSettings.
 const char kSignedDataRoamingEnabled[] = "cros.signed.data_roaming_enabled";
 
