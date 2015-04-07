@@ -1837,11 +1837,11 @@ list.autocomplete-suggestions > [lead] {
   position: relative;
 }
 
-#suggest-app-dialog.show-spinner #webview-container webview {
+#suggest-app-dialog #webview-container.show-spinner webview {
   pointer-events: none;
 }
 
-#suggest-app-dialog:not(.show-spinner) .spinner-layer {
+#suggest-app-dialog #webview-container:not(.show-spinner) .spinner-layer {
   display: none;
 }
 

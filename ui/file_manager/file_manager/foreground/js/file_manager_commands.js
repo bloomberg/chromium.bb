@@ -1257,7 +1257,7 @@ CommandHandler.COMMANDS_['add-new-services'] = /** @type {Command} */ ({
         function(result, itemId) {
           // If a new provider is installed, then launch it so the configuration
           // dialog is shown (if it's available).
-          if (result === SuggestAppsDialog.Result.INSTALL_SUCCESSFUL)
+          if (result === SuggestAppsDialog.Result.SUCCESS)
             chrome.management.launchApp(assert(itemId), function() {});
         });
   },

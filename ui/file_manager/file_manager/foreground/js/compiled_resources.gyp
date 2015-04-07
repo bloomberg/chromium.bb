@@ -74,6 +74,7 @@
           './app_state_controller.js',
           './column_visibility_controller.js',
           './cws_container_client.js',
+          './cws_widget_container.js',
           './dialog_action_controller.js',
           './dialog_type.js',
           './directory_contents.js',
