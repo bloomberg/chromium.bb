@@ -17,7 +17,6 @@ PepperPluginInfo::EntryPoints::EntryPoints()
 PepperPluginInfo::PepperPluginInfo()
     : is_internal(false),
       is_out_of_process(false),
-      is_sandboxed(true),
       permissions(0) {
 }
 
@@ -28,9 +27,7 @@ WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
   WebPluginInfo info;
 
   info.type = is_out_of_process ?
-      (is_sandboxed ?
-        WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS :
-        WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED) :
+      WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS :
       WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
 
   info.name = name.empty() ?

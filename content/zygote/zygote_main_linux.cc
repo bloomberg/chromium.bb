@@ -303,7 +303,7 @@ void PreloadPepperPlugins() {
   std::vector<PepperPluginInfo> plugins;
   ComputePepperPluginList(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
-    if (!plugins[i].is_internal && plugins[i].is_sandboxed) {
+    if (!plugins[i].is_internal) {
       base::NativeLibraryLoadError error;
       base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path,
                                                             &error);

@@ -93,9 +93,7 @@ enum {
   DIR_PNACL_BASE,               // Full path to the base dir for PNaCl.
   DIR_PNACL_COMPONENT,          // Full path to the latest PNaCl version
                                 // (subdir of DIR_PNACL_BASE).
-  FILE_O1D_PLUGIN,              // Full path to the O1D Pepper plugin file.
   FILE_EFFECTS_PLUGIN,          // Full path to the Effects Pepper plugin file.
-  FILE_GTALK_PLUGIN,            // Full path to the GTalk Pepper plugin file.
   DIR_COMPONENT_WIDEVINE_CDM,   // Directory that contains component-updated
                                 // Widevine CDM files.
   FILE_WIDEVINE_CDM_ADAPTER,    // Full path to the Widevine CDM adapter file.

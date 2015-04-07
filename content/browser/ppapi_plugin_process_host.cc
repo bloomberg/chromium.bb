@@ -74,7 +74,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
         *base::CommandLine::ForCurrentProcess();
     base::CommandLine::StringType plugin_launcher = browser_command_line
         .GetSwitchValueNative(switches::kPpapiPluginLauncher);
-    return !is_broker_ && plugin_launcher.empty() && info_.is_sandboxed;
+    return !is_broker_ && plugin_launcher.empty();
   }
   base::ScopedFD TakeIpcFd() override { return ipc_fd_.Pass(); }
 #endif  // OS_WIN
@@ -377,13 +377,8 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     cmd_line->PrependWrapper(plugin_launcher);
 
   // On posix, never use the zygote for the broker. Also, only use the zygote if
-  // the plugin is sandboxed, and we are not using a plugin launcher - having a
-  // plugin launcher means we need to use another process instead of just
-  // forking the zygote.
-#if defined(OS_POSIX)
-  if (!info.is_sandboxed)
-    cmd_line->AppendSwitchASCII(switches::kNoSandbox, std::string());
-#endif  // OS_POSIX
+  // we are not using a plugin launcher - having a plugin launcher means we need
+  // to use another process instead of just forking the zygote.
   process_->Launch(
       new PpapiPluginSandboxedProcessLauncherDelegate(is_broker_,
                                                       info,

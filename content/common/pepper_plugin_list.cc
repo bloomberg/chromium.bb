@@ -129,10 +129,7 @@ bool MakePepperPluginInfo(const WebPluginInfo& webplugin_info,
     return false;
 
   pepper_info->is_out_of_process =
-      webplugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS ||
-      webplugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED;
-  pepper_info->is_sandboxed = webplugin_info.type !=
-      WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED;
+      webplugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
 
   pepper_info->path = base::FilePath(webplugin_info.path);
   pepper_info->name = base::UTF16ToASCII(webplugin_info.name);

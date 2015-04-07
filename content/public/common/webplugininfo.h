@@ -47,7 +47,6 @@ struct CONTENT_EXPORT WebPluginInfo {
     PLUGIN_TYPE_NPAPI,
     PLUGIN_TYPE_PEPPER_IN_PROCESS,
     PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS,
-    PLUGIN_TYPE_PEPPER_UNSANDBOXED,
     PLUGIN_TYPE_BROWSER_PLUGIN
   };
 
@@ -64,8 +63,7 @@ struct CONTENT_EXPORT WebPluginInfo {
 
   bool is_pepper_plugin() const {
     return ((type == PLUGIN_TYPE_PEPPER_IN_PROCESS ) ||
-          (type == PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS) ||
-          (type == PLUGIN_TYPE_PEPPER_UNSANDBOXED));
+          (type == PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS));
   }
 
   // Parse a version string as used by a plugin. This method is more lenient

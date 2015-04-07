@@ -75,16 +75,6 @@ const base::FilePath::CharType kEffectsPluginFileName[] =
     FILE_PATH_LITERAL("pepper/libppeffects.so");
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-
-const base::FilePath::CharType kO1DPluginFileName[] =
-    FILE_PATH_LITERAL("pepper/libppo1d.so");
-
-const base::FilePath::CharType kGTalkPluginFileName[] =
-    FILE_PATH_LITERAL("pepper/libppgoogletalk.so");
-
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
-
 #if defined(OS_LINUX)
 // The path to the external extension <id>.json files.
 // /usr/share seems like a good choice, see: http://www.pathname.com/fhs/
@@ -375,18 +365,6 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif
       cur = cur.Append(FILE_PATH_LITERAL("pnacl"));
       break;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-    case chrome::FILE_O1D_PLUGIN:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
-        return false;
-      cur = cur.Append(kO1DPluginFileName);
-      break;
-    case chrome::FILE_GTALK_PLUGIN:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
-        return false;
-      cur = cur.Append(kGTalkPluginFileName);
-      break;
-#endif
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
 #if defined(WIDEVINE_CDM_IS_COMPONENT)
     case chrome::DIR_COMPONENT_WIDEVINE_CDM:

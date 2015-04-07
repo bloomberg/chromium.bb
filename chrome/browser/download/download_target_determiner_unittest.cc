@@ -2104,22 +2104,6 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
   target_info = RunDownloadTargetDeterminer(
       GetPathInDownloadDir(kInitialPath), item.get());
   EXPECT_FALSE(target_info->is_filetype_handled_safely);
-
-  // Now register an unsandboxed PPAPI plugin. This plugin should not be
-  // considered secure.
-  ScopedRegisterInternalPlugin ppapi_unsandboxed_plugin(
-      plugin_service,
-      content::WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED,
-      test_download_dir().AppendASCII("ppapi-nosandbox"),
-      kTestMIMEType,
-      "fakeext");
-  EXPECT_CALL(mock_plugin_filter_,
-              MockPluginAvailable(ppapi_unsandboxed_plugin.path()))
-      .WillRepeatedly(Return(true));
-
-  target_info = RunDownloadTargetDeterminer(
-      GetPathInDownloadDir(kInitialPath), item.get());
-  EXPECT_FALSE(target_info->is_filetype_handled_safely);
 }
 
 // Check if secure handling of filetypes is determined correctly for NPAPI
