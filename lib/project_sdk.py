@@ -49,7 +49,7 @@ def VersionFile(sdk_dir):
 def FindVersion(sdk_dir=None):
   """Find the version of a given SDK.
 
-  If the SDK was fetched my any means other that "brillo sdk" then it will
+  If the SDK was fetched by any means other than "brillo sdk" then it will
   always appear to be 'non-official', even if an official manifest was used.
 
   Args:
