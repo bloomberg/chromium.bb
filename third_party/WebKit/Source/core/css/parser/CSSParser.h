@@ -6,6 +6,7 @@
 #define CSSParser_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "platform/graphics/Color.h"
 

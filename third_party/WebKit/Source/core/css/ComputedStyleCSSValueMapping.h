@@ -6,6 +6,7 @@
 #define ComputedStyleCSSValueMapping_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/css/CSSValue.h"
 
 namespace blink {
 

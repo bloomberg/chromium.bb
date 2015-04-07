@@ -899,39 +899,12 @@ private:
 // leftmost from another such USING_GARBAGE_COLLECTED_MIXIN-mixin class, extra
 // care and handling is needed for the above two steps; see comment below.
 
-
-// Trait template to resolve the effective base GC class to use when allocating
-// objects at some type T. Requires specialization for Node and CSSValue
-// derived types to have these be allocated on appropriate heaps.
-//
-// FIXME: this trait is needed to support Node's overriding 'operator new'
-// implementation in combination with GC mixins (step 1 above.) Should
-// Node' operator new no longer be needed, this trait can be removed.
-template<typename T, typename Enabled = void>
-class EffectiveGCBaseTrait {
-public:
-    using Type = T;
-};
-
-#define ALLOCATE_ALL_INSTANCES_ON_SAME_GC_HEAP(TYPE)  \
-template<typename T>                                  \
-class EffectiveGCBaseTrait<T, typename WTF::EnableIf<WTF::IsSubclass<T, blink::TYPE>::value>::Type> { \
-public:                \
-    using Type = TYPE; \
-}
-
-#if ENABLE(OILPAN)
-#define WILL_HAVE_ALL_INSTANCES_ON_SAME_GC_HEAP(TYPE) ALLOCATE_ALL_INSTANCES_ON_SAME_GC_HEAP(TYPE)
-#else
-#define WILL_HAVE_ALL_INSTANCES_ON_SAME_GC_HEAP(TYPE)
-#endif
-
 #define DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)                         \
 public:                                                                                 \
     GC_PLUGIN_IGNORE("crbug.com/456823")                                                \
     void* operator new(size_t size)                                                     \
     {                                                                                   \
-        void* object = Heap::allocate<typename EffectiveGCBaseTrait<TYPE>::Type>(size); \
+        void* object = TYPE::allocateObject(size);                                      \
         ThreadState* state = ThreadStateFor<ThreadingTrait<TYPE>::Affinity>::state();   \
         state->enterGCForbiddenScope(TYPE::mixinLevels);                                \
         return object;                                                                  \

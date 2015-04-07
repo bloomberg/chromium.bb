@@ -114,7 +114,6 @@ protected:
 
 class Node;
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(Node);
-WILL_HAVE_ALL_INSTANCES_ON_SAME_GC_HEAP(Node);
 
 #if ENABLE(OILPAN)
 #define NODE_BASE_CLASSES public EventTarget
@@ -164,13 +163,18 @@ public:
     };
 
 #if ENABLE(OILPAN)
-    // Node is now a GarbageCollected<EventTarget> instead of a GarbageCollected<Node>, which confuses Oilpan's
-    // static type dispatching of typed heap for Nodes. We override GarbageCollected<>'s operator new here, to put
-    // Node descendants into typed heap for Nodes. <http://crbug.com/443854>
-    using GarbageCollectedBase = EventTarget;
-
+    // Override operator new to allocate Node subtype objects onto
+    // a dedicated heap.
     GC_PLUGIN_IGNORE("crbug.com/443854")
-    void* operator new(size_t size) { return Heap::allocate<Node>(size); }
+    void* operator new(size_t size)
+    {
+        return allocateObject(size);
+    }
+    static void* allocateObject(size_t size)
+    {
+        ThreadState* state = ThreadStateFor<ThreadingTrait<Node>::Affinity>::state();
+        return Heap::allocateOnHeapIndex(state, size, NodeHeapIndex, GCInfoTrait<EventTarget>::index());
+    }
 #else // !ENABLE(OILPAN)
     // All Nodes are placed in their own heap partition for security.
     // See http://crbug.com/246860 for detail.

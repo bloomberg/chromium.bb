@@ -733,6 +733,21 @@ int SimpleFinalizedObject::s_destructorCalls = 0;
 
 class IntNode : public GarbageCollected<IntNode> {
 public:
+    // IntNode is used to test typed heap allocation. Instead of
+    // redefining blink::Node to our test version, we keep it separate
+    // so as to avoid possible warnings about linker duplicates.
+    // Override operator new to allocate IntNode subtype objects onto
+    // the dedicated heap for blink::Node.
+    //
+    // TODO(haraken): untangling the heap unit tests from Blink would
+    // simplify and avoid running into this problem - http://crbug.com/425381
+    GC_PLUGIN_IGNORE("crbug.com/443854")
+    void* operator new(size_t size)
+    {
+        ThreadState* state = ThreadState::current();
+        return Heap::allocateOnHeapIndex(state, size, NodeHeapIndex, GCInfoTrait<IntNode>::index());
+    }
+
     static IntNode* create(int i)
     {
         return new IntNode(i);
@@ -745,19 +760,6 @@ public:
 private:
     IntNode(int i) : m_value(i) { }
     int m_value;
-};
-
-// IntNode is used to test typed heap allocation. Instead of
-// redefining blink::Node to our test version, we keep it separate
-// so as to avoid possible warnings about linker duplicates.
-// Provide a HeapIndexTrait<> specialization to assign the test
-// object to Node's typed heap instead.
-//
-// FIXME: untangling the heap unit tests from Blink would simplify
-// and avoid running into this problem - http://crbug.com/425381
-template<>
-struct HeapIndexTrait<IntNode> {
-    static int index(size_t) { return NodeHeapIndex; }
 };
 
 class Bar : public GarbageCollectedFinalized<Bar> {

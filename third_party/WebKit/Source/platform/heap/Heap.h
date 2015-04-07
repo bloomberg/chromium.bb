@@ -1096,29 +1096,17 @@ private:
 // practical to prepare dedicated heaps for all types. Thus we group objects
 // by their sizes, hoping that it will approximately group objects
 // by their types.
-template<typename T>
-struct HeapIndexTrait {
-    static int index(size_t size)
-    {
-        if (size < 64) {
-            if (size < 32)
-                return NormalPage1HeapIndex;
-            return NormalPage2HeapIndex;
-        }
-        if (size < 128)
-            return NormalPage3HeapIndex;
-        return NormalPage4HeapIndex;
-    };
-};
-
-// FIXME: The forward declaration is layering violation.
-#define DEFINE_TYPED_HEAP_TRAIT(Type)                   \
-    class Type;                                         \
-    template <> struct HeapIndexTrait<class Type> {     \
-        static int index(size_t) { return Type##HeapIndex; }; \
-    };
-FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
-#undef DEFINE_TYPED_HEAP_TRAIT
+static int heapIndexForNormalHeap(size_t size)
+{
+    if (size < 64) {
+        if (size < 32)
+            return NormalPage1HeapIndex;
+        return NormalPage2HeapIndex;
+    }
+    if (size < 128)
+        return NormalPage3HeapIndex;
+    return NormalPage4HeapIndex;
+}
 
 // Base class for objects allocated in the Blink garbage-collected heap.
 //
@@ -1156,6 +1144,11 @@ public:
     using GarbageCollectedBase = T;
 
     void* operator new(size_t size)
+    {
+        return allocateObject(size);
+    }
+
+    static void* allocateObject(size_t size)
     {
         return Heap::allocate<T>(size);
     }
@@ -1457,7 +1450,7 @@ template<typename T>
 Address Heap::allocate(size_t size)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    return Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::index(size), GCInfoTrait<T>::index());
+    return Heap::allocateOnHeapIndex(state, size, heapIndexForNormalHeap(size), GCInfoTrait<T>::index());
 }
 
 template<typename T>
@@ -1469,13 +1462,15 @@ Address Heap::reallocate(void* previous, size_t size)
         return nullptr;
     }
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    Address address = Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::index(size), GCInfoTrait<T>::index());
+    // TODO(haraken): reallocate() should use the heap that the original object
+    // is using. This won't be a big deal since reallocate() is rarely used.
+    Address address = Heap::allocateOnHeapIndex(state, size, heapIndexForNormalHeap(size), GCInfoTrait<T>::index());
     if (!previous) {
         // This is equivalent to malloc(size).
         return address;
     }
     HeapObjectHeader* previousHeader = HeapObjectHeader::fromPayload(previous);
-    // FIXME: We don't support reallocate() for finalizable objects.
+    // TODO(haraken): We don't support reallocate() for finalizable objects.
     ASSERT(!Heap::gcInfo(previousHeader->gcInfoIndex())->hasFinalizer());
     ASSERT(previousHeader->gcInfoIndex() == GCInfoTrait<T>::index());
     size_t copySize = previousHeader->payloadSize();

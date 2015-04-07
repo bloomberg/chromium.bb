@@ -461,10 +461,8 @@ public:
     }
 
     // Get one of the heap structures for this thread.
-    //
-    // The heap is split into multiple heap parts based on object
-    // types. To get the index for a given type, use
-    // HeapIndexTrait<Type>::index.
+    // The thread heap is split into multiple heap parts based on object types
+    // and object sizes.
     BaseHeap* heap(int heapIndex) const
     {
         ASSERT(0 <= heapIndex);

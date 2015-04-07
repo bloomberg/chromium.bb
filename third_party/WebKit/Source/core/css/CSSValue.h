@@ -32,11 +32,22 @@ namespace blink {
 
 class CSSValue : public RefCountedWillBeGarbageCollectedFinalized<CSSValue> {
 public:
+#if ENABLE(OILPAN)
+    // Override operator new to allocate CSSValue subtype objects onto
+    // a dedicated heap.
+    GC_PLUGIN_IGNORE("crbug.com/443854")
+    void* operator new(size_t size)
+    {
+        return allocateObject(size);
+    }
+    static void* allocateObject(size_t size)
+    {
+        ThreadState* state = ThreadStateFor<ThreadingTrait<CSSValue>::Affinity>::state();
+        return Heap::allocateOnHeapIndex(state, size, CSSValueHeapIndex, GCInfoTrait<CSSValue>::index());
+    }
+#else
     // Override RefCounted's deref() to ensure operator delete is called on
     // the appropriate subclass type.
-    // When oilpan is enabled the finalize method is called by the garbage
-    // collector and not immediately when deref reached zero.
-#if !ENABLE(OILPAN)
     void deref()
     {
         if (derefBase())
@@ -219,8 +230,6 @@ inline bool compareCSSValuePtr(const Member<CSSValueType>& first, const Member<C
 
 #define DEFINE_CSS_VALUE_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, CSSValue, value, value->predicate, value.predicate)
-
-WILL_HAVE_ALL_INSTANCES_ON_SAME_GC_HEAP(CSSValue);
 
 } // namespace blink
 
