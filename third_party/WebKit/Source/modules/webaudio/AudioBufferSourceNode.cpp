@@ -47,9 +47,10 @@ const double DefaultGrainDuration = 0.020; // 20ms
 // to minimize linear interpolation aliasing.
 const double MaxRate = 1024;
 
-AudioBufferSourceHandler::AudioBufferSourceHandler(AudioNode& node, float sampleRate)
+AudioBufferSourceHandler::AudioBufferSourceHandler(AudioNode& node, float sampleRate, AudioParamHandler& playbackRate)
     : AudioScheduledSourceHandler(NodeTypeAudioBufferSource, node, sampleRate)
     , m_buffer(nullptr)
+    , m_playbackRate(playbackRate)
     , m_isLooping(false)
     , m_loopStart(0)
     , m_loopEnd(0)
@@ -58,8 +59,6 @@ AudioBufferSourceHandler::AudioBufferSourceHandler(AudioNode& node, float sample
     , m_grainOffset(0.0)
     , m_grainDuration(DefaultGrainDuration)
 {
-    m_playbackRate = AudioParam::create(context(), 1.0);
-
     // Default to mono. A call to setBuffer() will set the number of output
     // channels to that of the buffer.
     addOutput(1);
@@ -485,7 +484,7 @@ double AudioBufferSourceHandler::totalPitchRate()
 {
     double dopplerRate = 1.0;
     if (m_pannerNode)
-        dopplerRate = m_pannerNode->pannerHandler().dopplerRate();
+        dopplerRate = m_pannerNode->dopplerRate();
 
     // Incorporate buffer's sample-rate versus AudioContext's sample-rate.
     // Normally it's not an issue because buffers are loaded at the AudioContext's sample-rate, but we can handle it in any case.
@@ -493,7 +492,7 @@ double AudioBufferSourceHandler::totalPitchRate()
     if (buffer())
         sampleRateFactor = buffer()->sampleRate() / sampleRate();
 
-    double basePitchRate = playbackRate()->value();
+    double basePitchRate = m_playbackRate->value();
 
     double totalRate = dopplerRate * sampleRateFactor * basePitchRate;
 
@@ -516,22 +515,22 @@ bool AudioBufferSourceHandler::propagatesSilence() const
     return !isPlayingOrScheduled() || hasFinished() || !m_buffer;
 }
 
-void AudioBufferSourceHandler::setPannerNode(PannerNode* pannerNode)
+void AudioBufferSourceHandler::setPannerNode(PannerHandler* pannerNode)
 {
     if (m_pannerNode != pannerNode && !hasFinished()) {
-        PannerNode* oldPannerNode(m_pannerNode.release());
+        PannerHandler* oldPannerNode(m_pannerNode.release());
         m_pannerNode = pannerNode;
         if (pannerNode)
-            pannerNode->handler().makeConnection();
+            pannerNode->makeConnection();
         if (oldPannerNode)
-            oldPannerNode->handler().breakConnection();
+            oldPannerNode->breakConnection();
     }
 }
 
 void AudioBufferSourceHandler::clearPannerNode()
 {
     if (m_pannerNode) {
-        m_pannerNode->handler().breakConnection();
+        m_pannerNode->breakConnection();
         m_pannerNode.clear();
     }
 }
@@ -561,7 +560,6 @@ void AudioBufferSourceHandler::finish()
 DEFINE_TRACE(AudioBufferSourceHandler)
 {
     visitor->trace(m_buffer);
-    visitor->trace(m_playbackRate);
     visitor->trace(m_pannerNode);
     AudioScheduledSourceHandler::trace(visitor);
 }
@@ -569,13 +567,20 @@ DEFINE_TRACE(AudioBufferSourceHandler)
 // ----------------------------------------------------------------
 AudioBufferSourceNode::AudioBufferSourceNode(AudioContext& context, float sampleRate)
     : AudioScheduledSourceNode(context)
+    , m_playbackRate(AudioParam::create(&context, 1.0))
 {
-    setHandler(new AudioBufferSourceHandler(*this, sampleRate));
+    setHandler(new AudioBufferSourceHandler(*this, sampleRate, m_playbackRate->handler()));
 }
 
 AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext* context, float sampleRate)
 {
     return new AudioBufferSourceNode(*context, sampleRate);
+}
+
+DEFINE_TRACE(AudioBufferSourceNode)
+{
+    visitor->trace(m_playbackRate);
+    AudioScheduledSourceNode::trace(visitor);
 }
 
 AudioBufferSourceHandler& AudioBufferSourceNode::audioBufferSourceHandler() const
@@ -595,7 +600,7 @@ void AudioBufferSourceNode::setBuffer(AudioBuffer* newBuffer, ExceptionState& ex
 
 AudioParam* AudioBufferSourceNode::playbackRate() const
 {
-    return audioBufferSourceHandler().playbackRate();
+    return m_playbackRate;
 }
 
 bool AudioBufferSourceNode::loop() const

@@ -44,7 +44,7 @@ class AudioContext;
 
 class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
 public:
-    AudioBufferSourceHandler(AudioNode&, float sampleRate);
+    AudioBufferSourceHandler(AudioNode&, float sampleRate, AudioParamHandler& playbackRate);
     virtual ~AudioBufferSourceHandler();
 
     // AudioHandler
@@ -77,10 +77,8 @@ public:
     void setLoopStart(double loopStart) { m_loopStart = loopStart; }
     void setLoopEnd(double loopEnd) { m_loopEnd = loopEnd; }
 
-    AudioParam* playbackRate() { return m_playbackRate.get(); }
-
     // If a panner node is set, then we can incorporate doppler shift into the playback pitch rate.
-    void setPannerNode(PannerNode*);
+    void setPannerNode(PannerHandler*);
     void clearPannerNode();
 
     // If we are no longer playing, propogate silence ahead to downstream nodes.
@@ -112,8 +110,7 @@ private:
     OwnPtr<const float*[]> m_sourceChannels;
     OwnPtr<float*[]> m_destinationChannels;
 
-    // Used for the "playbackRate" attributes.
-    Member<AudioParam> m_playbackRate;
+    RefPtr<AudioParamHandler> m_playbackRate;
 
     // If m_isLooping is false, then this node will be done playing and become inactive after it reaches the end of the sample data in the buffer.
     // If true, it will wrap around to the start of the buffer each time it reaches the end.
@@ -144,7 +141,7 @@ private:
     // Oilpan: This holds connection references. We must call
     // AudioNode::makeConnection when we add an AudioNode to this, and must call
     // AudioNode::breakConnection() when we remove an AudioNode from this.
-    Member<PannerNode> m_pannerNode;
+    Member<PannerHandler> m_pannerNode;
 
     // This synchronizes process() with setBuffer() which can cause dynamic channel count changes.
     mutable Mutex m_processLock;
@@ -154,6 +151,7 @@ class AudioBufferSourceNode final : public AudioScheduledSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static AudioBufferSourceNode* create(AudioContext*, float sampleRate);
+    DECLARE_VIRTUAL_TRACE();
     AudioBufferSourceHandler& audioBufferSourceHandler() const;
 
     AudioBuffer* buffer() const;
@@ -173,6 +171,9 @@ public:
 
 private:
     AudioBufferSourceNode(AudioContext&, float sampleRate);
+
+    // Used for the "playbackRate" attributes.
+    Member<AudioParam> m_playbackRate;
 };
 
 } // namespace blink
