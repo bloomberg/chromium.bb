@@ -44,10 +44,6 @@ struct MD5Digest {
 // should not access the data.
 typedef char MD5Context[88];
 
-// Computes the MD5 sum of the given data buffer with the given length.
-// The given 'digest' structure will be filled with the result data.
-BASE_EXPORT void MD5Sum(const void* data, size_t length, MD5Digest* digest);
-
 // Initializes the given MD5 context structure for subsequent calls to
 // MD5Update().
 BASE_EXPORT void MD5Init(MD5Context* context);
@@ -68,6 +64,10 @@ BASE_EXPORT void MD5IntermediateFinal(MD5Digest* digest,
 
 // Converts a digest into human-readable hexadecimal.
 BASE_EXPORT std::string MD5DigestToBase16(const MD5Digest& digest);
+
+// Computes the MD5 sum of the given data buffer with the given length.
+// The given 'digest' structure will be filled with the result data.
+BASE_EXPORT void MD5Sum(const void* data, size_t length, MD5Digest* digest);
 
 // Returns the MD5 (in hexadecimal) of a string.
 BASE_EXPORT std::string MD5String(const StringPiece& str);
