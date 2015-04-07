@@ -1364,6 +1364,9 @@ class BisectPerformanceMetrics(object):
           break
       elif self._IsBisectModeReturnCode():
         metric_values.append(return_code)
+        # If there's a failed test, we can bail out early.
+        if return_code:
+          break
 
       elapsed_minutes = (time.time() - start_time) / 60.0
       time_limit = self.opts.max_time_minutes * test_run_multiplier
