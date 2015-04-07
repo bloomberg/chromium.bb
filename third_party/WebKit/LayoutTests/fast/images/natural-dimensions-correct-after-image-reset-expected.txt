@@ -1,0 +1,7 @@
+
+    crbug.com/468915: Resetting or removing the src attribute should reset the image immediately, rather than waiting for an asynchronous load to do it.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS

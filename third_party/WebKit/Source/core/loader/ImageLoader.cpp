@@ -356,6 +356,14 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior)
         doUpdateFromElement(DoNotBypassMainWorldCSP, updateBehavior);
         return;
     }
+    // Allow the idiom "img.src=''; img.src='.." to clear down the image before
+    // an asynchronous load completes.
+    if (imageSourceURL.isEmpty()) {
+        ImageResource* image = m_image.get();
+        if (image)
+            image->removeClient(this);
+        m_image = nullptr;
+    }
     enqueueImageLoadingMicroTask(updateBehavior);
 }
 
