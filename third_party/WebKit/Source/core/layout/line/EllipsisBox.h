@@ -31,9 +31,8 @@ class HitTestResult;
 class EllipsisBox final : public InlineBox {
 public:
     EllipsisBox(LayoutObject& obj, const AtomicString& ellipsisStr, InlineFlowBox* parent,
-        int width, int height, int x, int y, bool firstLine, bool isVertical, InlineBox* markupBox)
+        int width, int height, int x, int y, bool firstLine, bool isVertical)
         : InlineBox(obj, FloatPointWillBeLayoutPoint(x, y), width, firstLine, true, false, false, isVertical, 0, 0, parent)
-        , m_shouldPaintMarkupBox(markupBox)
         , m_height(height)
         , m_str(ellipsisStr)
         , m_selectionState(LayoutObject::SelectionNone)
@@ -49,13 +48,11 @@ public:
     virtual FloatWillBeLayoutUnit virtualLogicalHeight() const override { return m_height; }
     virtual LayoutObject::SelectionState selectionState() const override { return m_selectionState; }
     const AtomicString& ellipsisStr() { return m_str; }
-    InlineBox* markupBox() const;
 
     virtual const char* boxName() const override;
 
 private:
 
-    bool m_shouldPaintMarkupBox;
     int m_height;
     AtomicString m_str;
     LayoutObject::SelectionState m_selectionState;

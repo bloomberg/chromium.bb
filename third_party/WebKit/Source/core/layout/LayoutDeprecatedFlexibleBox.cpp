@@ -895,20 +895,9 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         if (!lastVisibleLine)
             continue;
 
-        const UChar ellipsisAndSpace[2] = { horizontalEllipsis, ' ' };
-        DEFINE_STATIC_LOCAL(AtomicString, ellipsisAndSpaceStr, (ellipsisAndSpace, 2));
         DEFINE_STATIC_LOCAL(AtomicString, ellipsisStr, (&horizontalEllipsis, 1));
         const Font& font = style(numVisibleLines == 1)->font();
-
-        // Get ellipsis width, and if the last child is an anchor, it will go after the ellipsis, so add in a space and the anchor width too
-        float totalWidth;
-        InlineBox* anchorBox = lastLine->lastChild();
-        if (anchorBox && anchorBox->layoutObject().style()->isLink()) {
-            totalWidth = anchorBox->logicalWidth() + font.width(constructTextRun(this, font, ellipsisAndSpace, 2, styleRef(), style()->direction()));
-        } else {
-            anchorBox = 0;
-            totalWidth = font.width(constructTextRun(this, font, &horizontalEllipsis, 1, styleRef(), style()->direction()));
-        }
+        float totalWidth = font.width(constructTextRun(this, font, &horizontalEllipsis, 1, styleRef(), style()->direction()));
 
         // See if this width can be accommodated on the last visible line
         LayoutBlockFlow& destBlock = lastVisibleLine->block();
@@ -929,7 +918,7 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         // Let the truncation code kick in.
         // FIXME: the text alignment should be recomputed after the width changes due to truncation.
         LayoutUnit blockLeftEdge = destBlock.logicalLeftOffsetForLine(lastVisibleLine->y(), false);
-        lastVisibleLine->placeEllipsis(anchorBox ? ellipsisAndSpaceStr : ellipsisStr, leftToRight, blockLeftEdge.toFloat(), blockRightEdge.toFloat(), totalWidth, anchorBox);
+        lastVisibleLine->placeEllipsis(ellipsisStr, leftToRight, blockLeftEdge.toFloat(), blockRightEdge.toFloat(), totalWidth);
         destBlock.setHasMarkupTruncation(true);
     }
 }

@@ -19,7 +19,6 @@ void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pa
 {
     const ComputedStyle& style = m_ellipsisBox.layoutObject().styleRef(m_ellipsisBox.isFirstLineStyle());
     paintEllipsis(paintInfo, paintOffset, lineTop, lineBottom, style);
-    paintMarkupBox(paintInfo, paintOffset, lineTop, lineBottom, style);
 }
 
 void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle& style)
@@ -54,18 +53,6 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
     TextRun textRun = constructTextRun(&m_ellipsisBox.layoutObject(), font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion);
     TextPainter textPainter(context, font, textRun, textOrigin, boxRect, m_ellipsisBox.isHorizontal());
     textPainter.paint(0, m_ellipsisBox.ellipsisStr().length(), m_ellipsisBox.ellipsisStr().length(), textStyle);
-}
-
-void EllipsisBoxPainter::paintMarkupBox(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle& style)
-{
-    InlineBox* markupBox = m_ellipsisBox.markupBox();
-    if (!markupBox)
-        return;
-
-    LayoutPoint adjustedPaintOffset = paintOffset;
-    adjustedPaintOffset.move(m_ellipsisBox.x() + m_ellipsisBox.logicalWidth() - markupBox->x(),
-        m_ellipsisBox.y() + style.fontMetrics().ascent() - (markupBox->y() + markupBox->layoutObject().styleRef(m_ellipsisBox.isFirstLineStyle()).fontMetrics().ascent()));
-    markupBox->paint(paintInfo, adjustedPaintOffset, lineTop, lineBottom);
 }
 
 void EllipsisBoxPainter::paintSelection(GraphicsContext* context, const FloatPoint& boxOrigin, const ComputedStyle& style, const Font& font)

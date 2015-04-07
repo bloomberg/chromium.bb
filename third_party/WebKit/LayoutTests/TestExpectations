@@ -1071,6 +1071,7 @@ crbug.com/470713 virtual/slimmingpaint/fast/block/float/float-not-removed-from-n
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Crash Pass ]
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Crash Pass ]
 
+crbug.com/474343 fast/overflow/line-clamp.html [ NeedsRebaseline ]
 crbug.com/356777 http/tests/history/frameset-repeated-name.html [ Pass Failure ]
 
 crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]

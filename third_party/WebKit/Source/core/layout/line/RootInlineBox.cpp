@@ -113,12 +113,11 @@ bool RootInlineBox::lineCanAccommodateEllipsis(bool ltr, int blockEdge, int line
     return InlineFlowBox::canAccommodateEllipsis(ltr, blockEdge, ellipsisWidth);
 }
 
-FloatWillBeLayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool ltr, FloatWillBeLayoutUnit blockLeftEdge, FloatWillBeLayoutUnit blockRightEdge, FloatWillBeLayoutUnit ellipsisWidth, InlineBox* markupBox)
+FloatWillBeLayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,  bool ltr, FloatWillBeLayoutUnit blockLeftEdge, FloatWillBeLayoutUnit blockRightEdge, FloatWillBeLayoutUnit ellipsisWidth)
 {
     // Create an ellipsis box.
     EllipsisBox* ellipsisBox = new EllipsisBox(layoutObject(), ellipsisStr, this,
-        ellipsisWidth - (markupBox ? markupBox->logicalWidth().toFloat() : 0), logicalHeight().toFloat(),
-        x(), y(), !prevRootBox(), isHorizontal(), markupBox);
+        ellipsisWidth, logicalHeight().toFloat(), x(), y(), !prevRootBox(), isHorizontal());
 
     if (!gEllipsisBoxMap)
         gEllipsisBoxMap = new EllipsisBoxMap();

@@ -38,25 +38,6 @@ void EllipsisBox::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     EllipsisBoxPainter(*this).paint(paintInfo, paintOffset, lineTop, lineBottom);
 }
 
-InlineBox* EllipsisBox::markupBox() const
-{
-    if (!m_shouldPaintMarkupBox || !layoutObject().isLayoutBlock())
-        return 0;
-
-    LayoutBlock& block = toLayoutBlock(layoutObject());
-    RootInlineBox* lastLine = block.lineAtIndex(block.lineCount() - 1);
-    if (!lastLine)
-        return 0;
-
-    // If the last line-box on the last line of a block is a link, -webkit-line-clamp paints that box after the ellipsis.
-    // It does not actually move the link.
-    InlineBox* anchorBox = lastLine->lastChild();
-    if (!anchorBox || !anchorBox->layoutObject().style()->isLink())
-        return 0;
-
-    return anchorBox;
-}
-
 IntRect EllipsisBox::selectionRect()
 {
     const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
@@ -69,17 +50,6 @@ bool EllipsisBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
     // FIXME: the call to roundedLayoutPoint() below is temporary and should be removed once
     // the transition to LayoutUnit-based types is complete (crbug.com/321237)
     LayoutPoint adjustedLocation = accumulatedOffset + topLeft().roundedLayoutPoint();
-
-    // Hit test the markup box.
-    if (InlineBox* markupBox = this->markupBox()) {
-        const ComputedStyle& style = layoutObject().styleRef(isFirstLineStyle());
-        LayoutUnit mtx = adjustedLocation.x() + m_logicalWidth - markupBox->x();
-        LayoutUnit mty = adjustedLocation.y() + style.fontMetrics().ascent() - (markupBox->y() + markupBox->layoutObject().style(isFirstLineStyle())->fontMetrics().ascent());
-        if (markupBox->nodeAtPoint(result, locationInContainer, LayoutPoint(mtx, mty), lineTop, lineBottom)) {
-            layoutObject().updateHitTestResult(result, locationInContainer.point() - LayoutSize(mtx, mty));
-            return true;
-        }
-    }
 
     FloatPointWillBeLayoutPoint boxOrigin = locationIncludingFlipping();
     boxOrigin.moveBy(accumulatedOffset);
