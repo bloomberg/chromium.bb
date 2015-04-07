@@ -520,7 +520,7 @@ void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, StyleRule:
         }
         case AtKeywordToken: {
             RefPtrWillBeRawPtr<StyleRuleBase> rule = consumeAtRule(range, NoRules);
-            ASSERT(!rule);
+            ASSERT_UNUSED(rule, !rule);
             break;
         }
         default: // Parse error, unexpected token in declaration list
