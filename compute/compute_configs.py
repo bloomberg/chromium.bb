@@ -48,7 +48,15 @@ configs['cros-bot'] = dict(
 
 # The default config for Chrome OS PreCQ builders.
 configs['cros-precq-bot'] = dict(
-    machine_type='n1-highmem-8',
+    machine_type='n1-highmem-16',
+    zone=DEFAULT_ZONE,
+    image=DEFAULT_IMAGE_NAME,
+    scopes=DEFAULT_SCOPES,
+)
+
+# A light-weight config for light jobs, like boardless masters.
+configs['cros-master'] = dict(
+    machine_type='n1-standard-8',
     zone=DEFAULT_ZONE,
     image=DEFAULT_IMAGE_NAME,
     scopes=DEFAULT_SCOPES,
