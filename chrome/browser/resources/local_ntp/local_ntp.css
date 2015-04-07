@@ -594,6 +594,11 @@ html[dir=rtl] .thumb-ntp .mv-favicon {
   background-size: 16px 16px;
 }
 
+.mv-favicon img {
+  height: 100%;
+  width: 100%;
+}
+
 /* The notification shown when a tile is blacklisted. */
 #mv-notice {
   font-size: 12px;

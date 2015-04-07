@@ -368,6 +368,11 @@ html[dir=rtl] .mv-favicon {
   background-size: 16px 16px;
 }
 
+.mv-favicon img {
+  height: 100%;
+  width: 100%;
+}
+
 .mv-favicon.failed-favicon img {
   display: none;
 }
