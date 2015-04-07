@@ -29,6 +29,12 @@ class Service : public KeyedService {
   // Dispatches onQueryStarted events to listener extensions.
   void OnQueryStarted(const std::string& query, const int max_result);
 
+  // Dispatches onQueryEnded events to listener extensions.
+  void OnQueryEnded();
+
+  // Returns true if there is a running query.
+  bool IsQueryRunning() const;
+
  private:
   // Returns extension ids of listener extensions.
   std::set<extensions::ExtensionId> GetListenerExtensionIds();
@@ -36,6 +42,7 @@ class Service : public KeyedService {
   Profile* const profile_;
   extensions::ExtensionRegistry* extension_registry_;
   uint32 query_id_;
+  bool is_query_running_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

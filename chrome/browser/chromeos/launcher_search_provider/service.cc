@@ -20,7 +20,10 @@ namespace launcher_search_provider {
 
 Service::Service(Profile* profile,
                  extensions::ExtensionRegistry* extension_registry)
-    : profile_(profile), extension_registry_(extension_registry), query_id_(0) {
+    : profile_(profile),
+      extension_registry_(extension_registry),
+      query_id_(0),
+      is_query_running_(false) {
 }
 
 Service::~Service() {
@@ -32,6 +35,9 @@ Service* Service::Get(content::BrowserContext* context) {
 }
 
 void Service::OnQueryStarted(const std::string& query, const int max_result) {
+  DCHECK(!is_query_running_);
+  is_query_running_ = true;
+
   ++query_id_;
 
   extensions::EventRouter* event_router =
@@ -46,6 +52,29 @@ void Service::OnQueryStarted(const std::string& query, const int max_result) {
             api_launcher_search_provider::OnQueryStarted::Create(
                 std::to_string(query_id_), query, max_result))));
   }
+}
+
+void Service::OnQueryEnded() {
+  DCHECK(is_query_running_);
+
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
+
+  std::set<ExtensionId> extension_ids = GetListenerExtensionIds();
+  for (const ExtensionId extension_id : extension_ids) {
+    event_router->DispatchEventToExtension(
+        extension_id,
+        make_scoped_ptr(new extensions::Event(
+            api_launcher_search_provider::OnQueryEnded::kEventName,
+            api_launcher_search_provider::OnQueryEnded::Create(
+                std::to_string(query_id_)))));
+  }
+
+  is_query_running_ = false;
+}
+
+bool Service::IsQueryRunning() const {
+  return is_query_running_;
 }
 
 std::set<ExtensionId> Service::GetListenerExtensionIds() {
