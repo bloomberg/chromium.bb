@@ -32,6 +32,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -94,38 +95,25 @@ class DockedBackgroundWidget : public views::Widget,
   }
 
   void OnNativeWidgetPaint(const ui::PaintContext& context) override {
-    gfx::Canvas* canvas = context.canvas();
+    ui::PaintRecorder recorder(context);
     const gfx::ImageSkia& shelf_background(
         alignment_ == DOCKED_ALIGNMENT_LEFT ?
             shelf_background_left_ : shelf_background_right_);
     gfx::Rect rect = gfx::Rect(GetWindowBoundsInScreen().size());
     SkPaint paint;
     paint.setAlpha(alpha_);
-    canvas->DrawImageInt(shelf_background,
-                         0,
-                         0,
-                         shelf_background.width(),
-                         shelf_background.height(),
-                         alignment_ == DOCKED_ALIGNMENT_LEFT
-                             ? rect.width() - shelf_background.width()
-                             : 0,
-                         0,
-                         shelf_background.width(),
-                         rect.height(),
-                         false,
-                         paint);
-    canvas->DrawImageInt(
+    recorder.canvas()->DrawImageInt(
+        shelf_background, 0, 0, shelf_background.width(),
+        shelf_background.height(), alignment_ == DOCKED_ALIGNMENT_LEFT
+                                       ? rect.width() - shelf_background.width()
+                                       : 0,
+        0, shelf_background.width(), rect.height(), false, paint);
+    recorder.canvas()->DrawImageInt(
         shelf_background,
         alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width() - 1,
-        0,
-        1,
-        shelf_background.height(),
-        alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width(),
-        0,
-        rect.width() - shelf_background.width(),
-        rect.height(),
-        false,
-        paint);
+        0, 1, shelf_background.height(),
+        alignment_ == DOCKED_ALIGNMENT_LEFT ? 0 : shelf_background.width(), 0,
+        rect.width() - shelf_background.width(), rect.height(), false, paint);
   }
 
   // BackgroundAnimatorDelegate:

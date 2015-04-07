@@ -11,6 +11,7 @@
 #include "ash/shell_window_ids.h"
 #include "base/stl_util.h"
 #include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -61,15 +62,15 @@ class PartialScreenshotController::PartialScreenshotLayer
     if (region_.IsEmpty())
       return;
 
-    gfx::Canvas* canvas = context.canvas();
     // Screenshot area representation: black rectangle with white
     // rectangle inside.  To avoid capturing these rectangles when mouse
     // release, they should be outside of the actual capturing area.
+    ui::PaintRecorder recorder(context);
     gfx::Rect rect(region_);
     rect.Inset(-1, -1);
-    canvas->DrawRect(rect, SK_ColorWHITE);
+    recorder.canvas()->DrawRect(rect, SK_ColorWHITE);
     rect.Inset(-1, -1);
-    canvas->DrawRect(rect, SK_ColorBLACK);
+    recorder.canvas()->DrawRect(rect, SK_ColorBLACK);
   }
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
