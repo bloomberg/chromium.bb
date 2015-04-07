@@ -107,9 +107,9 @@ def processJinjaTemplate(input_file, include_paths, output_file, context):
   io.open(output_file, 'w', encoding='utf-8').write(rendered)
 
 def buildWebApp(buildtype, version, destination, zip_path,
-                manifest_template, webapp_type, appid, app_name,
-                app_description, app_capabilities, files, locales_listfile,
-                jinja_paths, service_environment, use_gcd):
+                manifest_template, webapp_type, appid, app_client_id, app_name,
+                app_description, app_capabilities, manifest_key, files,
+                locales_listfile, jinja_paths, service_environment, use_gcd):
   """Does the main work of building the webapp directory and zipfile.
 
   Args:
@@ -123,10 +123,12 @@ def buildWebApp(buildtype, version, destination, zip_path,
     appid: A string with the Remoting Application Id (only used for app
              remoting webapps). If supplied, it defaults to using the
              test API server.
+    app_client_id: The OAuth2 client ID for the webapp.
     app_name: A string with the name of the application.
     app_description: A string with the description of the application.
     app_capabilities: A set of strings naming the capabilities that should be
                       enabled for this application.
+    manifest_key: The manifest key for the webapp.
     files: An array of strings listing the paths for resources to include
            in this webapp.
     locales_listfile: The name of a file containing a list of locales, one per
@@ -134,8 +136,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
              the _locales directory down.
     jinja_paths: An array of paths to search for {%include} directives in
                  addition to the directory containing the manifest template.
-    service_environment: Used to point the webApp to one of the
-                         dev/test/staging/prod environments
+    service_environment: Used to point the webapp to one of the
+                         dev/test/staging/prod/prod-testing environments
     use_gcd: True if GCD support should be enabled.
   """
 
@@ -212,7 +214,10 @@ def buildWebApp(buildtype, version, destination, zip_path,
   directoryApiHost = os.environ.get(
       'DIRECTORY_API_HOST', 'https://www.googleapis.com')
 
-  if webapp_type == 'app_remoting':
+  is_app_remoting_webapp = webapp_type == 'app_remoting'
+  is_prod_service_environment = service_environment == 'prod' or \
+                                service_environment == 'prod-testing'
+  if is_app_remoting_webapp:
     appRemotingApiHost = os.environ.get(
         'APP_REMOTING_API_HOST', None)
     appRemotingApplicationId = os.environ.get(
@@ -223,11 +228,11 @@ def buildWebApp(buildtype, version, destination, zip_path,
     # being generated correctly (no overrides) and with the correct buildtype.
     # They also verify that folks are not accidentally building dev/test/staging
     # apps for release (no impersonation) instead of dev.
-    if service_environment == 'prod' and buildtype == 'Dev':
+    if is_prod_service_environment and buildtype == 'Dev':
       raise Exception("Prod environment cannot be built for 'dev' builds")
 
     if buildtype != 'Dev':
-      if service_environment != 'prod':
+      if not is_prod_service_environment:
         raise Exception('Invalid service_environment targeted for '
                         + buildtype + ': ' + service_environment)
       if 'out/Release' not in destination and 'out\Release' not in destination:
@@ -256,10 +261,10 @@ def buildWebApp(buildtype, version, destination, zip_path,
   oauth2ApiBaseUrl = oauth2ApiHost + '/oauth2'
   directoryApiBaseUrl = directoryApiHost + '/chromoting/v1'
 
-  if webapp_type == 'app_remoting':
+  if is_app_remoting_webapp:
     # Set the apiary endpoint and then set the endpoint version
     if not appRemotingApiHost:
-      if service_environment == 'prod':
+      if is_prod_service_environment:
         appRemotingApiHost = 'https://www.googleapis.com'
       else:
         appRemotingApiHost = 'https://www-googleapis-test.sandbox.google.com'
@@ -272,6 +277,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
       appRemotingServicePath = '/appremoting/v1beta1_staging'
     elif service_environment == 'prod':
       appRemotingServicePath = '/appremoting/v1beta1'
+    elif service_environment == 'prod-testing':
+      appRemotingServicePath = '/appremoting/v1beta1_prod_testing'
     else:
       raise Exception('Unknown service environment: ' + service_environment)
     appRemotingApiBaseUrl = appRemotingApiHost + appRemotingServicePath
@@ -282,7 +289,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
   replaceString(destination, 'OAUTH2_BASE_URL', oauth2BaseUrl)
   replaceString(destination, 'OAUTH2_API_BASE_URL', oauth2ApiBaseUrl)
   replaceString(destination, 'DIRECTORY_API_BASE_URL', directoryApiBaseUrl)
-  if webapp_type == 'app_remoting':
+  if is_app_remoting_webapp:
     replaceString(destination, 'APP_REMOTING_API_BASE_URL',
                   appRemotingApiBaseUrl)
 
@@ -343,7 +350,14 @@ def buildWebApp(buildtype, version, destination, zip_path,
   # For overriding the client ID/secret via env vars, see google_api_keys.py.
   apiClientId = google_api_keys.GetClientID('REMOTING')
   apiClientSecret = google_api_keys.GetClientSecret('REMOTING')
-  apiClientIdV2 = google_api_keys.GetClientID('REMOTING_IDENTITY_API')
+
+  if is_app_remoting_webapp and buildtype != 'Dev':
+    if not app_client_id:
+      raise Exception('Invalid app_client_id passed in: "' +
+          app_client_id + '"')
+    apiClientIdV2 = app_client_id
+  else:
+    apiClientIdV2 = google_api_keys.GetClientID('REMOTING_IDENTITY_API')
 
   replaceString(destination, 'API_CLIENT_ID', apiClientId)
   replaceString(destination, 'API_CLIENT_SECRET', apiClientSecret)
@@ -357,7 +371,16 @@ def buildWebApp(buildtype, version, destination, zip_path,
   # Use a consistent extension id for dev builds.
   # AppRemoting builds always use the dev app id - the correct app id gets
   # written into the manifest later.
-  if buildtype != 'Official' or webapp_type == 'app_remoting':
+  if is_app_remoting_webapp:
+    if buildtype != 'Dev':
+      if not manifest_key:
+        raise Exception('Invalid manifest_key passed in: "' +
+            manifest_key + '"')
+      manifestKey = '"key": "' + manifest_key + '",'
+    else:
+      manifestKey = '"key": "remotingdevbuild",'
+  elif buildtype != 'Official':
+    # TODO(joedow): Update the chromoting webapp GYP entries to include keys.
     manifestKey = '"key": "remotingdevbuild",'
   else:
     manifestKey = ''
@@ -412,6 +435,8 @@ def main():
   parser.add_argument('--app_capabilities',
                       nargs='*', default=[], metavar='CAPABILITY')
   parser.add_argument('--appid')
+  parser.add_argument('--app_client_id', default='')
+  parser.add_argument('--manifest_key', default='')
   parser.add_argument('--locales_listfile', default='', metavar='PATH')
   parser.add_argument('--jinja_paths', nargs='*', default=[], metavar='PATH')
   parser.add_argument('--service_environment', default='', metavar='ENV')

@@ -11,7 +11,7 @@
 
     # Set this to enable cast mode on the android client.
     'enable_cast%': 0,
- 
+
     # Set this to use GCD instead of the remoting directory service.
     'remoting_use_gcd%': 0,
 
@@ -33,13 +33,13 @@
 
     # The ar_service_environment variable is used to define the target
     # environment for the app being built.
-    # The allowed values are dev, test, staging, and prod.
+    # The allowed values are dev, test, staging, prod, and prod-testing.
     'conditions': [
       ['buildtype == "Dev"', {
         'ar_service_environment%': 'dev',
       }, {  # buildtype != 'Dev'
-        # Non-dev build must have this set to 'prod'.
-        'ar_service_environment': 'prod',
+        # Non-dev builds should default to 'prod'.
+        'ar_service_environment%': 'prod',
       }],
     ],  # conditions
 

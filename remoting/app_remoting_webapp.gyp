@@ -100,6 +100,7 @@
       'app_name': 'App Remoting Client',
       'app_description': 'App Remoting client',
       'app_capabilities': ['GOOGLE_DRIVE'],
+      'manifest_key': 'remotingdevbuild',
     },
   ],  # end of targets
 }

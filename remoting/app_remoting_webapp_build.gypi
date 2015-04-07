@@ -131,6 +131,10 @@
           '>@(_app_capabilities)',
           '--service_environment',
           '<@(ar_service_environment)',
+          '--manifest_key',
+          '>@(_manifest_key)',
+          '--app_client_id',
+          '>@(_app_client_id)',
         ],
       },
       {
