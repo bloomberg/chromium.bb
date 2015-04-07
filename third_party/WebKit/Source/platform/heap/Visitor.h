@@ -636,19 +636,6 @@ public:
     }
 #endif
 
-    inline static bool canTraceEagerly()
-    {
-        ASSERT(m_stackFrameDepth);
-        return m_stackFrameDepth->isSafeToRecurse();
-    }
-
-    inline static void configureEagerTraceLimit()
-    {
-        if (!m_stackFrameDepth)
-            m_stackFrameDepth = new StackFrameDepth;
-        m_stackFrameDepth->configureLimit();
-    }
-
     inline bool isGlobalMarkingVisitor() const { return m_isGlobalMarkingVisitor; }
 
 protected:
@@ -670,7 +657,6 @@ protected:
 
 private:
     static Visitor* fromHelper(VisitorHelper<Visitor>* helper) { return static_cast<Visitor*>(helper); }
-    static StackFrameDepth* m_stackFrameDepth;
 
     bool m_isGlobalMarkingVisitor;
 };
@@ -746,9 +732,9 @@ public:
             // calls from HashTable weak processing. Remove the condition once
             // it is refactored.
 #if !defined(ADDRESS_SANITIZER)
-            ASSERT(Visitor::canTraceEagerly() || visitor->isMarked(t));
+            ASSERT(StackFrameDepth::isSafeToRecurse() || visitor->isMarked(t));
 #endif
-            if (LIKELY(Visitor::canTraceEagerly())) {
+            if (LIKELY(StackFrameDepth::isSafeToRecurse())) {
                 if (visitor->ensureMarked(t)) {
                     TraceTrait<T>::trace(visitor, const_cast<T*>(t));
                 }

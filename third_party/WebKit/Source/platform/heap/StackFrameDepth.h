@@ -16,17 +16,20 @@ namespace blink {
 // call stack for more recursive call.
 class PLATFORM_EXPORT StackFrameDepth final {
 public:
-    inline bool isSafeToRecurse()
+    inline static bool isSafeToRecurse()
     {
-        ASSERT(m_stackFrameLimit);
+        ASSERT(s_stackFrameLimit);
 
         // Asssume that the stack grows towards lower addresses, which
         // all the ABIs currently supported do.
         //
         // A unit test checks that the assumption holds for a target
         // (HeapTest.StackGrowthDirection.)
-        return currentStackFrame() > m_stackFrameLimit;
+        return currentStackFrame() > s_stackFrameLimit;
     }
+    static void configureStackLimit();
+    static size_t getUnderestimatedStackSize();
+    static void* getStackStart();
 
     static uintptr_t currentStackFrame(const char* dummy = nullptr)
     {
@@ -40,17 +43,12 @@ public:
 #endif
     }
 
-    void configureLimit();
-
-    static size_t getUnderestimatedStackSize();
-    static void* getStackStart();
-
 private:
     // The maximum depth of eager, unrolled trace() calls that is
     // considered safe and allowed.
     static const int kSafeStackFrameSize = 32 * 1024;
 
-    uintptr_t m_stackFrameLimit;
+    static uintptr_t s_stackFrameLimit;
 };
 
 } // namespace blink
