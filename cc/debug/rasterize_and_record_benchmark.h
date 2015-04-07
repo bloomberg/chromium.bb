@@ -38,9 +38,9 @@ class RasterizeAndRecordBenchmark : public MicroBenchmark {
 
  private:
   void RunOnDisplayListLayer(PictureLayer* layer,
-                             const gfx::Rect& visible_content_rect);
+                             const gfx::Rect& visible_layer_rect);
   void RunOnPictureLayer(PictureLayer* layer,
-                         const gfx::Rect& visible_content_rect);
+                         const gfx::Rect& visible_layer_rect);
 
   void RecordRasterResults(scoped_ptr<base::Value> results);
 

@@ -105,21 +105,21 @@ scoped_ptr<MicroBenchmarkImpl> RasterizeAndRecordBenchmark::CreateBenchmarkImpl(
 void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   DCHECK(host_);
 
-  gfx::Rect visible_content_rect = gfx::ScaleToEnclosingRect(
+  gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
       layer->visible_content_rect(), 1.f / layer->contents_scale_x());
-  if (visible_content_rect.IsEmpty())
+  if (visible_layer_rect.IsEmpty())
     return;
 
   if (host_->settings().use_display_lists) {
-    RunOnDisplayListLayer(layer, visible_content_rect);
+    RunOnDisplayListLayer(layer, visible_layer_rect);
   } else {
-    RunOnPictureLayer(layer, visible_content_rect);
+    RunOnPictureLayer(layer, visible_layer_rect);
   }
 }
 
 void RasterizeAndRecordBenchmark::RunOnPictureLayer(
     PictureLayer* layer,
-    const gfx::Rect& visible_content_rect) {
+    const gfx::Rect& visible_layer_rect) {
   ContentLayerClient* painter = layer->client();
 
   DCHECK(host_ && !host_->settings().use_display_lists);
@@ -141,7 +141,7 @@ void RasterizeAndRecordBenchmark::RunOnPictureLayer(
                      kTimeCheckInterval);
       scoped_refptr<Picture> picture;
       do {
-        picture = Picture::Create(visible_content_rect, painter, tile_grid_size,
+        picture = Picture::Create(visible_layer_rect, painter, tile_grid_size,
                                   false, mode);
         if (memory_used) {
           // Verify we are recording the same thing each time.
@@ -161,7 +161,7 @@ void RasterizeAndRecordBenchmark::RunOnPictureLayer(
     if (mode == RecordingSource::RECORD_NORMALLY) {
       record_results_.bytes_used += memory_used;
       record_results_.pixels_recorded +=
-          visible_content_rect.width() * visible_content_rect.height();
+          visible_layer_rect.width() * visible_layer_rect.height();
     }
     record_results_.total_best_time[mode_index] += min_time;
   }
@@ -169,7 +169,7 @@ void RasterizeAndRecordBenchmark::RunOnPictureLayer(
 
 void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
     PictureLayer* layer,
-    const gfx::Rect& visible_content_rect) {
+    const gfx::Rect& visible_layer_rect) {
   ContentLayerClient* painter = layer->client();
 
   DCHECK(host_ && host_->settings().use_display_lists);
@@ -207,8 +207,9 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
                      kTimeCheckInterval);
 
       do {
-        display_list = painter->PaintContentsToDisplayList(visible_content_rect,
+        display_list = painter->PaintContentsToDisplayList(visible_layer_rect,
                                                            painting_control);
+        display_list->CreateAndCacheSkPicture();
 
         if (memory_used) {
           // Verify we are recording the same thing each time.
@@ -228,7 +229,7 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
     if (mode_index == RecordingSource::RECORD_NORMALLY) {
       record_results_.bytes_used += memory_used;
       record_results_.pixels_recorded +=
-          visible_content_rect.width() * visible_content_rect.height();
+          visible_layer_rect.width() * visible_layer_rect.height();
     }
     record_results_.total_best_time[mode_index] += min_time;
   }
