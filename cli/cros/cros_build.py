@@ -116,7 +116,8 @@ To just build a single package:
     Only print the output if this step fails or if we're in debug mode.
     """
     if self.options.deps and not self.host:
-      cmd = chroot_util.GetEmergeCommand(board=self.board)
+      sysroot = cros_build_lib.GetSysroot(self.board)
+      cmd = chroot_util.GetEmergeCommand(sysroot=sysroot)
       cmd += ['-pe', '--backtrack=0'] + self.build_pkgs
       try:
         cros_build_lib.RunCommand(cmd, combine_stdout_stderr=True,

@@ -64,7 +64,7 @@ class ChrootUtilTest(cros_test_lib.MockTempDirTestCase):
                          use_binary=use_binary, jobs=jobs,
                          debug_output=debug_output)
       cmd = self.last_rc_cmd
-      self.assertEquals(not host, '--board=%s' % board in cmd)
+      self.assertEquals(not host, any(p.startswith('--sysroot') for p in cmd))
       self.assertEquals(with_deps, '--deep' in cmd)
       self.assertEquals(not with_deps, '--nodeps' in cmd)
       self.assertEquals(rebuild_deps, '--rebuild-if-unbuilt' in cmd)

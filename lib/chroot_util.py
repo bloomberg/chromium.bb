@@ -29,11 +29,11 @@ def _GetToolchainPackages():
   return [toolchain.GetPortagePackage('host', x) for x in packages]
 
 
-def GetEmergeCommand(board=None):
-  """Returns the emerge command to use for |board| (host if None)."""
+def GetEmergeCommand(sysroot=None):
+  """Returns the emerge command to use for |sysroot| (host if None)."""
   cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')]
-  if board is not None:
-    cmd += ['--board=%s' % board]
+  if sysroot is not None:
+    cmd += ['--sysroot=%s' % sysroot]
   return cmd
 
 
@@ -63,7 +63,8 @@ def Emerge(packages, brick=None, board=None, host=False, with_deps=True,
   elif brick:
     board = brick.FriendlyName()
 
-  cmd = GetEmergeCommand(board=board)
+  sysroot = board and cros_build_lib.GetSysroot(board)
+  cmd = GetEmergeCommand(sysroot)
   cmd.append('-uNv')
 
   modified_packages = list(workon.ListModifiedWorkonPackages(
