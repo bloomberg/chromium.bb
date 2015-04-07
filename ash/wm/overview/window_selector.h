@@ -56,6 +56,9 @@ class ASH_EXPORT WindowSelector
   // the text filtering textfield.
   static const int kTextFilterBottomEdge;
 
+  // Returns true if the window can be selected in overview mode.
+  static bool IsSelectable(aura::Window* window);
+
   enum Direction {
     LEFT,
     UP,
@@ -116,9 +119,6 @@ class ASH_EXPORT WindowSelector
   // Position all of the windows in the overview.
   void PositionWindows(bool animate);
 
-  // Hide and track all hidden windows not in the overview item list.
-  void HideAndTrackNonOverviewWindows();
-
   // |focus|, restores focus to the stored window.
   void ResetFocusRestoreWindow(bool focus);
 
@@ -148,10 +148,6 @@ class ASH_EXPORT WindowSelector
 
   // List of all the window overview grids, one for each root window.
   ScopedVector<WindowGrid> grid_list_;
-
-  // Tracks windows which were hidden because they were not part of the
-  // overview.
-  aura::WindowTracker hidden_windows_;
 
   // Tracks the index of the root window the selection widget is in.
   size_t selected_grid_index_;

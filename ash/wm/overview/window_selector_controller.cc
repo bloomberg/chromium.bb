@@ -46,8 +46,13 @@ void WindowSelectorController::ToggleOverview() {
     if (!CanSelect())
       return;
 
-    std::vector<aura::Window*> windows = ash::Shell::GetInstance()->
-        mru_window_tracker()->BuildMruWindowList();
+    aura::Window::Windows windows =
+        ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+    auto end =
+        std::remove_if(windows.begin(), windows.end(),
+                       std::not1(std::ptr_fun(&WindowSelector::IsSelectable)));
+    windows.resize(end - windows.begin());
+
     // Don't enter overview mode with no windows.
     if (windows.empty())
       return;

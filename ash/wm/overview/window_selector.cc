@@ -16,8 +16,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/switchable_windows.h"
-#include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
@@ -218,6 +216,17 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
 const int WindowSelector::kTextFilterBottomEdge =
     kTextFilterDistanceFromTop + kTextFilterHeight;
 
+// static
+bool WindowSelector::IsSelectable(aura::Window* window) {
+  wm::WindowState* state = wm::GetWindowState(window);
+  if (state->GetStateType() == wm::WINDOW_STATE_TYPE_DOCKED ||
+      state->GetStateType() == wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED) {
+    return false;
+  }
+  return window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+         window->type() == ui::wm::WINDOW_TYPE_PANEL;
+}
+
 WindowSelector::WindowSelector(WindowSelectorDelegate* delegate)
     : delegate_(delegate),
       restore_focus_window_(aura::client::GetFocusClient(
@@ -302,7 +311,6 @@ void WindowSelector::Init(const WindowList& windows) {
 
   shell->GetScreen()->AddObserver(this);
   shell->metrics()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
-  HideAndTrackNonOverviewWindows();
   // Send an a11y alert.
   shell->accessibility_delegate()->TriggerAccessibilityAlert(
       ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
@@ -325,16 +333,6 @@ void WindowSelector::Shutdown() {
     static_cast<PanelLayoutManager*>(
         Shell::GetContainer(*iter, kShellWindowId_PanelContainer)
             ->layout_manager())->SetShowCalloutWidgets(true);
-  }
-
-  const aura::WindowTracker::Windows hidden_windows(hidden_windows_.windows());
-  for (aura::WindowTracker::Windows::const_iterator iter =
-       hidden_windows.begin(); iter != hidden_windows.end(); ++iter) {
-    ScopedOverviewAnimationSettings animation_settings(
-        OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
-        *iter);
-    (*iter)->layer()->SetOpacity(1);
-    (*iter)->Show();
   }
 
   size_t remaining_items = 0;
@@ -456,10 +454,8 @@ void WindowSelector::OnDisplayMetricsChanged(const gfx::Display& display,
 }
 
 void WindowSelector::OnWindowAdded(aura::Window* new_window) {
-  if (new_window->type() != ui::wm::WINDOW_TYPE_NORMAL &&
-      new_window->type() != ui::wm::WINDOW_TYPE_PANEL) {
+  if (!IsSelectable(new_window))
     return;
-  }
 
   for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
     if (new_window->parent()->id() == kSwitchableWindowContainerIds[i] &&
@@ -553,42 +549,6 @@ void WindowSelector::PositionWindows(bool animate) {
   for (ScopedVector<WindowGrid>::iterator iter = grid_list_.begin();
       iter != grid_list_.end(); iter++) {
     (*iter)->PositionWindows(animate);
-  }
-}
-
-void WindowSelector::HideAndTrackNonOverviewWindows() {
-  // Add the windows to hidden_windows first so that if any are destroyed
-  // while hiding them they are tracked.
-  for (ScopedVector<WindowGrid>::iterator grid_iter = grid_list_.begin();
-      grid_iter != grid_list_.end(); ++grid_iter) {
-    for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
-      const aura::Window* container =
-          Shell::GetContainer((*grid_iter)->root_window(),
-                              kSwitchableWindowContainerIds[i]);
-      for (aura::Window::Windows::const_iterator iter =
-           container->children().begin(); iter != container->children().end();
-           ++iter) {
-        if (!(*iter)->IsVisible() || (*grid_iter)->Contains(*iter))
-          continue;
-        hidden_windows_.Add(*iter);
-      }
-    }
-  }
-
-  // Copy the window list as it can change during iteration.
-  const aura::WindowTracker::Windows hidden_windows(hidden_windows_.windows());
-  for (aura::WindowTracker::Windows::const_iterator iter =
-       hidden_windows.begin(); iter != hidden_windows.end(); ++iter) {
-    if (!hidden_windows_.Contains(*iter))
-      continue;
-    ScopedOverviewAnimationSettings animation_settings(
-        OverviewAnimationType::OVERVIEW_ANIMATION_HIDE_WINDOW,
-        *iter);
-    (*iter)->Hide();
-    // Hiding the window can result in it being destroyed.
-    if (!hidden_windows_.Contains(*iter))
-      continue;
-    (*iter)->layer()->SetOpacity(0);
   }
 }
 
