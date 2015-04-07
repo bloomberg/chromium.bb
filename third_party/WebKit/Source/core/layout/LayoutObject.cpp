@@ -1585,21 +1585,24 @@ void LayoutObject::selectionStartEnd(int& spos, int& epos) const
     view()->selectionStartEnd(spos, epos);
 }
 
-void LayoutObject::handleDynamicFloatPositionChange()
+// Called when an object that was floating or positioned becomes a normal flow object
+// again.  We have to make sure the render tree updates as needed to accommodate the new
+// normal flow object.
+static inline void handleDynamicFloatPositionChange(LayoutObject* object)
 {
     // We have gone from not affecting the inline status of the parent flow to suddenly
     // having an impact.  See if there is a mismatch between the parent flow's
     // childrenInline() state and our state.
-    setInline(style()->isDisplayInlineType());
-    if (isInline() != parent()->childrenInline()) {
-        if (!isInline()) {
-            toLayoutBoxModelObject(parent())->childBecameNonInline(this);
+    object->setInline(object->style()->isDisplayInlineType());
+    if (object->isInline() != object->parent()->childrenInline()) {
+        if (!object->isInline()) {
+            toLayoutBoxModelObject(object->parent())->childBecameNonInline(object);
         } else {
             // An anonymous block must be made to wrap this inline.
-            LayoutBlock* block = toLayoutBlock(parent())->createAnonymousBlock();
-            LayoutObjectChildList* childlist = parent()->virtualChildren();
-            childlist->insertChildNode(parent(), block, this);
-            block->children()->appendChildNode(block, childlist->removeChildNode(parent(), this));
+            LayoutBlock* block = toLayoutBlock(object->parent())->createAnonymousBlock();
+            LayoutObjectChildList* childlist = object->parent()->virtualChildren();
+            childlist->insertChildNode(object->parent(), block, object);
+            block->children()->appendChildNode(block, childlist->removeChildNode(object->parent(), object));
         }
     }
 }
@@ -1866,7 +1869,7 @@ static inline bool areCursorsEqual(const ComputedStyle* a, const ComputedStyle* 
 void LayoutObject::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     if (s_affectsParentBlock)
-        handleDynamicFloatPositionChange();
+        handleDynamicFloatPositionChange(this);
 
     if (!m_parent)
         return;

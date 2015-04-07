@@ -273,11 +273,6 @@ public:
     // children.
     virtual LayoutBlock* firstLineBlock() const;
 
-    // Called when an object that was floating or positioned becomes a normal flow object
-    // again.  We have to make sure the render tree updates as needed to accommodate the new
-    // normal flow object.
-    void handleDynamicFloatPositionChange();
-
     // LayoutObject tree manipulation
     //////////////////////////////////////////
     virtual bool canHaveChildren() const { return virtualChildren(); }
