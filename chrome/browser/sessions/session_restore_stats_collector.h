@@ -25,10 +25,13 @@ class SessionRestoreStatsCollector
       public base::RefCounted<SessionRestoreStatsCollector> {
  public:
   // Called to start tracking tabs. If a restore is already occuring, the tabs
-  // are added to the existing list of tracked tabs.
+  // are added to the existing list of tracked tabs. If |active_only| is true,
+  // only tabs that are marked as active will be tracked (for example when
+  // background tabs are not loaded during session restore).
   static void TrackTabs(
       const std::vector<SessionRestoreDelegate::RestoredTab>& tabs,
-      const base::TimeTicks& restore_started);
+      const base::TimeTicks& restore_started,
+      bool active_only);
 
  private:
   friend class base::RefCounted<SessionRestoreStatsCollector>;
@@ -43,8 +46,11 @@ class SessionRestoreStatsCollector
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Adds new tabs to the list of tracked tabs.
-  void AddTabs(const std::vector<SessionRestoreDelegate::RestoredTab>& tabs);
+  // Adds new tabs to the list of tracked tabs. If |active_only| is true,
+  // only tabs that are marked as active will be tracked (for example when
+  // background tabs are not loaded during session restore).
+  void AddTabs(const std::vector<SessionRestoreDelegate::RestoredTab>& tabs,
+               bool active_only);
 
   // Called when a tab is no longer tracked.
   void RemoveTab(content::NavigationController* tab);

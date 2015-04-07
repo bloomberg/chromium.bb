@@ -20,11 +20,12 @@ using content::WebContents;
 // static
 void SessionRestoreStatsCollector::TrackTabs(
     const std::vector<SessionRestoreDelegate::RestoredTab>& tabs,
-    const base::TimeTicks& restore_started) {
+    const base::TimeTicks& restore_started,
+    bool active_only) {
   if (!shared_collector_)
     shared_collector_ = new SessionRestoreStatsCollector(restore_started);
 
-  shared_collector_->AddTabs(tabs);
+  shared_collector_->AddTabs(tabs, active_only);
 }
 
 SessionRestoreStatsCollector::SessionRestoreStatsCollector(
@@ -162,8 +163,14 @@ void SessionRestoreStatsCollector::Observe(
 }
 
 void SessionRestoreStatsCollector::AddTabs(
-    const std::vector<SessionRestoreDelegate::RestoredTab>& tabs) {
+    const std::vector<SessionRestoreDelegate::RestoredTab>& tabs,
+    bool active_only) {
+  tab_count_ += tabs.size();
   for (auto& tab : tabs) {
+    // If we are only restoring active tabs and the tab is not active, nothing
+    // to do.
+    if (active_only && !tab.is_active)
+      continue;
     RegisterForNotifications(&tab.contents->GetController());
     if (tab.is_active) {
       RenderWidgetHost* render_widget_host =
@@ -218,7 +225,6 @@ void SessionRestoreStatsCollector::RegisterForNotifications(
                  content::Source<NavigationController>(tab));
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  content::Source<NavigationController>(tab));
-  ++tab_count_;
   tabs_tracked_.insert(tab);
 }
 
