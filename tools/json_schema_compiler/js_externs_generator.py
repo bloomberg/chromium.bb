@@ -126,7 +126,7 @@ class _Generator(object):
     """Given an OrderedDict of properties, returns a Code containing the
        description of an object.
     """
-    if not properties: return ''
+    if not properties: return Code()
 
     c = Code()
     c.Sblock('{')
@@ -212,38 +212,39 @@ class _Generator(object):
 
   def _TypeToJsType(self, js_type):
     """Converts a model.Type to a JS type (number, Array, etc.)"""
-    c = Code()
     if js_type.property_type in (PropertyType.INTEGER, PropertyType.DOUBLE):
-      c.Append('number')
-    elif js_type.property_type is PropertyType.OBJECT:
-      c = self._GenerateObjectDefinition(js_type.properties)
-    elif js_type.property_type is PropertyType.ARRAY:
-      (c.Append('!Array<').
+      return Code().Append('number')
+    if js_type.property_type is PropertyType.OBJECT:
+      if js_type.properties:
+        return self._GenerateObjectDefinition(js_type.properties)
+      return Code().Append('Object')
+    if js_type.property_type is PropertyType.ARRAY:
+      return (Code().Append('!Array<').
            Concat(self._TypeToJsType(js_type.item_type), new_line=False).
            Append('>', new_line=False))
-    elif js_type.property_type is PropertyType.REF:
+    if js_type.property_type is PropertyType.REF:
       ref_type = js_type.ref_type
       # Enums are defined as chrome.fooAPI.MyEnum, but types are defined simply
       # as MyType.
       if self._namespace.types[ref_type].property_type is PropertyType.ENUM:
         ref_type = '!chrome.%s.%s' % (self._namespace.name, ref_type)
-      c.Append(ref_type)
-    elif js_type.property_type is PropertyType.CHOICES:
+      return Code().Append(ref_type)
+    if js_type.property_type is PropertyType.CHOICES:
+      c = Code()
       c.Append('(')
       for i, choice in enumerate(js_type.choices):
         c.Concat(self._TypeToJsType(choice), new_line=False)
         if i is not len(js_type.choices) - 1:
           c.Append('|', new_line=False)
       c.Append(')', new_line=False)
-    elif js_type.property_type is PropertyType.FUNCTION:
-      c = self._FunctionToJsFunction(js_type.function)
-    elif js_type.property_type is PropertyType.ANY:
-      c.Append('*')
-    elif js_type.property_type.is_fundamental:
-      c.Append(js_type.property_type.name)
-    else:
-      c.Append('?') # TODO(tbreisacher): Make this more specific.
-    return c
+      return c
+    if js_type.property_type is PropertyType.FUNCTION:
+      return self._FunctionToJsFunction(js_type.function)
+    if js_type.property_type is PropertyType.ANY:
+      return Code().Append('*')
+    if js_type.property_type.is_fundamental:
+      return Code().Append(js_type.property_type.name)
+    return Code().Append('?') # TODO(tbreisacher): Make this more specific.
 
   def _GenerateFunction(self, function):
     """Generates the code representing a function, including its documentation.

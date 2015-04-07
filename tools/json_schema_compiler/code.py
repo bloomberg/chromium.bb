@@ -132,7 +132,7 @@ class Code(object):
 
     # First line has the full maximum length.
     if not new_line and self._code:
-      max_len = self._comment_length - len(self._code[-1].value) - 1
+      max_len = self._comment_length - len(self._code[-1].value)
     else:
       max_len = (self._comment_length - len(''.join(self._line_prefixes)) -
                  len(comment_prefix))

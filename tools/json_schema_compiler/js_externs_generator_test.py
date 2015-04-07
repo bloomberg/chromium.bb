@@ -43,6 +43,7 @@ namespace fakeApi {
     Bar obj;
     long? maybe;
     (DOMString or Greek or long[]) choice;
+    object plainObj;
   };
 
   callback VoidCallback = void();
@@ -114,7 +115,8 @@ var Bar;
  *   anythingGoes: !Array<*>,
  *   obj: Bar,
  *   maybe: (number|undefined),
- *   choice: (string|!chrome.fakeApi.Greek|!Array<number>)
+ *   choice: (string|!chrome.fakeApi.Greek|!Array<number>),
+ *   plainObj: Object
  * }}
  * @see https://developer.chrome.com/extensions/fakeApi#type-Baz
  */

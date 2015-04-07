@@ -191,7 +191,7 @@ class CodeTest(unittest.TestCase):
         ' */',
         output)
 
-  def testSameLineAppendAndConcat(self):
+  def testSameLineAppendConcatComment(self):
     c = Code()
     c.Append('This is a line.')
     c.Append('This too.', new_line=False)
@@ -199,6 +199,15 @@ class CodeTest(unittest.TestCase):
     d.Append('And this.')
     c.Concat(d, new_line=False)
     self.assertEquals('This is a line.This too.And this.', c.Render())
+    c = Code()
+    c.Append('This is a')
+    c.Comment(' spectacular 80-character line thingy ' +
+                  'that fits wonderfully everywhere.',
+              comment_prefix='',
+              new_line=False)
+    self.assertEquals('This is a spectacular 80-character line thingy that ' +
+                          'fits wonderfully everywhere.',
+                      c.Render())
 
 if __name__ == '__main__':
   unittest.main()
