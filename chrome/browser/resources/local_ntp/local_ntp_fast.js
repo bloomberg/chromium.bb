@@ -772,6 +772,8 @@ function init() {
     args.push('rtl=1');
   if (window.configData.useIcons)
     args.push('icons=1');
+  if (NTP_DESIGN.numTitleLines > 1)
+    args.push('ntl=' + NTP_DESIGN.numTitleLines);
 
   args.push('removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));

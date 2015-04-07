@@ -118,10 +118,11 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
     // The fading length in pixels is passed by the caller.
     var mask = 'linear-gradient(' + dir + ', rgba(0,0,0,1), rgba(0,0,0,1) ' +
         styles.textFadePos + 'px, rgba(0,0,0,0))';
-    link.style.lineHeight = 'auto';
     link.style.textOverflow = 'clip';
     link.style.webkitMask = mask;
-    link.style.whiteSpace = 'nowrap';
+  }
+  if (styles.numTitleLines && styles.numTitleLines > 1) {
+    link.classList.add('multiline');
   }
 
   link.href = href;
@@ -130,8 +131,12 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
   // Include links in the tab order.  The tabIndex is necessary for
   // accessibility.
   link.tabIndex = '0';
-  if (text)
-    link.textContent = text;
+  if (text) {
+    // Wrap text with span so ellipsis will appear at the end of multiline.
+    var spanWrap = document.createElement('span');
+    spanWrap.textContent = text;
+    link.appendChild(spanWrap);
+  }
   link.addEventListener('mouseover', function() {
     var ntpApiHandle = chrome.embeddedSearch.newTabPage;
     ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_MOUSEOVER);
@@ -224,7 +229,8 @@ function getTextColor(params, isTitle) {
  * - f: font-family.
  * - fs: font-size as a number in pixels.
  * - ta: text-align property, as a string.
- * - tf: specifying a text fade starting position, in pixels.
+ * - tf: text fade starting position, in pixels.
+ * - ntl: number of lines in the title.
  * @param {Object<string, string>} params URL parameters specifying style.
  * @param {boolean} isTitle if the style is for the Most Visited Title.
  * @return {Object} Styles suitable for CSS interpolation.
@@ -245,6 +251,11 @@ function getMostVisitedStyles(params, isTitle) {
     var tf = parseInt(params.tf, 10);
     if (isFinite(tf))
       styles.textFadePos = tf;
+  }
+  if ('ntl' in params) {
+    var ntl = parseInt(params.ntl, 10);
+    if (isFinite(ntl))
+      styles.numTitleLines = ntl;
   }
   return styles;
 }

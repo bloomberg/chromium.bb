@@ -637,6 +637,8 @@ function getMostVisitedTitleIframeUrl(rid, position) {
     params.push('ta=' + encodeURIComponent(NTP_DESIGN.titleTextAlign));
   if (NTP_DESIGN.titleTextFade)
     params.push('tf=' + encodeURIComponent(NTP_DESIGN.titleTextFade));
+  if (NTP_DESIGN.numTitleLines > 1)
+    params.push('ntl=' + NTP_DESIGN.numTitleLines);
   return url + '?' + params.join('&');
 }
 

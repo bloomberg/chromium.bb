@@ -20,6 +20,7 @@
  * fontFamily: Font family to use for title and thumbnail iframes.
  * fontSize: Font size to use for the iframes, in px.
  * mainClass: Class applied to #ntp-contents to control CSS.
+ * numTitleLines: Number of lines to display in titles.
  * showFavicon: Whether to show favicon.
  * thumbnailTextColor: The 4-component color that thumbnail iframe may use to
  *   display text message in place of missing thumbnail.
@@ -41,6 +42,7 @@
  *   fontFamily: string,
  *   fontSize: number,
  *   mainClass: string,
+ *   numTitleLines: number,
  *   showFavicon: boolean,
  *   thumbnailTextColor: string,
  *   thumbnailFallback: string|null|undefined,
@@ -57,6 +59,7 @@ var NTP_DESIGN = {
   fontFamily: 'arial, sans-serif',
   fontSize: 12,
   mainClass: 'thumb-ntp',
+  numTitleLines: 1,
   showFavicon: true,
   thumbnailTextColor: [50, 50, 50, 255],
   thumbnailFallback: THUMBNAIL_FALLBACK.DOT,
@@ -75,6 +78,7 @@ var NTP_DESIGN = {
 function modifyNtpDesignForIcons() {
   NTP_DESIGN.fakeboxWingSize = 132;
   NTP_DESIGN.mainClass = 'icon-ntp';
+  NTP_DESIGN.numTitleLines = 2;
   NTP_DESIGN.showFavicon = false;
   NTP_DESIGN.thumbnailFallback = null;
   NTP_DESIGN.tileWidth = 48 + 2 * 18;

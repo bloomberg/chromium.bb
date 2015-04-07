@@ -47,18 +47,25 @@ var LOG_TYPE = {
 
 
 /**
- * Whether to use icons instead of thumbnails.
- * @const {number}
- */
-var USE_ICONS = false;
-
-
-/**
  * Total number of tiles to show at any time. If the host page doesn't send
  * enough tiles, we fill them blank.
  * @const {number}
  */
 var NUMBER_OF_TILES = 8;
+
+
+/**
+ * Whether to use icons instead of thumbnails.
+ * @type {boolean}
+ */
+var USE_ICONS = false;
+
+
+/**
+ * Number of lines to display in titles.
+ * @type {number}
+ */
+var NUM_TITLE_LINES = 1;
 
 
 /**
@@ -345,6 +352,9 @@ var renderTile = function(data) {
   var title = tile.querySelector('.mv-title');
   title.innerText = data.title;
   title.style.direction = data.direction || 'ltr';
+  if (NUM_TITLE_LINES > 1) {
+    title.classList.add('multiline');
+  }
 
   var hasIcon = USE_ICONS && data.largeIconUrl;
   var hasThumb = !USE_ICONS && data.thumbnailUrl;
@@ -427,6 +437,12 @@ var init = function() {
 
   // Apply class for icon NTP, if specified.
   USE_ICONS = queryArgs['icons'] == '1';
+  if ('ntl' in queryArgs) {
+    var ntl = parseInt(queryArgs['ntl'], 10);
+    if (isFinite(ntl))
+      NUM_TITLE_LINES = ntl;
+  }
+
   // Duplicating NTP_DESIGN.mainClass.
   document.querySelector('#most-visited').classList.add(
       USE_ICONS ? 'icon-ntp' : 'thumb-ntp');

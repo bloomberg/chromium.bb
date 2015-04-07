@@ -15,8 +15,14 @@ a {
   line-height: 117%;
   overflow: hidden;
   text-align: center;  /* Can be overridden in JS. */
-  text-overflow: clip;  /* Can be overridden in JS. */
-  white-space: pre-wrap;  /* Can be overridden in JS. */
+  text-overflow: ellipsis;  /* Can be overridden in JS. */
+  white-space: nowrap;  /* Can be overridden in JS. */
+}
+
+a.multiline {
+  text-overflow: clip;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 a:focus {
