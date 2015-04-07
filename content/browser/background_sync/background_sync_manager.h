@@ -174,11 +174,9 @@ class CONTENT_EXPORT BackgroundSyncManager
                           int64 sw_registration_id,
                           const ServiceWorkerStorage::StatusCallback& callback);
 
-  // If the registration is in the map, removes it and returns the removed
-  // registration in |old_registration|. |old_registration| may be null.
+  // Removes the registration if it is in the map.
   void RemoveRegistrationFromMap(int64 sw_registration_id,
-                                 const std::string& sync_registration_name,
-                                 BackgroundSyncRegistration* old_registration);
+                                 const std::string& sync_registration_name);
 
   void AddRegistrationToMap(
       int64 sw_registration_id,
@@ -209,7 +207,6 @@ class CONTENT_EXPORT BackgroundSyncManager
       const StatusCallback& callback);
   void UnregisterDidStore(
       int64 sw_registration_id,
-      const BackgroundSyncRegistration& old_sync_registration,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status);
 

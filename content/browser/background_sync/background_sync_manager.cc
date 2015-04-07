@@ -386,20 +386,14 @@ void BackgroundSyncManager::RegisterDidStore(
 
 void BackgroundSyncManager::RemoveRegistrationFromMap(
     int64 sw_registration_id,
-    const std::string& sync_registration_name,
-    BackgroundSyncRegistration* old_registration) {
+    const std::string& sync_registration_name) {
   DCHECK(
       LookupRegistration(sw_registration_id, sync_registration_name, nullptr));
 
   BackgroundSyncRegistrations* registrations =
       &sw_to_registrations_map_[sw_registration_id];
 
-  const auto name_and_registration_iter =
-      registrations->name_to_registration_map.find(sync_registration_name);
-  if (old_registration)
-    *old_registration = name_and_registration_iter->second;
-
-  registrations->name_to_registration_map.erase(name_and_registration_iter);
+  registrations->name_to_registration_map.erase(sync_registration_name);
 }
 
 void BackgroundSyncManager::AddRegistrationToMap(
@@ -455,20 +449,16 @@ void BackgroundSyncManager::UnregisterImpl(
     return;
   }
 
-  BackgroundSyncRegistration old_sync_registration;
-  RemoveRegistrationFromMap(sw_registration_id, sync_registration_name,
-                            &old_sync_registration);
+  RemoveRegistrationFromMap(sw_registration_id, sync_registration_name);
 
   StoreRegistrations(
       origin, sw_registration_id,
       base::Bind(&BackgroundSyncManager::UnregisterDidStore,
-                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                 old_sync_registration, callback));
+                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id, callback));
 }
 
 void BackgroundSyncManager::UnregisterDidStore(
     int64 sw_registration_id,
-    const BackgroundSyncRegistration& old_sync_registration,
     const StatusCallback& callback,
     ServiceWorkerStatusCode status) {
   if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
