@@ -192,7 +192,8 @@ void ConsoleMessage::collectCallStack()
         return;
     }
 
-    m_callStack.clear();
+    if (m_callStack && !m_callStack->size())
+        m_callStack.clear();
 }
 
 DEFINE_TRACE(ConsoleMessage)
