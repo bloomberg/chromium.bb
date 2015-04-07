@@ -23,6 +23,10 @@
                     android:id="@+id/bookmark_this_page_id"
                     android:icon="@drawable/btn_star"
                     android:title="@string/accessibility_menu_bookmark"/>
+                <item
+                    android:id="@+id/info_menu_id"
+                    android:icon="@drawable/btn_info"
+                    android:title="@string/accessibility_menu_info"/>
             </menu>
         </item>
         <item

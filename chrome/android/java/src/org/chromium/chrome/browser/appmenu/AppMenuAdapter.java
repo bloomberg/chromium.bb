@@ -40,9 +40,9 @@ class AppMenuAdapter extends BaseAdapter {
      */
     private static final int TITLE_BUTTON_MENU_ITEM = 1;
     /**
-     * Menu item that has three buttons. Every one of these buttons is displayed as an icon.
+     * Menu item that has four buttons. Every one of these buttons is displayed as an icon.
      */
-    private static final int THREE_BUTTON_MENU_ITEM = 2;
+    private static final int FOUR_BUTTON_MENU_ITEM = 2;
 
     /**
      * The number of view types specified above.  If you add a view type you MUST increment this.
@@ -85,8 +85,8 @@ class AppMenuAdapter extends BaseAdapter {
         MenuItem item = getItem(position);
         int viewCount = item.hasSubMenu() ? item.getSubMenu().size() : 1;
 
-        if (viewCount == 3) {
-            return THREE_BUTTON_MENU_ITEM;
+        if (viewCount == 4) {
+            return FOUR_BUTTON_MENU_ITEM;
         } else if (viewCount == 2) {
             return TITLE_BUTTON_MENU_ITEM;
         }
@@ -145,26 +145,28 @@ class AppMenuAdapter extends BaseAdapter {
                 convertView.setEnabled(isEnabled);
                 break;
             }
-            case THREE_BUTTON_MENU_ITEM: {
-                ThreeButtonMenuItemViewHolder holder = null;
+            case FOUR_BUTTON_MENU_ITEM: {
+                FourButtonMenuItemViewHolder holder = null;
                 if (convertView == null) {
-                    holder = new ThreeButtonMenuItemViewHolder();
-                    convertView = mInflater.inflate(R.layout.three_button_menu_item, parent, false);
+                    holder = new FourButtonMenuItemViewHolder();
+                    convertView = mInflater.inflate(R.layout.four_button_menu_item, parent, false);
                     holder.buttons[0] =
                             (TintedImageButton) convertView.findViewById(R.id.button_one);
                     holder.buttons[1] =
                             (TintedImageButton) convertView.findViewById(R.id.button_two);
                     holder.buttons[2] =
                             (TintedImageButton) convertView.findViewById(R.id.button_three);
+                    holder.buttons[3] =
+                            (TintedImageButton) convertView.findViewById(R.id.button_four);
                     convertView.setTag(holder);
                     convertView.setTag(R.id.menu_item_enter_anim_id,
                             buildIconItemEnterAnimator(holder.buttons));
                 } else {
-                    holder = (ThreeButtonMenuItemViewHolder) convertView.getTag();
+                    holder = (FourButtonMenuItemViewHolder) convertView.getTag();
                 }
-                setupImageButton(holder.buttons[0], item.getSubMenu().getItem(0));
-                setupImageButton(holder.buttons[1], item.getSubMenu().getItem(1));
-                setupImageButton(holder.buttons[2], item.getSubMenu().getItem(2));
+                for (int i = 0; i < 4; i++) {
+                    setupImageButton(holder.buttons[i], item.getSubMenu().getItem(i));
+                }
 
                 convertView.setFocusable(false);
                 convertView.setEnabled(false);
@@ -313,8 +315,8 @@ class AppMenuAdapter extends BaseAdapter {
         public AppMenuItemIcon image;
     }
 
-    static class ThreeButtonMenuItemViewHolder {
-        public TintedImageButton[] buttons = new TintedImageButton[3];
+    static class FourButtonMenuItemViewHolder {
+        public TintedImageButton[] buttons = new TintedImageButton[4];
     }
 
     static class TitleButtonMenuItemViewHolder {

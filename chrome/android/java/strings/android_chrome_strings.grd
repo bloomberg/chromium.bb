@@ -1113,6 +1113,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ACCESSIBILITY_MENU_BACK" desc="Content description for the backard navigation button.">
         Go back
       </message>
+      <message name="IDS_ACCESSIBILITY_MENU_INFO" desc="Content description for the button which opens the page info popup, which displays security information and permissions for the current page">
+        View site information
+      </message>
       <message name="IDS_ACCESSIBILITY_CONTENT_VIEW" desc="Content description for the content view that holds the web contents [CHAR-LIMIT=30]">
         Web View
       </message>

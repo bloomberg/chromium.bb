@@ -33,4 +33,12 @@
         android:layout_weight="1"
         android:background="?attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
+
+    <org.chromium.chrome.browser.widget.TintedImageButton
+        android:id="@+id/button_four"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?attr/listChoiceBackgroundIndicator"
+        android:scaleType="center" />
 </LinearLayout>

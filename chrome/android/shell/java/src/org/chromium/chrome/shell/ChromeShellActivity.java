@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
@@ -389,6 +390,9 @@ public class ChromeShellActivity extends ActionBarActivity implements AppMenuPro
             if (activeTab != null && activeTab.canGoForward()) {
                 activeTab.goForward();
             }
+            return true;
+        } else if (id == R.id.info_menu_id) {
+            WebsiteSettingsPopup.show(this, activeTab.getProfile(), activeTab.getWebContents());
             return true;
         } else if (id == R.id.new_tab_menu_id) {
             mTabManager.createNewTab();
