@@ -15,7 +15,7 @@
 #include "ui/base/layout.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_png_rep.h"
@@ -59,16 +59,16 @@ class ImageLayerDelegate : public ui::LayerDelegate {
  private:
   // Overridden from ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
-    gfx::Canvas* canvas = context.canvas();
+    ui::PaintRecorder recorder(context);
     if (image_.IsEmpty()) {
-      canvas->DrawColor(SK_ColorWHITE);
+      recorder.canvas()->DrawColor(SK_ColorWHITE);
     } else {
-      SkISize size = canvas->sk_canvas()->getDeviceSize();
+      SkISize size = recorder.canvas()->sk_canvas()->getDeviceSize();
       if (size.width() != image_size_.width() ||
           size.height() != image_size_.height()) {
-        canvas->DrawColor(SK_ColorWHITE);
+        recorder.canvas()->DrawColor(SK_ColorWHITE);
       }
-      canvas->DrawImageInt(image_.AsImageSkia(), 0, 0);
+      recorder.canvas()->DrawImageInt(image_.AsImageSkia(), 0, 0);
     }
   }
 

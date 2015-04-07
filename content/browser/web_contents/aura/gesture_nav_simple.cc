@@ -16,7 +16,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_delegate.h"
-#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
@@ -91,14 +91,13 @@ class ArrowLayerDelegate : public ui::LayerDelegate {
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
 
-    gfx::Canvas* canvas = context.canvas();
-    canvas->DrawCircle(
+    ui::PaintRecorder recorder(context);
+    recorder.canvas()->DrawCircle(
         gfx::Point(left_arrow_ ? 0 : kArrowWidth, kArrowHeight / 2),
-        kArrowWidth,
-        paint);
-    canvas->DrawImageInt(*image_.ToImageSkia(),
-                         left_arrow_ ? 0 : kArrowWidth - image_.Width(),
-                         (kArrowHeight - image_.Height()) / 2);
+        kArrowWidth, paint);
+    recorder.canvas()->DrawImageInt(
+        *image_.ToImageSkia(), left_arrow_ ? 0 : kArrowWidth - image_.Width(),
+        (kArrowHeight - image_.Height()) / 2);
   }
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
