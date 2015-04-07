@@ -226,6 +226,7 @@ static const MimeInfo secondary_mappings[] = {
   { "application/pkcs7-mime", "p7m,p7c,p7z" },
   { "application/pkcs7-signature", "p7s" },
   { "application/x-mpegurl", "m3u8" },
+  { "application/epub+zip", "epub" },
 };
 
 static const char* FindMimeType(const MimeInfo* mappings,
