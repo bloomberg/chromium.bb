@@ -8,7 +8,15 @@
 #include "platform/heap/Visitor.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
+#include "wtf/Deque.h"
+#include "wtf/HashCountedSet.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/HashTable.h"
+#include "wtf/LinkedHashSet.h"
+#include "wtf/ListHashSet.h"
 #include "wtf/TypeTraits.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -108,6 +116,242 @@ struct GCInfoTrait {
     static size_t index()
     {
         return GCInfoAtBase<typename GetGarbageCollectedBase<T>::type>::index();
+    }
+};
+
+class HeapAllocator;
+template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
+template<typename T, typename Traits> class HeapVectorBacking;
+template<typename Table> class HeapHashTableBacking;
+
+// The standard implementation of GCInfoTrait<T>::index() just returns a static
+// from the class T, but we can't do that for HashMap, HashSet, Vector, etc.
+// because they are in WTF and know nothing of GCInfos. Instead we have a
+// specialization of GCInfoTrait for these four classes here.
+
+template<typename Key, typename Value, typename T, typename U, typename V>
+struct GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator>> {
+    static size_t index()
+    {
+        using TargetType = HashMap<Key, Value, T, U, V, HeapAllocator>;
+        static const GCInfo gcInfo = {
+            TraceTrait<TargetType>::trace,
+            nullptr,
+            false, // HashMap needs no finalizer.
+            WTF::IsPolymorphic<TargetType>::value,
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
+    }
+};
+
+template<typename T, typename U, typename V>
+struct GCInfoTrait<HashSet<T, U, V, HeapAllocator>> {
+    static size_t index()
+    {
+        using TargetType = HashSet<T, U, V, HeapAllocator>;
+        static const GCInfo gcInfo = {
+            TraceTrait<TargetType>::trace,
+            nullptr,
+            false, // HashSet needs no finalizer.
+            WTF::IsPolymorphic<TargetType>::value,
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
+    }
+};
+
+template<typename T, typename U, typename V>
+struct GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator>> {
+    static size_t index()
+    {
+        using TargetType = LinkedHashSet<T, U, V, HeapAllocator>;
+        static const GCInfo gcInfo = {
+            TraceTrait<TargetType>::trace,
+            LinkedHashSet<T, U, V, HeapAllocator>::finalize,
+            true, // Needs finalization. The anchor needs to unlink itself from the chain.
+            WTF::IsPolymorphic<TargetType>::value,
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
+    }
+};
+
+template<typename ValueArg, size_t inlineCapacity, typename U>
+struct GCInfoTrait<ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAllocator<ValueArg, inlineCapacity>>> {
+    static size_t index()
+    {
+        using TargetType = WTF::ListHashSet<ValueArg, inlineCapacity, U, HeapListHashSetAllocator<ValueArg, inlineCapacity>>;
+        static const GCInfo gcInfo = {
+            TraceTrait<TargetType>::trace,
+            nullptr,
+            false, // ListHashSet needs no finalization though its backing might.
+            false, // no vtable.
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
+    }
+};
+
+template<typename T, typename Allocator>
+struct GCInfoTrait<WTF::ListHashSetNode<T, Allocator>> {
+    static size_t index()
+    {
+        using TargetType = WTF::ListHashSetNode<T, Allocator>;
+        static const GCInfo gcInfo = {
+            TraceTrait<TargetType>::trace,
+            TargetType::finalize,
+            !WTF::IsTriviallyDestructible<T>::value, // The node needs destruction if its data does.
+            false, // no vtable.
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
+    }
+};
+
+template<typename T>
+struct GCInfoTrait<Vector<T, 0, HeapAllocator>> {
+    static size_t index()
+    {
+#if ENABLE(GC_PROFILING)
+        using TargetType = Vector<T, 0, HeapAllocator>;
+#endif
+        static const GCInfo gcInfo = {
+            TraceTrait<Vector<T, 0, HeapAllocator>>::trace,
+            nullptr,
+            false, // Vector needs no finalizer if it has no inline capacity.
+            WTF::IsPolymorphic<Vector<T, 0, HeapAllocator>>::value,
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
+    }
+};
+
+template<typename T, size_t inlineCapacity>
+struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator>> : public FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>, true> { };
+
+template<typename T, size_t inlineCapacity>
+struct GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator>> {
+    static size_t index()
+    {
+        using TargetType = Vector<T, inlineCapacity, HeapAllocator>;
+        static const GCInfo gcInfo = {
+            TraceTrait<TargetType>::trace,
+            FinalizerTrait<TargetType>::finalize,
+            // Finalizer is needed to destruct things stored in the inline capacity.
+            inlineCapacity && VectorTraits<T>::needsDestruction,
+            WTF::IsPolymorphic<TargetType>::value,
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
+    }
+};
+
+template<typename T>
+struct GCInfoTrait<Deque<T, 0, HeapAllocator>> {
+    static size_t index()
+    {
+        using TargetType = Deque<T, 0, HeapAllocator>;
+        static const GCInfo gcInfo = {
+            TraceTrait<TargetType>::trace,
+            nullptr,
+            false, // Deque needs no finalizer if it has no inline capacity.
+            WTF::IsPolymorphic<TargetType>::value,
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
+    }
+};
+
+template<typename T, typename U, typename V>
+struct GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator>> {
+    static size_t index()
+    {
+        using TargetType = HashCountedSet<T, U, V, HeapAllocator>;
+        static const GCInfo gcInfo = {
+            TraceTrait<TargetType>::trace,
+            nullptr,
+            false, // HashCountedSet is just a HashTable, and needs no finalizer.
+            WTF::IsPolymorphic<TargetType>::value,
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
+    }
+};
+
+template<typename T, size_t inlineCapacity>
+struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator>> : public FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>, true> { };
+
+template<typename T, size_t inlineCapacity>
+struct GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator>> {
+    static size_t index()
+    {
+        using TargetType = Deque<T, inlineCapacity, HeapAllocator>;
+        static const GCInfo gcInfo = {
+            TraceTrait<TargetType>::trace,
+            FinalizerTrait<TargetType>::finalize,
+            // Finalizer is needed to destruct things stored in the inline capacity.
+            inlineCapacity && VectorTraits<T>::needsDestruction,
+            WTF::IsPolymorphic<TargetType>::value,
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
+    }
+};
+
+template<typename T, typename Traits>
+struct GCInfoTrait<HeapVectorBacking<T, Traits>> {
+    static size_t index()
+    {
+        using TargetType = HeapVectorBacking<T, Traits>;
+        static const GCInfo gcInfo = {
+            TraceTrait<TargetType>::trace,
+            FinalizerTrait<TargetType>::finalize,
+            Traits::needsDestruction,
+            false, // We don't support embedded objects in HeapVectors with vtables.
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
+    }
+};
+
+template<typename Table>
+struct GCInfoTrait<HeapHashTableBacking<Table>> {
+    static size_t index()
+    {
+        using TargetType = HeapHashTableBacking<Table>;
+        static const GCInfo gcInfo = {
+            TraceTrait<TargetType>::trace,
+            HeapHashTableBacking<Table>::finalize,
+            !WTF::IsTriviallyDestructible<typename Table::ValueType>::value,
+            WTF::IsPolymorphic<TargetType>::value,
+#if ENABLE(GC_PROFILING)
+            TypenameStringTrait<TargetType>::get()
+#endif
+        };
+        RETURN_GCINFO_INDEX();
     }
 };
 
