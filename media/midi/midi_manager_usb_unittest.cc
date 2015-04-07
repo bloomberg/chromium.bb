@@ -320,8 +320,8 @@ TEST_F(MidiManagerUsbTest, InitializeFailBecauseOfInvalidDescriptor) {
 }
 
 TEST_F(MidiManagerUsbTest, Send) {
+  Initialize();
   scoped_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
-  FakeMidiManagerClient client(&logger_);
   uint8 descriptor[] = {
     0x12, 0x01, 0x10, 0x01, 0x00, 0x00, 0x00, 0x08, 0x86, 0x1a,
     0x2d, 0x75, 0x54, 0x02, 0x00, 0x02, 0x00, 0x01, 0x09, 0x02,
@@ -345,7 +345,6 @@ TEST_F(MidiManagerUsbTest, Send) {
     0xf0, 0x00, 0x01, 0xf7,
   };
 
-  Initialize();
   ScopedVector<UsbMidiDevice> devices;
   devices.push_back(device.release());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
@@ -353,25 +352,22 @@ TEST_F(MidiManagerUsbTest, Send) {
   EXPECT_EQ(MIDI_OK, GetInitializationResult());
   ASSERT_EQ(2u, manager_->output_streams().size());
 
-  manager_->DispatchSendMidiData(&client, 1, ToVector(data), 0);
+  manager_->DispatchSendMidiData(client_.get(), 1, ToVector(data), 0);
   // Since UsbMidiDevice::Send is posted as a task, RunLoop should run to
   // invoke the task.
-  // TODO(crbug.com/467442): AccumulateMidiBytesSent is recorded before
-  // UsbMidiDevice is invoked for now, but this should be after the invocation.
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
   EXPECT_EQ("UsbMidiDevice::GetDescriptor\n"
-            "MidiManagerClient::AccumulateMidiBytesSent size = 7\n"
             "UsbMidiDevice::Send endpoint = 2 data = "
             "0x19 0x90 0x45 0x7f "
             "0x14 0xf0 0x00 0x01 "
-            "0x15 0xf7 0x00 0x00\n",
+            "0x15 0xf7 0x00 0x00\n"
+            "MidiManagerClient::AccumulateMidiBytesSent size = 7\n",
             logger_.TakeLog());
 }
 
 TEST_F(MidiManagerUsbTest, SendFromCompromizedRenderer) {
   scoped_ptr<FakeUsbMidiDevice> device(new FakeUsbMidiDevice(&logger_));
-  FakeMidiManagerClient client(&logger_);
   uint8 descriptor[] = {
     0x12, 0x01, 0x10, 0x01, 0x00, 0x00, 0x00, 0x08, 0x86, 0x1a,
     0x2d, 0x75, 0x54, 0x02, 0x00, 0x02, 0x00, 0x01, 0x09, 0x02,
@@ -405,11 +401,11 @@ TEST_F(MidiManagerUsbTest, SendFromCompromizedRenderer) {
   EXPECT_EQ("UsbMidiDevice::GetDescriptor\n", logger_.TakeLog());
 
   // The specified port index is invalid. The manager must ignore the request.
-  manager_->DispatchSendMidiData(&client, 99, ToVector(data), 0);
+  manager_->DispatchSendMidiData(client_.get(), 99, ToVector(data), 0);
   EXPECT_EQ("", logger_.TakeLog());
 
   // The specified port index is invalid. The manager must ignore the request.
-  manager_->DispatchSendMidiData(&client, 2, ToVector(data), 0);
+  manager_->DispatchSendMidiData(client_.get(), 2, ToVector(data), 0);
   EXPECT_EQ("", logger_.TakeLog());
 }
 

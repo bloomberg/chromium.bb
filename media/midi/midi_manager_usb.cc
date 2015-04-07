@@ -33,7 +33,7 @@ void MidiManagerUsb::StartInitialization() {
 void MidiManagerUsb::Initialize(
     base::Callback<void(MidiResult result)> callback) {
   initialize_callback_ = callback;
-  scheduler_.reset(new MidiScheduler);
+  scheduler_.reset(new MidiScheduler(this));
   // This is safe because EnumerateDevices cancels the operation on destruction.
   device_factory_->EnumerateDevices(
       this,

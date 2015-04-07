@@ -11,7 +11,9 @@
 
 namespace media {
 
-MidiScheduler::MidiScheduler() : weak_factory_(this) {
+MidiScheduler::MidiScheduler(MidiManager* manager)
+  : manager_(manager),
+    weak_factory_(this) {
 }
 
 MidiScheduler::~MidiScheduler() {
@@ -26,7 +28,11 @@ void MidiScheduler::PostSendDataTask(MidiManagerClient* client,
   DCHECK(client);
 
   const base::Closure& weak_closure = base::Bind(
-      &MidiScheduler::InvokeClosure, weak_factory_.GetWeakPtr(), closure);
+      &MidiScheduler::InvokeClosure,
+      weak_factory_.GetWeakPtr(),
+      client,
+      length,
+      closure);
 
   base::TimeDelta delay;
   if (timestamp != 0.0) {
@@ -37,15 +43,13 @@ void MidiScheduler::PostSendDataTask(MidiManagerClient* client,
   }
   base::MessageLoop::current()->task_runner()->PostDelayedTask(
       FROM_HERE, weak_closure, delay);
-
-  // TODO(crbug.com/467442): AccumulateMidiBytesSent should be called in
-  // InvokeClosure. But for now, we call it here since |client| may be deleted
-  // at that time.
-  client->AccumulateMidiBytesSent(length);
 }
 
-void MidiScheduler::InvokeClosure(const base::Closure& closure) {
+void MidiScheduler::InvokeClosure(MidiManagerClient* client,
+                                  size_t length,
+                                  const base::Closure& closure) {
   closure.Run();
+  manager_->AccumulateMidiBytesSent(client, length);
 }
 
 }  // namespace media

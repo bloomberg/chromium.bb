@@ -86,6 +86,10 @@ class MEDIA_EXPORT MidiManager {
   // A client calls EndSession() to stop receiving MIDI data.
   void EndSession(MidiManagerClient* client);
 
+  // Invoke AccumulateMidiBytesSent() for |client| safely. If the session was
+  // already closed, do nothing.
+  void AccumulateMidiBytesSent(MidiManagerClient* client, size_t n);
+
   // DispatchSendMidiData() is called when MIDI data should be sent to the MIDI
   // system.
   // This method is supposed to return immediately and should not block.

@@ -10,12 +10,13 @@
 
 namespace media {
 
+class MidiManager;
 class MidiManagerClient;
 
 // TODO(crbug.com/467442): Make tasks cancelable per client.
 class MidiScheduler final {
  public:
-  MidiScheduler();
+  MidiScheduler(MidiManager* manager);
   ~MidiScheduler();
 
   // Post |closure| to the current message loop safely. The |closure| will not
@@ -27,8 +28,12 @@ class MidiScheduler final {
                         const base::Closure& closure);
 
  private:
-  void InvokeClosure(const base::Closure& closure);
+  void InvokeClosure(MidiManagerClient* client,
+                     size_t length,
+                     const base::Closure& closure);
 
+  // MidiManager should own the MidiScheduler and be alive longer.
+  MidiManager* manager_;
   base::WeakPtrFactory<MidiScheduler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiScheduler);

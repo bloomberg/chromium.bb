@@ -94,6 +94,15 @@ void MidiManager::EndSession(MidiManagerClient* client) {
   pending_clients_.erase(client);
 }
 
+void MidiManager::AccumulateMidiBytesSent(MidiManagerClient* client, size_t n) {
+  {
+    base::AutoLock auto_lock(lock_);
+    if (clients_.find(client) == clients_.end())
+      return;
+  }
+  client->AccumulateMidiBytesSent(n);
+}
+
 void MidiManager::DispatchSendMidiData(MidiManagerClient* client,
                                        uint32 port_index,
                                        const std::vector<uint8>& data,
