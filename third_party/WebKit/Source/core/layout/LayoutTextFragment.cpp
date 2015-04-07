@@ -159,18 +159,4 @@ Text* LayoutTextFragment::associatedTextNode() const
     return (node && node->isTextNode()) ? toText(node) : nullptr;
 }
 
-void LayoutTextFragment::updateHitTestResult(HitTestResult& result, const LayoutPoint& point)
-{
-    if (result.innerNode())
-        return;
-
-    LayoutObject::updateHitTestResult(result, point);
-
-    // If we aren't part of a first-letter element, or if we
-    // are part of first-letter but we're the remaining text then return.
-    if (m_isRemainingTextRenderer || !firstLetterPseudoElement())
-        return;
-    result.setInnerNode(firstLetterPseudoElement());
-}
-
 } // namespace blink
