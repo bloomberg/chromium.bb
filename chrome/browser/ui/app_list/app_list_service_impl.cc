@@ -213,6 +213,7 @@ void AppListServiceImpl::RecordAppListLaunch() {
                             prefs::kAppListLaunchCount,
                             &SendAppListLaunch);
   RecordAppListDiscoverability(local_state_, false);
+  RecordAppListLastLaunch();
 }
 
 // static
@@ -220,6 +221,19 @@ void AppListServiceImpl::RecordAppListAppLaunch() {
   RecordDailyEventFrequency(prefs::kLastAppListAppLaunchPing,
                             prefs::kAppListAppLaunchCount,
                             &SendAppListAppLaunch);
+}
+
+// static
+void AppListServiceImpl::RecordAppListLastLaunch() {
+  if (!g_browser_process)
+    return;  // In a unit test.
+
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return;  // In a unit test.
+
+  local_state->SetInt64(prefs::kAppListLastLaunchTime,
+                        base::Time::Now().ToInternalValue());
 }
 
 // static

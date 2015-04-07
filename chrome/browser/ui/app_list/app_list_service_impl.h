@@ -45,6 +45,7 @@ class AppListServiceImpl : public AppListService,
 
   void RecordAppListLaunch();
   static void RecordAppListAppLaunch();
+  static void RecordAppListLastLaunch();
 
   // AppListService overrides:
   void SetAppListNextPaintCallback(void (*callback)()) override;

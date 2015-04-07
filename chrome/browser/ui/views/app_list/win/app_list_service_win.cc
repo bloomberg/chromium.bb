@@ -72,6 +72,8 @@ void AppListService::InitAll(Profile* initial_profile,
 
 namespace {
 
+const int kUnusedAppListNoWarmupDays = 28;
+
 int GetAppListIconIndex() {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   return dist->GetIconIndex(BrowserDistribution::SHORTCUT_APP_LAUNCHER);
@@ -353,6 +355,21 @@ bool AppListServiceWin::IsWarmupNeeded() {
   if (!g_browser_process || g_browser_process->IsShuttingDown() ||
       browser_shutdown::IsTryingToQuit() ||
       command_line->HasSwitch(switches::kTestType)) {
+    return false;
+  }
+
+  // Don't warm up the app list if it hasn't been used for a while. If the last
+  // launch is unknown, record it as "used" on the first warmup.
+  PrefService* local_state = g_browser_process->local_state();
+  int64 last_launch_time_pref =
+      local_state->GetInt64(prefs::kAppListLastLaunchTime);
+  if (last_launch_time_pref == 0)
+    RecordAppListLastLaunch();
+
+  base::Time last_launch_time =
+      base::Time::FromInternalValue(last_launch_time_pref);
+  if (base::Time::Now() - last_launch_time >
+      base::TimeDelta::FromDays(kUnusedAppListNoWarmupDays)) {
     return false;
   }
 

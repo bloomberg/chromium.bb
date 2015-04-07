@@ -145,6 +145,7 @@ void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kAppListEnableMethod,
                                 ENABLE_NOT_RECORDED);
   registry->RegisterInt64Pref(prefs::kAppListEnableTime, 0);
+  registry->RegisterInt64Pref(prefs::kAppListLastLaunchTime, 0);
 
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(prefs::kAppLauncherShortcutVersion, 0);
