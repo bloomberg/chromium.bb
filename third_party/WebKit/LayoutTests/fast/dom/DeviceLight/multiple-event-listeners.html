@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script>
+
+description('Tests using multiple event handlers for the Device Light API.');
+
+var mockEvent;
+var expectedEvent;
+function setMockLight(value) {
+
+    mockEvent = {value: value};
+
+    if (window.testRunner)
+        testRunner.setMockDeviceLight(mockEvent.value);
+    else
+        debug('This test can not be run without the TestRunner');
+}
+
+var deviceLightEvent;
+function checkLight(event) {
+    deviceLightEvent = event;
+    shouldBe('deviceLightEvent.value', 'expectedEvent.value');
+}
+
+var firstListenerCount = 0;
+function firstListener(event) {
+    checkLight(event);
+    firstListenerCount++;
+    proceedIfNecessary();
+}
+
+var secondListenerCount = 0;
+function secondListener(event) {
+    checkLight(event);
+    secondListenerCount++;
+    proceedIfNecessary();
+}
+
+function proceedIfNecessary() {
+    if (firstListenerCount == 1 && secondListenerCount == 1) {
+        setMockLight(20);
+        // Note: this should not stop Device Light updates,
+        // because there is still one listener active.
+        window.removeEventListener('devicelight', secondListener);
+        initThirdListener();
+    }
+}
+
+var childFrame;
+function initThirdListener() {
+    childFrame = document.createElement('iframe');
+    document.body.appendChild(childFrame);
+    childFrame.contentWindow.addEventListener('devicelight', thirdListener);
+}
+
+function thirdListener(event) {
+    // Expect the cached event because Device Light was already active
+    // when third listener was added.
+    checkLight(event);
+    window.removeEventListener('devicelight', firstListener);
+    childFrame.contentWindow.removeEventListener('devicelight', thirdListener);
+    initFourthListener();
+}
+
+function initFourthListener() {
+    expectedEvent = mockEvent;
+    window.addEventListener('devicelight', fourthListener);
+}
+
+function fourthListener(event) {
+    checkLight(event);
+    finishJSTest();
+}
+
+setMockLight(10);
+expectedEvent = mockEvent;
+window.addEventListener('devicelight', firstListener);
+window.addEventListener('devicelight', secondListener);
+
+window.jsTestIsAsync = true;
+
+</script>
+</body>
+</html>
