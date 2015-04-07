@@ -50,6 +50,7 @@
       'type': 'static_library',
       'sources': [
         'proximity_auth/cryptauth/proto/cryptauth_api.proto',
+        'proximity_auth/cryptauth/proto/securemessage.proto',
       ],
       'variables': {
         'proto_in_dir': 'proximity_auth/cryptauth/proto',
@@ -81,6 +82,26 @@
         "proximity_auth/cryptauth/cryptauth_client_factory.h",
         "proximity_auth/cryptauth/cryptauth_enrollment_utils.cc",
         "proximity_auth/cryptauth/cryptauth_enrollment_utils.h",
+        "proximity_auth/cryptauth/secure_message_delegate.cc",
+        "proximity_auth/cryptauth/secure_message_delegate.h",
+      ],
+      'export_dependent_settings': [
+        'cryptauth_proto',
+      ],
+    },
+    {
+      'target_name': 'cryptauth_test_support',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'cryptauth_proto',
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        "proximity_auth/cryptauth/fake_secure_message_delegate.cc",
+        "proximity_auth/cryptauth/fake_secure_message_delegate.h",
       ],
       'export_dependent_settings': [
         'cryptauth_proto',

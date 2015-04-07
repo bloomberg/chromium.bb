@@ -15,6 +15,8 @@ source_set("cryptauth") {
     "cryptauth_client_factory.h",
     "cryptauth_enrollment_utils.cc",
     "cryptauth_enrollment_utils.h",
+    "secure_message_delegate.cc",
+    "secure_message_delegate.h",
   ]
 
   deps = [
@@ -28,16 +30,34 @@ source_set("cryptauth") {
   ]
 }
 
+source_set("test_support") {
+  sources = [
+    "fake_secure_message_delegate.cc",
+    "fake_secure_message_delegate.h",
+  ]
+
+  deps = [
+    ":cryptauth",
+    "//base",
+  ]
+
+  public_deps = [
+    "proto",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
     "cryptauth_account_token_fetcher_unittest.cc",
     "cryptauth_api_call_flow_unittest.cc",
     "cryptauth_client_unittest.cc",
+    "fake_secure_message_delegate_unittest.cc",
   ]
 
   deps = [
     ":cryptauth",
+    ":test_support",
     "//base/test:test_support",
     "//google_apis:test_support",
     "//net:test_support",

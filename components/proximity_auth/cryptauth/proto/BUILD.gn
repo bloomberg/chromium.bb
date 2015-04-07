@@ -8,5 +8,6 @@ import("//third_party/protobuf/proto_library.gni")
 proto_library("proto") {
   sources = [
     "cryptauth_api.proto",
+    "securemessage.proto",
   ]
 }
