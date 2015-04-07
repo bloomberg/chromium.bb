@@ -67,23 +67,18 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const typename Strategy::
     , m_startOffset(0)
     , m_endContainer(nullptr)
     , m_endOffset(0)
-    , m_positionNode(nullptr)
-    , m_positionStartOffset(0)
-    , m_positionEndOffset(0)
-    , m_textLength(0)
     , m_needsAnotherNewline(false)
     , m_textBox(nullptr)
     , m_remainingTextBox(nullptr)
     , m_firstLetterText(nullptr)
     , m_lastTextNode(nullptr)
     , m_lastTextNodeEndedWithCollapsedSpace(false)
-    , m_lastCharacter(0)
-    , m_singleCharacterBuffer(0)
     , m_sortedTextBoxesPosition(0)
-    , m_hasEmitted(false)
     , m_behavior(behavior)
     , m_handledFirstLetter(false)
     , m_shouldStop(false)
+    // The call to emitsOriginalText() must occur after m_behavior is initialized.
+    , m_textState(emitsOriginalText())
 {
     ASSERT(start.isNotNull());
     ASSERT(end.isNotNull());
@@ -157,9 +152,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
 
     ASSERT(!m_node || !m_node->document().needsRenderTreeUpdate());
 
-    // reset the run information
-    m_positionNode = nullptr;
-    m_textLength = 0;
+    m_textState.resetRunInformation();
 
     // handle remembered node that needed a newline after the text node's newline
     if (m_needsAnotherNewline) {
@@ -185,7 +178,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
     // handle remembered text box
     if (m_textBox) {
         handleTextBox();
-        if (m_positionNode)
+        if (m_textState.positionNode())
             return;
     }
 
@@ -260,7 +253,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
                 }
                 if (handledNode)
                     m_iterationProgress = HandledNode;
-                if (m_positionNode)
+                if (m_textState.positionNode())
                     return;
             }
         }
@@ -289,7 +282,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
                     parentNode = Strategy::parent(*m_node);
                     if (haveRenderer)
                         exitNode();
-                    if (m_positionNode) {
+                    if (m_textState.positionNode()) {
                         m_iterationProgress = HandledChildren;
                         return;
                     }
@@ -340,53 +333,8 @@ void TextIteratorAlgorithm<Strategy>::advance()
         m_firstLetterText = nullptr;
 
         // how would this ever be?
-        if (m_positionNode)
+        if (m_textState.positionNode())
             return;
-    }
-}
-
-template<typename Strategy>
-UChar TextIteratorAlgorithm<Strategy>::characterAt(unsigned index) const
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(index < static_cast<unsigned>(length()));
-    if (!(index < static_cast<unsigned>(length())))
-        return 0;
-
-    if (m_singleCharacterBuffer) {
-        ASSERT(!index);
-        ASSERT(length() == 1);
-        return m_singleCharacterBuffer;
-    }
-
-    return string()[m_positionStartOffset + index];
-}
-
-template<typename Strategy>
-String TextIteratorAlgorithm<Strategy>::substring(unsigned position, unsigned length) const
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(position <= static_cast<unsigned>(this->length()));
-    ASSERT_WITH_SECURITY_IMPLICATION(position + length <= static_cast<unsigned>(this->length()));
-    if (!length)
-        return emptyString();
-    if (m_singleCharacterBuffer) {
-        ASSERT(!position);
-        ASSERT(length == 1);
-        return String(&m_singleCharacterBuffer, 1);
-    }
-    return string().substring(m_positionStartOffset + position, length);
-}
-
-template<typename Strategy>
-void TextIteratorAlgorithm<Strategy>::appendTextToStringBuilder(StringBuilder& builder, unsigned position, unsigned maxLength) const
-{
-    unsigned lengthToAppend = std::min(static_cast<unsigned>(length()) - position, maxLength);
-    if (!lengthToAppend)
-        return;
-    if (m_singleCharacterBuffer) {
-        ASSERT(!position);
-        builder.append(m_singleCharacterBuffer);
-    } else {
-        builder.append(string(), m_positionStartOffset + position, lengthToAppend);
     }
 }
 
@@ -497,7 +445,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox()
             InlineTextBox* firstTextBox = renderer->containsReversedText() ? (m_sortedTextBoxes.isEmpty() ? 0 : m_sortedTextBoxes[0]) : renderer->firstTextBox();
             bool needSpace = m_lastTextNodeEndedWithCollapsedSpace
                 || (m_textBox == firstTextBox && textBoxStart == runStart && runStart > 0);
-            if (needSpace && !renderer->style()->isCollapsibleWhiteSpace(m_lastCharacter) && m_lastCharacter) {
+            if (needSpace && !renderer->style()->isCollapsibleWhiteSpace(m_textState.lastCharacter()) && m_textState.lastCharacter()) {
                 if (m_lastTextNode == m_node && runStart > 0 && str[runStart - 1] == ' ') {
                     unsigned spaceRunStart = runStart - 1;
                     while (spaceRunStart > 0 && str[spaceRunStart - 1] == ' ')
@@ -549,7 +497,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox()
 
                 // If we are doing a subrun that doesn't go to the end of the text box,
                 // come back again to finish handling this text box; don't advance to the next one.
-                if (static_cast<unsigned>(m_positionEndOffset) < textBoxEnd)
+                if (static_cast<unsigned>(m_textState.positionEndOffset()) < textBoxEnd)
                     return;
 
                 // Advance and return
@@ -643,8 +591,6 @@ bool TextIteratorAlgorithm<Strategy>::handleReplacedElement()
         return true;
     }
 
-    m_hasEmitted = true;
-
     if (emitsCharactersBetweenAllVisiblePositions()) {
         // We want replaced elements to behave like punctuation for boundary
         // finding, and to simply take up space for the selection preservation
@@ -653,23 +599,13 @@ bool TextIteratorAlgorithm<Strategy>::handleReplacedElement()
         return true;
     }
 
-    m_positionNode = Strategy::parent(*m_node);
-    m_positionOffsetBaseNode = m_node;
-    m_positionStartOffset = 0;
-    m_positionEndOffset = 1;
-    m_singleCharacterBuffer = 0;
+    m_textState.updateForReplacedElement(m_node);
 
     if (emitsImageAltText() && TextIterator::supportsAltText(m_node)) {
-        m_text = toHTMLElement(m_node)->altText();
-        if (!m_text.isEmpty()) {
-            m_textLength = m_text.length();
-            m_lastCharacter = m_text[m_textLength - 1];
+        m_textState.emitAltText(m_node);
+        if (m_textState.length())
             return true;
-        }
     }
-
-    m_textLength = 0;
-    m_lastCharacter = 0;
 
     return true;
 }
@@ -811,11 +747,11 @@ bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero()
 
     // Leave element positioned flush with start of a paragraph
     // (e.g. do not insert tab before a table cell at the start of a paragraph)
-    if (m_lastCharacter == '\n')
+    if (m_textState.lastCharacter() == '\n')
         return false;
 
     // Otherwise, show the position if we have emitted any characters
-    if (m_hasEmitted)
+    if (m_textState.hasEmitted())
         return true;
 
     // We've not emitted anything yet. Generally, there is no need for any positioning then.
@@ -902,24 +838,13 @@ bool TextIteratorAlgorithm<Strategy>::handleNonTextNode()
 }
 
 template<typename Strategy>
-void TextIteratorAlgorithm<Strategy>::flushPositionOffsets() const
-{
-    if (!m_positionOffsetBaseNode)
-        return;
-    int index = Strategy::index(*m_positionOffsetBaseNode);
-    m_positionStartOffset += index;
-    m_positionEndOffset += index;
-    m_positionOffsetBaseNode = nullptr;
-}
-
-template<typename Strategy>
 void TextIteratorAlgorithm<Strategy>::exitNode()
 {
     // prevent emitting a newline when exiting a collapsed block at beginning of the range
     // FIXME: !m_hasEmitted does not necessarily mean there was a collapsed block... it could
     // have been an hr (e.g.). Also, a collapsed block could have height (e.g. a table) and
     // therefore look like a blank line.
-    if (!m_hasEmitted)
+    if (!m_textState.hasEmitted())
         return;
 
     // Emit with a position *inside* m_node, after m_node's contents, in
@@ -937,7 +862,7 @@ void TextIteratorAlgorithm<Strategy>::exitNode()
 
         // FIXME: We need to emit a '\n' as we leave an empty block(s) that
         // contain a VisiblePosition when doing selection preservation.
-        if (m_lastCharacter != '\n') {
+        if (m_textState.lastCharacter() != '\n') {
             // insert a newline with a position following this block's contents.
             emitCharacter('\n', Strategy::parent(*baseNode), baseNode, 1, 1);
             // remember whether to later add a newline for the current node
@@ -950,61 +875,36 @@ void TextIteratorAlgorithm<Strategy>::exitNode()
     }
 
     // If nothing was emitted, see if we need to emit a space.
-    if (!m_positionNode && shouldEmitSpaceBeforeAndAfterNode(m_node))
+    if (!m_textState.positionNode() && shouldEmitSpaceBeforeAndAfterNode(m_node))
         emitCharacter(space, Strategy::parent(*baseNode), baseNode, 1, 1);
 }
 
 template<typename Strategy>
 void TextIteratorAlgorithm<Strategy>::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, int textStartOffset, int textEndOffset)
 {
-    m_hasEmitted = true;
-
-    // remember information with which to construct the TextIterator::range()
-    // NOTE: textNode is often not a text node, so the range will specify child nodes of positionNode
-    m_positionNode = textNode;
-    m_positionOffsetBaseNode = offsetBaseNode;
-    m_positionStartOffset = textStartOffset;
-    m_positionEndOffset = textEndOffset;
-
-    // remember information with which to construct the TextIterator::characters() and length()
-    m_singleCharacterBuffer = c;
-    ASSERT(m_singleCharacterBuffer);
-    m_textLength = 1;
-
-    // remember some iteration state
+    // Since m_lastTextNodeEndedWithCollapsedSpace seems better placed in
+    // TextIterator, but is always reset when we call emitCharacter, we
+    // wrap TextIteratorTextState::emitCharacter() with this function.
+    m_textState.emitCharacter(c, textNode, offsetBaseNode, textStartOffset, textEndOffset);
     m_lastTextNodeEndedWithCollapsedSpace = false;
-    m_lastCharacter = c;
 }
 
 template<typename Strategy>
 void TextIteratorAlgorithm<Strategy>::emitText(Node* textNode, LayoutText* renderer, int textStartOffset, int textEndOffset)
 {
-    m_text = emitsOriginalText() ? renderer->originalText() : renderer->text();
-    ASSERT(!m_text.isEmpty());
-    ASSERT(0 <= textStartOffset && textStartOffset < static_cast<int>(m_text.length()));
-    ASSERT(0 <= textEndOffset && textEndOffset <= static_cast<int>(m_text.length()));
-    ASSERT(textStartOffset <= textEndOffset);
-
-    m_positionNode = textNode;
-    m_positionOffsetBaseNode = nullptr;
-    m_positionStartOffset = textStartOffset;
-    m_positionEndOffset = textEndOffset;
-    m_singleCharacterBuffer = 0;
-    m_textLength = textEndOffset - textStartOffset;
-    m_lastCharacter = m_text[textEndOffset - 1];
-
+    // Since m_lastTextNodeEndedWithCollapsedSpace seems better placed in
+    // TextIterator, but is always reset when we call emitCharacter, we
+    // wrap TextIteratorTextState::emitCharacter() with this function.
+    m_textState.emitText(textNode, renderer, textStartOffset, textEndOffset);
     m_lastTextNodeEndedWithCollapsedSpace = false;
-    m_hasEmitted = true;
 }
 
 template<typename Strategy>
 PassRefPtrWillBeRawPtr<Range> TextIteratorAlgorithm<Strategy>::createRange() const
 {
     // use the current run information, if we have it
-    if (m_positionNode) {
-        flushPositionOffsets();
-        return Range::create(m_positionNode->document(), m_positionNode, m_positionStartOffset, m_positionNode, m_positionEndOffset);
-    }
+    if (m_textState.positionNode())
+        return m_textState.createRange();
 
     // otherwise, return the end of the overall range we were given
     if (m_endContainer)
@@ -1016,8 +916,8 @@ PassRefPtrWillBeRawPtr<Range> TextIteratorAlgorithm<Strategy>::createRange() con
 template<typename Strategy>
 Document* TextIteratorAlgorithm<Strategy>::ownerDocument() const
 {
-    if (m_positionNode)
-        return &m_positionNode->document();
+    if (m_textState.positionNode())
+        return &m_textState.positionNode()->document();
     if (m_endContainer)
         return &m_endContainer->document();
     return 0;
@@ -1026,7 +926,7 @@ Document* TextIteratorAlgorithm<Strategy>::ownerDocument() const
 template<typename Strategy>
 Node* TextIteratorAlgorithm<Strategy>::node() const
 {
-    if (m_positionNode || m_endContainer) {
+    if (m_textState.positionNode() || m_endContainer) {
         Node* node = currentContainer();
         if (node->offsetInCharacters())
             return node;
@@ -1038,9 +938,9 @@ Node* TextIteratorAlgorithm<Strategy>::node() const
 template<typename Strategy>
 int TextIteratorAlgorithm<Strategy>::startOffsetInCurrentContainer() const
 {
-    if (m_positionNode) {
-        flushPositionOffsets();
-        return m_positionStartOffset;
+    if (m_textState.positionNode()) {
+        m_textState.flushPositionOffsets();
+        return m_textState.positionStartOffset();
     }
     ASSERT(m_endContainer);
     return m_endOffset;
@@ -1049,9 +949,9 @@ int TextIteratorAlgorithm<Strategy>::startOffsetInCurrentContainer() const
 template<typename Strategy>
 int TextIteratorAlgorithm<Strategy>::endOffsetInCurrentContainer() const
 {
-    if (m_positionNode) {
-        flushPositionOffsets();
-        return m_positionEndOffset;
+    if (m_textState.positionNode()) {
+        m_textState.flushPositionOffsets();
+        return m_textState.positionEndOffset();
     }
     ASSERT(m_endContainer);
     return m_endOffset;
@@ -1060,8 +960,8 @@ int TextIteratorAlgorithm<Strategy>::endOffsetInCurrentContainer() const
 template<typename Strategy>
 Node* TextIteratorAlgorithm<Strategy>::currentContainer() const
 {
-    if (m_positionNode) {
-        return m_positionNode;
+    if (m_textState.positionNode()) {
+        return m_textState.positionNode();
     }
     ASSERT(m_endContainer);
     return m_endContainer;
@@ -1121,7 +1021,7 @@ static String createPlainText(TextIterator& it)
     builder.reserveCapacity(initialCapacity);
 
     for (; !it.atEnd(); it.advance()) {
-        it.appendTextToStringBuilder(builder);
+        it.text().appendTextToStringBuilder(builder);
         bufferLength += it.length();
     }
 

@@ -107,7 +107,7 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
             // FIXME: This is a workaround for the fact that the end of a run
             // is often at the wrong position for emitted '\n's or if the
             // renderer of the current node is a replaced element.
-            if (len == 1 && (it.characterAt(0) == '\n' || it.isInsideReplacedElement())) {
+            if (len == 1 && (it.text().characterAt(0) == '\n' || it.isInsideReplacedElement())) {
                 it.advance();
                 if (!it.atEnd()) {
                     textRunEndPosition = it.startPositionInCurrentContainer();

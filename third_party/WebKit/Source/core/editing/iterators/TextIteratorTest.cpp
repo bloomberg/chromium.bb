@@ -99,7 +99,7 @@ Vector<String> TextIteratorTest::iterateWithIterator(TextIterator& iterator)
 {
     Vector<String> textChunks;
     while (!iterator.atEnd()) {
-        textChunks.append(iterator.substring(0, iterator.length()));
+        textChunks.append(iterator.text().substring(0, iterator.text().length()));
         iterator.advance();
     }
     return textChunks;

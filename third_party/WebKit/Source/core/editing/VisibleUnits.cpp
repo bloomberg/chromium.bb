@@ -472,7 +472,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         TextIterator forwardsIterator(forwardsScanRange->startPosition(), forwardsScanRange->endPosition());
         while (!forwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
-            forwardsIterator.appendTextTo(characters);
+            forwardsIterator.text().appendTextTo(characters);
             int i = endOfFirstWordBoundaryContext(characters.data(), characters.size());
             string.append(characters.data(), i);
             suffixLength += i;
@@ -570,7 +570,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         // returns an end value not equal to the length of the string passed to it.
         bool inTextSecurityMode = it.node() && it.node()->layoutObject() && it.node()->layoutObject()->style()->textSecurity() != TSNONE;
         if (!inTextSecurityMode)
-            it.appendTextTo(string);
+            it.text().appendTextTo(string);
         else {
             // Treat bullets used in the text security mode as regular characters when looking for boundaries
             Vector<UChar, 1024> iteratorString;

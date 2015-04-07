@@ -1326,6 +1326,8 @@
             'editing/iterators/TextIterator.h',
             'editing/iterators/TextIteratorStrategy.cpp',
             'editing/iterators/TextIteratorStrategy.h',
+            'editing/iterators/TextIteratorTextState.cpp',
+            'editing/iterators/TextIteratorTextState.h',
             'editing/iterators/CharacterIterator.cpp',
             'editing/iterators/SimplifiedBackwardsTextIterator.cpp',
             'editing/iterators/WordAwareIterator.cpp',

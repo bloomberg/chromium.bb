@@ -62,22 +62,22 @@ void WordAwareIterator::advance()
 
     while (1) {
         // If this chunk ends in whitespace we can just use it as our chunk.
-        if (isSpaceOrNewline(m_textIterator.characterAt(m_textIterator.length() - 1)))
+        if (isSpaceOrNewline(m_textIterator.text().characterAt(m_textIterator.length() - 1)))
             return;
 
         // If this is the first chunk that failed, save it in m_buffer before look ahead.
         if (m_buffer.isEmpty())
-            m_textIterator.appendTextTo(m_buffer);
+            m_textIterator.text().appendTextTo(m_buffer);
 
         // Look ahead to next chunk. If it is whitespace or a break, we can use the previous stuff
         m_textIterator.advance();
-        if (m_textIterator.atEnd() || !m_textIterator.length() || isSpaceOrNewline(m_textIterator.characterAt(0))) {
+        if (m_textIterator.atEnd() || !m_textIterator.length() || isSpaceOrNewline(m_textIterator.text().characterAt(0))) {
             m_didLookAhead = true;
             return;
         }
 
         // Start gobbling chunks until we get to a suitable stopping point
-        m_textIterator.appendTextTo(m_buffer);
+        m_textIterator.text().appendTextTo(m_buffer);
     }
 }
 
@@ -92,14 +92,14 @@ String WordAwareIterator::substring(unsigned position, unsigned length) const
 {
     if (!m_buffer.isEmpty())
         return String(m_buffer.data() + position, length);
-    return m_textIterator.substring(position, length);
+    return m_textIterator.text().substring(position, length);
 }
 
 UChar WordAwareIterator::characterAt(unsigned index) const
 {
     if (!m_buffer.isEmpty())
         return m_buffer[index];
-    return m_textIterator.characterAt(index);
+    return m_textIterator.text().characterAt(index);
 }
 
 } // namespace blink

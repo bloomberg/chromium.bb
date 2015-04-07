@@ -31,6 +31,7 @@
 #include "core/editing/FindOptions.h"
 #include "core/editing/iterators/FullyClippedStateStack.h"
 #include "core/editing/iterators/TextIteratorFlags.h"
+#include "core/editing/iterators/TextIteratorTextState.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
@@ -57,30 +58,9 @@ public:
     TextIteratorAlgorithm(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
     ~TextIteratorAlgorithm();
 
-    bool atEnd() const { return !m_positionNode || m_shouldStop; }
+    bool atEnd() const { return !m_textState.positionNode() || m_shouldStop; }
     void advance();
     bool isInsideReplacedElement() const;
-
-    int length() const { return m_textLength; }
-    UChar characterAt(unsigned index) const;
-    String substring(unsigned position, unsigned length) const;
-    void appendTextToStringBuilder(StringBuilder&, unsigned position = 0, unsigned maxLength = UINT_MAX) const;
-
-    template<typename BufferType>
-    void appendTextTo(BufferType& output, unsigned position = 0)
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(position <= static_cast<unsigned>(length()));
-        unsigned lengthToAppend = length() - position;
-        if (!lengthToAppend)
-            return;
-        if (m_singleCharacterBuffer) {
-            ASSERT(!position);
-            ASSERT(length() == 1);
-            output.append(&m_singleCharacterBuffer, 1);
-        } else {
-            string().appendTo(output, startOffsetInCurrentContainer() + position, lengthToAppend);
-        }
-    }
 
     PassRefPtrWillBeRawPtr<Range> createRange() const;
     Node* node() const;
@@ -91,6 +71,9 @@ public:
     int endOffsetInCurrentContainer() const;
     typename Strategy::PositionType startPositionInCurrentContainer() const;
     typename Strategy::PositionType endPositionInCurrentContainer() const;
+
+    const TextIteratorTextState& text() const { return m_textState; };
+    int length() const { return m_textState.length(); }
 
     bool breaksAtReplacedElement() { return !(m_behavior & TextIteratorDoesNotBreakAtReplacedElement); }
 
@@ -121,9 +104,6 @@ private:
 
     void initialize(Node* startContainer, int startOffset, Node* endContainer, int endOffset);
 
-    void flushPositionOffsets() const;
-    int positionStartOffset() const { return m_positionStartOffset; }
-    const String& string() const { return m_text; }
     void exitNode();
     bool shouldRepresentNodeOffsetZero();
     bool shouldEmitSpaceBeforeAndAfterNode(Node*);
@@ -174,14 +154,6 @@ private:
     int m_endOffset;
     RawPtrWillBeMember<Node> m_pastEndNode;
 
-    // The current text and its position, in the form to be returned from the iterator.
-    RawPtrWillBeMember<Node> m_positionNode;
-    mutable RawPtrWillBeMember<Node> m_positionOffsetBaseNode;
-    mutable int m_positionStartOffset;
-    mutable int m_positionEndOffset;
-    int m_textLength;
-    String m_text;
-
     // Used when there is still some pending text from the current node; when these
     // are false and 0, we go back to normal iterating.
     bool m_needsAnotherNewline;
@@ -195,18 +167,10 @@ private:
     // Used to do the whitespace collapsing logic.
     RawPtrWillBeMember<Text> m_lastTextNode;
     bool m_lastTextNodeEndedWithCollapsedSpace;
-    UChar m_lastCharacter;
-
-    // Used for whitespace characters that aren't in the DOM, so we can point at them.
-    // If non-zero, overrides m_text.
-    UChar m_singleCharacterBuffer;
 
     // Used when text boxes are out of order (Hebrew/Arabic w/ embeded LTR text)
     Vector<InlineTextBox*> m_sortedTextBoxes;
     size_t m_sortedTextBoxesPosition;
-
-    // Used when deciding whether to emit a "positioning" (e.g. newline) before any other content
-    bool m_hasEmitted;
 
     const TextIteratorBehaviorFlags m_behavior;
 
@@ -214,6 +178,9 @@ private:
     bool m_handledFirstLetter;
     // Used when stopsOnFormControls() is true to determine if the iterator should keep advancing.
     bool m_shouldStop;
+
+    // Contains state of emitted text.
+    TextIteratorTextState m_textState;
 };
 
 extern template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<TextIteratorStrategy>;
