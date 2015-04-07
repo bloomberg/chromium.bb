@@ -329,6 +329,12 @@ void LoadablePluginPlaceholder::DidFinishLoadingCallback() {
   if (message_.length() > 0)
     UpdateMessage();
 
+  // Ensure that we force a layout and paint invalidation for the new
+  // content. This will cause the container invalidation to be acted upon.
+  blink::WebFrame* frame = GetFrame();
+  blink::WebView* view = frame->view();
+  view->setNeedsLayoutAndFullPaintInvalidation();
+
   // Wait for the placeholder to finish loading to hide the premade plugin.
   // This is necessary to prevent a flicker.
   if (premade_throttler_ && !placeholder_was_replaced_)
