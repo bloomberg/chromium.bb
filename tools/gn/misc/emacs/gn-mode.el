@@ -1,23 +1,59 @@
-;;; gn.el - A major mode for editing gn files.
+;;; gn-mode.el - A major mode for editing gn files.
 
 ;; Copyright 2015 The Chromium Authors. All rights reserved.
 ;; Use of this source code is governed by a BSD-style license that can be
 ;; found in the LICENSE file.
 
-;; Put this somewhere in your load-path and
-;; (require 'gn)
+;; Author: Elliot Glaysher <erg@chromium.org>
+;; Created: April 03, 2015
+;; Keywords: tools, gn, ninja, chromium
 
-;; TODO(erg): There's a lot of general improvements that could be made here:
-;;
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; A major mode for editing GN files. GN stands for Generate Ninja. GN is the
+;; meta build system used in Chromium. For more information on GN, see the GN
+;; manual: <https://code.google.com/p/chromium/wiki/gn>
+
+;;; To Do:
+
 ;; - We syntax highlight builtin actions, but don't highlight instantiations of
 ;;   templates. Should we?
 ;; - `fill-paragraph' works for comments, but when pointed at code, breaks
 ;;   spectacularly.
-;; - Might want to support `imenu' users. Even if it's just a list of toplevel
-;;   targets?
+
+
 
 (eval-when-compile (require 'cl))       ;For the `case' macro.
 (require 'smie)
+
+(defgroup gn nil
+  "Major mode for editing Generate Ninja files."
+  :prefix "gn-"
+  :group 'languages)
+
+(defcustom gn-indent-basic 2
+  "The number of spaces to indent a new scope."
+  :group 'gn
+  :type 'integer)
+
+(defgroup gn-faces nil
+  "Faces used in Generate Ninja mode."
+  :group 'gn
+  :group 'faces)
+
+(defface gn-embedded-variable
+  '((t :inherit font-lock-variable-name-face))
+  "Font lock face used to highlight variable names in strings."
+  :group 'gn-faces)
+
+(defface gn-embedded-variable-boundary
+  '((t :bold t
+       :inherit gn-embedded-variable))
+  "Font lock face used to highlight the '$' that starts a
+variable name or the '{{' and '}}' which surround it."
+  :group 'gn-faces)
 
 (defvar gn-font-lock-target-declaration-keywords
   '("action" "action_foreach" "copy" "executable" "group"
@@ -52,9 +88,21 @@
     (,(regexp-opt gn-font-lock-predefined-var-keywords 'words) .
      font-lock-constant-face)
     (,(regexp-opt gn-font-lock-var-keywords 'words) .
-     font-lock-variable-name-face)))
-
-(defvar gn-indent-basic 2)
+     font-lock-variable-name-face)
+    ;; $variables_like_this
+    ("\\(\\$\\)\\([a-zA-Z0-9_]+\\)"
+     (1 'gn-embedded-variable-boundary t)
+     (2 'gn-embedded-variable t))
+    ;; ${variables_like_this}
+    ("\\(\\${\\)\\([^\n }]+\\)\\(}\\)"
+     (1 'gn-embedded-variable-boundary t)
+     (2 'gn-embedded-variable t)
+     (3 'gn-embedded-variable-boundary t))
+    ;; {{placeholders}}    (see substitute_type.h)
+    ("\\({{\\)\\([^\n }]+\\)\\(}}\\)"
+     (1 'gn-embedded-variable-boundary t)
+     (2 'gn-embedded-variable t)
+     (3 'gn-embedded-variable-boundary t))))
 
 (defun gn-smie-rules (kind token)
   "These are slightly modified indentation rules from the SMIE
@@ -73,12 +121,17 @@
 ;;;###autoload
 (define-derived-mode gn-mode prog-mode "GN"
   "Major mode for editing gn (Generate Ninja)."
-
-  (setq-local font-lock-defaults '(gn-font-lock-keywords))
+  :group 'gn
 
   (setq-local comment-use-syntax t)
   (setq-local comment-start "#")
   (setq-local comment-end "")
+
+  (setq-local font-lock-defaults '(gn-font-lock-keywords))
+
+  ;; For every 'rule("name") {', adds "name" to the imenu for quick navigation.
+  (setq-local imenu-generic-expression
+              '((nil "^\s*[a-zA-Z0-9_]+(\"\\([a-zA-Z0-9_]+\\)\")\s*{" 1)))
 
   (smie-setup nil #'gn-smie-rules)
   (setq-local smie-indent-basic gn-indent-basic)
