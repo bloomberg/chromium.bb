@@ -67,6 +67,10 @@ namespace {
 CSSPropertyID propertyForAnimation(CSSPropertyID property)
 {
     switch (property) {
+    case CSSPropertyWebkitBackgroundSize:
+        return CSSPropertyBackgroundSize;
+    case CSSPropertyWebkitBoxShadow:
+        return CSSPropertyBoxShadow;
     case CSSPropertyWebkitPerspective:
         return CSSPropertyPerspective;
     case CSSPropertyWebkitTransform:
