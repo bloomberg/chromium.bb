@@ -25,6 +25,8 @@
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/Pattern.h"
 
+class SkPaint;
+
 namespace blink {
 
 enum LayoutSVGResourceMode {
@@ -47,6 +49,7 @@ public:
     static SVGPaintServer requestForLayoutObject(const LayoutObject&, const ComputedStyle&, LayoutSVGResourceMode);
     static bool existsForLayoutObject(const LayoutObject&, const ComputedStyle&, LayoutSVGResourceMode);
 
+    void applyToSkPaint(SkPaint&, float paintAlpha);
     void apply(GraphicsContext&, LayoutSVGResourceMode, float paintAlpha, GraphicsContextStateSaver&);
 
     static SVGPaintServer invalid() { return SVGPaintServer(Color(Color::transparent)); }

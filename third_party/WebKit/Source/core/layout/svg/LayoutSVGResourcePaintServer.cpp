@@ -28,6 +28,7 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "third_party/skia/include/core/SkPaint.h"
 
 namespace blink {
 
@@ -46,6 +47,18 @@ SVGPaintServer::SVGPaintServer(PassRefPtr<Pattern> pattern)
     : m_pattern(pattern)
     , m_color(Color::black)
 {
+}
+
+void SVGPaintServer::applyToSkPaint(SkPaint& paint, float paintAlpha)
+{
+    SkColor baseColor = m_gradient || m_pattern ? SK_ColorBLACK : m_color.rgb();
+    paint.setColor(scaleAlpha(baseColor, paintAlpha));
+    if (m_pattern)
+        paint.setShader(m_pattern->shader());
+    else if (m_gradient)
+        paint.setShader(m_gradient->shader());
+    else
+        paint.setShader(nullptr);
 }
 
 void SVGPaintServer::apply(GraphicsContext& context, LayoutSVGResourceMode resourceMode, float paintAlpha, GraphicsContextStateSaver& stateSaver)
