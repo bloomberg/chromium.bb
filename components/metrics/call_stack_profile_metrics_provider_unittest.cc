@@ -12,7 +12,7 @@
 using base::StackSamplingProfiler;
 using Frame = StackSamplingProfiler::Frame;
 using Module = StackSamplingProfiler::Module;
-using Profile = StackSamplingProfiler::Profile;
+using Profile = StackSamplingProfiler::CallStackProfile;
 using Sample = StackSamplingProfiler::Sample;
 
 namespace metrics {
@@ -201,7 +201,7 @@ TEST(CallStackProfileMetricsProviderTest, MultipleProfiles) {
                                       module_base_address), entry.address());
         ASSERT_TRUE(entry.has_module_id_index());
         EXPECT_EQ(profile_sample_frames[i][j][k].module_index,
-                  entry.module_id_index());
+                  static_cast<size_t>(entry.module_id_index()));
       }
     }
 
@@ -298,7 +298,8 @@ TEST(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
       EXPECT_EQ(static_cast<uint64>(instruction_pointer - module_base_address),
                 entry.address());
       ASSERT_TRUE(entry.has_module_id_index());
-      EXPECT_EQ(sample_frames[i][j].module_index, entry.module_id_index());
+      EXPECT_EQ(sample_frames[i][j].module_index,
+                static_cast<size_t>(entry.module_id_index()));
     }
   }
 }
@@ -374,7 +375,8 @@ TEST(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
       EXPECT_EQ(static_cast<uint64>(instruction_pointer - module_base_address),
                 entry.address());
       ASSERT_TRUE(entry.has_module_id_index());
-      EXPECT_EQ(sample_frames[i][j].module_index, entry.module_id_index());
+      EXPECT_EQ(sample_frames[i][j].module_index,
+                static_cast<size_t>(entry.module_id_index()));
     }
   }
 }
@@ -382,8 +384,8 @@ TEST(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
 
 // Checks that unknown modules produce an empty Entry.
 TEST(CallStackProfileMetricsProviderTest, UnknownModule) {
-  // -1 indicates an unknown module.
-  const Frame frame(reinterpret_cast<const void*>(0x1000), -1);
+  const Frame frame(reinterpret_cast<const void*>(0x1000),
+                    Frame::kUnknownModuleIndex);
 
   Profile profile;
 

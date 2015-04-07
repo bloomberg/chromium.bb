@@ -26,10 +26,12 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
   // ProvideGeneralMetrics, rather than sourcing them from the
   // StackSamplingProfiler.
   void SetSourceProfilesForTesting(
-      const std::vector<base::StackSamplingProfiler::Profile>& profiles);
+      const std::vector<base::StackSamplingProfiler::CallStackProfile>&
+          profiles);
 
  private:
-  std::vector<base::StackSamplingProfiler::Profile> source_profiles_for_test_;
+  std::vector<base::StackSamplingProfiler::CallStackProfile>
+      source_profiles_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(CallStackProfileMetricsProvider);
 };

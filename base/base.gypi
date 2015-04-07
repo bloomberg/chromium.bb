@@ -487,6 +487,8 @@
           'process/process_win.cc',
           'profiler/alternate_timer.cc',
           'profiler/alternate_timer.h',
+          'profiler/native_stack_sampler.cc',
+          'profiler/native_stack_sampler.h',
           'profiler/scoped_profile.cc',
           'profiler/scoped_profile.h',
           'profiler/scoped_tracker.cc',

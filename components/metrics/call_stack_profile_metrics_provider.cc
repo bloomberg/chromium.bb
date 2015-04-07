@@ -42,7 +42,7 @@ void CopySampleToProto(
     // A frame may not have a valid module. If so, we can't compute the
     // instruction pointer offset, and we don't want to send bare pointers, so
     // leave call_stack_entry empty.
-    if (frame.module_index < 0)
+    if (frame.module_index == StackSamplingProfiler::Frame::kUnknownModuleIndex)
       continue;
     int64 module_offset =
         reinterpret_cast<const char*>(frame.instruction_pointer) -
@@ -55,7 +55,7 @@ void CopySampleToProto(
 
 // Transcode |profile| into |proto_profile|.
 void CopyProfileToProto(
-    const StackSamplingProfiler::Profile& profile,
+    const StackSamplingProfiler::CallStackProfile& profile,
     CallStackProfile* proto_profile) {
   if (profile.samples.empty())
     return;
@@ -112,13 +112,13 @@ CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {}
 
 void CallStackProfileMetricsProvider::ProvideGeneralMetrics(
     ChromeUserMetricsExtension* uma_proto) {
-  std::vector<StackSamplingProfiler::Profile> profiles;
+  std::vector<StackSamplingProfiler::CallStackProfile> profiles;
   if (!source_profiles_for_test_.empty())
     profiles.swap(source_profiles_for_test_);
   else
     StackSamplingProfiler::GetPendingProfiles(&profiles);
 
-  for (const StackSamplingProfiler::Profile& profile : profiles) {
+  for (const StackSamplingProfiler::CallStackProfile& profile : profiles) {
     CallStackProfile* call_stack_profile =
         uma_proto->add_sampled_profile()->mutable_call_stack_profile();
     CopyProfileToProto(profile, call_stack_profile);
@@ -126,7 +126,7 @@ void CallStackProfileMetricsProvider::ProvideGeneralMetrics(
 }
 
 void CallStackProfileMetricsProvider::SetSourceProfilesForTesting(
-    const std::vector<StackSamplingProfiler::Profile>& profiles) {
+    const std::vector<StackSamplingProfiler::CallStackProfile>& profiles) {
   source_profiles_for_test_ = profiles;
 }
 

@@ -9,33 +9,41 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/singleton.h"
+#include "base/profiler/native_stack_sampler.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/timer/elapsed_timer.h"
-
-template <typename T> struct DefaultSingletonTraits;
 
 namespace base {
 
+// PendingProfiles ------------------------------------------------------------
+
 namespace {
 
-// Thread-safe singleton class that stores collected profiles waiting to be
-// processed.
+// Thread-safe singleton class that stores collected call stack profiles waiting
+// to be processed.
 class PendingProfiles {
  public:
-  PendingProfiles();
   ~PendingProfiles();
 
   static PendingProfiles* GetInstance();
 
-  // Appends |profiles|. This function is thread safe.
-  void PutProfiles(const std::vector<StackSamplingProfiler::Profile>& profiles);
-  // Gets the pending profiles into *|profiles|. This function is thread safe.
-  void GetProfiles(std::vector<StackSamplingProfiler::Profile>* profiles);
+  // Appends |profiles| to |profiles_|. This function may be called on any
+  // thread.
+  void AppendProfiles(
+      const std::vector<StackSamplingProfiler::CallStackProfile>& profiles);
+
+  // Copies the pending profiles from |profiles_| into |profiles|, and clears
+  // |profiles_|. This function may be called on any thread.
+  void GetAndClearPendingProfiles(
+      std::vector<StackSamplingProfiler::CallStackProfile>* profiles);
 
  private:
+  friend struct DefaultSingletonTraits<PendingProfiles>;
+
+  PendingProfiles();
+
   Lock profiles_lock_;
-  std::vector<StackSamplingProfiler::Profile> profiles_;
+  std::vector<StackSamplingProfiler::CallStackProfile> profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingProfiles);
 };
@@ -49,20 +57,23 @@ PendingProfiles* PendingProfiles::GetInstance() {
   return Singleton<PendingProfiles>::get();
 }
 
-void PendingProfiles::PutProfiles(
-    const std::vector<StackSamplingProfiler::Profile>& profiles) {
+void PendingProfiles::AppendProfiles(
+    const std::vector<StackSamplingProfiler::CallStackProfile>& profiles) {
   AutoLock scoped_lock(profiles_lock_);
   profiles_.insert(profiles_.end(), profiles.begin(), profiles.end());
 }
 
-void PendingProfiles::GetProfiles(
-    std::vector<StackSamplingProfiler::Profile>* profiles) {
+void PendingProfiles::GetAndClearPendingProfiles(
+    std::vector<StackSamplingProfiler::CallStackProfile>* profiles) {
   profiles->clear();
 
   AutoLock scoped_lock(profiles_lock_);
   profiles_.swap(*profiles);
 }
+
 }  // namespace
+
+// StackSamplingProfiler::Module ----------------------------------------------
 
 StackSamplingProfiler::Module::Module() : base_address(nullptr) {}
 StackSamplingProfiler::Module::Module(const void* base_address,
@@ -72,60 +83,28 @@ StackSamplingProfiler::Module::Module(const void* base_address,
 
 StackSamplingProfiler::Module::~Module() {}
 
-StackSamplingProfiler::Frame::Frame()
-    : instruction_pointer(nullptr),
-      module_index(-1) {}
+// StackSamplingProfiler::Frame -----------------------------------------------
 
 StackSamplingProfiler::Frame::Frame(const void* instruction_pointer,
-                                    int module_index)
+                                    size_t module_index)
     : instruction_pointer(instruction_pointer),
       module_index(module_index) {}
 
 StackSamplingProfiler::Frame::~Frame() {}
 
-StackSamplingProfiler::Profile::Profile() : preserve_sample_ordering(false) {}
+// StackSamplingProfiler::CallStackProfile ------------------------------------
 
-StackSamplingProfiler::Profile::~Profile() {}
+StackSamplingProfiler::CallStackProfile::CallStackProfile()
+    : preserve_sample_ordering(false) {}
 
-class StackSamplingProfiler::SamplingThread : public PlatformThread::Delegate {
- public:
-  // Samples stacks using |native_sampler|. When complete, invokes
-  // |profiles_callback| with the collected profiles. |profiles_callback| must
-  // be thread-safe and may consume the contents of the vector.
-  SamplingThread(
-      scoped_ptr<NativeStackSampler> native_sampler,
-      const SamplingParams& params,
-      Callback<void(const std::vector<Profile>&)> completed_callback);
-  ~SamplingThread() override;
+StackSamplingProfiler::CallStackProfile::~CallStackProfile() {}
 
-  // Implementation of PlatformThread::Delegate:
-  void ThreadMain() override;
-
-  void Stop();
-
- private:
-  // Collects a profile from a single burst. Returns true if the profile was
-  // collected, or false if collection was stopped before it completed.
-  bool CollectProfile(Profile* profile, TimeDelta* elapsed_time);
-  // Collects profiles from all bursts, or until the sampling is stopped. If
-  // stopped before complete, |profiles| will contains only full bursts.
-  void CollectProfiles(std::vector<Profile>* profiles);
-
-  scoped_ptr<NativeStackSampler> native_sampler_;
-
-  const SamplingParams params_;
-
-  WaitableEvent stop_event_;
-
-  Callback<void(const std::vector<Profile>&)> completed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SamplingThread);
-};
+// StackSamplingProfiler::SamplingThread --------------------------------------
 
 StackSamplingProfiler::SamplingThread::SamplingThread(
     scoped_ptr<NativeStackSampler> native_sampler,
     const SamplingParams& params,
-    Callback<void(const std::vector<Profile>&)> completed_callback)
+    CompletedCallback completed_callback)
     : native_sampler_(native_sampler.Pass()),
       params_(params),
       stop_event_(false, false),
@@ -137,61 +116,77 @@ StackSamplingProfiler::SamplingThread::~SamplingThread() {}
 void StackSamplingProfiler::SamplingThread::ThreadMain() {
   PlatformThread::SetName("Chrome_SamplingProfilerThread");
 
-  std::vector<Profile> profiles;
+  CallStackProfiles profiles;
   CollectProfiles(&profiles);
   completed_callback_.Run(profiles);
 }
 
+// Depending on how long the sampling takes and the length of the sampling
+// interval, a burst of samples could take arbitrarily longer than
+// samples_per_burst * sampling_interval. In this case, we (somewhat
+// arbitrarily) honor the number of samples requested rather than strictly
+// adhering to the sampling intervals. Once we have established users for the
+// StackSamplingProfiler and the collected data to judge, we may go the other
+// way or make this behavior configurable.
 bool StackSamplingProfiler::SamplingThread::CollectProfile(
-    Profile* profile,
+    CallStackProfile* profile,
     TimeDelta* elapsed_time) {
   ElapsedTimer profile_timer;
-  Profile current_profile;
-  native_sampler_->ProfileRecordingStarting(&current_profile);
+  CallStackProfile current_profile;
+  native_sampler_->ProfileRecordingStarting(&current_profile.modules);
   current_profile.sampling_period = params_.sampling_interval;
-  bool stopped_early = false;
+  bool burst_completed = true;
+  TimeDelta previous_elapsed_sample_time;
   for (int i = 0; i < params_.samples_per_burst; ++i) {
-    ElapsedTimer sample_timer;
-    current_profile.samples.push_back(Sample());
-    native_sampler_->RecordStackSample(&current_profile.samples.back());
-    TimeDelta elapsed_sample_time = sample_timer.Elapsed();
-    if (i != params_.samples_per_burst - 1) {
+    if (i != 0) {
+      // Always wait, even if for 0 seconds, so we can observe a signal on
+      // stop_event_.
       if (stop_event_.TimedWait(
-              std::max(params_.sampling_interval - elapsed_sample_time,
+              std::max(params_.sampling_interval - previous_elapsed_sample_time,
                        TimeDelta()))) {
-        stopped_early = true;
+        burst_completed = false;
         break;
       }
     }
+    ElapsedTimer sample_timer;
+    current_profile.samples.push_back(Sample());
+    native_sampler_->RecordStackSample(&current_profile.samples.back());
+    previous_elapsed_sample_time = sample_timer.Elapsed();
   }
 
   *elapsed_time = profile_timer.Elapsed();
   current_profile.profile_duration = *elapsed_time;
   native_sampler_->ProfileRecordingStopped();
 
-  if (!stopped_early)
+  if (burst_completed)
     *profile = current_profile;
 
-  return !stopped_early;
+  return burst_completed;
 }
 
+// In an analogous manner to CollectProfile() and samples exceeding the expected
+// total sampling time, bursts may also exceed the burst_interval. We adopt the
+// same wait-and-see approach here.
 void StackSamplingProfiler::SamplingThread::CollectProfiles(
-    std::vector<Profile>* profiles) {
+    CallStackProfiles* profiles) {
   if (stop_event_.TimedWait(params_.initial_delay))
     return;
 
+  TimeDelta previous_elapsed_profile_time;
   for (int i = 0; i < params_.bursts; ++i) {
-    Profile profile;
-    TimeDelta elapsed_profile_time;
-    if (CollectProfile(&profile, &elapsed_profile_time))
-      profiles->push_back(profile);
-    else
-      return;
+    if (i != 0) {
+      // Always wait, even if for 0 seconds, so we can observe a signal on
+      // stop_event_.
+      if (stop_event_.TimedWait(
+              std::max(params_.burst_interval - previous_elapsed_profile_time,
+                       TimeDelta())))
+        return;
+    }
 
-    if (stop_event_.TimedWait(
-            std::max(params_.burst_interval - elapsed_profile_time,
-                     TimeDelta())))
+    CallStackProfile profile;
+    if (!CollectProfile(&profile, &previous_elapsed_profile_time))
       return;
+    profiles->push_back(profile);
   }
 }
 
@@ -199,14 +194,7 @@ void StackSamplingProfiler::SamplingThread::Stop() {
   stop_event_.Signal();
 }
 
-void StackSamplingProfiler::SamplingThreadDeleter::operator()(
-    SamplingThread* thread) const {
-  delete thread;
-}
-
-StackSamplingProfiler::NativeStackSampler::NativeStackSampler() {}
-
-StackSamplingProfiler::NativeStackSampler::~NativeStackSampler() {}
+// StackSamplingProfiler ------------------------------------------------------
 
 StackSamplingProfiler::SamplingParams::SamplingParams()
     : initial_delay(TimeDelta::FromMilliseconds(0)),
@@ -224,19 +212,20 @@ StackSamplingProfiler::StackSamplingProfiler(PlatformThreadId thread_id,
 StackSamplingProfiler::~StackSamplingProfiler() {}
 
 void StackSamplingProfiler::Start() {
-  native_sampler_ = NativeStackSampler::Create(thread_id_);
-  if (!native_sampler_)
+  scoped_ptr<NativeStackSampler> native_sampler =
+      NativeStackSampler::Create(thread_id_);
+  if (!native_sampler)
     return;
 
   sampling_thread_.reset(
       new SamplingThread(
-          native_sampler_.Pass(), params_,
+          native_sampler.Pass(), params_,
           (custom_completed_callback_.is_null() ?
-           Bind(&PendingProfiles::PutProfiles,
+           Bind(&PendingProfiles::AppendProfiles,
                 Unretained(PendingProfiles::GetInstance())) :
            custom_completed_callback_)));
   if (!PlatformThread::CreateNonJoinable(0, sampling_thread_.get()))
-    LOG(ERROR) << "failed to create thread";
+    sampling_thread_.reset();
 }
 
 void StackSamplingProfiler::Stop() {
@@ -245,14 +234,11 @@ void StackSamplingProfiler::Stop() {
 }
 
 // static
-void StackSamplingProfiler::GetPendingProfiles(std::vector<Profile>* profiles) {
-  PendingProfiles::GetInstance()->GetProfiles(profiles);
+void StackSamplingProfiler::GetPendingProfiles(CallStackProfiles* profiles) {
+  PendingProfiles::GetInstance()->GetAndClearPendingProfiles(profiles);
 }
 
-void StackSamplingProfiler::SetCustomCompletedCallback(
-    Callback<void(const std::vector<Profile>&)> callback) {
-  custom_completed_callback_ = callback;
-}
+// StackSamplingProfiler::Frame global functions ------------------------------
 
 bool operator==(const StackSamplingProfiler::Frame &a,
                 const StackSamplingProfiler::Frame &b) {
