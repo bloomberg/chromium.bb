@@ -367,6 +367,7 @@ NSColor* IdentityVerifiedTextColor() {
 - (void)windowWillClose:(NSNotification*)notification {
   if (presenter_.get())
     presenter_->OnUIClosing();
+  presenter_.reset();
   [super windowWillClose:notification];
 }
 
