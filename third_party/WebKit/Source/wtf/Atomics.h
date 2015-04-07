@@ -153,7 +153,7 @@ ALWAYS_INLINE void releaseStore(volatile unsigned long* ptr, unsigned long value
 }
 ALWAYS_INLINE void releaseStore(volatile unsigned long long* ptr, unsigned long long value)
 {
-    __tsan_atomic64_store(reinterpret_cast<volatile long long*>(ptr), static_cast<long long>(value), __tsan_memory_order_release);
+    __tsan_atomic64_store(reinterpret_cast<volatile long*>(ptr), static_cast<long>(value), __tsan_memory_order_release);
 }
 ALWAYS_INLINE void releaseStore(void* volatile* ptr, void* value)
 {
