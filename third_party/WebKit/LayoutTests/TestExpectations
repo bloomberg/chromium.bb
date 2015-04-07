@@ -10,6 +10,8 @@ crbug.com/453972 [ Android ] virtual/slimmingpaint/fast/block [ Pass ]
 crbug.com/452320 [ Mac ] virtual/slimmingpaint/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/452320 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
+crbug.com/474117 compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
+
 # These need a manual rebaseline after crbug.com/452967
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/svg-as-mask.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/450136 virtual/slimmingpaint/fast/backgrounds/transformed-body-background.html [ ImageOnlyFailure NeedsManualRebaseline ]
@@ -910,13 +912,14 @@ crbug.com/345767 virtual/slimmingpaint/fast/repaint/selection-gap-overflow-scrol
 crbug.com/323130 imported/web-platform-tests/shadow-dom/styles/test-001.html [ Skip ]
 crbug.com/323130 imported/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
 
-crbug.com/338475 crbug.com/307777 [ Android ] css1/cascade/important.html [ Failure Timeout ]
-crbug.com/338475 crbug.com/307777 [ Android ] css1/classification/list_style.html [ Failure Timeout ]
-crbug.com/338475 crbug.com/307777 [ Android ] css1/color_and_background/background_color.html [ Crash Failure Timeout ]
-crbug.com/338475 crbug.com/307777 [ Android ] css1/color_and_background/color.html [ Failure Timeout ]
-crbug.com/338475 crbug.com/307777 [ Android ] fast/hidpi/clip-text-in-hidpi.html [ Failure Timeout ]
-crbug.com/338475 crbug.com/307777 [ Android ] fast/invalid/009.html [ Failure Timeout ]
+crbug.com/307777 [ Android ] css1/cascade/important.html [ Failure Timeout ]
+crbug.com/307777 [ Android ] css1/classification/list_style.html [ Failure Timeout ]
+crbug.com/439457 crbug.com/307777 [ Android ] css1/color_and_background/background_color.html [ Crash Failure Timeout ]
+crbug.com/439457 crbug.com/307777 [ Android ] css1/color_and_background/color.html [ Crash Failure Timeout ]
+crbug.com/307777 [ Android ] fast/hidpi/clip-text-in-hidpi.html [ Failure Timeout ]
+crbug.com/307777 [ Android ] fast/invalid/009.html [ Failure Timeout ]
 
+crbug.com/439457 [ Android ] css1/units/rounding.html [ Crash Pass ]
 crbug.com/439457 [ Android ] compositing/draws-content/canvas-background-layer.html [ Failure Crash ]
 crbug.com/439457 [ Android ] http/tests/media/media-source/mediasource-play.html [ Failure Crash ]
 crbug.com/439457 [ Android ] compositing/repaint/invalidations-on-composited-layers.html [ Timeout Crash ]
@@ -939,6 +942,68 @@ crbug.com/439457 [ Android ] svg/as-background-image/svg-width-100p-as-backgroun
 crbug.com/439457 [ Android ] svg/batik/text/textAnchor3.svg [ Timeout Crash ]
 crbug.com/439457 [ Android ] svg/canvas/canvas-pattern-svg.html [ Timeout Crash ]
 crbug.com/439457 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Timeout Crash ]
+crbug.com/439457 [ Release Android ] css3/style-zoomed-image.html [ Crash Pass ]
+crbug.com/439457 [ Release Android ] editing/editability/empty-document-justify-right.html [ Crash Pass ]
+crbug.com/439457 [ Release Android ] editing/input/set-value-on-input-and-type-input.html [ Crash Pass ]
+
+crbug.com/474120 [ Debug Lion ] css3/selectors3/xml/css3-modsel-d1b.xml [ Failure Pass ]
+crbug.com/474120 [ Release SnowLeopard ] css3/selectors3/xml/css3-modsel-d2.xml [ Failure Pass ]
+crbug.com/474120 [ Release SnowLeopard ] css3/selectors3/xml/css3-modsel-d4.xml [ Failure Pass ]
+
+crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Pass Timeout ]
+
+crbug.com/453092 editing/inserting/edited-whitespace-1.html [ ImageOnlyFailure Pass ]
+
+crbug.com/474124 [ Mac ] fast/css/crash-corner-present.html [ Crash Pass ]
+
+crbug.com/474125 [ Release SnowLeopard ] fast/css/font-face-multiple-faces.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/font-face-multiple-faces.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/font-face-remote.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/font-face-remote.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/font-face-unicode-range.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/font-face-unicode-range.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/font-face-variant.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/min-width-with-spanned-cell-fixed.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/min-width-with-spanned-cell-fixed.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/min-width-with-spanned-cell.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/min-width-with-spanned-cell.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/pseudo-first-line-border-width.html [ Failure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/pseudo-first-line-border-width.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/text-indent-first-line-001.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/text-indent-first-line-001.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/text-indent-first-line-002.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/text-indent-first-line-002.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/text-indent-first-line-003.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/text-indent-first-line-003.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/text-indent-first-line-004.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/text-indent-first-line-004.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/text-indent-first-line-005.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/text-indent-first-line-005.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/text-indent-first-line-006.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/text-indent-first-line-006.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release SnowLeopard ] fast/css/text-overflow-ellipsis-color.html [ ImageOnlyFailure Pass ]
+crbug.com/474125 [ Release Mavericks ] fast/css/text-overflow-ellipsis-color.html [ ImageOnlyFailure Pass ]
+
+crbug.com/474155 [ Release Linux ] fast/dom/HTMLScriptElement/append-child-adopt-node-error-crash.html [ Pass Timeout ]
+crbug.com/474155 [ Release XP ] fast/dom/HTMLScriptElement/append-child-adopt-node-error-crash.html [ Pass Timeout ]
+
+crbug.com/453822 [ Linux Win ] fast/forms/calendar-picker/datepicker-crash-after-keydown.html [ Crash Pass ]
+crbug.com/455111 [ Win Mac ] fast/forms/date-multiple-fields/date-multiple-fields-mouse-events.html [ Failure Pass ]
+crbug.com/455111 [ Win Mac ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-mouse-events.html [ Failure Pass ]
+crbug.com/474160 [ Linux Mac ] fast/forms/date-multiple-fields/date-multiple-fields-preserve-value-after-history-back.html [ Failure Pass ]
+crbug.com/474160 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-preserve-value-after-history-back.html [ Failure Pass ]
+crbug.com/474160 [ Debug Win7 ] fast/forms/week-multiple-fields/week-multiple-fields-preserve-value-after-history-back.html [ Failure Pass ]
+
+crbug.com/474162 [ Debug Mac ] fast/history/form-submit-in-frame-via-onclick.html [ Crash Pass ]
+crbug.com/474162 [ Debug Win7 ] fast/history/form-submit-in-frame-via-onclick.html [ Crash Pass ]
+
+crbug.com/474168 [ Mac ] fast/images/12-55.html [ Crash Pass ]
+crbug.com/474168 [ Mac ] fast/images/182.html [ Crash Pass ]
+crbug.com/474168 [ Mac ] fast/images/2-dht.html [ Crash Pass ]
+crbug.com/474168 [ Mac ] fast/images/23-55.html [ Crash Pass ]
+crbug.com/474168 [ Mac ] fast/images/55.html [ Crash Pass ]
+
+crbug.com/474121 [ Debug Win7 ] editing/deleting/password-delete-performance.html [ Pass Timeout ]
 
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]
 
@@ -1739,7 +1804,6 @@ crbug.com/446740 virtual/slimmingpaint/fast/canvas/canvas-measure-text-rtl.html 
 crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pass ImageOnlyFailure ]
 
 # These tests have issues after the removal of the CoreText shaper.
-crbug.com/418091 [ Mavericks ] editing/inserting/edited-whitespace-1.html [ ImageOnlyFailure ]
 crbug.com/418091 [ Mac ] editing/pasteboard/copy-crash.html [ Pass Timeout ]
 crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-http-equiv-refresh.html [ Pass Timeout ]
 crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-location-reload.html [ Pass Timeout ]
@@ -1857,8 +1921,6 @@ crbug.com/448980 fast/forms/select/styling-option-checked.html [ Pass ImageOnlyF
 crbug.com/448980 virtual/slimmingpaint/fast/forms/select/styling-option-checked.html [ Pass ImageOnlyFailure ]
 
 crbug.com/449021 http/tests/misc/script-after-slow-stylesheet-removed.html [ Pass Failure ]
-
-crbug.com/455111 [ Win7 ] fast/forms/date-multiple-fields/date-multiple-fields-mouse-events.html [ Pass Failure ]
 
 crbug.com/455192 svg/animations/smil-leak-element-instances-noBaseValRef.svg [ Pass Failure ]
 
