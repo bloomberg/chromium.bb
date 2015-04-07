@@ -15,6 +15,24 @@ using blink::WebRect;
 using blink::WebThemeEngine;
 
 namespace content {
+namespace {
+
+#if defined(OS_WIN)
+// The scrollbar metrics default to 17 dips which is the default value on
+// Windows in most cases.
+int32 g_vertical_scroll_bar_width = 17;
+
+// The height of a horizontal scroll bar in dips.
+int32 g_horizontal_scroll_bar_height = 17;
+
+// The height of the arrow bitmap on a vertical scroll bar in dips.
+int32 g_vertical_arrow_bitmap_height = 17;
+
+// The width of the arrow bitmap on a horizontal scroll bar in dips.
+int32 g_horizontal_arrow_bitmap_width = 17;
+#endif
+
+}  // namespace
 
 static ui::NativeTheme::Part NativeThemePart(
     WebThemeEngine::Part part) {
@@ -162,9 +180,28 @@ static void GetNativeThemeExtraParams(
 
 blink::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
   ui::NativeTheme::ExtraParams extra;
-  return ui::NativeTheme::instance()->GetPartSize(NativeThemePart(part),
-                                                   ui::NativeTheme::kNormal,
-                                                   extra);
+  ui::NativeTheme::Part native_theme_part = NativeThemePart(part);
+#if defined(OS_WIN)
+  switch (native_theme_part) {
+    case ui::NativeTheme::kScrollbarDownArrow:
+    case ui::NativeTheme::kScrollbarLeftArrow:
+    case ui::NativeTheme::kScrollbarRightArrow:
+    case ui::NativeTheme::kScrollbarUpArrow:
+    case ui::NativeTheme::kScrollbarHorizontalThumb:
+    case ui::NativeTheme::kScrollbarVerticalThumb:
+    case ui::NativeTheme::kScrollbarHorizontalTrack:
+    case ui::NativeTheme::kScrollbarVerticalTrack: {
+      return gfx::Size(g_vertical_scroll_bar_width,
+                       g_vertical_scroll_bar_width);
+    }
+
+    default:
+      break;
+  }
+#endif
+  return ui::NativeTheme::instance()->GetPartSize(native_theme_part,
+                                                  ui::NativeTheme::kNormal,
+                                                  extra);
 }
 
 void WebThemeEngineImpl::paint(
@@ -198,5 +235,19 @@ void WebThemeEngineImpl::paintStateTransition(blink::WebCanvas* canvas,
       progress,
       gfx::Rect(rect));
 }
+
+#if defined(OS_WIN)
+// static
+void WebThemeEngineImpl::cacheScrollBarMetrics(
+    int32 vertical_scroll_bar_width,
+    int32 horizontal_scroll_bar_height,
+    int32 vertical_arrow_bitmap_height,
+    int32 horizontal_arrow_bitmap_width) {
+  g_vertical_scroll_bar_width = vertical_scroll_bar_width;
+  g_horizontal_scroll_bar_height = horizontal_scroll_bar_height;
+  g_vertical_arrow_bitmap_height = vertical_arrow_bitmap_height;
+  g_horizontal_arrow_bitmap_width = horizontal_arrow_bitmap_width;
+}
+#endif
 
 }  // namespace content

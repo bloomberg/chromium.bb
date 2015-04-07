@@ -135,6 +135,10 @@ struct CONTENT_EXPORT RendererPreferences {
   // encrypted video.  Currently only used by Android.
   bool use_view_overlay_for_all_video;
 
+  // Country iso of the mobile network for content detection purpose.
+  std::string network_contry_iso;
+
+#if defined(OS_WIN)
   // The default system font settings for caption, small caption, menu and
   // status messages. Used only by Windows.
   base::string16 caption_font_family_name;
@@ -152,8 +156,19 @@ struct CONTENT_EXPORT RendererPreferences {
   base::string16 message_font_family_name;
   int32 message_font_height;
 
-  // Contry iso of the mobile network for content detection purpose.
-  std::string network_contry_iso;
+  // The width of a vertical scroll bar in dips.
+  int32 vertical_scroll_bar_width_in_dips;
+
+  // The height of a horizontal scroll bar in dips.
+  int32 horizontal_scroll_bar_height_in_dips;
+
+  // The height of the arrow bitmap on a vertical scroll bar in dips.
+  int32 arrow_bitmap_height_vertical_scroll_bar_in_dips;
+
+  // The width of the arrow bitmap on a horizontal scroll bar in dips.
+  int32 arrow_bitmap_width_horizontal_scroll_bar_in_dips;
+#endif
+
 };
 
 }  // namespace content

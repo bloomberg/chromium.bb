@@ -89,6 +89,8 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
+#include "ui/gfx/platform_font_win.h"
+#include "ui/gfx/win/dpi.h"
 #endif
 
 using base::TimeDelta;
@@ -123,6 +125,40 @@ void DismissVirtualKeyboardTask() {
       virtual_keyboard_display_retries = 0;
     }
   }
+}
+
+void GetWindowsSpecificPrefs(RendererPreferences* prefs) {
+  NONCLIENTMETRICS_XP metrics = {0};
+  base::win::GetNonClientMetrics(&metrics);
+
+  prefs->caption_font_family_name = metrics.lfCaptionFont.lfFaceName;
+  prefs->caption_font_height = gfx::PlatformFontWin::GetFontSize(
+      metrics.lfCaptionFont);
+
+  prefs->small_caption_font_family_name = metrics.lfSmCaptionFont.lfFaceName;
+  prefs->small_caption_font_height = gfx::PlatformFontWin::GetFontSize(
+      metrics.lfSmCaptionFont);
+
+  prefs->menu_font_family_name = metrics.lfMenuFont.lfFaceName;
+  prefs->menu_font_height = gfx::PlatformFontWin::GetFontSize(
+      metrics.lfMenuFont);
+
+  prefs->status_font_family_name = metrics.lfStatusFont.lfFaceName;
+  prefs->status_font_height = gfx::PlatformFontWin::GetFontSize(
+      metrics.lfStatusFont);
+
+  prefs->message_font_family_name = metrics.lfMessageFont.lfFaceName;
+  prefs->message_font_height = gfx::PlatformFontWin::GetFontSize(
+      metrics.lfMessageFont);
+
+  prefs->vertical_scroll_bar_width_in_dips =
+      gfx::win::GetSystemMetricsInDIP(SM_CXVSCROLL);
+  prefs->horizontal_scroll_bar_height_in_dips =
+      gfx::win::GetSystemMetricsInDIP(SM_CYHSCROLL);
+  prefs->arrow_bitmap_height_vertical_scroll_bar_in_dips =
+      gfx::win::GetSystemMetricsInDIP(SM_CYVSCROLL);
+  prefs->arrow_bitmap_width_horizontal_scroll_bar_in_dips =
+      gfx::win::GetSystemMetricsInDIP(SM_CXHSCROLL);
 }
 #endif
 
@@ -268,6 +304,9 @@ bool RenderViewHostImpl::CreateRenderView(
   ViewMsg_New_Params params;
   params.renderer_preferences =
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
+#if defined(OS_WIN)
+  GetWindowsSpecificPrefs(&params.renderer_preferences);
+#endif
   params.web_preferences = GetWebkitPreferences();
   params.view_id = GetRoutingID();
   params.main_frame_routing_id = main_frame_routing_id_;
