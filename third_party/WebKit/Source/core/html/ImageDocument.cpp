@@ -228,6 +228,7 @@ float ImageDocument::scale() const
     if (!view)
         return 1;
 
+    ASSERT(m_imageElement->cachedImage());
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), pageZoomFactor(this));
     LayoutSize windowSize = LayoutSize(view->width(), view->height());
 
@@ -242,6 +243,7 @@ void ImageDocument::resizeImageToFit(ScaleType type)
     if (!m_imageElement || m_imageElement->document() != this || (pageZoomFactor(this) > 1 && type == ScaleOnlyUnzoomedDocument))
         return;
 
+    ASSERT(m_imageElement->cachedImage());
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), pageZoomFactor(this));
 
     float scale = this->scale();
@@ -281,7 +283,7 @@ void ImageDocument::imageUpdated()
     if (m_imageSizeIsKnown)
         return;
 
-    if (m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), pageZoomFactor(this)).isEmpty())
+    if (!m_imageElement->cachedImage() || m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), pageZoomFactor(this)).isEmpty())
         return;
 
     m_imageSizeIsKnown = true;
@@ -300,6 +302,7 @@ void ImageDocument::restoreImageSize(ScaleType type)
     if (!m_imageElement || !m_imageSizeIsKnown || m_imageElement->document() != this || (pageZoomFactor(this) < 1 && type == ScaleOnlyUnzoomedDocument))
         return;
 
+    ASSERT(m_imageElement->cachedImage());
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), 1.0f);
     m_imageElement->setWidth(imageSize.width());
     m_imageElement->setHeight(imageSize.height());
@@ -321,6 +324,7 @@ bool ImageDocument::imageFitsInWindow() const
     if (!view)
         return true;
 
+    ASSERT(m_imageElement->cachedImage());
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForLayoutObject(m_imageElement->layoutObject(), pageZoomFactor(this));
     LayoutSize windowSize = LayoutSize(view->width(), view->height());
 
