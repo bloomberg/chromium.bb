@@ -1,0 +1,76 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+button {
+  border: 1px solid rgb(193, 193, 195);
+  color: rgb(44, 44, 44);
+  cursor: pointer;
+  font-size: 0.875em;
+  font-weight: bold;
+  height: 32px;
+  overflow: hidden;
+  text-align: center;
+  width: 100%;
+}
+
+.button-secondary {
+  background: linear-gradient(to top, rgb(254, 254, 254), rgb(222, 222, 222));
+}
+
+.button-action {
+  background: linear-gradient(to top, rgb(89, 158, 244), rgb(75, 134, 241));
+  border: 1px solid rgb(55, 113, 206);
+  color: white;
+}
+
+.issue-action {
+  color: black;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.blocking-issue-header {
+  overflow: hidden;
+}
+
+.blocking-issue-message {
+  -webkit-padding-start: 8px;
+  color: rgb(125, 125, 125);
+  line-height: 1.125em;
+  vertical-align: middle;
+}
+
+.blocking-issue-title {
+  -webkit-padding-start: 8px;
+  font-weight: bold;
+  line-height: 1.125em;
+  vertical-align: top;
+}
+
+.non-blocking-issue {
+  -webkit-padding-start: 12px;
+  background-color: rgb(249, 236, 191);
+  line-height: 1.25em;
+  padding-bottom: 6px;
+  padding-top: 6px;
+}
+
+.sad-face {
+  background-image: -webkit-image-set(
+    url(../icon/sad-face.png) 1x,
+    url(../icon/sad-face2x.png) 2x);
+  background-repeat: no-repeat;
+  height: 32px;
+  width: 32px;
+}
+
+:host-context(html[dir='ltr']) .sad-face {
+  float: left;
+  left: 4px;
+}
+
+:host-context(html[dir='rtl']) .sad-face {
+  float: right;
+  right: 4px;
+}

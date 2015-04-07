@@ -1,0 +1,43 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<polymer-element name="issue-banner">
+<template>
+  <link rel="stylesheet" href="issue_banner.css">
+  <template if="{{issue.isBlocking}}">
+    <div class="blocking-issue-header">
+      <div class="sad-face"></div>
+      <div>
+        <div class="blocking-issue-title">{{issue.title}}</div>
+        <div class="blocking-issue-message">{{issue.message}}</div>
+      </div>
+    </div>
+    <div>
+      <template if="{{issue.optActionText}}">
+        <button class="button-secondary" title="{{issue.optActionType}}"
+            on-click="{{onClickAction}}">
+          {{issue.optActionText}}
+        </button>
+      </template>
+      <button class="button-action" title="{{issue.defaultActionType}}"
+          on-click="{{onClickAction}}">
+        {{issue.defaultActionText}}
+      </button>
+    </div>
+  </template>
+  <template if="{{!issue.isBlocking}}">
+    <div class="non-blocking-issue">
+      <div>{{issue.message}}</div>
+      <template if="{{issue.optActionText}}">
+        <span class="issue-action" title="{{issue.optActionType}}"
+            on-click="{{onClickAction}}">
+          {{issue.optActionText}}
+        </span>
+      </template>
+      <span class="issue-action" title="{{issue.defaultActionType}}"
+          on-click="{{onClickAction}}">
+        {{issue.defaultActionText}}
+      </span>
+    </div>
+  </template>
+</template>
+<script src="issue_banner.js"></script>
+</polymer-element>
