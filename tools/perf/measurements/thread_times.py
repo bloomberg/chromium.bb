@@ -43,4 +43,5 @@ class ThreadTimes(page_test.PageTest):
                              self._timeline_controller.smooth_records, results)
 
   def CleanUpAfterPage(self, _, tab):
-    self._timeline_controller.CleanUp(tab)
+    if self._timeline_controller:
+      self._timeline_controller.CleanUp(tab)

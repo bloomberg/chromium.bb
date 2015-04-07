@@ -6,7 +6,6 @@ from telemetry.core import wpr_modes
 from telemetry import decorators
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
-from telemetry.web_perf.metrics.layout import LayoutMetric
 
 from measurements import smoothness_unittest
 from measurements import thread_times
@@ -24,18 +23,12 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
     measurement = thread_times.ThreadTimes()
     timeline_options = self._options
     results = self.RunMeasurement(measurement, ps, options = timeline_options)
-    self.assertEquals(0, len(results.failures))
+    self.assertFalse(len(results.failures), results.failures)
 
     for category in timeline.TimelineThreadCategories.values():
       cpu_time_name = timeline.ThreadCpuTimeResultName(category)
       cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
       self.assertEquals(len(cpu_time), 1)
-
-    for short_name in LayoutMetric.EVENTS.itervalues():
-      self.assertEquals(len(results.FindAllPageSpecificValuesNamed(
-        short_name + '_avg')), 1)
-      self.assertEquals(len(results.FindAllPageSpecificValuesNamed(
-        short_name + '_stddev')), 1)
 
   def testBasicForPageWithNoGesture(self):
     ps = self.CreateEmptyPageSet()
