@@ -199,12 +199,10 @@ void SpdyProxyClientSocketTest::Initialize(MockRead* reads,
   ASSERT_TRUE(spdy_stream.get() != NULL);
 
   // Create the SpdyProxyClientSocket.
-  sock_.reset(
-      new SpdyProxyClientSocket(spdy_stream, user_agent_,
-                                endpoint_host_port_pair_, url_,
-                                proxy_host_port_, net_log_.bound(),
-                                session_->http_auth_cache(),
-                                session_->http_auth_handler_factory()));
+  sock_.reset(new SpdyProxyClientSocket(
+      spdy_stream, user_agent_, endpoint_host_port_pair_, proxy_host_port_,
+      net_log_.bound(), session_->http_auth_cache(),
+      session_->http_auth_handler_factory()));
 }
 
 scoped_refptr<IOBufferWithSize> SpdyProxyClientSocketTest::CreateBuffer(

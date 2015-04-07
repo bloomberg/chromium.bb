@@ -28,7 +28,6 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
     const base::WeakPtr<SpdyStream>& spdy_stream,
     const std::string& user_agent,
     const HostPortPair& endpoint,
-    const GURL& url,
     const HostPortPair& proxy_server,
     const BoundNetLog& source_net_log,
     HttpAuthCache* auth_cache,
@@ -40,6 +39,7 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
                                    GURL("https://" + proxy_server.ToString()),
                                    auth_cache,
                                    auth_handler_factory)),
+      user_agent_(user_agent),
       user_buffer_len_(0),
       write_buffer_len_(0),
       was_ever_used_(false),
@@ -49,11 +49,7 @@ SpdyProxyClientSocket::SpdyProxyClientSocket(
       weak_factory_(this),
       write_callback_weak_factory_(this) {
   request_.method = "CONNECT";
-  request_.url = url;
-  if (!user_agent.empty())
-    request_.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
-                                     user_agent);
-
+  request_.url = GURL("https://" + endpoint.ToString());
   net_log_.BeginEvent(NetLog::TYPE_SOCKET_ALIVE,
                       source_net_log.source().ToEventParametersCallback());
   net_log_.AddEvent(
@@ -353,25 +349,17 @@ int SpdyProxyClientSocket::DoSendRequest() {
     auth_->AddAuthorizationHeader(&authorization_headers);
   }
 
-  std::string user_agent;
-  if (!request_.extra_headers.GetHeader(HttpRequestHeaders::kUserAgent,
-                                        &user_agent)) {
-    user_agent.clear();
-  }
   std::string request_line;
-  HttpRequestHeaders request_headers;
-  BuildTunnelRequest(endpoint_, authorization_headers, user_agent,
-                     &request_line, &request_headers);
+  BuildTunnelRequest(endpoint_, authorization_headers, user_agent_,
+                     &request_line, &request_.extra_headers);
 
   net_log_.AddEvent(
       NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       base::Bind(&HttpRequestHeaders::NetLogCallback,
-                 base::Unretained(&request_headers),
-                 &request_line));
+                 base::Unretained(&request_.extra_headers), &request_line));
 
-  request_.extra_headers.MergeFrom(request_headers);
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());
-  CreateSpdyHeadersFromHttpRequest(request_, request_headers,
+  CreateSpdyHeadersFromHttpRequest(request_, request_.extra_headers,
                                    spdy_stream_->GetProtocolVersion(), true,
                                    headers.get());
   // Reset the URL to be the endpoint of the connection

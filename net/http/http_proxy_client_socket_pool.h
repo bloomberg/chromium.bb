@@ -44,7 +44,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   HttpProxySocketParams(
       const scoped_refptr<TransportSocketParams>& transport_params,
       const scoped_refptr<SSLSocketParams>& ssl_params,
-      const GURL& request_url,
       const std::string& user_agent,
       const HostPortPair& endpoint,
       HttpAuthCache* http_auth_cache,
@@ -59,7 +58,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   const scoped_refptr<SSLSocketParams>& ssl_params() const {
     return ssl_params_;
   }
-  const GURL& request_url() const { return request_url_; }
   const std::string& user_agent() const { return user_agent_; }
   const HostPortPair& endpoint() const { return endpoint_; }
   HttpAuthCache* http_auth_cache() const { return http_auth_cache_; }
@@ -84,7 +82,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   const scoped_refptr<TransportSocketParams> transport_params_;
   const scoped_refptr<SSLSocketParams> ssl_params_;
   SpdySessionPool* spdy_session_pool_;
-  const GURL request_url_;
   const std::string user_agent_;
   const HostPortPair endpoint_;
   HttpAuthCache* const http_auth_cache_;

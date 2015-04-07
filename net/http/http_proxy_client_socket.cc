@@ -28,7 +28,6 @@ namespace net {
 
 HttpProxyClientSocket::HttpProxyClientSocket(
     ClientSocketHandle* transport_socket,
-    const GURL& request_url,
     const std::string& user_agent,
     const HostPortPair& endpoint,
     const HostPortPair& proxy_server,
@@ -60,8 +59,8 @@ HttpProxyClientSocket::HttpProxyClientSocket(
       proxy_delegate_(proxy_delegate),
       net_log_(transport_socket->socket()->NetLog()) {
   // Synthesize the bits of a request that we actually use.
-  request_.url = request_url;
-  request_.method = "GET";
+  request_.url = GURL("https://" + endpoint.ToString());
+  request_.method = "CONNECT";
   if (!user_agent.empty())
     request_.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
                                      user_agent);

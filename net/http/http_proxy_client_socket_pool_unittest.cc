@@ -237,7 +237,6 @@ class HttpProxyClientSocketPoolTest
     return scoped_refptr<HttpProxySocketParams>(new HttpProxySocketParams(
         CreateHttpProxyParams(),
         CreateHttpsProxyParams(),
-        GURL(tunnel ? "https://www.google.com/" : "http://www.google.com"),
         std::string(),
         HostPortPair("www.google.com", tunnel ? 443 : 80),
         session_->http_auth_cache(),

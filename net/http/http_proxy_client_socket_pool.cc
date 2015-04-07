@@ -32,7 +32,6 @@ namespace net {
 HttpProxySocketParams::HttpProxySocketParams(
     const scoped_refptr<TransportSocketParams>& transport_params,
     const scoped_refptr<SSLSocketParams>& ssl_params,
-    const GURL& request_url,
     const std::string& user_agent,
     const HostPortPair& endpoint,
     HttpAuthCache* http_auth_cache,
@@ -43,7 +42,6 @@ HttpProxySocketParams::HttpProxySocketParams(
     : transport_params_(transport_params),
       ssl_params_(ssl_params),
       spdy_session_pool_(spdy_session_pool),
-      request_url_(request_url),
       user_agent_(user_agent),
       endpoint_(endpoint),
       http_auth_cache_(tunnel ? http_auth_cache : NULL),
@@ -286,7 +284,6 @@ int HttpProxyConnectJob::DoHttpProxyConnect() {
   // Add a HttpProxy connection on top of the tcp socket.
   transport_socket_.reset(
       new HttpProxyClientSocket(transport_socket_handle_.release(),
-                                params_->request_url(),
                                 params_->user_agent(),
                                 params_->endpoint(),
                                 proxy_server,
@@ -338,12 +335,10 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
   }
 
   next_state_ = STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE;
-  return spdy_stream_request_.StartRequest(SPDY_BIDIRECTIONAL_STREAM,
-                                           spdy_session,
-                                           params_->request_url(),
-                                           priority(),
-                                           spdy_session->net_log(),
-                                           callback_);
+  return spdy_stream_request_.StartRequest(
+      SPDY_BIDIRECTIONAL_STREAM, spdy_session,
+      GURL("https://" + params_->endpoint().ToString()), priority(),
+      spdy_session->net_log(), callback_);
 }
 
 int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
@@ -358,7 +353,6 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {
       new SpdyProxyClientSocket(stream,
                                 params_->user_agent(),
                                 params_->endpoint(),
-                                params_->request_url(),
                                 params_->destination().host_port_pair(),
                                 net_log(),
                                 params_->http_auth_cache(),

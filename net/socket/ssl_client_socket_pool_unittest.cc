@@ -109,7 +109,6 @@ class SSLClientSocketPoolTest
         http_proxy_socket_params_(
             new HttpProxySocketParams(proxy_transport_socket_params_,
                                       NULL,
-                                      GURL("http://host"),
                                       std::string(),
                                       HostPortPair("host", 80),
                                       session_->http_auth_cache(),

@@ -26,9 +26,6 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_stream.h"
 
-
-class GURL;
-
 namespace net {
 
 class AddressList;
@@ -46,7 +43,6 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   SpdyProxyClientSocket(const base::WeakPtr<SpdyStream>& spdy_stream,
                         const std::string& user_agent,
                         const HostPortPair& endpoint,
-                        const GURL& url,
                         const HostPortPair& proxy_server,
                         const BoundNetLog& source_net_log,
                         HttpAuthCache* auth_cache,
@@ -148,6 +144,8 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   // specified by the URL, due to Alternate-Protocol or fixed testing ports.
   const HostPortPair endpoint_;
   scoped_refptr<HttpAuthController> auth_;
+
+  std::string user_agent_;
 
   // We buffer the response body as it arrives asynchronously from the stream.
   SpdyReadQueue read_buffer_queue_;

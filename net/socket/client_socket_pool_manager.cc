@@ -202,7 +202,6 @@ int InitSocketPoolHelper(const GURL& request_url,
       http_proxy_params =
           new HttpProxySocketParams(proxy_tcp_params,
                                     ssl_params,
-                                    request_url,
                                     user_agent,
                                     origin_host_port,
                                     session->http_auth_cache(),
