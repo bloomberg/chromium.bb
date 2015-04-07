@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.19",
+  "version": "7.20",
   "entries": [
     {
       "id": 1,
@@ -1188,6 +1188,22 @@ LONG_STRING_CONST(
       "gl_renderer": ".*420",
       "features": [
         "disable_fbo_invalidations"
+      ]
+    },
+    {
+      "id": 104,
+      "description": "EXT_occlusion_query hangs on MediaTek MT8135 pre-Lollipop",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "5.0.0"
+        }
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR Rogue Han",
+      "features": [
+        "disable_ext_occlusion_query"
       ]
     }
   ]
