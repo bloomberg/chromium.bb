@@ -70,6 +70,7 @@ int TypeAhead::handleEvent(KeyboardEvent* event, MatchModeFlags matchMode)
 
     if (delta > typeAheadTimeout)
         m_buffer.clear();
+
     m_buffer.append(c);
 
     if (optionCount < 1)
@@ -117,6 +118,12 @@ int TypeAhead::handleEvent(KeyboardEvent* event, MatchModeFlags matchMode)
             return index - 1;
     }
     return -1;
+}
+
+bool TypeAhead::hasActiveSession(KeyboardEvent* event)
+{
+    DOMTimeStamp delta = event->timeStamp() - m_lastTypeTime;
+    return delta <= typeAheadTimeout;
 }
 
 } // namespace blink

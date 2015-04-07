@@ -57,7 +57,7 @@ public:
 
     // Returns the index for the matching option.
     int handleEvent(KeyboardEvent*, MatchModeFlags);
-
+    bool hasActiveSession(KeyboardEvent*);
 private:
     TypeAheadDataSource* m_dataSource;
     DOMTimeStamp m_lastTypeTime;

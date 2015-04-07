@@ -1222,7 +1222,7 @@ bool HTMLSelectElement::shouldOpenPopupForKeyPressEvent(KeyboardEvent *event)
     LayoutTheme& layoutTheme = LayoutTheme::theme();
     int keyCode = event->keyCode();
 
-    return ((layoutTheme.popsMenuBySpaceKey() && event->keyCode() == ' ')
+    return ((layoutTheme.popsMenuBySpaceKey() && event->keyCode() == ' ' && !m_typeAhead.hasActiveSession(event))
         || (layoutTheme.popsMenuByReturnKey() && keyCode == '\r'));
 }
 
