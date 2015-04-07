@@ -53,6 +53,11 @@ remoting.InputDialog.prototype.show = function() {
   return this.deferred_.promise();
 };
 
+/** @return {HTMLElement} */
+remoting.InputDialog.prototype.inputField = function() {
+  return this.inputField_;
+}
+
 /** @private */
 remoting.InputDialog.prototype.onSubmit_ = function() {
   this.deferred_.resolve(this.inputField_.value);

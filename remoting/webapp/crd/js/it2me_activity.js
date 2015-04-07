@@ -17,8 +17,9 @@ var ACCESS_CODE_LENGTH = SUPPORT_ID_LENGTH + HOST_SECRET_LENGTH;
 /**
  * @param {remoting.SessionConnector} sessionConnector
  * @constructor
+ * @implements {remoting.Activity}
  */
-remoting.It2MeConnectFlow = function(sessionConnector) {
+remoting.It2MeActivity = function(sessionConnector) {
   /** @private */
   this.sessionConnector_ = sessionConnector;
   /** @private */
@@ -35,8 +36,9 @@ remoting.It2MeConnectFlow = function(sessionConnector) {
     form.querySelector('#cancel-access-code-button'));
 };
 
+remoting.It2MeActivity.prototype.dispose = function() {};
 
-remoting.It2MeConnectFlow.prototype.start = function() {
+remoting.It2MeActivity.prototype.start = function() {
   var that = this;
 
   this.accessCodeDialog_.show().then(function(/** string */ accessCode) {
@@ -65,11 +67,39 @@ remoting.It2MeConnectFlow.prototype.start = function() {
 };
 
 /**
+ * @param {!remoting.Error} error
+ */
+remoting.It2MeActivity.prototype.onConnectionFailed = function(error) {
+  this.onError(error);
+};
+
+/**
+ * @param {!remoting.ConnectionInfo} connectionInfo
+ */
+remoting.It2MeActivity.prototype.onConnected = function(connectionInfo) {
+  this.accessCodeDialog_.inputField().value = '';
+};
+
+remoting.It2MeActivity.prototype.onDisconnected = function() {
+  remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
+};
+
+/**
+ * @param {!remoting.Error} error
+ */
+remoting.It2MeActivity.prototype.onError = function(error) {
+  var errorDiv = document.getElementById('connect-error-message');
+  l10n.localizeElementFromTag(errorDiv, error.getTag());
+  remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
+};
+
+
+/**
  * @param {string} accessCode
  * @return {Promise}  Promise that resolves if the access code is valid.
  * @private
  */
-remoting.It2MeConnectFlow.prototype.verifyAccessCode_ = function(accessCode) {
+remoting.It2MeActivity.prototype.verifyAccessCode_ = function(accessCode) {
   var normalizedAccessCode = accessCode.replace(/\s/g, '');
   if (normalizedAccessCode.length !== ACCESS_CODE_LENGTH) {
     return Promise.reject(new remoting.Error(
@@ -89,7 +119,7 @@ remoting.It2MeConnectFlow.prototype.verifyAccessCode_ = function(accessCode) {
  * @return {Promise<!remoting.Xhr.Response>}
  * @private
  */
-remoting.It2MeConnectFlow.prototype.getHostInfo_ = function(token) {
+remoting.It2MeActivity.prototype.getHostInfo_ = function(token) {
   var that = this;
   return new remoting.Xhr({
     method: 'GET',
@@ -107,7 +137,7 @@ remoting.It2MeConnectFlow.prototype.getHostInfo_ = function(token) {
  * @return {!Promise<!remoting.Host>} Rejects on error.
  * @private
  */
-remoting.It2MeConnectFlow.prototype.onHostInfo_ = function(xhrResponse) {
+remoting.It2MeActivity.prototype.onHostInfo_ = function(xhrResponse) {
   if (xhrResponse.status == 200) {
     var response = /** @type {{data: {jabberId: string, publicKey: string}}} */
         (base.jsonParseSafe(xhrResponse.getText()));

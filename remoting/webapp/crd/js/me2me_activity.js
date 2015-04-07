@@ -14,21 +14,30 @@ var remoting = remoting || {};
  * @param {remoting.Host} host
  *
  * @constructor
+ * @implements {remoting.Activity}
  */
-remoting.Me2MeConnectFlow = function(sessionConnector, host) {
+remoting.Me2MeActivity = function(sessionConnector, host) {
   /** @private */
   this.host_ = host;
   /** @private */
   this.connector_ = sessionConnector;
+  /** @private */
+  this.pinDialog_ =
+      new remoting.PinDialog(document.getElementById('pin-dialog'), host);
+  /** @private */
+  this.hostUpdateDialog_ = new remoting.HostNeedsUpdateDialog(
+      document.getElementById('host-needs-update-dialog'), this.host_);
+  /** @private */
+  this.retryOnHostOffline_ = true;
 };
 
-remoting.Me2MeConnectFlow.prototype.start = function() {
+remoting.Me2MeActivity.prototype.dispose = function() {};
+
+remoting.Me2MeActivity.prototype.start = function() {
   var webappVersion = chrome.runtime.getManifest().version;
-  var needsUpdateDialog = new remoting.HostNeedsUpdateDialog(
-      document.getElementById('host-needs-update-dialog'), this.host_);
   var that = this;
 
-  needsUpdateDialog.showIfNecessary(webappVersion).then(function() {
+  this.hostUpdateDialog_.showIfNecessary(webappVersion).then(function() {
     return that.host_.options.load();
   }).then(function() {
     that.connect_();
@@ -40,7 +49,7 @@ remoting.Me2MeConnectFlow.prototype.start = function() {
 };
 
 /** @private */
-remoting.Me2MeConnectFlow.prototype.connect_ = function() {
+remoting.Me2MeActivity.prototype.connect_ = function() {
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
   var host = this.host_;
 
@@ -58,18 +67,15 @@ remoting.Me2MeConnectFlow.prototype.connect_ = function() {
     thirdPartyTokenFetcher.fetchToken();
   };
 
+  var that = this;
   /**
    * @param {boolean} supportsPairing
    * @param {function(string):void} onPinFetched
    */
   var requestPin = function(supportsPairing, onPinFetched) {
-    var pinDialog =
-        new remoting.PinDialog(document.getElementById('pin-dialog'), host);
-    pinDialog.show(supportsPairing).then(function(/** string */ pin) {
+    that.pinDialog_.show(supportsPairing).then(function(/** string */ pin) {
       remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
       onPinFetched(pin);
-      /** @type {boolean} */
-      remoting.pairingRequested = pinDialog.pairingRequested();
     }).catch(function(/** remoting.Error */ error) {
       base.debug.assert(error.hasTag(remoting.Error.Tag.CANCELLED));
       remoting.setMode(remoting.AppMode.HOME);
@@ -81,6 +87,61 @@ remoting.Me2MeConnectFlow.prototype.connect_ = function() {
                                pairingInfo.clientId, pairingInfo.sharedSecret);
 };
 
+/**
+ * @param {!remoting.Error} error
+ */
+remoting.Me2MeActivity.prototype.onConnectionFailed = function(error) {
+  var that = this;
+  var onHostListRefresh = function(/** boolean */ success) {
+    if (success) {
+      // Get the host from the hostList for the refreshed JID.
+      var host = remoting.hostList.getHostForId(that.host_.hostId);
+      that.connector_.retryConnectMe2Me(host);
+      return;
+    }
+    that.onError(error);
+  };
+
+  if (error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
+      this.retryOnHostOffline_) {
+    this.retryOnHostOffline_ = false;
+
+    // The plugin will be re-created when the host finished refreshing
+    remoting.hostList.refresh(onHostListRefresh);
+  } else {
+    this.onError(error);
+  }
+};
+
+/**
+ * @param {!remoting.ConnectionInfo} connectionInfo
+ */
+remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
+  // Reset the refresh flag so that the next connection will retry if needed.
+  this.retryOnHostOffline_ = true;
+
+  if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST)) {
+    this.connector_.registerProtocolExtension(
+        new remoting.CastExtensionHandler());
+  }
+  this.connector_.registerProtocolExtension(new remoting.GnubbyAuthHandler());
+  this.pinDialog_.requestPairingIfNecessary(connectionInfo.plugin(),
+                                            this.connector_);
+};
+
+remoting.Me2MeActivity.prototype.onDisconnected = function() {
+  remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
+};
+
+/**
+ * @param {!remoting.Error} error
+ */
+remoting.Me2MeActivity.prototype.onError = function(error) {
+  this.retryOnHostOffline_ = true;
+  var errorDiv = document.getElementById('connect-error-message');
+  l10n.localizeElementFromTag(errorDiv, error.getTag());
+  remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
+};
 
 /**
  * @param {HTMLElement} rootElement
@@ -189,9 +250,43 @@ remoting.PinDialog.prototype.show = function(supportsPairing) {
   return this.dialog_.show();
 };
 
-/** @return {boolean} */
-remoting.PinDialog.prototype.pairingRequested = function() {
-  return this.pairingCheckbox_.checked;
+/**
+ * @param {remoting.ClientPlugin} plugin
+ * @param {remoting.SessionConnector} connector
+ */
+remoting.PinDialog.prototype.requestPairingIfNecessary =
+    function(plugin, connector) {
+  if (this.pairingCheckbox_.checked) {
+    var that = this;
+    /**
+     * @param {string} clientId
+     * @param {string} sharedSecret
+     */
+    var onPairingComplete = function(clientId, sharedSecret) {
+      that.host_.options.pairingInfo.clientId = clientId;
+      that.host_.options.pairingInfo.sharedSecret = sharedSecret;
+      that.host_.options.save();
+      connector.updatePairingInfo(clientId, sharedSecret);
+    };
+
+    // Use the platform name as a proxy for the local computer name.
+    // TODO(jamiewalch): Use a descriptive name for the local computer, for
+    // example, its Chrome Sync name.
+    var clientName = '';
+    if (remoting.platformIsMac()) {
+      clientName = 'Mac';
+    } else if (remoting.platformIsWindows()) {
+      clientName = 'Windows';
+    } else if (remoting.platformIsChromeOS()) {
+      clientName = 'ChromeOS';
+    } else if (remoting.platformIsLinux()) {
+      clientName = 'Linux';
+    } else {
+      console.log('Unrecognized client platform. Using navigator.platform.');
+      clientName = navigator.platform;
+    }
+    plugin.requestPairing(clientName, onPairingComplete);
+  }
 };
 
 })();

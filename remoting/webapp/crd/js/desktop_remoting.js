@@ -22,15 +22,16 @@ var remoting = remoting || {};
 remoting.DesktopRemoting = function(appCapabilities) {
   base.inherits(this, remoting.Application, appCapabilities);
 
-  /**
-   * Whether to refresh the JID and retry the connection if the current JID
-   * is offline.
-   *
-   * @private {boolean}
-   */
-  this.refreshHostJidIfOffline_ = true;
-
   /** @private {remoting.DesktopConnectedView} */
+  this.connectedView_ = null;
+
+  /** @private {remoting.Activity} */
+  this.activity_ = null;
+};
+
+/** @private */
+remoting.DesktopRemoting.prototype.reset_ = function() {
+  base.dispose(this.connectedView_);
   this.connectedView_ = null;
 };
 
@@ -152,22 +153,6 @@ remoting.DesktopRemoting.prototype.exitApplication_ = function() {
 remoting.DesktopRemoting.prototype.onConnected_ = function(connectionInfo) {
   this.initSession_(connectionInfo);
 
-  // Set the text on the buttons shown under the error message so that they are
-  // easy to understand in the case where a successful connection failed, as
-  // opposed to the case where a connection never succeeded.
-  // TODO(garykac): Investigate to see if these need to be reverted to their
-  // original values in the onDisconnected_ method.
-  var button1 = document.getElementById('client-reconnect-button');
-  l10n.localizeElementFromTag(button1, /*i18n-content*/'RECONNECT');
-  button1.removeAttribute('autofocus');
-  var button2 = document.getElementById('client-finished-me2me-button');
-  l10n.localizeElementFromTag(button2, /*i18n-content*/'OK');
-  button2.setAttribute('autofocus', 'autofocus');
-
-  // Reset the refresh flag so that the next connection will retry if needed.
-  this.refreshHostJidIfOffline_ = true;
-
-  document.getElementById('access-code-entry').value = '';
   remoting.setMode(remoting.AppMode.IN_SESSION);
   if (!base.isAppsV2()) {
     remoting.toolbar.center();
@@ -183,14 +168,6 @@ remoting.DesktopRemoting.prototype.onConnected_ = function(connectionInfo) {
     connectionInfo.plugin().setRemapKeys('0x0700e4>0x0700e7');
   }
 
-  if (remoting.app.getConnectionMode() === remoting.Application.Mode.ME2ME) {
-    if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST)) {
-      this.sessionConnector_.registerProtocolExtension(
-          new remoting.CastExtensionHandler());
-    }
-    this.sessionConnector_.registerProtocolExtension(
-        new remoting.GnubbyAuthHandler());
-  }
   if (connectionInfo.session().hasCapability(
           remoting.ClientSession.Capability.VIDEO_RECORDER)) {
     var recorder = new remoting.VideoFrameRecorder();
@@ -198,52 +175,15 @@ remoting.DesktopRemoting.prototype.onConnected_ = function(connectionInfo) {
     this.connectedView_.setVideoFrameRecorder(recorder);
   }
 
-  if (remoting.pairingRequested) {
-    var that = this;
-    /**
-     * @param {string} clientId
-     * @param {string} sharedSecret
-     */
-    var onPairingComplete = function(clientId, sharedSecret) {
-      var connector = that.sessionConnector_;
-      var host = remoting.hostList.getHostForId(connector.getHostId());
-      host.options.pairingInfo.clientId = clientId;
-      host.options.pairingInfo.sharedSecret = sharedSecret;
-      host.options.save();
-      connector.updatePairingInfo(clientId, sharedSecret);
-    };
-    // Use the platform name as a proxy for the local computer name.
-    // TODO(jamiewalch): Use a descriptive name for the local computer, for
-    // example, its Chrome Sync name.
-    var clientName = '';
-    if (remoting.platformIsMac()) {
-      clientName = 'Mac';
-    } else if (remoting.platformIsWindows()) {
-      clientName = 'Windows';
-    } else if (remoting.platformIsChromeOS()) {
-      clientName = 'ChromeOS';
-    } else if (remoting.platformIsLinux()) {
-      clientName = 'Linux';
-    } else {
-      console.log('Unrecognized client platform. Using navigator.platform.');
-      clientName = navigator.platform;
-    }
-    connectionInfo.session().requestPairing(clientName, onPairingComplete);
-  }
+  this.activity_.onConnected(connectionInfo);
 };
 
 /**
  * @override {remoting.ApplicationInterface}
  */
 remoting.DesktopRemoting.prototype.onDisconnected_ = function() {
-  var mode = this.getConnectionMode();
-  if (mode === remoting.Application.Mode.IT2ME) {
-    remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
-  } else {
-    remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
-  }
-  base.dispose(this.connectedView_);
-  this.connectedView_ = null;
+  this.activity_.onDisconnected();
+  this.reset_();
 };
 
 /**
@@ -251,30 +191,7 @@ remoting.DesktopRemoting.prototype.onDisconnected_ = function() {
  * @override {remoting.ApplicationInterface}
  */
 remoting.DesktopRemoting.prototype.onConnectionFailed_ = function(error) {
-  var that = this;
-  var onHostListRefresh = function(/** boolean */ success) {
-    if (success) {
-      var connector = that.sessionConnector_;
-      var host = remoting.hostList.getHostForId(connector.getHostId());
-      if (host) {
-        connector.retryConnectMe2Me(host);
-        return;
-      }
-    }
-    that.onError_(error);
-  };
-
-  var mode = this.getConnectionMode();
-  if (error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
-      mode === remoting.Application.Mode.ME2ME &&
-      this.refreshHostJidIfOffline_) {
-    this.refreshHostJidIfOffline_ = false;
-
-    // The plugin will be re-created when the host finished refreshing
-    remoting.hostList.refresh(onHostListRefresh);
-  } else {
-    this.onError_(error);
-  }
+  this.activity_.onConnectionFailed(error);
 };
 
 /**
@@ -283,9 +200,6 @@ remoting.DesktopRemoting.prototype.onConnectionFailed_ = function(error) {
  */
 remoting.DesktopRemoting.prototype.onError_ = function(error) {
   console.error('Connection failed: ' + error.toString());
-  var mode = this.getConnectionMode();
-  base.dispose(this.connectedView_);
-  this.connectedView_ = null;
 
   if (error.hasTag(remoting.Error.Tag.AUTHENTICATION_FAILED)) {
     remoting.setMode(remoting.AppMode.HOME);
@@ -293,17 +207,8 @@ remoting.DesktopRemoting.prototype.onError_ = function(error) {
     return;
   }
 
-  // Reset the refresh flag so that the next connection will retry if needed.
-  this.refreshHostJidIfOffline_ = true;
-
-  var errorDiv = document.getElementById('connect-error-message');
-  l10n.localizeElementFromTag(errorDiv, error.getTag());
-
-  if (mode == remoting.Application.Mode.IT2ME) {
-    remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
-  } else {
-    remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
-  }
+  this.activity_.onError(error);
+  this.reset_();
 };
 
 /**
@@ -367,8 +272,15 @@ remoting.DesktopRemoting.prototype.getConnectedViewForTesting = function() {
  */
 remoting.DesktopRemoting.prototype.connectMe2Me_ = function(hostId) {
   var host = remoting.hostList.getHostForId(hostId);
-  var flow = new remoting.Me2MeConnectFlow(this.sessionConnector_, host);
-  flow.start();
+  // The Me2MeActivity triggers a reconnect underneath the hood on connection
+  // failure, but it won't notify the DesktopRemoting upon successful
+  // re-connection.  Therefore, we can't dispose the activity on connection
+  // failure.  Instead, the activity is only disposed when a new one is
+  // created.  This would be fixed once |sessionConnector| is moved out of the
+  // application.
+  base.dispose(this.activity_);
+  this.activity_ = new remoting.Me2MeActivity(this.sessionConnector_, host);
+  this.activity_.start();
 };
 
 /**
@@ -377,6 +289,7 @@ remoting.DesktopRemoting.prototype.connectMe2Me_ = function(hostId) {
  * @private
  */
 remoting.DesktopRemoting.prototype.connectIt2Me_ = function() {
-  var flow = new remoting.It2MeConnectFlow(this.sessionConnector_);
-  flow.start();
+  base.dispose(this.activity_);
+  this.activity_ = new remoting.It2MeActivity(this.sessionConnector_);
+  this.activity_.start();
 };
