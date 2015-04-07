@@ -1,6 +1,4 @@
 <!DOCTYPE html>
-<iframe src=resources/append-child-adopt-node-error-frame.html></iframe>
-<iframe src=resources/append-child-adopt-node-error-frame.svg></iframe>
 <script>
 testRunner.waitUntilDone();
 testRunner.dumpAsText();
@@ -10,7 +8,7 @@ testRunner.dumpAsText();
 // Hence it makes sense to keep this small and easy to debug when regress.
 console.log("PASS unless crash.");
 
-var count = document.querySelectorAll("iframe").length;
+var count = 2;
 
 function done() {
     if (--count)
@@ -18,3 +16,5 @@ function done() {
     testRunner.notifyDone();
 }
 </script>
+<iframe src=resources/append-child-adopt-node-error-frame.html></iframe>
+<iframe src=resources/append-child-adopt-node-error-frame.svg></iframe>
