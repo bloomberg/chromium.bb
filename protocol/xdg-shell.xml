@@ -403,6 +403,10 @@
         You can specify an output that you would prefer to be fullscreen.
 	If this value is NULL, it's up to the compositor to choose which
         display will be used to map this surface.
+
+        If the surface doesn't cover the whole output, the compositor will
+        position the surface in the center of the output and compensate with
+        black borders filling the rest of the output.
       </description>
       <arg name="output" type="object" interface="wl_output" allow-null="true"/>
     </request>
