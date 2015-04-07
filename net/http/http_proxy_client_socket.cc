@@ -302,7 +302,6 @@ int HttpProxyClientSocket::DidDrainBodyForAuthRestart(bool keep_alive) {
 void HttpProxyClientSocket::LogBlockedTunnelResponse() const {
   ProxyClientSocket::LogBlockedTunnelResponse(
       response_.headers->response_code(),
-      request_.url,
       is_https_proxy_);
 }
 
@@ -414,7 +413,12 @@ int HttpProxyClientSocket::DoSendRequest() {
       proxy_delegate_->OnBeforeTunnelRequest(proxy_server_,
                                              &authorization_headers);
     }
-    BuildTunnelRequest(request_, authorization_headers, endpoint_,
+    std::string user_agent;
+    if (!request_.extra_headers.GetHeader(HttpRequestHeaders::kUserAgent,
+                                          &user_agent)) {
+      user_agent.clear();
+    }
+    BuildTunnelRequest(endpoint_, authorization_headers, user_agent,
                        &request_line_, &request_headers_);
 
     net_log_.AddEvent(

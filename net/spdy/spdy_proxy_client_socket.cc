@@ -265,7 +265,6 @@ int SpdyProxyClientSocket::GetLocalAddress(IPEndPoint* address) const {
 void SpdyProxyClientSocket::LogBlockedTunnelResponse() const {
   ProxyClientSocket::LogBlockedTunnelResponse(
       response_.headers->response_code(),
-      request_.url,
       /* is_https_proxy = */ true);
 }
 
@@ -354,10 +353,15 @@ int SpdyProxyClientSocket::DoSendRequest() {
     auth_->AddAuthorizationHeader(&authorization_headers);
   }
 
+  std::string user_agent;
+  if (!request_.extra_headers.GetHeader(HttpRequestHeaders::kUserAgent,
+                                        &user_agent)) {
+    user_agent.clear();
+  }
   std::string request_line;
   HttpRequestHeaders request_headers;
-  BuildTunnelRequest(request_, authorization_headers, endpoint_, &request_line,
-                     &request_headers);
+  BuildTunnelRequest(endpoint_, authorization_headers, user_agent,
+                     &request_line, &request_headers);
 
   net_log_.AddEvent(
       NetLog::TYPE_HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,

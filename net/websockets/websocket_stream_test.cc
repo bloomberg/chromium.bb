@@ -1291,7 +1291,7 @@ TEST_F(WebSocketStreamCreateTest, HandleErrConnectionClosed) {
 TEST_F(WebSocketStreamCreateTest, HandleErrTunnelConnectionFailed) {
   static const char kConnectRequest[] =
       "CONNECT localhost:80 HTTP/1.1\r\n"
-      "Host: localhost\r\n"
+      "Host: localhost:80\r\n"
       "Proxy-Connection: keep-alive\r\n"
       "\r\n";
 

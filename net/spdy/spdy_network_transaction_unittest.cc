@@ -4787,9 +4787,10 @@ TEST_P(SpdyNetworkTransactionTest, ProxyConnect) {
   const char kConnect443[] = {"CONNECT www.google.com:443 HTTP/1.1\r\n"
                            "Host: www.google.com\r\n"
                            "Proxy-Connection: keep-alive\r\n\r\n"};
-  const char kConnect80[] = {"CONNECT www.google.com:80 HTTP/1.1\r\n"
-                           "Host: www.google.com\r\n"
-                           "Proxy-Connection: keep-alive\r\n\r\n"};
+  const char kConnect80[] = {
+      "CONNECT www.google.com:80 HTTP/1.1\r\n"
+      "Host: www.google.com:80\r\n"
+      "Proxy-Connection: keep-alive\r\n\r\n"};
   const char kHTTP200[] = {"HTTP/1.1 200 OK\r\n\r\n"};
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
@@ -4948,9 +4949,10 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   const char kConnect443[] = {"CONNECT www.google.com:443 HTTP/1.1\r\n"
                            "Host: www.google.com\r\n"
                            "Proxy-Connection: keep-alive\r\n\r\n"};
-  const char kConnect80[] = {"CONNECT www.google.com:80 HTTP/1.1\r\n"
-                           "Host: www.google.com\r\n"
-                           "Proxy-Connection: keep-alive\r\n\r\n"};
+  const char kConnect80[] = {
+      "CONNECT www.google.com:80 HTTP/1.1\r\n"
+      "Host: www.google.com:80\r\n"
+      "Proxy-Connection: keep-alive\r\n\r\n"};
   const char kHTTP200[] = {"HTTP/1.1 200 OK\r\n\r\n"};
   scoped_ptr<SpdyFrame> req2(spdy_util_.ConstructSpdyGet(
       "http://www.google.com/foo.dat", false, 1, LOWEST));

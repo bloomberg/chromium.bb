@@ -13800,7 +13800,7 @@ TEST_P(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
       // preflight HTTP request.
       MockWrite(
           "CONNECT www.google.com:80 HTTP/1.1\r\n"
-          "Host: www.google.com\r\n"
+          "Host: www.google.com:80\r\n"
           "Proxy-Connection: keep-alive\r\n"
           "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
 

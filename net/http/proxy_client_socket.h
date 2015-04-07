@@ -57,9 +57,9 @@ class NET_EXPORT_PRIVATE ProxyClientSocket : public StreamSocket {
   // The HTTP CONNECT method for establishing a tunnel connection is documented
   // in draft-luotonen-web-proxy-tunneling-01.txt and RFC 2817, Sections 5.2
   // and 5.3.
-  static void BuildTunnelRequest(const HttpRequestInfo& request_info,
+  static void BuildTunnelRequest(const HostPortPair& endpoint,
                                  const HttpRequestHeaders& auth_headers,
-                                 const HostPortPair& endpoint,
+                                 const std::string& user_agent,
                                  std::string* request_line,
                                  HttpRequestHeaders* request_headers);
 
@@ -71,7 +71,6 @@ class NET_EXPORT_PRIVATE ProxyClientSocket : public StreamSocket {
 
   // Logs (to the log and in a histogram) a blocked CONNECT response.
   static void LogBlockedTunnelResponse(int http_response_code,
-                                       const GURL& url,
                                        bool is_https_proxy);
 
   // When a proxy authentication response is received during tunnel
