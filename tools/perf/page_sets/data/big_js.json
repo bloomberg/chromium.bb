@@ -1,9 +1,12 @@
 {
-    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "description": "Describes the Web Page Replay archives for a user story set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
         "big_js_000.wpr": [
-            "http://beta.unity3d.com/jonas/DT2/",
+            "http://beta.unity3d.com/jonas/DT2/", 
             "http://www.foo.com"
+        ], 
+        "big_js_001.wpr": [
+            "https://www.youtube.com/watch?v=IJNR2EpS0jw"
         ]
     }
 }
