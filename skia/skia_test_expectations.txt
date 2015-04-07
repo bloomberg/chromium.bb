@@ -48,4 +48,15 @@
 #
 # START OVERRIDES HERE
 
+Bug(senorblanco) css3/filters/effect-reference-colorspace-hw.html [ NeedsManualRebaseline ]
+Bug(senorblanco) css3/filters/effect-reference-ordering-hw.html [ NeedsManualRebaseline ]
+Bug(senorblanco) css3/filters/effect-reference-zoom-hw.html [ NeedsManualRebaseline ]
+Bug(senorblanco) css3/filters/filter-repaint-composited-fallback-crash.html [ NeedsManualRebaseline ]
+Bug(senorblanco) css3/filters/filter-repaint-composited-fallback.html [ NeedsManualRebaseline ]
+Bug(senorblanco) virtual/slimmingpaint/css3/filters/effect-reference-colorspace-hw.html [ NeedsManualRebaseline ]
+Bug(senorblanco) virtual/slimmingpaint/css3/filters/effect-reference-ordering-hw.html [ NeedsManualRebaseline ]
+Bug(senorblanco) virtual/slimmingpaint/css3/filters/effect-reference-zoom-hw.html [ NeedsManualRebaseline ]
+Bug(senorblanco) virtual/slimmingpaint/css3/filters/filter-repaint-composited-fallback-crash.html [ NeedsManualRebaseline ]
+Bug(senorblanco) virtual/slimmingpaint/css3/filters/filter-repaint-composited-fallback.html [ NeedsManualRebaseline ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
