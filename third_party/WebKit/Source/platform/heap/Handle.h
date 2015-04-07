@@ -946,25 +946,25 @@ public:
 template<typename T, typename U, typename V, typename W, typename X>
 class TraceEagerlyTrait<HeapHashMap<T, U, V, W, X>> {
 public:
-    static const bool value = MARKER_EAGER_TRACING || TraceEagerlyTrait<T>::value || TraceEagerlyTrait<U>::value;
+    static const bool value = true;
 };
 
 template<typename T, typename U, typename V>
 class TraceEagerlyTrait<HeapHashSet<T, U, V>> {
 public:
-    static const bool value = MARKER_EAGER_TRACING || TraceEagerlyTrait<T>::value;
+    static const bool value = true;
 };
 
 template<typename T, typename U, typename V>
 class TraceEagerlyTrait<HeapLinkedHashSet<T, U, V>> {
 public:
-    static const bool value = MARKER_EAGER_TRACING || TraceEagerlyTrait<T>::value;
+    static const bool value = true;
 };
 
 template<typename T, size_t inlineCapacity, typename U>
 class TraceEagerlyTrait<HeapListHashSet<T, inlineCapacity, U>> {
 public:
-    static const bool value = MARKER_EAGER_TRACING || TraceEagerlyTrait<T>::value;
+    static const bool value = true;
 };
 
 template<typename T, size_t inlineCapacity>
@@ -976,25 +976,25 @@ public:
 template<typename T, size_t inlineCapacity>
 class TraceEagerlyTrait<HeapVector<T, inlineCapacity>> {
 public:
-    static const bool value = MARKER_EAGER_TRACING || TraceEagerlyTrait<T>::value;
+    static const bool value = true;
 };
 
 template<typename T, typename U>
 class TraceEagerlyTrait<HeapVectorBacking<T, U>> {
 public:
-    static const bool value = MARKER_EAGER_TRACING || TraceEagerlyTrait<T>::value;
+    static const bool value = true;
 };
 
 template<typename T, size_t inlineCapacity>
 class TraceEagerlyTrait<HeapDeque<T, inlineCapacity>> {
 public:
-    static const bool value = MARKER_EAGER_TRACING || TraceEagerlyTrait<T>::value;
+    static const bool value = true;
 };
 
 template<typename T, typename U, typename V>
 class TraceEagerlyTrait<HeapHashCountedSet<T, U, V>> {
 public:
-    static const bool value = MARKER_EAGER_TRACING || TraceEagerlyTrait<T>::value;
+    static const bool value = true;
 };
 
 } // namespace blink

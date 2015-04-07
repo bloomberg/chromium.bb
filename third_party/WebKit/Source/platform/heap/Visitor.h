@@ -295,10 +295,9 @@ public:                                  \
 //
 // A class type can opt out of eager tracing by declaring a TraceEagerlyTrait<>
 // specialization, mapping the trait's |value| to |false| (see the
-// WILL_NOT_BE_EAGERLY_TRACED() macros below.) For Blink, this is done for
+// WILL_NOT_BE_EAGERLY_TRACED_CLASS() macros below.) For Blink, this is done for
 // the small set of GCed classes that are directly recursive.
-#define MARKER_EAGER_TRACING 1
-
+//
 // The TraceEagerlyTrait<T> trait controls whether or not a class
 // (and its subclasses) should be eagerly traced or not.
 //
@@ -314,15 +313,8 @@ public:                                  \
 template<typename T, typename Enabled = void>
 class TraceEagerlyTrait {
 public:
-    static const bool value = MARKER_EAGER_TRACING;
+    static const bool value = true;
 };
-
-#define WILL_NOT_BE_EAGERLY_TRACED(TYPE)                                                    \
-template<typename T>                                                                        \
-class TraceEagerlyTrait<T, typename WTF::EnableIf<WTF::IsSubclass<T, TYPE>::value>::Type> { \
-public:                                                                                     \
-    static const bool value = false;                                                        \
-}
 
 // Disable eager tracing for TYPE, but not any of its subclasses.
 #define WILL_NOT_BE_EAGERLY_TRACED_CLASS(TYPE)   \

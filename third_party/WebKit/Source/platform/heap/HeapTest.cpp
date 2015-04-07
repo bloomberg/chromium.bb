@@ -791,7 +791,7 @@ protected:
     }
 };
 
-WILL_NOT_BE_EAGERLY_TRACED(Bar);
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(Bar);
 
 unsigned Bar::s_live = 0;
 
@@ -863,6 +863,8 @@ private:
     bool m_pointsToFoo;
 };
 
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(Foo);
+
 class Bars : public Bar {
 public:
     static Bars* create()
@@ -894,6 +896,8 @@ private:
     unsigned m_width;
     Member<Bar> m_bars[width];
 };
+
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(Bars);
 
 class ConstructorAllocation : public GarbageCollected<ConstructorAllocation> {
 public:
@@ -1083,6 +1087,8 @@ private:
     Bar* m_weakBar;
 };
 
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(Weak);
+
 class WithWeakMember : public Bar {
 public:
     static WithWeakMember* create(Bar* strong, Bar* weak)
@@ -1110,6 +1116,8 @@ private:
     Member<Bar> m_strongBar;
     WeakMember<Bar> m_weakBar;
 };
+
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(WithWeakMember);
 
 class Observable : public GarbageCollectedFinalized<Observable> {
     USING_PRE_FINALIZER(Observable, willFinalize);
@@ -5428,19 +5436,15 @@ class TraceTypeEagerly1 : public GarbageCollected<TraceTypeEagerly1> { };
 class TraceTypeEagerly2 : public TraceTypeEagerly1 { };
 
 class TraceTypeNonEagerly1 { };
-WILL_NOT_BE_EAGERLY_TRACED(TraceTypeNonEagerly1);
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(TraceTypeNonEagerly1);
 class TraceTypeNonEagerly2 : public TraceTypeNonEagerly1 { };
-
-class TraceTypeNonEagerly3 { };
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(TraceTypeNonEagerly3);
-class TraceTypeNonEagerly4 : public TraceTypeNonEagerly3 { };
 
 TEST(HeapTest, TraceTypesEagerly)
 {
     static_assert(TraceEagerlyTrait<TraceTypeEagerly1>::value, "should be true");
     static_assert(TraceEagerlyTrait<Member<TraceTypeEagerly1>>::value, "should be true");
     static_assert(TraceEagerlyTrait<WeakMember<TraceTypeEagerly1>>::value, "should be true");
-    static_assert(TraceEagerlyTrait<RawPtr<TraceTypeEagerly1>>::value == MARKER_EAGER_TRACING, "should be true");
+    static_assert(TraceEagerlyTrait<RawPtr<TraceTypeEagerly1>>::value, "should be true");
     static_assert(TraceEagerlyTrait<HeapVector<Member<TraceTypeEagerly1>>>::value, "should be true");
     static_assert(TraceEagerlyTrait<HeapVector<WeakMember<TraceTypeEagerly1>>>::value, "should be true");
     static_assert(TraceEagerlyTrait<HeapHashSet<Member<TraceTypeEagerly1>>>::value, "should be true");
@@ -5453,10 +5457,8 @@ TEST(HeapTest, TraceTypesEagerly)
     static_assert(TraceEagerlyTrait<TraceTypeEagerly2>::value, "should be true");
     static_assert(TraceEagerlyTrait<Member<TraceTypeEagerly2>>::value, "should be true");
 
-    static_assert(!TraceEagerlyTrait<TraceTypeNonEagerly1>::value, "should be true");
-    static_assert(!TraceEagerlyTrait<TraceTypeNonEagerly2>::value, "should be true");
-    static_assert(!TraceEagerlyTrait<TraceTypeNonEagerly3>::value, "should be true");
-    static_assert(TraceEagerlyTrait<TraceTypeNonEagerly4>::value == MARKER_EAGER_TRACING, "should be true");
+    static_assert(!TraceEagerlyTrait<TraceTypeNonEagerly1>::value, "should be false");
+    static_assert(TraceEagerlyTrait<TraceTypeNonEagerly2>::value, "should be true");
 }
 
 class DeepEagerly final : public GarbageCollected<DeepEagerly> {
