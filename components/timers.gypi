@@ -15,10 +15,8 @@
         '../base/base.gyp:base',
       ],
       'sources': [
-        'timers/alarm_timer.cc',
-        'timers/alarm_timer.h',
-        'timers/rtc_alarm.cc',
-        'timers/rtc_alarm.h',
+        'timers/alarm_timer_chromeos.cc',
+        'timers/alarm_timer_chromeos.h',
       ],
     },
   ],

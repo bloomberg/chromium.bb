@@ -25,7 +25,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_CHROMEOS)
-#include "components/timers/alarm_timer.h"
+#include "components/timers/alarm_timer_chromeos.h"
 #endif
 
 namespace gcm {
@@ -344,7 +344,7 @@ void GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat(bool wake) {
 
   scoped_ptr<base::Timer> timer;
   if (wake)
-    timer.reset(new timers::AlarmTimer(true, false));
+    timer.reset(new timers::SimpleAlarmTimer());
   else
     timer.reset(new base::Timer(true, false));
 
