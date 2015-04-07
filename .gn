@@ -109,6 +109,12 @@ exec_script_whitelist = [
   "//chrome/test/BUILD.gn",
   "//chrome/utility/BUILD.gn",
   "//chromeos/BUILD.gn",
+
+  # TODO(dgn): Layer violation but breaks the build otherwise, see
+  # https://crbug.com/474506
+  "//clank/java/BUILD.gn",
+  "//clank/native/framework/BUILD.gn",
+
   "//components/domain_reliability/BUILD.gn",
   "//components/webui_generator/generator/wug.gni",
   "//content/browser/browser.gni",
