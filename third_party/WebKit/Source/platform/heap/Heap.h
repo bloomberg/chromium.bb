@@ -1502,6 +1502,13 @@ inline void Heap::increaseExternallyAllocatedBytes(size_t delta)
         Heap::requestUrgentGC();
 }
 
+template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct CollectionBackingTraceTrait;
+template<typename T, typename Traits = WTF::VectorTraits<T>> class HeapVectorBacking;
+template<typename Table> class HeapHashTableBacking {
+public:
+    static void finalize(void* pointer);
+};
+
 class HeapAllocatorQuantizer {
 public:
     template<typename T>

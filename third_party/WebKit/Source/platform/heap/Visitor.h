@@ -63,8 +63,6 @@ template <typename T> struct IsGarbageCollectedType;
 #define STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, ErrorMessage) \
     static_assert(!IsGarbageCollectedType<T>::value, ErrorMessage)
 
-template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct CollectionBackingTraceTrait;
-
 // The TraceMethodDelegate is used to convert a trace method for type T to a TraceCallback.
 // This allows us to pass a type's trace method as a parameter to the PersistentNode
 // constructor. The PersistentNode constructor needs the specific trace method due an issue
@@ -140,8 +138,6 @@ public:
 
 template <typename T> const bool NeedsAdjustAndMark<T, false>::value;
 
-template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultTraceTrait;
-
 // HasInlinedTraceMethod<T>::value is true for T supporting
 // T::trace(InlinedGlobalMarkingVisitor).
 // The template works by checking if T::HasInlinedTraceMethodMarker type is
@@ -168,6 +164,8 @@ public:
 
 template <typename T, bool = HasInlinedTraceMethod<T>::value>
 struct TraceCompatibilityAdaptor;
+
+template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultTraceTrait;
 
 // The TraceTrait is used to specify how to mark an object pointer and
 // how to trace all of the pointers in the object.
@@ -736,15 +734,6 @@ struct OffHeapCollectionTraceTrait<WTF::Deque<T, N>> {
         for (typename Deque::const_iterator it = deque.begin(), end = deque.end(); it != end; ++it)
             TraceTrait<T>::trace(visitor, const_cast<T*>(&(*it)));
     }
-};
-
-template<typename T, typename Traits = WTF::VectorTraits<T>>
-class HeapVectorBacking;
-
-template<typename Table>
-class HeapHashTableBacking {
-public:
-    static void finalize(void* pointer);
 };
 
 template<typename T> struct GCInfoTrait;
