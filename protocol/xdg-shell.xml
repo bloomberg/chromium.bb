@@ -317,6 +317,11 @@
 	about how its surface should be resized in window geometry
 	coordinates. See set_window_geometry.
 
+	If the width or height arguments are zero, it means the client
+	should decide its own window dimension. This may happen when the
+	compositor need to configure the state of the surface but doesn't
+	have any information about any previous or expected dimension.
+
 	The states listed in the event specify how the width/height
 	arguments should be interpreted, and possibly how it should be
 	drawn.
