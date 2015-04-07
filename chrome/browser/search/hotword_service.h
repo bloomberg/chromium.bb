@@ -12,6 +12,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/webstore_startup_installer.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -38,7 +39,8 @@ extern const char kHotwordTrainingEnabled[];
 
 // Provides an interface for the Hotword component that does voice triggered
 // search.
-class HotwordService : public extensions::ExtensionRegistryObserver,
+class HotwordService : public MediaCaptureDevicesDispatcher::Observer,
+                       public extensions::ExtensionRegistryObserver,
                        public KeyedService {
  public:
   // A simple subclass to allow for aborting an install during shutdown.
@@ -125,6 +127,8 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // no error.
   int error_message() { return error_message_; }
 
+  bool microphone_available() { return microphone_available_; }
+
   // These methods are for launching, and getting and setting the launch mode of
   // the Hotword Audio Verification App.
   //
@@ -174,12 +178,20 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // Turn off the currently enabled version of hotwording if one exists.
   void DisableHotwordPreferences();
 
+  // Overridden from MediaCaptureDevicesDispatcher::Observer
+  void OnUpdateAudioDevices(
+      const content::MediaStreamDevices& devices) override;
+
  protected:
   // Used in test subclasses.
   scoped_refptr<HotwordWebstoreInstaller> installer_;
 
  private:
   class HotwordUserSessionStateObserver;
+
+  // Must be called from the UI thread since the instance of
+  // MediaCaptureDevicesDispatcher can only be accessed on the UI thread.
+  void InitializeMicrophoneObserver();
 
   // Callback for webstore extension installer.
   void InstalledFromWebstoreCallback(
@@ -206,6 +218,13 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
       extension_registry_observer_;
 
   scoped_ptr<HotwordAudioHistoryHandler> audio_history_handler_;
+
+  bool microphone_available_;
+
+  // Indicates if the check for audio devices has been run such that it can be
+  // included in the error checking. Audio checking is not done immediately
+  // upon start up because of the negative impact on performance.
+  bool audio_device_state_updated_;
 
   HotwordClient* client_;
   int error_message_;

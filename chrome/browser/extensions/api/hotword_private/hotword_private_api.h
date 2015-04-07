@@ -44,10 +44,14 @@ class HotwordPrivateEventService : public BrowserContextKeyedAPI {
 
   void OnSpeakerModelExists();
 
+  void OnMicrophoneStateChanged(bool enabled);
+
  private:
   friend class BrowserContextKeyedAPIFactory<HotwordPrivateEventService>;
 
   void SignalEvent(const std::string& event_name);
+  void SignalEvent(const std::string& event_name,
+                   scoped_ptr<base::ListValue> args);
 
   Profile* profile_;
   PrefChangeRegistrar pref_change_registrar_;

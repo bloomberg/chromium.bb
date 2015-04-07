@@ -323,6 +323,8 @@ void HotwordService::HotwordWebstoreInstaller::Shutdown() {
 HotwordService::HotwordService(Profile* profile)
     : profile_(profile),
       extension_registry_observer_(this),
+      microphone_available_(false),
+      audio_device_state_updated_(false),
       client_(NULL),
       error_message_(0),
       reinstall_pending_(false),
@@ -386,6 +388,13 @@ HotwordService::HotwordService(Profile* profile)
         session_observer_.get());
   }
 #endif
+
+  // Register with the device observer list to update the microphone
+  // availability.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&HotwordService::InitializeMicrophoneObserver,
+                 base::Unretained(this)));
 }
 
 HotwordService::~HotwordService() {
@@ -454,6 +463,10 @@ void HotwordService::OnExtensionUninstalled(
 
 std::string HotwordService::ReinstalledExtensionId() {
   return extension_misc::kHotwordSharedModuleId;
+}
+
+void HotwordService::InitializeMicrophoneObserver() {
+  MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
 }
 
 void HotwordService::InstalledFromWebstoreCallback(
@@ -605,19 +618,16 @@ bool HotwordService::IsServiceAvailable() {
 
   RecordErrorMetrics(error_message_);
 
-  // Determine if the proper audio capabilities exist.
-  // The first time this is called, it probably won't return in time, but that's
-  // why it won't be included in the error calculation (i.e., the call to
-  // IsAudioDeviceStateUpdated()). However, this use case is rare and typically
-  // the devices will be initialized by the time a user goes to settings.
-  bool audio_device_state_updated =
-      HotwordServiceFactory::IsAudioDeviceStateUpdated();
+  // Determine if the proper audio capabilities exist. The first time this is
+  // called, it probably won't return in time, but that's why it won't be
+  // included in the error calculation. However, this use case is rare and
+  // typically the devices will be initialized by the time a user goes to
+  // settings.
   HotwordServiceFactory::GetInstance()->UpdateMicrophoneState();
-  if (audio_device_state_updated) {
+  if (audio_device_state_updated_) {
     bool audio_capture_allowed =
         profile_->GetPrefs()->GetBoolean(prefs::kAudioCaptureAllowed);
-    if (!audio_capture_allowed ||
-        !HotwordServiceFactory::IsMicrophoneAvailable())
+    if (!audio_capture_allowed || !microphone_available_)
       error_message_ = IDS_HOTWORD_MICROPHONE_ERROR_MESSAGE;
   }
 
@@ -770,6 +780,17 @@ void HotwordService::DisableHotwordPreferences() {
     profile_->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled,
                                      false);
   }
+}
+
+void HotwordService::OnUpdateAudioDevices(
+    const content::MediaStreamDevices& devices) {
+  bool microphone_was_available = microphone_available_;
+  microphone_available_ = !devices.empty();
+  audio_device_state_updated_ = true;
+  HotwordPrivateEventService* event_service =
+      BrowserContextKeyedAPIFactory<HotwordPrivateEventService>::Get(profile_);
+  if (event_service && microphone_was_available != microphone_available_)
+    event_service->OnMicrophoneStateChanged(microphone_available_);
 }
 
 void HotwordService::OnHotwordAlwaysOnSearchEnabledChanged(

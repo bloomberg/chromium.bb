@@ -270,9 +270,11 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
 
     AddPair(list, "NaCl Enabled", nacl_enabled);
 
-    AddPair(list,
-            "Microphone",
-            HotwordServiceFactory::IsMicrophoneAvailable() ? "Yes" : "No");
+    HotwordService* hotword_service =
+        HotwordServiceFactory::GetForProfile(profile_);
+    AddPair(list, "Microphone",
+            hotword_service && hotword_service->microphone_available() ? "Yes"
+                                                                       : "No");
 
     std::string audio_capture = "No";
     if (profile_->GetPrefs()->GetBoolean(prefs::kAudioCaptureAllowed))

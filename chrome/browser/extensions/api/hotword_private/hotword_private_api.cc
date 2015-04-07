@@ -106,11 +106,21 @@ void HotwordPrivateEventService::OnSpeakerModelExists() {
   SignalEvent(api::hotword_private::OnSpeakerModelExists::kEventName);
 }
 
+void HotwordPrivateEventService::OnMicrophoneStateChanged(bool enabled) {
+  SignalEvent(api::hotword_private::OnMicrophoneStateChanged::kEventName,
+              api::hotword_private::OnMicrophoneStateChanged::Create(enabled));
+}
+
 void HotwordPrivateEventService::SignalEvent(const std::string& event_name) {
+  SignalEvent(event_name, make_scoped_ptr(new base::ListValue()));
+}
+
+void HotwordPrivateEventService::SignalEvent(const std::string& event_name,
+                                             scoped_ptr<base::ListValue> args) {
   EventRouter* router = EventRouter::Get(profile_);
   if (!router || !router->HasEventListener(event_name))
     return;
-  scoped_ptr<base::ListValue> args(new base::ListValue());
+
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
   router->BroadcastEvent(event.Pass());
 }

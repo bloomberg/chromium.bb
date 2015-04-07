@@ -35,6 +35,8 @@ cr.define('hotword', function() {
     this.tabCreatedListener_ = this.handleCreatedTab_.bind(this);
     this.tabUpdatedListener_ = this.handleUpdatedTab_.bind(this);
     this.tabActivatedListener_ = this.handleActivatedTab_.bind(this);
+    this.microphoneStateChangedListener_ =
+        this.handleMicrophoneStateChanged_.bind(this);
     this.windowFocusChangedListener_ = this.handleChangedWindow_.bind(this);
     this.messageListener_ = this.handleMessageFromPage_.bind(this);
 
@@ -237,6 +239,19 @@ cr.define('hotword', function() {
       this.updateTabState_();
     },
 
+    /**
+     * Handles the microphone state changing.
+     * @param {boolean} enabled Whether the microphone is now enabled.
+     * @private
+     */
+    handleMicrophoneStateChanged_: function(enabled) {
+      if (enabled) {
+        this.updateTabState_();
+        return;
+      }
+
+      this.stopHotwording_();
+    },
 
     /**
      * Handles a change in Chrome windows.
@@ -492,6 +507,8 @@ cr.define('hotword', function() {
       chrome.tabs.onActivated.addListener(this.tabActivatedListener_);
       chrome.windows.onFocusChanged.addListener(
           this.windowFocusChangedListener_);
+      chrome.hotwordPrivate.onMicrophoneStateChanged.addListener(
+          this.microphoneStateChangedListener_);
       if (chrome.runtime.onMessage.hasListener(this.messageListener_))
         return;
       chrome.runtime.onMessageExternal.addListener(
@@ -509,6 +526,8 @@ cr.define('hotword', function() {
       chrome.tabs.onActivated.removeListener(this.tabActivatedListener_);
       chrome.windows.onFocusChanged.removeListener(
           this.windowFocusChangedListener_);
+      chrome.hotwordPrivate.onMicrophoneStateChanged.removeListener(
+          this.microphoneStateChangedListener_);
       // Don't remove the Message listener, as we want them listening all
       // the time,
     },

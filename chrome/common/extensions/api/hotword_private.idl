@@ -182,5 +182,8 @@ namespace hotwordPrivate {
     // Fired when the browser wants to find out whether the speaker model
     // exists.
     static void onSpeakerModelExists();
+
+    // Fired when the microphone state changes.
+    static void onMicrophoneStateChanged(boolean enabled);
   };
 };
