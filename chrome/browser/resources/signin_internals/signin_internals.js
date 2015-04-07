@@ -168,6 +168,7 @@ function refreshSigninInfo(signinInfo) {
   chrome.signin.internalsInfo = signinInfo;
   jstProcess(new JsEvalContext(signinInfo), $('signin-info'));
   jstProcess(new JsEvalContext(signinInfo), $('token-info'));
+  jstProcess(new JsEvalContext(signinInfo), $('account-info'));
 }
 
 // Replace the cookie information with the fetched values.

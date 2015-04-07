@@ -247,6 +247,7 @@ void AboutSigninInternals::NotifyObservers() {
       signin_status_.ToValue(account_tracker_,
                              signin_manager_,
                              signin_error_controller_,
+                             token_service_,
                              product_version);
 
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
@@ -264,6 +265,7 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
   return signin_status_.ToValue(account_tracker_,
                                 signin_manager_,
                                 signin_error_controller_,
+                                token_service_,
                                 client_->GetProductVersion()).Pass();
 }
 
@@ -419,8 +421,13 @@ AboutSigninInternals::TokenInfo::~TokenInfo() {}
 
 bool AboutSigninInternals::TokenInfo::LessThan(const TokenInfo* a,
                                                const TokenInfo* b) {
-  return a->consumer_id < b->consumer_id ||
-      (a->consumer_id == b->consumer_id && a->scopes < b->scopes);
+  if (a->request_time == b->request_time) {
+    if (a->consumer_id == b->consumer_id) {
+      return a->scopes < b->scopes;
+    }
+    return a->consumer_id < b->consumer_id;
+  }
+  return a->request_time < b->request_time;
 }
 
 void AboutSigninInternals::TokenInfo::Invalidate() { removed_ = true; }
@@ -492,6 +499,7 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
     AccountTrackerService* account_tracker,
     SigninManagerBase* signin_manager,
     SigninErrorController* signin_error_controller,
+    ProfileOAuth2TokenService* token_service,
     const std::string& product_version) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
@@ -607,6 +615,23 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
       base::DictionaryValue* token_info = tokens[i]->ToValue();
       token_details->Append(token_info);
     }
+  }
+
+  base::ListValue* account_info = new base::ListValue();
+  signin_status->Set("accountInfo", account_info);
+  const std::vector<std::string>& accounts_in_token_service =
+      token_service->GetAccounts();
+
+  if(accounts_in_token_service.size() == 0) {
+    base::DictionaryValue* no_token_entry = new base::DictionaryValue();
+    no_token_entry->SetString("accountId", "No token in Token Service.");
+    account_info->Append(no_token_entry);
+  }
+
+  for(const std::string& account_id : accounts_in_token_service) {
+    base::DictionaryValue* entry = new base::DictionaryValue();
+    entry->SetString("accountId", account_id);
+    account_info->Append(entry);
   }
 
   return signin_status.Pass();

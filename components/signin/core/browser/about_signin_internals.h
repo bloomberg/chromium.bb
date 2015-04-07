@@ -151,6 +151,7 @@ class AboutSigninInternals
         AccountTrackerService* account_tracker,
         SigninManagerBase* signin_manager,
         SigninErrorController* signin_error_controller,
+        ProfileOAuth2TokenService* token_service,
         const std::string& product_version);
   };
 
