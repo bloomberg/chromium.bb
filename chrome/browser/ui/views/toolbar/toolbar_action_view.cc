@@ -19,7 +19,7 @@
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -110,7 +110,8 @@ void ToolbarActionView::ViewHierarchyChanged(
 
 void ToolbarActionView::PaintChildren(const ui::PaintContext& context) {
   View::PaintChildren(context);
-  view_controller_->PaintExtra(context.canvas(), GetLocalBounds(),
+  ui::PaintRecorder recorder(context);
+  view_controller_->PaintExtra(recorder.canvas(), GetLocalBounds(),
                                GetCurrentWebContents());
 }
 
