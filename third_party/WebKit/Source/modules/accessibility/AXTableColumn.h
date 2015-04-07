@@ -29,6 +29,7 @@
 #ifndef AXTableColumn_h
 #define AXTableColumn_h
 
+#include "modules/ModulesExport.h"
 #include "modules/accessibility/AXMockObject.h"
 #include "modules/accessibility/AXTable.h"
 
@@ -37,7 +38,7 @@ namespace blink {
 class AXObjectCacheImpl;
 class LayoutTableSection;
 
-class AXTableColumn final : public AXMockObject {
+class MODULES_EXPORT AXTableColumn final : public AXMockObject {
 
 private:
     explicit AXTableColumn(AXObjectCacheImpl*);

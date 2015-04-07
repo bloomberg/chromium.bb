@@ -7,13 +7,14 @@
 
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "modules/ModulesExport.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 class Page;
 
-class InspectorAccessibilityAgent : public InspectorBaseAgent<InspectorAccessibilityAgent, InspectorFrontend::Accessibility>, public InspectorBackendDispatcher::AccessibilityCommandHandler {
+class MODULES_EXPORT InspectorAccessibilityAgent : public InspectorBaseAgent<InspectorAccessibilityAgent, InspectorFrontend::Accessibility>, public InspectorBackendDispatcher::AccessibilityCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorAccessibilityAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorAccessibilityAgent> create(Page* page)

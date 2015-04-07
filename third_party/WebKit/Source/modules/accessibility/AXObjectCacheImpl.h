@@ -31,6 +31,7 @@
 
 #include "core/dom/AXObjectCache.h"
 #include "core/layout/LayoutText.h"
+#include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
 #include "platform/Timer.h"
 #include "wtf/Forward.h"
@@ -53,7 +54,7 @@ struct TextMarkerData {
 };
 
 // This class should only be used from inside the accessibility directory.
-class AXObjectCacheImpl : public AXObjectCache {
+class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
     WTF_MAKE_NONCOPYABLE(AXObjectCacheImpl); WTF_MAKE_FAST_ALLOCATED(AXObjectCacheImpl);
 public:
     static AXObjectCache* create(Document&);

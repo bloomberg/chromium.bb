@@ -31,6 +31,7 @@
 #define AXObject_h
 
 #include "core/editing/VisiblePosition.h"
+#include "modules/ModulesExport.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "wtf/Forward.h"
@@ -286,7 +287,7 @@ enum TextUnderElementMode {
     TextUnderElementAny // If the text is unimportant, just whether or not it's present
 };
 
-class AXObject : public RefCounted<AXObject> {
+class MODULES_EXPORT AXObject : public RefCounted<AXObject> {
 public:
     typedef Vector<RefPtr<AXObject>> AccessibilityChildrenVector;
 
