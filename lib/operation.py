@@ -10,11 +10,196 @@ updates, verbose text display and perhaps some errors.
 
 from __future__ import print_function
 
+import collections
 import contextlib
+import fcntl
+import multiprocessing
+import os
+import pty
+try:
+  import Queue
+except ImportError:
+  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
+  # with naming variables as "queue".  Maybe we'll transition at some point.
+  # pylint: disable=import-error
+  import queue as Queue
 import re
+import struct
 import sys
+import termios
 
+from chromite.lib import cros_logging as logging
+from chromite.lib import cros_test_lib
+from chromite.lib import osutils
+from chromite.lib import parallel
 from chromite.lib.terminal import Color
+
+
+_TerminalSize = collections.namedtuple('_TerminalSize', ('lines', 'columns'))
+
+
+class _BackgroundTaskComplete(object):
+  """Sentinal object to indicate that the background task is complete."""
+
+
+class ProgressBarOperation(object):
+  """Wrapper around long running functions to show progress.
+
+  This class is intended to capture the output of a long running fuction, parse
+  the output, and display a progress bar.
+
+  To display a progress bar for a function foo with argument foo_args, this is
+  the usage case:
+    1) Create a class that inherits from ProgressBarOperation (e.g.
+    FooTypeOperation. In this class, override the ParseOutput method to parse
+    the output of foo.
+    2) op = operation.FooTypeOperation()
+       op.Run(foo, foo_args)
+  """
+
+  # Subtract 10 characters from the width of the terminal because these are used
+  # to display the percentage as well as other spaces.
+  _PROGRESS_BAR_BORDER_SIZE = 10
+
+  # By default, update the progress bar every 100 ms.
+  _PROGRESS_BAR_UPDATE_INTERVAL = 0.1
+
+  def __init__(self):
+    self._queue = multiprocessing.Queue()
+    self._stderr = None
+    self._stdout = None
+    self._stdout_path = None
+    self._stderr_path = None
+    self._progress_bar_displayed = False
+
+  def _GetTerminalSize(self, fd=pty.STDOUT_FILENO):
+    """Return a terminal size object for |fd|.
+
+    Note: Replace with os.terminal_size() in python3.3.
+    """
+    winsize = struct.pack('HHHH', 0, 0, 0, 0)
+    data = fcntl.ioctl(fd, termios.TIOCGWINSZ, winsize)
+    winsize = struct.unpack('HHHH', data)
+    return _TerminalSize(int(winsize[0]), int(winsize[1]))
+
+  def _ProgressBar(self, progress):
+    """This method creates and displays a progress bar.
+
+    Args:
+      progress: a float between 0 and 1 that represents the fraction of the
+        current progress.
+    """
+    self._progress_bar_displayed = True
+    progress = max(0.0, min(1.0, progress))
+    width = max(1, self._GetTerminalSize().columns -
+                self._PROGRESS_BAR_BORDER_SIZE)
+    block = int(width * progress)
+    shaded = '#' * block
+    unshaded = '-' * (width - block)
+    text = '\r [%s%s] %d%%' % (shaded, unshaded, progress * 100)
+    sys.stdout.write(text)
+    sys.stdout.flush()
+
+  def OpenStdoutStderr(self):
+    """Open the stdout and stderr streams."""
+    if self._stdout is None and self._stderr is None:
+      self._stdout = open(self._stdout_path, 'r')
+      self._stderr = open(self._stderr_path, 'r')
+
+  def _Cleanup(self):
+    """Method to cleanup progress bar.
+
+    If progress bar has been printed, then we make sure it displays 100% before
+    exiting.
+    """
+    if self._progress_bar_displayed:
+      self._ProgressBar(1)
+      sys.stdout.write('\n')
+      sys.stdout.flush()
+
+  def ParseOutput(self):
+    """Method to parse output and update progress bar.
+
+    This method should be overridden to read and parse the lines in _stdout and
+    _stderr.
+
+    One example use of this method could be to detect 'foo' in stdout and
+    increment the progress bar every time foo is seen.
+
+    def ParseOutput(self):
+      stdout = self._stdout.read()
+      if 'foo' in stdout:
+        # Increment progress bar.
+    """
+    raise NotImplementedError('Subclass must override this method.')
+
+  # TODO(ralphnathan): Deprecate this function and use parallel._BackgroundTask
+  # instead (brbug.com/863)
+  def WaitUntilComplete(self, update_period):
+    """Return True if running background task has completed."""
+    try:
+      x = self._queue.get(timeout=update_period)
+      if isinstance(x, _BackgroundTaskComplete):
+        return True
+    except Queue.Empty:
+      return False
+
+  def CaptureOutputInBackground(self, func, *args, **kwargs):
+    """Launch func in background and capture its output.
+
+    Args:
+      func: Function to execute in the background and whose output is to be
+        captured.
+      log_level: Logging level to run the func at. By default, it runs at log
+        level info.
+    """
+    log_level = kwargs.pop('log_level', logging.INFO)
+    restore_log_level = logging.getLogger().getEffectiveLevel()
+    logging.getLogger().setLevel(log_level)
+    try:
+      with cros_test_lib.OutputCapturer(stdout_path=self._stdout_path,
+                                        stderr_path=self._stderr_path):
+        func(*args, **kwargs)
+    finally:
+      self._queue.put(_BackgroundTaskComplete())
+      logging.getLogger().setLevel(restore_log_level)
+
+  def Run(self, func, *args, **kwargs):
+    """Run func, parse its output, and update the progress bar.
+
+    Args:
+      func: Function to execute in the background and whose output is to be
+        captured.
+      upadate_period: Optional argument to specify the period that output should
+        be read.
+    """
+    update_period = kwargs.pop('update_period',
+                               self._PROGRESS_BAR_UPDATE_INTERVAL)
+
+    # If we are not running in a terminal device, do not display the progress
+    # bar.
+    if not os.isatty(sys.stdout.fileno()):
+      func(*args, **kwargs)
+      return
+
+    with osutils.TempDir() as tempdir:
+      self._stdout_path = os.path.join(tempdir, 'stdout')
+      self._stderr_path = os.path.join(tempdir, 'stderr')
+      osutils.Touch(self._stdout_path)
+      osutils.Touch(self._stderr_path)
+      with parallel.BackgroundTaskRunner(
+          self.CaptureOutputInBackground, func, *args, **kwargs) as queue:
+        queue.put([])
+        self.OpenStdoutStderr()
+        while True:
+          self.ParseOutput()
+          if self.WaitUntilComplete(update_period):
+            break
+      # Before we exit, parse the output again to update progress bar.
+      self.ParseOutput()
+      # Final sanity check to update the progress bar to 100% if it was used by
+      # ParseOutput
+      self._Cleanup()
 
 
 # TODO(sjg): When !isatty(), keep stdout and stderr separate so they can be

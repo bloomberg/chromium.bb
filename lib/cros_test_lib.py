@@ -520,7 +520,7 @@ class _FdCapturer(object):
   the capturer is active.
   """
 
-  def __init__(self, source):
+  def __init__(self, source, output=None):
     """Construct the _FdCapturer object.
 
     Does not start capturing until Start() is called.
@@ -529,21 +529,49 @@ class _FdCapturer(object):
       source: A file object to capture. Typically sys.stdout or
         sys.stderr, but will work with anything that implements flush()
         and fileno().
+      output: A file name where the captured output is to be stored. If None,
+        then the output will be stored to a temporary file.
     """
     self._source = source
     self._captured = ''
     self._saved_fd = None
     self._tempfile = None
-    self._tempfile_reader = None
+    self._capturefile = None
+    self._capturefile_reader = None
+    self._capturefile_name = output
+
+  def _SafeCreateTempfile(self, tempfile_obj):
+    """Ensure that the tempfile is created safely.
+
+    (1) Stash away a reference to the tempfile.
+    (2) Unlink the file from the filesystem.
+
+    (2) ensures that if we crash, the file gets deleted. (1) ensures that while
+    we are running, we hold a reference to the file so the system does not close
+    the file.
+
+    Args:
+      tempfile_obj: A tempfile object.
+    """
+    self._tempfile = tempfile_obj
+    os.unlink(tempfile_obj.name)
 
   def Start(self):
     """Begin capturing output."""
-    self._tempfile = tempfile.NamedTemporaryFile(delete=False)
-    self._tempfile_reader = open(self._tempfile.name)
-    os.unlink(self._tempfile.name)
+    if self._capturefile_name is None:
+      tempfile_obj = tempfile.NamedTemporaryFile(delete=False)
+      self._capturefile = tempfile_obj.file
+      self._capturefile_name = tempfile_obj.name
+      self._capturefile_reader = open(self._capturefile_name)
+      self._SafeCreateTempfile(tempfile_obj)
+    else:
+      # Open file passed in for writing. Set buffering=1 for line level
+      # buffering.
+      self._capturefile = open(self._capturefile_name, 'w', buffering=1)
+      self._capturefile_reader = open(self._capturefile_name)
     # Save the original fd so we can revert in Stop().
     self._saved_fd = os.dup(self._source.fileno())
-    os.dup2(self._tempfile.file.fileno(), self._source.fileno())
+    os.dup2(self._capturefile.fileno(), self._source.fileno())
 
   def Stop(self):
     """Stop capturing output."""
@@ -552,12 +580,14 @@ class _FdCapturer(object):
       os.dup2(self._saved_fd, self._source.fileno())
       os.close(self._saved_fd)
       self._saved_fd = None
-    if self._tempfile_reader is not None:
-      self._tempfile_reader.close()
-      self._tempfile_reader = None
-    if self._tempfile is not None:
-      self._tempfile.close()
-      self._tempfile = None
+    # If capturefile and capturefile_reader exist, close them as they were
+    # opened in self.Start().
+    if self._capturefile_reader is not None:
+      self._capturefile_reader.close()
+      self._capturefile_reader = None
+    if self._capturefile is not None:
+      self._capturefile.close()
+      self._capturefile = None
 
   def GetCaptured(self):
     """Return all output captured up to this point.
@@ -565,8 +595,8 @@ class _FdCapturer(object):
     Can be used while capturing or after Stop() has been called.
     """
     self._source.flush()
-    if self._tempfile_reader is not None:
-      self._captured += self._tempfile_reader.read()
+    if self._capturefile_reader is not None:
+      self._captured += self._capturefile_reader.read()
     return self._captured
 
   def ClearCaptured(self):
@@ -575,6 +605,7 @@ class _FdCapturer(object):
     self._captured = ''
 
 
+# TODO(ralphnathan) See brbug.com/816 and move class and friends somewhere else.
 class OutputCapturer(object):
   """Class for capturing test stdout/stderr output.
 
@@ -591,6 +622,11 @@ class OutputCapturer(object):
 
   # Some Assert methods are only valid if capturing was used in test.
   self.AssertOutputContainsError() # Or other related methods
+
+  # OutputCapturer can also be used to capture output to specified files.
+  with self.OutputCapturer(stdout_path='/tmp/stdout.txt') as output:
+    # Do stuff.
+    # stdout will be captured to /tmp/stdout.txt.
   """
 
   # These work with error output from operation module.
@@ -603,9 +639,18 @@ class OutputCapturer(object):
 
   __slots__ = ['_stdout_capturer', '_stderr_capturer']
 
-  def __init__(self):
-    self._stdout_capturer = _FdCapturer(sys.stdout)
-    self._stderr_capturer = _FdCapturer(sys.stderr)
+  def __init__(self, stdout_path=None, stderr_path=None):
+    """Initalize OutputCapturer with capture files.
+
+    If OutputCapturer is initialized with filenames to capture stdout and stderr
+    to, then those files are used. Otherwise, temporary files are created.
+
+    Args:
+      stdout_path: File to capture stdout to. If None, a temporary file is used.
+      stderr_path: File to capture stderr to. If None, a temporary file is used.
+    """
+    self._stdout_capturer = _FdCapturer(sys.stdout, output=stdout_path)
+    self._stderr_capturer = _FdCapturer(sys.stderr, output=stderr_path)
 
   def __enter__(self):
     # This method is called with entering 'with' block.
@@ -834,9 +879,9 @@ class OutputTestCase(TestCase):
     TestCase.__init__(self, *args, **kwargs)
     self._output_capturer = None
 
-  def OutputCapturer(self):
+  def OutputCapturer(self, *args, **kwargs):
     """Create and return OutputCapturer object."""
-    self._output_capturer = OutputCapturer()
+    self._output_capturer = OutputCapturer(*args, **kwargs)
     return self._output_capturer
 
   def _GetOutputCapt(self):

@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import mock
+import os
 import sys
 import time
 import unittest
@@ -14,6 +15,7 @@ import unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
+from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import timeout_util
 
@@ -198,7 +200,8 @@ class TestCaseTest(unittest.TestCase):
     self.assertRaises(timeout_util.TimeoutError, test.testSleeping)
 
 
-class OutputTestCaseTest(cros_test_lib.OutputTestCase):
+class OutputTestCaseTest(cros_test_lib.OutputTestCase,
+                         cros_test_lib.TempDirTestCase):
   """Tests OutputTestCase functionality."""
 
   def testStdoutAndStderr(self):
@@ -236,3 +239,18 @@ class OutputTestCaseTest(cros_test_lib.OutputTestCase):
                                 mute_output=False)
     self.AssertOutputContainsLine('foo')
     self.AssertOutputContainsLine('bar', check_stdout=False, check_stderr=True)
+
+  def testCapturingStdoutAndStderrToFile(self):
+    """Check that OutputCapturer captures to a named file."""
+    stdout_path = os.path.join(self.tempdir, 'stdout')
+    stderr_path = os.path.join(self.tempdir, 'stderr')
+    with self.OutputCapturer(stdout_path=stdout_path, stderr_path=stderr_path):
+      print('foo')
+      print('bar', file=sys.stderr)
+
+    # Check that output can be read by OutputCapturer.
+    self.AssertOutputContainsLine('foo')
+    self.AssertOutputContainsLine('bar', check_stdout=False, check_stderr=True)
+    # Verify that output is actually written to the correct files.
+    self.assertEqual('foo\n', osutils.ReadFile(stdout_path))
+    self.assertEqual('bar\n', osutils.ReadFile(stderr_path))
