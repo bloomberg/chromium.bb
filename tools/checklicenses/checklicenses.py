@@ -210,6 +210,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/icu': [  # http://crbug.com/98301
         'UNKNOWN',
     ],
+    'third_party/jsoncpp/source': [
+        # https://github.com/open-source-parsers/jsoncpp/issues/234
+        'UNKNOWN',
+    ],
     'third_party/lcov': [  # http://crbug.com/98304
         'UNKNOWN',
     ],

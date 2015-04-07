@@ -239,11 +239,8 @@ deps = {
   'src/third_party/openmax_dl':
     Var('chromium_git') + '/external/webrtc/deps/third_party/openmax.git' + '@' +  Var('openmax_dl_revision'),
 
-  'src/third_party/jsoncpp/source/include':
-    Var('chromium_git') + '/external/jsoncpp/jsoncpp/include.git' + '@' + 'b0dd48e02b6e6248328db78a65b5c601f150c349',
-
-  'src/third_party/jsoncpp/source/src/lib_json':
-    Var('chromium_git') + '/external/jsoncpp/jsoncpp/src/lib_json.git' + '@' + 'a8caa51ba2f80971a45880425bf2ae864a786784',
+  'src/third_party/jsoncpp/source':
+    Var('chromium_git') + '/external/jsoncpp/jsoncpp.git' + '@' + 'ab1e40f3bce061ea6f9bdc60351d6cde2a4f872b', # from svn 248
 
   'src/third_party/libyuv':
     Var('chromium_git') + '/external/libyuv.git' + '@' + 'd204db647e591ccf0e2589236ecea90330d65a66', # from svn revision 1171
