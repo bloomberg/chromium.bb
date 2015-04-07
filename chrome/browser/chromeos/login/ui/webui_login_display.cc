@@ -96,8 +96,7 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
   // If this call is made after new user signs in but login screen is still
   // around that would trigger a sign in extension refresh.
   if (is_enabled && (!user_manager::UserManager::Get()->IsUserLoggedIn() ||
-                     ScreenLocker::default_screen_locker()) &&
-      !StartupUtils::IsWebviewSigninEnabled()) {
+                     ScreenLocker::default_screen_locker())) {
     ClearAndEnablePassword();
   }
 
