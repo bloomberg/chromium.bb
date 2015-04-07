@@ -105,8 +105,8 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
     tryCatch.SetVerbose(reportExceptions);
 
     v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(m_thisObject.v8Value());
-    v8::Local<v8::Value> value = thisObject->Get(v8String(m_scriptState->isolate(), m_name));
-    if (tryCatch.HasCaught()) {
+    v8::Local<v8::Value> value;
+    if (!thisObject->Get(m_scriptState->context(), v8String(m_scriptState->isolate(), m_name)).ToLocal(&value)) {
         hadException = true;
         return ScriptValue();
     }

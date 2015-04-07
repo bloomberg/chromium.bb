@@ -240,13 +240,14 @@ static void constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>& inf
     // changes to a DOM constructor's toString's toString will cause the
     // toString of the DOM constructor itself to change. This is extremely
     // obscure and unlikely to be a problem.
-    v8::Handle<v8::Value> value = info.Callee()->Get(v8AtomicString(info.GetIsolate(), "toString"));
-    if (!value->IsFunction()) {
-        v8SetReturnValue(info, v8::String::Empty(info.GetIsolate()));
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Local<v8::Value> value;
+    if (!info.Callee()->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "toString")).ToLocal(&value) || !value->IsFunction()) {
+        v8SetReturnValue(info, v8::String::Empty(isolate));
         return;
     }
     v8::Local<v8::Value> result;
-    if (V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), info.This(), 0, 0, info.GetIsolate()).ToLocal(&result))
+    if (V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), info.This(), 0, 0, isolate).ToLocal(&result))
         v8SetReturnValue(info, result);
 }
 

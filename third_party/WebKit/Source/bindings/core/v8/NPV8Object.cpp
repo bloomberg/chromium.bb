@@ -257,8 +257,8 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
     ExceptionCatcher exceptionCatcher;
 
     v8::Local<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NpObject->v8Object);
-    v8::Local<v8::Value> functionObject = v8Object->Get(v8AtomicString(isolate, identifier->value.string));
-    if (functionObject.IsEmpty() || functionObject->IsNull()) {
+    v8::Local<v8::Value> functionObject;
+    if (!v8Object->Get(scriptState->context(), v8AtomicString(scriptState->isolate(), identifier->value.string)).ToLocal(&functionObject) || functionObject->IsNull()) {
         NULL_TO_NPVARIANT(*result);
         return false;
     }
@@ -397,9 +397,8 @@ bool _NPN_GetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, NP
         ExceptionCatcher exceptionCatcher;
 
         v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
-        v8::Local<v8::Value> v8result = obj->Get(npIdentifierToV8Identifier(isolate, propertyName));
-
-        if (v8result.IsEmpty())
+        v8::Local<v8::Value> v8result;
+        if (!obj->Get(scriptState->context(), npIdentifierToV8Identifier(scriptState->isolate(), propertyName)).ToLocal(&v8result))
             return false;
 
         convertV8ObjectToNPVariant(isolate, v8result, npObject, result);
@@ -498,7 +497,9 @@ bool _NPN_HasMethod(NPP npp, NPObject* npObject, NPIdentifier methodName)
         ExceptionCatcher exceptionCatcher;
 
         v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
-        v8::Local<v8::Value> prop = obj->Get(npIdentifierToV8Identifier(isolate, methodName));
+        v8::Local<v8::Value> prop;
+        if (!obj->Get(scriptState->context(), npIdentifierToV8Identifier(scriptState->isolate(), methodName)).ToLocal(&prop))
+            return false;
         return prop->IsFunction();
     }
 
@@ -533,14 +534,13 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
         return false;
 
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
-        v8::Isolate* isolate = v8::Isolate::GetCurrent();
-        ScriptState* scriptState = mainWorldScriptState(isolate, npp, npObject);
+        ScriptState* scriptState = mainWorldScriptState(v8::Isolate::GetCurrent(), npp, npObject);
         if (!scriptState)
             return false;
         ScriptState::Scope scope(scriptState);
         ExceptionCatcher exceptionCatcher;
 
-        v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(isolate, object->v8Object);
+        v8::Local<v8::Object> obj = v8::Local<v8::Object>::New(scriptState->isolate(), object->v8Object);
 
         // FIXME: http://b/issue?id=1210340: Use a v8::Object::Keys() method when it exists, instead of evaluating javascript.
 
@@ -554,15 +554,15 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
             "  }"
             "  return props;"
             "});";
-        v8::Local<v8::String> source = v8AtomicString(isolate, enumeratorCode);
+        v8::Local<v8::String> source = v8AtomicString(scriptState->isolate(), enumeratorCode);
         v8::Local<v8::Value> result;
-        if (!V8ScriptRunner::compileAndRunInternalScript(source, isolate).ToLocal(&result))
+        if (!V8ScriptRunner::compileAndRunInternalScript(source, scriptState->isolate()).ToLocal(&result))
             return false;
         ASSERT(result->IsFunction());
         v8::Local<v8::Function> enumerator = v8::Local<v8::Function>::Cast(result);
         v8::Local<v8::Value> argv[] = { obj };
         v8::Local<v8::Value> propsObj;
-        if (!V8ScriptRunner::callInternalFunction(enumerator, v8::Local<v8::Object>::Cast(result), WTF_ARRAY_LENGTH(argv), argv, isolate).ToLocal(&propsObj))
+        if (!V8ScriptRunner::callInternalFunction(enumerator, v8::Local<v8::Object>::Cast(result), WTF_ARRAY_LENGTH(argv), argv, scriptState->isolate()).ToLocal(&propsObj))
             return false;
 
         // Convert the results into an array of NPIdentifiers.
@@ -570,7 +570,9 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
         *count = props->Length();
         *identifier = static_cast<NPIdentifier*>(calloc(*count, sizeof(NPIdentifier)));
         for (uint32_t i = 0; i < *count; ++i) {
-            v8::Local<v8::Value> name = props->Get(v8::Integer::New(isolate, i));
+            v8::Local<v8::Value> name;
+            if (!props->Get(scriptState->context(), v8::Integer::New(scriptState->isolate(), i)).ToLocal(&name))
+                return false;
             (*identifier)[i] = getStringIdentifier(v8::Local<v8::String>::Cast(name));
         }
         return true;
@@ -587,17 +589,15 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
     if (!npObject)
         return false;
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
-        ScriptState* scriptState = mainWorldScriptState(isolate, npp, npObject);
+        ScriptState* scriptState = mainWorldScriptState(v8::Isolate::GetCurrent(), npp, npObject);
         if (!scriptState)
             return false;
         ScriptState::Scope scope(scriptState);
         ExceptionCatcher exceptionCatcher;
 
         // Lookup the constructor function.
-        v8::Local<v8::Object> ctorObj = v8::Local<v8::Object>::New(isolate, object->v8Object);
+        v8::Local<v8::Object> ctorObj = v8::Local<v8::Object>::New(scriptState->isolate(), object->v8Object);
         if (!ctorObj->IsFunction())
             return false;
 
@@ -607,14 +607,14 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
         if (!ctor->IsNull()) {
             LocalFrame* frame = object->rootObject->frame();
             ASSERT(frame);
-            OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, isolate);
-            resultObject = V8ObjectConstructor::newInstanceInDocument(isolate, ctor, argumentCount, argv.get(), frame ? frame->document() : 0);
+            OwnPtr<v8::Local<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, scriptState->isolate());
+            resultObject = V8ObjectConstructor::newInstanceInDocument(scriptState->isolate(), ctor, argumentCount, argv.get(), frame ? frame->document() : 0);
         }
 
         if (resultObject.IsEmpty())
             return false;
 
-        convertV8ObjectToNPVariant(isolate, resultObject, npObject, result);
+        convertV8ObjectToNPVariant(scriptState->isolate(), resultObject, npObject, result);
         return true;
     }
 

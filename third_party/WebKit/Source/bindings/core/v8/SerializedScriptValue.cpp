@@ -180,7 +180,9 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
 
     // Validate the passed array of transferrables.
     for (unsigned i = 0; i < length; ++i) {
-        v8::Local<v8::Value> transferrable = transferrables->Get(i);
+        v8::Local<v8::Value> transferrable;
+        if (!transferrables->Get(isolate->GetCurrentContext(), i).ToLocal(&transferrable))
+            return false;
         // Validation of non-null objects, per HTML5 spec 10.3.3.
         if (isUndefinedOrNull(transferrable)) {
             exceptionState.throwTypeError("Value at index " + String::number(i) + " is an untransferable " + (transferrable->IsUndefined() ? "'undefined'" : "'null'") + " value.");

@@ -36,7 +36,10 @@ namespace blink {
 static void domExceptionStackGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ASSERT(info.Data()->IsObject());
-    v8SetReturnValue(info, info.Data()->ToObject(info.GetIsolate())->Get(v8AtomicString(info.GetIsolate(), "stack")));
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Local<v8::Value> value;
+    if (info.Data().As<v8::Object>()->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "stack")).ToLocal(&value))
+        v8SetReturnValue(info, value);
 }
 
 static void domExceptionStackSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)

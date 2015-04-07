@@ -60,9 +60,9 @@ enum V8ContextEmbedderDataField {
 
 class CORE_EXPORT V8PerContextData final {
 public:
-    static PassOwnPtr<V8PerContextData> create(v8::Handle<v8::Context>);
+    static PassOwnPtr<V8PerContextData> create(v8::Local<v8::Context>);
 
-    static V8PerContextData* from(v8::Handle<v8::Context>);
+    static V8PerContextData* from(v8::Local<v8::Context>);
 
     ~V8PerContextData();
 
@@ -96,7 +96,7 @@ public:
     void setCompiledPrivateScript(String, v8::Handle<v8::Value>);
 
 private:
-    V8PerContextData(v8::Handle<v8::Context>);
+    V8PerContextData(v8::Local<v8::Context>);
 
     v8::Local<v8::Object> createWrapperFromCacheSlowCase(const WrapperTypeInfo*);
     v8::Local<v8::Function> constructorForTypeSlowCase(const WrapperTypeInfo*);

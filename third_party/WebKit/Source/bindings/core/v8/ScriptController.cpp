@@ -587,8 +587,12 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const WillBeHea
     }
 
     if (results) {
-        for (size_t i = 0; i < resultArray->Length(); ++i)
-            results->append(resultArray->Get(i));
+        for (size_t i = 0; i < resultArray->Length(); ++i) {
+            v8::Local<v8::Value> value;
+            if (!resultArray->Get(scriptState->context(), i).ToLocal(&value))
+                return;
+            results->append(value);
+        }
     }
 }
 

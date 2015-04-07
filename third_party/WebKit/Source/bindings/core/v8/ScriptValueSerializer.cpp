@@ -496,11 +496,9 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::se
 {
     while (m_index < m_propertyNames->Length()) {
         if (!m_nameDone) {
-            v8::Local<v8::Value> propertyName = m_propertyNames->Get(m_index);
-            if (StateBase* newState = serializer.checkException(this))
-                return newState;
-            if (propertyName.IsEmpty())
-                return serializer.handleError(InputError, "Empty property names cannot be cloned.", this);
+            v8::Local<v8::Value> propertyName;
+            if (!m_propertyNames->Get(serializer.context(), m_index).ToLocal(&propertyName))
+                return serializer.handleError(JSException, "Failed to get a property while cloning an object.", this);
             bool hasStringProperty = propertyName->IsString() && v8CallBoolean(composite()->HasRealNamedProperty(serializer.context(), propertyName.As<v8::String>()));
             if (StateBase* newState = serializer.checkException(this))
                 return newState;
@@ -520,9 +518,9 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::se
             if (StateBase* newState = serializer.doSerialize(m_propertyName, this))
                 return newState;
         }
-        v8::Local<v8::Value> value = composite()->Get(m_propertyName);
-        if (StateBase* newState = serializer.checkException(this))
-            return newState;
+        v8::Local<v8::Value> value;
+        if (!composite()->Get(serializer.context(), m_propertyName).ToLocal(&value))
+            return serializer.handleError(JSException, "Failed to get a property while cloning an object.", this);
         m_nameDone = false;
         m_propertyName.Clear();
         ++m_index;
@@ -553,7 +551,9 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::ObjectState::objectDone
 ScriptValueSerializer::StateBase* ScriptValueSerializer::DenseArrayState::advance(ScriptValueSerializer& serializer)
 {
     while (m_arrayIndex < m_arrayLength) {
-        v8::Local<v8::Value> value = composite().As<v8::Array>()->Get(m_arrayIndex);
+        v8::Local<v8::Value> value;
+        if (!composite().As<v8::Array>()->Get(serializer.context(), m_arrayIndex).ToLocal(&value))
+            return serializer.handleError(JSException, "Failed to get an element while cloning an array.", this);
         m_arrayIndex++;
         if (StateBase* newState = serializer.checkException(this))
             return newState;
