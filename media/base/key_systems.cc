@@ -187,7 +187,7 @@ static bool IsPotentiallySupportedKeySystem(const std::string& key_system) {
 
 class KeySystemsImpl : public KeySystems {
  public:
-  static KeySystemsImpl& GetInstance();
+  static KeySystemsImpl* GetInstance();
 
   void UpdateIfNeeded();
 
@@ -310,9 +310,9 @@ class KeySystemsImpl : public KeySystems {
 static base::LazyInstance<KeySystemsImpl> g_key_systems =
     LAZY_INSTANCE_INITIALIZER;
 
-KeySystemsImpl& KeySystemsImpl::GetInstance() {
-  KeySystemsImpl& key_systems = g_key_systems.Get();
-  key_systems.UpdateIfNeeded();
+KeySystemsImpl* KeySystemsImpl::GetInstance() {
+  KeySystemsImpl* key_systems = g_key_systems.Pointer();
+  key_systems->UpdateIfNeeded();
   return key_systems;
 }
 
@@ -906,7 +906,7 @@ EmeConfigRule KeySystemsImpl::GetDistinctiveIdentifierConfigRule(
   return EmeConfigRule::IDENTIFIER_REQUIRED;
 }
 
-KeySystems& KeySystems::GetInstance() {
+KeySystems* KeySystems::GetInstance() {
   return KeySystemsImpl::GetInstance();
 }
 
@@ -932,11 +932,12 @@ std::string GetPrefixedKeySystemName(const std::string& key_system) {
 }
 
 bool PrefixedIsSupportedConcreteKeySystem(const std::string& key_system) {
-  return KeySystemsImpl::GetInstance().IsConcreteSupportedKeySystem(key_system);
+  return KeySystemsImpl::GetInstance()->IsConcreteSupportedKeySystem(
+      key_system);
 }
 
 bool IsSupportedKeySystem(const std::string& key_system) {
-  if (!KeySystemsImpl::GetInstance().IsSupportedKeySystem(key_system))
+  if (!KeySystemsImpl::GetInstance()->IsSupportedKeySystem(key_system))
     return false;
 
   // TODO(ddorwin): Move this to where we add key systems when prefixed EME is
@@ -953,8 +954,8 @@ bool IsSupportedKeySystem(const std::string& key_system) {
 
 bool IsSupportedKeySystemWithInitDataType(const std::string& key_system,
                                           EmeInitDataType init_data_type) {
-  return KeySystemsImpl::GetInstance().IsSupportedInitDataType(key_system,
-                                                               init_data_type);
+  return KeySystemsImpl::GetInstance()->IsSupportedInitDataType(key_system,
+                                                                init_data_type);
 }
 
 bool PrefixedIsSupportedKeySystemWithMediaMimeType(
@@ -962,21 +963,21 @@ bool PrefixedIsSupportedKeySystemWithMediaMimeType(
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
   return KeySystemsImpl::GetInstance()
-      .PrefixedIsSupportedKeySystemWithMediaMimeType(mime_type, codecs,
-                                                     key_system);
+      ->PrefixedIsSupportedKeySystemWithMediaMimeType(mime_type, codecs,
+                                                      key_system);
 }
 
 std::string GetKeySystemNameForUMA(const std::string& key_system) {
-  return KeySystemsImpl::GetInstance().GetKeySystemNameForUMA(key_system);
+  return KeySystemsImpl::GetInstance()->GetKeySystemNameForUMA(key_system);
 }
 
 bool CanUseAesDecryptor(const std::string& concrete_key_system) {
-  return KeySystemsImpl::GetInstance().UseAesDecryptor(concrete_key_system);
+  return KeySystemsImpl::GetInstance()->UseAesDecryptor(concrete_key_system);
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
 std::string GetPepperType(const std::string& concrete_key_system) {
-  return KeySystemsImpl::GetInstance().GetPepperType(concrete_key_system);
+  return KeySystemsImpl::GetInstance()->GetPepperType(concrete_key_system);
 }
 #endif
 
@@ -987,14 +988,14 @@ std::string GetPepperType(const std::string& concrete_key_system) {
 // "MEDIA_EXPORT" here again so that they are visible to tests.
 
 MEDIA_EXPORT void AddContainerMask(const std::string& container, uint32 mask) {
-  KeySystemsImpl::GetInstance().AddContainerMask(container, mask);
+  KeySystemsImpl::GetInstance()->AddContainerMask(container, mask);
 }
 
 MEDIA_EXPORT void AddCodecMask(
     EmeMediaType media_type,
     const std::string& codec,
     uint32 mask) {
-  KeySystemsImpl::GetInstance().AddCodecMask(media_type, codec, mask);
+  KeySystemsImpl::GetInstance()->AddCodecMask(media_type, codec, mask);
 }
 
 }  // namespace media

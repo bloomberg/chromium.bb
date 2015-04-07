@@ -24,7 +24,7 @@ namespace media {
 // |key_system| to every method. http://crbug.com/457438
 class MEDIA_EXPORT KeySystems {
  public:
-  static KeySystems& GetInstance();
+  static KeySystems* GetInstance();
 
   // Returns whether |key_system| is a supported key system.
   virtual bool IsSupportedKeySystem(const std::string& key_system) const = 0;

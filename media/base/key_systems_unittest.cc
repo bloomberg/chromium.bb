@@ -77,7 +77,7 @@ static bool IsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
-  return KeySystems::GetInstance().IsSupportedCodecCombination(
+  return KeySystems::GetInstance()->IsSupportedCodecCombination(
       key_system, EmeMediaType::VIDEO, mime_type, codecs);
 }
 
@@ -85,7 +85,7 @@ static bool IsSupportedKeySystemWithAudioMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
-  return KeySystems::GetInstance().IsSupportedCodecCombination(
+  return KeySystems::GetInstance()->IsSupportedCodecCombination(
       key_system, EmeMediaType::AUDIO, mime_type, codecs);
 }
 
