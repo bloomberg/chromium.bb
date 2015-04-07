@@ -822,7 +822,9 @@ void removeHiddenValueFromArray(v8::Isolate* isolate, v8::Handle<v8::Object> obj
         return;
     v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(arrayValue);
     for (int i = array->Length() - 1; i >= 0; --i) {
-        v8::Local<v8::Value> item = array->Get(v8::Integer::New(isolate, i));
+        v8::Local<v8::Value> item;
+        if (!array->Get(isolate->GetCurrentContext(), i).ToLocal(&item))
+            return;
         if (item->StrictEquals(value)) {
             array->Delete(isolate->GetCurrentContext(), i);
             return;
@@ -869,20 +871,23 @@ JSONValuePtr NativeValueTraits<JSONValuePtr>::nativeValue(v8::Isolate* isolate, 
         return nullptr;
     maxDepth--;
 
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     if (value->IsNull() || value->IsUndefined())
         return JSONValue::null();
     if (value->IsBoolean())
-        return JSONBasicValue::create(value->BooleanValue());
+        return JSONBasicValue::create(value.As<v8::Boolean>()->Value());
     if (value->IsNumber())
-        return JSONBasicValue::create(value->NumberValue());
+        return JSONBasicValue::create(value.As<v8::Number>()->Value());
     if (value->IsString())
         return JSONString::create(toCoreString(value.As<v8::String>()));
     if (value->IsArray()) {
-        v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(value);
+        v8::Local<v8::Array> array = value.As<v8::Array>();
         RefPtr<JSONArray> inspectorArray = JSONArray::create();
         uint32_t length = array->Length();
         for (uint32_t i = 0; i < length; i++) {
-            v8::Local<v8::Value> value = array->Get(v8::Int32::New(isolate, i));
+            v8::Local<v8::Value> value;
+            if (!array->Get(context, i).ToLocal(&value))
+                return nullptr;
             RefPtr<JSONValue> element = nativeValue(isolate, value, exceptionState, maxDepth);
             if (!element)
                 return nullptr;
@@ -891,7 +896,6 @@ JSONValuePtr NativeValueTraits<JSONValuePtr>::nativeValue(v8::Isolate* isolate, 
         return inspectorArray;
     }
     if (value->IsObject()) {
-        v8::Local<v8::Context> context = isolate->GetCurrentContext();
         RefPtr<JSONObject> jsonObject = JSONObject::create();
         v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
         v8::Local<v8::Array> propertyNames;
@@ -899,7 +903,9 @@ JSONValuePtr NativeValueTraits<JSONValuePtr>::nativeValue(v8::Isolate* isolate, 
             return nullptr;
         uint32_t length = propertyNames->Length();
         for (uint32_t i = 0; i < length; i++) {
-            v8::Local<v8::Value> name = propertyNames->Get(v8::Int32::New(isolate, i));
+            v8::Local<v8::Value> name;
+            if (!propertyNames->Get(context, i).ToLocal(&name))
+                return nullptr;
             // FIXME(yurys): v8::Object should support GetOwnPropertyNames
             if (name->IsString() && !v8CallBoolean(object->HasRealNamedProperty(context, v8::Local<v8::String>::Cast(name))))
                 continue;
