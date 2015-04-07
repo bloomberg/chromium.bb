@@ -305,13 +305,6 @@ void BubbleDelegateView::HandleVisibilityChanged(Widget* widget, bool visible) {
     else
       anchor_widget()->GetTopLevelWidget()->EnableInactiveRendering();
   }
-
-  if (widget == GetWidget() && visible) {
-    ui::AXViewState state;
-    GetAccessibleState(&state);
-    if (state.role == ui::AX_ROLE_ALERT_DIALOG)
-      NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
-  }
 }
 
 }  // namespace views

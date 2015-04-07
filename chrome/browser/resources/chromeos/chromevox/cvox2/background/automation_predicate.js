@@ -83,13 +83,3 @@ AutomationPredicate.linebreak = function(first, second) {
   return fl.top != sl.top ||
       (fl.top + fl.height != sl.top + sl.height);
 };
-
-/**
- * Leaf nodes that should be ignored.
- * @param {chrome.automation.AutomationNode} node
- * @return {boolean}
- */
-AutomationPredicate.shouldIgnoreLeaf = function(node) {
-  return AutomationPredicate.leaf(node) &&
-      node.role == chrome.automation.RoleType.client;
-};
