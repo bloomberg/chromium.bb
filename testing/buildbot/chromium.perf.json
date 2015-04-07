@@ -251,6 +251,20 @@
       }
     ]
   },
+  "Win 7 Nvidia GPU Perf": {
+    "scripts": [
+      {
+        "args": [
+          "angle_perftests",
+          "--test-launcher-print-test-stdio=always",
+          "--gtest_filter=DrawCallPerf*",
+          "--test-launcher-jobs=1"
+        ],
+        "name": "angle_perftests",
+        "script": "gtest_perf_test.py"
+      }
+    ]
+  },
   "Win 7 Perf (3)": {
     "scripts": [
       {
