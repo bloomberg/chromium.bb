@@ -4,7 +4,9 @@
        in the LICENSE file. -->
   <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.chromium.android_webview.test">
-    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="21" />
+    <!-- TODO(boliu): Change minSdkVersion to 19 when bots no longer try
+         to install webview apks on < K devices. crbug.com/474374 -->
+    <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="21" />
     <instrumentation android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="org.chromium.android_webview.shell"
         android:label="Tests for org.chromium.android_webview"/>
