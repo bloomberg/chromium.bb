@@ -50,8 +50,8 @@ class MacPort(base.Port):
 
     FALLBACK_PATHS = {}
     FALLBACK_PATHS['mavericks'] = ['mac']
+    FALLBACK_PATHS['retina'] = ['mac-retina'] + FALLBACK_PATHS['mavericks']
     FALLBACK_PATHS['mountainlion'] = ['mac-mountainlion'] + FALLBACK_PATHS['mavericks']
-    FALLBACK_PATHS['retina'] = ['mac-retina'] + FALLBACK_PATHS['mountainlion']
     FALLBACK_PATHS['lion'] = ['mac-lion'] + FALLBACK_PATHS['mountainlion']
     FALLBACK_PATHS['snowleopard'] = ['mac-snowleopard'] + FALLBACK_PATHS['lion']
 
