@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 
 namespace chromeos {
@@ -61,20 +61,22 @@ void FocusRingLayer::OnPaintLayer(const ui::PaintContext& context) {
   if (!root_window_ || focus_ring_.IsEmpty())
     return;
 
-  gfx::Canvas* canvas = context.canvas();
-  gfx::Rect bounds = focus_ring_ - layer_->bounds().OffsetFromOrigin();
+  ui::PaintRecorder recorder(context);
+
   SkPaint paint;
   paint.setColor(kShadowColor);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(2);
+
+  gfx::Rect bounds = focus_ring_ - layer_->bounds().OffsetFromOrigin();
   int r = kShadowRadius;
   for (int i = 0; i < r; i++) {
     // Fade out alpha quadratically.
     paint.setAlpha((kShadowAlpha * (r - i) * (r - i)) / (r * r));
     gfx::Rect outsetRect = bounds;
     outsetRect.Inset(-i, -i, -i, -i);
-    canvas->DrawRect(outsetRect, paint);
+    recorder.canvas()->DrawRect(outsetRect, paint);
   }
 }
 

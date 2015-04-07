@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 
 namespace chromeos {
@@ -117,18 +117,20 @@ void OverscanCalibrator::UpdateInsets(const gfx::Insets& insets) {
 }
 
 void OverscanCalibrator::OnPaintLayer(const ui::PaintContext& context) {
-  gfx::Canvas* canvas = context.canvas();
+  ui::PaintRecorder recorder(context);
   static const SkColor kTransparent = SkColorSetARGB(0, 0, 0, 0);
   gfx::Rect full_bounds = calibration_layer_->bounds();
   gfx::Rect inner_bounds = full_bounds;
   inner_bounds.Inset(insets_);
-  canvas->FillRect(full_bounds, SK_ColorBLACK);
-  canvas->FillRect(inner_bounds, kTransparent, SkXfermode::kClear_Mode);
+  recorder.canvas()->FillRect(full_bounds, SK_ColorBLACK);
+  recorder.canvas()->FillRect(inner_bounds, kTransparent,
+                              SkXfermode::kClear_Mode);
 
   gfx::Point center = inner_bounds.CenterPoint();
   int vertical_offset = inner_bounds.height() / 2 - kArrowGapWidth;
   int horizontal_offset = inner_bounds.width() / 2 - kArrowGapWidth;
 
+  gfx::Canvas* canvas = recorder.canvas();
   DrawTriangle(center.x(), center.y() + vertical_offset, 0, canvas);
   DrawTriangle(center.x(), center.y() - vertical_offset, 180, canvas);
   DrawTriangle(center.x() - horizontal_offset, center.y(), 90, canvas);
