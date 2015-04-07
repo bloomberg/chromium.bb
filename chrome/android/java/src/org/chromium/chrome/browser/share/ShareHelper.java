@@ -49,6 +49,7 @@ public class ShareHelper {
 
     private static final String PACKAGE_NAME_KEY = "last_shared_package_name";
     private static final String CLASS_NAME_KEY = "last_shared_class_name";
+    private static final String EXTRA_SHARE_SCREENSHOT_AS_STREAM = "share_screenshot_as_stream";
 
     /**
      * Directory name for screenshots.
@@ -252,7 +253,7 @@ public class ShareHelper {
         intent.putExtra(Intent.EXTRA_TEXT, url);
         if (screenshotUri != null) {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.putExtra(Intent.EXTRA_STREAM, screenshotUri);
+            intent.putExtra(EXTRA_SHARE_SCREENSHOT_AS_STREAM, screenshotUri);
         }
         return intent;
     }
