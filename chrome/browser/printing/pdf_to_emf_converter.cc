@@ -12,12 +12,14 @@
 #include "base/logging.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "printing/emf_win.h"
 #include "printing/pdf_render_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace printing {
 
@@ -61,8 +63,8 @@ class LazyEmf : public MetafilePlayer {
       : temp_dir_(temp_dir), file_(file.Pass()) {}
   virtual ~LazyEmf() { Close(); }
 
-  virtual bool SafePlayback(HDC hdc) const override;
-  virtual bool SaveTo(base::File* file) const override;
+  bool SafePlayback(HDC hdc) const override;
+  bool SaveTo(base::File* file) const override;
 
  private:
   void Close() const;
@@ -103,9 +105,9 @@ class PdfToEmfUtilityProcessHostClient
   void Stop();
 
   // UtilityProcessHostClient implementation.
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual void OnProcessLaunchFailed() override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  void OnProcessLaunchFailed() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   class GetPageCallbackData {
@@ -181,12 +183,12 @@ class PdfToEmfConverterImpl : public PdfToEmfConverter {
 
   virtual ~PdfToEmfConverterImpl();
 
-  virtual void Start(const scoped_refptr<base::RefCountedMemory>& data,
-                     const PdfRenderSettings& conversion_settings,
-                     const StartCallback& start_callback) override;
+  void Start(const scoped_refptr<base::RefCountedMemory>& data,
+             const PdfRenderSettings& conversion_settings,
+             const StartCallback& start_callback) override;
 
-  virtual void GetPage(int page_number,
-                       const GetPageCallback& get_page_callback) override;
+  void GetPage(int page_number,
+               const GetPageCallback& get_page_callback) override;
 
   // Helps to cancel callbacks if this object is destroyed.
   void RunCallback(const base::Closure& callback);
@@ -298,8 +300,8 @@ void PdfToEmfUtilityProcessHostClient::Start(
       content::UtilityProcessHost::Create(
           this, base::MessageLoop::current()->message_loop_proxy())
           ->AsWeakPtr();
-  if (!utility_process_host_)
-    return OnFailed();
+  utility_process_host_->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_EMF_CONVERTOR_NAME));
   // Should reply with OnProcessStarted().
   Send(new ChromeUtilityMsg_StartupPing);
 }

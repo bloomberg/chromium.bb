@@ -5,8 +5,10 @@
 #include "chrome/browser/local_discovery/wifi/credential_getter_win.h"
 
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace local_discovery {
 
@@ -33,6 +35,8 @@ void CredentialGetterWin::StartOnIOThread(const std::string& network_guid) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current());
+  host->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME));
   host->ElevatePrivileges();
   host->Send(new ChromeUtilityHostMsg_GetWiFiCredentials(network_guid));
 }

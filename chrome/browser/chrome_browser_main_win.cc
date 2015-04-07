@@ -108,12 +108,14 @@ int GetMinimumFontSize() {
 
 class TranslationDelegate : public installer::TranslationDelegate {
  public:
-  virtual base::string16 GetLocalizedString(int installer_string_id) override;
+  base::string16 GetLocalizedString(int installer_string_id) override;
 };
 
 void ExecuteFontCacheBuildTask(const base::FilePath& path) {
   base::WeakPtr<content::UtilityProcessHost> utility_process_host(
       content::UtilityProcessHost::Create(NULL, NULL)->AsWeakPtr());
+  utility_process_host->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_FONT_CACHE_BUILDER_NAME));
   utility_process_host->DisableSandbox();
   utility_process_host->Send(
       new ChromeUtilityHostMsg_BuildDirectWriteFontCache(path));
@@ -361,7 +363,8 @@ void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
   // The encoding we use for the info is "title|context|direction" where
   // direction is either env_vars::kRtlLocale or env_vars::kLtrLocale depending
   // on the current locale.
-  base::string16 dlg_strings(l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_TITLE));
+  base::string16 dlg_strings(
+      l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_TITLE));
   dlg_strings.push_back('|');
   base::string16 adjusted_string(
       l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_CONTENT));
@@ -458,7 +461,8 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
         // system-level Chrome instead.
         const base::string16 text =
             l10n_util::GetStringUTF16(IDS_MACHINE_LEVEL_INSTALL_CONFLICT);
-        const base::string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+        const base::string16 caption =
+            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
         const UINT flags = MB_OK | MB_ICONERROR | MB_TOPMOST;
         ui::MessageBox(NULL, text, caption, flags);
       }

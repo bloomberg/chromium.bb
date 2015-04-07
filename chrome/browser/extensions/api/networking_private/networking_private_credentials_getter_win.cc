@@ -10,9 +10,11 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::UtilityProcessHost;
@@ -98,9 +100,11 @@ void CredentialsGetterHostClient::StartProcessOnIOThread(
     const std::string& network_guid,
     const NetworkingPrivateCredentialsGetter::CredentialsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  callback_ = callback;
   UtilityProcessHost* host =
       UtilityProcessHost::Create(this, base::MessageLoopProxy::current());
-  callback_ = callback;
+  host->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME));
   host->ElevatePrivileges();
   host->Send(new ChromeUtilityHostMsg_GetWiFiCredentials(network_guid));
 }

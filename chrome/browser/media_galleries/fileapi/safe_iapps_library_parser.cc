@@ -7,9 +7,11 @@
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "ipc/ipc_platform_file.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::UtilityProcessHost;
@@ -66,6 +68,8 @@ void SafeIAppsLibraryParser::StartProcessOnIOThread() {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   utility_process_host_ =
       UtilityProcessHost::Create(this, message_loop_proxy.get())->AsWeakPtr();
+  utility_process_host_->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_MEDIA_LIBRARY_FILE_CHECKER_NAME));
   // Wait for the startup notification before sending the main IPC to the
   // utility process, so that we can dup the file handle.
   utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);

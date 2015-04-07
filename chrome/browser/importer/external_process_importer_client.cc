@@ -312,6 +312,8 @@ void ExternalProcessImporterClient::StartProcessOnIOThread(
   utility_process_host_ = UtilityProcessHost::Create(
       this, BrowserThread::GetMessageLoopProxyForThread(thread_id).get())
       ->AsWeakPtr();
+  utility_process_host_->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME));
   utility_process_host_->DisableSandbox();
 
 #if defined(OS_MACOSX)

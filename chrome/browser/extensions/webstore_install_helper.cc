@@ -11,10 +11,12 @@
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::UtilityProcessHost;
@@ -68,6 +70,8 @@ void WebstoreInstallHelper::StartWorkOnIOThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   utility_host_ = UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current().get())->AsWeakPtr();
+  utility_host_->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_JSON_PARSER_NAME));
   utility_host_->StartBatchMode();
 
   utility_host_->Send(new ChromeUtilityMsg_ParseJSON(manifest_));

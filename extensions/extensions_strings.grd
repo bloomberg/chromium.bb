@@ -472,6 +472,14 @@
           Can not unpack extension.  To safely unpack an extension, there must be a path to your profile directory that does not contain a symlink.  No such path exists for your profile.
         </message>
       </if>
+
+      <!-- Utility process names. Please keep alphabetized. -->
+      <message name="IDS_UTILITY_PROCESS_EXTENSION_UNPACKER_NAME" desc="The name of the utility process used for unpacking extensions.">
+        Extension Unpacker
+      </message>
+      <message name="IDS_UTILITY_PROCESS_MANIFEST_PARSER_NAME" desc="The name of the utility process used for parsing extension manifests.">
+        Extension Manifest Parser
+      </message>
     </messages>
   </release>
 </grit>

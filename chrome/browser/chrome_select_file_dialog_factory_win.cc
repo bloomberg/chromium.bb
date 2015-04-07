@@ -17,9 +17,11 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/win/metro.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/open_file_name_win.h"
 #include "ui/shell_dialogs/select_file_dialog_win.h"
 
@@ -65,9 +67,9 @@ class GetOpenFileNameClient : public content::UtilityProcessHostClient {
   const std::vector<base::FilePath>& filenames() const { return filenames_; }
 
   // UtilityProcessHostClient implementation
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual void OnProcessLaunchFailed() override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  void OnProcessLaunchFailed() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
   virtual ~GetOpenFileNameClient();
@@ -137,6 +139,8 @@ void DoInvokeGetOpenFileName(
   base::WeakPtr<content::UtilityProcessHost> utility_process_host(
       content::UtilityProcessHost::Create(client, current_task_runner)
       ->AsWeakPtr());
+  utility_process_host->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_FILE_DIALOG_NAME));
   utility_process_host->DisableSandbox();
   utility_process_host->Send(new ChromeUtilityMsg_GetOpenFileName(
       ofn->hwndOwner,
@@ -196,9 +200,9 @@ class GetSaveFileNameClient : public content::UtilityProcessHostClient {
   int one_based_filter_index() const { return one_based_filter_index_; }
 
   // UtilityProcessHostClient implementation
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual void OnProcessLaunchFailed() override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  void OnProcessLaunchFailed() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
   virtual ~GetSaveFileNameClient();
@@ -267,6 +271,8 @@ void DoInvokeGetSaveFileName(
   base::WeakPtr<content::UtilityProcessHost> utility_process_host(
       content::UtilityProcessHost::Create(client, current_task_runner)
       ->AsWeakPtr());
+  utility_process_host->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_FILE_DIALOG_NAME));
   utility_process_host->DisableSandbox();
   ChromeUtilityMsg_GetSaveFileName_Params params;
   params.owner = ofn->hwndOwner;

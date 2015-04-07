@@ -5,8 +5,10 @@
 #include "chrome/browser/media_galleries/fileapi/safe_itunes_pref_parser_win.h"
 
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::UtilityProcessHost;
@@ -40,6 +42,8 @@ void SafeITunesPrefParserWin::StartWorkOnIOThread() {
 
   UtilityProcessHost* host =
       UtilityProcessHost::Create(this, base::MessageLoopProxy::current());
+  host->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_MEDIA_LIBRARY_FILE_CHECKER_NAME));
   host->Send(new ChromeUtilityMsg_ParseITunesPrefXml(unsafe_xml_));
   parser_state_ = STARTED_PARSING_STATE;
 }

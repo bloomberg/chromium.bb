@@ -5,10 +5,12 @@
 #include "chrome/browser/local_discovery/service_discovery_host_client.h"
 
 #include "chrome/common/local_discovery/local_discovery_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "net/dns/mdns_client.h"
 #include "net/socket/socket_descriptor.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_POSIX)
 #include <netinet/in.h>
@@ -282,8 +284,8 @@ void ServiceDiscoveryHostClient::OnSocketsReady(const SocketInfoList& sockets) {
   DCHECK(!utility_host_);
   utility_host_ = UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current().get())->AsWeakPtr();
-  if (!utility_host_)
-    return;
+  utility_host_->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_SERVICE_DISCOVERY_HANDLER_NAME));
   utility_host_->EnableMDns();
   utility_host_->StartBatchMode();
   if (sockets.empty()) {
@@ -304,8 +306,8 @@ void ServiceDiscoveryHostClient::StartOnIOThread() {
   DCHECK(!utility_host_);
   utility_host_ = UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current().get())->AsWeakPtr();
-  if (!utility_host_)
-    return;
+  utility_host_->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_SERVICE_DISCOVERY_HANDLER_NAME));
   utility_host_->EnableMDns();
   utility_host_->StartBatchMode();
   // Windows does not enumerate networks here.

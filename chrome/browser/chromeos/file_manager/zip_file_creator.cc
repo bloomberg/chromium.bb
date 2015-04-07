@@ -9,8 +9,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::UtilityProcessHost;
@@ -91,6 +93,8 @@ void ZipFileCreator::StartProcessOnIOThread(base::File dest_file) {
   UtilityProcessHost* host = UtilityProcessHost::Create(
       this,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get());
+  host->SetName(
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_ZIP_FILE_CREATOR_NAME));
   host->SetExposedDir(src_dir_);
   host->Send(new ChromeUtilityMsg_CreateZipFile(src_dir_, src_relative_paths_,
                                                 dest_fd));

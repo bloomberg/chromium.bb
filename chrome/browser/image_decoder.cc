@@ -7,8 +7,10 @@
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::UtilityProcessHost;
@@ -127,6 +129,8 @@ void ImageDecoder::StartBatchMode() {
   utility_process_host_ =
       UtilityProcessHost::Create(this, base::MessageLoopProxy::current().get())
           ->AsWeakPtr();
+  utility_process_host_->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_IMAGE_DECODER_NAME));
   if (!utility_process_host_->StartBatchMode()) {
      utility_process_host_.reset();
      return;

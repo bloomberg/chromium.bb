@@ -11,8 +11,10 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 using content::UtilityProcessHost;
@@ -73,6 +75,8 @@ void ZipFileInstaller::StartWorkOnIOThread(const base::FilePath& temp_dir) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UtilityProcessHost* host =
       UtilityProcessHost::Create(this, base::MessageLoopProxy::current().get());
+  host->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_ZIP_FILE_INSTALLER_NAME));
   host->SetExposedDir(temp_dir);
   host->Send(new ChromeUtilityMsg_UnzipToDir(zip_path_, temp_dir));
 }

@@ -348,6 +348,8 @@ void SandboxedUnpacker::StartProcessOnIOThread(
     const base::FilePath& temp_crx_path) {
   UtilityProcessHost* host =
       UtilityProcessHost::Create(this, unpacker_io_task_runner_.get());
+  host->SetName(
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_EXTENSION_UNPACKER_NAME));
   // Grant the subprocess access to the entire subdir the extension file is
   // in, so that it can unpack to that dir.
   host->SetExposedDir(temp_crx_path.DirName());

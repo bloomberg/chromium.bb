@@ -25,9 +25,11 @@
 #include "chrome/browser/platform_util_internal.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
@@ -54,7 +56,7 @@ void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
       DWORD flags);
 
   static SHOpenFolderAndSelectItemsFuncPtr open_folder_and_select_itemsPtr =
-    NULL;
+      nullptr;
   static bool initialize_open_folder_proc = true;
   if (initialize_open_folder_proc) {
     initialize_open_folder_proc = false;
@@ -168,6 +170,8 @@ void OpenItemViaShellInUtilityProcess(const base::FilePath& full_path,
                                       OpenItemType type) {
   base::WeakPtr<content::UtilityProcessHost> utility_process_host(
       content::UtilityProcessHost::Create(NULL, NULL)->AsWeakPtr());
+  utility_process_host->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_FILE_DIALOG_NAME));
   utility_process_host->DisableSandbox();
   switch (type) {
     case OPEN_FILE:

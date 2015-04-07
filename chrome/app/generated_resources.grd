@@ -3941,9 +3941,74 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
       </if>
 
+      <message name="IDS_UTILITY_PROCESS_COMPONENT_PATCHER_NAME" desc="The name of the utility process used for patching components.">
+        Component Patcher
+      </message>
+      <message name="IDS_UTILITY_PROCESS_IMAGE_DECODER_NAME" desc="The name of the utility process used for decoding images.">
+        Image Decoder
+      </message>
+      <message name="IDS_UTILITY_PROCESS_JSON_PARSER_NAME" desc="The name of the utility process used for parsing JSON files.">
+        JSON Parser
+      </message>
       <message name="IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME" desc="The name of the utility process used for out-of-process V8 proxy resolution.">
         V8 Proxy Resolver
       </message>
+      <if expr="chromeos">
+        <message name="IDS_UTILITY_PROCESS_ZIP_FILE_CREATOR_NAME" desc="The name of the utility process used for creating zip files.">
+          Zip File Creator
+        </message>
+      </if>
+      <if expr="is_android">
+        <message name="IDS_UTILITY_PROCESS_SECCOMP_DETECTOR_NAME" desc="The name of the utility process used for Seccomp support detection.">
+          Seccomp Detector
+        </message>
+      </if>
+      <if expr="not is_android">
+        <message name="IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME" desc="The name of the utility process used for importing profiles.">
+          Profile Importer
+        </message>
+        <message name="IDS_UTILITY_PROCESS_SAFE_BROWSING_ZIP_FILE_ANALYZER_NAME" desc="The name of the utility process used for analyzing .zip files for Safe Browsing.">
+          Safe Browsing Zip File Analyzer
+        </message>
+      </if>
+      <if expr="is_win">
+        <message name="IDS_UTILITY_PROCESS_EMF_CONVERTOR_NAME" desc="The name of the utility process used for converting PDFs to EMFs.">
+          EMF Convertor
+        </message>
+        <message name="IDS_UTILITY_PROCESS_FILE_DIALOG_NAME" desc="The name of the utility process used for handling a file open/save dialog.">
+          File Open/Save Dialog
+        </message>
+        <message name="IDS_UTILITY_PROCESS_FONT_CACHE_BUILDER_NAME" desc="The name of the utility process used for building the DirectWrite font cache.">
+          DirectWrite Font Cache Builder
+        </message>
+        <message name="IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME" desc="The name of the utility process used for getting the WiFi credentials">
+          WiFi Credentials Getter
+        </message>
+      </if>
+      <if expr="enable_extensions">
+        <message name="IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME" desc="The name of the utility process used for writing ChromeOS system images.">
+          ChromeOS System Image Writer
+        </message>
+        <message name="IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME" desc="The name of the utility process used for checking media files.">
+          Media File Checker
+        </message>
+        <message name="IDS_UTILITY_PROCESS_MEDIA_LIBRARY_FILE_CHECKER_NAME" desc="The name of the utility process used for checking media library files.">
+          Media Library File Checker
+        </message>
+        <message name="IDS_UTILITY_PROCESS_ZIP_FILE_INSTALLER_NAME" desc="The name of the utility process used for unpacking zip files.">
+          Zip File Installer
+        </message>
+      </if>
+      <if expr="enable_print_preview">
+        <message name="IDS_UTILITY_PROCESS_PWG_RASTER_CONVERTOR_NAME" desc="The name of the utility process used for converting PDFs to the PWG Raster format.">
+          PWG Raster Convertor
+        </message>
+      </if>
+      <if expr="enable_service_discovery">
+        <message name="IDS_UTILITY_PROCESS_SERVICE_DISCOVERY_HANDLER_NAME" desc="The name of the utility process used for handling service discovery.">
+          Service Discovery Handler
+        </message>
+      </if>
 
       <if expr="not is_android">
         <!-- Performance Monitor page -->

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
@@ -17,6 +18,7 @@
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace component_updater {
 
@@ -54,6 +56,8 @@ void PatchHost::StartProcess(scoped_ptr<IPC::Message> message) {
   // UtilityProcessHost object.
   content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current().get());
+  host->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_COMPONENT_PATCHER_NAME));
   host->DisableSandbox();
   host->Send(message.release());
 }

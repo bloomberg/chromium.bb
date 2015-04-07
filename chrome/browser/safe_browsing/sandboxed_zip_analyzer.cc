@@ -12,12 +12,14 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/safe_browsing/zip_analyzer_results.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -115,6 +117,8 @@ void SandboxedZipAnalyzer::StartProcessOnIOThread() {
       this,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get())
       ->AsWeakPtr();
+  utility_process_host_->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_SAFE_BROWSING_ZIP_FILE_ANALYZER_NAME));
   utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
   // Wait for the startup notification before sending the main IPC to the
   // utility process, so that we can dup the file handle.

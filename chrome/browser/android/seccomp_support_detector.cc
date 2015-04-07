@@ -11,8 +11,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -73,6 +75,8 @@ void SeccompSupportDetector::DetectSeccomp() {
   content::UtilityProcessHost* utility_process_host =
       content::UtilityProcessHost::Create(
           this, base::MessageLoopProxy::current());
+  utility_process_host->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_SECCOMP_DETECTOR_NAME));
   utility_process_host->Send(new ChromeUtilityMsg_DetectSeccompSupport());
 }
 

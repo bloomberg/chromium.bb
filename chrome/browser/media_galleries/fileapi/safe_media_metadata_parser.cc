@@ -6,9 +6,11 @@
 
 #include "chrome/browser/extensions/blob_reader.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/utility_process_host.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -49,6 +51,8 @@ void SafeMediaMetadataParser::StartWorkOnIOThread(
 
   utility_process_host_ = content::UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current())->AsWeakPtr();
+  utility_process_host_->SetName(l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME));
 
   utility_process_host_->Send(
       new ChromeUtilityMsg_ParseMediaMetadata(mime_type_, blob_size_,

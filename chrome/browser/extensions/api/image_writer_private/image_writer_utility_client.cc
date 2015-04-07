@@ -7,7 +7,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_utility_client.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
 
@@ -90,6 +92,8 @@ void ImageWriterUtilityClient::StartHost() {
         base::MessageLoop::current()->message_loop_proxy();
     utility_process_host_ = content::UtilityProcessHost::Create(
                                 this, task_runner.get())->AsWeakPtr();
+    utility_process_host_->SetName(l10n_util::GetStringUTF16(
+        IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME));
 
 #if defined(OS_WIN)
     utility_process_host_->ElevatePrivileges();
