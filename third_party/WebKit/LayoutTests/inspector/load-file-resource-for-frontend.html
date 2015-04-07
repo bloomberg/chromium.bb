@@ -12,7 +12,7 @@ function test()
         var fullURL = urlPrefix + url;
         InspectorTest.addResult("Loading resource from " + url);
 
-        WebInspector.NetworkManager.loadResourceForFrontend(fullURL, null, callback);
+        WebInspector.ResourceLoader.load(fullURL, null, callback);
 
         function callback(statusCode, headers, content)
         {

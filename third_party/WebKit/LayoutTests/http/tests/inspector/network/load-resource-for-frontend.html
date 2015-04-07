@@ -14,9 +14,8 @@ function test()
 
     function testLoadForURL(url, headers, next)
     {
-        InspectorTest.recordNetwork();
         InspectorTest.addResult("Loading resource from " + url);
-        WebInspector.NetworkManager.loadResourceForFrontend(url, headers, callback);
+        WebInspector.ResourceLoader.load(url, headers, callback);
 
         function callback(statusCode, headers, content)
         {
