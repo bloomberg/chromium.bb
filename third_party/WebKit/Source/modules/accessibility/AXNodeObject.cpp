@@ -205,13 +205,13 @@ static bool isPresentationRoleInTable(AXObject* parent, Node* child)
     // cell(its role)-> tr(tr role)-> tfoot, tbody, thead(ignored role) -> table(table role).
     // If table has presentation role, it will be like
     // cell(group)-> tr(unknown) -> tfoot, tbody, thead(ignored) -> table(presentation).
-    if (isHTMLTableCellElement(child) && isHTMLTableRowElement(*parentNode))
+    if (child && isHTMLTableCellElement(*child) && isHTMLTableRowElement(*parentNode))
         return parent->hasInheritedPresentationalRole();
 
     if (isHTMLTableRowElement(child) && isHTMLTableSectionElement(*parentNode)) {
         // Because TableSections have ignored role, presentation should be checked with its parent node
         AXObject* tableObject = parent->parentObject();
-        Node* tableNode = tableObject->node();
+        Node* tableNode = tableObject ? tableObject->node() : 0;
         return isHTMLTableElement(tableNode) && tableObject->hasInheritedPresentationalRole();
     }
     return false;
@@ -230,7 +230,7 @@ static bool isRequiredOwnedElement(AXObject* parent, AccessibilityRole childRole
     if (childRole == MenuItemCheckBoxRole || childRole ==  MenuItemRole || childRole ==  MenuItemRadioRole)
         return isHTMLMenuElement(*parentNode);
 
-    if (isHTMLTableCellElement(childNode))
+    if (childNode && isHTMLTableCellElement(*childNode))
         return isHTMLTableRowElement(*parentNode);
     if (isHTMLTableRowElement(childNode))
         return isHTMLTableSectionElement(*parentNode);
