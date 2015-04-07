@@ -26,6 +26,7 @@
 #include "core/svg/SVGFilterElement.h"
 
 #include "core/XLinkNames.h"
+#include "core/frame/UseCounter.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/svg/SVGParserUtilities.h"
 
@@ -110,11 +111,14 @@ void SVGFilterElement::svgAttributeChanged(const QualifiedName& attrName)
 
     SVGElement::InvalidationGuard invalidationGuard(this);
 
-    if (attrName == SVGNames::xAttr
+    bool isXYWH = attrName == SVGNames::xAttr
         || attrName == SVGNames::yAttr
         || attrName == SVGNames::widthAttr
-        || attrName == SVGNames::heightAttr)
+        || attrName == SVGNames::heightAttr;
+    if (isXYWH)
         updateRelativeLengthsInformation();
+    else if (attrName == SVGNames::filterResAttr)
+        UseCounter::count(document(), UseCounter::SVGFilterRes);
 
     LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
     if (renderer)
