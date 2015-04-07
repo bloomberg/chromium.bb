@@ -27,10 +27,22 @@
           ],
         }],
         ['target_arch == "arm"', {
-          'sources': [ '<@(boringssl_linux_arm_sources)' ],
+          'conditions': [
+            ['OS == "linux" or OS == "android"', {
+              'sources': [ '<@(boringssl_linux_arm_sources)' ],
+            }, {
+              'defines': [ 'OPENSSL_NO_ASM' ],
+            }],
+          ],
         }],
         ['target_arch == "arm64"', {
-          'sources': [ '<@(boringssl_linux_aarch64_sources)' ],
+          'conditions': [
+            ['OS == "linux" or OS == "android"', {
+              'sources': [ '<@(boringssl_linux_aarch64_sources)' ],
+            }, {
+              'defines': [ 'OPENSSL_NO_ASM' ],
+            }],
+          ],
         }],
         ['target_arch == "ia32"', {
           'conditions': [

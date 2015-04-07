@@ -90,9 +90,9 @@ component("boringssl") {
     } else {
       defines += [ "OPENSSL_NO_ASM" ]
     }
-  } else if (current_cpu == "arm") {
+  } else if (current_cpu == "arm" && (is_linux || is_android)) {
     sources += gypi_values.boringssl_linux_arm_sources
-  } else if (current_cpu == "arm64") {
+  } else if (current_cpu == "arm64" && (is_linux || is_android)) {
     sources += gypi_values.boringssl_linux_aarch64_sources
   } else {
     defines += [ "OPENSSL_NO_ASM" ]
