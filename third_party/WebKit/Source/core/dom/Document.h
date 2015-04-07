@@ -129,6 +129,7 @@ class MediaQueryListListener;
 class MediaQueryMatcher;
 class NodeFilter;
 class NodeIterator;
+class NthIndexCache;
 class Page;
 class PlatformMouseEvent;
 class ProcessingInstruction;
@@ -1061,6 +1062,8 @@ public:
 
     OriginsUsingFeatures::Value& originsUsingFeaturesValue() { return m_originsUsingFeaturesValue; }
 
+    NthIndexCache* nthIndexCache() const { return m_nthIndexCache; }
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1080,6 +1083,7 @@ protected:
 
 private:
     friend class IgnoreDestructiveWriteCountIncrementer;
+    friend class NthIndexCache;
 
     bool isDocumentFragment() const = delete; // This will catch anyone doing an unnecessary check.
     bool isDocumentNode() const = delete; // This will catch anyone doing an unnecessary check.
@@ -1171,6 +1175,8 @@ private:
     static EventFactorySet& eventFactories();
 
     void updateElementOpacity(const AtomicString& cssSelector, double opacity);
+
+    void setNthIndexCache(NthIndexCache* nthIndexCache) { ASSERT(!m_nthIndexCache || !nthIndexCache); m_nthIndexCache = nthIndexCache; }
 
     DocumentLifecycle m_lifecycle;
 
@@ -1317,6 +1323,14 @@ private:
     WillBeHeapHashMap<String, RefPtrWillBeMember<HTMLCanvasElement>> m_cssCanvasElements;
 
     OwnPtr<SelectorQueryCache> m_selectorQueryCache;
+
+    // It is safe to keep a raw, untraced pointer to this stack-allocated
+    // cache object: it is set upon the cache object being allocated on
+    // the stack and cleared upon leaving its allocated scope. Hence it
+    // is acceptable not to trace it -- should a conservative GC occur,
+    // the cache object's references will be traced by a stack walk.
+    GC_PLUGIN_IGNORE("461878")
+    NthIndexCache* m_nthIndexCache = nullptr;
 
     bool m_useSecureKeyboardEntryWhenActive;
 

@@ -87,6 +87,7 @@
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"
+#include "core/dom/NthIndexCache.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptedAnimationController.h"
@@ -1768,6 +1769,8 @@ void Document::updateStyle(StyleRecalcChange change)
 
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
+
+    NthIndexCache nthIndexCache(*this);
 
     if (styleChangeType() >= SubtreeStyleChange)
         change = Force;

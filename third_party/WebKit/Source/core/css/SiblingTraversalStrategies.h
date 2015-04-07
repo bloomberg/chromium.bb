@@ -29,8 +29,10 @@
 #ifndef SiblingTraversalStrategies_h
 #define SiblingTraversalStrategies_h
 
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/NthIndexCache.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
@@ -79,6 +81,9 @@ inline bool DOMSiblingTraversalStrategy::isLastOfType(Element& element, const Qu
 
 inline int DOMSiblingTraversalStrategy::countElementsBefore(Element& element) const
 {
+    if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
+        return nthIndexCache->nthChildIndex(element) - 1;
+
     int count = 0;
     for (const Element* sibling = ElementTraversal::previousSibling(element); sibling; sibling = ElementTraversal::previousSibling(*sibling))
         count++;
@@ -96,6 +101,9 @@ inline int DOMSiblingTraversalStrategy::countElementsOfTypeBefore(Element& eleme
 
 inline int DOMSiblingTraversalStrategy::countElementsAfter(Element& element) const
 {
+    if (NthIndexCache* nthIndexCache = element.document().nthIndexCache())
+        return nthIndexCache->nthLastChildIndex(element) - 1;
+
     int count = 0;
     for (const Element* sibling = ElementTraversal::nextSibling(element); sibling; sibling = ElementTraversal::nextSibling(*sibling))
         ++count;

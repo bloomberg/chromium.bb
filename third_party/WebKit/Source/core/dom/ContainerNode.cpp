@@ -34,6 +34,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/NthIndexCache.h"
 #include "core/dom/SelectorQuery.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/StyleEngine.h"
@@ -1158,6 +1159,8 @@ PassRefPtrWillBeRawPtr<Element> ContainerNode::querySelector(const AtomicString&
     SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), exceptionState);
     if (!selectorQuery)
         return nullptr;
+
+    NthIndexCache nthIndexCache(document());
     return selectorQuery->queryFirst(*this);
 }
 
@@ -1172,6 +1175,7 @@ PassRefPtrWillBeRawPtr<StaticElementList> ContainerNode::querySelectorAll(const 
     if (!selectorQuery)
         return nullptr;
 
+    NthIndexCache nthIndexCache(document());
     return selectorQuery->queryAll(*this);
 }
 
