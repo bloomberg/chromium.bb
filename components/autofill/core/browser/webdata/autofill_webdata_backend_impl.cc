@@ -336,12 +336,12 @@ scoped_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerCreditCards(
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::UnmaskServerCreditCard(
-    const std::string& id,
+    const CreditCard& card,
     const base::string16& full_number,
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
   if (AutofillTable::FromWebDatabase(db)->UnmaskServerCreditCard(
-          id, full_number))
+          card, full_number))
     return WebDatabase::COMMIT_NEEDED;
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
@@ -356,12 +356,23 @@ WebDatabase::State
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataBackendImpl::UpdateUnmaskedCardUsageStats(
+WebDatabase::State AutofillWebDataBackendImpl::UpdateServerCardUsageStats(
     const CreditCard& card,
     WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
-  if (AutofillTable::FromWebDatabase(db)->UpdateUnmaskedCardUsageStats(card))
+  if (AutofillTable::FromWebDatabase(db)->UpdateServerCardUsageStats(card))
     return WebDatabase::COMMIT_NEEDED;
+  return WebDatabase::COMMIT_NOT_NEEDED;
+}
+
+WebDatabase::State AutofillWebDataBackendImpl::UpdateServerAddressUsageStats(
+    const AutofillProfile& profile,
+    WebDatabase* db) {
+  DCHECK(db_thread_->BelongsToCurrentThread());
+  if (AutofillTable::FromWebDatabase(db)->UpdateServerAddressUsageStats(
+          profile)) {
+    return WebDatabase::COMMIT_NEEDED;
+  }
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 

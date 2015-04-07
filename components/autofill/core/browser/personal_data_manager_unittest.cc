@@ -3102,7 +3102,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
 
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
   test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker",
-                          "2109" /* Mastercard */, "12", "2012");
+                          "4444" /* Mastercard */, "12", "2012");
   server_cards.back().SetTypeForMaskedCard(kMasterCard);
 
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
@@ -3131,6 +3131,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMainMessageLoop());
   base::MessageLoop::current()->Run();
+  ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
 
   for (size_t i = 0; i < 3; ++i)
     EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
@@ -3152,6 +3153,7 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
       .WillOnce(QuitMainMessageLoop());
   base::MessageLoop::current()->Run();
+  ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
 
   EXPECT_EQ(1U, personal_data_->GetCreditCards()[0]->use_count());
   EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[0]->use_date());
@@ -3163,6 +3165,31 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[2]->use_date());
   // Time may or may not have elapsed between unmasking and RecordUseOf.
   EXPECT_LE(initial_use_date, personal_data_->GetCreditCards()[2]->use_date());
+
+  // Can record usage stats on masked cards.
+  server_cards[1].set_guid(personal_data_->GetCreditCards()[1]->guid());
+  personal_data_->RecordUseOf(server_cards[1]);
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+  ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(1U, personal_data_->GetCreditCards()[1]->use_count());
+  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
+
+  // Upgrading to unmasked retains the usage stats (and increments them).
+  CreditCard* unmasked_card2 = &server_cards[1];
+  unmasked_card2->set_record_type(CreditCard::FULL_SERVER_CARD);
+  unmasked_card2->SetNumber(ASCIIToUTF16("5555555555554444"));
+  personal_data_->UpdateServerCreditCard(*unmasked_card2);
+
+  server_cards[1].set_guid(personal_data_->GetCreditCards()[1]->guid());
+  personal_data_->RecordUseOf(server_cards[1]);
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+  ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetCreditCards()[1]->use_count());
+  EXPECT_NE(base::Time(), personal_data_->GetCreditCards()[1]->use_date());
 }
 
 TEST_F(PersonalDataManagerTest, ClearAllServerData) {

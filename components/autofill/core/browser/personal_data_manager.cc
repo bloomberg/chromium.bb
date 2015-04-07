@@ -517,16 +517,10 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
   if (credit_card) {
     credit_card->RecordUse();
 
-    if (credit_card->record_type() == CreditCard::LOCAL_CARD) {
+    if (credit_card->record_type() == CreditCard::LOCAL_CARD)
       database_->UpdateCreditCard(*credit_card);
-    } else if (credit_card->record_type() == CreditCard::FULL_SERVER_CARD) {
-      database_->UpdateUnmaskedCardUsageStats(*credit_card);
-    } else {
-      // It's possible to get a masked server card here if the user decides not
-      // to store a card while verifying it. We don't currently track usage
-      // of masked cards, so no-op.
-      return;
-    }
+    else
+      database_->UpdateServerCardUsageStats(*credit_card);
 
     Refresh();
     return;
@@ -535,7 +529,12 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
   AutofillProfile* profile = GetProfileByGUID(data_model.guid());
   if (profile) {
     profile->RecordUse();
-    database_->UpdateAutofillProfile(*profile);
+
+    if (profile->record_type() == AutofillProfile::LOCAL_PROFILE)
+      database_->UpdateAutofillProfile(*profile);
+    else if (profile->record_type() == AutofillProfile::SERVER_PROFILE)
+      database_->UpdateServerAddressUsageStats(*profile);
+
     Refresh();
   }
 }
@@ -673,7 +672,7 @@ void PersonalDataManager::UpdateServerCreditCard(
   DCHECK_NE(existing_credit_card->record_type(), credit_card.record_type());
   DCHECK_EQ(existing_credit_card->Label(), credit_card.Label());
   if (existing_credit_card->record_type() == CreditCard::MASKED_SERVER_CARD) {
-    database_->UnmaskServerCreditCard(credit_card.server_id(),
+    database_->UnmaskServerCreditCard(credit_card,
                                       credit_card.number());
   } else {
     database_->MaskServerCreditCard(credit_card.server_id());

@@ -132,7 +132,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 64;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 65;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -932,5 +932,52 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion61ToCurrent) {
                                            "use_count"));
     EXPECT_TRUE(connection.DoesColumnExist("unmasked_credit_cards",
                                            "use_date"));
+  }
+}
+
+// Tests addition of server metadata tables.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion64ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_64.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 64, 64));
+
+    EXPECT_FALSE(connection.DoesTableExist("server_card_metadata"));
+    EXPECT_FALSE(connection.DoesTableExist("server_address_metadata"));
+
+    // Add a server address --- make sure it gets an ID.
+    sql::Statement insert_profiles(
+        connection.GetUniqueStatement(
+            "INSERT INTO server_addresses(id, postal_code) "
+            "VALUES ('', 90210)"));
+    insert_profiles.Run();
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    EXPECT_TRUE(connection.DoesTableExist("server_card_metadata"));
+    EXPECT_TRUE(connection.DoesTableExist("server_address_metadata"));
+
+    sql::Statement read_profiles(
+        connection.GetUniqueStatement(
+            "SELECT id, postal_code FROM server_addresses"));
+    ASSERT_TRUE(read_profiles.Step());
+    EXPECT_FALSE(read_profiles.ColumnString(0).empty());
+    EXPECT_EQ("90210", read_profiles.ColumnString(1));
   }
 }

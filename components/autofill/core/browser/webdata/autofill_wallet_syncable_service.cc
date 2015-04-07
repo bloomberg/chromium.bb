@@ -76,7 +76,7 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
 
 AutofillProfile ProfileFromSpecifics(
     const sync_pb::WalletPostalAddress& address) {
-  AutofillProfile profile(AutofillProfile::SERVER_PROFILE, address.id());
+  AutofillProfile profile(AutofillProfile::SERVER_PROFILE, std::string());
 
   // AutofillProfile stores multi-line addresses with newline separators.
   std::vector<std::string> street_address(address.street_address().begin(),
@@ -108,6 +108,8 @@ AutofillProfile ProfileFromSpecifics(
   profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
                   base::UTF8ToUTF16(address.phone_number()),
                   profile.language_code());
+
+  profile.GenerateServerProfileIdentifier();
 
   return profile;
 }

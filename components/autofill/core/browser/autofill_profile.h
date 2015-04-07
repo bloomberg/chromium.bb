@@ -42,7 +42,8 @@ class AutofillProfile : public AutofillDataModel {
   AutofillProfile(const std::string& guid, const std::string& origin);
 
   // Server profile constructor. The type must be SERVER_PROFILE (this serves
-  // to differentiate this constructor).
+  // to differentiate this constructor). |server_id| can be empty. If empty,
+  // callers should invoke GenerateServerProfileIdentifier after setting data.
   AutofillProfile(RecordType type, const std::string& server_id);
 
   // For use in STL containers.
@@ -181,6 +182,11 @@ class AutofillProfile : public AutofillDataModel {
   // Nonempty only when type() == SERVER_PROFILE.
   const std::string& server_id() const { return server_id_; }
 
+  // Creates an identifier and saves it as |server_id_|. Only used for
+  // server credit cards. The server doesn't attach an identifier so Chrome
+  // creates its own. The ID is a hash of the data contained in the profile.
+  void GenerateServerProfileIdentifier();
+
   // Returns a standardized representation of the given string for comparison
   // purposes. The resulting string will be lower-cased with all punctuation
   // substituted by spaces. Whitespace will be converted to ASCII space, and
@@ -257,7 +263,8 @@ class AutofillProfile : public AutofillDataModel {
   // The BCP 47 language code that can be used to format |address_| for display.
   std::string language_code_;
 
-  // ID assigned by the server. This will be set only for WALLET_PROFILEs.
+  // ID used for identifying this profile. Only set for SERVER_PROFILEs. This is
+  // a hash of the contents.
   std::string server_id_;
 };
 

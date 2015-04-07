@@ -299,7 +299,7 @@ void SetServerCreditCards(AutofillTable* table,
     if (card.record_type() != CreditCard::FULL_SERVER_CARD)
       continue;
 
-    table->UnmaskServerCreditCard(card.server_id(), card.number());
+    table->UnmaskServerCreditCard(card, card.number());
   }
 }
 

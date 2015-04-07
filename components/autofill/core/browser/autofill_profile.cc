@@ -15,6 +15,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
+#include "base/sha1.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -267,7 +268,8 @@ AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
       record_type_(type),
       name_(1),
       email_(1),
-      phone_number_(1, PhoneNumber(this)) {
+      phone_number_(1, PhoneNumber(this)),
+      server_id_(server_id) {
   DCHECK(type == SERVER_PROFILE);
 }
 
@@ -310,6 +312,8 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
 
   address_ = profile.address_;
   set_language_code(profile.language_code());
+
+  server_id_ = profile.server_id();
 
   return *this;
 }
@@ -822,6 +826,26 @@ void AutofillProfile::CreateInferredLabels(
                                  minimal_fields_shown, app_locale, labels);
     }
   }
+}
+
+void AutofillProfile::GenerateServerProfileIdentifier() {
+  DCHECK_EQ(SERVER_PROFILE, record_type());
+  base::string16 contents = MultiString(*this, NAME_FIRST);
+  contents.append(MultiString(*this, NAME_MIDDLE));
+  contents.append(MultiString(*this, NAME_LAST));
+  contents.append(MultiString(*this, EMAIL_ADDRESS));
+  contents.append(GetRawInfo(COMPANY_NAME));
+  contents.append(GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
+  contents.append(GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY));
+  contents.append(GetRawInfo(ADDRESS_HOME_CITY));
+  contents.append(GetRawInfo(ADDRESS_HOME_STATE));
+  contents.append(GetRawInfo(ADDRESS_HOME_ZIP));
+  contents.append(GetRawInfo(ADDRESS_HOME_SORTING_CODE));
+  contents.append(GetRawInfo(ADDRESS_HOME_COUNTRY));
+  contents.append(MultiString(*this, PHONE_HOME_WHOLE_NUMBER));
+  std::string contents_utf8 = UTF16ToUTF8(contents);
+  contents_utf8.append(language_code());
+  server_id_ = base::SHA1HashString(contents_utf8);
 }
 
 // static

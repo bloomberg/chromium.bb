@@ -1665,7 +1665,7 @@ TEST_F(AutofillTableTest, MaskUnmaskServerCards) {
 
   // Unmask the number. The full number should be available.
   base::string16 full_number(ASCIIToUTF16("4111111111111111"));
-  ASSERT_TRUE(table_->UnmaskServerCreditCard(inputs[0].server_id(),
+  ASSERT_TRUE(table_->UnmaskServerCreditCard(inputs[0],
                                              full_number));
 
   std::vector<CreditCard*> outputs;
@@ -1705,7 +1705,7 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
 
   // Now unmask it.
   base::string16 full_number = ASCIIToUTF16("4111111111111111");
-  table_->UnmaskServerCreditCard(masked_card.server_id(), full_number);
+  table_->UnmaskServerCreditCard(masked_card, full_number);
 
   // The card should now be unmasked.
   std::vector<CreditCard*> outputs;
@@ -1764,6 +1764,63 @@ TEST_F(AutofillTableTest, SetServerCardModify) {
   outputs.clear();
 }
 
+TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
+  // Add a masked card.
+  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  masked_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Paul F. Tompkins"));
+  masked_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
+  masked_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2020"));
+  masked_card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("1111"));
+  masked_card.SetTypeForMaskedCard(kVisaCard);
+
+  std::vector<CreditCard> inputs;
+  inputs.push_back(masked_card);
+  test::SetServerCreditCards(table_.get(), inputs);
+
+  ScopedVector<CreditCard> outputs;
+  table_->GetServerCreditCards(&outputs.get());
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
+  EXPECT_EQ(0U, outputs[0]->use_count());
+  EXPECT_EQ(base::Time(), outputs[0]->use_date());
+  outputs.clear();
+
+  // Update the usage stats; make sure they're reflected in GetServerProfiles.
+  inputs.back().set_use_count(4U);
+  inputs.back().set_use_date(base::Time::Now());
+  table_->UpdateServerCardUsageStats(inputs.back());
+  table_->GetServerCreditCards(&outputs.get());
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
+  EXPECT_EQ(4U, outputs[0]->use_count());
+  EXPECT_NE(base::Time(), outputs[0]->use_date());
+  outputs.clear();
+
+  // Setting the cards again shouldn't delete the usage stats.
+  table_->SetServerCreditCards(inputs);
+  table_->GetServerCreditCards(&outputs.get());
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
+  EXPECT_EQ(4U, outputs[0]->use_count());
+  EXPECT_NE(base::Time(), outputs[0]->use_date());
+  outputs.clear();
+
+  // Set a card list where the card is missing --- this should clear metadata.
+  CreditCard masked_card2(CreditCard::MASKED_SERVER_CARD, "b456");
+  inputs.back() = masked_card2;
+  table_->SetServerCreditCards(inputs);
+
+  // Back to the original card list.
+  inputs.back() = masked_card;
+  table_->SetServerCreditCards(inputs);
+  table_->GetServerCreditCards(&outputs.get());
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
+  EXPECT_EQ(0U, outputs[0]->use_count());
+  EXPECT_EQ(base::Time(), outputs[0]->use_date());
+  outputs.clear();
+}
+
 TEST_F(AutofillTableTest, SetServerProfile) {
   AutofillProfile one(AutofillProfile::SERVER_PROFILE, "a123");
   std::vector<AutofillProfile> inputs;
@@ -1792,6 +1849,52 @@ TEST_F(AutofillTableTest, SetServerProfile) {
   outputs.clear();
 }
 
+TEST_F(AutofillTableTest, SetServerProfileUpdateUsageStats) {
+  AutofillProfile one(AutofillProfile::SERVER_PROFILE, "a123");
+  std::vector<AutofillProfile> inputs;
+  inputs.push_back(one);
+  table_->SetServerProfiles(inputs);
+
+  ScopedVector<AutofillProfile> outputs;
+  table_->GetServerProfiles(&outputs.get());
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
+  EXPECT_EQ(0U, outputs[0]->use_count());
+  EXPECT_EQ(base::Time(), outputs[0]->use_date());
+  outputs.clear();
+
+  // Update the usage stats; make sure they're reflected in GetServerProfiles.
+  inputs.back().set_use_count(4U);
+  inputs.back().set_use_date(base::Time::Now());
+  table_->UpdateServerAddressUsageStats(inputs.back());
+  table_->GetServerProfiles(&outputs.get());
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
+  EXPECT_EQ(4U, outputs[0]->use_count());
+  EXPECT_NE(base::Time(), outputs[0]->use_date());
+  outputs.clear();
+
+  // Setting the profiles again shouldn't delete the usage stats.
+  table_->SetServerProfiles(inputs);
+  table_->GetServerProfiles(&outputs.get());
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
+  EXPECT_EQ(4U, outputs[0]->use_count());
+  EXPECT_NE(base::Time(), outputs[0]->use_date());
+  outputs.clear();
+
+  // Set a null profile list --- this should clear metadata.
+  table_->SetServerProfiles(std::vector<AutofillProfile>());
+  // Reset the old profile list and see the metadata is reset.
+  table_->SetServerProfiles(inputs);
+  table_->GetServerProfiles(&outputs.get());
+  ASSERT_EQ(1u, outputs.size());
+  EXPECT_EQ(one.server_id(), outputs[0]->server_id());
+  EXPECT_EQ(0U, outputs[0]->use_count());
+  EXPECT_EQ(base::Time(), outputs[0]->use_date());
+  outputs.clear();
+}
+
 // Tests that deleting time ranges re-masks server credit cards that were
 // unmasked in that time.
 // TODO(brettw) fix flakiness and re-enable: crbug.com/465882
@@ -1815,7 +1918,7 @@ TEST_F(AutofillTableTest, DISABLED_DeleteUnmaskedCard) {
 
   // Unmask it.
   base::string16 full_number = ASCIIToUTF16("4111111111111111");
-  table_->UnmaskServerCreditCard(masked_card.server_id(), full_number);
+  table_->UnmaskServerCreditCard(masked_card, full_number);
 
   // Delete data in a range a year in the future.
   std::vector<std::string> profile_guids;
@@ -1847,7 +1950,7 @@ TEST_F(AutofillTableTest, DISABLED_DeleteUnmaskedCard) {
   outputs.clear();
 
   // Unmask again, the card should be back.
-  table_->UnmaskServerCreditCard(masked_card.server_id(), full_number);
+  table_->UnmaskServerCreditCard(masked_card, full_number);
   ASSERT_TRUE(table_->GetServerCreditCards(&outputs.get()));
   ASSERT_EQ(1u, outputs.size());
   EXPECT_EQ(CreditCard::FULL_SERVER_CARD, outputs[0]->record_type());

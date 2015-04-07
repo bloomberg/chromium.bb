@@ -183,12 +183,12 @@ WebDataServiceBase::Handle AutofillWebDataService::GetServerCreditCards(
 }
 
 void AutofillWebDataService::UnmaskServerCreditCard(
-    const std::string& id,
+    const CreditCard& credit_card,
     const base::string16& full_number) {
   wdbs_->ScheduleDBTask(
       FROM_HERE,
       Bind(&AutofillWebDataBackendImpl::UnmaskServerCreditCard,
-           autofill_backend_, id, full_number));
+           autofill_backend_, credit_card, full_number));
 }
 
 void AutofillWebDataService::MaskServerCreditCard(const std::string& id) {
@@ -205,12 +205,20 @@ void AutofillWebDataService::ClearAllServerData() {
            autofill_backend_));
 }
 
-void AutofillWebDataService::UpdateUnmaskedCardUsageStats(
+void AutofillWebDataService::UpdateServerCardUsageStats(
     const CreditCard& credit_card) {
   wdbs_->ScheduleDBTask(
       FROM_HERE,
-      Bind(&AutofillWebDataBackendImpl::UpdateUnmaskedCardUsageStats,
+      Bind(&AutofillWebDataBackendImpl::UpdateServerCardUsageStats,
            autofill_backend_, credit_card));
+}
+
+void AutofillWebDataService::UpdateServerAddressUsageStats(
+    const AutofillProfile& profile) {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE,
+      Bind(&AutofillWebDataBackendImpl::UpdateServerAddressUsageStats,
+           autofill_backend_, profile));
 }
 
 void AutofillWebDataService::RemoveAutofillDataModifiedBetween(

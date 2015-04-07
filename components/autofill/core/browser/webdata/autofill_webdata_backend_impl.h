@@ -137,14 +137,18 @@ class AutofillWebDataBackendImpl
 
   // Server credit cards can be masked (only last 4 digits stored) or unmasked
   // (all data stored). These toggle between the two states.
-  WebDatabase::State UnmaskServerCreditCard(const std::string& id,
+  WebDatabase::State UnmaskServerCreditCard(const CreditCard& card,
                                             const base::string16& full_number,
                                             WebDatabase* db);
   WebDatabase::State MaskServerCreditCard(const std::string& id,
                                           WebDatabase* db);
 
-  WebDatabase::State UpdateUnmaskedCardUsageStats(
+  WebDatabase::State UpdateServerCardUsageStats(
       const CreditCard& credit_card,
+      WebDatabase* db);
+
+  WebDatabase::State UpdateServerAddressUsageStats(
+      const AutofillProfile& profile,
       WebDatabase* db);
 
   WebDatabase::State ClearAllServerData(WebDatabase* db);

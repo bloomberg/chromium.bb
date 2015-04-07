@@ -116,7 +116,7 @@ message WalletMaskedCreditCard {
 // Different than an AutofillProfile because this represents some known address
 // on the server that is pulled down rather than synced between Chromes.
 message WalletPostalAddress {
-  // Server-generated unique ID string. This is opaque to the client.
+  // DEPRECATED
   optional string id = 1;
 
   optional string recipient_name = 12;

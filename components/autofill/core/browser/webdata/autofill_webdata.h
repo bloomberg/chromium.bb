@@ -103,12 +103,16 @@ class AutofillWebData {
 
   // Toggles the record for a server credit card between masked (only last 4
   // digits) and full (all digits).
-  virtual void UnmaskServerCreditCard(const std::string& id,
+  virtual void UnmaskServerCreditCard(const CreditCard& credit_card,
                                       const base::string16& full_number) = 0;
   virtual void MaskServerCreditCard(const std::string& id) = 0;
 
-  // Updates the use count and last use date for an unmasked server card.
-  virtual void UpdateUnmaskedCardUsageStats(const CreditCard& credit_card) = 0;
+  // Updates the use count and last use date for a server card (masked or not).
+  virtual void UpdateServerCardUsageStats(const CreditCard& credit_card) = 0;
+
+  // Updates the use count and last use date for a server address.
+  virtual void UpdateServerAddressUsageStats(const AutofillProfile& profile)
+      = 0;
 
   // Removes Autofill records from the database.
   virtual void RemoveAutofillDataModifiedBetween(

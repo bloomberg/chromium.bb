@@ -163,12 +163,21 @@ struct FormFieldData;
 //                      masked_credit_cards table to get the rest of the data.
 //   card_number_encrypted
 //                      Full card number, encrypted.
-//   use_count          The number of times this card has been used to fill
-//                      a form. Added in version 62.
-//   use_date           The date this card was last used to fill a form, in
-//                      internal time format (NOT time_t). Added in version 62.
+//   use_count          DEPRECATED in version 65. See server_card_metadata.
+//   use_date           DEPRECATED in version 65. See server_card_metadata.
 //   unmask_date        The date this card was unmasked in units of
 //                      Time::ToInternalValue. Added in version 64.
+//
+// server_card_metadata
+//                      Metadata (currently, usage data) about server credit
+//                      cards. This will be synced.
+//
+//   id                 The server ID, which matches an ID from the
+//                      masked_credit_cards table.
+//   use_count          The number of times this card has been used to fill
+//                      a form.
+//   use_date           The date this card was last used to fill a form,
+//                      in internal t.
 //
 // server_addresses     This table contains Autofill address data synced from
 //                      the wallet server. It's basically the same as the
@@ -198,6 +207,18 @@ struct FormFieldData;
 //                      "ja-latn" language code starts with the recipient name.
 //   phone_number       Phone number. This is a string and has no formatting
 //                      constraints. Added in version 64.
+//
+// server_address_metadata
+//                      Metadata (currently, usage data) about server addresses.
+//                      This will be synced.
+//
+//   id                 The server ID, which matches an ID from the
+//                      server_addresses table.
+//   use_count          The number of times this address has been used to fill
+//                      a form.
+//   use_date           The date this address was last used to fill a form,
+//                      in internal t.
+
 class AutofillTable : public WebDatabaseTable {
  public:
   explicit AutofillTable(const std::string& app_locale);
@@ -316,12 +337,12 @@ class AutofillTable : public WebDatabaseTable {
   // Cards synced from the server may be "masked" (only last 4 digits
   // available) or "unmasked" (everything is available). These functions set
   // that state.
-  bool UnmaskServerCreditCard(const std::string& id,
+  bool UnmaskServerCreditCard(const CreditCard& masked,
                               const base::string16& full_number);
   bool MaskServerCreditCard(const std::string& id);
 
-  // Updates the use count and last use date for an unmasked server card.
-  bool UpdateUnmaskedCardUsageStats(const CreditCard& credit_card);
+  bool UpdateServerCardUsageStats(const CreditCard& credit_card);
+  bool UpdateServerAddressUsageStats(const AutofillProfile& profile);
 
   // Deletes all data from the server card and profile tables. Returns true if
   // any data was deleted, false if not (so false means "commit not needed"
@@ -365,7 +386,10 @@ class AutofillTable : public WebDatabaseTable {
   // Clear all profiles.
   bool ClearAutofillProfiles();
 
-  // Table migration functions.
+  // Table migration functions. NB: These do not and should not rely on other
+  // functions in this class. The implementation of a function such as
+  // GetCreditCard may change over time, but MigrateToVersionXX should never
+  // change.
   bool MigrateToVersion54AddI18nFieldsAndRemoveDeprecatedFields();
   bool MigrateToVersion55MergeAutofillDatesTable();
   bool MigrateToVersion56AddProfileLanguageCodeForFormatting();
@@ -375,6 +399,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion62AddUsageStatsForUnmaskedCards();
   bool MigrateToVersion63AddServerRecipientName();
   bool MigrateToVersion64AddUnmaskDate();
+  bool MigrateToVersion65AddServerMetadataTables();
 
   // Max data length saved in the table;
   static const size_t kMaxDataLength;
@@ -444,7 +469,9 @@ class AutofillTable : public WebDatabaseTable {
   bool InitProfileTrashTable();
   bool InitMaskedCreditCardsTable();
   bool InitUnmaskedCreditCardsTable();
+  bool InitServerCardMetadataTable();
   bool InitServerAddressesTable();
+  bool InitServerAddressMetadataTable();
 
   // The application locale.  The locale is needed for the migration to version
   // 35. Since it must be read on the UI thread, it is set when the table is
