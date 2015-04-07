@@ -1410,6 +1410,46 @@ const char kErrorRejected[] = "org.bluez.Error.Rejected";
 const char kErrorCanceled[] = "org.bluez.Error.Canceled";
 }  // namespace bluetooth_profile
 
+namespace bluetooth_advertisement {
+// Bluetooth LE Advertisement service identifiers.
+const char kBluetoothAdvertisementServiceName[] = "org.bluez";
+const char kBluetoothAdvertisementIntervace[] =
+    "org.bluez.LEAdvertisement1";
+
+// Bluetooth Advertisement methods.
+const char kRelease[] = "Release";
+
+// Bluetooth Advertisement properties.
+const char kManufacturerDataProperty[] = "ManufacturerData";
+const char kServiceUUIDsProperty[] = "ServiceUUIDs";
+const char kServiceDataProperty[] = "ServiceData";
+const char kSolicitUUIDsProperty[] = "SolicitUUIDs";
+const char kTypeProperty[] = "Type";
+
+// Possible values for the "Type" property.
+const char kTypeBroadcast[] = "broadcast";
+const char kTypePeripheral[] = "peripheral";
+
+}  // namespace bluetooth_advertisement
+
+namespace bluetooth_advertising_manager {
+// Bluetooth LE Advertising Manager service identifiers.
+const char kBluetoothAdvertisingManagerServiceName[] = "org.bluez";
+const char kBluetoothAdvertisingManagerInterface[] =
+    "org.bluez.LEAdvertisingManager1";
+
+// Bluetooth LE Advertising Manager methods.
+const char kRegisterAdvertisement[] = "RegisterAdvertisement";
+const char kUnregisterAdvertisement[] = "UnregisterAdvertisement";
+
+// Bluetooth LE Advertising Manager errors.
+const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
+const char kErrorFailed[] = "org.bluez.Error.Failed";
+const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+const char kErrorInvalidLength[] = "org.bluez.Error.InvalidLength";
+}  // namespace bluetooth_advertising_manager
+
 namespace nfc_adapter {
 // NFC Adapter service identifiers.
 const char kNfcAdapterServiceName[] = "org.neard";
