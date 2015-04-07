@@ -66,16 +66,6 @@ void BluetoothDispatcherHost::set_adapter(
 
 void BluetoothDispatcherHost::OnRequestDevice(int thread_id, int request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(
-                              &BluetoothDispatcherHost::OnRequestDeviceOnUI,
-                              this, thread_id, request_id));
-}
-
-void BluetoothDispatcherHost::OnRequestDeviceOnUI(int thread_id,
-                                                  int request_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // TODO(scheib) Extend this very simple mock implementation by using
   // device/bluetooth/test mock adapter and related classes.
   switch (bluetooth_mock_data_set_) {
