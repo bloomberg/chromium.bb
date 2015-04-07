@@ -11,10 +11,12 @@ a subdirectory 'bisect' of the working directory provided, annd runs the
 bisect scrip there.
 """
 
+import json
 import optparse
 import os
 import platform
 import re
+import shlex
 import subprocess
 import sys
 import traceback
@@ -26,7 +28,6 @@ from auto_bisect import source_control
 
 CROS_BOARD_ENV = 'BISECT_CROS_BOARD'
 CROS_IP_ENV = 'BISECT_CROS_IP'
-
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 SRC_DIR = os.path.join(SCRIPT_DIR, os.path.pardir)
 BISECT_CONFIG_PATH = os.path.join(SCRIPT_DIR, 'auto_bisect', 'bisect.cfg')
@@ -35,6 +36,9 @@ WEBKIT_RUN_TEST_CONFIG_PATH = os.path.join(
     SRC_DIR, 'third_party', 'WebKit', 'Tools', 'run-perf-test.cfg')
 BISECT_SCRIPT_DIR = os.path.join(SCRIPT_DIR, 'auto_bisect')
 
+PERF_BENCHMARKS_PATH = 'tools/perf/benchmarks'
+BUILDBOT_BUILDERNAME = 'BUILDBOT_BUILDERNAME'
+BENCHMARKS_JSON_FILE = 'benchmarks.json'
 
 class Goma(object):
 
@@ -437,13 +441,14 @@ def _RunPerformanceTest(config):
       results_without_patch, results_with_patch, annotations_dict)
 
 
-def _SetupAndRunPerformanceTest(config, path_to_goma):
+def _SetupAndRunPerformanceTest(config, path_to_goma, is_cq_tryjob=False):
   """Attempts to build and run the current revision with and without the
   current patch, with the parameters passed in.
 
   Args:
     config: The config read from run-perf-test.cfg.
     path_to_goma: Path to goma directory.
+    is_cq_tryjob: Whether or not the try job was initiated by commit queue.
 
   Returns:
     An exit code: 0 on success, otherwise 1.
@@ -457,7 +462,10 @@ def _SetupAndRunPerformanceTest(config, path_to_goma):
       config['use_goma'] = bool(path_to_goma)
       if config['use_goma']:
         config['goma_dir'] = os.path.abspath(path_to_goma)
-      _RunPerformanceTest(config)
+      if not is_cq_tryjob:
+        _RunPerformanceTest(config)
+      else:
+        return _RunBenchmarksForCommitQueue(config)
     return 0
   except RuntimeError, e:
     bisect_utils.OutputAnnotationStepFailure()
@@ -566,8 +574,194 @@ def _PrintConfigStep(config):
   bisect_utils.OutputAnnotationStepClosed()
 
 
+def _GetBrowserType(bot_platform):
+  """Gets the browser type to be used in the run benchmark command."""
+  if bot_platform == 'android':
+    return 'android-chrome-shell'
+  elif 'x64' in bot_platform:
+    return 'release_x64'
+
+  return 'release'
+
+
+
+def _GuessTelemetryTestCommand(bot_platform, test_name=None):
+  """Creates a Telemetry benchmark command based on bot and test name."""
+  command = []
+  # On Windows, Python scripts should be prefixed with the python command.
+  if bot_platform == 'win':
+    command.append('python')
+  command.append('tools/perf/run_benchmark')
+  command.append('-v')
+  command.append('--browser=%s' % _GetBrowserType(bot_platform))
+  if test_name:
+    command.append(test_name)
+
+  return ' '.join(command)
+
+
+def _GetConfigBasedOnPlatform(config, bot_name, test_name):
+  """Generates required options to create BisectPerformanceMetrics instance."""
+  opts_dict = {
+      'command': _GuessTelemetryTestCommand(bot_name, test_name),
+      'target_arch': 'x64' if 'x64' in bot_name else 'ia32',
+      'build_preference': 'ninja',
+      'output_buildbot_annotations': True,
+      'repeat_test_count': 1,
+      'bisect_mode': bisect_utils.BISECT_MODE_RETURN_CODE,
+  }
+
+  if 'use_goma' in config:
+    opts_dict['use_goma'] = config['use_goma']
+  if 'goma_dir' in config:
+    opts_dict['goma_dir'] = config['goma_dir']
+  if 'android-chrome-shell' in opts_dict['command']:
+    opts_dict['target_platform'] = 'android'
+
+  return bisect_perf_regression.BisectOptions.FromDict(opts_dict)
+
+
+def _GetModifiedFilesFromPatch(cwd=None):
+  """Gets list of files modified in the current patch."""
+  log_output = bisect_utils.CheckRunGit(
+      ['diff', '--no-ext-diff', '--name-only', 'HEAD~1'], cwd=cwd)
+  modified_files = log_output.split()
+  return modified_files
+
+
+def _GetAffectedBenchmarkModuleNames():
+  """Gets list of modified benchmark files under tools/perf/benchmarks."""
+  all_affected_files = _GetModifiedFilesFromPatch()
+  modified_benchmarks = []
+  for affected_file in all_affected_files:
+    if affected_file.startswith(PERF_BENCHMARKS_PATH):
+      benchmark = os.path.basename(os.path.splitext(affected_file)[0])
+      modified_benchmarks.append(benchmark)
+  return modified_benchmarks
+
+
+def _ListAvailableBenchmarks(bot_platform):
+  """Gets all available benchmarks names as a list."""
+  browser_type =  _GetBrowserType(bot_platform)
+  if os.path.exists(BENCHMARKS_JSON_FILE):
+    os.remove(BENCHMARKS_JSON_FILE)
+  command = []
+  if 'win' in bot_platform:
+    command.append('python')
+  command.append('tools/perf/run_benchmark')
+  command.extend([
+      'list',
+      '--browser',
+      browser_type,
+      '--json-output',
+      BENCHMARKS_JSON_FILE])
+  try:
+    output, return_code = bisect_utils.RunProcessAndRetrieveOutput(
+        command=command, cwd=SRC_DIR)
+    if return_code:
+      raise RuntimeError('Something went wrong while listing benchmarks. '
+            'Please review the command line: %s.\nERROR: [%s]' %
+            (' '.join(command), output))
+    with open(BENCHMARKS_JSON_FILE) as tests_json:
+      tests_data = json.load(tests_json)
+      if tests_data.get('steps'):
+        return tests_data.get('steps').keys()
+  finally:
+    try:
+      if os.path.exists(BENCHMARKS_JSON_FILE):
+        os.remove(BENCHMARKS_JSON_FILE)
+    except OSError as e:
+      if e.errno != errno.ENOENT:
+        raise
+  return None
+
+
+def _OutputOverallResults(results):
+  """Creates results step and prints results on buildbot job."""
+  test_status = all(current_value == True for current_value in results.values())
+  bisect_utils.OutputAnnotationStepStart(
+      'Results - %s' % ('Passed' if test_status else 'Failed'))
+  print
+  print 'Results of benchmarks:'
+  print
+  for benchmark, result in results.iteritems():
+    print '%s: %s' % (benchmark, 'Passed' if result else 'Failed')
+  if not test_status:
+    bisect_utils.OutputAnnotationStepFailure()
+  bisect_utils.OutputAnnotationStepClosed()
+  # Returns 0 for success and 1 for failure.
+  return 0 if test_status else 1
+
+
+def _RunBenchmark(bisect_instance, opts, bot_name, benchmark_name):
+  """Runs a Telemetry benchmark."""
+  bisect_utils.OutputAnnotationStepStart(benchmark_name)
+  command_to_run = _GuessTelemetryTestCommand(bot_name, benchmark_name)
+  args = shlex.split(command_to_run, posix=not bisect_utils.IsWindowsHost())
+  output, return_code = bisect_utils.RunProcessAndRetrieveOutput(args, SRC_DIR)
+  # A value other than 0 indicates that the test couldn't be run, and results
+  # should also include an error message.
+  if return_code:
+    print ('Error: Something went wrong running the benchmark: %s.'
+           'Please review the command line:%s\n\n%s' %
+           (benchmark_name, command_to_run, output))
+    bisect_utils.OutputAnnotationStepFailure()
+  print output
+  bisect_utils.OutputAnnotationStepClosed()
+  # results[1] contains the return code from subprocess that executes test
+  # command, On successful test run it contains 0 otherwise any non-zero value.
+  return return_code == 0
+
+
+def _RunBenchmarksForCommitQueue(config):
+  """Runs Telemetry benchmark for the commit queue."""
+  os.chdir(SRC_DIR)
+  # To determine the bot platform by reading buildbot name from environment
+  # variable.
+  bot_name = os.environ.get(BUILDBOT_BUILDERNAME)
+  if not bot_name:
+    bot_name = sys.platform
+  bot_name = bot_name.split('_')[0]
+
+  affected_benchmarks = _GetAffectedBenchmarkModuleNames()
+  # Abort if there are no changes to benchmark any existing benchmark files.
+  if not affected_benchmarks:
+    bisect_utils.OutputAnnotationStepStart('Results')
+    print
+    print ('There are no modification to Telemetry benchmarks,'
+           ' aborting the try job.')
+    bisect_utils.OutputAnnotationStepClosed()
+    return 0
+
+  # Bisect script expects to be run from the src directory
+  # Gets required options inorder to create BisectPerformanceMetrics instance.
+  # Since command is a required arg in BisectPerformanceMetrics, we just create
+  # a dummy command for now.
+  opts = _GetConfigBasedOnPlatform(config, bot_name, test_name='')
+  annotations_dict = _GetStepAnnotationStringsDict(config)
+  b = bisect_perf_regression.BisectPerformanceMetrics(opts, os.getcwd())
+  _RunBuildStepForPerformanceTest(b,
+                                  annotations_dict.get('build1'),
+                                  annotations_dict.get('sync1'),
+                                  None)
+  available_benchmarks = _ListAvailableBenchmarks(bot_name)
+  overall_results = {}
+  for affected_benchmark in affected_benchmarks:
+    for benchmark in available_benchmarks:
+      if (benchmark.startswith(affected_benchmark) and
+          not benchmark.endswith('reference')):
+        overall_results[benchmark] = _RunBenchmark(b, opts, bot_name, benchmark)
+
+  return _OutputOverallResults(overall_results)
+
+
 def _OptionParser():
   """Returns the options parser for run-bisect-perf-regression.py."""
+
+  def ConvertJson(option, _, value, parser):
+    """Provides an OptionParser callback to unmarshal a JSON string."""
+    setattr(parser.values, option.dest, json.loads(value))
+
   usage = ('%prog [options] [-- chromium-options]\n'
            'Used by a try bot to run the bisection script using the parameters'
            ' provided in the auto_bisect/bisect.cfg file.')
@@ -596,6 +790,14 @@ def _OptionParser():
                     help='The script will perform the full bisect, but '
                     'without syncing, building, or running the performance '
                     'tests.')
+  # This argument is passed by buildbot to supply build properties to the bisect
+  # script. Note: Don't change "--build-properties" property name.
+  parser.add_option('--build-properties', action='callback',
+                    dest='build_properties',
+                    callback=ConvertJson, type='string',
+                    nargs=1, default={},
+                    help='build properties in JSON format')
+
   return parser
 
 
@@ -645,6 +847,13 @@ def main():
 
     if config and config_is_valid:
       return _SetupAndRunPerformanceTest(config, opts.path_to_goma)
+
+  # If there are no changes to config file, then check if the request is
+  # from commit-bot, if so then run the modified Telemetry benchmarks for the
+  # patch.
+  if opts.build_properties.get('requester') == 'commit-bot@chromium.org':
+    return _SetupAndRunPerformanceTest(
+        config={}, path_to_goma=opts.path_to_goma, is_cq_tryjob=True)
 
   print ('Error: Could not load config file. Double check your changes to '
          'auto_bisect/bisect.cfg or run-perf-test.cfg for syntax errors.\n')
