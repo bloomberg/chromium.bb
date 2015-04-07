@@ -26,7 +26,7 @@ DeviceMonitorMessageWindow* g_message_window;
 // Provides basic comparability for GUIDs so that they can be used as keys to an
 // STL map.
 struct CompareGUID {
-  bool operator()(const GUID& a, const GUID& b) {
+  bool operator()(const GUID& a, const GUID& b) const {
     return memcmp(&a, &b, sizeof a) < 0;
   }
 };
