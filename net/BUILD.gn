@@ -507,10 +507,7 @@ component("net") {
       "base/platform_mime_util_linux.cc",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
-
-    if (!is_android_webview_build) {
-      deps += [ ":net_jni_headers" ]
-    }
+    deps += [ ":net_jni_headers" ]
   }
 
   if (use_icu_alternatives_on_android) {

@@ -713,6 +713,7 @@
         ['OS=="android"', {
           'dependencies': [
             'media_android_jni_headers',
+            'media_java',
             'player_android',
             'video_capture_android_jni_headers',
           ],
@@ -726,13 +727,6 @@
             'filters/opus_audio_decoder.h',
             'renderers/default_renderer_factory.cc',
             'renderers/default_renderer_factory.h',
-          ],
-          'conditions': [
-            ['android_webview_build==0', {
-              'dependencies': [
-                'media_java',
-              ],
-            }],
           ],
           'defines': [
             'DISABLE_USER_INPUT_MONITOR',

@@ -368,7 +368,7 @@
         ],
       },
     ],
-    ['OS=="android" and _toolset=="target" and android_webview_build == 0', {
+    ['OS=="android" and _toolset=="target"', {
       'dependencies': [
          'net_java',
       ],

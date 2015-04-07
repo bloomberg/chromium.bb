@@ -345,12 +345,10 @@ component("media") {
     ]
     deps += [
       "//media/base/android",
+      "//media/base/android:media_java",
       "//media/base/android:media_jni_headers",
       "//media/base/android:video_capture_jni_headers",
     ]
-    if (!is_android_webview_build) {
-      deps += [ "//media/base/android:media_java" ]
-    }
   }
 
   if (current_cpu != "arm" && is_chromeos) {
