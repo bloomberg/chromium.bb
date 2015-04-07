@@ -68,6 +68,11 @@ public:
         return color() == o.color() && isTransparent() == o.isTransparent() && isSameIgnoringColor(o);
     }
 
+    bool shouldPaint(const CollapsedBorderValue& tableCurrentBorderValue) const
+    {
+        return style() > BHIDDEN && !isTransparent() && exists() && isSameIgnoringColor(tableCurrentBorderValue);
+    }
+
 private:
     Color m_color;
     unsigned m_colorIsCurrentColor : 1;

@@ -13,7 +13,7 @@
 
 namespace blink {
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedLeftBorder(const ComputedStyle& styleForCellFlow) const
+inline const CollapsedBorderValue& TableCellPainter::cachedCollapsedLeftBorder(const ComputedStyle& styleForCellFlow) const
 {
     if (styleForCellFlow.isHorizontalWritingMode()) {
         return styleForCellFlow.isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSStart)
@@ -23,7 +23,7 @@ inline CollapsedBorderValue TableCellPainter::cachedCollapsedLeftBorder(const Co
         : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore);
 }
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedRightBorder(const ComputedStyle& styleForCellFlow) const
+inline const CollapsedBorderValue& TableCellPainter::cachedCollapsedRightBorder(const ComputedStyle& styleForCellFlow) const
 {
     if (styleForCellFlow.isHorizontalWritingMode()) {
         return styleForCellFlow.isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSEnd)
@@ -33,14 +33,14 @@ inline CollapsedBorderValue TableCellPainter::cachedCollapsedRightBorder(const C
         : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSAfter);
 }
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedTopBorder(const ComputedStyle& styleForCellFlow) const
+inline const CollapsedBorderValue& TableCellPainter::cachedCollapsedTopBorder(const ComputedStyle& styleForCellFlow) const
 {
     if (styleForCellFlow.isHorizontalWritingMode())
         return styleForCellFlow.isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSAfter) : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore);
     return styleForCellFlow.isLeftToRightDirection() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSStart) : m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSEnd);
 }
 
-inline CollapsedBorderValue TableCellPainter::cachedCollapsedBottomBorder(const ComputedStyle& styleForCellFlow) const
+inline const CollapsedBorderValue& TableCellPainter::cachedCollapsedBottomBorder(const ComputedStyle& styleForCellFlow) const
 {
     if (styleForCellFlow.isHorizontalWritingMode()) {
         return styleForCellFlow.isFlippedBlocksWritingMode() ?  m_layoutTableCell.section()->cachedCollapsedBorder(&m_layoutTableCell, CBSBefore)
@@ -55,55 +55,6 @@ void TableCellPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pain
     ASSERT(paintInfo.phase != PaintPhaseCollapsedTableBorders);
     BlockPainter(m_layoutTableCell).paint(paintInfo, paintOffset);
 }
-
-struct CollapsedBorder {
-    CollapsedBorderValue borderValue;
-    BoxSide side;
-    bool shouldPaint;
-    int x1;
-    int y1;
-    int x2;
-    int y2;
-    EBorderStyle style;
-};
-
-class CollapsedBorders {
-public:
-    CollapsedBorders()
-        : m_count(0)
-    {
-    }
-
-    void addBorder(const CollapsedBorderValue& borderValue, BoxSide borderSide, bool shouldPaint, int x1, int y1, int x2, int y2, EBorderStyle borderStyle)
-    {
-        if (borderValue.exists() && shouldPaint) {
-            m_borders[m_count].borderValue = borderValue;
-            m_borders[m_count].side = borderSide;
-            m_borders[m_count].shouldPaint = shouldPaint;
-            m_borders[m_count].x1 = x1;
-            m_borders[m_count].x2 = x2;
-            m_borders[m_count].y1 = y1;
-            m_borders[m_count].y2 = y2;
-            m_borders[m_count].style = borderStyle;
-            m_count++;
-        }
-    }
-
-    CollapsedBorder* nextBorder()
-    {
-        for (unsigned i = 0; i < m_count; i++) {
-            if (m_borders[i].borderValue.exists() && m_borders[i].shouldPaint) {
-                m_borders[i].shouldPaint = false;
-                return &m_borders[i];
-            }
-        }
-
-        return 0;
-    }
-
-    CollapsedBorder m_borders[4];
-    unsigned m_count;
-};
 
 static EBorderStyle collapsedBorderStyle(EBorderStyle style)
 {
@@ -132,56 +83,61 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (drawingCullRect.maxY() <= paintInfo.rect.y())
         return;
 
-    if (!m_layoutTableCell.table()->currentBorderValue())
+    const CollapsedBorderValue* tableCurrentBorderValue = m_layoutTableCell.table()->currentBorderValue();
+    if (!tableCurrentBorderValue)
         return;
 
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutTableCell, paintInfo.phase, drawingCullRect);
+    GraphicsContext* graphicsContext = paintInfo.context;
+    LayoutObjectDrawingRecorder recorder(*graphicsContext, m_layoutTableCell, paintInfo.phase, drawingCullRect);
     if (recorder.canUseCachedDrawing())
         return;
 
     const ComputedStyle& styleForCellFlow = m_layoutTableCell.styleForCellFlow();
-    CollapsedBorderValue leftVal = cachedCollapsedLeftBorder(styleForCellFlow);
-    CollapsedBorderValue rightVal = cachedCollapsedRightBorder(styleForCellFlow);
-    CollapsedBorderValue topVal = cachedCollapsedTopBorder(styleForCellFlow);
-    CollapsedBorderValue bottomVal = cachedCollapsedBottomBorder(styleForCellFlow);
+    const CollapsedBorderValue& leftBorderValue = cachedCollapsedLeftBorder(styleForCellFlow);
+    const CollapsedBorderValue& rightBorderValue = cachedCollapsedRightBorder(styleForCellFlow);
+    const CollapsedBorderValue& topBorderValue = cachedCollapsedTopBorder(styleForCellFlow);
+    const CollapsedBorderValue& bottomBorderValue = cachedCollapsedBottomBorder(styleForCellFlow);
+
+    bool shouldPaintTop = topBorderValue.shouldPaint(*tableCurrentBorderValue);
+    bool shouldPaintBottom = bottomBorderValue.shouldPaint(*tableCurrentBorderValue);
+    bool shouldPaintLeft = leftBorderValue.shouldPaint(*tableCurrentBorderValue);
+    bool shouldPaintRight = rightBorderValue.shouldPaint(*tableCurrentBorderValue);
+
+    if (!shouldPaintTop && !shouldPaintBottom && !shouldPaintLeft && !shouldPaintRight)
+        return;
+
+    bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
 
     // Adjust our x/y/width/height so that we paint the collapsed borders at the correct location.
-    int topWidth = topVal.width();
-    int bottomWidth = bottomVal.width();
-    int leftWidth = leftVal.width();
-    int rightWidth = rightVal.width();
+    int topWidth = topBorderValue.width();
+    int bottomWidth = bottomBorderValue.width();
+    int leftWidth = leftBorderValue.width();
+    int rightWidth = rightBorderValue.width();
 
     IntRect borderRect = pixelSnappedIntRect(paintRect.x() - leftWidth / 2,
         paintRect.y() - topWidth / 2,
         paintRect.width() + leftWidth / 2 + (rightWidth + 1) / 2,
         paintRect.height() + topWidth / 2 + (bottomWidth + 1) / 2);
 
-    EBorderStyle topStyle = collapsedBorderStyle(topVal.style());
-    EBorderStyle bottomStyle = collapsedBorderStyle(bottomVal.style());
-    EBorderStyle leftStyle = collapsedBorderStyle(leftVal.style());
-    EBorderStyle rightStyle = collapsedBorderStyle(rightVal.style());
-
-    bool renderTop = topStyle > BHIDDEN && !topVal.isTransparent();
-    bool renderBottom = bottomStyle > BHIDDEN && !bottomVal.isTransparent();
-    bool renderLeft = leftStyle > BHIDDEN && !leftVal.isTransparent();
-    bool renderRight = rightStyle > BHIDDEN && !rightVal.isTransparent();
+    Color cellColor = m_layoutTableCell.resolveColor(CSSPropertyColor);
 
     // We never paint diagonals at the joins.  We simply let the border with the highest
     // precedence paint on top of borders with lower precedence.
-    CollapsedBorders borders;
-    borders.addBorder(topVal, BSTop, renderTop, borderRect.x(), borderRect.y(), borderRect.maxX(), borderRect.y() + topWidth, topStyle);
-    borders.addBorder(bottomVal, BSBottom, renderBottom, borderRect.x(), borderRect.maxY() - bottomWidth, borderRect.maxX(), borderRect.maxY(), bottomStyle);
-    borders.addBorder(leftVal, BSLeft, renderLeft, borderRect.x(), borderRect.y(), borderRect.x() + leftWidth, borderRect.maxY(), leftStyle);
-    borders.addBorder(rightVal, BSRight, renderRight, borderRect.maxX() - rightWidth, borderRect.y(), borderRect.maxX(), borderRect.maxY(), rightStyle);
-
-    GraphicsContext* graphicsContext = paintInfo.context;
-    bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
-
-    for (CollapsedBorder* border = borders.nextBorder(); border; border = borders.nextBorder()) {
-        if (border->borderValue.isSameIgnoringColor(*m_layoutTableCell.table()->currentBorderValue())) {
-            ObjectPainter::drawLineForBoxSide(graphicsContext, border->x1, border->y1, border->x2, border->y2, border->side,
-                border->borderValue.color().resolve(m_layoutTableCell.resolveColor(CSSPropertyColor)), border->style, 0, 0, antialias);
-        }
+    if (shouldPaintTop) {
+        ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.x(), borderRect.y(), borderRect.maxX(), borderRect.y() + topWidth, BSTop,
+            topBorderValue.color().resolve(cellColor), collapsedBorderStyle(topBorderValue.style()), 0, 0, antialias);
+    }
+    if (shouldPaintBottom) {
+        ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.x(), borderRect.maxY() - bottomWidth, borderRect.maxX(), borderRect.maxY(), BSBottom,
+            bottomBorderValue.color().resolve(cellColor), collapsedBorderStyle(bottomBorderValue.style()), 0, 0, antialias);
+    }
+    if (shouldPaintLeft) {
+        ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.x(), borderRect.y(), borderRect.x() + leftWidth, borderRect.maxY(), BSLeft,
+            leftBorderValue.color().resolve(cellColor), collapsedBorderStyle(leftBorderValue.style()), 0, 0, antialias);
+    }
+    if (shouldPaintRight) {
+        ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.maxX() - rightWidth, borderRect.y(), borderRect.maxX(), borderRect.maxY(), BSRight,
+            rightBorderValue.color().resolve(cellColor), collapsedBorderStyle(rightBorderValue.style()), 0, 0, antialias);
     }
 }
 
