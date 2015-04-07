@@ -113,6 +113,8 @@ AutomationUtil.findNextNode = function(cur, dir, pred) {
       return null;
     cur = next;
     next = AutomationUtil.findNodePre(next, dir, pred);
+    if (next && AutomationPredicate.shouldIgnoreLeaf(next))
+      next = null;
   } while (!next);
   return next;
 };

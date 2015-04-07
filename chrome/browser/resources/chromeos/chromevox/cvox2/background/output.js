@@ -195,7 +195,7 @@ Output.RULES = {
       speak: '@describe_slider($value, $name)'
     },
     staticText: {
-      speak: '$value'
+      speak: '$value $name'
     },
     tab: {
       speak: '@describe_tab($name)'

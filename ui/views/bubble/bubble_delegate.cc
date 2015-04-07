@@ -305,6 +305,17 @@ void BubbleDelegateView::HandleVisibilityChanged(Widget* widget, bool visible) {
     else
       anchor_widget()->GetTopLevelWidget()->EnableInactiveRendering();
   }
+
+  // Fire AX_EVENT_ALERT for bubbles marked as AX_ROLE_ALERT_DIALOG; this
+  // instructs accessibility tools to read the bubble in its entirety rather
+  // than just its title and initially focused view.  See
+  // http://crbug.com/474622 for details.
+  if (widget == GetWidget() && visible) {
+    ui::AXViewState state;
+    GetAccessibleState(&state);
+    if (state.role == ui::AX_ROLE_ALERT_DIALOG)
+      NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
+  }
 }
 
 }  // namespace views
