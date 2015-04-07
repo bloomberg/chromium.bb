@@ -93,7 +93,8 @@ class MetricsLog {
   void RecordEnvironment(
       const std::vector<MetricsProvider*>& metrics_providers,
       const std::vector<variations::ActiveGroupId>& synthetic_trials,
-      int64 install_date);
+      int64 install_date,
+      int64 metrics_reporting_enabled_date);
 
   // Loads the environment proto that was saved by the last RecordEnvironment()
   // call from prefs and clears the pref value. Returns true on success or false
@@ -146,6 +147,9 @@ class MetricsLog {
       std::vector<variations::ActiveGroupId>* field_trial_ids) const;
 
   ChromeUserMetricsExtension* uma_proto() { return &uma_proto_; }
+
+  // Exposed to allow subclass to access to export the uma_proto. Can be used
+  // by external components to export logs to Chrome.
   const ChromeUserMetricsExtension* uma_proto() const {
     return &uma_proto_;
   }

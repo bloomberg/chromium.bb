@@ -56,17 +56,6 @@ bool IsTestingID(const std::string& id) {
   return id.size() < 16;
 }
 
-// Returns the date at which the current metrics client ID was created as
-// a string containing seconds since the epoch, or "0" if none was found.
-std::string GetMetricsEnabledDate(PrefService* pref) {
-  if (!pref) {
-    NOTREACHED();
-    return "0";
-  }
-
-  return pref->GetString(prefs::kMetricsReportingEnabledTimestamp);
-}
-
 // Computes a SHA-1 hash of |data| and returns it as a hex string.
 std::string ComputeSHA1(const std::string& data) {
   const std::string sha1 = base::SHA1HashString(data);
@@ -302,7 +291,8 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
 void MetricsLog::RecordEnvironment(
     const std::vector<MetricsProvider*>& metrics_providers,
     const std::vector<variations::ActiveGroupId>& synthetic_trials,
-    int64 install_date) {
+    int64 install_date,
+    int64 metrics_reporting_enabled_date) {
   DCHECK(!HasEnvironment());
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
@@ -311,13 +301,9 @@ void MetricsLog::RecordEnvironment(
   if (client_->GetBrand(&brand_code))
     system_profile->set_brand_code(brand_code);
 
-  int enabled_date;
-  bool success =
-      base::StringToInt(GetMetricsEnabledDate(local_state_), &enabled_date);
-  DCHECK(success);
-
   // Reduce granularity of the enabled_date field to nearest hour.
-  system_profile->set_uma_enabled_date(RoundSecondsToHour(enabled_date));
+  system_profile->set_uma_enabled_date(
+      RoundSecondsToHour(metrics_reporting_enabled_date));
 
   // Reduce granularity of the install_date field to nearest hour.
   system_profile->set_install_date(RoundSecondsToHour(install_date));

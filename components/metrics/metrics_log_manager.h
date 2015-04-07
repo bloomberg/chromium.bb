@@ -90,10 +90,11 @@ class MetricsLogManager {
   // Loads any unsent logs from persistent storage.
   void LoadPersistedUnsentLogs();
 
- private:
-  // Saves |log_data| as the given type.
+  // Saves |log_data| as the given type. Public to allow to push log created by
+  // external components.
   void StoreLog(const std::string& log_data, MetricsLog::LogType log_type);
 
+ private:
   // Tracks whether unsent logs (if any) have been loaded from the serializer.
   bool unsent_logs_loaded_;
 

@@ -355,6 +355,10 @@ int64 MetricsService::GetInstallDate() {
   return local_state_->GetInt64(prefs::kInstallDate);
 }
 
+int64 MetricsService::GetMetricsReportingEnabledDate() {
+  return local_state_->GetInt64(prefs::kMetricsReportingEnabledTimestamp);
+}
+
 scoped_ptr<const base::FieldTrial::EntropyProvider>
 MetricsService::CreateEntropyProvider() {
   // TODO(asvitkine): Refactor the code so that MetricsService does not expose
@@ -520,6 +524,10 @@ void MetricsService::ClearSavedStabilityMetrics() {
   local_state_->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
   local_state_->SetInteger(prefs::kStabilityLaunchCount, 0);
   local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
+}
+
+void MetricsService::PushExternalLog(const std::string& log) {
+  log_manager_.StoreLog(log, MetricsLog::ONGOING_LOG);
 }
 
 //------------------------------------------------------------------------------
@@ -1072,7 +1080,7 @@ void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
   std::vector<variations::ActiveGroupId> synthetic_trials;
   GetCurrentSyntheticFieldTrials(&synthetic_trials);
   log->RecordEnvironment(metrics_providers_.get(), synthetic_trials,
-                         GetInstallDate());
+                         GetInstallDate(), GetMetricsReportingEnabledDate());
   UMA_HISTOGRAM_COUNTS_100("UMA.SyntheticTrials.Count",
                            synthetic_trials.size());
 }

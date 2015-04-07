@@ -79,6 +79,8 @@
       'common/media/webrtc_logging_message_data.h',
       'common/media/webrtc_logging_messages.h',
       'common/media_galleries/metadata_types.h',
+      'common/metrics/version_utils.cc',
+      'common/metrics/version_utils.h',
       'common/multi_process_lock.h',
       'common/multi_process_lock_linux.cc',
       'common/multi_process_lock_mac.cc',

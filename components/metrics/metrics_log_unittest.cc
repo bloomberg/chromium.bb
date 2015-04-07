@@ -250,7 +250,7 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
 
   log.RecordEnvironment(std::vector<MetricsProvider*>(),
                         synthetic_trials,
-                        kInstallDate);
+                        kInstallDate, kEnabledDate);
   // Check that the system profile on the log has the correct values set.
   CheckSystemProfile(log.system_profile());
 
@@ -286,7 +286,7 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
         kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client, &prefs_);
     log.RecordEnvironment(std::vector<MetricsProvider*>(),
                           std::vector<variations::ActiveGroupId>(),
-                          kInstallDate);
+                          kInstallDate, kEnabledDate);
     EXPECT_FALSE(prefs_.GetString(kSystemProfilePref).empty());
     EXPECT_FALSE(prefs_.GetString(kSystemProfileHashPref).empty());
   }
@@ -310,7 +310,7 @@ TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
     // Call RecordEnvironment() to record the pref again.
     log.RecordEnvironment(std::vector<MetricsProvider*>(),
                           std::vector<variations::ActiveGroupId>(),
-                          kInstallDate);
+                          kInstallDate, kEnabledDate);
   }
 
   {
@@ -335,7 +335,7 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
   std::vector<MetricsProvider*> metrics_providers;
   log.RecordEnvironment(metrics_providers,
                         std::vector<variations::ActiveGroupId>(),
-                        kInstallDate);
+                        kInstallDate, kEnabledDate);
   log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
                              base::TimeDelta());
   const SystemProfileProto_Stability& stability =
@@ -358,7 +358,7 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   std::vector<MetricsProvider*> metrics_providers;
   log.RecordEnvironment(metrics_providers,
                         std::vector<variations::ActiveGroupId>(),
-                        kInstallDate);
+                        kInstallDate, kEnabledDate);
   log.RecordStabilityMetrics(metrics_providers, base::TimeDelta(),
                              base::TimeDelta());
   const SystemProfileProto_Stability& stability =

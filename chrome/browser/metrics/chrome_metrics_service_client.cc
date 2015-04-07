@@ -27,8 +27,8 @@
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
+#include "chrome/common/metrics/version_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
@@ -80,24 +80,6 @@ namespace {
 // This specifies the amount of time to wait for all renderers to send their
 // data.
 const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
-
-metrics::SystemProfileProto::Channel AsProtobufChannel(
-    chrome::VersionInfo::Channel channel) {
-  switch (channel) {
-    case chrome::VersionInfo::CHANNEL_UNKNOWN:
-      return metrics::SystemProfileProto::CHANNEL_UNKNOWN;
-    case chrome::VersionInfo::CHANNEL_CANARY:
-      return metrics::SystemProfileProto::CHANNEL_CANARY;
-    case chrome::VersionInfo::CHANNEL_DEV:
-      return metrics::SystemProfileProto::CHANNEL_DEV;
-    case chrome::VersionInfo::CHANNEL_BETA:
-      return metrics::SystemProfileProto::CHANNEL_BETA;
-    case chrome::VersionInfo::CHANNEL_STABLE:
-      return metrics::SystemProfileProto::CHANNEL_STABLE;
-  }
-  NOTREACHED();
-  return metrics::SystemProfileProto::CHANNEL_UNKNOWN;
-}
 
 // Standard interval between log uploads, in seconds.
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -199,18 +181,11 @@ bool ChromeMetricsServiceClient::GetBrand(std::string* brand_code) {
 }
 
 metrics::SystemProfileProto::Channel ChromeMetricsServiceClient::GetChannel() {
-  return AsProtobufChannel(chrome::VersionInfo::GetChannel());
+  return metrics::AsProtobufChannel(chrome::VersionInfo::GetChannel());
 }
 
 std::string ChromeMetricsServiceClient::GetVersionString() {
-  chrome::VersionInfo version_info;
-  std::string version = version_info.Version();
-#if defined(ARCH_CPU_64_BITS)
-  version += "-64";
-#endif  // defined(ARCH_CPU_64_BITS)
-  if (!version_info.IsOfficialBuild())
-    version.append("-devel");
-  return version;
+  return metrics::GetVersionString();
 }
 
 void ChromeMetricsServiceClient::OnLogUploadComplete() {
