@@ -89,17 +89,6 @@ remoting.SessionConnectorImpl.prototype.resetConnection_ = function() {
 
   /** @private {remoting.CredentialsProvider} */
   this.credentialsProvider_ = null;
-
-  /** @private {Object<string,remoting.ProtocolExtension>} */
-  this.protocolExtensions_ = {};
-
-  /**
-   * True once a session has been created and we've started the extensions.
-   * This is used to immediately start any extensions that are registered
-   * after the CONNECTED state change.
-   * @private {boolean}
-   */
-  this.protocolExtensionsStarted_ = false;
 };
 
 /**
@@ -327,8 +316,7 @@ remoting.SessionConnectorImpl.prototype.onPluginInitialized_ = function(
   }
 
   this.clientSession_ = new remoting.ClientSession(
-      this.plugin_, this.host_, this.signalStrategy_,
-      this.onProtocolExtensionMessage_.bind(this));
+      this.plugin_, this.host_, this.signalStrategy_);
   remoting.clientSession = this.clientSession_;
 
   this.clientSession_.logHostOfflineErrors(this.logHostOfflineErrors_);
@@ -357,89 +345,6 @@ remoting.SessionConnectorImpl.prototype.closeSession = function() {
 
   base.dispose(this.plugin_);
   this.plugin_ = null;
-};
-
-/**
- * @param {remoting.ProtocolExtension} extension
- */
-remoting.SessionConnectorImpl.prototype.registerProtocolExtension =
-    function(extension) {
-  var types = extension.getExtensionTypes();
-
-  // Make sure we don't have an extension of that type already registered.
-  for (var i=0, len=types.length; i < len; i++) {
-    if (types[i] in this.protocolExtensions_) {
-      console.error(
-          'Attempt to register multiple extensions of the same type: ', type);
-      return;
-    }
-  }
-
-  for (var i=0, len=types.length; i < len; i++) {
-    var type = types[i];
-    this.protocolExtensions_[type] = extension;
-    if (this.protocolExtensionsStarted_) {
-      this.startProtocolExtension_(type);
-    }
-  }
-};
-
-/** @private */
-remoting.SessionConnectorImpl.prototype.initProtocolExtensions_ = function() {
-  base.debug.assert(!this.protocolExtensionsStarted_);
-  for (var type in this.protocolExtensions_) {
-    this.startProtocolExtension_(type);
-  }
-  this.protocolExtensionsStarted_ = true;
-};
-
-/**
- * @param {string} type
- * @private
- */
-remoting.SessionConnectorImpl.prototype.startProtocolExtension_ =
-    function(type) {
-  var extension = this.protocolExtensions_[type];
-  extension.startExtension(this.plugin_.sendClientMessage.bind(this.plugin_));
-};
-
-/**
- * Called when an extension message needs to be handled.
- *
- * @param {string} type The type of the extension message.
- * @param {string} data The payload of the extension message.
- * @return {boolean} Return true if the extension message was recognized.
- * @private
- */
-remoting.SessionConnectorImpl.prototype.onProtocolExtensionMessage_ =
-    function(type, data) {
-  if (type == 'test-echo-reply') {
-    console.log('Got echo reply: ' + data);
-    return true;
-  }
-
-  var message = base.jsonParseSafe(data);
-  if (typeof message != 'object') {
-    console.error('Error parsing extension json data: ' + data);
-    return false;
-  }
-
-  if (type in this.protocolExtensions_) {
-    /** @type {remoting.ProtocolExtension} */
-    var extension = this.protocolExtensions_[type];
-    var handled = false;
-    try {
-      handled = extension.onExtensionMessage(type, message);
-    } catch (/** @type {*} */ err) {
-      console.error('Failed to process protocol extension ' + type +
-                    ' message: ' + err);
-    }
-    if (handled) {
-      return true;
-    }
-  }
-
-  return false;
 };
 
 /**
@@ -472,8 +377,6 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
           this.host_, this.credentialsProvider_, this.clientSession_,
           this.plugin_);
       this.onConnected_(connectionInfo);
-      // Initialize any protocol extensions that may have been added by the app.
-      this.initProtocolExtensions_();
       break;
 
     case remoting.ClientSession.State.CONNECTING:

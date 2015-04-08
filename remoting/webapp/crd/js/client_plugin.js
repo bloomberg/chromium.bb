@@ -24,6 +24,11 @@ remoting.ClientPlugin = function() {};
 remoting.ClientPlugin.prototype.hostDesktop = function() {};
 
 /**
+ * @return {remoting.ProtocolExtensionManager}
+ */
+remoting.ClientPlugin.prototype.extensions = function() {};
+
+/**
  * @return {HTMLElement} The DOM element representing the remote session.
  */
 remoting.ClientPlugin.prototype.element = function() {};
@@ -229,14 +234,6 @@ remoting.ClientPlugin.ConnectionEventHandler.prototype.onConnectionReady =
  */
 remoting.ClientPlugin.ConnectionEventHandler.prototype.onSetCapabilities =
     function(capabilities) {};
-
-/**
- * @param {string} type
- * @param {string} data
- */
-remoting.ClientPlugin.ConnectionEventHandler.prototype.onExtensionMessage =
-    function(type, data) {};
-
 
 /**
  * @interface

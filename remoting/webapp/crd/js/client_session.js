@@ -35,17 +35,13 @@ remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
  * @param {remoting.ClientPlugin} plugin
  * @param {remoting.Host} host The host to connect to.
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
- * @param {function(string, string):boolean} onExtensionMessage The handler for
- *     protocol extension messages. Returns true if a message is recognized;
- *     false otherwise.
  *
  * @constructor
  * @extends {base.EventSourceImpl}
  * @implements {base.Disposable}
  * @implements {remoting.ClientPlugin.ConnectionEventHandler}
  */
-remoting.ClientSession = function(plugin, host, signalStrategy,
-                                  onExtensionMessage) {
+remoting.ClientSession = function(plugin, host, signalStrategy) {
   base.inherits(this, base.EventSourceImpl);
 
   /** @private */
@@ -79,9 +75,6 @@ remoting.ClientSession = function(plugin, host, signalStrategy,
    * @type {boolean} @private
    */
   this.logHostOfflineErrors_ = true;
-
-  /** @private {function(string, string):boolean} */
-  this.onExtensionMessageHandler_ = onExtensionMessage;
 
   /** @private {remoting.ClientPlugin} */
   this.plugin_ = plugin;
@@ -509,14 +502,6 @@ remoting.ClientSession.prototype.onSetCapabilities = function(capabilities) {
   if (this.hasCapability(remoting.ClientSession.Capability.GOOGLE_DRIVE)) {
     this.sendGoogleDriveAccessToken_();
   }
-};
-
-/**
- * @param {string} type
- * @param {string} data
- */
-remoting.ClientSession.prototype.onExtensionMessage = function(type, data) {
-  this.onExtensionMessageHandler_(type, data);
 };
 
 /**

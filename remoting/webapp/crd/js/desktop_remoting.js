@@ -171,7 +171,7 @@ remoting.DesktopRemoting.prototype.onConnected_ = function(connectionInfo) {
   if (connectionInfo.session().hasCapability(
           remoting.ClientSession.Capability.VIDEO_RECORDER)) {
     var recorder = new remoting.VideoFrameRecorder();
-    this.sessionConnector_.registerProtocolExtension(recorder);
+    connectionInfo.plugin().extensions().register(recorder);
     this.connectedView_.setVideoFrameRecorder(recorder);
   }
 

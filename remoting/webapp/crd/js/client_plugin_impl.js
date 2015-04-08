@@ -93,8 +93,13 @@ remoting.ClientPluginImpl = function(container,
     window.setTimeout(this.showPluginForClickToPlay_.bind(this), 500);
   }
 
+  /** @private */
   this.hostDesktop_ = new remoting.ClientPlugin.HostDesktopImpl(
       this, this.postMessage_.bind(this));
+
+  /** @private */
+  this.extensions_ = new remoting.ProtocolExtensionManager(
+      this.sendClientMessage.bind(this));
 
   /** @private {remoting.CredentialsProvider} */
   this.credentials_ = null;
@@ -226,7 +231,11 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
       var error = remoting.ClientSession.ConnectionError.fromString(
           base.getStringAttr(message.data, 'error'));
       handler.onConnectionStatusUpdate(state, error);
-
+      // TODO(kelvinp): Refactor the ClientSession.State into its own file as
+      // the plugin should not depend on ClientSession.
+      if (state === remoting.ClientSession.State.CONNECTED) {
+        this.extensions_.start();
+      }
     } else if (message.method == 'onRouteChanged') {
       var channel = base.getStringAttr(message.data, 'channel');
       var connectionType = base.getStringAttr(message.data, 'connectionType');
@@ -242,10 +251,6 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
           base.getStringAttr(message.data, 'capabilities'));
       handler.onSetCapabilities(capabilities);
 
-    } else if (message.method == 'extensionMessage') {
-      var extMsgType = base.getStringAttr(message.data, 'type');
-      var extMsgData = base.getStringAttr(message.data, 'data');
-      handler.onExtensionMessage(extMsgType, extMsgData);
     }
   }
 
@@ -372,6 +377,11 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
       this.debugRegionHandler_(
           /** @type {{rects: Array<(Array<number>)>}} **/(message.data));
     }
+  } else if (message.method == 'extensionMessage') {
+    var extMsgType = base.getStringAttr(message.data, 'type');
+    var extMsgData = base.getStringAttr(message.data, 'data');
+    this.extensions_.onProtocolExtensionMessage(extMsgType, extMsgData);
+
   }
 };
 
@@ -383,6 +393,9 @@ remoting.ClientPluginImpl.prototype.dispose = function() {
     this.plugin_.parentNode.removeChild(this.plugin_);
     this.plugin_ = null;
   }
+
+  base.dispose(this.extensions_);
+  this.extensions_ = null;
 };
 
 /**
@@ -789,6 +802,10 @@ remoting.ClientPluginImpl.prototype.sendClientMessage =
 
 remoting.ClientPluginImpl.prototype.hostDesktop = function() {
   return this.hostDesktop_;
+};
+
+remoting.ClientPluginImpl.prototype.extensions = function() {
+  return this.extensions_;
 };
 
 /**

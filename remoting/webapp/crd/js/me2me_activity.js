@@ -120,11 +120,11 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
   // Reset the refresh flag so that the next connection will retry if needed.
   this.retryOnHostOffline_ = true;
 
+  var plugin = connectionInfo.plugin();
   if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST)) {
-    this.connector_.registerProtocolExtension(
-        new remoting.CastExtensionHandler());
+    plugin.extensions().register(new remoting.CastExtensionHandler());
   }
-  this.connector_.registerProtocolExtension(new remoting.GnubbyAuthHandler());
+  plugin.extensions().register(new remoting.GnubbyAuthHandler());
   this.pinDialog_.requestPairingIfNecessary(connectionInfo.plugin(),
                                             this.connector_);
 };

@@ -214,7 +214,7 @@ remoting.AppRemoting.prototype.onConnected_ = function(connectionInfo) {
             JSON.stringify({fullName: userInfo.name}));
       });
 
-  this.sessionConnector_.registerProtocolExtension(this);
+  connectionInfo.plugin().extensions().register(this);
 
   this.connectedView_ = new remoting.AppConnectedView(
       document.getElementById('client-container'), connectionInfo);
