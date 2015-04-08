@@ -310,6 +310,23 @@ class ChromeProxyLoFi(ChromeProxyValidation):
   def AddResults(self, tab, results):
     self._metrics.AddResultsForLoFi(tab, results)
 
+class ChromeProxyExpDirective(ChromeProxyValidation):
+  """Correctness measurement for experiment directives in Chrome-Proxy header.
+
+  This test verifies that "exp=test" in the Chrome-Proxy request header
+  causes a bypass on the experiment test page.
+  """
+
+  def __init__(self):
+    super(ChromeProxyExpDirective, self).__init__(restart_after_each_page=True)
+
+  def CustomizeBrowserOptions(self, options):
+    super(ChromeProxyExpDirective, self).CustomizeBrowserOptions(options)
+    options.AppendExtraBrowserArgs('--data-reduction-proxy-experiment=test')
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForBypass(tab, results)
+
 
 class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):
   """Correctness measurement for HTTP proxy fallback to direct."""

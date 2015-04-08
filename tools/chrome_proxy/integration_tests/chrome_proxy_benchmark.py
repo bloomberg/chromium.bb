@@ -124,6 +124,16 @@ class ChromeProxyLoFi(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.lo_fi.lo_fi'
 
 
+class ChromeProxyExpDirective(benchmark.Benchmark):
+  tag = 'exp_directive'
+  test = measurements.ChromeProxyExpDirective
+  page_set = pagesets.ExpDirectivePageSet
+
+  @classmethod
+  def Name(cls):
+    return 'chrome_proxy_benchmark.exp_directive.exp_directive'
+
+
 class ChromeProxyBypass(benchmark.Benchmark):
   tag = 'bypass'
   test = measurements.ChromeProxyBypass
