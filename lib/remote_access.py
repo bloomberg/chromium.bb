@@ -78,6 +78,10 @@ class DefaultDeviceError(RemoteAccessException):
   """Raised when a default ChromiumOSDevice can't be found."""
 
 
+class RunningPidsError(RemoteAccessException):
+  """Raised when unable to get running pids on the device."""
+
+
 def NormalizePort(port, str_ok=True):
   """Checks if |port| is a valid port number and returns the number.
 
@@ -730,6 +734,31 @@ class RemoteDevice(object):
     """Cat a file and pipe over SSH."""
     producer_cmd = ['cat', filepath]
     return self.agent.PipeToRemoteSh(producer_cmd, cmd, **kwargs)
+
+  def GetRunningPids(self, exe, full_path=True):
+    """Get all the running pids on the device with the executable path.
+
+    Args:
+      exe: The executable path to get pids for.
+      full_path: Whether |exe| is a full executable path.
+
+    Raises:
+      RunningPidsError when failing to parse out pids from command output.
+      SSHConnectionError when error occurs during SSH connection.
+    """
+    try:
+      cmd = ['pgrep', exe]
+      if full_path:
+        cmd.append('-f')
+      result = self.agent.RemoteSh(cmd, error_code_ok=True, capture_output=True)
+      try:
+        return [int(pid) for pid in result.output.splitlines()]
+      except ValueError:
+        logging.error('Parsing output failed:\n%s', result.output)
+        raise RunningPidsError('Unable to get running pids of %s' % exe)
+    except SSHConnectionError:
+      logging.error('Error connecting to device %s', self.hostname)
+      raise
 
   def Reboot(self):
     """Reboot the device."""

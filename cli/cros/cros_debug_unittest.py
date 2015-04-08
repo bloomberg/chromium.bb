@@ -71,6 +71,11 @@ class DebugRunThroughTest(cros_test_lib.MockTempDirTestCase):
     self.SetupCommandMock([self.DEVICE, '--exe', self.EXE, '--pid', self.PID])
     self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
 
+  def testExeMustBeFullPath(self):
+    """Test that --exe only takes full path as a valid argument."""
+    self.SetupCommandMock([self.DEVICE, '--exe', 'bash'])
+    self.assertRaises(cros_build_lib.DieSystemExit, self.cmd_mock.inst.Run)
+
   def testDebugProcessWithPid(self):
     """Test that methods are called correctly when pid is provided."""
     self.SetupCommandMock([self.DEVICE, '--pid', self.PID])
@@ -87,19 +92,10 @@ class DebugRunThroughTest(cros_test_lib.MockTempDirTestCase):
     self.assertFalse(self.cmd_mock.patched['_DebugNewProcess'].called)
     self.assertFalse(self.cmd_mock.patched['_DebugRunningProcess'].called)
 
-  def testDebugWithNoRunningProcess(self):
-    """Test that command starts a new process to debug if none is running."""
-    self.SetupCommandMock([self.DEVICE, '--exe', self.EXE])
-    with mock.patch.object(cros_debug.DebugCommand, '_GetRunningPids',
-                           return_value=[]):
-      self.cmd_mock.inst.Run()
-      self.assertTrue(self.cmd_mock.patched['_DebugNewProcess'].called)
-      self.assertFalse(self.cmd_mock.patched['_DebugRunningProcess'].called)
-
   def testDebugNewProcess(self):
     """Test that user can select zero to start a new process to debug."""
     self.SetupCommandMock([self.DEVICE, '--exe', self.EXE])
-    with mock.patch.object(cros_debug.DebugCommand, '_GetRunningPids',
+    with mock.patch.object(remote_access.RemoteDevice, 'GetRunningPids',
                            return_value=['1']):
       with mock.patch.object(
           cros_build_lib, 'GetChoice', return_value=0) as mock_prompt:
@@ -112,7 +108,7 @@ class DebugRunThroughTest(cros_test_lib.MockTempDirTestCase):
   def testDebugRunningProcess(self):
     """Test that user can select none-zero to debug a running process."""
     self.SetupCommandMock([self.DEVICE, '--exe', self.EXE])
-    with mock.patch.object(cros_debug.DebugCommand, '_GetRunningPids',
+    with mock.patch.object(remote_access.RemoteDevice, 'GetRunningPids',
                            return_value=['1']):
       with mock.patch.object(
           cros_build_lib, 'GetChoice', return_value=1) as mock_prompt:

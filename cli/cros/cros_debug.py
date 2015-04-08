@@ -77,17 +77,6 @@ To debug a process by its pid:
         '-p', '--pid', type=int,
         help='The pid of the process on the target device.')
 
-  def _GetRunningPids(self, device):
-    """Get all the running pids on the device with the executable path."""
-    try:
-      result = device.BaseRunCommand(['pgrep', '-fx', self.exe])
-      try:
-        return [int(pid) for pid in result.output.splitlines()]
-      except ValueError:
-        cros_build_lib.Die('Parsing output failed:\n%s', result.output)
-    except cros_build_lib.RunCommandError:
-      return []
-
   def _ListProcesses(self, device, pids):
     """Provided with a list of pids, print out information of the processes."""
     if not pids:
@@ -177,7 +166,7 @@ To debug a process by its pid:
               'File path "%s" does not exist or is not executable on device %s',
               self.exe, self.ssh_hostname)
 
-        pids = self._GetRunningPids(device)
+        pids = device.GetRunningPids(self.exe)
         self._ListProcesses(device, pids)
 
         if self.list:
@@ -201,3 +190,5 @@ To debug a process by its pid:
       logging.error(e)
       if self.options.debug:
         raise
+      else:
+        raise SystemExit(1)
