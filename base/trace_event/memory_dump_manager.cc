@@ -77,10 +77,7 @@ void MemoryDumpManager::Initialize() {
 
 void MemoryDumpManager::SetDelegate(MemoryDumpManagerDelegate* delegate) {
   AutoLock lock(lock_);
-  // TODO(primiano): The DCHECK below is disabled just temporary (and it is
-  // strongly useful). It should be re-enabled soon as crbug.com/474973 is fixed
-  // (ETA: end of April 2015). Commenting out just to de-entangle CL deps.
-  // DCHECK(delegate_ == nullptr);
+  DCHECK_EQ(static_cast<MemoryDumpManagerDelegate*>(nullptr), delegate_);
   delegate_ = delegate;
 }
 

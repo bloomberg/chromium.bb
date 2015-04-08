@@ -401,8 +401,7 @@ void ChildThreadImpl::Init(const Options& options) {
   channel_->AddFilter(bluetooth_message_filter_->GetFilter());
   channel_->AddFilter(navigator_connect_dispatcher_->GetFilter());
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess)) {
+  if (!IsInBrowserProcess()) {
     // In single process mode, browser-side tracing will cover the whole
     // process including renderers.
     channel_->AddFilter(new tracing::ChildTraceMessageFilter(
