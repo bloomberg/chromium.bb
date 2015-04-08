@@ -6849,9 +6849,8 @@ TEST_F(WebFrameSwapTest, RemoteFramesAreIndexable)
     v8::Local<v8::Value> remoteWindow = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window[2]"));
     EXPECT_TRUE(remoteWindow->IsObject());
     v8::Local<v8::Value> windowLength = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window.length"));
-    ASSERT_TRUE(windowLength->IsNumber());
-    v8::Local<v8::Integer> windowLengthInteger = windowLength->ToInteger();
-    EXPECT_EQ(3, windowLengthInteger->Value());
+    ASSERT_TRUE(windowLength->IsInt32());
+    EXPECT_EQ(3, windowLength.As<v8::Int32>()->Value());
 
     reset();
 }
@@ -6865,9 +6864,8 @@ TEST_F(WebFrameSwapTest, RemoteFrameLengthAccess)
     mainFrame()->lastChild()->swap(remoteFrame);
     remoteFrame->setReplicatedOrigin(SecurityOrigin::createUnique());
     v8::Local<v8::Value> remoteWindowLength = mainFrame()->executeScriptAndReturnValue(WebScriptSource("window[2].length"));
-    ASSERT_TRUE(remoteWindowLength->IsNumber());
-    v8::Local<v8::Integer> remoteWindowLengthInteger = remoteWindowLength->ToInteger();
-    EXPECT_EQ(0, remoteWindowLengthInteger->Value());
+    ASSERT_TRUE(remoteWindowLength->IsInt32());
+    EXPECT_EQ(0, remoteWindowLength.As<v8::Int32>()->Value());
 
     reset();
 }
@@ -6911,9 +6909,8 @@ TEST_F(WebFrameSwapTest, FramesOfRemoteParentAreIndexable)
     EXPECT_TRUE(window->StrictEquals(childOfRemoteParent));
 
     v8::Local<v8::Value> windowLength = childFrame->executeScriptAndReturnValue(WebScriptSource("parent.frames.length"));
-    ASSERT_TRUE(windowLength->IsNumber());
-    v8::Local<v8::Integer> windowLengthInteger = windowLength->ToInteger();
-    EXPECT_EQ(1, windowLengthInteger->Value());
+    ASSERT_TRUE(windowLength->IsInt32());
+    EXPECT_EQ(1, windowLength.As<v8::Int32>()->Value());
 
     // Manually reset to break WebViewHelper's dependency on the stack allocated clients.
     reset();
