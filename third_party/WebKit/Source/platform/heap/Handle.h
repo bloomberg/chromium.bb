@@ -276,7 +276,7 @@ class CrossThreadPersistent;
 //
 // We have to construct and destruct Persistent with default RootsAccessor in
 // the same thread.
-template<typename T, typename RootsAccessor /* = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > */ >
+template<typename T, typename RootsAccessor /*= ThreadLocalPersistents<ThreadingTrait<T>::Affinity>*/>
 class Persistent : public PersistentBase<RootsAccessor, Persistent<T, RootsAccessor>> {
 public:
     Persistent() : m_raw(nullptr) { }
@@ -918,84 +918,6 @@ template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { retu
     DEFINE_STATIC_REF(type, name, arguments)
 
 #endif // ENABLE(OILPAN)
-
-template<typename T>
-class TraceEagerlyTrait<Member<T>> {
-public:
-    static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template<typename T>
-class TraceEagerlyTrait<WeakMember<T>> {
-public:
-    static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template<typename T>
-class TraceEagerlyTrait<Persistent<T>> {
-public:
-    static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template<typename T>
-class TraceEagerlyTrait<CrossThreadPersistent<T>> {
-public:
-    static const bool value = TraceEagerlyTrait<T>::value;
-};
-
-template<typename T, typename U, typename V, typename W, typename X>
-class TraceEagerlyTrait<HeapHashMap<T, U, V, W, X>> {
-public:
-    static const bool value = true;
-};
-
-template<typename T, typename U, typename V>
-class TraceEagerlyTrait<HeapHashSet<T, U, V>> {
-public:
-    static const bool value = true;
-};
-
-template<typename T, typename U, typename V>
-class TraceEagerlyTrait<HeapLinkedHashSet<T, U, V>> {
-public:
-    static const bool value = true;
-};
-
-template<typename T, size_t inlineCapacity, typename U>
-class TraceEagerlyTrait<HeapListHashSet<T, inlineCapacity, U>> {
-public:
-    static const bool value = true;
-};
-
-template<typename T, size_t inlineCapacity>
-class TraceEagerlyTrait<WTF::ListHashSetNode<T, HeapListHashSetAllocator<T, inlineCapacity>>> {
-public:
-    static const bool value = false;
-};
-
-template<typename T, size_t inlineCapacity>
-class TraceEagerlyTrait<HeapVector<T, inlineCapacity>> {
-public:
-    static const bool value = true;
-};
-
-template<typename T, typename U>
-class TraceEagerlyTrait<HeapVectorBacking<T, U>> {
-public:
-    static const bool value = true;
-};
-
-template<typename T, size_t inlineCapacity>
-class TraceEagerlyTrait<HeapDeque<T, inlineCapacity>> {
-public:
-    static const bool value = true;
-};
-
-template<typename T, typename U, typename V>
-class TraceEagerlyTrait<HeapHashCountedSet<T, U, V>> {
-public:
-    static const bool value = true;
-};
 
 } // namespace blink
 

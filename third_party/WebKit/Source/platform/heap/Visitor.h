@@ -54,8 +54,11 @@ class GarbageCollectedMixin;
 class HeapObjectHeader;
 class InlinedGlobalMarkingVisitor;
 template<typename T> class Member;
-template<typename T> class WeakMember;
+template<ThreadAffinity affinity> class ThreadLocalPersistents;
+template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity>> class Persistent;
+template<typename T> class CrossThreadPersistent;
 class Visitor;
+template<typename T> class WeakMember;
 
 template <typename T> struct IsGarbageCollectedType;
 #define STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \
@@ -323,6 +326,37 @@ class TraceEagerlyTrait<TYPE> {                  \
 public:                                          \
     static const bool value = false;             \
 }
+
+template<typename T>
+class TraceEagerlyTrait<Member<T>> {
+public:
+    static const bool value = TraceEagerlyTrait<T>::value;
+};
+
+template<typename T>
+class TraceEagerlyTrait<WeakMember<T>> {
+public:
+    static const bool value = TraceEagerlyTrait<T>::value;
+};
+
+template<typename T>
+class TraceEagerlyTrait<Persistent<T>> {
+public:
+    static const bool value = TraceEagerlyTrait<T>::value;
+};
+
+template<typename T>
+class TraceEagerlyTrait<CrossThreadPersistent<T>> {
+public:
+    static const bool value = TraceEagerlyTrait<T>::value;
+};
+
+template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
+template<typename T, size_t inlineCapacity>
+class TraceEagerlyTrait<WTF::ListHashSetNode<T, HeapListHashSetAllocator<T, inlineCapacity>>> {
+public:
+    static const bool value = false;
+};
 
 template<typename Collection>
 struct OffHeapCollectionTraceTrait;

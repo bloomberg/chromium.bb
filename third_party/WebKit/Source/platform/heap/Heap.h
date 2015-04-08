@@ -90,8 +90,6 @@ static const intptr_t zappedVTable = 0xd0d;
 class CallbackStack;
 class PageMemory;
 class NormalPageHeap;
-template<ThreadAffinity affinity> class ThreadLocalPersistents;
-template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity>> class Persistent;
 
 #if ENABLE(GC_PROFILING)
 class TracedValue;
