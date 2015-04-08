@@ -256,13 +256,6 @@ public:
 
 #endif
 
-    // FIXME: This could be used when changing the size of a renderer without children to skip some invalidations.
-    // FIXME: This is incorrect for document element. Remove this when we enable slimming paint.
-    bool rendererHasNoBoxEffectObsolete() const
-    {
-        return !style()->hasVisualOverflowingEffect() && !style()->hasBorder() && !style()->hasBackground();
-    }
-
     // Correct version of !rendererHasNoBoxEffectObsolete().
     bool hasBoxEffect() const
     {
