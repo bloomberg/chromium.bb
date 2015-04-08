@@ -25,6 +25,7 @@ source_set("heap") {
     "SafePoint.h",
     "ThreadState.cpp",
     "ThreadState.h",
+    "ThreadingTraits.h",
     "Visitor.h",
   ]
 

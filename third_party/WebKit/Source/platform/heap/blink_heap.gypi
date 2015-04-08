@@ -48,6 +48,7 @@
       'StackFrameDepth.h',
       'ThreadState.cpp',
       'ThreadState.h',
+      'ThreadingTraits.h',
       'Visitor.h',
     ],
     'platform_heap_test_files': [

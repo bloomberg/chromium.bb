@@ -33,6 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/AddressSanitizer.h"
+#include "platform/heap/ThreadingTraits.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -69,49 +70,6 @@ using VisitorCallback = void (*)(Visitor*, void* self);
 using TraceCallback = VisitorCallback;
 using WeakPointerCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
-
-// ThreadAffinity indicates which threads objects can be used on. We
-// distinguish between objects that can be used on the main thread
-// only and objects that can be used on any thread.
-//
-// For objects that can only be used on the main thread we avoid going
-// through thread-local storage to get to the thread state.
-//
-// FIXME: We should evaluate the performance gain. Having
-// ThreadAffinity is complicating the implementation and we should get
-// rid of it if it is fast enough to go through thread-local storage
-// always.
-enum ThreadAffinity {
-    AnyThread,
-    MainThreadOnly,
-};
-
-// FIXME: These forward declarations violate dependency rules. Remove them.
-// Ideally we want to provide a USED_IN_MAIN_THREAD_ONLY(T) macro, which
-// indicates that classes in T's hierarchy are used only by the main thread.
-class Node;
-class NodeList;
-
-template<typename T,
-    bool mainThreadOnly = WTF::IsSubclass<typename WTF::RemoveConst<T>::Type, Node>::value
-        || WTF::IsSubclass<typename WTF::RemoveConst<T>::Type, NodeList>::value> struct DefaultThreadingTrait;
-
-template<typename T>
-struct DefaultThreadingTrait<T, false> {
-    static const ThreadAffinity Affinity = AnyThread;
-};
-
-template<typename T>
-struct DefaultThreadingTrait<T, true> {
-    static const ThreadAffinity Affinity = MainThreadOnly;
-};
-
-template<typename T>
-struct ThreadingTrait {
-    static const ThreadAffinity Affinity = DefaultThreadingTrait<T>::Affinity;
-};
-
-template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { };
 
 // Declare that a class has a pre-finalizer function.  The function is called in
 // the object's owner thread, and can access Member<>s to other
