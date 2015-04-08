@@ -2086,6 +2086,24 @@ gl_renderer_destroy(struct weston_compositor *ec)
 	free(gr);
 }
 
+static void
+renderer_setup_egl_client_extensions(struct gl_renderer *gr)
+{
+	const char *extensions;
+
+	extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+	if (!extensions) {
+		weston_log("Retrieving EGL client extension string failed.\n");
+		return;
+	}
+
+	if (strstr(extensions, "EGL_EXT_platform_base"))
+		gr->create_platform_window =
+			(void *) eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
+	else
+		weston_log("warning: EGL_EXT_platform_base not supported.\n");
+}
+
 static int
 gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 {
@@ -2132,23 +2150,12 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 			   "supported. Performance could be affected.\n");
 #endif
 
-	extensions =
-		(const char *) eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-	if (!extensions) {
-		weston_log("Retrieving EGL client extension string failed.\n");
-		return 0;
-	}
-
-	if (strstr(extensions, "EGL_EXT_platform_base"))
-		gr->create_platform_window =
-			(void *) eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
-	else
-		weston_log("warning: EGL_EXT_platform_base not supported.\n");
-
 #ifdef EGL_MESA_configless_context
 	if (strstr(extensions, "EGL_MESA_configless_context"))
 		gr->has_configless_context = 1;
 #endif
+
+	renderer_setup_egl_client_extensions(gr);
 
 	return 0;
 }
