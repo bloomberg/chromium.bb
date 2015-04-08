@@ -124,6 +124,7 @@ void ConvolverHandler::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionS
             "The buffer sample rate of " + String::number(buffer->sampleRate())
             + " does not match the context rate of " + String::number(context()->sampleRate())
             + " Hz.");
+        return;
     }
 
     unsigned numberOfChannels = buffer->numberOfChannels();

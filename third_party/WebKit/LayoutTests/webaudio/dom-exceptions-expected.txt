@@ -136,6 +136,7 @@ PASS node.gain.exponentialRampToValueAtTime(Math.pow(2, -150), 0.1) threw except
 PASS oc = new OfflineAudioContext(1, 44100, 44100) did not throw exception.
 PASS conv = oc.createConvolver() did not throw exception.
 PASS conv.buffer = oc.createBuffer(1, 100, 22050) threw exception NotSupportedError: Failed to set the 'buffer' property on 'ConvolverNode': The buffer sample rate of 22050 does not match the context rate of 44100 Hz..
+PASS conv.buffer is null
 PASS panner.channelCount = 1 did not throw exception.
 PASS panner.channelCount = 2 did not throw exception.
 PASS panner.channelCount = 0 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': The channelCount provided (0) is outside the range [1, 2]..

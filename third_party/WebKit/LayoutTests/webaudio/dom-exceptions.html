@@ -260,7 +260,9 @@ function runTest() {
     shouldNotThrow("oc = new OfflineAudioContext(1, 44100, 44100)");
     shouldNotThrow("conv = oc.createConvolver()");
     shouldThrow("conv.buffer = oc.createBuffer(1, 100, 22050)");
-
+    // conv.buffer should be unchanged (null) because the above failed.
+    shouldBeNull("conv.buffer");
+    
     // PannerNode channel count and mode
     panner = context.createPanner();
     // Channel count can only be set to 1 or 2.
