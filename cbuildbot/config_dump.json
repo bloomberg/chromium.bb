@@ -44012,7 +44012,6 @@
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: x86-mario_freon, x86-alex_freon, x86-zgb_freon, x86-alex_he-freon, x86-zgb_he-freon)",
-        "important": true,
         "name": "pineview-freon-release-group"
     },
     "pineview-full-group": {

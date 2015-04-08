@@ -2903,7 +2903,9 @@ _AddGroupConfig('pineview-freon', 'x86-mario_freon', (
 ), (
     'x86-alex_he-freon',
     'x86-zgb_he-freon',
-))
+),
+    important=False
+)
 
 # sandybridge chipset boards
 _AddGroupConfig('sandybridge', 'parrot', (
@@ -3375,6 +3377,7 @@ _waterfall_config_map = {
       'daisy-freon-release-group',
       'jecht-release-group',
       'peach-freon-release-group',
+      'pineview-freon-release-group',
       'rambi-d-release-group',
       'rambi-freon-b-release-group',
       'veyron-b-release-group',
