@@ -46,4 +46,77 @@ promise_test(function() {
     });
 }, 'Verify: "This algorithm preserves... the identity of duplicate objects in graphs."');
 
+promise_test(function() {
+    var name = 'this is a setter';
+
+    var orig = {};
+    orig[name] = 'value';
+
+    var setter_called = false;
+    Object.defineProperty(Object.prototype, name, {
+        set: function(a) {
+            setter_called = true;
+        }
+    });
+
+    assert_true(orig.hasOwnProperty(name));
+
+    return structuredClone(orig).then(function(clone) {
+        assert_equals(typeof clone, 'object', 'Clone should be an object');
+        assert_false(setter_called, 'Setter should not be called by cloning algorithm.');
+        assert_true(clone.hasOwnProperty(name), 'Cloning algorithm should add an own property.')
+        assert_equals(clone[name], orig[name], 'Property value should match');
+    });
+}, 'Verify: "Add a new property..." (objects)');
+
+promise_test(function() {
+    var name = '123456';
+
+    var orig = [];
+    orig[name] = 'value';
+
+    var setter_called = false;
+    Object.defineProperty(Object.prototype, name, {
+        set: function(a) {
+            setter_called = true;
+        }
+    });
+
+    assert_true(orig.hasOwnProperty(name));
+
+    return structuredClone(orig).then(function(clone) {
+        assert_true(Array.isArray(clone), 'Clone should be an Array');
+        assert_false(setter_called, 'Setter should not be called by cloning algorithm.');
+        assert_true(clone.hasOwnProperty(name), 'Cloning algorithm should add an own property.')
+        assert_equals(clone[name], orig[name], 'Property value should match');
+    });
+}, 'Verify: "Add a new property..." (arrays)');
+
+promise_test(function() {
+    var name = '256';
+
+    var orig = [];
+    for (var i = 0; i < 256; ++i) {
+        orig[i] = i;
+    }
+
+    orig[name] = 'value';
+
+    var setter_called = false;
+    Object.defineProperty(Object.prototype, name, {
+        set: function(a) {
+            setter_called = true;
+        }
+    });
+
+    assert_true(orig.hasOwnProperty(name));
+
+    return structuredClone(orig).then(function(clone) {
+        assert_true(Array.isArray(clone), 'Clone should be an Array');
+        assert_false(setter_called, 'Setter should not be called by cloning algorithm.');
+        assert_true(clone.hasOwnProperty(name), 'Cloning algorithm should add an own property.')
+        assert_equals(clone[name], orig[name], 'Property value should match');
+    });
+}, 'Verify: "Add a new property..." (dense arrays)');
+
 </script>

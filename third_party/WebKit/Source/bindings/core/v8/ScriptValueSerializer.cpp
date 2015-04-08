@@ -1819,10 +1819,13 @@ bool ScriptValueDeserializer::completeDenseArray(uint32_t numProperties, uint32_
         return false;
     if (length > stackDepth())
         return false;
+    v8::Isolate* isolate = m_reader.scriptState()->isolate();
     for (unsigned i = 0, stackPos = stackDepth() - length; i < length; i++, stackPos++) {
         v8::Local<v8::Value> elem = element(stackPos);
-        if (!elem->IsUndefined())
-            array->Set(i, elem);
+        if (!elem->IsUndefined()) {
+            // TODO(jsbell): Use DefineOwnProperty when exposed by v8. http://crbug.com/475206
+            array->ForceSet(v8::Integer::New(isolate, i), elem);
+        }
     }
     pop(length);
     return true;
@@ -1883,7 +1886,8 @@ bool ScriptValueDeserializer::initializeObject(v8::Local<v8::Object> object, uin
     for (unsigned i = stackDepth() - length; i < stackDepth(); i += 2) {
         v8::Local<v8::Value> propertyName = element(i);
         v8::Local<v8::Value> propertyValue = element(i + 1);
-        object->Set(propertyName, propertyValue);
+        // TODO(jsbell): Use DefineOwnProperty when exposed by v8. http://crbug.com/475206
+        object->ForceSet(propertyName, propertyValue);
     }
     pop(length);
     *value = object;
