@@ -243,6 +243,7 @@ static inline void removeFromCacheAndInvalidateDependencies(LayoutObject* object
 
     if (!object->node() || !object->node()->isSVGElement())
         return;
+
     SVGElementSet* dependencies = toSVGElement(object->node())->setOfIncomingReferences();
     if (!dependencies)
         return;
@@ -251,10 +252,9 @@ static inline void removeFromCacheAndInvalidateDependencies(LayoutObject* object
     // reference graph adjustments on changes, so we need to break possible cycles here.
     // This strong reference is safe, as it is guaranteed that this set will be emptied
     // at the end of recursion.
-    typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement>> SVGElementSet;
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGElementSet>, invalidatingDependencies, (adoptPtrWillBeNoop(new SVGElementSet)));
 
-    for (auto* element : *dependencies) {
+    for (SVGElement* element : *dependencies) {
         if (LayoutObject* layoutObject = element->layoutObject()) {
             if (UNLIKELY(!invalidatingDependencies->add(element).isNewEntry)) {
                 // Reference cycle: we are in process of invalidating this dependant.
