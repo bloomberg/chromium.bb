@@ -84,8 +84,8 @@ QUnit.Assert.prototype.throws = function(a, opt_b, opt_message) {};
 
 /**
  * @typedef {{
- *   beforeEach: (function(QUnit.Assert=) | undefined),
- *   afterEach: (function(QUnit.Assert=) | undefined)
+ *   beforeEach: (function(!QUnit.Assert) | undefined),
+ *   afterEach: (function(!QUnit.Assert) | undefined)
  * }}
  */
 QUnit.ModuleArgs;
@@ -98,6 +98,6 @@ QUnit.module = function(desc, opt_args) {};
 
 /**
  * @param {string} desc
- * @param {function(QUnit.Assert)} f
+ * @param {function(!QUnit.Assert)} f
  */
 QUnit.test = function(desc, f) {};

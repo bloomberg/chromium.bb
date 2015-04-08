@@ -62,7 +62,10 @@ chromeMocks.runtime = {};
 
 /** @constructor */
 chromeMocks.runtime.Port = function() {
+  /** @const */
   this.onMessage = new chromeMocks.Event();
+
+  /** @const */
   this.onDisconnect = new chromeMocks.Event();
 
   /** @type {string} */
@@ -99,6 +102,24 @@ chromeMocks.runtime.sendMessage = function(extensionId, message,
         message_copy, {id: extensionId}, responseCallback);
   });
 };
+
+/**
+ * Always returns the same mock port for given application name.
+ * @param {string} application
+ * @return {chromeMocks.runtime.Port}
+ */
+chromeMocks.runtime.connectNative = function(application) {
+  var port = nativePorts[application];
+  if (port === undefined) {
+    port = new chromeMocks.runtime.Port();
+    port.name = application;
+    nativePorts[application] = port;
+  }
+  return port;
+};
+
+/** @const {Object<string,!chromeMocks.runtime.Port>} */
+var nativePorts = null;
 
 /** @type {string} */
 chromeMocks.runtime.id = 'extensionId';
@@ -225,6 +246,7 @@ chromeMocks.activate = function(components) {
     throw new Error('chromeMocks.activate() can only be called once.');
   }
   originals_ = {};
+  nativePorts = {};
   components.forEach(function(component) {
     if (!chromeMocks[component]) {
       throw new Error('No mocks defined for chrome.' + component);
@@ -242,6 +264,7 @@ chromeMocks.restore = function() {
     chrome[components] = originals_[components];
   }
   originals_ = null;
+  nativePorts = null;
 };
 
 })();

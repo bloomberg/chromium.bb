@@ -76,6 +76,7 @@
       'webapp/crd/js/fallback_signal_strategy_unittest.js',
       'webapp/crd/js/gcd_client_unittest.js',
       'webapp/crd/js/gcd_client_with_mock_xhr_unittest.js',
+      'webapp/crd/js/host_daemon_facade_unittest.js',
       'webapp/crd/js/host_table_entry_unittest.js',
       'webapp/crd/js/identity_unittest.js',
       'webapp/crd/js/l10n_unittest.js',
