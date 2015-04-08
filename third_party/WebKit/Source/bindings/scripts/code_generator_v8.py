@@ -126,7 +126,9 @@ class TypedefResolver(Visitor):
 
     def resolve(self, definitions, definition_name):
         """Traverse definitions and resolves typedefs with the actual types."""
-        self.typedefs = self.info_provider.typedefs
+        self.typedefs = {}
+        for name, typedef in self.info_provider.typedefs.iteritems():
+            self.typedefs[name] = typedef.idl_type
         self.additional_includes = set()
         definitions.accept(self)
         self._update_dependencies_include_paths(definition_name)

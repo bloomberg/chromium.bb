@@ -153,9 +153,9 @@ def collect_union_types_from_definitions(definitions):
             this_union_types.add(callback_function.idl_type)
     for dictionary in definitions.dictionaries.itervalues():
         this_union_types.update(union_types_from(dictionary.members))
-    for idl_type in definitions.typedefs.itervalues():
-        if idl_type.is_union_type:
-            this_union_types.add(idl_type)
+    for typedef in definitions.typedefs.itervalues():
+        if typedef.idl_type.is_union_type:
+            this_union_types.add(typedef.idl_type)
     return this_union_types
 
 

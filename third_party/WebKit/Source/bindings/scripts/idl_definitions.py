@@ -113,8 +113,8 @@ class IdlDefinitions(object):
                 # For simplicity, treat exceptions as interfaces
                 self.interfaces[exception.name] = exception
             elif child_class == 'Typedef':
-                type_name = child.GetName()
-                self.typedefs[type_name] = typedef_node_to_type(child)
+                typedef = IdlTypedef(child)
+                self.typedefs[typedef.name] = typedef
             elif child_class == 'Enum':
                 enumeration = IdlEnum(idl_name, child)
                 self.enumerations[enumeration.name] = enumeration
@@ -131,13 +131,14 @@ class IdlDefinitions(object):
 
     def accept(self, visitor):
         visitor.visit_definitions(self)
-        # FIXME: Visit typedefs as well. (We need to add IdlTypedef to do that).
         for interface in self.interfaces.itervalues():
             interface.accept(visitor)
         for callback_function in self.callback_functions.itervalues():
             callback_function.accept(visitor)
         for dictionary in self.dictionaries.itervalues():
             dictionary.accept(visitor)
+        for typedef in self.typedefs.itervalues():
+            typedef.accept(visitor)
 
     def update(self, other):
         """Update with additional IdlDefinitions."""
@@ -252,6 +253,21 @@ class IdlEnum(object):
         self.values = []
         for child in node.GetChildren():
             self.values.append(child.GetName())
+
+
+################################################################################
+# Typedefs
+################################################################################
+
+class IdlTypedef(object):
+    idl_type_attributes = ('idl_type',)
+
+    def __init__(self, node):
+        self.name = node.GetName()
+        self.idl_type = typedef_node_to_type(node)
+
+    def accept(self, visitor):
+        visitor.visit_typedef(self)
 
 
 ################################################################################
@@ -1048,6 +1064,9 @@ class Visitor(object):
 
     def visit_interface(self, interface):
         pass
+
+    def visit_typedef(self, typedef):
+        self.visit_typed_object(typedef)
 
     def visit_attribute(self, attribute):
         self.visit_typed_object(attribute)
