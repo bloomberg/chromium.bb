@@ -20,11 +20,11 @@
 namespace blink {
 
 static const char kBasicScript[] = "alert('test');";
-static const char kSha256Integrity[] = "ni:///sha-256;GAF48QOoxRvu0gZAmQivUdJPyBacqznBAXwnkfpmQX4=";
-static const char kSha384Integrity[] = "ni:///sha-384;nep3XpvhUxpCMOVXIFPecThAqdY_uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
-static const char kSha512Integrity[] = "ni:///sha-512;TXkJw18PqlVlEUXXjeXbGetop1TKB3wYQIp1_ihxCOFGUfG9TYOaA1MlkpTAqSV6yaevLO8Tj5pgH1JmZ--ItA==";
-static const char kSha384IntegrityLabeledAs256[] = "ni:///sha-256;nep3XpvhUxpCMOVXIFPecThAqdY_uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
-static const char kUnsupportedHashFunctionIntegrity[] = "ni:///sha-1;JfLW308qMPKfb4DaHpUBEESwuPc=";
+static const char kSha256Integrity[] = "sha-256;GAF48QOoxRvu0gZAmQivUdJPyBacqznBAXwnkfpmQX4=";
+static const char kSha384Integrity[] = "sha-384;nep3XpvhUxpCMOVXIFPecThAqdY_uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
+static const char kSha512Integrity[] = "sha-512;TXkJw18PqlVlEUXXjeXbGetop1TKB3wYQIp1_ihxCOFGUfG9TYOaA1MlkpTAqSV6yaevLO8Tj5pgH1JmZ--ItA==";
+static const char kSha384IntegrityLabeledAs256[] = "sha-256;nep3XpvhUxpCMOVXIFPecThAqdY_uVeiD4kXSqXpx0YJUWU4fTTaFgciTuZk7fmE";
+static const char kUnsupportedHashFunctionIntegrity[] = "sha-1;JfLW308qMPKfb4DaHpUBEESwuPc=";
 
 class SubresourceIntegrityTest : public ::testing::Test {
 public:
@@ -194,10 +194,10 @@ TEST_F(SubresourceIntegrityTest, ParseAlgorithm)
 TEST_F(SubresourceIntegrityTest, ParseDigest)
 {
     expectDigest("abcdefg", "abcdefg");
-    expectDigest("abcdefg?", "abcdefg");
     expectDigest("ab+de/g", "ab+de/g");
     expectDigest("ab-de_g", "ab+de/g");
 
+    expectDigestFailure("abcdefg?");
     expectDigestFailure("?");
     expectDigestFailure("&&&foobar&&&");
     expectDigestFailure("\x01\x02\x03\x04");
@@ -205,18 +205,19 @@ TEST_F(SubresourceIntegrityTest, ParseDigest)
 
 TEST_F(SubresourceIntegrityTest, ParseMimeType)
 {
-    expectMimeType("?ct=application/javascript", "application/javascript");
-    expectMimeType("?ct=application/xhtml+xml", "application/xhtml+xml");
-    expectMimeType("?ct=text/vnd.abc", "text/vnd.abc");
-    expectMimeType("?ct=video/x-ms-wmv", "video/x-ms-wmv");
+    expectMimeType("type:application/javascript ", "application/javascript");
+    expectMimeType("type:application/xhtml+xml ", "application/xhtml+xml");
+    expectMimeType("type:text/vnd.abc ", "text/vnd.abc");
+    expectMimeType("type:video/x-ms-wmv ", "video/x-ms-wmv");
+    expectMimeType("?ct=video/x-ms-wmv ", "");
+    expectMimeType("boo:video/x-ms-wmv ", "");
 
-    expectMimeTypeFailure("application/javascript");
-    expectMimeTypeFailure("?application/javascript");
-    expectMimeTypeFailure("?not-ct=application/javascript");
-    expectMimeTypeFailure("?ct==application/javascript");
-    expectMimeTypeFailure("?yay=boo&ct=application/javascript");
-    expectMimeTypeFailure("?ct=application/javascript&yay=boo");
-    expectMimeTypeFailure("?ct=video%2Fx-ms-wmv");
+    expectMimeTypeFailure("type:video/x-ms-wmv");
+    expectMimeTypeFailure("type:?application/javascript ");
+    expectMimeTypeFailure("type:=application/javascript ");
+    expectMimeTypeFailure("type:boo&ct=application/javascript ");
+    expectMimeTypeFailure("type:application/javascript&yay=boo ");
+    expectMimeTypeFailure("type:video%2Fx-ms-wmv ");
 }
 
 //
@@ -225,61 +226,67 @@ TEST_F(SubresourceIntegrityTest, ParseMimeType)
 
 TEST_F(SubresourceIntegrityTest, Parsing)
 {
-    expectParseFailure("", SubresourceIntegrity::IntegrityParseErrorFatal);
-    expectParseFailure("not_really_a_valid_anything", SubresourceIntegrity::IntegrityParseErrorFatal);
-    expectParseFailure("foobar:///sha256;abcdefg", SubresourceIntegrity::IntegrityParseErrorFatal);
-    expectParseFailure("ni://sha256;abcdefg", SubresourceIntegrity::IntegrityParseErrorFatal);
-    expectParseFailure("ni:///not-sha256-at-all;abcdefg", SubresourceIntegrity::IntegrityParseErrorNonfatal);
-    expectParseFailure("ni:///sha256;&&&foobar&&&", SubresourceIntegrity::IntegrityParseErrorFatal);
-    expectParseFailure("ni:///sha256;\x01\x02\x03\x04", SubresourceIntegrity::IntegrityParseErrorFatal);
+    expectParseFailure("", SubresourceIntegrity::IntegrityParseErrorNonfatal);
+    expectParseFailure("not_really_a_valid_anything", SubresourceIntegrity::IntegrityParseErrorNonfatal);
+    expectParseFailure("foobar:///sha256;abcdefg", SubresourceIntegrity::IntegrityParseErrorNonfatal);
+    expectParseFailure("ni:///sha256;abcdefg", SubresourceIntegrity::IntegrityParseErrorNonfatal);
+    expectParseFailure("not-sha256-at-all;abcdefg", SubresourceIntegrity::IntegrityParseErrorNonfatal);
+    expectParseFailure("sha256;&&&foobar&&&", SubresourceIntegrity::IntegrityParseErrorFatal);
+    expectParseFailure("sha256;\x01\x02\x03\x04", SubresourceIntegrity::IntegrityParseErrorFatal);
 
     expectParse(
-        "ni:///sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
+        "sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
         "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
         HashAlgorithmSha256,
         "");
 
     expectParse(
-        "ni:///sha-256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
+        "sha-256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
         "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
         HashAlgorithmSha256,
         "");
 
     expectParse(
-        "     ni:///sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=     ",
+        "     sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=     ",
         "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
         HashAlgorithmSha256,
         "");
 
     expectParse(
-        "ni:///sha384;XVVXBGoYw6AJOh9J-Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup_tA1v5GPr",
+        "sha384;XVVXBGoYw6AJOh9J-Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup_tA1v5GPr",
         "XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
         HashAlgorithmSha384,
         "");
 
     expectParse(
-        "ni:///sha-384;XVVXBGoYw6AJOh9J_Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup_tA1v5GPr",
+        "sha-384;XVVXBGoYw6AJOh9J_Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup_tA1v5GPr",
         "XVVXBGoYw6AJOh9J/Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
         HashAlgorithmSha384,
         "");
 
     expectParse(
-        "ni:///sha512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ-07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        "sha512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ-07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
         "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
         HashAlgorithmSha512,
         "");
 
     expectParse(
-        "ni:///sha-512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ-07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        "sha-512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ-07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
         "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
         HashAlgorithmSha512,
         "");
+
+    expectParse(
+        "type:application/javascript sha-512;tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ-07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        "tbUPioKbVBplr0b1ucnWB57SJWt4x9dOE0Vy2mzCXvH3FepqDZ+07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
+        HashAlgorithmSha512,
+        "application/javascript");
 }
 
 TEST_F(SubresourceIntegrityTest, ParsingBase64)
 {
     expectParse(
-        "ni:///sha384;XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
+        "sha384;XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
         "XVVXBGoYw6AJOh9J+Z8pBDMVVPfkBpngexkA7JqZu8d5GENND6TEIup/tA1v5GPr",
         HashAlgorithmSha384,
         "");

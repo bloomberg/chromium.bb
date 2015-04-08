@@ -1,0 +1,6 @@
+CONSOLE ERROR: Error parsing 'integrity' attribute ('type:applicationjavascript sha256;_CPhHgLf4bYjXZA6KVnegM7ECdy7A3f35ntfHeYy9zI='). The content type could not be parsed.
+CONSOLE ERROR: Subresource Integrity: The resource 'http://127.0.0.1:8000/security/subresourceIntegrity/resources/setResultWithMIME.php?mime=application/javascript&value=true' was delivered as type 'application/javascript', which does not match the expected type 'app/javascript'. The resource has been blocked.
+This is a testharness.js-based test.
+PASS Test that scripts with bad MIME types don't load. 
+Harness: the test ran to completion.
+

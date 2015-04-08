@@ -149,15 +149,15 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
 
 // Before:
 //
-// ni:///[algorithm];[hash]
-//       ^                 ^
-//       position          end
+// [algorithm];[hash]
+// ^                 ^
+// position          end
 //
 // After (if successful: if the method returns false, we make no promises and the caller should exit early):
 //
-// ni:///[algorithm];[hash]
-//                  ^      ^
-//           position    end
+// [algorithm];[hash]
+//            ^      ^
+//     position    end
 bool SubresourceIntegrity::parseAlgorithm(const UChar*& position, const UChar* end, HashAlgorithm& algorithm)
 {
     // Any additions or subtractions from this struct should also modify the
@@ -187,21 +187,21 @@ bool SubresourceIntegrity::parseAlgorithm(const UChar*& position, const UChar* e
 
 // Before:
 //
-// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
-//                   ^     ^                              ^              ^
-//            position   end                       position            end
+// type:[params] [algorithm];[hash]
+//                           ^     ^
+//                    position   end
 //
 // After (if successful: if the method returns false, we make no promises and the caller should exit early):
 //
-// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
-//                         ^                                    ^        ^
-//                         position/end                  position      end
+// type:[params] [algorithm];[hash]
+//                                 ^
+//                                 position/end
 bool SubresourceIntegrity::parseDigest(const UChar*& position, const UChar* end, String& digest)
 {
     const UChar* begin = position;
     skipWhile<UChar, isIntegrityCharacter>(position, end);
 
-    if (position == begin || (position != end && *position != '?')) {
+    if (position != end) {
         digest = emptyString();
         return false;
     }
@@ -214,25 +214,29 @@ bool SubresourceIntegrity::parseDigest(const UChar*& position, const UChar* end,
 
 // Before:
 //
-// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
-//                         ^                                    ^        ^
-//              position/end                             position      end
+// [algorithm];[hash]     OR      type:[params] [algorithm];[hash]
+// ^                 ^            ^                               ^
+// position        end            position                      end
 //
 // After (if successful: if the method returns false, we make no promises and the caller should exit early):
 //
-// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
-//                         ^                                             ^
-//              position/end                                  position/end
+// [algorithm];[hash]     OR      type:[params] [algorithm];[hash]
+// ^                 ^                          ^                 ^
+// position        end                          position        end
 bool SubresourceIntegrity::parseMimeType(const UChar*& position, const UChar* end, String& type)
 {
     type = emptyString();
+
+    const UChar* begin = position;
+    if (!skipToken<UChar>(position, end, "type:")) {
+        position = begin;
+        return true;
+    }
+
+    begin = position;
     if (position == end)
         return true;
 
-    if (!skipToken<UChar>(position, end, "?ct="))
-        return false;
-
-    const UChar* begin = position;
     skipWhile<UChar, isASCIIAlpha>(position, end);
     if (position == end)
         return false;
@@ -244,10 +248,12 @@ bool SubresourceIntegrity::parseMimeType(const UChar*& position, const UChar* en
         return false;
 
     skipWhile<UChar, isTypeCharacter>(position, end);
-    if (position != end)
+    if (!isASCIISpace(*position))
         return false;
 
     type = String(begin, position - begin);
+    skipWhile<UChar, isASCIISpace>(position, end);
+
     return true;
 }
 
@@ -258,8 +264,8 @@ SubresourceIntegrity::IntegrityParseResult SubresourceIntegrity::parseIntegrityA
     const UChar* position = characters.data();
     const UChar* end = characters.end();
 
-    if (!skipToken<UChar>(position, end, "ni:///")) {
-        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The value must begin with 'ni:///'.", document);
+    if (!parseMimeType(position, end, type)) {
+        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The content type could not be parsed.", document);
         return IntegrityParseErrorFatal;
     }
 
@@ -279,11 +285,6 @@ SubresourceIntegrity::IntegrityParseResult SubresourceIntegrity::parseIntegrityA
 
     if (!parseDigest(position, end, digest)) {
         logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The digest must be a valid, base64-encoded value.", document);
-        return IntegrityParseErrorFatal;
-    }
-
-    if (!parseMimeType(position, end, type)) {
-        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The content type could not be parsed.", document);
         return IntegrityParseErrorFatal;
     }
 

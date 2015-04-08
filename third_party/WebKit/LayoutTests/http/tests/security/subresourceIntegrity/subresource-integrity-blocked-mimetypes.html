@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<head>
+    <title>SRI with bad MIME types are blocked</title>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+</head>
+<body>
+        <script>
+            var test = async_test("Test that scripts with bad MIME types don't load.");
+            var result = false;
+            var tests = [
+                {
+                    'src': 'resources/setResultWithMIME.php?mime=application/javascript&value=true',
+                    'integrity': 'type:applicationjavascript sha256;_CPhHgLf4bYjXZA6KVnegM7ECdy7A3f35ntfHeYy9zI='
+                },
+                {
+                    'src': 'resources/setResultWithMIME.php?mime=application/javascript&value=true',
+                    'integrity': 'type:app/javascript sha256;_CPhHgLf4bYjXZA6KVnegM7ECdy7A3f35ntfHeYy9zI='
+                }
+            ];
+            function scriptLoad() {
+                test.step(function() {
+                    assert_unreached();
+                });
+            }
+            function scriptError() {
+                test.step(function() {
+                    assert_false(result);
+                    nextTest();
+                });
+            }
+            function nextTest() {
+                var next = tests.shift();
+                if (!next) {
+                    test.done();
+                    return;
+                }
+                result = false;
+                var script = document.createElement('script');
+                script.onload = scriptLoad;
+                script.onerror = scriptError;
+                script.src = next.src;
+                script.integrity = next.integrity;
+                document.body.appendChild(script);
+            }
+            window.onload = function() {
+                nextTest();
+            };
+        </script>
+</body>
