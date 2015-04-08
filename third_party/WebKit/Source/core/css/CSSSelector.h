@@ -22,6 +22,7 @@
 #ifndef CSSSelector_h
 #define CSSSelector_h
 
+#include "core/CoreExport.h"
 #include "core/dom/QualifiedName.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "wtf/OwnPtr.h"
@@ -78,7 +79,7 @@ namespace blink {
     // It appears this is used only for pseudo elements that appear in user-agent shadow DOM. They are not exposed to author-created
     // shadow DOM.
 
-    class CSSSelector {
+    class CORE_EXPORT CSSSelector {
         WTF_MAKE_FAST_ALLOCATED(CSSSelector);
     public:
         CSSSelector();

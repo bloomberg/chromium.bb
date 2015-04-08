@@ -22,7 +22,9 @@
 #ifndef RuleFeature_h
 #define RuleFeature_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
+#include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/css/invalidation/StyleInvalidator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
@@ -30,7 +32,6 @@
 
 namespace blink {
 
-class DescendantInvalidationSet;
 class QualifiedName;
 class RuleData;
 class SpaceSplitString;
@@ -48,7 +49,7 @@ public:
     bool hasDocumentSecurityOrigin;
 };
 
-class RuleFeatureSet {
+class CORE_EXPORT RuleFeatureSet {
     DISALLOW_ALLOCATION();
 public:
     RuleFeatureSet();

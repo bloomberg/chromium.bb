@@ -162,7 +162,7 @@ struct CSSParserValue {
     inline void setFromValueList(PassOwnPtr<CSSParserValueList>);
 };
 
-class CSSParserValueList {
+class CORE_EXPORT CSSParserValueList {
     WTF_MAKE_FAST_ALLOCATED(CSSParserValueList);
 public:
     CSSParserValueList()

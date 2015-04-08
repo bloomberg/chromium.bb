@@ -5,17 +5,18 @@
 #ifndef CSSParserTokenRange_h
 #define CSSParserTokenRange_h
 
+#include "core/CoreExport.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-extern const CSSParserToken& staticEOFToken;
+CORE_EXPORT extern const CSSParserToken& staticEOFToken;
 
 // A CSSParserTokenRange is an iterator over a subrange of a vector of CSSParserTokens.
 // Accessing outside of the range will return an endless stream of EOF tokens.
 // This class refers to half-open intervals [first, last).
-class CSSParserTokenRange {
+class CORE_EXPORT CSSParserTokenRange {
 public:
     CSSParserTokenRange(const Vector<CSSParserToken>& vector)
     : m_first(vector.begin())

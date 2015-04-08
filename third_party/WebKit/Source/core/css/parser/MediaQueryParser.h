@@ -5,6 +5,7 @@
 #ifndef MediaQueryParser_h
 #define MediaQueryParser_h
 
+#include "core/CoreExport.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaQueryExp.h"
@@ -47,7 +48,7 @@ public:
     inline void setMediaFeature(const String& str) { m_mediaFeature = str; }
 };
 
-class MediaQueryParser {
+class CORE_EXPORT MediaQueryParser {
     STACK_ALLOCATED();
 public:
     static PassRefPtrWillBeRawPtr<MediaQuerySet> parseMediaQuerySet(const String&);

@@ -26,6 +26,7 @@
 #ifndef FontSelector_h
 #define FontSelector_h
 
+#include "platform/PlatformExport.h"
 #include "platform/fonts/FontCacheClient.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -36,7 +37,7 @@ namespace blink {
 class FontData;
 class FontDescription;
 
-class FontSelector : public FontCacheClient {
+class PLATFORM_EXPORT FontSelector : public FontCacheClient {
 public:
     virtual ~FontSelector() { }
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString& familyName) = 0;

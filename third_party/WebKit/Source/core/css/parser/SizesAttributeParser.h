@@ -5,6 +5,7 @@
 #ifndef SizesAttributeParser_h
 #define SizesAttributeParser_h
 
+#include "core/CoreExport.h"
 #include "core/css/MediaValues.h"
 #include "core/css/parser/MediaQueryBlockWatcher.h"
 #include "core/css/parser/MediaQueryParser.h"
@@ -13,7 +14,7 @@
 
 namespace blink {
 
-class SizesAttributeParser {
+class CORE_EXPORT SizesAttributeParser {
     STACK_ALLOCATED();
 public:
     SizesAttributeParser(PassRefPtr<MediaValues>, const String&);

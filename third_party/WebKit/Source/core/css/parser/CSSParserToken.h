@@ -5,6 +5,7 @@
 #ifndef CSSParserToken_h
 #define CSSParserToken_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSParserValues.h"
 
@@ -62,7 +63,7 @@ enum HashTokenType {
     HashTokenUnrestricted,
 };
 
-class CSSParserToken {
+class CORE_EXPORT CSSParserToken {
 public:
     enum BlockType {
         NotBlock,

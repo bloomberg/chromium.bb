@@ -5,11 +5,12 @@
 #ifndef MediaValuesCached_h
 #define MediaValuesCached_h
 
+#include "core/CoreExport.h"
 #include "core/css/MediaValues.h"
 
 namespace blink {
 
-class MediaValuesCached final : public MediaValues {
+class CORE_EXPORT MediaValuesCached final : public MediaValues {
 public:
     struct MediaValuesCachedData {
         // Members variables must be thread safe, since they're copied to the parser thread

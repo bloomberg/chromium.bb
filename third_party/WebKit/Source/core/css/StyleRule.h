@@ -22,6 +22,7 @@
 #ifndef StyleRule_h
 #define StyleRule_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/MediaList.h"
 #include "platform/heap/Handle.h"
@@ -34,7 +35,7 @@ class CSSStyleSheet;
 class MutableStylePropertySet;
 class StylePropertySet;
 
-class StyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<StyleRuleBase> {
+class CORE_EXPORT StyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<StyleRuleBase> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleBase);
 public:
     enum Type {
@@ -84,11 +85,15 @@ public:
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { };
     void finalizeGarbageCollectedObject();
 
+    // ~StyleRuleBase should be public, because non-public ~StyleRuleBase
+    // causes C2248 error : 'blink::StyleRuleBase::~StyleRuleBase' : cannot
+    // access protected member declared in class 'blink::StyleRuleBase' when
+    // compiling 'source\wtf\refcounted.h' by using msvc.
+    ~StyleRuleBase() { }
+
 protected:
     StyleRuleBase(Type type) : m_type(type) { }
     StyleRuleBase(const StyleRuleBase& o) : m_type(o.m_type) { }
-
-    ~StyleRuleBase() { }
 
 private:
     void destroy();

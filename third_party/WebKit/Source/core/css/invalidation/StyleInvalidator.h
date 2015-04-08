@@ -6,6 +6,7 @@
 #define StyleInvalidator_h
 
 #include "platform/heap/Handle.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -15,6 +16,7 @@ class Element;
 
 class StyleInvalidator {
     DISALLOW_ALLOCATION();
+    WTF_MAKE_NONCOPYABLE(StyleInvalidator);
 public:
     StyleInvalidator();
     ~StyleInvalidator();

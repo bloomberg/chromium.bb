@@ -6,6 +6,7 @@
 #define CSSParser_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "platform/graphics/Color.h"
@@ -23,7 +24,7 @@ class StyleRuleKeyframe;
 class StyleSheetContents;
 
 // This class serves as the public API for the css/parser subsystem
-class CSSParser {
+class CORE_EXPORT CSSParser {
     STATIC_ONLY(CSSParser);
 public:
     // As well as regular rules, allows @import and @namespace but not @charset

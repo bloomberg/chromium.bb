@@ -21,6 +21,7 @@
 #ifndef CSSStyleSheet_h
 #define CSSStyleSheet_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSRule.h"
 #include "core/css/StyleSheet.h"
 #include "platform/heap/Handle.h"
@@ -44,7 +45,7 @@ enum StyleSheetUpdateType {
     EntireStyleSheetUpdate
 };
 
-class CSSStyleSheet final : public StyleSheet {
+class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSStyleSheet> create(PassRefPtrWillBeRawPtr<StyleSheetContents>, CSSImportRule* ownerRule = 0);

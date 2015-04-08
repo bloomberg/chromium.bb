@@ -31,6 +31,7 @@
 #ifndef DescendantInvalidationSet_h
 #define DescendantInvalidationSet_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
@@ -46,7 +47,8 @@ class TracedValue;
 
 // Tracks data to determine which elements of a DOM subtree need to have style
 // recalculated.
-class DescendantInvalidationSet final : public RefCountedWillBeGarbageCollected<DescendantInvalidationSet> {
+class CORE_EXPORT DescendantInvalidationSet final : public RefCountedWillBeGarbageCollected<DescendantInvalidationSet> {
+    WTF_MAKE_NONCOPYABLE(DescendantInvalidationSet);
 public:
     static PassRefPtrWillBeRawPtr<DescendantInvalidationSet> create()
     {

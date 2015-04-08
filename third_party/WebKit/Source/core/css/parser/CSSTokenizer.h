@@ -5,6 +5,7 @@
 #ifndef CSSTokenizer_h
 #define CSSTokenizer_h
 
+#include "core/CoreExport.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "wtf/text/WTFString.h"
@@ -17,7 +18,7 @@ class CSSTokenizerInputStream;
 struct CSSParserString;
 class CSSParserTokenRange;
 
-class CSSTokenizer {
+class CORE_EXPORT CSSTokenizer {
     WTF_MAKE_NONCOPYABLE(CSSTokenizer);
     WTF_MAKE_FAST_ALLOCATED(CSSTokenizer);
 public:

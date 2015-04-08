@@ -26,6 +26,7 @@
 #ifndef CSSFontFace_h
 #define CSSFontFace_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSFontFaceSource.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/FontFace.h"
@@ -40,7 +41,8 @@ class FontDescription;
 class RemoteFontFaceSource;
 class SimpleFontData;
 
-class CSSFontFace final : public NoBaseWillBeGarbageCollectedFinalized<CSSFontFace> {
+class CORE_EXPORT CSSFontFace final : public NoBaseWillBeGarbageCollectedFinalized<CSSFontFace> {
+    WTF_MAKE_NONCOPYABLE(CSSFontFace);
 public:
     struct UnicodeRange;
     class UnicodeRangeSet;

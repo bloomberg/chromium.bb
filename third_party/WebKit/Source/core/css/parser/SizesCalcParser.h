@@ -5,6 +5,7 @@
 #ifndef SizesCalcParser_h
 #define SizesCalcParser_h
 
+#include "core/CoreExport.h"
 #include "core/css/MediaValues.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
@@ -32,7 +33,7 @@ struct SizesCalcValue {
     }
 };
 
-class SizesCalcParser {
+class CORE_EXPORT SizesCalcParser {
 
 public:
     SizesCalcParser(CSSParserTokenRange, PassRefPtr<MediaValues>);

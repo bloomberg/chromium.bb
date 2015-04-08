@@ -22,11 +22,13 @@
 #define StylePropertySet_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSProperty.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "wtf/ListHashSet.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -37,7 +39,8 @@ class ImmutableStylePropertySet;
 class MutableStylePropertySet;
 class StyleSheetContents;
 
-class StylePropertySet : public RefCountedWillBeGarbageCollectedFinalized<StylePropertySet> {
+class CORE_EXPORT StylePropertySet : public RefCountedWillBeGarbageCollectedFinalized<StylePropertySet> {
+    WTF_MAKE_NONCOPYABLE(StylePropertySet);
     friend class PropertyReference;
 public:
 
@@ -184,7 +187,7 @@ inline const StylePropertyMetadata* ImmutableStylePropertySet::metadataArray() c
 
 DEFINE_TYPE_CASTS(ImmutableStylePropertySet, StylePropertySet, set, !set->isMutable(), !set.isMutable());
 
-class MutableStylePropertySet : public StylePropertySet {
+class CORE_EXPORT MutableStylePropertySet : public StylePropertySet {
 public:
     ~MutableStylePropertySet() { }
     static PassRefPtrWillBeRawPtr<MutableStylePropertySet> create(CSSParserMode = HTMLQuirksMode);

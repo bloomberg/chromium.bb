@@ -5,11 +5,13 @@
 #ifndef MediaQueryBlockWatcher_h
 #define MediaQueryBlockWatcher_h
 
+#include "core/CoreExport.h"
+
 namespace blink {
 
 class CSSParserToken;
 
-class MediaQueryBlockWatcher {
+class CORE_EXPORT MediaQueryBlockWatcher {
 public:
 
     MediaQueryBlockWatcher();

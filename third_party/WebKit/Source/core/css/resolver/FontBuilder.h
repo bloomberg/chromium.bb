@@ -24,6 +24,7 @@
 #define FontBuilder_h
 
 #include "core/CSSValueKeywords.h"
+#include "core/CoreExport.h"
 #include "core/css/FontSize.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/heap/Handle.h"
@@ -35,7 +36,7 @@ class CSSValue;
 class FontSelector;
 class ComputedStyle;
 
-class FontBuilder {
+class CORE_EXPORT FontBuilder {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(FontBuilder);
 public:

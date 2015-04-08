@@ -28,6 +28,7 @@
 #ifndef MediaQueryEvaluator_h
 #define MediaQueryEvaluator_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
@@ -52,7 +53,7 @@ typedef WillBeHeapVector<RefPtrWillBeMember<MediaQueryResult>> MediaQueryResultL
 // the device characteristics are not known. This can be used to prune the loading
 // of stylesheets to only those which are probable to match.
 
-class MediaQueryEvaluator {
+class CORE_EXPORT MediaQueryEvaluator {
     WTF_MAKE_NONCOPYABLE(MediaQueryEvaluator); WTF_MAKE_FAST_ALLOCATED(MediaQueryEvaluator);
 public:
     // Creates evaluator which evaluates only simple media queries

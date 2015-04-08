@@ -5,6 +5,7 @@
 #ifndef CSSSelectorParser_h
 #define CSSSelectorParser_h
 
+#include "core/CoreExport.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSParserValues.h"
 
@@ -15,7 +16,7 @@ class StyleSheetContents;
 
 // FIXME: We should consider building CSSSelectors directly instead of using
 // the intermediate CSSParserSelector.
-class CSSSelectorParser {
+class CORE_EXPORT CSSSelectorParser {
 public:
     static void parseSelector(CSSParserTokenRange, const CSSParserContext&, const AtomicString& defaultNamespace, StyleSheetContents*, CSSSelectorList&);
 

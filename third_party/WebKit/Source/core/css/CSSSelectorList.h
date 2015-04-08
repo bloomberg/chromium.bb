@@ -26,13 +26,14 @@
 #ifndef CSSSelectorList_h
 #define CSSSelectorList_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
 
 namespace blink {
 
 class CSSParserSelector;
 
-class CSSSelectorList {
+class CORE_EXPORT CSSSelectorList {
     WTF_MAKE_FAST_ALLOCATED(CSSSelectorList);
 public:
     CSSSelectorList() : m_selectorArray(0) { }

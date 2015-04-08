@@ -5,6 +5,7 @@
 #ifndef MediaValues_h
 #define MediaValues_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/PointerProperties.h"
 #include "public/platform/WebDisplayMode.h"
@@ -17,7 +18,7 @@ class Document;
 class CSSPrimitiveValue;
 class LocalFrame;
 
-class MediaValues : public RefCounted<MediaValues> {
+class CORE_EXPORT MediaValues : public RefCounted<MediaValues> {
 public:
 
     enum MediaValuesMode {

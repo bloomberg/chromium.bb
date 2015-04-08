@@ -26,6 +26,7 @@
 #ifndef CSSFontSelector_h
 #define CSSFontSelector_h
 
+#include "core/CoreExport.h"
 #include "core/css/FontFaceCache.h"
 #include "core/css/FontLoader.h"
 #include "platform/fonts/FontSelector.h"
@@ -41,7 +42,7 @@ class CSSFontSelectorClient;
 class Document;
 class FontDescription;
 
-class CSSFontSelector : public FontSelector {
+class CORE_EXPORT CSSFontSelector : public FontSelector {
 public:
     static PassRefPtrWillBeRawPtr<CSSFontSelector> create(Document* document)
     {

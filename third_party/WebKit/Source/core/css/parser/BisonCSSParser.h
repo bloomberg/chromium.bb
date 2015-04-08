@@ -25,6 +25,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
+#include "core/CoreExport.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSGradientValue.h"
 #include "core/css/CSSProperty.h"
@@ -39,6 +40,7 @@
 #include "core/css/parser/CSSPropertyParser.h"
 #include "platform/graphics/Color.h"
 #include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
@@ -66,8 +68,9 @@ struct CSSParserLocation {
     CSSParserString token;
 };
 
-class BisonCSSParser {
+class CORE_EXPORT BisonCSSParser {
     STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(BisonCSSParser);
     friend inline int cssyylex(void*, BisonCSSParser*);
 public:
     explicit BisonCSSParser(const CSSParserContext&);

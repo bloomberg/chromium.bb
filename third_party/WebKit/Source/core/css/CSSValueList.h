@@ -21,13 +21,14 @@
 #ifndef CSSValueList_h
 #define CSSValueList_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class CSSValueList : public CSSValue {
+class CORE_EXPORT CSSValueList : public CSSValue {
 public:
     using iterator = WillBeHeapVector<RefPtrWillBeMember<CSSValue>, 4>::iterator;
     using const_iterator = WillBeHeapVector<RefPtrWillBeMember<CSSValue>, 4>::const_iterator;

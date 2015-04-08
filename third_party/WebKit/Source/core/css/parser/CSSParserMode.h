@@ -31,6 +31,7 @@
 #ifndef CSSParserMode_h
 #define CSSParserMode_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
@@ -82,7 +83,7 @@ inline bool isUseCounterEnabledForMode(CSSParserMode mode)
 
 class UseCounter;
 
-class CSSParserContext {
+class CORE_EXPORT CSSParserContext {
     WTF_MAKE_FAST_ALLOCATED(CSSParserContext);
 public:
     CSSParserContext(CSSParserMode, UseCounter*);
@@ -132,7 +133,7 @@ private:
     UseCounter* m_useCounter;
 };
 
-const CSSParserContext& strictCSSParserContext();
+CORE_EXPORT const CSSParserContext& strictCSSParserContext();
 
 };
 

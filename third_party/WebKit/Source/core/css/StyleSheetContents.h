@@ -21,6 +21,7 @@
 #ifndef StyleSheetContents_h
 #define StyleSheetContents_h
 
+#include "core/CoreExport.h"
 #include "core/css/RuleSet.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -44,7 +45,7 @@ class StyleRuleBase;
 class StyleRuleFontFace;
 class StyleRuleImport;
 
-class StyleSheetContents : public RefCountedWillBeGarbageCollectedFinalized<StyleSheetContents> {
+class CORE_EXPORT StyleSheetContents : public RefCountedWillBeGarbageCollectedFinalized<StyleSheetContents> {
 public:
     static PassRefPtrWillBeRawPtr<StyleSheetContents> create(const CSSParserContext& context)
     {
@@ -165,6 +166,8 @@ public:
 private:
     StyleSheetContents(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext&);
     StyleSheetContents(const StyleSheetContents&);
+    StyleSheetContents() = delete;
+    StyleSheetContents& operator=(const StyleSheetContents&) = delete;
     void notifyRemoveFontFaceRule(const StyleRuleFontFace*);
 
     Document* clientSingleOwnerDocument() const;

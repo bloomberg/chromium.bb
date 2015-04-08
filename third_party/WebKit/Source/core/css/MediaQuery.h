@@ -29,6 +29,7 @@
 #ifndef MediaQuery_h
 #define MediaQuery_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -40,7 +41,7 @@ class MediaQueryExp;
 
 typedef WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp>> ExpressionHeapVector;
 
-class MediaQuery : public NoBaseWillBeGarbageCollectedFinalized<MediaQuery> {
+class CORE_EXPORT MediaQuery : public NoBaseWillBeGarbageCollectedFinalized<MediaQuery> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(MediaQuery);
 public:
     enum Restrictor {

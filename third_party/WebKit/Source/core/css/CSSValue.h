@@ -21,6 +21,7 @@
 #ifndef CSSValue_h
 #define CSSValue_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
@@ -30,7 +31,7 @@
 
 namespace blink {
 
-class CSSValue : public RefCountedWillBeGarbageCollectedFinalized<CSSValue> {
+class CORE_EXPORT CSSValue : public RefCountedWillBeGarbageCollectedFinalized<CSSValue> {
 public:
 #if ENABLE(OILPAN)
     // Override operator new to allocate CSSValue subtype objects onto
@@ -100,6 +101,12 @@ public:
     void finalizeGarbageCollectedObject();
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { }
     DECLARE_TRACE();
+
+    // ~CSSValue should be public, because non-public ~CSSValue causes C2248
+    // error: 'blink::CSSValue::~CSSValue' : cannot access protected member
+    // declared in class 'blink::CSSValue' when compiling
+    // 'source\wtf\refcounted.h' by using msvc.
+    ~CSSValue() { }
 
 protected:
 
@@ -172,8 +179,6 @@ protected:
 
     // NOTE: This class is non-virtual for memory and performance reasons.
     // Don't go making it virtual again unless you know exactly what you're doing!
-
-    ~CSSValue() { }
 
 private:
     void destroy();

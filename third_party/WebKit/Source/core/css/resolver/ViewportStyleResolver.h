@@ -31,6 +31,7 @@
 #define ViewportStyleResolver_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/css/RuleSet.h"
 #include "platform/Length.h"
 #include "wtf/RefCounted.h"
@@ -42,7 +43,7 @@ class Document;
 class MutableStylePropertySet;
 class StyleRuleViewport;
 
-class ViewportStyleResolver : public NoBaseWillBeGarbageCollected<ViewportStyleResolver> {
+class CORE_EXPORT ViewportStyleResolver : public NoBaseWillBeGarbageCollected<ViewportStyleResolver> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ViewportStyleResolver);
 public:
     static PassOwnPtrWillBeRawPtr<ViewportStyleResolver> create(Document* document)

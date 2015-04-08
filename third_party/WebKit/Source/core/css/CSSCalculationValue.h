@@ -31,6 +31,7 @@
 #ifndef CSSCalculationValue_h
 #define CSSCalculationValue_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/parser/CSSParserValues.h"
@@ -100,7 +101,7 @@ protected:
     bool m_isInteger;
 };
 
-class CSSCalcValue : public CSSValue {
+class CORE_EXPORT CSSCalcValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSCalcValue> create(CSSParserValueList*, ValueRange);
     static PassRefPtrWillBeRawPtr<CSSCalcValue> create(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, ValueRange = ValueRangeAll);

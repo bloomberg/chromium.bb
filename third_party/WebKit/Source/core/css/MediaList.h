@@ -22,6 +22,7 @@
 #define MediaList_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -38,7 +39,7 @@ class ExceptionState;
 class MediaList;
 class MediaQuery;
 
-class MediaQuerySet : public RefCountedWillBeGarbageCollected<MediaQuerySet> {
+class CORE_EXPORT MediaQuerySet : public RefCountedWillBeGarbageCollected<MediaQuerySet> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQuerySet);
 public:
     static PassRefPtrWillBeRawPtr<MediaQuerySet> create()

@@ -31,9 +31,9 @@
 #ifndef CSSToLengthConversionData_h
 #define CSSToLengthConversionData_h
 
+#include "core/CoreExport.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
-#include "wtf/Noncopyable.h"
 #include <limits>
 
 namespace blink {
@@ -42,7 +42,7 @@ class ComputedStyle;
 class LayoutView;
 class Font;
 
-class CSSToLengthConversionData {
+class CORE_EXPORT CSSToLengthConversionData {
 public:
 
     class FontSizes {

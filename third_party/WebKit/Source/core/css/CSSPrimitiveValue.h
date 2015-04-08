@@ -24,12 +24,14 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
+#include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/graphics/Color.h"
 #include "wtf/BitVector.h"
 #include "wtf/Forward.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/text/StringHash.h"
 
 namespace blink {
 
@@ -68,7 +70,7 @@ template<> inline float roundForImpreciseConversion(double value)
 // CSSPrimitiveValues are immutable. This class has manual ref-counting
 // of unioned types and does not have the code necessary
 // to handle any kind of mutations.
-class CSSPrimitiveValue : public CSSValue {
+class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
 public:
     enum UnitType {
         CSS_UNKNOWN = 0,
