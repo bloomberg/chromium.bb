@@ -51305,6 +51305,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="746" label="TabStopProperty"/>
   <int value="747" label="TabStopAttribute"/>
   <int value="748" label="LegacyConst"/>
+  <int value="750" label="V8Permissions_Query_Method"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
