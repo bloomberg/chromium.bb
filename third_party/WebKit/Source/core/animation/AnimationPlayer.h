@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/animation/AnimationNode.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMException.h"
@@ -50,7 +51,7 @@ class Element;
 class ExceptionState;
 class WebCompositorAnimationPlayer;
 
-class AnimationPlayer final
+class CORE_EXPORT AnimationPlayer final
     : public EventTargetWithInlineData
     , public RefCountedWillBeNoBase<AnimationPlayer>
     , public ActiveDOMObject

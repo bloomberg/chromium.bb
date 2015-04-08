@@ -2,12 +2,13 @@
 #define VisibilityStyleInterpolation_h
 
 #include "core/CSSValueKeywords.h"
+#include "core/CoreExport.h"
 #include "core/animation/StyleInterpolation.h"
 #include "core/css/CSSPrimitiveValue.h"
 
 namespace blink {
 
-class VisibilityStyleInterpolation : public StyleInterpolation {
+class CORE_EXPORT VisibilityStyleInterpolation : public StyleInterpolation {
 public:
     static PassRefPtrWillBeRawPtr<VisibilityStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id)
     {

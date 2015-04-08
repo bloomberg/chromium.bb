@@ -5,6 +5,7 @@
 #ifndef InterpolationEffect_h
 #define InterpolationEffect_h
 
+#include "core/CoreExport.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/Keyframe.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -14,7 +15,7 @@
 
 namespace blink {
 
-class InterpolationEffect : public RefCountedWillBeGarbageCollected<InterpolationEffect> {
+class CORE_EXPORT InterpolationEffect : public RefCountedWillBeGarbageCollected<InterpolationEffect> {
 public:
     static PassRefPtrWillBeRawPtr<InterpolationEffect> create()
     {

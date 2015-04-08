@@ -31,6 +31,7 @@
 #ifndef Animation_h
 #define Animation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationNode.h"
 #include "core/animation/EffectInput.h"
@@ -46,7 +47,7 @@ class Element;
 class ExceptionState;
 class SampledEffect;
 
-class Animation final : public AnimationNode {
+class CORE_EXPORT Animation final : public AnimationNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum Priority { DefaultPriority, TransitionPriority };

@@ -31,12 +31,13 @@
 #ifndef AnimatableTransform_h
 #define AnimatableTransform_h
 
+#include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/transforms/TransformOperations.h"
 
 namespace blink {
 
-class AnimatableTransform final : public AnimatableValue {
+class CORE_EXPORT AnimatableTransform final : public AnimatableValue {
 public:
     virtual ~AnimatableTransform() { }
     static PassRefPtrWillBeRawPtr<AnimatableTransform> create(const TransformOperations&);

@@ -31,12 +31,13 @@
 #ifndef AnimatableLength_h
 #define AnimatableLength_h
 
+#include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/Length.h"
 
 namespace blink {
 
-class AnimatableLength final : public AnimatableValue {
+class CORE_EXPORT AnimatableLength final : public AnimatableValue {
 public:
     static PassRefPtrWillBeRawPtr<AnimatableLength> create(const Length& length, float zoom)
     {

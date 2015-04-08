@@ -5,13 +5,14 @@
 #ifndef LengthBoxStyleInterpolation_h
 #define LengthBoxStyleInterpolation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/Rect.h"
 
 namespace blink {
 
-class LengthBoxStyleInterpolation : public StyleInterpolation {
+class CORE_EXPORT LengthBoxStyleInterpolation : public StyleInterpolation {
 public:
     static PassRefPtrWillBeRawPtr<LengthBoxStyleInterpolation> maybeCreateFrom(CSSValue&, CSSValue&, CSSPropertyID);
 

@@ -32,6 +32,7 @@
 #define AnimationNode_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/animation/Timing.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
@@ -60,7 +61,7 @@ static inline double nullValue()
     return std::numeric_limits<double>::quiet_NaN();
 }
 
-class AnimationNode : public RefCountedWillBeGarbageCollectedFinalized<AnimationNode>, public ScriptWrappable {
+class CORE_EXPORT AnimationNode : public RefCountedWillBeGarbageCollectedFinalized<AnimationNode>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     friend class AnimationPlayer; // Calls attach/detach, updateInheritedTime.
 public:

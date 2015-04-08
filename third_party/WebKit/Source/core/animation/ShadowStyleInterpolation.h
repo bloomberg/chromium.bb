@@ -5,6 +5,7 @@
 #ifndef ShadowStyleInterpolation_h
 #define ShadowStyleInterpolation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/StyleInterpolation.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/style/ComputedStyle.h"
@@ -12,7 +13,7 @@
 
 namespace blink {
 
-class ShadowStyleInterpolation : public StyleInterpolation {
+class CORE_EXPORT ShadowStyleInterpolation : public StyleInterpolation {
 public:
     typedef bool NonInterpolableType;
 

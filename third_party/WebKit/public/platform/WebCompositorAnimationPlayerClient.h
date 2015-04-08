@@ -5,12 +5,14 @@
 #ifndef WebCompositorAnimationPlayerClient_h
 #define WebCompositorAnimationPlayerClient_h
 
+#include "public/platform/WebCommon.h"
+
 namespace blink {
 
 class WebCompositorAnimationPlayer;
 
 // A client for compositor representation of AnimationPlayer.
-class WebCompositorAnimationPlayerClient {
+class BLINK_PLATFORM_EXPORT WebCompositorAnimationPlayerClient {
 public:
     virtual ~WebCompositorAnimationPlayerClient() { }
 

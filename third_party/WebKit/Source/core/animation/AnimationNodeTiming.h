@@ -6,6 +6,7 @@
 #define AnimationNodeTiming_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/animation/AnimationNode.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -14,7 +15,7 @@ namespace blink {
 
 class UnrestrictedDoubleOrString;
 
-class AnimationNodeTiming : public RefCountedWillBeGarbageCollectedFinalized<AnimationNodeTiming>, public ScriptWrappable {
+class CORE_EXPORT AnimationNodeTiming : public RefCountedWillBeGarbageCollectedFinalized<AnimationNodeTiming>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<AnimationNodeTiming> create(AnimationNode* parent);

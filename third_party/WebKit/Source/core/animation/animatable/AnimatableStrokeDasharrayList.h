@@ -31,12 +31,13 @@
 #ifndef AnimatableStrokeDasharrayList_h
 #define AnimatableStrokeDasharrayList_h
 
+#include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableRepeatable.h"
 #include "core/style/SVGComputedStyleDefs.h"
 
 namespace blink {
 
-class AnimatableStrokeDasharrayList final : public AnimatableRepeatable {
+class CORE_EXPORT AnimatableStrokeDasharrayList final : public AnimatableRepeatable {
 public:
     virtual ~AnimatableStrokeDasharrayList() { }
 

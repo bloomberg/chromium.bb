@@ -5,6 +5,7 @@
 #ifndef LengthStyleInterpolation_h
 #define LengthStyleInterpolation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/StyleInterpolation.h"
 #include "core/css/CSSPrimitiveValue.h"
 
@@ -13,7 +14,7 @@ namespace blink {
 class ComputedStyle;
 class Length;
 
-class LengthStyleInterpolation : public StyleInterpolation {
+class CORE_EXPORT LengthStyleInterpolation : public StyleInterpolation {
 public:
     typedef void (ComputedStyle::*LengthSetter)(const Length&);
     typedef void NonInterpolableType;

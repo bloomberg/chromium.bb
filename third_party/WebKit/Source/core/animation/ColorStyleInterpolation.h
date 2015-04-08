@@ -5,13 +5,14 @@
 #ifndef ColorStyleInterpolation_h
 #define ColorStyleInterpolation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/StyleInterpolation.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "platform/graphics/Color.h"
 
 namespace blink {
 
-class ColorStyleInterpolation : public StyleInterpolation {
+class CORE_EXPORT ColorStyleInterpolation : public StyleInterpolation {
 public:
     static PassRefPtrWillBeRawPtr<ColorStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id)
     {

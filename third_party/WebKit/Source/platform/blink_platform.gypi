@@ -263,6 +263,7 @@
       'exported/WebAudioBus.cpp',
       'exported/WebAudioDevice.cpp',
       'exported/WebBlobData.cpp',
+      'exported/WebCompositorAnimationPlayerClient.cpp',
       'exported/WebContentDecryptionModule.cpp',
       'exported/WebContentDecryptionModuleAccess.cpp',
       'exported/WebContentDecryptionModuleResult.cpp',

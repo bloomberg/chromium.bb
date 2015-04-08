@@ -31,6 +31,7 @@
 #ifndef CompositorPendingAnimations_h
 #define CompositorPendingAnimations_h
 
+#include "core/CoreExport.h"
 #include "core/animation/AnimationPlayer.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -43,7 +44,7 @@ namespace blink {
 // For CSS Animations, used to synchronize the start of main-thread animations
 // with compositor animations when both classes of CSS Animations are triggered
 // by the same recalc
-class CompositorPendingAnimations final {
+class CORE_EXPORT CompositorPendingAnimations final {
     DISALLOW_ALLOCATION();
 public:
 

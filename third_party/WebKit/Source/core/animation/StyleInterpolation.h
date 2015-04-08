@@ -6,6 +6,7 @@
 #define StyleInterpolation_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/animation/Interpolation.h"
 
 namespace blink {
@@ -23,7 +24,7 @@ enum InterpolationRange {
     RangeZeroToOne
 };
 
-class StyleInterpolation : public Interpolation {
+class CORE_EXPORT StyleInterpolation : public Interpolation {
 public:
     // 1) convert m_cachedValue into an X
     // 2) shove X into StyleResolverState

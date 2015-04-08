@@ -6,13 +6,14 @@
 #define AnimationInputHelpers_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
 class TimingFunction;
 
-class AnimationInputHelpers {
+class CORE_EXPORT AnimationInputHelpers {
 public:
     static CSSPropertyID keyframeAttributeToCSSPropertyID(const String&);
     static PassRefPtr<TimingFunction> parseTimingFunction(const String&);

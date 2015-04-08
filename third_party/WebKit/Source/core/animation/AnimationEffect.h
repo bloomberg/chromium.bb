@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
@@ -42,7 +43,7 @@ namespace blink {
 
 class Interpolation;
 
-class AnimationEffect : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffect>, public ScriptWrappable {
+class CORE_EXPORT AnimationEffect : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffect>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum CompositeOperation {

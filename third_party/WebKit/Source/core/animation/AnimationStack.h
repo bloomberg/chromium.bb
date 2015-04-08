@@ -31,6 +31,7 @@
 #ifndef AnimationStack_h
 #define AnimationStack_h
 
+#include "core/CoreExport.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationPlayer.h"
@@ -43,7 +44,7 @@ namespace blink {
 
 class InertAnimation;
 
-class AnimationStack {
+class CORE_EXPORT AnimationStack {
     DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(AnimationStack);
 public:

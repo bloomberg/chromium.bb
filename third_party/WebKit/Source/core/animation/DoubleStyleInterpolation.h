@@ -5,12 +5,13 @@
 #ifndef DoubleStyleInterpolation_h
 #define DoubleStyleInterpolation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/StyleInterpolation.h"
 #include "core/css/CSSPrimitiveValue.h"
 
 namespace blink {
 
-class DoubleStyleInterpolation : public StyleInterpolation {
+class CORE_EXPORT DoubleStyleInterpolation : public StyleInterpolation {
 public:
     static PassRefPtrWillBeRawPtr<DoubleStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, CSSPrimitiveValue::UnitType type, InterpolationRange clamp)
     {

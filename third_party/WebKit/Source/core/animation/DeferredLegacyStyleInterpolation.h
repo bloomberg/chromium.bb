@@ -5,6 +5,7 @@
 #ifndef DeferredLegacyStyleInterpolation_h
 #define DeferredLegacyStyleInterpolation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/StyleInterpolation.h"
 #include "core/css/CSSValue.h"
@@ -18,7 +19,7 @@ class CSSShadowValue;
 class CSSSVGDocumentValue;
 class CSSValueList;
 
-class DeferredLegacyStyleInterpolation : public StyleInterpolation {
+class CORE_EXPORT DeferredLegacyStyleInterpolation : public StyleInterpolation {
 public:
     static PassRefPtrWillBeRawPtr<DeferredLegacyStyleInterpolation> create(PassRefPtrWillBeRawPtr<CSSValue> start, PassRefPtrWillBeRawPtr<CSSValue> end, CSSPropertyID id)
     {

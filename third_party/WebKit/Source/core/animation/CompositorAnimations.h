@@ -31,6 +31,7 @@
 #ifndef CompositorAnimations_h
 #define CompositorAnimations_h
 
+#include "core/CoreExport.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/Timing.h"
 #include "platform/animation/TimingFunction.h"
@@ -42,7 +43,7 @@ class AnimationPlayer;
 class Element;
 class FloatBox;
 
-class CompositorAnimations {
+class CORE_EXPORT CompositorAnimations {
 public:
     static CompositorAnimations* instance() { return instance(0); }
     static void setInstanceForTesting(CompositorAnimations* newInstance) { instance(newInstance); }

@@ -5,12 +5,13 @@
 #ifndef LengthPairStyleInterpolation_h
 #define LengthPairStyleInterpolation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/StyleInterpolation.h"
 #include "platform/Length.h"
 
 namespace blink {
 
-class LengthPairStyleInterpolation : public StyleInterpolation {
+class CORE_EXPORT LengthPairStyleInterpolation : public StyleInterpolation {
 public:
     static PassRefPtrWillBeRawPtr<LengthPairStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id, InterpolationRange range)
     {

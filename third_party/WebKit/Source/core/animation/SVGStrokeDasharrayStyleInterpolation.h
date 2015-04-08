@@ -5,6 +5,7 @@
 #ifndef SVGStrokeDasharrayStyleInterpolation_h
 #define SVGStrokeDasharrayStyleInterpolation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/StyleInterpolation.h"
 #include "core/css/CSSPrimitiveValue.h"
 
@@ -12,7 +13,7 @@ namespace blink {
 
 class CSSValueList;
 
-class SVGStrokeDasharrayStyleInterpolation : public StyleInterpolation {
+class CORE_EXPORT SVGStrokeDasharrayStyleInterpolation : public StyleInterpolation {
 public:
     static PassRefPtrWillBeRawPtr<SVGStrokeDasharrayStyleInterpolation> maybeCreate(const CSSValue& start, const CSSValue& end, CSSPropertyID);
 

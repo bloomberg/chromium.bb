@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "core/CoreExport.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/Timing.h"
@@ -38,7 +39,7 @@ namespace blink {
 
 class WebCompositorAnimationCurve;
 
-class CompositorAnimationsImpl {
+class CORE_EXPORT CompositorAnimationsImpl {
 private:
     struct CompositorTiming {
         void assertValid() const

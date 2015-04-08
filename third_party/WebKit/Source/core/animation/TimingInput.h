@@ -5,6 +5,7 @@
 #ifndef TimingInput_h
 #define TimingInput_h
 
+#include "core/CoreExport.h"
 #include "core/animation/Timing.h"
 
 namespace blink {
@@ -12,7 +13,7 @@ namespace blink {
 class Dictionary;
 class AnimationTimingProperties;
 
-class TimingInput {
+class CORE_EXPORT TimingInput {
 public:
     static Timing convert(const AnimationTimingProperties& timingInput);
     static Timing convert(double duration);

@@ -5,12 +5,13 @@
 #ifndef Interpolation_h
 #define Interpolation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/InterpolableValue.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class Interpolation : public RefCountedWillBeGarbageCollectedFinalized<Interpolation> {
+class CORE_EXPORT Interpolation : public RefCountedWillBeGarbageCollectedFinalized<Interpolation> {
 public:
     static PassRefPtrWillBeRawPtr<Interpolation> create(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end)
     {
