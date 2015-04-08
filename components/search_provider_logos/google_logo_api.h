@@ -16,8 +16,9 @@ namespace search_provider_logos {
 
 // Implements AppendFingerprintToLogoURL, defined in logo_tracker.h, for Google
 // doodles.
-GURL GoogleAppendFingerprintToLogoURL(const GURL& logo_url,
-                                      const std::string& fingerprint);
+GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
+                                      const std::string& fingerprint,
+                                      bool wants_cta);
 
 // Implements ParseLogoResponse, defined in logo_tracker.h, for Google doodles.
 scoped_ptr<EncodedLogo> GoogleParseLogoResponse(

@@ -16,24 +16,35 @@ namespace {
 const char kResponsePreamble[] = ")]}'";
 }
 
-GURL GoogleAppendFingerprintToLogoURL(const GURL& logo_url,
-                                      const std::string& fingerprint) {
+GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
+                                      const std::string& fingerprint,
+                                      bool wants_cta) {
   // Note: we can't just use net::AppendQueryParameter() because it escapes
   // ":" to "%3A", but the server requires the colon not to be escaped.
   // See: http://crbug.com/413845
 
   // TODO(newt): Switch to using net::AppendQueryParameter once it no longer
   // escapes ":"
+  if (!fingerprint.empty() || wants_cta) {
+    std::string query(logo_url.query());
+    if (!query.empty())
+      query += "&";
 
-  std::string query(logo_url.query());
-  if (!query.empty())
-    query += "&";
+    query += "async=";
+    if (!fingerprint.empty()) {
+      query += "es_dfp:" + fingerprint;
+      if (wants_cta)
+        query += ",";
+    }
+    if (wants_cta) {
+      query += "cta:1";
+    }
+    GURL::Replacements replacements;
+    replacements.SetQueryStr(query);
+    return logo_url.ReplaceComponents(replacements);
+  }
 
-  query += "async=es_dfp:";
-  query += fingerprint;
-  GURL::Replacements replacements;
-  replacements.SetQueryStr(query);
-  return logo_url.ReplaceComponents(replacements);
+  return logo_url;
 }
 
 scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
