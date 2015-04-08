@@ -24,7 +24,8 @@
 #ifndef SVGLayoutSupport_h
 #define SVGLayoutSupport_h
 
-#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
+#include "core/layout/LayoutObject.h"
+#include "core/style/SVGComputedStyleDefs.h"
 #include "platform/graphics/DashArray.h"
 
 namespace blink {
@@ -32,11 +33,8 @@ namespace blink {
 class AffineTransform;
 class FloatPoint;
 class FloatRect;
-class GraphicsContext;
-class GraphicsContextStateSaver;
 class PaintInvalidationState;
 class LayoutRect;
-struct PaintInfo;
 class LayoutGeometryMap;
 class LayoutBoxModelObject;
 class LayoutObject;
@@ -80,15 +78,9 @@ public:
     static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&);
 
     // Shared between SVG layoutObjects and resources.
-    static void applyStrokeStyleToContext(GraphicsContext&, const ComputedStyle&, const LayoutObject&);
     static void applyStrokeStyleToStrokeData(StrokeData&, const ComputedStyle&, const LayoutObject&);
 
     static DashArray resolveSVGDashArray(const SVGDashArray&, const ComputedStyle&, const SVGLengthContext&);
-
-    // Update the GC state (on |paintInfo.context|) for painting |layoutObject|
-    // using |style|. |resourceMode| is used to decide between fill/stroke.
-    // Previous state will be saved (if needed) using |stateSaver|.
-    static bool updateGraphicsContext(const PaintInfo&, GraphicsContextStateSaver&, const ComputedStyle&, LayoutObject&, LayoutSVGResourceMode, const AffineTransform* additionalPaintServerTransform = 0);
 
     // Determines if any ancestor's transform has changed.
     static bool transformToRootChanged(LayoutObject*);

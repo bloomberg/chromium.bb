@@ -20,6 +20,7 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/InlineTextBoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/SVGPaintContext.h"
 
 namespace blink {
 
@@ -268,19 +269,24 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
         switch (svgDecorationStyle.paintOrderType(i)) {
         case PT_FILL:
             if (svgDecorationStyle.hasFill()) {
-                GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
-                if (!SVGLayoutSupport::updateGraphicsContext(paintInfo, stateSaver, decorationStyle, *decorationRenderer, ApplyToFillMode))
+                SkPaint fillPaint;
+                if (!SVGPaintContext::paintForLayoutObject(paintInfo, decorationStyle, *decorationRenderer, ApplyToFillMode, fillPaint))
                     break;
-                paintInfo.context->fillPath(path);
+                fillPaint.setAntiAlias(true);
+                paintInfo.context->drawPath(path.skPath(), fillPaint);
             }
             break;
         case PT_STROKE:
             if (svgDecorationStyle.hasVisibleStroke()) {
                 // FIXME: Non-scaling stroke is not applied here.
-                GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
-                if (!SVGLayoutSupport::updateGraphicsContext(paintInfo, stateSaver, decorationStyle, *decorationRenderer, ApplyToStrokeMode))
+                SkPaint strokePaint;
+                if (!SVGPaintContext::paintForLayoutObject(paintInfo, decorationStyle, *decorationRenderer, ApplyToStrokeMode, strokePaint))
                     break;
-                paintInfo.context->strokePath(path);
+                strokePaint.setAntiAlias(true);
+                StrokeData strokeData;
+                SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, decorationStyle, *decorationRenderer);
+                strokeData.setupPaint(&strokePaint);
+                paintInfo.context->drawPath(path.skPath(), strokePaint);
             }
             break;
         case PT_MARKERS:
@@ -324,19 +330,23 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
     }
 
     // FIXME: Non-scaling stroke is not applied here.
-
-    if (!SVGLayoutSupport::updateGraphicsContext(paintInfo, stateSaver, style, m_svgInlineTextBox.parent()->layoutObject(), resourceMode, additionalPaintServerTransform))
+    SkPaint paint;
+    if (!SVGPaintContext::paintForLayoutObject(paintInfo, style, m_svgInlineTextBox.parent()->layoutObject(), resourceMode, paint, additionalPaintServerTransform))
         return;
+    paint.setAntiAlias(true);
 
     if (hasShadow) {
-        stateSaver.saveIfNeeded();
-        context->setDrawLooper(shadowList->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha));
+        OwnPtr<DrawLooperBuilder> drawLooperBuilder = shadowList->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha);
+        RefPtr<SkDrawLooper> drawLooper = drawLooperBuilder->detachDrawLooper();
+        paint.setLooper(drawLooper.get());
     }
 
-    context->setTextDrawingMode(resourceMode == ApplyToFillMode ? TextModeFill : TextModeStroke);
-
-    if (scalingFactor != 1 && resourceMode == ApplyToStrokeMode)
-        context->setStrokeThickness(context->strokeThickness() * scalingFactor);
+    if (resourceMode == ApplyToStrokeMode) {
+        StrokeData strokeData;
+        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, style, m_svgInlineTextBox.parent()->layoutObject());
+        strokeData.setThickness(strokeData.thickness() * scalingFactor);
+        strokeData.setupPaint(&paint);
+    }
 
     TextRunPaintInfo textRunPaintInfo(textRun);
     textRunPaintInfo.from = startPosition;
@@ -346,7 +356,7 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
     textRunPaintInfo.bounds = FloatRect(textOrigin.x(), textOrigin.y() - baseline,
         textSize.width(), textSize.height());
 
-    context->drawText(scaledFont, textRunPaintInfo, textOrigin);
+    context->drawText(scaledFont, textRunPaintInfo, textOrigin, paint);
 }
 
 void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo, const ComputedStyle& style,

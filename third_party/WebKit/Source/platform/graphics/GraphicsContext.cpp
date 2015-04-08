@@ -943,6 +943,14 @@ void GraphicsContext::drawRect(const IntRect& rect)
     }
 }
 
+void GraphicsContext::drawText(const Font& font, const TextRunPaintInfo& runInfo, const FloatPoint& point, const SkPaint& paint)
+{
+    if (contextDisabled())
+        return;
+
+    font.drawText(m_canvas, runInfo, point, m_deviceScaleFactor, paint);
+}
+
 template<typename DrawTextFunc>
 void GraphicsContext::drawTextPasses(const DrawTextFunc& drawText)
 {

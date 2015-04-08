@@ -34,8 +34,6 @@ enum LayoutSVGResourceMode {
     ApplyToStrokeMode,
 };
 
-class GraphicsContext;
-class GraphicsContextStateSaver;
 class LayoutObject;
 class LayoutSVGResourcePaintServer;
 class ComputedStyle;
@@ -50,7 +48,6 @@ public:
     static bool existsForLayoutObject(const LayoutObject&, const ComputedStyle&, LayoutSVGResourceMode);
 
     void applyToSkPaint(SkPaint&, float paintAlpha);
-    void apply(GraphicsContext&, LayoutSVGResourceMode, float paintAlpha, GraphicsContextStateSaver&);
 
     static SVGPaintServer invalid() { return SVGPaintServer(Color(Color::transparent)); }
     bool isValid() const { return m_color != Color::transparent; }

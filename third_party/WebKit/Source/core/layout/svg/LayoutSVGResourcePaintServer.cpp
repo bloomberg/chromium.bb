@@ -26,8 +26,7 @@
 #include "core/style/ComputedStyle.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkPaint.h"
 
 namespace blink {
@@ -59,30 +58,6 @@ void SVGPaintServer::applyToSkPaint(SkPaint& paint, float paintAlpha)
         paint.setShader(m_gradient->shader());
     else
         paint.setShader(nullptr);
-}
-
-void SVGPaintServer::apply(GraphicsContext& context, LayoutSVGResourceMode resourceMode, float paintAlpha, GraphicsContextStateSaver& stateSaver)
-{
-    ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
-
-    if (m_gradient || m_pattern)
-        stateSaver.saveIfNeeded();
-
-    if (resourceMode == ApplyToFillMode) {
-        if (m_pattern)
-            context.setFillPattern(m_pattern, paintAlpha);
-        else if (m_gradient)
-            context.setFillGradient(m_gradient, paintAlpha);
-        else
-            context.setFillColor(scaleAlpha(m_color.rgb(), paintAlpha));
-    } else {
-        if (m_pattern)
-            context.setStrokePattern(m_pattern, paintAlpha);
-        else if (m_gradient)
-            context.setStrokeGradient(m_gradient, paintAlpha);
-        else
-            context.setStrokeColor(scaleAlpha(m_color.rgb(), paintAlpha));
-    }
 }
 
 void SVGPaintServer::prependTransform(const AffineTransform& transform)

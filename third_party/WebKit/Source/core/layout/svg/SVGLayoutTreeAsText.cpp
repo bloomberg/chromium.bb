@@ -45,6 +45,7 @@
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/layout/svg/LayoutSVGShape.h"
 #include "core/layout/svg/LayoutSVGText.h"
+#include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/svg/LinearGradientAttributes.h"

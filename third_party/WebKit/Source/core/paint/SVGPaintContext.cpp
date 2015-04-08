@@ -197,4 +197,41 @@ void SVGPaintContext::paintSubtree(GraphicsContext* context, LayoutObject* item)
     item->paint(info, IntPoint());
 }
 
+bool SVGPaintContext::paintForLayoutObject(const PaintInfo& paintInfo, const ComputedStyle& style, LayoutObject& layoutObject, LayoutSVGResourceMode resourceMode, SkPaint& paint, const AffineTransform* additionalPaintServerTransform)
+{
+    if (paintInfo.isRenderingClipPathAsMaskImage()) {
+        if (resourceMode == ApplyToStrokeMode)
+            return false;
+        paint.setColor(SVGComputedStyle::initialFillPaintColor().rgb());
+        paint.setShader(nullptr);
+        return true;
+    }
+
+    SVGPaintServer paintServer = SVGPaintServer::requestForLayoutObject(layoutObject, style, resourceMode);
+    if (!paintServer.isValid())
+        return false;
+
+    if (additionalPaintServerTransform && paintServer.isTransformDependent())
+        paintServer.prependTransform(*additionalPaintServerTransform);
+
+    const SVGComputedStyle& svgStyle = style.svgStyle();
+    float paintAlpha = resourceMode == ApplyToFillMode ? svgStyle.fillOpacity() : svgStyle.strokeOpacity();
+    paintServer.applyToSkPaint(paint, paintAlpha);
+
+    paint.setFilterQuality(WebCoreInterpolationQualityToSkFilterQuality(InterpolationDefault));
+
+    // TODO(fs): The color filter can set when generating a picture for a mask -
+    // due to color-interpolation. We could also just apply the
+    // color-interpolation property from the the shape itself (which could mean
+    // the paintserver if it has it specified), since that would be more in line
+    // with the spec for color-interpolation. For now, just steal it from the GC
+    // though.
+    // Additionally, it's not really safe/guaranteed to be correct, as
+    // something down the paint pipe may want to farther tweak the color
+    // filter, which could yield incorrect results. (Consider just using
+    // saveLayer() w/ this color filter explicitly instead.)
+    paint.setColorFilter(paintInfo.context->colorFilter());
+    return true;
+}
+
 } // namespace blink

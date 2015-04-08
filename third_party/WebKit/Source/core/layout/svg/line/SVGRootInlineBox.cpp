@@ -29,6 +29,7 @@
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/paint/SVGRootInlineBoxPainter.h"
+#include "core/svg/SVGTextPathElement.h"
 
 namespace blink {
 

@@ -31,6 +31,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/PointerEventsHitRules.h"
+#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGPathData.h"
 #include "core/layout/svg/SVGResources.h"

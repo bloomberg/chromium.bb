@@ -249,6 +249,7 @@ public:
     void clipRect(const SkRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
 
     void drawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
+    void drawText(const Font&, const TextRunPaintInfo&, const FloatPoint&, const SkPaint&);
     void drawEmphasisMarks(const Font&, const TextRunPaintInfo&, const AtomicString& mark, const FloatPoint&);
     void drawBidiText(const Font&, const TextRunPaintInfo&, const FloatPoint&, Font::CustomFontNotReadyAction = Font::DoNotPaintIfFontNotReady);
     void drawHighlightForText(const Font&, const TextRun&, const FloatPoint&, int h, const Color& backgroundColor, int from = 0, int to = -1);

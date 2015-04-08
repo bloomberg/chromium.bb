@@ -356,23 +356,6 @@ DashArray SVGLayoutSupport::resolveSVGDashArray(const SVGDashArray& svgDashArray
     return dashArray;
 }
 
-void SVGLayoutSupport::applyStrokeStyleToContext(GraphicsContext& context, const ComputedStyle& style, const LayoutObject& object)
-{
-    ASSERT(object.node());
-    ASSERT(object.node()->isSVGElement());
-
-    const SVGComputedStyle& svgStyle = style.svgStyle();
-
-    SVGLengthContext lengthContext(toSVGElement(object.node()));
-    context.setStrokeThickness(lengthContext.valueForLength(svgStyle.strokeWidth()));
-    context.setLineCap(svgStyle.capStyle());
-    context.setLineJoin(svgStyle.joinStyle());
-    context.setMiterLimit(svgStyle.strokeMiterLimit());
-
-    DashArray dashArray = resolveSVGDashArray(*svgStyle.strokeDashArray(), style, lengthContext);
-    context.setLineDash(dashArray, lengthContext.valueForLength(svgStyle.strokeDashOffset(), style));
-}
-
 void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, const ComputedStyle& style, const LayoutObject& object)
 {
     ASSERT(object.node());
@@ -388,37 +371,6 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, cons
 
     DashArray dashArray = resolveSVGDashArray(*svgStyle.strokeDashArray(), style, lengthContext);
     strokeData.setLineDash(dashArray, lengthContext.valueForLength(svgStyle.strokeDashOffset(), style));
-}
-
-bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const ComputedStyle& style, LayoutObject& layoutObject, LayoutSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
-{
-    ASSERT(paintInfo.context == stateSaver.context());
-
-    GraphicsContext& context = *paintInfo.context;
-    if (paintInfo.isRenderingClipPathAsMaskImage()) {
-        if (resourceMode == ApplyToStrokeMode)
-            return false;
-        context.setFillColor(SVGComputedStyle::initialFillPaintColor());
-        return true;
-    }
-
-    SVGPaintServer paintServer = SVGPaintServer::requestForLayoutObject(layoutObject, style, resourceMode);
-    if (!paintServer.isValid())
-        return false;
-
-    if (additionalPaintServerTransform && paintServer.isTransformDependent())
-        paintServer.prependTransform(*additionalPaintServerTransform);
-
-    const SVGComputedStyle& svgStyle = style.svgStyle();
-    float paintAlpha = resourceMode == ApplyToFillMode ? svgStyle.fillOpacity() : svgStyle.strokeOpacity();
-    paintServer.apply(context, resourceMode, paintAlpha, stateSaver);
-
-    if (resourceMode == ApplyToFillMode)
-        context.setFillRule(svgStyle.fillRule());
-    else
-        applyStrokeStyleToContext(context, style, layoutObject);
-
-    return true;
 }
 
 bool SVGLayoutSupport::isLayoutableTextNode(const LayoutObject* object)
