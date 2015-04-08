@@ -102,11 +102,11 @@ PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSou
     if (matchesGIFSignature(contents))
         return adoptPtr(new GIFImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
 
-    if (matchesICOSignature(contents) || matchesCURSignature(contents))
-        return adoptPtr(new ICOImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
-
     if (matchesWebPSignature(contents))
         return adoptPtr(new WEBPImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
+
+    if (matchesICOSignature(contents) || matchesCURSignature(contents))
+        return adoptPtr(new ICOImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
 
     if (matchesBMPSignature(contents))
         return adoptPtr(new BMPImageDecoder(alphaOption, gammaAndColorProfileOption, maxDecodedBytes));
