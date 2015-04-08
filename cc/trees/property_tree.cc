@@ -312,7 +312,8 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
   gfx::Transform delta = node->data.from_target;
   delta *= rounded;
 
-  DCHECK(delta.IsIdentityOr2DTranslation());
+  DCHECK(delta.IsApproximatelyIdentityOrTranslation(SkDoubleToMScalar(1e-4)))
+      << delta.ToString();
 
   gfx::Vector2dF translation = delta.To2dTranslation();
 
