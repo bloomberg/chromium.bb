@@ -57,7 +57,7 @@
           'CPU_CISC',
         ],
       }],
-      ['target_arch=="arm" or target_arch=="armv7" or target_arch=="arm64" \
+      ['target_arch=="arm" or target_arch=="arm64" \
        or target_arch=="mipsel" or target_arch=="mips64el"', {
         'defines': [
           # TODO(leozwang): CPU_RISC doesn't work properly on android/arm and
@@ -68,7 +68,7 @@
           'CPU_CISC',
         ],
       }],
-      ['target_arch=="mipsel" or target_arch=="arm" or target_arch=="armv7" or target_arch=="ia32"', {
+      ['target_arch=="mipsel" or target_arch=="arm" or target_arch=="ia32"', {
         'defines': [
           # Define FORCE_64BIT_ALIGN to avoid alignment-related-crashes like
           # crbug/414919. Without this, aes_cbc_alloc will allocate an
