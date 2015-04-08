@@ -15,7 +15,7 @@
 const char kFamilyApiUrl[] = "https://www.googleapis.com/kidsmanagement/v1/";
 const char kGetFamilyProfileApiSuffix[] = "families/mine?alt=json";
 const char kGetFamilyMembersApiSuffix[] = "families/mine/members?alt=json";
-const char kScope[] = "https://www.googleapis.com/auth/kid.family";
+const char kScope[] = "https://www.googleapis.com/auth/kid.family.readonly";
 const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 const int kNumRetries = 1;
 
