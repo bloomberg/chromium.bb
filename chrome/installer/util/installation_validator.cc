@@ -11,17 +11,13 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
-#include "base/win/registry.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
-#include "chrome/installer/util/updating_app_registration_data.h"
 
 namespace installer {
 
@@ -555,30 +551,6 @@ bool InstallationValidator::ValidateInstallationTypeForState(
                  ProductBits::CHROME_MULTI :
                  ProductBits::CHROME_SINGLE));
   }
-
-#if defined(GOOGLE_CHROME_BUILD)
-  if (!InstallUtil::IsChromeSxSProcess()) {
-    // Usage of the app launcher is tracked alongside Chrome.
-    const HKEY root_key = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-    base::string16 launcher_key(
-        UpdatingAppRegistrationData(kAppLauncherGuid).GetVersionKey());
-    base::win::RegKey key(root_key, launcher_key.c_str(),
-                          KEY_QUERY_VALUE | KEY_WOW64_32KEY);
-    bool have_launcher =
-        key.Valid() && key.HasValue(google_update::kRegVersionField);
-
-    BrowserDistribution* chrome_dist =
-        BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_BROWSER);
-    if (!have_launcher) {
-      LOG_IF(ERROR, product_state) << "App launcher is not installed with "
-                                   << chrome_dist->GetDisplayName();
-    } else {
-      LOG_IF(ERROR, !product_state) << "App launcher is installed without "
-                                    << chrome_dist->GetDisplayName();
-    }
-  }
-#endif  // GOOGLE_CHROME_BUILD
 
   // Is Chrome Frame installed?
   product_state =

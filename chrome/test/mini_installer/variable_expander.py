@@ -72,6 +72,8 @@ class VariableExpander:
             key, of Chrome for Google Update.
         * $CHROME_UPDATE_REGISTRY_SUBKEY_SXS: the registry key, excluding the
             root key, of Chrome SxS for Google Update.
+        * $LAUNCHER_UPDATE_REGISTRY_SUBKEY: the registry key, excluding the root
+            key, of the app launcher for Google Update if $SUPPORTS_SXS.
         * $LOCAL_APPDATA: the unquoted path to the Local Application Data
             folder.
         * $MINI_INSTALLER: the unquoted path to the mini_installer.
@@ -127,7 +129,10 @@ class VariableExpander:
           'CHROME_SHORT_NAME_SXS': 'ChromeCanary',
           'CHROME_UPDATE_REGISTRY_SUBKEY_SXS': (
             'Software\\Google\\Update\\Clients\\'
-            '{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}')
+            '{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}'),
+          'LAUNCHER_UPDATE_REGISTRY_SUBKEY': (
+            'Software\\Google\\Update\\Clients\\'
+            '{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}')
       })
     elif mini_installer_product_name == 'Chromium Installer':
       self._variable_mapping.update({

@@ -25,6 +25,13 @@
         "pv": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
       }
     },
+    "HKEY_LOCAL_MACHINE\\$LAUNCHER_UPDATE_REGISTRY_SUBKEY": {
+      "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+      "exists": "required",
+      "values": {
+        "pv": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
+      }
+    },
     "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME": {
       "exists": "required",
       "values": {

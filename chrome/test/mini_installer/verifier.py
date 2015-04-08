@@ -49,4 +49,4 @@ class Verifier:
     Returns:
       The result of the evaluated condition.
     """
-    return eval(condition, {'__builtins__': None}, None)
+    return eval(condition, {'__builtins__': {'False': False, 'True': True}})

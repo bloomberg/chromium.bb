@@ -7,6 +7,10 @@
       "exists": "forbidden"},
     "HKEY_LOCAL_MACHINE\\$BINARIES_UPDATE_REGISTRY_SUBKEY": {
       "exists": "forbidden"},
+    "HKEY_LOCAL_MACHINE\\$LAUNCHER_UPDATE_REGISTRY_SUBKEY": {
+      "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+      "exists": "forbidden"
+    },
     "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME":
         {"exists": "forbidden"},
     "HKEY_LOCAL_MACHINE\\Software\\Classes\\$CHROME_SHORT_NAME": {
