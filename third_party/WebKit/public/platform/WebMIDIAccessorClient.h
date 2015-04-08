@@ -40,7 +40,6 @@ public:
     enum MIDIPortState {
         MIDIPortStateDisconnected,
         MIDIPortStateConnected,
-        MIDIPortStateOpened,
     };
 
     // didAddInputPort() and didAddOutputPort() can be called before and after

@@ -53,12 +53,7 @@ MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufactu
     ASSERT(access);
     ASSERT(type == TypeInput || type == TypeOutput);
     ASSERT(state == PortState::MIDIPortStateDisconnected
-        || state == PortState::MIDIPortStateConnected
-        || state == PortState::MIDIPortStateOpened);
-    // TODO(toyoshim): Remove following code once blink API has a real open and
-    // close operations.
-    if (state == PortState::MIDIPortStateOpened)
-        state = PortState::MIDIPortStateConnected;
+        || state == PortState::MIDIPortStateConnected);
     m_state = state;
 }
 
@@ -81,7 +76,6 @@ String MIDIPort::state() const
     case PortState::MIDIPortStateDisconnected:
         return "disconnected";
     case PortState::MIDIPortStateConnected:
-    case PortState::MIDIPortStateOpened:
         return "connected";
     }
     return emptyString();
@@ -116,27 +110,35 @@ ScriptPromise MIDIPort::close(ScriptState* scriptState)
 
 void MIDIPort::setState(PortState state)
 {
-    // TODO(toyoshim): Remove MIDIPortStateOpened state and rewrite by using
-    // switch.
-    if (state == PortState::MIDIPortStateOpened)
-        state = PortState::MIDIPortStateConnected;
-
-    if (state == PortState::MIDIPortStateDisconnected) {
-        if (m_connection != ConnectionStateClosed) {
+    switch (state) {
+    case PortState::MIDIPortStateDisconnected:
+        switch (m_connection) {
+        case ConnectionStateOpen:
+        case ConnectionStatePending:
             setStates(PortState::MIDIPortStateDisconnected, ConnectionStatePending);
-        } else {
+            break;
+        case ConnectionStateClosed:
+            // Will do nothing.
             setStates(PortState::MIDIPortStateDisconnected, ConnectionStateClosed);
+            break;
         }
-    } else {
-        ASSERT(m_connection != ConnectionStateOpen);
-        if (m_connection == ConnectionStatePending) {
+        break;
+    case PortState::MIDIPortStateConnected:
+        switch (m_connection) {
+        case ConnectionStateOpen:
+            ASSERT_NOT_REACHED();
+            break;
+        case ConnectionStatePending:
             // We do not use |setStates| in order not to dispatch events twice.
             // |open| calls |setStates|.
             m_state = PortState::MIDIPortStateConnected;
             open();
-        } else {
+            break;
+        case ConnectionStateClosed:
             setStates(PortState::MIDIPortStateConnected, ConnectionStateClosed);
+            break;
         }
+        break;
     }
 }
 
@@ -175,10 +177,6 @@ void MIDIPort::open()
         // TODO(toyoshim): Add blink API to perform a real open and close
         // operation.
         setStates(m_state, ConnectionStateOpen);
-        break;
-    case PortState::MIDIPortStateOpened:
-        // TODO(toyoshim): Remove PortState::MIDIPortStateOpened.
-        ASSERT_NOT_REACHED();
         break;
     }
 }
