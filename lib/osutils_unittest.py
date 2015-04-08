@@ -261,6 +261,34 @@ class TempDirTests(cros_test_lib.TestCase):
     # Cleanup the dir leaked by our mock exception.
     os.rmdir(tempdir)
 
+  def testSkipCleanup(self):
+    """Test that we leave behind tempdirs when requested."""
+    tempdir_obj = osutils.TempDir(prefix=self.PREFIX, delete=False)
+    tempdir = tempdir_obj.tempdir
+    tempdir_obj.Cleanup()
+    # Ensure we cleaned up ...
+    self.assertIsNone(tempdir_obj.tempdir)
+    # ... but leaked the directory.
+    self.assertExists(tempdir)
+    # Now really cleanup the directory leaked by the test.
+    os.rmdir(tempdir)
+
+  def testSkipCleanupGlobal(self):
+    """Test that we reset global tempdir as expected even with skip."""
+    with osutils.TempDir(prefix=self.PREFIX, set_global=True) as tempdir:
+      tempdir_before = osutils.GetGlobalTempDir()
+      tempdir_obj = osutils.TempDir(prefix=self.PREFIX, set_global=True,
+                                    delete=False)
+      tempdir_inside = osutils.GetGlobalTempDir()
+      tempdir_obj.Cleanup()
+      tempdir_after = osutils.GetGlobalTempDir()
+
+    # We shouldn't leak the outer directory.
+    self.assertNotExists(tempdir)
+    self.assertEqual(tempdir_before, tempdir_after)
+    # This is a strict substring check.
+    self.assertLess(tempdir_before, tempdir_inside)
+
 
 class MountTests(cros_test_lib.TestCase):
   """Unittests for osutils mounting and umounting helpers."""

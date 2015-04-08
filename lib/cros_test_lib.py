@@ -1067,22 +1067,49 @@ class OutputTestCase(TestCase):
 class TempDirTestCase(TestCase):
   """Mixin used to give each test a tempdir that is cleansed upon finish"""
 
-  sudo_cleanup = False
+  # Whether to delete tempdir used by this test. cf: SkipCleanup.
+  DELETE = True
+  _NO_DELETE_TEMPDIR_OBJ = None
 
   def __init__(self, *args, **kwargs):
     TestCase.__init__(self, *args, **kwargs)
     self.tempdir = None
     self._tempdir_obj = None
 
+  @classmethod
+  def SkipCleanup(cls):
+    """Leave behind tempdirs created by instances of this class.
+
+    Calling this function ensures that all future instances will leak their
+    temporary directories. Additionally, all future temporary directories will
+    be created inside one top level temporary directory, so that you can easily
+    blow them away when you're done.
+    Currently, this function is pretty stupid. You should call it *before*
+    creating any instances.
+
+    Returns:
+      Path to a temporary directory that contains all future temporary
+      directories created by instances of this class.
+    """
+    cls.DELETE = False
+    cls._NO_DELETE_TEMPDIR_OBJ = osutils.TempDir(
+        prefix='chromite.test_no_cleanup',
+        set_global=True,
+        delete=cls.DELETE)
+    logging.info('%s requested to SkipCleanup. Will leak %s',
+                 cls.__name__, cls._NO_DELETE_TEMPDIR_OBJ.tempdir)
+    return cls._NO_DELETE_TEMPDIR_OBJ.tempdir
+
   def setUp(self):
-    self._tempdir_obj = osutils.TempDir(prefix='chromite.test', set_global=True)
+    self._tempdir_obj = osutils.TempDir(prefix='chromite.test', set_global=True,
+                                        delete=self.DELETE)
     self.tempdir = self._tempdir_obj.tempdir
 
   def tearDown(self):
     if self._tempdir_obj is not None:
       self._tempdir_obj.Cleanup()
-      self.tempdir = None
       self._tempdir_obj = None
+      self.tempdir = None
 
 
 class LocalSqlServerTestCase(TempDirTestCase):
@@ -1185,7 +1212,6 @@ class LocalSqlServerTestCase(TempDirTestCase):
             None)
       else:
         self._mysqld_runner.__exit__(None, None, None)
-    osutils.RmDir(self._mysqld_dir, ignore_missing=True)
 
 
 class MockTestCase(TestCase):
@@ -1788,6 +1814,7 @@ class TestProgram(unittest.TestProgram):
 
   def __init__(self, **kwargs):
     self.default_log_level = kwargs.pop('level', 'critical')
+    self._leaked_tempdir = None
 
     try:
       super(TestProgram, self).__init__(**kwargs)
@@ -1823,6 +1850,10 @@ class TestProgram(unittest.TestProgram):
     parser.add_argument('--network', default=False, action='store_true',
                         help='Run tests that depend on good network '
                              'connectivity')
+    parser.add_argument('--no-wipe', default=True, action='store_false',
+                        dest='wipe',
+                        help='Do not wipe the temporary working directory '
+                             '(default is to always wipe)')
 
     # Note: The tracer module includes coverage options ...
     group = parser.add_argument_group('Tracing options')
@@ -1913,7 +1944,21 @@ class TestProgram(unittest.TestProgram):
       self.testNames = opts.tests
     else:
       self.testNames = (self.defaultTest,)
+
+    if not opts.wipe:
+      # Instruct the TempDirTestCase to skip cleanup before actually creating
+      # any tempdirs.
+      self._leaked_tempdir = TempDirTestCase.SkipCleanup()
+
     self.createTests()
+
+  def runTests(self):
+    try:
+      super(TestProgram, self).runTests()
+    finally:
+      if self._leaked_tempdir is not None:
+        logging.info('Working directory %s left behind. Please cleanup later.',
+                     self._leaked_tempdir)
 
 
 class main(TestProgram):

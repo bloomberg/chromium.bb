@@ -397,7 +397,7 @@ def SetGlobalTempDir(tempdir_value, tempdir_env=None):
   """
   # pylint: disable=protected-access
   with tempfile._once_lock:
-    old_tempdir_value = tempfile._get_default_tempdir()
+    old_tempdir_value = GetGlobalTempDir()
     old_tempdir_env = tuple((x, os.environ.get(x)) for x in _TEMPDIR_ENV_VARS)
 
     # Now update TMPDIR/TEMP/TMP, and poke the python
@@ -421,6 +421,15 @@ def SetGlobalTempDir(tempdir_value, tempdir_env=None):
   return (old_tempdir_value, old_tempdir_env)
 
 
+def GetGlobalTempDir():
+  """Get the path to the current global tempdir.
+
+  The global tempdir path can be modified through calls to SetGlobalTempDir.
+  """
+  # pylint: disable=protected-access
+  return tempfile._get_default_tempdir()
+
+
 def _TempDirSetup(self, prefix='tmp', set_global=False, base_dir=None):
   """Generate a tempdir, modifying the object, and env to use it.
 
@@ -439,12 +448,12 @@ def _TempDirSetup(self, prefix='tmp', set_global=False, base_dir=None):
         SetGlobalTempDir(self.tempdir)
 
 
-def _TempDirTearDown(self, force_sudo):
+def _TempDirTearDown(self, force_sudo, delete=True):
   # Note that _TempDirSetup may have failed, resulting in these attributes
   # not being set; this is why we use getattr here (and must).
   tempdir = getattr(self, 'tempdir', None)
   try:
-    if tempdir is not None:
+    if tempdir is not None and delete:
       RmDir(tempdir, ignore_missing=True, sudo=force_sudo)
   except EnvironmentError as e:
     # Suppress ENOENT since we may be invoked
@@ -476,9 +485,13 @@ class TempDir(object):
       base_dir: The directory to place the temporary directory.
       set_global: Set this directory as the global temporary directory.
       storage: The object that will have its 'tempdir' attribute set.
+      delete: Whether the temporary dir should be deleted as part of cleanup.
+          (default: True)
       sudo_rm: Whether the temporary dir will need root privileges to remove.
+          (default: False)
     """
     self.kwargs = kwargs.copy()
+    self.delete = kwargs.pop('delete', True)
     self.sudo_rm = kwargs.pop('sudo_rm', False)
     self.tempdir = None
     _TempDirSetup(self, **kwargs)
@@ -487,7 +500,7 @@ class TempDir(object):
     """Clean up the temporary directory."""
     if self.tempdir is not None:
       try:
-        _TempDirTearDown(self, self.sudo_rm)
+        _TempDirTearDown(self, self.sudo_rm, delete=self.delete)
       finally:
         self.tempdir = None
 
