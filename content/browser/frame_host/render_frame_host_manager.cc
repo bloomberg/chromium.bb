@@ -455,45 +455,39 @@ void RenderFrameHostManager::DidNavigateFrame(
 void RenderFrameHostManager::CommitPendingIfNecessary(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
-    if (render_frame_host == speculative_render_frame_host_.get()) {
-      CommitPending();
-    } else if (render_frame_host == render_frame_host_.get()) {
-      // TODO(carlosk): this code doesn't properly handle in-page navigation or
-      // interwoven navigation requests.
-      DCHECK(!speculative_render_frame_host_);
-    } else {
-      // No one else should be sending us a DidNavigate in this state.
-      DCHECK(false);
-    }
-    DCHECK(!speculative_render_frame_host_);
-    return;
-  }
-
+  // Note: In PlzNavigate |cross_navigation_pending_| being false means there is
+  // *no* speculative RenderFrameHost set.
   if (!cross_navigation_pending_) {
+    DCHECK(!speculative_render_frame_host_);
     DCHECK(!pending_render_frame_host_);
+    DCHECK_IMPLIES(should_reuse_web_ui_, web_ui_);
 
     // We should only hear this from our current renderer.
     DCHECK_EQ(render_frame_host_, render_frame_host);
 
     // Even when there is no pending RVH, there may be a pending Web UI.
-    if (pending_web_ui())
+    if (pending_web_ui() || speculative_web_ui_)
       CommitPending();
     return;
   }
 
-  if (render_frame_host == pending_render_frame_host_) {
+  if (render_frame_host == pending_render_frame_host_ ||
+      render_frame_host == speculative_render_frame_host_) {
     // The pending cross-site navigation completed, so show the renderer.
     CommitPending();
   } else if (render_frame_host == render_frame_host_) {
-    if (was_caused_by_user_gesture) {
-      // A navigation in the original page has taken place.  Cancel the pending
-      // one. Only do it for user gesture originated navigations to prevent
-      // page doing any shenanigans to prevent user from navigating.
-      // See https://code.google.com/p/chromium/issues/detail?id=75195
-      CancelPending();
-      cross_navigation_pending_ = false;
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBrowserSideNavigation)) {
+      CleanUpNavigation();
+    } else {
+      if (was_caused_by_user_gesture) {
+        // A navigation in the original page has taken place.  Cancel the
+        // pending one. Only do it for user gesture originated navigations to
+        // prevent page doing any shenanigans to prevent user from navigating.
+        // See https://code.google.com/p/chromium/issues/detail?id=75195
+        CancelPending();
+        cross_navigation_pending_ = false;
+      }
     }
   } else {
     // No one else should be sending us DidNavigate in this state.
@@ -1680,26 +1674,27 @@ void RenderFrameHostManager::CommitPending() {
   // this triggers won't be able to figure out what's going on.
   bool will_focus_location_bar = delegate_->FocusLocationBarByDefault();
 
-  if (!browser_side_navigation) {
-    DCHECK(!speculative_web_ui_);
-    // Next commit the Web UI, if any. Either replace |web_ui_| with
-    // |pending_web_ui_|, or clear |web_ui_| if there is no pending WebUI, or
-    // leave |web_ui_| as is if reusing it.
-    DCHECK(!(pending_web_ui_.get() && pending_and_current_web_ui_.get()));
-    if (pending_web_ui_) {
-      web_ui_.reset(pending_web_ui_.release());
-    } else if (!pending_and_current_web_ui_.get()) {
-      web_ui_.reset();
+  // Next commit the Web UI, if any. Either replace |web_ui_| with
+  // |pending_web_ui_|, or clear |web_ui_| if there is no pending WebUI, or
+  // leave |web_ui_| as is if reusing it.
+  DCHECK(!(pending_web_ui_ && pending_and_current_web_ui_));
+  if (pending_web_ui_ || speculative_web_ui_) {
+    DCHECK(!should_reuse_web_ui_);
+    web_ui_.reset(browser_side_navigation ? speculative_web_ui_.release()
+                                          : pending_web_ui_.release());
+  } else if (pending_and_current_web_ui_ || should_reuse_web_ui_) {
+    if (browser_side_navigation) {
+      DCHECK(web_ui_);
+      should_reuse_web_ui_ = false;
     } else {
       DCHECK_EQ(pending_and_current_web_ui_.get(), web_ui_.get());
       pending_and_current_web_ui_.reset();
     }
   } else {
-    // PlzNavigate
-    if (!should_reuse_web_ui_)
-      web_ui_.reset(speculative_web_ui_.release());
-    DCHECK(!speculative_web_ui_);
+    web_ui_.reset();
   }
+  DCHECK(!speculative_web_ui_);
+  DCHECK(!should_reuse_web_ui_);
 
   // It's possible for the pending_render_frame_host_ to be nullptr when we
   // aren't crossing process boundaries. If so, we just needed to handle the Web

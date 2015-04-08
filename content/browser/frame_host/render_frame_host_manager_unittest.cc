@@ -1076,6 +1076,41 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   manager2->DidNavigateFrame(host2, true);
 }
 
+// Tests that a WebUI is correctly reused between chrome:// pages.
+TEST_F(RenderFrameHostManagerTest, WebUIWasReused) {
+  set_should_create_webui(true);
+
+  // Navigate to a WebUI page.
+  const GURL kUrl1("chrome://foo");
+  contents()->NavigateAndCommit(kUrl1);
+  RenderFrameHostManager* manager =
+      main_test_rfh()->frame_tree_node()->render_manager();
+  WebUIImpl* web_ui = manager->web_ui();
+  EXPECT_TRUE(web_ui);
+
+  // Navigate to another WebUI page which should be same-site and keep the
+  // current WebUI.
+  const GURL kUrl2("chrome://foo/bar");
+  contents()->NavigateAndCommit(kUrl2);
+  EXPECT_EQ(web_ui, manager->web_ui());
+}
+
+// Tests that a WebUI is correctly cleaned up when navigating from a chrome://
+// page to a non-chrome:// page.
+TEST_F(RenderFrameHostManagerTest, WebUIWasCleared) {
+  set_should_create_webui(true);
+
+  // Navigate to a WebUI page.
+  const GURL kUrl1("chrome://foo");
+  contents()->NavigateAndCommit(kUrl1);
+  EXPECT_TRUE(main_test_rfh()->frame_tree_node()->render_manager()->web_ui());
+
+  // Navigate to a non-WebUI page.
+  const GURL kUrl2("http://www.google.com");
+  contents()->NavigateAndCommit(kUrl2);
+  EXPECT_FALSE(main_test_rfh()->frame_tree_node()->render_manager()->web_ui());
+}
+
 // Tests that we don't end up in an inconsistent state if a page does a back and
 // then reload. http://crbug.com/51680
 // Also tests that only user-gesture navigations can interrupt cross-process
