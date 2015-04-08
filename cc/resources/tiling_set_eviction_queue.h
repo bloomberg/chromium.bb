@@ -13,58 +13,51 @@
 namespace cc {
 
 // This eviction queue returned tiles from all tilings in a tiling set in
-// the following order:
-// 1) Eventually rect tiles (EVENTUALLY tiles).
-//    1) Eventually rect tiles not required for activation from each tiling in
-//       the tiling set, in turn, in the following order:
-//       1) the first higher than high res tiling, the second one and so on
-//       2) the first lower than low res tiling, the second one and so on
-//       3) the first between high and low res tiling, the second one and so on
-//       4) low res tiling
-//       5) high res tiling
-//    2) Eventually rect tiles required for activation from the tiling with
-//       required for activation tiles. In the case of a pending tree tiling
-//       set that is the high res tiling. In the case of an active tree tiling
-//       set that is a tiling whose twin tiling is a pending tree high res
-//       tiling.
-// 2) Soon border rect and skewport rect tiles (whose priority bin is SOON
-//    unless the max tile priority bin is lowered by PictureLayerTilingClient).
-//    1) Soon border rect and skewport rect tiles not required for activation
-//       from each tiling in the tiling set.
-//        * Tilings are iterated in the same order as in the case of eventually
-//          rect tiles not required for activation.
-//        * For each tiling, first soon border rect tiles and then skewport
-//          rect tiles are returned.
-//    2) Soon border rect and skewport rect tiles required for activation from
-//       the tiling with required for activation tiles.
-//        * First soon border rect tiles and then skewport rect tiles are
-//          returned.
-// 3) Visible rect tiles (whose priority bin is NOW unless the max tile
-//    priority bin is lowered by PictureLayerTilingClient).
-//    1) Visible rect tiles not required for activation from each tiling in
-//       the tiling set.
-//        * Tilings are iterated in the same order as in the case of eventually
-//          rect tiles not required for activation.
-//        * For each tiling, first occluded tiles and then unoccluded tiles
-//          are returned.
-//    2) Visible rect tiles required for activation from the tiling with
-//       required for activation tiles.
-//        * First occluded tiles and then unoccluded tiles are returned.
-//    If the max tile priority bin is lowered by PictureLayerTilingClient,
-//    occlusion is not taken into account as occlusion is meaningful only for
-//    NOW tiles.
+// the order in which the tiles should be evicted. It can be thought of as the
+// following:
+//  for all phases:
+//    for all ordered tilings:
+//      yield the next tile for the given phase from the given tiling
 //
-// Within each tiling and tile priority rect, tiles are returned in reverse
-// spiral order i.e. in (mostly) decreasing distance-to-visible order.
+// Phases are the following (in order in which they are processed):
+// EVENTUALLY_RECT - Tiles in the eventually region of the tiling.
+// SOON_BORDER_RECT - Tiles in the prepainting skirt of the tiling.
+// SKEWPORT_RECT - Tiles in the skewport of the tiling.
+// VISIBLE_RECT_OCCLUDED - Occluded, not required for activation, visible tiles.
+// VISIBLE_RECT_UNOCCLUDED - Unoccluded, not required for activation, visible
+//     tiles.
+// VISIBLE_RECT_REQUIRED_FOR_ACTIVATION_OCCLUDED - Occluded, but required for
+//     activation, visible tiles. This can happen when an active tree tile is
+//     occluded, but is not occluded on the pending tree (and is required for
+//     activation).
+// VISIBLE_RECT_REQUIRED_FOR_ACTIVATION_UNOCCLUDED - Unoccluded, required for
+//     activation, tiles.
 //
-// If the skip_shared_out_of_order_tiles value passed to the constructor is
-// true (like it should be when there is a twin layer with a twin tiling set),
-// eviction queue does not return shared which are out of order because their
-// priority for tree priority is lowered or raised by a twin layer.
-// This happens for a tile specific lower priority tree eviction queue
-// (because eviction priority the combined priority).
-// Those skipped shared out of order tiles are when returned only by the twin
-// eviction queue.
+// The tilings are ordered as follows. Suppose we have tilings with the scales
+// below:
+// 2.0   1.5   1.0(HR)   0.8   0.5   0.25(LR)   0.2   0.1
+// With HR referring to high res tiling and LR referring to low res tiling,
+// then tilings are processed in this order:
+// 2.0   1.5   0.1   0.2   0.5   0.8   0.25(LR)   1.0(HR).
+//
+// To put it differently:
+//  1. Process the highest scale tiling down to, but not including, high res
+//     tiling.
+//  2. Process the lowest scale tiling up to, but not including, the low res
+//     tiling. In cases without a low res tiling, this is an empty set.
+//  3. Process low res tiling up to high res tiling, including neither high
+//     nor low res tilings. In cases without a low res tiling, this set
+//     includes all tilings with a lower scale than the high res tiling.
+//  4. Process the low res tiling.
+//  5. Process the high res tiling.
+//
+// Additional notes:
+// Since eventually the tiles are considered to have the priority which is the
+// higher of the two trees, we might visit a tile that should actually be
+// returned by its twin. In those situations, the tiles are not returned. That
+// is, since the twin has higher priority, it should return it when it gets to
+// it. This ensures that we don't block raster because we've returned a tile
+// with low priority on one tree, but high combined priority.
 class CC_EXPORT TilingSetEvictionQueue {
  public:
   TilingSetEvictionQueue(PictureLayerTilingSet* tiling_set,
@@ -77,29 +70,114 @@ class CC_EXPORT TilingSetEvictionQueue {
   bool IsEmpty() const;
 
  private:
-  bool AdvanceToNextEvictionTile();
-  bool AdvanceToNextPriorityBin();
-  bool AdvanceToNextTilingRangeType();
-  bool AdvanceToNextValidTiling();
+  enum Phase {
+    EVENTUALLY_RECT,
+    SOON_BORDER_RECT,
+    SKEWPORT_RECT,
+    VISIBLE_RECT_OCCLUDED,
+    VISIBLE_RECT_UNOCCLUDED,
+    VISIBLE_RECT_REQUIRED_FOR_ACTIVATION_OCCLUDED,
+    VISIBLE_RECT_REQUIRED_FOR_ACTIVATION_UNOCCLUDED
+  };
 
-  PictureLayerTilingSet::TilingRange CurrentTilingRange() const;
-  size_t CurrentTilingIndex() const;
+  void GenerateTilingOrder(PictureLayerTilingSet* tiling_set);
 
-  PictureLayerTilingSet* tiling_set_;
+  // Helper base class for individual region iterators.
+  class EvictionRectIterator {
+   public:
+    EvictionRectIterator();
+    EvictionRectIterator(std::vector<PictureLayerTiling*>* tilings,
+                         WhichTree tree,
+                         bool skip_shared_out_of_order_tiles);
+
+    bool done() const { return !tile_; }
+    Tile* operator*() const { return tile_; }
+
+   protected:
+    ~EvictionRectIterator() = default;
+
+    template <typename TilingIteratorType>
+    bool AdvanceToNextTile(TilingIteratorType* iterator);
+    template <typename TilingIteratorType>
+    bool GetFirstTileAndCheckIfValid(TilingIteratorType* iterator);
+
+    Tile* tile_;
+    std::vector<PictureLayerTiling*>* tilings_;
+    WhichTree tree_;
+    bool skip_shared_out_of_order_tiles_;
+    size_t tiling_index_;
+  };
+
+  class VisibleTilingIterator : public EvictionRectIterator {
+   public:
+    VisibleTilingIterator() = default;
+    VisibleTilingIterator(std::vector<PictureLayerTiling*>* tilings,
+                          WhichTree tree,
+                          bool skip_shared_out_of_order_tiles,
+                          bool return_occluded_tiles,
+                          bool return_required_for_activation_tiles);
+
+    VisibleTilingIterator& operator++();
+
+   private:
+    bool TileMatchesRequiredFlags(const Tile* tile) const;
+
+    TilingData::Iterator iterator_;
+    bool return_occluded_tiles_;
+    bool return_required_for_activation_tiles_;
+  };
+
+  class SkewportTilingIterator : public EvictionRectIterator {
+   public:
+    SkewportTilingIterator() = default;
+    SkewportTilingIterator(std::vector<PictureLayerTiling*>* tilings,
+                           WhichTree tree,
+                           bool skip_shared_out_of_order_tiles);
+
+    SkewportTilingIterator& operator++();
+
+   private:
+    TilingData::ReverseSpiralDifferenceIterator iterator_;
+  };
+
+  class SoonBorderTilingIterator : public EvictionRectIterator {
+   public:
+    SoonBorderTilingIterator() = default;
+    SoonBorderTilingIterator(std::vector<PictureLayerTiling*>* tilings,
+                             WhichTree tree,
+                             bool skip_shared_out_of_order_tiles);
+
+    SoonBorderTilingIterator& operator++();
+
+   private:
+    TilingData::ReverseSpiralDifferenceIterator iterator_;
+  };
+
+  class EventuallyTilingIterator : public EvictionRectIterator {
+   public:
+    EventuallyTilingIterator() = default;
+    EventuallyTilingIterator(std::vector<PictureLayerTiling*>* tilings,
+                             WhichTree tree,
+                             bool skip_shared_out_of_order_tiles);
+
+    EventuallyTilingIterator& operator++();
+
+   private:
+    TilingData::ReverseSpiralDifferenceIterator iterator_;
+  };
+
+  void AdvancePhase();
+
   WhichTree tree_;
   bool skip_shared_out_of_order_tiles_;
-  bool processing_soon_border_rect_;
-  bool processing_required_for_activation_tiles_;
+  Phase phase_;
+  Tile* current_tile_;
+  std::vector<PictureLayerTiling*> tilings_;
 
-  TilePriority::PriorityBin current_priority_bin_;
-  PictureLayerTiling* current_tiling_;
-  size_t current_tiling_index_;
-  PictureLayerTilingSet::TilingRangeType current_tiling_range_type_;
-  Tile* current_eviction_tile_;
-
-  TilingData::ReverseSpiralDifferenceIterator spiral_iterator_;
-  TilingData::Iterator visible_iterator_;
-  std::vector<Tile*> unoccluded_now_tiles_;
+  EventuallyTilingIterator eventually_iterator_;
+  SoonBorderTilingIterator soon_iterator_;
+  SkewportTilingIterator skewport_iterator_;
+  VisibleTilingIterator visible_iterator_;
 };
 
 }  // namespace cc

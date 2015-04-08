@@ -31,10 +31,10 @@ class CC_EXPORT PictureLayerTilingSet {
     LOWER_THAN_LOW_RES
   };
   struct TilingRange {
-    TilingRange(size_t start, size_t end) : start(start), end(end) {}
+    TilingRange(int start, int end) : start(start), end(end) {}
 
-    size_t start;
-    size_t end;
+    int start;
+    int end;
   };
 
   static scoped_ptr<PictureLayerTilingSet> Create(

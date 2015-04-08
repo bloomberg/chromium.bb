@@ -91,6 +91,7 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
   gfx::Size tile_size() const { return tiling_data_.max_texture_size(); }
   float contents_scale() const { return contents_scale_; }
+  const TilingData* tiling_data() const { return &tiling_data_; }
 
   Tile* TileAt(int i, int j) const {
     TileMap::const_iterator iter = tiles_.find(TileMapKey(i, j));
