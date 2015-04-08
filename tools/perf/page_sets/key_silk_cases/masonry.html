@@ -1116,7 +1116,7 @@ function() {
     }(window);
 var container = document.querySelector('#container');
 var item = container.children[0];
-for (var i = 0; i < 100; ++i) {
+for (var i = 0; i < 20; ++i) {
   container.appendChild(item.cloneNode(true));
 }
 document.body.style.display = 'block';
@@ -1125,12 +1125,23 @@ window.brick = function() {
   var mason = new Masonry(container, {
     itemSelector: '.item',
   });
-  requestAnimationFrame(function() {
-    mason.element.style.maxWidth = '950px';
-    mason.layout();
-    requestAnimationFrame(function() {
+  function relayout(i) {
+    if (i === 30) {
       window.done = true;
+      return;
+    }
+    requestAnimationFrame(function() {
+      mason.element.style.maxWidth = '950px';
+      mason.layout();
+      requestAnimationFrame(function() {
+        mason.element.style.maxWidth = '200px';
+        mason.layout();
+        requestAnimationFrame(function() {
+          relayout(i + 1);
+        });
+      });
     });
-  });
+  }
+  relayout(0);
 };
 </script>
