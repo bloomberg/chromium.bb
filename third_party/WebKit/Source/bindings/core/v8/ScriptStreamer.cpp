@@ -309,12 +309,20 @@ bool ScriptStreamer::convertEncoding(const char* encodingName, v8::ScriptCompile
 void ScriptStreamer::streamingCompleteOnBackgroundThread()
 {
     ASSERT(!isMainThread());
-    MutexLocker locker(m_mutex);
-    m_parsingFinished = true;
+    {
+        MutexLocker locker(m_mutex);
+        m_parsingFinished = true;
+    }
 
     // notifyFinished might already be called, or it might be called in the
     // future (if the parsing finishes earlier because of a parse error).
     Platform::current()->mainThread()->postTask(FROM_HERE, bind(&ScriptStreamer::streamingComplete, this));
+
+    // The task might delete ScriptStreamer, so it's not safe to do anything
+    // after posting it. Note that there's no way to guarantee that this
+    // function has returned before the task is ran - however, we should not
+    // access the "this" object after posting the task. (Especially, we should
+    // not be holding the mutex at this point.)
 }
 
 void ScriptStreamer::cancel()
