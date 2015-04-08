@@ -18,8 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in DOM Level 2:
-[
-] interface CSSUnknownRule : CSSRule {
-};
+// The CSSUnknownRule interface was introduced in DOM Level 2 Style, but has
+// been removed in CSSOM:
+// http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSUnknownRule
+// http://dev.w3.org/csswg/cssom/
+//
+// TODO(philipj): Remove CSSUnknownRule.
 
+interface CSSUnknownRule : CSSRule {
+};

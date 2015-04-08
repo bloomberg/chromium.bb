@@ -4,6 +4,7 @@
 
 
 // http://dev.w3.org/csswg/cssom-view/#mediaquerylistevent
+
 [
     Constructor(DOMString type, optional MediaQueryListEventInit eventInitDict)
 ] interface MediaQueryListEvent : Event {

@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Introduced in DOM Level 2:
+// http://dev.w3.org/csswg/cssom/#the-medialist-interface
+
+// TODO(philipj): MediaList should be an [ArrayClass].
 [
     WillBeGarbageCollected
 ] interface MediaList {
-
-             attribute DOMString? mediaText;
+    // TODO(philipj): [TreatNullAs=EmptyString] stringifier attribute DOMString mediaText;
+    attribute DOMString? mediaText;
     readonly attribute unsigned long length;
-
     getter DOMString? item(unsigned long index);
-    [RaisesException] void deleteMedium(DOMString oldMedium);
-    [RaisesException] void appendMedium(DOMString newMedium);
-
+    // TODO(philipj): appendMedium() and deleteMedium() should never throw.
+    [RaisesException] void appendMedium(DOMString medium);
+    [RaisesException] void deleteMedium(DOMString medium);
 };
-

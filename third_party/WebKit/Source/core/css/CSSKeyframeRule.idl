@@ -26,11 +26,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Introduced in DOM Level ?:
-interface CSSKeyframeRule : CSSRule {
+// http://dev.w3.org/csswg/css-animations/#interface-csskeyframerule
 
+interface CSSKeyframeRule : CSSRule {
     [RaisesException=Setter] attribute DOMString keyText;
     readonly attribute CSSStyleDeclaration style;
-
 };
-

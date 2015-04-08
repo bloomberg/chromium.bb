@@ -18,12 +18,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in DOM Level 2:
+// http://dev.w3.org/csswg/cssom/#the-stylesheetlist-interface
+
+// TODO(philipj): StyleSheetList should be an [ArrayClass].
 [
     SetWrapperReferenceFrom=document,
     WillBeGarbageCollected
 ] interface StyleSheetList {
+    getter StyleSheet? item(unsigned long index);
     readonly attribute unsigned long length;
-    getter StyleSheet item(unsigned long index);
+
+    // Non-standard APIs
     [NotEnumerable] getter CSSStyleSheet (DOMString name);
 };

@@ -95,7 +95,9 @@
     // http://dev.w3.org/csswg/cssom/#extensions-to-the-window-interface
     // FIXME: The optional pseudoElt argument should have no default.
     [NewObject, TypeChecking=Interface] CSSStyleDeclaration getComputedStyle(Element elt, optional DOMString? pseudoElt = null);
-    // http://dev.w3.org/csswg/cssom/#utility-apis
+
+    // CSS Conditional Rules Module
+    // http://dev.w3.org/csswg/css-conditional/#the-css-interface
     // FIXME: CSS should be an interface with static members, in which
     // case this getter would not be needed.
     [Replaceable] readonly attribute CSS CSS;

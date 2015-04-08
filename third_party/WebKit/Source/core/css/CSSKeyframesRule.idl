@@ -26,14 +26,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Introduced in DOM Level ?:
+// http://dev.w3.org/csswg/css-animations/#interface-csskeyframesrule
+
 interface CSSKeyframesRule : CSSRule {
     attribute DOMString name;
     readonly attribute CSSRuleList cssRules;
 
+    [ImplementedAs=insertRule, MeasureAs=CSSKeyframesRuleAppendRule] void appendRule(DOMString rule);
+    void deleteRule(DOMString select);
+    CSSKeyframeRule? findRule(DOMString select);
+
+    // Non-standard APIs
     [ImplementedAs=item, NotEnumerable] getter CSSKeyframeRule (unsigned long index);
     [DeprecateAs=CSSKeyframesRuleInsertRule] void insertRule(DOMString rule);
-    [ImplementedAs=insertRule, MeasureAs=CSSKeyframesRuleAppendRule] void appendRule(DOMString rule);
-    void deleteRule(DOMString key);
-    CSSKeyframeRule? findRule(DOMString key);
 };

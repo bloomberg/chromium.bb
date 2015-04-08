@@ -18,8 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in DOM Level 2:
+// http://dev.w3.org/csswg/cssom/#the-cssstylerule-interface
+
 interface CSSStyleRule : CSSRule {
     attribute DOMString selectorText;
-    readonly attribute CSSStyleDeclaration style;
+    // TODO(philipj): style should have [PutForwards=cssText].
+    [SameObject] readonly attribute CSSStyleDeclaration style;
 };

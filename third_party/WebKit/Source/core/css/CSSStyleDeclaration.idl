@@ -18,24 +18,32 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in DOM Level 2:
+// http://dev.w3.org/csswg/cssom/#the-cssstyledeclaration-interface
+
 [
     DependentLifetime,
     WillBeGarbageCollected
 ] interface CSSStyleDeclaration {
-    [RaisesException=Setter] attribute DOMString?       cssText;
+    // TODO(philipj): cssText should not be nullable.
+    [RaisesException=Setter] attribute DOMString? cssText;
+    readonly attribute unsigned long length;
+    getter DOMString item(unsigned long index);
+    // TODO(philipj): All DOMString? return types in this interface should be
+    // just DOMString (not nullable).
+    DOMString? getPropertyValue(DOMString property);
+    DOMString? getPropertyPriority(DOMString property);
+    // TODO(philipj): The value and priority arguments should have
+    // [TreatNullAs=EmptyString] and should not be nullable.
+    [RaisesException] void setProperty(DOMString property, DOMString? value, optional DOMString? priority = null);
+    // void setPropertyValue(DOMString property, [TreatNullAs=EmptyString] DOMString value);
+    // void setPropertyPriority(DOMString property, [TreatNullAs=EmptyString] DOMString priority);
+    [RaisesException] DOMString? removeProperty(DOMString property);
+    readonly attribute CSSRule? parentRule;
+    // [TreatNullAs=EmptyString] attribute DOMString cssFloat;
 
-    DOMString?          getPropertyValue(DOMString propertyName);
-    [RaisesException] DOMString?          removeProperty(DOMString propertyName);
-    DOMString?          getPropertyPriority(DOMString propertyName);
-    [RaisesException] void setProperty(DOMString propertyName,
-                                       DOMString? value,
-                                       optional DOMString? priority = null);
-
-    readonly attribute unsigned long    length;
-    getter DOMString          item(unsigned long index);
+    // The camel-cased and dashed attribute getters have custom bindings.
+    // http://dev.w3.org/csswg/cssom/#dom-cssstyledeclaration-camel-cased-attribute
+    // http://dev.w3.org/csswg/cssom/#dom-cssstyledeclaration-dashed-attribute
     [Custom=(PropertyGetter,PropertyEnumerator,PropertyQuery)] getter (DOMString or float) (DOMString name);
-    [Custom] setter void (DOMString propertyName, DOMString? propertyValue);
-    readonly attribute CSSRule          parentRule;
+    [Custom] setter void (DOMString property, DOMString? propertyValue);
 };
-
