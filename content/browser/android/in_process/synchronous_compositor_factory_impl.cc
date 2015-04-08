@@ -83,11 +83,10 @@ class SynchronousCompositorFactoryImpl::VideoContextProvider
     : public StreamTextureFactorySynchronousImpl::ContextProvider {
  public:
   VideoContextProvider(
-      scoped_ptr<gpu::GLInProcessContext> gl_in_process_context)
-      : gl_in_process_context_(gl_in_process_context.get()) {
-    context_provider_ = webkit::gpu::ContextProviderInProcess::Create(
-        WrapContext(gl_in_process_context.Pass(), GetDefaultAttribs()),
-        "Video-Offscreen-main-thread");
+      scoped_refptr<cc::ContextProvider> context_provider,
+      gpu::GLInProcessContext* gl_in_process_context)
+      : context_provider_(context_provider),
+        gl_in_process_context_(gl_in_process_context) {
     context_provider_->BindToCurrentThread();
   }
 
@@ -262,9 +261,15 @@ SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
     attributes.shareResources = false;
     // This needs to run in on-screen |service_| context due to SurfaceTexture
     // limitations.
-    video_context_provider_ = new VideoContextProvider(CreateContextHolder(
-        attributes, service_, gpu::GLInProcessContextSharedMemoryLimits(),
-        false));
+    scoped_ptr<gpu::GLInProcessContext> context =
+        CreateContextHolder(attributes, service_,
+                            gpu::GLInProcessContextSharedMemoryLimits(), false);
+    gpu::GLInProcessContext* context_ptr = context.get();
+    video_context_provider_ =
+        new VideoContextProvider(webkit::gpu::ContextProviderInProcess::Create(
+                                     WrapContext(context.Pass(), attributes),
+                                     "Video-Offscreen-main-thread"),
+                                 context_ptr);
   }
   return video_context_provider_;
 }
