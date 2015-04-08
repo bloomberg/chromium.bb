@@ -14,6 +14,16 @@ function test()
         'rgb(255,-10,0)',      // clipped to rgb(255,0,0)
         'rgb(110%, 0%, 0%)',   // clipped to rgb(100%,0%,0%)
 
+        // Each of these are valid
+        'rgba(0,0,0,0.5)',
+        'hsl(-120, 100%, 50%)',
+        'hsl(-120, 200%, 200%)', // clipped to hsl(240,100%,100%)
+        'hsl(-120, -200%, -200%)', // clipped to hsl(240,100%,100%)
+        'hsla(-120, -200%, -200%, -5)', // clipped to hsla(0,0%,0%,0)
+        'hsla(240,100%,50%,0.05)',
+        'hsl(200.5,0%,50%)',
+        'hsla(200,1.5%,50%,1)',
+
         // Each of these has their alpha clipped [0.0, 1.0].
         'rgba(255, 0, 0, -5)', // clipped to rgba(255,0,0,0)
         'rgba(255, 0, 0, 5)',  // clipped to rgba(255,0,0,1)
@@ -22,6 +32,19 @@ function test()
     var invalidColors = [
         // An invalid color, eg a value for a shorthand like 'border' which can have a color
         'none',
+        '#0000',
+        '#00000',
+        '#ggg',
+        'rgb(a,b,c)',
+        'rgb(a,b,c,d)',
+        'rgb(1,1,1.2)',
+        'rgba(0,0,0,1%)',
+        'hsl(0,0,0)',
+        'hsl(0%, 0%, 0%)',
+        'hsl(0, 0%, 0)',
+        'hsl(a,b,c)',
+        'hsla(0,0,0,0)',
+        'hsla'
     ];
 
     InspectorTest.runTestSuite([
@@ -45,7 +68,6 @@ function test()
         if (!color) {
             InspectorTest.addResult("");
             InspectorTest.addResult("SUCCESS: parsed invalid color " + colorString + " to null");
-            return;
         } else {
             InspectorTest.addResult("");
             InspectorTest.addResult("FAIL: invalid color " + colorString + " did not parse to to null");
