@@ -299,21 +299,6 @@ static yuv_subsampling yuvSubsampling(const jpeg_decompress_struct& info)
     return YUV_UNKNOWN;
 }
 
-bool validateSubsampling(const jpeg_decompress_struct* cinfo)
-{
-    ASSERT(cinfo->num_components);
-
-    jpeg_component_info* component = cinfo->comp_info;
-    for (int c = 0; c < cinfo->num_components; ++c, ++component) {
-        if (component->h_samp_factor == 3)
-            component->h_samp_factor = 1;
-        if (component->v_samp_factor == 3)
-            component->v_samp_factor = 1;
-    }
-
-    return true;
-}
-
 class JPEGImageReader {
     WTF_MAKE_FAST_ALLOCATED(JPEGImageReader);
 public:
@@ -411,7 +396,6 @@ public:
             return m_decoder->setFailed();
 
         J_COLOR_SPACE overrideColorSpace = JCS_UNKNOWN;
-
         switch (m_state) {
         case JPEG_HEADER:
             // Read file parameters with jpeg_read_header().
@@ -447,9 +431,6 @@ public:
             default:
                 return m_decoder->setFailed();
             }
-
-            if (!validateSubsampling(&m_info))
-                return m_decoder->setFailed();
 
             m_state = JPEG_START_DECOMPRESS;
 
