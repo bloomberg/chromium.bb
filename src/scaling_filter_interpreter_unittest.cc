@@ -323,6 +323,8 @@ static void RunTouchMajorAndMinorTest(
 
     has_zero_area[i] = pressure == 0.0;
 
+    pressure = std::max(pressure , 1.0f);
+
     if (has_zero_area[i]) {
       base_interpreter->expected_orientation_.push_back(
           std::vector<float>(0));
@@ -374,7 +376,10 @@ TEST(ScalingFilterInterpreterTest, TouchMajorAndMinorTest) {
 
   const float e_x = 17;
   const float e_y = 71;
+  const bool kFilterLowPressure = 1;
+
   interpreter.surface_area_from_pressure_.val_ = false;
+  interpreter.filter_low_pressure_.val_ = kFilterLowPressure;
   interpreter.tp_x_bias_.val_ = e_x;
   interpreter.tp_y_bias_.val_ = e_y;
 

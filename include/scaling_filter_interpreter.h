@@ -100,6 +100,10 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   DoubleProperty pressure_scale_;
   DoubleProperty pressure_translate_;
   DoubleProperty pressure_threshold_;
+  // if true, the low pressure touch will be ignored.
+  // if false, or doesn't exist, the low pressure touch will be converted
+  // to touch with pressure 1.0
+  BoolProperty filter_low_pressure_;
 
   // If true, adjust touch count to match finger count when scaling
   // input state. This can help avoid being considered a T5R2 pad.
