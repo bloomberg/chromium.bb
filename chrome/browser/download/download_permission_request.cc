@@ -11,7 +11,11 @@
 
 DownloadPermissionRequest::DownloadPermissionRequest(
     base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host)
-    : host_(host) {}
+    : host_(host) {
+  const content::WebContents* web_contents = host_->web_contents();
+  DCHECK(web_contents);
+  request_url_ = web_contents->GetURL();
+}
 
 DownloadPermissionRequest::~DownloadPermissionRequest() {}
 
@@ -37,11 +41,7 @@ bool DownloadPermissionRequest::HasUserGesture() const {
 }
 
 GURL DownloadPermissionRequest::GetRequestingHostname() const {
-  const content::WebContents* web_contents = host_->web_contents();
-  if (web_contents) {
-    return web_contents->GetURL();
-  }
-  return GURL();
+  return request_url_;
 }
 
 void DownloadPermissionRequest::PermissionGranted() {

@@ -33,6 +33,7 @@ class DownloadPermissionRequest : public PermissionBubbleRequest {
 
  private:
   base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host_;
+  GURL request_url_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadPermissionRequest);
 };
