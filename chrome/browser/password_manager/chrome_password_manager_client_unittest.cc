@@ -5,12 +5,16 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 
 #include "base/command_line.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
@@ -18,6 +22,7 @@
 #include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -39,14 +44,23 @@ class MockLogReceiver : public password_manager::LogReceiver {
   MOCK_METHOD1(LogSavePasswordProgress, void(const std::string&));
 };
 
+// TODO(vabr): Get rid of the mocked client in the client's own test, see
+// http://crbug.com/474577.
 class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
  public:
+  MOCK_CONST_METHOD0(IsPasswordManagementEnabledForCurrentPage, bool());
+  MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   MOCK_CONST_METHOD2(IsSyncAccountCredential,
                      bool(const std::string& username,
                           const std::string& origin));
 
   explicit MockChromePasswordManagerClient(content::WebContents* web_contents)
-      : ChromePasswordManagerClient(web_contents, nullptr) {}
+      : ChromePasswordManagerClient(web_contents, nullptr) {
+    ON_CALL(*this, DidLastPageLoadEncounterSSLErrors())
+        .WillByDefault(testing::Return(false));
+    ON_CALL(*this, IsPasswordManagementEnabledForCurrentPage())
+        .WillByDefault(testing::Return(true));
+  }
   ~MockChromePasswordManagerClient() override {}
 
  private:
@@ -61,6 +75,10 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 
   virtual void SetUp() override;
 
+  TestingPrefServiceSyncable* prefs() {
+    return profile()->GetTestingPrefService();
+  }
+
  protected:
   ChromePasswordManagerClient* GetClient();
 
@@ -72,6 +90,7 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
   password_manager::PasswordManagerInternalsService* service_;
 
   testing::StrictMock<MockLogReceiver> receiver_;
+  TestingPrefServiceSimple prefs_;
 };
 
 ChromePasswordManagerClientTest::ChromePasswordManagerClientTest()
@@ -80,6 +99,8 @@ ChromePasswordManagerClientTest::ChromePasswordManagerClientTest()
 
 void ChromePasswordManagerClientTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
+  prefs_.registry()->RegisterBooleanPref(
+      password_manager::prefs::kPasswordManagerSavingEnabled, true);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents(), nullptr);
   service_ = password_manager::PasswordManagerInternalsServiceFactory::
@@ -272,37 +293,41 @@ TEST_F(ChromePasswordManagerClientTest, ShouldFilterAutofillResult) {
 }
 
 TEST_F(ChromePasswordManagerClientTest,
-       IsPasswordManagerEnabledForCurrentPage) {
+       IsPasswordManagementEnabledForCurrentPage) {
   ChromePasswordManagerClient* client = GetClient();
   NavigateAndCommit(
       GURL("https://accounts.google.com/ServiceLogin?continue="
            "https://passwords.google.com/settings&rart=123"));
-  EXPECT_FALSE(client->IsPasswordManagerEnabledForCurrentPage());
+  EXPECT_FALSE(client->IsPasswordManagementEnabledForCurrentPage());
 
   // Password site is inaccesible via HTTP, but because of HSTS the following
   // link should still continue to https://passwords.google.com.
   NavigateAndCommit(
       GURL("https://accounts.google.com/ServiceLogin?continue="
            "http://passwords.google.com/settings&rart=123"));
-  EXPECT_FALSE(client->IsPasswordManagerEnabledForCurrentPage());
+  EXPECT_FALSE(client->IsPasswordManagementEnabledForCurrentPage());
+  EXPECT_FALSE(client->IsSavingEnabledForCurrentPage());
 
   // Specifying default port still passes.
   NavigateAndCommit(
       GURL("https://accounts.google.com/ServiceLogin?continue="
            "https://passwords.google.com:443/settings&rart=123"));
-  EXPECT_FALSE(client->IsPasswordManagerEnabledForCurrentPage());
+  EXPECT_FALSE(client->IsPasswordManagementEnabledForCurrentPage());
+  EXPECT_FALSE(client->IsSavingEnabledForCurrentPage());
 
   // Encoded URL is considered the same.
   NavigateAndCommit(
       GURL("https://accounts.google.com/ServiceLogin?continue="
            "https://passwords.%67oogle.com/settings&rart=123"));
-  EXPECT_FALSE(client->IsPasswordManagerEnabledForCurrentPage());
+  EXPECT_FALSE(client->IsPasswordManagementEnabledForCurrentPage());
+  EXPECT_FALSE(client->IsSavingEnabledForCurrentPage());
 
   // Make sure testing sites are disabled as well.
   NavigateAndCommit(
       GURL("https://accounts.google.com/Login?continue="
            "https://passwords-ac-testing.corp.google.com/settings&rart=456"));
-  EXPECT_FALSE(client->IsPasswordManagerEnabledForCurrentPage());
+  EXPECT_FALSE(client->IsSavingEnabledForCurrentPage());
+  EXPECT_FALSE(client->IsPasswordManagementEnabledForCurrentPage());
 
   // Fully qualified domain name is considered a different hostname by GURL.
   // Ideally this would not be the case, but this quirk can be avoided by
@@ -311,25 +336,25 @@ TEST_F(ChromePasswordManagerClientTest,
   NavigateAndCommit(
       GURL("https://accounts.google.com/ServiceLogin?continue="
            "https://passwords.google.com./settings&rart=123"));
-  EXPECT_TRUE(client->IsPasswordManagerEnabledForCurrentPage());
+  EXPECT_TRUE(client->IsPasswordManagementEnabledForCurrentPage());
 
   // Not a transactional reauth page.
   NavigateAndCommit(
       GURL("https://accounts.google.com/ServiceLogin?continue="
            "https://passwords.google.com/settings"));
-  EXPECT_TRUE(client->IsPasswordManagerEnabledForCurrentPage());
+  EXPECT_TRUE(client->IsPasswordManagementEnabledForCurrentPage());
 
   // Should be enabled for other transactional reauth pages.
   NavigateAndCommit(
       GURL("https://accounts.google.com/ServiceLogin?continue="
            "https://mail.google.com&rart=234"));
-  EXPECT_TRUE(client->IsPasswordManagerEnabledForCurrentPage());
+  EXPECT_TRUE(client->IsPasswordManagementEnabledForCurrentPage());
 
   // Reauth pages are only on accounts.google.com
   NavigateAndCommit(
       GURL("https://other.site.com/ServiceLogin?continue="
            "https://passwords.google.com&rart=234"));
-  EXPECT_TRUE(client->IsPasswordManagerEnabledForCurrentPage());
+  EXPECT_TRUE(client->IsPasswordManagementEnabledForCurrentPage());
 }
 
 TEST_F(ChromePasswordManagerClientTest, IsPasswordSyncEnabled) {
@@ -384,4 +409,69 @@ TEST_F(ChromePasswordManagerClientTest, IsPasswordSyncEnabled) {
       client->IsPasswordSyncEnabled(password_manager::ONLY_CUSTOM_PASSPHRASE));
   EXPECT_FALSE(client->IsPasswordSyncEnabled(
       password_manager::WITHOUT_CUSTOM_PASSPHRASE));
+}
+
+TEST_F(ChromePasswordManagerClientTest, IsOffTheRecordTest) {
+  ChromePasswordManagerClient* client = GetClient();
+
+  profile()->ForceIncognito(true);
+  EXPECT_TRUE(client->IsOffTheRecord());
+
+  profile()->ForceIncognito(false);
+  EXPECT_FALSE(client->IsOffTheRecord());
+}
+
+TEST_F(ChromePasswordManagerClientTest,
+       SavingDependsOnManagerEnabledPreference) {
+  // Test that saving passwords depends on the password manager enabled
+  // preference.
+  ChromePasswordManagerClient* client = GetClient();
+  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+                       new base::FundamentalValue(true));
+  EXPECT_TRUE(client->IsSavingEnabledForCurrentPage());
+  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+                       new base::FundamentalValue(false));
+  EXPECT_FALSE(client->IsSavingEnabledForCurrentPage());
+}
+
+TEST_F(ChromePasswordManagerClientTest, IsSavingEnabledForCurrentPageTest) {
+  scoped_ptr<MockChromePasswordManagerClient> client(
+      new MockChromePasswordManagerClient(web_contents()));
+  // Functionality disabled if there is SSL errors.
+  EXPECT_CALL(*client, DidLastPageLoadEncounterSSLErrors())
+      .WillRepeatedly(Return(true));
+  EXPECT_FALSE(client->IsSavingEnabledForCurrentPage());
+
+  // Functionality disabled if there are SSL errors and the manager itself is
+  // disabled.
+  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+                       new base::FundamentalValue(false));
+  EXPECT_FALSE(client->IsSavingEnabledForCurrentPage());
+
+  // Functionality disabled if there are no SSL errorsm, but the manager itself
+  // is disabled.
+  EXPECT_CALL(*client, DidLastPageLoadEncounterSSLErrors())
+      .WillRepeatedly(Return(false));
+  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+                       new base::FundamentalValue(false));
+  EXPECT_FALSE(client->IsSavingEnabledForCurrentPage());
+
+  // Functionality enabled if there are no SSL errors and the manager is
+  // enabled.
+  EXPECT_CALL(*client, DidLastPageLoadEncounterSSLErrors())
+      .WillRepeatedly(Return(false));
+  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+                       new base::FundamentalValue(true));
+  EXPECT_TRUE(client->IsSavingEnabledForCurrentPage());
+
+  // Functionality disabled in Incognito mode.
+  profile()->ForceIncognito(true);
+  EXPECT_FALSE(client->IsSavingEnabledForCurrentPage());
+
+  // Functionality disabled in Incognito mode also when manager itself is
+  // enabled.
+  prefs()->SetUserPref(password_manager::prefs::kPasswordManagerSavingEnabled,
+                       new base::FundamentalValue(true));
+  EXPECT_FALSE(client->IsSavingEnabledForCurrentPage());
+  profile()->ForceIncognito(false);
 }

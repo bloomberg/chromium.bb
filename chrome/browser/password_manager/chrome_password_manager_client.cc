@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -37,6 +38,7 @@
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -53,11 +55,40 @@ using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerInternalsService;
 using password_manager::PasswordManagerInternalsServiceFactory;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromePasswordManagerClient);
-
 // Shorten the name to spare line breaks. The code provides enough context
 // already.
 typedef autofill::SavePasswordProgressLogger Logger;
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromePasswordManagerClient);
+
+namespace {
+// This routine is called when PasswordManagerClient is constructed.
+// Currently we report metrics only once at startup. We require
+// that this is only ever called from a single thread in order to
+// avoid needing to lock (a static boolean flag is then sufficient to
+// guarantee running only once).
+void ReportMetrics(bool password_manager_enabled,
+                   password_manager::PasswordManagerClient* client) {
+  static base::PlatformThreadId initial_thread_id =
+      base::PlatformThread::CurrentId();
+  DCHECK_EQ(base::PlatformThread::CurrentId(), initial_thread_id);
+
+  static bool ran_once = false;
+  if (ran_once)
+    return;
+  ran_once = true;
+
+  password_manager::PasswordStore* store = client->GetPasswordStore();
+  // May be null in tests.
+  if (store) {
+    store->ReportMetrics(client->GetSyncUsername(),
+                         client->IsPasswordSyncEnabled(
+                             password_manager::ONLY_CUSTOM_PASSPHRASE));
+  }
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
+}
+
+}  // namespace
 
 // static
 void ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
@@ -93,6 +124,9 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
   if (service)
     can_use_log_router_ = service->RegisterClient(this);
   SetUpAutofillSyncState();
+  saving_passwords_enabled_.Init(
+      password_manager::prefs::kPasswordManagerSavingEnabled, GetPrefs());
+  ReportMetrics(*saving_passwords_enabled_, this);
 }
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {
@@ -109,27 +143,39 @@ bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
              chrome::VersionInfo::CHANNEL_UNKNOWN;
 }
 
-bool ChromePasswordManagerClient::IsPasswordManagerEnabledForCurrentPage()
+bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage()
     const {
   DCHECK(web_contents());
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
+  bool is_enabled = false;
   if (!entry) {
     // TODO(gcasto): Determine if fix for crbug.com/388246 is relevant here.
-    return true;
+    is_enabled = true;
+  } else if (IsURLPasswordWebsiteReauth(entry->GetURL())) {
+    // Disable the password manager for online password management.
+    is_enabled = false;
+  } else if (EnabledForSyncSignin()) {
+    is_enabled = true;
+  } else {
+    // Do not fill nor save password when a user is signing in for sync. This
+    // is because users need to remember their password if they are syncing as
+    // this is effectively their master password.
+    is_enabled = entry->GetURL().host() != chrome::kChromeUIChromeSigninHost;
   }
+  if (IsLoggingActive()) {
+    password_manager::BrowserSavePasswordProgressLogger logger(this);
+    logger.LogBoolean(
+        Logger::STRING_PASSWORD_MANAGEMENT_ENABLED_FOR_CURRENT_PAGE,
+        is_enabled);
+  }
+  return is_enabled;
+}
 
-  // Disable the password manager for online password management.
-  if (IsURLPasswordWebsiteReauth(entry->GetURL()))
-    return false;
-
-  if (EnabledForSyncSignin())
-    return true;
-
-  // Do not fill nor save password when a user is signing in for sync. This
-  // is because users need to remember their password if they are syncing as
-  // this is effectively their master password.
-  return entry->GetURL().host() != chrome::kChromeUIChromeSigninHost;
+bool ChromePasswordManagerClient::IsSavingEnabledForCurrentPage() const {
+  return *saving_passwords_enabled_ && !IsOffTheRecord() &&
+         !DidLastPageLoadEncounterSSLErrors() &&
+         IsPasswordManagementEnabledForCurrentPage();
 }
 
 bool ChromePasswordManagerClient::ShouldFilterAutofillResult(
@@ -329,10 +375,17 @@ bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
 bool ChromePasswordManagerClient::DidLastPageLoadEncounterSSLErrors() const {
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry)
-    return false;
-
-  return net::IsCertStatusError(entry->GetSSL().cert_status);
+  bool ssl_errors = true;
+  if (!entry) {
+    ssl_errors = false;
+  } else {
+    ssl_errors = net::IsCertStatusError(entry->GetSSL().cert_status);
+  }
+  if (IsLoggingActive()) {
+    password_manager::BrowserSavePasswordProgressLogger logger(this);
+    logger.LogBoolean(Logger::STRING_SSL_ERRORS_PRESENT, ssl_errors);
+  }
+  return ssl_errors;
 }
 
 bool ChromePasswordManagerClient::IsOffTheRecord() const {

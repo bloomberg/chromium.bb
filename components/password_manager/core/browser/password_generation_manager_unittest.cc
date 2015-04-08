@@ -123,8 +123,8 @@ class PasswordGenerationManagerTest : public testing::Test {
 TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
   // Enabling the PasswordManager and password sync should cause generation to
   // be enabled.
-  PrefService* prefs = client_->GetPrefs();
-  prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, true);
+  EXPECT_CALL(*client_, IsSavingEnabledForCurrentPage())
+      .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*client_, IsPasswordSyncEnabled(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_TRUE(IsGenerationEnabled());
@@ -136,7 +136,8 @@ TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
 
   // Disabling the PasswordManager should cause generation to be disabled even
   // if syncing is enabled.
-  prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, false);
+  EXPECT_CALL(*client_, IsSavingEnabledForCurrentPage())
+      .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(*client_, IsPasswordSyncEnabled(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_FALSE(IsGenerationEnabled());
@@ -144,8 +145,8 @@ TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
 
 TEST_F(PasswordGenerationManagerTest, DetectAccountCreationForms) {
   // Setup so that IsGenerationEnabled() returns true.
-  PrefService* prefs = client_->GetPrefs();
-  prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, true);
+  EXPECT_CALL(*client_, IsSavingEnabledForCurrentPage())
+      .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*client_, IsPasswordSyncEnabled(_))
       .WillRepeatedly(testing::Return(true));
 

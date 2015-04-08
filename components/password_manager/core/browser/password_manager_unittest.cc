@@ -8,9 +8,6 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -37,11 +34,11 @@ namespace {
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MOCK_CONST_METHOD0(IsPasswordManagerEnabledForCurrentPage, bool());
+  MOCK_CONST_METHOD0(IsSavingEnabledForCurrentPage, bool());
+  MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   MOCK_CONST_METHOD2(IsSyncAccountCredential,
                      bool(const std::string&, const std::string&));
   MOCK_CONST_METHOD0(GetPasswordStore, PasswordStore*());
-  MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   // The code inside EXPECT_CALL for PromptUserToSavePasswordPtr owns the
   // PasswordFormManager* argument.
   MOCK_METHOD2(PromptUserToSavePasswordPtr,
@@ -95,20 +92,16 @@ class TestPasswordManager : public PasswordManager {
 class PasswordManagerTest : public testing::Test {
  protected:
   void SetUp() override {
-    prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
-                                           true);
-
     store_ = new MockPasswordStore;
     EXPECT_CALL(*store_, ReportMetrics(_, _)).Times(AnyNumber());
     CHECK(store_->Init(syncer::SyncableService::StartSyncFlare()));
 
-    EXPECT_CALL(client_, IsPasswordManagerEnabledForCurrentPage())
-        .WillRepeatedly(Return(true));
+    ON_CALL(client_, IsSavingEnabledForCurrentPage())
+        .WillByDefault(testing::Return(true));
     EXPECT_CALL(client_, IsSyncAccountCredential(_, _))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(client_, GetPasswordStore())
         .WillRepeatedly(Return(store_.get()));
-    EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(&prefs_));
     EXPECT_CALL(client_, GetDriver()).WillRepeatedly(Return(&driver_));
 
     manager_.reset(new TestPasswordManager(&client_));
@@ -233,7 +226,6 @@ class PasswordManagerTest : public testing::Test {
     submitted_form_ = form;
   }
 
-  TestingPrefServiceSimple prefs_;
   scoped_refptr<MockPasswordStore> store_;
   MockPasswordManagerClient client_;
   MockPasswordManagerDriver driver_;
@@ -584,24 +576,14 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
                                      true);  // The post-navigation layout.
 }
 
-TEST_F(PasswordManagerTest, SavingDependsOnManagerEnabledPreference) {
-  // Test that saving passwords depends on the password manager enabled
-  // preference.
-  prefs_.SetUserPref(prefs::kPasswordManagerSavingEnabled,
-                     new base::FundamentalValue(true));
-  EXPECT_TRUE(manager()->IsSavingEnabledForCurrentPage());
-  prefs_.SetUserPref(prefs::kPasswordManagerSavingEnabled,
-                     new base::FundamentalValue(false));
-  EXPECT_FALSE(manager()->IsSavingEnabledForCurrentPage());
-}
 
 TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   // Test fix for issue 158296: Passwords must be filled even if the password
   // manager is disabled.
   ScopedVector<PasswordForm> result;
   result.push_back(new PasswordForm(MakeSimpleForm()));
-  prefs_.SetUserPref(prefs::kPasswordManagerSavingEnabled,
-                     new base::FundamentalValue(false));
+  EXPECT_CALL(client_, IsSavingEnabledForCurrentPage())
+      .WillRepeatedly(Return(false));
   EXPECT_CALL(driver_, FillPasswordForm(_));
   EXPECT_CALL(*store_,
               GetLogins(_, testing::Eq(PasswordStore::DISALLOW_PROMPT), _))
@@ -713,48 +695,6 @@ TEST_F(PasswordManagerTest, PasswordFormReappearance) {
   // No expected calls to the PasswordStore...
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
-}
-
-TEST_F(PasswordManagerTest, SavingNotEnabledOnSSLErrors) {
-  EXPECT_CALL(client_, DidLastPageLoadEncounterSSLErrors())
-      .WillRepeatedly(Return(true));
-  EXPECT_FALSE(manager()->IsSavingEnabledForCurrentPage());
-}
-
-TEST_F(PasswordManagerTest, AutofillingNotEnabledOnSSLErrors) {
-  // Test that in the presence of SSL errors, the password manager does not
-  // attempt to autofill forms found on a website.
-  EXPECT_CALL(client_, DidLastPageLoadEncounterSSLErrors())
-      .WillRepeatedly(Return(true));
-
-  // Let us pretend some forms were found on a website.
-  std::vector<PasswordForm> forms;
-  forms.push_back(MakeSimpleForm());
-
-  // Feed those forms to |manager()| and check that it does not try to find
-  // matching saved credentials for the forms.
-  EXPECT_CALL(*store_, GetLogins(_, _, _)).Times(Exactly(0));
-  manager()->OnPasswordFormsParsed(&driver_, forms);
-}
-
-TEST_F(PasswordManagerTest, SavingDisabledIfManagerDisabled) {
-  EXPECT_CALL(client_, IsPasswordManagerEnabledForCurrentPage())
-      .WillRepeatedly(Return(false));
-  EXPECT_FALSE(manager()->IsSavingEnabledForCurrentPage());
-}
-
-TEST_F(PasswordManagerTest, AutofillingDisabledIfManagerDisabled) {
-  EXPECT_CALL(client_, IsPasswordManagerEnabledForCurrentPage())
-      .WillRepeatedly(Return(false));
-
-  // Let us pretend some forms were found on a website.
-  std::vector<PasswordForm> forms;
-  forms.push_back(MakeSimpleForm());
-
-  // Feed those forms to |manager()| and check that it does not try to find
-  // matching saved credentials for the forms.
-  EXPECT_CALL(*store_, GetLogins(_, _, _)).Times(Exactly(0));
-  manager()->OnPasswordFormsParsed(&driver_, forms);
 }
 
 TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {

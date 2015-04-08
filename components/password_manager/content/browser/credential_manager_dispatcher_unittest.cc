@@ -37,6 +37,7 @@ const int kRequestId = 4;
 class MockPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
+  MOCK_CONST_METHOD0(IsSavingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD1(NotifyUserAutoSigninPtr,
                bool(const std::vector<autofill::PasswordForm*>& local_forms));
@@ -161,6 +162,8 @@ class CredentialManagerDispatcherTest
     client_.reset(new MockPasswordManagerClient(store_.get()));
     dispatcher_.reset(new TestCredentialManagerDispatcher(
         web_contents(), client_.get(), &stub_driver_));
+    ON_CALL(*client_, IsSavingEnabledForCurrentPage())
+        .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsOffTheRecord()).WillByDefault(testing::Return(false));
 
     NavigateAndCommit(GURL("https://example.com/test.html"));
@@ -255,9 +258,11 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedIn) {
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
 }
 
-TEST_F(CredentialManagerDispatcherTest, CredentialManagerIncognitoSignedIn) {
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerSignInWithSavingDisabledForCurrentPage) {
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_LOCAL);
-  EXPECT_CALL(*client_, IsOffTheRecord()).WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, IsSavingEnabledForCurrentPage())
+      .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(
       *client_,
       PromptUserToSavePasswordPtr(

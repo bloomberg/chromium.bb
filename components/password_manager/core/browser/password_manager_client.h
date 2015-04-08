@@ -50,7 +50,13 @@ class PasswordManagerClient {
 
   // If the password manager should work for the current page. Default
   // always returns true.
-  virtual bool IsPasswordManagerEnabledForCurrentPage() const;
+  virtual bool IsPasswordManagementEnabledForCurrentPage() const;
+
+  // Is saving new data for password autofill enabled for the current profile
+  // and page? For example, saving new data is disabled in Incognito mode,
+  // whereas filling data is not. Also, saving data is disabled in the presence
+  // of SSL errors on a page.
+  virtual bool IsSavingEnabledForCurrentPage() const;
 
   // Return true if |form| should not be available for autofill.
   virtual bool ShouldFilterAutofillResult(

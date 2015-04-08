@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/prefs/pref_member.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/content/browser/credential_manager_dispatcher.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -42,7 +43,8 @@ class ChromePasswordManagerClient
 
   // PasswordManagerClient implementation.
   bool IsAutomaticPasswordSavingEnabled() const override;
-  bool IsPasswordManagerEnabledForCurrentPage() const override;
+  bool IsPasswordManagementEnabledForCurrentPage() const override;
+  bool IsSavingEnabledForCurrentPage() const override;
   bool ShouldFilterAutofillResult(const autofill::PasswordForm& form) override;
   std::string GetSyncUsername() const override;
   bool IsSyncAccountCredential(const std::string& username,
@@ -171,6 +173,10 @@ class ChromePasswordManagerClient
   // If the sync credential was filtered during autofill. Used for statistics
   // reporting.
   bool sync_credential_was_filtered_;
+
+  // Set to false to disable password saving (will no longer ask if you
+  // want to save passwords but will continue to fill passwords).
+  BooleanPrefMember saving_passwords_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

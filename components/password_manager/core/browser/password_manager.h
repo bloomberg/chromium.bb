@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
-#include "base/prefs/pref_member.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -59,12 +58,6 @@ class PasswordManager : public LoginModel {
   // owners of these callbacks have sufficient lifetimes so that the callbacks
   // should always be valid when called.
   void AddSubmissionCallback(const PasswordSubmittedCallback& callback);
-
-  // Is saving new data for password autofill enabled for the current profile
-  // and page? For example, saving new data is disabled in Incognito mode,
-  // whereas filling data is not. Also, saving data is disabled in the presence
-  // of SSL errors on a page.
-  bool IsSavingEnabledForCurrentPage() const;
 
   // Called by a PasswordFormManager when it decides a form can be autofilled
   // on the page.
@@ -133,11 +126,6 @@ class PasswordManager : public LoginModel {
     MAX_FAILURE_VALUE
   };
 
-  // Returns if the password manager is enabled for this page. There are certain
-  // situations (e.g. bad SSL cert) where we disable the password manager
-  // temporarily.
-  bool IsEnabledForCurrentPage() const;
-
   // Log failure for UMA. Logs additional metrics if the |form_origin|
   // corresponds to one of the top, explicitly monitored websites. For some
   // values of |failure| also sends logs to the internals page through |logger|,
@@ -192,10 +180,6 @@ class PasswordManager : public LoginModel {
 
   // The embedder-level client. Must outlive this class.
   PasswordManagerClient* const client_;
-
-  // Set to false to disable password saving (will no longer ask if you
-  // want to save passwords but will continue to fill passwords).
-  BooleanPrefMember saving_passwords_enabled_;
 
   // Observers to be notified of LoginModel events.  This is mutable to allow
   // notification in const member functions.

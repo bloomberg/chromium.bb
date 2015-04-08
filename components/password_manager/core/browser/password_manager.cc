@@ -42,33 +42,6 @@ const char kSpdyProxyRealm[] = "/SpdyProxy";
 // already.
 typedef autofill::SavePasswordProgressLogger Logger;
 
-// This routine is called when PasswordManagers are constructed.
-//
-// Currently we report metrics only once at startup. We require
-// that this is only ever called from a single thread in order to
-// avoid needing to lock (a static boolean flag is then sufficient to
-// guarantee running only once).
-void ReportMetrics(bool password_manager_enabled,
-                   PasswordManagerClient* client) {
-  static base::PlatformThreadId initial_thread_id =
-      base::PlatformThread::CurrentId();
-  DCHECK(initial_thread_id == base::PlatformThread::CurrentId());
-
-  static bool ran_once = false;
-  if (ran_once)
-    return;
-  ran_once = true;
-
-  PasswordStore* store = client->GetPasswordStore();
-  // May be null in tests.
-  if (store) {
-    store->ReportMetrics(client->GetSyncUsername(),
-                         client->IsPasswordSyncEnabled(
-                             password_manager::ONLY_CUSTOM_PASSPHRASE));
-  }
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
-}
-
 bool ShouldDropSyncCredential() {
   std::string group_name =
       base::FieldTrialList::FindFullName("PasswordManagerDropSyncCredential");
@@ -144,10 +117,6 @@ void PasswordManager::RegisterLocalPrefs(PrefRegistrySimple* registry) {
 PasswordManager::PasswordManager(PasswordManagerClient* client)
     : client_(client) {
   DCHECK(client_);
-  saving_passwords_enabled_.Init(prefs::kPasswordManagerSavingEnabled,
-                                 client_->GetPrefs());
-
-  ReportMetrics(*saving_passwords_enabled_, client_);
 }
 
 PasswordManager::~PasswordManager() {
@@ -157,7 +126,7 @@ PasswordManager::~PasswordManager() {
 void PasswordManager::SetFormHasGeneratedPassword(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& form) {
-  DCHECK(IsSavingEnabledForCurrentPage());
+  DCHECK(client_->IsSavingEnabledForCurrentPage());
 
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
@@ -179,28 +148,8 @@ void PasswordManager::SetFormHasGeneratedPassword(
   // TODO(gcasto): Add UMA stats to track this.
 }
 
-bool PasswordManager::IsEnabledForCurrentPage() const {
-  bool ssl_errors = client_->DidLastPageLoadEncounterSSLErrors();
-  bool client_check = client_->IsPasswordManagerEnabledForCurrentPage();
-
-  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (client_->IsLoggingActive()) {
-    logger.reset(new BrowserSavePasswordProgressLogger(client_));
-    logger->LogMessage(Logger::STRING_ENABLED_FOR_CURRENT_PAGE_METHOD);
-    logger->LogBoolean(Logger::STRING_SSL_ERRORS_PRESENT, ssl_errors);
-    logger->LogBoolean(Logger::STRING_CLIENT_CHECK_PRESENT, client_check);
-  }
-
-  return !ssl_errors && client_check;
-}
-
-bool PasswordManager::IsSavingEnabledForCurrentPage() const {
-  return *saving_passwords_enabled_ && !client_->IsOffTheRecord() &&
-         IsEnabledForCurrentPage();
-}
-
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
-  bool is_saving_enabled = IsSavingEnabledForCurrentPage();
+  bool is_saving_enabled = client_->IsSavingEnabledForCurrentPage();
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
   if (client_->IsLoggingActive()) {
@@ -208,9 +157,6 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     logger->LogMessage(Logger::STRING_PROVISIONALLY_SAVE_PASSWORD_METHOD);
     logger->LogPasswordForm(Logger::STRING_PROVISIONALLY_SAVE_PASSWORD_FORM,
                             form);
-    logger->LogBoolean(Logger::STRING_IS_SAVING_ENABLED, is_saving_enabled);
-    logger->LogBoolean(Logger::STRING_SSL_ERRORS_PRESENT,
-                       client_->DidLastPageLoadEncounterSSLErrors());
   }
 
   if (!is_saving_enabled) {
@@ -446,7 +392,8 @@ void PasswordManager::CreatePendingLoginManagers(
     logger->LogMessage(Logger::STRING_CREATE_LOGIN_MANAGERS_METHOD);
   }
 
-  if (!IsEnabledForCurrentPage())
+  if (client_->DidLastPageLoadEncounterSSLErrors() ||
+      !client_->IsPasswordManagementEnabledForCurrentPage())
     return;
 
   if (logger) {
@@ -520,7 +467,7 @@ void PasswordManager::OnPasswordFormsRendered(
     return;
   }
 
-  DCHECK(IsSavingEnabledForCurrentPage());
+  DCHECK(client_->IsSavingEnabledForCurrentPage());
 
   // If the server throws an internal error, access denied page, page not
   // found etc. after a login attempt, we do not save the credentials.

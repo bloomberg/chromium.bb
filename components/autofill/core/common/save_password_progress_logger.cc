@@ -201,10 +201,9 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "Number of pending login managers (before)";
     case SavePasswordProgressLogger::STRING_NEW_NUMBER_LOGIN_MANAGERS:
       return "Number of pending login managers (after)";
-    case SavePasswordProgressLogger::STRING_ENABLED_FOR_CURRENT_PAGE_METHOD:
-      return "PasswordManager::IsEnabledForCurrentPage";
-    case SavePasswordProgressLogger::STRING_CLIENT_CHECK_PRESENT:
-      return "IsPasswordManagerEnabledForCurrentPage";
+    case SavePasswordProgressLogger::
+        STRING_PASSWORD_MANAGEMENT_ENABLED_FOR_CURRENT_PAGE:
+      return "IsPasswordManagementEnabledForCurrentPage";
     case SavePasswordProgressLogger::STRING_SHOW_LOGIN_PROMPT_METHOD:
       return "ShowLoginPrompt";
     case SavePasswordProgressLogger::STRING_NEW_UI_STATE:

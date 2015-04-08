@@ -75,7 +75,6 @@ class CredentialManagerDispatcher : public content::WebContentsObserver {
 
   PasswordStore* GetPasswordStore();
 
-  bool IsSavingEnabledForCurrentPage() const;
   bool IsZeroClickAllowed() const;
 
   // Returns the driver for the current main frame.
