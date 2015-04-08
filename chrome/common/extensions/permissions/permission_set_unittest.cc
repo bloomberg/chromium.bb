@@ -1270,7 +1270,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
       extension->permissions_data()->HasAPIPermission(APIPermission::kSocket));
   EXPECT_TRUE(VerifyOnePermissionMessage(
       extension->permissions_data(),
-      "Exchange data with any computer on the local network or internet"));
+      "Exchange data with any device on the local network or internet"));
 }
 
 TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
@@ -1288,8 +1288,8 @@ TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
   // order in the manifest file.
   EXPECT_TRUE(VerifyTwoPermissionMessages(
       extension->permissions_data(),
-      "Exchange data with any computer in the domain example.org",
-      "Exchange data with the computers named: "
+      "Exchange data with any device in the domain example.org",
+      "Exchange data with the devices named: "
       "b\xC3\xA5r.example.com foo.example.com",
       // "\xC3\xA5" = UTF-8 for lowercase A with ring above
       true));
@@ -1309,9 +1309,9 @@ TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
   // in alphabetical order regardless of the order in the manifest file.
   EXPECT_TRUE(VerifyTwoPermissionMessages(
       extension->permissions_data(),
-      "Exchange data with any computer in the domains: "
+      "Exchange data with any device in the domains: "
       "example.com foo.example.org",
-      "Exchange data with the computer named bar.example.org", true));
+      "Exchange data with the device named bar.example.org", true));
 }
 
 // Since platform apps always use isolated storage, they can't (silently)

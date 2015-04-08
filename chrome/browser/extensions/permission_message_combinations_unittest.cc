@@ -545,7 +545,7 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  }"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with any computer on the local network or internet"));
+      "Exchange data with any device on the local network or internet"));
 
   CreateAndInstall(
       "{"
@@ -559,7 +559,7 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  }"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with any computer on the local network or internet"));
+      "Exchange data with any device on the local network or internet"));
 
   CreateAndInstall(
       "{"
@@ -573,7 +573,7 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  }"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with the computer named 127.0.0.1"));
+      "Exchange data with the device named 127.0.0.1"));
 
   CreateAndInstall(
       "{"
@@ -587,7 +587,7 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  }"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with the computer named www.example.com"));
+      "Exchange data with the device named www.example.com"));
 
   CreateAndInstall(
       "{"
@@ -601,7 +601,7 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  }"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with the computer named 127.0.0.1"));
+      "Exchange data with the device named 127.0.0.1"));
 
   CreateAndInstall(
       "{"
@@ -615,7 +615,7 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  }"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with any computer on the local network or internet"));
+      "Exchange data with any device on the local network or internet"));
 
   CreateAndInstall(
       "{"
@@ -637,7 +637,7 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  }"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with the computers named: 127.0.0.1 www.bar.com "
+      "Exchange data with the devices named: 127.0.0.1 www.bar.com "
       "www.example.com www.foo.com www.google.com"));
 
   CreateAndInstall(
@@ -668,7 +668,7 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  }"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with the computers named: 127.0.0.1 www.abc.com "
+      "Exchange data with the devices named: 127.0.0.1 www.abc.com "
       "www.example.com www.foo.com www.freestuff.com www.google.com "
       "www.mywebsite.com www.test.com"));
 
@@ -685,7 +685,7 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  }"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with any computer on the local network or internet"));
+      "Exchange data with any device on the local network or internet"));
 }
 
 // Check that permission messages are generated correctly for
@@ -788,7 +788,7 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with any computer on the local network or internet"));
+      "Exchange data with any device on the local network or internet"));
 
   CreateAndInstall(
       "{"
@@ -806,7 +806,7 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with any computer on the local network or internet"));
+      "Exchange data with any device on the local network or internet"));
 
   CreateAndInstall(
       "{"
@@ -820,7 +820,7 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with the computer named foo.example.com"));
+      "Exchange data with the device named foo.example.com"));
 
   CreateAndInstall(
       "{"
@@ -834,7 +834,7 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with any computer on the local network or internet"));
+      "Exchange data with any device on the local network or internet"));
 
   CreateAndInstall(
       "{"
@@ -851,7 +851,7 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with the computers named: foo.example.com test.ping.com"));
+      "Exchange data with the devices named: foo.example.com test.ping.com"));
 
   CreateAndInstall(
       "{"
@@ -871,7 +871,7 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with the computers named: foo.example.com test.ping.com "
+      "Exchange data with the devices named: foo.example.com test.ping.com "
       "test2.ping.com www.ping.com"));
 
   CreateAndInstall(
@@ -890,7 +890,7 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Exchange data with any computer on the local network or internet"));
+      "Exchange data with any device on the local network or internet"));
 }
 
 // Check that permission messages are generated correctly for
