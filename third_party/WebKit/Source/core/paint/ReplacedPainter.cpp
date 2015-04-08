@@ -66,7 +66,12 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
             } else {
                 // Push a clip if we have a border radius, since we want to round the foreground content that gets painted.
                 FloatRoundedRect roundedInnerRect = m_layoutReplaced.style()->getRoundedInnerBorderFor(paintRect,
-                    m_layoutReplaced.paddingTop() + m_layoutReplaced.borderTop(), m_layoutReplaced.paddingBottom() + m_layoutReplaced.borderBottom(), m_layoutReplaced.paddingLeft() + m_layoutReplaced.borderLeft(), m_layoutReplaced.paddingRight() + m_layoutReplaced.borderRight(), true, true);
+                    LayoutRectOutsets(
+                        -(m_layoutReplaced.paddingTop() + m_layoutReplaced.borderTop()),
+                        -(m_layoutReplaced.paddingRight() + m_layoutReplaced.borderRight()),
+                        -(m_layoutReplaced.paddingBottom() + m_layoutReplaced.borderBottom()),
+                        -(m_layoutReplaced.paddingLeft() + m_layoutReplaced.borderLeft())),
+                    true, true);
 
                 clipper = adoptPtr(new RoundedInnerRectClipper(m_layoutReplaced, paintInfo, paintRect, roundedInnerRect, ApplyToDisplayListIfEnabled));
             }

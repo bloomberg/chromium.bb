@@ -1033,22 +1033,27 @@ FloatRoundedRect ComputedStyle::getRoundedInnerBorderFor(const LayoutRect& borde
     int topWidth = (horizontal || includeLogicalLeftEdge) ? borderTopWidth() : 0;
     int bottomWidth = (horizontal || includeLogicalRightEdge) ? borderBottomWidth() : 0;
 
-    return getRoundedInnerBorderFor(borderRect, topWidth, bottomWidth, leftWidth, rightWidth, includeLogicalLeftEdge, includeLogicalRightEdge);
+    return getRoundedInnerBorderFor(borderRect,
+        LayoutRectOutsets(-topWidth, -rightWidth, -bottomWidth, -leftWidth),
+        includeLogicalLeftEdge, includeLogicalRightEdge);
 }
 
 FloatRoundedRect ComputedStyle::getRoundedInnerBorderFor(const LayoutRect& borderRect,
-    int topWidth, int bottomWidth, int leftWidth, int rightWidth, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
+    const LayoutRectOutsets insets, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
-    LayoutRect innerRect(borderRect.x() + leftWidth,
-        borderRect.y() + topWidth,
-        borderRect.width() - leftWidth - rightWidth,
-        borderRect.height() - topWidth - bottomWidth);
+    LayoutRect innerRect(borderRect);
+    innerRect.expand(insets);
 
     FloatRoundedRect roundedRect(pixelSnappedIntRect(innerRect));
 
     if (hasBorderRadius()) {
         FloatRoundedRect::Radii radii = getRoundedBorderFor(borderRect).radii();
-        radii.shrink(topWidth, bottomWidth, leftWidth, rightWidth);
+        // Insets use negative values.
+        radii.shrink(
+            -insets.top().toFloat(),
+            -insets.bottom().toFloat(),
+            -insets.left().toFloat(),
+            -insets.right().toFloat());
         roundedRect.includeLogicalEdges(radii, isHorizontalWritingMode(), includeLogicalLeftEdge, includeLogicalRightEdge);
     }
     return roundedRect;

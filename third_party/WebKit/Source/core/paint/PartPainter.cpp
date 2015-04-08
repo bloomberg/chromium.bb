@@ -51,7 +51,12 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
                 return;
 
             FloatRoundedRect roundedInnerRect = m_layoutPart.style()->getRoundedInnerBorderFor(borderRect,
-                m_layoutPart.paddingTop() + m_layoutPart.borderTop(), m_layoutPart.paddingBottom() + m_layoutPart.borderBottom(), m_layoutPart.paddingLeft() + m_layoutPart.borderLeft(), m_layoutPart.paddingRight() + m_layoutPart.borderRight(), true, true);
+                LayoutRectOutsets(
+                    -(m_layoutPart.paddingTop() + m_layoutPart.borderTop()),
+                    -(m_layoutPart.paddingRight() + m_layoutPart.borderRight()),
+                    -(m_layoutPart.paddingBottom() + m_layoutPart.borderBottom()),
+                    -(m_layoutPart.paddingLeft() + m_layoutPart.borderLeft())),
+                true, true);
             clipper = adoptPtr(new RoundedInnerRectClipper(m_layoutPart, paintInfo, borderRect, roundedInnerRect, ApplyToDisplayListIfEnabled));
         }
 

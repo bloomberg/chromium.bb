@@ -26,6 +26,7 @@
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
+#include "platform/geometry/LayoutRectOutsets.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
 
@@ -351,8 +352,12 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
         // Clip to the padding or content boxes as necessary.
         if (bgLayer.clip() == ContentFillBox) {
             border = obj.style()->getRoundedInnerBorderFor(LayoutRect(border.rect()),
-                obj.paddingTop() + obj.borderTop(), obj.paddingBottom() + obj.borderBottom(),
-                obj.paddingLeft() + obj.borderLeft(), obj.paddingRight() + obj.borderRight(), includeLeftEdge, includeRightEdge);
+                LayoutRectOutsets(
+                    -(obj.paddingTop() + obj.borderTop()),
+                    -(obj.paddingRight() + obj.borderRight()),
+                    -(obj.paddingBottom() + obj.borderBottom()),
+                    -(obj.paddingLeft() + obj.borderLeft())),
+                includeLeftEdge, includeRightEdge);
         } else if (bgLayer.clip() == PaddingFillBox) {
             border = obj.style()->getRoundedInnerBorderFor(LayoutRect(border.rect()), includeLeftEdge, includeRightEdge);
         }
@@ -1380,9 +1385,20 @@ bool allCornersClippedOut(const FloatRoundedRect& border, const IntRect& intClip
     return true;
 }
 
+// TODO(fmalita): Border painting is complex enough to warrant a standalone class. Move all related
+//                logic out into BoxBorderPainter or such.
+// TODO(fmalita): Move static BoxPainter border methods to anonymous ns and update to use a
+//                BoxBorderInfo argument.
 struct BoxBorderInfo {
-    BoxBorderInfo(const ComputedStyle& style, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
-        : visibleEdgeCount(0)
+    STACK_ALLOCATED();
+public:
+    BoxBorderInfo(const ComputedStyle& style, BackgroundBleedAvoidance bleedAvoidance,
+        bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
+        : style(style)
+        , bleedAvoidance(bleedAvoidance)
+        , includeLogicalLeftEdge(includeLogicalLeftEdge)
+        , includeLogicalRightEdge(includeLogicalRightEdge)
+        , visibleEdgeCount(0)
         , firstVisibleEdge(0)
         , visibleEdgeSet(0)
         , isUniformStyle(true)
@@ -1421,6 +1437,11 @@ struct BoxBorderInfo {
         }
     }
 
+    const ComputedStyle& style;
+    const BackgroundBleedAvoidance bleedAvoidance;
+    const bool includeLogicalLeftEdge;
+    const bool includeLogicalRightEdge;
+
     BorderEdge edges[4];
 
     unsigned visibleEdgeCount;
@@ -1432,6 +1453,16 @@ struct BoxBorderInfo {
     bool isUniformColor;
     bool hasAlpha;
 };
+
+LayoutRectOutsets doubleStripeInsets(const BorderEdge edges[], BorderEdge::DoubleBorderStripe stripe)
+{
+    // Insets are representes as negative outsets.
+    return LayoutRectOutsets(
+        -edges[BSTop].getDoubleBorderStripeWidth(stripe),
+        -edges[BSRight].getDoubleBorderStripeWidth(stripe),
+        -edges[BSBottom].getDoubleBorderStripeWidth(stripe),
+        -edges[BSLeft].getDoubleBorderStripeWidth(stripe));
+}
 
 void drawSolidBorderRect(GraphicsContext* context, const FloatRect& borderRect,
     float borderWidth, const Color& color)
@@ -1452,51 +1483,29 @@ void drawSolidBorderRect(GraphicsContext* context, const FloatRect& borderRect,
         context->setShouldAntialias(wasAntialias);
 }
 
-void drawDoubleBorderRect(GraphicsContext* context, const BoxBorderInfo& borderInfo,
-    const FloatRect& outerBorder, const FloatRect& innerBorder)
+void drawDoubleBorder(GraphicsContext* context, const BoxBorderInfo& borderInfo, const LayoutRect& borderRect,
+    const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder)
 {
     ASSERT(borderInfo.isUniformColor);
     ASSERT(borderInfo.isUniformStyle);
     ASSERT(borderInfo.edges[borderInfo.firstVisibleEdge].borderStyle() == DOUBLE);
     ASSERT(borderInfo.visibleEdgeSet == AllBorderEdges);
 
-    FloatRectOutsets innerThirdOutsets;
-    FloatRectOutsets outerThirdOutsets;
+    const Color color = borderInfo.edges[borderInfo.firstVisibleEdge].color;
 
-    int innerWidth;
-    int outerWidth;
+    // outer stripe
+    const LayoutRectOutsets outerThirdInsets =
+        doubleStripeInsets(borderInfo.edges, BorderEdge::DoubleBorderStripeOuter);
+    const FloatRoundedRect outerThirdRect = borderInfo.style.getRoundedInnerBorderFor(borderRect,
+        outerThirdInsets, borderInfo.includeLogicalLeftEdge, borderInfo.includeLogicalRightEdge);
+    context->fillDRRect(outerBorder, outerThirdRect, color);
 
-    borderInfo.edges[BSLeft].getDoubleBorderStripeWidths(outerWidth, innerWidth);
-    innerThirdOutsets.setLeft(-innerWidth);
-    outerThirdOutsets.setLeft(-outerWidth);
-
-    borderInfo.edges[BSTop].getDoubleBorderStripeWidths(outerWidth, innerWidth);
-    innerThirdOutsets.setTop(-innerWidth);
-    outerThirdOutsets.setTop(-outerWidth);
-
-    borderInfo.edges[BSRight].getDoubleBorderStripeWidths(outerWidth, innerWidth);
-    innerThirdOutsets.setRight(-innerWidth);
-    outerThirdOutsets.setRight(-outerWidth);
-
-    borderInfo.edges[BSBottom].getDoubleBorderStripeWidths(outerWidth, innerWidth);
-    innerThirdOutsets.setBottom(-innerWidth);
-    outerThirdOutsets.setBottom(-outerWidth);
-
-    FloatRect innerThirdRect = outerBorder;
-    FloatRect outerThirdRect = outerBorder;
-    innerThirdRect.expand(innerThirdOutsets);
-    outerThirdRect.expand(outerThirdOutsets);
-
-    // TODO(fmalita): use 2 x fillDRRect() instead of fillPath()?
-    Path path;
-    path.addRect(outerBorder);
-    path.addRect(outerThirdRect);
-    path.addRect(innerThirdRect);
-    path.addRect(innerBorder);
-
-    context->setFillRule(RULE_EVENODD);
-    context->setFillColor(borderInfo.edges[borderInfo.firstVisibleEdge].color);
-    context->fillPath(path);
+    // inner stripe
+    const LayoutRectOutsets innerThirdInsets =
+        doubleStripeInsets(borderInfo.edges, BorderEdge::DoubleBorderStripeInner);
+    const FloatRoundedRect innerThirdRect = borderInfo.style.getRoundedInnerBorderFor(borderRect,
+        innerThirdInsets, borderInfo.includeLogicalLeftEdge, borderInfo.includeLogicalRightEdge);
+    context->fillDRRect(innerThirdRect, innerBorder, color);
 }
 
 } // anonymous namespace
@@ -1508,7 +1517,7 @@ void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, c
     if (paintNinePieceImage(obj, graphicsContext, rect, style, style.borderImage()))
         return;
 
-    const BoxBorderInfo borderInfo(style, includeLogicalLeftEdge, includeLogicalRightEdge);
+    const BoxBorderInfo borderInfo(style, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge);
     FloatRoundedRect outerBorder = style.getRoundedBorderFor(rect, includeLogicalLeftEdge, includeLogicalRightEdge);
     FloatRoundedRect innerBorder = style.getRoundedInnerBorderFor(borderInnerRectAdjustedForBleedAvoidance(graphicsContext, rect, bleedAvoidance), includeLogicalLeftEdge, includeLogicalRightEdge);
 
@@ -1523,6 +1532,8 @@ void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, c
     // rectangular to improve performance.
     if (haveAllSolidEdges && outerBorder.isRounded() && allCornersClippedOut(outerBorder, info.rect))
         outerBorder.setRadii(FloatRoundedRect::Radii());
+
+    // TODO(fmalita): rationalize all fastpath branches.
 
     // Fast path for drawing 4-side all-solid uniform-color borders.
     if (haveAllSolidEdges && borderInfo.visibleEdgeSet == AllBorderEdges && borderInfo.isUniformColor && innerBorder.isRenderable()) {
@@ -1540,17 +1551,17 @@ void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, c
 
     // isRenderable() check avoids issue described in https://bugs.webkit.org/show_bug.cgi?id=38787
     if ((haveAllSolidEdges || haveAllDoubleEdges) && borderInfo.isUniformColor && innerBorder.isRenderable()) {
-        // Fast path for drawing all unrounded double edges.
-        // TODO(fmalita): why is this predicated on hasAlpha?
-        if (borderInfo.visibleEdgeSet == AllBorderEdges && borderInfo.hasAlpha && !outerBorder.isRounded() && !innerBorder.isRounded()) {
+        // Fast path for drawing double edges.
+        if (borderInfo.visibleEdgeSet == AllBorderEdges) {
             // Solid edges are handled by prevous fast paths.
             ASSERT(!haveAllSolidEdges);
 
-            drawDoubleBorderRect(graphicsContext, borderInfo, outerBorder.rect(), innerBorder.rect());
+            drawDoubleBorder(graphicsContext, borderInfo, rect, outerBorder, innerBorder);
             return;
         }
 
         // Avoid creating transparent layers
+        // TODO(fmalita): why is this predicated on hasAlpha?
         if (haveAllSolidEdges && borderInfo.visibleEdgeSet != AllBorderEdges && !outerBorder.isRounded() && borderInfo.hasAlpha) {
             Path path;
 
@@ -1562,6 +1573,7 @@ void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, c
                 }
             }
 
+            // TODO(fmalita): 1-3 drawRects should be significantly faster than a concave drawPath.
             graphicsContext->setFillRule(RULE_NONZERO);
             graphicsContext->setFillColor(firstEdge.color);
             graphicsContext->fillPath(path);
@@ -1803,29 +1815,12 @@ void BoxPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext, const Lay
         return;
     }
     case DOUBLE: {
-        // Get the inner border rects for both the outer border line and the inner border line
-        int outerBorderTopWidth;
-        int innerBorderTopWidth;
-        edges[BSTop].getDoubleBorderStripeWidths(outerBorderTopWidth, innerBorderTopWidth);
-
-        int outerBorderRightWidth;
-        int innerBorderRightWidth;
-        edges[BSRight].getDoubleBorderStripeWidths(outerBorderRightWidth, innerBorderRightWidth);
-
-        int outerBorderBottomWidth;
-        int innerBorderBottomWidth;
-        edges[BSBottom].getDoubleBorderStripeWidths(outerBorderBottomWidth, innerBorderBottomWidth);
-
-        int outerBorderLeftWidth;
-        int innerBorderLeftWidth;
-        edges[BSLeft].getDoubleBorderStripeWidths(outerBorderLeftWidth, innerBorderLeftWidth);
-
         // Draw inner border line
         {
             GraphicsContextStateSaver stateSaver(*graphicsContext);
+            const LayoutRectOutsets innerInsets = doubleStripeInsets(edges, BorderEdge::DoubleBorderStripeInner);
             FloatRoundedRect innerClip = style.getRoundedInnerBorderFor(borderRect,
-                innerBorderTopWidth, innerBorderBottomWidth, innerBorderLeftWidth, innerBorderRightWidth,
-                includeLogicalLeftEdge, includeLogicalRightEdge);
+                innerInsets, includeLogicalLeftEdge, includeLogicalRightEdge);
 
             graphicsContext->clipRoundedRect(innerClip);
             drawBoxSideFromPath(graphicsContext, borderRect, borderPath, edges, thickness, drawThickness, side, style, color, SOLID, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge);
@@ -1835,16 +1830,17 @@ void BoxPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext, const Lay
         {
             GraphicsContextStateSaver stateSaver(*graphicsContext);
             LayoutRect outerRect = borderRect;
+            LayoutRectOutsets outerInsets = doubleStripeInsets(edges, BorderEdge::DoubleBorderStripeOuter);
+
             if (bleedAvoidance == BackgroundBleedClipBackground) {
                 outerRect.inflate(1);
-                ++outerBorderTopWidth;
-                ++outerBorderBottomWidth;
-                ++outerBorderLeftWidth;
-                ++outerBorderRightWidth;
+                outerInsets.setTop(outerInsets.top() - 1);
+                outerInsets.setRight(outerInsets.right() - 1);
+                outerInsets.setBottom(outerInsets.bottom() - 1);
+                outerInsets.setLeft(outerInsets.left() - 1);
             }
 
-            FloatRoundedRect outerClip = style.getRoundedInnerBorderFor(outerRect,
-                outerBorderTopWidth, outerBorderBottomWidth, outerBorderLeftWidth, outerBorderRightWidth,
+            FloatRoundedRect outerClip = style.getRoundedInnerBorderFor(outerRect, outerInsets,
                 includeLogicalLeftEdge, includeLogicalRightEdge);
             graphicsContext->clipOutRoundedRect(outerClip);
             drawBoxSideFromPath(graphicsContext, borderRect, borderPath, edges, thickness, drawThickness, side, style, color, SOLID, bleedAvoidance, includeLogicalLeftEdge, includeLogicalRightEdge);
@@ -1875,7 +1871,7 @@ void BoxPainter::drawBoxSideFromPath(GraphicsContext* graphicsContext, const Lay
         LayoutUnit rightWidth = edges[BSRight].usedWidth() / 2;
 
         FloatRoundedRect clipRect = style.getRoundedInnerBorderFor(borderRect,
-            topWidth, bottomWidth, leftWidth, rightWidth,
+            LayoutRectOutsets(-topWidth, -rightWidth, -bottomWidth, -leftWidth),
             includeLogicalLeftEdge, includeLogicalRightEdge);
 
         graphicsContext->clipRoundedRect(clipRect);

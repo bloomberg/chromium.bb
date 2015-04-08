@@ -62,18 +62,14 @@ int BorderEdge::usedWidth() const
     return isPresent ? width : 0;
 }
 
-void BorderEdge::getDoubleBorderStripeWidths(int& outerWidth, int& innerWidth) const
+int BorderEdge::getDoubleBorderStripeWidth(DoubleBorderStripe stripe) const
 {
-    int fullWidth = usedWidth();
-    outerWidth = fullWidth / 3;
-    innerWidth = fullWidth * 2 / 3;
+    ASSERT(stripe == DoubleBorderStripeOuter || stripe == DoubleBorderStripeInner);
 
-    // We need certain integer rounding results
-    if (fullWidth % 3 == 2)
-        outerWidth += 1;
-
-    if (fullWidth % 3 == 1)
-        innerWidth += 1;
+    // We need certain integer rounding results.
+    return stripe == DoubleBorderStripeOuter
+        ? (usedWidth() + 1) / 3
+        : (usedWidth() * 2 + 1) / 3;
 }
 
 bool BorderEdge::sharesColorWith(const BorderEdge& other) const
