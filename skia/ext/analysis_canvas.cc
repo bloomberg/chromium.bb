@@ -60,7 +60,9 @@ bool IsFullQuad(SkCanvas* canvas, const SkRect& drawn_rect) {
     return false;
 
   SkIRect clip_irect;
-  canvas->getClipDeviceBounds(&clip_irect);
+  if (!canvas->getClipDeviceBounds(&clip_irect))
+    return false;
+  
   // if the clip is smaller than the canvas, we're partly clipped, so abort.
   if (!clip_irect.contains(SkIRect::MakeSize(canvas->getDeviceSize())))
     return false;
@@ -96,8 +98,8 @@ void AnalysisCanvas::SetForceNotTransparent(bool flag) {
 
 void AnalysisCanvas::onDrawPaint(const SkPaint& paint) {
   SkRect rect;
-  getClipBounds(&rect);
-  drawRect(rect, paint);
+  if (getClipBounds(&rect))
+    drawRect(rect, paint);
 }
 
 void AnalysisCanvas::onDrawPoints(SkCanvas::PointMode mode,
