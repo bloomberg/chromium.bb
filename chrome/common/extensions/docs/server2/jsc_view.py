@@ -233,7 +233,8 @@ class _JSCViewBuilder(object):
         'functions': self._GenerateFunctions(type_.functions),
         'events': self._GenerateEvents(type_.events),
         'id': _CreateId(type_, 'type'),
-        'availability': self._GetAvailabilityTemplate()
+        'availability': self._GetAvailabilityTemplate(
+            is_enum=type_.property_type == model.PropertyType.ENUM)
       }
       self._RenderTypeInformation(type_, type_dict)
       return type_dict
@@ -444,10 +445,16 @@ class _JSCViewBuilder(object):
       'version': version
     }
 
-  def _GetAvailabilityTemplate(self):
+  def _GetAvailabilityTemplate(self, is_enum=False):
     '''Gets availability for the current node and returns an appropriate
     template object.
     '''
+    # We don't show an availability warning for enums.
+    # TODO(devlin): We should also render enums differently, indicating that
+    # symbolic constants are available from version 44 onwards.
+    if is_enum:
+      return None
+
     # Displaying deprecated status takes precedence over when the API
     # became stable.
     availability_info = self._current_node.GetDeprecated()
