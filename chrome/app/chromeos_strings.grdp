@@ -6214,16 +6214,16 @@ All users must sign out to continue.
     Permission requested
   </message>
   <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_MESSAGE" desc="Message in a prompt dialog for granting read-only permissions to a volume (eg. USB drive, SD card, MTP device) with the specified name to the extension.">
-    Do you want to grant this app permission to read files from <ph name="VOLUME_NAME">$1<ex>FooBar 4GB</ex></ph>?
+    <ph name="APP_NAME">$1<ex>Super Kiosk app</ex></ph> wants to copy files from <ph name="VOLUME_NAME">$2<ex>FooBar 4GB</ex></ph>.
   </message>
   <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_WRITABLE_MESSAGE" desc="Message in a prompt dialog for granting full permissions (read, write, delete, create files and directories) to a volume (eg. USB drive, SD card, MTP device) with the specified name to the extension.">
-    Do you want to grant this app permission to read, write, delete and create files on <ph name="VOLUME_NAME">$1<ex>FooBar 4GB</ex></ph>?
+    <ph name="APP_NAME">$1<ex>Super Kiosk app</ex></ph> wants to access <ph name="VOLUME_NAME">$2<ex>FooBar 4GB</ex></ph>. It may modify or delete your files.
   </message>
-  <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_YES_BUTTON" desc="Label on the button to grant permissions.">
-    Yes
+  <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_ALLOW_BUTTON" desc="Label on the button to grant permissions.">
+    Allow
   </message>
-  <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_NO_BUTTON" desc="Label on the button to reject permissions.">
-    No
+  <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_DENY_BUTTON" desc="Label on the button to reject permissions.">
+    Deny
   </message>
   <message name="IDS_FLAG_ENABLE_MTP_WRITE_SUPPORT_NAME" desc="Name of the option to enable mtp write support.">
     Enable MTP write support

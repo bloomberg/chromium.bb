@@ -54,10 +54,10 @@ base::string16 RequestFileSystemDialogView::GetDialogButtonLabel(
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
       return l10n_util::GetStringUTF16(
-          IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_YES_BUTTON);
+          IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_ALLOW_BUTTON);
     case ui::DIALOG_BUTTON_CANCEL:
       return l10n_util::GetStringUTF16(
-          IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_NO_BUTTON);
+          IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_DENY_BUTTON);
     default:
       NOTREACHED();
   }
@@ -105,35 +105,29 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
     return;
   }
 
+  const base::string16 app_name = base::UTF8ToUTF16(extension.name());
   // TODO(mtomasz): Improve the dialog contents, so it's easier for the user
   // to understand what device is being requested.
-  const base::string16 display_name =
+  const base::string16 volume_name =
       base::UTF8ToUTF16(!volume->volume_label().empty() ? volume->volume_label()
                                                         : volume->volume_id());
+  std::vector<size_t> placeholder_offsets;
   const base::string16 message = l10n_util::GetStringFUTF16(
       writable ? IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_WRITABLE_MESSAGE
                : IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_MESSAGE,
-      display_name);
-
-  // Find location of the placeholder by comparing message and message_host
-  // strings in order to apply the bold style on the display name.
-  const base::string16 message_host = l10n_util::GetStringFUTF16(
-      writable ? IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_WRITABLE_MESSAGE
-               : IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_MESSAGE,
-      base::string16());
-
-  size_t placeholder_start = 0;
-  while (placeholder_start < message.size() &&
-         message[placeholder_start] == message_host[placeholder_start]) {
-    ++placeholder_start;
-  }
+      app_name, volume_name, &placeholder_offsets);
 
   views::StyledLabel* const label = new views::StyledLabel(message, nullptr);
   views::StyledLabel::RangeStyleInfo bold_style;
   bold_style.font_style = gfx::Font::BOLD;
 
+  DCHECK_EQ(2u, placeholder_offsets.size());
+  label->AddStyleRange(gfx::Range(placeholder_offsets[0],
+                                  placeholder_offsets[0] + app_name.length()),
+                       bold_style);
   label->AddStyleRange(
-      gfx::Range(placeholder_start, placeholder_start + display_name.size()),
+      gfx::Range(placeholder_offsets[1],
+                 placeholder_offsets[1] + volume_name.length()),
       bold_style);
 
   views::BoxLayout* const layout = new views::BoxLayout(
