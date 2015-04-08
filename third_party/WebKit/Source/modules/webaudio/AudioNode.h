@@ -282,6 +282,11 @@ protected:
 
 private:
     void dispose();
+    void disconnectAllFromOutput(unsigned outputIndex);
+    // Returns true if the specified AudioNodeInput was connected.
+    bool disconnectFromOutputIfConnected(unsigned outputIndex, AudioNode& destination, unsigned inputIndexOfDestination);
+    // Returns true if the specified AudioParam was connected.
+    bool disconnectFromOutputIfConnected(unsigned outputIndex, AudioParam&);
 
     Member<AudioContext> m_context;
     Member<AudioHandler> m_handler;
