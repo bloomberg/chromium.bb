@@ -631,11 +631,9 @@ void WebKitTestController::OnCaptureSessionHistory() {
     WebContents* web_contents = (*window)->web_contents();
     // Only capture the history from windows in the same process as the main
     // window. During layout tests, we only use two processes when an
-    // devtools window is open. This should not happen during history navigation
-    // tests.
+    // devtools window is open.
     if (render_view_host->GetProcess() !=
         web_contents->GetRenderViewHost()->GetProcess()) {
-      NOTREACHED();
       continue;
     }
     routing_ids.push_back(web_contents->GetRenderViewHost()->GetRoutingID());
