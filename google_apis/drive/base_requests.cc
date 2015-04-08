@@ -556,6 +556,31 @@ UrlFetchRequestBase::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+//============================ BatchableRequestBase ============================
+
+net::URLFetcher::RequestType BatchableRequestBase::GetRequestType() const {
+  return UrlFetchRequestBase::GetRequestType();
+}
+
+std::vector<std::string> BatchableRequestBase::GetExtraRequestHeaders() const {
+  return UrlFetchRequestBase::GetExtraRequestHeaders();
+}
+
+void BatchableRequestBase::Prepare(const PrepareCallback& callback) {
+  return UrlFetchRequestBase::Prepare(callback);
+}
+
+bool BatchableRequestBase::GetContentData(
+    std::string* upload_content_type, std::string* upload_content) {
+  return UrlFetchRequestBase::GetContentData(
+      upload_content_type, upload_content);
+}
+
+void BatchableRequestBase::ProcessURLFetchResults(
+    const net::URLFetcher* source) {
+  ProcessURLFetchResults(GetErrorCode(), response_writer()->data());
+}
+
 //============================ EntryActionRequest ============================
 
 EntryActionRequest::EntryActionRequest(RequestSender* sender,
@@ -832,7 +857,7 @@ MultipartUploadRequestBase::MultipartUploadRequestBase(
     const base::FilePath& local_file_path,
     const FileResourceCallback& callback,
     const ProgressCallback& progress_callback)
-    : UrlFetchRequestBase(sender),
+    : BatchableRequestBase(sender),
       metadata_json_(metadata_json),
       content_type_(content_type),
       local_path_(local_file_path),
@@ -893,13 +918,12 @@ bool MultipartUploadRequestBase::GetContentData(
 }
 
 void MultipartUploadRequestBase::ProcessURLFetchResults(
-    const URLFetcher* source) {
+    DriveApiErrorCode code, const std::string& body) {
   // The upload is successfully done. Parse the response which should be
   // the entry's metadata.
-  const DriveApiErrorCode code = GetErrorCode();
   if (code == HTTP_CREATED || code == HTTP_SUCCESS) {
     ParseJsonOnBlockingPool(
-        blocking_task_runner(), response_writer()->data(),
+        blocking_task_runner(), body,
         base::Bind(&MultipartUploadRequestBase::OnDataParsed,
                    weak_ptr_factory_.GetWeakPtr(), code));
   } else {

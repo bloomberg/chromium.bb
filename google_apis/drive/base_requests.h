@@ -258,6 +258,27 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   DISALLOW_COPY_AND_ASSIGN(UrlFetchRequestBase);
 };
 
+//============================ BatchableRequestBase ============================
+
+class BatchableRequestBase : public UrlFetchRequestBase {
+ public:
+  explicit BatchableRequestBase(RequestSender* sender) :
+      UrlFetchRequestBase(sender) {}
+
+  GURL GetURL() const override = 0;
+  net::URLFetcher::RequestType GetRequestType() const override;
+  std::vector<std::string> GetExtraRequestHeaders() const override;
+  void Prepare(const PrepareCallback& callback) override;
+  bool GetContentData(std::string* upload_content_type,
+                      std::string* upload_content) override;
+  void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override = 0;
+  virtual void ProcessURLFetchResults(
+      DriveApiErrorCode code, const std::string& body) = 0;
+
+ private:
+  void ProcessURLFetchResults(const net::URLFetcher* source) final;
+};
+
 //============================ EntryActionRequest ============================
 
 // Callback type for requests that return only error status, like: Delete/Move.
@@ -475,7 +496,7 @@ class GetUploadStatusRequestBase : public UploadRangeRequestBase {
 
 // This class provides base implementation for performing the request for
 // uploading a file by multipart body.
-class MultipartUploadRequestBase : public UrlFetchRequestBase {
+class MultipartUploadRequestBase : public BatchableRequestBase {
  public:
   // Set boundary. Only tests can use this method.
   void SetBoundaryForTesting(const std::string& boundary);
@@ -498,7 +519,8 @@ class MultipartUploadRequestBase : public UrlFetchRequestBase {
   void Prepare(const PrepareCallback& callback) override;
   bool GetContentData(std::string* upload_content_type,
                       std::string* upload_content) override;
-  void ProcessURLFetchResults(const net::URLFetcher* source) override;
+  void ProcessURLFetchResults(
+      DriveApiErrorCode code, const std::string& body) override;
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
 
   // content::UrlFetcherDelegate overrides.
