@@ -277,12 +277,10 @@ void TileManager::FreeResourcesForReleasedTiles() {
 }
 
 void TileManager::CleanUpReleasedTiles() {
-  std::vector<Tile*>::iterator it = released_tiles_.begin();
-  while (it != released_tiles_.end()) {
-    Tile* tile = *it;
-
+  std::vector<Tile*> tiles_to_retain;
+  for (auto* tile : released_tiles_) {
     if (tile->HasRasterTask()) {
-      ++it;
+      tiles_to_retain.push_back(tile);
       continue;
     }
 
@@ -299,8 +297,8 @@ void TileManager::CleanUpReleasedTiles() {
     }
 
     delete tile;
-    it = released_tiles_.erase(it);
   }
+  released_tiles_.swap(tiles_to_retain);
 }
 
 void TileManager::DidFinishRunningTileTasks(TaskSet task_set) {
