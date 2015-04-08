@@ -311,7 +311,15 @@ int main(int argc, char **argv) {
   ASSERT_EQ(rc, 0);
   ASSERT_EQ(shared, PTHREAD_PROCESS_PRIVATE);
   rc = pthread_rwlockattr_setpshared(&attrs, PTHREAD_PROCESS_SHARED);
-  ASSERT_EQ(rc, 0);
+#ifndef __GLIBC__
+  /*
+   * glibc's pthread_rwlockattr_setpshared doesn't currently fail
+   * with PTHREAD_PROCESS_SHARED. TODO(sbc): remove this once
+   * we fix the glibc bug:
+   * https://code.google.com/p/nativeclient/issues/detail?id=4142
+   */
+  ASSERT_EQ(rc, EINVAL);
+#endif
   rc = pthread_rwlockattr_setpshared(&attrs, PTHREAD_PROCESS_PRIVATE);
   ASSERT_EQ(rc, 0);
   rc = pthread_rwlock_init(&g_rwlock, &attrs);

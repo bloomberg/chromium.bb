@@ -108,3 +108,34 @@ int pthread_cond_timedwait_abs(pthread_cond_t *cond,
     return 0;
   }
 }
+
+int pthread_condattr_init(pthread_condattr_t *attr) {
+  return 0;
+}
+
+int pthread_condattr_destroy(pthread_condattr_t *attr) {
+  return 0;
+}
+
+int pthread_condattr_getpshared(const pthread_condattr_t *attr, int *pshared) {
+  *pshared = PTHREAD_PROCESS_PRIVATE;
+  return 0;
+}
+
+int pthread_condattr_setpshared(pthread_condattr_t *attr, int pshared) {
+  if (pshared != PTHREAD_PROCESS_PRIVATE)
+    return EINVAL;
+  return 0;
+}
+
+int pthread_condattr_getclock(const pthread_condattr_t *attr,
+                              clockid_t *clock_id) {
+  *clock_id = CLOCK_REALTIME;
+  return 0;
+}
+
+int pthread_condattr_setclock(pthread_condattr_t *attr, clockid_t clock_id) {
+  if (clock_id != CLOCK_REALTIME)
+    return EINVAL;
+  return 0;
+}

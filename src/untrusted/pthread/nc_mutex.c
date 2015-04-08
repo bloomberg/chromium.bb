@@ -301,3 +301,16 @@ int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr,
   *kind = attr->kind;
   return 0;
 }
+
+int pthread_mutexattr_setpshared(pthread_mutexattr_t *attr,
+                                 int pshared) {
+  if (pshared != PTHREAD_PROCESS_PRIVATE)
+    return EINVAL;
+  return 0;
+}
+
+int pthread_mutexattr_getpshared(const pthread_mutexattr_t *attr,
+                                 int *pshared) {
+  *pshared = PTHREAD_PROCESS_PRIVATE;
+  return 0;
+}

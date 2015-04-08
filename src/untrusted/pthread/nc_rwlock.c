@@ -24,7 +24,6 @@
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
 int pthread_rwlockattr_init(pthread_rwlockattr_t *attr) {
-  attr->type = PTHREAD_PROCESS_PRIVATE;
   return 0;
 }
 
@@ -34,21 +33,18 @@ int pthread_rwlockattr_destroy(pthread_rwlockattr_t *attr) {
 
 int pthread_rwlockattr_getpshared(const pthread_rwlockattr_t *attr,
                                   int *pshared) {
-  *pshared = attr->type;
+  *pshared = PTHREAD_PROCESS_PRIVATE;
   return 0;
 }
 
 int pthread_rwlockattr_setpshared(pthread_rwlockattr_t *attr, int pshared) {
-  if (pshared != PTHREAD_PROCESS_PRIVATE && pshared != PTHREAD_PROCESS_SHARED)
+  if (pshared != PTHREAD_PROCESS_PRIVATE)
     return EINVAL;
-  attr->type = pshared;
   return 0;
 }
 
 int pthread_rwlock_init(pthread_rwlock_t *rwlock,
                         const pthread_rwlockattr_t *attr) {
-  if (attr != NULL && attr->type != PTHREAD_PROCESS_PRIVATE)
-    return EINVAL;
   rwlock->writer_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   rwlock->writers_waiting = 0;
   rwlock->reader_count = 0;

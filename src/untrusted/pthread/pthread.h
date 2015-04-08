@@ -134,7 +134,7 @@ typedef struct {
  * opaque record; the names of the fields can change anytime.
  */
 typedef struct {
-  pthread_mutex_t mutex; /* mutex for all values in the structure */
+  pthread_mutex_t mutex;  /* mutex for all values in the structure */
   int reader_count;
   int writers_waiting;
   struct __nc_basic_thread_data *writer_thread_id;
@@ -147,7 +147,7 @@ typedef struct {
  * opaque record.
  */
 typedef struct {
-  int type;
+  int dummy; /**< Reserved; rwlocks don't have attributes */
 } pthread_rwlockattr_t;
 
 /** A value that represents an uninitialized handle. */
@@ -301,6 +301,10 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int kind);
  */
 int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr, int *kind);
 
+int pthread_mutexattr_getpshared(const pthread_mutexattr_t *attr, int *pshared);
+
+int pthread_mutexattr_setpshared(pthread_mutexattr_t *attr, int pshared);
+
 /* Functions for handling conditional variables.  */
 
 /**
@@ -411,6 +415,21 @@ int pthread_cond_timedwait_rel(pthread_cond_t *cond,
  * a macro calling pthread_cond_timedwait_abs().
  */
 #define pthread_cond_timedwait pthread_cond_timedwait_abs
+
+/* Condition variable attributes manipulation */
+
+int pthread_condattr_init(pthread_condattr_t *attr);
+
+int pthread_condattr_destroy(pthread_condattr_t *attr);
+
+int pthread_condattr_getpshared(const pthread_condattr_t *attr, int *pshared);
+
+int pthread_condattr_setpshared(pthread_condattr_t *attr, int pshared);
+
+int pthread_condattr_getclock(const pthread_condattr_t *attr,
+                              clockid_t *clock_id);
+
+int pthread_condattr_setclock(pthread_condattr_t *attr, clockid_t clock_id);
 
 /* Functions for rwlock handling.  */
 
