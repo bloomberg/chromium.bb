@@ -58,14 +58,22 @@ void V8DevToolsHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Val
 
 static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, ContextMenu& menu, v8::Isolate* isolate)
 {
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     for (size_t i = 0; i < itemArray->Length(); ++i) {
-        v8::Local<v8::Object> item = v8::Local<v8::Object>::Cast(itemArray->Get(i));
-        v8::Local<v8::Value> type = item->Get(v8AtomicString(isolate, "type"));
-        v8::Local<v8::Value> id = item->Get(v8AtomicString(isolate, "id"));
-        v8::Local<v8::Value> label = item->Get(v8AtomicString(isolate, "label"));
-        v8::Local<v8::Value> enabled = item->Get(v8AtomicString(isolate, "enabled"));
-        v8::Local<v8::Value> checked = item->Get(v8AtomicString(isolate, "checked"));
-        v8::Local<v8::Value> subItems = item->Get(v8AtomicString(isolate, "subItems"));
+        v8::Local<v8::Object> item = itemArray->Get(context, i).ToLocalChecked().As<v8::Object>();
+        v8::Local<v8::Value> type;
+        v8::Local<v8::Value> id;
+        v8::Local<v8::Value> label;
+        v8::Local<v8::Value> enabled;
+        v8::Local<v8::Value> checked;
+        v8::Local<v8::Value> subItems;
+        if (!item->Get(context, v8AtomicString(isolate, "type")).ToLocal(&type)
+            || !item->Get(context, v8AtomicString(isolate, "id")).ToLocal(&id)
+            || !item->Get(context, v8AtomicString(isolate, "label")).ToLocal(&label)
+            || !item->Get(context, v8AtomicString(isolate, "enabled")).ToLocal(&enabled)
+            || !item->Get(context, v8AtomicString(isolate, "checked")).ToLocal(&checked)
+            || !item->Get(context, v8AtomicString(isolate, "subItems")).ToLocal(&subItems))
+            return false;
         if (!type->IsString())
             continue;
         String typeString = toCoreStringWithNullCheck(type.As<v8::String>());
@@ -88,7 +96,10 @@ static bool populateContextMenuItems(const v8::Local<v8::Array>& itemArray, Cont
                 &subMenu);
             menu.appendItem(item);
         } else {
-            ContextMenuAction typedId = static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + id->ToInt32(isolate)->Value());
+            int32_t int32Id;
+            if (!v8Call(id->Int32Value(context), int32Id))
+                return false;
+            ContextMenuAction typedId = static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + int32Id);
             TOSTRING_DEFAULT(V8StringResource<TreatNullAsNullString>, labelString, label, false);
             ContextMenuItem menuItem((typeString == "checkbox" ? CheckableActionType : ActionType), typedId, labelString, String());
             if (checked->IsBoolean())
