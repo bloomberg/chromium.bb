@@ -33,4 +33,8 @@ const char kIosBookmarkPromoAlreadySeen[] = "ios.bookmark.promo_already_seen";
 // The preferred SSO user for wallet payments.
 const char kPaymentsPreferredUserId[] = "ios.payments.preferred_user_id";
 
+// True if the memory debugging tools should be visible.
+extern const char kShowMemoryDebuggingTools[] =
+    "ios.memory.show_debugging_tools";
+
 }  // namespace prefs

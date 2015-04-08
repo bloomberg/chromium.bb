@@ -20,6 +20,7 @@ namespace prefs {
 extern const char kIosBookmarkFolderDefault[];
 extern const char kIosBookmarkPromoAlreadySeen[];
 extern const char kPaymentsPreferredUserId[];
+extern const char kShowMemoryDebuggingTools[];
 
 }  // namespace prefs
 
