@@ -31,7 +31,7 @@ TEST_P(GpuMemoryBufferFactoryTest, CreateAndDestroy) {
   const int kBufferId = 1;
   const int kClientId = 1;
 
-  gfx::Size buffer_size(1, 1);
+  gfx::Size buffer_size(2, 2);
 
   for (auto configuration : supported_configurations_) {
     gfx::GpuMemoryBufferHandle handle = factory_->CreateGpuMemoryBuffer(

@@ -98,6 +98,7 @@ std::vector<uint8> GetTexturePixel(const gfx::GpuMemoryBuffer::Format format) {
     case gfx::GpuMemoryBuffer::DXT5:
     case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::RGBX_8888:
+    case gfx::GpuMemoryBuffer::YUV_420:
       NOTREACHED();
       return std::vector<uint8>();
   }
@@ -123,6 +124,7 @@ std::vector<uint8> GetFramebufferPixel(
     case gfx::GpuMemoryBuffer::DXT5:
     case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::RGBX_8888:
+    case gfx::GpuMemoryBuffer::YUV_420:
       NOTREACHED();
       return std::vector<uint8>();
   }
@@ -143,6 +145,7 @@ GLenum InternalFormat(gfx::GpuMemoryBuffer::Format format) {
     case gfx::GpuMemoryBuffer::DXT5:
     case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::RGBX_8888:
+    case gfx::GpuMemoryBuffer::YUV_420:
       NOTREACHED();
       return 0;
   }

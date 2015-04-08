@@ -23,6 +23,7 @@ int WindowFormat(gfx::GpuMemoryBuffer::Format format) {
     case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::RGBX_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
+    case gfx::GpuMemoryBuffer::YUV_420:
       NOTREACHED();
       return 0;
   }
@@ -81,7 +82,7 @@ bool GpuMemoryBufferImplSurfaceTexture::Map(void** data) {
   }
 
   size_t stride_in_bytes = 0;
-  if (!StrideInBytes(buffer.stride, format_, &stride_in_bytes))
+  if (!StrideInBytes(buffer.stride, format_, 0, &stride_in_bytes))
     return false;
 
   DCHECK_LE(size_.width(), buffer.stride);

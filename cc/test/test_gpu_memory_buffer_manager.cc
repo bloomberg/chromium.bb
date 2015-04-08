@@ -10,24 +10,80 @@
 namespace cc {
 namespace {
 
-size_t StrideInBytes(size_t width, gfx::GpuMemoryBuffer::Format format) {
+size_t NumberOfPlanesForGpuMemoryBufferFormat(
+    gfx::GpuMemoryBuffer::Format format) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::Format::ATC:
+    case gfx::GpuMemoryBuffer::Format::ATCIA:
+    case gfx::GpuMemoryBuffer::Format::DXT1:
+    case gfx::GpuMemoryBuffer::Format::DXT5:
+    case gfx::GpuMemoryBuffer::Format::ETC1:
+    case gfx::GpuMemoryBuffer::Format::RGBA_8888:
+    case gfx::GpuMemoryBuffer::Format::RGBX_8888:
+    case gfx::GpuMemoryBuffer::Format::BGRA_8888:
+      return 1;
+    case gfx::GpuMemoryBuffer::Format::YUV_420:
+      return 3;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+size_t SubsamplingFactor(gfx::GpuMemoryBuffer::Format format, int plane) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::ATC:
+    case gfx::GpuMemoryBuffer::ATCIA:
+    case gfx::GpuMemoryBuffer::DXT1:
+    case gfx::GpuMemoryBuffer::DXT5:
+    case gfx::GpuMemoryBuffer::ETC1:
+    case gfx::GpuMemoryBuffer::RGBA_8888:
+    case gfx::GpuMemoryBuffer::RGBX_8888:
+    case gfx::GpuMemoryBuffer::BGRA_8888:
+      return 1;
+    case gfx::GpuMemoryBuffer::YUV_420: {
+      static size_t factor[] = {1, 2, 2};
+      DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
+      return factor[plane];
+    }
+  }
+  NOTREACHED();
+  return 0;
+}
+
+size_t StrideInBytes(size_t width,
+                     gfx::GpuMemoryBuffer::Format format,
+                     int plane) {
   switch (format) {
     case gfx::GpuMemoryBuffer::ATCIA:
     case gfx::GpuMemoryBuffer::DXT5:
+      DCHECK_EQ(plane, 0);
       return width;
     case gfx::GpuMemoryBuffer::ATC:
     case gfx::GpuMemoryBuffer::DXT1:
     case gfx::GpuMemoryBuffer::ETC1:
+      DCHECK_EQ(plane, 0);
       DCHECK_EQ(width % 2, 0U);
       return width / 2;
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
+      DCHECK_EQ(plane, 0);
       return width * 4;
+    case gfx::GpuMemoryBuffer::YUV_420:
+      return width / SubsamplingFactor(format, plane);
   }
-
   NOTREACHED();
   return 0;
+}
+
+size_t BufferSizeInBytes(const gfx::Size& size,
+                         gfx::GpuMemoryBuffer::Format format) {
+  size_t size_in_bytes = 0u;
+  for (size_t i = 0; i < NumberOfPlanesForGpuMemoryBufferFormat(format); ++i) {
+    size_in_bytes += StrideInBytes(size.width(), format, i) *
+                     (size.height() / SubsamplingFactor(format, i));
+  }
+  return size_in_bytes;
 }
 
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
@@ -43,11 +99,17 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map(void** data) override {
     DCHECK(!mapped_);
-    if (!shared_memory_->Map(StrideInBytes(size_.width(), format_) *
-                             size_.height()))
+    if (!shared_memory_->Map(BufferSizeInBytes(size_, format_)))
       return false;
     mapped_ = true;
-    *data = shared_memory_->memory();
+    data[0] = shared_memory_->memory();
+    for (size_t i = 0; i < NumberOfPlanesForGpuMemoryBufferFormat(format_) - 1;
+         ++i) {
+      size_t offset = StrideInBytes(size_.width(), format_, i) *
+                      (size_.height() / SubsamplingFactor(format_, i));
+      data[i + 1] = reinterpret_cast<uint8*>(data[i]) + offset;
+    }
+
     return true;
   }
   void Unmap() override {
@@ -58,7 +120,10 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   bool IsMapped() const override { return mapped_; }
   Format GetFormat() const override { return format_; }
   void GetStride(uint32* stride) const override {
-    *stride = StrideInBytes(size_.width(), format_);
+    for (size_t i = 0; i < NumberOfPlanesForGpuMemoryBufferFormat(format_);
+         ++i) {
+      stride[i] = StrideInBytes(size_.width(), format_, i);
+    }
   }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     gfx::GpuMemoryBufferHandle handle;
@@ -91,8 +156,7 @@ TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage) {
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
-  if (!shared_memory->CreateAnonymous(StrideInBytes(size.width(), format) *
-                                      size.height()))
+  if (!shared_memory->CreateAnonymous(BufferSizeInBytes(size, format)))
     return nullptr;
   return make_scoped_ptr<gfx::GpuMemoryBuffer>(
       new GpuMemoryBufferImpl(size, format, shared_memory.Pass()));

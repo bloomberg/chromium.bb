@@ -24,6 +24,12 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
       Format format,
       base::ProcessHandle child_process);
 
+  // Calculates the number of bytes used to store all the planes of a given
+  // |format|.
+  static bool BufferSizeInBytes(const gfx::Size& size,
+                                Format format,
+                                size_t* size_in_bytes);
+
   static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,

@@ -96,6 +96,7 @@ SurfaceFactoryOzone::BufferFormat GetOzoneFormatFor(
     case gfx::GpuMemoryBuffer::DXT5:
     case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::BGRA_8888:
+    case gfx::GpuMemoryBuffer::YUV_420:
       NOTREACHED();
       return SurfaceFactoryOzone::RGBA_8888;
   }

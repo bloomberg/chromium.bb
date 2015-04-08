@@ -33,15 +33,19 @@ class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Type-checking upcast routine. Returns an NULL on failure.
   static GpuMemoryBufferImpl* FromClientBuffer(ClientBuffer buffer);
 
+  // Returns the number of planes based on the format of the buffer.
+  static size_t NumberOfPlanesForGpuMemoryBufferFormat(Format format);
+
   // Calculates the number of bytes that an implementation must use to store
   // one row of pixel data.
   static bool StrideInBytes(size_t width,
                             Format format,
+                            int plane,
                             size_t* stride_in_bytes);
 
-  // Returns the number of planes based on the format of the buffer.
-  static size_t NumberOfPlanesForGpuMemoryBufferFormat(
-      gfx::GpuMemoryBuffer::Format format);
+  // Returns the subsampling factor applied to the given zero-indexed |plane| of
+  // the |format| both horizontally and vertically.
+  static size_t SubsamplingFactor(Format format, int plane);
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool IsMapped() const override;
