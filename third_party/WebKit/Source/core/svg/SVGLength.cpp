@@ -61,6 +61,8 @@ inline const char* lengthTypeToString(SVGLengthType type)
         return "pt";
     case LengthTypePC:
         return "pc";
+    case LengthTypeREMS:
+        return "rem";
     }
 
     ASSERT_NOT_REACHED();
@@ -95,6 +97,12 @@ SVGLengthType stringToLengthType(const CharType*& ptr, const CharType* end)
                 type = LengthTypeEMS;
             if (secondChar == 'x')
                 type = LengthTypeEXS;
+        } else if (firstChar == 'r') {
+            if (secondChar == 'e') {
+                const CharType thirdChar = *ptr++;
+                if (thirdChar == 'm')
+                    type = LengthTypeREMS;
+            }
         } else if (firstChar == 'c' && secondChar == 'm') {
             type = LengthTypeCM;
         } else if (firstChar == 'm' && secondChar == 'm') {
@@ -300,6 +308,9 @@ PassRefPtrWillBeRawPtr<SVGLength> SVGLength::fromCSSPrimitiveValue(CSSPrimitiveV
     case CSSPrimitiveValue::CSS_PT:
         svgType = LengthTypePT;
         break;
+    case CSSPrimitiveValue::CSS_REMS:
+        svgType = LengthTypeREMS;
+        break;
     default:
         ASSERT(value->primitiveType() == CSSPrimitiveValue::CSS_PC);
         svgType = LengthTypePC;
@@ -348,6 +359,9 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> SVGLength::toCSSPrimitiveValue(PassRef
         break;
     case LengthTypePC:
         cssType = CSSPrimitiveValue::CSS_PC;
+        break;
+    case LengthTypeREMS:
+        cssType = CSSPrimitiveValue::CSS_REMS;
         break;
     };
 
@@ -402,7 +416,7 @@ PassRefPtrWillBeRawPtr<SVGLength> SVGLength::blend(PassRefPtrWillBeRawPtr<SVGLen
         || toType == LengthTypeUnknown
         || (!from->isZero() && fromType != LengthTypePercentage && toType == LengthTypePercentage)
         || (!isZero() && fromType == LengthTypePercentage && toType != LengthTypePercentage)
-        || (!from->isZero() && !isZero() && (fromType == LengthTypeEMS || fromType == LengthTypeEXS) && fromType != toType))
+        || (!from->isZero() && !isZero() && (fromType == LengthTypeEMS || fromType == LengthTypeEXS || fromType == LengthTypeREMS) && fromType != toType))
         return clone();
 
     RefPtrWillBeRawPtr<SVGLength> length = create();
@@ -414,7 +428,7 @@ PassRefPtrWillBeRawPtr<SVGLength> SVGLength::blend(PassRefPtrWillBeRawPtr<SVGLen
         return length;
     }
 
-    if (fromType == toType || from->isZero() || isZero() || fromType == LengthTypeEMS || fromType == LengthTypeEXS) {
+    if (fromType == toType || from->isZero() || isZero() || fromType == LengthTypeEMS || fromType == LengthTypeEXS || fromType == LengthTypeREMS) {
         float fromValue = from->valueInSpecifiedUnits();
         float toValue = valueInSpecifiedUnits();
         if (isZero())

@@ -25,6 +25,7 @@
 
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGSVGElement.h"
@@ -168,6 +169,9 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
     case LengthTypePC:
         userUnits = value * cssPixelsPerPica;
         break;
+    case LengthTypeREMS:
+        userUnits = convertValueFromREMSToUserUnits(value);
+        break;
     default:
         ASSERT_NOT_REACHED();
         break;
@@ -198,6 +202,8 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
         return convertValueFromUserUnitsToEMS(value);
     case LengthTypeEXS:
         return convertValueFromUserUnitsToEXS(value);
+    case LengthTypeREMS:
+        return convertValueFromUserUnitsToREMS(value);
     case LengthTypePX:
         return value;
     case LengthTypeCM:
@@ -251,6 +257,48 @@ float SVGLengthContext::convertValueFromEMSToUserUnits(float value) const
     const ComputedStyle* style = computedStyleForLengthResolving(m_context);
     if (!style)
         return 0;
+    return value * style->specifiedFontSize();
+}
+
+float SVGLengthContext::convertValueFromUserUnitsToREMS(float value) const
+{
+    if (!m_context)
+        return 0;
+
+    const ComputedStyle* style = 0;
+    const Document& document = m_context->document();
+    Node* documentElement = document.documentElement();
+    const ComputedStyle* documentStyle = document.computedStyle();
+    style = documentElement && (static_cast<const Node*>(m_context.get()) != documentElement) ? documentElement->computedStyle() : documentStyle;
+    if (!style)
+        style = documentStyle;
+
+    if (!style)
+        return 0;
+
+    float fontSize = style->specifiedFontSize();
+    if (!fontSize)
+        return 0;
+
+    return value / fontSize;
+}
+
+float SVGLengthContext::convertValueFromREMSToUserUnits(float value) const
+{
+    if (!m_context)
+        return 0;
+
+    const ComputedStyle* style = 0;
+    const Document& document = m_context->document();
+    Node* documentElement = document.documentElement();
+    const ComputedStyle* documentStyle = document.computedStyle();
+    style = documentElement && (static_cast<const Node*>(m_context.get()) != documentElement) ? documentElement->computedStyle() : documentStyle;
+    if (!style)
+        style = documentStyle;
+
+    if (!style)
+        return 0;
+
     return value * style->specifiedFontSize();
 }
 

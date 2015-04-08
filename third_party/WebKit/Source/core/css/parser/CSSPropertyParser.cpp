@@ -8145,6 +8145,8 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
             parsedValue = CSSPrimitiveValue::create(value->string, (CSSPrimitiveValue::UnitType) value->unit);
         else if (value->unit >= CSSPrimitiveValue::CSS_NUMBER && value->unit <= CSSPrimitiveValue::CSS_KHZ)
             parsedValue = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitType) value->unit);
+        else if (value->unit == CSSPrimitiveValue::CSS_REMS)
+            parsedValue = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitType)value->unit);
         else if (value->unit >= CSSParserValue::Q_EMS)
             parsedValue = CSSPrimitiveValue::createAllowingMarginQuirk(value->fValue, CSSPrimitiveValue::CSS_EMS);
         if (isCalculation(value)) {
@@ -8175,6 +8177,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGStrokeDasharray()
             ret->append(CSSPrimitiveValue::createIdentifier(value->id));
         else if (value->unit >= CSSPrimitiveValue::CSS_NUMBER && value->unit <= CSSPrimitiveValue::CSS_KHZ)
             ret->append(CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitType) value->unit));
+        else if (value->unit == CSSPrimitiveValue::CSS_REMS)
+            ret->append(CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitType)value->unit));
         value = m_valueList->next();
         bool commaConsumed = consumeComma(m_valueList);
         value = m_valueList->current();

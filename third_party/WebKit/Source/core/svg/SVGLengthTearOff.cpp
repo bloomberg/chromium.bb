@@ -55,7 +55,7 @@ inline bool canResolveRelativeUnits(const SVGElement* contextElement)
 
 SVGLengthType SVGLengthTearOff::unitType()
 {
-    return target()->unitType();
+    return hasExposedLengthUnit() ? target()->unitType() : LengthTypeUnknown;
 }
 
 SVGLengthMode SVGLengthTearOff::unitMode()
@@ -108,7 +108,8 @@ void SVGLengthTearOff::setValueInSpecifiedUnits(float value, ExceptionState& es)
 
 String SVGLengthTearOff::valueAsString()
 {
-    return target()->valueAsString();
+    // TODO(shanmuga.m@samsung.com): Not all <length> properties have 0 (with no unit) as the default (lacuna) value, Need to return default value instead of 0
+    return hasExposedLengthUnit() ? target()->valueAsString() : String::number(0);
 }
 
 void SVGLengthTearOff::setValueAsString(const String& str, ExceptionState& es)
@@ -118,7 +119,16 @@ void SVGLengthTearOff::setValueAsString(const String& str, ExceptionState& es)
         return;
     }
 
+    String oldValue = target()->valueAsString();
+
     target()->setValueAsString(str, es);
+
+    if (!es.hadException() && !hasExposedLengthUnit()) {
+        target()->setValueAsString(oldValue, ASSERT_NO_EXCEPTION); // rollback to old value
+        es.throwDOMException(SyntaxError, "The value provided ('" + str + "') is invalid.");
+        return;
+    }
+
     commitChange();
 }
 

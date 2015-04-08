@@ -55,6 +55,10 @@ public:
     {
         if (m_unitType == LengthTypeNumber)
             return CSSPrimitiveValue::UnitType::CSS_PX;
+
+        if (m_unitType == LengthTypeREMS)
+            return CSSPrimitiveValue::UnitType::CSS_REMS;
+
         return static_cast<CSSPrimitiveValue::UnitType>(m_unitType);
     }
     void setUnitType(SVGLengthType);
@@ -89,7 +93,8 @@ public:
     {
         return unitType == LengthTypePercentage
             || unitType == LengthTypeEMS
-            || unitType == LengthTypeEXS;
+            || unitType == LengthTypeEXS
+            || unitType == LengthTypeREMS;
     }
     inline bool isRelative() const { return isRelativeUnit(unitType()); }
 

@@ -71,6 +71,8 @@ public:
     void newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState&);
     void convertToSpecifiedUnits(unsigned short unitType, ExceptionState&);
 
+    bool hasExposedLengthUnit() { return target()->unitType() <= LengthTypePC; }
+
 private:
     SVGLengthTearOff(PassRefPtrWillBeRawPtr<SVGLength>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
