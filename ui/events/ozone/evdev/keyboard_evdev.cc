@@ -156,6 +156,7 @@ void KeyboardEvdev::StartKeyRepeat(unsigned int key) {
 }
 
 void KeyboardEvdev::StopKeyRepeat() {
+  repeat_key_ = KEY_RESERVED;
   repeat_sequence_++;
 }
 
