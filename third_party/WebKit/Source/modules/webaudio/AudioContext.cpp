@@ -754,7 +754,7 @@ ScriptPromise AudioContext::suspendContext(ScriptState* scriptState)
         return ScriptPromise::rejectWithDOMException(
             scriptState,
             DOMException::create(
-                InvalidStateError,
+                InvalidAccessError,
                 "cannot suspend an OfflineAudioContext"));
     }
 
@@ -776,7 +776,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState)
         return ScriptPromise::rejectWithDOMException(
             scriptState,
             DOMException::create(
-                InvalidStateError,
+                InvalidAccessError,
                 "cannot resume an OfflineAudioContext"));
     }
 
@@ -784,7 +784,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState)
         return ScriptPromise::rejectWithDOMException(
             scriptState,
             DOMException::create(
-                InvalidStateError,
+                InvalidAccessError,
                 "cannot resume a closed AudioContext"));
     }
 
@@ -1259,7 +1259,7 @@ ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
     if (isOfflineContext()) {
         return ScriptPromise::rejectWithDOMException(
             scriptState,
-            DOMException::create(InvalidStateError, "Cannot call close() on an OfflineAudioContext."));
+            DOMException::create(InvalidAccessError, "cannot close an OfflineAudioContext."));
     }
 
     if (isContextClosed()) {

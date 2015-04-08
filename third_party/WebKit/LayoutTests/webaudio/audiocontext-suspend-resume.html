@@ -12,10 +12,11 @@
     description("Test suspend/resume for an (offline) AudioContext");
     window.jsTestIsAsync = true;
 
-    var context;
+    var offlineContext;
     var osc;
     var p1;
     var p2;
+    var p3;
 
     var sampleRate = 44100;
     var durationInSeconds = 1;
@@ -41,21 +42,29 @@
       // online context.
 
       // Create an audio context with an oscillator.
-      context = new OfflineAudioContext(1, durationInSeconds * sampleRate, sampleRate);
-      osc = context.createOscillator();
-      osc.connect(context.destination);
+      shouldNotThrow("offlineContext = new OfflineAudioContext(1, durationInSeconds * sampleRate, sampleRate)");
+      osc = offlineContext.createOscillator();
+      osc.connect(offlineContext.destination);
 
       // Verify the state.
-      shouldBeEqualToString("context.state", "suspended");
+      shouldBeEqualToString("offlineContext.state", "suspended");
 
       // Multiple calls to suspend() should not be a problem. But we can't test 
       // that on an offline context.  Thus, check that suspend() on an 
       // OfflineAudioContext rejects the promise.
-      shouldNotThrow("p1 = context.suspend()");
+      shouldNotThrow("p1 = offlineContext.suspend()");
       shouldBeType(p1, Promise);
       p1.then(
-        handlePromise(testFailed, "context.suspend() should have been rejected for an offline context"),
-        handlePromise(testPassed, "context.suspend() was correctly rejected for an offline context")
+        handlePromise(testFailed, "offlineContext.suspend() should have been rejected for an offline context"),
+        function (e) {
+          if (e.name === "InvalidAccessError") {
+            testPassed(
+              "offlineContext.suspend() was correctly rejected: " + e);
+          } else {
+            testFailed(
+              "offlineContext.suspend() was correctly rejected but expected InvalidAccessError, not: " + e);
+          }
+        }
       ).then(done);
     });
 
@@ -66,15 +75,22 @@
       // Multiple calls to resume should not be a problem. But we can't test 
       // that on an offline context. Thus, check that resume() on an 
       // OfflineAudioContext rejects the promise.
-      shouldNotThrow("p2 = context.resume()");
+      shouldNotThrow("p2 = offlineContext.resume()");
       shouldBeType(p2, Promise);
       
       // Resume doesn't actually resume an offline context
-      shouldBeEqualToString("context.state", "suspended");
-      
+      shouldBeEqualToString("offlineContext.state", "suspended");
       p2.then(
-        handlePromise(testFailed, "context.resume() should have been rejected for an offline context"),
-        handlePromise(testPassed, "context.resume() was correctly rejected for an offline context")
+        handlePromise(testFailed, "offlineContext.resume() should have been rejected for an offline context"),
+        function (e) {
+          if (e.name === "InvalidAccessError") {
+            testPassed(
+              "offlineContext.resume() was correctly rejected: " + e);
+          } else {
+            testFailed(
+              "offlineContext.resume() was correctly rejected but expected InvalidAccessError, not: " + e);
+          }
+        }
       ).then(done);
     });
 
@@ -86,18 +102,31 @@
 
       // Test suspend/resume in tested promise pattern. We don't care about the 
       // actual result of the offline rendering.
-      context.startRendering().then(function () {
-        shouldBeEqualToString("context.state", "closed");
+      shouldNotThrow("p3 = offlineContext.startRendering()");
+      p3.then(function () {
+        shouldBeEqualToString("offlineContext.state", "closed");
 
         // suspend() should be rejected on a closed context.
-        context.suspend().then(
-          handlePromise(testFailed, "context.suspend() on a closed context not rejected"),
-          handlePromise(testPassed, "context.suspend() on a closed context rejected as expected")
+        offlineContext.suspend().then(
+          handlePromise(testFailed, "offlineContext.suspend() on a closed context not rejected"),
+          function (e) {
+            if (e.name === "InvalidAccessError") {
+              testPassed("offlineContext.suspend() on a closed context rejected: " + e);
+            } else {
+              testFailed("offlineContext.suspend() on a closed context rejected but expected InvalidAccessError, not: " + e);
+            }
+          }
         ).then(function () {
           // resume() should be rejected on closed context.
-          context.resume().then(
-            handlePromise(testFailed, "context.resume() on a closed context not rejected"),
-            handlePromise(testPassed, "context.resume() on a closed context rejected as expected")
+          offlineContext.resume().then(
+            handlePromise(testFailed, "offlineContext.resume() on a closed context not rejected"),
+            function (e) {
+              if (e.name === "InvalidAccessError") {
+                testPassed("offlineContext.resume() on a closed context rejected: " + e);
+              } else {
+                testFailed("offlineContext.resume() on a closed context rejected but expected InvalidAccessError, not: " + e);
+              }
+            }
           ).then(done);
         });
 

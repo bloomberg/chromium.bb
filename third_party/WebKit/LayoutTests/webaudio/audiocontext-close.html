@@ -119,8 +119,12 @@
         function () {
           testFailed("Closing offline context erroneously resolved");
         },
-        function () {
-          testPassed("Closing offline context correctly rejected");
+        function (e) {
+          if (e.name === "InvalidAccessError") {
+            testPassed("Closing offline context correctly rejected: " + e);
+          } else {
+            testFailed("Closing offline context correctly rejected but expected InvalidAccessError, not: " + e);
+          }
         }
       ).then(done);
     });
