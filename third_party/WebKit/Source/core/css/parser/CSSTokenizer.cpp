@@ -556,7 +556,7 @@ CSSParserToken CSSTokenizer::consumeUrlToken()
             m_input.advance(size + 1);
             return CSSParserToken(UrlToken, m_input.rangeAsCSSParserString(startOffset, size));
         }
-        if (cc == '\0' || cc == '\\' || cc == '"' || cc == '\'' || cc == '(' || isNonPrintableCodePoint(cc) || isHTMLSpace(cc))
+        if (cc <= ' ' || cc == '\\' || cc == '"' || cc == '\'' || cc == '(' || cc == '\x7f')
             break;
     }
 
