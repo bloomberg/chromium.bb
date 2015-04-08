@@ -7,34 +7,56 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "content/browser/web_contents/aura/window_slider.h"
+#include "content/browser/web_contents/aura/overscroll_window_animation.h"
+#include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/gfx/image/image.h"
 
 struct ViewHostMsg_UpdateRect_Params;
 
-namespace aura_extra {
-class ImageWindowDelegate;
-}
-
 namespace content {
 
-class ImageLayerDelegate;
+class OverscrollWindowDelegate;
 class OverscrollNavigationOverlayTest;
+class ScopedLayerClippingSetting;
 
 // When a history navigation is triggered at the end of an overscroll
 // navigation, it is necessary to show the history-screenshot until the page is
-// done navigating and painting. This class accomplishes this by showing the
-// screenshot window on top of the page until the page has completed loading and
-// painting.
+// done navigating and painting. This class accomplishes this by calling the
+// navigation and creating, showing and destroying the screenshot window on top
+// of the page until the page has completed loading and painting. When the
+// overscroll completes, this screenshot window is returned by
+// OnOverscrollComplete and |window_| is set to own it.
+// There are two overscroll cases, for the first one the main window is the web
+// contents window. At this stage, |window_| is null. The second case is
+// triggered if the user overscrolls after |window_| is set, before the page
+// finishes loading. When this happens, |window_| is the main window.
 class CONTENT_EXPORT OverscrollNavigationOverlay
     : public WebContentsObserver,
-      public WindowSlider::Delegate {
+      public OverscrollWindowAnimation::Delegate {
  public:
-  explicit OverscrollNavigationOverlay(WebContentsImpl* web_contents);
+  enum NavigationDirection { FORWARD, BACK, NONE };
+
+  OverscrollNavigationOverlay(WebContentsImpl* web_contents,
+                              aura::Window* web_contents_window);
+
   ~OverscrollNavigationOverlay() override;
 
-  bool has_window() const { return !!window_.get(); }
+  // Returns a pointer to the relay delegate we own.
+  OverscrollControllerDelegate* relay_delegate() { return owa_.get(); }
+
+ private:
+  class ScopedLayerClippingSetting;
+
+  friend class OverscrollNavigationOverlayTest;
+  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest, WithScreenshot);
+  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest, WithoutScreenshot);
+  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest, CannotNavigate);
+  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest, CancelNavigation);
+  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
+                           CancelAfterSuccessfulNavigation);
+  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest, OverlayWindowSwap);
 
   // Resets state and starts observing |web_contents_| for page load/paint
   // updates. This function makes sure that the screenshot window is stacked
@@ -44,62 +66,39 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   // otherwise the overlay may be dismissed prematurely.
   void StartObserving();
 
-  // Sets the screenshot window and the delegate. This takes ownership of
-  // |window|.
-  // Note that aura_extra::ImageWindowDelegate manages its own lifetime, so this
-  // function does not take ownership of |delegate|.
-  void SetOverlayWindow(scoped_ptr<aura::Window> window,
-                        aura_extra::ImageWindowDelegate* delegate);
-
- private:
-  friend class OverscrollNavigationOverlayTest;
-  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
-                           FirstVisuallyNonEmptyPaint_NoImage);
-  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
-                           FirstVisuallyNonEmptyPaint_WithImage);
-  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
-                           LoadUpdateWithoutNonEmptyPaint);
-  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
-                           MultiNavigation_LoadingUpdate);
-  FRIEND_TEST_ALL_PREFIXES(OverscrollNavigationOverlayTest,
-                           MultiNavigation_PaintUpdate);
-
-  enum SlideDirection {
-    SLIDE_UNKNOWN,
-    SLIDE_BACK,
-    SLIDE_FRONT
-  };
-
   // Stop observing the page and start the final overlay fade-out animation if
-  // a window-slide isn't in progress and either the page has been painted or
-  // the page-load has completed.
+  // there's no active overscroll window animation.
   void StopObservingIfDone();
 
-  // Creates a layer to be used for window-slide. |offset| is the offset of the
-  // NavigationEntry for the screenshot image to display.
-  ui::Layer* CreateSlideLayer(int offset);
+  // Creates a window that shows a history-screenshot and is stacked relative to
+  // the current overscroll |direction_| with the given |bounds|.
+  scoped_ptr<aura::Window> CreateOverlayWindow(const gfx::Rect& bounds);
 
-  // Overridden from WindowSlider::Delegate:
-  ui::Layer* CreateBackLayer() override;
-  ui::Layer* CreateFrontLayer() override;
-  void OnWindowSlideCompleting() override;
-  void OnWindowSlideCompleted(scoped_ptr<ui::Layer> layer) override;
-  void OnWindowSlideAborted() override;
-  void OnWindowSliderDestroyed() override;
+  // Returns an image with the history-screenshot for the previous or next page,
+  // according to the given |direction|.
+  const gfx::Image GetImageForDirection(NavigationDirection direction) const;
+
+  // Overridden from OverscrollWindowAnimation::Delegate:
+  scoped_ptr<aura::Window> CreateFrontWindow(const gfx::Rect& bounds) override;
+  scoped_ptr<aura::Window> CreateBackWindow(const gfx::Rect& bounds) override;
+  aura::Window* GetMainWindow() const override;
+  void OnOverscrollCompleting() override;
+  void OnOverscrollCompleted(scoped_ptr<aura::Window> window) override;
+  void OnOverscrollCancelled() override;
 
   // Overridden from WebContentsObserver:
   void DidFirstVisuallyNonEmptyPaint() override;
   void DidStopLoading() override;
 
-  // The WebContents which is being navigated.
+  // The current overscroll direction.
+  NavigationDirection direction_;
+
+  // The web contents that are being navigated.
   WebContentsImpl* web_contents_;
 
-  // The screenshot overlay window.
+  // The overlay window that shows a screenshot during an overscroll gesture and
+  // handles overscroll events during the second overscroll case.
   scoped_ptr<aura::Window> window_;
-
-  // This is the WindowDelegate of |window_|. The delegate manages its own
-  // lifetime (destroys itself when |window_| is destroyed).
-  aura_extra::ImageWindowDelegate* image_delegate_;
 
   bool loading_complete_;
   bool received_paint_update_;
@@ -109,19 +108,15 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
   // when the relevant page loads and paints.
   GURL pending_entry_url_;
 
-  // The |WindowSlider| that allows sliding history layers while the page is
-  // being reloaded.
-  scoped_ptr<WindowSlider> window_slider_;
+  // Manages the overscroll animations.
+  scoped_ptr<OverscrollWindowAnimation> owa_;
 
-  // Layer to be used for the final overlay fadeout animation when the overlay
-  // is being dismissed.
-  scoped_ptr<ui::Layer> overlay_dismiss_layer_;
+  // The window that hosts the web contents.
+  aura::Window* web_contents_window_;
 
-  // The direction of the in-progress slide (if any).
-  SlideDirection slide_direction_;
-
-  // The LayerDelegate used for the back/front layers during a slide.
-  scoped_ptr<ImageLayerDelegate> layer_delegate_;
+  // Scoped clipping settings for the contents layer and its parent.
+  scoped_ptr<ScopedLayerClippingSetting> contents_layer_settings_;
+  scoped_ptr<ScopedLayerClippingSetting> contents_layer_parent_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollNavigationOverlay);
 };

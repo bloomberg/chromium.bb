@@ -600,7 +600,8 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
         "../browser/renderer_host/render_widget_host_view_aura_unittest.cc",
         "../browser/renderer_host/web_input_event_aura_unittest.cc",
         "../browser/web_contents/aura/overscroll_navigation_overlay_unittest.cc",
-        "../browser/web_contents/aura/window_slider_unittest.cc",
+        "../browser/web_contents/aura/overscroll_window_animation_unittest.cc",
+        "../browser/web_contents/aura/overscroll_window_delegate_unittest.cc",
       ]
     }
     if (use_aura || toolkit_views) {
