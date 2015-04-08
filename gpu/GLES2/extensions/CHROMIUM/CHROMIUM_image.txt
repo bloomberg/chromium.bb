@@ -15,6 +15,7 @@ Dependencies
     OpenGL ES 2.0 is required.
 
     EXT_texture_format_BGRA8888 affects the definition of this extension.
+    ARB_texture_rg affects the definition of this extension.
 
 Overview
 
@@ -45,7 +46,7 @@ New Procedures and Functions
     INVALID_VALUE is generated if <width> or <height> is nonpositive.
 
     INVALID_ENUM is generated if <internalformat> is not one of
-    RGB, RGBA or GL_BGRA_EXT.
+    R8, RGB, RGBA or BGRA_EXT.
 
     void DestroyImageCHROMIUM(GLuint image_id)
 
@@ -56,7 +57,12 @@ New Procedures and Functions
 Dependencies on EXT_texture_format_BGRA8888
 
     If EXT_texture_format_BGRA8888 is not supported:
-     * delete any reference to the GL_BGRA_EXT format.
+     * delete any reference to the BGRA_EXT format.
+
+Dependencies on ARB_texture_rg
+
+    If ARB_texture_rg is not supported:
+     * delete any reference to the R8 format.
 
 Errors
 
@@ -71,4 +77,5 @@ Revision History
     5/9/2013    Documented the extension
     4/30/2014   Moved usage flag to creation function.
     10/7/2014   Remove map/unmap API.
-    4/6/2015    Add GL_BGRA_EXT format.
+    4/6/2015    Add BGRA_EXT format.
+    2/7/2015    Add R8 format.

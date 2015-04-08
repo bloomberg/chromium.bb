@@ -4829,6 +4829,7 @@ namespace {
 
 bool ValidImageFormat(GLenum internalformat) {
   switch (internalformat) {
+    case GL_R8:
     case GL_RGB:
     case GL_RGBA:
     case GL_BGRA_EXT:

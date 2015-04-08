@@ -127,6 +127,7 @@ bool GpuMemoryBufferImplSharedMemory::IsFormatSupported(Format format) {
     case DXT1:
     case DXT5:
     case ETC1:
+    case R_8:
     case RGBA_8888:
     case BGRA_8888:
     case YUV_420:
@@ -152,6 +153,7 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
       // Compressed images must have a width and height that's evenly divisible
       // by the block size.
       return size.width() % 4 == 0 && size.height() % 4 == 0;
+    case R_8:
     case RGBA_8888:
     case BGRA_8888:
     case RGBX_8888:

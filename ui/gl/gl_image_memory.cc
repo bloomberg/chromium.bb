@@ -19,6 +19,7 @@ namespace {
 
 bool ValidInternalFormat(unsigned internalformat) {
   switch (internalformat) {
+    case GL_R8:
     case GL_RGBA:
     case GL_BGRA_EXT:
       return true;
@@ -34,6 +35,7 @@ bool ValidFormat(gfx::GpuMemoryBuffer::Format format) {
     case gfx::GpuMemoryBuffer::DXT1:
     case gfx::GpuMemoryBuffer::DXT5:
     case gfx::GpuMemoryBuffer::ETC1:
+    case gfx::GpuMemoryBuffer::R_8:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
       return true;
@@ -55,6 +57,7 @@ bool IsCompressedFormat(gfx::GpuMemoryBuffer::Format format) {
     case gfx::GpuMemoryBuffer::ETC1:
     case gfx::GpuMemoryBuffer::YUV_420:
       return true;
+    case gfx::GpuMemoryBuffer::R_8:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
@@ -77,6 +80,8 @@ GLenum TextureFormat(gfx::GpuMemoryBuffer::Format format) {
       return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
     case gfx::GpuMemoryBuffer::ETC1:
       return GL_ETC1_RGB8_OES;
+    case gfx::GpuMemoryBuffer::R_8:
+      return GL_RED;
     case gfx::GpuMemoryBuffer::RGBA_8888:
       return GL_RGBA;
     case gfx::GpuMemoryBuffer::BGRA_8888:
@@ -99,6 +104,7 @@ GLenum DataType(gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
+    case gfx::GpuMemoryBuffer::R_8:
       return GL_UNSIGNED_BYTE;
     case gfx::GpuMemoryBuffer::ATC:
     case gfx::GpuMemoryBuffer::ATCIA:
@@ -155,27 +161,30 @@ GLImageMemory::~GLImageMemory() {
 bool GLImageMemory::StrideInBytes(size_t width,
                                   gfx::GpuMemoryBuffer::Format format,
                                   size_t* stride_in_bytes) {
-  base::CheckedNumeric<size_t> s = width;
+  base::CheckedNumeric<size_t> checked_stride = width;
   switch (format) {
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::ETC1:
-      DCHECK_EQ(width % 2, 0U);
-      s /= 2;
-      if (!s.IsValid())
-        return false;
-      *stride_in_bytes = s.ValueOrDie();
-      return true;
     case gfx::GpuMemoryBuffer::ATCIA:
     case gfx::GpuMemoryBuffer::DXT5:
       *stride_in_bytes = width;
       return true;
+    case gfx::GpuMemoryBuffer::ATC:
+    case gfx::GpuMemoryBuffer::DXT1:
+    case gfx::GpuMemoryBuffer::ETC1:
+      DCHECK_EQ(width % 2, 0u);
+      *stride_in_bytes = width / 2;
+      return true;
+    case gfx::GpuMemoryBuffer::R_8:
+      checked_stride += 3;
+      if (!checked_stride.IsValid())
+        return false;
+      *stride_in_bytes = checked_stride.ValueOrDie() & ~0x3;
+      return true;
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
-      s *= 4;
-      if (!s.IsValid())
+      checked_stride *= 4;
+      if (!checked_stride.IsValid())
         return false;
-      *stride_in_bytes = s.ValueOrDie();
+      *stride_in_bytes = checked_stride.ValueOrDie();
       return true;
     case gfx::GpuMemoryBuffer::RGBX_8888:
     case gfx::GpuMemoryBuffer::YUV_420:
@@ -358,8 +367,7 @@ void GLImageMemory::DoBindTexImage(unsigned target) {
                                   0,  // y-offset
                                   size_.width(), size_.height(),
                                   DataFormat(format_),
-                                  SizeInBytes(size_, format_),
-                                  memory_);
+                                  SizeInBytes(size_, format_), memory_);
       } else {
         glTexSubImage2D(GL_TEXTURE_2D,
                         0,  // mip level

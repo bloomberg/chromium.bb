@@ -85,6 +85,7 @@ size_t GpuMemoryBufferImpl::NumberOfPlanesForGpuMemoryBufferFormat(
     case DXT1:
     case DXT5:
     case ETC1:
+    case R_8:
     case RGBA_8888:
     case RGBX_8888:
     case BGRA_8888:
@@ -101,6 +102,7 @@ bool GpuMemoryBufferImpl::StrideInBytes(size_t width,
                                         Format format,
                                         int plane,
                                         size_t* stride_in_bytes) {
+  base::CheckedNumeric<size_t> checked_stride = width;
   switch (format) {
     case ATCIA:
     case DXT5:
@@ -111,26 +113,29 @@ bool GpuMemoryBufferImpl::StrideInBytes(size_t width,
     case DXT1:
     case ETC1:
       DCHECK_EQ(plane, 0);
-      DCHECK_EQ(width % 2, 0U);
+      DCHECK_EQ(width % 2, 0u);
       *stride_in_bytes = width / 2;
       return true;
-    case RGBA_8888:
-    case RGBX_8888:
-    case BGRA_8888: {
-      base::CheckedNumeric<size_t> s = width;
-      DCHECK_EQ(plane, 0);
-      s *= 4;
-      if (!s.IsValid())
+    case R_8:
+      checked_stride += 3;
+      if (!checked_stride.IsValid())
         return false;
-      *stride_in_bytes = s.ValueOrDie();
+      *stride_in_bytes = checked_stride.ValueOrDie() & ~0x3;
       return true;
-    }
-    case YUV_420: {
+    case RGBX_8888:
+    case RGBA_8888:
+    case BGRA_8888:
+      checked_stride *= 4;
+      if (!checked_stride.IsValid())
+        return false;
+      *stride_in_bytes = checked_stride.ValueOrDie();
+      return true;
+    case YUV_420:
       DCHECK_EQ(width % 2, 0u);
       *stride_in_bytes = width / SubsamplingFactor(format, plane);
       return true;
-    }
   }
+
   NOTREACHED();
   return false;
 }
@@ -145,6 +150,7 @@ size_t GpuMemoryBufferImpl::SubsamplingFactor(
     case DXT1:
     case DXT5:
     case ETC1:
+    case R_8:
     case RGBA_8888:
     case RGBX_8888:
     case BGRA_8888:

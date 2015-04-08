@@ -1070,7 +1070,9 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_format.AddValue(GL_RED_EXT);
     validators_.texture_format.AddValue(GL_RG_EXT);
     validators_.texture_internal_format.AddValue(GL_RED_EXT);
+    validators_.texture_internal_format.AddValue(GL_R8_EXT);
     validators_.texture_internal_format.AddValue(GL_RG_EXT);
+    validators_.texture_internal_format.AddValue(GL_RG8_EXT);
     validators_.read_pixel_format.AddValue(GL_RED_EXT);
     validators_.read_pixel_format.AddValue(GL_RG_EXT);
     validators_.render_buffer_format.AddValue(GL_R8_EXT);

@@ -80,6 +80,9 @@ SHADER(
 std::vector<uint8> GetTexturePixel(const gfx::GpuMemoryBuffer::Format format) {
   std::vector<uint8> pixel;
   switch (format) {
+    case gfx::GpuMemoryBuffer::R_8:
+      pixel.push_back(255u);
+      return pixel;
     case gfx::GpuMemoryBuffer::RGBA_8888:
       pixel.push_back(255u);
       pixel.push_back(0u);
@@ -111,6 +114,7 @@ std::vector<uint8> GetFramebufferPixel(
     const gfx::GpuMemoryBuffer::Format format) {
   std::vector<uint8> pixel;
   switch (format) {
+    case gfx::GpuMemoryBuffer::R_8:
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
       pixel.push_back(255u);
@@ -135,6 +139,8 @@ std::vector<uint8> GetFramebufferPixel(
 
 GLenum InternalFormat(gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
+    case gfx::GpuMemoryBuffer::R_8:
+      return GL_R8;
     case gfx::GpuMemoryBuffer::RGBA_8888:
       return GL_RGBA;
     case gfx::GpuMemoryBuffer::BGRA_8888:
@@ -158,6 +164,9 @@ GLenum InternalFormat(gfx::GpuMemoryBuffer::Format format) {
 
 // An end to end test that tests the whole GpuMemoryBuffer lifecycle.
 TEST_P(GpuMemoryBufferTest, Lifecycle) {
+  ASSERT_TRUE((GetParam() != gfx::GpuMemoryBuffer::R_8) ||
+              gl_.GetCapabilities().texture_rg);
+
   GLuint texture_id = 0;
   glGenTextures(1, &texture_id);
   ASSERT_NE(0u, texture_id);
@@ -243,7 +252,8 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
 
 INSTANTIATE_TEST_CASE_P(GpuMemoryBufferTests,
                         GpuMemoryBufferTest,
-                        ::testing::Values(gfx::GpuMemoryBuffer::RGBA_8888,
+                        ::testing::Values(gfx::GpuMemoryBuffer::R_8,
+                                          gfx::GpuMemoryBuffer::RGBA_8888,
                                           gfx::GpuMemoryBuffer::BGRA_8888));
 
 }  // namespace gles2

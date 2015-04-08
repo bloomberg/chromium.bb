@@ -713,6 +713,8 @@ int32 InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
 
   int32 new_id = next_image_id_.GetNext();
 
+  DCHECK(gpu::ImageFactory::IsGpuMemoryBufferFormatSupported(
+      gpu_memory_buffer->GetFormat(), capabilities_));
   DCHECK(gpu::ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
       internalformat, gpu_memory_buffer->GetFormat()));
 
