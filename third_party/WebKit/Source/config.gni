@@ -7,9 +7,6 @@ import("//third_party/WebKit/public/features.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
-} else {
-  # TODO(brettw) remove this once && early-out is checked in.
-  is_android_webview_build = false
 }
 if (current_cpu == "arm") {
   import("//build/config/arm.gni")
@@ -34,7 +31,7 @@ use_default_render_theme = use_aura
 # will also enable WebAudio support on Android ARM, ia32 and x64. Default is
 # enabled. Whether WebAudio is actually available depends on runtime settings
 # and flags.
-use_openmax_dl_fft = is_android && !is_android_webview_build &&
+use_openmax_dl_fft = is_android &&
   (current_cpu == "x86" ||
    current_cpu == "x64" ||
    (current_cpu == "arm" && arm_version >= 7) ||

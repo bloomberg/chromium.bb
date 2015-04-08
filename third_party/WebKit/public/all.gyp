@@ -51,7 +51,7 @@
                 '../Source/wtf/wtf_tests.gyp:wtf_unittests',
             ],
             'conditions': [
-                ['OS=="android" and android_webview_build==0', {
+                ['OS=="android"', {
                     'dependencies': [
                         '../Source/platform/blink_platform_tests.gyp:blink_heap_unittests_apk',
                         '../Source/platform/blink_platform_tests.gyp:blink_platform_unittests_apk',

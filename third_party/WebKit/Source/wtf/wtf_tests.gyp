@@ -80,7 +80,7 @@
     },
   ],
   'conditions': [
-    ['OS=="android" and android_webview_build==0 and gtest_target_type=="shared_library"', {
+    ['OS=="android" and gtest_target_type=="shared_library"', {
       'targets': [{
         'target_name': 'wtf_unittests_apk',
         'type': 'none',
