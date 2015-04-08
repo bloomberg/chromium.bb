@@ -303,7 +303,6 @@ bool TaskQueue::UpdateWorkQueue(LazyNow* lazy_now,
 
   {
     base::AutoLock lock(lock_);
-    MoveReadyDelayedTasksToIncomingQueueLocked(lazy_now);
     if (!ShouldAutoPumpQueueLocked(previous_task))
       return false;
     MoveReadyDelayedTasksToIncomingQueueLocked(lazy_now);
