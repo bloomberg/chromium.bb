@@ -44,7 +44,6 @@
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/system_background_controller.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
-#include "ash/wm/virtual_keyboard_container_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -635,9 +634,6 @@ void RootWindowController::ActivateKeyboard(
       keyboard_controller->GetContainerWindow();
   keyboard_container->set_id(kShellWindowId_VirtualKeyboardContainer);
   parent->AddChild(keyboard_container);
-  // TODO(oshima): Bounds of keyboard container should be handled by
-  // RootWindowLayoutManager. Remove this after fixed RootWindowLayoutManager.
-  keyboard_container->SetBounds(parent->bounds());
 }
 
 void RootWindowController::DeactivateKeyboard(
@@ -993,9 +989,6 @@ void RootWindowController::CreateContainersInRootWindow(
                       lock_screen_related_containers);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(
       virtual_keyboard_parent_container);
-  virtual_keyboard_parent_container->SetLayoutManager(
-      new VirtualKeyboardContainerLayoutManager(
-          virtual_keyboard_parent_container));
   SetUsesScreenCoordinates(virtual_keyboard_parent_container);
 
   aura::Window* menu_container = CreateContainer(

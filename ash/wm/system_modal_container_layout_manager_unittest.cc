@@ -182,8 +182,8 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
       keyboard->ShowKeyboard(true);
       if (keyboard->proxy()->GetKeyboardWindow()->bounds().height() == 0) {
         keyboard->proxy()->GetKeyboardWindow()->SetBounds(
-            keyboard::KeyboardBoundsFromWindowBounds(
-                keyboard->GetContainerWindow()->bounds(), 100));
+            keyboard::FullWidthKeyboardBoundsFromRootBounds(
+                Shell::GetPrimaryRootWindow()->bounds(), 100));
       }
     } else {
       keyboard->HideKeyboard(keyboard::KeyboardController::HIDE_REASON_MANUAL);

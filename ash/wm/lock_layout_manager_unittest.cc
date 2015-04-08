@@ -93,8 +93,8 @@ class LockLayoutManagerTest : public AshTestBase {
       keyboard->ShowKeyboard(true);
       if (keyboard->proxy()->GetKeyboardWindow()->bounds().height() == 0) {
         keyboard->proxy()->GetKeyboardWindow()->SetBounds(
-            keyboard::KeyboardBoundsFromWindowBounds(
-                keyboard->GetContainerWindow()->bounds(),
+            keyboard::FullWidthKeyboardBoundsFromRootBounds(
+                Shell::GetPrimaryRootWindow()->bounds(),
                 kVirtualKeyboardHeight));
       }
     } else {

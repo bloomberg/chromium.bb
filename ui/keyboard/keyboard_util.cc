@@ -57,21 +57,12 @@ keyboard::KeyboardShowOverride g_keyboard_show_override =
 
 namespace keyboard {
 
-gfx::Rect DefaultKeyboardBoundsFromWindowBounds(
-    const gfx::Rect& window_bounds) {
-  // Initialize default keyboard height to 0. The keyboard window height should
-  // only be set by window.resizeTo in virtual keyboard web contents. Otherwise,
-  // the default height may conflict with the new height and causing some
-  // strange animation issues.
-  return KeyboardBoundsFromWindowBounds(window_bounds, 0);
-}
-
-gfx::Rect KeyboardBoundsFromWindowBounds(const gfx::Rect& window_bounds,
-                                         int keyboard_height) {
+gfx::Rect FullWidthKeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
+                                                int keyboard_height) {
   return gfx::Rect(
-      window_bounds.x(),
-      window_bounds.bottom() - keyboard_height,
-      window_bounds.width(),
+      root_bounds.x(),
+      root_bounds.bottom() - keyboard_height,
+      root_bounds.width(),
       keyboard_height);
 }
 

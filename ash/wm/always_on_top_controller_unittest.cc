@@ -79,8 +79,8 @@ TEST_F(VirtualKeyboardAlwaysOnTopControllerTest, NotifyKeyboardBoundsChanged) {
   keyboard_container->AddChild(keyboard_window);
   keyboard_window->set_owned_by_parent(false);
   const int kKeyboardHeight = 200;
-  gfx::Rect keyboard_bounds = keyboard::KeyboardBoundsFromWindowBounds(
-      keyboard_container->bounds(), kKeyboardHeight);
+  gfx::Rect keyboard_bounds = keyboard::FullWidthKeyboardBoundsFromRootBounds(
+      root_window->bounds(), kKeyboardHeight);
   keyboard_window->SetBounds(keyboard_bounds);
   keyboard_window->Show();
   keyboard_controller->NotifyKeyboardBoundsChanging(keyboard_bounds);

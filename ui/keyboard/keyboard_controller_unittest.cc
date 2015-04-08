@@ -37,6 +37,13 @@
 namespace keyboard {
 namespace {
 
+// Verify if the |keyboard| window covers the |container| window completely.
+void VerifyKeyboardWindowSize(aura::Window* container, aura::Window* keyboard) {
+  ASSERT_EQ(gfx::Rect(0, 0, container->bounds().width(),
+                      container->bounds().height()),
+            keyboard->bounds());
+}
+
 // Steps a layer animation until it is completed. Animations must be enabled.
 void RunAnimationForLayer(ui::Layer* layer) {
   // Animations must be enabled for stepping to work.
@@ -201,6 +208,15 @@ class KeyboardControllerTest : public testing::Test {
     SetFocus(test_text_input_client_.get());
   }
 
+  void MockRotateScreen() {
+    const gfx::Rect root_bounds = root_window()->bounds();
+    controller_->OnWindowBoundsChanged(root_window(), gfx::Rect(),
+                                       gfx::Rect(0,
+                                                 0,
+                                                 root_bounds.height(),
+                                                 root_bounds.width()));
+  }
+
  protected:
   void SetFocus(ui::TextInputClient* client) {
     ui::InputMethod* input_method = proxy()->GetInputMethod();
@@ -215,8 +231,8 @@ class KeyboardControllerTest : public testing::Test {
       if (proxy_->GetKeyboardWindow()->bounds().height() == 0) {
         // Set initial bounds for test keyboard window.
         proxy_->GetKeyboardWindow()->SetBounds(
-            KeyboardBoundsFromWindowBounds(
-                controller()->GetContainerWindow()->bounds(), 100));
+            FullWidthKeyboardBoundsFromRootBounds(root_window()->bounds(),
+                                                  100));
       }
     }
   }
@@ -243,26 +259,50 @@ class KeyboardControllerTest : public testing::Test {
 TEST_F(KeyboardControllerTest, KeyboardSize) {
   aura::Window* container(controller()->GetContainerWindow());
   aura::Window* keyboard(proxy()->GetKeyboardWindow());
-  container->SetBounds(gfx::Rect(0, 0, 200, 100));
-
+  gfx::Rect screen_bounds = root_window()->bounds();
+  root_window()->AddChild(container);
   container->AddChild(keyboard);
-  const gfx::Rect& before_bounds = keyboard->bounds();
-  // The initial keyboard should be positioned at the bottom of container and
-  // has 0 height.
-  ASSERT_EQ(gfx::Rect(0, 100, 200, 0), before_bounds);
+  const gfx::Rect& initial_bounds = container->bounds();
+  // The container should be positioned at the bottom of screen and has 0
+  // height.
+  ASSERT_EQ(gfx::Rect(), initial_bounds);
+  VerifyKeyboardWindowSize(container, keyboard);
 
-  gfx::Rect new_bounds(
-      before_bounds.x(), before_bounds.y() - 50,
-      before_bounds.width(), 50);
+  gfx::Rect new_bounds(0, 0, 50, 50);
+
+  // In FULL_WIDTH mode, attempt to change window width or move window up from
+  // the bottom are ignored. Changing window height is supported.
+  gfx::Rect expected_bounds(0,
+                            screen_bounds.height() - 50,
+                            screen_bounds.width(),
+                            50);
 
   keyboard->SetBounds(new_bounds);
-  ASSERT_EQ(new_bounds, keyboard->bounds());
+  ASSERT_EQ(expected_bounds, container->bounds());
+  VerifyKeyboardWindowSize(container, keyboard);
 
-  // Mock a screen rotation.
-  container->SetBounds(gfx::Rect(0, 0, 100, 200));
+  MockRotateScreen();
   // The above call should resize keyboard to new width while keeping the old
   // height.
-  ASSERT_EQ(gfx::Rect(0, 150, 100, 50), keyboard->bounds());
+  ASSERT_EQ(gfx::Rect(0,
+                      screen_bounds.width() - 50,
+                      screen_bounds.height(),
+                      50),
+            container->bounds());
+  VerifyKeyboardWindowSize(container, keyboard);
+}
+
+TEST_F(KeyboardControllerTest, FloatingKeyboardSize) {
+  aura::Window* container(controller()->GetContainerWindow());
+  aura::Window* keyboard(proxy()->GetKeyboardWindow());
+  gfx::Rect screen_bounds = root_window()->bounds();
+  root_window()->AddChild(container);
+  controller()->SetKeyboardMode(FLOATING);
+  container->AddChild(keyboard);
+  gfx::Rect new_bounds(0, 50, 50, 50);
+  keyboard->SetBounds(new_bounds);
+  ASSERT_EQ(new_bounds, container->bounds());
+  VerifyKeyboardWindowSize(container, keyboard);
 }
 
 // Tests that tapping/clicking inside the keyboard does not give it focus.
@@ -277,7 +317,6 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   window->Focus();
 
   aura::Window* keyboard_container(controller()->GetContainerWindow());
-  keyboard_container->SetBounds(root_bounds);
 
   root_window()->AddChild(keyboard_container);
   keyboard_container->Show();
@@ -295,7 +334,7 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   keyboard_container->AddPreTargetHandler(&observer);
 
   ui::test::EventGenerator generator(root_window());
-  generator.MoveMouseTo(proxy()->GetKeyboardWindow()->bounds().CenterPoint());
+  generator.MoveMouseTo(keyboard_container->bounds().CenterPoint());
   generator.ClickLeftButton();
   EXPECT_TRUE(window->HasFocus());
   EXPECT_FALSE(keyboard_container->HasFocus());
@@ -310,80 +349,7 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   keyboard_container->RemovePreTargetHandler(&observer);
 }
 
-TEST_F(KeyboardControllerTest, EventHitTestingInContainer) {
-  const gfx::Rect& root_bounds = root_window()->bounds();
-  aura::test::EventCountDelegate delegate;
-  scoped_ptr<aura::Window> window(new aura::Window(&delegate));
-  window->Init(ui::LAYER_NOT_DRAWN);
-  window->SetBounds(root_bounds);
-  root_window()->AddChild(window.get());
-  window->Show();
-  window->Focus();
-
-  aura::Window* keyboard_container(controller()->GetContainerWindow());
-  keyboard_container->SetBounds(root_bounds);
-
-  root_window()->AddChild(keyboard_container);
-  keyboard_container->Show();
-
-  ShowKeyboard();
-
-  EXPECT_TRUE(window->IsVisible());
-  EXPECT_TRUE(keyboard_container->IsVisible());
-  EXPECT_TRUE(window->HasFocus());
-  EXPECT_FALSE(keyboard_container->HasFocus());
-
-  // Make sure hit testing works correctly while the keyboard is visible.
-  aura::Window* keyboard_window = proxy()->GetKeyboardWindow();
-  ui::EventTarget* root = root_window();
-  ui::EventTargeter* targeter = root->GetEventTargeter();
-  gfx::Point location = keyboard_window->bounds().CenterPoint();
-  ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, location, location,
-                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
-  EXPECT_EQ(keyboard_window, targeter->FindTargetForEvent(root, &mouse1));
-
-  location.set_y(keyboard_window->bounds().y() - 5);
-  ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, location, location,
-                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
-  EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root, &mouse2));
-}
-
-TEST_F(KeyboardControllerTest, KeyboardWindowCreation) {
-  const gfx::Rect& root_bounds = root_window()->bounds();
-  aura::test::EventCountDelegate delegate;
-  scoped_ptr<aura::Window> window(new aura::Window(&delegate));
-  window->Init(ui::LAYER_NOT_DRAWN);
-  window->SetBounds(root_bounds);
-  root_window()->AddChild(window.get());
-  window->Show();
-  window->Focus();
-
-  aura::Window* keyboard_container(controller()->GetContainerWindow());
-  keyboard_container->SetBounds(root_bounds);
-
-  root_window()->AddChild(keyboard_container);
-  keyboard_container->Show();
-
-  EXPECT_FALSE(proxy()->HasKeyboardWindow());
-
-  ui::EventTarget* root = root_window();
-  ui::EventTargeter* targeter = root->GetEventTargeter();
-  gfx::Point location(root_window()->bounds().width() / 2,
-                      root_window()->bounds().height() - 10);
-  ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location,
-                       ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
-  EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root, &mouse));
-  EXPECT_FALSE(proxy()->HasKeyboardWindow());
-
-  EXPECT_EQ(
-      controller()->GetContainerWindow(),
-      controller()->GetContainerWindow()->GetEventHandlerForPoint(location));
-  EXPECT_FALSE(proxy()->HasKeyboardWindow());
-}
-
 TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
-  const gfx::Rect& root_bounds = root_window()->bounds();
-
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_2(ui::TEXT_INPUT_TYPE_TEXT);
@@ -393,7 +359,6 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
   aura::Window* keyboard_container(controller()->GetContainerWindow());
   scoped_ptr<KeyboardContainerObserver> keyboard_container_observer(
       new KeyboardContainerObserver(keyboard_container));
-  keyboard_container->SetBounds(root_bounds);
   root_window()->AddChild(keyboard_container);
 
   SetFocus(&input_client_0);
@@ -425,13 +390,10 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
 // Test to prevent spurious overscroll boxes when changing tabs during keyboard
 // hide. Refer to crbug.com/401670 for more context.
 TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
-  const gfx::Rect& root_bounds = root_window()->bounds();
-
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 
   aura::Window* keyboard_container(controller()->GetContainerWindow());
-  keyboard_container->SetBounds(root_bounds);
   root_window()->AddChild(keyboard_container);
 
   // Enable touch keyboard / overscroll mode to test insets.
@@ -450,8 +412,6 @@ TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
 }
 
 TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
-  const gfx::Rect& root_bounds = root_window()->bounds();
-
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client_0(ui::TEXT_INPUT_TYPE_NONE);
@@ -460,7 +420,6 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   aura::Window* keyboard_container(controller()->GetContainerWindow());
   scoped_ptr<KeyboardContainerObserver> keyboard_container_observer(
       new KeyboardContainerObserver(keyboard_container));
-  keyboard_container->SetBounds(root_bounds);
   root_window()->AddChild(keyboard_container);
 
   SetFocus(&input_client_0);
@@ -557,9 +516,9 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   float show_end_opacity = layer->opacity();
   EXPECT_LT(show_start_opacity, show_end_opacity);
   EXPECT_EQ(gfx::Transform(), layer->transform());
-  // KeyboardController should notify the bounds of keyboard window to its
+  // KeyboardController should notify the bounds of container window to its
   // observers after show animation finished.
-  EXPECT_EQ(keyboard_window()->bounds(), notified_bounds());
+  EXPECT_EQ(keyboard_container()->bounds(), notified_bounds());
 
   // Directly hide keyboard without delay.
   controller()->HideKeyboard(KeyboardController::HIDE_REASON_AUTOMATIC);
