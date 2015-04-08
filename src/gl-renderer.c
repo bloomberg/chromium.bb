@@ -2136,7 +2136,7 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 		(const char *) eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 	if (!extensions) {
 		weston_log("Retrieving EGL client extension string failed.\n");
-		return -1;
+		return 0;
 	}
 
 	if (strstr(extensions, "EGL_EXT_platform_base"))
