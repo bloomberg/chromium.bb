@@ -105,7 +105,11 @@ LabelButton* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
                   *rb.GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
   close->SetBorder(nullptr);
   close->SetSize(close->GetPreferredSize());
+#if !defined(OS_WIN)
+  // Windows will automatically create a tooltip for the close button based on
+  // the HTCLOSE result from NonClientHitTest().
   close->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
+#endif
   return close;
 }
 
