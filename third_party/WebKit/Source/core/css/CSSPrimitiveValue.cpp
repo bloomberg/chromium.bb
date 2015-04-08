@@ -800,7 +800,7 @@ double CSSPrimitiveValue::getDoubleValue() const
 
 CSSPrimitiveValue::UnitType CSSPrimitiveValue::canonicalUnitTypeForCategory(UnitCategory category)
 {
-    // The canonical unit type is chosen according to the way BisonCSSParser::validUnit() chooses the default unit
+    // The canonical unit type is chosen according to the way CSSPropertyParser::validUnit() chooses the default unit
     // in each category (based on unitflags).
     switch (category) {
     case UNumber:

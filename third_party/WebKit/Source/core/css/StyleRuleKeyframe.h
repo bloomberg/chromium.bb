@@ -27,7 +27,7 @@ public:
 
     // Used by StyleResolver.
     const Vector<double>& keys() const;
-    // Used by BisonCSSParser when constructing a new StyleRuleKeyframe.
+    // Used by the CSS parser when constructing a new StyleRuleKeyframe.
     void setKeys(PassOwnPtr<Vector<double>>);
 
     const StylePropertySet& properties() const { return *m_properties; }

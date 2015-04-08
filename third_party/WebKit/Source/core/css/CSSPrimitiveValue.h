@@ -154,7 +154,6 @@ public:
     void accumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
     void accumulateLengthArray(CSSLengthArray&, CSSLengthTypeArray&, double multiplier = 1) const;
 
-    // This enum follows the BisonCSSParser::Units enum augmented with UNIT_FREQUENCY for frequencies.
     enum UnitCategory {
         UNumber,
         UPercent,
