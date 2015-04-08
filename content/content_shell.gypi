@@ -743,9 +743,14 @@
           'dependencies': [ '../build/linux/system.gyp:x11' ],
         }],
         ['OS=="win"', {
-          'defines': [
-            # This seems like a hack, but this is what Safari Win does.
-            'snprintf=_snprintf',
+          'conditions': [
+            ['MSVS_VERSION < "2015"', {
+              'defines': [
+                # This seems like a hack, but this is what Safari Win does.
+                # Luckily it is no longer needed/allowed with VS 2015.
+                'snprintf=_snprintf',
+              ],
+            }],
           ],
           'sources': [
             'shell/tools/plugin/win/TestNetscapePlugin.def',

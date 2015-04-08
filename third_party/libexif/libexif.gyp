@@ -83,9 +83,16 @@
               'sources': [
                 'libexif.def',
               ],
+              'conditions': [
+                ['MSVS_VERSION < "2015"', {
+                  'defines': [
+                    # This seems like a hack, but this is what Safari Win does.
+                    # Luckily it is no longer needed/allowed with VS 2015.
+                    'snprintf=_snprintf',
+                  ],
+                }],
+              ],
               'defines': [
-                # This seems like a hack, but this is what WebKit Win does.
-                'snprintf=_snprintf',
                 'inline=__inline',
               ],
               'msvs_disabled_warnings': [
