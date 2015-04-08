@@ -344,10 +344,7 @@ static v8::Local<v8::Value> deserializeIDBValueBuffer(v8::Isolate* isolate, Shar
     if (!buffer)
         return v8::Null(isolate);
 
-    // FIXME: The extra copy here can be eliminated by allowing SerializedScriptValue to take a raw const char* or const uint8_t*.
-    Vector<uint8_t> value;
-    value.append(buffer->data(), buffer->size());
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::instance().createFromWireBytes(value);
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::instance().createFromWireBytes(buffer->data(), buffer->size());
     return serializedValue->deserialize(isolate, 0, blobInfo);
 }
 

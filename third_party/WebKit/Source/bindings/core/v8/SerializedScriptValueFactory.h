@@ -25,7 +25,7 @@ public:
     virtual PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, ExceptionState&, v8::Isolate*);
     PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, ExceptionState&, v8::Isolate*);
     PassRefPtr<SerializedScriptValue> createFromWire(const String&);
-    PassRefPtr<SerializedScriptValue> createFromWireBytes(const Vector<uint8_t>&);
+    PassRefPtr<SerializedScriptValue> createFromWireBytes(const char* data, size_t length);
     PassRefPtr<SerializedScriptValue> create(const String&);
     virtual PassRefPtr<SerializedScriptValue> create(const String&, v8::Isolate*);
     PassRefPtr<SerializedScriptValue> create();
@@ -67,4 +67,3 @@ private:
 } // namespace blink
 
 #endif // SerializedScriptValueFactory_h
-

@@ -67,15 +67,15 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::createFromWire(c
     return adoptRef(new SerializedScriptValue(data));
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::createFromWireBytes(const Vector<uint8_t>& data)
+PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::createFromWireBytes(const char* data, size_t length)
 {
     // Decode wire data from big endian to host byte order.
-    ASSERT(!(data.size() % sizeof(UChar)));
-    size_t length = data.size() / sizeof(UChar);
-    StringBuffer<UChar> buffer(length);
-    const UChar* src = reinterpret_cast<const UChar*>(data.data());
+    ASSERT(!(length % sizeof(UChar)));
+    size_t stringLength = length / sizeof(UChar);
+    StringBuffer<UChar> buffer(stringLength);
+    const UChar* src = reinterpret_cast<const UChar*>(data);
     UChar* dst = buffer.characters();
-    for (size_t i = 0; i < length; i++)
+    for (size_t i = 0; i < stringLength; i++)
         dst[i] = ntohs(src[i]);
 
     return createFromWire(String::adopt(buffer));
