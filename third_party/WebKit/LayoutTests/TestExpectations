@@ -881,8 +881,6 @@ crbug.com/460633 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-
 crbug.com/460633 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 crbug.com/460633 virtual/slimmingpaint/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 
-crbug.com/475068 virtual/slimmingpaint/fast/repaint/repaint-during-scroll-with-zoom.html [ NeedsRebaseline ]
-
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
 

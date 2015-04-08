@@ -13,7 +13,7 @@
         [2, 65, 235, 235],
         [2, 65, 225, 225],
         [2, 65, 135, 135],
-        [2, 65, 58, 15]
+        [2, 65, 52, 17]
       ],
       "paintInvalidationClients": [
         "HorizontalScrollbar",
