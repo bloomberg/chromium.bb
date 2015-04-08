@@ -169,6 +169,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, CollectDllBlacklistData) {
   EXPECT_EQ(path_expected, process_report_path);
 }
 
+#if !defined(_WIN64)
 TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
   //  Load the test modules.
   std::vector<base::ScopedNativeLibrary> test_dlls(kTestDllNamesCount);
@@ -218,5 +219,6 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
   EXPECT_EQ(std::string(kTestExportName),
             process_report.module_state(0).modified_export(0));
 }
+#endif  // _WIN64
 
 }  // namespace safe_browsing

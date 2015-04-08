@@ -129,6 +129,7 @@ void CollectModuleVerificationData(
     const wchar_t* const modules_to_verify[],
     size_t num_modules_to_verify,
     ClientIncidentReport_EnvironmentData_Process* process) {
+#if !defined(_WIN64)
   for (size_t i = 0; i < num_modules_to_verify; ++i) {
     scoped_ptr<ClientIncidentReport_EnvironmentData_Process_ModuleState>
         module_state(
@@ -191,6 +192,7 @@ void CollectModuleVerificationData(
     }
     process->mutable_module_state()->AddAllocated(module_state.release());
   }
+#endif  // _WIN64
 }
 
 void CollectPlatformProcessData(
