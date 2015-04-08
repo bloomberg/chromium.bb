@@ -180,7 +180,8 @@ typedef struct {
 
 /* Functions for mutex handling.  */
 
-/** @nqPosix
+/**
+ * @nqPosix
  * Initializes a mutex using attributes in mutex_attr, or using the
  * default values if the latter is NULL.
  *
@@ -191,204 +192,216 @@ typedef struct {
  *
  * @return 0 upon success, 1 otherwise
  */
-extern int pthread_mutex_init(pthread_mutex_t *mutex,
+int pthread_mutex_init(pthread_mutex_t *mutex,
                               const pthread_mutexattr_t *mutex_attr);
 
-/** @nqPosix
-* Destroys a mutex.
-*
-* @linkPthread
-*
-* @param mutex The address of the mutex structure to be destroyed.
-*
-* @return 0 upon success, non-zero error code otherwise
-*/
-extern int pthread_mutex_destroy(pthread_mutex_t *mutex);
+/**
+ * @nqPosix
+ * Destroys a mutex.
+ *
+ * @linkPthread
+ *
+ * @param mutex The address of the mutex structure to be destroyed.
+ *
+ * @return 0 upon success, non-zero error code otherwise
+ */
+int pthread_mutex_destroy(pthread_mutex_t *mutex);
 
-/** @nqPosix
-* Tries to lock a mutex.
-*
-* @linkPthread
-*
-* @param mutex The address of the mutex structure to be locked.
-*
-* @return 0 upon success, EBUSY if the mutex is locked by another thread,
-* non-zero error code otherwise.
-*/
-extern int pthread_mutex_trylock(pthread_mutex_t *mutex);
+/**
+ * @nqPosix
+ * Tries to lock a mutex.
+ *
+ * @linkPthread
+ *
+ * @param mutex The address of the mutex structure to be locked.
+ *
+ * @return 0 upon success, EBUSY if the mutex is locked by another thread,
+ * non-zero error code otherwise.
+ */
+int pthread_mutex_trylock(pthread_mutex_t *mutex);
 
-/** @nqPosix
-* Locks a mutex.
-*
-* @linkPthread
-*
-* @param mutex The address of the mutex structure to be locked.
-*
-* @return 0 upon success, non-zero error code otherwise.
-*/
-extern int pthread_mutex_lock(pthread_mutex_t *mutex);
+/**
+ * @nqPosix
+ * Locks a mutex.
+ *
+ * @linkPthread
+ *
+ * @param mutex The address of the mutex structure to be locked.
+ *
+ * @return 0 upon success, non-zero error code otherwise.
+ */
+int pthread_mutex_lock(pthread_mutex_t *mutex);
 
 /* Wait until lock becomes available, or specified time passes. */
-extern int pthread_mutex_timedlock(pthread_mutex_t *mutex,
-                                   const struct timespec *abstime);
+int pthread_mutex_timedlock(pthread_mutex_t *mutex,
+                            const struct timespec *abstime);
 
-/** @nqPosix
-* Unlocks a mutex.
-*
-* @linkPthread
-*
-* @param mutex The address of the mutex structure to be unlocked.
-*
-* @return 0 upon success, non-zero error code otherwise.
-*/
-extern int pthread_mutex_unlock(pthread_mutex_t *mutex);
+/**
+ * @nqPosix
+ * Unlocks a mutex.
+ *
+ * @linkPthread
+ *
+ * @param mutex The address of the mutex structure to be unlocked.
+ *
+ * @return 0 upon success, non-zero error code otherwise.
+ */
+int pthread_mutex_unlock(pthread_mutex_t *mutex);
 
 /* Mutex attributes manipulation */
 
-/** @nqPosix
-* Initializes mutex attributes.
-*
-* @linkPthread
-*
-* @param attr The address of the attributes structure to be initialized.
-*
-* @return 0.
-*/
-extern int pthread_mutexattr_init(pthread_mutexattr_t *attr);
+/**
+ * @nqPosix
+ * Initializes mutex attributes.
+ *
+ * @linkPthread
+ *
+ * @param attr The address of the attributes structure to be initialized.
+ *
+ * @return 0.
+ */
+int pthread_mutexattr_init(pthread_mutexattr_t *attr);
 
-/** @nqPosix
-* Destroys mutex attributes structure.
-*
-* @linkPthread
-*
-* @param attr The address of the attributes structure to be destroyed.
-*
-* @return 0.
-*/
-extern int pthread_mutexattr_destroy(pthread_mutexattr_t *attr);
+/**
+ * @nqPosix
+ * Destroys mutex attributes structure.
+ *
+ * @linkPthread
+ *
+ * @param attr The address of the attributes structure to be destroyed.
+ *
+ * @return 0.
+ */
+int pthread_mutexattr_destroy(pthread_mutexattr_t *attr);
 
-/** @nqPosix
-* Sets the mutex type: fast, recursive or error-checking.
-*
-* @linkPthread
-*
-* @param attr The address of the attributes structure.
-* @param kind PTHREAD_MUTEX_FAST_NP, PTHREAD_MUTEX_RECURSIVE_NP or
-* PTHREAD_MUTEX_ERRORCHECK_NP.
-*
-* @return 0 on success, -1 for illegal values of kind.
-*/
-extern int pthread_mutexattr_settype(pthread_mutexattr_t *attr,
-                                     int kind);
+/**
+ * @nqPosix
+ * Sets the mutex type: fast, recursive or error-checking.
+ *
+ * @linkPthread
+ *
+ * @param attr The address of the attributes structure.
+ * @param kind PTHREAD_MUTEX_FAST_NP, PTHREAD_MUTEX_RECURSIVE_NP or
+ * PTHREAD_MUTEX_ERRORCHECK_NP.
+ *
+ * @return 0 on success, -1 for illegal values of kind.
+ */
+int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int kind);
 
-/** @nqPosix
-* Gets the mutex type: fast, recursive or error-checking.
-*
-* @linkPthread
-*
-* @param attr The address of the attributes structure.
-* @param kind Pointer to the location where the mutex kind value is copied.
-*
-* @return 0.
-*/
-extern int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr,
-                                     int *kind);
+/**
+ * @nqPosix
+ * Gets the mutex type: fast, recursive or error-checking.
+ *
+ * @linkPthread
+ *
+ * @param attr The address of the attributes structure.
+ * @param kind Pointer to the location where the mutex kind value is copied.
+ *
+ * @return 0.
+ */
+int pthread_mutexattr_gettype(const pthread_mutexattr_t *attr, int *kind);
 
 /* Functions for handling conditional variables.  */
 
-/** @nqPosix
-* Initializes a condition variable.
-*
-* @linkPthread
-*
-* @param cond Pointer to the condition variable structure.
-* @param cond_attr Pointer to the attributes structure, should be NULL as
-* Native Client does not support any attributes for a condition variable at
-* this stage.
-*
-* @return 0 for success, 1 otherwise.
-*/
-extern int pthread_cond_init(pthread_cond_t *cond,
-                             const pthread_condattr_t *cond_attr);
+/**
+ * @nqPosix
+ * Initializes a condition variable.
+ *
+ * @linkPthread
+ *
+ * @param cond Pointer to the condition variable structure.
+ * @param cond_attr Pointer to the attributes structure, should be NULL as
+ * Native Client does not support any attributes for a condition variable at
+ * this stage.
+ *
+ * @return 0 for success, 1 otherwise.
+ */
+int pthread_cond_init(pthread_cond_t *cond,
+                      const pthread_condattr_t *cond_attr);
 
-/** @nqPosix
-* Destroys a condition variable.
-*
-* @linkPthread
-*
-* @param cond Pointer to the condition variable structure.
-*
-* @return 0 for success, non-zero error code otherwise.
-*/
-extern int pthread_cond_destroy(pthread_cond_t *cond);
+/**
+ * @nqPosix
+ * Destroys a condition variable.
+ *
+ * @linkPthread
+ *
+ * @param cond Pointer to the condition variable structure.
+ *
+ * @return 0 for success, non-zero error code otherwise.
+ */
+int pthread_cond_destroy(pthread_cond_t *cond);
 
-/** @nqPosix
-* Signals a condition variable, waking up one of the threads waiting on it.
-*
-* @linkPthread
-*
-* @param cond Pointer to the condition variable structure.
-*
-* @return 0 for success, non-zero error code otherwise.
-*/
-extern int pthread_cond_signal(pthread_cond_t *cond);
+/**
+ * @nqPosix
+ * Signals a condition variable, waking up one of the threads waiting on it.
+ *
+ * @linkPthread
+ *
+ * @param cond Pointer to the condition variable structure.
+ *
+ * @return 0 for success, non-zero error code otherwise.
+ */
+int pthread_cond_signal(pthread_cond_t *cond);
 
-/** @nqPosix
-* Wakes up all threads waiting on a condition variable.
-*
-* @linkPthread
-*
-* @param cond Pointer to the condition variable structure.
-*
-* @return 0 for success, non-zero error code otherwise.
-*/
-extern int pthread_cond_broadcast(pthread_cond_t *cond);
+/**
+ * @nqPosix
+ * Wakes up all threads waiting on a condition variable.
+ *
+ * @linkPthread
+ *
+ * @param cond Pointer to the condition variable structure.
+ *
+ * @return 0 for success, non-zero error code otherwise.
+ */
+int pthread_cond_broadcast(pthread_cond_t *cond);
 
-/** @nqPosix
-* Waits for a condition variable to be signaled or broadcast.
-*
-* @linkPthread
-*
-* @param cond Pointer to the condition variable structure.
-* @param mutex Pointer to the mutex structure. The mutex is assumed to be locked
-* when this function is called.
-*
-* @return 0 for success, non-zero error code otherwise.
-*/
-extern int pthread_cond_wait(pthread_cond_t *cond,
-                             pthread_mutex_t *mutex);
+/**
+ * @nqPosix
+ * Waits for a condition variable to be signaled or broadcast.
+ *
+ * @linkPthread
+ *
+ * @param cond Pointer to the condition variable structure.
+ * @param mutex Pointer to the mutex structure. The mutex is assumed to be
+ * locked when this function is called.
+ *
+ * @return 0 for success, non-zero error code otherwise.
+ */
+int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex);
 
-/** @nqPosix
-* Waits for condition variable cond to be signaled or broadcast until
-* abstime.
-*
-* @linkPthread
-*
-* @param cond Pointer to the condition variable structure.
-* @param mutex Pointer to the mutex structure. The mutex is assumed to be locked
-* when this function is called.
-* @param abstime Absolute time specification; zero is the beginning of the epoch
-* (00:00:00 GMT, January 1, 1970).
-*
-* @return 0 for success, non-zero error code otherwise.
-*/
+/**
+ * @nqPosix
+ * Waits for condition variable cond to be signaled or broadcast until
+ * abstime.
+ *
+ * @linkPthread
+ *
+ * @param cond Pointer to the condition variable structure.
+ * @param mutex Pointer to the mutex structure. The mutex is assumed to be
+ * locked when this function is called.
+ * @param abstime Absolute time specification; zero is the beginning of the
+ * epoch (00:00:00 GMT, January 1, 1970).
+ *
+ * @return 0 for success, non-zero error code otherwise.
+ */
 int pthread_cond_timedwait_abs(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
                                const struct timespec *abstime);
 
-/** @nqPosix
-* Waits for condition variable cond to be signaled or broadcast; wait time is
-* limited by reltime.
-*
-* @linkPthread
-*
-* @param cond Pointer to the condition variable structure.
-* @param mutex Pointer to the mutex structure. The mutex is assumed to be locked
-* when this function is called.
-* @param reltime Time specification, relative to the current time.
-*
-* @return 0 for success, non-zero error code otherwise.
-*/
+/**
+ * @nqPosix
+ * Waits for condition variable cond to be signaled or broadcast; wait time is
+ * limited by reltime.
+ *
+ * @linkPthread
+ *
+ * @param cond Pointer to the condition variable structure.
+ * @param mutex Pointer to the mutex structure. The mutex is assumed to be
+ * locked when this function is called.
+ * @param reltime Time specification, relative to the current time.
+ *
+ * @return 0 for success, non-zero error code otherwise.
+ */
 int pthread_cond_timedwait_rel(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
                                const struct timespec *reltime);
@@ -456,203 +469,215 @@ typedef struct {
 
 /* Thread functions  */
 
-/** @nqPosix
-* Creates a thread.
-*
-* @linkPthread
-*
-* @param[out] thread_id A pointer to the location where the identifier of the
-* newly created thread is stored on success.
-* @param attr Thread attributes structure.
-* @param start_routine Thread function.
-* @param arg A single argument that is passed to the thread function.
-*
-* @return 0 for success, non-zero error code otherwise.
-*/
-extern int pthread_create(pthread_t *thread_id,
-                          const pthread_attr_t *attr,
-                          void *(*start_routine)(void *p),
-                          void *arg);
+/**
+ * @nqPosix
+ * Creates a thread.
+ *
+ * @linkPthread
+ *
+ * @param[out] thread_id A pointer to the location where the identifier of the
+ * newly created thread is stored on success.
+ * @param attr Thread attributes structure.
+ * @param start_routine Thread function.
+ * @param arg A single argument that is passed to the thread function.
+ *
+ * @return 0 for success, non-zero error code otherwise.
+ */
+int pthread_create(pthread_t *thread_id,
+                   const pthread_attr_t *attr,
+                   void *(*start_routine)(void *p),
+                   void *arg);
 
-/** @nqPosix
-* Obtains the identifier of the current thread.
-*
-* @linkPthread
-*
-* @return Thread ID of the current thread.
-*/
-extern pthread_t pthread_self(void);
+/**
+ * @nqPosix
+ * Obtains the identifier of the current thread.
+ *
+ * @linkPthread
+ *
+ * @return Thread ID of the current thread.
+ */
+pthread_t pthread_self(void);
 
-/** @nqPosix
-* Compares two thread identifiers.
-*
-* @linkPthread
-*
-* @param thread1 Thread ID of thread A.
-* @param thread2 Thread ID of thread B.
-*
-* @return 1 if both identifiers belong to the same thread, 0 otherwise.
-*/
-extern int pthread_equal(pthread_t thread1, pthread_t thread2);
+/**
+ * @nqPosix
+ * Compares two thread identifiers.
+ *
+ * @linkPthread
+ *
+ * @param thread1 Thread ID of thread A.
+ * @param thread2 Thread ID of thread B.
+ *
+ * @return 1 if both identifiers belong to the same thread, 0 otherwise.
+ */
+int pthread_equal(pthread_t thread1, pthread_t thread2);
 
-/** @nqPosix
-* Terminates the calling thread.
-*
-* @linkPthread
-*
-* @param retval Return value of the thread.
-*
-* @return The function never returns.
-*/
-extern void pthread_exit(void *retval);
+/**
+ * @nqPosix
+ * Terminates the calling thread.
+ *
+ * @linkPthread
+ *
+ * @param retval Return value of the thread.
+ *
+ * @return The function never returns.
+ */
+void pthread_exit(void *retval);
 
-/** @nqPosix
-* Makes the calling thread wait for termination of another thread.
-*
-* @linkPthread
-*
-* @param th The identifier of the thread to wait for.
-* @param thread_return If not NULL, points to the location where the return
-* value of the terminated thread is stored upon completion.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_join(pthread_t th, void **thread_return);
+/**
+ * @nqPosix
+ * Makes the calling thread wait for termination of another thread.
+ *
+ * @linkPthread
+ *
+ * @param th The identifier of the thread to wait for.
+ * @param thread_return If not NULL, points to the location where the return
+ * value of the terminated thread is stored upon completion.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_join(pthread_t th, void **thread_return);
 
-/** @nqPosix
-* Indicates that the specified thread is never to be joined with pthread_join().
-* The resources of that thread will therefore be freed immediately when it
-* terminates, instead of waiting for another thread to perform pthread_join()
-* on it.
-*
-* @linkPthread
-*
-* @param th Thread identifier.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_detach(pthread_t th);
+/**
+ * @nqPosix
+ * Indicates that the specified thread is never to be joined with
+ * pthread_join(). The resources of that thread will therefore be freed
+ * immediately when it terminates, instead of waiting for another thread to
+ * perform pthread_join() on it.
+ *
+ * @linkPthread
+ *
+ * @param th Thread identifier.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_detach(pthread_t th);
 
-/** @nqPosix
-* Sends a signal to a thread.  (Currently only a stub implementation.)
-*
-* @linkPthread
-*
-* @param thread_id The identifier of the thread to receive the signal.
-* @param sig The signal value to send.
-*
-* @return 0 for success, non-zero error code otherwise.
-*/
-extern int pthread_kill(pthread_t thread_id,
-                        int sig);
+/**
+ * @nqPosix
+ * Sends a signal to a thread.  (Currently only a stub implementation.)
+ *
+ * @linkPthread
+ *
+ * @param thread_id The identifier of the thread to receive the signal.
+ * @param sig The signal value to send.
+ *
+ * @return 0 for success, non-zero error code otherwise.
+ */
+int pthread_kill(pthread_t thread_id, int sig);
 
 /* Functions for handling thread attributes.  */
 
-/** @nqPosix
-* Initializes thread attributes structure attr with default attributes
-* (detachstate is PTHREAD_CREATE_JOINABLE).
-*
-* @linkPthread
-*
-* @param attr Pointer to thread attributes structure.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_attr_init(pthread_attr_t *attr);
+/**
+ * @nqPosix
+ * Initializes thread attributes structure attr with default attributes
+ * (detachstate is PTHREAD_CREATE_JOINABLE).
+ *
+ * @linkPthread
+ *
+ * @param attr Pointer to thread attributes structure.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_attr_init(pthread_attr_t *attr);
 
-/** @nqPosix
-* Destroys a thread attributes structure.
-*
-* @linkPthread
-*
-* @param attr Pointer to thread attributes structure.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_attr_destroy(pthread_attr_t *attr);
+/**
+ * @nqPosix
+ * Destroys a thread attributes structure.
+ *
+ * @linkPthread
+ *
+ * @param attr Pointer to thread attributes structure.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_attr_destroy(pthread_attr_t *attr);
 
-/** @nqPosix
-* Sets the detachstate attribute in thread attributes.
-*
-* @linkPthread
-*
-* @param attr Pointer to thread attributes structure.
-* @param detachstate Value to be set, determines whether the thread is joinable.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_attr_setdetachstate(pthread_attr_t *attr,
-                                       int detachstate);
+/**
+ * @nqPosix
+ * Sets the detachstate attribute in thread attributes.
+ *
+ * @linkPthread
+ *
+ * @param attr Pointer to thread attributes structure.
+ * @param detachstate Value to be set, determines whether the thread is
+ * joinable.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate);
 
-/** @nqPosix
-* Gets the detachstate attribute from thread attributes.
-*
-* @linkPthread
-*
-* @param attr Pointer to thread attributes structure.
-* @param detachstate Location where the value of `detachstate` is stored upon
-* successful completion.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_attr_getdetachstate(const pthread_attr_t *attr,
-                                       int *detachstate);
+/**
+ * @nqPosix
+ * Gets the detachstate attribute from thread attributes.
+ *
+ * @linkPthread
+ *
+ * @param attr Pointer to thread attributes structure.
+ * @param detachstate Location where the value of `detachstate` is stored upon
+ * successful completion.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate);
 
-/** @nqPosix
-* Sets the contention scope attribute in thread attributes.
-* Native Client (like Linux) only supports PTHREAD_SCOPE_SYSTEM.
-*
-* @linkPthread
-*
-* @param attr Pointer to thread attributes structure.
-* @param scope Value to be set, determines the contention scope of the thread.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_attr_setscope(pthread_attr_t *attr, int scope);
+/**
+ * @nqPosix
+ * Sets the contention scope attribute in thread attributes.
+ * Native Client (like Linux) only supports PTHREAD_SCOPE_SYSTEM.
+ *
+ * @linkPthread
+ *
+ * @param attr Pointer to thread attributes structure.
+ * @param scope Value to be set, determines the contention scope of the thread.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_attr_setscope(pthread_attr_t *attr, int scope);
 
-/** @nqPosix
-* Gets the contention scope attribute from thread attributes.
-* Native Client (like Linux) only supports PTHREAD_SCOPE_SYSTEM.
-*
-* @linkPthread
-*
-* @param attr Pointer to thread attributes structure.
-* @param scope Location where the value of `scope` is stored upon
-* successful completion.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_attr_getscope(const pthread_attr_t *attr, int *scope);
+/**
+ * @nqPosix
+ * Gets the contention scope attribute from thread attributes.
+ * Native Client (like Linux) only supports PTHREAD_SCOPE_SYSTEM.
+ *
+ * @linkPthread
+ *
+ * @param attr Pointer to thread attributes structure.
+ * @param scope Location where the value of `scope` is stored upon
+ * successful completion.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_attr_getscope(const pthread_attr_t *attr, int *scope);
 
-/** @nqPosix
-* Sets the stacksize attribute in thread attributes.  Has no effect if the
-* size is less than PTHREAD_STACK_MIN.
-*
-* @linkPthread
-*
-* @param attr Pointer to thread attributes structure.
-* @param stacksize Value to be set, determines the minimum stack size.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_attr_setstacksize(pthread_attr_t *attr,
-                                     size_t stacksize);
+/**
+ * @nqPosix
+ * Sets the stacksize attribute in thread attributes.  Has no effect if the
+ * size is less than PTHREAD_STACK_MIN.
+ *
+ * @linkPthread
+ *
+ * @param attr Pointer to thread attributes structure.
+ * @param stacksize Value to be set, determines the minimum stack size.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize);
 
-/** @nqPosix
-* Gets the stacksize attribute in thread attributes.
-*
-* @linkPthread
-*
-* @param attr Pointer to thread attributes structure.
-* @param stacksize Value to be set, determines the minimum stack size.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_attr_getstacksize(const pthread_attr_t *attr,
-                                     size_t *stacksize);
+/**
+ * @nqPosix
+ * Gets the stacksize attribute in thread attributes.
+ *
+ * @linkPthread
+ *
+ * @param attr Pointer to thread attributes structure.
+ * @param stacksize Value to be set, determines the minimum stack size.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_attr_getstacksize(const pthread_attr_t *attr, size_t *stacksize);
 
-/** @nqPosix
+/**
+ * @nqPosix
  * Gets the maximum address of the stack (assuming stacks grow
  * downwards) of the given thread.
  *
@@ -667,7 +692,7 @@ extern int pthread_attr_getstacksize(const pthread_attr_t *attr,
  * a way to determine the initial thread's stack size.  See:
  * https://code.google.com/p/nativeclient/issues/detail?id=3431
  */
-extern int pthread_get_stack_end_np(pthread_t tid, void **stack_end);
+int pthread_get_stack_end_np(pthread_t tid, void **stack_end);
 
 /* Functions for handling thread-specific data.  */
 
@@ -677,59 +702,61 @@ typedef int pthread_key_t;
 /** Number of available keys for thread-specific data. */
 #define PTHREAD_KEYS_MAX 512
 
-/** @nqPosix
-* Creates a key value identifying a location in the thread-specific
-* data area.
-*
-* @linkPthread
-*
-* @param key Pointer to the location where the value of the key is stored upon
-* successful completion.
-* @param destr_function Pointer to a cleanup function that is called if the
-* thread terminates while the key is still allocated.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_key_create(pthread_key_t *key,
-                              void (*destr_function)(void *p));
+/**
+ * @nqPosix
+ * Creates a key value identifying a location in the thread-specific
+ * data area.
+ *
+ * @linkPthread
+ *
+ * @param key Pointer to the location where the value of the key is stored upon
+ * successful completion.
+ * @param destr_function Pointer to a cleanup function that is called if the
+ * thread terminates while the key is still allocated.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_key_create(pthread_key_t *key, void (*destr_function)(void *p));
 
 
-/** @nqPosix
-* Destroys a thread-specific data key.
-*
-* @linkPthread
-*
-* @param key Key value, previously obtained using pthread_key_create().
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_key_delete(pthread_key_t key);
+/**
+ * @nqPosix
+ * Destroys a thread-specific data key.
+ *
+ * @linkPthread
+ *
+ * @param key Key value, previously obtained using pthread_key_create().
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_key_delete(pthread_key_t key);
 
-/** @nqPosix
-* Stores a value in the thread-specific data slot identified by a key value.
-*
-* @linkPthread
-*
-* @param key Key value, previously obtained using pthread_key_create().
-* @param pointer The value to be stored.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_setspecific(pthread_key_t key,
-                               const void *pointer);
+/**
+ * @nqPosix
+ * Stores a value in the thread-specific data slot identified by a key value.
+ *
+ * @linkPthread
+ *
+ * @param key Key value, previously obtained using pthread_key_create().
+ * @param pointer The value to be stored.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_setspecific(pthread_key_t key, const void *pointer);
 
-/** @nqPosix
-* Gets the value currently stored at the thread-specific data slot
-* identified by the key.
-*
-* @linkPthread
-*
-* @param key Key value, previously obtained using pthread_key_create().
-*
-* @return The value that was previously stored using pthread_setspecific is
-* returned on success, otherwise NULL.
-*/
-extern void *pthread_getspecific(pthread_key_t key);
+/**
+ * @nqPosix
+ * Gets the value currently stored at the thread-specific data slot
+ * identified by the key.
+ *
+ * @linkPthread
+ *
+ * @param key Key value, previously obtained using pthread_key_create().
+ *
+ * @return The value that was previously stored using pthread_setspecific is
+ * returned on success, otherwise NULL.
+ */
+void *pthread_getspecific(pthread_key_t key);
 
 /**
  * A structure describing a control block
@@ -748,31 +775,32 @@ typedef struct {
 /** Static initializer for pthread_once_t. */
 #define PTHREAD_ONCE_INIT {0, PTHREAD_MUTEX_INITIALIZER}
 
-/** @nqPosix
-* Ensures that a piece of initialization code is executed at most once.
-*
-* @linkPthread
-*
-* @param __once_control Points to a static or extern variable statically
-* initialized to PTHREAD_ONCE_INIT.
-* @param __init_routine A pointer to the initialization function.
-*
-* @return 0.
-*/
-extern int pthread_once(pthread_once_t *__once_control,
-                        void (*__init_routine)(void));
+/**
+ * @nqPosix
+ * Ensures that a piece of initialization code is executed at most once.
+ *
+ * @linkPthread
+ *
+ * @param __once_control Points to a static or extern variable statically
+ * initialized to PTHREAD_ONCE_INIT.
+ * @param __init_routine A pointer to the initialization function.
+ *
+ * @return 0.
+ */
+int pthread_once(pthread_once_t *__once_control, void (*__init_routine)(void));
 
-/** @nqPosix
-* Sets the scheduling priority of a thread.
-*
-* @linkPthread
-*
-* @param thread_id Identifies the thread to operate on.
-* @param prio Scheduling priority to apply to that thread.
-*
-* @return 0 on success, non-zero error code otherwise.
-*/
-extern int pthread_setschedprio(pthread_t thread_id, int prio);
+/**
+ * @nqPosix
+ * Sets the scheduling priority of a thread.
+ *
+ * @linkPthread
+ *
+ * @param thread_id Identifies the thread to operate on.
+ * @param prio Scheduling priority to apply to that thread.
+ *
+ * @return 0 on success, non-zero error code otherwise.
+ */
+int pthread_setschedprio(pthread_t thread_id, int prio);
 
 /*
  * NOTE: this is only declared here to shut up
@@ -780,7 +808,7 @@ extern int pthread_setschedprio(pthread_t thread_id, int prio);
  * We do not define this function anywhere.
  */
 
-extern int pthread_cancel(pthread_t th);
+int pthread_cancel(pthread_t th);
 
 /*
  * NOTE: There are only stub implementations of these functions.
@@ -790,8 +818,8 @@ void pthread_cleanup_push(void (*func)(void *cleanup_arg), void *arg);
 void pthread_cleanup_pop(int execute);
 
 /**
-* @} End of PTHREAD group
-*/
+ * @} End of PTHREAD group
+ */
 
 #ifdef __cplusplus
 }
