@@ -122,7 +122,6 @@ class CommandVMTest(object):
     result = cros_build_lib.RunCommand(write_cmd, capture_output=True,
                                        error_code_ok=True)
     if result.returncode:
-      logging.error('Error code: %d', result.returncode)
       logging.error('Failed to write the file to the VM device.')
       raise CommandError(result.error)
 
