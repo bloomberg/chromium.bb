@@ -355,6 +355,29 @@ struct GCInfoTrait<HeapHashTableBacking<Table>> {
     }
 };
 
+template<typename T, typename U, typename V, typename W, typename X> class HeapHashMap;
+template<typename T, typename U, typename V> class HeapHashSet;
+template<typename T, typename U, typename V> class HeapLinkedHashSet;
+template<typename T, size_t inlineCapacity, typename U> class HeapListHashSet;
+template<typename T, size_t inlineCapacity> class HeapVector;
+template<typename T, size_t inlineCapacity> class HeapDeque;
+template<typename T, typename U, typename V> class HeapHashCountedSet;
+
+template<typename T, typename U, typename V, typename W, typename X>
+struct GCInfoTrait<HeapHashMap<T, U, V, W, X>> : public GCInfoTrait<HashMap<T, U, V, W, X, HeapAllocator>> { };
+template<typename T, typename U, typename V>
+struct GCInfoTrait<HeapHashSet<T, U, V>> : public GCInfoTrait<HashSet<T, U, V, HeapAllocator>> { };
+template<typename T, typename U, typename V>
+struct GCInfoTrait<HeapLinkedHashSet<T, U, V>> : public GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator>> { };
+template<typename T, size_t inlineCapacity, typename U>
+struct GCInfoTrait<HeapListHashSet<T, inlineCapacity, U>> : public GCInfoTrait<ListHashSet<T, inlineCapacity, U, HeapListHashSetAllocator<T, inlineCapacity>>> { };
+template<typename T, size_t inlineCapacity>
+struct GCInfoTrait<HeapVector<T, inlineCapacity>> : public GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator>> { };
+template<typename T, size_t inlineCapacity>
+struct GCInfoTrait<HeapDeque<T, inlineCapacity>> : public GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator>> { };
+template<typename T, typename U, typename V>
+struct GCInfoTrait<HeapHashCountedSet<T, U, V>> : public GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator>> { };
+
 } // namespace blink
 
 #endif
