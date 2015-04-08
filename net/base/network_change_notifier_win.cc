@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "net/base/winsock_init.h"
@@ -208,11 +207,6 @@ NetworkChangeNotifierWin::RecomputeCurrentConnectionType() const {
 
 NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifierWin::GetCurrentConnectionType() const {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 NetworkChangeNotifierWin::GetCurrentConnectionType"));
-
   base::AutoLock auto_lock(last_computed_connection_type_lock_);
   return last_computed_connection_type_;
 }

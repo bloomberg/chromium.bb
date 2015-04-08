@@ -719,11 +719,6 @@ void PepperTCPSocketMessageFilter::DoListen(
 void PepperTCPSocketMessageFilter::OnResolveCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436634 PepperTCPSocketMessageFilter::OnResolveCompleted"));
-
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!state_.IsPending(TCPSocketState::CONNECT)) {

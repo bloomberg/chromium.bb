@@ -888,7 +888,7 @@ bool SSLClientSocketOpenSSL::DoTransportIO() {
   return network_moved;
 }
 
-// TODO(vadimt): Remove including "base/threading/thread_local.h" and
+// TODO(cbentzel): Remove including "base/threading/thread_local.h" and
 // g_first_run_completed once crbug.com/424386 is fixed.
 base::LazyInstance<base::ThreadLocalBoolean>::Leaky g_first_run_completed =
     LAZY_INSTANCE_INITIALIZER;
@@ -899,42 +899,25 @@ int SSLClientSocketOpenSSL::DoHandshake() {
 
   int rv;
 
-  // TODO(vadimt): Leave only 1 call to SSL_do_handshake once crbug.com/424386
+  // TODO(cbentzel): Leave only 1 call to SSL_do_handshake once crbug.com/424386
   // is fixed.
   if (ssl_config_.send_client_cert && ssl_config_.client_cert.get()) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("424386 DoHandshake_WithCert"));
-
     rv = SSL_do_handshake(ssl_);
   } else {
     if (g_first_run_completed.Get().Get()) {
-      // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is
+      // TODO(cbentzel): Remove ScopedTracker below once crbug.com/424386 is
       // fixed.
-      tracked_objects::ScopedTracker tracking_profile1(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "424386 DoHandshake_WithoutCert Not First"));
+      tracked_objects::ScopedTracker tracking_profile(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION("424386 SSL_do_handshake()"));
 
       rv = SSL_do_handshake(ssl_);
     } else {
       g_first_run_completed.Get().Set(true);
-
-      // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile1(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "424386 DoHandshake_WithoutCert First"));
-
       rv = SSL_do_handshake(ssl_);
     }
   }
 
   if (rv == 1) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "424386 SSLClientSocketOpenSSL::DoHandshake3"));
-
     if (trying_cached_session_ && logging::DEBUG_MODE) {
       DVLOG(2) << "Result of session reuse for " << host_and_port_.ToString()
                << " is: " << (SSL_session_reused(ssl_) ? "Success" : "Fail");
@@ -982,11 +965,6 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     UpdateServerCert();
     GotoState(STATE_VERIFY_CERT);
   } else {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "424386 SSLClientSocketOpenSSL::DoHandshake4"));
-
     if (client_auth_cert_needed_)
       return ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
 
@@ -1190,19 +1168,8 @@ void SSLClientSocketOpenSSL::DoConnectCallback(int rv) {
 }
 
 void SSLClientSocketOpenSSL::UpdateServerCert() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketOpenSSL::UpdateServerCert"));
-
   server_cert_chain_->Reset(SSL_get_peer_cert_chain(ssl_));
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketOpenSSL::UpdateServerCert1"));
   server_cert_ = server_cert_chain_->AsOSChain();
-
   if (server_cert_.get()) {
     net_log_.AddEvent(
         NetLog::TYPE_SSL_CERTIFICATES_RECEIVED,
@@ -1213,12 +1180,6 @@ void SSLClientSocketOpenSSL::UpdateServerCert() {
     // update IsOCSPStaplingSupported for Mac. https://crbug.com/430714
     if (IsOCSPStaplingSupported()) {
 #if defined(OS_WIN)
-      // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile2(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "424386 SSLClientSocketOpenSSL::UpdateServerCert2"));
-
       const uint8_t* ocsp_response_raw;
       size_t ocsp_response_len;
       SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
@@ -1663,11 +1624,6 @@ int SSLClientSocketOpenSSL::TransportReadComplete(int result) {
 }
 
 int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketOpenSSL::ClientCertRequestCallback"));
-
   DVLOG(3) << "OpenSSL ClientCertRequestCallback called";
   DCHECK(ssl == ssl_);
 
@@ -1765,11 +1721,6 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl) {
 }
 
 int SSLClientSocketOpenSSL::CertVerifyCallback(X509_STORE_CTX* store_ctx) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketOpenSSL::CertVerifyCallback"));
-
   if (!completed_connect_) {
     // If the first handshake hasn't completed then we accept any certificates
     // because we verify after the handshake.
@@ -1804,11 +1755,6 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
                                                     unsigned char* outlen,
                                                     const unsigned char* in,
                                                     unsigned int inlen) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketOpenSSL::SelectNextProtoCallback"));
-
   if (ssl_config_.next_protos.empty()) {
     *out = reinterpret_cast<uint8*>(
         const_cast<char*>(kDefaultSupportedNPNProtocol));
@@ -1889,11 +1835,6 @@ long SSLClientSocketOpenSSL::BIOCallback(
     int cmd,
     const char *argp, int argi, long argl,
     long retvalue) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketOpenSSL::BIOCallback"));
-
   SSLClientSocketOpenSSL* socket = reinterpret_cast<SSLClientSocketOpenSSL*>(
       BIO_get_callback_arg(bio));
   CHECK(socket);

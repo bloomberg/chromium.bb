@@ -138,11 +138,8 @@ void ReadMetadata(disk_cache::Entry* entry, const MetadataCallback& callback) {
   net::CompletionCallback read_header_callback =
       base::Bind(ReadMetadataDidReadMetadata, entry, callback, buffer);
 
-  int read_rv = entry->ReadData(
-      INDEX_HEADERS, 0, buffer.get(), buffer->size(),
-      tracked_objects::ScopedTracker::TrackCallback(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION("422516 ReadMetadata"),
-          read_header_callback));
+  int read_rv = entry->ReadData(INDEX_HEADERS, 0, buffer.get(), buffer->size(),
+                                read_header_callback);
 
   if (read_rv != net::ERR_IO_PENDING)
     read_header_callback.Run(read_rv);
@@ -717,11 +714,6 @@ void CacheStorageCache::MatchDidReadMetadata(
 void CacheStorageCache::MatchDidReadResponseBodyData(
     scoped_ptr<MatchContext> match_context,
     int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 CacheStorageCache::MatchDidReadResponseBodyData"));
-
   if (rv < 0) {
     match_context->original_callback.Run(CacheStorageCache::ERROR_TYPE_STORAGE,
                                          scoped_ptr<ServiceWorkerResponse>(),

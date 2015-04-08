@@ -71,7 +71,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -1656,11 +1655,6 @@ void SSLClientSocketNSS::Core::HandshakeCallback(
 }
 
 void SSLClientSocketNSS::Core::HandshakeSucceeded() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketNSS::Core::HandshakeSucceeded"));
-
   DCHECK(OnNSSTaskRunner());
 
   PRBool last_handshake_resumed;
@@ -1687,11 +1681,6 @@ void SSLClientSocketNSS::Core::HandshakeSucceeded() {
 }
 
 int SSLClientSocketNSS::Core::HandleNSSError(PRErrorCode nss_error) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketNSS::Core::HandleNSSError"));
-
   DCHECK(OnNSSTaskRunner());
 
   int net_error = MapNSSClientError(nss_error);
@@ -1724,11 +1713,6 @@ int SSLClientSocketNSS::Core::HandleNSSError(PRErrorCode nss_error) {
 }
 
 int SSLClientSocketNSS::Core::DoHandshakeLoop(int last_io_result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketNSS::Core::DoHandshakeLoop"));
-
   DCHECK(OnNSSTaskRunner());
 
   int rv = last_io_result;
@@ -1765,11 +1749,6 @@ int SSLClientSocketNSS::Core::DoHandshakeLoop(int last_io_result) {
 }
 
 int SSLClientSocketNSS::Core::DoReadLoop(int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketNSS::Core::DoReadLoop"));
-
   DCHECK(OnNSSTaskRunner());
   DCHECK(false_started_ || handshake_callback_called_);
   DCHECK_EQ(STATE_NONE, next_handshake_state_);
@@ -1829,20 +1808,10 @@ int SSLClientSocketNSS::Core::DoWriteLoop(int result) {
 }
 
 int SSLClientSocketNSS::Core::DoHandshake() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketNSS::Core::DoHandshake"));
-
   DCHECK(OnNSSTaskRunner());
 
   int net_error = OK;
   SECStatus rv = SSL_ForceHandshake(nss_fd_);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketNSS::Core::DoHandshake 1"));
 
   // Note: this function may be called multiple times during the handshake, so
   // even though channel id and client auth are separate else cases, they can
@@ -1882,11 +1851,6 @@ int SSLClientSocketNSS::Core::DoHandshake() {
 }
 
 int SSLClientSocketNSS::Core::DoGetDBCertComplete(int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketNSS::Core::DoGetDBCertComplete"));
-
   SECStatus rv;
   PostOrRunCallback(
       FROM_HERE,
@@ -2071,11 +2035,6 @@ int SSLClientSocketNSS::Core::DoPayloadWrite() {
 // transport socket. Return true if some I/O performed, false
 // otherwise (error or ERR_IO_PENDING).
 bool SSLClientSocketNSS::Core::DoTransportIO() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketNSS::Core::DoTransportIO"));
-
   DCHECK(OnNSSTaskRunner());
 
   bool network_moved = false;
@@ -2252,11 +2211,6 @@ void SSLClientSocketNSS::Core::OnSendComplete(int result) {
 // callback. For Read() and Write(), that's what we want. But for Connect(),
 // the caller expects OK (i.e. 0) for success.
 void SSLClientSocketNSS::Core::DoConnectCallback(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketNSS::Core::DoConnectCallback"));
-
   DCHECK(OnNSSTaskRunner());
   DCHECK_NE(rv, ERR_IO_PENDING);
   DCHECK(!user_connect_callback_.is_null());
@@ -2268,11 +2222,6 @@ void SSLClientSocketNSS::Core::DoConnectCallback(int rv) {
 }
 
 void SSLClientSocketNSS::Core::DoReadCallback(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketNSS::Core::DoReadCallback"));
-
   DCHECK(OnNSSTaskRunner());
   DCHECK_NE(ERR_IO_PENDING, rv);
   DCHECK(!user_read_callback_.is_null());

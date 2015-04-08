@@ -201,10 +201,6 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
 }
 
 WifiPHYLayerProtocol GetWifiPHYLayerProtocol() {
-  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 net_util_win::GetWifiPHYLayerProtocol1"));
   const internal::WlanApi& wlanapi = internal::WlanApi::GetInstance();
   if (!wlanapi.initialized)
     return WIFI_PHY_LAYER_PROTOCOL_NONE;
@@ -212,30 +208,24 @@ WifiPHYLayerProtocol GetWifiPHYLayerProtocol() {
   internal::WlanHandle client;
   DWORD cur_version = 0;
   const DWORD kMaxClientVersion = 2;
-  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 net_util_win::GetWifiPHYLayerProtocol2"));
-  DWORD result = wlanapi.OpenHandle(kMaxClientVersion, &cur_version, &client);
-  if (result != ERROR_SUCCESS)
-    return WIFI_PHY_LAYER_PROTOCOL_NONE;
+  {
+    // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("422516 OpenHandle()"));
+    DWORD result = wlanapi.OpenHandle(kMaxClientVersion, &cur_version, &client);
+    if (result != ERROR_SUCCESS)
+      return WIFI_PHY_LAYER_PROTOCOL_NONE;
+  }
 
-  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 net_util_win::GetWifiPHYLayerProtocol3"));
   WLAN_INTERFACE_INFO_LIST* interface_list_ptr = NULL;
-  result = wlanapi.enum_interfaces_func(client.Get(), NULL,
-                                        &interface_list_ptr);
+  DWORD result =
+      wlanapi.enum_interfaces_func(client.Get(), NULL, &interface_list_ptr);
   if (result != ERROR_SUCCESS)
     return WIFI_PHY_LAYER_PROTOCOL_NONE;
   scoped_ptr<WLAN_INTERFACE_INFO_LIST, internal::WlanApiDeleter> interface_list(
       interface_list_ptr);
 
-  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 net_util_win::GetWifiPHYLayerProtocol4"));
   // Assume at most one connected wifi interface.
   WLAN_INTERFACE_INFO* info = NULL;
   for (unsigned i = 0; i < interface_list->dwNumberOfItems; ++i) {
@@ -252,10 +242,6 @@ WifiPHYLayerProtocol GetWifiPHYLayerProtocol() {
   WLAN_CONNECTION_ATTRIBUTES* conn_info_ptr;
   DWORD conn_info_size = 0;
   WLAN_OPCODE_VALUE_TYPE op_code;
-  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile5(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 net_util_win::GetWifiPHYLayerProtocol5"));
   result = wlanapi.query_interface_func(
       client.Get(), &info->InterfaceGuid, wlan_intf_opcode_current_connection,
       NULL, &conn_info_size, reinterpret_cast<VOID**>(&conn_info_ptr),

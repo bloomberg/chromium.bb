@@ -11,7 +11,6 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -89,10 +88,6 @@ class SocketTunnel : public base::NonThreadSafe {
   }
 
   void OnResolved(int result) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 SocketTunnel::OnResolved"));
-
     if (result < 0) {
       SelfDestruct();
       return;

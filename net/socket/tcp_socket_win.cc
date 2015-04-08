@@ -414,10 +414,6 @@ int TCPSocketWin::Accept(scoped_ptr<TCPSocketWin>* socket,
 
 int TCPSocketWin::Connect(const IPEndPoint& address,
                           const CompletionCallback& callback) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 TCPSocketWin::Connect"));
-
   DCHECK(CalledOnValidThread());
   DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(!waiting_connect_);
@@ -781,10 +777,6 @@ void TCPSocketWin::OnObjectSignaled(HANDLE object) {
 }
 
 int TCPSocketWin::DoConnect() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 TCPSocketWin::DoConnect"));
-
   DCHECK_EQ(connect_os_error_, 0);
   DCHECK(!core_.get());
 
@@ -792,10 +784,6 @@ int TCPSocketWin::DoConnect() {
                       CreateNetLogIPEndPointCallback(peer_address_.get()));
 
   core_ = new Core(this);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 TCPSocketWin::DoConnect1"));
 
   // WSAEventSelect sets the socket to non-blocking mode as a side effect.
   // Our connect() and recv() calls require that the socket be non-blocking.
@@ -805,15 +793,15 @@ int TCPSocketWin::DoConnect() {
   if (!peer_address_->ToSockAddr(storage.addr, &storage.addr_len))
     return ERR_ADDRESS_INVALID;
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 TCPSocketWin::DoConnect2"));
+  int result;
+  {
+    // TODO(ricea): Remove ScopedTracker below once crbug.com/436634 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 connect()"));
+    result = connect(socket_, storage.addr, storage.addr_len);
+  }
 
-  if (!connect(socket_, storage.addr, storage.addr_len)) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 TCPSocketWin::DoConnect3"));
-
+  if (!result) {
     // Connected without waiting!
     //
     // The MSDN page for connect says:
@@ -830,11 +818,6 @@ int TCPSocketWin::DoConnect() {
       return OK;
   } else {
     int os_error = WSAGetLastError();
-
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 TCPSocketWin::DoConnect4"));
-
     if (os_error != WSAEWOULDBLOCK) {
       LOG(ERROR) << "connect failed: " << os_error;
       connect_os_error_ = os_error;
@@ -844,9 +827,9 @@ int TCPSocketWin::DoConnect() {
     }
   }
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile5(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 TCPSocketWin::DoConnect5"));
+  // TODO(ricea): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 WatchForRead()"));
 
   core_->WatchForRead();
   return ERR_IO_PENDING;

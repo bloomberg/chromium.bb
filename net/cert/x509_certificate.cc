@@ -263,7 +263,7 @@ X509Certificate* X509Certificate::CreateFromHandle(
 // static
 X509Certificate* X509Certificate::CreateFromDERCertChain(
     const std::vector<base::StringPiece>& der_certs) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  // TODO(cbentzel): Remove ScopedTracker below once crbug.com/424386 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424386 X509Certificate::CreateFromDERCertChain"));

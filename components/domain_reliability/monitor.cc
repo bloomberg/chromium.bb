@@ -76,11 +76,6 @@ void DomainReliabilityMonitor::MoveToNetworkThread() {
 
 void DomainReliabilityMonitor::InitURLRequestContext(
     net::URLRequestContext* url_request_context) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 DomainReliabilityMonitor::InitURLRequestContext"));
-
   DCHECK(OnNetworkThread());
   DCHECK(moved_to_network_thread_);
 
@@ -106,7 +101,7 @@ void DomainReliabilityMonitor::InitURLRequestContext(
 }
 
 void DomainReliabilityMonitor::AddBakedInConfigs() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  // TODO(ttuttle): Remove ScopedTracker below once crbug.com/436671 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "436671 DomainReliabilityMonitor::AddBakedInConfigs"));
@@ -195,11 +190,6 @@ scoped_ptr<base::Value> DomainReliabilityMonitor::GetWebUIData() const {
 DomainReliabilityContext* DomainReliabilityMonitor::AddContextForTesting(
     scoped_ptr<const DomainReliabilityConfig> config) {
   DCHECK(OnNetworkThread());
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 DomainReliabilityConfig::AddContextForConfig"));
 
   return context_manager_.AddContextForConfig(config.Pass());
 }

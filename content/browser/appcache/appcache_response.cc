@@ -127,7 +127,7 @@ void AppCacheResponseIO::WriteRaw(int index, int offset,
 }
 
 void AppCacheResponseIO::OnRawIOComplete(int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422516 AppCacheResponseIO::OnRawIOComplete"));

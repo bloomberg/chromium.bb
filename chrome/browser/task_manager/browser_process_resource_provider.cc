@@ -33,25 +33,18 @@ gfx::ImageSkia* BrowserProcessResource::default_icon_ = NULL;
 
 BrowserProcessResource::BrowserProcessResource()
     : title_() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "437890 BrowserProcessResource::BrowserProcessResource1"));
-
 #if defined(OS_WIN)
   if (!default_icon_) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "437890 BrowserProcessResource::BrowserProcessResource2"));
+    // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 GetAppIcon()"));
 
     HICON icon = GetAppIcon();
     if (icon) {
-      // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is
+      // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is
       // fixed.
-      tracked_objects::ScopedTracker tracking_profile3(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "437890 BrowserProcessResource::BrowserProcessResource3"));
+      tracked_objects::ScopedTracker tracking_profile2(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 CreateSkBitmapFromHICON()"));
 
       scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(icon));
       default_icon_ = new gfx::ImageSkia(gfx::ImageSkiaRep(*bitmap, 1.0f));
@@ -59,6 +52,10 @@ BrowserProcessResource::BrowserProcessResource()
   }
 #elif defined(OS_POSIX)
   if (!default_icon_) {
+    // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 POSIX icon construction"));
+
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_icon_ = rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_16);
   }
@@ -67,12 +64,9 @@ BrowserProcessResource::BrowserProcessResource()
   NOTIMPLEMENTED();
 #endif  // defined(OS_WIN)
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is
-  // fixed.
+  // TODO(afakhry): Remove ScopedTracker below once crbug.com/437890 is fixed.
   tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "437890 BrowserProcessResource::BrowserProcessResource4"));
-
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("437890 MakeThreadSafe()"));
   default_icon_->MakeThreadSafe();
 }
 

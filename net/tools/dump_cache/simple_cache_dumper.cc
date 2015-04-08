@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/threading/thread.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
@@ -261,11 +260,6 @@ int SimpleCacheDumper::DoWriteBodyComplete(int rv) {
 }
 
 void SimpleCacheDumper::OnIOComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 SimpleCacheDumper::OnIOComplete"));
-
   rv = DoLoop(rv);
 
   if (rv != ERR_IO_PENDING) {

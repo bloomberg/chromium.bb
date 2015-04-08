@@ -9,7 +9,6 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -143,11 +142,6 @@ void DiskCacheBasedQuicServerInfo::Persist() {
 }
 
 void DiskCacheBasedQuicServerInfo::PersistInternal() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::PersistInternal"));
-
   DCHECK(CalledOnValidThread());
   DCHECK_NE(GET_BACKEND, state_);
   DCHECK(new_data_.empty());
@@ -196,11 +190,6 @@ std::string DiskCacheBasedQuicServerInfo::key() const {
 
 void DiskCacheBasedQuicServerInfo::OnIOComplete(CacheOperationDataShim* unused,
                                                 int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::OnIOComplete"));
-
   DCHECK_NE(NONE, state_);
   rv = DoLoop(rv);
   if (rv == ERR_IO_PENDING)
@@ -271,11 +260,6 @@ int DiskCacheBasedQuicServerInfo::DoLoop(int rv) {
 }
 
 int DiskCacheBasedQuicServerInfo::DoGetBackendComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::DoGetBackendComplete"));
-
   if (rv == OK) {
     backend_ = data_shim_->backend;
     state_ = OPEN;
@@ -287,11 +271,6 @@ int DiskCacheBasedQuicServerInfo::DoGetBackendComplete(int rv) {
 }
 
 int DiskCacheBasedQuicServerInfo::DoOpenComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::DoOpenComplete"));
-
   if (rv == OK) {
     entry_ = data_shim_->entry;
     state_ = READ;
@@ -305,11 +284,6 @@ int DiskCacheBasedQuicServerInfo::DoOpenComplete(int rv) {
 }
 
 int DiskCacheBasedQuicServerInfo::DoReadComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::DoReadComplete"));
-
   if (rv > 0)
     data_.assign(read_buffer_->data(), rv);
   else if (rv < 0)
@@ -320,11 +294,6 @@ int DiskCacheBasedQuicServerInfo::DoReadComplete(int rv) {
 }
 
 int DiskCacheBasedQuicServerInfo::DoWriteComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::DoWriteComplete"));
-
   if (rv < 0)
     RecordQuicServerInfoFailure(WRITE_FAILURE);
   state_ = SET_DONE;
@@ -332,11 +301,6 @@ int DiskCacheBasedQuicServerInfo::DoWriteComplete(int rv) {
 }
 
 int DiskCacheBasedQuicServerInfo::DoCreateOrOpenComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::DoCreateOrOpenComplete"));
-
   if (rv != OK) {
     RecordQuicServerInfoFailure(CREATE_OR_OPEN_FAILURE);
     state_ = SET_DONE;
@@ -352,31 +316,16 @@ int DiskCacheBasedQuicServerInfo::DoCreateOrOpenComplete(int rv) {
 }
 
 int DiskCacheBasedQuicServerInfo::DoGetBackend() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::DoGetBackend"));
-
   state_ = GET_BACKEND_COMPLETE;
   return http_cache_->GetBackend(&data_shim_->backend, io_callback_);
 }
 
 int DiskCacheBasedQuicServerInfo::DoOpen() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::DoOpen"));
-
   state_ = OPEN_COMPLETE;
   return backend_->OpenEntry(key(), &data_shim_->entry, io_callback_);
 }
 
 int DiskCacheBasedQuicServerInfo::DoRead() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::DoRead"));
-
   const int32 size = entry_->GetDataSize(0 /* index */);
   if (!size) {
     state_ = WAIT_FOR_DATA_READY_DONE;
@@ -390,11 +339,6 @@ int DiskCacheBasedQuicServerInfo::DoRead() {
 }
 
 int DiskCacheBasedQuicServerInfo::DoWrite() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::DoWrite"));
-
   write_buffer_ = new IOBuffer(new_data_.size());
   memcpy(write_buffer_->data(), new_data_.data(), new_data_.size());
   state_ = WRITE_COMPLETE;
@@ -408,11 +352,6 @@ int DiskCacheBasedQuicServerInfo::DoWrite() {
 }
 
 int DiskCacheBasedQuicServerInfo::DoCreateOrOpen() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::DoCreateOrOpen"));
-
   state_ = CREATE_OR_OPEN_COMPLETE;
   if (entry_)
     return OK;
@@ -425,11 +364,6 @@ int DiskCacheBasedQuicServerInfo::DoCreateOrOpen() {
 }
 
 int DiskCacheBasedQuicServerInfo::DoWaitForDataReadyDone() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 DiskCacheBasedQuicServerInfo::DoWaitForDataReadyDone"));
-
   DCHECK(!ready_);
   state_ = NONE;
   ready_ = true;

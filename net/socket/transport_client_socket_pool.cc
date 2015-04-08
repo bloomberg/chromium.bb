@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -238,7 +239,7 @@ void TransportConnectJob::MakeAddressListStartWithIPv4(AddressList* list) {
 }
 
 int TransportConnectJob::DoResolveHost() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  // TODO(ricea): Remove ScopedTracker below once crbug.com/436634 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "436634 TransportConnectJob::DoResolveHost"));
@@ -247,20 +248,10 @@ int TransportConnectJob::DoResolveHost() {
 }
 
 int TransportConnectJob::DoResolveHostComplete(int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436634 TransportConnectJob::DoResolveHostComplete"));
-
   return helper_.DoResolveHostComplete(result, net_log());
 }
 
 int TransportConnectJob::DoTransportConnect() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436634 TransportConnectJob::DoTransportConnect"));
-
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks last_connect_time;
   {
@@ -279,11 +270,6 @@ int TransportConnectJob::DoTransportConnect() {
     else
       interval_between_connects_ = CONNECT_INTERVAL_GT_20MS;
   }
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436634 TransportConnectJob::DoTransportConnect1"));
 
   helper_.set_next_state(
       TransportConnectJobHelper::STATE_TRANSPORT_CONNECT_COMPLETE);
@@ -307,18 +293,7 @@ int TransportConnectJob::DoTransportConnect() {
     transport_socket_->EnableTCPFastOpenIfSupported();
   }
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436634 TransportConnectJob::DoTransportConnect2"));
-
   int rv = transport_socket_->Connect(helper_.on_io_complete());
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436634 TransportConnectJob::DoTransportConnect3"));
-
   if (rv == ERR_IO_PENDING && try_ipv6_connect_with_ipv4_fallback) {
     fallback_timer_.Start(
         FROM_HERE,
@@ -331,11 +306,6 @@ int TransportConnectJob::DoTransportConnect() {
 }
 
 int TransportConnectJob::DoTransportConnectComplete(int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436634 TransportConnectJob::DoTransportConnectComplete"));
-
   if (result == OK) {
     bool is_ipv4 =
         helper_.addresses().front().GetFamily() == ADDRESS_FAMILY_IPV4;

@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/host_port_pair.h"
@@ -317,18 +316,7 @@ void TransportConnectJobHelper::SetOnIOComplete(T* job) {
 
 template <class T>
 void TransportConnectJobHelper::OnIOComplete(T* job, int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436634 TransportConnectJobHelper::OnIOComplete"));
-
   result = this->DoLoop(job, result);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436634 TransportConnectJobHelper::OnIOComplete1"));
-
   if (result != ERR_IO_PENDING)
     job->NotifyDelegateOfCompletion(result);  // Deletes |job| and |this|
 }

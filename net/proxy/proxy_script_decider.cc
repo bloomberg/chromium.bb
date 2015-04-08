@@ -167,11 +167,6 @@ ProxyScriptDecider::PacSourceList ProxyScriptDecider::
 }
 
 void ProxyScriptDecider::OnIOCompletion(int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436634 ProxyScriptDecider::OnIOCompletion"));
-
   DCHECK_NE(STATE_NONE, next_state_);
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING) {

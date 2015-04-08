@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,10 +49,6 @@ class FactoryForMain : public ChromeURLRequestContextFactory {
   }
 
   net::URLRequestContext* Create() override {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 FactoryForMain::Create"));
-
     profile_io_data_->Init(&protocol_handlers_, request_interceptors_.Pass());
     return profile_io_data_->GetMainRequestContext();
   }
@@ -71,11 +66,6 @@ class FactoryForExtensions : public ChromeURLRequestContextFactory {
       : profile_io_data_(profile_io_data) {}
 
   net::URLRequestContext* Create() override {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436671 FactoryForExtensions::Create"));
-
     return profile_io_data_->GetExtensionsRequestContext();
   }
 
@@ -103,11 +93,6 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
   }
 
   net::URLRequestContext* Create() override {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436671 FactoryForIsolatedApp::Create"));
-
     // We will copy most of the state from the main request context.
     //
     // Note that this factory is one-shot.  After Create() is called once, the
@@ -145,11 +130,6 @@ class FactoryForIsolatedMedia : public ChromeURLRequestContextFactory {
       app_context_getter_(app_context) {}
 
   net::URLRequestContext* Create() override {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436671 FactoryForIsolatedMedia::Create"));
-
     // We will copy most of the state from the corresopnding app's
     // request context. We expect to have the same lifetime as
     // the associated |app_context_getter_| so we can just reuse
@@ -174,10 +154,6 @@ class FactoryForMedia : public ChromeURLRequestContextFactory {
   }
 
   net::URLRequestContext* Create() override {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 FactoryForMedia::Create"));
-
     return profile_io_data_->GetMediaRequestContext();
   }
 
@@ -203,11 +179,6 @@ ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {}
 // Lazily create a URLRequestContext using our factory.
 net::URLRequestContext*
 ChromeURLRequestContextGetter::GetURLRequestContext() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 ChromeURLRequestContextGetter::GetURLRequestContext"));
-
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (factory_.get()) {

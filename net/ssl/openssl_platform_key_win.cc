@@ -29,7 +29,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/win/windows_version.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_capi_types.h"
@@ -229,10 +228,6 @@ int RsaMethodSign(int hash_nid,
                   uint8_t* out,
                   unsigned* out_len,
                   const RSA* rsa) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("424386 RsaMethodSign"));
-
   // TODO(davidben): Switch BoringSSL's sign hook to using size_t rather than
   // unsigned.
   const KeyExData* ex_data = RsaGetExData(rsa);
@@ -460,10 +455,6 @@ int EcdsaMethodSign(const uint8_t* digest,
                     uint8_t* out_sig,
                     unsigned int* out_sig_len,
                     EC_KEY* ec_key) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("424386 EcdsaMethodSign"));
-
   const KeyExData* ex_data = EcKeyGetExData(ec_key);
   // Only CNG supports ECDSA.
   if (!ex_data || ex_data->key->dwKeySpec != CERT_NCRYPT_KEY_SPEC) {

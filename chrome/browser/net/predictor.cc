@@ -125,11 +125,6 @@ class Predictor::LookupRequest {
 
  private:
   void OnLookupFinished(int result) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436634 Predictor::LookupRequest::OnLookupFinished"));
-
     predictor_->OnLookupFinished(this, url_, result == net::OK);
   }
 
@@ -443,10 +438,6 @@ void Predictor::DiscardAllResults() {
 // Overloaded Resolve() to take a vector of names.
 void Predictor::ResolveList(const UrlList& urls,
                             UrlInfo::ResolutionMotivation motivation) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 Predictor::ResolveList"));
-
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   for (UrlList::const_iterator it = urls.begin(); it < urls.end(); ++it) {
@@ -689,32 +680,17 @@ void Predictor::FinalizeInitializationOnIOThread(
     base::ListValue* referral_list,
     IOThread* io_thread,
     ProfileIOData* profile_io_data) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 Predictor::FinalizeInitializationOnIOThread1"));
-
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   profile_io_data_ = profile_io_data;
   initial_observer_.reset(new InitialObserver());
   host_resolver_ = io_thread->globals()->host_resolver.get();
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 Predictor::FinalizeInitializationOnIOThread2"));
-
   net::URLRequestContext* context =
       url_request_context_getter_->GetURLRequestContext();
   transport_security_state_ = context->transport_security_state();
   ssl_config_service_ = context->ssl_config_service();
   proxy_service_ = context->proxy_service();
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 Predictor::FinalizeInitializationOnIOThread3"));
 
   // base::WeakPtrFactory instances need to be created and destroyed
   // on the same thread. The predictor lives on the IO thread and will die
@@ -723,18 +699,8 @@ void Predictor::FinalizeInitializationOnIOThread(
   // TODO(groby): Check if WeakPtrFactory has the same constraint.
   weak_factory_.reset(new base::WeakPtrFactory<Predictor>(this));
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 Predictor::FinalizeInitializationOnIOThread4"));
-
   // Prefetch these hostnames on startup.
   DnsPrefetchMotivatedList(startup_urls, UrlInfo::STARTUP_LIST_MOTIVATED);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile5(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 Predictor::FinalizeInitializationOnIOThread5"));
 
   DeserializeReferrersThenDelete(referral_list);
 }
@@ -776,11 +742,6 @@ void Predictor::DnsPrefetchList(const NameList& hostnames) {
 void Predictor::DnsPrefetchMotivatedList(
     const UrlList& urls,
     UrlInfo::ResolutionMotivation motivation) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 Predictor::DnsPrefetchMotivatedList"));
-
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled_)
@@ -1059,11 +1020,6 @@ bool Predictor::WouldLikelyProxyURL(const GURL& url) {
 UrlInfo* Predictor::AppendToResolutionQueue(
     const GURL& url,
     UrlInfo::ResolutionMotivation motivation) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 Predictor::AppendToResolutionQueue1"));
-
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(url.has_host());
 
@@ -1082,28 +1038,21 @@ UrlInfo* Predictor::AppendToResolutionQueue(
     return NULL;
   }
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 Predictor::AppendToResolutionQueue2"));
+  bool would_likely_proxy;
+  {
+    // TODO(ttuttle): Remove ScopedTracker below once crbug.com/436671 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 WouldLikelyProxyURL()"));
+    would_likely_proxy = WouldLikelyProxyURL(url);
+  }
 
-  if (WouldLikelyProxyURL(url)) {
+  if (would_likely_proxy) {
     info->DLogResultsStats("DNS PrefetchForProxiedRequest");
     return NULL;
   }
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 Predictor::AppendToResolutionQueue3"));
-
   info->SetQueuedState(motivation);
   work_queue_.Push(url, motivation);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "436671 Predictor::AppendToResolutionQueue4"));
 
   StartSomeQueuedResolutions();
   return info;
@@ -1132,11 +1081,6 @@ void Predictor::StartSomeQueuedResolutions() {
 
   while (!work_queue_.IsEmpty() &&
          pending_lookups_.size() < max_concurrent_dns_lookups_) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436671 Predictor::StartSomeQueuedResolutions1"));
-
     const GURL url(work_queue_.Pop());
     UrlInfo* info = &results_[url];
     DCHECK(info->HasUrl(url));
@@ -1149,17 +1093,14 @@ void Predictor::StartSomeQueuedResolutions() {
 
     LookupRequest* request = new LookupRequest(this, host_resolver_, url);
 
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436671 Predictor::StartSomeQueuedResolutions2"));
-
-    int status = request->Start();
-
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436671 Predictor::StartSomeQueuedResolutions3"));
+    int status;
+    {
+      // TODO(ttuttle): Remove ScopedTracker below once crbug.com/436671 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 LookupRequest::Start()"));
+      status = request->Start();
+    }
 
     if (status == net::ERR_IO_PENDING) {
       // Will complete asynchronously.

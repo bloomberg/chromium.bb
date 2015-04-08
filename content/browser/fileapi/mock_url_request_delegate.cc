@@ -4,7 +4,6 @@
 
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 
-#include "base/profiler/scoped_tracker.h"
 #include "base/run_loop.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,11 +22,6 @@ MockURLRequestDelegate::~MockURLRequestDelegate() {
 }
 
 void MockURLRequestDelegate::OnResponseStarted(net::URLRequest* request) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 MockURLRequestDelegate::OnResponseStarted"));
-
   if (request->status().is_success()) {
     EXPECT_TRUE(request->response_headers());
     ReadSome(request);
@@ -38,11 +32,6 @@ void MockURLRequestDelegate::OnResponseStarted(net::URLRequest* request) {
 
 void MockURLRequestDelegate::OnReadCompleted(net::URLRequest* request,
                                              int bytes_read) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 MockURLRequestDelegate::OnReadCompleted"));
-
   if (bytes_read > 0)
     ReceiveData(request, bytes_read);
   else

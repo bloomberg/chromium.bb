@@ -4,7 +4,6 @@
 
 #include "content/browser/gpu/shader_disk_cache.h"
 
-#include "base/profiler/scoped_tracker.h"
 #include "base/threading/thread_checker.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -260,11 +259,6 @@ void ShaderDiskReadHelper::LoadCache() {
 }
 
 void ShaderDiskReadHelper::OnOpComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 ShaderDiskReadHelper::OnOpComplete"));
-
   DCHECK(CalledOnValidThread());
   if (!cache_.get())
     return;
@@ -296,11 +290,6 @@ void ShaderDiskReadHelper::OnOpComplete(int rv) {
 }
 
 int ShaderDiskReadHelper::OpenNextEntry() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 ShaderDiskReadHelper::OpenNextEntry"));
-
   DCHECK(CalledOnValidThread());
   // Called through OnOpComplete, so we know |cache_| is valid.
   op_type_ = OPEN_NEXT_COMPLETE;
@@ -311,11 +300,6 @@ int ShaderDiskReadHelper::OpenNextEntry() {
 }
 
 int ShaderDiskReadHelper::OpenNextEntryComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 ShaderDiskReadHelper::OpenNextEntryComplete"));
-
   DCHECK(CalledOnValidThread());
   // Called through OnOpComplete, so we know |cache_| is valid.
   if (rv == net::ERR_FAILED) {
@@ -338,11 +322,6 @@ int ShaderDiskReadHelper::OpenNextEntryComplete(int rv) {
 }
 
 int ShaderDiskReadHelper::ReadComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 ShaderDiskReadHelper::ReadComplete"));
-
   DCHECK(CalledOnValidThread());
   // Called through OnOpComplete, so we know |cache_| is valid.
   if (rv && rv == buf_->size()) {
@@ -361,11 +340,6 @@ int ShaderDiskReadHelper::ReadComplete(int rv) {
 }
 
 int ShaderDiskReadHelper::IterationComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 ShaderDiskReadHelper::IterationComplete"));
-
   DCHECK(CalledOnValidThread());
   // Called through OnOpComplete, so we know |cache_| is valid.
   iter_.reset();

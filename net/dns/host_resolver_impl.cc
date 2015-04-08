@@ -24,7 +24,6 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -495,11 +494,6 @@ class HostResolverImpl::Request {
 
   // Prepare final AddressList and call completion callback.
   void OnComplete(int error, const AddressList& addr_list) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436634 HostResolverImpl::Request::OnComplete"));
-
     DCHECK(!was_canceled());
     if (error == OK)
       *addresses_ = EnsurePortOnAddressList(addr_list, info_.port());
@@ -710,11 +704,6 @@ class HostResolverImpl::ProcTask
                         const uint32 attempt_number,
                         int error,
                         const int os_error) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436634 HostResolverImpl::ProcTask::OnLookupComplete1"));
-
     DCHECK(origin_loop_->BelongsToCurrentThread());
     // If results are empty, we should return an error.
     bool empty_list_on_ok = (error == OK && results.empty());
@@ -775,11 +764,6 @@ class HostResolverImpl::ProcTask
     }
     net_log_.EndEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_PROC_TASK,
                       net_log_callback);
-
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436634 HostResolverImpl::ProcTask::OnLookupComplete2"));
 
     callback_.Run(error, results_);
   }
@@ -1517,11 +1501,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   void OnProcTaskComplete(base::TimeTicks start_time,
                           int net_error,
                           const AddressList& addr_list) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436634 HostResolverImpl::Job::OnProcTaskComplete"));
-
     DCHECK(is_proc_running());
 
     if (!resolver_->resolved_known_ipv6_hostname_ &&
@@ -1671,11 +1650,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   // Performs Job's last rites. Completes all Requests. Deletes this.
   void CompleteRequests(const HostCache::Entry& entry,
                         base::TimeDelta ttl) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436634 HostResolverImpl::Job::CompleteRequests1"));
-
     CHECK(resolver_.get());
 
     // This job must be removed from resolver's |jobs_| now to make room for a
@@ -1724,11 +1698,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
                         (entry.error != ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
     if (did_complete)
       resolver_->CacheResult(key_, entry, ttl);
-
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "436634 HostResolverImpl::Job::CompleteRequests2"));
 
     // Complete all of the requests that were attached to the job.
     for (RequestsList::const_iterator it = requests_.begin();
