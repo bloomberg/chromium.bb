@@ -1176,6 +1176,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // defined(OS_WIN)
 
   if (parsed_command_line().HasSwitch(switches::kMakeDefaultBrowser)) {
+    bool is_managed = g_browser_process->local_state()->IsManagedPreference(
+        prefs::kDefaultBrowserSettingEnabled);
+    if (is_managed && !g_browser_process->local_state()->GetBoolean(
+        prefs::kDefaultBrowserSettingEnabled)) {
+      return static_cast<int>(chrome::RESULT_CODE_ACTION_DISALLOWED_BY_POLICY);
+    }
+
     return ShellIntegration::SetAsDefaultBrowser() ?
         static_cast<int>(content::RESULT_CODE_NORMAL_EXIT) :
         static_cast<int>(chrome::RESULT_CODE_SHELL_INTEGRATION_FAILED);

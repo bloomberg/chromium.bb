@@ -89,6 +89,9 @@ enum ResultCode {
   // (Linux-only).
   RESULT_CODE_SXS_MIGRATION_FAILED,
 
+  // The action is not allowed by a policy.
+  RESULT_CODE_ACTION_DISALLOWED_BY_POLICY,
+
   // Last return code (keep this last).
   RESULT_CODE_CHROME_LAST_CODE,
 };
