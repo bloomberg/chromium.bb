@@ -682,7 +682,6 @@ private:
     bool m_sweepForbidden;
     size_t m_noAllocationCount;
     size_t m_gcForbiddenCount;
-    size_t m_allocatedObjectSizeBeforeGC;
     BaseHeap* m_heaps[NumberOfHeaps];
 
     int m_vectorBackingHeapIndex;

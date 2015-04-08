@@ -556,12 +556,12 @@ bool ThreadState::shouldForceConservativeGC()
     // lazy sweeping, the thread will use the estimated size of the last GC.
     size_t estimatedLiveObjectSize = Heap::estimatedLiveObjectSize();
     size_t allocatedObjectSize = Heap::allocatedObjectSize();
-    if (allocatedObjectSize >= 300 * 1024 * 1024) {
-        // If we consume too much memory, trigger a conservative GC
+    if (Heap::markedObjectSize() + allocatedObjectSize >= 300 * 1024 * 1024) {
+        // If we're consuming too much memory, trigger a conservative GC
         // aggressively. This is a safe guard to avoid OOM.
         return allocatedObjectSize > estimatedLiveObjectSize / 2;
     }
-    // Schedule a precise GC if more than 32 MB has been allocated since
+    // Schedule a conservative GC if more than 32 MB has been allocated since
     // the last GC and the current memory usage (=allocated + estimated)
     // is >500% larger than the estimated live memory usage.
     return allocatedObjectSize >= 32 * 1024 * 1024 && allocatedObjectSize > 4 * estimatedLiveObjectSize;
@@ -887,9 +887,6 @@ void ThreadState::preGC()
     makeConsistentForSweeping();
     prepareRegionTree();
     flushHeapDoesNotContainCacheIfNeeded();
-    if (isMainThread())
-        m_allocatedObjectSizeBeforeGC = Heap::allocatedObjectSize() + Heap::markedObjectSize();
-
     clearHeapAges();
 }
 
