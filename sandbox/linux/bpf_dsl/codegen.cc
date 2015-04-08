@@ -4,12 +4,11 @@
 
 #include "sandbox/linux/bpf_dsl/codegen.h"
 
-#include <linux/filter.h>
-
 #include <limits>
 #include <utility>
 
 #include "base/logging.h"
+#include "sandbox/linux/system_headers/linux_filter.h"
 
 // This CodeGen implementation strives for simplicity while still
 // generating acceptable BPF programs under typical usage patterns

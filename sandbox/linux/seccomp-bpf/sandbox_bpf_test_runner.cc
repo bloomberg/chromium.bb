@@ -5,13 +5,13 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_test_runner.h"
 
 #include <fcntl.h>
-#include <linux/filter.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/system_headers/linux_filter.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 namespace sandbox {

@@ -8,6 +8,7 @@
 
 #include "sandbox/linux/bpf_dsl/codegen.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
+#include "sandbox/linux/system_headers/linux_filter.h"
 #include "sandbox/linux/system_headers/linux_seccomp.h"
 
 namespace sandbox {
@@ -79,19 +80,22 @@ void DumpBPF::PrintProgram(const CodeGen::Program& program) {
         }
         break;
       case BPF_ALU:
-        fprintf(stderr, BPF_OP(iter->code) == BPF_NEG
-            ? "A := -A\n" : "A := A %s 0x%x\n",
-            BPF_OP(iter->code) == BPF_ADD ? "+"  :
-            BPF_OP(iter->code) == BPF_SUB ? "-"  :
-            BPF_OP(iter->code) == BPF_MUL ? "*"  :
-            BPF_OP(iter->code) == BPF_DIV ? "/"  :
-            BPF_OP(iter->code) == BPF_MOD ? "%"  :
-            BPF_OP(iter->code) == BPF_OR  ? "|"  :
-            BPF_OP(iter->code) == BPF_XOR ? "^"  :
-            BPF_OP(iter->code) == BPF_AND ? "&"  :
-            BPF_OP(iter->code) == BPF_LSH ? "<<" :
-            BPF_OP(iter->code) == BPF_RSH ? ">>" : "???",
-            (int)iter->k);
+        if (BPF_OP(iter->code) == BPF_NEG) {
+          fprintf(stderr, "A := -A\n");
+        } else {
+          fprintf(stderr, "A := A %s 0x%x\n",
+                  BPF_OP(iter->code) == BPF_ADD ? "+"  :
+                  BPF_OP(iter->code) == BPF_SUB ? "-"  :
+                  BPF_OP(iter->code) == BPF_MUL ? "*"  :
+                  BPF_OP(iter->code) == BPF_DIV ? "/"  :
+                  BPF_OP(iter->code) == BPF_MOD ? "%"  :
+                  BPF_OP(iter->code) == BPF_OR  ? "|"  :
+                  BPF_OP(iter->code) == BPF_XOR ? "^"  :
+                  BPF_OP(iter->code) == BPF_AND ? "&"  :
+                  BPF_OP(iter->code) == BPF_LSH ? "<<" :
+                  BPF_OP(iter->code) == BPF_RSH ? ">>" : "???",
+                  (int)iter->k);
+        }
         break;
       default:
         fprintf(stderr, "???\n");

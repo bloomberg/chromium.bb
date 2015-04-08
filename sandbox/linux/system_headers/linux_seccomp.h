@@ -5,8 +5,6 @@
 #ifndef SANDBOX_LINUX_SYSTEM_HEADERS_LINUX_SECCOMP_H_
 #define SANDBOX_LINUX_SYSTEM_HEADERS_LINUX_SECCOMP_H_
 
-#include <linux/filter.h>
-
 // The Seccomp2 kernel ABI is not part of older versions of glibc.
 // As we can't break compilation with these versions of the library,
 // we explicitly define all missing symbols.
@@ -65,13 +63,6 @@
 #endif
 #ifndef IPC_64
 #define IPC_64                   0x0100
-#endif
-
-#ifndef BPF_MOD
-#define BPF_MOD                    0x90
-#endif
-#ifndef BPF_XOR
-#define BPF_XOR                    0xA0
 #endif
 
 // In order to build will older tool chains, we currently have to avoid

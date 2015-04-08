@@ -5,9 +5,6 @@
 #ifndef SANDBOX_LINUX_BPF_DSL_SECCOMP_MACROS_H_
 #define SANDBOX_LINUX_BPF_DSL_SECCOMP_MACROS_H_
 
-#include <asm/unistd.h>
-#include <linux/filter.h>
-
 #include <sys/cdefs.h>
 // Old Bionic versions do not have sys/user.h.  The if can be removed once we no
 // longer need to support these old Bionic versions.

@@ -4,8 +4,6 @@
 
 #include "sandbox/linux/bpf_dsl/codegen.h"
 
-#include <linux/filter.h>
-
 #include <map>
 #include <utility>
 #include <vector>
@@ -13,6 +11,7 @@
 #include "base/macros.h"
 #include "base/md5.h"
 #include "base/strings/string_piece.h"
+#include "sandbox/linux/system_headers/linux_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {

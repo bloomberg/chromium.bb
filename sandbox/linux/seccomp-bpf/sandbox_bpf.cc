@@ -11,7 +11,6 @@
 #endif
 
 #include <errno.h>
-#include <linux/filter.h>
 #include <sys/prctl.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -34,6 +33,7 @@
 #include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/services/thread_helpers.h"
+#include "sandbox/linux/system_headers/linux_filter.h"
 #include "sandbox/linux/system_headers/linux_seccomp.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 

@@ -26,6 +26,7 @@
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/linux/bpf_dsl/verifier.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
+#include "sandbox/linux/system_headers/linux_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define CASES SANDBOX_BPF_DSL_CASES
