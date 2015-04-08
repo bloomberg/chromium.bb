@@ -13481,6 +13481,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ManagedUsers.FilteringResult"
+    enum="SupervisedUserSafetyFilterResult">
+  <owner>treib@chromium.org</owner>
+  <owner>pam@chromium.org</owner>
+  <summary>
+    The counts of results from supervised user URL filtering. Each entry
+    includes the outcome of the filter (i.e. allowed, blocked, or unknown) and
+    the page transition type (how the user got there, e.g. typed URL, clicked
+    link).
+  </summary>
+</histogram>
+
 <histogram name="ManagedUsers.SafeSitesDelay" units="milliseconds">
   <owner>treib@chromium.org</owner>
   <owner>pam@chromium.org</owner>
@@ -13498,8 +13510,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     The counts of results from the supervised user safety filter. Each entry
     includes the outcome of the filter (i.e. allowed, blocked, or unknown) and
     the page transition type (how the user got there, e.g. typed URL, clicked
-    link). This only includes URL requests that were not handled by a manual
-    exception.
+    link). This only includes URL requests that were handled by the SafeSites
+    filter (both online and the static blacklist).
   </summary>
 </histogram>
 
@@ -61705,6 +61717,78 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="499" label="OTHER_BLOCKED_SAFESITES">
     Other navigation; Blocked by SafeSites
+  </int>
+  <int value="500" label="LINK_BLOCKED_MANUAL">
+    Link; Blocked by manual exception
+  </int>
+  <int value="501" label="TYPED_BLOCKED_MANUAL">
+    Typed URL; Blocked by manual exception
+  </int>
+  <int value="502" label="AUTO_BOOKMARK_BLOCKED_MANUAL">
+    Bookmark; Blocked by manual exception
+  </int>
+  <int value="503" label="AUTO_SUBFRAME_BLOCKED_MANUAL">
+    Subframe navigation; Blocked by manual exception
+  </int>
+  <int value="504" label="MANUAL_SUBFRAME_BLOCKED_MANUAL">
+    Manual subframe navigation; Blocked by manual exception
+  </int>
+  <int value="505" label="GENERATED_BLOCKED_MANUAL">
+    Generated from Omnibox; Blocked by manual exception
+  </int>
+  <int value="506" label="AUTO_TOPLEVEL_BLOCKED_MANUAL">
+    Automatic toplevel navigation; Blocked by manual exception
+  </int>
+  <int value="507" label="FORM_SUBMIT_BLOCKED_MANUAL">
+    Form submission; Blocked by manual exception
+  </int>
+  <int value="508" label="RELOAD_BLOCKED_MANUAL">
+    Reload; Blocked by manual exception
+  </int>
+  <int value="509" label="KEYWORD_BLOCKED_MANUAL">
+    Omnibox keyword; Blocked by manual exception
+  </int>
+  <int value="510" label="KEYWORD_GENERATED_BLOCKED_MANUAL">
+    URL generated from Omnibox keyword; Blocked by manual exception
+  </int>
+  <int value="599" label="OTHER_BLOCKED_MANUAL">
+    Other navigation; Blocked by manual exception
+  </int>
+  <int value="600" label="LINK_BLOCKED_DEFAULT">
+    Link; Blocked by global settings
+  </int>
+  <int value="601" label="TYPED_BLOCKED_DEFAULT">
+    Typed URL; Blocked by global settings
+  </int>
+  <int value="602" label="AUTO_BOOKMARK_BLOCKED_DEFAULT">
+    Bookmark; Blocked by global settings
+  </int>
+  <int value="603" label="AUTO_SUBFRAME_BLOCKED_DEFAULT">
+    Subframe navigation; Blocked by global settings
+  </int>
+  <int value="604" label="MANUAL_SUBFRAME_BLOCKED_DEFAULT">
+    Manual subframe navigation; Blocked by global settings
+  </int>
+  <int value="605" label="GENERATED_BLOCKED_DEFAULT">
+    Generated from Omnibox; Blocked by global settings
+  </int>
+  <int value="606" label="AUTO_TOPLEVEL_BLOCKED_DEFAULT">
+    Automatic toplevel navigation; Blocked by global settings
+  </int>
+  <int value="607" label="FORM_SUBMIT_BLOCKED_DEFAULT">
+    Form submission; Blocked by global settings
+  </int>
+  <int value="608" label="RELOAD_BLOCKED_DEFAULT">
+    Reload; Blocked by global settings
+  </int>
+  <int value="609" label="KEYWORD_BLOCKED_DEFAULT">
+    Omnibox keyword; Blocked by global settings
+  </int>
+  <int value="610" label="KEYWORD_GENERATED_BLOCKED_DEFAULT">
+    URL generated from Omnibox keyword; Blocked by global settings
+  </int>
+  <int value="699" label="OTHER_BLOCKED_DEFAULT">
+    Other navigation; Blocked by global settings
   </int>
 </enum>
 

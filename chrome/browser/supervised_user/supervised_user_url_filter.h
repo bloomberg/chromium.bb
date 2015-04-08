@@ -48,7 +48,7 @@ class SupervisedUserURLFilter
     ALLOW,
     WARN,
     BLOCK,
-    HISTOGRAM_BOUNDING_VALUE
+    INVALID
   };
   enum FilteringBehaviorReason {
     DEFAULT,
