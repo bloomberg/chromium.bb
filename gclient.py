@@ -2024,6 +2024,9 @@ def CMDsync(parser, args):
   parser.add_option('--shallow', action='store_true',
                     help='GIT ONLY - Do a shallow clone into the cache dir. '
                          'Requires Git 1.9+')
+  parser.add_option('--no_bootstrap', '--no-bootstrap',
+                    action='store_true',
+                    help='Don\'t bootstrap from Google Storage.')
   parser.add_option('--ignore_locks', action='store_true',
                     help='GIT ONLY - Ignore cache locks.')
   (options, args) = parser.parse_args(args)
