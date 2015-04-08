@@ -1541,23 +1541,11 @@ TEST_P(SpdySessionTest, SendInitialDataOnNewSession) {
   };
 
   SettingsMap settings;
-  const SpdySettingsIds kSpdySettingsIds1 = SETTINGS_MAX_CONCURRENT_STREAMS;
-  const SpdySettingsIds kSpdySettingsIds2 = SETTINGS_INITIAL_WINDOW_SIZE;
-  const uint32 kInitialRecvWindowSize = 10 * 1024 * 1024;
-  settings[kSpdySettingsIds1] =
+  settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
-  if (spdy_util_.spdy_version() >= SPDY3) {
-    settings[kSpdySettingsIds2] =
-        SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kInitialRecvWindowSize);
-  }
   MockConnect connect_data(SYNCHRONOUS, OK);
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize -
-              SpdySession::GetInitialWindowSize(GetParam())));
   std::vector<MockWrite> writes;
   if ((GetParam() >= kProtoSPDY4MinimumVersion) &&
      (GetParam() <= kProtoSPDY4MaximumVersion)) {
@@ -1567,9 +1555,6 @@ TEST_P(SpdySessionTest, SendInitialDataOnNewSession) {
                   kHttp2ConnectionHeaderPrefixSize));
   }
   writes.push_back(CreateMockWrite(*settings_frame));
-  if (GetParam() >= kProtoSPDY31) {
-    writes.push_back(CreateMockWrite(*initial_window_update));
-  };
 
   SettingsMap server_settings;
   const uint32 initial_max_concurrent_streams = 1;
@@ -1581,8 +1566,6 @@ TEST_P(SpdySessionTest, SendInitialDataOnNewSession) {
   if (GetParam() <= kProtoSPDY31) {
     writes.push_back(CreateMockWrite(*server_settings_frame));
   }
-
-  session_deps_.stream_initial_recv_window_size = kInitialRecvWindowSize;
 
   StaticSocketDataProvider data(reads, arraysize(reads),
                                 vector_as_array(&writes), writes.size());

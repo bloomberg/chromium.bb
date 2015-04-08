@@ -368,8 +368,8 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
       protocol(protocol),
-      stream_initial_recv_window_size(
-          SpdySession::GetInitialWindowSize(protocol)),
+      session_max_recv_window_size(SpdySession::GetInitialWindowSize(protocol)),
+      stream_max_recv_window_size(SpdySession::GetInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
       force_spdy_over_ssl(false),
       force_spdy_always(false),
@@ -402,8 +402,8 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol,
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
       protocol(protocol),
-      stream_initial_recv_window_size(
-          SpdySession::GetInitialWindowSize(protocol)),
+      session_max_recv_window_size(SpdySession::GetInitialWindowSize(protocol)),
+      stream_max_recv_window_size(SpdySession::GetInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
       force_spdy_over_ssl(false),
       force_spdy_always(false),
@@ -459,8 +459,10 @@ net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_user_alternate_protocol_ports =
       session_deps->enable_user_alternate_protocol_ports;
   params.spdy_default_protocol = session_deps->protocol;
-  params.spdy_stream_initial_recv_window_size =
-      session_deps->stream_initial_recv_window_size;
+  params.spdy_session_max_recv_window_size =
+      session_deps->session_max_recv_window_size;
+  params.spdy_stream_max_recv_window_size =
+      session_deps->stream_max_recv_window_size;
   params.time_func = session_deps->time_func;
   params.next_protos = session_deps->next_protos;
   params.trusted_spdy_proxy = session_deps->trusted_spdy_proxy;
@@ -711,6 +713,14 @@ void SpdySessionPoolPeer::DisableDomainAuthenticationVerification() {
 
 void SpdySessionPoolPeer::SetEnableSendingInitialData(bool enabled) {
   pool_->enable_sending_initial_data_ = enabled;
+}
+
+void SpdySessionPoolPeer::SetSessionMaxRecvWindowSize(size_t window) {
+  pool_->session_max_recv_window_size_ = window;
+}
+
+void SpdySessionPoolPeer::SetStreamInitialRecvWindowSize(size_t window) {
+  pool_->stream_max_recv_window_size_ = window;
 }
 
 SpdyTestUtil::SpdyTestUtil(NextProto protocol)

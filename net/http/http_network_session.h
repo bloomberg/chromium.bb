@@ -94,7 +94,8 @@ class NET_EXPORT HttpNetworkSession
     //                protocols are disabled.  We should use some reasonable
     //                defaults.
     NextProtoVector next_protos;
-    size_t spdy_stream_initial_recv_window_size;
+    size_t spdy_session_max_recv_window_size;
+    size_t spdy_stream_max_recv_window_size;
     size_t spdy_initial_max_concurrent_streams;
     size_t spdy_max_concurrent_streams_limit;
     SpdySessionPool::TimeFunc time_func;

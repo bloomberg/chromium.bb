@@ -215,7 +215,8 @@ struct SpdySessionDependencies {
   bool enable_ping;
   bool enable_user_alternate_protocol_ports;
   NextProto protocol;
-  size_t stream_initial_recv_window_size;
+  size_t session_max_recv_window_size;
+  size_t stream_max_recv_window_size;
   SpdySession::TimeFunc time_func;
   NextProtoVector next_protos;
   std::string trusted_spdy_proxy;
@@ -289,6 +290,8 @@ class SpdySessionPoolPeer {
   void RemoveAliases(const SpdySessionKey& key);
   void DisableDomainAuthenticationVerification();
   void SetEnableSendingInitialData(bool enabled);
+  void SetSessionMaxRecvWindowSize(size_t window);
+  void SetStreamInitialRecvWindowSize(size_t window);
 
  private:
   SpdySessionPool* const pool_;

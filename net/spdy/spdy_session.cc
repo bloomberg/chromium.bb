@@ -608,7 +608,8 @@ SpdySession::SpdySession(
     bool enable_compression,
     bool enable_ping_based_connection_checking,
     NextProto default_protocol,
-    size_t stream_initial_recv_window_size,
+    size_t session_max_recv_window_size,
+    size_t stream_max_recv_window_size,
     size_t initial_max_concurrent_streams,
     size_t max_concurrent_streams_limit,
     TimeFunc time_func,
@@ -654,13 +655,12 @@ SpdySession::SpdySession(
       check_ping_status_pending_(false),
       send_connection_header_prefix_(false),
       flow_control_state_(FLOW_CONTROL_NONE),
-      stream_initial_send_window_size_(GetInitialWindowSize(default_protocol)),
-      stream_initial_recv_window_size_(stream_initial_recv_window_size == 0
-                                           ? kDefaultInitialRecvWindowSize
-                                           : stream_initial_recv_window_size),
       session_send_window_size_(0),
+      session_max_recv_window_size_(session_max_recv_window_size),
       session_recv_window_size_(0),
       session_unacked_recv_window_bytes_(0),
+      stream_initial_send_window_size_(GetInitialWindowSize(default_protocol)),
+      stream_max_recv_window_size_(stream_max_recv_window_size),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_HTTP2_SESSION)),
       verify_domain_authentication_(verify_domain_authentication),
       enable_sending_initial_data_(enable_sending_initial_data),
@@ -890,10 +890,8 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
 
   scoped_ptr<SpdyStream> new_stream(
       new SpdyStream(request.type(), GetWeakPtr(), request.url(),
-                     request.priority(),
-                     stream_initial_send_window_size_,
-                     stream_initial_recv_window_size_,
-                     request.net_log()));
+                     request.priority(), stream_initial_send_window_size_,
+                     stream_max_recv_window_size_, request.net_log()));
   *stream = new_stream->GetWeakPtr();
   InsertCreatedStream(new_stream.Pass());
 
@@ -2687,13 +2685,10 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
     return false;
   }
 
-  scoped_ptr<SpdyStream> stream(new SpdyStream(SPDY_PUSH_STREAM,
-                                               GetWeakPtr(),
-                                               gurl,
-                                               request_priority,
-                                               stream_initial_send_window_size_,
-                                               stream_initial_recv_window_size_,
-                                               net_log_));
+  scoped_ptr<SpdyStream> stream(
+      new SpdyStream(SPDY_PUSH_STREAM, GetWeakPtr(), gurl, request_priority,
+                     stream_initial_send_window_size_,
+                     stream_max_recv_window_size_, net_log_));
   stream->set_stream_id(stream_id);
 
   // In spdy4/http2 PUSH_PROMISE arrives on associated stream.
@@ -2777,10 +2772,9 @@ void SpdySession::SendInitialData() {
   settings_map[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
   if (flow_control_state_ >= FLOW_CONTROL_STREAM &&
-      stream_initial_recv_window_size_ != GetInitialWindowSize(protocol_)) {
+      stream_max_recv_window_size_ != GetInitialWindowSize(protocol_)) {
     settings_map[SETTINGS_INITIAL_WINDOW_SIZE] =
-        SettingsFlagsAndValue(SETTINGS_FLAG_NONE,
-                              stream_initial_recv_window_size_);
+        SettingsFlagsAndValue(SETTINGS_FLAG_NONE, stream_max_recv_window_size_);
   }
   SendSettings(settings_map);
 
@@ -2789,12 +2783,14 @@ void SpdySession::SendInitialData() {
     // Bump up the receive window size to the real initial value. This
     // has to go here since the WINDOW_UPDATE frame sent by
     // IncreaseRecvWindowSize() call uses |buffered_spdy_framer_|.
-    DCHECK_GT(kDefaultInitialRecvWindowSize, session_recv_window_size_);
-    // This condition implies that |kDefaultInitialRecvWindowSize| -
+    // This condition implies that |session_max_recv_window_size_| -
     // |session_recv_window_size_| doesn't overflow.
-    DCHECK_GT(session_recv_window_size_, 0);
-    IncreaseRecvWindowSize(
-        kDefaultInitialRecvWindowSize - session_recv_window_size_);
+    DCHECK_GE(session_max_recv_window_size_, session_recv_window_size_);
+    DCHECK_GE(session_recv_window_size_, 0);
+    if (session_max_recv_window_size_ > session_recv_window_size_) {
+      IncreaseRecvWindowSize(session_max_recv_window_size_ -
+                             session_recv_window_size_);
+    }
   }
 
   if (protocol_ <= kProtoSPDY31) {
@@ -3190,8 +3186,7 @@ void SpdySession::IncreaseRecvWindowSize(int32 delta_window_size) {
                                delta_window_size, session_recv_window_size_));
 
   session_unacked_recv_window_bytes_ += delta_window_size;
-  if (session_unacked_recv_window_bytes_ >
-      GetInitialWindowSize(protocol_) / 2) {
+  if (session_unacked_recv_window_bytes_ > session_max_recv_window_size_ / 2) {
     SendWindowUpdateFrame(kSessionFlowControlStreamId,
                           session_unacked_recv_window_bytes_,
                           HIGHEST);

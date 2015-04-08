@@ -334,7 +334,7 @@ void SpdyStream::IncreaseRecvWindowSize(int32 delta_window_size) {
 
   unacked_recv_window_bytes_ += delta_window_size;
   if (unacked_recv_window_bytes_ >
-      session_->stream_initial_recv_window_size() / 2) {
+      session_->stream_max_recv_window_size() / 2) {
     session_->SendStreamWindowUpdate(
         stream_id_, static_cast<uint32>(unacked_recv_window_bytes_));
     unacked_recv_window_bytes_ = 0;

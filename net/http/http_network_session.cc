@@ -51,6 +51,10 @@ net::ClientSocketPoolManager* CreateSocketPoolManager(
 
 namespace net {
 
+// The maximum receive window sizes for HTTP/2 sessions and streams.
+const int32 kSpdySessionMaxRecvWindowSize = 10 * 1024 * 1024;  // 10 MB
+const int32 kSpdyStreamMaxRecvWindowSize = 10 * 1024 * 1024;   // 10 MB
+
 HttpNetworkSession::Params::Params()
     : client_socket_factory(NULL),
       host_resolver(NULL),
@@ -74,7 +78,8 @@ HttpNetworkSession::Params::Params()
       enable_spdy_compression(true),
       enable_spdy_ping_based_connection_checking(true),
       spdy_default_protocol(kProtoUnknown),
-      spdy_stream_initial_recv_window_size(0),
+      spdy_session_max_recv_window_size(kSpdySessionMaxRecvWindowSize),
+      spdy_stream_max_recv_window_size(kSpdyStreamMaxRecvWindowSize),
       spdy_initial_max_concurrent_streams(0),
       spdy_max_concurrent_streams_limit(0),
       time_func(&base::TimeTicks::Now),
@@ -152,7 +157,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                          params.enable_spdy_compression,
                          params.enable_spdy_ping_based_connection_checking,
                          params.spdy_default_protocol,
-                         params.spdy_stream_initial_recv_window_size,
+                         params.spdy_session_max_recv_window_size,
+                         params.spdy_stream_max_recv_window_size,
                          params.spdy_initial_max_concurrent_streams,
                          params.spdy_max_concurrent_streams_limit,
                          params.time_func,

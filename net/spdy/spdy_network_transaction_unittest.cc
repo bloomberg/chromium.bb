@@ -4411,13 +4411,6 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   scoped_ptr<SpdyFrame> initial_settings_frame(
       spdy_util_.ConstructSpdySettings(initial_settings));
 
-  // Construct the initial window update.
-  scoped_ptr<SpdyFrame> initial_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(
-          kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize -
-              SpdySession::GetInitialWindowSize(GetParam().protocol)));
-
   // Construct the persisted SETTINGS frame.
   const SettingsMap& settings =
       spdy_session_pool->http_server_properties()->GetSpdySettings(
@@ -4438,9 +4431,6 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
                   kHttp2ConnectionHeaderPrefixSize));
   }
   writes.push_back(CreateMockWrite(*initial_settings_frame));
-  if (GetParam().protocol >= kProtoSPDY31) {
-    writes.push_back(CreateMockWrite(*initial_window_update));
-  }
   writes.push_back(CreateMockWrite(*settings_frame));
   writes.push_back(CreateMockWrite(*req));
 
@@ -6150,23 +6140,64 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
 // Test that received data frames and sent WINDOW_UPDATE frames change
 // the recv_window_size_ correctly.
 TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
-  const int32 initial_window_size =
+  const int32 default_initial_window_size =
       SpdySession::GetInitialWindowSize(GetParam().protocol);
-  // Amount of body required to trigger a sent window update.
-  const size_t kTargetSize = initial_window_size / 2 + 1;
+  // Session level maximum window size that is more than twice the default
+  // initial window size so that an initial window update is sent.
+  const int32 session_max_recv_window_size = 5 * 64 * 1024;
+  ASSERT_LT(2 * default_initial_window_size, session_max_recv_window_size);
+  // Stream level maximum window size that is less than the session level
+  // maximum window size so that we test for confusion between the two.
+  const int32 stream_max_recv_window_size = 4 * 64 * 1024;
+  ASSERT_GT(session_max_recv_window_size, stream_max_recv_window_size);
+  // Size of body to be sent.  Has to be less than or equal to both window sizes
+  // so that we do not run out of receiving window.  Also has to be greater than
+  // half of them so that it triggers both a session level and a stream level
+  // window update frame.
+  const int32 kTargetSize = 3 * 64 * 1024;
+  ASSERT_GE(session_max_recv_window_size, kTargetSize);
+  ASSERT_GE(stream_max_recv_window_size, kTargetSize);
+  ASSERT_LT(session_max_recv_window_size / 2, kTargetSize);
+  ASSERT_LT(stream_max_recv_window_size / 2, kTargetSize);
+  // Size of each DATA frame.
+  const int32 kChunkSize = 4096;
+  // Size of window updates.
+  ASSERT_EQ(0, session_max_recv_window_size / 2 % kChunkSize);
+  const int32 session_window_update_delta =
+      session_max_recv_window_size / 2 + kChunkSize;
+  ASSERT_EQ(0, stream_max_recv_window_size / 2 % kChunkSize);
+  const int32 stream_window_update_delta =
+      stream_max_recv_window_size / 2 + kChunkSize;
 
+  SettingsMap initial_settings;
+  initial_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
+  initial_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, stream_max_recv_window_size);
+  scoped_ptr<SpdyFrame> initial_settings_frame(
+      spdy_util_.ConstructSpdySettings(initial_settings));
+  scoped_ptr<SpdyFrame> initial_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(
+          kSessionFlowControlStreamId,
+          session_max_recv_window_size - default_initial_window_size));
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> session_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(0, kTargetSize));
-  scoped_ptr<SpdyFrame> window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(1, kTargetSize));
+      spdy_util_.ConstructSpdyWindowUpdate(0, session_window_update_delta));
+  scoped_ptr<SpdyFrame> stream_window_update(
+      spdy_util_.ConstructSpdyWindowUpdate(1, stream_window_update_delta));
 
   std::vector<MockWrite> writes;
+  if ((GetParam().protocol >= kProtoSPDY4MinimumVersion) &&
+      (GetParam().protocol <= kProtoSPDY4MaximumVersion)) {
+    writes.push_back(MockWrite(ASYNC, kHttp2ConnectionHeaderPrefix,
+                               kHttp2ConnectionHeaderPrefixSize, 0));
+  }
+  writes.push_back(CreateMockWrite(*initial_settings_frame));
+  writes.push_back(CreateMockWrite(*initial_window_update));
   writes.push_back(CreateMockWrite(*req));
-  if (GetParam().protocol >= kProtoSPDY31)
-    writes.push_back(CreateMockWrite(*session_window_update));
-  writes.push_back(CreateMockWrite(*window_update));
+  writes.push_back(CreateMockWrite(*session_window_update));
+  writes.push_back(CreateMockWrite(*stream_window_update));
 
   std::vector<MockRead> reads;
   scoped_ptr<SpdyFrame> resp(
@@ -6174,7 +6205,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   reads.push_back(CreateMockRead(*resp));
 
   ScopedVector<SpdyFrame> body_frames;
-  const std::string body_data(4096, 'x');
+  const std::string body_data(kChunkSize, 'x');
   for (size_t remaining = kTargetSize; remaining != 0;) {
     size_t frame_size = std::min(remaining, body_data.size());
     body_frames.push_back(spdy_util_.ConstructSpdyBodyFrame(
@@ -6184,15 +6215,21 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   }
   reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, 0));  // Yield.
 
-  DelayedSocketData data(1, vector_as_array(&reads), reads.size(),
+  DelayedSocketData data(2, vector_as_array(&reads), reads.size(),
                          vector_as_array(&writes), writes.size());
 
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), NULL);
   helper.AddData(&data);
   helper.RunPreTestSetup();
-  HttpNetworkTransaction* trans = helper.trans();
 
+  SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
+  SpdySessionPoolPeer pool_peer(spdy_session_pool);
+  pool_peer.SetEnableSendingInitialData(true);
+  pool_peer.SetSessionMaxRecvWindowSize(session_max_recv_window_size);
+  pool_peer.SetStreamInitialRecvWindowSize(stream_max_recv_window_size);
+
+  HttpNetworkTransaction* trans = helper.trans();
   TestCompletionCallback callback;
   int rv = trans->Start(&helper.request(), callback.callback(), BoundNetLog());
 
@@ -6206,7 +6243,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   ASSERT_TRUE(stream->stream() != NULL);
 
   // All data has been read, but not consumed. The window reflects this.
-  EXPECT_EQ(static_cast<int>(initial_window_size - kTargetSize),
+  EXPECT_EQ(static_cast<int>(stream_max_recv_window_size - kTargetSize),
             stream->stream()->recv_window_size());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
@@ -6220,7 +6257,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   scoped_refptr<IOBuffer> buf(new IOBuffer(kTargetSize));
   EXPECT_EQ(static_cast<int>(kTargetSize),
             trans->Read(buf.get(), kTargetSize, CompletionCallback()));
-  EXPECT_EQ(static_cast<int>(initial_window_size),
+  EXPECT_EQ(static_cast<int>(stream_max_recv_window_size),
             stream->stream()->recv_window_size());
   EXPECT_THAT(base::StringPiece(buf->data(), kTargetSize), Each(Eq('x')));
 
