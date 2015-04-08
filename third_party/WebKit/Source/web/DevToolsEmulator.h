@@ -51,7 +51,6 @@ private:
 
     bool m_deviceMetricsEnabled;
     bool m_emulateMobileEnabled;
-    bool m_originalViewportEnabled;
     bool m_isOverlayScrollbarsEnabled;
     float m_originalDefaultMinimumPageScaleFactor;
     float m_originalDefaultMaximumPageScaleFactor;

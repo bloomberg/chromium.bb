@@ -52,7 +52,6 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_emulationAgent(nullptr)
     , m_deviceMetricsEnabled(false)
     , m_emulateMobileEnabled(false)
-    , m_originalViewportEnabled(false)
     , m_isOverlayScrollbarsEnabled(false)
     , m_originalDefaultMinimumPageScaleFactor(0)
     , m_originalDefaultMaximumPageScaleFactor(0)
@@ -182,8 +181,6 @@ void DevToolsEmulator::enableMobileEmulation()
     m_emulateMobileEnabled = true;
     m_isOverlayScrollbarsEnabled = RuntimeEnabledFeatures::overlayScrollbarsEnabled();
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
-    m_originalViewportEnabled = RuntimeEnabledFeatures::cssViewportEnabled();
-    RuntimeEnabledFeatures::setCSSViewportEnabled(true);
     m_webViewImpl->enableViewport();
     m_webViewImpl->settings()->setViewportMetaEnabled(true);
     m_webViewImpl->settings()->setShrinksViewportContentToFit(true);
@@ -202,7 +199,6 @@ void DevToolsEmulator::disableMobileEmulation()
     if (!m_emulateMobileEnabled)
         return;
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
-    RuntimeEnabledFeatures::setCSSViewportEnabled(m_originalViewportEnabled);
     m_webViewImpl->disableViewport();
     m_webViewImpl->settings()->setViewportMetaEnabled(false);
     m_webViewImpl->settings()->setShrinksViewportContentToFit(false);
