@@ -410,7 +410,7 @@ public:
 
         IDBRequest* idbRequest = static_cast<IDBRequest*>(event->target());
         IDBAny* requestResult = idbRequest->resultAsAny();
-        if (requestResult->type() == IDBAny::BufferType) {
+        if (requestResult->type() == IDBAny::IDBValueType) {
             end(false);
             return;
         }

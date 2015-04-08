@@ -40,6 +40,7 @@
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBEventDispatcher.h"
 #include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBValue.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebBlobInfo.h"
 
@@ -193,22 +194,24 @@ IDBCursor* IDBRequest::getResultCursor() const
     return 0;
 }
 
-void IDBRequest::setResultCursor(IDBCursor* cursor, IDBKey* key, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<WebBlobInfo>> blobInfo)
+void IDBRequest::setResultCursor(IDBCursor* cursor, IDBKey* key, IDBKey* primaryKey, PassRefPtr<IDBValue> value)
 {
     ASSERT(m_readyState == PENDING);
     m_cursorKey = key;
     m_cursorPrimaryKey = primaryKey;
     m_cursorValue = value;
-    setBlobInfo(blobInfo);
+    ackReceivedBlobs(m_cursorValue.get());
 
     onSuccessInternal(IDBAny::create(cursor));
 }
 
-void IDBRequest::setBlobInfo(PassOwnPtr<Vector<WebBlobInfo>> blobInfo)
+void IDBRequest::ackReceivedBlobs(const IDBValue* value)
 {
-    m_blobs = adoptPtr(new IDBBlobHolder(blobInfo));
-    if (!m_blobs->getUUIDs().isEmpty() && m_transaction && m_transaction->backendDB())
-        m_transaction->backendDB()->ackReceivedBlobs(m_blobs->getUUIDs());
+    if (!m_transaction || !m_transaction->backendDB())
+        return;
+    Vector<String> uuids = value->getUUIDs();
+    if (!uuids.isEmpty())
+        m_transaction->backendDB()->ackReceivedBlobs(uuids);
 }
 
 bool IDBRequest::shouldEnqueueEvent() const
@@ -247,7 +250,7 @@ void IDBRequest::onSuccess(const Vector<String>& stringList)
     onSuccessInternal(IDBAny::create(domStringList.release()));
 }
 
-void IDBRequest::onSuccess(PassOwnPtr<WebIDBCursor> backend, IDBKey* key, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<WebBlobInfo>> blobInfo)
+void IDBRequest::onSuccess(PassOwnPtr<WebIDBCursor> backend, IDBKey* key, IDBKey* primaryKey, PassRefPtr<IDBValue> value)
 {
     IDB_TRACE("IDBRequest::onSuccess(IDBCursor)");
     if (!shouldEnqueueEvent())
@@ -265,7 +268,7 @@ void IDBRequest::onSuccess(PassOwnPtr<WebIDBCursor> backend, IDBKey* key, IDBKey
     default:
         ASSERT_NOT_REACHED();
     }
-    setResultCursor(cursor, key, primaryKey, value, blobInfo);
+    setResultCursor(cursor, key, primaryKey, value);
 }
 
 void IDBRequest::onSuccess(IDBKey* idbKey)
@@ -280,22 +283,24 @@ void IDBRequest::onSuccess(IDBKey* idbKey)
         onSuccessInternal(IDBAny::createUndefined());
 }
 
-void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> valueBuffer, PassOwnPtr<Vector<WebBlobInfo>> blobInfo)
+void IDBRequest::onSuccess(PassRefPtr<IDBValue> prpValue)
 {
     IDB_TRACE("IDBRequest::onSuccess(SharedBuffer)");
     if (!shouldEnqueueEvent())
         return;
 
+    RefPtr<IDBValue> value(prpValue);
+
     if (m_pendingCursor) {
         // Value should be null, signifying the end of the cursor's range.
-        ASSERT(!valueBuffer.get());
-        ASSERT(!blobInfo->size());
+        ASSERT(value->isNull());
+        ASSERT(!value->blobInfo()->size());
         m_pendingCursor->close();
         m_pendingCursor.clear();
     }
 
-    setBlobInfo(blobInfo);
-    onSuccessInternal(IDBAny::create(valueBuffer, m_blobs->getInfo()));
+    ackReceivedBlobs(value.get());
+    onSuccessInternal(IDBAny::create(value));
 }
 
 #if ENABLE(ASSERT)
@@ -311,7 +316,7 @@ static IDBObjectStore* effectiveObjectStore(IDBAny* source)
 }
 #endif
 
-void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> prpValueBuffer, PassOwnPtr<Vector<WebBlobInfo>> blobInfo, IDBKey* prpPrimaryKey, const IDBKeyPath& keyPath)
+void IDBRequest::onSuccess(PassRefPtr<IDBValue> prpValue, IDBKey* prpPrimaryKey, const IDBKeyPath& keyPath)
 {
     IDB_TRACE("IDBRequest::onSuccess(SharedBuffer, IDBKey, IDBKeyPath)");
     if (!shouldEnqueueEvent())
@@ -319,15 +324,15 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> prpValueBuffer, PassOwnPtr<V
 
     ASSERT(keyPath == effectiveObjectStore(m_source)->metadata().keyPath);
 
-    RefPtr<SharedBuffer> valueBuffer = prpValueBuffer;
+    RefPtr<IDBValue> value(prpValue);
     IDBKey* primaryKey = prpPrimaryKey;
-    setBlobInfo(blobInfo);
+    ackReceivedBlobs(value.get());
 
 #if ENABLE(ASSERT)
-    assertPrimaryKeyValidOrInjectable(m_scriptState.get(), valueBuffer, m_blobs->getInfo(), primaryKey, keyPath);
+    assertPrimaryKeyValidOrInjectable(m_scriptState.get(), value.get(), primaryKey, keyPath);
 #endif
 
-    onSuccessInternal(IDBAny::create(valueBuffer, m_blobs->getInfo(), primaryKey, keyPath));
+    onSuccessInternal(IDBAny::create(value.release(), primaryKey, keyPath));
 }
 
 void IDBRequest::onSuccess(int64_t value)
@@ -360,14 +365,14 @@ void IDBRequest::setResult(IDBAny* result)
     m_resultDirty = true;
 }
 
-void IDBRequest::onSuccess(IDBKey* key, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<Vector<WebBlobInfo>> blobInfo)
+void IDBRequest::onSuccess(IDBKey* key, IDBKey* primaryKey, PassRefPtr<IDBValue> value)
 {
     IDB_TRACE("IDBRequest::onSuccess(key, primaryKey, value)");
     if (!shouldEnqueueEvent())
         return;
 
     ASSERT(m_pendingCursor);
-    setResultCursor(m_pendingCursor.release(), key, primaryKey, value, blobInfo);
+    setResultCursor(m_pendingCursor.release(), key, primaryKey, value);
 }
 
 bool IDBRequest::hasPendingActivity() const
@@ -444,7 +449,7 @@ bool IDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
     if (event->type() == EventTypeNames::success) {
         cursorToNotify = getResultCursor();
         if (cursorToNotify)
-            cursorToNotify->setValueReady(m_cursorKey.release(), m_cursorPrimaryKey.release(), m_cursorValue.release(), m_blobs.release());
+            cursorToNotify->setValueReady(m_cursorKey.release(), m_cursorPrimaryKey.release(), m_cursorValue.release());
     }
 
     if (event->type() == EventTypeNames::upgradeneeded) {
@@ -536,25 +541,6 @@ void IDBRequest::dequeueEvent(Event* event)
         if (m_enqueuedEvents[i].get() == event)
             m_enqueuedEvents.remove(i);
     }
-}
-
-IDBRequest::IDBBlobHolder::IDBBlobHolder(PassOwnPtr<Vector<WebBlobInfo>> blobInfo)
-    : m_blobInfo(blobInfo)
-{
-    if (!m_blobInfo->isEmpty()) {
-        m_blobData = adoptPtr(new Vector<RefPtr<BlobDataHandle>>());
-        for (const auto& info : *m_blobInfo.get())
-            m_blobData->append(BlobDataHandle::create(info.uuid(), info.type(), info.size()));
-    }
-}
-
-Vector<String> IDBRequest::IDBBlobHolder::getUUIDs() const
-{
-    Vector<String> uuids;
-    uuids.reserveCapacity(m_blobInfo->size());
-    for (const auto& info : *m_blobInfo)
-        uuids.append(info.uuid());
-    return uuids;
 }
 
 } // namespace blink

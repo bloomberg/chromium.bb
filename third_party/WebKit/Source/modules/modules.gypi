@@ -833,6 +833,8 @@
       'indexeddb/IDBTracing.h',
       'indexeddb/IDBTransaction.cpp',
       'indexeddb/IDBTransaction.h',
+      'indexeddb/IDBValue.cpp',
+      'indexeddb/IDBValue.h',
       'indexeddb/IDBVersionChangeEvent.cpp',
       'indexeddb/IDBVersionChangeEvent.h',
       'indexeddb/IndexedDB.h',

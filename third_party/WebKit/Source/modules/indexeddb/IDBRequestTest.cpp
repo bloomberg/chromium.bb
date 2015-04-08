@@ -36,6 +36,7 @@
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBOpenDBRequest.h"
+#include "modules/indexeddb/IDBValue.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebIDBDatabase.h"
@@ -88,13 +89,13 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
     // Ensure none of the following raise assertions in stopped state:
     request->onError(DOMError::create(AbortError, "Description goes here."));
     request->onSuccess(Vector<String>());
-    request->onSuccess(nullptr, IDBKey::createInvalid(), IDBKey::createInvalid(), nullptr, adoptPtr(new Vector<WebBlobInfo>()));
+    request->onSuccess(nullptr, IDBKey::createInvalid(), IDBKey::createInvalid(), IDBValue::create());
     request->onSuccess(IDBKey::createInvalid());
-    request->onSuccess(PassRefPtr<SharedBuffer>(nullptr), adoptPtr(new Vector<WebBlobInfo>()));
-    request->onSuccess(PassRefPtr<SharedBuffer>(nullptr), adoptPtr(new Vector<WebBlobInfo>()), IDBKey::createInvalid(), IDBKeyPath());
+    request->onSuccess(IDBValue::create());
+    request->onSuccess(IDBValue::create(), IDBKey::createInvalid(), IDBKeyPath());
     request->onSuccess(static_cast<int64_t>(0));
     request->onSuccess();
-    request->onSuccess(IDBKey::createInvalid(), IDBKey::createInvalid(), nullptr, adoptPtr(new Vector<WebBlobInfo>()));
+    request->onSuccess(IDBKey::createInvalid(), IDBKey::createInvalid(), IDBValue::create());
 }
 
 TEST_F(IDBRequestTest, AbortErrorAfterAbort)

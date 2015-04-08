@@ -101,26 +101,20 @@ IDBObjectStore* IDBAny::idbObjectStore() const
 
 const IDBKey* IDBAny::key() const
 {
-    ASSERT(m_type == KeyType || m_type == BufferKeyAndKeyPathType);
+    ASSERT(m_type == KeyType || m_type == IDBValueKeyAndKeyPathType);
     return m_idbKey.get();
 }
 
 const IDBKeyPath& IDBAny::keyPath() const
 {
-    ASSERT(m_type == BufferKeyAndKeyPathType);
+    ASSERT(m_type == IDBValueKeyAndKeyPathType);
     return m_idbKeyPath;
 }
 
-SharedBuffer* IDBAny::buffer() const
+IDBValue* IDBAny::value() const
 {
-    ASSERT(m_type == BufferType || m_type == BufferKeyAndKeyPathType);
-    return m_buffer.get();
-}
-
-const Vector<WebBlobInfo>* IDBAny::blobInfo() const
-{
-    ASSERT(m_type == BufferType || m_type == BufferKeyAndKeyPathType);
-    return m_blobInfo;
+    ASSERT(m_type == IDBValueType || m_type == IDBValueKeyAndKeyPathType);
+    return m_idbValue.get();
 }
 
 int64_t IDBAny::integer() const
@@ -164,20 +158,18 @@ IDBAny::IDBAny(IDBObjectStore* value)
 {
 }
 
-IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<WebBlobInfo>* blobInfo)
-    : m_type(BufferType)
-    , m_buffer(value)
-    , m_blobInfo(blobInfo)
+IDBAny::IDBAny(PassRefPtr<IDBValue> value)
+    : m_type(IDBValueType)
+    , m_idbValue(value)
     , m_integer(0)
 {
 }
 
-IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, const Vector<WebBlobInfo>* blobInfo, IDBKey* key, const IDBKeyPath& keyPath)
-    : m_type(BufferKeyAndKeyPathType)
+IDBAny::IDBAny(PassRefPtr<IDBValue> value, IDBKey* key, const IDBKeyPath& keyPath)
+    : m_type(IDBValueKeyAndKeyPathType)
     , m_idbKey(key)
     , m_idbKeyPath(keyPath)
-    , m_buffer(value)
-    , m_blobInfo(blobInfo)
+    , m_idbValue(value)
     , m_integer(0)
 {
 }

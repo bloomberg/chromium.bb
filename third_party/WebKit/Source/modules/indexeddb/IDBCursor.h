@@ -41,8 +41,8 @@ namespace blink {
 class ExceptionState;
 class IDBAny;
 class IDBTransaction;
+class IDBValue;
 class ScriptState;
-class SharedBuffer;
 
 class IDBCursor : public GarbageCollectedFinalized<IDBCursor>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -75,7 +75,7 @@ public:
     void postSuccessHandlerCallback();
     bool isDeleted() const;
     void close();
-    void setValueReady(IDBKey*, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<IDBRequest::IDBBlobHolder>);
+    void setValueReady(IDBKey*, IDBKey* primaryKey, PassRefPtr<IDBValue>);
     IDBKey* idbPrimaryKey() const { return m_primaryKey; }
     IDBRequest* request() const { return m_request.get(); }
     virtual bool isKeyCursor() const { return true; }
@@ -98,8 +98,7 @@ private:
     bool m_valueDirty;
     Member<IDBKey> m_key;
     Member<IDBKey> m_primaryKey;
-    RefPtr<SharedBuffer> m_value;
-    OwnPtr<IDBRequest::IDBBlobHolder> m_blobs;
+    RefPtr<IDBValue> m_value;
 };
 
 } // namespace blink

@@ -268,7 +268,7 @@ void IDBCursor::postSuccessHandlerCallback()
 
 void IDBCursor::close()
 {
-    m_blobs.clear();
+    m_value.clear();
     m_request.clear();
     m_backend.clear();
 }
@@ -293,12 +293,12 @@ ScriptValue IDBCursor::value(ScriptState* scriptState)
     const IDBObjectStoreMetadata& metadata = objectStore->metadata();
     IDBAny* value;
     if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
-        value = IDBAny::create(m_value, m_blobs->getInfo(), m_primaryKey, metadata.keyPath);
+        value = IDBAny::create(m_value, m_primaryKey, metadata.keyPath);
 #if ENABLE(ASSERT)
-        assertPrimaryKeyValidOrInjectable(scriptState, m_value, m_blobs->getInfo(), m_primaryKey, metadata.keyPath);
+        assertPrimaryKeyValidOrInjectable(scriptState, m_value.get(), m_primaryKey, metadata.keyPath);
 #endif
     } else {
-        value = IDBAny::create(m_value, m_blobs->getInfo());
+        value = IDBAny::create(m_value);
     }
 
     m_valueDirty = false;
@@ -311,7 +311,7 @@ ScriptValue IDBCursor::source(ScriptState* scriptState) const
     return ScriptValue::from(scriptState, m_source);
 }
 
-void IDBCursor::setValueReady(IDBKey* key, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<IDBRequest::IDBBlobHolder> blobs)
+void IDBCursor::setValueReady(IDBKey* key, IDBKey* primaryKey, PassRefPtr<IDBValue> value)
 {
     m_key = key;
     m_keyDirty = true;
@@ -321,7 +321,6 @@ void IDBCursor::setValueReady(IDBKey* key, IDBKey* primaryKey, PassRefPtr<Shared
 
     if (isCursorWithValue()) {
         m_value = value;
-        m_blobs = blobs;
         m_valueDirty = true;
     }
 

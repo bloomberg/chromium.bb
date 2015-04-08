@@ -45,6 +45,7 @@
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBValue.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/MathExtras.h"
@@ -52,7 +53,7 @@
 
 namespace blink {
 
-static v8::Local<v8::Value> deserializeIDBValueBuffer(v8::Isolate*, SharedBuffer*, const Vector<blink::WebBlobInfo>*);
+static v8::Local<v8::Value> deserializeIDBValue(v8::Isolate*, const IDBValue*);
 
 v8::Local<v8::Value> toV8(const IDBKeyPath& value, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -145,14 +146,14 @@ v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creationCont
         return toV8(impl->idbIndex(), creationContext, isolate);
     case IDBAny::IDBObjectStoreType:
         return toV8(impl->idbObjectStore(), creationContext, isolate);
-    case IDBAny::BufferType:
-        return deserializeIDBValueBuffer(isolate, impl->buffer(), impl->blobInfo());
+    case IDBAny::IDBValueType:
+        return deserializeIDBValue(isolate, impl->value());
     case IDBAny::IntegerType:
         return v8::Number::New(isolate, impl->integer());
     case IDBAny::KeyType:
         return toV8(impl->key(), creationContext, isolate);
-    case IDBAny::BufferKeyAndKeyPathType: {
-        v8::Local<v8::Value> value = deserializeIDBValueBuffer(isolate, impl->buffer(), impl->blobInfo());
+    case IDBAny::IDBValueKeyAndKeyPathType: {
+        v8::Local<v8::Value> value = deserializeIDBValue(isolate, impl->value());
         v8::Local<v8::Value> key = toV8(impl->key(), creationContext, isolate);
         bool injected = injectV8KeyIntoV8Value(isolate, key, value, impl->keyPath());
         ASSERT_UNUSED(injected, injected);
@@ -338,14 +339,15 @@ static IDBKey* createIDBKeyFromScriptValueAndKeyPathInternal(v8::Isolate* isolat
     return createIDBKeyFromScriptValueAndKeyPathInternal(isolate, value, keyPath.string(), allowExperimentalTypes);
 }
 
-static v8::Local<v8::Value> deserializeIDBValueBuffer(v8::Isolate* isolate, SharedBuffer* buffer, const Vector<blink::WebBlobInfo>* blobInfo)
+static v8::Local<v8::Value> deserializeIDBValue(v8::Isolate* isolate, const IDBValue* value)
 {
     ASSERT(isolate->InContext());
-    if (!buffer)
+    if (value->isNull())
         return v8::Null(isolate);
 
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::instance().createFromWireBytes(buffer->data(), buffer->size());
-    return serializedValue->deserialize(isolate, 0, blobInfo);
+    const SharedBuffer* valueData = value->data();
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::instance().createFromWireBytes(valueData->data(), valueData->size());
+    return serializedValue->deserialize(isolate, 0, value->blobInfo());
 }
 
 bool injectV8KeyIntoV8Value(v8::Isolate* isolate, v8::Local<v8::Value> key, v8::Local<v8::Value> value, const IDBKeyPath& keyPath)
@@ -442,12 +444,12 @@ IDBKeyRange* NativeValueTraits<IDBKeyRange*>::nativeValue(v8::Isolate* isolate, 
 }
 
 #if ENABLE(ASSERT)
-void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, PassRefPtr<SharedBuffer> buffer, const Vector<blink::WebBlobInfo>* blobInfo, IDBKey* key, const IDBKeyPath& keyPath)
+void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, IDBValue* value, IDBKey* key, const IDBKeyPath& keyPath)
 {
     ScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
     ScriptValue keyValue = ScriptValue::from(scriptState, key);
-    ScriptValue scriptValue(scriptState, deserializeIDBValueBuffer(isolate, buffer.get(), blobInfo));
+    ScriptValue scriptValue(scriptState, deserializeIDBValue(isolate, value));
 
     // This assertion is about already persisted data, so allow experimental types.
     const bool allowExperimentalTypes = true;

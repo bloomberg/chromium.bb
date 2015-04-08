@@ -14,6 +14,7 @@ class IDBAny;
 class IDBKey;
 class IDBKeyPath;
 class IDBKeyRange;
+class IDBValue;
 class SerializedScriptValue;
 class SharedBuffer;
 class WebBlobInfo;
@@ -26,7 +27,7 @@ bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBK
 ScriptValue deserializeScriptValue(ScriptState*, SerializedScriptValue*, const Vector<blink::WebBlobInfo>*);
 
 #if ENABLE(ASSERT)
-void assertPrimaryKeyValidOrInjectable(ScriptState*, PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, IDBKey*, const IDBKeyPath&);
+void assertPrimaryKeyValidOrInjectable(ScriptState*, IDBValue*, IDBKey*, const IDBKeyPath&);
 #endif
 
 template <>
