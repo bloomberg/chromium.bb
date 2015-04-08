@@ -11,6 +11,8 @@
       'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h',
       'browser/extensions/api/file_system/request_file_system_dialog_view.cc',
       'browser/extensions/api/file_system/request_file_system_dialog_view.h',
+      'browser/extensions/api/file_system/request_file_system_notification.cc',
+      'browser/extensions/api/file_system/request_file_system_notification.h',
       'browser/extensions/api/input_ime/input_ime_api.cc',
       'browser/extensions/api/input_ime/input_ime_api.h',
       'browser/extensions/api/log_private/filter_handler.cc',

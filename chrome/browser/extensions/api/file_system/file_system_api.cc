@@ -67,6 +67,7 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/extensions/api/file_system/request_file_system_dialog_view.h"
+#include "chrome/browser/extensions/api/file_system/request_file_system_notification.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/common/constants.h"
@@ -293,22 +294,25 @@ ConsentProvider::ConsentProvider(DelegateInterface* delegate)
 ConsentProvider::~ConsentProvider() {
 }
 
-void ConsentProvider::RequestConsent(const extensions::Extension& extension,
-                                     base::WeakPtr<file_manager::Volume> volume,
-                                     bool writable,
-                                     const ConsentCallback& callback) {
+void ConsentProvider::RequestConsent(
+    const extensions::Extension& extension,
+    const base::WeakPtr<file_manager::Volume>& volume,
+    bool writable,
+    const ConsentCallback& callback) {
   DCHECK(IsGrantable(extension));
 
-  // If auto-launched kiosk app, then no need to ask user.
-  if (delegate_->IsAutoLaunched(extension)) {
+  // If a whitelisted component, then no need to ask or inform the user.
+  if (extension.location() == Manifest::COMPONENT &&
+      delegate_->IsWhitelistedComponent(extension)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, CONSENT_GRANTED));
     return;
   }
 
-  // If a whitelisted component, then no need to ask user, either.
-  if (extension.location() == Manifest::COMPONENT &&
-      delegate_->IsWhitelistedComponent(extension)) {
+  // If auto-launched kiosk app, then no need to ask user either, but show the
+  // notification.
+  if (delegate_->IsAutoLaunched(extension)) {
+    delegate_->ShowNotification(extension, volume, writable);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, CONSENT_GRANTED));
     return;
@@ -371,7 +375,7 @@ void ConsentProviderDelegate::SetAutoDialogButtonForTest(
 
 void ConsentProviderDelegate::ShowDialog(
     const extensions::Extension& extension,
-    base::WeakPtr<file_manager::Volume> volume,
+    const base::WeakPtr<file_manager::Volume>& volume,
     bool writable,
     const file_system_api::ConsentProvider::ShowDialogCallback& callback) {
   content::WebContents* const foreground_contents =
@@ -398,6 +402,14 @@ void ConsentProviderDelegate::ShowDialog(
 
   RequestFileSystemDialogView::ShowDialog(web_contents, extension, volume,
                                           writable, base::Bind(callback));
+}
+
+void ConsentProviderDelegate::ShowNotification(
+    const extensions::Extension& extension,
+    const base::WeakPtr<file_manager::Volume>& volume,
+    bool writable) {
+  RequestFileSystemNotification::ShowAutoGrantedNotification(
+      profile_, extension, volume, writable);
 }
 
 bool ConsentProviderDelegate::IsAutoLaunched(
@@ -1270,7 +1282,7 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
 }
 
 void FileSystemRequestFileSystemFunction::OnConsentReceived(
-    base::WeakPtr<file_manager::Volume> volume,
+    const base::WeakPtr<file_manager::Volume>& volume,
     bool writable,
     ConsentProvider::Consent result) {
   using file_manager::VolumeManager;

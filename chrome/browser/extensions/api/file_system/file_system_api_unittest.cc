@@ -85,6 +85,7 @@ class TestingConsentProviderDelegate
  public:
   TestingConsentProviderDelegate()
       : show_dialog_counter_(0),
+        show_notification_counter_(0),
         dialog_button_(ui::DIALOG_BUTTON_NONE),
         is_auto_launched_(false) {}
 
@@ -104,16 +105,23 @@ class TestingConsentProviderDelegate
   }
 
   int show_dialog_counter() const { return show_dialog_counter_; }
+  int show_notification_counter() const { return show_notification_counter_; }
 
  private:
   // ConsentProvider::DelegateInterface overrides:
   void ShowDialog(
       const extensions::Extension& extension,
-      base::WeakPtr<Volume> volume,
+      const base::WeakPtr<Volume>& volume,
       bool writable,
       const ConsentProvider::ShowDialogCallback& callback) override {
     ++show_dialog_counter_;
     callback.Run(dialog_button_);
+  }
+
+  void ShowNotification(const extensions::Extension& extension,
+                        const base::WeakPtr<Volume>& volume,
+                        bool writable) override {
+    ++show_notification_counter_;
   }
 
   bool IsAutoLaunched(const extensions::Extension& extension) override {
@@ -125,6 +133,7 @@ class TestingConsentProviderDelegate
   }
 
   int show_dialog_counter_;
+  int show_notification_counter_;
   ui::DialogButton dialog_button_;
   bool is_auto_launched_;
   std::string whitelisted_component_id_;
@@ -330,6 +339,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForNonKioskApps) {
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(0, delegate.show_dialog_counter());
+    EXPECT_EQ(0, delegate.show_notification_counter());
     EXPECT_EQ(ConsentProvider::CONSENT_GRANTED, result);
   }
 
@@ -346,7 +356,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForNonKioskApps) {
 
 TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
   // Non-component apps in auto-launch kiosk mode will be granted access
-  // instantly without asking for user consent.
+  // instantly without asking for user consent, but with a notification.
   {
     scoped_refptr<Extension> auto_launch_kiosk_app(
         test_util::BuildApp(ExtensionBuilder().Pass())
@@ -369,6 +379,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(0, delegate.show_dialog_counter());
+    EXPECT_EQ(1, delegate.show_notification_counter());
     EXPECT_EQ(ConsentProvider::CONSENT_GRANTED, result);
   }
 
@@ -394,6 +405,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(1, delegate.show_dialog_counter());
+    EXPECT_EQ(0, delegate.show_notification_counter());
     EXPECT_EQ(ConsentProvider::CONSENT_GRANTED, result);
   }
 
@@ -412,6 +424,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(1, delegate.show_dialog_counter());
+    EXPECT_EQ(0, delegate.show_notification_counter());
     EXPECT_EQ(ConsentProvider::CONSENT_REJECTED, result);
   }
 }

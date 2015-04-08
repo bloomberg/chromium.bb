@@ -61,9 +61,15 @@ class ConsentProvider {
    public:
     // Shows a dialog for granting permissions.
     virtual void ShowDialog(const extensions::Extension& extension,
-                            base::WeakPtr<file_manager::Volume> volume,
+                            const base::WeakPtr<file_manager::Volume>& volume,
                             bool writable,
                             const ShowDialogCallback& callback) = 0;
+
+    // Shows a notification about permissions automatically granted access.
+    virtual void ShowNotification(
+        const extensions::Extension& extension,
+        const base::WeakPtr<file_manager::Volume>& volume,
+        bool writable) = 0;
 
     // Checks if the extension was launched in auto-launch kiosk mode.
     virtual bool IsAutoLaunched(const extensions::Extension& extension) = 0;
@@ -80,7 +86,7 @@ class ConsentProvider {
   // volume by the |extension|. Must be called only if the extension is
   // grantable, which can be checked with IsGrantable().
   void RequestConsent(const extensions::Extension& extension,
-                      base::WeakPtr<file_manager::Volume> volume,
+                      const base::WeakPtr<file_manager::Volume>& volume,
                       bool writable,
                       const ConsentCallback& callback);
 
@@ -114,10 +120,13 @@ class ConsentProviderDelegate : public ConsentProvider::DelegateInterface {
 
   // ConsentProvider::DelegateInterface overrides:
   void ShowDialog(const extensions::Extension& extension,
-                  base::WeakPtr<file_manager::Volume> volume,
+                  const base::WeakPtr<file_manager::Volume>& volume,
                   bool writable,
                   const file_system_api::ConsentProvider::ShowDialogCallback&
                       callback) override;
+  void ShowNotification(const extensions::Extension& extension,
+                        const base::WeakPtr<file_manager::Volume>& volume,
+                        bool writable) override;
   bool IsAutoLaunched(const extensions::Extension& extension) override;
   bool IsWhitelistedComponent(const extensions::Extension& extension) override;
 
@@ -378,7 +387,7 @@ class FileSystemRequestFileSystemFunction : public UIThreadExtensionFunction {
  private:
   // Called when a user grants or rejects permissions for the file system
   // access.
-  void OnConsentReceived(base::WeakPtr<file_manager::Volume> volume,
+  void OnConsentReceived(const base::WeakPtr<file_manager::Volume>& volume,
                          bool writable,
                          file_system_api::ConsentProvider::Consent result);
 
