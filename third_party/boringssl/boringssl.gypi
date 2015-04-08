@@ -130,6 +130,7 @@
       'src/crypto/evp/digestsign.c',
       'src/crypto/evp/evp.c',
       'src/crypto/evp/evp_ctx.c',
+      'src/crypto/evp/p_dsa_asn1.c',
       'src/crypto/evp/p_ec.c',
       'src/crypto/evp/p_ec_asn1.c',
       'src/crypto/evp/p_hmac.c',
