@@ -19,5 +19,9 @@ Release
 ipch
 dumpvtt
 sample
-samplemuxer
+sample_muxer
 vttdemux
+Makefile
+CMakeFiles
+CMakeCache.txt
+*.cmake
