@@ -87,16 +87,17 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
     void set_fade_everything(bool fade_everything) {
       fade_everything_ = fade_everything;
     }
-    void SetOpacity(double opacity);
+
+    // Set the alpha channel for this view. 0 is transparent and 255 is opaque.
+    void SetAlpha(uint8_t alpha);
 
    private:
     // Controls whether the background and border are faded out as well. Default
     // is false, meaning only children are faded.
     bool fade_everything_;
 
-    // On a scale of 0-1, how much to fade out the contents of this view. 0 is
-    // totally invisible, 1 is totally visible.
-    double opacity_;
+    // The alpha channel for this view. 0 is transparent and 255 is opaque.
+    uint8_t alpha_;
 
     DISALLOW_COPY_AND_ASSIGN(FadeOutView);
   };

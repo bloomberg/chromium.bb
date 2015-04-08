@@ -22,6 +22,7 @@
 #include "ui/compositor/compositing_recorder.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -85,7 +86,7 @@ void CardUnmaskPromptViews::ControllerGone() {
 
 void CardUnmaskPromptViews::DisableAndWaitForVerification() {
   SetInputsEnabled(false);
-  progress_overlay_->SetOpacity(0.0);
+  progress_overlay_->SetAlpha(0);
   progress_overlay_->SetVisible(true);
   progress_throbber_->Start();
   overlay_animation_.Show();
@@ -109,7 +110,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
     // TODO(estade): it's somewhat jarring when the error comes back too
     // quickly.
     overlay_animation_.Reset();
-    storage_row_->SetOpacity(1.0);
+    storage_row_->SetAlpha(255);
     progress_overlay_->SetVisible(false);
 
     if (allow_retry) {
@@ -326,8 +327,9 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
 
 void CardUnmaskPromptViews::AnimationProgressed(
     const gfx::Animation* animation) {
-  progress_overlay_->SetOpacity(animation->GetCurrentValue());
-  storage_row_->SetOpacity(1.0 - animation->GetCurrentValue());
+  uint8_t alpha = static_cast<uint8_t>(animation->CurrentValueBetween(0, 255));
+  progress_overlay_->SetAlpha(alpha);
+  storage_row_->SetAlpha(255 - alpha);
 }
 
 void CardUnmaskPromptViews::InitIfNecessary() {
@@ -456,29 +458,28 @@ void CardUnmaskPromptViews::ClosePrompt() {
 }
 
 CardUnmaskPromptViews::FadeOutView::FadeOutView()
-    : fade_everything_(false), opacity_(1.0) {
+    : fade_everything_(false), alpha_(255) {
 }
 CardUnmaskPromptViews::FadeOutView::~FadeOutView() {
 }
 
 void CardUnmaskPromptViews::FadeOutView::PaintChildren(
     const ui::PaintContext& context) {
-  uint8_t alpha = static_cast<uint8_t>(255 * opacity_);
-  ui::CompositingRecorder recorder(context, alpha);
+  ui::CompositingRecorder recorder(context, alpha_);
   views::View::PaintChildren(context);
 }
 
 void CardUnmaskPromptViews::FadeOutView::OnPaint(gfx::Canvas* canvas) {
-  if (!fade_everything_ || opacity_ > 0.99)
+  if (!fade_everything_ || alpha_ == 255)
     return views::View::OnPaint(canvas);
 
-  canvas->SaveLayerAlpha(0xff * opacity_);
+  canvas->SaveLayerAlpha(alpha_);
   views::View::OnPaint(canvas);
   canvas->Restore();
 }
 
-void CardUnmaskPromptViews::FadeOutView::SetOpacity(double opacity) {
-  opacity_ = opacity;
+void CardUnmaskPromptViews::FadeOutView::SetAlpha(uint8_t alpha) {
+  alpha_ = alpha;
   SchedulePaint();
 }
 
