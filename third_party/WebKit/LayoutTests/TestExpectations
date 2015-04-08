@@ -1653,24 +1653,6 @@ crbug.com/437131 [ Win Linux ] virtual/gpu/fast/canvas/image-object-in-canvas.ht
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 crbug.com/419486 [ Mac ] virtual/slimmingpaint/fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
 
-# http://crrev.com/1060843002/
-crbug.com/473119 fast/backgrounds/background-leakage-transforms.html [ NeedsRebaseline ]
-crbug.com/473119 fast/backgrounds/background-leakage.html [ NeedsRebaseline ]
-crbug.com/473119 fast/borders/border-radius-constraints-double.html [ NeedsRebaseline ]
-crbug.com/473119 fast/borders/border-radius-different-width-001-double.html [ NeedsRebaseline ]
-crbug.com/473119 fast/borders/borderRadiusAllStylesAllCorners.html [ NeedsRebaseline ]
-crbug.com/473119 fast/borders/borderRadiusDouble01.html [ NeedsRebaseline ]
-crbug.com/473119 fast/borders/borderRadiusDouble02.html [ NeedsRebaseline ]
-crbug.com/473119 fast/borders/borderRadiusDouble03.html [ NeedsRebaseline ]
-crbug.com/473119 fast/borders/fieldsetBorderRadius.html [ NeedsRebaseline ]
-crbug.com/473119 virtual/slimmingpaint/fast/borders/border-radius-constraints-double.html [ NeedsRebaseline ]
-crbug.com/473119 virtual/slimmingpaint/fast/borders/border-radius-different-width-001-double.html [ NeedsRebaseline ]
-crbug.com/473119 virtual/slimmingpaint/fast/borders/borderRadiusAllStylesAllCorners.html [ NeedsRebaseline ]
-crbug.com/473119 virtual/slimmingpaint/fast/borders/borderRadiusDouble01.html [ NeedsRebaseline ]
-crbug.com/473119 virtual/slimmingpaint/fast/borders/borderRadiusDouble02.html [ NeedsRebaseline ]
-crbug.com/473119 virtual/slimmingpaint/fast/borders/borderRadiusDouble03.html [ NeedsRebaseline ]
-crbug.com/473119 virtual/slimmingpaint/fast/borders/fieldsetBorderRadius.html [ NeedsRebaseline ]
-
 # Disabled until the test plugin is fixed.
 crbug.com/363099 [ Win ] plugins/geturlnotify-during-document-teardown.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/nested-plugin-objects.html [ Failure ]
