@@ -248,6 +248,35 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
 
     EXPECT_TRUE(state.BeginFrameNeeded());
 
+    // Expect nothing to happen until after OnBeginImplFrame.
+    EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
+    EXPECT_IMPL_FRAME_STATE(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
+    EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
+
+    state.OnBeginImplFrame();
+    EXPECT_ACTION_UPDATE_STATE(
+        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  }
+
+  // If commit requested and can't draw, still begin a main frame.
+  {
+    StateMachine state(default_scheduler_settings);
+    state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
+    state.SetCanStart();
+    state.UpdateState(state.NextAction());
+    state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+    state.SetNeedsRedraw(false);
+    state.SetVisible(true);
+    state.SetNeedsCommit();
+    state.SetCanDraw(false);
+
+    EXPECT_TRUE(state.BeginFrameNeeded());
+
+    // Expect nothing to happen until after OnBeginImplFrame.
+    EXPECT_COMMIT_STATE(SchedulerStateMachine::COMMIT_STATE_IDLE);
+    EXPECT_IMPL_FRAME_STATE(SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
+    EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
+
     state.OnBeginImplFrame();
     EXPECT_ACTION_UPDATE_STATE(
         SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
