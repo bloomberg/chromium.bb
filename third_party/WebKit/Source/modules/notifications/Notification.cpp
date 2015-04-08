@@ -122,8 +122,9 @@ Notification* Notification::create(ExecutionContext* context, const String& pers
     if (!data.icon.isEmpty())
         notification->setIconUrl(data.icon);
 
-    if (!data.data.isEmpty()) {
-        notification->setSerializedData(SerializedScriptValueFactory::instance().createFromWire(data.data));
+    const WebVector<char>& dataBytes = data.data;
+    if (!dataBytes.isEmpty()) {
+        notification->setSerializedData(SerializedScriptValueFactory::instance().createFromWireBytes(dataBytes.data(), dataBytes.size()));
         notification->serializedData()->registerMemoryAllocatedWithCurrentScriptContext();
     }
 
@@ -171,8 +172,9 @@ void Notification::show()
 
     // The lifetime and availability of non-persistent notifications is tied to the page
     // they were created by, and thus the data doesn't have to be known to the embedder.
-    String emptyDataAsWireString;
-    WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl, m_silent, emptyDataAsWireString);
+    Vector<char> emptyDataWireBytes;
+
+    WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl, m_silent, emptyDataWireBytes);
     notificationManager()->show(WebSerializedOrigin(*origin), notificationData, this);
 
     m_state = NotificationStateShowing;

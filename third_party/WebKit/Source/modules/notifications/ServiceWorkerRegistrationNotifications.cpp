@@ -67,12 +67,13 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "No notification permission has been granted for this origin."));
 
     // FIXME: Unify the code path here with the Notification.create() function.
-    String dataAsWireString;
+    Vector<char> dataAsWireBytes;
     if (options.hasData()) {
         RefPtr<SerializedScriptValue> data = SerializedScriptValueFactory::instance().create(options.data(), nullptr, exceptionState, options.data().isolate());
         if (exceptionState.hadException())
             return exceptionState.reject(scriptState);
-        dataAsWireString = data->toWireString();
+
+        data->toWireBytes(dataAsWireBytes);
     }
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
@@ -88,7 +89,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     }
 
     WebNotificationData::Direction dir = options.dir() == "rtl" ? WebNotificationData::DirectionRightToLeft : WebNotificationData::DirectionLeftToRight;
-    WebNotificationData notification(title, dir, options.lang(), options.body(), options.tag(), iconUrl, options.silent(), dataAsWireString);
+    WebNotificationData notification(title, dir, options.lang(), options.body(), options.tag(), iconUrl, options.silent(), dataAsWireBytes);
     WebNotificationShowCallbacks* callbacks = new CallbackPromiseAdapter<void, void>(resolver);
 
     SecurityOrigin* origin = executionContext->securityOrigin();

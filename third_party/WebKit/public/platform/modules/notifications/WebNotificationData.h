@@ -7,6 +7,7 @@
 
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
@@ -35,7 +36,7 @@ struct WebNotificationData {
     {
     }
 
-    WebNotificationData(const WebString& title, Direction direction, const WebString& lang, const WebString& body, const WebString& tag, const WebURL& icon, bool silent, const WebString& data)
+    WebNotificationData(const WebString& title, Direction direction, const WebString& lang, const WebString& body, const WebString& tag, const WebURL& icon, bool silent, const WebVector<char>& data)
         : title(title)
         , direction(direction)
         , lang(lang)
@@ -54,7 +55,7 @@ struct WebNotificationData {
     WebString tag;
     WebURL icon;
     bool silent;
-    WebString data;
+    WebVector<char> data;
 };
 
 } // namespace blink
