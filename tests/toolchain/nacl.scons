@@ -251,7 +251,7 @@ base_eh_env = env.Clone()
 supports_cxx11 = (env.Bit('bitcode') or env.Bit('build_arm') or
                   env.Bit('nacl_clang'))
 base_eh_env.Append(CPPDEFINES=[['SUPPORTS_CXX11', str(int(supports_cxx11))]])
-if not env.Bit('bitcode') and not env.Bit('nacl_clang'):
+if supports_cxx11 and not env.Bit('bitcode') and not env.Bit('nacl_clang'):
   # This flag is necessary for testing std::rethrow_exception(), at
   # least when using libstdc++.
   base_eh_env.Append(CXXFLAGS=['-std=gnu++11'])
