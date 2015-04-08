@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/trace_event/trace_event.h"
 
 namespace gfx {
 
@@ -13,6 +14,49 @@ ANGLEPlatformImpl::ANGLEPlatformImpl() {
 }
 
 ANGLEPlatformImpl::~ANGLEPlatformImpl() {
+}
+
+double ANGLEPlatformImpl::monotonicallyIncreasingTime() {
+  return base::TimeTicks::Now().ToInternalValue() /
+         static_cast<double>(base::Time::kMicrosecondsPerSecond);
+}
+
+const unsigned char* ANGLEPlatformImpl::getTraceCategoryEnabledFlag(
+    const char* category_group) {
+  return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);
+}
+
+angle::Platform::TraceEventHandle ANGLEPlatformImpl::addTraceEvent(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    double timestamp,
+    int num_args,
+    const char** arg_names,
+    const unsigned char* arg_types,
+    const unsigned long long* arg_values,
+    unsigned char flags) {
+  base::TimeTicks timestamp_tt = base::TimeTicks::FromInternalValue(
+      static_cast<int64>(timestamp * base::Time::kMicrosecondsPerSecond));
+  base::trace_event::TraceEventHandle handle =
+      TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
+          phase, category_group_enabled, name, id,
+          base::PlatformThread::CurrentId(), timestamp_tt, num_args, arg_names,
+          arg_types, arg_values, nullptr, flags);
+  angle::Platform::TraceEventHandle result;
+  memcpy(&result, &handle, sizeof(result));
+  return result;
+}
+
+void ANGLEPlatformImpl::updateTraceEventDuration(
+    const unsigned char* category_group_enabled,
+    const char* name,
+    TraceEventHandle handle) {
+  base::trace_event::TraceEventHandle trace_event_handle;
+  memcpy(&trace_event_handle, &handle, sizeof(handle));
+  TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(category_group_enabled, name,
+                                              trace_event_handle);
 }
 
 void ANGLEPlatformImpl::histogramCustomCounts(const char* name,

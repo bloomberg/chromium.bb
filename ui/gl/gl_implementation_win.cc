@@ -61,45 +61,6 @@ bool LoadD3DXLibrary(const base::FilePath& module_path,
   return true;
 }
 
-const unsigned char* AngleGetTraceCategoryEnabledFlag(const char* name) {
-  return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(name);
-}
-
-void AngleAddTraceEvent(char phase,
-                        const unsigned char* category_group_enabled,
-                        const char* name,
-                        unsigned long long id,
-                        int num_args,
-                        const char** arg_names,
-                        const unsigned char* arg_types,
-                        const unsigned long long* arg_values,
-                        unsigned char flags) {
-  TRACE_EVENT_API_ADD_TRACE_EVENT(phase,
-                                  category_group_enabled,
-                                  name,
-                                  id,
-                                  num_args,
-                                  arg_names,
-                                  arg_types,
-                                  arg_values,
-                                  NULL,
-                                  flags);
-}
-
-typedef const unsigned char* (*GetCategoryEnabledFlagFunc)(const char* name);
-typedef void (*AddTraceEventFunc)(char phase,
-                                  const unsigned char* categoryGroupEnabled,
-                                  const char* name,
-                                  unsigned long long id,
-                                  int numArgs,
-                                  const char** argNames,
-                                  const unsigned char* argTypes,
-                                  const unsigned long long* argValues,
-                                  unsigned char flags);
-typedef void (__stdcall *SetTraceFunctionPointersFunc)(
-    GetCategoryEnabledFlagFunc get_category_enabled_flag,
-    AddTraceEventFunc add_trace_event_func);
-
 // TODO(jmadill): Apply to all platforms eventually
 base::LazyInstance<ANGLEPlatformImpl> g_angle_platform_impl =
     LAZY_INSTANCE_INITIALIZER;
@@ -213,16 +174,6 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
 #endif
 
       if (!using_swift_shader) {
-        // TODO(jmadill): remove when platform impl supports tracing
-        SetTraceFunctionPointersFunc set_trace_function_pointers =
-            reinterpret_cast<SetTraceFunctionPointersFunc>(
-                base::GetFunctionPointerFromNativeLibrary(
-                    gles_library, "SetTraceFunctionPointers"));
-        if (set_trace_function_pointers) {
-          set_trace_function_pointers(&AngleGetTraceCategoryEnabledFlag,
-                                      &AngleAddTraceEvent);
-        }
-
         // Init ANGLE platform here, before we call GetPlatformDisplay().
         // TODO(jmadill): Apply to all platforms eventually
         ANGLEPlatformInitializeFunc angle_platform_init =

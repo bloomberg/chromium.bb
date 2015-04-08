@@ -20,6 +20,22 @@ class ANGLEPlatformImpl : public angle::Platform {
   ~ANGLEPlatformImpl() override;
 
   // angle::Platform:
+  double monotonicallyIncreasingTime() override;
+  const unsigned char* getTraceCategoryEnabledFlag(
+      const char* category_group) override;
+  TraceEventHandle addTraceEvent(char phase,
+                                 const unsigned char* category_group_enabled,
+                                 const char* name,
+                                 unsigned long long id,
+                                 double timestamp,
+                                 int num_args,
+                                 const char** arg_names,
+                                 const unsigned char* arg_types,
+                                 const unsigned long long* arg_values,
+                                 unsigned char flags) override;
+  void updateTraceEventDuration(const unsigned char* category_group_enabled,
+                                const char* name,
+                                TraceEventHandle handle) override;
   void histogramCustomCounts(const char* name,
                              int sample,
                              int min,
