@@ -95,17 +95,17 @@ class BatteryUtilsSetBatteryMeasurementTest(BatteryUtilsTest):
             mock.ANY, retries=0, single_line=True,
             timeout=10, check_return=True), '22'),
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
+            ['dumpsys', 'battery', 'reset'], check_return=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'batterystats', '--charged', '--checkin'],
             check_return=True), []),
         (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'ac', '0'], check_return=True), []),
+        (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'set', 'usb', '0'], check_return=True), []),
         (self.call.battery.GetCharging(), False),
-        (self.call.device.RunShellCommand(
-            ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'reset'], check_return=True), []),
         (self.call.battery.GetCharging(), True)):

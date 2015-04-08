@@ -200,6 +200,7 @@ class BatteryUtils(object):
     Raises:
       device_errors.CommandFailedError: If method of disabling charging cannot
         be determined.
+      device_errors.DeviceVersionError: If device is not L or higher.
     """
     if 'charging_config' not in self._cache:
       for c in _CONTROL_CHARGING_COMMANDS:
@@ -233,12 +234,17 @@ class BatteryUtils(object):
     Raises:
       device_errors.CommandFailedError: When resetting batterystats fails to
         reset power values.
+      device_errors.DeviceVersionError: If device is not L or higher.
     """
     def battery_updates_disabled():
       return self.GetCharging() is False
 
+    if (self._device.build_version_sdk <
+        constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP):
+      raise device_errors.DeviceVersionError('Device must be L or higher.')
+
     self._device.RunShellCommand(
-        ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True)
+        ['dumpsys', 'battery', 'reset'], check_return=True)
     self._device.RunShellCommand(
         ['dumpsys', 'batterystats', '--reset'], check_return=True)
     battery_data = self._device.RunShellCommand(
@@ -252,6 +258,8 @@ class BatteryUtils(object):
           and l[PWI_POWER_INDEX] != 0):
         raise device_errors.CommandFailedError(
             'Non-zero pmi value found after reset.')
+    self._device.RunShellCommand(['dumpsys', 'battery', 'set', 'ac', '0'],
+                                 check_return=True)
     self._device.RunShellCommand(['dumpsys', 'battery', 'set', 'usb', '0'],
                                  check_return=True)
     timeout_retry.WaitFor(battery_updates_disabled, wait_period=1)
@@ -267,8 +275,10 @@ class BatteryUtils(object):
     def battery_updates_enabled():
       return self.GetCharging() is True
 
-    self._device.RunShellCommand(['dumpsys', 'battery', 'set', 'usb', '1'],
-                                 check_return=True)
+    if (self._device.build_version_sdk <
+        constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP):
+      raise device_errors.DeviceVersionError('Device must be L or higher.')
+
     self._device.RunShellCommand(['dumpsys', 'battery', 'reset'],
                                  check_return=True)
     timeout_retry.WaitFor(battery_updates_enabled, wait_period=1)
@@ -294,7 +304,7 @@ class BatteryUtils(object):
       retries: number of retries
 
     Raises:
-      device_errors.CommandFailedError: If device is not L or higher.
+      device_errors.DeviceVersionError: If device is not L or higher.
     """
     if (self._device.build_version_sdk <
         constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP):
