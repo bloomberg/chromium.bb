@@ -122,12 +122,19 @@ public class Log {
      *                     the line number.
      * @param messageTemplate The message you would like logged. It is to be specified as a format
      *                        string.
-     * @param args Arguments referenced by the format specifiers in the format string.
+     * @param args Arguments referenced by the format specifiers in the format string. If the last
+     *             one is a {@link Throwable}, its trace will be printed.
      */
     private void verbose(String secondaryTag, String messageTemplate, Object... args) {
         if (isEnabled(android.util.Log.VERBOSE)) {
             if (mDebugWithStack) secondaryTag = getCallOrigin();
-            android.util.Log.v(mTag, formatLog(secondaryTag, messageTemplate, args));
+            String message = formatLog(secondaryTag, messageTemplate, args);
+            Throwable tr = getThrowableToLog(args);
+            if (tr != null) {
+                android.util.Log.v(mTag, message, tr);
+            } else {
+                android.util.Log.v(mTag, message);
+            }
         }
     }
 
@@ -190,12 +197,19 @@ public class Log {
      *                     the line number.
      * @param messageTemplate The message you would like logged. It is to be specified as a format
      *                        string.
-     * @param args Arguments referenced by the format specifiers in the format string.
+     * @param args Arguments referenced by the format specifiers in the format string. If the last
+     *             one is a {@link Throwable}, its trace will be printed.
      */
     private void debug(String secondaryTag, String messageTemplate, Object... args) {
         if (isEnabled(android.util.Log.DEBUG)) {
             if (mDebugWithStack) secondaryTag = getCallOrigin();
-            android.util.Log.d(mTag, formatLog(secondaryTag, messageTemplate, args));
+            String message = formatLog(secondaryTag, messageTemplate, args);
+            Throwable tr = getThrowableToLog(args);
+            if (tr != null) {
+                android.util.Log.d(mTag, message, tr);
+            } else {
+                android.util.Log.d(mTag, message);
+            }
         }
     }
 
@@ -249,11 +263,18 @@ public class Log {
      *                     class where the log call occurs.
      * @param messageTemplate The message you would like logged. It is to be specified as a format
      *                        string.
-     * @param args Arguments referenced by the format specifiers in the format string.
+     * @param args Arguments referenced by the format specifiers in the format string. If the last
+     *             one is a {@link Throwable}, its trace will be printed.
      */
     public void i(String secondaryTag, String messageTemplate, Object... args) {
         if (isEnabled(android.util.Log.INFO)) {
-            android.util.Log.i(mTag, formatLog(secondaryTag, messageTemplate, args));
+            String message = formatLog(secondaryTag, messageTemplate, args);
+            Throwable tr = getThrowableToLog(args);
+            if (tr != null) {
+                android.util.Log.i(mTag, message, tr);
+            } else {
+                android.util.Log.i(mTag, message);
+            }
         }
     }
 
@@ -264,11 +285,18 @@ public class Log {
      *                     class where the log call occurs.
      * @param messageTemplate The message you would like logged. It is to be specified as a format
      *                        string.
-     * @param args Arguments referenced by the format specifiers in the format string.
+     * @param args Arguments referenced by the format specifiers in the format string. If the last
+     *             one is a {@link Throwable}, its trace will be printed.
      */
     public void w(String secondaryTag, String messageTemplate, Object... args) {
         if (isEnabled(android.util.Log.WARN)) {
-            android.util.Log.w(mTag, formatLog(secondaryTag, messageTemplate, args));
+            String message = formatLog(secondaryTag, messageTemplate, args);
+            Throwable tr = getThrowableToLog(args);
+            if (tr != null) {
+                android.util.Log.w(mTag, message, tr);
+            } else {
+                android.util.Log.w(mTag, message);
+            }
         }
     }
 
@@ -279,12 +307,54 @@ public class Log {
      *                     class where the log call occurs.
      * @param messageTemplate The message you would like logged. It is to be specified as a format
      *                        string.
-     * @param args Arguments referenced by the format specifiers in the format string.
+     * @param args Arguments referenced by the format specifiers in the format string. If the last
+     *             one is a {@link Throwable}, its trace will be printed.
      */
     public void e(String secondaryTag, String messageTemplate, Object... args) {
         if (isEnabled(android.util.Log.ERROR)) {
-            android.util.Log.e(mTag, formatLog(secondaryTag, messageTemplate, args));
+            String message = formatLog(secondaryTag, messageTemplate, args);
+            Throwable tr = getThrowableToLog(args);
+            if (tr != null) {
+                android.util.Log.e(mTag, message, tr);
+            } else {
+                android.util.Log.e(mTag, message);
+            }
         }
+    }
+
+    /**
+     * What a Terrible Failure: Used for conditions that should never happen, and logged at
+     * the {@link android.util.Log#ASSERT} level. Depending on the configuration, it might
+     * terminate the process.
+     *
+     * @see android.util.Log#wtf(String, String, Throwable)
+     *
+     * @param secondaryTag Used to identify the source of a log message. It usually identifies the
+     *                     class where the log call occurs.
+     * @param messageTemplate The message you would like logged. It is to be specified as a format
+     *                        string.
+     * @param args Arguments referenced by the format specifiers in the format string. If the last
+     *             one is a {@link Throwable}, its trace will be printed.
+     */
+    public void wtf(String secondaryTag, String messageTemplate, Object... args) {
+        if (isEnabled(android.util.Log.ERROR)) {
+            String message = formatLog(secondaryTag, messageTemplate, args);
+            Throwable tr = getThrowableToLog(args);
+            if (tr != null) {
+                android.util.Log.wtf(mTag, message, tr);
+            } else {
+                android.util.Log.wtf(mTag, message);
+            }
+        }
+    }
+
+    private Throwable getThrowableToLog(Object[] args) {
+        if (args == null || args.length == 0) return null;
+
+        Object lastArg = args[args.length - 1];
+
+        if (!(lastArg instanceof Throwable)) return null;
+        return (Throwable) lastArg;
     }
 
     /** Returns a string form of the origin of the log call, to be used as secondary tag.*/
