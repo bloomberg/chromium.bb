@@ -749,6 +749,24 @@ void DevToolsUIBindings::RecordActionUMA(const std::string& name, int action) {
     UMA_HISTOGRAM_ENUMERATION(name, action, kDevToolsPanelShownBoundary);
 }
 
+void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
+                                                   int sample,
+                                                   int boundary_value) {
+  if (!(boundary_value >= 0 && boundary_value < 100 && sample >= 0 &&
+        sample < boundary_value)) {
+    frontend_host_->BadMessageRecieved();
+    return;
+  }
+  // Each histogram name must follow a different code path in
+  // order to UMA_HISTOGRAM_ENUMERATION work correctly.
+  if (name == kDevToolsActionTakenHistogram)
+    UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value);
+  else if (name == kDevToolsPanelShownHistogram)
+    UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value);
+  else
+    frontend_host_->BadMessageRecieved();
+}
+
 void DevToolsUIBindings::SendJsonRequest(const DispatchCallback& callback,
                                          const std::string& browser_id,
                                          const std::string& url) {

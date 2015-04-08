@@ -133,6 +133,9 @@ class DevToolsUIBindings : public content::NotificationObserver,
   void SetDevicesUpdatesEnabled(bool enabled) override;
   void SendMessageToBrowser(const std::string& message) override;
   void RecordActionUMA(const std::string& name, int action) override;
+  void RecordEnumeratedHistogram(const std::string& name,
+                                 int sample,
+                                 int boundary_value) override;
   void SendJsonRequest(const DispatchCallback& callback,
                        const std::string& browser_id,
                        const std::string& url) override;

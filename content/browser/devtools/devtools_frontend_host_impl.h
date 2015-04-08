@@ -17,6 +17,8 @@ class DevToolsFrontendHostImpl : public DevToolsFrontendHost,
                            DevToolsFrontendHost::Delegate* delegate);
   ~DevToolsFrontendHostImpl() override;
 
+  void BadMessageRecieved() override;
+
  private:
   // WebContentsObserver overrides.
   bool OnMessageReceived(const IPC::Message& message,

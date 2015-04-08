@@ -42,6 +42,8 @@ class DevToolsFrontendHost {
       Delegate* delegate);
 
   CONTENT_EXPORT virtual ~DevToolsFrontendHost() {}
+
+  CONTENT_EXPORT virtual void BadMessageRecieved() {}
 };
 
 }  // namespace content

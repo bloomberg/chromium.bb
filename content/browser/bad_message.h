@@ -38,6 +38,7 @@ enum BadMessageReason {
   WC_INVALID_FRAME_SOURCE,
   RWHVM_UNEXPECTED_FRAME_TYPE,
   RFPH_DETACH,
+  DFH_BAD_EMBEDDER_MESSAGE,
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
   // reason.
