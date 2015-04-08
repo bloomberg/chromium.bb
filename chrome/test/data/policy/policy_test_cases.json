@@ -2213,6 +2213,14 @@
     "os": ["chromeos"],
     "can_be_recommended": true
   },
+  
+  "ForceMaximizeOnFirstRun": {
+    "os": ["chromeos"],
+    "test_policy": { "ForceMaximizeOnFirstRun": true },
+    "pref_mappings": [
+      { "pref": "ui.force_maximize_on_first_run" }
+    ]
+  },
 
   "----- Chrome OS device policies ---------------------------------------": {},
 

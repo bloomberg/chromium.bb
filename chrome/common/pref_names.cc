@@ -817,6 +817,11 @@ const char kWakeOnWifiSsid[] = "settings.internet.wake_on_wifi_ssid";
 // which allows to bypass the user's proxy for captive portal authentication.
 const char kCaptivePortalAuthenticationIgnoresProxy[] =
     "proxy.captive_portal_ignores_proxy";
+
+// This boolean controls whether the first window shown on first run should be
+// unconditionally maximized, overriding the heuristic that normally chooses the
+// window size.
+const char kForceMaximizeOnFirstRun[] = "ui.force_maximize_on_first_run";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

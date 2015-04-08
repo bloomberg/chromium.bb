@@ -82,6 +82,7 @@ class MediaDelegateImpl : public MediaDelegate {
 TestShellDelegate::TestShellDelegate()
     : num_exit_requests_(0),
       multi_profiles_enabled_(false),
+      force_maximize_on_first_run_(false),
       test_session_state_delegate_(NULL) {
 }
 
@@ -106,6 +107,10 @@ bool TestShellDelegate::IsRunningInForcedAppMode() const {
 
 bool TestShellDelegate::IsMultiAccountEnabled() const {
   return false;
+}
+
+bool TestShellDelegate::IsForceMaximizeOnFirstRun() const {
+  return force_maximize_on_first_run_;
 }
 
 void TestShellDelegate::PreInit() {

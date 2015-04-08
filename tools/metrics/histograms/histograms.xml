@@ -48973,6 +48973,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="296" label="Set Apps and Extensions cache size (in bytes)"/>
   <int value="297"
       label="Show an autocomplete option during user sign-in flow"/>
+  <int value="298" label="Maximize the first browser window on first run"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

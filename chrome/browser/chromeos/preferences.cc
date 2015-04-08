@@ -333,6 +333,10 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kCaptivePortalAuthenticationIgnoresProxy, true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  registry->RegisterBooleanPref(
+      prefs::kForceMaximizeOnFirstRun, false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {

@@ -181,6 +181,10 @@ bool ShellDelegateImpl::IsMultiAccountEnabled() const {
   return false;
 }
 
+bool ShellDelegateImpl::IsForceMaximizeOnFirstRun() const {
+  return false;
+}
+
 void ShellDelegateImpl::PreInit() {
 }
 

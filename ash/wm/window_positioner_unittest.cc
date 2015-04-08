@@ -4,11 +4,15 @@
 
 #include "ash/wm/window_positioner.h"
 
+#include <string>
+
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -144,6 +148,51 @@ TEST_F(WindowPositionerTest, EnsureMinimumVisibility) {
   // Make sure the bounds is adjusted to be inside the work area.
   EXPECT_EQ("390,10 100x100", widget->GetWindowBoundsInScreen().ToString());
   widget->CloseNow();
+}
+
+// In general case on first run the browser window will be maximized only for
+// low resolution screens (width < 1366). In case of big screens the browser is
+// opened being not maximized. To enforce maximization for all screen
+// resolutions, one can set "ForceMaximizeBrowserWindowOnFirstRun"
+// policy. In the following tests we check if the window will be opened in
+// maximized mode for low and high resolution when this policy is set.
+TEST_F(WindowPositionerTest, FirstRunMaximizeWindowHighResloution) {
+  const int width = ash::WindowPositioner::GetForceMaximizedWidthLimit() + 100;
+  // Set resolution to 1466x300.
+  const std::string resolution = base::IntToString(width) + "x300";
+  UpdateDisplay(resolution);
+  gfx::Rect bounds_in_out(0, 0, 320, 240);  // Random bounds.
+  ui::WindowShowState show_state_out = ui::SHOW_STATE_DEFAULT;
+
+  test::TestShellDelegate* const delegate =
+      static_cast<test::TestShellDelegate*>(Shell::GetInstance()->delegate());
+  delegate->SetForceMaximizeOnFirstRun(true);
+
+  WindowPositioner::GetBoundsAndShowStateForNewWindow(
+      Shell::GetScreen(), nullptr, false, ui::SHOW_STATE_DEFAULT,
+      &bounds_in_out, &show_state_out);
+
+  EXPECT_EQ(show_state_out, ui::SHOW_STATE_MAXIMIZED);
+}
+
+// For detail see description of FirstRunMaximizeWindowHighResloution.
+TEST_F(WindowPositionerTest, FirstRunMaximizeWindowLowResolution) {
+  const int width = ash::WindowPositioner::GetForceMaximizedWidthLimit() - 100;
+  // Set resolution to 1266x300.
+  const std::string resolution = base::IntToString(width) + "x300";
+  UpdateDisplay(resolution);
+  gfx::Rect bounds_in_out(0, 0, 320, 240);  // Random bounds.
+  ui::WindowShowState show_state_out = ui::SHOW_STATE_DEFAULT;
+
+  test::TestShellDelegate* const delegate =
+      static_cast<test::TestShellDelegate*>(Shell::GetInstance()->delegate());
+  delegate->SetForceMaximizeOnFirstRun(true);
+
+  WindowPositioner::GetBoundsAndShowStateForNewWindow(
+      Shell::GetScreen(), nullptr, false, ui::SHOW_STATE_DEFAULT,
+      &bounds_in_out, &show_state_out);
+
+  EXPECT_EQ(show_state_out, ui::SHOW_STATE_MAXIMIZED);
 }
 
 }  // namespace

@@ -6,6 +6,7 @@
 
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_resizer.h"
@@ -246,7 +247,6 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
     ui::WindowShowState show_state_in,
     gfx::Rect* bounds_in_out,
     ui::WindowShowState* show_state_out) {
-
   // Always open new window in the target display.
   aura::Window* target = Shell::GetTargetRootWindow();
 
@@ -264,14 +264,24 @@ void WindowPositioner::GetBoundsAndShowStateForNewWindow(
     // Use adjusted saved bounds, if there is one.
     if (is_saved_bounds)
       return;
-    // When using "small screens" we want to always open in full screen mode.
-    if (show_state_in == ui::SHOW_STATE_DEFAULT && (maximize_first_window ||
-         (work_area.width() <= GetForceMaximizedWidthLimit() &&
-         (!new_window || !wm::GetWindowState(new_window)->IsFullscreen())))) {
-      *show_state_out = ui::SHOW_STATE_MAXIMIZED;
+
+    if (show_state_in == ui::SHOW_STATE_DEFAULT) {
+      const bool maximize_first_window_on_first_run =
+          Shell::GetInstance()->delegate()->IsForceMaximizeOnFirstRun();
+      // We want to always open maximized on "small screens" or when policy
+      // tells us to.
+      const bool set_maximized =
+          maximize_first_window ||
+          ((work_area.width() <= GetForceMaximizedWidthLimit() ||
+            maximize_first_window_on_first_run) &&
+           (!new_window || !wm::GetWindowState(new_window)->IsFullscreen()));
+
+      if (set_maximized)
+        *show_state_out = ui::SHOW_STATE_MAXIMIZED;
     }
     return;
   }
+
   wm::WindowState* top_window_state = wm::GetWindowState(top_window);
   bool maximized = top_window_state->IsMaximized();
   // We ignore the saved show state, but look instead for the top level

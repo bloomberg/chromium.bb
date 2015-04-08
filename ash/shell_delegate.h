@@ -83,6 +83,11 @@ class ASH_EXPORT ShellDelegate {
   // Returns true if multi account is enabled.
   virtual bool IsMultiAccountEnabled() const = 0;
 
+  // Returns true if the first window shown on first run should be
+  // unconditionally maximized, overriding the heuristic that normally chooses
+  // the window size.
+  virtual bool IsForceMaximizeOnFirstRun() const = 0;
+
   // Called before processing |Shell::Init()| so that the delegate
   // can perform tasks necessary before the shell is initialized.
   virtual void PreInit() = 0;

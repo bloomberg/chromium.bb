@@ -270,6 +270,7 @@ extern const char kFileSystemProviderMounted[];
 extern const char kTouchVirtualKeyboardEnabled[];
 extern const char kWakeOnWifiSsid[];
 extern const char kCaptivePortalAuthenticationIgnoresProxy[];
+extern const char kForceMaximizeOnFirstRun[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];

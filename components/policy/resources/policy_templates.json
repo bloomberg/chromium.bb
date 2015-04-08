@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 297
+#   For your editing convenience: highest ID currently used: 298
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -7305,6 +7305,21 @@
       'caption': '''Enable domain name autocomplete during user sign in''',
       'desc': '''If this policy is set to a blank string or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not show an autocomplete option during user sign-in flow.
       If this policy is set to a string representing a domain name, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show an autocomplete option during user sign-in allowing the user to type in only his user name without the domain name extension.  The user will be able to overwrite this domain name extension.''',
+    },
+    {
+      'name': 'ForceMaximizeOnFirstRun',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:43-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 298,
+      'caption': '''Maximize the first browser window on first run''',
+      'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will unconditionally maximize the the first window shown on first run.
+      If this policy is set to false or not configured, a heuristic will decide whether to maximize the first window shown, based on the screen size.''',
     },
   ],
   'messages': {

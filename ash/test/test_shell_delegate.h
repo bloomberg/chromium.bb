@@ -36,6 +36,7 @@ class TestShellDelegate : public ShellDelegate {
   bool IsMultiProfilesEnabled() const override;
   bool IsRunningInForcedAppMode() const override;
   bool IsMultiAccountEnabled() const override;
+  bool IsForceMaximizeOnFirstRun() const override;
   void PreInit() override;
   void PreShutdown() override;
   void Exit() override;
@@ -63,10 +64,14 @@ class TestShellDelegate : public ShellDelegate {
   int num_exit_requests() const { return num_exit_requests_; }
 
   void SetMediaCaptureState(MediaCaptureState state);
+  void SetForceMaximizeOnFirstRun(bool maximize) {
+    force_maximize_on_first_run_ = maximize;
+  };
 
  private:
   int num_exit_requests_;
   bool multi_profiles_enabled_;
+  bool force_maximize_on_first_run_;
 
   scoped_ptr<content::BrowserContext> active_browser_context_;
   scoped_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
