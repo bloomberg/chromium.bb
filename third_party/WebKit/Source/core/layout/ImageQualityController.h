@@ -31,6 +31,7 @@
 #ifndef ImageQualityController_h
 #define ImageQualityController_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutSize.h"
@@ -44,7 +45,7 @@ namespace blink {
 typedef HashMap<const void*, LayoutSize> LayerSizeMap;
 typedef HashMap<LayoutObject*, LayerSizeMap> ObjectLayerSizeMap;
 
-class ImageQualityController final {
+class CORE_EXPORT ImageQualityController final {
     WTF_MAKE_NONCOPYABLE(ImageQualityController); WTF_MAKE_FAST_ALLOCATED(ImageQualityController);
 public:
     ~ImageQualityController();

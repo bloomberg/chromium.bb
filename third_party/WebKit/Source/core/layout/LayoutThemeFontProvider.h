@@ -27,11 +27,12 @@
 #define LayoutThemeFontProvider_h
 
 #include "core/CSSValueKeywords.h"
+#include "core/CoreExport.h"
 #include "platform/fonts/FontTraits.h"
 
 namespace blink {
 
-class LayoutThemeFontProvider {
+class CORE_EXPORT LayoutThemeFontProvider {
 public:
     static void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily);
     static void setDefaultFontSize(int);

@@ -30,6 +30,7 @@
 #ifndef Shape_h
 #define Shape_h
 
+#include "core/CoreExport.h"
 #include "core/style/BasicShapes.h"
 #include "core/style/StyleImage.h"
 #include "platform/geometry/LayoutRect.h"
@@ -66,7 +67,7 @@ struct LineSegment {
 // computed segments are returned as pairs of logical X coordinates. The BasicShape itself is defined in
 // physical coordinates.
 
-class Shape {
+class CORE_EXPORT Shape {
 public:
     struct DisplayPaths {
         Path shape;

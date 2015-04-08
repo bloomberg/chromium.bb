@@ -26,6 +26,7 @@
 #ifndef LayoutGeometryMap_h
 #define LayoutGeometryMap_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutGeometryMapStep.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/geometry/FloatPoint.h"
@@ -42,7 +43,7 @@ class TransformationMatrix;
 class TransformState;
 
 // Can be used while walking the Renderer tree to cache data about offsets and transforms.
-class LayoutGeometryMap {
+class CORE_EXPORT LayoutGeometryMap {
     WTF_MAKE_NONCOPYABLE(LayoutGeometryMap);
 public:
     LayoutGeometryMap(MapCoordinatesFlags = UseTransforms);

@@ -27,6 +27,7 @@
 #ifndef LayoutMultiColumnFlowThread_h
 #define LayoutMultiColumnFlowThread_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutFlowThread.h"
 
 namespace blink {
@@ -114,7 +115,7 @@ enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpac
 //
 // There's also some documentation online:
 // https://sites.google.com/a/chromium.org/dev/developers/design-documents/multi-column-layout
-class LayoutMultiColumnFlowThread : public LayoutFlowThread {
+class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread {
 public:
     virtual ~LayoutMultiColumnFlowThread();
 

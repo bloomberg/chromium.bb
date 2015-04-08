@@ -29,13 +29,14 @@
 #ifndef LayoutThemeDefault_h
 #define LayoutThemeDefault_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutTheme.h"
 
 namespace blink {
 
 class LayoutProgress;
 
-class LayoutThemeDefault : public LayoutTheme {
+class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
 public:
     virtual String extraDefaultStyleSheet() override;
     virtual String extraQuirksStyleSheet() override;

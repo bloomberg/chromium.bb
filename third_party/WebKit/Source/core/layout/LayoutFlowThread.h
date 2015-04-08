@@ -30,6 +30,7 @@
 #ifndef LayoutFlowThread_h
 #define LayoutFlowThread_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/paint/DeprecatedPaintLayerFragment.h"
 #include "wtf/ListHashSet.h"
@@ -47,7 +48,7 @@ typedef ListHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
 // and nodeAtPoint methods to this object. Each LayoutRegion will actually be a viewPort
 // of the LayoutFlowThread.
 
-class LayoutFlowThread: public LayoutBlockFlow {
+class CORE_EXPORT LayoutFlowThread: public LayoutBlockFlow {
 public:
     LayoutFlowThread();
     virtual ~LayoutFlowThread() { };

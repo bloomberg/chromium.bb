@@ -26,6 +26,7 @@
 #ifndef DeprecatedPaintLayerCompositor_h
 #define DeprecatedPaintLayerCompositor_h
 
+#include "core/CoreExport.h"
 #include "core/layout/compositing/CompositingReasonFinder.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "wtf/HashMap.h"
@@ -63,7 +64,7 @@ enum CompositingStateTransitionType {
 //
 // There is one DeprecatedPaintLayerCompositor per LayoutView.
 
-class DeprecatedPaintLayerCompositor final : public GraphicsLayerClient {
+class CORE_EXPORT DeprecatedPaintLayerCompositor final : public GraphicsLayerClient {
     WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerCompositor);
 public:
     explicit DeprecatedPaintLayerCompositor(LayoutView&);

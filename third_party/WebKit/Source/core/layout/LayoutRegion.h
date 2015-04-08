@@ -30,13 +30,14 @@
 #ifndef LayoutRegion_h
 #define LayoutRegion_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 
 class LayoutFlowThread;
 
-class LayoutRegion : public LayoutBlockFlow {
+class CORE_EXPORT LayoutRegion : public LayoutBlockFlow {
 public:
     explicit LayoutRegion(Element*, LayoutFlowThread*);
 

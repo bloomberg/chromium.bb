@@ -31,6 +31,7 @@
 #ifndef TextAutosizer_h
 #define TextAutosizer_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTable.h"
 #include "platform/heap/Handle.h"
@@ -50,7 +51,7 @@ class LayoutBlock;
 // Single-pass text autosizer. Documentation at:
 // http://tinyurl.com/TextAutosizer
 
-class TextAutosizer final : public NoBaseWillBeGarbageCollectedFinalized<TextAutosizer> {
+class CORE_EXPORT TextAutosizer final : public NoBaseWillBeGarbageCollectedFinalized<TextAutosizer> {
     WTF_MAKE_NONCOPYABLE(TextAutosizer);
 public:
     static PassOwnPtrWillBeRawPtr<TextAutosizer> create(const Document* document)

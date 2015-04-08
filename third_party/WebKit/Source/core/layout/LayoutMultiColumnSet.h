@@ -27,6 +27,7 @@
 #ifndef LayoutMultiColumnSet_h
 #define LayoutMultiColumnSet_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutRegion.h"
 #include "core/layout/MultiColumnFragmentainerGroup.h"
@@ -58,7 +59,7 @@ namespace blink {
 // may need to group the columns, so that we get one MultiColumnFragmentainerGroup for each outer
 // fragmentainer (page / column) that the inner multicol container lives in. Each fragmentainer
 // group has its own column height, but the column height is uniform within a group.
-class LayoutMultiColumnSet : public LayoutRegion {
+class CORE_EXPORT LayoutMultiColumnSet : public LayoutRegion {
 public:
     static LayoutMultiColumnSet* createAnonymous(LayoutFlowThread&, const ComputedStyle& parentStyle);
 

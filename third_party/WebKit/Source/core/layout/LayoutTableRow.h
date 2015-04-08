@@ -25,6 +25,7 @@
 #ifndef LayoutTableRow_h
 #define LayoutTableRow_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutTableSection.h"
 
 namespace blink {
@@ -32,7 +33,7 @@ namespace blink {
 static const unsigned unsetRowIndex = 0x7FFFFFFF;
 static const unsigned maxRowIndex = 0x7FFFFFFE; // 2,147,483,646
 
-class LayoutTableRow final : public LayoutBox {
+class CORE_EXPORT LayoutTableRow final : public LayoutBox {
 public:
     explicit LayoutTableRow(Element*);
 
