@@ -10,11 +10,18 @@
 
 namespace blink {
 
+template <typename Strategy>
+class PositionIteratorAlgorithm;
+
 class Position;
 
 class EditingStrategy : public NodeTraversal {
 public:
     using PositionType = Position;
+    using PositionIteratorType = PositionIteratorAlgorithm<EditingStrategy>;
+
+    static bool editingIgnoresContent(const Node*);
+    static int lastOffsetForEditing(const Node*);
 };
 
 } // namespace blink
