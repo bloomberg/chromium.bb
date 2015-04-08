@@ -179,7 +179,10 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldSt
         || !oldStyle->contentDataEquivalent(newStyle)
         || oldStyle->hasTextCombine() != newStyle->hasTextCombine()
         || oldStyle->justifyItems() != newStyle->justifyItems()
-        || oldStyle->alignItems() != newStyle->alignItems())
+        || oldStyle->justifyItemsOverflowAlignment() != newStyle->justifyItemsOverflowAlignment()
+        || oldStyle->justifyItemsPositionType() != newStyle->justifyItemsPositionType()
+        || oldStyle->alignItems() != newStyle->alignItems()
+        || oldStyle->alignItemsOverflowAlignment() != newStyle->alignItemsOverflowAlignment())
         return Reattach;
 
     if (oldStyle->inheritedNotEqual(*newStyle))
@@ -468,7 +471,6 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
             || rareNonInheritedData->m_wrapThrough != other.rareNonInheritedData->m_wrapThrough
             || rareNonInheritedData->m_shapeMargin != other.rareNonInheritedData->m_shapeMargin
             || rareNonInheritedData->m_order != other.rareNonInheritedData->m_order
-            || rareNonInheritedData->m_justifyContent != other.rareNonInheritedData->m_justifyContent
             || rareNonInheritedData->m_grid.get() != other.rareNonInheritedData->m_grid.get()
             || rareNonInheritedData->m_gridItem.get() != other.rareNonInheritedData->m_gridItem.get()
             || rareNonInheritedData->m_textCombine != other.rareNonInheritedData->m_textCombine
@@ -649,7 +651,10 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const
         if (rareNonInheritedData->m_alignContent != other.rareNonInheritedData->m_alignContent
             || rareNonInheritedData->m_alignContentDistribution != other.rareNonInheritedData->m_alignContentDistribution
             || rareNonInheritedData->m_alignItems != other.rareNonInheritedData->m_alignItems
-            || rareNonInheritedData->m_alignSelf != other.rareNonInheritedData->m_alignSelf)
+            || rareNonInheritedData->m_alignSelf != other.rareNonInheritedData->m_alignSelf
+            || rareNonInheritedData->m_alignSelfOverflowAlignment != other.rareNonInheritedData->m_alignSelfOverflowAlignment
+            || rareNonInheritedData->m_justifyContent != other.rareNonInheritedData->m_justifyContent
+            || rareNonInheritedData->m_justifyContentDistribution != other.rareNonInheritedData->m_justifyContentDistribution)
             return true;
     }
 

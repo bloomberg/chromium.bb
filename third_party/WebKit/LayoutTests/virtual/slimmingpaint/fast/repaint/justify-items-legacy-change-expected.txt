@@ -1,0 +1,39 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [125, 53, 50, 50],
+        [124, 52, 52, 150],
+        [101, 53, 50, 50],
+        [100, 52, 52, 150],
+        [25, 53, 50, 50],
+        [24, 52, 52, 150],
+        [1, 53, 50, 50],
+        [0, 52, 300, 400],
+        [0, 52, 300, 400],
+        [0, 52, 200, 300],
+        [0, 52, 200, 300],
+        [0, 52, 52, 150]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV class='item1'",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV class='item2'",
+        "LayoutGrid DIV id='container'",
+        "LayoutBlockFlow DIV id='parentContainer'",
+        "LayoutBlockFlow DIV id='parentContainer'",
+        "LayoutGrid DIV id='container'",
+        "LayoutBlockFlow DIV class='item1'",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV class='item2'",
+        "LayoutBlockFlow DIV"
+      ]
+    }
+  ]
+}
+
