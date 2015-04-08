@@ -45,11 +45,8 @@ cr.define('options', function() {
 
       supervisedUserList.addEventListener('change', function(event) {
         var supervisedUser = supervisedUserList.selectedItem;
-        if (!supervisedUser)
-          return;
-
         $('supervised-user-import-ok').disabled =
-          supervisedUserList.selectedItem.onCurrentDevice;
+            !supervisedUser || supervisedUser.onCurrentDevice;
       });
 
       var self = this;
