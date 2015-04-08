@@ -10,12 +10,16 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "components/favicon/core/favicon_driver_observer.h"
 #include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_router.h"
+
+class FaviconTabHelper;
 
 namespace content {
 class WebContents;
@@ -30,6 +34,7 @@ namespace extensions {
 class TabsEventRouter : public TabStripModelObserver,
                         public chrome::BrowserListObserver,
                         public content::NotificationObserver,
+                        public favicon::FaviconDriverObserver,
                         public ui_zoom::ZoomObserver {
  public:
   explicit TabsEventRouter(Profile* profile);
@@ -75,6 +80,11 @@ class TabsEventRouter : public TabStripModelObserver,
   // ZoomObserver.
   void OnZoomChanged(
       const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
+
+  // favicon::FaviconDriverObserver.
+  void OnFaviconAvailable(const gfx::Image& image) override;
+  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                        bool icon_url_changed) override;
 
  private:
   // "Synthetic" event. Called from TabInsertedAt if new tab is detected.
@@ -168,6 +178,8 @@ class TabsEventRouter : public TabStripModelObserver,
 
   // The main profile that owns this event router.
   Profile* profile_;
+
+  ScopedObserver<FaviconTabHelper, TabsEventRouter> favicon_scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TabsEventRouter);
 };

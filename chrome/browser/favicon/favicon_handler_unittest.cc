@@ -231,6 +231,8 @@ class TestFaviconDriver : public favicon::FaviconDriver {
     SetActiveFaviconImage(image);
   }
 
+  void NotifyFaviconUpdated(bool icon_url_changed) override {}
+
   size_t num_active_favicon() const { return num_active_favicon_; }
   size_t num_favicon_available() const { return num_favicon_available_; }
   void ResetNumActiveFavicon() { num_active_favicon_ = 0; }

@@ -228,16 +228,6 @@ enum NotificationType {
   // the LoginHandler that should be cancelled.
   NOTIFICATION_AUTH_CANCELLED,
 
-  // Favicon ------------------------------------------------------------------
-
-  // Sent by FaviconTabHelper when a tab's favicon has been successfully
-  // updated. The details are a bool indicating whether the
-  // NavigationEntry's favicon URL has changed since the previous
-  // NOTIFICATION_FAVICON_UPDATED notification. The details are true if
-  // there was no previous NOTIFICATION_FAVICON_UPDATED notification for the
-  // current NavigationEntry.
-  NOTIFICATION_FAVICON_UPDATED,
-
   // Profiles -----------------------------------------------------------------
 
   // Sent after a Profile has been created. This notification is sent both for

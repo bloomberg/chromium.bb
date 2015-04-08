@@ -102,6 +102,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
   void OnFaviconAvailable(const gfx::Image& image,
                           const GURL& url,
                           bool is_active_favicon) override;
+  void NotifyFaviconUpdated(bool icon_url_changed) override;
 
   // Favicon download callback.
   void DidDownloadFavicon(

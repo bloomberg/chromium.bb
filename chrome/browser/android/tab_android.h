@@ -139,6 +139,8 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   // favicon::FaviconDriverObserver -------------------------------------------
   void OnFaviconAvailable(const gfx::Image& image) override;
+  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                        bool icon_url_changed) override;
 
   // Methods called from Java via JNI -----------------------------------------
 

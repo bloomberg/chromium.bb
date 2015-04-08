@@ -74,6 +74,11 @@ class FaviconDriver {
                                   const GURL& icon_url,
                                   bool is_active_favicon) = 0;
 
+  // Sends notification that the current page favicon has changed.
+  // |icon_url_changed| is true if the URL of the favicon changed in addition to
+  // the favicon image.
+  virtual void NotifyFaviconUpdated(bool icon_url_changed) = 0;
+
  protected:
   FaviconDriver() {}
   virtual ~FaviconDriver() {}

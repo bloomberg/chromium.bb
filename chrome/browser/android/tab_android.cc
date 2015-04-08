@@ -395,6 +395,10 @@ void TabAndroid::OnFaviconAvailable(const gfx::Image& image) {
                               gfx::ConvertToJavaBitmap(&favicon).obj());
 }
 
+void TabAndroid::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                                  bool icon_url_changed) {
+}
+
 void TabAndroid::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }

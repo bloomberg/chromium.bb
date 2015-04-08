@@ -8,12 +8,14 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -66,6 +68,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/favicon/core/favicon_driver_observer.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -130,6 +133,42 @@ using task_manager::browsertest_util::WaitForTaskManagerRows;
 namespace prerender {
 
 namespace {
+
+class FaviconUpdateWatcher : public favicon::FaviconDriverObserver {
+ public:
+  explicit FaviconUpdateWatcher(content::WebContents* web_contents)
+      : seen_(false), running_(false), scoped_observer_(this) {
+    scoped_observer_.Add(FaviconTabHelper::FromWebContents(web_contents));
+  }
+
+  void Wait() {
+    if (seen_)
+      return;
+
+    running_ = true;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+  }
+
+ private:
+  void OnFaviconAvailable(const gfx::Image& image) override {}
+  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                        bool icon_url_changed) override {
+    seen_ = true;
+    if (!running_)
+      return;
+
+    message_loop_runner_->Quit();
+    running_ = false;
+  }
+
+  bool seen_;
+  bool running_;
+  ScopedObserver<FaviconTabHelper, FaviconUpdateWatcher> scoped_observer_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(FaviconUpdateWatcher);
+};
 
 class MockNetworkChangeNotifierWIFI : public NetworkChangeNotifier {
  public:
@@ -3146,9 +3185,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
   if (!FaviconTabHelper::FromWebContents(
           GetActiveWebContents())->FaviconIsValid()) {
     // If the favicon has not been set yet, wait for it to be.
-    content::WindowedNotificationObserver favicon_update_watcher(
-        chrome::NOTIFICATION_FAVICON_UPDATED,
-        content::Source<WebContents>(GetActiveWebContents()));
+    FaviconUpdateWatcher favicon_update_watcher(GetActiveWebContents());
     favicon_update_watcher.Wait();
   }
   EXPECT_TRUE(FaviconTabHelper::FromWebContents(

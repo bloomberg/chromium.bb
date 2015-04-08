@@ -6,6 +6,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/favicon/core/favicon_driver_observer.h"
 #include "components/favicon/core/favicon_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -99,16 +101,19 @@ class FaviconTabHelperPendingTaskChecker {
 // - The pending navigation.
 // - FaviconHandler's pending favicon database requests.
 // - FaviconHandler's pending downloads.
-class PendingTaskWaiter : public content::NotificationObserver {
+class PendingTaskWaiter : public content::NotificationObserver,
+                          public favicon::FaviconDriverObserver {
  public:
   PendingTaskWaiter(content::WebContents* web_contents,
                     FaviconTabHelperPendingTaskChecker* checker)
-      : checker_(checker), load_stopped_(false), weak_factory_(this) {
-    registrar_.Add(this, chrome::NOTIFICATION_FAVICON_UPDATED,
-                   content::Source<content::WebContents>(web_contents));
+      : checker_(checker),
+        load_stopped_(false),
+        scoped_observer_(this),
+        weak_factory_(this) {
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    content::Source<content::NavigationController>(
                        &web_contents->GetController()));
+    scoped_observer_.Add(FaviconTabHelper::FromWebContents(web_contents));
   }
   ~PendingTaskWaiter() override {}
 
@@ -129,10 +134,21 @@ class PendingTaskWaiter : public content::NotificationObserver {
     if (type == content::NOTIFICATION_LOAD_STOP)
       load_stopped_ = true;
 
+    OnNotification();
+  }
+
+  // favicon::Favicon
+  void OnFaviconAvailable(const gfx::Image& image) override {}
+  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                        bool icon_url_changed) override {
+    OnNotification();
+  }
+
+  void OnNotification() {
     if (!quit_closure_.is_null()) {
       // We stop waiting based on changes in state to FaviconHandler which occur
-      // immediately after NOTIFICATION_FAVICON_UPDATED is sent. Post a task to
-      // check if we can stop waiting.
+      // immediately after OnFaviconUpdated() is called. Post a task to check if
+      // we can stop waiting.
       base::MessageLoopForUI::current()->PostTask(
           FROM_HERE, base::Bind(&PendingTaskWaiter::EndLoopIfCanStopWaiting,
                                 weak_factory_.GetWeakPtr()));
@@ -151,6 +167,7 @@ class PendingTaskWaiter : public content::NotificationObserver {
   bool load_stopped_;
   base::Closure quit_closure_;
   content::NotificationRegistrar registrar_;
+  ScopedObserver<FaviconTabHelper, PendingTaskWaiter> scoped_observer_;
   base::WeakPtrFactory<PendingTaskWaiter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingTaskWaiter);
