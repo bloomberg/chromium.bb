@@ -63,8 +63,6 @@ crbug.com/469454 [ Mac ] virtual/slimmingpaint/fast/repaint/fixed-element-repain
 
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ Pass ImageOnlyFailure ]
 
-crbug.com/474422 inspector/console/console-native-function.html [ Pass Failure ]
-
 crbug.com/450725 virtual/slimmingpaint/svg/text/remove-tspan-from-text.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/450725 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ Crash Timeout NeedsManualRebaseline ]
 crbug.com/450725 virtual/slimmingpaint/svg/text/text-text-05-t.svg [ ImageOnlyFailure NeedsManualRebaseline ]

@@ -1,5 +1,6 @@
 var initialize_ConsoleTest = function() {
 
+InspectorTest.preloadModule("source_frame");
 InspectorTest.preloadPanel("console");
 
 InspectorTest.evaluateInConsole = function(code, callback)

@@ -765,6 +765,13 @@ InspectorTest.preloadPanel = function(panelName)
     InspectorTest._panelsToPreload.push(panelName);
 }
 
+InspectorTest._modulesToPreload = [];
+
+InspectorTest.preloadModule = function(moduleName)
+{
+    InspectorTest._modulesToPreload.push(moduleName);
+}
+
 };  // initialize_InspectorTest
 
 var initializeCallId = 0;
@@ -847,6 +854,9 @@ function runTest(enableWatchDogWhileDebugging)
         var lastLoadedPanel;
 
         var promises = [];
+        for (var moduleName of InspectorTest._modulesToPreload)
+            promises.push(self.runtime.loadModulePromise(moduleName));
+
         for (var i = 0; i < InspectorTest._panelsToPreload.length; ++i) {
             lastLoadedPanel = InspectorTest._panelsToPreload[i];
             promises.push(WebInspector.inspectorView.panel(lastLoadedPanel));
