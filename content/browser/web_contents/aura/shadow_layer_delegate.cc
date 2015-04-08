@@ -50,8 +50,7 @@ void ShadowLayerDelegate::OnPaintLayer(const ui::PaintContext& context) {
   SkPaint paint;
   paint.setShader(shader.get());
   ui::PaintRecorder recorder(context);
-  recorder.canvas()->sk_canvas()->drawRect(gfx::RectToSkRect(paint_rect),
-                                           paint);
+  recorder.canvas()->DrawRect(paint_rect, paint);
 }
 
 void ShadowLayerDelegate::OnDelegatedFrameDamage(
