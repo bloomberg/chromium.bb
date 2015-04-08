@@ -11,7 +11,8 @@
 
 namespace content {
 
-class RenderViewHostImpl;
+class RenderFrameHostImpl;
+class WebContentsImpl;
 
 namespace devtools {
 
@@ -29,7 +30,7 @@ class EmulationHandler : public page::PageHandler::ScreencastListener {
   // page::PageHandler::ScreencastListener implementation.
   void ScreencastEnabledChanged() override;
 
-  void SetRenderViewHost(RenderViewHostImpl* host);
+  void SetRenderFrameHost(RenderFrameHostImpl* host);
   void Detached();
 
   Response SetGeolocationOverride(double* latitude,
@@ -52,6 +53,7 @@ class EmulationHandler : public page::PageHandler::ScreencastListener {
   Response ClearDeviceMetricsOverride();
 
  private:
+  WebContentsImpl* GetWebContents();
   void UpdateTouchEventEmulationState();
   void UpdateDeviceEmulationState();
 
@@ -62,7 +64,7 @@ class EmulationHandler : public page::PageHandler::ScreencastListener {
   blink::WebDeviceEmulationParams device_emulation_params_;
 
   page::PageHandler* page_handler_;
-  RenderViewHostImpl* host_;
+  RenderFrameHostImpl* host_;
 
   DISALLOW_COPY_AND_ASSIGN(EmulationHandler);
 };

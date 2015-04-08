@@ -28,8 +28,6 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
 
@@ -141,26 +139,32 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
       input_handler_(new devtools::input::InputHandler()),
       inspector_handler_(new devtools::inspector::InspectorHandler()),
       network_handler_(new devtools::network::NetworkHandler()),
-      page_handler_(new devtools::page::PageHandler()),
+      page_handler_(nullptr),
       power_handler_(new devtools::power::PowerHandler()),
       service_worker_handler_(
           new devtools::service_worker::ServiceWorkerHandler()),
       tracing_handler_(new devtools::tracing::TracingHandler(
           devtools::tracing::TracingHandler::Renderer)),
-      emulation_handler_(new devtools::emulation::EmulationHandler(
-          page_handler_.get())),
+      emulation_handler_(nullptr),
       frame_trace_recorder_(new DevToolsFrameTraceRecorder()),
       reattaching_(false) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetDOMHandler(dom_handler_.get());
-  dispatcher->SetEmulationHandler(emulation_handler_.get());
   dispatcher->SetInputHandler(input_handler_.get());
   dispatcher->SetInspectorHandler(inspector_handler_.get());
   dispatcher->SetNetworkHandler(network_handler_.get());
-  dispatcher->SetPageHandler(page_handler_.get());
   dispatcher->SetPowerHandler(power_handler_.get());
   dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
   dispatcher->SetTracingHandler(tracing_handler_.get());
+
+  if (!rfh->GetParent()) {
+    page_handler_.reset(new devtools::page::PageHandler());
+    emulation_handler_.reset(
+        new devtools::emulation::EmulationHandler(page_handler_.get()));
+    dispatcher->SetPageHandler(page_handler_.get());
+    dispatcher->SetEmulationHandler(emulation_handler_.get());
+  }
+
   SetRenderFrameHost(rfh);
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderFrameHostDestroyed.
@@ -217,8 +221,10 @@ void RenderFrameDevToolsAgentHost::OnClientDetached() {
 #if defined(OS_ANDROID)
   power_save_blocker_.reset();
 #endif
-  emulation_handler_->Detached();
-  page_handler_->Detached();
+  if (emulation_handler_)
+    emulation_handler_->Detached();
+  if (page_handler_)
+    page_handler_->Detached();
   power_handler_->Detached();
   service_worker_handler_->Detached();
   tracing_handler_->Detached();
@@ -365,7 +371,8 @@ bool RenderFrameDevToolsAgentHost::OnMessageReceived(
 }
 
 void RenderFrameDevToolsAgentHost::DidAttachInterstitialPage() {
-  page_handler_->DidAttachInterstitialPage();
+  if (page_handler_)
+    page_handler_->DidAttachInterstitialPage();
 
   if (!render_frame_host_)
     return;
@@ -380,7 +387,8 @@ void RenderFrameDevToolsAgentHost::DidAttachInterstitialPage() {
 }
 
 void RenderFrameDevToolsAgentHost::DidDetachInterstitialPage() {
-  page_handler_->DidDetachInterstitialPage();
+  if (page_handler_)
+    page_handler_->DidDetachInterstitialPage();
 }
 
 void RenderFrameDevToolsAgentHost::TitleWasSet(
@@ -400,15 +408,6 @@ void RenderFrameDevToolsAgentHost::DidCommitProvisionalLoadForFrame(
   service_worker_handler_->UpdateHosts();
 }
 
-void RenderFrameDevToolsAgentHost::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
-  if (type == content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED) {
-    bool visible = *Details<bool>(details).ptr();
-    page_handler_->OnVisibilityChanged(visible);
-  }
-}
-
 void RenderFrameDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
   DCHECK(ShouldCreateDevToolsFor(rfh));
   DCHECK(!render_frame_host_);
@@ -418,32 +417,26 @@ void RenderFrameDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       rfh->GetRenderViewHost());
   dom_handler_->SetRenderFrameHost(render_frame_host_);
-  emulation_handler_->SetRenderViewHost(rvh);
   input_handler_->SetRenderViewHost(rvh);
   network_handler_->SetRenderFrameHost(render_frame_host_);
-  page_handler_->SetRenderViewHost(rvh);
   service_worker_handler_->SetRenderFrameHost(render_frame_host_);
 
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHost>(rvh));
+  if (emulation_handler_)
+    emulation_handler_->SetRenderFrameHost(render_frame_host_);
+  if (page_handler_)
+    page_handler_->SetRenderFrameHost(render_frame_host_);
 }
 
 void RenderFrameDevToolsAgentHost::ClearRenderFrameHost() {
   DCHECK(render_frame_host_);
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      render_frame_host_->GetRenderViewHost());
-  registrar_.Remove(
-      this,
-      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHost>(rvh));
   render_frame_host_ = nullptr;
   dom_handler_->SetRenderFrameHost(nullptr);
-  emulation_handler_->SetRenderViewHost(nullptr);
+  if (emulation_handler_)
+    emulation_handler_->SetRenderFrameHost(nullptr);
   input_handler_->SetRenderViewHost(nullptr);
   network_handler_->SetRenderFrameHost(nullptr);
-  page_handler_->SetRenderViewHost(nullptr);
+  if (page_handler_)
+    page_handler_->SetRenderFrameHost(nullptr);
   service_worker_handler_->SetRenderFrameHost(nullptr);
 }
 
@@ -512,7 +505,8 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
   ViewHostMsg_SwapCompositorFrame::Param param;
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return;
-  page_handler_->OnSwapCompositorFrame(get<1>(param).metadata);
+  if (page_handler_)
+    page_handler_->OnSwapCompositorFrame(get<1>(param).metadata);
   frame_trace_recorder_->OnSwapCompositorFrame(
       render_frame_host_, get<1>(param).metadata);
 }
@@ -521,7 +515,8 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
     const cc::CompositorFrameMetadata& frame_metadata) {
   if (!render_frame_host_)
     return;
-  page_handler_->OnSwapCompositorFrame(frame_metadata);
+  if (page_handler_)
+    page_handler_->OnSwapCompositorFrame(frame_metadata);
   frame_trace_recorder_->OnSwapCompositorFrame(
       render_frame_host_, frame_metadata);
 }

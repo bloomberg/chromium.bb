@@ -5,8 +5,9 @@
 #include "content/browser/devtools/protocol/emulation_handler.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/geolocation/geolocation_service_context.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/url_constants.h"
@@ -52,7 +53,7 @@ void EmulationHandler::ScreencastEnabledChanged() {
    UpdateTouchEventEmulationState();
 }
 
-void EmulationHandler::SetRenderViewHost(RenderViewHostImpl* host) {
+void EmulationHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
   if (host_ == host)
     return;
 
@@ -70,16 +71,11 @@ void EmulationHandler::Detached() {
 
 Response EmulationHandler::SetGeolocationOverride(
     double* latitude, double* longitude, double* accuracy) {
-  if (!host_)
+  if (!GetWebContents())
     return Response::InternalError("Could not connect to view");
 
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(host_));
-  if (!web_contents)
-    return Response::InternalError("No WebContents to override");
-
   GeolocationServiceContext* geolocation_context =
-      web_contents->GetGeolocationServiceContext();
+      GetWebContents()->GetGeolocationServiceContext();
   scoped_ptr<Geoposition> geoposition(new Geoposition());
   if (latitude && longitude && accuracy) {
     geoposition->latitude = *latitude;
@@ -97,16 +93,11 @@ Response EmulationHandler::SetGeolocationOverride(
 }
 
 Response EmulationHandler::ClearGeolocationOverride() {
-  if (!host_)
+  if (!GetWebContents())
     return Response::InternalError("Could not connect to view");
 
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(host_));
-  if (!web_contents)
-    return Response::InternalError("No WebContents to override");
-
   GeolocationServiceContext* geolocation_context =
-      web_contents->GetGeolocationServiceContext();
+      GetWebContents()->GetGeolocationServiceContext();
   geolocation_context->ClearOverride();
   return Response::OK();
 }
@@ -124,18 +115,11 @@ Response EmulationHandler::CanEmulate(bool* result) {
 #if defined(OS_ANDROID)
   *result = false;
 #else
-  if (host_) {
-    if (WebContents* web_contents = WebContents::FromRenderViewHost(host_)) {
-      *result = web_contents->GetMainFrame()->GetRenderViewHost() == host_;
+  *result = true;
 #if defined(DEBUG_DEVTOOLS)
-      *result &= !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme);
+  if (WebContentsImpl* web_contents = GetWebContents())
+    *result &= !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme);
 #endif  // defined(DEBUG_DEVTOOLS)
-    } else {
-      *result = true;
-    }
-  } else {
-    *result = true;
-  }
 #endif  // defined(OS_ANDROID)
   return Response::OK();
 }
@@ -194,28 +178,37 @@ Response EmulationHandler::ClearDeviceMetricsOverride() {
   return Response::OK();
 }
 
+WebContentsImpl* EmulationHandler::GetWebContents() {
+  return host_ ?
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host_)) :
+      nullptr;
+}
+
 void EmulationHandler::UpdateTouchEventEmulationState() {
+  RenderWidgetHostImpl* widget_host =
+      host_ ? host_->GetRenderWidgetHost() : nullptr;
   if (!host_)
     return;
   bool enabled = touch_emulation_enabled_ ||
       page_handler_->screencast_enabled();
   ui::GestureProviderConfigType config_type =
       TouchEmulationConfigurationToType(touch_emulation_configuration_);
-  host_->SetTouchEventEmulationEnabled(enabled, config_type);
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(host_));
-  if (web_contents)
-    web_contents->SetForceDisableOverscrollContent(enabled);
+  widget_host->SetTouchEventEmulationEnabled(enabled, config_type);
+  if (GetWebContents())
+    GetWebContents()->SetForceDisableOverscrollContent(enabled);
 }
 
 void EmulationHandler::UpdateDeviceEmulationState() {
+  RenderWidgetHostImpl* widget_host =
+      host_ ? host_->GetRenderWidgetHost() : nullptr;
   if (!host_)
     return;
   if (device_emulation_enabled_) {
-    host_->Send(new ViewMsg_EnableDeviceEmulation(
-        host_->GetRoutingID(), device_emulation_params_));
+    widget_host->Send(new ViewMsg_EnableDeviceEmulation(
+        widget_host->GetRoutingID(), device_emulation_params_));
   } else {
-    host_->Send(new ViewMsg_DisableDeviceEmulation(host_->GetRoutingID()));
+    widget_host->Send(new ViewMsg_DisableDeviceEmulation(
+        widget_host->GetRoutingID()));
   }
 }
 

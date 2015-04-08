@@ -11,20 +11,23 @@
 #include "base/time/time.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/readback_types.h"
 
 class SkBitmap;
 
 namespace content {
 
-class RenderViewHostImpl;
+class RenderFrameHostImpl;
+class WebContentsImpl;
 
 namespace devtools {
 namespace page {
 
 class ColorPicker;
 
-class PageHandler {
+class PageHandler : public NotificationObserver {
  public:
   typedef DevToolsProtocolClient::Response Response;
 
@@ -35,13 +38,12 @@ class PageHandler {
   };
 
   PageHandler();
-  virtual ~PageHandler();
+  ~PageHandler() override;
 
-  void SetRenderViewHost(RenderViewHostImpl* host);
+  void SetRenderFrameHost(RenderFrameHostImpl* host);
   void SetClient(scoped_ptr<Client> client);
   void Detached();
   void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
-  void OnVisibilityChanged(bool visible);
   void DidAttachInterstitialPage();
   void DidDetachInterstitialPage();
   void SetScreencastListener(ScreencastListener* listener);
@@ -80,6 +82,7 @@ class PageHandler {
   Response SetColorPickerEnabled(bool enabled);
 
  private:
+  WebContentsImpl* GetWebContents();
   void NotifyScreencastVisibility(bool visible);
   void InnerSwapCompositorFrame();
   void ScreencastFrameCaptured(const cc::CompositorFrameMetadata& metadata,
@@ -95,6 +98,11 @@ class PageHandler {
       size_t png_size);
 
   void OnColorPicked(int r, int g, int b, int a);
+
+  // NotificationObserver overrides.
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
 
   bool enabled_;
 
@@ -113,9 +121,10 @@ class PageHandler {
 
   scoped_ptr<ColorPicker> color_picker_;
 
-  RenderViewHostImpl* host_;
+  RenderFrameHostImpl* host_;
   scoped_ptr<Client> client_;
   ScreencastListener* screencast_listener_;
+  NotificationRegistrar registrar_;
   base::WeakPtrFactory<PageHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageHandler);

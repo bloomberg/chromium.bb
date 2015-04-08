@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "content/browser/devtools/protocol/color_picker.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
@@ -20,6 +20,8 @@
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/referrer.h"
@@ -106,12 +108,29 @@ PageHandler::PageHandler()
 PageHandler::~PageHandler() {
 }
 
-void PageHandler::SetRenderViewHost(RenderViewHostImpl* host) {
+void PageHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
   if (host_ == host)
     return;
 
-  color_picker_->SetRenderViewHost(host);
+  RenderWidgetHostImpl* widget_host =
+      host_ ? host_->GetRenderWidgetHost() : nullptr;
+  if (widget_host) {
+    registrar_.Remove(
+        this,
+        content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+        content::Source<RenderWidgetHost>(widget_host));
+  }
+
   host_ = host;
+  widget_host = host_ ? host_->GetRenderWidgetHost() : nullptr;
+  color_picker_->SetRenderWidgetHost(widget_host);
+
+  if (widget_host) {
+    registrar_.Add(
+        this,
+        content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+        content::Source<RenderWidgetHost>(widget_host));
+  }
 }
 
 void PageHandler::SetClient(scoped_ptr<Client> client) {
@@ -134,9 +153,13 @@ void PageHandler::OnSwapCompositorFrame(
   color_picker_->OnSwapCompositorFrame();
 }
 
-void PageHandler::OnVisibilityChanged(bool visible) {
+void PageHandler::Observe(int type,
+                          const NotificationSource& source,
+                          const NotificationDetails& details) {
   if (!screencast_enabled_)
     return;
+  DCHECK(type == content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED);
+  bool visible = *Details<bool>(details).ptr();
   NotifyScreencastVisibility(visible);
 }
 
@@ -173,12 +196,9 @@ Response PageHandler::Disable() {
 Response PageHandler::Reload(const bool* ignoreCache,
                              const std::string* script_to_evaluate_on_load,
                              const std::string* script_preprocessor) {
-  if (!host_)
-    return Response::InternalError("Could not connect to view");
-
-  WebContents* web_contents = WebContents::FromRenderViewHost(host_);
+  WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)
-    return Response::InternalError("No WebContents to reload");
+    return Response::InternalError("Could not connect to view");
 
   // Handle in browser only if it is crashed.
   if (!web_contents->IsCrashed())
@@ -194,12 +214,9 @@ Response PageHandler::Navigate(const std::string& url,
   if (!gurl.is_valid())
     return Response::InternalError("Cannot navigate to invalid URL");
 
-  if (!host_)
-    return Response::InternalError("Could not connect to view");
-
-  WebContents* web_contents = WebContents::FromRenderViewHost(host_);
+  WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)
-    return Response::InternalError("No WebContents to navigate");
+    return Response::InternalError("Could not connect to view");
 
   web_contents->GetController()
       .LoadURL(gurl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
@@ -208,12 +225,9 @@ Response PageHandler::Navigate(const std::string& url,
 
 Response PageHandler::GetNavigationHistory(int* current_index,
                                            NavigationEntries* entries) {
-  if (!host_)
-    return Response::InternalError("Could not connect to view");
-
-  WebContents* web_contents = WebContents::FromRenderViewHost(host_);
+  WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)
-    return Response::InternalError("No WebContents to navigate");
+    return Response::InternalError("Could not connect to view");
 
   NavigationController& controller = web_contents->GetController();
   *current_index = controller.GetCurrentEntryIndex();
@@ -228,12 +242,9 @@ Response PageHandler::GetNavigationHistory(int* current_index,
 }
 
 Response PageHandler::NavigateToHistoryEntry(int entry_id) {
-  if (!host_)
-    return Response::InternalError("Could not connect to view");
-
-  WebContents* web_contents = WebContents::FromRenderViewHost(host_);
+  WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)
-    return Response::InternalError("No WebContents to navigate");
+    return Response::InternalError("Could not connect to view");
 
   NavigationController& controller = web_contents->GetController();
   for (int i = 0; i != controller.GetEntryCount(); ++i) {
@@ -247,10 +258,10 @@ Response PageHandler::NavigateToHistoryEntry(int entry_id) {
 }
 
 Response PageHandler::CaptureScreenshot(DevToolsCommandId command_id) {
-  if (!host_ || !host_->GetView())
+  if (!host_ || !host_->GetRenderWidgetHost())
     return Response::InternalError("Could not connect to view");
 
-  host_->GetSnapshotFromBrowser(
+  host_->GetRenderWidgetHost()->GetSnapshotFromBrowser(
       base::Bind(&PageHandler::ScreenshotCaptured,
           weak_factory_.GetWeakPtr(), command_id));
   return Response::OK();
@@ -269,7 +280,9 @@ Response PageHandler::StartScreencast(const std::string* format,
                                       const int* quality,
                                       const int* max_width,
                                       const int* max_height) {
-  if (!host_)
+  RenderWidgetHostImpl* widget_host =
+      host_ ? host_->GetRenderWidgetHost() : nullptr;
+  if (!widget_host)
     return Response::InternalError("Could not connect to view");
 
   screencast_enabled_ = true;
@@ -280,13 +293,15 @@ Response PageHandler::StartScreencast(const std::string* format,
   screencast_max_width_ = max_width ? *max_width : -1;
   screencast_max_height_ = max_height ? *max_height : -1;
 
-  bool visible = !host_->is_hidden();
+  bool visible = !widget_host->is_hidden();
   NotifyScreencastVisibility(visible);
   if (visible) {
-    if (has_compositor_frame_metadata_)
+    if (has_compositor_frame_metadata_) {
       InnerSwapCompositorFrame();
-    else
-      host_->Send(new ViewMsg_ForceRedraw(host_->GetRoutingID(), 0));
+    } else {
+      widget_host->Send(
+          new ViewMsg_ForceRedraw(widget_host->GetRoutingID(), 0));
+    }
   }
   if (screencast_listener_)
     screencast_listener_->ScreencastEnabledChanged();
@@ -311,12 +326,9 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
   if (prompt_text)
     prompt_override = base::UTF8ToUTF16(*prompt_text);
 
-  if (!host_)
-    return Response::InternalError("Could not connect to view");
-
-  WebContents* web_contents = WebContents::FromRenderViewHost(host_);
+  WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)
-    return Response::InternalError("No JavaScript dialog to handle");
+    return Response::InternalError("Could not connect to view");
 
   JavaScriptDialogManager* manager =
       web_contents->GetDelegate()->GetJavaScriptDialogManager(web_contents);
@@ -339,6 +351,12 @@ Response PageHandler::SetColorPickerEnabled(bool enabled) {
 
   color_picker_->SetEnabled(enabled);
   return Response::OK();
+}
+
+WebContentsImpl* PageHandler::GetWebContents() {
+  return host_ ?
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host_)) :
+      nullptr;
 }
 
 void PageHandler::NotifyScreencastVisibility(bool visible) {
