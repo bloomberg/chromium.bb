@@ -74,7 +74,7 @@ public:
     bool collapsed() const { return m_start == m_end; }
 
     Node* commonAncestorContainer() const;
-    static Node* commonAncestorContainer(Node* containerA, Node* containerB);
+    static Node* commonAncestorContainer(const Node* containerA, const Node* containerB);
     void setStart(PassRefPtrWillBeRawPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
     void setEnd(PassRefPtrWillBeRawPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
     void collapse(bool toStart);

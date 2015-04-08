@@ -150,15 +150,11 @@ Node* Range::commonAncestorContainer() const
     return commonAncestorContainer(m_start.container(), m_end.container());
 }
 
-Node* Range::commonAncestorContainer(Node* containerA, Node* containerB)
+Node* Range::commonAncestorContainer(const Node* containerA, const Node* containerB)
 {
-    for (Node* parentA = containerA; parentA; parentA = parentA->parentNode()) {
-        for (Node* parentB = containerB; parentB; parentB = parentB->parentNode()) {
-            if (parentA == parentB)
-                return parentA;
-        }
-    }
-    return 0;
+    if (!containerA || !containerB)
+        return nullptr;
+    return containerA->commonAncestor(*containerB, NodeTraversal::parent);
 }
 
 static inline bool checkForDifferentRootContainer(const RangeBoundaryPoint& start, const RangeBoundaryPoint& end)
