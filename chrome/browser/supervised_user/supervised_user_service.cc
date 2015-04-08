@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist_downloader.h"
+#include "chrome/browser/supervised_user/experimental/supervised_user_filtering_switches.h"
 #include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service.h"
 #include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service_factory.h"
 #include "chrome/browser/supervised_user/legacy/permission_request_creator_sync.h"
@@ -797,16 +798,14 @@ void SupervisedUserService::SetActive(bool active) {
     whitelist_service_->Init();
     UpdateManualHosts();
     UpdateManualURLs();
-    bool use_blacklist = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableSupervisedUserBlacklist);
-    if (delegate_ && use_blacklist) {
+    if (profile_->IsChild() &&
+        supervised_users::IsSafeSitesBlacklistEnabled()) {
       base::FilePath blacklist_path = delegate_->GetBlacklistPath();
       if (!blacklist_path.empty())
         LoadBlacklist(blacklist_path, delegate_->GetBlacklistURL());
     }
-    bool use_safesites = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableSupervisedUserSafeSites);
-    if (delegate_ && use_safesites) {
+    if (profile_->IsChild() &&
+        supervised_users::IsSafeSitesOnlineCheckEnabled()) {
       const std::string& cx = delegate_->GetSafeSitesCx();
       if (!cx.empty()) {
         url_filter_context_.InitAsyncURLChecker(

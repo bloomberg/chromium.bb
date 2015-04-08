@@ -103,8 +103,6 @@ class ChildAccountService : public KeyedService,
   void ClearFirstCustodianPrefs();
   void ClearSecondCustodianPrefs();
 
-  void EnableExperimentalFiltering();
-
   // Owns us via the KeyedService mechanism.
   Profile* profile_;
 

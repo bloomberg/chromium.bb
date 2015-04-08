@@ -181,8 +181,6 @@ bool ChildAccountService::SetActive(bool active) {
         SupervisedUserServiceFactory::GetForProfile(profile_);
     service->AddPermissionRequestCreator(
         PermissionRequestCreatorApiary::CreateWithProfile(profile_));
-
-    EnableExperimentalFiltering();
   } else {
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForProfile(profile_);
@@ -425,24 +423,4 @@ void ChildAccountService::ClearSecondCustodianPrefs() {
       prefs::kSupervisedUserSecondCustodianProfileURL);
   profile_->GetPrefs()->ClearPref(
       prefs::kSupervisedUserSecondCustodianProfileImageURL);
-}
-
-void ChildAccountService::EnableExperimentalFiltering() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  // Static blacklist defaults to enabled.
-  bool has_enable_blacklist =
-      command_line->HasSwitch(switches::kEnableSupervisedUserBlacklist);
-  bool has_disable_blacklist =
-      command_line->HasSwitch(switches::kDisableSupervisedUserBlacklist);
-  if (!has_enable_blacklist && !has_disable_blacklist)
-    command_line->AppendSwitch(switches::kEnableSupervisedUserBlacklist);
-
-  // Query-based filtering also defaults to enabled.
-  bool has_enable_safesites =
-      command_line->HasSwitch(switches::kEnableSupervisedUserSafeSites);
-  bool has_disable_safesites =
-      command_line->HasSwitch(switches::kDisableSupervisedUserSafeSites);
-  if (!has_enable_safesites && !has_disable_safesites)
-    command_line->AppendSwitch(switches::kEnableSupervisedUserSafeSites);
 }

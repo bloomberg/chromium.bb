@@ -2670,6 +2670,8 @@
       'browser/supervised_user/experimental/supervised_user_blacklist.h',
       'browser/supervised_user/experimental/supervised_user_blacklist_downloader.cc',
       'browser/supervised_user/experimental/supervised_user_blacklist_downloader.h',
+      'browser/supervised_user/experimental/supervised_user_filtering_switches.cc',
+      'browser/supervised_user/experimental/supervised_user_filtering_switches.h',
       'browser/supervised_user/legacy/custodian_profile_downloader_service.cc',
       'browser/supervised_user/legacy/custodian_profile_downloader_service.h',
       'browser/supervised_user/legacy/custodian_profile_downloader_service_factory.cc',

@@ -438,6 +438,22 @@ const Experiment::Choice kDataSaverPromptChoices[] = {
 };
 #endif
 
+const Experiment::Choice kSupervisedUserSafeSitesChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kSupervisedUserSafeSites,
+    "enabled" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kSupervisedUserSafeSites,
+    "disabled" },
+  { IDS_SUPERVISED_USER_SAFESITES_BLACKLIST_ONLY,
+    switches::kSupervisedUserSafeSites,
+    "blacklist-only" },
+  { IDS_SUPERVISED_USER_SAFESITES_ONLINE_CHECK_ONLY,
+    switches::kSupervisedUserSafeSites,
+    "online-check-only" }
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1197,27 +1213,11 @@ const Experiment kExperiments[] = {
                               switches::kDisableSuggestionsService)
   },
   {
-    "enable-supervised-user-blacklist",
-    IDS_FLAGS_ENABLE_SUPERVISED_USER_BLACKLIST_NAME,
-    IDS_FLAGS_ENABLE_SUPERVISED_USER_BLACKLIST_DESCRIPTION,
-    kOsAndroid | kOsMac | kOsWin | kOsLinux | kOsCrOS,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSupervisedUserBlacklist,
-                              switches::kDisableSupervisedUserBlacklist)
-  },
-  {
     "enable-supervised-user-managed-bookmarks-folder",
     IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_NAME,
     IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_DESCRIPTION,
     kOsAndroid | kOsMac | kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableSupervisedUserManagedBookmarksFolder)
-  },
-  {
-    "enable-supervised-user-safesites",
-    IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_NAME,
-    IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_DESCRIPTION,
-    kOsAndroid | kOsMac | kOsWin | kOsLinux | kOsCrOS,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSupervisedUserSafeSites,
-                              switches::kDisableSupervisedUserSafeSites)
   },
 #if defined(ENABLE_APP_LIST)
   {
@@ -2341,6 +2341,13 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kDataSaverPromptChoices)
   },
 #endif  // defined(OS_CHROMEOS)
+  {
+    "supervised-user-safesites",
+    IDS_FLAGS_SUPERVISED_USER_SAFESITES_NAME,
+    IDS_FLAGS_SUPERVISED_USER_SAFESITES_DESCRIPTION,
+    kOsAndroid | kOsMac | kOsWin | kOsLinux | kOsCrOS,
+    MULTI_VALUE_TYPE(kSupervisedUserSafeSitesChoices)
+  },
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

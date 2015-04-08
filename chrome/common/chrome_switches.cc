@@ -354,14 +354,6 @@ const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
 // Disables the suggestions service.
 const char kDisableSuggestionsService[]     = "disable-suggestions-service";
 
-// Disables the supervised user host blacklist.
-const char kDisableSupervisedUserBlacklist[] =
-    "disable-supervised-user-blacklist";
-
-// Disables SafeSites filtering for supervised users.
-const char kDisableSupervisedUserSafeSites[] =
-    "disable-supervised-user-safesites";
-
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
@@ -575,17 +567,9 @@ const char kEnableSpdy4[]                   = "enable-spdy4";
 // Enables the suggestions service.
 const char kEnableSuggestionsService[]      = "enable-suggestions-service";
 
-// Enables the supervised user host blacklist.
-const char kEnableSupervisedUserBlacklist[] =
-    "enable-supervised-user-blacklist";
-
 // Enables the supervised user managed bookmarks folder.
 const char kEnableSupervisedUserManagedBookmarksFolder[] =
     "enable-supervised-user-managed-bookmarks-folder";
-
-// Enables SafeSites filtering for supervised users.
-const char kEnableSupervisedUserSafeSites[] =
-    "enable-supervised-user-safesites";
 
 // Enables synced articles.
 const char kEnableSyncArticles[]            = "enable-sync-articles";
@@ -1125,6 +1109,10 @@ const char kStartMaximized[]                = "start-maximized";
 // given value. Pass an empty string to mark the profile as non-supervised.
 // Used for testing.
 const char kSupervisedUserId[]              = "managed-user-id";
+
+// Enables/disables SafeSites filtering for supervised users. Possible values
+// are "enabled", "disabled", "blacklist-only", and "online-check-only".
+const char kSupervisedUserSafeSites[]       = "supervised-user-safesites";
 
 // Used to authenticate requests to the Sync service for supervised users.
 // Setting this switch also causes Sync to be set up for a supervised user.

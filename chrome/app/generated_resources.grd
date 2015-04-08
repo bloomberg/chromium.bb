@@ -6584,23 +6584,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SUGGESTIONS_SERVICE_DESCRIPTION" desc="Description for the flag to enable suggestions service.">
         Enable the experimental Chrome suggestions service.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_BLACKLIST_NAME" desc="Name of the flag to enable the supervised user host blacklist.">
-        Enable the child account host blacklist
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_BLACKLIST_DESCRIPTION" desc="Description for the flag to enable the supervised user host blacklist.">
-        Enable the host blacklist for use by child accounts.
-      </message>
       <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_NAME" desc="Name of the flag to enable the managed bookmarks folder for supervised users.">
         Enable managed bookmarks for supervised users
       </message>
       <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_MANAGED_BOOKMARKS_FOLDER_DESCRIPTION" desc="Description for the flag to enable the managed bookmarks folder for supervised users.">
         Enable the managed bookmarks folder for supervised users.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_NAME" desc="Name of the flag to enable the supervised user SafeSites feature.">
-        Enable the child account SafeSites filter
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SUPERVISED_USER_SAFESITES_DESCRIPTION" desc="Description for the flag to enable the supervised user SafeSites feature.">
-        Enable SafeSites filtering for child accounts.
       </message>
       <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_NAME" desc="Name of the flag to enable syncing the app list.">
         Enable App Launcher sync
@@ -7050,6 +7038,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_DATASAVER_PROMPT_DEMO_MODE" desc="The value of the Data Saver prompt flag which always shows prompt on network properties change.">
         Demo mode
+      </message>
+      <message name="IDS_FLAGS_SUPERVISED_USER_SAFESITES_NAME" desc="Name of the flag to enable/disable the supervised user SafeSites filtering feature.">
+        Child account SafeSites filtering
+      </message>
+      <message name="IDS_FLAGS_SUPERVISED_USER_SAFESITES_DESCRIPTION" desc="Description for the flag to enable/disable the supervised user SafeSites filtering feature.">
+        Enable or disable SafeSites filtering for child accounts.
+      </message>
+      <message name="IDS_SUPERVISED_USER_SAFESITES_BLACKLIST_ONLY" desc="Description for the choice to enable only the static blacklist in the supervised user SafeSites filtering feature.">
+        Static blacklist only
+      </message>
+      <message name="IDS_SUPERVISED_USER_SAFESITES_ONLINE_CHECK_ONLY" desc="Description for the choice to enable only the online check in the supervised user SafeSites filtering feature.">
+        Online check only
       </message>
 
       <!-- Crashes -->
