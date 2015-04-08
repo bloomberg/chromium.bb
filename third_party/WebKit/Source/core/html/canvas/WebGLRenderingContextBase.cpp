@@ -2593,11 +2593,22 @@ ScriptValue WebGLRenderingContextBase::getProgramParameter(ScriptState* scriptSt
         return WebGLAny(scriptState, static_cast<bool>(value));
     case GL_LINK_STATUS:
         return WebGLAny(scriptState, program->linkStatus());
+    case GL_ACTIVE_UNIFORM_BLOCKS:
+    case GL_TRANSFORM_FEEDBACK_VARYINGS:
+        if (!isWebGL2OrHigher()) {
+            synthesizeGLError(GL_INVALID_ENUM, "getProgramParameter", "invalid parameter name");
+            return ScriptValue::createNull(scriptState);
+        }
     case GL_ATTACHED_SHADERS:
     case GL_ACTIVE_ATTRIBUTES:
     case GL_ACTIVE_UNIFORMS:
         webContext()->getProgramiv(objectOrZero(program), pname, &value);
         return WebGLAny(scriptState, value);
+    case GL_TRANSFORM_FEEDBACK_BUFFER_MODE:
+        if (isWebGL2OrHigher()) {
+            webContext()->getProgramiv(objectOrZero(program), pname, &value);
+            return WebGLAny(scriptState, static_cast<unsigned>(value));
+        }
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getProgramParameter", "invalid parameter name");
         return ScriptValue::createNull(scriptState);
