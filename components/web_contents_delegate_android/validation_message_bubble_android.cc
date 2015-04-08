@@ -17,12 +17,15 @@ using content::RenderWidgetHost;
 
 namespace {
 
-inline ContentViewCore* GetContentViewCoreFrom(RenderWidgetHost* widget_host) {
-  return ContentViewCore::FromWebContents(
-      content::WebContents::FromRenderViewHost(
+base::android::ScopedJavaLocalRef<jobject> GetJavaContentViewCoreFrom(
+    RenderWidgetHost* widget_host) {
+  ContentViewCore* content_view_core =
+      ContentViewCore::FromWebContents(content::WebContents::FromRenderViewHost(
           content::RenderViewHost::From(widget_host)));
+  if (!content_view_core)
+    return base::android::ScopedJavaLocalRef<jobject>();
+  return content_view_core->GetJavaObject();
 }
-
 }
 
 namespace web_contents_delegate_android {
@@ -32,11 +35,16 @@ ValidationMessageBubbleAndroid::ValidationMessageBubbleAndroid(
     const gfx::Rect& anchor_in_root_view,
     const base::string16& main_text,
     const base::string16& sub_text) {
+  base::android::ScopedJavaLocalRef<jobject> java_content_view_core =
+      GetJavaContentViewCoreFrom(widget_host);
+  if (java_content_view_core.is_null())
+    return;
+
   JNIEnv* env = base::android::AttachCurrentThread();
   java_validation_message_bubble_.Reset(
       Java_ValidationMessageBubble_createAndShow(
           env,
-          GetContentViewCoreFrom(widget_host)->GetJavaObject().obj(),
+          java_content_view_core.obj(),
           anchor_in_root_view.x(),
           anchor_in_root_view.y(),
           anchor_in_root_view.width(),
@@ -52,10 +60,15 @@ ValidationMessageBubbleAndroid::~ValidationMessageBubbleAndroid() {
 
 void ValidationMessageBubbleAndroid::SetPositionRelativeToAnchor(
     RenderWidgetHost* widget_host, const gfx::Rect& anchor_in_root_view) {
+  base::android::ScopedJavaLocalRef<jobject> java_content_view_core =
+      GetJavaContentViewCoreFrom(widget_host);
+  if (java_content_view_core.is_null())
+    return;
+
   Java_ValidationMessageBubble_setPositionRelativeToAnchor(
       base::android::AttachCurrentThread(),
       java_validation_message_bubble_.obj(),
-      GetContentViewCoreFrom(widget_host)->GetJavaObject().obj(),
+      java_content_view_core.obj(),
       anchor_in_root_view.x(),
       anchor_in_root_view.y(),
       anchor_in_root_view.width(),

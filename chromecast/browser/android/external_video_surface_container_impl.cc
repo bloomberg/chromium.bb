@@ -11,17 +11,24 @@
 
 namespace chromecast {
 namespace shell {
-
-ExternalVideoSurfaceContainerImpl::ExternalVideoSurfaceContainerImpl(
+// static
+ExternalVideoSurfaceContainerImpl* ExternalVideoSurfaceContainerImpl::Create(
     content::WebContents* web_contents) {
   content::ContentViewCore* cvc =
       content::ContentViewCore::FromWebContents(web_contents);
-  if (cvc) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    jobject_.Reset(
-        Java_ExternalVideoSurfaceContainer_create(
-            env, reinterpret_cast<intptr_t>(this), cvc->GetJavaObject().obj()));
-  }
+  if (!cvc)
+    return nullptr;
+  base::android::ScopedJavaLocalRef<jobject> jcvc = cvc->GetJavaObject();
+  if (jcvc.is_null())
+    return nullptr;
+  return new ExternalVideoSurfaceContainerImpl(jcvc);
+}
+
+ExternalVideoSurfaceContainerImpl::ExternalVideoSurfaceContainerImpl(
+    base::android::ScopedJavaLocalRef<jobject> java_content_view_core) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  jobject_.Reset(Java_ExternalVideoSurfaceContainer_create(
+      env, reinterpret_cast<intptr_t>(this), java_content_view_core.obj()));
 }
 
 ExternalVideoSurfaceContainerImpl::~ExternalVideoSurfaceContainerImpl() {

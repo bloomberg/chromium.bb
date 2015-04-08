@@ -45,6 +45,8 @@ class CONTENT_EXPORT ContentViewCore {
   static ContentViewCore* GetNativeContentViewCore(JNIEnv* env, jobject obj);
 
   virtual WebContents* GetWebContents() const = 0;
+
+  // May return null reference.
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
   virtual ui::ViewAndroid* GetViewAndroid() const = 0;
   virtual ui::WindowAndroid* GetWindowAndroid() const = 0;

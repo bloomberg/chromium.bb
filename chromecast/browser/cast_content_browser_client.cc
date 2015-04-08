@@ -327,7 +327,7 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 content::ExternalVideoSurfaceContainer*
 CastContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
     content::WebContents* web_contents) {
-  return new ExternalVideoSurfaceContainerImpl(web_contents);
+  return ExternalVideoSurfaceContainerImpl::Create(web_contents);
 }
 #endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
 

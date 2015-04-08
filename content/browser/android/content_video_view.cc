@@ -198,11 +198,17 @@ ScopedJavaLocalRef<jobject> ContentVideoView::GetJavaObject(JNIEnv* env) {
 JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
   ContentViewCore* content_view_core = manager_->GetContentViewCore();
   JNIEnv* env = AttachCurrentThread();
+
+  base::android::ScopedJavaLocalRef<jobject> j_content_view_core =
+      content_view_core->GetJavaObject();
+  if (j_content_view_core.is_null())
+    return JavaObjectWeakGlobalRef(env, nullptr);
+
   return JavaObjectWeakGlobalRef(
       env,
       Java_ContentVideoView_createContentVideoView(
           env,
-          content_view_core->GetJavaObject().obj(),
+          j_content_view_core.obj(),
           reinterpret_cast<intptr_t>(this)).obj());
 }
 }  // namespace content

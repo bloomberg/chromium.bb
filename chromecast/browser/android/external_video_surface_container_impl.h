@@ -21,7 +21,8 @@ class ExternalVideoSurfaceContainerImpl
   typedef base::Callback<void(int, jobject)> SurfaceCreatedCB;
   typedef base::Callback<void(int)> SurfaceDestroyedCB;
 
-  ExternalVideoSurfaceContainerImpl(content::WebContents* contents);
+  static ExternalVideoSurfaceContainerImpl* Create(
+      content::WebContents* web_contents);
 
   // ExternalVideoSurfaceContainer implementation.
   void RequestExternalVideoSurface(
@@ -40,6 +41,8 @@ class ExternalVideoSurfaceContainerImpl
   void SurfaceDestroyed(JNIEnv* env, jobject obj, jint player_id);
 
  private:
+  explicit ExternalVideoSurfaceContainerImpl(
+      base::android::ScopedJavaLocalRef<jobject> java_content_view_core);
   ~ExternalVideoSurfaceContainerImpl() override;
 
   base::android::ScopedJavaGlobalRef<jobject> jobject_;

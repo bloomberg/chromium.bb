@@ -195,7 +195,7 @@ AwMessagePortService* AwMainDelegate::CreateAwMessagePortService() {
 content::ExternalVideoSurfaceContainer*
 AwMainDelegate::CreateExternalVideoSurfaceContainer(
     content::WebContents* web_contents) {
-  return new ExternalVideoSurfaceContainerImpl(web_contents);
+  return ExternalVideoSurfaceContainerImpl::Create(web_contents);
 }
 #endif
 
