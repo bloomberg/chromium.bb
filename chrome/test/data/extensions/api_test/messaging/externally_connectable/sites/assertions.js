@@ -29,11 +29,15 @@ function clobber(obj, name, qualifiedName) {
   // SafeBuiltins does not support getters yet. See crbug.com/463526.
   // Clobbering Function.call would make it impossible to implement these tests.
   // Clobbering Object.valueOf breaks v8.
+  // Clobbering %FunctionPrototype%.caller and .arguments will break because
+  // these properties are poisoned accessors in ES6.
   if (name == 'constructor' ||
       name == 'toString' ||
       name == '__proto__' ||
       name == 'name' && typeof obj == 'function' ||
       qualifiedName == 'Function.call' ||
+      (obj !== Function && qualifiedName == 'Function.caller') ||
+      (obj !== Function && qualifiedName == 'Function.arguments') ||
       qualifiedName == 'Object.valueOf') {
     return;
   }
