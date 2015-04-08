@@ -19,6 +19,7 @@ TEST(GPUInfoBasicTest, EmptyGPUInfo) {
   EXPECT_EQ(gpu_info.driver_date, "");
   EXPECT_EQ(gpu_info.pixel_shader_version, "");
   EXPECT_EQ(gpu_info.vertex_shader_version, "");
+  EXPECT_EQ(gpu_info.max_msaa_samples, "");
   EXPECT_EQ(gpu_info.gl_version, "");
   EXPECT_EQ(gpu_info.gl_vendor, "");
   EXPECT_EQ(gpu_info.gl_renderer, "");

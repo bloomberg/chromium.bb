@@ -154,6 +154,8 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
                                              gpu_info.pixel_shader_version));
   basic_info->Append(NewDescriptionValuePair("Vertex shader version",
                                              gpu_info.vertex_shader_version));
+  basic_info->Append(NewDescriptionValuePair("Max. MSAA samples",
+                                             gpu_info.max_msaa_samples));
   basic_info->Append(NewDescriptionValuePair("Machine model name",
                                              gpu_info.machine_model_name));
   basic_info->Append(NewDescriptionValuePair("Machine model version",

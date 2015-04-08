@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -101,6 +102,9 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->gl_extensions = GetGLString(GL_EXTENSIONS);
   gpu_info->gl_version = GetGLString(GL_VERSION);
   std::string glsl_version_string = GetGLString(GL_SHADING_LANGUAGE_VERSION);
+  GLint max_samples = 0;
+  glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
+  gpu_info->max_msaa_samples = base::StringPrintf("%d", max_samples);
 
   gfx::GLWindowSystemBindingInfo window_system_binding_info;
   if (GetGLWindowSystemBindingInfo(&window_system_binding_info)) {
@@ -141,6 +145,8 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
       context_gpu_info.pixel_shader_version;
   basic_gpu_info->vertex_shader_version =
       context_gpu_info.vertex_shader_version;
+  basic_gpu_info->max_msaa_samples =
+      context_gpu_info.max_msaa_samples;
   basic_gpu_info->gl_ws_vendor = context_gpu_info.gl_ws_vendor;
   basic_gpu_info->gl_ws_version = context_gpu_info.gl_ws_version;
   basic_gpu_info->gl_ws_extensions = context_gpu_info.gl_ws_extensions;
