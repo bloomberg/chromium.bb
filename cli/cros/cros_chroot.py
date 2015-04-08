@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import argparse
 
+from chromite.cbuildbot import constants
 from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import workspace_lib
@@ -48,11 +49,18 @@ class ChrootCommand(command.CliCommand):
     if not cmd:
       cmd = ['bash']
 
+    chroot_args = ['--log-level', self.options.log_level]
+
+    workspace_path = workspace_lib.WorkspacePath()
+    if workspace_path is not None:
+      chroot_args.extend(['--chroot', workspace_lib.ChrootPath(workspace_path),
+                          '--workspace', workspace_path])
+
     result = cros_build_lib.RunCommand(cmd, print_cmd=False, error_code_ok=True,
+                                       cwd=constants.SOURCE_ROOT,
                                        mute_output=False,
                                        enter_chroot=True,
-                                       chroot_args=['--log-level',
-                                                    self.options.log_level])
+                                       chroot_args=chroot_args)
     return result.returncode
 
   @classmethod
