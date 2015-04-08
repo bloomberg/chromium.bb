@@ -98,6 +98,11 @@ class ExplicitSelectorForTest : public SelectorForTest {
 };
 
 class TaskQueueManagerTest : public testing::Test {
+ public:
+  void DeleteTaskQueueManager() {
+    manager_.reset();
+  }
+
  protected:
   enum class SelectorType {
     Automatic,
@@ -1034,6 +1039,20 @@ TEST_F(TaskQueueManagerTest, NextPendingDelayedTaskRunTime_MultipleQueues) {
 
   EXPECT_EQ(now_src_->Now() + delay2,
             manager_->NextPendingDelayedTaskRunTime());
+}
+
+TEST_F(TaskQueueManagerTest, DeleteTaskQueueManagerInsideATask) {
+  Initialize(1u, SelectorType::Automatic);
+
+  scoped_refptr<base::SingleThreadTaskRunner> runner =
+      manager_->TaskRunnerForQueue(0);
+  runner->PostTask(FROM_HERE,
+                   base::Bind(&TaskQueueManagerTest::DeleteTaskQueueManager,
+                              base::Unretained(this)));
+
+  // This should not crash, assuming DoWork detects the TaskQueueManager has
+  // been deleted.
+  test_task_runner_->RunUntilIdle();
 }
 
 }  // namespace

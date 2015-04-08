@@ -463,6 +463,7 @@ TaskQueueManager::TaskQueueManager(
       time_source_(nullptr),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
+      deletion_sentinel_(new DeletionSentinel()),
       weak_factory_(this) {
   DCHECK(main_task_runner->RunsTasksOnCurrentThread());
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(disabled_by_default_tracing_category,
@@ -595,7 +596,9 @@ void TaskQueueManager::DoWork(bool posted_from_main_thread) {
     // Note that this function won't post another call to DoWork if one is
     // already pending, so it is safe to call it in a loop.
     MaybePostDoWorkOnMainRunner();
-    ProcessTaskFromWorkQueue(queue_index, i > 0, &previous_task);
+
+    if (ProcessTaskFromWorkQueue(queue_index, i > 0, &previous_task))
+      return; // The TaskQueueManager got deleted, we must bail out.
 
     if (!UpdateWorkQueues(&previous_task))
       return;
@@ -615,11 +618,12 @@ void TaskQueueManager::DidQueueTask(base::PendingTask* pending_task) {
   task_annotator_.DidQueueTask("TaskQueueManager::PostTask", *pending_task);
 }
 
-void TaskQueueManager::ProcessTaskFromWorkQueue(
+bool TaskQueueManager::ProcessTaskFromWorkQueue(
     size_t queue_index,
     bool has_previous_task,
     base::PendingTask* previous_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  scoped_refptr<DeletionSentinel> protect(deletion_sentinel_);
   internal::TaskQueue* queue = Queue(queue_index);
   base::PendingTask pending_task = queue->TakeTaskFromWorkQueue();
   if (!pending_task.nestable && main_task_runner_->IsNested()) {
@@ -639,9 +643,16 @@ void TaskQueueManager::ProcessTaskFromWorkQueue(
     }
     task_annotator_.RunTask("TaskQueueManager::PostTask",
                             "TaskQueueManager::RunTask", pending_task);
+
+    // Detect if the TaskQueueManager just got deleted.  If this happens we must
+    // not access any member variables after this point.
+    if (protect->HasOneRef())
+      return true;
+
     pending_task.task.Reset();
     *previous_task = pending_task;
   }
+  return false;
 }
 
 bool TaskQueueManager::RunsTasksOnCurrentThread() const {

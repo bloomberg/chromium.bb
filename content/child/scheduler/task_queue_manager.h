@@ -128,6 +128,12 @@ class CONTENT_EXPORT TaskQueueManager {
   friend class internal::LazyNow;
   friend class internal::TaskQueue;
 
+  class DeletionSentinel : public base::RefCounted<DeletionSentinel> {
+   private:
+    friend class base::RefCounted<DeletionSentinel>;
+    ~DeletionSentinel() {}
+  };
+
   // Called by the task queue to register a new pending task and allocate a
   // sequence number for it.
   void DidQueueTask(base::PendingTask* pending_task);
@@ -158,7 +164,8 @@ class CONTENT_EXPORT TaskQueueManager {
   // |queue_index|. If |has_previous_task| is true, |previous_task| should
   // contain the previous task in this work batch. Non-nestable task are
   // reposted on the run loop. The queue must not be empty.
-  void ProcessTaskFromWorkQueue(size_t queue_index,
+  // Returns true if the TaskQueueManager got deleted, and false otherwise.
+  bool ProcessTaskFromWorkQueue(size_t queue_index,
                                 bool has_previous_task,
                                 base::PendingTask* previous_task);
 
@@ -198,6 +205,7 @@ class CONTENT_EXPORT TaskQueueManager {
 
   const char* disabled_by_default_tracing_category_;
 
+  scoped_refptr<DeletionSentinel> deletion_sentinel_;
   base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManager);
