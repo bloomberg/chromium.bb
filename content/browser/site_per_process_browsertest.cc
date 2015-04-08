@@ -14,6 +14,7 @@
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -25,6 +26,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/test_frame_navigation_observer.h"
+#include "ipc/ipc_security_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -319,6 +321,94 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
         base::TimeDelta::FromMilliseconds(10));
     run_loop.Run();
   }
+}
+
+// Ensure that OOPIFs are deleted after navigating to a new main frame.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CleanupCrossSiteIframe) {
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  TestNavigationObserver observer(shell()->web_contents());
+
+  // Load a cross-site page into both iframes.
+  GURL foo_url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+  NavigateFrameToURL(root->child_at(0), foo_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(foo_url, observer.last_navigation_url());
+  NavigateFrameToURL(root->child_at(1), foo_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(foo_url, observer.last_navigation_url());
+
+  // Ensure that we have created a new process for the subframes.
+  ASSERT_EQ(2U, root->child_count());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(root->child_at(0)->current_frame_host()->GetSiteInstance(),
+            root->child_at(1)->current_frame_host()->GetSiteInstance());
+
+  // Use Javascript in the parent to remove one of the frames and ensure that
+  // the subframe goes away.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.body.removeChild("
+                            "document.querySelectorAll('iframe')[0])"));
+  ASSERT_EQ(1U, root->child_count());
+
+  // Load a new same-site page in the top-level frame and ensure the other
+  // subframe goes away.
+  GURL new_url(embedded_test_server()->GetURL("/title1.html"));
+  NavigateToURL(shell(), new_url);
+  ASSERT_EQ(0U, root->child_count());
+}
+
+// Ensure that root frames cannot be detached.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  TestNavigationObserver observer(shell()->web_contents());
+
+  // Load cross-site pages into both iframes.
+  GURL foo_url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+  NavigateFrameToURL(root->child_at(0), foo_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(foo_url, observer.last_navigation_url());
+  GURL bar_url = embedded_test_server()->GetURL("bar.com", "/title2.html");
+  NavigateFrameToURL(root->child_at(1), bar_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(bar_url, observer.last_navigation_url());
+
+  // Ensure that we have created new processes for the subframes.
+  ASSERT_EQ(2U, root->child_count());
+  FrameTreeNode* foo_child = root->child_at(0);
+  SiteInstance* foo_site_instance =
+      foo_child->current_frame_host()->GetSiteInstance();
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(), foo_site_instance);
+  FrameTreeNode* bar_child = root->child_at(1);
+  SiteInstance* bar_site_instance =
+      bar_child->current_frame_host()->GetSiteInstance();
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(), bar_site_instance);
+
+  // Simulate an attempt to detach the root frame from foo_site_instance.  This
+  // should kill foo_site_instance's process.
+  RenderFrameProxyHost* foo_mainframe_rfph =
+      root->render_manager()->GetRenderFrameProxyHost(foo_site_instance);
+  content::RenderProcessHostWatcher foo_terminated(
+      foo_mainframe_rfph->GetProcess(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  FrameHostMsg_Detach evil_msg2(foo_mainframe_rfph->GetRoutingID());
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      foo_mainframe_rfph->GetProcess()->GetChannel(), evil_msg2);
+  foo_terminated.Wait();
 }
 
 // Disabled for flaky crashing: crbug.com/446575

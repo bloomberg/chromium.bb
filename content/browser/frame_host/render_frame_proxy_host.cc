@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 
 #include "base/lazy_instance.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -116,6 +117,7 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxyHost, msg)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -157,8 +159,22 @@ void RenderFrameProxyHost::DisownOpener() {
   Send(new FrameMsg_DisownOpener(GetRoutingID()));
 }
 
+void RenderFrameProxyHost::OnDetach() {
+  // This message should only be received for subframes.  Note that we can't
+  // restrict it to just the current SiteInstances of the ancestors of this
+  // frame, because another frame in the tree may be able to detach this frame
+  // by navigating its parent.
+  if (frame_tree_node_->IsMainFrame()) {
+    bad_message::ReceivedBadMessage(GetProcess(), bad_message::RFPH_DETACH);
+    return;
+  }
+  frame_tree_node_->frame_tree()->RemoveFrame(frame_tree_node_);
+}
+
 void RenderFrameProxyHost::OnOpenURL(
     const FrameHostMsg_OpenURL_Params& params) {
+  // TODO(creis): Verify that we are in the same BrowsingInstance as the current
+  // RenderFrameHost.  See NavigatorImpl::RequestOpenURL.
   frame_tree_node_->current_frame_host()->OpenURL(params, site_instance_.get());
 }
 

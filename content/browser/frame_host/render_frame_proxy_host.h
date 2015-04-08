@@ -115,6 +115,7 @@ class RenderFrameProxyHost
 
  private:
   // IPC Message handlers.
+  void OnDetach();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
 
   // This RenderFrameProxyHost's routing id.

@@ -1094,3 +1094,53 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("aac")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 }
+
+// Tests what happens when a tab does a same-site navigation away from a page
+// with cross-site iframes.
+IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
+                       LeavePageWithCrossSiteIframes) {
+  ShowTaskManager();
+
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  content::SetupCrossSiteRedirector(embedded_test_server());
+
+  // Navigate the tab to a page on a.com with cross-process subframes.
+  GURL a_dotcom_with_iframes(embedded_test_server()->GetURL(
+      "/cross-site/a.com/iframe_cross_site.html"));
+  browser()->OpenURL(content::OpenURLParams(a_dotcom_with_iframes,
+                                            content::Referrer(), CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false));
+
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchTab("cross-site iframe test")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
+  if (!ShouldExpectSubframes()) {
+    ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnySubframe()));
+  } else {
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
+    ASSERT_NO_FATAL_FAILURE(
+        WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
+    ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnySubframe()));
+  }
+
+  // Navigate the tab to a page on a.com without cross-process subframes, and
+  // the subframe processes should disappear.
+  GURL a_dotcom_simple(
+      embedded_test_server()->GetURL("/cross-site/a.com/title2.html"));
+  browser()->OpenURL(content::OpenURLParams(a_dotcom_simple,
+                                            content::Referrer(), CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchTab("Title Of Awesomeness")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnySubframe()));
+
+  HideTaskManager();
+  ShowTaskManager();
+
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchTab("Title Of Awesomeness")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnySubframe()));
+}

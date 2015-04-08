@@ -304,8 +304,13 @@ void RenderFrameProxy::OnDidUpdateName(const std::string& name) {
 }
 
 void RenderFrameProxy::frameDetached() {
-  if (web_frame_->parent())
+  if (web_frame_->parent()) {
     web_frame_->parent()->removeChild(web_frame_);
+
+    // Let the browser process know this subframe is removed, so that it is
+    // destroyed in its current process.
+    Send(new FrameHostMsg_Detach(routing_id_));
+  }
 
   web_frame_->close();
   delete this;

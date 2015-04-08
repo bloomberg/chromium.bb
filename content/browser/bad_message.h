@@ -37,6 +37,7 @@ enum BadMessageReason {
   SERVICE_WORKER_BAD_URL,
   WC_INVALID_FRAME_SOURCE,
   RWHVM_UNEXPECTED_FRAME_TYPE,
+  RFPH_DETACH,
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
   // reason.
