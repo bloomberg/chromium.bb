@@ -49,24 +49,24 @@ void AudioBasicInspectorHandler::pullInputs(size_t framesToProcess)
     input(0)->pull(output(0)->bus(), framesToProcess);
 }
 
-void AudioBasicInspectorHandler::connect(AudioHandler* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
+void AudioBasicInspectorNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
     AudioContext::AutoLocker locker(context());
 
-    AudioHandler::connect(destination, outputIndex, inputIndex, exceptionState);
-    updatePullStatus();
+    AudioNode::connect(destination, outputIndex, inputIndex, exceptionState);
+    static_cast<AudioBasicInspectorHandler&>(handler()).updatePullStatus();
 }
 
-void AudioBasicInspectorHandler::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
+void AudioBasicInspectorNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
     AudioContext::AutoLocker locker(context());
 
-    AudioHandler::disconnect(outputIndex, exceptionState);
-    updatePullStatus();
+    AudioNode::disconnect(outputIndex, exceptionState);
+    static_cast<AudioBasicInspectorHandler&>(handler()).updatePullStatus();
 }
 
 void AudioBasicInspectorHandler::checkNumberOfChannelsForInput(AudioNodeInput* input)

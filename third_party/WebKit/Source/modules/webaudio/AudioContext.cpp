@@ -1280,7 +1280,7 @@ ScriptPromise AudioContext::closeContext(ScriptState* scriptState)
     for (auto& node : m_liveNodes) {
         if (node) {
             for (unsigned k = 0; k < node->numberOfOutputs(); ++k)
-                node->handler().disconnectWithoutException(k);
+                node->disconnectWithoutException(k);
         }
     }
 

@@ -40,13 +40,23 @@ public:
 
     // AudioHandler
     virtual void pullInputs(size_t framesToProcess) override final;
-    virtual void connect(AudioHandler*, unsigned outputIndex, unsigned inputIndex, ExceptionState&) override final;
-    virtual void disconnect(unsigned outputIndex, ExceptionState&) override final;
     virtual void checkNumberOfChannelsForInput(AudioNodeInput*) override final;
 
-private:
     void updatePullStatus();
+
+private:
     bool m_needAutomaticPull; // When setting to true, AudioBasicInspectorHandler will be pulled automaticlly by AudioContext before the end of each render quantum.
+};
+
+class AudioBasicInspectorNode : public AudioNode {
+protected:
+    explicit AudioBasicInspectorNode(AudioContext& context) : AudioNode(context) { }
+
+private:
+    // TODO(tkent): Should AudioBasicInspectorNode override other variants of
+    // connect() and disconnect()?
+    void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&) final;
+    void disconnect(unsigned outputIndex, ExceptionState&) final;
 };
 
 } // namespace blink

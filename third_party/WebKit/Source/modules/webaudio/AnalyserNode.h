@@ -65,7 +65,7 @@ private:
     RealtimeAnalyser m_analyser;
 };
 
-class AnalyserNode final : public AudioNode {
+class AnalyserNode final : public AudioBasicInspectorNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static AnalyserNode* create(AudioContext&, float sampleRate);

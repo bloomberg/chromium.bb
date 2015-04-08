@@ -58,7 +58,7 @@ private:
     RefPtr<AudioBus> m_mixBus;
 };
 
-class MediaStreamAudioDestinationNode final : public AudioNode {
+class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static MediaStreamAudioDestinationNode* create(AudioContext&, size_t numberOfChannels);

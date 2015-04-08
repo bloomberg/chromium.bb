@@ -77,7 +77,7 @@ void MediaStreamAudioDestinationHandler::process(size_t numberOfFrames)
 // ----------------------------------------------------------------
 
 MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext& context, size_t numberOfChannels)
-    : AudioNode(context)
+    : AudioBasicInspectorNode(context)
 {
     setHandler(new MediaStreamAudioDestinationHandler(*this, numberOfChannels));
 }

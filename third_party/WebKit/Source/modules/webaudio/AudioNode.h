@@ -136,22 +136,6 @@ public:
     AudioNodeInput* input(unsigned);
     AudioNodeOutput* output(unsigned);
 
-    // Called from main thread by corresponding JavaScript methods.
-    virtual void connect(AudioHandler*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
-    void connect(AudioParam*, unsigned outputIndex, ExceptionState&);
-
-    virtual void disconnect();
-    virtual void disconnect(unsigned outputIndex, ExceptionState&);
-    virtual void disconnect(AudioHandler*, ExceptionState&);
-    virtual void disconnect(AudioHandler*, unsigned outputIndex, ExceptionState&);
-    virtual void disconnect(AudioHandler*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
-    virtual void disconnect(AudioParam*, ExceptionState&);
-    virtual void disconnect(AudioParam*, unsigned outputIndex, ExceptionState&);
-
-    // Like disconnect, but no exception is thrown if the outputIndex is invalid.  Just do nothing
-    // in that case.
-    virtual void disconnectWithoutException(unsigned outputIndex);
-
     virtual float sampleRate() const { return m_sampleRate; }
 
     // processIfNecessary() is called by our output(s) when the rendering graph needs this AudioNode to process.
@@ -208,7 +192,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    // Inputs and outputs must be created before the AudioNode is initialized.
+    // Inputs and outputs must be created before the AudioHandler is
+    // initialized.
     void addInput();
     void addOutput(unsigned numberOfChannels);
 
@@ -230,14 +215,6 @@ private:
     float m_sampleRate;
     Vector<OwnPtr<AudioNodeInput>> m_inputs;
     Vector<OwnPtr<AudioNodeOutput>> m_outputs;
-    // Represents audio node graph with Oilpan references. N-th HeapHashSet
-    // represents a set of AudioNode objects connected to this AudioNode's N-th
-    // output.
-    HeapVector<Member<HeapHashSet<Member<AudioHandler>>>> m_connectedNodes;
-    // Represents audio node graph with Oilpan references. N-th HeapHashSet
-    // represents a set of AudioParam objects connected to this AudioNode's N-th
-    // output.
-    HeapVector<Member<HeapHashSet<Member<AudioParam>>>> m_connectedParams;
 
     double m_lastProcessingTime;
     double m_lastNonSilentTime;
@@ -269,10 +246,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
     AudioHandler& handler() const;
 
-    void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
+    virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
     void connect(AudioParam*, unsigned outputIndex, ExceptionState&);
     void disconnect();
-    void disconnect(unsigned outputIndex, ExceptionState&);
+    virtual void disconnect(unsigned outputIndex, ExceptionState&);
     void disconnect(AudioNode*, ExceptionState&);
     void disconnect(AudioNode*, unsigned outputIndex, ExceptionState&);
     void disconnect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
@@ -292,6 +269,12 @@ public:
     virtual const AtomicString& interfaceName() const override final;
     virtual ExecutionContext* executionContext() const override final;
 
+    // Called inside AudioHandler constructors.
+    void didAddOutput(unsigned numberOfOutputs);
+    // Like disconnect, but no exception is thrown if the outputIndex is invalid.  Just do nothing
+    // in that case.
+    void disconnectWithoutException(unsigned outputIndex);
+
 protected:
     explicit AudioNode(AudioContext&);
     // This should be called in a constructor.
@@ -302,6 +285,14 @@ private:
 
     Member<AudioContext> m_context;
     Member<AudioHandler> m_handler;
+    // Represents audio node graph with Oilpan references. N-th HeapHashSet
+    // represents a set of AudioNode objects connected to this AudioNode's N-th
+    // output.
+    HeapVector<Member<HeapHashSet<Member<AudioNode>>>> m_connectedNodes;
+    // Represents audio node graph with Oilpan references. N-th HeapHashSet
+    // represents a set of AudioParam objects connected to this AudioNode's N-th
+    // output.
+    HeapVector<Member<HeapHashSet<Member<AudioParam>>>> m_connectedParams;
 };
 
 } // namespace blink
