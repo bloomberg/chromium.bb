@@ -66,8 +66,6 @@ void _sanitizer_options_link_helper() { }
 //     so the slow unwinder may not work properly.
 //   detect_stack_use_after_return=1 - use fake stack to delay the reuse of
 //     stack allocations and detect stack-use-after-return errors.
-//   detect_container_overflow=0 - do not detect overflows in containers
-//     until crbug.com/459632 is fixed.
 #if defined(OS_LINUX)
 #if defined(GOOGLE_CHROME_BUILD)
 // Default AddressSanitizer options for the official build. These do not affect
@@ -76,22 +74,20 @@ void _sanitizer_options_link_helper() { }
 const char kAsanDefaultOptions[] =
     "legacy_pthread_cond=1 malloc_context_size=5 strict_memcmp=0 "
     "symbolize=false check_printf=1 use_sigaltstack=1 detect_leaks=0 "
-    "strip_path_prefix=Release/../../ fast_unwind_on_fatal=1 "
-    "detect_container_overflow=0 ";
+    "strip_path_prefix=Release/../../ fast_unwind_on_fatal=1";
 #else
 // Default AddressSanitizer options for buildbots and non-official builds.
 const char *kAsanDefaultOptions =
     "strict_memcmp=0 symbolize=false check_printf=1 use_sigaltstack=1 "
     "detect_leaks=0 strip_path_prefix=Release/../../ fast_unwind_on_fatal=1 "
-    "detect_stack_use_after_return=1 detect_container_overflow=0 ";
+    "detect_stack_use_after_return=1 ";
 #endif  // GOOGLE_CHROME_BUILD
 
 #elif defined(OS_MACOSX)
 const char *kAsanDefaultOptions =
     "strict_memcmp=0 replace_intrin=0 check_printf=1 use_sigaltstack=1 "
     "strip_path_prefix=Release/../../ fast_unwind_on_fatal=1 "
-    "detect_stack_use_after_return=1 detect_odr_violation=0 "
-    "detect_container_overflow=0 ";
+    "detect_stack_use_after_return=1 detect_odr_violation=0 ";
 static const char kNaClDefaultOptions[] = "handle_segv=0";
 static const char kNaClFlag[] = "--type=nacl-loader";
 #endif  // OS_LINUX
