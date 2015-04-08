@@ -62,7 +62,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   base::FilePath GetPathOfProfileAtIndex(size_t index) const override;
   base::Time GetProfileActiveTimeAtIndex(size_t index) const override;
   base::string16 GetUserNameOfProfileAtIndex(size_t index) const override;
-  const gfx::Image& GetAvatarIconOfProfileAtIndex(size_t index) const override;
+  const gfx::Image& GetAvatarIconOfProfileAtIndex(size_t index) override;
   std::string GetLocalAuthCredentialsOfProfileAtIndex(
       size_t index) const override;
   // Note that a return value of false could mean an error in collection or
@@ -148,6 +148,11 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void AddObserver(ProfileInfoCacheObserver* obs);
   void RemoveObserver(ProfileInfoCacheObserver* obs);
 
+  void set_disable_avatar_download_for_testing(
+      bool disable_avatar_download_for_testing) {
+    disable_avatar_download_for_testing_ = disable_avatar_download_for_testing;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest, DownloadHighResAvatarTest);
 
@@ -223,6 +228,10 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // or when the ProfileInfoCache is destroyed.
   std::map<std::string, ProfileAvatarDownloader*>
       avatar_images_downloads_in_progress_;
+
+  // Determines of the ProfileAvatarDownloader should be created and executed
+  // or not. Only set to true for tests.
+  bool disable_avatar_download_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
 };

@@ -152,7 +152,8 @@ void DeleteBitmap(const base::FilePath& image_path) {
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
                                    const base::FilePath& user_data_dir)
     : prefs_(prefs),
-      user_data_dir_(user_data_dir) {
+      user_data_dir_(user_data_dir),
+      disable_avatar_download_for_testing_(false) {
   // Populate the cache
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   base::DictionaryValue* cache = update.Get();
@@ -181,7 +182,7 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
 
   // If needed, start downloading the high-res avatars and migrate any legacy
   // profile names.
-  if (switches::IsNewAvatarMenu())
+  if (switches::IsNewAvatarMenu() && !disable_avatar_download_for_testing_)
     MigrateLegacyProfileNamesAndDownloadAvatars();
 }
 
@@ -220,7 +221,7 @@ void ProfileInfoCache::AddProfileToCache(
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
 
-  if (switches::IsNewAvatarMenu())
+  if (switches::IsNewAvatarMenu() && !disable_avatar_download_for_testing_)
     DownloadHighResAvatarIfNeeded(icon_index, profile_path);
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
@@ -318,7 +319,7 @@ base::string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(
 }
 
 const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
-    size_t index) const {
+    size_t index) {
   if (IsUsingGAIAPictureOfProfileAtIndex(index)) {
     const gfx::Image* image = GetGAIAPictureOfProfileAtIndex(index);
     if (image)
@@ -544,7 +545,7 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
 
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
 
-  if (switches::IsNewAvatarMenu())
+  if (switches::IsNewAvatarMenu() && !disable_avatar_download_for_testing_)
     DownloadHighResAvatarIfNeeded(icon_index, profile_path);
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
@@ -866,6 +867,7 @@ void ProfileInfoCache::DownloadHighResAvatarIfNeeded(
 #if defined(OS_ANDROID) || defined(OS_IOS) || defined(OS_CHROMEOS)
   return;
 #endif
+  DCHECK(!disable_avatar_download_for_testing_);
 
   const base::FilePath& file_path =
       profiles::GetPathOfHighResAvatarAtIndex(icon_index);
@@ -1064,6 +1066,10 @@ const gfx::Image* ProfileInfoCache::LoadAvatarPictureFromPath(
       return NULL;
     return cached_avatar_images_[key];
   }
+
+  // Don't download the image if downloading is disabled for tests.
+  if (disable_avatar_download_for_testing_)
+    return NULL;
 
   // If the picture is already being loaded then don't try loading it again.
   if (cached_avatar_images_loading_[key])

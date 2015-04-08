@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/profiles/avatar_icon_controller.h"
 
+#include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -22,10 +23,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/signin/core/common/profile_management_switches.h"
 
 class AvatarIconControllerTest : public CocoaProfileTest {
  public:
   void SetUp() override {
+    switches::DisableNewAvatarMenuForTesting(
+        base::CommandLine::ForCurrentProcess());
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 

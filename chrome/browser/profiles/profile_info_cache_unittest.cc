@@ -546,27 +546,37 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
   switches::EnableNewAvatarMenuForTesting(
       base::CommandLine::ForCurrentProcess());
 
-  EXPECT_EQ(0U, GetCache()->GetNumberOfProfiles());
+  // The TestingProfileManager's ProfileInfoCache doesn't download avatars.
+  ProfileInfoCache profile_info_cache(g_browser_process->local_state(),
+      testing_profile_manager_.profile_manager()->user_data_dir());
+
+  // // Make sure there are no avatars already on disk.
+  const size_t kIconIndex = 0;
+  base::FilePath icon_path =
+      profiles::GetPathOfHighResAvatarAtIndex(kIconIndex);
+  EXPECT_FALSE(base::PathExists(icon_path));
+
+  EXPECT_EQ(0U, profile_info_cache.GetNumberOfProfiles());
   base::FilePath path_1 = GetProfilePath("path_1");
-  GetCache()->AddProfileToCache(path_1, ASCIIToUTF16("name_1"),
-                                base::string16(), 0, std::string());
-  EXPECT_EQ(1U, GetCache()->GetNumberOfProfiles());
+  profile_info_cache.AddProfileToCache(path_1, ASCIIToUTF16("name_1"),
+      base::string16(), kIconIndex, std::string());
+  EXPECT_EQ(1U, profile_info_cache.GetNumberOfProfiles());
   base::RunLoop().RunUntilIdle();
 
   // We haven't downloaded any high-res avatars yet.
-  EXPECT_EQ(0U, GetCache()->cached_avatar_images_.size());
+  EXPECT_EQ(0U, profile_info_cache.cached_avatar_images_.size());
 
   // After adding a new profile, the download of high-res avatar will be
   // triggered if the flag kNewAvatarMenu has been set. But the downloader
   // won't ever call OnFetchComplete in the test.
-  EXPECT_EQ(1U, GetCache()->avatar_images_downloads_in_progress_.size());
+  EXPECT_EQ(1U, profile_info_cache.avatar_images_downloads_in_progress_.size());
 
-  EXPECT_FALSE(GetCache()->GetHighResAvatarOfProfileAtIndex(0));
+  EXPECT_FALSE(profile_info_cache.GetHighResAvatarOfProfileAtIndex(0));
 
   // Simulate downloading a high-res avatar.
-  const size_t kIconIndex = 0;
   ProfileAvatarDownloader avatar_downloader(
-      kIconIndex, GetCache()->GetPathOfProfileAtIndex(0), GetCache());
+      kIconIndex, profile_info_cache.GetPathOfProfileAtIndex(0),
+      &profile_info_cache);
 
   // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
   SkBitmap bitmap;
@@ -577,23 +587,21 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
       GURL("http://www.google.com/avatar.png"), &bitmap);
 
   // Now the download should not be in progress anymore.
-  EXPECT_EQ(0U, GetCache()->avatar_images_downloads_in_progress_.size());
+  EXPECT_EQ(0U, profile_info_cache.avatar_images_downloads_in_progress_.size());
 
   std::string file_name =
       profiles::GetDefaultAvatarIconFileNameAtIndex(kIconIndex);
 
   // The file should have been cached and saved.
-  EXPECT_EQ(1U, GetCache()->cached_avatar_images_.size());
-  EXPECT_TRUE(GetCache()->GetHighResAvatarOfProfileAtIndex(0));
-  EXPECT_EQ(GetCache()->cached_avatar_images_[file_name],
-      GetCache()->GetHighResAvatarOfProfileAtIndex(0));
+  EXPECT_EQ(1U, profile_info_cache.cached_avatar_images_.size());
+  EXPECT_TRUE(profile_info_cache.GetHighResAvatarOfProfileAtIndex(0));
+  EXPECT_EQ(profile_info_cache.cached_avatar_images_[file_name],
+      profile_info_cache.GetHighResAvatarOfProfileAtIndex(0));
 
   // Make sure everything has completed, and the file has been written to disk.
   base::RunLoop().RunUntilIdle();
 
   // Clean up.
-  base::FilePath icon_path =
-      profiles::GetPathOfHighResAvatarAtIndex(kIconIndex);
   EXPECT_NE(std::string::npos, icon_path.MaybeAsASCII().find(file_name));
   EXPECT_TRUE(base::PathExists(icon_path));
   EXPECT_TRUE(base::DeleteFile(icon_path, true));

@@ -79,16 +79,16 @@ State GetProcessState() {
   } else if (is_new_avatar_menu) {
     return STATE_NEW_AVATAR_MENU;
   } else if (not_new_profile_management) {
-    return STATE_OLD_AVATAR_MENU;
+    return STATE_NEW_AVATAR_MENU;
   } else if (not_consistent_identity) {
-    return STATE_OLD_AVATAR_MENU;
+    return STATE_NEW_AVATAR_MENU;
   }
 
   // Set the default state
 #if defined(OS_ANDROID) || defined(OS_IOS)
   State state = STATE_ACCOUNT_CONSISTENCY;
 #else
-  State state = STATE_OLD_AVATAR_MENU;
+  State state = STATE_NEW_AVATAR_MENU;
 #endif
 
   if (!trial_type.empty()) {
@@ -99,7 +99,7 @@ State GetProcessState() {
     } else if (trial_type == "NewAvatarMenu") {
       state = STATE_NEW_AVATAR_MENU;
     } else {
-      state = STATE_OLD_AVATAR_MENU;
+      state = STATE_NEW_AVATAR_MENU;
     }
   }
 

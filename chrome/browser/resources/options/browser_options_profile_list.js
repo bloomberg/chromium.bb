@@ -51,6 +51,7 @@ cr.define('options.browser_options', function() {
       var iconEl = this.ownerDocument.createElement('img');
       iconEl.className = 'profile-img';
       iconEl.style.content = getProfileAvatarIcon(profileInfo.iconURL);
+      iconEl.alt = '';
       containerEl.appendChild(iconEl);
 
       var nameEl = this.ownerDocument.createElement('div');

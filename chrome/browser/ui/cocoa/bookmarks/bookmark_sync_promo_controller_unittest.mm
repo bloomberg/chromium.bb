@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -21,6 +22,8 @@ namespace {
 class BookmarkSyncPromoControllerTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
+    switches::DisableNewAvatarMenuForTesting(
+        base::CommandLine::ForCurrentProcess());
     BrowserWithTestWindowTest::SetUp();
     ASSERT_TRUE(profile());
     // Adds TestExtensionSystem, since signin uses the gaia auth extension.

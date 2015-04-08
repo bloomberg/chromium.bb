@@ -100,15 +100,15 @@ void OpenNewWindowForProfile(
 }
 
 std::string GetAvatarImageAtIndex(
-    size_t index, const ProfileInfoCache& info_cache) {
+    size_t index, ProfileInfoCache* info_cache) {
   bool is_gaia_picture =
-      info_cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
-      info_cache.GetGAIAPictureOfProfileAtIndex(index);
+      info_cache->IsUsingGAIAPictureOfProfileAtIndex(index) &&
+      info_cache->GetGAIAPictureOfProfileAtIndex(index);
 
   // If the avatar is too small (i.e. the old-style low resolution avatar),
   // it will be pixelated when displayed in the User Manager, so we should
   // return the placeholder avatar instead.
-  gfx::Image avatar_image = info_cache.GetAvatarIconOfProfileAtIndex(index);
+  gfx::Image avatar_image = info_cache->GetAvatarIconOfProfileAtIndex(index);
   if (avatar_image.Width() <= profiles::kAvatarIconWidth ||
       avatar_image.Height() <= profiles::kAvatarIconHeight ) {
     avatar_image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -725,8 +725,8 @@ void UserManagerScreenHandler::GetLocalizedValues(
 
 void UserManagerScreenHandler::SendUserList() {
   base::ListValue users_list;
-  const ProfileInfoCache& info_cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileInfoCache* info_cache =
+      &g_browser_process->profile_manager()->GetProfileInfoCache();
   user_auth_type_map_.clear();
 
   // Profile deletion is not allowed in Metro mode.
@@ -735,14 +735,14 @@ void UserManagerScreenHandler::SendUserList() {
   can_remove = !ash::Shell::HasInstance();
 #endif
 
-  for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
+  for (size_t i = 0; i < info_cache->GetNumberOfProfiles(); ++i) {
     base::DictionaryValue* profile_value = new base::DictionaryValue();
-    base::FilePath profile_path = info_cache.GetPathOfProfileAtIndex(i);
+    base::FilePath profile_path = info_cache->GetPathOfProfileAtIndex(i);
 
     profile_value->SetString(
-        kKeyUsername, info_cache.GetUserNameOfProfileAtIndex(i));
+        kKeyUsername, info_cache->GetUserNameOfProfileAtIndex(i));
     profile_value->SetString(
-        kKeyEmailAddress, info_cache.GetUserNameOfProfileAtIndex(i));
+        kKeyEmailAddress, info_cache->GetUserNameOfProfileAtIndex(i));
     profile_value->SetString(
         kKeyDisplayName,
         profiles::GetAvatarNameForProfile(profile_path));
@@ -750,11 +750,11 @@ void UserManagerScreenHandler::SendUserList() {
         kKeyProfilePath, base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean(kKeyPublicAccount, false);
     profile_value->SetBoolean(kKeyLegacySupervisedUser,
-                              info_cache.ProfileIsLegacySupervisedAtIndex(i));
+                              info_cache->ProfileIsLegacySupervisedAtIndex(i));
     profile_value->SetBoolean(
-        kKeyChildUser, info_cache.ProfileIsChildAtIndex(i));
+        kKeyChildUser, info_cache->ProfileIsChildAtIndex(i));
     profile_value->SetBoolean(
-        kKeyNeedsSignin, info_cache.ProfileIsSigninRequiredAtIndex(i));
+        kKeyNeedsSignin, info_cache->ProfileIsSigninRequiredAtIndex(i));
     profile_value->SetBoolean(kKeyIsOwner, false);
     profile_value->SetBoolean(kKeyCanRemove, can_remove);
     profile_value->SetBoolean(kKeyIsDesktop, true);
