@@ -51,7 +51,6 @@
 #include "modules/push_messaging/PushMessageData.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/FetchEvent.h"
-#include "modules/serviceworkers/InstallEvent.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -119,7 +118,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);
     WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Install, eventID);
-    RefPtrWillBeRawPtr<Event> event(InstallEvent::create(EventTypeNames::install, InstallEventInit(), observer));
+    RefPtrWillBeRawPtr<Event> event(ExtendableEvent::create(EventTypeNames::install, ExtendableEventInit(), observer));
     m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }
 
