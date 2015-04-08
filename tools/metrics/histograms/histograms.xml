@@ -59999,7 +59999,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="13" label="DICTIONARY_FOUND_HAS_WRONG_SCHEME"/>
   <int value="14" label="DICTIONARY_HASH_NOT_FOUND"/>
   <int value="15" label="DICTIONARY_HASH_MALFORMED"/>
-  <int value="16" label="DICTIONARY_FOUND_EXPIRED"/>
+  <int value="16" label="defunct (DICTIONARY_FOUND_EXPIRED)"/>
   <int value="20" label="DICTIONARY_HAS_NO_HEADER"/>
   <int value="21" label="DICTIONARY_HEADER_LINE_MISSING_COLON"/>
   <int value="22" label="DICTIONARY_MISSING_DOMAIN_SPECIFIER"/>
@@ -60054,11 +60054,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="78" label="PASS_THROUGH_404_CODE"/>
   <int value="79" label="PASS_THROUGH_OLD_CACHED"/>
   <int value="80" label="META_REFRESH_CACHED_RECOVERY"/>
-  <int value="81" label="DISCARD_TENTATIVE_SDCH"/>
-  <int value="90" label="UNFLUSHED_CONTENT"/>
+  <int value="81" label="defunct (DISCARD_TENTATIVE_SDCH)">
+    Now tracked by ResponseCorruptionDetection.* histograms.
+  </int>
+  <int value="90" label="defunct (UNFLUSHED_CONTENT)"/>
   <int value="91" label="MISSING_TIME_STATS"/>
   <int value="92" label="CACHE_DECODED"/>
-  <int value="93" label="OVER_10_MINUTES"/>
+  <int value="93" label="defunct (OVER_10_MINUTES)"/>
   <int value="94" label="UNINITIALIZED"/>
   <int value="95" label="PRIOR_TO_DICTIONARY"/>
   <int value="96" label="DECODE_ERROR"/>
