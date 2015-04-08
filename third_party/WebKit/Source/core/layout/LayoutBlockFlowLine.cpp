@@ -1013,12 +1013,11 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                     line->adjustBlockDirectionPosition(delta.toFloat());
                 }
                 if (Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr()) {
-                    Vector<LayoutBox*>::iterator end = cleanLineFloats->end();
-                    for (Vector<LayoutBox*>::iterator f = cleanLineFloats->begin(); f != end; ++f) {
-                        FloatingObject* floatingObject = insertFloatingObject(**f);
+                    for (auto* box : *cleanLineFloats) {
+                        FloatingObject* floatingObject = insertFloatingObject(*box);
                         ASSERT(!floatingObject->originatingLine());
                         floatingObject->setOriginatingLine(line);
-                        setLogicalHeight(logicalTopForChild(**f) - marginBeforeForChild(**f) + delta);
+                        setLogicalHeight(logicalTopForChild(*box) - marginBeforeForChild(*box) + delta);
                         positionNewFloats();
                     }
                 }
@@ -1629,9 +1628,7 @@ void LayoutBlockFlow::checkFloatsInCleanLine(RootInlineBox* line, Vector<FloatWi
     if (!cleanLineFloats)
         return;
 
-    Vector<LayoutBox*>::iterator end = cleanLineFloats->end();
-    for (Vector<LayoutBox*>::iterator it = cleanLineFloats->begin(); it != end; ++it) {
-        LayoutBox* floatingBox = *it;
+    for (auto* floatingBox : *cleanLineFloats) {
         floatingBox->layoutIfNeeded();
         LayoutSize newSize = floatingBox->size() +
             LayoutSize(floatingBox->marginWidth(), floatingBox->marginHeight());
@@ -1742,14 +1739,13 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         RootInlineBox* line = firstRootBox();
         while (line != curr) {
             if (Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr()) {
-                Vector<LayoutBox*>::iterator end = cleanLineFloats->end();
-                for (Vector<LayoutBox*>::iterator f = cleanLineFloats->begin(); f != end; ++f) {
-                    FloatingObject* floatingObject = insertFloatingObject(**f);
+                for (auto* box : *cleanLineFloats) {
+                    FloatingObject* floatingObject = insertFloatingObject(*box);
                     ASSERT(!floatingObject->originatingLine());
                     floatingObject->setOriginatingLine(line);
-                    setLogicalHeight(logicalTopForChild(**f) - marginBeforeForChild(**f));
+                    setLogicalHeight(logicalTopForChild(*box) - marginBeforeForChild(*box));
                     positionNewFloats();
-                    ASSERT(layoutState.floats()[numCleanFloats].object == *f);
+                    ASSERT(layoutState.floats()[numCleanFloats].object == box);
                     numCleanFloats++;
                 }
             }

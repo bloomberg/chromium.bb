@@ -787,9 +787,8 @@ bool TextAutosizer::superclusterHasEnoughTextToAutosize(Supercluster* superclust
     if (supercluster->m_hasEnoughTextToAutosize != UnknownAmountOfText)
         return supercluster->m_hasEnoughTextToAutosize == HasEnoughText;
 
-    BlockSet::iterator end = supercluster->m_roots->end();
-    for (BlockSet::iterator it = supercluster->m_roots->begin(); it != end; ++it) {
-        if (clusterWouldHaveEnoughTextToAutosize(*it, widthProvider)) {
+    for (auto* root : *supercluster->m_roots) {
+        if (clusterWouldHaveEnoughTextToAutosize(root, widthProvider)) {
             supercluster->m_hasEnoughTextToAutosize = HasEnoughText;
             return true;
         }
@@ -824,8 +823,8 @@ const LayoutBlock* TextAutosizer::maxClusterWidthProvider(const Supercluster* su
     float maxWidth = widthFromBlock(result);
 
     const BlockSet* roots = supercluster->m_roots;
-    for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it) {
-        const LayoutBlock* widthProvider = clusterWidthProvider(*it);
+    for (const auto* root : *roots) {
+        const LayoutBlock* widthProvider = clusterWidthProvider(root);
         if (widthProvider->needsLayout())
             continue;
         float width = widthFromBlock(widthProvider);

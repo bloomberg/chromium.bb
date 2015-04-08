@@ -999,9 +999,8 @@ void LayoutTableSection::layoutRows()
 
             if (!cellChildrenFlex) {
                 if (TrackedRendererListHashSet* percentHeightDescendants = cell->percentHeightDescendants()) {
-                    TrackedRendererListHashSet::iterator end = percentHeightDescendants->end();
-                    for (TrackedRendererListHashSet::iterator it = percentHeightDescendants->begin(); it != end; ++it) {
-                        if (flexAllChildren || shouldFlexCellChild(*it)) {
+                    for (auto* descendant : *percentHeightDescendants) {
+                        if (flexAllChildren || shouldFlexCellChild(descendant)) {
                             cellChildrenFlex = true;
                             break;
                         }

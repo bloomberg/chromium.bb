@@ -131,15 +131,15 @@ void ImageQualityController::highQualityRepaintTimerFired(Timer<ImageQualityCont
         return;
     m_animatedResizeIsActive = false;
 
-    for (ObjectLayerSizeMap::iterator it = m_objectLayerSizeMap.begin(); it != m_objectLayerSizeMap.end(); ++it) {
-        if (LocalFrame* frame = it->key->document().frame()) {
+    for (auto* layoutObject : m_objectLayerSizeMap.keys()) {
+        if (LocalFrame* frame = layoutObject->document().frame()) {
             // If this renderer's containing FrameView is in live resize, punt the timer and hold back for now.
             if (frame->view() && frame->view()->inLiveResize()) {
                 restartTimer();
                 return;
             }
         }
-        it->key->setShouldDoFullPaintInvalidation();
+        layoutObject->setShouldDoFullPaintInvalidation();
     }
 
     m_liveResizeOptimizationIsActive = false;

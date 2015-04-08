@@ -47,8 +47,8 @@ SubtreeLayoutScope::~SubtreeLayoutScope()
     RELEASE_ASSERT(!m_root.needsLayout());
 
 #if ENABLE(ASSERT)
-    for (HashSet<LayoutObject*>::iterator it = m_renderersToLayout.begin(); it != m_renderersToLayout.end(); ++it)
-        (*it)->assertRendererLaidOut();
+    for (auto* renderer : m_renderersToLayout)
+        renderer->assertRendererLaidOut();
 #endif
 }
 

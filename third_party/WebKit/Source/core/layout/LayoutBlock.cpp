@@ -162,9 +162,8 @@ LayoutBlock::LayoutBlock(ContainerNode* node)
 static void removeBlockFromDescendantAndContainerMaps(LayoutBlock* block, TrackedDescendantsMap*& descendantMap, TrackedContainerMap*& containerMap)
 {
     if (OwnPtr<TrackedRendererListHashSet> descendantSet = descendantMap->take(block)) {
-        TrackedRendererListHashSet::iterator end = descendantSet->end();
-        for (TrackedRendererListHashSet::iterator descendant = descendantSet->begin(); descendant != end; ++descendant) {
-            TrackedContainerMap::iterator it = containerMap->find(*descendant);
+        for (auto& descendant : *descendantSet) {
+            TrackedContainerMap::iterator it = containerMap->find(descendant);
             ASSERT(it != containerMap->end());
             if (it == containerMap->end())
                 continue;
@@ -369,9 +368,7 @@ void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
 
     // Take care of positioned objects. This is required as PaintInvalidationState keeps a single clip rect.
     if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
-        TrackedRendererListHashSet::iterator end = positionedObjects->end();
-        for (TrackedRendererListHashSet::iterator it = positionedObjects->begin(); it != end; ++it) {
-            LayoutBox* box = *it;
+        for (auto* box : *positionedObjects) {
 
             // One of the renderers we're skipping over here may be the child's paint invalidation container,
             // so we can't pass our own paint invalidation container along.
@@ -1339,8 +1336,7 @@ void LayoutBlock::finishDelayUpdateScrollInfo()
         OwnPtr<DelayedUpdateScrollInfoSet> infoSet(adoptPtr(gDelayedUpdateScrollInfoSet));
         gDelayedUpdateScrollInfoSet = 0;
 
-        for (DelayedUpdateScrollInfoSet::iterator it = infoSet->begin(); it != infoSet->end(); ++it) {
-            LayoutBlock* block = *it;
+        for (auto* block : *infoSet) {
             if (block->hasOverflowClip()) {
                 block->layer()->scrollableArea()->updateAfterLayout();
             }
@@ -1411,8 +1407,8 @@ bool LayoutBlock::updateImageLoadingPriorities()
         screenArea.intersect(objectBounds);
     }
 
-    for (Vector<ImageResource*>::iterator it = images.begin(), end = images.end(); it != end; ++it)
-        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->notifyImageResourceVisibility(*it, status, screenArea);
+    for (auto* imageResource : images)
+        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->notifyImageResourceVisibility(imageResource, status, screenArea);
 
     return true;
 }
@@ -1507,11 +1503,7 @@ void LayoutBlock::addOverflowFromPositionedObjects()
     if (!positionedDescendants)
         return;
 
-    LayoutBox* positionedObject;
-    TrackedRendererListHashSet::iterator end = positionedDescendants->end();
-    for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
-        positionedObject = *it;
-
+    for (auto* positionedObject : *positionedDescendants) {
         // Fixed positioned elements don't contribute to layout overflow, since they don't scroll with the content.
         if (positionedObject->style()->position() != FixedPosition)
             addOverflowFromChild(positionedObject, toLayoutSize(positionedObject->location()));
@@ -1691,20 +1683,16 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
     if (hasColumns())
         view()->layoutState()->clearPaginationInformation(); // Positioned objects are not part of the column flow, so they don't paginate with the columns.
 
-    LayoutBox* r;
-    TrackedRendererListHashSet::iterator end = positionedDescendants->end();
-    for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
-        r = *it;
+    for (auto* positionedObject : *positionedDescendants) {
+        positionedObject->setMayNeedPaintInvalidation();
 
-        r->setMayNeedPaintInvalidation();
-
-        SubtreeLayoutScope layoutScope(*r);
+        SubtreeLayoutScope layoutScope(*positionedObject);
         // A fixed position element with an absolute positioned ancestor has no way of knowing if the latter has changed position. So
         // if this is a fixed position element, mark it for layout if it has an abspos ancestor and needs to move with that ancestor, i.e.
         // it has static position.
-        markFixedPositionObjectForLayoutIfNeeded(r, layoutScope);
+        markFixedPositionObjectForLayoutIfNeeded(positionedObject, layoutScope);
         if (info == LayoutOnlyFixedPositionedObjects) {
-            r->layoutIfNeeded();
+            positionedObject->layoutIfNeeded();
             continue;
         }
 
@@ -1712,38 +1700,38 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
         // non-positioned block.  Rather than trying to detect all of these movement cases, we just always lay out positioned
         // objects that are positioned implicitly like this.  Such objects are rare, and so in typical DHTML menu usage (where everything is
         // positioned explicitly) this should not incur a performance penalty.
-        if (relayoutChildren || (r->style()->hasStaticBlockPosition(isHorizontalWritingMode()) && r->parent() != this))
-            layoutScope.setChildNeedsLayout(r);
+        if (relayoutChildren || (positionedObject->style()->hasStaticBlockPosition(isHorizontalWritingMode()) && positionedObject->parent() != this))
+            layoutScope.setChildNeedsLayout(positionedObject);
 
         // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
-        if (relayoutChildren && r->needsPreferredWidthsRecalculation())
-            r->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+        if (relayoutChildren && positionedObject->needsPreferredWidthsRecalculation())
+            positionedObject->setPreferredLogicalWidthsDirty(MarkOnlyThis);
 
-        if (!r->needsLayout())
-            r->markForPaginationRelayoutIfNeeded(layoutScope);
+        if (!positionedObject->needsLayout())
+            positionedObject->markForPaginationRelayoutIfNeeded(layoutScope);
 
         // If we are paginated or in a line grid, go ahead and compute a vertical position for our object now.
         // If it's wrong we'll lay out again.
         LayoutUnit oldLogicalTop = 0;
-        bool needsBlockDirectionLocationSetBeforeLayout = r->needsLayout() && view()->layoutState()->needsBlockDirectionLocationSetBeforeLayout();
+        bool needsBlockDirectionLocationSetBeforeLayout = positionedObject->needsLayout() && view()->layoutState()->needsBlockDirectionLocationSetBeforeLayout();
         if (needsBlockDirectionLocationSetBeforeLayout) {
-            if (isHorizontalWritingMode() == r->isHorizontalWritingMode())
-                r->updateLogicalHeight();
+            if (isHorizontalWritingMode() == positionedObject->isHorizontalWritingMode())
+                positionedObject->updateLogicalHeight();
             else
-                r->updateLogicalWidth();
-            oldLogicalTop = logicalTopForChild(*r);
+                positionedObject->updateLogicalWidth();
+            oldLogicalTop = logicalTopForChild(*positionedObject);
         }
 
         // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout() here instead of a full layout. Need
         // to investigate why it does not trigger the correct invalidations in that case. crbug.com/350756
         if (info == ForcedLayoutAfterContainingBlockMoved)
-            r->setNeedsLayout(LayoutInvalidationReason::AncestorMoved, MarkOnlyThis);
+            positionedObject->setNeedsLayout(LayoutInvalidationReason::AncestorMoved, MarkOnlyThis);
 
-        r->layoutIfNeeded();
+        positionedObject->layoutIfNeeded();
 
         // Lay out again if our estimate was wrong.
-        if (needsBlockDirectionLocationSetBeforeLayout && logicalTopForChild(*r) != oldLogicalTop)
-            r->forceChildLayout();
+        if (needsBlockDirectionLocationSetBeforeLayout && logicalTopForChild(*positionedObject) != oldLogicalTop)
+            positionedObject->forceChildLayout();
     }
 
     if (hasColumns())
@@ -1753,9 +1741,8 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
 void LayoutBlock::markPositionedObjectsForLayout()
 {
     if (TrackedRendererListHashSet* positionedDescendants = positionedObjects()) {
-        TrackedRendererListHashSet::iterator end = positionedDescendants->end();
-        for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it)
-            (*it)->setChildNeedsLayout();
+        for (auto* descendant : *positionedDescendants)
+            descendant->setChildNeedsLayout();
     }
 }
 
@@ -1964,10 +1951,7 @@ void LayoutBlock::removeFromTrackedRendererMaps(LayoutBox* descendant, TrackedDe
     if (!containerSet)
         return;
 
-    HashSet<LayoutBlock*>::iterator end = containerSet->end();
-    for (HashSet<LayoutBlock*>::iterator it = containerSet->begin(); it != end; ++it) {
-        LayoutBlock* container = *it;
-
+    for (auto* container : *containerSet) {
         // FIXME: Disabling this assert temporarily until we fix the layout
         // bugs associated with positioned objects not properly cleared from
         // their ancestor chain before being moved. See webkit bug 93766.
@@ -2009,30 +1993,24 @@ void LayoutBlock::removePositionedObjects(LayoutBlock* o, ContainingBlockState c
     if (!positionedDescendants)
         return;
 
-    LayoutBox* r;
-
-    TrackedRendererListHashSet::iterator end = positionedDescendants->end();
-
     Vector<LayoutBox*, 16> deadObjects;
-
-    for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
-        r = *it;
-        if (!o || r->isDescendantOf(o)) {
+    for (auto* positionedObject : *positionedDescendants) {
+        if (!o || positionedObject->isDescendantOf(o)) {
             if (containingBlockState == NewContainingBlock) {
-                r->setChildNeedsLayout(MarkOnlyThis);
-                if (r->needsPreferredWidthsRecalculation())
-                    r->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+                positionedObject->setChildNeedsLayout(MarkOnlyThis);
+                if (positionedObject->needsPreferredWidthsRecalculation())
+                    positionedObject->setPreferredLogicalWidthsDirty(MarkOnlyThis);
             }
 
             // It is parent blocks job to add positioned child to positioned objects list of its containing block
             // Parent layout needs to be invalidated to ensure this happens.
-            LayoutObject* p = r->parent();
+            LayoutObject* p = positionedObject->parent();
             while (p && !p->isLayoutBlock())
                 p = p->parent();
             if (p)
                 p->setChildNeedsLayout();
 
-            deadObjects.append(r);
+            deadObjects.append(positionedObject);
         }
     }
 
@@ -2078,9 +2056,7 @@ void LayoutBlock::dirtyForLayoutFromPercentageHeightDescendants(SubtreeLayoutSco
     if (!descendants)
         return;
 
-    TrackedRendererListHashSet::iterator end = descendants->end();
-    for (TrackedRendererListHashSet::iterator it = descendants->begin(); it != end; ++it) {
-        LayoutBox* box = *it;
+    for (auto* box : *descendants) {
         while (box != this) {
             if (box->normalChildNeedsLayout())
                 break;
@@ -3833,10 +3809,7 @@ bool LayoutBlock::recalcChildOverflowAfterStyleChange()
     if (!positionedDescendants)
         return childrenOverflowChanged;
 
-    TrackedRendererListHashSet::iterator end = positionedDescendants->end();
-    for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
-        LayoutBox* box = *it;
-
+    for (auto* box : *positionedDescendants) {
         if (!box->needsOverflowRecalcAfterStyleChange())
             continue;
         LayoutBlock* block = toLayoutBlock(box);

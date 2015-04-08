@@ -86,9 +86,8 @@ bool SVGResourcesCycleSolver::resourceContainsCycles(LayoutSVGResourceContainer*
             nodeResources->buildSetOfResources(nodeSet);
 
             // Iterate resources referenced by |node|.
-            ResourceSet::iterator end = nodeSet.end();
-            for (ResourceSet::iterator it = nodeSet.begin(); it != end; ++it) {
-                if (m_activeResources.contains(*it) || resourceContainsCycles(*it))
+            for (auto* node : nodeSet) {
+                if (m_activeResources.contains(node) || resourceContainsCycles(node))
                     return true;
             }
         }
@@ -115,10 +114,9 @@ void SVGResourcesCycleSolver::resolveCycles()
     // This performs a depth-first search for a back-edge in all the
     // (potentially disjoint) graphs formed by the resources referenced by
     // |m_layoutObject|.
-    ResourceSet::iterator end = localResources.end();
-    for (ResourceSet::iterator it = localResources.begin(); it != end; ++it) {
-        if (m_activeResources.contains(*it) || resourceContainsCycles(*it))
-            breakCycle(*it);
+    for (auto* localResource : localResources) {
+        if (m_activeResources.contains(localResource) || resourceContainsCycles(localResource))
+            breakCycle(localResource);
     }
 
     m_activeResources.clear();

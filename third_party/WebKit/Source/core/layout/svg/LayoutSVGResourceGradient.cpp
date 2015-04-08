@@ -114,9 +114,8 @@ void LayoutSVGResourceGradient::addStops(GradientData* gradientData, const Vecto
 {
     ASSERT(gradientData->gradient);
 
-    const Vector<Gradient::ColorStop>::const_iterator end = stops.end();
-    for (Vector<Gradient::ColorStop>::const_iterator it = stops.begin(); it != end; ++it)
-        gradientData->gradient->addColorStop(*it);
+    for (const auto& stop : stops)
+        gradientData->gradient->addColorStop(stop);
 }
 
 GradientSpreadMethod LayoutSVGResourceGradient::platformSpreadMethodFromSVGType(SVGSpreadMethodType method) const

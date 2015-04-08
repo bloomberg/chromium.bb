@@ -352,8 +352,8 @@ void DeprecatedPaintLayerCompositor::updateIfNeeded()
         {
             TRACE_EVENT0("blink", "DeprecatedPaintLayerCompositor::updateAfterCompositingChange");
             if (const FrameView::ScrollableAreaSet* scrollableAreas = m_layoutView.frameView()->scrollableAreas()) {
-                for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
-                    layersChanged |= (*it)->updateAfterCompositingChange();
+                for (auto* scrollableArea : *scrollableAreas)
+                    layersChanged |= scrollableArea->updateAfterCompositingChange();
             }
         }
 

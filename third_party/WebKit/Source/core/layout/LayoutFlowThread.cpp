@@ -73,8 +73,7 @@ void LayoutFlowThread::validateRegions()
             LayoutUnit previousRegionLogicalHeight = 0;
             bool firstRegionVisited = false;
 
-            for (LayoutMultiColumnSetList::iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
-                LayoutMultiColumnSet* columnSet = *iter;
+            for (auto* columnSet : m_multiColumnSetList) {
                 LayoutUnit regionLogicalHeight = columnSet->pageLogicalHeight();
 
                 if (!firstRegionVisited) {
@@ -195,12 +194,10 @@ LayoutRect LayoutFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundin
     ASSERT(!m_regionsInvalidated);
 
     LayoutRect result;
-    for (LayoutMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
-        LayoutMultiColumnSet* columnSet = *iter;
+    for (auto* columnSet : m_multiColumnSetList) {
         DeprecatedPaintLayerFragments fragments;
         columnSet->collectLayerFragments(fragments, layerBoundingBox, LayoutRect(LayoutRect::infiniteIntRect()));
-        for (size_t i = 0; i < fragments.size(); ++i) {
-            const DeprecatedPaintLayerFragment& fragment = fragments.at(i);
+        for (const auto& fragment : fragments) {
             LayoutRect fragmentRect(layerBoundingBox);
             fragmentRect.intersect(fragment.paginationClip);
             fragmentRect.moveBy(fragment.paginationOffset);
