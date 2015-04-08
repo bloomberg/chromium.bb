@@ -52,7 +52,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         if (m_layoutListMarker.selectionState() != LayoutObject::SelectionNone) {
             LayoutRect selRect = m_layoutListMarker.localSelectionRect();
             selRect.moveBy(boxOrigin);
-            context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.selectionBackgroundColor());
+            context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.listItem()->selectionBackgroundColor());
         }
         return;
     }
@@ -60,7 +60,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (m_layoutListMarker.selectionState() != LayoutObject::SelectionNone) {
         LayoutRect selRect = m_layoutListMarker.localSelectionRect();
         selRect.moveBy(boxOrigin);
-        context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.selectionBackgroundColor());
+        context->fillRect(pixelSnappedIntRect(selRect), m_layoutListMarker.listItem()->selectionBackgroundColor());
     }
 
     const Color color(m_layoutListMarker.resolveColor(CSSPropertyColor));

@@ -2119,3 +2119,8 @@ crbug.com/473725 [ Linux ] virtual/slimmingpaint/fast/forms/submit-change-fragme
 
 crbug.com/474224 [ Mac ] inspector-protocol/input/dispatchKeyEvent-focus.html [ Failure ]
 crbug.com/453822 virtual/slimmingpaint/fast/forms/calendar-picker/datepicker-crash-after-keydown.html [ Crash Pass Timeout ]
+
+crbug.com/467092 [ Android Linux Win ] fast/backgrounds/selection-background-color-of-list-style.html [ NeedsRebaseline ]
+crbug.com/467092 [ Android Linux Win ] fast/backgrounds/selection-background-color-of-image-list-style.html [ NeedsRebaseline ]
+crbug.com/467092 [ Linux ] virtual/slimmingpaint/fast/backgrounds/selection-background-color-of-image-list-style.html [ NeedsRebaseline ]
+crbug.com/467092 [ Linux ] virtual/slimmingpaint/fast/backgrounds/selection-background-color-of-list-style.html [ NeedsRebaseline ]
