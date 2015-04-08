@@ -30,3 +30,5 @@ ExtensionLoadingTest.UpgradeAfterNavigatingFromOverriddenNewTabPage
 # http://crbug.com/459000
 ClipboardApiTest.HostedAppNoPermission
 
+# http://crbug.com/475172
+BasicExtensionSettingsWebUITest.testUninstall 
