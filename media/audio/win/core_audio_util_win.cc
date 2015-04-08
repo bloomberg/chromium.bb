@@ -136,18 +136,6 @@ static bool LoadAudiosesDll() {
   return (LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH) != NULL);
 }
 
-static bool CanCreateDeviceEnumerator() {
-  ScopedComPtr<IMMDeviceEnumerator> device_enumerator;
-  HRESULT hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
-                                                NULL, CLSCTX_INPROC_SERVER);
-
-  // If we hit CO_E_NOTINITIALIZED, CoInitialize has not been called and it
-  // must be called at least once for each thread that uses the COM library.
-  CHECK_NE(hr, CO_E_NOTINITIALIZED);
-
-  return SUCCEEDED(hr);
-}
-
 static std::string GetDeviceID(IMMDevice* device) {
   ScopedCoMem<WCHAR> device_id_com;
   std::string device_id;
@@ -156,7 +144,68 @@ static std::string GetDeviceID(IMMDevice* device) {
   return device_id;
 }
 
-bool CoreAudioUtil::IsSupported() {
+static HRESULT GetDeviceFriendlyNameInternal(IMMDevice* device,
+                                             std::string* friendly_name) {
+  // Retrieve user-friendly name of endpoint device.
+  // Example: "Microphone (Realtek High Definition Audio)".
+  ScopedComPtr<IPropertyStore> properties;
+  HRESULT hr = device->OpenPropertyStore(STGM_READ, properties.Receive());
+  if (FAILED(hr))
+    return hr;
+
+  base::win::ScopedPropVariant friendly_name_pv;
+  hr = properties->GetValue(PKEY_Device_FriendlyName,
+                            friendly_name_pv.Receive());
+  if (FAILED(hr))
+    return hr;
+
+  if (friendly_name_pv.get().vt == VT_LPWSTR &&
+      friendly_name_pv.get().pwszVal) {
+    base::WideToUTF8(friendly_name_pv.get().pwszVal,
+                     wcslen(friendly_name_pv.get().pwszVal), friendly_name);
+  }
+
+  return hr;
+}
+
+static ScopedComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal() {
+  ScopedComPtr<IMMDeviceEnumerator> device_enumerator;
+  HRESULT hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
+                                                NULL, CLSCTX_INPROC_SERVER);
+  if (hr == CO_E_NOTINITIALIZED) {
+    LOG(ERROR) << "CoCreateInstance fails with CO_E_NOTINITIALIZED";
+    // We have seen crashes which indicates that this method can in fact
+    // fail with CO_E_NOTINITIALIZED in combination with certain 3rd party
+    // modules. Calling CoInitializeEx is an attempt to resolve the reported
+    // issues. See http://crbug.com/378465 for details.
+    hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    if (SUCCEEDED(hr)) {
+      hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
+                                            NULL, CLSCTX_INPROC_SERVER);
+    }
+  }
+  return device_enumerator;
+}
+
+static bool IsRemoteSession() {
+  return !!GetSystemMetrics(SM_REMOTESESSION);
+}
+
+static bool IsRemoteDeviceInternal(IMMDevice* device) {
+  DCHECK(IsRemoteSession());
+
+  std::string device_name;
+  HRESULT hr = GetDeviceFriendlyNameInternal(device, &device_name);
+
+  // This method should only be called if IsRemoteSession() is true, so assume
+  // we have a remote audio device if we can't tell.
+  if (FAILED(hr))
+    return true;
+
+  return device_name == "Remote Audio";
+}
+
+static bool IsSupportedInternal() {
   // It is possible to force usage of WaveXxx APIs by using a command line flag.
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kForceWaveAudio)) {
@@ -176,19 +225,47 @@ bool CoreAudioUtil::IsSupported() {
   // the Audioses DLL since it depends on Mmdevapi.dll.
   // See http://crbug.com/166397 why this extra step is required to guarantee
   // Core Audio support.
-  static bool g_audioses_dll_available = LoadAudiosesDll();
-  if (!g_audioses_dll_available)
+  if (!LoadAudiosesDll())
     return false;
 
   // Being able to load the Audioses.dll does not seem to be sufficient for
   // all devices to guarantee Core Audio support. To be 100%, we also verify
   // that it is possible to a create the IMMDeviceEnumerator interface. If this
   // works as well we should be home free.
-  static bool g_can_create_device_enumerator = CanCreateDeviceEnumerator();
-  LOG_IF(ERROR, !g_can_create_device_enumerator)
-      << "Failed to create Core Audio device enumerator on thread with ID "
-      << GetCurrentThreadId();
-  return g_can_create_device_enumerator;
+  ScopedComPtr<IMMDeviceEnumerator> device_enumerator =
+      CreateDeviceEnumeratorInternal();
+  if (!device_enumerator) {
+    LOG(ERROR)
+        << "Failed to create Core Audio device enumerator on thread with ID "
+        << GetCurrentThreadId();
+    return false;
+  }
+
+  // Don't use CoreAudio when a remote desktop session with remote audio is
+  // present; several users report only WaveAudio working for them and crash
+  // reports show hangs when calling into the OS for CoreAudio API calls. See
+  // http://crbug.com/422522 and http://crbug.com/180591.
+  //
+  // Note: There's another check in WASAPIAudioOutputStream::Open() for the case
+  // where a remote session is created after Chrome has been started.  Graceful
+  // fallback to WaveOut will occur in this case via AudioOutputResampler.
+  if (!IsRemoteSession())
+    return true;
+
+  ScopedComPtr<IMMDevice> device;
+  HRESULT hr = device_enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
+                                                          device.Receive());
+
+  // Assume remote audio playback if we can't tell.
+  if (FAILED(hr))
+    return false;
+
+  return !IsRemoteDeviceInternal(device.get());
+}
+
+bool CoreAudioUtil::IsSupported() {
+  static bool g_is_supported = IsSupportedInternal();
+  return g_is_supported;
 }
 
 base::TimeDelta CoreAudioUtil::RefererenceTimeToTimeDelta(REFERENCE_TIME time) {
@@ -233,22 +310,9 @@ int CoreAudioUtil::NumberOfActiveDevices(EDataFlow data_flow) {
 
 ScopedComPtr<IMMDeviceEnumerator> CoreAudioUtil::CreateDeviceEnumerator() {
   DCHECK(IsSupported());
-  ScopedComPtr<IMMDeviceEnumerator> device_enumerator;
-  HRESULT hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
-                                                NULL, CLSCTX_INPROC_SERVER);
-  if (hr == CO_E_NOTINITIALIZED) {
-    LOG(ERROR) << "CoCreateInstance fails with CO_E_NOTINITIALIZED";
-    // We have seen crashes which indicates that this method can in fact
-    // fail with CO_E_NOTINITIALIZED in combination with certain 3rd party
-    // modules. Calling CoInitializeEx is an attempt to resolve the reported
-    // issues. See http://crbug.com/378465 for details.
-    hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-    if (SUCCEEDED(hr)) {
-      hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
-                                            NULL, CLSCTX_INPROC_SERVER);
-    }
-  }
-  CHECK(SUCCEEDED(hr));
+  ScopedComPtr<IMMDeviceEnumerator> device_enumerator =
+      CreateDeviceEnumeratorInternal();
+  CHECK(device_enumerator);
   return device_enumerator;
 }
 
@@ -323,21 +387,9 @@ HRESULT CoreAudioUtil::GetDeviceName(IMMDevice* device, AudioDeviceName* name) {
   if (device_name.unique_id.empty())
     return E_FAIL;
 
-  // Retrieve user-friendly name of endpoint device.
-  // Example: "Microphone (Realtek High Definition Audio)".
-  ScopedComPtr<IPropertyStore> properties;
-  HRESULT hr = device->OpenPropertyStore(STGM_READ, properties.Receive());
+  HRESULT hr = GetDeviceFriendlyNameInternal(device, &device_name.device_name);
   if (FAILED(hr))
     return hr;
-  base::win::ScopedPropVariant friendly_name;
-  hr = properties->GetValue(PKEY_Device_FriendlyName, friendly_name.Receive());
-  if (FAILED(hr))
-    return hr;
-  if (friendly_name.get().vt == VT_LPWSTR && friendly_name.get().pwszVal) {
-    base::WideToUTF8(friendly_name.get().pwszVal,
-                     wcslen(friendly_name.get().pwszVal),
-                     &device_name.device_name);
-  }
 
   *name = device_name;
   DVLOG(2) << "friendly name: " << device_name.device_name;
@@ -852,6 +904,17 @@ bool CoreAudioUtil::FillRenderEndpointBufferWithSilence(
   DVLOG(2) << "filling up " << num_frames_to_fill << " frames with silence";
   return SUCCEEDED(render_client->ReleaseBuffer(num_frames_to_fill,
                                                 AUDCLNT_BUFFERFLAGS_SILENT));
+}
+
+bool CoreAudioUtil::IsRemoteOutputDevice(const std::string& device_id) {
+  DCHECK(IsSupported());
+  if (!IsRemoteSession())
+    return false;
+  ScopedComPtr<IMMDevice> device(device_id.empty()
+                                     ? CreateDefaultDevice(eRender, eConsole)
+                                     : CreateDevice(device_id));
+  // Assume remote audio if we can't tell.
+  return device ? IsRemoteDeviceInternal(device.get()) : true;
 }
 
 }  // namespace media

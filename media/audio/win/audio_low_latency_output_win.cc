@@ -135,6 +135,11 @@ bool WASAPIAudioOutputStream::Open() {
   DCHECK(!audio_client_.get());
   DCHECK(!audio_render_client_.get());
 
+  // Don't allow WASAPI streams to be created for remote output devices, this
+  // frequently leads to hangs of the audio thread.  http://crbug.com/422522.
+  if (CoreAudioUtil::IsRemoteOutputDevice(device_id_))
+    return false;
+
   // Will be set to true if we ended up opening the default communications
   // device.
   bool communications_device = false;
