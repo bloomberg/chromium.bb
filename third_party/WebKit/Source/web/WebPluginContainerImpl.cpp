@@ -512,7 +512,6 @@ void WebPluginContainerImpl::loadFrameRequest(const WebURLRequest& request, cons
     }
 
     FrameLoadRequest frameRequest(frame->document(), request.toResourceRequest(), target);
-    UserGestureIndicator gestureIndicator(request.hasUserGesture() ? DefinitelyProcessingNewUserGesture : PossiblyProcessingUserGesture);
     frame->loader().load(frameRequest);
 }
 
