@@ -897,6 +897,13 @@ bool HTMLInputElement::isTextField() const
     return m_inputType->isTextField();
 }
 
+void HTMLInputElement::dispatchChangeEventIfNeeded()
+{
+    setTextAsOfLastFormControlChangeEvent(String());
+    if (inDocument() && m_inputType->shouldSendChangeEventAfterCheckedChanged())
+        dispatchFormControlChangeEvent();
+}
+
 void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventBehavior)
 {
     if (checked() == nowChecked)
@@ -930,7 +937,6 @@ void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventB
         setTextAsOfLastFormControlChangeEvent(String());
         if (eventBehavior == DispatchInputAndChangeEvent)
             dispatchFormControlInputEvent();
-        dispatchFormControlChangeEvent();
     }
 
     pseudoStateChanged(CSSSelector::PseudoChecked);
