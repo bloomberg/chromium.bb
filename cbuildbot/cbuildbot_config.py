@@ -2468,6 +2468,21 @@ _config.add_group('external-mixed-pre-cq',
   config['amd64-generic-no-vmtest-pre-cq'],
 )
 
+_config.add_group('kernel-3_14-a-pre-cq',
+  config['x86-generic-no-vmtest-pre-cq'],
+  config['arm-generic-no-vmtest-pre-cq']
+)
+
+_config.add_group('kernel-3_14-b-pre-cq',
+  config['storm-no-vmtest-pre-cq'],
+  config['urara-no-vmtest-pre-cq']
+)
+
+_config.add_group('kernel-3_14-c-pre-cq',
+  config['veyron_pinky-no-vmtest-pre-cq'],
+  config['rush_ryu-no-vmtest-pre-cq']
+)
+
 # TODO (crbug.com/438839): pre-cq-group has been replaced by multiple
 # configs. Remove this config when no active CL has been screened
 # with this config.
