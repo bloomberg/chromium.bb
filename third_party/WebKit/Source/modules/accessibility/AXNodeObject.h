@@ -204,6 +204,7 @@ private:
     void changeValueByPercent(float percentChange);
     float stepValueForRange() const;
     AXObject* findChildWithTagName(const HTMLQualifiedName&) const;
+    bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXNodeObject, isAXNodeObject());

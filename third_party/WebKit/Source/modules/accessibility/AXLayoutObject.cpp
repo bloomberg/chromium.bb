@@ -282,8 +282,6 @@ AccessibilityRole AXLayoutObject::determineAccessibilityRole()
         return ListMarkerRole;
     if (m_layoutObject->isBR())
         return LineBreakRole;
-    if (isHTMLLegendElement(node))
-        return LegendRole;
     if (m_layoutObject->isText())
         return StaticTextRole;
     if (cssBox && isImageOrAltText(cssBox, node)) {
@@ -307,69 +305,12 @@ AccessibilityRole AXLayoutObject::determineAccessibilityRole()
     if (m_layoutObject->isSVGRoot())
         return SVGRootRole;
 
-    if (node && node->hasTagName(ddTag))
-        return DescriptionListDetailRole;
-
-    if (node && node->hasTagName(dtTag))
-        return DescriptionListTermRole;
-
-    if (node && (node->nodeName() == "math"))
-        return MathRole;
-
-    if (node && (node->hasTagName(rpTag) || node->hasTagName(rtTag)))
-        return AnnotationRole;
-
     // Table sections should be ignored.
     if (m_layoutObject->isTableSection())
         return IgnoredRole;
 
     if (m_layoutObject->isHR())
         return SplitterRole;
-
-    if (isHTMLFormElement(node))
-        return FormRole;
-
-    if (node && node->hasTagName(articleTag))
-        return ArticleRole;
-
-    if (node && node->hasTagName(mainTag))
-        return MainRole;
-
-    if (node && node->hasTagName(navTag))
-        return NavigationRole;
-
-    if (node && node->hasTagName(asideTag))
-        return ComplementaryRole;
-
-    if (node && node->hasTagName(preTag))
-        return PreRole;
-
-    if (node && node->hasTagName(sectionTag))
-        return RegionRole;
-
-    if (node && node->hasTagName(addressTag))
-        return ContentInfoRole;
-
-    if (node && node->hasTagName(dialogTag))
-        return DialogRole;
-
-    // The HTML element should not be exposed as an element. That's what the LayoutView element does.
-    if (isHTMLHtmlElement(node))
-        return IgnoredRole;
-
-    if (node && node->hasTagName(iframeTag)) {
-        const AtomicString& ariaRole = getAttribute(roleAttr);
-        if (ariaRole == "none" || ariaRole == "presentation")
-            return IframePresentationalRole;
-        return IframeRole;
-    }
-
-    // There should only be one banner/contentInfo per page. If header/footer are being used within an article or section
-    // then it should not be exposed as whole page's banner/contentInfo
-    if (node && node->hasTagName(headerTag) && !isDescendantOfElementType(articleTag) && !isDescendantOfElementType(sectionTag))
-        return BannerRole;
-    if (node && node->hasTagName(footerTag) && !isDescendantOfElementType(articleTag) && !isDescendantOfElementType(sectionTag))
-        return FooterRole;
 
     AccessibilityRole role = AXNodeObject::determineAccessibilityRoleUtil();
     if (role != UnknownRole)
@@ -2061,15 +2002,6 @@ LayoutObject* AXLayoutObject::layoutParentObject() const
     }
 
     return parent;
-}
-
-bool AXLayoutObject::isDescendantOfElementType(const HTMLQualifiedName& tagName) const
-{
-    for (LayoutObject* parent = m_layoutObject->parent(); parent; parent = parent->parent()) {
-        if (parent->node() && parent->node()->hasTagName(tagName))
-            return true;
-    }
-    return false;
 }
 
 bool AXLayoutObject::isSVGImage() const

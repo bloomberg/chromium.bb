@@ -199,7 +199,6 @@ private:
     bool isTabItemSelected() const;
     AXObject* accessibilityImageMapHitTest(HTMLAreaElement*, const IntPoint&) const;
     LayoutObject* layoutParentObject() const;
-    bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;
     bool isSVGImage() const;
     void detachRemoteSVGRoot();
     AXSVGRoot* remoteSVGRootElement() const;

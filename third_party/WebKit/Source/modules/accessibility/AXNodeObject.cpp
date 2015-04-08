@@ -271,16 +271,33 @@ bool AXNodeObject::computeHasInheritedPresentationalRole() const
     return isRequiredOwnedElement(parent, roleValue(), curNode);
 }
 
+bool AXNodeObject::isDescendantOfElementType(const HTMLQualifiedName& tagName) const
+{
+    if (!node())
+        return false;
+
+    for (Element* parent = node()->parentElement(); parent; parent = parent->parentElement()) {
+        if (parent->hasTagName(tagName))
+            return true;
+    }
+    return false;
+}
+
 AccessibilityRole AXNodeObject::determineAccessibilityRoleUtil()
 {
     if (!node())
         return UnknownRole;
-    if (node()->isLink())
+    // HTMLAnchorElement sets isLink only when it has hrefAttr.
+    // We assume that it is also LinkRole if it has event listners even though it doesn't have hrefAttr.
+    if (node()->isLink() || (isHTMLAnchorElement(*node()) && isClickable()))
         return LinkRole;
+
     if (isHTMLButtonElement(*node()))
         return buttonRoleType();
+
     if (isHTMLDetailsElement(*node()))
         return DetailsRole;
+
     if (isHTMLSummaryElement(*node())) {
         if (node()->parentNode() && isHTMLDetailsElement(node()->parentNode()))
             return DisclosureTriangleRole;
@@ -328,42 +345,115 @@ AccessibilityRole AXNodeObject::determineAccessibilityRoleUtil()
             return TimeRole;
         return TextFieldRole;
     }
+
     if (isHTMLSelectElement(*node())) {
         HTMLSelectElement& selectElement = toHTMLSelectElement(*node());
         return selectElement.multiple() ? ListBoxRole : PopUpButtonRole;
     }
+
     if (isHTMLTextAreaElement(*node()))
         return TextFieldRole;
+
     if (headingLevel())
         return HeadingRole;
+
     if (isHTMLDivElement(*node()))
         return DivRole;
+
     if (isHTMLMeterElement(*node()))
         return MeterRole;
+
     if (isHTMLOutputElement(*node()))
         return StatusRole;
+
     if (isHTMLParagraphElement(*node()))
         return ParagraphRole;
+
     if (isHTMLLabelElement(*node()))
         return LabelRole;
+
+    if (isHTMLLegendElement(*node()))
+        return LegendRole;
+
     if (isHTMLRubyElement(*node()))
         return RubyRole;
+
     if (isHTMLDListElement(*node()))
         return DescriptionListRole;
-    if (node()->isElementNode() && node()->hasTagName(blockquoteTag))
-        return BlockquoteRole;
-    if (node()->isElementNode() && node()->hasTagName(captionTag))
-        return CaptionRole;
-    if (node()->isElementNode() && node()->hasTagName(figcaptionTag))
-        return FigcaptionRole;
-    if (node()->isElementNode() && node()->hasTagName(figureTag))
-        return FigureRole;
-    if (isHTMLAnchorElement(*node()) && isClickable())
-        return LinkRole;
-    if (isHTMLIFrameElement(*node()))
+
+    if (node()->hasTagName(ddTag))
+        return DescriptionListDetailRole;
+
+    if (node()->hasTagName(dtTag))
+        return DescriptionListTermRole;
+
+    if (node()->nodeName() == "math")
+        return MathRole;
+
+    if (node()->hasTagName(rpTag) || node()->hasTagName(rtTag))
+        return AnnotationRole;
+
+    if (isHTMLFormElement(*node()))
+        return FormRole;
+
+    if (node()->hasTagName(articleTag))
+        return ArticleRole;
+
+    if (node()->hasTagName(mainTag))
+        return MainRole;
+
+    if (node()->hasTagName(navTag))
+        return NavigationRole;
+
+    if (node()->hasTagName(asideTag))
+        return ComplementaryRole;
+
+    if (node()->hasTagName(preTag))
+        return PreRole;
+
+    if (node()->hasTagName(sectionTag))
+        return RegionRole;
+
+    if (node()->hasTagName(addressTag))
+        return ContentInfoRole;
+
+    if (isHTMLDialogElement(*node()))
+        return DialogRole;
+
+    // The HTML element should not be exposed as an element. That's what the LayoutView element does.
+    if (isHTMLHtmlElement(*node()))
+        return IgnoredRole;
+
+    if (isHTMLIFrameElement(*node())) {
+        const AtomicString& ariaRole = getAttribute(roleAttr);
+        if (ariaRole == "none" || ariaRole == "presentation")
+            return IframePresentationalRole;
         return IframeRole;
+    }
+
+    // There should only be one banner/contentInfo per page. If header/footer are being used within an article or section
+    // then it should not be exposed as whole page's banner/contentInfo
+    if (node()->hasTagName(headerTag) && !isDescendantOfElementType(articleTag) && !isDescendantOfElementType(sectionTag))
+        return BannerRole;
+
+    if (node()->hasTagName(footerTag) && !isDescendantOfElementType(articleTag) && !isDescendantOfElementType(sectionTag))
+        return FooterRole;
+
+    if (node()->hasTagName(blockquoteTag))
+        return BlockquoteRole;
+
+    if (node()->hasTagName(captionTag))
+        return CaptionRole;
+
+    if (node()->hasTagName(figcaptionTag))
+        return FigcaptionRole;
+
+    if (node()->hasTagName(figureTag))
+        return FigureRole;
+
     if (isEmbeddedObject())
         return EmbeddedObjectRole;
+
     return UnknownRole;
 }
 
