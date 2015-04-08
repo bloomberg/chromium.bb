@@ -42293,6 +42293,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="UserSessionManager.UserPodsDisplay" enum="UserPodsDisplay">
+  <owner>ginkage@chromium.org</owner>
+  <summary>
+    Whether the user pods were enabled during login, and what could disable
+    them.
+  </summary>
+</histogram>
+
 <histogram name="V8.ASTOptimization">
   <obsolete>
     This histogram is no longer present in V8.
@@ -62422,6 +62430,13 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <enum name="UserInitiatedEvent" type="int">
   <int value="0" label="WiFi Scan"/>
+</enum>
+
+<enum name="UserPodsDisplay" type="int">
+  <int value="0" label="Enabled by local settings"/>
+  <int value="1" label="Enabled by domain policy"/>
+  <int value="2" label="Disabled by local settings"/>
+  <int value="3" label="Disabled by domain policy"/>
 </enum>
 
 <enum name="UserSelectableSyncType" type="int">
