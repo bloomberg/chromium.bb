@@ -185,7 +185,7 @@ private:
     void createSecondaryBuffers();
     bool resizeFramebuffer(const IntSize&);
     bool resizeMultisampleFramebuffer(const IntSize&);
-    void resizeDepthStencil(const IntSize&);
+    bool resizeDepthStencil(const IntSize&);
 
     // Bind to the m_framebufferBinding if it's not 0. Otherwise, bind to the default FBO.
     void restoreFramebufferBinding();
@@ -219,7 +219,7 @@ private:
     // By default, alignment is 4, the OpenGL default setting.
     void texImage2DResourceSafe(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint alignment = 4);
     // Allocate buffer storage to be sent to compositor using either texImage2D or CHROMIUM_image based on available support.
-    void allocateTextureMemory(TextureInfo*, const IntSize&);
+    bool allocateTextureMemory(TextureInfo*, const IntSize&);
     void deleteChromiumImageForTexture(TextureInfo*);
 
     PreserveDrawingBuffer m_preserveDrawingBuffer;

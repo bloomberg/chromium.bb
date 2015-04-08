@@ -54,6 +54,9 @@ namespace {
 
 const float s_resourceAdjustedRatio = 0.5;
 
+// Drawing buffers with more pixels than this will be explicitly checked for out of memory errors upon creation
+const int s_largeBufferSize = 4096 * 4096;
+
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, drawingBufferCounter, ("DrawingBuffer"));
 
 class ScopedTextureUnit0BindingRestorer {
@@ -76,6 +79,57 @@ private:
     GLenum m_oldActiveTextureUnit;
     Platform3DObject m_oldTextureUnitZeroId;
 };
+
+class ScopedConditionalErrorCache {
+public:
+    ScopedConditionalErrorCache(WebGraphicsContext3D* context, bool active)
+        : m_context(context)
+        , m_active(active)
+    {
+        if (m_active) {
+            GLenum error = m_context->getError();
+            int i = 0;
+            for (; i < 100 && error != GL_NO_ERROR; ++i) {
+                m_cachedErrors.append(error);
+                error = m_context->getError();
+            }
+            ASSERT(i < 100);
+        }
+    }
+
+    ~ScopedConditionalErrorCache()
+    {
+        while (m_cachedErrors.size()) {
+            m_context->synthesizeGLError(m_cachedErrors.first());
+            m_cachedErrors.remove(0);
+        }
+    }
+
+    bool consumeErrorIf(GLenum error)
+    {
+        if (m_active) {
+            GLenum nextError = m_context->getError();
+            if (error == GL_NO_ERROR)
+                return false;
+
+            if (nextError == error)
+                return true;
+
+            m_cachedErrors.append(nextError);
+        }
+        return false;
+    }
+
+private:
+    WebGraphicsContext3D* m_context;
+    bool m_active;
+    Vector<GLenum> m_cachedErrors;
+};
+
+bool isLargeBuffer(const IntSize& size)
+{
+    return s_largeBufferSize <= size.width() * size.height();
+}
 
 } // namespace
 
@@ -620,7 +674,8 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
 
     m_context->bindTexture(GL_TEXTURE_2D, m_colorBuffer.textureId);
 
-    allocateTextureMemory(&m_colorBuffer, size);
+    if (!allocateTextureMemory(&m_colorBuffer, size))
+        return false;
 
     if (m_multisampleMode == ImplicitResolve)
         m_context->framebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer.textureId, 0, m_sampleCount);
@@ -629,8 +684,10 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
 
     m_context->bindTexture(GL_TEXTURE_2D, 0);
 
-    if (m_multisampleMode != ExplicitResolve)
-        resizeDepthStencil(size);
+    if (m_multisampleMode != ExplicitResolve) {
+        if (!resizeDepthStencil(size))
+            return false;
+    }
     if (m_context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return false;
 
@@ -640,16 +697,19 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
 bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
 {
     if (m_multisampleMode == ExplicitResolve) {
+        ScopedConditionalErrorCache errorCache(m_context.get(), isLargeBuffer(size));
+
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
 
         m_context->bindRenderbuffer(GL_RENDERBUFFER, m_multisampleColorBuffer);
         m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, m_internalRenderbufferFormat, size.width(), size.height());
 
-        if (m_context->getError() == GL_OUT_OF_MEMORY)
+        if (errorCache.consumeErrorIf(GL_OUT_OF_MEMORY))
             return false;
 
         m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_multisampleColorBuffer);
-        resizeDepthStencil(size);
+        if (!resizeDepthStencil(size))
+            return false;
         if (m_context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             return false;
     }
@@ -657,10 +717,12 @@ bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
     return true;
 }
 
-void DrawingBuffer::resizeDepthStencil(const IntSize& size)
+bool DrawingBuffer::resizeDepthStencil(const IntSize& size)
 {
     if (!m_requestedAttributes.depth && !m_requestedAttributes.stencil)
-        return;
+        return true;
+
+    ScopedConditionalErrorCache errorCache(m_context.get(), isLargeBuffer(size));
 
     if (m_packedDepthStencilExtensionSupported) {
         if (!m_depthStencilBuffer)
@@ -701,6 +763,11 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
         }
     }
     m_context->bindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    if (errorCache.consumeErrorIf(GL_OUT_OF_MEMORY))
+        return false;
+
+    return true;
 }
 
 
@@ -963,19 +1030,30 @@ void DrawingBuffer::texImage2DResourceSafe(GLenum target, GLint level, GLenum in
     m_context->texImage2D(target, level, internalformat, width, height, border, format, type, 0);
 }
 
-void DrawingBuffer::allocateTextureMemory(TextureInfo* info, const IntSize& size)
+bool DrawingBuffer::allocateTextureMemory(TextureInfo* info, const IntSize& size)
 {
+    ScopedConditionalErrorCache errorCache(m_context.get(), isLargeBuffer(size));
+
     if (RuntimeEnabledFeatures::webGLImageChromiumEnabled()) {
         deleteChromiumImageForTexture(info);
 
         info->imageId = m_context->createGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), GL_RGBA, GC3D_SCANOUT_CHROMIUM);
+
+        if (errorCache.consumeErrorIf(GL_OUT_OF_MEMORY))
+            return false;
+
         if (info->imageId) {
             m_context->bindTexImage2DCHROMIUM(GL_TEXTURE_2D, info->imageId);
-            return;
+            return true;
         }
     }
 
     texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
+
+    if (errorCache.consumeErrorIf(GL_OUT_OF_MEMORY))
+        return false;
+
+    return true;
 }
 
 void DrawingBuffer::deleteChromiumImageForTexture(TextureInfo* info)
