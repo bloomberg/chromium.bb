@@ -2213,6 +2213,9 @@ gl_renderer_supports(struct weston_compositor *ec,
 			       extensions);
 	}
 
+	if (!strstr(extensions, "EGL_EXT_platform_base"))
+		return 0;
+
 	snprintf(s, sizeof s, "EGL_KHR_platform_%s", extension_suffix);
 	if (strstr(extensions, s))
 		return 1;
@@ -2225,8 +2228,8 @@ gl_renderer_supports(struct weston_compositor *ec,
 	if (strstr(extensions, s))
 		return 1;
 
-	/* at this point we definitely have some client extensions but
-	 * haven't found the supplied client extension, so chances are it's
+	/* at this point we definitely have some platform extensions but
+	 * haven't found the supplied platform, so chances are it's
 	 * not supported. */
 
 	return -1;
