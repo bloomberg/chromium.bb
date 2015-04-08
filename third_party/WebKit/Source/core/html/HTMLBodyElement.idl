@@ -30,9 +30,9 @@ interface HTMLBodyElement : HTMLElement {
     [Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
     [Reflect] attribute DOMString background;
 
-    // FIXME: The spec requires special behavior for these event
-    // handler attributes but does not include them in the IDL:
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28166
+    // TODO(philipj): These event handler attributes should be inherited from
+    // HTMLElement (which implements GlobalEventHandlers), but have different
+    // behavior. See https://www.w3.org/Bugs/Public/show_bug.cgi?id=28166
     attribute EventHandler onblur;
     attribute EventHandler onerror;
     attribute EventHandler onfocus;
