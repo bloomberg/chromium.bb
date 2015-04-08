@@ -183,7 +183,8 @@ TEST(AnalysisCanvasTest, FilterPaint) {
   skia::AnalysisCanvas canvas(255, 255);
   SkPaint paint;
 
-  skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(SkOffsetImageFilter::Create(10, 10));
+  skia::RefPtr<SkImageFilter> filter =
+      skia::AdoptRef(SkOffsetImageFilter::Create(10, 10));
   paint.setImageFilter(filter.get());
   canvas.drawRect(SkRect::MakeWH(255, 255), paint);
 
@@ -344,7 +345,8 @@ TEST(AnalysisCanvasTest, EarlyOutNotSolid) {
   record_canvas->drawText(
       text.c_str(), text.length(), point.fX, point.fY, paint);
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(recorder.endRecordingAsPicture());
 
   // Draw the picture into the analysis canvas, using the canvas as a callback
   // as well.
@@ -357,7 +359,6 @@ TEST(AnalysisCanvasTest, EarlyOutNotSolid) {
 
   // Verify that we aborted drawing.
   EXPECT_TRUE(canvas.abortDrawing());
-
 }
 
 TEST(AnalysisCanvasTest, ClipComplexRegion) {

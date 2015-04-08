@@ -218,7 +218,7 @@ void Picture::Record(ContentLayerClient* painter,
   painter->PaintContents(canvas.get(), layer_rect_, painting_control);
 
   canvas->restore();
-  picture_ = skia::AdoptRef(recorder.endRecording());
+  picture_ = skia::AdoptRef(recorder.endRecordingAsPicture());
   DCHECK(picture_);
 
   EmitTraceSnapshot();

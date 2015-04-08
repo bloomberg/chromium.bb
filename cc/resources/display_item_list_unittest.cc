@@ -44,7 +44,7 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
-  picture = skia::AdoptRef(recorder.endRecording());
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
   list->AppendItem(DrawingDisplayItem::Create(picture));
   DrawDisplayList(pixels, layer_rect, list);
 
@@ -83,7 +83,7 @@ TEST(DisplayItemListTest, ClipItem) {
       recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect)));
   canvas->translate(first_offset.x(), first_offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
-  picture = skia::AdoptRef(recorder.endRecording());
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
   list->AppendItem(DrawingDisplayItem::Create(picture));
 
   gfx::Rect clip_rect(60, 60, 10, 10);
@@ -95,7 +95,7 @@ TEST(DisplayItemListTest, ClipItem) {
       recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect)));
   canvas->translate(second_offset.x(), second_offset.y());
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
-  picture = skia::AdoptRef(recorder.endRecording());
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
   list->AppendItem(DrawingDisplayItem::Create(picture));
 
   list->AppendItem(EndClipDisplayItem::Create());
@@ -138,7 +138,7 @@ TEST(DisplayItemListTest, TransformItem) {
       recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect)));
   canvas->translate(first_offset.x(), first_offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
-  picture = skia::AdoptRef(recorder.endRecording());
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
   list->AppendItem(DrawingDisplayItem::Create(picture));
 
   gfx::Transform transform;
@@ -151,7 +151,7 @@ TEST(DisplayItemListTest, TransformItem) {
       recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect)));
   canvas->translate(second_offset.x(), second_offset.y());
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
-  picture = skia::AdoptRef(recorder.endRecording());
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
   list->AppendItem(DrawingDisplayItem::Create(picture));
 
   list->AppendItem(EndTransformDisplayItem::Create());

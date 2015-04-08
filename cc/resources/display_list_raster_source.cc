@@ -130,7 +130,8 @@ skia::RefPtr<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {
                                              display_list_rect.height());
   if (!display_list_rect.IsEmpty())
     PlaybackToCanvas(canvas, display_list_rect, 1.0);
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(recorder.endRecordingAsPicture());
 
   return picture;
 }

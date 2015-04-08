@@ -89,7 +89,7 @@ FakeContentLayerClient::PaintContentsToDisplayList(
         skia::SharePtr(recorder.beginRecording(gfx::RectFToSkRect(draw_rect)));
     canvas->drawRectCoords(draw_rect.x(), draw_rect.y(), draw_rect.width(),
                            draw_rect.height(), paint);
-    picture = skia::AdoptRef(recorder.endRecording());
+    picture = skia::AdoptRef(recorder.endRecordingAsPicture());
     list->AppendItem(DrawingDisplayItem::Create(picture));
   }
 
@@ -101,7 +101,7 @@ FakeContentLayerClient::PaintContentsToDisplayList(
     canvas = skia::SharePtr(
         recorder.beginRecording(it->bitmap.width(), it->bitmap.height()));
     canvas->drawBitmap(it->bitmap, it->point.x(), it->point.y(), &it->paint);
-    picture = skia::AdoptRef(recorder.endRecording());
+    picture = skia::AdoptRef(recorder.endRecordingAsPicture());
     list->AppendItem(DrawingDisplayItem::Create(picture));
     if (!it->transform.IsIdentity()) {
       list->AppendItem(EndTransformDisplayItem::Create());
@@ -117,7 +117,7 @@ FakeContentLayerClient::PaintContentsToDisplayList(
       canvas = skia::SharePtr(
           recorder.beginRecording(gfx::RectFToSkRect(draw_rect)));
       canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
-      picture = skia::AdoptRef(recorder.endRecording());
+      picture = skia::AdoptRef(recorder.endRecordingAsPicture());
       list->AppendItem(DrawingDisplayItem::Create(picture));
       draw_rect.Inset(1, 1);
     }

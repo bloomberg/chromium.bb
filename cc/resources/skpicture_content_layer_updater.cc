@@ -38,7 +38,7 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
                 paint_rect,
                 contents_width_scale,
                 contents_height_scale);
-  picture_ = skia::AdoptRef(recorder.endRecording());
+  picture_ = skia::AdoptRef(recorder.endRecordingAsPicture());
 }
 
 void SkPictureContentLayerUpdater::DrawPicture(SkCanvas* canvas) {

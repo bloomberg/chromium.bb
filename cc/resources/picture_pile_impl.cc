@@ -257,7 +257,8 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
       recorder.beginRecording(tiling_rect.width(), tiling_rect.height());
   if (!tiling_rect.IsEmpty())
     PlaybackToCanvas(canvas, tiling_rect, 1.0);
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(recorder.endRecordingAsPicture());
 
   return picture;
 }

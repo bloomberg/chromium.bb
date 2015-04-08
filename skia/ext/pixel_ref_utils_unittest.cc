@@ -85,7 +85,7 @@ SkCanvas* StartRecording(SkPictureRecorder* recorder, gfx::Rect layer_rect) {
 
 SkPicture* StopRecording(SkPictureRecorder* recorder, SkCanvas* canvas) {
   canvas->restore();
-  return recorder->endRecording();
+  return recorder->endRecordingAsPicture();
 }
 
 }  // namespace
@@ -115,7 +115,8 @@ TEST(PixelRefUtilsTest, DrawPaint) {
   canvas->clipRect(SkRect::MakeWH(100, 100));
   canvas->drawPaint(third_paint);
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(StopRecording(&recorder, canvas));
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(StopRecording(&recorder, canvas));
 
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
@@ -168,7 +169,8 @@ TEST(PixelRefUtilsTest, DrawPoints) {
   // (50, 55, 150, 145).
   canvas->drawPoints(SkCanvas::kPolygon_PointMode, 3, points, third_paint);
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(StopRecording(&recorder, canvas));
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(StopRecording(&recorder, canvas));
 
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
@@ -216,7 +218,8 @@ TEST(PixelRefUtilsTest, DrawRect) {
   // (50, 50, 50, 50)
   canvas->drawRect(SkRect::MakeXYWH(0, 0, 100, 100), third_paint);
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(StopRecording(&recorder, canvas));
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(StopRecording(&recorder, canvas));
 
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
@@ -269,7 +272,8 @@ TEST(PixelRefUtilsTest, DrawRRect) {
   // (50, 50, 50, 50)
   canvas->drawRRect(rrect, third_paint);
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(StopRecording(&recorder, canvas));
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(StopRecording(&recorder, canvas));
 
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
@@ -321,7 +325,8 @@ TEST(PixelRefUtilsTest, DrawOval) {
   // (50, 50, 50, 50)
   canvas->drawRect(SkRect::MakeXYWH(0, 0, 100, 100), third_paint);
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(StopRecording(&recorder, canvas));
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(StopRecording(&recorder, canvas));
 
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
@@ -365,7 +370,8 @@ TEST(PixelRefUtilsTest, DrawPath) {
 
   canvas->restore();
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(StopRecording(&recorder, canvas));
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(StopRecording(&recorder, canvas));
 
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
@@ -419,7 +425,8 @@ TEST(PixelRefUtilsTest, DrawBitmap) {
   // At (0, 0), scaled by 5 and 6
   canvas->drawBitmap(fifth, 0, 0);
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(StopRecording(&recorder, canvas));
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(StopRecording(&recorder, canvas));
 
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
@@ -435,7 +442,6 @@ TEST(PixelRefUtilsTest, DrawBitmap) {
                        gfx::SkRectToRectF(pixel_refs[3].pixel_ref_rect));
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 60),
                        gfx::SkRectToRectF(pixel_refs[4].pixel_ref_rect));
-
 }
 
 TEST(PixelRefUtilsTest, DrawBitmapRect) {
@@ -473,7 +479,8 @@ TEST(PixelRefUtilsTest, DrawBitmapRect) {
 
   canvas->restore();
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(StopRecording(&recorder, canvas));
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(StopRecording(&recorder, canvas));
 
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
@@ -536,7 +543,8 @@ TEST(PixelRefUtilsTest, DrawSprite) {
   // (100, 100, 50, 50).
   canvas->drawSprite(fifth, 100, 100, &first_paint);
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(StopRecording(&recorder, canvas));
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(StopRecording(&recorder, canvas));
 
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
@@ -583,7 +591,8 @@ TEST(PixelRefUtilsTest, DrawText) {
   canvas->drawPosText("text", 4, points, first_paint);
   canvas->drawTextOnPath("text", 4, path, NULL, first_paint);
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(StopRecording(&recorder, canvas));
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(StopRecording(&recorder, canvas));
 
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
@@ -656,7 +665,8 @@ TEST(PixelRefUtilsTest, DrawVertices) {
                        3,
                        third_paint);
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(StopRecording(&recorder, canvas));
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(StopRecording(&recorder, canvas));
 
   std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
   skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);

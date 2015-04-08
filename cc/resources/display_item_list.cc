@@ -72,7 +72,7 @@ void DisplayItemList::CreateAndCacheSkPicture() {
   canvas->clipRect(gfx::RectToSkRect(layer_rect_));
   for (size_t i = 0; i < items_.size(); ++i)
     items_[i]->Raster(canvas.get(), NULL);
-  picture_ = skia::AdoptRef(recorder.endRecording());
+  picture_ = skia::AdoptRef(recorder.endRecordingAsPicture());
   DCHECK(picture_);
 }
 
@@ -127,7 +127,8 @@ DisplayItemList::AsValue() const {
   canvas->clipRect(gfx::RectToSkRect(layer_rect_));
   for (size_t i = 0; i < items_.size(); ++i)
     items_[i]->RasterForTracing(canvas);
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(recorder.endRecording());
+  skia::RefPtr<SkPicture> picture =
+      skia::AdoptRef(recorder.endRecordingAsPicture());
 
   std::string b64_picture;
   PictureDebugUtil::SerializeAsBase64(picture.get(), &b64_picture);

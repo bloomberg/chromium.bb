@@ -121,7 +121,7 @@ bool PdfMetafileSkia::FinishPage() {
     return false;
   DCHECK(!(data_->pages_.back().content_));
   data_->pages_.back().content_ =
-      skia::AdoptRef(data_->recorder_.endRecording());
+      skia::AdoptRef(data_->recorder_.endRecordingAsPicture());
   return true;
 }
 
