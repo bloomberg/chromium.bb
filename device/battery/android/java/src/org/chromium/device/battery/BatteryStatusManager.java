@@ -142,7 +142,7 @@ class BatteryStatusManager {
         batteryStatus.dischargingTime = dischargingTimeSeconds;
         batteryStatus.level = level;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (mLollipopBatteryManager != null) {
             updateBatteryStatusForLollipop(batteryStatus);
         }
 

@@ -35,6 +35,9 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
 
     private BatteryStatusManager mManager;
 
+    // Can be non-null only for versions L and higher.
+    private BatteryManagerForTesting mLollipopManager;
+
     private void verifyValues(
             boolean charging, double chargingTime, double dischargingTime, double level) {
         assertEquals(charging, mCharging);
@@ -85,6 +88,7 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
     }
 
     public void initializeManager(BatteryManagerForTesting managerForTesting) {
+        mLollipopManager = managerForTesting;
         mManager = BatteryStatusManager.createBatteryStatusManagerForTesting(
                 getContext(), mCallback, managerForTesting);
     }
@@ -168,11 +172,9 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
 
     @SmallTest
     public void testLollipopChargingTimeEstimate() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
-            return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
-        BatteryManagerForTesting testManager = new BatteryManagerForTesting();
-        initializeManager(testManager);
+        initializeManager(new BatteryManagerForTesting());
 
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
         intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
@@ -180,9 +182,9 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         intent.putExtra(BatteryManager.EXTRA_LEVEL, 50);
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
 
-        testManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER, 1000);
-        testManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY, 50);
-        testManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE, 100);
+        mLollipopManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER, 1000);
+        mLollipopManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY, 50);
+        mLollipopManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE, 100);
 
         mManager.onReceive(intent);
         verifyValues(true, 0.5 * 10 * 3600, Double.POSITIVE_INFINITY, 0.5);
@@ -190,11 +192,9 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
 
     @SmallTest
     public void testLollipopDischargingTimeEstimate() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
-            return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
-        BatteryManagerForTesting testManager = new BatteryManagerForTesting();
-        initializeManager(testManager);
+        initializeManager(new BatteryManagerForTesting());
 
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
         intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
@@ -203,9 +203,9 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_NOT_CHARGING);
 
-        testManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER, 1000);
-        testManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY, 60);
-        testManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE, -100);
+        mLollipopManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER, 1000);
+        mLollipopManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY, 60);
+        mLollipopManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE, -100);
 
         mManager.onReceive(intent);
         verifyValues(false, Double.POSITIVE_INFINITY, 0.6 * 10 * 3600, 0.6);
@@ -213,11 +213,9 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
 
     @SmallTest
     public void testLollipopDischargingTimeEstimateRounding() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP)
-            return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
-        BatteryManagerForTesting testManager = new BatteryManagerForTesting();
-        initializeManager(testManager);
+        initializeManager(new BatteryManagerForTesting());
 
         Intent intent = new Intent(Intent.ACTION_BATTERY_CHANGED);
         intent.putExtra(BatteryManager.EXTRA_PRESENT, true);
@@ -226,9 +224,9 @@ public class BatteryStatusManagerTest extends AndroidTestCase {
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
         intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_NOT_CHARGING);
 
-        testManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER, 1999);
-        testManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY, 90);
-        testManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE, -1000);
+        mLollipopManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER, 1999);
+        mLollipopManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY, 90);
+        mLollipopManager.setIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE, -1000);
 
         mManager.onReceive(intent);
         verifyValues(false, Double.POSITIVE_INFINITY, Math.floor(0.9 * 1.999 * 3600), 0.9);
