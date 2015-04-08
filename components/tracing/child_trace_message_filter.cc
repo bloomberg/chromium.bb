@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/trace_event/trace_event.h"
+#include "components/tracing/child_memory_dump_manager_delegate_impl.h"
 #include "components/tracing/tracing_messages.h"
 #include "ipc/ipc_channel.h"
 
@@ -16,14 +17,20 @@ namespace tracing {
 ChildTraceMessageFilter::ChildTraceMessageFilter(
     base::MessageLoopProxy* ipc_message_loop)
     : sender_(NULL),
-      ipc_message_loop_(ipc_message_loop) {}
+      ipc_message_loop_(ipc_message_loop),
+      pending_memory_dump_guid_(0) {
+}
 
 void ChildTraceMessageFilter::OnFilterAdded(IPC::Sender* sender) {
   sender_ = sender;
   sender_->Send(new TracingHostMsg_ChildSupportsTracing());
+  ChildMemoryDumpManagerDelegateImpl::GetInstance()->SetChildTraceMessageFilter(
+      this);
 }
 
 void ChildTraceMessageFilter::OnFilterRemoved() {
+  ChildMemoryDumpManagerDelegateImpl::GetInstance()->SetChildTraceMessageFilter(
+      nullptr);
   sender_ = NULL;
 }
 
@@ -175,8 +182,9 @@ void ChildTraceMessageFilter::OnMonitoringTraceDataCollected(
 // Sent by the Browser's MemoryDumpManager when coordinating a global dump.
 void ChildTraceMessageFilter::OnProcessMemoryDumpRequest(
     const base::trace_event::MemoryDumpRequestArgs& args) {
-  // TODO(primiano): create local dump and send a response back to the browser.
-  NOTIMPLEMENTED();
+  base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(args);
+  sender_->Send(
+      new TracingHostMsg_ProcessMemoryDumpResponse(args.dump_guid, true));
 }
 
 // Initiates a dump request, asking the Browser's MemoryDumpManager to
@@ -187,18 +195,28 @@ void ChildTraceMessageFilter::OnProcessMemoryDumpRequest(
 void ChildTraceMessageFilter::SendGlobalMemoryDumpRequest(
     const base::trace_event::MemoryDumpRequestArgs& args,
     const base::trace_event::MemoryDumpCallback& callback) {
-  // TODO(primiano): implement the logic to send the request to the browser
-  // process and keep track of that.
-  NOTIMPLEMENTED();
+  // If there is already another dump request pending from this child process,
+  // there is no point bothering the Browser's MemoryDumpManager.
+  if (pending_memory_dump_guid_) {
+    if (!callback.is_null())
+      callback.Run(args.dump_guid, false);
+    return;
+  }
+
+  pending_memory_dump_guid_ = args.dump_guid;
+  pending_memory_dump_callback_ = callback;
+  sender_->Send(new TracingHostMsg_GlobalMemoryDumpRequest(args));
 }
 
 // Sent by the Browser's MemoryDumpManager in response of a dump request
 // initiated by this child process.
 void ChildTraceMessageFilter::OnGlobalMemoryDumpResponse(uint64 dump_guid,
                                                          bool success) {
-  // TODO(primiano): implement the logic to handle the global response from
-  // the browser and clear up the bookkeeping.
-  NOTIMPLEMENTED();
+  DCHECK_NE(0U, pending_memory_dump_guid_);
+  pending_memory_dump_guid_ = 0;
+  if (pending_memory_dump_callback_.is_null())
+    return;
+  pending_memory_dump_callback_.Run(dump_guid, success);
 }
 
 }  // namespace tracing

@@ -34,6 +34,8 @@
             'build_nonsfi_helper': 1,
           },
           'sources': [
+            'tracing/child_memory_dump_manager_delegate_impl.cc',
+            'tracing/child_memory_dump_manager_delegate_impl.h',
             'tracing/child_trace_message_filter.cc',
             'tracing/child_trace_message_filter.h',
             'tracing/tracing_messages.cc',

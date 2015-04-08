@@ -4,6 +4,8 @@
 
 source_set("tracing") {
   sources = [
+    "child_memory_dump_manager_delegate_impl.cc",
+    "child_memory_dump_manager_delegate_impl.h",
     "child_trace_message_filter.cc",
     "child_trace_message_filter.h",
     "tracing_messages.cc",

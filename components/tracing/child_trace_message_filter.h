@@ -30,6 +30,8 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
       const base::trace_event::MemoryDumpRequestArgs& args,
       const base::trace_event::MemoryDumpCallback& callback);
 
+  base::MessageLoopProxy* ipc_message_loop() const { return ipc_message_loop_; }
+
  protected:
   ~ChildTraceMessageFilter() override;
 
@@ -64,6 +66,13 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
 
   IPC::Sender* sender_;
   base::MessageLoopProxy* ipc_message_loop_;
+
+  // guid of the outstanding request (to the Browser's MemoryDumpManager), if
+  // any. 0 if there is no request pending.
+  uint64 pending_memory_dump_guid_;
+
+  // callback of the outstanding memory dump request, if any.
+  base::trace_event::MemoryDumpCallback pending_memory_dump_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildTraceMessageFilter);
 };
