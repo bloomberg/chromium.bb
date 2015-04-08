@@ -46,7 +46,6 @@ IDBAny* IDBAny::createNull()
 
 IDBAny::IDBAny(Type type)
     : m_type(type)
-    , m_integer(0)
 {
     ASSERT(type == UndefinedType || type == NullType);
 }
@@ -126,42 +125,36 @@ int64_t IDBAny::integer() const
 IDBAny::IDBAny(PassRefPtrWillBeRawPtr<DOMStringList> value)
     : m_type(DOMStringListType)
     , m_domStringList(value)
-    , m_integer(0)
 {
 }
 
 IDBAny::IDBAny(IDBCursor* value)
     : m_type(value->isCursorWithValue() ? IDBCursorWithValueType : IDBCursorType)
     , m_idbCursor(value)
-    , m_integer(0)
 {
 }
 
 IDBAny::IDBAny(IDBDatabase* value)
     : m_type(IDBDatabaseType)
     , m_idbDatabase(value)
-    , m_integer(0)
 {
 }
 
 IDBAny::IDBAny(IDBIndex* value)
     : m_type(IDBIndexType)
     , m_idbIndex(value)
-    , m_integer(0)
 {
 }
 
 IDBAny::IDBAny(IDBObjectStore* value)
     : m_type(IDBObjectStoreType)
     , m_idbObjectStore(value)
-    , m_integer(0)
 {
 }
 
 IDBAny::IDBAny(PassRefPtr<IDBValue> value)
     : m_type(IDBValueType)
     , m_idbValue(value)
-    , m_integer(0)
 {
 }
 
@@ -170,14 +163,12 @@ IDBAny::IDBAny(PassRefPtr<IDBValue> value, IDBKey* key, const IDBKeyPath& keyPat
     , m_idbKey(key)
     , m_idbKeyPath(keyPath)
     , m_idbValue(value)
-    , m_integer(0)
 {
 }
 
 IDBAny::IDBAny(IDBKey* key)
     : m_type(KeyType)
     , m_idbKey(key)
-    , m_integer(0)
 {
 }
 

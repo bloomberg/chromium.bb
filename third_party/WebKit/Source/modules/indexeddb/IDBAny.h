@@ -135,7 +135,7 @@ private:
     const Member<IDBKey> m_idbKey;
     const IDBKeyPath m_idbKeyPath;
     const RefPtr<IDBValue> m_idbValue;
-    const int64_t m_integer;
+    const int64_t m_integer = 0;
 };
 
 } // namespace blink

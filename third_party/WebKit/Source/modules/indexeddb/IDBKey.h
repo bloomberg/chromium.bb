@@ -144,17 +144,17 @@ public:
     bool isEqual(const IDBKey* other) const;
 
 private:
-    IDBKey() : m_type(InvalidType), m_number(0) { }
+    IDBKey() : m_type(InvalidType) { }
     IDBKey(Type type, double number) : m_type(type), m_number(number) { }
-    explicit IDBKey(const String& value) : m_type(StringType), m_string(value), m_number(0) { }
-    explicit IDBKey(PassRefPtr<SharedBuffer> value) : m_type(BinaryType), m_binary(value), m_number(0) { }
-    explicit IDBKey(const KeyArray& keyArray) : m_type(ArrayType), m_array(keyArray), m_number(0) { }
+    explicit IDBKey(const String& value) : m_type(StringType), m_string(value) { }
+    explicit IDBKey(PassRefPtr<SharedBuffer> value) : m_type(BinaryType), m_binary(value) { }
+    explicit IDBKey(const KeyArray& keyArray) : m_type(ArrayType), m_array(keyArray) { }
 
     const Type m_type;
     const KeyArray m_array;
     RefPtr<SharedBuffer> m_binary;
     const String m_string;
-    const double m_number;
+    const double m_number = 0;
 };
 
 } // namespace blink
