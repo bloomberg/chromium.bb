@@ -357,6 +357,10 @@ bool MouseEvent::IsRepeatedClickEvent(
       (event2.flags() & ~EF_IS_DOUBLE_CLICK))
     return false;
 
+  // The new event has been created from the same native event.
+  if (event1.time_stamp() == event2.time_stamp())
+    return false;
+
   base::TimeDelta time_difference = event2.time_stamp() - event1.time_stamp();
 
   if (time_difference.InMilliseconds() > kDoubleClickTimeMS)

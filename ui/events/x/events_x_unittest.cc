@@ -208,9 +208,11 @@ TEST_F(EventsXTest, ClickCount) {
   XEvent event;
   gfx::Point location(5, 10);
 
+  base::TimeDelta time_stamp = base::TimeDelta::FromMilliseconds(1);
   for (int i = 1; i <= 3; ++i) {
     InitButtonEvent(&event, true, location, 1, 0);
     {
+      event.xbutton.time = time_stamp.InMilliseconds();
       MouseEvent mouseev(&event);
       EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouseev.type());
       EXPECT_EQ(i, mouseev.GetClickCount());
@@ -218,10 +220,12 @@ TEST_F(EventsXTest, ClickCount) {
 
     InitButtonEvent(&event, false, location, 1, 0);
     {
+      event.xbutton.time = time_stamp.InMilliseconds();
       MouseEvent mouseev(&event);
       EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouseev.type());
       EXPECT_EQ(i, mouseev.GetClickCount());
     }
+    time_stamp += base::TimeDelta::FromMilliseconds(1);
   }
 }
 
