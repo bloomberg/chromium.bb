@@ -25,22 +25,9 @@ DEP_LINKFLAGS = (['-Wl,--whole-archive'] + LIBGCC +
 if env.Bit('bitcode'):
   env.Append(CCFLAGS=['-allow-asm'])
 
-# Test C++11 code with both supported C++ standard libraries.
-cpp11_libs = ['libc++']
-if env.Bit('bitcode'):
-  # PNaCl still supports libstdc++ but nacl-clang does not.
-  cpp11_libs.append('libstdc++')
-cpp11_envs = {}
-for lib in cpp11_libs:
-  cpp11_envs[lib] = env.Clone()
-  # TODO(jfb): Change this to -std=c++11 when it's properly supported.
-  cpp11_envs[lib].Append(CCFLAGS=['-std=gnu++11', '-stdlib=' + lib])
-  cpp11_envs[lib].Append(LINKFLAGS=['-stdlib=' + lib])
-  if lib == 'libstdc++':
-    # c++ is added to NONIRT_LIBS for clang to ensure that its dependence on
-    # pthreads can be satisfied by pthread_private instead of pthread. Filter it
-    # out here to ensure that we use libstdc++.
-    cpp11_envs[lib].FilterOut(NONIRT_LIBS=['c++'])
+cpp11_env = env.Clone()
+# TODO(jfb): Change this to -std=c++11 when it's properly supported.
+cpp11_env.Append(CCFLAGS=['-std=gnu++11'])
 
 # All the libraries were already included via -l switches in LINKFLAGS.
 # But we use them again in LIBS so scons knows about the dependencies.
@@ -96,22 +83,19 @@ if env.Bit('bitcode') or env.Bit('nacl_clang'):
   # PNaCl. Command-line flags and libraries need to be updated for GCC
   # support.
   # pthread is needed when building with libc++.
-  for lib in cpp11_envs:
-    AddIntrinsicTest(cpp11_envs[lib], 'condition_variable_cpp11.cc', '0',
-                     test_suffix=lib, EXTRA_LIBS=['${PTHREAD_LIBS}'])
-    AddIntrinsicTest(cpp11_envs[lib], 'future_cpp11.cc', '0',
-                     test_suffix=lib, EXTRA_LIBS=['${PTHREAD_LIBS}'])
-    AddIntrinsicTest(cpp11_envs[lib], 'mutex_cpp11.cc', '0',
-                     test_suffix=lib, EXTRA_LIBS=['${PTHREAD_LIBS}'])
-    AddIntrinsicTest(cpp11_envs[lib], 'synchronization_cpp11.cc', '0',
-                     test_suffix=lib, EXTRA_LIBS=['${PTHREAD_LIBS}'],
-                     add_bias=True)
-    AddIntrinsicTest(cpp11_envs[lib], 'thread_cpp11.cc', '0',
-                     test_suffix=lib, EXTRA_LIBS=['${PTHREAD_LIBS}'])
-    if lib != 'libstdc++':
-      # TODO(jfb) Can't compile with libstdc++.
-      AddIntrinsicTest(cpp11_envs[lib], 'long_double_cpp11.cc', '0',
-                       test_suffix=lib, EXTRA_LIBS=['${PTHREAD_LIBS}'])
+  AddIntrinsicTest(cpp11_env, 'condition_variable_cpp11.cc', '0',
+                   EXTRA_LIBS=['${PTHREAD_LIBS}'])
+  AddIntrinsicTest(cpp11_env, 'future_cpp11.cc', '0',
+                   EXTRA_LIBS=['${PTHREAD_LIBS}'])
+  AddIntrinsicTest(cpp11_env, 'mutex_cpp11.cc', '0',
+                   EXTRA_LIBS=['${PTHREAD_LIBS}'])
+  AddIntrinsicTest(cpp11_env, 'synchronization_cpp11.cc', '0',
+                   EXTRA_LIBS=['${PTHREAD_LIBS}'],
+                   add_bias=True)
+  AddIntrinsicTest(cpp11_env, 'thread_cpp11.cc', '0',
+                   EXTRA_LIBS=['${PTHREAD_LIBS}'])
+  AddIntrinsicTest(cpp11_env, 'long_double_cpp11.cc', '0',
+                   EXTRA_LIBS=['${PTHREAD_LIBS}'])
 
 # This test redirects C function calls to llvm instrinsic functions,
 # so they only work w/ PNaCl.
@@ -119,7 +103,7 @@ if env.Bit('bitcode') or env.Bit('nacl_clang'):
   AddIntrinsicTest(env, 'llvm_bitmanip_intrinsics.c', '0',
                    golden_file=env.File('llvm_bitmanip_intrinsics.stdout'))
   for should_inline in [0, 1]:
-    AddIntrinsicTest(cpp11_envs['libc++'], 'overflow.cc', '0',
+    AddIntrinsicTest(cpp11_env, 'overflow.cc', '0',
                      test_suffix='inline' if should_inline else 'noinline',
                      golden_file=env.File('overflow.stdout'),
                      EXTRA_CCFLAGS='-DSHOULD_INLINE=' + str(should_inline))
@@ -222,6 +206,7 @@ node = env.CommandSelLdrTestNacl('cpp_threadsafe_static_init.out', nexe)
 env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
                        'run_cpp_threadsafe_static_init_test',
                        is_broken=(not env.Bit('bitcode') and
+                                  not env.Bit('nacl_clang') and
                                   not env.Bit('nacl_glibc') and
                                   not env.Bit('build_x86_32')))
 
@@ -266,30 +251,21 @@ base_eh_env = env.Clone()
 supports_cxx11 = (env.Bit('bitcode') or env.Bit('build_arm') or
                   env.Bit('nacl_clang'))
 base_eh_env.Append(CPPDEFINES=[['SUPPORTS_CXX11', str(int(supports_cxx11))]])
-if supports_cxx11:
+if not env.Bit('bitcode') and not env.Bit('nacl_clang'):
   # This flag is necessary for testing std::rethrow_exception(), at
   # least when using libstdc++.
   base_eh_env.Append(CXXFLAGS=['-std=gnu++11'])
 
-if env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] >= 1:
-  for lib in ('libstdc++', 'libc++'):
-    sjlj_eh_env = base_eh_env.Clone()
-    sjlj_eh_env.Append(LINKFLAGS=['--pnacl-exceptions=sjlj',
-                                  '-stdlib=%s' % lib])
-    sjlj_eh_env.Append(CCFLAGS=['-stdlib=%s' % lib])
-    # c++ is added to NONIRT_LIBS for clang to ensure that its dependence on
-    # pthreads can be satisfied by pthread_private instead of pthread. Filter it
-    # out here to ensure that we use libstdc++.
-    if lib == 'libstdc++':
-      sjlj_eh_env.FilterOut(NONIRT_LIBS=['c++'])
-    EH_ENVIRONMENTS_TO_TRY.append(('sjlj_%s' % lib, sjlj_eh_env))
-
 if env.Bit('bitcode'):
+  sjlj_eh_env = base_eh_env.Clone()
+  sjlj_eh_env.Append(LINKFLAGS=['--pnacl-exceptions=sjlj'])
+  EH_ENVIRONMENTS_TO_TRY.append(('sjlj_libc++', sjlj_eh_env))
   zerocost_eh_env = base_eh_env.Clone()
   zerocost_eh_env.Append(LINKFLAGS=['--pnacl-allow-exceptions'])
   zerocost_eh_env.Append(TRANSLATEFLAGS=['--pnacl-allow-exceptions'])
 else:
   zerocost_eh_env = base_eh_env
+
 # Zero-cost C++ exception handling is not currently supported in
 # PNaCl's stable ABI.
 if zerocost_eh_env.SetNonStableBitcodeIfAllowed():
