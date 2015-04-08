@@ -86,19 +86,15 @@ bool GetTracingOptions(const std::string& data64,
   options_ok &= options->GetString("categoryFilter", &category_filter_string);
   *category_filter = base::trace_event::CategoryFilter(category_filter_string);
 
+  std::string record_mode;
+  options_ok &=
+      options->GetString("tracingRecordMode", &record_mode);
+  options_ok &= tracing_options->SetFromString(record_mode);
+
   options_ok &= options->GetBoolean("useSystemTracing",
                                     &tracing_options->enable_systrace);
   options_ok &=
       options->GetBoolean("useSampling", &tracing_options->enable_sampling);
-
-  bool use_continuous_tracing;
-  options_ok &=
-      options->GetBoolean("useContinuousTracing", &use_continuous_tracing);
-
-  if (use_continuous_tracing)
-    tracing_options->record_mode = base::trace_event::RECORD_CONTINUOUSLY;
-  else
-    tracing_options->record_mode = base::trace_event::RECORD_UNTIL_FULL;
 
   if (!options_ok) {
     LOG(ERROR) << "Malformed options";
