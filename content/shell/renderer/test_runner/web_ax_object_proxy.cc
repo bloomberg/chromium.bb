@@ -226,8 +226,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("TableHeaderContainer");
     case blink::WebAXRoleTable:
       return result.append("Table");
-    case blink::WebAXRoleTextArea:
-      return result.append("TextArea");
     case blink::WebAXRoleTextField:
       return result.append("TextField");
     case blink::WebAXRoleTime:
