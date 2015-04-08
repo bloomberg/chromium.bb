@@ -18,14 +18,9 @@ remoting.initElementEventHandlers = function() {
       goHome();
     }
   };
-  var reconnect = function() {
-    remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-    remoting.app.getSessionConnector().reconnect();
-  };
   /** @type {Array<{event: string, id: string, fn: function(Event):void}>} */
   var it2me_actions = [
       { event: 'click', id: 'cancel-share-button', fn: remoting.cancelShare },
-      { event: 'click', id: 'client-finished-it2me-button', fn: goHome },
       { event: 'click', id: 'get-started-it2me',
         fn: remoting.showIT2MeUiAndSave },
       { event: 'click', id: 'host-finished-button', fn: goHome },
@@ -33,8 +28,6 @@ remoting.initElementEventHandlers = function() {
   ];
   /** @type {Array<{event: string, id: string, fn: function(Event):void}>} */
   var me2me_actions = [
-      { event: 'click', id: 'client-finished-me2me-button', fn: goHome },
-      { event: 'click', id: 'client-reconnect-button', fn: reconnect },
       { event: 'click', id: 'daemon-pin-cancel', fn: goHome },
       { event: 'click', id: 'get-started-me2me',
         fn: remoting.showMe2MeUiAndSave }

@@ -81,7 +81,7 @@ remoting.It2MeActivity.prototype.onConnected = function(connectionInfo) {
 };
 
 remoting.It2MeActivity.prototype.onDisconnected = function() {
-  remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
+  this.showFinishDialog_(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
 };
 
 /**
@@ -90,9 +90,21 @@ remoting.It2MeActivity.prototype.onDisconnected = function() {
 remoting.It2MeActivity.prototype.onError = function(error) {
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, error.getTag());
-  remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
+  this.showFinishDialog_(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
 };
 
+/**
+ * @param {remoting.AppMode} mode
+ * @private
+ */
+remoting.It2MeActivity.prototype.showFinishDialog_ = function(mode) {
+  var finishDialog = new remoting.MessageDialog(
+      mode,
+      document.getElementById('client-finished-it2me-button'));
+  finishDialog.show().then(function() {
+    remoting.setMode(remoting.AppMode.HOME);
+  });
+};
 
 /**
  * @param {string} accessCode

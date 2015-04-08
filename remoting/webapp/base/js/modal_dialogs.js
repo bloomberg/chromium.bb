@@ -90,4 +90,71 @@ remoting.InputDialog.prototype.createFormEventHandler_ = function(handler) {
   };
 };
 
+/**
+ * A helper class for implementing MessageDialog with a primary and
+ * and secondary button using remoting.setMode().
+ *
+ * @param {remoting.AppMode} mode
+ * @param {HTMLElement} primaryButton
+ * @param {HTMLElement=} opt_secondaryButton
+ * @constructor
+ */
+remoting.MessageDialog = function(mode, primaryButton, opt_secondaryButton) {
+  /** @private @const */
+  this.mode_ = mode;
+  /** @private @const */
+  this.primaryButton_ = primaryButton;
+  /** @private @const */
+  this.secondaryButton_ = opt_secondaryButton;
+  /** @private {base.Deferred} */
+  this.deferred_ = null;
+  /** @private {base.Disposables} */
+  this.eventHooks_ = null;
+};
+
+/**
+ * @return {Promise<remoting.MessageDialog.Result>}  Promise that resolves with
+ * the button clicked.
+ */
+remoting.MessageDialog.prototype.show = function() {
+  this.eventHooks_ = new base.Disposables(new base.DomEventHook(
+      this.primaryButton_, 'click',
+      this.onClicked_.bind(this, remoting.MessageDialog.Result.PRIMARY),
+      false));
+
+  if (this.secondaryButton_) {
+    this.eventHooks_.add(new base.DomEventHook(
+        this.secondaryButton_, 'click',
+        this.onClicked_.bind(this, remoting.MessageDialog.Result.SECONDARY),
+        false));
+  }
+
+  base.debug.assert(this.deferred_ === null);
+  this.deferred_ = new base.Deferred();
+  remoting.setMode(this.mode_);
+  return this.deferred_.promise();
+};
+
+/**
+ * @param {remoting.MessageDialog.Result} result
+ * @return {Function}
+ * @private
+ */
+remoting.MessageDialog.prototype.onClicked_ = function(result) {
+  this.deferred_.resolve(result);
+  base.dispose(this.eventHooks_);
+  this.eventHooks_ = null;
+  this.deferred_ = null;
+};
+
 })();
+
+/**
+ * Define the enum at the end of file as JSCompile doesn't understand enums that
+ * are defined within an IIFE (Immediately Invoked Function Expression).
+ * @enum {number}
+ */
+remoting.MessageDialog.Result = {
+  PRIMARY: 0,
+  SECONDARY: 1
+};

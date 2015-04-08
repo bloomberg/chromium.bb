@@ -27,6 +27,7 @@ remoting.Me2MeActivity = function(sessionConnector, host) {
   /** @private */
   this.hostUpdateDialog_ = new remoting.HostNeedsUpdateDialog(
       document.getElementById('host-needs-update-dialog'), this.host_);
+
   /** @private */
   this.retryOnHostOffline_ = true;
 };
@@ -130,17 +131,40 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
 };
 
 remoting.Me2MeActivity.prototype.onDisconnected = function() {
-  remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
+  this.showFinishDialog_(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
 };
 
 /**
  * @param {!remoting.Error} error
  */
 remoting.Me2MeActivity.prototype.onError = function(error) {
-  this.retryOnHostOffline_ = true;
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, error.getTag());
-  remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
+  this.showFinishDialog_(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);
+};
+
+/**
+ * @param {remoting.AppMode} mode
+ * @private
+ */
+remoting.Me2MeActivity.prototype.showFinishDialog_ = function(mode) {
+  var dialog = new remoting.MessageDialog(
+      mode,
+      document.getElementById('client-finished-me2me-button'),
+      document.getElementById('client-reconnect-button'));
+
+  /** @typedef {remoting.MessageDialog.Result} */
+  var Result = remoting.MessageDialog.Result;
+  var that = this;
+
+  dialog.show().then(function(/** Result */result) {
+    if (result === Result.PRIMARY) {
+      remoting.setMode(remoting.AppMode.HOME);
+    } else {
+      that.connector_.reconnect();
+      remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+    }
+  });
 };
 
 /**
@@ -152,11 +176,10 @@ remoting.HostNeedsUpdateDialog = function(rootElement, host) {
   /** @private */
   this.host_ = host;
   /** @private */
-  this.rootElement_ = rootElement;
-  /** @private {base.Deferred} */
-  this.deferred_ = null;
-  /** @private {base.Disposables} */
-  this.eventHooks_ = null;
+  this.dialog_ = new remoting.MessageDialog(
+      remoting.AppMode.CLIENT_HOST_NEEDS_UPGRADE,
+      rootElement.querySelector('.connect-button'),
+      rootElement.querySelector('.cancel-button'));
 
   l10n.localizeElementFromTag(
       rootElement.querySelector('.host-needs-update-message'),
@@ -177,39 +200,13 @@ remoting.HostNeedsUpdateDialog.prototype.showIfNecessary =
   if (!remoting.Host.needsUpdate(this.host_, webappVersion)) {
     return Promise.resolve();
   }
-
-  this.eventHooks_ = new base.Disposables(
-    new base.DomEventHook(this.rootElement_.querySelector('.connect-button'),
-                         'click', this.onOK_.bind(this), false),
-    new base.DomEventHook(this.rootElement_.querySelector('.cancel-button'),
-                          'click', this.onCancel_.bind(this), false));
-
-  base.debug.assert(this.deferred_ === null);
-  this.deferred_ = new base.Deferred();
-
-  remoting.setMode(remoting.AppMode.CLIENT_HOST_NEEDS_UPGRADE);
-
-  return this.deferred_.promise();
-};
-
-/** @private */
-remoting.HostNeedsUpdateDialog.prototype.cleanup_ = function() {
-  base.dispose(this.eventHooks_);
-  this.eventHooks_ = null;
-  this.deferred_ = null;
-};
-
-
-/** @private */
-remoting.HostNeedsUpdateDialog.prototype.onOK_ = function() {
-  this.deferred_.resolve();
-  this.cleanup_();
-};
-
-/** @private */
-remoting.HostNeedsUpdateDialog.prototype.onCancel_ = function() {
-  this.deferred_.reject(new remoting.Error(remoting.Error.Tag.CANCELLED));
-  this.cleanup_();
+  /** @typedef {remoting.MessageDialog.Result} */
+  var Result = remoting.MessageDialog.Result;
+  return this.dialog_.show().then(function(/** Result */ result) {
+    if (result === Result.SECONDARY) {
+      return Promise.reject(new remoting.Error(remoting.Error.Tag.CANCELLED));
+    }
+  });
 };
 
 /**
