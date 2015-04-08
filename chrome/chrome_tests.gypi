@@ -725,6 +725,7 @@
       'browser/chromeos/login/users/wallpaper/wallpaper_manager_policy_browsertest.cc',
       'browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.cc',
       'browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h',
+      'browser/chromeos/login/webview_login_browsertest.cc',
       'browser/chromeos/login/wizard_controller_browsertest.cc',
       'browser/chromeos/memory/oom_priority_manager_browsertest.cc',
       'browser/chromeos/net/network_portal_detector_impl_browsertest.cc',

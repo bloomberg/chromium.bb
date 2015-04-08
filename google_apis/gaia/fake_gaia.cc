@@ -56,6 +56,9 @@ const char kDefaultGaiaId[]  ="12345";
 const base::FilePath::CharType kServiceLogin[] =
     FILE_PATH_LITERAL("google_apis/test/service_login.html");
 
+const base::FilePath::CharType kEmbeddedSetupChromeos[] =
+    FILE_PATH_LITERAL("google_apis/test/embedded_setup_chromeos.html");
+
 // OAuth2 Authentication header value prefix.
 const char kAuthHeaderBearer[] = "Bearer ";
 const char kAuthHeaderOAuth[] = "OAuth ";
@@ -139,6 +142,9 @@ FakeGaia::FakeGaia() : issue_oauth_code_cookie_(false) {
   CHECK(base::ReadFileToString(
       source_root_dir.Append(base::FilePath(kServiceLogin)),
       &service_login_response_));
+  CHECK(base::ReadFileToString(
+      source_root_dir.Append(base::FilePath(kEmbeddedSetupChromeos)),
+      &embedded_setup_chromeos_response_));
 }
 
 FakeGaia::~FakeGaia() {}
@@ -213,9 +219,8 @@ void FakeGaia::Initialize() {
       gaia_urls->service_login_url(), HandleServiceLogin);
 
   // Handles /embedded/setup/chromeos GAIA call.
-  // Same handler as for /ServiceLogin is used for now.
-  REGISTER_RESPONSE_HANDLER(
-      gaia_urls->embedded_setup_chromeos_url(), HandleServiceLogin);
+  REGISTER_RESPONSE_HANDLER(gaia_urls->embedded_setup_chromeos_url(),
+                            HandleEmbeddedSetupChromeos);
 
   // Handles /OAuthLogin GAIA call.
   REGISTER_RESPONSE_HANDLER(
@@ -224,6 +229,16 @@ void FakeGaia::Initialize() {
   // Handles /ServiceLoginAuth GAIA call.
   REGISTER_RESPONSE_HANDLER(
       gaia_urls->service_login_auth_url(), HandleServiceLoginAuth);
+
+  // Handles /_/embedded/lookup/accountlookup for /embedded/setup/chromeos
+  // authentication request.
+  REGISTER_PATH_RESPONSE_HANDLER("/_/embedded/lookup/accountlookup",
+                                 HandleEmbeddedLookupAccountLookup);
+
+  // Handles /_/embedded/signin/challenge for /embedded/setup/chromeos
+  // authentication request.
+  REGISTER_PATH_RESPONSE_HANDLER("/_/embedded/signin/challenge",
+                                 HandleEmbeddedSigninChallenge);
 
   // Handles /SSO GAIA call (not GAIA, made up for SAML tests).
   REGISTER_PATH_RESPONSE_HANDLER("/SSO", HandleSSO);
@@ -424,6 +439,13 @@ void FakeGaia::HandleServiceLogin(const HttpRequest& request,
   http_response->set_content_type("text/html");
 }
 
+void FakeGaia::HandleEmbeddedSetupChromeos(const HttpRequest& request,
+                                           BasicHttpResponse* http_response) {
+  http_response->set_code(net::HTTP_OK);
+  http_response->set_content(embedded_setup_chromeos_response_);
+  http_response->set_content_type("text/html");
+}
+
 void FakeGaia::HandleOAuthLogin(const HttpRequest& request,
                                 BasicHttpResponse* http_response) {
   http_response->set_code(net::HTTP_UNAUTHORIZED);
@@ -497,6 +519,45 @@ void FakeGaia::HandleServiceLoginAuth(const HttpRequest& request,
     return;
 
   AddGoogleAccountsSigninHeader(http_response, email);
+  if (issue_oauth_code_cookie_)
+    SetOAuthCodeCookie(http_response);
+}
+
+void FakeGaia::HandleEmbeddedLookupAccountLookup(
+    const net::test_server::HttpRequest& request,
+    net::test_server::BasicHttpResponse* http_response) {
+  std::string email;
+  const bool is_saml =
+      GetQueryParameter(request.content, "identifier", &email) &&
+      saml_account_idp_map_.find(email) != saml_account_idp_map_.end();
+
+  if (!is_saml)
+    return;
+
+  GURL url(saml_account_idp_map_[email]);
+  url = net::AppendQueryParameter(url, "SAMLRequest", "fake_request");
+  url = net::AppendQueryParameter(
+      url, "RelayState",
+      "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/success.html");
+  std::string redirect_url = url.spec();
+  http_response->AddCustomHeader("Google-Accounts-SAML", "Start");
+
+  http_response->AddCustomHeader("continue", redirect_url);
+}
+
+void FakeGaia::HandleEmbeddedSigninChallenge(const HttpRequest& request,
+                                             BasicHttpResponse* http_response) {
+  std::string email;
+  GetQueryParameter(request.content, "identifier", &email);
+
+  if (!merge_session_params_.auth_sid_cookie.empty() &&
+      !merge_session_params_.auth_lsid_cookie.empty()) {
+    SetCookies(http_response, merge_session_params_.auth_sid_cookie,
+               merge_session_params_.auth_lsid_cookie);
+  }
+
+  AddGoogleAccountsSigninHeader(http_response, email);
+
   if (issue_oauth_code_cookie_)
     SetOAuthCodeCookie(http_response);
 }

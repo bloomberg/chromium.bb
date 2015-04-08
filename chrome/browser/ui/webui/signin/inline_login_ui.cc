@@ -127,7 +127,7 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
 InlineLoginUI::~InlineLoginUI() {}
 
 // Gets the Gaia iframe within a WebContents.
-content::RenderFrameHost* InlineLoginUI::GetAuthIframe(
+content::RenderFrameHost* InlineLoginUI::GetAuthFrame(
     content::WebContents* web_contents,
     const GURL& parent_origin,
     const std::string& parent_frame_name) {

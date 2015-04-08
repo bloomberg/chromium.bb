@@ -21,9 +21,10 @@ class InlineLoginUI : public ui::WebDialogUI {
   explicit InlineLoginUI(content::WebUI* web_ui);
   ~InlineLoginUI() override;
 
-  // Gets the iframe within an auth page that has the specified parent origin
-  // if |parent_origin| is not empty, and the specified parent frame name.
-  static content::RenderFrameHost* GetAuthIframe(
+  // Gets the frame (iframe or webview) within an auth page that has the
+  // specified parent origin if |parent_origin| is not empty, and the specified
+  // parent frame name.
+  static content::RenderFrameHost* GetAuthFrame(
       content::WebContents* web_contents,
       const GURL& parent_origin,
       const std::string& parent_frame_name);

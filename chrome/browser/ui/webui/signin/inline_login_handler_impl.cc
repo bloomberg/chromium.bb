@@ -496,9 +496,9 @@ void InlineLoginHandlerImpl::DidCommitProvisionalLoadForFrame(
   // Returns early if this is not a gaia iframe navigation.
   const GURL kGaiaExtOrigin(
       "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/");
-  content::RenderFrameHost* gaia_iframe = InlineLoginUI::GetAuthIframe(
+  content::RenderFrameHost* gaia_frame = InlineLoginUI::GetAuthFrame(
       web_contents(), kGaiaExtOrigin, "signin-frame");
-  if (render_frame_host != gaia_iframe)
+  if (render_frame_host != gaia_frame)
     return;
 
   // Loading any untrusted (e.g., HTTP) URLs in the privileged sign-in process

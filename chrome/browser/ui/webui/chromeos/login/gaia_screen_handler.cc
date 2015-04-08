@@ -535,7 +535,7 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
     focus_stolen_ = false;
     const char code[] =
         "if (typeof gWindowOnLoad != 'undefined') gWindowOnLoad();";
-    content::RenderFrameHost* frame = InlineLoginUI::GetAuthIframe(
+    content::RenderFrameHost* frame = InlineLoginUI::GetAuthFrame(
         web_ui()->GetWebContents(),
         GURL(kAuthIframeParentOrigin),
         kAuthIframeParentName);
@@ -549,7 +549,7 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
     const char code[] =
         "var gWindowOnLoad = window.onload; "
         "window.onload=function() {};";
-    content::RenderFrameHost* frame = InlineLoginUI::GetAuthIframe(
+    content::RenderFrameHost* frame = InlineLoginUI::GetAuthFrame(
         web_ui()->GetWebContents(),
         GURL(kAuthIframeParentOrigin),
         kAuthIframeParentName);
@@ -687,16 +687,33 @@ void GaiaScreenHandler::ShowSigninScreenForCreds(const std::string& username,
 void GaiaScreenHandler::SubmitLoginFormForTest() {
   VLOG(2) << "Submit login form for test, user=" << test_user_;
 
-  std::string code;
-  code += "document.getElementById('Email').value = '" + test_user_ + "';";
-  code += "document.getElementById('Passwd').value = '" + test_pass_ + "';";
-  code += "document.getElementById('signIn').click();";
-
-  content::RenderFrameHost* frame = InlineLoginUI::GetAuthIframe(
+  content::RenderFrameHost* frame = InlineLoginUI::GetAuthFrame(
       web_ui()->GetWebContents(),
       GURL(kAuthIframeParentOrigin),
       kAuthIframeParentName);
-  frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
+
+  if (!StartupUtils::IsWebviewSigninEnabled()) {
+    std::string code;
+    code += "document.getElementById('Email').value = '" + test_user_ + "';";
+    code += "document.getElementById('Passwd').value = '" + test_pass_ + "';";
+    code += "document.getElementById('signIn').click();";
+
+    frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
+  } else {
+    std::string code;
+
+    code =
+        "document.getElementById('identifier').value = '" + test_user_ + "';";
+    code += "document.getElementById('nextButton').click();";
+    frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
+
+    if (!test_pass_.empty()) {
+      code =
+          "document.getElementById('password').value = '" + test_pass_ + "';";
+      code += "document.getElementById('nextButton').click();";
+      frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
+    }
+  }
 
   // Test properties are cleared in HandleCompleteLogin because the form
   // submission might fail and login will not be attempted after reloading

@@ -5,14 +5,19 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 
 #include "base/command_line.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
 #include "components/user_manager/fake_user_manager.h"
@@ -30,7 +35,9 @@ namespace chromeos {
 OobeBaseTest::OobeBaseTest()
     : fake_gaia_(new FakeGaia()),
       network_portal_detector_(NULL),
-      needs_background_networking_(false) {
+      needs_background_networking_(false),
+      gaia_frame_parent_("signin-frame"),
+      use_webview_(false) {
   set_exit_when_last_browser_closes(false);
   set_chromeos_user_ = false;
 }
@@ -42,14 +49,50 @@ void OobeBaseTest::SetUp() {
   base::FilePath test_data_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&FakeGaia::HandleRequest, base::Unretained(fake_gaia_.get())));
+
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  // Start https wrapper here so that the URLs can be pointed at it in
+  // SetUpCommandLine().
+  InitHttpsForwarders();
+
   // Stop IO thread here because no threads are allowed while
   // spawning sandbox host process. See crbug.com/322732.
   embedded_test_server()->StopThread();
 
   ExtensionApiTest::SetUp();
+}
+
+bool OobeBaseTest::SetUpUserDataDirectory() {
+  if (use_webview_) {
+    // Fake Dev channel to enable webview signin.
+    scoped_channel_.reset(
+        new extensions::ScopedCurrentChannel(chrome::VersionInfo::CHANNEL_DEV));
+
+    base::FilePath user_data_dir;
+    CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+    base::FilePath local_state_path =
+        user_data_dir.Append(chrome::kLocalStateFilename);
+
+    // Set webview enabled flag only when local state file does not exist.
+    // Otherwise, we break PRE tests that leave state in it.
+    if (!base::PathExists(local_state_path)) {
+      base::DictionaryValue local_state_dict;
+      local_state_dict.SetBoolean(prefs::kWebviewSigninEnabled, true);
+      // OobeCompleted to skip controller-pairing-screen which still uses
+      // iframe and ends up in a JS error in oobe page init.
+      // See http://crbug.com/467147
+      local_state_dict.SetBoolean(prefs::kOobeComplete, true);
+
+      CHECK(JSONFileValueSerializer(local_state_path)
+                .Serialize(local_state_dict));
+    }
+  }
+
+  return ExtensionApiTest::SetUpUserDataDirectory();
 }
 
 void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
@@ -65,6 +108,10 @@ void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
 void OobeBaseTest::SetUpOnMainThread() {
   // Restart the thread as the sandbox host process has already been spawned.
   embedded_test_server()->RestartThreadAndListen();
+
+  login_screen_load_observer_.reset(new content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+      content::NotificationService::AllSources()));
 
   ExtensionApiTest::SetUpOnMainThread();
 }
@@ -82,25 +129,27 @@ void OobeBaseTest::TearDownOnMainThread() {
 
 void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
   ExtensionApiTest::SetUpCommandLine(command_line);
+
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   if (!needs_background_networking_)
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 
-  // Create gaia and webstore URL from test server url but using different
-  // host names. This is to avoid gaia response being tagged as from
-  // webstore in chrome_resource_dispatcher_host_delegate.cc.
-  const GURL& server_url = embedded_test_server()->base_url();
-
-  GURL::Replacements replace_gaia_host;
-  replace_gaia_host.SetHostStr("gaia");
-  GURL gaia_url = server_url.ReplaceComponents(replace_gaia_host);
+  GURL gaia_url = gaia_https_forwarder_->GetURL("");
   command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
   command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
   command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
                                   gaia_url.spec());
+
   fake_gaia_->Initialize();
+  fake_gaia_->set_issue_oauth_code_cookie(use_webview_);
+}
+
+void OobeBaseTest::InitHttpsForwarders() {
+  gaia_https_forwarder_.reset(
+      new HTTPSForwarder(embedded_test_server()->base_url()));
+  ASSERT_TRUE(gaia_https_forwarder_->Start());
 }
 
 void OobeBaseTest::SimulateNetworkOffline() {
@@ -166,6 +215,35 @@ WebUILoginDisplay* OobeBaseTest::GetLoginDisplay() {
   CHECK(controller);
   return static_cast<WebUILoginDisplay*>(
       controller->login_display());
+}
+
+void OobeBaseTest::WaitForSigninScreen() {
+  WizardController* wizard_controller = WizardController::default_controller();
+  if (wizard_controller) {
+    wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+  }
+  WizardController::SkipPostLoginScreensForTesting();
+
+  login_screen_load_observer_->Wait();
+}
+
+void OobeBaseTest::ExecuteJsInSigninFrame(const std::string& js) {
+  content::RenderFrameHost* frame = InlineLoginUI::GetAuthFrame(
+      GetLoginUI()->GetWebContents(), GURL(), gaia_frame_parent_);
+  ASSERT_TRUE(content::ExecuteScript(frame, js));
+}
+
+void OobeBaseTest::SetSignFormField(const std::string& field_id,
+                                    const std::string& field_value) {
+  std::string js =
+      "(function(){"
+      "document.getElementById('$FieldId').value = '$FieldValue';"
+      "var e = new Event('input');"
+      "document.getElementById('$FieldId').dispatchEvent(e);"
+      "})();";
+  ReplaceSubstringsAfterOffset(&js, 0, "$FieldId", field_id);
+  ReplaceSubstringsAfterOffset(&js, 0, "$FieldValue", field_value);
+  ExecuteJsInSigninFrame(js);
 }
 
 }  // namespace chromeos

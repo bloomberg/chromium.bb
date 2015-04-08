@@ -114,7 +114,7 @@ void ExecuteJsToSigninInSigninFrame(Browser* browser,
 
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(content::ExecuteScript(InlineLoginUI::GetAuthIframe(
+  ASSERT_TRUE(content::ExecuteScript(InlineLoginUI::GetAuthFrame(
       web_contents, GURL(), "signin-frame"), js));
 }
 

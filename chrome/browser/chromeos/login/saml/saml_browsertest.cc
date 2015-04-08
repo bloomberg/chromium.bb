@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
@@ -36,7 +37,6 @@
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
@@ -259,140 +259,35 @@ scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
 
 }  // namespace
 
-class SamlTest : public InProcessBrowserTest,
-                 public testing::WithParamInterface<bool> {
+class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
  public:
-  SamlTest() : gaia_frame_parent_("signin-frame"), saml_load_injected_(false) {}
+  SamlTest() : saml_load_injected_(false) { use_webview_ = GetParam(); }
   ~SamlTest() override {}
 
-  bool UseWebView() const {
-    return GetParam();
-  }
-
-  void SetUp() override {
-    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-    // Start the GAIA https wrapper here so that the GAIA URLs can be pointed at
-    // it in SetUpCommandLine().
-    gaia_https_forwarder_.reset(
-        new HTTPSForwarder(embedded_test_server()->base_url()));
-    ASSERT_TRUE(gaia_https_forwarder_->Start());
-
-    // Start the SAML IdP https wrapper here so that GAIA can be pointed at it
-    // in SetUpCommandLine().
-    saml_https_forwarder_.reset(
-        new HTTPSForwarder(embedded_test_server()->base_url()));
-    ASSERT_TRUE(saml_https_forwarder_->Start());
-
-    // Stop IO thread here because no threads are allowed while
-    // spawning sandbox host process. See crbug.com/322732.
-    embedded_test_server()->StopThread();
-
-    InProcessBrowserTest::SetUp();
-  }
-
-  bool SetUpUserDataDirectory() override {
-    if (UseWebView()) {
-      // Fake Dev channel to enable webview signin.
-      scoped_channel_.reset(new extensions::ScopedCurrentChannel(
-          chrome::VersionInfo::CHANNEL_DEV));
-
-      base::FilePath user_data_dir;
-      CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-      base::FilePath local_state_path =
-          user_data_dir.Append(chrome::kLocalStateFilename);
-
-      // Set webview enabled flag only when local state file does not exist.
-      // Otherwise, we break PRE tests that leave state in it.
-      if (!base::PathExists(local_state_path)) {
-        base::DictionaryValue local_state_dict;
-        local_state_dict.SetBoolean(prefs::kWebviewSigninEnabled, true);
-        // OobeCompleted to skip controller-pairing-screen which still uses
-        // iframe and ends up in a JS error in oobe page init.
-        // See http://crbug.com/467147
-        local_state_dict.SetBoolean(prefs::kOobeComplete, true);
-
-        CHECK(JSONFileValueSerializer(local_state_path)
-                  .Serialize(local_state_dict));
-      }
-    }
-
-    return InProcessBrowserTest::SetUpUserDataDirectory();
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kLoginManager);
-    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
-    command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
-    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
 
     const GURL gaia_url = gaia_https_forwarder_->GetURL("");
-    command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
-    command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
-    command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
-                                    gaia_url.spec());
-
     const GURL saml_idp_url = saml_https_forwarder_->GetURL("SAML");
     fake_saml_idp_.SetUp(saml_idp_url.path(), gaia_url);
-    fake_gaia_.RegisterSamlUser(kFirstSAMLUserEmail, saml_idp_url);
-    fake_gaia_.RegisterSamlUser(kSecondSAMLUserEmail, saml_idp_url);
-    fake_gaia_.RegisterSamlUser(
+    fake_gaia_->RegisterSamlUser(kFirstSAMLUserEmail, saml_idp_url);
+    fake_gaia_->RegisterSamlUser(kSecondSAMLUserEmail, saml_idp_url);
+    fake_gaia_->RegisterSamlUser(
         kHTTPSAMLUserEmail,
         embedded_test_server()->base_url().Resolve("/SAML"));
-    fake_gaia_.RegisterSamlUser(kDifferentDomainSAMLUserEmail, saml_idp_url);
+    fake_gaia_->RegisterSamlUser(kDifferentDomainSAMLUserEmail, saml_idp_url);
 
-    fake_gaia_.Initialize();
-    fake_gaia_.set_issue_oauth_code_cookie(UseWebView());
+    OobeBaseTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
-    fake_gaia_.SetFakeMergeSessionParams(kFirstSAMLUserEmail,
-                                         kTestAuthSIDCookie1,
-                                         kTestAuthLSIDCookie1);
+    fake_gaia_->SetFakeMergeSessionParams(
+        kFirstSAMLUserEmail, kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
 
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&FakeGaia::HandleRequest, base::Unretained(&fake_gaia_)));
     embedded_test_server()->RegisterRequestHandler(base::Bind(
         &FakeSamlIdp::HandleRequest, base::Unretained(&fake_saml_idp_)));
 
-    // Restart the thread as the sandbox host process has already been spawned.
-    embedded_test_server()->RestartThreadAndListen();
-
-    login_screen_load_observer_.reset(new content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-        content::NotificationService::AllSources()));
-  }
-
-  void TearDownOnMainThread() override {
-    // If the login display is still showing, exit gracefully.
-    if (LoginDisplayHostImpl::default_host()) {
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::Bind(&chrome::AttemptExit));
-      content::RunMessageLoop();
-    }
-  }
-
-  WebUILoginDisplay* GetLoginDisplay() {
-    ExistingUserController* controller =
-        ExistingUserController::current_controller();
-    CHECK(controller);
-    return static_cast<WebUILoginDisplay*>(controller->login_display());
-  }
-
-  void WaitForSigninScreen() {
-    WizardController* wizard_controller =
-        WizardController::default_controller();
-    if (wizard_controller) {
-      wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-    }
-    WizardController::SkipPostLoginScreensForTesting();
-
-    login_screen_load_observer_->Wait();
+    OobeBaseTest::SetUpOnMainThread();
   }
 
   virtual void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
@@ -419,34 +314,12 @@ class SamlTest : public InProcessBrowserTest,
     EXPECT_EQ("\"SamlLoaded\"", message);
   }
 
-  void SetSignFormField(const std::string& field_id,
-                        const std::string& field_value) {
-    std::string js =
-        "(function(){"
-          "document.getElementById('$FieldId').value = '$FieldValue';"
-          "var e = new Event('input');"
-          "document.getElementById('$FieldId').dispatchEvent(e);"
-        "})();";
-    ReplaceSubstringsAfterOffset(&js, 0, "$FieldId", field_id);
-    ReplaceSubstringsAfterOffset(&js, 0, "$FieldValue", field_value);
-    ExecuteJsInSigninFrame(js);
-  }
-
   void SendConfirmPassword(const std::string& password_to_confirm) {
     std::string js =
         "$('confirm-password-input').value='$Password';"
         "$('confirm-password').onConfirmPassword_();";
     ReplaceSubstringsAfterOffset(&js, 0, "$Password", password_to_confirm);
     ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
-  }
-
-  void JsExpect(const std::string& js) {
-    bool result;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-        GetLoginUI()->GetWebContents(),
-        "window.domAutomationController.send(!!(" + js + "));",
-        &result));
-    EXPECT_TRUE(result) << js;
   }
 
   std::string WaitForAndGetFatalErrorMessage() {
@@ -462,32 +335,21 @@ class SamlTest : public InProcessBrowserTest,
     return error_message;
   }
 
-  content::WebUI* GetLoginUI() {
-    return static_cast<LoginDisplayHostImpl*>(
-        LoginDisplayHostImpl::default_host())->GetOobeUI()->web_ui();
-  }
-
-  // Executes JavaScript code in the auth iframe hosted by gaia_auth extension.
-  void ExecuteJsInSigninFrame(const std::string& js) {
-    content::RenderFrameHost* frame = InlineLoginUI::GetAuthIframe(
-        GetLoginUI()->GetWebContents(), GURL(), gaia_frame_parent_);
-    ASSERT_TRUE(content::ExecuteScript(frame, js));
-  }
-
   FakeSamlIdp* fake_saml_idp() { return &fake_saml_idp_; }
 
  protected:
-  scoped_ptr<content::WindowedNotificationObserver> login_screen_load_observer_;
-  FakeGaia fake_gaia_;
+  void InitHttpsForwarders() override {
+    saml_https_forwarder_.reset(
+        new HTTPSForwarder(embedded_test_server()->base_url()));
+    ASSERT_TRUE(saml_https_forwarder_->Start());
 
-  std::string gaia_frame_parent_;
+    OobeBaseTest::InitHttpsForwarders();
+  }
 
-  scoped_ptr<HTTPSForwarder> gaia_https_forwarder_;
   scoped_ptr<HTTPSForwarder> saml_https_forwarder_;
 
  private:
   FakeSamlIdp fake_saml_idp_;
-  scoped_ptr<extensions::ScopedCurrentChannel> scoped_channel_;
 
   bool saml_load_injected_;
 
@@ -503,13 +365,13 @@ IN_PROC_BROWSER_TEST_P(SamlTest, SamlUI) {
 
   // Saml flow UI expectations.
   JsExpect("$('gaia-signin').classList.contains('full-width')");
-  if (!UseWebView()) {
+  if (!use_webview_) {
     JsExpect("!$('cancel-add-user-button').hidden");
   }
 
   // Click on 'cancel'.
   content::DOMMessageQueue message_queue;  // Observe before 'cancel'.
-  if (UseWebView()) {
+  if (use_webview_) {
     ASSERT_TRUE(content::ExecuteScript(
         GetLoginUI()->GetWebContents(),
         "$('close-button-item').click();"));
@@ -535,7 +397,7 @@ IN_PROC_BROWSER_TEST_P(SamlTest, CredentialPassingAPI) {
   // webview.executeScript and there is no way to control the injection time.
   // As a result, this test is flaky and fails about 20% of the time.
   // TODO(xiyuan): Re-enable when webview.addContentScript API is ready.
-  if (UseWebView())
+  if (use_webview_)
     return;
 
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
@@ -682,8 +544,8 @@ IN_PROC_BROWSER_TEST_P(SamlTest, FailToRetrieveAutenticatedUserEmailAddress) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
-  fake_gaia_.SetFakeMergeSessionParams(
-      "", kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
+  fake_gaia_->SetFakeMergeSessionParams("", kTestAuthSIDCookie1,
+                                        kTestAuthLSIDCookie1);
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
@@ -823,7 +685,7 @@ void SAMLEnrollmentTest::SetUpOnMainThread() {
   token_info.scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
   token_info.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   token_info.email = kFirstSAMLUserEmail;
-  fake_gaia_.IssueOAuthToken(kTestRefreshToken, token_info);
+  fake_gaia_->IssueOAuthToken(kTestRefreshToken, token_info);
 
   SamlTest::SetUpOnMainThread();
 }
@@ -1056,8 +918,8 @@ void SAMLPolicyTest::LogInWithSAML(const std::string& user_id,
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(user_id);
 
-  fake_gaia_.SetFakeMergeSessionParams(
-      user_id, auth_sid_cookie, auth_lsid_cookie);
+  fake_gaia_->SetFakeMergeSessionParams(user_id, auth_sid_cookie,
+                                        auth_lsid_cookie);
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");

@@ -158,9 +158,18 @@ class FakeGaia {
       net::test_server::BasicHttpResponse* http_response);
   void HandleServiceLogin(const net::test_server::HttpRequest& request,
                           net::test_server::BasicHttpResponse* http_response);
+  void HandleEmbeddedSetupChromeos(
+      const net::test_server::HttpRequest& request,
+      net::test_server::BasicHttpResponse* http_response);
   void HandleOAuthLogin(const net::test_server::HttpRequest& request,
                         net::test_server::BasicHttpResponse* http_response);
   void HandleServiceLoginAuth(
+      const net::test_server::HttpRequest& request,
+      net::test_server::BasicHttpResponse* http_response);
+  void HandleEmbeddedLookupAccountLookup(
+      const net::test_server::HttpRequest& request,
+      net::test_server::BasicHttpResponse* http_response);
+  void HandleEmbeddedSigninChallenge(
       const net::test_server::HttpRequest& request,
       net::test_server::BasicHttpResponse* http_response);
   void HandleSSO(const net::test_server::HttpRequest& request,
@@ -198,6 +207,7 @@ class FakeGaia {
   AccessTokenInfoMap access_token_info_map_;
   RequestHandlerMap request_handlers_;
   std::string service_login_response_;
+  std::string embedded_setup_chromeos_response_;
   SamlAccountIdpMap saml_account_idp_map_;
   bool issue_oauth_code_cookie_;
 

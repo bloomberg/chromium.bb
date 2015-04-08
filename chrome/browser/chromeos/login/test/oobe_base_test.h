@@ -19,13 +19,19 @@
 
 namespace content {
 class WebUI;
+class WindowedNotificationObserver;
+}
+
+namespace extensions {
+class ScopedCurrentChannel;
 }
 
 namespace chromeos {
 
+class HTTPSForwarder;
 class NetworkPortalDetectorTestImpl;
 
-// Base class for OOBE and Kiosk tests.
+// Base class for OOBE, login, SAML and Kiosk tests.
 class OobeBaseTest : public ExtensionApiTest {
  public:
   OobeBaseTest();
@@ -35,9 +41,12 @@ class OobeBaseTest : public ExtensionApiTest {
   // InProcessBrowserTest overrides.
   void SetUp() override;
   void SetUpInProcessBrowserTestFixture() override;
+  bool SetUpUserDataDirectory() override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
+
+  virtual void InitHttpsForwarders();
 
   // Network status control functions.
   void SimulateNetworkOffline();
@@ -57,12 +66,25 @@ class OobeBaseTest : public ExtensionApiTest {
   // Returns login display.
   WebUILoginDisplay* GetLoginDisplay();
 
+  void WaitForSigninScreen();
+  void ExecuteJsInSigninFrame(const std::string& js);
+  void SetSignFormField(const std::string& field_id,
+                        const std::string& field_value);
+
   scoped_ptr<FakeGaia> fake_gaia_;
   NetworkPortalDetectorTestImpl* network_portal_detector_;
 
   // Whether to use background networking. Note this is only effective when it
   // is set before SetUpCommandLine is invoked.
   bool needs_background_networking_;
+
+  scoped_ptr<content::WindowedNotificationObserver> login_screen_load_observer_;
+  scoped_ptr<extensions::ScopedCurrentChannel> scoped_channel_;
+  scoped_ptr<HTTPSForwarder> gaia_https_forwarder_;
+  std::string gaia_frame_parent_;
+  bool use_webview_;
+
+  DISALLOW_COPY_AND_ASSIGN(OobeBaseTest);
 };
 
 }  // namespace chromeos
