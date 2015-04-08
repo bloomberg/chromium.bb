@@ -145,26 +145,6 @@ sigchild_handler(int s)
 		fprintf(stderr, "child %d exited\n", pid);
 }
 
-static void
-menu_func(void *data, struct input *input, int index)
-{
-	printf("Selected index %d from a panel menu.\n", index);
-}
-
-static void
-show_menu(struct panel *panel, struct input *input, uint32_t time)
-{
-	int32_t x, y;
-	static const char *entries[] = {
-		"Roy", "Pris", "Leon", "Zhora"
-	};
-
-	input_get_position(input, &x, &y);
-	window_show_menu(window_get_display(panel->window),
-			 input, time, panel->window,
-			 x - 10, y - 10, menu_func, entries, 4);
-}
-
 static int
 is_desktop_painted(struct desktop *desktop)
 {
@@ -454,18 +434,6 @@ panel_add_clock(struct panel *panel)
 }
 
 static void
-panel_button_handler(struct widget *widget,
-		     struct input *input, uint32_t time,
-		     uint32_t button,
-		     enum wl_pointer_button_state state, void *data)
-{
-	struct panel *panel = data;
-
-	if (button == BTN_RIGHT && state == WL_POINTER_BUTTON_STATE_PRESSED)
-		show_menu(panel, input, time);
-}
-
-static void
 panel_resize_handler(struct widget *widget,
 		     int32_t width, int32_t height, void *data)
 {
@@ -553,7 +521,6 @@ panel_create(struct desktop *desktop)
 
 	widget_set_redraw_handler(panel->widget, panel_redraw_handler);
 	widget_set_resize_handler(panel->widget, panel_resize_handler);
-	widget_set_button_handler(panel->widget, panel_button_handler);
 	
 	panel_add_clock(panel);
 
