@@ -10,13 +10,15 @@
 namespace ui {
 
 CompositingRecorder::CompositingRecorder(const PaintContext& context,
-                                         float opacity)
-    : canvas_(context.canvas()) {
-  canvas_->SaveLayerAlpha(0xff * opacity);
+                                         uint8_t alpha)
+    : canvas_(context.canvas()), saved_(alpha < 255) {
+  if (saved_)
+    canvas_->SaveLayerAlpha(alpha);
 }
 
 CompositingRecorder::~CompositingRecorder() {
-  canvas_->Restore();
+  if (saved_)
+    canvas_->Restore();
 }
 
 }  // namespace ui

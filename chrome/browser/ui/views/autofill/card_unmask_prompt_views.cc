@@ -463,10 +463,8 @@ CardUnmaskPromptViews::FadeOutView::~FadeOutView() {
 
 void CardUnmaskPromptViews::FadeOutView::PaintChildren(
     const ui::PaintContext& context) {
-  if (opacity_ > 0.99)
-    return views::View::PaintChildren(context);
-
-  ui::CompositingRecorder recorder(context, opacity_);
+  uint8_t alpha = static_cast<uint8_t>(255 * opacity_);
+  ui::CompositingRecorder recorder(context, alpha);
   views::View::PaintChildren(context);
 }
 

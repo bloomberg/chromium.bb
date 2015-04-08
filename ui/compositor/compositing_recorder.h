@@ -5,6 +5,7 @@
 #ifndef UI_COMPOSITOR_COMPOSITING_RECORDER_H_
 #define UI_COMPOSITOR_COMPOSITING_RECORDER_H_
 
+#include "base/basictypes.h"
 #include "base/macros.h"
 #include "ui/compositor/compositor_export.h"
 
@@ -22,11 +23,14 @@ class PaintContext;
 // be filtered by the effect.
 class COMPOSITOR_EXPORT CompositingRecorder {
  public:
-  CompositingRecorder(const PaintContext& context, float opacity);
+  // |alpha| is a value between 0 and 255, where 0 is transparent and 255 is
+  // opaque.
+  CompositingRecorder(const PaintContext& context, uint8_t alpha);
   ~CompositingRecorder();
 
  private:
   gfx::Canvas* canvas_;
+  bool saved_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositingRecorder);
 };
