@@ -55,7 +55,7 @@ Image::~Image() {}
 std::string Image::checksum() const {
   base::MD5Digest digest;
   base::MD5Sum(&data_[0], data_.size(), &digest);
-  return base::HexEncode(&digest, sizeof(digest));
+  return base::MD5DigestToBase16(digest);
 }
 
 bool Image::SaveToPng(const base::FilePath& filepath) const {
