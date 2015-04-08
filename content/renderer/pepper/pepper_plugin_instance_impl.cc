@@ -3161,7 +3161,8 @@ int32_t PepperPluginInstanceImpl::Navigate(
     return PP_ERROR_FAILED;
   }
   web_request.setFirstPartyForCookies(document.firstPartyForCookies());
-  web_request.setHasUserGesture(from_user_action);
+  if (IsProcessingUserGesture())
+    web_request.setHasUserGesture(true);
 
   GURL gurl(web_request.url());
   if (gurl.SchemeIs(url::kJavaScriptScheme)) {
@@ -3174,7 +3175,8 @@ int32_t PepperPluginInstanceImpl::Navigate(
 
     // TODO(viettrungluu): NPAPI sends the result back to the plugin -- do we
     // need that?
-    WebString result = container_->executeScriptURL(gurl, from_user_action);
+    blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
+    WebString result = container_->executeScriptURL(gurl, false);
     return result.isNull() ? PP_ERROR_FAILED : PP_OK;
   }
 
@@ -3183,6 +3185,7 @@ int32_t PepperPluginInstanceImpl::Navigate(
     return PP_ERROR_BADARGUMENT;
 
   WebString target_str = WebString::fromUTF8(target);
+  blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
   container_->loadFrameRequest(web_request, target_str, false, NULL);
   return PP_OK;
 }
