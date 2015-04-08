@@ -96,7 +96,6 @@
         'public/web_state/crw_web_view_proxy.h'
         'public/web_state/crw_web_view_scroll_view_proxy.h'
         'public/web_state/js/crw_js_base_manager.h',
-        'public/web_state/js/crw_js_early_script_manager.h',
         'public/web_state/js/crw_js_injection_evaluator.h',
         'public/web_state/js/crw_js_injection_manager.h',
         'public/web_state/js/crw_js_injection_receiver.h',
@@ -119,6 +118,7 @@
         'web_state/blocked_popup_info.h',
         'web_state/blocked_popup_info.mm',
         'web_state/crw_recurring_task_delegate.h',
+        'web_state/js/crw_js_early_script_manager.h',
         'web_state/js/crw_js_early_script_manager.mm',
         'web_state/js/crw_js_injection_manager.mm',
         'web_state/js/crw_js_injection_receiver.mm',
