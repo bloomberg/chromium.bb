@@ -99,7 +99,6 @@
         'public/web_state/js/crw_js_injection_evaluator.h',
         'public/web_state/js/crw_js_injection_manager.h',
         'public/web_state/js/crw_js_injection_receiver.h',
-        'public/web_state/js/crw_js_message_manager.h',
         'public/web_state/page_scroll_state.h',
         'public/web_state/page_scroll_state.mm',
         'public/web_state/url_verification_constants.h',
