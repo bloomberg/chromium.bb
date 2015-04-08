@@ -368,7 +368,6 @@ crbug.com/473268 virtual/slimmingpaint/fast/pagination/viewport-y-vertical-lr-lt
 crbug.com/473268 virtual/slimmingpaint/fast/pagination/viewport-x-vertical-lr-rtl.html [ Skip ]
 crbug.com/473268 virtual/slimmingpaint/fast/pagination/viewport-x-vertical-rl-rtl.html [ Skip ]
 crbug.com/470713 virtual/slimmingpaint/fast/repaint/multicol-as-paint-container.html [ Skip ]
-crbug.com/456357 virtual/slimmingpaint/fast/overflow/line-clamp.html [ NeedsRebaseline ]
 crbug.com/470713 virtual/slimmingpaint/fast/dom/Element/getBoundingClientRect.html [ Skip ]
 crbug.com/470713 virtual/slimmingpaint/fast/repaint/multicol-repaint.html [ Skip ]
 
