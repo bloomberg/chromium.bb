@@ -28,7 +28,7 @@ import socket
 import sys
 import traceback
 
-third_party_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+third_party_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, os.path.dirname(third_party_dir))
 sys.path.insert(0, third_party_dir)
 
