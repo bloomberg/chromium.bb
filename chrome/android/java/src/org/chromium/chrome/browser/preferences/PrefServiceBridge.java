@@ -41,7 +41,7 @@ public final class PrefServiceBridge {
     public static final int SUPERVISED_USER_FILTERING_BLOCK = 2;
 
     private static final String MIGRATION_PREF_KEY = "PrefMigrationVersion";
-    private static final int MIGRATION_CURRENT_VERSION = 2;
+    private static final int MIGRATION_CURRENT_VERSION = 3;
 
     private static String sProfilePath;
 
@@ -149,6 +149,10 @@ public final class PrefServiceBridge {
         }
         if (currentVersion < 2) {
             addDefaultSearchEnginePermission(context);
+        }
+        if (currentVersion < 3) {
+            nativeMigrateLocationPreference();
+            nativeMigrateProtectedMediaPreference();
         }
         preferences.edit().putInt(MIGRATION_PREF_KEY, MIGRATION_CURRENT_VERSION).commit();
     }
@@ -889,6 +893,8 @@ public final class PrefServiceBridge {
     private native boolean nativeGetJavaScriptEnabled();
     private native void nativeSetJavaScriptEnabled(boolean enabled);
     private native void nativeMigrateJavascriptPreference();
+    private native void nativeMigrateLocationPreference();
+    private native void nativeMigrateProtectedMediaPreference();
     private native void nativeSetJavaScriptAllowed(String pattern, int setting);
     private native void nativeGetJavaScriptExceptions(List<JavaScriptExceptionInfo> list);
     private native void nativeClearBrowsingData(boolean history, boolean cache,

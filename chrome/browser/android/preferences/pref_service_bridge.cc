@@ -230,13 +230,6 @@ static jboolean GetSearchSuggestManaged(JNIEnv* env, jobject obj) {
 }
 
 static jboolean GetProtectedMediaIdentifierEnabled(JNIEnv* env, jobject obj) {
-  // Migrate Settings from Preferences to the Host Content Settings Map.
-  // TODO (knn): Remove this once users have migrated.
-  PrefService* prefs = GetPrefService();
-  if (!prefs->GetBoolean(prefs::kProtectedMediaIdentifierEnabled)) {
-    prefs->SetBoolean(prefs::kProtectedMediaIdentifierEnabled, true);
-    SetProtectedMediaIdentifierEnabled(env, obj, false);
-  }
   return GetBooleanForContentSetting(
       CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
 }
@@ -246,15 +239,6 @@ static jboolean GetPushNotificationsEnabled(JNIEnv* env, jobject obj) {
 }
 
 static jboolean GetAllowLocationEnabled(JNIEnv* env, jobject obj) {
-  // Migrate Settings from Preferences to the Host Content Settings Map.
-  // TODO (knn): Remove this once users have migrated.
-  PrefService* prefs = GetPrefService();
-  // Non-user-modifiable preference levels should have been migrated already.
-  DCHECK(prefs->IsUserModifiablePreference(prefs::kGeolocationEnabled));
-  if (!prefs->GetBoolean(prefs::kGeolocationEnabled)) {
-    prefs->SetBoolean(prefs::kGeolocationEnabled, true);
-    SetAllowLocationEnabled(env, obj, false);
-  }
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 }
 
@@ -511,6 +495,35 @@ static void MigrateJavascriptPreference(JNIEnv* env, jobject obj) {
   DCHECK(retval);
   SetJavaScriptEnabled(env, obj, javascript_enabled);
   GetPrefService()->ClearPref(prefs::kWebKitJavascriptEnabled);
+}
+
+static void MigrateLocationPreference(JNIEnv* env, jobject obj) {
+  const PrefService::Preference* pref =
+      GetPrefService()->FindPreference(prefs::kGeolocationEnabled);
+  if (!pref || !pref->HasUserSetting())
+    return;
+  bool location_enabled = false;
+  bool retval = pref->GetValue()->GetAsBoolean(&location_enabled);
+  DCHECK(retval);
+  // Do a restrictive migration. GetAllowLocationEnabled could be
+  // non-usermodifiable and we don't want to migrate that.
+  if (!location_enabled)
+    SetAllowLocationEnabled(env, obj, false);
+  GetPrefService()->ClearPref(prefs::kGeolocationEnabled);
+}
+
+static void MigrateProtectedMediaPreference(JNIEnv* env, jobject obj) {
+  const PrefService::Preference* pref =
+      GetPrefService()->FindPreference(prefs::kProtectedMediaIdentifierEnabled);
+  if (!pref || !pref->HasUserSetting())
+    return;
+  bool pmi_enabled = false;
+  bool retval = pref->GetValue()->GetAsBoolean(&pmi_enabled);
+  DCHECK(retval);
+  // Do a restrictive migration if values disagree.
+  if (!pmi_enabled)
+    SetProtectedMediaIdentifierEnabled(env, obj, false);
+  GetPrefService()->ClearPref(prefs::kProtectedMediaIdentifierEnabled);
 }
 
 static void SetPasswordEchoEnabled(JNIEnv* env,
