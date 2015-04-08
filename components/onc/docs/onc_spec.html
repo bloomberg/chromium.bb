@@ -1032,6 +1032,17 @@
     </p>
 
     <dl class="field_list">
+      <dt class="field">LcpEchoDisabled</dt>
+      <dd>
+        <span class="field_meta">
+          (optional, defaults to <span class="value">false</span>)
+          <span class="type">boolean</span>
+        </span>
+        Disable L2TP connection monitoring via PPP LCP frames.  This
+        allows the VPN client to work around server implementations
+        that do not support the LCP echo feature.
+      </dd>
+
       <dt class="field">Password</dt>
       <dd>
         <span class="field_meta">
