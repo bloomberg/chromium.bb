@@ -449,6 +449,7 @@
             'navigation_controller_java',
             'popup_item_type_java',
             'result_codes_java',
+            'readback_response_java',
             'speech_recognition_error_java',
             'top_controls_state_java',
             'screen_orientation_values_java',
@@ -518,6 +519,14 @@
           'type': 'none',
           'variables': {
             'source_file': 'browser/android/content_view_core_impl.cc',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          'target_name': 'readback_response_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'public/browser/readback_types.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

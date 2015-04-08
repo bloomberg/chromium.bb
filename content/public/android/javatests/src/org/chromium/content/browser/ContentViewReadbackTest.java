@@ -105,7 +105,7 @@ public class ContentViewReadbackTest extends ContentShellTestBase {
 
                 GetBitmapCallback callback = new GetBitmapCallback() {
                     @Override
-                    public void onFinishGetBitmap(Bitmap bitmap) {
+                    public void onFinishGetBitmap(Bitmap bitmap, int response) {
                         assertNotNull("Readback did not return valid bitmap", bitmap);
                         // Verify a pixel in the center of the screenshot.
                         color.set(bitmap.getPixel(bitmap.getWidth() / 2, bitmap.getHeight() / 2));

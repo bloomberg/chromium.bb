@@ -111,7 +111,7 @@ void ContentReadbackHandler::OnFinishReadback(int readback_id,
     java_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
 
   Java_ContentReadbackHandler_notifyGetBitmapFinished(
-      env, java_obj_.obj(), readback_id, java_bitmap.obj());
+      env, java_obj_.obj(), readback_id, java_bitmap.obj(), response);
 }
 
 // static
