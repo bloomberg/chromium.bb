@@ -29,6 +29,7 @@
 #ifndef AXLayoutObject_h
 #define AXLayoutObject_h
 
+#include "modules/ModulesExport.h"
 #include "modules/accessibility/AXNodeObject.h"
 #include "platform/geometry/LayoutRect.h"
 #include "wtf/Forward.h"
@@ -45,7 +46,7 @@ class Node;
 class VisibleSelection;
 class Widget;
 
-class AXLayoutObject : public AXNodeObject {
+class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 protected:
     AXLayoutObject(LayoutObject*, AXObjectCacheImpl*);
 

@@ -29,6 +29,7 @@
 #ifndef AXNodeObject_h
 #define AXNodeObject_h
 
+#include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
 #include "wtf/Forward.h"
 
@@ -40,7 +41,7 @@ class HTMLLabelElement;
 class LayoutRect;
 class Node;
 
-class AXNodeObject : public AXObject {
+class MODULES_EXPORT AXNodeObject : public AXObject {
 protected:
     AXNodeObject(Node*, AXObjectCacheImpl*);
 

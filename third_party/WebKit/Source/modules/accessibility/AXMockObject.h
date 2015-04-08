@@ -26,13 +26,14 @@
 #ifndef AXMockObject_h
 #define AXMockObject_h
 
+#include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 
-class AXMockObject : public AXObject {
+class MODULES_EXPORT AXMockObject : public AXObject {
 
 protected:
     explicit AXMockObject(AXObjectCacheImpl*);
