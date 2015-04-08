@@ -279,7 +279,8 @@ class BrilloSdkTestSelfUpdate(cros_test_lib.MockTempDirTestCase):
     self.assertEquals(0, self.rc_mock.call_count)
 
 
-class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase):
+class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase,
+                           cros_test_lib.OutputTestCase):
   """Test class for our BuildCommand class."""
 
   def setUp(self):
@@ -331,3 +332,19 @@ class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase):
 
     # Make sure no exec assertion is raised.
     self.cmd_mock.inst.Run()
+
+  def testVersionOption(self):
+    self.PatchObject(project_sdk, 'FindVersion', return_value='foo')
+    self.SetupCommandMock(['--version'])
+    with self.OutputCapturer():
+      self.cmd_mock.inst.Run()
+    self.AssertOutputContainsLine('foo')
+
+  def testVersionOptionSdkNotFound(self):
+    self.PatchObject(project_sdk, 'FindVersion', return_value=None)
+    self.SetupCommandMock(['--version'])
+    with self.OutputCapturer():
+      self.cmd_mock.inst.Run()
+    self.AssertOutputContainsLine('foo', invert=True)
+    self.AssertOutputContainsLine('Please specify a valid SDK location.',
+                                  check_stderr=True, check_stdout=False)

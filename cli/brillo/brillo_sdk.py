@@ -188,7 +188,9 @@ class SdkCommand(command.CliCommand):
         '--sdk-dir', type='path',
         help='Force install to specific directory.')
     parser.add_argument(
-        '--update', help='Update the SDK to version 1.2.3, tot, latest')
+        '--update', help='Update the SDK to version 1.2.3, tot, or latest.')
+    parser.add_argument('--version', default=False, action='store_true',
+                        help='Display current version.')
 
   def Run(self):
     """Run brillo sdk."""
@@ -199,6 +201,14 @@ class SdkCommand(command.CliCommand):
 
     workspace_path = workspace_lib.WorkspacePath()
     sdk_dir = self.options.sdk_dir
+
+    if self.options.version:
+      version = project_sdk.FindVersion(sdk_dir)
+      if version is None:
+        logging.error('Please specify a valid SDK location.')
+      else:
+        print(version)
+      return
 
     if not sdk_dir and not workspace_path:
       cros_build_lib.Die('You must be in a workspace, or specifiy --sdk-dir.')
