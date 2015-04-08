@@ -14,3 +14,4 @@ layer at (0,0) size 800x600
           text run at (146,86) width 197: "If it doesn't crash, we're good. "
         LayoutImage {IMG} at (342.13,0) size 100x100
         LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
