@@ -32,7 +32,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync_driver/data_type_controller.h"
-#include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/data_type_status_table.h"
@@ -186,7 +185,6 @@ class ProfileSyncService : public sync_driver::SyncService,
                            public sync_driver::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
                            public KeyedService,
-                           public sync_driver::DataTypeEncryptionHandler,
                            public OAuth2TokenService::Consumer,
                            public OAuth2TokenService::Observer,
                            public SigninManagerBase::Observer {
@@ -238,14 +236,6 @@ class ProfileSyncService : public sync_driver::SyncService,
     MAX_SYNC_EVENT_CODE
   };
 
-  // Used to specify the kind of passphrase with which sync data is encrypted.
-  enum PassphraseType {
-    IMPLICIT,  // The user did not provide a custom passphrase for encryption.
-               // We implicitly use the GAIA password in such cases.
-    EXPLICIT,  // The user selected the "use custom passphrase" radio button
-               // during sync setup and provided a passphrase.
-  };
-
   enum SyncStatusSummary {
     UNRECOVERABLE_ERROR,
     NOT_ENABLED,
@@ -282,12 +272,33 @@ class ProfileSyncService : public sync_driver::SyncService,
   // immediately after an object of this class is constructed.
   void Initialize();
 
-  void SetSyncSetupCompleted();
-
   // sync_driver::SyncService implementation
   bool HasSyncSetupCompleted() const override;
   bool SyncActive() const override;
+  bool IsSyncEnabledAndLoggedIn() override;
+  void DisableForUser() override;
+  void StopAndSuppress() override;
+  void UnsuppressAndStart() override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
+  syncer::ModelTypeSet GetPreferredDataTypes() const override;
+  void OnUserChoseDatatypes(bool sync_everything,
+                            syncer::ModelTypeSet chosen_types) override;
+  void SetSyncSetupCompleted() override;
+  bool FirstSetupInProgress() const override;
+  void SetSetupInProgress(bool setup_in_progress) override;
+  bool setup_in_progress() const override;
+  bool ConfigurationDone() const override;
+  const GoogleServiceAuthError& GetAuthError() const override;
+  bool HasUnrecoverableError() const override;
+  bool backend_initialized() const override;
+  bool IsPassphraseRequiredForDecryption() const override;
+  base::Time GetExplicitPassphraseTime() const override;
+  bool IsUsingSecondaryPassphrase() const override;
+  void EnableEncryptEverything() override;
+  void SetEncryptionPassphrase(const std::string& passphrase,
+                               PassphraseType type) override;
+  bool SetDecryptionPassphrase(const std::string& passphrase) override
+      WARN_UNUSED_RESULT;
   void AddObserver(sync_driver::SyncServiceObserver* observer) override;
   void RemoveObserver(sync_driver::SyncServiceObserver* observer) override;
   bool HasObserver(
@@ -320,16 +331,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   void RegisterAuthNotifications();
   void UnregisterAuthNotifications();
-
-  // Returns true if sync is enabled/not suppressed and the user is logged in.
-  // (being logged in does not mean that tokens are available - tokens may
-  // be missing because they have not loaded yet, or because they were deleted
-  // due to http://crbug.com/121755).
-  // Virtual to enable mocking in tests.
-  // TODO(tim): Remove this? Nothing in ProfileSyncService uses it, and outside
-  // callers use a seemingly arbitrary / redundant / bug prone combination of
-  // this method, IsSyncAccessible, and others.
-  virtual bool IsSyncEnabledAndLoggedIn();
 
   // Return whether OAuth2 refresh token is loaded and available for the backend
   // to start up. Virtual to enable mocking in tests.
@@ -385,9 +386,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   void GetDataTypeControllerStates(
       sync_driver::DataTypeController::StateMap* state_map) const;
 
-  // Disables sync for user. Use ShowLoginDialog to enable.
-  virtual void DisableForUser();
-
   // Disables sync for the user and prevents it from starting on next restart.
   virtual void StopSyncingPermanently();
 
@@ -437,14 +435,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;
 
-  // Called when a user chooses which data types to sync as part of the sync
-  // setup wizard.  |sync_everything| represents whether they chose the
-  // "keep everything synced" option; if true, |chosen_types| will be ignored
-  // and all data types will be synced.  |sync_everything| means "sync all
-  // current and future data types."
-  virtual void OnUserChoseDatatypes(bool sync_everything,
-      syncer::ModelTypeSet chosen_types);
-
   // Get the sync status code.
   SyncStatusSummary QuerySyncStatusSummary();
 
@@ -457,24 +447,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   virtual bool QueryDetailedSyncStatus(
       browser_sync::SyncBackendHost::Status* result);
 
-  virtual const GoogleServiceAuthError& GetAuthError() const;
-
-  // Returns true if initial sync setup is in progress (does not return true
-  // if the user is customizing sync after already completing setup once).
-  // ProfileSyncService uses this to determine if it's OK to start syncing, or
-  // if the user is still setting up the initial sync configuration.
-  virtual bool FirstSetupInProgress() const;
-
-  // Called by the UI to notify the ProfileSyncService that UI is visible so it
-  // will not start syncing. This tells sync whether it's safe to start
-  // downloading data types yet (we don't start syncing until after sync setup
-  // is complete). The UI calls this as soon as any part of the signin wizard is
-  // displayed (even just the login UI).
-  // If |setup_in_progress| is false, this also kicks the sync engine to ensure
-  // that data download starts. In this case, |ReconfigureDatatypeManager| will
-  // get triggered.
-  virtual void SetSetupInProgress(bool setup_in_progress);
-
   // Reconfigures the data type manager with the latest enabled types.
   // Note: Does not initialize the backend if it is not already initialized.
   // This function needs to be called only after sync has been initialized
@@ -484,17 +456,12 @@ class ProfileSyncService : public sync_driver::SyncService,
   // This function is called by |SetSetupInProgress|.
   virtual void ReconfigureDatatypeManager();
 
-  virtual bool HasUnrecoverableError() const;
   const std::string& unrecoverable_error_message() {
     return unrecoverable_error_message_;
   }
   tracked_objects::Location unrecoverable_error_location() {
     return unrecoverable_error_location_;
   }
-
-  // Returns true if OnPassphraseRequired has been called for decryption and
-  // we have an encrypted data type enabled.
-  virtual bool IsPassphraseRequiredForDecryption() const;
 
   syncer::PassphraseRequiredReason passphrase_required_reason() const {
     return passphrase_required_reason_;
@@ -603,10 +570,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   virtual void ChangePreferredDataTypes(
       syncer::ModelTypeSet preferred_types);
 
-  // Returns the set of types which are preferred for enabling. This is a
-  // superset of the active types (see GetActiveDataTypes()).
-  virtual syncer::ModelTypeSet GetPreferredDataTypes() const;
-
   // Returns the set of directory types which are preferred for enabling.
   virtual syncer::ModelTypeSet GetPreferredDirectoryDataTypes() const;
 
@@ -635,17 +598,8 @@ class ProfileSyncService : public sync_driver::SyncService,
   virtual bool IsCryptographerReady(
       const syncer::BaseTransaction* trans) const;
 
-  // Returns true if a secondary (explicit) passphrase is being used. It is not
-  // legal to call this method before the backend is initialized.
-  virtual bool IsUsingSecondaryPassphrase() const;
-
   // Returns the actual passphrase type being used for encryption.
   virtual syncer::PassphraseType GetPassphraseType() const;
-
-  // Returns the time the current explicit passphrase (if any), was set.
-  // If no secondary passphrase is in use, or no time is available, returns an
-  // unset base::Time.
-  virtual base::Time GetExplicitPassphraseTime() const;
 
   // Note about setting passphrases: There are different scenarios under which
   // we might want to apply a passphrase. It could be for first-time encryption,
@@ -654,30 +608,12 @@ class ProfileSyncService : public sync_driver::SyncService,
   // reusing the GAIA password. Depending on what is happening in the system,
   // callers should determine which of the two methods below must be used.
 
-  // Asynchronously sets the passphrase to |passphrase| for encryption. |type|
-  // specifies whether the passphrase is a custom passphrase or the GAIA
-  // password being reused as a passphrase.
-  // TODO(atwilson): Change this so external callers can only set an EXPLICIT
-  // passphrase with this API.
-  virtual void SetEncryptionPassphrase(const std::string& passphrase,
-                                       PassphraseType type);
-
-  // Asynchronously decrypts pending keys using |passphrase|. Returns false
-  // immediately if the passphrase could not be used to decrypt a locally cached
-  // copy of encrypted keys; returns true otherwise.
-  virtual bool SetDecryptionPassphrase(const std::string& passphrase)
-      WARN_UNUSED_RESULT;
-
   // Returns true if encrypting all the sync data is allowed. If this method
   // returns false, EnableEncryptEverything() should not be called.
   virtual bool EncryptEverythingAllowed() const;
 
   // Sets whether encrypting all the sync data is allowed or not.
   virtual void SetEncryptEverythingAllowed(bool allowed);
-
-  // Turns on encryption for all data. Callers must call OnUserChoseDatatypes()
-  // after calling this to force the encryption to occur.
-  virtual void EnableEncryptEverything();
 
   // Returns true if we are currently set to encrypt all the sync data. Note:
   // this is based on the cryptographer's settings, so if the user has recently
@@ -693,13 +629,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Used by tests.
   bool auto_start_enabled() const;
-  bool setup_in_progress() const;
-
-  // Stops the sync backend and sets the flag for suppressing sync startup.
-  void StopAndSuppress();
-
-  // Resets the flag for suppressing sync startup and starts the sync backend.
-  virtual void UnsuppressAndStart();
 
   SyncErrorController* sync_error_controller() {
     return sync_error_controller_.get();
@@ -756,17 +685,8 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   virtual bool IsDataTypeControllerRunning(syncer::ModelType type) const;
 
-  // Returns true if the SyncBackendHost has told us it's ready to accept
-  // changes. This should only be used for sync's internal configuration logic
-  // (such as deciding when to prompt for an encryption passphrase).
-  virtual bool backend_initialized() const;
-
   // Returns the current mode the backend is in.
   BackendMode backend_mode() const;
-
-  // Whether the data types active for the current mode have finished
-  // configuration.
-  bool ConfigurationDone() const;
 
   // Helpers for testing rollback.
   void SetBrowsingDataRemoverObserverForTesting(
