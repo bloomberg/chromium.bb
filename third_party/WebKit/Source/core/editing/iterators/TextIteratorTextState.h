@@ -33,6 +33,7 @@
 namespace blink {
 
 class TextIteratorTextState {
+    STACK_ALLOCATED();
 public:
     explicit TextIteratorTextState(bool emitsOriginalText);
     ~TextIteratorTextState() { }
