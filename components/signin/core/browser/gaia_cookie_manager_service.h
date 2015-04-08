@@ -36,6 +36,48 @@ class GaiaCookieManagerService : public KeyedService,
                                  public UbertokenConsumer,
                                  public net::URLFetcherDelegate {
  public:
+  typedef base::Callback<void(const std::string& data,
+                              const GoogleServiceAuthError& error)>
+      ListAccountsCallback;
+
+
+  enum GaiaCookieRequestType {
+    ADD_ACCOUNT,
+    LOG_OUT,
+    LIST_ACCOUNTS
+  };
+
+  // Contains the information and parameters for any request.
+  class GaiaCookieRequest {
+   public:
+    ~GaiaCookieRequest();
+
+    GaiaCookieRequestType request_type() const { return request_type_; }
+    const std::string& account_id() const {return account_id_; }
+    const GaiaCookieManagerService::ListAccountsCallback&
+        list_accounts_callback() const {
+      return list_accounts_callback_;
+    }
+
+    static GaiaCookieRequest CreateAddAccountRequest(
+        const std::string& account_id);
+    static GaiaCookieRequest CreateLogOutRequest();
+    static GaiaCookieRequest CreateListAccountsRequest(
+        const GaiaCookieManagerService::ListAccountsCallback&
+            list_accounts_callback);
+
+   private:
+    GaiaCookieRequest(
+        GaiaCookieRequestType request_type,
+        const std::string& account_id,
+        const GaiaCookieManagerService::ListAccountsCallback&
+            list_accounts_callback);
+
+    GaiaCookieRequestType request_type_;
+    std::string account_id_;
+    GaiaCookieManagerService::ListAccountsCallback list_accounts_callback_;
+  };
+
   class Observer {
    public:
     // Called whenever a merge session is completed.  The account that was
@@ -124,19 +166,14 @@ class GaiaCookieManagerService : public KeyedService,
 
   void AddAccountToCookie(const std::string& account_id);
 
+  void ListAccounts(const ListAccountsCallback& callback);
+
   // Add or remove observers of this helper.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
   // Cancel all login requests.
   void CancelAll();
-
-  // Signout of |account_id| given a list of accounts already signed in.
-  // Since this involves signing out of all accounts and resigning back in,
-  // the order which |accounts| are given is important as it will dictate
-  // the sign in order. |account_id| does not have to be in |accounts|.
-  void LogOut(const std::string& account_id,
-              const std::vector<std::string>& accounts);
 
   // Signout all accounts.
   void LogOutAllAccounts();
@@ -148,7 +185,7 @@ class GaiaCookieManagerService : public KeyedService,
                       const GoogleServiceAuthError& error);
 
   // Returns true of there are pending log ins or outs.
-  bool is_running() const { return accounts_.size() > 0; }
+  bool is_running() const { return requests_.size() > 0; }
 
   // Start the process of fetching the external check connection result so that
   // its ready when we try to perform a merge session.
@@ -167,12 +204,9 @@ class GaiaCookieManagerService : public KeyedService,
   void OnMergeSessionSuccess(const std::string& data) override;
   void OnMergeSessionFailure(const GoogleServiceAuthError& error) override;
 
-  void LogOutInternal(const std::string& account_id,
-                      const std::vector<std::string>& accounts);
-
-  // Starts the process of fetching the uber token and then performing a merge
-  // session for the next account. Virtual so that it can be overriden in tests.
-  virtual void StartFetching();
+  // Starts the proess of fetching the uber token and performing a merge session
+  // for the next account.  Virtual so that it can be overriden in tests.
+  virtual void StartFetchingUbertoken();
 
   // Virtual for testing purposes.
   virtual void StartFetchingMergeSession();
@@ -180,8 +214,8 @@ class GaiaCookieManagerService : public KeyedService,
   // Virtual for testing purpose.
   virtual void StartLogOutUrlFetch();
 
-  // Start the next merge session, if needed.
-  void HandleNextAccount();
+  // Start the next request, if needed.
+  void HandleNextRequest();
 
   // Overridden from URLFetcherDelgate.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -200,10 +234,10 @@ class GaiaCookieManagerService : public KeyedService,
   // The last fetched ubertoken, for use in MergeSession retries.
   std::string uber_token_;
 
-  // A worklist for this class. Accounts names are stored here if
-  // we are pending a signin action for that account. Empty strings
-  // represent a signout request.
-  std::deque<std::string> accounts_;
+  // A worklist for this class. Stores any pending requests that couldn't be
+  // executed right away, since this class only permits one request to be
+  // executed at a time.
+  std::deque<GaiaCookieRequest> requests_;
 
   // List of observers to notify when merge session completes.
   // Makes sure list is empty on destruction.

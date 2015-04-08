@@ -58,7 +58,7 @@ class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
 
   virtual ~InstrumentedGaiaCookieManagerService() { total--; }
 
-  MOCK_METHOD0(StartFetching, void());
+  MOCK_METHOD0(StartFetchingUbertoken, void());
   MOCK_METHOD0(StartFetchingMergeSession, void());
   MOCK_METHOD0(StartLogOutUrlFetch, void());
 
@@ -137,7 +137,7 @@ TEST_F(GaiaCookieManagerServiceTest, Success) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  EXPECT_CALL(helper, StartFetching());
+  EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
                                                       no_error()));
 
@@ -149,7 +149,7 @@ TEST_F(GaiaCookieManagerServiceTest, FailedMergeSession) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  EXPECT_CALL(helper, StartFetching());
+  EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
                                                       error()));
 
@@ -163,7 +163,7 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  EXPECT_CALL(helper, StartFetching());
+  EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(helper, StartFetchingMergeSession());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
                                                       no_error()));
@@ -185,7 +185,7 @@ TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetriedTwice) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  EXPECT_CALL(helper, StartFetching());
+  EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(helper, StartFetchingMergeSession()).Times(2);
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
                                                       no_error()));
@@ -215,7 +215,7 @@ TEST_F(GaiaCookieManagerServiceTest, FailedUbertoken) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  EXPECT_CALL(helper, StartFetching());
+  EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
                                                       error()));
 
@@ -227,7 +227,7 @@ TEST_F(GaiaCookieManagerServiceTest, ContinueAfterSuccess) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  EXPECT_CALL(helper, StartFetching()).Times(2);
+  EXPECT_CALL(helper, StartFetchingUbertoken()).Times(2);
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
                                                       no_error()));
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
@@ -243,7 +243,7 @@ TEST_F(GaiaCookieManagerServiceTest, ContinueAfterFailure1) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  EXPECT_CALL(helper, StartFetching()).Times(2);
+  EXPECT_CALL(helper, StartFetchingUbertoken()).Times(2);
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
                                                       error()));
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
@@ -259,7 +259,7 @@ TEST_F(GaiaCookieManagerServiceTest, ContinueAfterFailure2) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  EXPECT_CALL(helper, StartFetching()).Times(2);
+  EXPECT_CALL(helper, StartFetchingUbertoken()).Times(2);
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
                                                       error()));
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
@@ -275,7 +275,7 @@ TEST_F(GaiaCookieManagerServiceTest, AllRequestsInMultipleGoes) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  EXPECT_CALL(helper, StartFetching()).Times(4);
+  EXPECT_CALL(helper, StartFetchingUbertoken()).Times(4);
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted(_, no_error())).Times(4);
 
   helper.AddAccountToCookie("acc1@gmail.com");
@@ -293,35 +293,126 @@ TEST_F(GaiaCookieManagerServiceTest, AllRequestsInMultipleGoes) {
   SimulateMergeSessionSuccess(&helper, "token4");
 }
 
-TEST_F(GaiaCookieManagerServiceTest, LogOut) {
+TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsNoQueue) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  std::vector<std::string> current_accounts;
-  current_accounts.push_back("acc1@gmail.com");
-  current_accounts.push_back("acc2@gmail.com");
-  current_accounts.push_back("acc3@gmail.com");
-
+  EXPECT_CALL(helper, StartFetchingUbertoken());
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
+                                                      no_error()));
   EXPECT_CALL(helper, StartLogOutUrlFetch());
-  EXPECT_CALL(helper, StartFetching()).Times(2);
+
+  helper.AddAccountToCookie("acc2@gmail.com");
+  SimulateMergeSessionSuccess(&helper, "token1");
+
+  helper.LogOutAllAccounts();
+  SimulateLogoutSuccess(&helper);
+}
+
+TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsAfterOneAddInQueue) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+  EXPECT_CALL(helper, StartFetchingUbertoken());
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
+                                                      no_error()));
+  EXPECT_CALL(helper, StartLogOutUrlFetch());
+
+  helper.AddAccountToCookie("acc2@gmail.com");
+  helper.LogOutAllAccounts();
+
+  SimulateMergeSessionSuccess(&helper, "token1");
+  SimulateLogoutSuccess(&helper);
+}
+
+TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsAfterTwoAddsInQueue) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+  EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
                                                       no_error()));
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
+                                                      canceled()));
+  EXPECT_CALL(helper, StartLogOutUrlFetch());
+
+  helper.AddAccountToCookie("acc1@gmail.com");
+  // The Log Out should prevent this AddAccount from being fetched.
+  helper.AddAccountToCookie("acc2@gmail.com");
+  helper.LogOutAllAccounts();
+
+  SimulateMergeSessionSuccess(&helper, "token1");
+  SimulateLogoutSuccess(&helper);
+}
+
+TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsTwice) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+  EXPECT_CALL(helper, StartFetchingUbertoken());
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
+                                                      no_error()));
+  EXPECT_CALL(helper, StartLogOutUrlFetch());
+
+  helper.AddAccountToCookie("acc2@gmail.com");
+  SimulateMergeSessionSuccess(&helper, "token1");
+
+  helper.LogOutAllAccounts();
+  // Only one LogOut will be fetched.
+  helper.LogOutAllAccounts();
+  SimulateLogoutSuccess(&helper);
+}
+
+TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsBeforeAdd) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+  EXPECT_CALL(helper, StartFetchingUbertoken()).Times(2);
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
+                                                      no_error()));
+  EXPECT_CALL(helper, StartLogOutUrlFetch());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc3@gmail.com",
                                                       no_error()));
 
-  helper.LogOut("acc2@gmail.com", current_accounts);
-  SimulateLogoutSuccess(&helper);
+  helper.AddAccountToCookie("acc2@gmail.com");
   SimulateMergeSessionSuccess(&helper, "token1");
-  SimulateMergeSessionSuccess(&helper, "token3");
+
+  helper.LogOutAllAccounts();
+  helper.AddAccountToCookie("acc3@gmail.com");
+
+  SimulateLogoutSuccess(&helper);
+  // After LogOut the MergeSession should be fetched.
+  SimulateMergeSessionSuccess(&helper, "token2");
+}
+
+TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsBeforeLogoutAndAdd) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+
+  EXPECT_CALL(helper, StartFetchingUbertoken()).Times(2);
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
+                                                      no_error()));
+  EXPECT_CALL(helper, StartLogOutUrlFetch());
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc3@gmail.com",
+                                                      no_error()));
+
+  helper.AddAccountToCookie("acc2@gmail.com");
+  SimulateMergeSessionSuccess(&helper, "token1");
+
+  helper.LogOutAllAccounts();
+  // Second LogOut will never be fetched.
+  helper.LogOutAllAccounts();
+  helper.AddAccountToCookie("acc3@gmail.com");
+
+  SimulateLogoutSuccess(&helper);
+  // After LogOut the MergeSession should be fetched.
+  SimulateMergeSessionSuccess(&helper, "token2");
 }
 
 TEST_F(GaiaCookieManagerServiceTest, PendingSigninThenSignout) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
-
-  std::vector<std::string> current_accounts;
-  current_accounts.push_back("acc2@gmail.com");
-  current_accounts.push_back("acc3@gmail.com");
 
   // From the first Signin.
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
@@ -333,13 +424,15 @@ TEST_F(GaiaCookieManagerServiceTest, PendingSigninThenSignout) {
                                                       no_error()));
 
   // Total sign in 2 times, not enforcing ordered sequences.
-  EXPECT_CALL(helper, StartFetching()).Times(2);
+  EXPECT_CALL(helper, StartFetchingUbertoken()).Times(2);
 
   helper.AddAccountToCookie("acc1@gmail.com");
-  helper.LogOut("acc2@gmail.com", current_accounts);
+  helper.LogOutAllAccounts();
 
   SimulateMergeSessionSuccess(&helper, "token1");
   SimulateLogoutSuccess(&helper);
+
+  helper.AddAccountToCookie("acc3@gmail.com");
   SimulateMergeSessionSuccess(&helper, "token3");
 }
 
@@ -349,7 +442,7 @@ TEST_F(GaiaCookieManagerServiceTest, CancelSignIn) {
 
   std::vector<std::string> current_accounts;
 
-  EXPECT_CALL(helper, StartFetching());
+  EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
                                                       canceled()));
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
@@ -358,40 +451,10 @@ TEST_F(GaiaCookieManagerServiceTest, CancelSignIn) {
 
   helper.AddAccountToCookie("acc1@gmail.com");
   helper.AddAccountToCookie("acc2@gmail.com");
-  helper.LogOut("acc2@gmail.com", current_accounts);
+  helper.LogOutAllAccounts();
 
   SimulateMergeSessionSuccess(&helper, "token1");
   SimulateLogoutSuccess(&helper);
-}
-
-TEST_F(GaiaCookieManagerServiceTest, DoubleSignout) {
-  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
-  MockObserver observer(&helper);
-
-  std::vector<std::string> current_accounts1;
-  current_accounts1.push_back("acc1@gmail.com");
-  current_accounts1.push_back("acc2@gmail.com");
-  current_accounts1.push_back("acc3@gmail.com");
-
-  std::vector<std::string> current_accounts2;
-  current_accounts2.push_back("acc1@gmail.com");
-  current_accounts2.push_back("acc3@gmail.com");
-
-  EXPECT_CALL(helper, StartFetching()).Times(2);
-  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc3@gmail.com",
-                                                      canceled()));
-  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
-                                                      no_error()))
-      .Times(2);
-  EXPECT_CALL(helper, StartLogOutUrlFetch());
-
-  helper.AddAccountToCookie("acc1@gmail.com");
-  helper.LogOut("acc2@gmail.com", current_accounts1);
-  helper.LogOut("acc3@gmail.com", current_accounts2);
-
-  SimulateMergeSessionSuccess(&helper, "token1");
-  SimulateLogoutSuccess(&helper);
-  SimulateMergeSessionSuccess(&helper, "token1");
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcher) {
