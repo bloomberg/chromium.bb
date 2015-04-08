@@ -15,7 +15,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/paint_context.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/image/image_skia.h"

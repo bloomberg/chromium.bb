@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/clip_transform_recorder.h"
-#include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"

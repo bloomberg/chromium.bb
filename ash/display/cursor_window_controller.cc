@@ -16,7 +16,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/dip_util.h"
-#include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"

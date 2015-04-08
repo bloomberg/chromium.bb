@@ -18,7 +18,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/clip_transform_recorder.h"
-#include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"

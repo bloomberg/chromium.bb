@@ -10,7 +10,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
-#include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"

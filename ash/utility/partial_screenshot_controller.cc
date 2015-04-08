@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "base/stl_util.h"
-#include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"

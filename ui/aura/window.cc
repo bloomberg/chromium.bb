@@ -30,7 +30,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/paint_context.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"

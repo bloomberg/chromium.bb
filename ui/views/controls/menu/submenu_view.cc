@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"

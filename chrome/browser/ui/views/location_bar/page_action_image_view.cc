@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
