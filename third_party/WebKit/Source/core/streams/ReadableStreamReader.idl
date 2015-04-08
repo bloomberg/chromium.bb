@@ -6,7 +6,6 @@
     GarbageCollected,
     ActiveDOMObject,
     Exposed=(Window,Worker),
-    NoInterfaceObject,
 ] interface ReadableStreamReader {
     // FIXME: Add constructor.
 
