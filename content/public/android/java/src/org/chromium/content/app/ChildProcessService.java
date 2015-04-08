@@ -126,7 +126,7 @@ public class ChildProcessService extends Service {
     public void onCreate() {
         Log.i(TAG, "Creating new ChildProcessService pid=" + Process.myPid());
         if (sContext.get() != null) {
-            Log.e(TAG, "ChildProcessService created again in process!");
+            throw new RuntimeException("Illegal child process reuse.");
         }
         sContext.set(this);
         super.onCreate();
