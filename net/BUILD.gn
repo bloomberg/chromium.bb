@@ -1564,6 +1564,7 @@ if (!is_android && !is_win && !is_mac) {
         "spdy/fuzzing/hpack_fuzz_util_test.cc",
 
         # Need TestServer.
+        "cert_net/cert_net_fetcher_impl_unittest.cc",
         "proxy/proxy_script_fetcher_impl_unittest.cc",
         "socket/ssl_client_socket_unittest.cc",
         "url_request/url_fetcher_impl_unittest.cc",

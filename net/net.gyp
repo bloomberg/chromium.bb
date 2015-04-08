@@ -380,6 +380,7 @@
               # Need to read input data files.
               'filter/gzip_filter_unittest.cc',
               # Need TestServer.
+              "cert_net/cert_net_fetcher_impl_unittest.cc",
               'proxy/proxy_script_fetcher_impl_unittest.cc',
               'socket/ssl_client_socket_unittest.cc',
               'socket/ssl_server_socket_unittest.cc',
