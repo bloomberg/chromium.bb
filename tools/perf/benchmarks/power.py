@@ -8,7 +8,7 @@ from measurements import power
 import page_sets
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled('android') # crbug.com/474696
 class PowerAndroidAcceptance(benchmark.Benchmark):
   """Android power acceptance test."""
   test = power.Power
@@ -19,7 +19,7 @@ class PowerAndroidAcceptance(benchmark.Benchmark):
 
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled('android') # crbug.com/474696
 class PowerTypical10Mobile(benchmark.Benchmark):
   """Android typical 10 mobile power test."""
   test = power.Power
