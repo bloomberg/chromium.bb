@@ -154,6 +154,7 @@ ObserverType* ObserverListBase<ObserverType>::Iterator::GetNext() {
 
 template <class ObserverType>
 void ObserverListBase<ObserverType>::AddObserver(ObserverType* obs) {
+  DCHECK(obs);
   if (std::find(observers_.begin(), observers_.end(), obs)
       != observers_.end()) {
     NOTREACHED() << "Observers can only be added once!";
@@ -164,6 +165,7 @@ void ObserverListBase<ObserverType>::AddObserver(ObserverType* obs) {
 
 template <class ObserverType>
 void ObserverListBase<ObserverType>::RemoveObserver(ObserverType* obs) {
+  DCHECK(obs);
   typename ListType::iterator it =
     std::find(observers_.begin(), observers_.end(), obs);
   if (it != observers_.end()) {

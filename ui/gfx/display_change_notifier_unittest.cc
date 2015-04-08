@@ -70,13 +70,6 @@ TEST(DisplayChangeNotifierTest, AddObserver_Smoke) {
   EXPECT_EQ(1, observer.display_added());
 }
 
-TEST(DisplayChangeNotifierTest, AddObserver_Null) {
-  DisplayChangeNotifier change_notifier;
-
-  change_notifier.AddObserver(NULL);
-  // Should not crash.
-}
-
 TEST(DisplayChangeNotifier, RemoveObserver_Smoke) {
   DisplayChangeNotifier change_notifier;
   MockDisplayObserver observer;
@@ -91,13 +84,6 @@ TEST(DisplayChangeNotifier, RemoveObserver_Smoke) {
   change_notifier.NotifyDisplaysChanged(
     std::vector<Display>(), std::vector<Display>(1, Display()));
   EXPECT_EQ(0, observer.display_added());
-}
-
-TEST(DisplayChangeNotifierTest, RemoveObserver_Null) {
-  DisplayChangeNotifier change_notifier;
-
-  change_notifier.RemoveObserver(NULL);
-  // Should not crash.
 }
 
 TEST(DisplayChangeNotifierTest, RemoveObserver_Unknown) {

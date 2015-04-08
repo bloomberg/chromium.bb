@@ -389,6 +389,8 @@ gfx::NativeWindow Widget::GetNativeWindow() const {
 }
 
 void Widget::AddObserver(WidgetObserver* observer) {
+  // Make sure that there is no nullptr in observer list. crbug.com/471649.
+  CHECK(observer);
   observers_.AddObserver(observer);
 }
 
