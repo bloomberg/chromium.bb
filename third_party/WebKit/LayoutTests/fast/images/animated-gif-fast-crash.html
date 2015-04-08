@@ -3,7 +3,9 @@ Tests fast animating gif (10ms per frame). Passes if it doesn't crash.<br>
 <img src="resources/animated-10color-fast.gif">
 <script>
 
-// Delay 50ms to trigger the bug of invalidation during paint.
+// Busy-wait 50ms to trigger the bug of invalidation during paint.
+// The busy-waiting (as opposed to setTimout) is intentional, in order to
+// block the thread.
 function delay() {
   var startTime = new Date().getTime();
   while (new Date().getTime() - startTime < 50);

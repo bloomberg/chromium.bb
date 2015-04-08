@@ -4,3 +4,27 @@
 doesn't crash, we're good.
 <img src="resources/animated-gif-with-offsets.gif">
 </body>
+<script>
+
+// Delay 50ms for each frame.
+function delay() {
+  var startTime = new Date().getTime();
+  while (new Date().getTime() - startTime < 50);
+}
+
+var count = 3;
+
+function displayOneFrame() {
+  delay();
+  if (--count >= 0)
+    testRunner.displayAsyncThen(displayOneFrame);
+  else
+    testRunner.notifyDone();
+}
+
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+  setTimeout(displayOneFrame, 50);
+}
+
+</script>

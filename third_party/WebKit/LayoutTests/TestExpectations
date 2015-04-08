@@ -267,6 +267,12 @@ crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-ele
 # New W3C failures (dpranke@ to triage)
 crbug.com/330083 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 
+crbug.com/231866 fast/backgrounds/animated-gif-as-background.html [ NeedsRebaseline ]
+crbug.com/231866 virtual/slimmingpaint/fast/backgrounds/animated-gif-as-background.html [ NeedsRebaseline ]
+crbug.com/231866 fast/images/animated-gif-with-offsets.html [ NeedsRebaseline ]
+crbug.com/231866 virtual/deferred/fast/images/animated-gif-with-offsets.html [ NeedsRebaseline ]
+crbug.com/231866 virtual/slimmingpaint/fast/images/animated-gif-with-offsets.html [ NeedsRebaseline ]
+
 crbug.com/330083 imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
 
 crbug.com/377950 svg/repaint/image-animation-with-zoom.html [ Failure Pass ]
