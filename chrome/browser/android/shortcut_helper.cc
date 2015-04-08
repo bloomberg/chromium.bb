@@ -349,7 +349,7 @@ void ShortcutHelper::RecordAddToHomescreen() {
   // Record that the shortcut has been added, so no banners will be shown
   // for this app.
   AppBannerSettingsHelper::RecordBannerEvent(
-      web_contents(), shortcut_info_.url, shortcut_info_.url.spec(),
+      web_contents(), web_contents()->GetURL(), shortcut_info_.url.spec(),
       AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
       base::Time::Now());
 }
