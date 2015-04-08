@@ -1377,7 +1377,6 @@ chrome.automation.RoleType = {
   tab: 'tab',
   tableHeaderContainer: 'tableHeaderContainer',
   table: 'table',
-  textArea: 'textArea',
   textField: 'textField',
   time: 'time',
   timer: 'timer',

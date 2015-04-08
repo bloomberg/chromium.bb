@@ -826,8 +826,7 @@ AutomationRootNodeImpl.prototype = {
     }
 
     // If this is an editable text area, set editable text attributes.
-    if (nodeData.role == schema.RoleType.textField ||
-        nodeData.role == schema.RoleType.textArea) {
+    if (nodeData.role == schema.RoleType.textField) {
       this.mixinAttributes_(nodeImpl, EditableTextMixinAttributes, nodeData);
     }
 

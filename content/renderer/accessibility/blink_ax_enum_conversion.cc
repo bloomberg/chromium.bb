@@ -43,6 +43,9 @@ uint32 AXStateFromBlink(const blink::WebAXObject& o) {
   if (o.isLinked())
     state |= (1 << ui::AX_STATE_LINKED);
 
+  if (o.isMultiline())
+    state |= (1 << ui::AX_STATE_MULTILINE);
+
   if (o.isMultiSelectable())
     state |= (1 << ui::AX_STATE_MULTISELECTABLE);
 
@@ -294,8 +297,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_TABLE;
     case blink::WebAXRoleTableHeaderContainer:
       return ui::AX_ROLE_TABLE_HEADER_CONTAINER;
-    case blink::WebAXRoleTextArea:
-      return ui::AX_ROLE_TEXT_AREA;
     case blink::WebAXRoleTextField:
       return ui::AX_ROLE_TEXT_FIELD;
     case blink::WebAXRoleTime:

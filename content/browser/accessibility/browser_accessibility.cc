@@ -52,7 +52,6 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
     case ui::AX_ROLE_LINE_BREAK:
     case ui::AX_ROLE_SLIDER:
     case ui::AX_ROLE_STATIC_TEXT:
-    case ui::AX_ROLE_TEXT_AREA:
     case ui::AX_ROLE_TEXT_FIELD:
       return true;
     default:
@@ -702,8 +701,7 @@ bool BrowserAccessibility::IsEditableText() const {
   // or contenteditable. We also check for editable text roles to cover
   // another element that has role=textbox set on it.
   return (!HasState(ui::AX_STATE_READ_ONLY) ||
-          GetRole() == ui::AX_ROLE_TEXT_FIELD ||
-          GetRole() == ui::AX_ROLE_TEXT_AREA);
+          GetRole() == ui::AX_ROLE_TEXT_FIELD);
 }
 
 bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {

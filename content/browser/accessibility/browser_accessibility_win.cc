@@ -4064,16 +4064,13 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role = ROLE_SYSTEM_PUSHBUTTON;
       ia2_role = IA2_ROLE_TOGGLE_BUTTON;
       break;
-    case ui::AX_ROLE_TEXT_AREA:
-      ia_role = ROLE_SYSTEM_TEXT;
-      ia2_state |= IA2_STATE_MULTI_LINE;
-      ia2_state |= IA2_STATE_EDITABLE;
-      ia2_state |= IA2_STATE_SELECTABLE_TEXT;
-      break;
     case ui::AX_ROLE_TEXT_FIELD:
     case ui::AX_ROLE_SEARCH_BOX:
       ia_role = ROLE_SYSTEM_TEXT;
-      ia2_state |= IA2_STATE_SINGLE_LINE;
+      if (HasState(ui::AX_STATE_MULTILINE))
+        ia2_state |= IA2_STATE_MULTI_LINE;
+      else
+        ia2_state |= IA2_STATE_SINGLE_LINE;
       ia2_state |= IA2_STATE_EDITABLE;
       ia2_state |= IA2_STATE_SELECTABLE_TEXT;
       break;

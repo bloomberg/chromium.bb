@@ -298,7 +298,7 @@ var tests = [
           'childIds': []
         },
         {
-          'id': 3, 'role': 'textArea',
+          'id': 3, 'role': 'textField',
           'childIds': []
         },
 

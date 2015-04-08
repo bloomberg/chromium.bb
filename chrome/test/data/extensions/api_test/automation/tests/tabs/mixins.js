@@ -85,7 +85,7 @@ var allTests = [
 
   function testEditableTextMixins() {
     var textFields = rootNode.findAll({ role: 'textField' });
-    assertEq(2, textFields.length);
+    assertEq(3, textFields.length);
     var EditableTextMixins = [ 'textSelStart', 'textSelEnd' ];
     for (var i = 0; i < textFields.length; i++) {
       var textField = textFields[i];
@@ -102,13 +102,7 @@ var allTests = [
     assertEq(2, input.textSelStart);
     assertEq(8, input.textSelEnd);
 
-    var ariaTextbox = textFields[1];
-    assertEq('textbox-role', ariaTextbox.attributes.id);
-    assertEq(0, ariaTextbox.textSelStart);
-    assertEq(0, ariaTextbox.textSelEnd);
-
-    var textArea = rootNode.find({ role: 'textArea' });
-    assertFalse(textArea == null, 'Should find a textArea in the page');
+    var textArea = textFields[1];
     assertEq('textarea', textArea.attributes.id);
     for (var i = 0; i < EditableTextMixins.length; i++) {
       var mixinAttribute = EditableTextMixins[i];
@@ -117,6 +111,11 @@ var allTests = [
     }
     assertEq(0, textArea.textSelStart);
     assertEq(0, textArea.textSelEnd);
+
+    var ariaTextbox = textFields[2];
+    assertEq('textbox-role', ariaTextbox.attributes.id);
+    assertEq(0, ariaTextbox.textSelStart);
+    assertEq(0, ariaTextbox.textSelEnd);
 
     chrome.test.succeed();
   },

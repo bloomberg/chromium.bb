@@ -172,8 +172,7 @@ bool BrowserAccessibilityAndroid::IsDismissable() const {
 }
 
 bool BrowserAccessibilityAndroid::IsEditableText() const {
-  return (GetRole() == ui::AX_ROLE_TEXT_AREA ||
-          GetRole() == ui::AX_ROLE_TEXT_FIELD);
+  return GetRole() == ui::AX_ROLE_TEXT_FIELD;
 }
 
 bool BrowserAccessibilityAndroid::IsEnabled() const {
@@ -216,7 +215,7 @@ bool BrowserAccessibilityAndroid::IsLink() const {
 }
 
 bool BrowserAccessibilityAndroid::IsMultiLine() const {
-  return GetRole() == ui::AX_ROLE_TEXT_AREA;
+  return HasState(ui::AX_STATE_MULTILINE);
 }
 
 bool BrowserAccessibilityAndroid::IsPassword() const {
@@ -257,7 +256,6 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
   switch (GetRole()) {
     case ui::AX_ROLE_SEARCH_BOX:
     case ui::AX_ROLE_SPIN_BUTTON:
-    case ui::AX_ROLE_TEXT_AREA:
     case ui::AX_ROLE_TEXT_FIELD:
       class_name = "android.widget.EditText";
       break;
@@ -345,7 +343,6 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
     switch (GetRole()) {
       case ui::AX_ROLE_COMBO_BOX:
       case ui::AX_ROLE_POP_UP_BUTTON:
-      case ui::AX_ROLE_TEXT_AREA:
       case ui::AX_ROLE_TEXT_FIELD:
         return value;
     }
@@ -381,7 +378,6 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   base::string16 placeholder;
   switch (GetRole()) {
     case ui::AX_ROLE_DATE:
-    case ui::AX_ROLE_TEXT_AREA:
     case ui::AX_ROLE_TEXT_FIELD:
     case ui::AX_ROLE_TIME:
       GetHtmlAttribute("placeholder", &placeholder);

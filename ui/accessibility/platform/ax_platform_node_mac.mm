@@ -119,7 +119,6 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_TABLE_HEADER_CONTAINER, NSAccessibilityGroupRole},
       {ui::AX_ROLE_TAB_LIST, NSAccessibilityTabGroupRole},
       {ui::AX_ROLE_TAB_PANEL, NSAccessibilityGroupRole},
-      {ui::AX_ROLE_TEXT_AREA, NSAccessibilityTextAreaRole},
       {ui::AX_ROLE_TEXT_FIELD, NSAccessibilityTextFieldRole},
       {ui::AX_ROLE_TIME, @"AXTimeField"},
       {ui::AX_ROLE_TIMER, NSAccessibilityGroupRole},

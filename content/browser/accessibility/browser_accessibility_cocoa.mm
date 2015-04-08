@@ -582,6 +582,10 @@ NSDictionary* attributeToMethodNameMap = nil;
     else
       return NSAccessibilityButtonRole;
   }
+  if (role == ui::AX_ROLE_TEXT_FIELD &&
+      browserAccessibility_->HasState(ui::AX_STATE_MULTILINE)) {
+    return NSAccessibilityTextAreaRole;
+  }
 
   // If this is a web area for a presentational iframe, give it a role of
   // something other than WebArea so that the fact that it's a separate doc
@@ -1209,8 +1213,7 @@ NSDictionary* attributeToMethodNameMap = nil;
         NSAccessibilityCellForColumnAndRowParameterizedAttribute,
         nil];
   }
-  if ([[self role] isEqualToString:NSAccessibilityTextFieldRole] ||
-      [[self role] isEqualToString:NSAccessibilityTextAreaRole]) {
+  if ([[self role] isEqualToString:NSAccessibilityTextFieldRole]) {
     return [NSArray arrayWithObjects:
         NSAccessibilityLineForIndexParameterizedAttribute,
         NSAccessibilityRangeForLineParameterizedAttribute,
@@ -1241,7 +1244,6 @@ NSDictionary* attributeToMethodNameMap = nil;
   NSString* role = [self role];
   // TODO(dtseng): this should only get set when there's a default action.
   if (![role isEqualToString:NSAccessibilityStaticTextRole] &&
-      ![role isEqualToString:NSAccessibilityTextAreaRole] &&
       ![role isEqualToString:NSAccessibilityTextFieldRole]) {
     [ret addObject:NSAccessibilityPressAction];
   }
@@ -1346,8 +1348,7 @@ NSDictionary* attributeToMethodNameMap = nil;
         @"AXLoaded",
         @"AXLoadingProgress",
         nil]];
-  } else if ([role isEqualToString:NSAccessibilityTextFieldRole] ||
-             [role isEqualToString:NSAccessibilityTextAreaRole]) {
+  } else if ([role isEqualToString:NSAccessibilityTextFieldRole]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityInsertionPointLineNumberAttribute,
         NSAccessibilityNumberOfCharactersAttribute,
@@ -1513,8 +1514,7 @@ NSDictionary* attributeToMethodNameMap = nil;
         ui::AX_ATTR_CAN_SET_VALUE);
   }
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute] &&
-      ([[self role] isEqualToString:NSAccessibilityTextFieldRole] ||
-       [[self role] isEqualToString:NSAccessibilityTextAreaRole]))
+      ([[self role] isEqualToString:NSAccessibilityTextFieldRole]))
     return YES;
 
   return NO;
