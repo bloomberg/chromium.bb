@@ -850,7 +850,8 @@ int main(int argc, char* const argv[]) {
   NSString* appPath = nil;
   NSString* appName = nil;
   NSString* sdkVersion = nil;
-  NSString* deviceName = IsRunningWithXcode6OrLater() ? @"iPhone 5" : @"iPhone";
+  NSString* deviceName =
+      IsRunningWithXcode6OrLater() ? @"iPhone 5s" : @"iPhone";
   NSString* simHomePath = nil;
   NSMutableArray* appArgs = [NSMutableArray array];
   NSMutableDictionary* appEnv = [NSMutableDictionary dictionary];
