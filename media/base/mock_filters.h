@@ -134,6 +134,7 @@ class MockVideoRenderer : public VideoRenderer {
                      const base::Closure& waiting_for_decryption_key_cb));
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta));
+  MOCK_METHOD1(OnTimeStateChanged, void(bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoRenderer);

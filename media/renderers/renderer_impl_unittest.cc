@@ -320,6 +320,41 @@ TEST_F(RendererImplTest, StartPlayingFrom) {
   Play();
 }
 
+TEST_F(RendererImplTest, StartPlayingFromWithPlaybackRate) {
+  InitializeWithAudioAndVideo();
+
+  // Play with a zero playback rate shouldn't start time.
+  Play();
+  Mock::VerifyAndClearExpectations(video_renderer_);
+
+  // Positive playback rate when ticking should start time.
+  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(true));
+  SetPlaybackRate(1.0);
+  Mock::VerifyAndClearExpectations(video_renderer_);
+
+  // Double notifications shouldn't be sent.
+  SetPlaybackRate(1.0);
+  Mock::VerifyAndClearExpectations(video_renderer_);
+
+  // Zero playback rate should stop time.
+  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(false));
+  SetPlaybackRate(0.0);
+  Mock::VerifyAndClearExpectations(video_renderer_);
+
+  // Double notifications shouldn't be sent.
+  SetPlaybackRate(0.0);
+  Mock::VerifyAndClearExpectations(video_renderer_);
+
+  // Starting playback and flushing should cause time to stop.
+  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(true));
+  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(false));
+  SetPlaybackRate(1.0);
+  Flush(false);
+
+  // A positive playback rate when playback isn't started should do nothing.
+  SetPlaybackRate(1.0);
+}
+
 TEST_F(RendererImplTest, FlushAfterInitialization) {
   InitializeWithAudioAndVideo();
   Flush(true);

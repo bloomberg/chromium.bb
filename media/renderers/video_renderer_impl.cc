@@ -275,6 +275,10 @@ void VideoRendererImpl::SetTickClockForTesting(
   tick_clock_.swap(tick_clock);
 }
 
+void VideoRendererImpl::OnTimeStateChanged(bool time_progressing) {
+  // TODO(dalecurtis): Wire up to the VideoRendererSink once it's implemented.
+}
+
 void VideoRendererImpl::PaintNextReadyFrame_Locked() {
   lock_.AssertAcquired();
 

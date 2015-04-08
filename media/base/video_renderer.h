@@ -82,6 +82,11 @@ class MEDIA_EXPORT VideoRenderer {
   // Only valid to call after a successful Initialize() or Flush().
   virtual void StartPlayingFrom(base::TimeDelta timestamp) = 0;
 
+  // Called when time starts or stops moving. Time progresses when a base time
+  // has been set and the playback rate is > 0. If either condition changes,
+  // |time_progressing| will be false.
+  virtual void OnTimeStateChanged(bool time_progressing) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoRenderer);
 };

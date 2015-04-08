@@ -65,6 +65,7 @@ class MEDIA_EXPORT VideoRendererImpl
                   const base::Closure& waiting_for_decryption_key_cb) override;
   void Flush(const base::Closure& callback) override;
   void StartPlayingFrom(base::TimeDelta timestamp) override;
+  void OnTimeStateChanged(bool time_progressing) override;
 
   // PlatformThread::Delegate implementation.
   void ThreadMain() override;

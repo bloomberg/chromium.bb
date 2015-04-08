@@ -35,6 +35,7 @@ RendererImpl::RendererImpl(
       video_renderer_(video_renderer.Pass()),
       time_source_(NULL),
       time_ticking_(false),
+      playback_rate_(0),
       audio_buffering_state_(BUFFERING_HAVE_NOTHING),
       video_buffering_state_(BUFFERING_HAVE_NOTHING),
       audio_ended_(false),
@@ -177,6 +178,16 @@ void RendererImpl::SetPlaybackRate(float playback_rate) {
     return;
 
   time_source_->SetPlaybackRate(playback_rate);
+
+  const float old_rate = playback_rate_;
+  playback_rate_ = playback_rate;
+  if (!time_ticking_ || !video_renderer_)
+    return;
+
+  if (old_rate == 0 && playback_rate > 0)
+    video_renderer_->OnTimeStateChanged(true);
+  else if (old_rate > 0 && playback_rate == 0)
+    video_renderer_->OnTimeStateChanged(false);
 }
 
 void RendererImpl::SetVolume(float volume) {
@@ -532,6 +543,8 @@ void RendererImpl::PausePlayback() {
 
   time_ticking_ = false;
   time_source_->StopTicking();
+  if (playback_rate_ > 0 && video_renderer_)
+    video_renderer_->OnTimeStateChanged(false);
 }
 
 void RendererImpl::StartPlayback() {
@@ -543,6 +556,8 @@ void RendererImpl::StartPlayback() {
 
   time_ticking_ = true;
   time_source_->StartTicking();
+  if (playback_rate_ > 0 && video_renderer_)
+    video_renderer_->OnTimeStateChanged(true);
 }
 
 void RendererImpl::OnAudioRendererEnded() {
