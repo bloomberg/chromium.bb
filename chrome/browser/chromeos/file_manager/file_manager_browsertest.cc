@@ -1119,6 +1119,20 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "traverseFolderShortcuts"),
         TestParameter(NOT_IN_GUEST_MODE, "addRemoveFolderShortcuts")));
 
+// Slow tests are disabled on debug build. http://crbug.com/327719
+// Fails on official build. http://crbug.com/429294
+// Disabled under MSAN as well. http://crbug.com/468980.
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD) || defined(MEMORY_SANITIZER)
+#define MAYBE_SortColumns DISABLED_SortColumns
+#else
+#define MAYBE_SortColumns SortColumns
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_SortColumns,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "sortColumns"),
+                      TestParameter(IN_GUEST_MODE, "sortColumns")));
+
 INSTANTIATE_TEST_CASE_P(
     TabIndex,
     FileManagerBrowserTest,

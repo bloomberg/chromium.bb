@@ -27,6 +27,7 @@
       "file_manager/restore_geometry.js",
       "file_manager/restore_prefs.js",
       "file_manager/share_dialog.js",
+      "file_manager/sort_columns.js",
       "file_manager/suggest_app_dialog.js",
       "file_manager/tab_index.js",
       "file_manager/tasks.js",
