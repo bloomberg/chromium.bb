@@ -68,9 +68,6 @@ crbug.com/474422 inspector/console/console-native-function.html [ Pass Failure ]
 crbug.com/450725 virtual/slimmingpaint/svg/text/remove-tspan-from-text.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/450725 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ Crash Timeout NeedsManualRebaseline ]
 crbug.com/450725 virtual/slimmingpaint/svg/text/text-text-05-t.svg [ ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/450725 virtual/slimmingpaint/css3/filters/blur-filter-page-scroll-parents.html [ ImageOnlyFailure ]
-crbug.com/450725 virtual/slimmingpaint/css3/filters/blur-filter-page-scroll-self.html [ ImageOnlyFailure ]
-crbug.com/450725 virtual/slimmingpaint/css3/filters/blur-filter-page-scroll.html [ ImageOnlyFailure ]
 
 # Slimming Paint printing failures
 crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Crash Timeout Pass ]
@@ -889,6 +886,8 @@ crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass
 crbug.com/460633 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 crbug.com/460633 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
 crbug.com/460633 virtual/slimmingpaint/compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Pass Failure ]
+
+crbug.com/475068 virtual/slimmingpaint/fast/repaint/repaint-during-scroll-with-zoom.html [ NeedsRebaseline ]
 
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
