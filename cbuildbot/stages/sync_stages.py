@@ -1167,6 +1167,12 @@ class PreCQLauncherStage(SyncStage):
     if '/overlays/' in change.project:
       configs_to_test.add(constants.BINHOST_PRE_CQ)
 
+    # Don't test internal configs on external bots.
+    if change.internal:
+      configs_to_test = [
+          x for x in configs_to_test if not cbuildbot_config.config[x].internal
+      ]
+
     return configs_to_test
 
   def _ParsePreCQOption(self, pre_cq_option):
