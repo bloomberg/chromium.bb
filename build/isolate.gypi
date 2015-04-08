@@ -61,9 +61,6 @@
         # Variables should use the -V FOO=<(FOO) form so frequent values,
         # like '0' or '1', aren't stripped out by GYP. Run 'isolate.py help' for
         # more details.
-        #
-        # This list needs to be kept in sync with the cmd line options
-        # in src/build/android/pylib/gtest/setup.py.
 
         # Path variables are used to replace file paths when loading a .isolate
         # file
@@ -74,6 +71,8 @@
         # the .isolate file but are not considered relative paths.
         '--extra-variable', 'version_full=<(version_full)',
 
+        # Note: This list must match DefaultConfigVariables()
+        # in build/android/pylib/utils/isolator.py
         '--config-variable', 'CONFIGURATION_NAME=<(CONFIGURATION_NAME)',
         '--config-variable', 'OS=<(OS)',
         '--config-variable', 'asan=<(asan)',

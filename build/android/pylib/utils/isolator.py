@@ -24,6 +24,7 @@ def DefaultPathVariables():
 
 
 def DefaultConfigVariables():
+  # Note: This list must match the --config-vars in build/isolate.gypi
   return {
     'CONFIGURATION_NAME': constants.GetBuildType(),
     'OS': 'android',
