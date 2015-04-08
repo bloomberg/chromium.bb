@@ -657,14 +657,17 @@ void WebKitTestRunner::Reset() {
   current_entry_indexes_.clear();
 
   render_view()->ClearEditCommands();
-  render_view()->GetWebView()->mainFrame()->setName(WebString());
+  if (render_view()->GetWebView()->mainFrame()->isWebLocalFrame())
+    render_view()->GetWebView()->mainFrame()->setName(WebString());
   render_view()->GetWebView()->mainFrame()->clearOpener();
 
   // Resetting the internals object also overrides the WebPreferences, so we
   // have to sync them to WebKit again.
-  WebTestingSupport::resetInternalsObject(
-      render_view()->GetWebView()->mainFrame()->toWebLocalFrame());
-  render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
+  if (render_view()->GetWebView()->mainFrame()->isWebLocalFrame()) {
+    WebTestingSupport::resetInternalsObject(
+        render_view()->GetWebView()->mainFrame()->toWebLocalFrame());
+    render_view()->SetWebkitPreferences(render_view()->GetWebkitPreferences());
+  }
 }
 
 // Private methods  -----------------------------------------------------------

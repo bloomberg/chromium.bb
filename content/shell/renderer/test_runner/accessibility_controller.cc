@@ -168,7 +168,7 @@ void AccessibilityController::NotificationReceived(
   v8::HandleScope handle_scope(isolate);
 
   blink::WebFrame* frame = web_view_->mainFrame();
-  if (!frame)
+  if (!frame || frame->isWebRemoteFrame())
     return;
 
   v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
