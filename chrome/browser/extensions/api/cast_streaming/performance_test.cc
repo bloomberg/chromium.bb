@@ -497,6 +497,7 @@ class CastV2PerformanceTest
 
     trace_analyzer::TraceEventVector capture_events;
     GetTraceEvents(analyzer, "Capture" , &capture_events);
+    EXPECT_GT(capture_events.size(), 0UL);
     std::vector<std::vector<double> > traced_frames;
     for (size_t i = kSkipEvents; i < capture_events.size(); i++) {
       std::vector<double> times;
@@ -610,7 +611,8 @@ class CastV2PerformanceTest
     }
 
     std::string json_events;
-    ASSERT_TRUE(tracing::BeginTracing("test_fps,mirroring,cast_perf_test"));
+    ASSERT_TRUE(tracing::BeginTracing(
+        "test_fps,mirroring,gpu.capture,cast_perf_test"));
     const std::string page_url = base::StringPrintf(
         "performance%d.html?port=%d",
         getfps(),
@@ -628,7 +630,7 @@ class CastV2PerformanceTest
 
     MeanAndError frame_data = AnalyzeTraceDistance(
         analyzer.get(),
-        TRACE_DISABLED_BY_DEFAULT("OnSwapCompositorFrame"));
+        "OnSwapCompositorFrame");
 
     EXPECT_GT(frame_data.num_values, 0UL);
     // Lower is better.
