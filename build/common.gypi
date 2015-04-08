@@ -4153,8 +4153,7 @@
                   '-m<(mips_float_abi)-float'
                 ],
                 'ldflags': [
-                  '-Wl,--no-keep-memory',
-                  '-ldl',
+                  '-Wl,--no-keep-memory'
                 ],
                 'cflags_cc': [
                   '-Wno-uninitialized',
@@ -4177,9 +4176,6 @@
                 ],
                 'cflags_cc': [
                   '-Wno-uninitialized',
-                ],
-                'ldflags': [
-                  '-ldl',
                 ],
               }],
             ],
