@@ -1,0 +1,27 @@
+<link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/core-label/core-label.html">
+<link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
+<link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
+
+<polymer-element name="cr-settings-date-time-page">
+  <template>
+    <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
+    <link rel="stylesheet" href="date_time_page.css">
+    <paper-shadow layout vertical cross-fade>
+      <cr-settings-page-header page="{{}}"></cr-settings-page-header>
+      <div horizontal layout center>
+        <core-label horizontal layout center>
+          <span class="time-zone-label">Time zone:</span>
+        </core-label>
+      </div>
+      <cr-settings-checkbox
+          pref="{{prefs.settings.settings.clock.use_24hour_clock}}"
+          label="Use 24-hour clock">
+      </cr-settings-checkbox>
+      <span id="setAutomatically">Date and time are set automatically.</span>
+    </paper-shadow>
+  </template>
+  <script src="date_time_page.js"></script>
+</polymer-element>

@@ -108,6 +108,9 @@
   <structure name="IDR_POLYMER_CORE_ICONS_CORE_ICONS_HTML"
              file="../../../third_party/polymer/components-chromium/core-icons/core-icons.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_CORE_ICONS_DEVICE_ICONS_HTML"
+             file="../../../third_party/polymer/components-chromium/core-icons/device-icons.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_CORE_ICONS_IMAGE_ICONS_HTML"
              file="../../../third_party/polymer/components-chromium/core-icons/image-icons.html"
              type="chrome_html" />

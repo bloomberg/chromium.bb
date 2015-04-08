@@ -39,6 +39,7 @@
    * @const {!Array<string>}
    */
   var CROS_ONLY_PREFS = [
+    'cros.system.timezone',
     'settings.accessibility',
     'settings.a11y.autoclick',
     'settings.a11y.autoclick_delay_ms',
@@ -48,6 +49,7 @@
     'settings.a11y.screen_magnifier',
     'settings.a11y.sticky_keys_enabled',
     'settings.a11y.virtual_keyboard',
+    'settings.clock.use_24hour_clock',
     'settings.touchpad.enable_tap_dragging',
   ];
 
@@ -83,7 +85,7 @@
       window[callbackName] = this.onPrefsFetched_.bind(this);
       var prefsToFetch = PREFS_TO_FETCH;
       if (cr.isChromeOS)
-        prefsToFetch.concat(CROS_ONLY_PREFS);
+        prefsToFetch = prefsToFetch.concat(CROS_ONLY_PREFS);
 
       chrome.send('fetchPrefs', [callbackName].concat(prefsToFetch));
     },

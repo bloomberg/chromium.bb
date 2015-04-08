@@ -46,7 +46,9 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_HTML"
                  file="settings_main/settings_main.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_JS"
                  file="settings_main/settings_main.js"
                  type="chrome_html" />
@@ -79,6 +81,15 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_UI_JS"
                  file="settings_ui/settings_ui.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DATE_TIME_PAGE_CSS"
+                 file="date_time_page/date_time_page.css"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DATE_TIME_PAGE_JS"
+                 file="date_time_page/date_time_page.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DATE_TIME_PAGE_HTML"
+                 file="date_time_page/date_time_page.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_CSS"
                  file="downloads_page/downloads_page.css"

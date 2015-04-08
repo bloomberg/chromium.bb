@@ -74,7 +74,7 @@
           var parentPrefString = this.parentNode && this.parentNode.host &&
               this.parentNode.host.getAttribute('pref');
           if (parentPrefString) {
-            keyHint = parentPrefString.match(/{{([a-z._]+)}}/)[1];
+            keyHint = parentPrefString.match(/{{([a-z0-9._]+)}}/)[1];
           }
 
           throw new Error('Pref not found. Key Hint: ' + keyHint);
