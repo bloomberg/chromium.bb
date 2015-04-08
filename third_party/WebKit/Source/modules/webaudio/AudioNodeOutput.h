@@ -33,7 +33,6 @@
 
 namespace blink {
 
-class AudioContext;
 class AudioNodeInput;
 
 // AudioNodeOutput represents a single output for an AudioNode.
@@ -48,7 +47,7 @@ public:
     // Can be called from any thread.
     // TODO(tkent): Rename it.
     AudioHandler* node() const { return &m_handler; }
-    AudioContext* context() { return m_handler.context(); }
+    DeferredTaskHandler& deferredTaskHandler() const { return m_handler.context()->handler(); }
 
     // Causes our AudioNode to process if it hasn't already for this render quantum.
     // It returns the bus containing the processed audio for this output, returning inPlaceBus if in-place processing was possible.

@@ -59,7 +59,7 @@ void AudioNodeOutput::dispose()
 #if ENABLE_ASSERT
     m_didCallDispose = true;
 #endif
-    context()->handler().removeMarkedAudioNodeOutput(this);
+    deferredTaskHandler().removeMarkedAudioNodeOutput(this);
     disconnectAll();
     ASSERT(m_inputs.isEmpty());
     ASSERT(m_params.isEmpty());
@@ -68,17 +68,17 @@ void AudioNodeOutput::dispose()
 void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)
 {
     ASSERT(numberOfChannels <= AudioContext::maxNumberOfChannels());
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     m_desiredNumberOfChannels = numberOfChannels;
 
-    if (context()->isAudioThread()) {
+    if (deferredTaskHandler().isAudioThread()) {
         // If we're in the audio thread then we can take care of it right away (we should be at the very start or end of a rendering quantum).
         updateNumberOfChannels();
     } else {
         ASSERT(!m_didCallDispose);
         // Let the context take care of it in the audio thread in the pre and post render tasks.
-        context()->handler().markAudioNodeOutputDirty(this);
+        deferredTaskHandler().markAudioNodeOutputDirty(this);
     }
 }
 
@@ -99,8 +99,8 @@ void AudioNodeOutput::updateRenderingState()
 
 void AudioNodeOutput::updateNumberOfChannels()
 {
-    ASSERT(context()->isAudioThread());
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isAudioThread());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     if (m_numberOfChannels != m_desiredNumberOfChannels) {
         m_numberOfChannels = m_desiredNumberOfChannels;
@@ -111,8 +111,8 @@ void AudioNodeOutput::updateNumberOfChannels()
 
 void AudioNodeOutput::propagateChannelCount()
 {
-    ASSERT(context()->isAudioThread());
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isAudioThread());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     if (isChannelCountKnown()) {
         // Announce to any nodes we're connected to that we changed our channel count for its input.
@@ -123,7 +123,7 @@ void AudioNodeOutput::propagateChannelCount()
 
 AudioBus* AudioNodeOutput::pull(AudioBus* inPlaceBus, size_t framesToProcess)
 {
-    ASSERT(context()->isAudioThread());
+    ASSERT(deferredTaskHandler().isAudioThread());
     ASSERT(m_renderingFanOutCount > 0 || m_renderingParamFanOutCount > 0);
 
     // Causes our AudioNode to process if it hasn't already for this render quantum.
@@ -142,19 +142,19 @@ AudioBus* AudioNodeOutput::pull(AudioBus* inPlaceBus, size_t framesToProcess)
 
 AudioBus* AudioNodeOutput::bus() const
 {
-    ASSERT(const_cast<AudioNodeOutput*>(this)->context()->isAudioThread());
+    ASSERT(deferredTaskHandler().isAudioThread());
     return m_isInPlace ? m_inPlaceBus.get() : m_internalBus.get();
 }
 
 unsigned AudioNodeOutput::fanOutCount()
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
     return m_inputs.size();
 }
 
 unsigned AudioNodeOutput::paramFanOutCount()
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
     return m_params.size();
 }
 
@@ -165,21 +165,21 @@ unsigned AudioNodeOutput::renderingFanOutCount() const
 
 void AudioNodeOutput::addInput(AudioNodeInput& input)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
     m_inputs.add(&input);
     input.node().makeConnection();
 }
 
 void AudioNodeOutput::removeInput(AudioNodeInput& input)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
     input.node().breakConnection();
     m_inputs.remove(&input);
 }
 
 void AudioNodeOutput::disconnectAllInputs()
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     // AudioNodeInput::disconnect() changes m_inputs by calling removeInput().
     while (!m_inputs.isEmpty())
@@ -188,31 +188,33 @@ void AudioNodeOutput::disconnectAllInputs()
 
 void AudioNodeOutput::disconnectInput(AudioNodeInput& input)
 {
-    ASSERT(context()->isGraphOwner() && isConnectedToInput(input));
+    ASSERT(deferredTaskHandler().isGraphOwner());
+    ASSERT(isConnectedToInput(input));
     input.disconnect(*this);
 }
 
 void AudioNodeOutput::disconnectAudioParam(AudioParamHandler& param)
 {
-    ASSERT(context()->isGraphOwner() && isConnectedToAudioParam(param));
+    ASSERT(deferredTaskHandler().isGraphOwner());
+    ASSERT(isConnectedToAudioParam(param));
     param.disconnect(*this);
 }
 
 void AudioNodeOutput::addParam(AudioParamHandler& param)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
     m_params.add(&param);
 }
 
 void AudioNodeOutput::removeParam(AudioParamHandler& param)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
     m_params.remove(&param);
 }
 
 void AudioNodeOutput::disconnectAllParams()
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     // AudioParam::disconnect() changes m_params by calling removeParam().
     while (!m_params.isEmpty())
@@ -227,19 +229,19 @@ void AudioNodeOutput::disconnectAll()
 
 bool AudioNodeOutput::isConnectedToInput(AudioNodeInput& input)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
     return m_inputs.contains(&input);
 }
 
 bool AudioNodeOutput::isConnectedToAudioParam(AudioParamHandler& param)
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
     return m_params.contains(&param);
 }
 
 void AudioNodeOutput::disable()
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     if (m_isEnabled) {
         m_isEnabled = false;
@@ -250,7 +252,7 @@ void AudioNodeOutput::disable()
 
 void AudioNodeOutput::enable()
 {
-    ASSERT(context()->isGraphOwner());
+    ASSERT(deferredTaskHandler().isGraphOwner());
 
     if (!m_isEnabled) {
         m_isEnabled = true;
