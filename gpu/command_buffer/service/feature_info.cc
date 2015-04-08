@@ -1090,6 +1090,7 @@ void FeatureInfo::InitializeFeatures() {
       texture_format_validators_[GL_RG_EXT].AddValue(GL_HALF_FLOAT_OES);
     }
   }
+  UMA_HISTOGRAM_BOOLEAN("GPU.TextureRG", feature_flags_.ext_texture_rg);
 
 #if !defined(OS_MACOSX)
   if (workarounds_.ignore_egl_sync_failures) {

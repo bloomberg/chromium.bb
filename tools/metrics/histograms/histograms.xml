@@ -11302,6 +11302,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GPU.TextureRG" enum="BooleanAvailable">
+  <owner>reveman@chromium.org</owner>
+  <summary>
+    Whether RG texture support is available. Recorded each time a new context
+    group is initialized and extensions are detected.
+  </summary>
+</histogram>
+
 <histogram name="Hardware.Display.Count.OnChange">
   <owner>erikchen@chromium.org</owner>
   <summary>
