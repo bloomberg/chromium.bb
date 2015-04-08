@@ -297,6 +297,58 @@ bool BufferedResourceHandler::DetermineMimeType() {
   return made_final_decision;
 }
 
+bool BufferedResourceHandler::IsHandledByPlugin(bool* defer,
+                                                bool* request_handled) {
+#if defined(ENABLE_PLUGINS)
+  bool stale;
+  WebPluginInfo plugin;
+  bool allow_wildcard = false;
+  ResourceRequestInfoImpl* info = GetRequestInfo();
+  bool has_plugin = plugin_service_->GetPluginInfo(
+      info->GetChildID(), info->GetRenderFrameID(), info->GetContext(),
+      request()->url(), GURL(), response_->head.mime_type, allow_wildcard,
+      &stale, &plugin, NULL);
+
+  if (stale) {
+    // Refresh the plugins asynchronously.
+    plugin_service_->GetPlugins(
+        base::Bind(&BufferedResourceHandler::OnPluginsLoaded,
+                   weak_ptr_factory_.GetWeakPtr()));
+    request()->LogBlockedBy("BufferedResourceHandler");
+    *defer = true;
+    return true;
+  }
+
+  if (has_plugin) {
+    if (plugin.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
+      // If it is a MimeHandlerView plugin, intercept the stream.
+      std::string payload;
+      scoped_ptr<ResourceHandler> handler(host_->MaybeInterceptAsStream(
+          plugin.path, request(), response_.get(), &payload));
+      if (handler) {
+        *request_handled = UseAlternateNextHandler(handler.Pass(), payload);
+        return true;
+      }
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  // If execution reaches here then we should try intercepting the stream for
+  // the old streamsPrivate extensions API. This API is deprecated and should
+  // go away.
+  std::string payload;
+  scoped_ptr<ResourceHandler> handler(host_->MaybeInterceptAsStream(
+      base::FilePath(), request(), response_.get(), &payload));
+  if (handler) {
+    *request_handled = UseAlternateNextHandler(handler.Pass(), payload);
+    return true;
+  }
+#endif
+  return false;
+}
+
 bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
   DCHECK(!response_->head.mime_type.empty());
 
@@ -314,13 +366,13 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
   // Allow requests for object/embed tags to be intercepted as streams.
   if (info->GetResourceType() == content::RESOURCE_TYPE_OBJECT) {
     DCHECK(!info->allow_download());
-    std::string payload;
-    scoped_ptr<ResourceHandler> handler(
-        host_->MaybeInterceptAsStream(request(), response_.get(), &payload));
-    if (handler) {
-      DCHECK(!net::IsSupportedMimeType(mime_type));
-      return UseAlternateNextHandler(handler.Pass(), payload);
-    }
+
+    bool request_handled = true;
+    bool handled_by_plugin = IsHandledByPlugin(defer, &request_handled);
+    if (!request_handled)
+      return false;
+    if (handled_by_plugin)
+      return true;
   }
 
   if (!info->allow_download())
@@ -337,28 +389,12 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
     if (net::IsSupportedMimeType(mime_type))
       return true;
 
-    std::string payload;
-    scoped_ptr<ResourceHandler> handler(
-        host_->MaybeInterceptAsStream(request(), response_.get(), &payload));
-    if (handler) {
-      return UseAlternateNextHandler(handler.Pass(), payload);
-    }
-
-#if defined(ENABLE_PLUGINS)
-    bool stale;
-    bool has_plugin = HasSupportingPlugin(&stale);
-    if (stale) {
-      // Refresh the plugins asynchronously.
-      plugin_service_->GetPlugins(
-          base::Bind(&BufferedResourceHandler::OnPluginsLoaded,
-                     weak_ptr_factory_.GetWeakPtr()));
-      request()->LogBlockedBy("BufferedResourceHandler");
-      *defer = true;
+    bool request_handled = true;
+    bool handled_by_plugin = IsHandledByPlugin(defer, &request_handled);
+    if (!request_handled)
+      return false;
+    if (handled_by_plugin)
       return true;
-    }
-    if (has_plugin)
-      return true;
-#endif
   }
 
   // Install download handler
@@ -473,23 +509,6 @@ bool BufferedResourceHandler::MustDownload() {
   }
 
   return must_download_;
-}
-
-bool BufferedResourceHandler::HasSupportingPlugin(bool* stale) {
-#if defined(ENABLE_PLUGINS)
-  ResourceRequestInfoImpl* info = GetRequestInfo();
-
-  bool allow_wildcard = false;
-  WebPluginInfo plugin;
-  return plugin_service_->GetPluginInfo(
-      info->GetChildID(), info->GetRenderFrameID(), info->GetContext(),
-      request()->url(), GURL(), response_->head.mime_type, allow_wildcard,
-      stale, &plugin, NULL);
-#else
-  if (stale)
-    *stale = false;
-  return false;
-#endif
 }
 
 bool BufferedResourceHandler::CopyReadBufferToNextHandler() {

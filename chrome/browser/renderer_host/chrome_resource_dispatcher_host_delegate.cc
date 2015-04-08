@@ -205,36 +205,6 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamInfo> stream,
       extension_id, web_contents, stream.Pass(), view_id, expected_content_size,
       embedded, render_process_id, render_frame_id);
 }
-
-// TODO(raymes): This won't return the right result if plugins haven't been
-// loaded yet. Fixing this properly really requires fixing crbug.com/443466.
-bool IsPluginEnabledForExtension(const Extension* extension,
-                                 const ResourceRequestInfo* info,
-                                 const std::string& mime_type,
-                                 const GURL& url) {
-  content::PluginService* service = content::PluginService::GetInstance();
-  std::vector<content::WebPluginInfo> plugins;
-  service->GetPluginInfoArray(url, mime_type, true, &plugins, nullptr);
-  content::PluginServiceFilter* filter = service->GetFilter();
-
-  for (auto& plugin : plugins) {
-    // Check that the plugin is running the extension.
-    if (plugin.path !=
-        base::FilePath::FromUTF8Unsafe(extension->url().spec())) {
-      continue;
-    }
-    // Check that the plugin is actually enabled.
-    if (!filter || filter->IsPluginAvailable(info->GetChildID(),
-                                             info->GetRenderFrameID(),
-                                             info->GetContext(),
-                                             url,
-                                             GURL(),
-                                             &plugin)) {
-      return true;
-    }
-  }
-  return false;
-}
 #endif  // !defined(ENABLE_EXTENSIONS)
 
 #if !defined(OS_ANDROID)
@@ -601,6 +571,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
 
 bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     net::URLRequest* request,
+    const base::FilePath& plugin_path,
     const std::string& mime_type,
     GURL* origin,
     std::string* payload) {
@@ -624,23 +595,27 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
          !extension_info_map->IsIncognitoEnabled(extension_id))) {
       continue;
     }
-
     MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
-    if (handler && handler->CanHandleMIMEType(mime_type)) {
+    // If the MimeHandlerView plugin to be loaded matches the extension,
+    // intercept the stream for that extension.
+    if (plugin_path ==
+        base::FilePath::FromUTF8Unsafe(extension->url().spec())) {
       StreamTargetInfo target_info;
       *origin = Extension::GetBaseURLFromExtensionId(extension_id);
       target_info.extension_id = extension_id;
-      if (!handler->handler_url().empty()) {
-        // This is reached in the case of MimeHandlerViews. If the
-        // MimeHandlerView plugin is disabled, then we shouldn't intercept the
-        // stream.
-        if (!IsPluginEnabledForExtension(extension, info, mime_type,
-                                         request->url())) {
-          continue;
-        }
-        target_info.view_id = base::GenerateGUID();
-        *payload = target_info.view_id;
-      }
+      DCHECK(!handler->handler_url().empty());
+      target_info.view_id = base::GenerateGUID();
+      *payload = target_info.view_id;
+      stream_target_info_[request] = target_info;
+      return true;
+    } else if (plugin_path.empty() && handler &&
+               handler->CanHandleMIMEType(mime_type)) {
+      // If no plugin path is provided, then we are trying to intercept the
+      // stream for the streamsPrivate API.
+      StreamTargetInfo target_info;
+      *origin = Extension::GetBaseURLFromExtensionId(extension_id);
+      target_info.extension_id = extension_id;
+      DCHECK(handler->handler_url().empty());
       stream_target_info_[request] = target_info;
       return true;
     }

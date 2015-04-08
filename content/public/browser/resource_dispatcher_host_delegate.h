@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
@@ -92,10 +93,12 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // If the stream will be rendered in a BrowserPlugin, |payload| will contain
   // the data that should be given to the old ResourceHandler to forward to the
   // renderer process.
-  virtual bool ShouldInterceptResourceAsStream(net::URLRequest* request,
-                                               const std::string& mime_type,
-                                               GURL* origin,
-                                               std::string* payload);
+  virtual bool ShouldInterceptResourceAsStream(
+      net::URLRequest* request,
+      const base::FilePath& plugin_path,
+      const std::string& mime_type,
+      GURL* origin,
+      std::string* payload);
 
   // Informs the delegate that a Stream was created. The Stream can be read from
   // the blob URL of the Stream, but can only be read once.

@@ -56,6 +56,11 @@ class CONTENT_EXPORT BufferedResourceHandler
 
   bool ShouldSniffContent();
   bool DetermineMimeType();
+  // Returns true if a plugin will handle the current request. |defer| is set
+  // to true if plugin data is stale and needs to be refreshed before the
+  // request can be handled. |request_handled| is false if the request should
+  // be cancelled and true otherwise.
+  bool IsHandledByPlugin(bool* defer, bool* request_handled);
   bool SelectNextHandler(bool* defer);
   bool UseAlternateNextHandler(scoped_ptr<ResourceHandler> handler,
                                const std::string& payload_for_old_handler);
@@ -64,7 +69,6 @@ class CONTENT_EXPORT BufferedResourceHandler
   void CallReplayReadCompleted();
 
   bool MustDownload();
-  bool HasSupportingPlugin(bool* is_stale);
 
   // Copies data from |read_buffer_| to |next_handler_|.
   bool CopyReadBufferToNextHandler();
