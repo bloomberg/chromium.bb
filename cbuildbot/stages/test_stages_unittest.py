@@ -26,7 +26,7 @@ from chromite.lib import osutils
 from chromite.lib import timeout_util
 
 
-class VMTestStageTest(generic_stages_unittest.AbstractStageTest):
+class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests for the VMTest stage."""
 
   BOT_ID = 'x86-generic-full'
@@ -80,7 +80,7 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTest):
     self.assertRaises(failures_lib.InfrastructureFailure, stage.PerformStage)
 
 
-class UnitTestStageTest(generic_stages_unittest.AbstractStageTest):
+class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests for the UnitTest stage."""
 
   BOT_ID = 'x86-generic-full'
@@ -138,7 +138,7 @@ class UnitTestStageTest(generic_stages_unittest.AbstractStageTest):
     self.testauzip_mock.assert_called_once_with(self.build_root, self.image_dir)
 
 
-class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
+class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests for the HWTest stage."""
 
   BOT_ID = 'x86-mario-release'
@@ -362,7 +362,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
                      constants.HWTEST_DEFAULT_PRIORITY)
 
 
-class AUTestStageTest(generic_stages_unittest.AbstractStageTest,
+class AUTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                       cros_build_lib_unittest.RunCommandTestCase):
   """Test only custom methods in AUTestStageTest."""
   BOT_ID = 'x86-mario-release'
@@ -425,7 +425,7 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTest,
     self.assertFalse(self.run_suite_mock.called)
 
 
-class ImageTestStageTest(generic_stages_unittest.AbstractStageTest,
+class ImageTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                          cros_build_lib_unittest.RunCommandTestCase):
   """Test image test stage."""
 

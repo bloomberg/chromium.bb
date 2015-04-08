@@ -43,7 +43,8 @@ from chromite.lib import timeout_util
 # It's normal for unittests to access protected members.
 # pylint: disable=protected-access
 
-class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
+class ManifestVersionedSyncStageTest(
+    generic_stages_unittest.AbstractStageTestCase):
   """Tests the ManifestVersionedSync stage."""
   # pylint: disable=abstract-method
 
@@ -185,7 +186,7 @@ class MockPatch(mock.MagicMock):
   def GetDiffStatus(self, _):
     return self.mock_diff_status
 
-class BaseCQTestCase(generic_stages_unittest.StageTest):
+class BaseCQTestCase(generic_stages_unittest.StageTestCase):
   """Helper class for testing the CommitQueueSync stage"""
   MANIFEST_CONTENTS = '<manifest/>'
 

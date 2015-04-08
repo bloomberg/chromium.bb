@@ -31,7 +31,7 @@ from chromite.cbuildbot.stages.generic_stages_unittest import patches
 # pylint: disable=too-many-ancestors
 
 
-class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTest):
+class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
   """Test building the SDK"""
 
   # pylint: disable=protected-access
@@ -83,7 +83,7 @@ class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTest):
                                enter_chroot=True, extra_env={'USE': 'foo'})
 
 
-class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTest):
+class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
   """Test building the board"""
 
   def ConstructStage(self):
@@ -169,7 +169,7 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTest):
     self.assertCommandContains(['./setup_board', '--skip_chroot_upgrade'])
 
 
-class UprevStageTest(generic_stages_unittest.AbstractStageTest):
+class UprevStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests for the UprevStage class."""
 
   def setUp(self):
@@ -193,12 +193,12 @@ class UprevStageTest(generic_stages_unittest.AbstractStageTest):
     self.assertFalse(self.uprev_mock.called)
 
 
-class AllConfigsTestCase(generic_stages_unittest.AbstractStageTest):
+class AllConfigsTestCase(generic_stages_unittest.AbstractStageTestCase):
   """Test case for testing against all bot configs."""
 
   def ConstructStage(self):
     """Bypass lint warning"""
-    generic_stages_unittest.AbstractStageTest.ConstructStage(self)
+    generic_stages_unittest.AbstractStageTestCase.ConstructStage(self)
 
   @contextlib.contextmanager
   def RunStageWithConfig(self, mock_configurator=None):

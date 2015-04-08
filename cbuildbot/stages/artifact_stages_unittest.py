@@ -37,7 +37,7 @@ DEFAULT_CHROME_BRANCH = '27'
 # pylint: disable=too-many-ancestors
 
 
-class ArchiveStageTest(generic_stages_unittest.AbstractStageTest):
+class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Exercise ArchiveStage functionality."""
 
   # pylint: disable=protected-access
@@ -113,7 +113,7 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTest):
 
 
 class UploadPrebuiltsStageTest(
-    generic_stages_unittest.RunCommandAbstractStageTest):
+    generic_stages_unittest.RunCommandAbstractStageTestCase):
   """Tests for the UploadPrebuilts stage."""
 
   cmd = 'upload_prebuilts'
@@ -175,7 +175,7 @@ class UploadPrebuiltsStageTest(
 
 
 class MasterUploadPrebuiltsStageTest(
-    generic_stages_unittest.RunCommandAbstractStageTest):
+    generic_stages_unittest.RunCommandAbstractStageTestCase):
   """Tests for the MasterUploadPrebuilts stage."""
 
   cmd = 'upload_prebuilts'
@@ -267,7 +267,7 @@ class MasterUploadPrebuiltsStageTest(
 
 
 class UploadDevInstallerPrebuiltsStageTest(
-    generic_stages_unittest.AbstractStageTest):
+    generic_stages_unittest.AbstractStageTestCase):
   """Tests for the UploadDevInstallerPrebuilts stage."""
 
   RELEASE_TAG = 'RT'
@@ -307,7 +307,7 @@ class UploadDevInstallerPrebuiltsStageTest(
         extra_args=mock.ANY)
 
 
-class CPEExportStageTest(generic_stages_unittest.AbstractStageTest):
+class CPEExportStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Test CPEExportStage"""
 
   def setUp(self):
@@ -343,7 +343,7 @@ class CPEExportStageTest(generic_stages_unittest.AbstractStageTest):
     self._TestPerformStage()
 
 
-class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTest):
+class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Test DebugSymbolsStage"""
 
   # pylint: disable=protected-access
@@ -571,7 +571,7 @@ class ArchivingMock(partial_mock.PartialMock):
 
 
 # TODO: Delete ArchivingStageTest once ArchivingStage is deprecated.
-class ArchivingStageTest(generic_stages_unittest.AbstractStageTest):
+class ArchivingStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Excerise ArchivingStage functionality."""
   RELEASE_TAG = ''
 

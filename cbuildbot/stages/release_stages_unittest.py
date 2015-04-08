@@ -25,7 +25,7 @@ from chromite.lib.paygen import paygen_build_lib
 # pylint: disable=protected-access
 
 
-class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
+class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Test the PaygenStageStage."""
 
   BOT_ID = 'x86-mario-release'

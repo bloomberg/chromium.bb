@@ -103,7 +103,7 @@ class ManifestVersionedSyncCompletionStageTest(
 
 
 class MasterSlaveSyncCompletionStageTest(
-    generic_stages_unittest.AbstractStageTest):
+    generic_stages_unittest.AbstractStageTestCase):
   """Tests MasterSlaveSyncCompletionStage with ManifestVersionedSyncStage."""
   BOT_ID = 'x86-generic-paladin'
 
@@ -252,7 +252,7 @@ class MasterSlaveSyncCompletionStageTestWithLKGMSync(
 
 
 class CanaryCompletionStageTest(
-    generic_stages_unittest.AbstractStageTest):
+    generic_stages_unittest.AbstractStageTestCase):
   """Tests how canary master handles failures in CanaryCompletionStage."""
   BOT_ID = 'master-release'
 
@@ -281,7 +281,8 @@ class CanaryCompletionStageTest(
 
 
 class BaseCommitQueueCompletionStageTest(
-    generic_stages_unittest.AbstractStageTest, patch_unittest.MockPatchBase):
+    generic_stages_unittest.AbstractStageTestCase,
+    patch_unittest.MockPatchBase):
   """Tests how CQ handles changes in CommitQueueCompletionStage."""
 
   def setUp(self):
@@ -578,7 +579,8 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
                      stage=stage)
 
 
-class PublishUprevChangesStageTest(generic_stages_unittest.AbstractStageTest):
+class PublishUprevChangesStageTest(
+    generic_stages_unittest.AbstractStageTestCase):
   """Tests for the PublishUprevChanges stage."""
 
   def setUp(self):

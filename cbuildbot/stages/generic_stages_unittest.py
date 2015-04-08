@@ -41,8 +41,8 @@ DEFAULT_BUILD_STAGE_ID = 313377
 
 # The inheritence order ensures the patchers are stopped before
 # cleaning up the temporary directories.
-class StageTest(cros_test_lib.MockOutputTestCase,
-                cros_test_lib.TempDirTestCase):
+class StageTestCase(cros_test_lib.MockOutputTestCase,
+                    cros_test_lib.TempDirTestCase):
   """Test running a single stage in isolation."""
 
   TARGET_MANIFEST_BRANCH = 'ooga_booga'
@@ -209,7 +209,7 @@ class StageTest(cros_test_lib.MockOutputTestCase,
       self.fail('%s raised instead of %s' % (e, exception))
 
 
-class AbstractStageTest(StageTest):
+class AbstractStageTestCase(StageTestCase):
   """Base class for tests that test a particular build stage.
 
   Abstract base class that sets up the build config and options with some
@@ -258,7 +258,7 @@ def patches(*args):
     yield
 
 
-class BuilderStageTest(AbstractStageTest):
+class BuilderStageTest(AbstractStageTestCase):
   """Tests for BuilderStage class."""
 
   def setUp(self):
@@ -419,7 +419,7 @@ class BuilderStageTest(AbstractStageTest):
         constants.BUILDER_STATUS_FAILED)
 
 
-class BoardSpecificBuilderStageTest(AbstractStageTest):
+class BoardSpecificBuilderStageTest(AbstractStageTestCase):
   """Tests option/config settings on board-specific stages."""
 
   DEFAULT_BOARD_NAME = 'my_shiny_test_board'
@@ -456,8 +456,8 @@ class BoardSpecificBuilderStageTest(AbstractStageTest):
   #                    'cbuildbot_config._settings') % (attr, obj.config_name))
 
 
-class RunCommandAbstractStageTest(AbstractStageTest,
-                                  cros_build_lib_unittest.RunCommandTestCase):
+class RunCommandAbstractStageTestCase(
+    AbstractStageTestCase, cros_build_lib_unittest.RunCommandTestCase):
   """Base test class for testing a stage and mocking RunCommand."""
 
   # pylint: disable=abstract-method
@@ -466,7 +466,7 @@ class RunCommandAbstractStageTest(AbstractStageTest,
   BIN_BOT_ID = 'x86-generic-paladin'
 
   def _Prepare(self, bot_id, **kwargs):
-    super(RunCommandAbstractStageTest, self)._Prepare(bot_id, **kwargs)
+    super(RunCommandAbstractStageTestCase, self)._Prepare(bot_id, **kwargs)
 
   def _PrepareFull(self, **kwargs):
     self._Prepare(self.FULL_BOT_ID, **kwargs)

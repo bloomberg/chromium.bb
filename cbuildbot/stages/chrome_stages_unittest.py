@@ -22,7 +22,7 @@ from chromite.lib import osutils
 from chromite.lib import parallel_unittest
 
 
-class ChromeSDKStageTest(generic_stages_unittest.AbstractStageTest,
+class ChromeSDKStageTest(generic_stages_unittest.AbstractStageTestCase,
                          cros_test_lib.LoggingTestCase):
   """Verify stage that creates the chrome-sdk and builds chrome with it."""
   BOT_ID = 'link-paladin'
@@ -84,7 +84,7 @@ class ChromeSDKStageTest(generic_stages_unittest.AbstractStageTest,
     cros_test_lib.VerifyTarball(env_tar, ['./', 'environment'])
 
 
-class PatchChromeStageTest(generic_stages_unittest.AbstractStageTest):
+class PatchChromeStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests for PatchChromeStage."""
 
   def setUp(self):

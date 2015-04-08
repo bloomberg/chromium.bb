@@ -125,7 +125,7 @@ upstream="old-special-branch"/>
                       special_revision2=SPECIAL_REVISION2)
 
 
-class BranchUtilStageTest(generic_stages_unittest.AbstractStageTest,
+class BranchUtilStageTest(generic_stages_unittest.AbstractStageTestCase,
                           cros_test_lib.LoggingTestCase):
   """Tests for branch creation/deletion."""
 

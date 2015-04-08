@@ -19,7 +19,8 @@ from chromite.lib import perf_uploader
 from chromite.lib import portage_util
 
 
-class SDKBuildToolchainsStageTest(generic_stages_unittest.AbstractStageTest):
+class SDKBuildToolchainsStageTest(
+    generic_stages_unittest.AbstractStageTestCase):
   """Tests SDK toolchain building."""
 
   def setUp(self):
@@ -44,7 +45,7 @@ class SDKBuildToolchainsStageTest(generic_stages_unittest.AbstractStageTest):
         self.assertTrue(isinstance(ele, basestring))
 
 
-class SDKPackageStageTest(generic_stages_unittest.AbstractStageTest):
+class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests SDK package and Manifest creation."""
 
   fake_packages = (('cat1/package', '1'), ('cat1/package', '2'),
@@ -176,7 +177,7 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTest):
     self.assertEqual(kwargs['revision'], 123456)
 
 
-class SDKTestStageTest(generic_stages_unittest.AbstractStageTest):
+class SDKTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests SDK test phase."""
 
   def setUp(self):

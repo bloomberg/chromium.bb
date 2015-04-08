@@ -33,7 +33,7 @@ from chromite.lib import toolchain
 
 # pylint: disable=protected-access
 
-class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTest):
+class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests that BuildReexecutionFinishedStage behaves as expected."""
   def setUp(self):
     self.fake_db = fake_cidb.FakeCIDBConnection()
@@ -79,7 +79,7 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTest):
   def ConstructStage(self):
     return report_stages.BuildReexecutionFinishedStage(self._run)
 
-class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
+class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests that BuildStartStage behaves as expected."""
 
   def setUp(self):
@@ -143,7 +143,8 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
     return report_stages.BuildStartStage(self._run)
 
 
-class AbstractReportStageTest(generic_stages_unittest.AbstractStageTest):
+class AbstractReportStageTestCase(
+    generic_stages_unittest.AbstractStageTestCase):
   """Base class for testing the Report stage."""
 
   def setUp(self):
@@ -180,7 +181,7 @@ class AbstractReportStageTest(generic_stages_unittest.AbstractStageTest):
     return report_stages.ReportStage(self._run, self.sync_stage, None)
 
 
-class ReportStageTest(AbstractReportStageTest):
+class ReportStageTest(AbstractReportStageTestCase):
   """Test the Report stage."""
 
   RELEASE_TAG = ''
@@ -274,7 +275,7 @@ class ReportStageTest(AbstractReportStageTest):
     self.assertEqual(expected, child_config_list)
 
 
-class ReportStageNoSyncTest(AbstractReportStageTest):
+class ReportStageNoSyncTest(AbstractReportStageTestCase):
   """Test the Report stage if SyncStage didn't complete.
 
   If SyncStage doesn't complete, we don't know the release tag, and can't
