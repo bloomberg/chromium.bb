@@ -135,7 +135,7 @@
 
   <!-- Autofill infobar -->
   <message name="IDS_AUTOFILL_CC_INFOBAR_ACCEPT" desc="Text to show for the Autofill credit card request infobar accept button.">
-    Save info
+    Save
   </message>
   <message name="IDS_AUTOFILL_CC_INFOBAR_DENY" desc="Text to show for the Autofill credit card request infobar deny button.">
     Don't save
