@@ -91,4 +91,11 @@ crbug.com/475017 virtual/slimmingpaint/fast/canvas/canvas-composite-video.html [
 crbug.com/475017 virtual/slimmingpaint/fast/canvas/canvas-composite.html [ NeedsManualRebaseline ]
 crbug.com/475017 virtual/slimmingpaint/svg/filters/feComposite.svg [ NeedsManualRebaseline ]
 
+# SK_SUPPORT_LEGACY_SCALAR_MAPPOINTS
+crbug.com/475022 media/audio-repaint.html [ NeedsManualRebaseline ]
+crbug.com/475022 svg/custom/linking-a-03-b-viewBox-transform.svg [ NeedsManualRebaseline ]
+crbug.com/475022 svg/custom/marker-orient-auto.html [ NeedsManualRebaseline ]
+crbug.com/475022 svg/text/text-path-01-b.svg [ NeedsManualRebaseline ]
+crbug.com/475022 virtual/slimmingpaint/svg/text/text-path-01-b.svg [ NeedsManualRebaseline ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
