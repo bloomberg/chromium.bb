@@ -21,7 +21,7 @@ enum SyncPowerState {
 
 message BackgroundSyncRegistrationProto {
   required int64 id = 1;
-  required string name = 2;
+  required string tag = 2;
   required bool fire_once = 3;
   required int64 min_period = 4;
   required SyncNetworkState network_state = 5;

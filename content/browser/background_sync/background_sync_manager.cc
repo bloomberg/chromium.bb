@@ -73,7 +73,7 @@ void BackgroundSyncManager::Register(
 void BackgroundSyncManager::Unregister(
     const GURL& origin,
     int64 sw_registration_id,
-    const std::string& sync_registration_name,
+    const std::string& sync_registration_tag,
     BackgroundSyncRegistration::RegistrationId sync_registration_id,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -86,14 +86,14 @@ void BackgroundSyncManager::Unregister(
 
   op_scheduler_.ScheduleOperation(base::Bind(
       &BackgroundSyncManager::UnregisterImpl, weak_ptr_factory_.GetWeakPtr(),
-      origin, sw_registration_id, sync_registration_name, sync_registration_id,
+      origin, sw_registration_id, sync_registration_tag, sync_registration_id,
       MakeStatusCompletion(callback)));
 }
 
 void BackgroundSyncManager::GetRegistration(
     const GURL& origin,
     int64 sw_registration_id,
-    const std::string sync_registration_name,
+    const std::string sync_registration_tag,
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -107,7 +107,7 @@ void BackgroundSyncManager::GetRegistration(
   op_scheduler_.ScheduleOperation(base::Bind(
       &BackgroundSyncManager::GetRegistrationImpl,
       weak_ptr_factory_.GetWeakPtr(), origin, sw_registration_id,
-      sync_registration_name, MakeStatusAndRegistrationCompletion(callback)));
+      sync_registration_tag, MakeStatusAndRegistrationCompletion(callback)));
 }
 
 void BackgroundSyncManager::OnRegistrationDeleted(int64 registration_id,
@@ -194,10 +194,10 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
         }
 
         BackgroundSyncRegistration* registration =
-            &registrations->name_to_registration_map[registration_proto.name()];
+            &registrations->tag_to_registration_map[registration_proto.tag()];
 
         registration->id = registration_proto.id();
-        registration->name = registration_proto.name();
+        registration->tag = registration_proto.tag();
         registration->fire_once = registration_proto.fire_once();
         registration->min_period = registration_proto.min_period();
         registration->network_state = registration_proto.network_state();
@@ -233,7 +233,7 @@ void BackgroundSyncManager::RegisterImpl(
   }
 
   BackgroundSyncRegistration existing_registration;
-  if (LookupRegistration(sw_registration_id, sync_registration.name,
+  if (LookupRegistration(sw_registration_id, sync_registration.tag,
                          &existing_registration)) {
     if (existing_registration.Equals(sync_registration)) {
       base::MessageLoop::current()->PostTask(
@@ -306,7 +306,7 @@ void BackgroundSyncManager::DisableAndClearManagerClearedOne(
 
 bool BackgroundSyncManager::LookupRegistration(
     int64 sw_registration_id,
-    const std::string& sync_registration_name,
+    const std::string& sync_registration_tag,
     BackgroundSyncRegistration* existing_registration) {
   SWIdToRegistrationsMap::iterator it =
       sw_to_registrations_map_.find(sw_registration_id);
@@ -314,14 +314,13 @@ bool BackgroundSyncManager::LookupRegistration(
     return false;
 
   const BackgroundSyncRegistrations& registrations = it->second;
-  const auto name_and_registration_iter =
-      registrations.name_to_registration_map.find(sync_registration_name);
-  if (name_and_registration_iter ==
-      registrations.name_to_registration_map.end())
+  const auto tag_and_registration_iter =
+      registrations.tag_to_registration_map.find(sync_registration_tag);
+  if (tag_and_registration_iter == registrations.tag_to_registration_map.end())
     return false;
 
   if (existing_registration)
-    *existing_registration = name_and_registration_iter->second;
+    *existing_registration = tag_and_registration_iter->second;
 
   return true;
 }
@@ -336,14 +335,14 @@ void BackgroundSyncManager::StoreRegistrations(
   BackgroundSyncRegistrationsProto registrations_proto;
   registrations_proto.set_next_registration_id(registrations.next_id);
 
-  for (const auto& name_and_registration :
-       registrations.name_to_registration_map) {
+  for (const auto& tag_and_registration :
+       registrations.tag_to_registration_map) {
     const BackgroundSyncRegistration& registration =
-        name_and_registration.second;
+        tag_and_registration.second;
     BackgroundSyncRegistrationProto* registration_proto =
         registrations_proto.add_registration();
     registration_proto->set_id(registration.id);
-    registration_proto->set_name(registration.name);
+    registration_proto->set_tag(registration.tag);
     registration_proto->set_fire_once(registration.fire_once);
     registration_proto->set_min_period(registration.min_period);
     registration_proto->set_network_state(registration.network_state);
@@ -386,14 +385,14 @@ void BackgroundSyncManager::RegisterDidStore(
 
 void BackgroundSyncManager::RemoveRegistrationFromMap(
     int64 sw_registration_id,
-    const std::string& sync_registration_name) {
+    const std::string& sync_registration_tag) {
   DCHECK(
-      LookupRegistration(sw_registration_id, sync_registration_name, nullptr));
+      LookupRegistration(sw_registration_id, sync_registration_tag, nullptr));
 
   BackgroundSyncRegistrations* registrations =
       &sw_to_registrations_map_[sw_registration_id];
 
-  registrations->name_to_registration_map.erase(sync_registration_name);
+  registrations->tag_to_registration_map.erase(sync_registration_tag);
 }
 
 void BackgroundSyncManager::AddRegistrationToMap(
@@ -404,7 +403,7 @@ void BackgroundSyncManager::AddRegistrationToMap(
 
   BackgroundSyncRegistrations* registrations =
       &sw_to_registrations_map_[sw_registration_id];
-  registrations->name_to_registration_map[sync_registration.name] =
+  registrations->tag_to_registration_map[sync_registration.tag] =
       sync_registration;
 }
 
@@ -431,7 +430,7 @@ void BackgroundSyncManager::GetDataFromBackend(
 void BackgroundSyncManager::UnregisterImpl(
     const GURL& origin,
     int64 sw_registration_id,
-    const std::string& sync_registration_name,
+    const std::string& sync_registration_tag,
     BackgroundSyncRegistration::RegistrationId sync_registration_id,
     const StatusCallback& callback) {
   if (disabled_) {
@@ -441,7 +440,7 @@ void BackgroundSyncManager::UnregisterImpl(
   }
 
   BackgroundSyncRegistration existing_registration;
-  if (!LookupRegistration(sw_registration_id, sync_registration_name,
+  if (!LookupRegistration(sw_registration_id, sync_registration_tag,
                           &existing_registration) ||
       existing_registration.id != sync_registration_id) {
     base::MessageLoop::current()->PostTask(
@@ -449,7 +448,7 @@ void BackgroundSyncManager::UnregisterImpl(
     return;
   }
 
-  RemoveRegistrationFromMap(sw_registration_id, sync_registration_name);
+  RemoveRegistrationFromMap(sw_registration_id, sync_registration_tag);
 
   StoreRegistrations(
       origin, sw_registration_id,
@@ -483,7 +482,7 @@ void BackgroundSyncManager::UnregisterDidStore(
 void BackgroundSyncManager::GetRegistrationImpl(
     const GURL& origin,
     int64 sw_registration_id,
-    const std::string sync_registration_name,
+    const std::string sync_registration_tag,
     const StatusAndRegistrationCallback& callback) {
   if (disabled_) {
     base::MessageLoop::current()->PostTask(
@@ -493,7 +492,7 @@ void BackgroundSyncManager::GetRegistrationImpl(
   }
 
   BackgroundSyncRegistration out_registration;
-  if (!LookupRegistration(sw_registration_id, sync_registration_name,
+  if (!LookupRegistration(sw_registration_id, sync_registration_tag,
                           &out_registration)) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, ERROR_TYPE_NOT_FOUND,
