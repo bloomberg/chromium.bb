@@ -22,17 +22,19 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
       ResultCallback;
   typedef base::Callback<void(const std::string& error_message)> ErrorCallback;
 
-  CryptAuthApiCallFlow(const GURL& request_url);
+  CryptAuthApiCallFlow();
   ~CryptAuthApiCallFlow() override;
 
   // Starts the API call.
+  //   request_url: The URL endpoint of the API request.
   //   context: The URL context used to make the request.
   //   access_token: The access token for whom to make the to make the request.
   //   serialized_request: A serialized proto containing the request data.
   //   result_callback: Called when the flow completes successfully with a
   //       serialized response proto.
   //   error_callback: Called when the flow completes with an error.
-  virtual void Start(net::URLRequestContextGetter* context,
+  virtual void Start(const GURL& request_url,
+                     net::URLRequestContextGetter* context,
                      const std::string& access_token,
                      const std::string& serialized_request,
                      const ResultCallback& result_callback,
@@ -52,7 +54,7 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
 
  private:
   // The URL of the CryptAuth endpoint serving the request.
-  const GURL request_url_;
+  GURL request_url_;
 
   // Serialized request message proto that will be sent in the API request.
   std::string serialized_request_;

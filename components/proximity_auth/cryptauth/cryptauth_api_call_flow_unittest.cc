@@ -25,8 +25,7 @@ class ProximityAuthCryptAuthApiCallFlowTest
  protected:
   ProximityAuthCryptAuthApiCallFlowTest()
       : url_request_context_getter_(new net::TestURLRequestContextGetter(
-            new base::TestSimpleTaskRunner())),
-        flow_(GURL(kRequestUrl)) {}
+            new base::TestSimpleTaskRunner())) {}
 
   void SetUp() override {
     // The TestURLFetcherFactory will override the global URLFetcherFactory for
@@ -36,9 +35,8 @@ class ProximityAuthCryptAuthApiCallFlowTest
   }
 
   void StartApiCallFlow() {
-    flow_.Start(url_request_context_getter_.get(),
-                "access_token",
-                kSerializedRequestProto,
+    flow_.Start(GURL(kRequestUrl), url_request_context_getter_.get(),
+                "access_token", kSerializedRequestProto,
                 base::Bind(&ProximityAuthCryptAuthApiCallFlowTest::OnResult,
                            base::Unretained(this)),
                 base::Bind(&ProximityAuthCryptAuthApiCallFlowTest::OnError,

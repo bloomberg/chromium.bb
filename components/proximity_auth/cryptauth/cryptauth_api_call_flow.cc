@@ -17,18 +17,19 @@ const char kHttpStatusErrorPrefix[] = "HTTP status: ";
 
 }  // namespace
 
-CryptAuthApiCallFlow::CryptAuthApiCallFlow(const GURL& request_url)
-    : request_url_(request_url) {
+CryptAuthApiCallFlow::CryptAuthApiCallFlow() {
 }
 
 CryptAuthApiCallFlow::~CryptAuthApiCallFlow() {
 }
 
-void CryptAuthApiCallFlow::Start(net::URLRequestContextGetter* context,
+void CryptAuthApiCallFlow::Start(const GURL& request_url,
+                                 net::URLRequestContextGetter* context,
                                  const std::string& access_token,
                                  const std::string& serialized_request,
                                  const ResultCallback& result_callback,
                                  const ErrorCallback& error_callback) {
+  request_url_ = request_url;
   serialized_request_ = serialized_request;
   result_callback_ = result_callback;
   error_callback_ = error_callback;

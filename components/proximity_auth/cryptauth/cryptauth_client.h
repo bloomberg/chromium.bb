@@ -2,146 +2,93 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPT_AUTH_CLIENT_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPT_AUTH_CLIENT_H
+#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_H
+#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_H
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "url/gurl.h"
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace proximity_auth {
 
 class CryptAuthAccessTokenFetcher;
 class CryptAuthApiCallFlow;
 
-// Use CryptAuthClient to make API requests to the CryptAuth service, which
+// Interface for making API requests to the CryptAuth service, which
 // manages cryptographic credentials (ie. public keys) for a user's devices.
-// CryptAuthClient only processes one request, so create a new instance for each
-// request you make. DO NOT REUSE.
+// Implmentations shall only processes a single request, so create a new
+// instance for each request you make. DO NOT REUSE.
 // For documentation on each API call, see
 // components/proximity_auth/cryptauth/proto/cryptauth_api.proto
-// Note: There is no need to set the |device_classifier| field in request
-// messages. CryptAuthClient will fill this field for all requests.
 class CryptAuthClient {
  public:
   typedef base::Callback<void(const std::string&)> ErrorCallback;
 
-  // Creates the client using |url_request_context| to make the HTTP request.
-  // CryptAuthClient takes ownership of |access_token_fetcher|, which provides
-  // the access token authorizing CryptAuth requests.
-  // The |device_classifier| argument contains basic device information of the
-  // caller (e.g. version and device type).
-  CryptAuthClient(
-      scoped_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context,
-      const cryptauth::DeviceClassifier& device_classifier);
-  virtual ~CryptAuthClient();
+  virtual ~CryptAuthClient() {}
 
   // GetMyDevices
   typedef base::Callback<void(const cryptauth::GetMyDevicesResponse&)>
       GetMyDevicesCallback;
-  void GetMyDevices(const cryptauth::GetMyDevicesRequest& request,
-                    const GetMyDevicesCallback& callback,
-                    const ErrorCallback& error_callback);
+  virtual void GetMyDevices(const cryptauth::GetMyDevicesRequest& request,
+                            const GetMyDevicesCallback& callback,
+                            const ErrorCallback& error_callback) = 0;
 
   // FindEligibleUnlockDevices
   typedef base::Callback<void(
       const cryptauth::FindEligibleUnlockDevicesResponse&)>
       FindEligibleUnlockDevicesCallback;
-  void FindEligibleUnlockDevices(
+  virtual void FindEligibleUnlockDevices(
       const cryptauth::FindEligibleUnlockDevicesRequest& request,
       const FindEligibleUnlockDevicesCallback& callback,
-      const ErrorCallback& error_callback);
+      const ErrorCallback& error_callback) = 0;
 
   // SendDeviceSyncTickle
   typedef base::Callback<void(const cryptauth::SendDeviceSyncTickleResponse&)>
       SendDeviceSyncTickleCallback;
-  void SendDeviceSyncTickle(
+  virtual void SendDeviceSyncTickle(
       const cryptauth::SendDeviceSyncTickleRequest& request,
       const SendDeviceSyncTickleCallback& callback,
-      const ErrorCallback& error_callback);
+      const ErrorCallback& error_callback) = 0;
 
   // ToggleEasyUnlock
   typedef base::Callback<void(const cryptauth::ToggleEasyUnlockResponse&)>
       ToggleEasyUnlockCallback;
-  void ToggleEasyUnlock(const cryptauth::ToggleEasyUnlockRequest& request,
-                        const ToggleEasyUnlockCallback& callback,
-                        const ErrorCallback& error_callback);
+  virtual void ToggleEasyUnlock(
+      const cryptauth::ToggleEasyUnlockRequest& request,
+      const ToggleEasyUnlockCallback& callback,
+      const ErrorCallback& error_callback) = 0;
 
   // SetupEnrollment
   typedef base::Callback<void(const cryptauth::SetupEnrollmentResponse&)>
       SetupEnrollmentCallback;
-  void SetupEnrollment(const cryptauth::SetupEnrollmentRequest& request,
-                       const SetupEnrollmentCallback& callback,
-                       const ErrorCallback& error_callback);
+  virtual void SetupEnrollment(const cryptauth::SetupEnrollmentRequest& request,
+                               const SetupEnrollmentCallback& callback,
+                               const ErrorCallback& error_callback) = 0;
 
   // FinishEnrollment
   typedef base::Callback<void(const cryptauth::FinishEnrollmentResponse&)>
       FinishEnrollmentCallback;
-  void FinishEnrollment(const cryptauth::FinishEnrollmentRequest& request,
-                        const FinishEnrollmentCallback& callback,
-                        const ErrorCallback& error_callback);
+  virtual void FinishEnrollment(
+      const cryptauth::FinishEnrollmentRequest& request,
+      const FinishEnrollmentCallback& callback,
+      const ErrorCallback& error_callback) = 0;
+};
 
- protected:
-  // Creates a CryptAuthApiCallFlow object. Exposed for testing.
-  virtual scoped_ptr<CryptAuthApiCallFlow> CreateFlow(const GURL& request_url);
+// Interface for creating CryptAuthClient instances. Because each
+// CryptAuthClient instance can only be used for one API call, a factory makes
+// it easier to make multiple requests in sequence or in parallel.
+class CryptAuthClientFactory {
+ public:
+  virtual ~CryptAuthClientFactory() {}
 
- private:
-  // Starts a call to the API given by |request_path|, with the templated
-  // request and response types. The client first fetches the access token and
-  // then makes the HTTP request.
-  template <class RequestProto, class ResponseProto>
-  void MakeApiCall(
-      const std::string& request_path,
-      const RequestProto& request_proto,
-      const base::Callback<void(const ResponseProto&)>& response_callback,
-      const ErrorCallback& error_callback);
-
-  // Called when the access token is obtained so the API request can be made.
-  template <class ResponseProto>
-  void OnAccessTokenFetched(
-      const std::string& serialized_request,
-      const base::Callback<void(const ResponseProto&)>& response_callback,
-      const std::string& access_token);
-
-  // Called with CryptAuthApiCallFlow completes successfully to deserialize and
-  // return the result.
-  template <class ResponseProto>
-  void OnFlowSuccess(
-      const base::Callback<void(const ResponseProto&)>& result_callback,
-      const std::string& serialized_response);
-
-  // Called when the current API call fails at any step.
-  void OnApiCallFailed(const std::string& error_message);
-
-  // The context for network requests.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
-
-  // Fetches the access token authorizing the API calls.
-  scoped_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher_;
-
-  // Contains basic device info of the client making the request that is sent to
-  // CryptAuth with each API call.
-  const cryptauth::DeviceClassifier device_classifier_;
-
-  // Handles the current API call.
-  scoped_ptr<CryptAuthApiCallFlow> flow_;
-
-  // URL path of the current request.
-  std::string request_path_;
-
-  // Called when the current request fails.
-  ErrorCallback error_callback_;
-
-  base::WeakPtrFactory<CryptAuthClient> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CryptAuthClient);
+  virtual scoped_ptr<CryptAuthClient> CreateInstance() = 0;
 };
 
 }  // namespace proximity_auth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_CRYPT_AUTH_CLIENT_H
+#endif  // COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_CLIENT_H

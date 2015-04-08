@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
+
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
-#include "components/proximity_auth/cryptauth/cryptauth_api_call_flow.h"
-#include "components/proximity_auth/cryptauth/cryptauth_client.h"
-#include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl.h"
 #include "components/proximity_auth/switches.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace proximity_auth {
 
@@ -47,27 +45,30 @@ GURL CreateRequestUrl(const std::string& request_path) {
 
 }  // namespace
 
-CryptAuthClient::CryptAuthClient(
+CryptAuthClientImpl::CryptAuthClientImpl(
+    scoped_ptr<CryptAuthApiCallFlow> api_call_flow,
     scoped_ptr<CryptAuthAccessTokenFetcher> access_token_fetcher,
     scoped_refptr<net::URLRequestContextGetter> url_request_context,
     const cryptauth::DeviceClassifier& device_classifier)
-    : url_request_context_(url_request_context),
+    : api_call_flow_(api_call_flow.Pass()),
       access_token_fetcher_(access_token_fetcher.Pass()),
+      url_request_context_(url_request_context),
       device_classifier_(device_classifier),
+      has_call_started_(false),
       weak_ptr_factory_(this) {
 }
 
-CryptAuthClient::~CryptAuthClient() {
+CryptAuthClientImpl::~CryptAuthClientImpl() {
 }
 
-void CryptAuthClient::GetMyDevices(
+void CryptAuthClientImpl::GetMyDevices(
     const cryptauth::GetMyDevicesRequest& request,
     const GetMyDevicesCallback& callback,
     const ErrorCallback& error_callback) {
   MakeApiCall(kGetMyDevicesPath, request, callback, error_callback);
 }
 
-void CryptAuthClient::FindEligibleUnlockDevices(
+void CryptAuthClientImpl::FindEligibleUnlockDevices(
     const cryptauth::FindEligibleUnlockDevicesRequest& request,
     const FindEligibleUnlockDevicesCallback& callback,
     const ErrorCallback& error_callback) {
@@ -75,50 +76,46 @@ void CryptAuthClient::FindEligibleUnlockDevices(
               error_callback);
 }
 
-void CryptAuthClient::SendDeviceSyncTickle(
+void CryptAuthClientImpl::SendDeviceSyncTickle(
     const cryptauth::SendDeviceSyncTickleRequest& request,
     const SendDeviceSyncTickleCallback& callback,
     const ErrorCallback& error_callback) {
   MakeApiCall(kSendDeviceSyncTicklePath, request, callback, error_callback);
 }
 
-void CryptAuthClient::ToggleEasyUnlock(
+void CryptAuthClientImpl::ToggleEasyUnlock(
     const cryptauth::ToggleEasyUnlockRequest& request,
     const ToggleEasyUnlockCallback& callback,
     const ErrorCallback& error_callback) {
   MakeApiCall(kToggleEasyUnlockPath, request, callback, error_callback);
 }
 
-void CryptAuthClient::SetupEnrollment(
+void CryptAuthClientImpl::SetupEnrollment(
     const cryptauth::SetupEnrollmentRequest& request,
     const SetupEnrollmentCallback& callback,
     const ErrorCallback& error_callback) {
   MakeApiCall(kSetupEnrollmentPath, request, callback, error_callback);
 }
 
-void CryptAuthClient::FinishEnrollment(
+void CryptAuthClientImpl::FinishEnrollment(
     const cryptauth::FinishEnrollmentRequest& request,
     const FinishEnrollmentCallback& callback,
     const ErrorCallback& error_callback) {
   MakeApiCall(kFinishEnrollmentPath, request, callback, error_callback);
 }
 
-scoped_ptr<CryptAuthApiCallFlow> CryptAuthClient::CreateFlow(
-    const GURL& request_url) {
-  return make_scoped_ptr(new CryptAuthApiCallFlow(request_url));
-}
-
 template <class RequestProto, class ResponseProto>
-void CryptAuthClient::MakeApiCall(
+void CryptAuthClientImpl::MakeApiCall(
     const std::string& request_path,
     const RequestProto& request_proto,
     const base::Callback<void(const ResponseProto&)>& response_callback,
     const ErrorCallback& error_callback) {
-  if (flow_) {
+  if (has_call_started_) {
     error_callback.Run(
         "Client has been used for another request. Do not reuse.");
     return;
   }
+  has_call_started_ = true;
 
   // The |device_classifier| field must be present for all CryptAuth requests.
   RequestProto request_copy(request_proto);
@@ -134,12 +131,12 @@ void CryptAuthClient::MakeApiCall(
   request_path_ = request_path;
   error_callback_ = error_callback;
   access_token_fetcher_->FetchAccessToken(base::Bind(
-      &CryptAuthClient::OnAccessTokenFetched<ResponseProto>,
+      &CryptAuthClientImpl::OnAccessTokenFetched<ResponseProto>,
       weak_ptr_factory_.GetWeakPtr(), serialized_request, response_callback));
 }
 
 template <class ResponseProto>
-void CryptAuthClient::OnAccessTokenFetched(
+void CryptAuthClientImpl::OnAccessTokenFetched(
     const std::string& serialized_request,
     const base::Callback<void(const ResponseProto&)>& response_callback,
     const std::string& access_token) {
@@ -148,16 +145,17 @@ void CryptAuthClient::OnAccessTokenFetched(
     return;
   }
 
-  flow_ = CreateFlow(CreateRequestUrl(request_path_));
-  flow_->Start(url_request_context_.get(), access_token, serialized_request,
-               base::Bind(&CryptAuthClient::OnFlowSuccess<ResponseProto>,
-                          weak_ptr_factory_.GetWeakPtr(), response_callback),
-               base::Bind(&CryptAuthClient::OnApiCallFailed,
-                          weak_ptr_factory_.GetWeakPtr()));
+  api_call_flow_->Start(
+      CreateRequestUrl(request_path_), url_request_context_.get(), access_token,
+      serialized_request,
+      base::Bind(&CryptAuthClientImpl::OnFlowSuccess<ResponseProto>,
+                 weak_ptr_factory_.GetWeakPtr(), response_callback),
+      base::Bind(&CryptAuthClientImpl::OnApiCallFailed,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 template <class ResponseProto>
-void CryptAuthClient::OnFlowSuccess(
+void CryptAuthClientImpl::OnFlowSuccess(
     const base::Callback<void(const ResponseProto&)>& result_callback,
     const std::string& serialized_response) {
   ResponseProto response;
@@ -168,8 +166,31 @@ void CryptAuthClient::OnFlowSuccess(
   result_callback.Run(response);
 };
 
-void CryptAuthClient::OnApiCallFailed(const std::string& error_message) {
+void CryptAuthClientImpl::OnApiCallFailed(const std::string& error_message) {
   error_callback_.Run(error_message);
+}
+
+// CryptAuthClientFactoryImpl
+CryptAuthClientFactoryImpl::CryptAuthClientFactoryImpl(
+    OAuth2TokenService* token_service,
+    const std::string& account_id,
+    scoped_refptr<net::URLRequestContextGetter> url_request_context,
+    const cryptauth::DeviceClassifier& device_classifier)
+    : token_service_(token_service),
+      account_id_(account_id),
+      url_request_context_(url_request_context),
+      device_classifier_(device_classifier) {
+}
+
+CryptAuthClientFactoryImpl::~CryptAuthClientFactoryImpl() {
+}
+
+scoped_ptr<CryptAuthClient> CryptAuthClientFactoryImpl::CreateInstance() {
+  return make_scoped_ptr(new CryptAuthClientImpl(
+      make_scoped_ptr(new CryptAuthApiCallFlow()),
+      make_scoped_ptr(
+          new CryptAuthAccessTokenFetcherImpl(token_service_, account_id_)),
+      url_request_context_, device_classifier_));
 }
 
 }  // proximity_auth

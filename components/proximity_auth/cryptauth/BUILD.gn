@@ -5,14 +5,13 @@
 source_set("cryptauth") {
   sources = [
     "cryptauth_access_token_fetcher.h",
-    "cryptauth_account_token_fetcher.cc",
-    "cryptauth_account_token_fetcher.h",
+    "cryptauth_access_token_fetcher_impl.cc",
+    "cryptauth_access_token_fetcher_impl.h",
     "cryptauth_api_call_flow.cc",
     "cryptauth_api_call_flow.h",
-    "cryptauth_client.cc",
     "cryptauth_client.h",
-    "cryptauth_client_factory.cc",
-    "cryptauth_client_factory.h",
+    "cryptauth_client_impl.cc",
+    "cryptauth_client_impl.h",
     "cryptauth_enrollment_utils.cc",
     "cryptauth_enrollment_utils.h",
     "secure_message_delegate.cc",
@@ -49,9 +48,9 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "cryptauth_account_token_fetcher_unittest.cc",
+    "cryptauth_access_token_fetcher_impl_unittest.cc",
     "cryptauth_api_call_flow_unittest.cc",
-    "cryptauth_client_unittest.cc",
+    "cryptauth_client_impl_unittest.cc",
     "fake_secure_message_delegate_unittest.cc",
   ]
 

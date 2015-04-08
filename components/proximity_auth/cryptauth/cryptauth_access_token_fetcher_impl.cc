@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/cryptauth/cryptauth_account_token_fetcher.h"
+#include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl.h"
 
 namespace proximity_auth {
 
@@ -17,19 +17,19 @@ OAuth2TokenService::ScopeSet GetScopes() {
 
 }  // namespace
 
-CryptAuthAccountTokenFetcher::CryptAuthAccountTokenFetcher(
+CryptAuthAccessTokenFetcherImpl::CryptAuthAccessTokenFetcherImpl(
     OAuth2TokenService* token_service,
     const std::string& account_id)
-    : OAuth2TokenService::Consumer("cryptauth_account_token_fetcher"),
+    : OAuth2TokenService::Consumer("cryptauth_access_token_fetcher"),
       token_service_(token_service),
       account_id_(account_id),
       fetch_started_(false) {
 }
 
-CryptAuthAccountTokenFetcher::~CryptAuthAccountTokenFetcher() {
+CryptAuthAccessTokenFetcherImpl::~CryptAuthAccessTokenFetcherImpl() {
 }
 
-void CryptAuthAccountTokenFetcher::FetchAccessToken(
+void CryptAuthAccessTokenFetcherImpl::FetchAccessToken(
     const AccessTokenCallback& callback) {
   if (fetch_started_) {
     LOG(WARNING) << "Create an instance for each token fetched. Do not reuse.";
@@ -44,14 +44,14 @@ void CryptAuthAccountTokenFetcher::FetchAccessToken(
   token_request_ = token_service_->StartRequest(account_id_, GetScopes(), this);
 }
 
-void CryptAuthAccountTokenFetcher::OnGetTokenSuccess(
+void CryptAuthAccessTokenFetcherImpl::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
   callback_.Run(access_token);
 }
 
-void CryptAuthAccountTokenFetcher::OnGetTokenFailure(
+void CryptAuthAccessTokenFetcherImpl::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   callback_.Run(std::string());

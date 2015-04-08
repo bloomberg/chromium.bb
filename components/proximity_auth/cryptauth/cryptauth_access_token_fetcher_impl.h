@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPT_AUTH_ACCOUNT_TOKEN_FETCHER_IMPL_H
-#define COMPONENTS_PROXIMITY_AUTH_CRYPT_AUTH_ACCOUNT_TOKEN_FETCHER_IMPL_H
+#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ACCESS_TOKEN_FETCHER_IMPL_H
+#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ACCESS_TOKEN_FETCHER_IMPL_H
 
 #include "base/callback.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
@@ -13,13 +13,13 @@ namespace proximity_auth {
 
 // Implementation of CryptAuthAccessTokenFetcher fetching an access token for a
 // given account using the provided OAuth2TokenService.
-class CryptAuthAccountTokenFetcher : public CryptAuthAccessTokenFetcher,
-                                     public OAuth2TokenService::Consumer {
+class CryptAuthAccessTokenFetcherImpl : public CryptAuthAccessTokenFetcher,
+                                        public OAuth2TokenService::Consumer {
  public:
   // |token_service| is not owned, and must outlive this object.
-  CryptAuthAccountTokenFetcher(OAuth2TokenService* token_service,
-                               const std::string& account_id);
-  ~CryptAuthAccountTokenFetcher() override;
+  CryptAuthAccessTokenFetcherImpl(OAuth2TokenService* token_service,
+                                  const std::string& account_id);
+  ~CryptAuthAccessTokenFetcherImpl() override;
 
   // CryptAuthAccessTokenFetcher:
   void FetchAccessToken(const AccessTokenCallback& callback) override;
@@ -48,9 +48,9 @@ class CryptAuthAccountTokenFetcher : public CryptAuthAccessTokenFetcher,
   // Callback to invoke when the token fetch succeeds or fails.
   AccessTokenCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(CryptAuthAccountTokenFetcher);
+  DISALLOW_COPY_AND_ASSIGN(CryptAuthAccessTokenFetcherImpl);
 };
 
 }  // namespace proximity_auth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_CRYPT_AUTH_ACCESS_TOKEN_FETCHER_IMPL_H
+#endif  // COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_ACCESS_TOKEN_FETCHER_IMPL_H

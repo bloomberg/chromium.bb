@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/cryptauth/cryptauth_account_token_fetcher.h"
+#include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl.h"
 
 #include <string>
 
@@ -25,20 +25,20 @@ void SaveAccessToken(std::string* out_token, const std::string& in_token) {
 
 }  // namespace
 
-class ProximityAuthCryptAuthAccountTokenFetcherTest : public testing::Test {
+class ProximityAuthCryptAuthAccessTokenFetcherTest : public testing::Test {
  protected:
-  ProximityAuthCryptAuthAccountTokenFetcherTest()
+  ProximityAuthCryptAuthAccessTokenFetcherTest()
       : fetcher_(&token_service_, kAccountId) {
     token_service_.AddAccount(kAccountId);
   }
 
   FakeOAuth2TokenService token_service_;
-  CryptAuthAccountTokenFetcher fetcher_;
+  CryptAuthAccessTokenFetcherImpl fetcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProximityAuthCryptAuthAccountTokenFetcherTest);
+  DISALLOW_COPY_AND_ASSIGN(ProximityAuthCryptAuthAccessTokenFetcherTest);
 };
 
-TEST_F(ProximityAuthCryptAuthAccountTokenFetcherTest, FetchSuccess) {
+TEST_F(ProximityAuthCryptAuthAccessTokenFetcherTest, FetchSuccess) {
   std::string result;
   fetcher_.FetchAccessToken(base::Bind(SaveAccessToken, &result));
   token_service_.IssueAllTokensForAccount(kAccountId, kAccessToken,
@@ -47,7 +47,7 @@ TEST_F(ProximityAuthCryptAuthAccountTokenFetcherTest, FetchSuccess) {
   EXPECT_EQ(kAccessToken, result);
 }
 
-TEST_F(ProximityAuthCryptAuthAccountTokenFetcherTest, FetchFailure) {
+TEST_F(ProximityAuthCryptAuthAccessTokenFetcherTest, FetchFailure) {
   std::string result(kInvalidResult);
   fetcher_.FetchAccessToken(base::Bind(SaveAccessToken, &result));
   token_service_.IssueErrorForAllPendingRequestsForAccount(
@@ -57,7 +57,7 @@ TEST_F(ProximityAuthCryptAuthAccountTokenFetcherTest, FetchFailure) {
   EXPECT_EQ(std::string(), result);
 }
 
-TEST_F(ProximityAuthCryptAuthAccountTokenFetcherTest, FetcherReuse) {
+TEST_F(ProximityAuthCryptAuthAccessTokenFetcherTest, FetcherReuse) {
   std::string result1;
   fetcher_.FetchAccessToken(base::Bind(SaveAccessToken, &result1));
 

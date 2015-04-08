@@ -22,9 +22,8 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/user_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/proximity_auth/cryptauth/cryptauth_account_token_fetcher.h"
-#include "components/proximity_auth/cryptauth/cryptauth_client.h"
-#include "components/proximity_auth/cryptauth/cryptauth_client_factory.h"
+#include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
+#include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
 #include "components/proximity_auth/switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -223,7 +222,7 @@ void EasyUnlockServiceRegular::RunTurnOffFlow() {
 
   SetTurnOffFlowStatus(PENDING);
 
-  proximity_auth::CryptAuthClientFactory factory(
+  proximity_auth::CryptAuthClientFactoryImpl factory(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
       SigninManagerFactory::GetForProfile(profile())
           ->GetAuthenticatedAccountId(),

@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/cryptauth/cryptauth_client.h"
+#include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
 
 #include "base/command_line.h"
 #include "base/test/null_task_runner.h"
 #include "components/proximity_auth/cryptauth/cryptauth_access_token_fetcher.h"
 #include "components/proximity_auth/cryptauth/cryptauth_api_call_flow.h"
-#include "components/proximity_auth/cryptauth/cryptauth_client_factory.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/switches.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
@@ -16,6 +15,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using testing::_;
 using testing::DoAll;
@@ -61,11 +61,12 @@ class FakeCryptAuthAccessTokenFetcher : public CryptAuthAccessTokenFetcher {
 // Mock CryptAuthApiCallFlow, which handles the HTTP requests to CryptAuth.
 class MockCryptAuthApiCallFlow : public CryptAuthApiCallFlow {
  public:
-  MockCryptAuthApiCallFlow() : CryptAuthApiCallFlow(GURL(std::string())) {}
+  MockCryptAuthApiCallFlow() : CryptAuthApiCallFlow() {}
   virtual ~MockCryptAuthApiCallFlow() {}
 
-  MOCK_METHOD5(Start,
-               void(net::URLRequestContextGetter* context,
+  MOCK_METHOD6(Start,
+               void(const GURL&,
+                    net::URLRequestContextGetter* context,
                     const std::string& access_token,
                     const std::string& serialized_request,
                     const ResultCallback& result_callback,
@@ -73,32 +74,6 @@ class MockCryptAuthApiCallFlow : public CryptAuthApiCallFlow {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCryptAuthApiCallFlow);
-};
-
-// Subclass of CryptAuthClient to use as test harness.
-class MockCryptAuthClient : public CryptAuthClient {
- public:
-  // Ownership of |access_token_fetcher| is passed to the superclass. Due to the
-  // limitations of gmock, we need to use a raw pointer argument rather than a
-  // scoped_ptr.
-  MockCryptAuthClient(
-      CryptAuthAccessTokenFetcher* access_token_fetcher,
-      scoped_refptr<net::URLRequestContextGetter> url_request_context,
-      const cryptauth::DeviceClassifier& device_classifier)
-      : CryptAuthClient(make_scoped_ptr(access_token_fetcher),
-                        url_request_context,
-                        device_classifier) {}
-  virtual ~MockCryptAuthClient() {}
-
-  MOCK_METHOD1(CreateFlowProxy, CryptAuthApiCallFlow*(const GURL& request_url));
-
-  scoped_ptr<CryptAuthApiCallFlow> CreateFlow(
-      const GURL& request_url) override {
-    return make_scoped_ptr(CreateFlowProxy(request_url));
-  };
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCryptAuthClient);
 };
 
 // Callback that should never be invoked.
@@ -119,6 +94,7 @@ class ProximityAuthCryptAuthClientTest : public testing::Test {
  protected:
   ProximityAuthCryptAuthClientTest()
       : access_token_fetcher_(new FakeCryptAuthAccessTokenFetcher()),
+        api_call_flow_(new StrictMock<MockCryptAuthApiCallFlow>()),
         url_request_context_(
             new net::TestURLRequestContextGetter(new base::NullTaskRunner())),
         serialized_request_(std::string()) {}
@@ -134,24 +110,20 @@ class ProximityAuthCryptAuthClientTest : public testing::Test {
     device_classifier.set_device_software_package(kDeviceSoftwarePackage);
     device_classifier.set_device_type(kDeviceType);
 
-    client_.reset(new StrictMock<MockCryptAuthClient>(
-        access_token_fetcher_, url_request_context_, device_classifier));
+    client_.reset(new CryptAuthClientImpl(
+        make_scoped_ptr(api_call_flow_), make_scoped_ptr(access_token_fetcher_),
+        url_request_context_, device_classifier));
   }
 
   // Sets up an expectation and captures a CryptAuth API request to
   // |request_url|.
   void ExpectRequest(const std::string& request_url) {
-    StrictMock<MockCryptAuthApiCallFlow>* api_call_flow =
-        new StrictMock<MockCryptAuthApiCallFlow>();
-
-    EXPECT_CALL(*client_, CreateFlowProxy(GURL(request_url)))
-        .WillOnce(Return(api_call_flow));
-
-    EXPECT_CALL(*api_call_flow,
-                Start(url_request_context_.get(), kAccessToken, _, _, _))
-        .WillOnce(DoAll(SaveArg<2>(&serialized_request_),
-                        SaveArg<3>(&flow_result_callback_),
-                        SaveArg<4>(&flow_error_callback_)));
+    GURL url(request_url);
+    EXPECT_CALL(*api_call_flow_,
+                Start(url, url_request_context_.get(), kAccessToken, _, _, _))
+        .WillOnce(DoAll(SaveArg<3>(&serialized_request_),
+                        SaveArg<4>(&flow_result_callback_),
+                        SaveArg<5>(&flow_error_callback_)));
   }
 
   // Returns |response_proto| as the result to the current API request.
@@ -169,9 +141,11 @@ class ProximityAuthCryptAuthClientTest : public testing::Test {
  protected:
   // Owned by |client_|.
   FakeCryptAuthAccessTokenFetcher* access_token_fetcher_;
+  // Owned by |client_|.
+  StrictMock<MockCryptAuthApiCallFlow>* api_call_flow_;
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
-  scoped_ptr<StrictMock<MockCryptAuthClient>> client_;
+  scoped_ptr<CryptAuthClient> client_;
 
   std::string serialized_request_;
   CryptAuthApiCallFlow::ResultCallback flow_result_callback_;
