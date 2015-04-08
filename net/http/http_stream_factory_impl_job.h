@@ -18,6 +18,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session_key.h"
 #include "net/ssl/ssl_config_service.h"
@@ -234,6 +235,8 @@ class HttpStreamFactoryImpl::Job {
   bool ShouldForceQuic() const;
 
   void MaybeMarkAlternativeServiceBroken();
+
+  ClientSocketPoolManager::SocketGroupType GetSocketGroup() const;
 
   // Record histograms of latency until Connect() completes.
   static void LogHttpConnectedMetrics(const ClientSocketHandle& handle);

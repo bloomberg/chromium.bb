@@ -628,7 +628,6 @@ int HttpStreamFactoryImpl::Job::DoStart() {
   // https://<alternative host>:<alternative port>/...
   // so the proxy resolution works with the actual destination, and so
   // that the correct socket pool is used.
-  // TODO(rch): change the socket pool API to not require a full URL.
   if (alternative_service_.protocol >= NPN_SPDY_MINIMUM_VERSION &&
       alternative_service_.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
     // TODO(rch):  Figure out how to make QUIC iteract with PAC
@@ -870,7 +869,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   if (IsPreconnecting()) {
     DCHECK(!stream_factory_->for_websockets_);
     return PreconnectSocketsForHttpRequest(
-        alternative_service_url_, request_info_.extra_headers,
+        GetSocketGroup(), server_, request_info_.extra_headers,
         request_info_.load_flags, priority_, session_, proxy_info_,
         ShouldForceSpdySSL(), want_spdy_over_npn, server_ssl_config_,
         proxy_ssl_config_, request_info_.privacy_mode, net_log_, num_streams_);
@@ -887,15 +886,15 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     SSLConfig websocket_server_ssl_config = server_ssl_config_;
     websocket_server_ssl_config.next_protos.clear();
     return InitSocketHandleForWebSocketRequest(
-        origin_url_, request_info_.extra_headers, request_info_.load_flags,
-        priority_, session_, proxy_info_, ShouldForceSpdySSL(),
-        want_spdy_over_npn, websocket_server_ssl_config, proxy_ssl_config_,
-        request_info_.privacy_mode, net_log_,
+        GetSocketGroup(), server_, request_info_.extra_headers,
+        request_info_.load_flags, priority_, session_, proxy_info_,
+        ShouldForceSpdySSL(), want_spdy_over_npn, websocket_server_ssl_config,
+        proxy_ssl_config_, request_info_.privacy_mode, net_log_,
         connection_.get(), resolution_callback, io_callback_);
   }
 
   return InitSocketHandleForHttpRequest(
-      alternative_service_url_, request_info_.extra_headers,
+      GetSocketGroup(), server_, request_info_.extra_headers,
       request_info_.load_flags, priority_, session_, proxy_info_,
       ShouldForceSpdySSL(), want_spdy_over_npn, server_ssl_config_,
       proxy_ssl_config_, request_info_.privacy_mode, net_log_,
@@ -1488,6 +1487,15 @@ void HttpStreamFactoryImpl::Job::MaybeMarkAlternativeServiceBroken() {
     session_->http_server_properties()->MarkAlternativeServiceBroken(
         other_job_alternative_service_);
   }
+}
+
+ClientSocketPoolManager::SocketGroupType
+HttpStreamFactoryImpl::Job::GetSocketGroup() const {
+  if (ShouldForceSpdySSL())
+    return ClientSocketPoolManager::SSL_GROUP;
+
+  return ClientSocketPoolManager::GroupTypeFromScheme(
+      alternative_service_url_.scheme());
 }
 
 }  // namespace net

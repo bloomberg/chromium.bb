@@ -44,6 +44,15 @@ enum DefaultMaxValues { kDefaultMaxSocketsPerProxyServer = 32 };
 
 class NET_EXPORT_PRIVATE ClientSocketPoolManager {
  public:
+  enum SocketGroupType {
+    SSL_GROUP,     // For all TLS sockets.
+    NORMAL_GROUP,  // For normal HTTP sockets.
+    FTP_GROUP      // For FTP sockets (over an HTTP proxy).
+  };
+
+  // Returns the correct socket group type for |scheme|.
+  static SocketGroupType GroupTypeFromScheme(const std::string& scheme);
+
   ClientSocketPoolManager();
   virtual ~ClientSocketPoolManager();
 
@@ -89,8 +98,14 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
 // |resolution_callback| will be invoked after the the hostname is
 // resolved.  If |resolution_callback| does not return OK, then the
 // connection will be aborted with that value.
+// If |want_spdy_over_ssl| is true, then after the SSL handshake is complete,
+// SPDY must have been negotiated or else it will be considered an error.
+// If |force_spdy_over_ssl| is true, then SPDY will be assumed to be supported
+// for all SSL connections.
+// TODO(rch): remove force_spdy_over_ssl.
 int InitSocketHandleForHttpRequest(
-    const GURL& request_url,
+    ClientSocketPoolManager::SocketGroupType group_type,
+    const HostPortPair& endpoint,
     const HttpRequestHeaders& request_extra_headers,
     int request_load_flags,
     RequestPriority request_priority,
@@ -116,7 +131,8 @@ int InitSocketHandleForHttpRequest(
 // connection will be aborted with that value.
 // This function uses WEBSOCKET_SOCKET_POOL socket pools.
 int InitSocketHandleForWebSocketRequest(
-    const GURL& request_url,
+    ClientSocketPoolManager::SocketGroupType group_type,
+    const HostPortPair& endpoint,
     const HttpRequestHeaders& request_extra_headers,
     int request_load_flags,
     RequestPriority request_priority,
@@ -165,7 +181,8 @@ NET_EXPORT int InitSocketHandleForTlsConnect(
 // Similar to InitSocketHandleForHttpRequest except that it initiates the
 // desired number of preconnect streams from the relevant socket pool.
 int PreconnectSocketsForHttpRequest(
-    const GURL& request_url,
+    ClientSocketPoolManager::SocketGroupType group_type,
+    const HostPortPair& endpoint,
     const HttpRequestHeaders& request_extra_headers,
     int request_load_flags,
     RequestPriority request_priority,
