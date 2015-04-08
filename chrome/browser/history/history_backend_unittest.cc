@@ -2642,49 +2642,6 @@ TEST_F(HistoryBackendTest, UpdateFaviconMappingsAndFetchNoDB) {
   EXPECT_TRUE(bitmap_results.empty());
 }
 
-TEST_F(HistoryBackendTest, CloneFaviconIsRestrictedToSameDomain) {
-  const GURL url("http://www.google.com/");
-  const GURL same_domain_url("http://www.google.com/subdir/index.html");
-  const GURL foreign_domain_url("http://www.not-google.com/");
-  const GURL icon_url("http://www.google.com/icon.png");
-  std::vector<SkBitmap> bitmaps;
-  bitmaps.push_back(CreateBitmap(SK_ColorBLUE, kSmallEdgeSize));
-
-  // Add a favicon
-  backend_->SetFavicons(url, favicon_base::FAVICON, icon_url, bitmaps);
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
-      url, favicon_base::FAVICON, NULL));
-
-  // Validate starting state.
-  std::vector<favicon_base::FaviconRawBitmapResult> bitmap_results_out;
-  EXPECT_TRUE(backend_->GetFaviconsFromDB(url,
-                                          favicon_base::FAVICON,
-                                          GetEdgeSizesSmallAndLarge(),
-                                          &bitmap_results_out));
-  EXPECT_FALSE(backend_->GetFaviconsFromDB(same_domain_url,
-                                           favicon_base::FAVICON,
-                                           GetEdgeSizesSmallAndLarge(),
-                                           &bitmap_results_out));
-  EXPECT_FALSE(backend_->GetFaviconsFromDB(foreign_domain_url,
-                                           favicon_base::FAVICON,
-                                           GetEdgeSizesSmallAndLarge(),
-                                           &bitmap_results_out));
-
-  // Same-domain cloning should work.
-  backend_->CloneFavicons(url, same_domain_url);
-  EXPECT_TRUE(backend_->GetFaviconsFromDB(same_domain_url,
-                                          favicon_base::FAVICON,
-                                          GetEdgeSizesSmallAndLarge(),
-                                          &bitmap_results_out));
-
-  // Foreign-domain cloning is forbidden.
-  backend_->CloneFavicons(url, foreign_domain_url);
-  EXPECT_FALSE(backend_->GetFaviconsFromDB(foreign_domain_url,
-                                           favicon_base::FAVICON,
-                                           GetEdgeSizesSmallAndLarge(),
-                                           &bitmap_results_out));
-}
-
 TEST_F(HistoryBackendTest, QueryFilteredURLs) {
   const char* google = "http://www.google.com/";
   const char* yahoo = "http://www.yahoo.com/";

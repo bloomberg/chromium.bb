@@ -300,8 +300,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void SetFaviconsOutOfDateForPage(const GURL& page_url);
 
-  void CloneFavicons(const GURL& old_page_url, const GURL& new_page_url);
-
   void SetImportedFavicons(
       const favicon_base::FaviconUsageDataList& favicon_usage);
 
@@ -505,8 +503,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconsFromDBExpired);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            UpdateFaviconMappingsAndFetchNoDB);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
-                           CloneFaviconIsRestrictedToSameDomain);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, QueryFilteredURLs);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, UpdateVisitDuration);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, ExpireHistoryForTimes);

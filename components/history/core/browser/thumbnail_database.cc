@@ -1035,16 +1035,6 @@ IconMappingID ThumbnailDatabase::AddIconMapping(
   return db_.GetLastInsertRowId();
 }
 
-bool ThumbnailDatabase::UpdateIconMapping(IconMappingID mapping_id,
-                                          favicon_base::FaviconID icon_id) {
-  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "UPDATE icon_mapping SET icon_id=? WHERE id=?"));
-  statement.BindInt64(0, icon_id);
-  statement.BindInt64(1, mapping_id);
-
-  return statement.Run();
-}
-
 bool ThumbnailDatabase::DeleteIconMappings(const GURL& page_url) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM icon_mapping WHERE page_url = ?"));
@@ -1068,29 +1058,6 @@ bool ThumbnailDatabase::HasMappingFor(favicon_base::FaviconID id) {
   statement.BindInt64(0, id);
 
   return statement.Step();
-}
-
-bool ThumbnailDatabase::CloneIconMappings(const GURL& old_page_url,
-                                          const GURL& new_page_url) {
-  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT icon_id FROM icon_mapping "
-      "WHERE page_url=?"));
-  if (!statement.is_valid())
-    return false;
-
-  // Do nothing if there are existing bindings
-  statement.BindString(0, URLDatabase::GURLToDatabaseURL(new_page_url));
-  if (statement.Step())
-    return true;
-
-  statement.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO icon_mapping (page_url, icon_id) "
-        "SELECT ?, icon_id FROM icon_mapping "
-        "WHERE page_url = ?"));
-
-  statement.BindString(0, URLDatabase::GURLToDatabaseURL(new_page_url));
-  statement.BindString(1, URLDatabase::GURLToDatabaseURL(old_page_url));
-  return statement.Run();
 }
 
 bool ThumbnailDatabase::InitIconMappingEnumerator(

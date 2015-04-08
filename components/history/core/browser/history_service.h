@@ -748,10 +748,6 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // of date.
   void SetFaviconsOutOfDateForPage(const GURL& page_url);
 
-  // Used by the FaviconService to clone favicons from one page to another,
-  // provided that other page does not already have favicons.
-  void CloneFavicons(const GURL& old_page_url, const GURL& new_page_url);
-
   // Used by the FaviconService for importing many favicons for many pages at
   // once. The pages must exist, any favicon sets for unknown pages will be
   // discarded. Existing favicons will not be overwritten.

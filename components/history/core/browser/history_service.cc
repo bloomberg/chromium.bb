@@ -622,15 +622,6 @@ void HistoryService::SetFaviconsOutOfDateForPage(const GURL& page_url) {
                           history_backend_.get(), page_url));
 }
 
-void HistoryService::CloneFavicons(const GURL& old_page_url,
-                                   const GURL& new_page_url) {
-  DCHECK(thread_) << "History service being called after cleanup";
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleTask(PRIORITY_NORMAL,
-               base::Bind(&HistoryBackend::CloneFavicons,
-                          history_backend_.get(), old_page_url, new_page_url));
-}
-
 void HistoryService::SetImportedFavicons(
     const favicon_base::FaviconUsageDataList& favicon_usage) {
   DCHECK(thread_) << "History service being called after cleanup";

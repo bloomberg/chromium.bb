@@ -231,12 +231,6 @@ void FaviconService::SetFaviconOutOfDateForPage(const GURL& page_url) {
     history_service_->SetFaviconsOutOfDateForPage(page_url);
 }
 
-void FaviconService::CloneFavicon(const GURL& old_page_url,
-                                  const GURL& new_page_url) {
-  if (history_service_)
-    history_service_->CloneFavicons(old_page_url, new_page_url);
-}
-
 void FaviconService::SetImportedFavicons(
     const favicon_base::FaviconUsageDataList& favicon_usage) {
   if (history_service_)

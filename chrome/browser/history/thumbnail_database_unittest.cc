@@ -247,34 +247,6 @@ TEST_F(ThumbnailDatabaseTest, LastRequestedTime) {
   EXPECT_EQ(last_requested, now);
  }
 
-TEST_F(ThumbnailDatabaseTest, UpdateIconMapping) {
-  ThumbnailDatabase db(NULL);
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
-  db.BeginTransaction();
-
-  GURL url("http://google.com");
-  favicon_base::FaviconID id = db.AddFavicon(url, favicon_base::TOUCH_ICON);
-
-  EXPECT_LT(0, db.AddIconMapping(url, id));
-  std::vector<IconMapping> icon_mapping;
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(url, &icon_mapping));
-  ASSERT_EQ(1u, icon_mapping.size());
-  EXPECT_EQ(url, icon_mapping.front().page_url);
-  EXPECT_EQ(id, icon_mapping.front().icon_id);
-
-  GURL url1("http://www.google.com/");
-  favicon_base::FaviconID new_id =
-      db.AddFavicon(url1, favicon_base::TOUCH_ICON);
-  EXPECT_TRUE(db.UpdateIconMapping(icon_mapping.front().mapping_id, new_id));
-
-  icon_mapping.clear();
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(url, &icon_mapping));
-  ASSERT_EQ(1u, icon_mapping.size());
-  EXPECT_EQ(url, icon_mapping.front().page_url);
-  EXPECT_EQ(new_id, icon_mapping.front().icon_id);
-  EXPECT_NE(id, icon_mapping.front().icon_id);
-}
-
 TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
   ThumbnailDatabase db(NULL);
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
@@ -612,71 +584,6 @@ TEST_F(ThumbnailDatabaseTest, HasMappingFor) {
   EXPECT_FALSE(db.HasMappingFor(id1));
   EXPECT_FALSE(db.HasMappingFor(id2));
   EXPECT_FALSE(db.HasMappingFor(id3));
-}
-
-TEST_F(ThumbnailDatabaseTest, CloneIconMappings) {
-  ThumbnailDatabase db(NULL);
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
-  db.BeginTransaction();
-
-  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
-  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
-
-  // Add a favicon which will have icon_mappings
-  favicon_base::FaviconID id1 =
-      db.AddFavicon(GURL("http://google.com"), favicon_base::FAVICON);
-  EXPECT_NE(0, id1);
-  base::Time time = base::Time::Now();
-  db.AddFaviconBitmap(id1, favicon, time, gfx::Size());
-
-  // Add another type of favicon
-  favicon_base::FaviconID id2 = db.AddFavicon(
-      GURL("http://www.google.com/icon"), favicon_base::TOUCH_ICON);
-  EXPECT_NE(0, id2);
-  time = base::Time::Now();
-  db.AddFaviconBitmap(id2, favicon, time, gfx::Size());
-
-  // Add 3rd favicon
-  favicon_base::FaviconID id3 = db.AddFavicon(
-      GURL("http://www.google.com/icon"), favicon_base::TOUCH_ICON);
-  EXPECT_NE(0, id3);
-  time = base::Time::Now();
-  db.AddFaviconBitmap(id3, favicon, time, gfx::Size());
-
-  GURL page1_url("http://page1.com");
-  EXPECT_TRUE(db.AddIconMapping(page1_url, id1));
-  EXPECT_TRUE(db.AddIconMapping(page1_url, id2));
-
-  GURL page2_url("http://page2.com");
-  EXPECT_TRUE(db.AddIconMapping(page2_url, id3));
-
-  // Test we do nothing with existing mappings.
-  std::vector<IconMapping> icon_mapping;
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(page2_url, &icon_mapping));
-  ASSERT_EQ(1U, icon_mapping.size());
-
-  EXPECT_TRUE(db.CloneIconMappings(page1_url, page2_url));
-
-  icon_mapping.clear();
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(page2_url, &icon_mapping));
-  ASSERT_EQ(1U, icon_mapping.size());
-  EXPECT_EQ(page2_url, icon_mapping[0].page_url);
-  EXPECT_EQ(id3, icon_mapping[0].icon_id);
-
-  // Test we clone if the new page has no mappings.
-  GURL page3_url("http://page3.com");
-  EXPECT_TRUE(db.CloneIconMappings(page1_url, page3_url));
-
-  icon_mapping.clear();
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(page3_url, &icon_mapping));
-
-  ASSERT_EQ(2U, icon_mapping.size());
-  if (icon_mapping[0].icon_id == id2)
-    std::swap(icon_mapping[0], icon_mapping[1]);
-  EXPECT_EQ(page3_url, icon_mapping[0].page_url);
-  EXPECT_EQ(id1, icon_mapping[0].icon_id);
-  EXPECT_EQ(page3_url, icon_mapping[1].page_url);
-  EXPECT_EQ(id2, icon_mapping[1].icon_id);
 }
 
 // Test loading version 3 database.

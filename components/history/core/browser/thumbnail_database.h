@@ -190,12 +190,6 @@ class ThumbnailDatabase {
   IconMappingID AddIconMapping(const GURL& page_url,
                                favicon_base::FaviconID icon_id);
 
-  // Updates the page and icon mapping for the given mapping_id with the given
-  // icon_id.
-  // Returns true if the update succeeded.
-  bool UpdateIconMapping(IconMappingID mapping_id,
-                         favicon_base::FaviconID icon_id);
-
   // Deletes the icon mapping entries for the given page url.
   // Returns true if the deletion succeeded.
   bool DeleteIconMappings(const GURL& page_url);
@@ -206,10 +200,6 @@ class ThumbnailDatabase {
 
   // Checks whether a favicon is used by any URLs in the database.
   bool HasMappingFor(favicon_base::FaviconID id);
-
-  // Clones the existing mappings from |old_page_url| if |new_page_url| has no
-  // mappings. Otherwise, will leave mappings alone.
-  bool CloneIconMappings(const GURL& old_page_url, const GURL& new_page_url);
 
   // The class to enumerate icon mappings. Use InitIconMappingEnumerator to
   // initialize.

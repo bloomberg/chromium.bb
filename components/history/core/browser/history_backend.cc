@@ -1769,19 +1769,6 @@ void HistoryBackend::SetFaviconsOutOfDateForPage(const GURL& page_url) {
   ScheduleCommit();
 }
 
-void HistoryBackend::CloneFavicons(const GURL& old_page_url,
-                                   const GURL& new_page_url) {
-  if (!thumbnail_db_)
-    return;
-
-  // Prevent cross-domain cloning.
-  if (old_page_url.GetOrigin() != new_page_url.GetOrigin())
-    return;
-
-  thumbnail_db_->CloneIconMappings(old_page_url, new_page_url);
-  ScheduleCommit();
-}
-
 void HistoryBackend::SetImportedFavicons(
     const favicon_base::FaviconUsageDataList& favicon_usage) {
   if (!db_ || !thumbnail_db_)
