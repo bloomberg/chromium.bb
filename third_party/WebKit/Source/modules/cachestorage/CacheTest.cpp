@@ -160,6 +160,7 @@ public:
     ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
     ExecutionContext* executionContext() { return scriptState()->executionContext(); }
     v8::Isolate* isolate() { return scriptState()->isolate(); }
+    v8::Local<v8::Context> context() { return scriptState()->context(); }
 
     Request* newRequestFromUrl(const String& url)
     {
@@ -181,7 +182,7 @@ public:
     std::string getRejectString(ScriptPromise& promise)
     {
         ScriptValue onReject = getRejectValue(promise);
-        return toCoreString(onReject.v8Value()->ToString(isolate())).ascii().data();
+        return toCoreString(onReject.v8Value()->ToString(context()).ToLocalChecked()).ascii().data();
     }
 
     ScriptValue getResolveValue(ScriptPromise& promise)
@@ -195,7 +196,7 @@ public:
     std::string getResolveString(ScriptPromise& promise)
     {
         ScriptValue onResolve = getResolveValue(promise);
-        return toCoreString(onResolve.v8Value()->ToString(isolate())).ascii().data();
+        return toCoreString(onResolve.v8Value()->ToString(context()).ToLocalChecked()).ascii().data();
     }
 
     ExceptionState& exceptionState()

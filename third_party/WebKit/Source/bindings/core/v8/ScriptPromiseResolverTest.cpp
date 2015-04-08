@@ -40,7 +40,7 @@ private:
     virtual ScriptValue call(ScriptValue value) override
     {
         ASSERT(!value.isEmpty());
-        *m_value = toCoreString(value.v8Value()->ToString(scriptState()->isolate()));
+        *m_value = toCoreString(value.v8Value()->ToString(scriptState()->context()).ToLocalChecked());
         return value;
     }
 

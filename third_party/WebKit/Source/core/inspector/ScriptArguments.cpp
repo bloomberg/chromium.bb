@@ -105,7 +105,10 @@ private:
             if (object->ObjectProtoToString(m_isolate->GetCurrentContext()).ToLocal(&stringValue))
                 return append(stringValue);
         }
-        return append(value->ToString(m_isolate));
+        v8::Local<v8::String> stringValue;
+        if (!value->ToString(m_isolate->GetCurrentContext()).ToLocal(&stringValue))
+            return false;
+        return append(stringValue);
     }
 
     bool append(v8::Local<v8::Array> array)

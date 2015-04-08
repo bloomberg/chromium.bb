@@ -50,7 +50,7 @@ private:
     ScriptValue call(ScriptValue value) override
     {
         ASSERT(!value.isEmpty());
-        *m_value = toCoreString(value.v8Value()->ToString(scriptState()->isolate()));
+        *m_value = toCoreString(value.v8Value()->ToString(scriptState()->context()).ToLocalChecked());
         return value;
     }
 
@@ -99,8 +99,7 @@ private:
 
         m_result->isSet = true;
         m_result->isDone = done.As<v8::Boolean>()->Value();
-        m_result->valueString = toCoreString(value->ToString(isolate));
-
+        m_result->valueString = toCoreString(value->ToString(scriptState()->context()).ToLocalChecked());
         return result;
     }
 

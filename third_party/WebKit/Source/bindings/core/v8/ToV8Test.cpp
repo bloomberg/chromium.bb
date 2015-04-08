@@ -32,7 +32,7 @@ public:
             ADD_FAILURE_AT(path, lineNumber) << "toV8 returns an empty value.";
             return;
         }
-        String actualString = toCoreString(actual->ToString(m_scope.isolate()));
+        String actualString = toCoreString(actual->ToString(m_scope.context()).ToLocalChecked());
         if (String(expected) != actualString) {
             ADD_FAILURE_AT(path, lineNumber) << "toV8 returns an incorrect value.\n  Actual: " << actualString.utf8().data() << "\nExpected: " << expected;
             return;
