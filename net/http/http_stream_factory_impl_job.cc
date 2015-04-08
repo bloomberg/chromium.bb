@@ -1494,8 +1494,14 @@ HttpStreamFactoryImpl::Job::GetSocketGroup() const {
   if (ShouldForceSpdySSL())
     return ClientSocketPoolManager::SSL_GROUP;
 
-  return ClientSocketPoolManager::GroupTypeFromScheme(
-      alternative_service_url_.scheme());
+  std::string scheme = alternative_service_url_.scheme();
+  if (scheme == "ftp")
+    return ClientSocketPoolManager::FTP_GROUP;
+
+  if (scheme == "https" || scheme == "wss")
+    return ClientSocketPoolManager::SSL_GROUP;
+
+  return ClientSocketPoolManager::NORMAL_GROUP;
 }
 
 }  // namespace net

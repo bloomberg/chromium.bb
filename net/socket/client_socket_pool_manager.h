@@ -50,9 +50,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
     FTP_GROUP      // For FTP sockets (over an HTTP proxy).
   };
 
-  // Returns the correct socket group type for |scheme|.
-  static SocketGroupType GroupTypeFromScheme(const std::string& scheme);
-
   ClientSocketPoolManager();
   virtual ~ClientSocketPoolManager();
 

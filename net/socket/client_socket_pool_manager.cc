@@ -327,18 +327,6 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
 
 }  // namespace
 
-// static
-ClientSocketPoolManager::SocketGroupType
-ClientSocketPoolManager::GroupTypeFromScheme(const std::string& scheme) {
-  if (scheme == "ftp")
-    return FTP_GROUP;
-
-  if (scheme == "https" || scheme == "wss")
-    return SSL_GROUP;
-
-  return NORMAL_GROUP;
-}
-
 ClientSocketPoolManager::ClientSocketPoolManager() {}
 ClientSocketPoolManager::~ClientSocketPoolManager() {}
 
