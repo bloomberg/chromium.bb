@@ -51,12 +51,14 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/FormData.h"
+#include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/StringHasher.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringUTF8Adaptor.h"
@@ -934,6 +936,31 @@ bool ContentSecurityPolicy::shouldBypassMainWorld(const ExecutionContext* contex
             return document->frame()->script().shouldBypassMainWorldCSP();
     }
     return false;
+}
+
+bool ContentSecurityPolicy::isScriptResource(const ResourceRequest& resourceRequest)
+{
+    return WebURLRequest::RequestContextScript == resourceRequest.requestContext() || WebURLRequest::RequestContextImport == resourceRequest.requestContext() || WebURLRequest::RequestContextXSLT == resourceRequest.requestContext() || WebURLRequest::RequestContextPrefetch == resourceRequest.requestContext();
+}
+
+bool ContentSecurityPolicy::isStyleResource(const ResourceRequest& resourceRequest)
+{
+    return WebURLRequest::RequestContextStyle == resourceRequest.requestContext() || WebURLRequest::RequestContextPrefetch == resourceRequest.requestContext();
+}
+
+bool ContentSecurityPolicy::isImageResource(const ResourceRequest& resourceRequest)
+{
+    return WebURLRequest::RequestContextImage == resourceRequest.requestContext() || WebURLRequest::RequestContextFavicon == resourceRequest.requestContext() || WebURLRequest::RequestContextImageSet == resourceRequest.requestContext() || WebURLRequest::RequestContextPrefetch == resourceRequest.requestContext();
+}
+
+bool ContentSecurityPolicy::isFontResource(const ResourceRequest& resourceRequest)
+{
+    return WebURLRequest::RequestContextFont == resourceRequest.requestContext() || WebURLRequest::RequestContextPrefetch == resourceRequest.requestContext();
+}
+
+bool ContentSecurityPolicy::isMediaResource(const ResourceRequest& resourceRequest)
+{
+    return WebURLRequest::RequestContextAudio == resourceRequest.requestContext() || WebURLRequest::RequestContextVideo == resourceRequest.requestContext() || WebURLRequest::RequestContextTrack == resourceRequest.requestContext() || WebURLRequest::RequestContextPrefetch == resourceRequest.requestContext();
 }
 
 bool ContentSecurityPolicy::shouldSendViolationReport(const String& report) const

@@ -447,11 +447,13 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
     switch (type) {
     case Resource::XSLStyleSheet:
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        ASSERT(ContentSecurityPolicy::isScriptResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
             return false;
         break;
     case Resource::Script:
     case Resource::ImportResource:
+        ASSERT(ContentSecurityPolicy::isScriptResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
             return false;
 
@@ -461,15 +463,18 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
         }
         break;
     case Resource::CSSStyleSheet:
+        ASSERT(ContentSecurityPolicy::isStyleResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowStyleFromSource(url, redirectStatus, cspReporting))
             return false;
         break;
     case Resource::SVGDocument:
     case Resource::Image:
+        ASSERT(ContentSecurityPolicy::isImageResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowImageFromSource(url, redirectStatus, cspReporting))
             return false;
         break;
     case Resource::Font: {
+        ASSERT(ContentSecurityPolicy::isFontResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowFontFromSource(url, redirectStatus, cspReporting))
             return false;
         break;
@@ -481,6 +486,7 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
         break;
     case Resource::Media:
     case Resource::TextTrack:
+        ASSERT(ContentSecurityPolicy::isMediaResource(resourceRequest));
         if (!shouldBypassMainWorldCSP && !csp->allowMediaFromSource(url, redirectStatus, cspReporting))
             return false;
 
