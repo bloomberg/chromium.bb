@@ -200,6 +200,40 @@ void Display::OnDraw() {
   NOTREACHED();
 }
 
+void Display::DeferredInitialize() {
+  NOTREACHED();
+}
+
+void Display::ReleaseGL() {
+  NOTREACHED();
+}
+
+void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
+  NOTREACHED();
+}
+
+void Display::ReclaimResources(const CompositorFrameAck* ack) {
+  NOTREACHED();
+}
+
+void Display::SetExternalDrawConstraints(
+    const gfx::Transform& transform,
+    const gfx::Rect& viewport,
+    const gfx::Rect& clip,
+    const gfx::Rect& viewport_rect_for_tile_priority,
+    const gfx::Transform& transform_for_tile_priority,
+    bool resourceless_software_draw) {
+  NOTREACHED();
+}
+
+void Display::SetTreeActivationCallback(const base::Closure& callback) {
+  NOTREACHED();
+}
+
+void Display::SetFullRootLayerDamage() {
+  NOTREACHED();
+}
+
 void Display::OnSurfaceDamaged(SurfaceId surface_id, bool* changed) {
   if (aggregator_ &&
       aggregator_->previous_contained_surfaces().count(surface_id)) {

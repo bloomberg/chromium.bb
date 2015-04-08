@@ -66,14 +66,14 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   int GetMaxFramesPending();
 
   // OutputSurfaceClient implementation.
-  void DeferredInitialize() override {}
-  void ReleaseGL() override {}
+  void DeferredInitialize() override;
+  void ReleaseGL() override;
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
-  void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override {}
+  void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
   void DidSwapBuffers() override;
   void DidSwapBuffersComplete() override;
-  void ReclaimResources(const CompositorFrameAck* ack) override {}
+  void ReclaimResources(const CompositorFrameAck* ack) override;
   void DidLoseOutputSurface() override;
   void SetExternalDrawConstraints(
       const gfx::Transform& transform,
@@ -81,13 +81,13 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
       const gfx::Rect& clip,
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority,
-      bool resourceless_software_draw) override {}
+      bool resourceless_software_draw) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
-  void SetTreeActivationCallback(const base::Closure& callback) override {}
+  void SetTreeActivationCallback(const base::Closure& callback) override;
   void OnDraw() override;
 
   // RendererClient implementation.
-  void SetFullRootLayerDamage() override {}
+  void SetFullRootLayerDamage() override;
 
   // SurfaceDamageObserver implementation.
   void OnSurfaceDamaged(SurfaceId surface, bool* changed) override;
