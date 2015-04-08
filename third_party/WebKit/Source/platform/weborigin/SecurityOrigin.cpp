@@ -213,8 +213,7 @@ void SecurityOrigin::setDomainFromDOM(const String& newDomain)
 
 bool SecurityOrigin::isSecure(const KURL& url)
 {
-    // Invalid URLs are secure, as are URLs which have a secure protocol.
-    if (!url.isValid() || SchemeRegistry::shouldTreatURLSchemeAsSecure(url.protocol()))
+    if (SchemeRegistry::shouldTreatURLSchemeAsSecure(url.protocol()))
         return true;
 
     // URLs that wrap inner URLs are secure if those inner URLs are secure.

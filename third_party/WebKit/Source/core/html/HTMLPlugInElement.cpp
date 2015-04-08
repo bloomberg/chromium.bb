@@ -617,6 +617,9 @@ void HTMLPlugInElement::dispatchErrorEvent()
 
 bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType)
 {
+    if (url.isEmpty() && mimeType.isEmpty())
+        return false;
+
     LocalFrame* frame = document().frame();
     Settings* settings = frame->settings();
     if (!settings)
@@ -642,7 +645,7 @@ bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType
         return false;
     }
 
-    return !MixedContentChecker::shouldBlockFetch(frame, WebURLRequest::RequestContextObject, WebURLRequest::FrameTypeNone, url);
+    return (!mimeType.isEmpty() && url.isEmpty()) || !MixedContentChecker::shouldBlockFetch(frame, WebURLRequest::RequestContextObject, WebURLRequest::FrameTypeNone, url);
 }
 
 void HTMLPlugInElement::didAddClosedShadowRoot(ShadowRoot&)
