@@ -271,11 +271,11 @@ component("net") {
       "socket/ssl_client_socket_openssl.h",
       "socket/ssl_server_socket_openssl.cc",
       "socket/ssl_server_socket_openssl.h",
-      "socket/ssl_session_cache_openssl.cc",
-      "socket/ssl_session_cache_openssl.h",
       "ssl/openssl_platform_key.h",
       "ssl/openssl_ssl_util.cc",
       "ssl/openssl_ssl_util.h",
+      "ssl/ssl_client_session_cache_openssl.cc",
+      "ssl/ssl_client_session_cache_openssl.h",
     ]
     if (is_mac) {
       sources -= [ "ssl/openssl_platform_key_mac.cc" ]
@@ -1409,7 +1409,7 @@ if (!is_android && !is_win && !is_mac) {
         "cert/x509_util_openssl_unittest.cc",
         "quic/test_tools/crypto_test_utils_openssl.cc",
         "socket/ssl_client_socket_openssl_unittest.cc",
-        "socket/ssl_session_cache_openssl_unittest.cc",
+        "ssl/ssl_client_session_cache_openssl_unittest.cc",
       ]
       if (!is_desktop_linux && !is_chromeos) {
         sources -= [ "cert/nss_cert_database_unittest.cc" ]

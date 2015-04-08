@@ -253,7 +253,7 @@
               'cert/x509_util_openssl_unittest.cc',
               'quic/test_tools/crypto_test_utils_openssl.cc',
               'socket/ssl_client_socket_openssl_unittest.cc',
-              'socket/ssl_session_cache_openssl_unittest.cc',
+              'ssl/ssl_client_session_cache_openssl_unittest.cc',
             ],
           },
         ],

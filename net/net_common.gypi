@@ -197,13 +197,13 @@
           'socket/ssl_client_socket_openssl.h',
           'socket/ssl_server_socket_openssl.cc',
           'socket/ssl_server_socket_openssl.h',
-          'socket/ssl_session_cache_openssl.cc',
-          'socket/ssl_session_cache_openssl.h',
           'ssl/openssl_platform_key.h',
           'ssl/openssl_platform_key_mac.cc',
           'ssl/openssl_platform_key_win.cc',
           'ssl/openssl_ssl_util.cc',
           'ssl/openssl_ssl_util.h',
+          'ssl/ssl_client_session_cache_openssl.cc',
+          'ssl/ssl_client_session_cache_openssl.h',
         ],
         'conditions': [
           # Pull in the bundled or system NSS as appropriate.

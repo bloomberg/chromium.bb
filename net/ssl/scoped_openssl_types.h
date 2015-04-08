@@ -16,6 +16,7 @@ using ScopedPKCS8_PRIV_KEY_INFO =
     crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>;
 using ScopedSSL = crypto::ScopedOpenSSL<SSL, SSL_free>;
 using ScopedSSL_CTX = crypto::ScopedOpenSSL<SSL_CTX, SSL_CTX_free>;
+using ScopedSSL_SESSION = crypto::ScopedOpenSSL<SSL_SESSION, SSL_SESSION_free>;
 using ScopedX509 = crypto::ScopedOpenSSL<X509, X509_free>;
 
 }  // namespace net

@@ -34,9 +34,9 @@
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/cert/x509_util_openssl.h"
 #include "net/http/transport_security_state.h"
-#include "net/socket/ssl_session_cache_openssl.h"
 #include "net/ssl/scoped_openssl_types.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_client_session_cache_openssl.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 
@@ -164,7 +164,7 @@ class SSLClientSocketOpenSSL::SSLContext {
  public:
   static SSLContext* GetInstance() { return Singleton<SSLContext>::get(); }
   SSL_CTX* ssl_ctx() { return ssl_ctx_.get(); }
-  SSLSessionCacheOpenSSL* session_cache() { return &session_cache_; }
+  SSLClientSessionCacheOpenSSL* session_cache() { return &session_cache_; }
 
   SSLClientSocketOpenSSL* GetClientSocketFromSSL(const SSL* ssl) {
     DCHECK(ssl);
@@ -181,12 +181,11 @@ class SSLClientSocketOpenSSL::SSLContext {
  private:
   friend struct DefaultSingletonTraits<SSLContext>;
 
-  SSLContext() {
+  SSLContext() : session_cache_(SSLClientSessionCacheOpenSSL::Config()) {
     crypto::EnsureOpenSSLInit();
     ssl_socket_data_index_ = SSL_get_ex_new_index(0, 0, 0, 0, 0);
     DCHECK_NE(ssl_socket_data_index_, -1);
     ssl_ctx_.reset(SSL_CTX_new(SSLv23_client_method()));
-    session_cache_.Reset(ssl_ctx_.get(), kDefaultSessionCacheConfig);
     SSL_CTX_set_cert_verify_callback(ssl_ctx_.get(), CertVerifyCallback, NULL);
     SSL_CTX_set_cert_cb(ssl_ctx_.get(), ClientCertRequestCallback, NULL);
     SSL_CTX_set_verify(ssl_ctx_.get(), SSL_VERIFY_PEER, NULL);
@@ -200,6 +199,12 @@ class SSLClientSocketOpenSSL::SSLContext {
     SSL_CTX_set_next_proto_select_cb(ssl_ctx_.get(), SelectNextProtoCallback,
                                      NULL);
     ssl_ctx_->tlsext_channel_id_enabled_new = 1;
+    SSL_CTX_set_info_callback(ssl_ctx_.get(), InfoCallback);
+
+    // Disable the internal session cache. Session caching is handled
+    // externally (i.e. by SSLClientSessionCacheOpenSSL).
+    SSL_CTX_set_session_cache_mode(
+        ssl_ctx_.get(), SSL_SESS_CACHE_CLIENT | SSL_SESS_CACHE_NO_INTERNAL);
 
     scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string ssl_keylog_file;
@@ -215,14 +220,6 @@ class SSLClientSocketOpenSSL::SSLContext {
       }
     }
   }
-
-  static std::string GetSessionCacheKey(const SSL* ssl) {
-    SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    CHECK(socket);
-    return socket->GetSessionCacheKey();
-  }
-
-  static SSLSessionCacheOpenSSL::Config kDefaultSessionCacheConfig;
 
   static int ClientCertRequestCallback(SSL* ssl, void* arg) {
     SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
@@ -247,13 +244,23 @@ class SSLClientSocketOpenSSL::SSLContext {
     return socket->SelectNextProtoCallback(out, outlen, in, inlen);
   }
 
+  static void InfoCallback(const SSL* ssl, int type, int val) {
+    SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
+    socket->InfoCallback(type, val);
+  }
+
   // This is the index used with SSL_get_ex_data to retrieve the owner
   // SSLClientSocketOpenSSL object from an SSL instance.
   int ssl_socket_data_index_;
 
   ScopedSSL_CTX ssl_ctx_;
-  // |session_cache_| must be destroyed before |ssl_ctx_|.
-  SSLSessionCacheOpenSSL session_cache_;
+
+  // TODO(davidben): Use a separate cache per URLRequestContext.
+  // https://crbug.com/458365
+  //
+  // TODO(davidben): Sessions should be invalidated on fatal
+  // alerts. https://crbug.com/466352
+  SSLClientSessionCacheOpenSSL session_cache_;
 };
 
 // PeerCertificateChain is a helper object which extracts the certificate
@@ -338,15 +345,6 @@ SSLClientSocketOpenSSL::PeerCertificateChain::AsOSChain() const {
 }
 
 // static
-SSLSessionCacheOpenSSL::Config
-    SSLClientSocketOpenSSL::SSLContext::kDefaultSessionCacheConfig = {
-        &GetSessionCacheKey,  // key_func
-        1024,                 // max_entries
-        256,                  // expiration_check_count
-        60 * 60,              // timeout_seconds
-};
-
-// static
 void SSLClientSocket::ClearSessionCache() {
   SSLClientSocketOpenSSL::SSLContext* context =
       SSLClientSocketOpenSSL::SSLContext::GetInstance();
@@ -382,10 +380,11 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       ssl_session_cache_shard_(context.ssl_session_cache_shard),
-      trying_cached_session_(false),
       next_handshake_state_(STATE_NONE),
       npn_status_(kNextProtoUnsupported),
       channel_id_xtn_negotiated_(false),
+      handshake_completed_(false),
+      certificate_verified_(false),
       transport_security_state_(context.transport_security_state),
       policy_enforcer_(context.cert_policy_enforcer),
       net_log_(transport_->socket()->NetLog()),
@@ -699,8 +698,9 @@ int SSLClientSocketOpenSSL::Init() {
   if (!SSL_set_tlsext_host_name(ssl_, host_and_port_.host().c_str()))
     return ERR_UNEXPECTED;
 
-  trying_cached_session_ = context->session_cache()->SetSSLSessionWithKey(
-      ssl_, GetSessionCacheKey());
+  SSL_SESSION* session = context->session_cache()->Lookup(GetSessionCacheKey());
+  if (session != nullptr)
+    SSL_set_session(ssl_, session);
 
   send_buffer_ = new GrowableIOBuffer();
   send_buffer_->SetCapacity(KDefaultOpenSSLBufferSize);
@@ -918,11 +918,6 @@ int SSLClientSocketOpenSSL::DoHandshake() {
   }
 
   if (rv == 1) {
-    if (trying_cached_session_ && logging::DEBUG_MODE) {
-      DVLOG(2) << "Result of session reuse for " << host_and_port_.ToString()
-               << " is: " << (SSL_session_reused(ssl_) ? "Success" : "Fail");
-    }
-
     if (ssl_config_.version_fallback &&
         ssl_config_.version_max < ssl_config_.version_fallback_min) {
       return ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION;
@@ -1145,9 +1140,9 @@ int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
     // the connection.
     VerifyCT();
 
-    // TODO(joth): Work out if we need to remember the intermediate CA certs
-    // when the server sends them to us, and do so here.
-    SSLContext::GetInstance()->session_cache()->MarkSSLSessionAsGood(ssl_);
+    DCHECK(!certificate_verified_);
+    certificate_verified_ = true;
+    MaybeCacheSession();
   } else {
     DVLOG(1) << "DoVerifyCertComplete error " << ErrorToString(result)
              << " (" << result << ")";
@@ -1840,6 +1835,28 @@ long SSLClientSocketOpenSSL::BIOCallback(
   CHECK(socket);
   return socket->MaybeReplayTransportError(
       bio, cmd, argp, argi, argl, retvalue);
+}
+
+void SSLClientSocketOpenSSL::MaybeCacheSession() {
+  // Only cache the session once both the handshake has completed and the
+  // certificate has been verified.
+  if (!handshake_completed_ || !certificate_verified_ ||
+      SSL_session_reused(ssl_)) {
+    return;
+  }
+
+  SSLContext::GetInstance()->session_cache()->Insert(GetSessionCacheKey(),
+                                                     SSL_get_session(ssl_));
+}
+
+void SSLClientSocketOpenSSL::InfoCallback(int type, int val) {
+  // Note that SSL_CB_HANDSHAKE_DONE may be signaled multiple times if the
+  // socket renegotiates.
+  if (type != SSL_CB_HANDSHAKE_DONE || handshake_completed_)
+    return;
+
+  handshake_completed_ = true;
+  MaybeCacheSession();
 }
 
 void SSLClientSocketOpenSSL::AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const {

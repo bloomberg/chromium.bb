@@ -166,6 +166,18 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
                           const char *argp, int argi, long argl,
                           long retvalue);
 
+  // Called after the initial handshake completes and after the server
+  // certificate has been verified. The order of handshake completion and
+  // certificate verification depends on whether the connection was false
+  // started. After both have happened (thus calling this twice), the session is
+  // safe to cache and will be cached.
+  void MaybeCacheSession();
+
+  // Callback from the SSL layer when the internal state machine progresses. It
+  // is used to listen for when the handshake completes entirely; |Connect| may
+  // return early if false starting.
+  void InfoCallback(int type, int val);
+
   // Adds the SignedCertificateTimestamps from ct_verify_result_ to |ssl_info|.
   // SCTs are held in three separate vectors in ct_verify_result, each
   // vetor representing a particular verification state, this method associates
@@ -264,9 +276,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // resume on the socket with a different value.
   const std::string ssl_session_cache_shard_;
 
-  // Used for session cache diagnostics.
-  bool trying_cached_session_;
-
   enum State {
     STATE_NONE,
     STATE_HANDSHAKE,
@@ -283,6 +292,10 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   std::string channel_id_cert_;
   // True if channel ID extension was negotiated.
   bool channel_id_xtn_negotiated_;
+  // True if the initial handshake has completed.
+  bool handshake_completed_;
+  // True if the initial handshake's certificate has been verified.
+  bool certificate_verified_;
   // The request handle for |channel_id_service_|.
   ChannelIDService::RequestHandle channel_id_request_handle_;
 
