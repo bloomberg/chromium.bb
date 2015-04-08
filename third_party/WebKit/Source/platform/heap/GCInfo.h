@@ -119,6 +119,8 @@ struct GCInfoTrait {
     }
 };
 
+template<typename U> class GCInfoTrait<const U> : public GCInfoTrait<U> { };
+
 class HeapAllocator;
 template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
 template<typename T, typename Traits> class HeapVectorBacking;
