@@ -26,6 +26,7 @@
 #include "core/dom/NodeTraversal.h"
 
 #include "core/dom/ContainerNode.h"
+#include "core/dom/Range.h"
 
 namespace blink {
 
@@ -171,6 +172,11 @@ Node* NodeTraversal::previousPostOrder(const Node& current, const Node* stayWith
     if (current.previousSibling())
         return current.previousSibling();
     return previousAncestorSiblingPostOrder(current, stayWithin);
+}
+
+Node* NodeTraversal::commonAncestor(const Node& nodeA, const Node& nodeB)
+{
+    return Range::commonAncestorContainer(&nodeA, &nodeB);
 }
 
 } // namespace blink

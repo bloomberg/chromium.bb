@@ -41,6 +41,7 @@ template <class TraversalNext> class TraversalNextIterator;
 class NodeTraversal {
 public:
     using TraversalNodeType = Node;
+
     // Does a pre-order traversal of the tree to find the next node after this one.
     // This uses the same order that tags appear in the source file. If the stayWithin
     // argument is non-null, the traversal will stop once the specified node is reached.
@@ -92,7 +93,9 @@ public:
     static Node* nextSibling(const Node& node) { return node.nextSibling(); }
     static Node* previousSibling(const Node& node) { return node.previousSibling(); }
     static ContainerNode* parent(const Node& node) { return node.parentNode(); }
+    static Node* commonAncestor(const Node& nodeA, const Node& nodeB);
     static unsigned index(const Node& node) { return node.nodeIndex(); }
+    static unsigned countChildren(const Node& parent) { return parent.countChildren(); }
 
     static TraversalRange<TraversalChildrenIterator<NodeTraversal>> childrenOf(const Node&);
     static TraversalRange<TraversalDescendantIterator<NodeTraversal>> descendantsOf(const Node&);
