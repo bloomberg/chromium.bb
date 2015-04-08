@@ -41,14 +41,6 @@
         ],
       },
     }],
-    ['OS=="linux" and branding=="Chrome" and enable_pepper_cdms==1', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/libwidevinecdm.so',
-          '<(PRODUCT_DIR)/libwidevinecdmadapter.so',
-        ],
-      },
-    }],
     ['OS=="linux" and libpeer_target_type=="loadable_module"', {
       'variables': {
         'files': [
@@ -190,14 +182,6 @@
         ],
       },
     }],
-    ['OS=="mac" and branding=="Chrome" and enable_pepper_cdms==1', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/libwidevinecdm.dylib',
-          '<(PRODUCT_DIR)/widevinecdmadapter.plugin/',
-        ],
-      },
-    }],
     ['OS=="win"', {
       'variables': {
         'files': [
@@ -208,14 +192,6 @@
           '<(PRODUCT_DIR)/plugins/',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
           'tools/build/repack_locales.py',
-        ],
-      },
-    }],
-    ['OS=="win" and branding=="Chrome" and enable_pepper_cdms==1', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/widevinecdm.dll',
-          '<(PRODUCT_DIR)/widevinecdmadapter.dll',
         ],
       },
     }],
