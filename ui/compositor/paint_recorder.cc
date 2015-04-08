@@ -9,7 +9,7 @@
 namespace ui {
 
 PaintRecorder::PaintRecorder(const PaintContext& context)
-    : canvas_(context.canvas()) {
+    : canvas_(context.canvas_) {
 }
 
 PaintRecorder::~PaintRecorder() {

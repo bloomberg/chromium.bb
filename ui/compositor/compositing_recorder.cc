@@ -11,7 +11,7 @@ namespace ui {
 
 CompositingRecorder::CompositingRecorder(const PaintContext& context,
                                          uint8_t alpha)
-    : canvas_(context.canvas()), saved_(alpha < 255) {
+    : canvas_(context.canvas_), saved_(alpha < 255) {
   if (saved_)
     canvas_->SaveLayerAlpha(alpha);
 }

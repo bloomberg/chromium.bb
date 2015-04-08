@@ -13,7 +13,7 @@
 namespace ui {
 
 ClipTransformRecorder::ClipTransformRecorder(const PaintContext& context)
-    : canvas_(context.canvas()) {
+    : canvas_(context.canvas_) {
   canvas_->Save();
 }
 

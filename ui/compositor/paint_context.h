@@ -13,6 +13,8 @@ class Canvas;
 }
 
 namespace ui {
+class ClipTransformRecorder;
+class CompositingRecorder;
 class PaintRecorder;
 
 class PaintContext {
@@ -43,9 +45,6 @@ class PaintContext {
     return PaintContext(canvas_);
   }
 
-  // TODO(danakj): Remove this once everything is painting to display lists.
-  gfx::Canvas* canvas() const { return canvas_; }
-
   // When true, IsRectInvalidated() can be called, otherwise its result would be
   // invalid.
   bool CanCheckInvalidated() const { return !invalidation_.IsEmpty(); }
@@ -70,9 +69,11 @@ class PaintContext {
   const gfx::Rect& InvalidationForTesting() const { return invalidation_; }
 
  private:
-  // The PaintRecorder needs access to the internal canvas and friends, but we
+  // The Recorder classes need access to the internal canvas and friends, but we
   // don't want to expose them on this class so that people must go through the
-  // recorder to access them.
+  // recorders to access them.
+  friend class ClipTransformRecorder;
+  friend class CompositingRecorder;
   friend class PaintRecorder;
 
   // Clone a PaintContext with an additional |offset|.
