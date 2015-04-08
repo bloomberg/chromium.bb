@@ -19,6 +19,8 @@ namespace blink {
 
 static const char* s_avoidOptimization = nullptr;
 
+uintptr_t StackFrameDepth::s_stackFrameLimit = 0;
+
 // NEVER_INLINE ensures that |dummy| array on configureLimit() is not optimized away,
 // and the stack frame base register is adjusted |kSafeStackFrameSize|.
 NEVER_INLINE static uintptr_t currentStackFrameBaseOnCallee(const char* dummy)
@@ -27,21 +29,21 @@ NEVER_INLINE static uintptr_t currentStackFrameBaseOnCallee(const char* dummy)
     return StackFrameDepth::currentStackFrame();
 }
 
-void StackFrameDepth::configureLimit()
+void StackFrameDepth::configureStackLimit()
 {
     static const int kStackRoomSize = 1024;
 
     size_t stackSize = getUnderestimatedStackSize();
     if (stackSize) {
         size_t stackBase = reinterpret_cast<size_t>(getStackStart());
-        m_stackFrameLimit = stackBase - stackSize + kStackRoomSize;
+        s_stackFrameLimit = stackBase - stackSize + kStackRoomSize;
         return;
     }
 
     // Fallback version
     // Allocate a 32KB object on stack and query stack frame base after it.
     char dummy[kSafeStackFrameSize];
-    m_stackFrameLimit = currentStackFrameBaseOnCallee(dummy);
+    s_stackFrameLimit = currentStackFrameBaseOnCallee(dummy);
 
     // Assert that the stack frame can be used.
     dummy[sizeof(dummy) - 1] = 0;

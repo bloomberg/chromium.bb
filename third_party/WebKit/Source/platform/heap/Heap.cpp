@@ -2248,8 +2248,8 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     ThreadState::NoAllocationScope noAllocationScope(state);
 
     preGC();
-    s_markingVisitor->configureEagerTraceLimit();
-    ASSERT(s_markingVisitor->canTraceEagerly());
+    StackFrameDepth::configureStackLimit();
+    ASSERT(StackFrameDepth::isSafeToRecurse());
 
     size_t totalObjectSize = Heap::allocatedObjectSize() + Heap::markedObjectSize();
     Heap::resetHeapCounters();
@@ -2311,8 +2311,8 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         ThreadState::NoAllocationScope noAllocationScope(state);
 
         state->preGC();
-        s_markingVisitor->configureEagerTraceLimit();
-        ASSERT(s_markingVisitor->canTraceEagerly());
+        StackFrameDepth::configureStackLimit();
+        ASSERT(StackFrameDepth::isSafeToRecurse());
 
         // 1. Trace the thread local persistent roots. For thread local GCs we
         // don't trace the stack (ie. no conservative scanning) since this is
