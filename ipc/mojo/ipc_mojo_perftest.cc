@@ -31,17 +31,15 @@ public:
   MojoChannelPerfTest();
 
   void TearDown() override {
-    ipc_support_.reset();
     IPC::test::IPCChannelPerfTestBase::TearDown();
   }
 
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
-    ipc_support_.reset(new IPC::ScopedIPCSupport(runner));
     host_.reset(new IPC::ChannelMojoHost(runner));
     return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
-                                                 handle);
+                                                 runner, handle);
   }
 
   bool DidStartClient() override {
@@ -52,7 +50,6 @@ public:
   }
 
  private:
-  scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
   scoped_ptr<IPC::ChannelMojoHost> host_;
 };
 
@@ -82,9 +79,6 @@ class MojoTestClient : public IPC::test::PingPongTestClient {
   MojoTestClient();
 
   scoped_ptr<IPC::Channel> CreateChannel(IPC::Listener* listener) override;
-
- private:
-  scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
 };
 
 MojoTestClient::MojoTestClient() {
@@ -93,12 +87,9 @@ MojoTestClient::MojoTestClient() {
 
 scoped_ptr<IPC::Channel> MojoTestClient::CreateChannel(
     IPC::Listener* listener) {
-  ipc_support_.reset(new IPC::ScopedIPCSupport(task_runner()));
-  return scoped_ptr<IPC::Channel>(
-      IPC::ChannelMojo::Create(NULL,
-                               IPCTestBase::GetChannelName("PerformanceClient"),
-                               IPC::Channel::MODE_CLIENT,
-                               listener));
+  return scoped_ptr<IPC::Channel>(IPC::ChannelMojo::Create(
+      NULL, task_runner(), IPCTestBase::GetChannelName("PerformanceClient"),
+      IPC::Channel::MODE_CLIENT, listener));
 }
 
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {

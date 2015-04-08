@@ -689,11 +689,10 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       channel_mojo_host_.reset(new IPC::ChannelMojoHost(mojo_task_runner));
     }
 
-    return IPC::ChannelProxy::Create(
-        IPC::ChannelMojo::CreateServerFactory(
-            channel_mojo_host_->channel_delegate(), channel_id),
-        this,
-        runner.get());
+    return IPC::ChannelProxy::Create(IPC::ChannelMojo::CreateServerFactory(
+                                         channel_mojo_host_->channel_delegate(),
+                                         mojo_task_runner, channel_id),
+                                     this, runner.get());
   }
 
   return IPC::ChannelProxy::Create(

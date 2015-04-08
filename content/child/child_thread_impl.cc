@@ -56,7 +56,6 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
-#include "ipc/mojo/scoped_ipc_support.h"
 
 #if defined(OS_WIN)
 #include "content/common/handle_enumerator_win.h"
@@ -205,45 +204,6 @@ ChildThread* ChildThread::Get() {
   return ChildThreadImpl::current();
 }
 
-// Mojo client channel delegate to be used in single process mode.
-class ChildThreadImpl::SingleProcessChannelDelegate
-    : public IPC::ChannelMojo::Delegate {
- public:
-  explicit SingleProcessChannelDelegate(
-      scoped_refptr<base::SequencedTaskRunner> io_runner)
-      : io_runner_(io_runner), weak_factory_(this) {}
-
-  ~SingleProcessChannelDelegate() override {}
-
-  base::WeakPtr<IPC::ChannelMojo::Delegate> ToWeakPtr() override {
-    return weak_factory_.GetWeakPtr();
-  }
-
-  scoped_refptr<base::TaskRunner> GetIOTaskRunner() override {
-    return io_runner_;
-  }
-
-  void OnChannelCreated(base::WeakPtr<IPC::ChannelMojo> channel) override {}
-
-  void DeleteSoon() {
-    io_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&base::DeletePointer<SingleProcessChannelDelegate>,
-                   base::Unretained(this)));
-  }
-
- private:
-  scoped_refptr<base::SequencedTaskRunner> io_runner_;
-  base::WeakPtrFactory<IPC::ChannelMojo::Delegate> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleProcessChannelDelegate);
-};
-
-void ChildThreadImpl::SingleProcessChannelDelegateDeleter::operator()(
-    SingleProcessChannelDelegate* delegate) const {
-  delegate->DeleteSoon();
-}
-
 ChildThreadImpl::Options::Options()
     : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID)),
@@ -321,15 +281,9 @@ void ChildThreadImpl::ConnectChannel(bool use_mojo_channel) {
     VLOG(1) << "Mojo is enabled on child";
     scoped_refptr<base::SequencedTaskRunner> io_task_runner = GetIOTaskRunner();
     DCHECK(io_task_runner);
-    if (IsInBrowserProcess())
-      single_process_channel_delegate_.reset(
-          new SingleProcessChannelDelegate(io_task_runner));
-    ipc_support_.reset(new IPC::ScopedIPCSupport(io_task_runner));
-    channel_->Init(
-        IPC::ChannelMojo::CreateClientFactory(
-            single_process_channel_delegate_.get(),
-            channel_name_),
-        create_pipe_now);
+    channel_->Init(IPC::ChannelMojo::CreateClientFactory(
+                       nullptr, io_task_runner, channel_name_),
+                   create_pipe_now);
     return;
   }
 
