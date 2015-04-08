@@ -2,14 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Integration tests for cidb.py module.
-
-Running these tests requires and assumes:
-  1) You are running from a machine with whitelisted access to the CIDB
-database test instance.
-  2) You have a checkout of the crostools repo, which provides credentials
-to the above test instance.
-"""
+"""Integration tests for cidb.py module."""
 
 from __future__ import print_function
 
