@@ -111,7 +111,14 @@ var i18nTemplate = (function() {
   };
 
   var attributeNames = Object.keys(handlers);
-  var selector = 'html /deep/ [' + attributeNames.join('],[') + ']';
+  // Chrome for iOS must use Apple's UIWebView, which (as of April 2015) does
+  // not have native shadow DOM support. If shadow DOM is supported (or
+  // polyfilled), search for i18n attributes using the /deep/ selector;
+  // otherwise, do not attempt to search within the shadow DOM.
+  var selector =
+      (window.document.body && window.document.body.createShadowRoot) ?
+      'html /deep/ [' + attributeNames.join('],[') + ']' :
+      '[' + attributeNames.join('],[') + ']';
 
   /**
    * Processes a DOM tree with the {@code dictionary} map.
