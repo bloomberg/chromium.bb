@@ -180,13 +180,21 @@ tc-test-bot() {
     build-run-prerequisites ${arch}
   done
 
-  echo "@@@BUILD_STEP pnacl bitcode compiler_rt tests@@@"
-  make -C toolchain_build/src/compiler-rt \
-    -f lib/builtins/Makefile-pnacl-bitcode \
-    TCROOT=${INSTALL_ABSPATH} nacltest-pnacl || handle-error
 
   # Run the torture tests and compiler_rt tests.
   for arch in ${archset}; do
+    echo "@@@BUILD_STEP pnacl bitcode compiler_rt tests@@@"
+    export PNACL_RUN_ARCH=${arch}
+    make -C toolchain_build/src/compiler-rt \
+      -f lib/builtins/Makefile-pnacl-bitcode \
+      TCROOT=${INSTALL_ABSPATH} nacltest-pnacl || handle-error
+
+    # The CC arg is just a dummy to keep the make scripts from complaining
+    # if clang is not found in PATH
+    echo "@@@BUILD_STEP clang compiler_rt tests $arch @@@"
+    make -C toolchain_build/src/compiler-rt TCROOT=${INSTALL_ABSPATH} \
+      CC=gcc nacltest-${arch} || handle-error
+
     echo "@@@BUILD_STEP torture_tests_clang $arch @@@"
     ${TORTURE_TEST} clang ${arch} --verbose \
       --concurrency=${PNACL_CONCURRENCY} || handle-error
@@ -199,10 +207,6 @@ tc-test-bot() {
     echo "@@@BUILD_STEP torture_tests_pnacl $arch @@@"
     ${TORTURE_TEST} pnacl ${arch} --verbose \
       --concurrency=${PNACL_CONCURRENCY} || handle-error
-
-    echo "@@@BUILD_STEP clang compiler_rt tests $arch @@@"
-    make -C toolchain_build/src/compiler-rt TCROOT=${INSTALL_ABSPATH} \
-      nacltest-${arch} || handle-error
   done
 
 
