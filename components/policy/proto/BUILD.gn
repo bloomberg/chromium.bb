@@ -4,7 +4,18 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-proto_library("proto") {
+# The proto files need to be a component to avoid duplicate symbols the way the
+# dependency structure is currently. Since proto_library generates a source
+# set, here we link the result into a component.
+component("proto") {
+  public_deps = [
+    ":proto_internal",
+  ]
+}
+
+proto_library("proto_internal") {
+  visibility = [ ":proto" ]
+
   sources = [
     "device_management_backend.proto",
     "policy_signing_key.proto",

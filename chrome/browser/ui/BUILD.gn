@@ -11,7 +11,7 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "../../chrome_browser_ui.gypi" ])
 
-static_library("ui") {
+source_set("ui") {
   output_name = "browser_ui"
 
   sources = []

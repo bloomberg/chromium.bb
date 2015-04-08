@@ -103,6 +103,7 @@ component("aura") {
     "//ui/base/ime",
     "//ui/compositor",
     "//ui/events",
+    "//ui/events:events_base",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",

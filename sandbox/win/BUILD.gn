@@ -163,6 +163,7 @@ source_set("sandbox") {
 
   deps = [
     "//base",
+    "//base:base_static",
   ]
   if (current_cpu == "x86") {
     deps += [ ":copy_wow_helper" ]

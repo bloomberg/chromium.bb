@@ -69,6 +69,7 @@ component("views") {
   if (is_win) {
     sources += gypi_values.views_win_sources
     libs = [
+      "dwmapi.lib",
       "imm32.lib",
       "oleacc.lib",
     ]

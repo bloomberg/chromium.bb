@@ -48,7 +48,7 @@ if (is_desktop_linux) {
   }
 }
 
-static_library("browser") {
+source_set("browser") {
   configs += [
     "//build/config/compiler:wexit_time_destructors",
     "//third_party/WebKit/public:debug_devtools",
@@ -682,7 +682,10 @@ static_library("browser") {
       "//ui/metro_viewer",
       "//win8:metro_viewer",
     ]
-    libs += [ "credui.lib" ]
+    libs += [
+      "credui.lib",
+      "netapi32.lib",
+    ]
   } else {
     # Non-Windows.
     sources +=

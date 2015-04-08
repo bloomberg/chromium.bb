@@ -4,7 +4,17 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-proto_library("protocol") {
+# This must be a component for the dependency structure we have now, but the
+# proto_library generates a source set. Link those into a component.
+component("protocol") {
+  public_deps = [
+    ":protocol_internal",
+  ]
+}
+
+proto_library("protocol_internal") {
+  visibility = [ ":protocol" ]
+
   sources = [
     "app_list_specifics.proto",
     "app_notification_specifics.proto",

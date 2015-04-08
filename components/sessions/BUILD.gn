@@ -38,6 +38,7 @@ source_set("sessions_core") {
     "//base",
     "//skia",
     "//sync",
+    "//sync/protocol",
     "//third_party/protobuf:protobuf_lite",
     "//ui/base",
     "//ui/gfx",

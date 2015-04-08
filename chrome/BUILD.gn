@@ -22,6 +22,7 @@ if (!is_android) {
     sources = [
       "app/chrome_exe_resource.h",
     ]
+    defines = []
     deps = []
     datadeps = []
 
@@ -51,6 +52,13 @@ if (!is_android) {
         "common/crash_keys.cc",
         "common/crash_keys.h'",
       ]
+
+      if (is_component_build) {
+        # This is necessary to make content_switches compile without DLL
+        # linkage errors in a component build.
+        defines += [ "COMPILE_CONTENT_STATICALLY" ]
+      }
+
       deps += [
         ":chrome_version_resources",
         ":image_pre_reader",
@@ -206,7 +214,7 @@ shared_library("main_dll") {
 
   #TODO(GYP) add chrome_multiple_dll support
   if (false) {  #chrome_multiple_dll) {
-    defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
+    defines += [ "CHROME_MULTIPLE_DLL_BROWSER" ]
     deps += [ "//content/public/app:browser" ]
   } else {
     deps += [

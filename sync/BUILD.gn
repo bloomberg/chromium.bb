@@ -645,6 +645,7 @@ test("sync_unit_tests") {
     "//sql",
     "//sync",
     "//sync/internal_api/attachments/proto",
+    "//sync/protocol",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/leveldatabase",
