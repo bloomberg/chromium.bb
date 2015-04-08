@@ -4,9 +4,11 @@
 
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 
+#include "base/metrics/field_trial.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
+#include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StackSamplingProfiler;
@@ -17,8 +19,33 @@ using Sample = StackSamplingProfiler::Sample;
 
 namespace metrics {
 
+// This test fixture enables the field trial that
+// CallStackProfileMetricsProvider depends on to report profiles.
+class CallStackProfileMetricsProviderTest : public testing::Test {
+ public:
+  CallStackProfileMetricsProviderTest()
+      : field_trial_list_(new base::FieldTrialList(
+          new metrics::SHA1EntropyProvider("foo"))) {
+    base::FieldTrialList::CreateFieldTrial(
+        FieldTrialState::kFieldTrialName,
+        FieldTrialState::kReportProfilesGroupName);
+  }
+
+  ~CallStackProfileMetricsProviderTest() override {}
+
+ private:
+  // Exposes field trial/group names from the CallStackProfileMetricsProvider.
+  class FieldTrialState : public CallStackProfileMetricsProvider {
+   public:
+    using CallStackProfileMetricsProvider::kFieldTrialName;
+    using CallStackProfileMetricsProvider::kReportProfilesGroupName;
+  };
+
+  const scoped_ptr<base::FieldTrialList> field_trial_list_;
+};
+
 // Checks that all properties from multiple profiles are filled as expected.
-TEST(CallStackProfileMetricsProviderTest, MultipleProfiles) {
+TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
   const uintptr_t module1_base_address = 0x1000;
   const uintptr_t module2_base_address = 0x2000;
   const uintptr_t module3_base_address = 0x3000;
@@ -165,7 +192,7 @@ TEST(CallStackProfileMetricsProviderTest, MultipleProfiles) {
   }
 
   CallStackProfileMetricsProvider provider;
-  provider.SetSourceProfilesForTesting(profiles);
+  provider.AppendSourceProfilesForTesting(profiles);
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -229,7 +256,7 @@ TEST(CallStackProfileMetricsProviderTest, MultipleProfiles) {
 
 // Checks that all duplicate samples are collapsed with
 // preserve_sample_ordering = false.
-TEST(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
+TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
   const uintptr_t module_base_address = 0x1000;
 
   const Module modules[] = {
@@ -268,7 +295,7 @@ TEST(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
   profile.preserve_sample_ordering = false;
 
   CallStackProfileMetricsProvider provider;
-  provider.SetSourceProfilesForTesting(std::vector<Profile>(1, profile));
+  provider.AppendSourceProfilesForTesting(std::vector<Profile>(1, profile));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -306,7 +333,7 @@ TEST(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
 
 // Checks that only contiguous duplicate samples are collapsed with
 // preserve_sample_ordering = true.
-TEST(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
+TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
   const uintptr_t module_base_address = 0x1000;
 
   const Module modules[] = {
@@ -345,7 +372,7 @@ TEST(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
   profile.preserve_sample_ordering = true;
 
   CallStackProfileMetricsProvider provider;
-  provider.SetSourceProfilesForTesting(std::vector<Profile>(1, profile));
+  provider.AppendSourceProfilesForTesting(std::vector<Profile>(1, profile));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -381,9 +408,8 @@ TEST(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
   }
 }
 
-
 // Checks that unknown modules produce an empty Entry.
-TEST(CallStackProfileMetricsProviderTest, UnknownModule) {
+TEST_F(CallStackProfileMetricsProviderTest, UnknownModule) {
   const Frame frame(reinterpret_cast<const void*>(0x1000),
                     Frame::kUnknownModuleIndex);
 
@@ -396,7 +422,7 @@ TEST(CallStackProfileMetricsProviderTest, UnknownModule) {
   profile.preserve_sample_ordering = false;
 
   CallStackProfileMetricsProvider provider;
-  provider.SetSourceProfilesForTesting(std::vector<Profile>(1, profile));
+  provider.AppendSourceProfilesForTesting(std::vector<Profile>(1, profile));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideGeneralMetrics(&uma_proto);
 
@@ -415,6 +441,34 @@ TEST(CallStackProfileMetricsProviderTest, UnknownModule) {
   const CallStackProfile::Entry& entry = proto_sample.entry().Get(0);
   EXPECT_FALSE(entry.has_address());
   EXPECT_FALSE(entry.has_module_id_index());
+}
+
+// Checks that pending profiles are only passed back to ProvideGeneralMetrics
+// once.
+TEST_F(CallStackProfileMetricsProviderTest, ProfilesProvidedOnlyOnce) {
+  CallStackProfileMetricsProvider provider;
+  for (int i = 0; i < 2; ++i) {
+    Profile profile;
+    profile.samples.push_back(Sample(1, Frame(
+        reinterpret_cast<const void*>(0x1000), Frame::kUnknownModuleIndex)));
+
+    profile.profile_duration = base::TimeDelta::FromMilliseconds(100);
+    // Use the sampling period to distinguish the two profiles.
+    profile.sampling_period = base::TimeDelta::FromMilliseconds(i);
+    profile.preserve_sample_ordering = false;
+
+    provider.AppendSourceProfilesForTesting(std::vector<Profile>(1, profile));
+    ChromeUserMetricsExtension uma_proto;
+    provider.ProvideGeneralMetrics(&uma_proto);
+
+    ASSERT_EQ(1, uma_proto.sampled_profile().size());
+    const SampledProfile& sampled_profile = uma_proto.sampled_profile().Get(0);
+    ASSERT_TRUE(sampled_profile.has_call_stack_profile());
+    const CallStackProfile& call_stack_profile =
+        sampled_profile.call_stack_profile();
+    ASSERT_TRUE(call_stack_profile.has_sampling_period_ms());
+    EXPECT_EQ(i, call_stack_profile.sampling_period_ms());
+  }
 }
 
 }  // namespace metrics

@@ -34,11 +34,12 @@ class NativeStackSampler;
 //   base::StackSamplingProfiler profiler(base::PlatformThread::CurrentId()),
 //       params);
 //
-//   // To process the call stack profiles within Chrome rather than via UMA,
-//   // set a custom completed callback:
+//   // Or, to process the profiles within Chrome rather than via UMA, use a
+//   // custom completed callback:
 //   base::StackStackSamplingProfiler::CompletedCallback
 //       thread_safe_callback = ...;
-//   profiler.SetCustomCompletedCallback(thread_safe_callback);
+//   base::StackSamplingProfiler profiler(base::PlatformThread::CurrentId()),
+//       params, thread_safe_callback);
 //
 //   profiler.Start();
 //   // ... work being done on the target thread here ...
@@ -49,13 +50,13 @@ class NativeStackSampler;
 // altered as desired.
 //
 // When all call stack profiles are complete or the profiler is stopped, if the
-// custom completed callback was set it is called from the profiler thread with
-// the completed profiles. A profile is considered complete if all requested
-// samples were recorded for the profile (i.e. it was not stopped
-// prematurely). If no callback was set, the completed profiles are stored
-// internally and retrieved for UMA through GetPendingProfiles().
-// GetPendingProfiles() should never be called by other code; to retrieve
-// profiles for in-process processing, set a completed callback.
+// custom completed callback was set it is called from a thread created by the
+// profiler with the completed profiles. A profile is considered complete if all
+// requested samples were recorded for the profile (i.e. it was not stopped
+// prematurely).  If no callback was set, the default completed callback will be
+// called with the profiles. It is expected that the the default completed
+// callback is set by the metrics system to allow profiles to be provided via
+// UMA.
 //
 // The results of the profiling are passed to the completed callback and consist
 // of a vector of CallStackProfiles. Each CallStackProfile corresponds to a
@@ -164,8 +165,14 @@ class BASE_EXPORT StackSamplingProfiler {
   // thread-safe callback implementation.
   using CompletedCallback = Callback<void(const CallStackProfiles&)>;
 
+  // Creates a profiler that sends completed profiles to the default completed
+  // callback.
   StackSamplingProfiler(PlatformThreadId thread_id,
                         const SamplingParams& params);
+  // Creates a profiler that sends completed profiles to |completed_callback|.
+  StackSamplingProfiler(PlatformThreadId thread_id,
+                        const SamplingParams& params,
+                        CompletedCallback callback);
   ~StackSamplingProfiler();
 
   // Initializes the profiler and starts sampling.
@@ -176,19 +183,14 @@ class BASE_EXPORT StackSamplingProfiler {
   // specified in the SamplingParams are completed.
   void Stop();
 
-  // Moves all pending call stack profiles from internal storage to
-  // |profiles|. This function is thread safe.
+  // Sets a callback to process profiles collected by profiler instances without
+  // a completed callback. Profiles are queued internally until a non-null
+  // callback is provided to this function,
   //
-  // ***This is intended for use only by UMA.*** Callers who want to process the
-  // collected profiles should use SetCustomCompletedCallback.
-  static void GetPendingProfiles(CallStackProfiles* call_stack_profiles);
-
-  // By default, collected call stack profiles are stored internally and can be
-  // retrieved by GetPendingProfiles. If a callback is provided via this
-  // function, however, it is called with the collected profiles instead.
-  void set_custom_completed_callback(CompletedCallback callback) {
-    custom_completed_callback_ = callback;
-  }
+  // The callback is typically called on a thread created by the profiler.  If
+  // completed profiles are queued when set, however, it will also be called
+  // immediately on the calling thread.
+  static void SetDefaultCompletedCallback(CompletedCallback callback);
 
  private:
   // SamplingThread is a separate thread used to suspend and sample stacks from
@@ -226,7 +228,7 @@ class BASE_EXPORT StackSamplingProfiler {
     // terminate before all the samples specified in |params_| are collected.
     WaitableEvent stop_event_;
 
-    CompletedCallback completed_callback_;
+    const CompletedCallback completed_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(SamplingThread);
   };
@@ -237,8 +239,9 @@ class BASE_EXPORT StackSamplingProfiler {
   const SamplingParams params_;
 
   scoped_ptr<SamplingThread> sampling_thread_;
+  PlatformThreadHandle sampling_thread_handle_;
 
-  CompletedCallback custom_completed_callback_;
+  const CompletedCallback completed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(StackSamplingProfiler);
 };

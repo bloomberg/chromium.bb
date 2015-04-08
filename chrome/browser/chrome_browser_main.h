@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/profiler/stack_sampling_profiler.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_process_singleton.h"
@@ -109,10 +110,8 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Record time from process startup to present time in an UMA histogram.
   void RecordBrowserStartupTime();
 
-  // Records a time value to an UMA histogram in the context of the
-  // PreReadExperiment field-trial. This also reports to the appropriate
-  // sub-histogram (_PreRead(Enabled|Disabled)).
-  void RecordPreReadExperimentTime(const char* name, base::TimeDelta time);
+  // Create parameters for sampling stacks during startup.
+  static base::StackSamplingProfiler::SamplingParams GetStartupSamplingParams();
 
   // Methods for Main Message Loop -------------------------------------------
 
@@ -147,6 +146,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Vector of additional ChromeBrowserMainExtraParts.
   // Parts are deleted in the inverse order they are added.
   std::vector<ChromeBrowserMainExtraParts*> chrome_extra_parts_;
+
+  // A profiler that periodically samples stack traces. Used to sample startup
+  // behavior.
+  base::StackSamplingProfiler sampling_profiler_;
 
   // Members initialized after / released before main_message_loop_ ------------
 
