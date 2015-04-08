@@ -75,6 +75,7 @@
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/CString.h"
 #include <limits>
@@ -934,6 +935,7 @@ void HTMLMediaElement::loadNextSourceChild()
 
 void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, const String& keySystem)
 {
+    ASSERT(isMainThread());
     ASSERT(isSafeToLoadURL(url, Complain));
 
     WTF_LOG(Media, "HTMLMediaElement::loadResource(%p, %s, %s, %s)", this, urlForLoggingMedia(url).utf8().data(), contentType.raw().utf8().data(), keySystem.utf8().data());
@@ -950,6 +952,11 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     // Set m_currentSrc *before* changing to the cache url, the fact that we are loading from the app
     // cache is an internal detail not exposed through the media element API.
     m_currentSrc = url;
+
+#if ENABLE(WEB_AUDIO)
+    if (m_audioSourceNode)
+        m_audioSourceNode->onCurrentSrcChanged(m_currentSrc);
+#endif
 
     WTF_LOG(Media, "HTMLMediaElement::loadResource(%p) - m_currentSrc -> %s", this, urlForLoggingMedia(m_currentSrc).utf8().data());
 
@@ -3447,6 +3454,7 @@ void HTMLMediaElement::createMediaPlayer()
 #if ENABLE(WEB_AUDIO)
 void HTMLMediaElement::setAudioSourceNode(AudioSourceProviderClient* sourceNode)
 {
+    ASSERT(isMainThread());
     m_audioSourceNode = sourceNode;
 
     AudioSourceProviderClientLockScope scope(*this);

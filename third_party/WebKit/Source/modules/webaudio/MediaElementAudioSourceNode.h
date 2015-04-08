@@ -53,6 +53,7 @@ public:
 
     // AudioSourceProviderClient
     virtual void setFormat(size_t numberOfChannels, float sampleRate) override;
+    virtual void onCurrentSrcChanged(const KURL& currentSrc) override;
 
     virtual void lock() override;
     virtual void unlock() override;
@@ -63,7 +64,11 @@ private:
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const override { return false; }
 
+    // Must be called only on the audio thread.
     bool passesCORSAccessCheck();
+
+    // Must be called only on the main thread.
+    bool passesCurrentSrcCORSAccessCheck(const KURL& currentSrc);
 
     RefPtrWillBeMember<HTMLMediaElement> m_mediaElement;
     Mutex m_processLock;
@@ -72,6 +77,13 @@ private:
     double m_sourceSampleRate;
 
     OwnPtr<MultiChannelResampler> m_multiChannelResampler;
+
+    // |m_passesCurrentSrcCORSAccessCheck| holds the value of
+    // context()->securityOrigin() && context()->securityOrigin()->canRequest(mediaElement()->currentSrc()),
+    // updated in the ctor and onCurrentSrcChanged() on the main thread and
+    // used in passesCORSAccessCheck() on the audio thread,
+    // protected by |m_processLock|.
+    bool m_passesCurrentSrcCORSAccessCheck;
 };
 
 class MediaElementAudioSourceNode final : public AudioSourceNode {

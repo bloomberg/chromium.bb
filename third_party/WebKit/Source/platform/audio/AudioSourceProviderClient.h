@@ -26,6 +26,7 @@
 #define AudioSourceProviderClient_h
 
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 
 namespace blink {
 
@@ -35,6 +36,11 @@ public:
     // Oilpan: Callers should keep this object alive during lock() and unlock().
     virtual void lock() { }
     virtual void unlock() { }
+
+    // Called on the main thread when HTMLMediaElement::currentSrc() is
+    // changed.
+    virtual void onCurrentSrcChanged(const KURL& currentSrc) { }
+
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 protected:
     virtual ~AudioSourceProviderClient() { }
