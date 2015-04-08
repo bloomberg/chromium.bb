@@ -2690,6 +2690,9 @@
       ['enable_webrtc==1', {
         'defines': ['ENABLE_WEBRTC=1'],
       }],
+      ['enable_media_router==1', {
+        'defines': ['ENABLE_MEDIA_ROUTER=1'],
+      }],
       ['proprietary_codecs==1', {
         'defines': ['USE_PROPRIETARY_CODECS'],
         'conditions': [
