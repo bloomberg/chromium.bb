@@ -266,6 +266,12 @@ cr.define('cr.login', function() {
         return;
       }
 
+      // Skip for none http/https url.
+      if (e.url.indexOf('https://') != 0 &&
+          e.url.indexOf('http://') != 0) {
+        return;
+      }
+
       this.isSamlPage_ = this.pendingIsSamlPage_;
       this.injectJs_();
     },
