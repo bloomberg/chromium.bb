@@ -142,7 +142,7 @@ h3,
 h4,
 h5,
 h6 {
-  line-height: 1.296rem;
+  line-height: 1.296;
   margin-bottom: 0.444rem;
 }
 
@@ -155,19 +155,50 @@ h6 {
 }
 
 #content {
-  margin-top: 1.296rem;
+  margin: 0.2rem;
 }
 
 /* Main margins. */
 
 body {
   max-width: 800px;
-  margin: 0px auto;
+  margin: 0px;
 }
 
 #mainContent {
-  margin: 1.296rem 1.296rem auto;
+  margin: auto 0px;
 }
+
+#articleHeader {
+  background-color: rgb(73, 73, 73);
+  color: white;
+  min-height: 90px;
+  width: 100%;
+}
+
+#titleCollapse  {
+  display: block;
+  overflow: hidden;
+}
+
+#titleCollapse .verticalCenterOuter {
+  min-height: 90px;
+}
+
+#titleHolder {
+  padding: 10px 30px;
+}
+
+.verticalCenterOuter {
+  display: table;
+  height: 100%;
+}
+
+.verticalCenterInner {
+  display: table-cell;
+  vertical-align: middle;
+}
+
 
 /* Link colors for light, dark and sepia themes */
 
@@ -199,7 +230,7 @@ hr {
 
 h1 {
   font-size: 1.7rem;
-  line-height: 1.9rem;
+  line-height: 1.296;
   margin-bottom: 0.444rem;
 }
 
@@ -267,7 +298,7 @@ pre code {
 }
 
 pre {
-  line-height: 1.296rem;
+  line-height: 1.296;
   overflow-x: scroll;
   padding: .5em;
 }

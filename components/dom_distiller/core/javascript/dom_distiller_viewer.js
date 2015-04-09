@@ -40,6 +40,21 @@ function showLoadingIndicator(isLastPage) {
   updateLoadingIndicator(isLastPage);
 }
 
+// Sets the title. The title will be exposed with a simple animation. This
+// should only be used when the title was not included in the initial html.
+function setTitle(title) {
+  var holder = document.getElementById('titleHolder');
+  var collapse = document.getElementById('titleCollapse');
+
+  collapse.style.height = "0px";
+
+  holder.textContent = title;
+  var newHeight = Math.max(90, holder.getBoundingClientRect().height);
+
+  collapse.style.transition = "height 0.2s";
+  collapse.style.height = newHeight + "px";
+}
+
 // Maps JS Font Family to CSS class and then changes body class name.
 // CSS classes must agree with distilledpage.css.
 function useFontFamily(fontFamily) {
