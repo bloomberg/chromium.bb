@@ -1,3 +1,13 @@
 This directory contains accessibility extensions developed by the
 Chrome team, not included with Chrome by default, but available via a
 one-click install from the Settings page.
+
+To build:
+
+build/gyp_chromium ui/accessibility/extensions/accessibility_extensions.gyp
+ninja -C out/Release accessibility_extensions
+
+The built extensions will be in:
+
+out/Release/ui/accessibility/extensions
+
