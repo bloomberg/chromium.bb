@@ -56,7 +56,8 @@ def ExpandPath(path):
   return os.path.realpath(os.path.expanduser(path))
 
 
-def WriteFile(path, content, mode='w', atomic=False, makedirs=False):
+def WriteFile(path, content, mode='w', atomic=False, makedirs=False,
+              sudo=False):
   """Write the given content to disk.
 
   Args:
@@ -67,25 +68,52 @@ def WriteFile(path, content, mode='w', atomic=False, makedirs=False):
     atomic: If the updating of the file should be done atomically.  Note this
             option is incompatible w/ append mode.
     makedirs: If True, create missing leading directories in the path.
+    sudo: If True, write the file as root.
   """
-  write_path = path
-  if atomic:
-    write_path = path + '.tmp'
+  if sudo:
+    if 'a' in mode or '+' in mode:
+      raise ValueError('append mode does not work in sudo mode')
+
+    if atomic:
+      raise ValueError('atomic is not supported in sudo mode')
+
 
   if makedirs:
-    SafeMakedirs(os.path.dirname(path))
+    SafeMakedirs(os.path.dirname(path), sudo=sudo)
 
-  with open(write_path, mode) as f:
-    f.writelines(cros_build_lib.iflatten_instance(content))
+  # If the file needs to be written as root and we are not root, write to a temp
+  # file, move it and change the permission.
+  if sudo and os.getuid() != 0:
+    with tempfile.NamedTemporaryFile(mode=mode, delete=False) as temp:
+      write_path = temp.name
+      temp.writelines(cros_build_lib.iflatten_instance(content))
+    os.chmod(write_path, 0o644)
 
-  if not atomic:
-    return
+    try:
+      cros_build_lib.SudoRunCommand(['mv', write_path, path],
+                                    print_cmd=False, redirect_stderr=True)
+      cros_build_lib.SudoRunCommand(['chown', 'root:root', path],
+                                    print_cmd=False, redirect_stderr=True)
+    except cros_build_lib.RunCommandError:
+      SafeUnlink(write_path)
+      raise
 
-  try:
-    os.rename(write_path, path)
-  except EnvironmentError:
-    SafeUnlink(write_path)
-    raise
+  else:
+    # We have the right permissions, simply write the file in python.
+    write_path = path
+    if atomic:
+      write_path = path + '.tmp'
+    with open(write_path, mode) as f:
+      f.writelines(cros_build_lib.iflatten_instance(content))
+
+    if not atomic:
+      return
+
+    try:
+      os.rename(write_path, path)
+    except EnvironmentError:
+      SafeUnlink(write_path)
+      raise
 
 
 def Touch(path, makedirs=False, mode=None):
@@ -112,6 +140,25 @@ def ReadFile(path, mode='r'):
   """Read a given file on disk.  Primarily useful for one off small files."""
   with open(path, mode) as f:
     return f.read()
+
+
+def SafeSymlink(source, dest, sudo=False):
+  """Create a symlink at |dest| pointing to |source|.
+
+  This will override the |dest| if the symlink exists. This operation is not
+  atomic.
+
+  Args:
+    source: source path.
+    dest: destination path.
+    sudo: If True, create the link as root.
+  """
+  if sudo and os.getuid() != 0:
+    cros_build_lib.SudoRunCommand(['ln', '-sfT', source, dest],
+                                  print_cmd=False, redirect_stderr=True)
+  else:
+    SafeUnlink(dest)
+    os.symlink(source, dest)
 
 
 def SafeUnlink(path, sudo=False):

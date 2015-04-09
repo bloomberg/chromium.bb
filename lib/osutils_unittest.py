@@ -26,6 +26,55 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertEqual(osutils.WriteFile(filename, data), None)
     self.assertEqual(osutils.ReadFile(filename), data)
 
+  def testSudoWrite(self):
+    """Verify that we can write a file as sudo."""
+    with osutils.TempDir(sudo_rm=True) as tempdir:
+      filename = os.path.join(tempdir, 'foo', 'bar')
+      self.assertTrue(osutils.SafeMakedirs(os.path.dirname(filename),
+                                           sudo=True))
+      self.assertRaises(IOError, osutils.WriteFile, filename, 'data')
+
+      osutils.WriteFile(filename, 'test', sudo=True)
+      self.assertEqual('test', osutils.ReadFile(filename))
+      self.assertEqual(0, os.stat(filename).st_uid)
+
+      # Appending to a file or atomic modifications are not supported with sudo.
+      self.assertRaises(ValueError, osutils.WriteFile, filename, 'data',
+                        sudo=True, atomic=True)
+      self.assertRaises(ValueError, osutils.WriteFile, filename, 'data',
+                        sudo=True, mode='a')
+
+  def testSafeSymlink(self):
+    """Test that we can create symlinks."""
+    with osutils.TempDir(sudo_rm=True) as tempdir:
+      file_a = os.path.join(tempdir, 'a')
+      osutils.WriteFile(file_a, 'a')
+
+      file_b = os.path.join(tempdir, 'b')
+      osutils.WriteFile(file_b, 'b')
+
+      user_dir = os.path.join(tempdir, 'bar')
+      user_link = os.path.join(user_dir, 'link')
+      osutils.SafeMakedirs(user_dir)
+
+      root_dir = os.path.join(tempdir, 'foo')
+      root_link = os.path.join(root_dir, 'link')
+      osutils.SafeMakedirs(root_dir, sudo=True)
+
+      # We can create and override links owned by a non-root user.
+      osutils.SafeSymlink(file_a, user_link)
+      self.assertEqual('a', osutils.ReadFile(user_link))
+
+      osutils.SafeSymlink(file_b, user_link)
+      self.assertEqual('b', osutils.ReadFile(user_link))
+
+      # We can create and override links owned by root.
+      osutils.SafeSymlink(file_a, root_link, sudo=True)
+      self.assertEqual('a', osutils.ReadFile(root_link))
+
+      osutils.SafeSymlink(file_b, root_link, sudo=True)
+      self.assertEqual('b', osutils.ReadFile(root_link))
+
   def testSafeUnlink(self):
     """Test unlinking files work (existing or not)."""
     def f(dirname, sudo=False):

@@ -373,9 +373,11 @@ def _ReExecuteIfNeeded(argv, network):
     # We got our namespaces, so switch back to the user to run the tests.
     gid = int(os.environ.pop('SUDO_GID'))
     uid = int(os.environ.pop('SUDO_UID'))
+    user = os.environ.pop('SUDO_USER')
+    os.initgroups(user, gid)
     os.setresgid(gid, gid, gid)
     os.setresuid(uid, uid, uid)
-    os.environ['USER'] = os.environ.pop('SUDO_USER')
+    os.environ['USER'] = user
 
 
 def GetParser():
