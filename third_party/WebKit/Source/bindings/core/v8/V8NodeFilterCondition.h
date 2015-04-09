@@ -77,7 +77,7 @@ private:
     // to hold a strong reference to |filter|.
     V8NodeFilterCondition(v8::Local<v8::Value> filter, v8::Local<v8::Object> owner, ScriptState*);
 
-    static void setWeakCallback(const v8::WeakCallbackData<v8::Value, V8NodeFilterCondition>&);
+    static void setWeakCallback(const v8::WeakCallbackInfo<V8NodeFilterCondition>&);
 
     RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Value> m_filter;

@@ -131,7 +131,7 @@ private:
 
     virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
 
-    static void setWeakCallback(const v8::WeakCallbackData<v8::Object, V8AbstractEventListener>&);
+    static void setWeakCallback(const v8::WeakCallbackInfo<V8AbstractEventListener>&);
 
     ScopedPersistent<v8::Object> m_listener;
 

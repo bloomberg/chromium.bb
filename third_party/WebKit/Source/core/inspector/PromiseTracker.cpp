@@ -144,9 +144,9 @@ public:
     }
 
 #if ENABLE(OILPAN)
-    static void didRemovePromise(const v8::WeakCallbackData<v8::Object, Persistent<PromiseDataWrapper> >& data)
+    static void didRemovePromise(const v8::WeakCallbackInfo<Persistent<PromiseDataWrapper>>& data)
 #else
-    static void didRemovePromise(const v8::WeakCallbackData<v8::Object, PromiseDataWrapper>& data)
+    static void didRemovePromise(const v8::WeakCallbackInfo<PromiseDataWrapper>& data)
 #endif
     {
 #if ENABLE(OILPAN)
@@ -156,8 +156,11 @@ public:
         OwnPtr<PromiseDataWrapper> wrapper = adoptPtr(data.GetParameter());
 #endif
         WeakPtrWillBeRawPtr<PromiseTracker::PromiseData> promiseData = wrapper->m_data;
-        if (!promiseData || !wrapper->m_tracker)
+        if (!promiseData || !wrapper->m_tracker) {
+            // Hitting this would mean the v8 object can't be disposed.
+            ASSERT_NOT_REACHED();
             return;
+        }
 
         PromiseTracker::Listener* listener = wrapper->m_tracker->listener();
         if (listener)

@@ -80,7 +80,7 @@ void V8MutationCallback::call(const WillBeHeapVector<RefPtrWillBeMember<Mutation
     ScriptController::callFunction(executionContext(), m_callback.newLocal(isolate), thisObject, WTF_ARRAY_LENGTH(argv), argv, isolate);
 }
 
-void V8MutationCallback::setWeakCallback(const v8::WeakCallbackData<v8::Function, V8MutationCallback>& data)
+void V8MutationCallback::setWeakCallback(const v8::WeakCallbackInfo<V8MutationCallback>& data)
 {
     data.GetParameter()->m_callback.clear();
 }

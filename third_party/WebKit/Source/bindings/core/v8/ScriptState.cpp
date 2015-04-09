@@ -21,11 +21,15 @@ PassRefPtr<ScriptState> ScriptState::create(v8::Handle<v8::Context> context, Pas
     return scriptState;
 }
 
-static void weakCallback(const v8::WeakCallbackData<v8::Context, ScriptState>& data)
+static void derefCallback(const v8::WeakCallbackInfo<ScriptState>& data)
 {
-    data.GetValue()->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, 0);
-    data.GetParameter()->clearContext();
     data.GetParameter()->deref();
+}
+
+static void weakCallback(const v8::WeakCallbackInfo<ScriptState>& data)
+{
+    data.GetParameter()->clearContext();
+    data.SetSecondPassCallback(derefCallback);
 }
 
 ScriptState::ScriptState(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)

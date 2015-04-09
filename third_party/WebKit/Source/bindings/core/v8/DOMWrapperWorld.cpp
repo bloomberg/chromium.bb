@@ -235,7 +235,7 @@ void DOMWrapperWorld::unregisterDOMObjectHolder(DOMObjectHolderBase* holderBase)
     m_domObjectHolders.remove(holderBase);
 }
 
-void DOMWrapperWorld::weakCallbackForDOMObjectHolder(const v8::WeakCallbackData<v8::Value, DOMObjectHolderBase>& data)
+void DOMWrapperWorld::weakCallbackForDOMObjectHolder(const v8::WeakCallbackInfo<DOMObjectHolderBase>& data)
 {
     DOMObjectHolderBase* holderBase = data.GetParameter();
     holderBase->world()->unregisterDOMObjectHolder(holderBase);

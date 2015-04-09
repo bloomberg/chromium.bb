@@ -33,7 +33,7 @@
 
 namespace blink {
 
-static void setWeakCallbackForGCObservation(const v8::WeakCallbackData<v8::Value, GCObservation>& data)
+static void setWeakCallbackForGCObservation(const v8::WeakCallbackInfo<GCObservation>& data)
 {
     data.GetParameter()->setWasCollected();
 }

@@ -83,7 +83,7 @@ static CustomElementLifecycleCallbacks::CallbackType flagSet(v8::MaybeLocal<v8::
 }
 
 template <typename T>
-static void weakCallback(const v8::WeakCallbackData<T, ScopedPersistent<T>>& data)
+static void weakCallback(const v8::WeakCallbackInfo<ScopedPersistent<T>>& data)
 {
     data.GetParameter()->clear();
 }

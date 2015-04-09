@@ -178,7 +178,7 @@ bool V8AbstractEventListener::belongsToTheCurrentWorld() const
     return isolate()->InContext() && &world() == &DOMWrapperWorld::current(isolate());
 }
 
-void V8AbstractEventListener::setWeakCallback(const v8::WeakCallbackData<v8::Object, V8AbstractEventListener> &data)
+void V8AbstractEventListener::setWeakCallback(const v8::WeakCallbackInfo<V8AbstractEventListener> &data)
 {
     data.GetParameter()->m_listener.clear();
 }

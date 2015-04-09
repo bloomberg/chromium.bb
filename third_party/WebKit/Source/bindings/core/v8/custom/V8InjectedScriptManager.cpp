@@ -129,7 +129,7 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
     return BindingSecurity::shouldAllowAccessToFrame(scriptState->isolate(), frame, DoNotReportSecurityError);
 }
 
-void InjectedScriptManager::setWeakCallback(const v8::WeakCallbackData<v8::Object, InjectedScriptManager::CallbackData>& data)
+void InjectedScriptManager::setWeakCallback(const v8::WeakCallbackInfo<InjectedScriptManager::CallbackData>& data)
 {
     InjectedScriptManager::CallbackData* callbackData = data.GetParameter();
     callbackData->injectedScriptManager->removeCallbackData(callbackData);

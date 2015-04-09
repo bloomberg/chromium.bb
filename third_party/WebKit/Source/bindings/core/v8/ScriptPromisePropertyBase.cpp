@@ -26,7 +26,7 @@ ScriptPromisePropertyBase::~ScriptPromisePropertyBase()
     clearWrappers();
 }
 
-static void clearHandle(const v8::WeakCallbackData<v8::Object, ScopedPersistent<v8::Object>>& data)
+static void clearHandle(const v8::WeakCallbackInfo<ScopedPersistent<v8::Object>>& data)
 {
     data.GetParameter()->clear();
 }

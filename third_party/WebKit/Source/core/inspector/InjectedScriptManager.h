@@ -80,7 +80,7 @@ public:
     typedef bool (*InspectedStateAccessCheck)(ScriptState*);
     InspectedStateAccessCheck inspectedStateAccessCheck() const { return m_inspectedStateAccessCheck; }
 
-    static void setWeakCallback(const v8::WeakCallbackData<v8::Object, CallbackData>&);
+    static void setWeakCallback(const v8::WeakCallbackInfo<CallbackData>&);
     CallbackData* createCallbackData(InjectedScriptManager*);
     void removeCallbackData(CallbackData*);
     void setCustomObjectFormatterEnabled(bool);

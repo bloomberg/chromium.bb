@@ -55,7 +55,7 @@ public:
 private:
     V8MutationCallback(v8::Local<v8::Function>, v8::Local<v8::Object>, ScriptState*);
 
-    static void setWeakCallback(const v8::WeakCallbackData<v8::Function, V8MutationCallback>&);
+    static void setWeakCallback(const v8::WeakCallbackInfo<V8MutationCallback>&);
 
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<ScriptState> m_scriptState;

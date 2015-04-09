@@ -65,9 +65,9 @@ public:
     }
 
     template<typename P>
-    void setWeak(P* parameters, void (*callback)(const v8::WeakCallbackData<T, P>&))
+    void setWeak(P* parameters, void (*callback)(const v8::WeakCallbackInfo<P>&), v8::WeakCallbackType type = v8::WeakCallbackType::kParameter)
     {
-        m_handle.SetWeak(parameters, callback);
+        m_handle.SetWeak(parameters, callback, type);
     }
 
     bool isEmpty() const { return m_handle.IsEmpty(); }

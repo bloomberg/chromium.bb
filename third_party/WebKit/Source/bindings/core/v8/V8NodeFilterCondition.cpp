@@ -105,7 +105,7 @@ short V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exceptionSta
     return result->Int32Value();
 }
 
-void V8NodeFilterCondition::setWeakCallback(const v8::WeakCallbackData<v8::Value, V8NodeFilterCondition>& data)
+void V8NodeFilterCondition::setWeakCallback(const v8::WeakCallbackInfo<V8NodeFilterCondition>& data)
 {
     data.GetParameter()->m_filter.clear();
 }

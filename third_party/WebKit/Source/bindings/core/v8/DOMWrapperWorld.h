@@ -135,7 +135,7 @@ private:
 
         DOMWrapperWorld* world() const { return m_world; }
         void setWorld(DOMWrapperWorld* world) { m_world = world; }
-        void setWeak(void (*callback)(const v8::WeakCallbackData<v8::Value, DOMObjectHolderBase>&))
+        void setWeak(void (*callback)(const v8::WeakCallbackInfo<DOMObjectHolderBase>&))
         {
             m_wrapper.setWeak(this, callback);
         }
@@ -173,7 +173,7 @@ public:
 private:
     DOMWrapperWorld(v8::Isolate*, int worldId, int extensionGroup);
 
-    static void weakCallbackForDOMObjectHolder(const v8::WeakCallbackData<v8::Value, DOMObjectHolderBase>&);
+    static void weakCallbackForDOMObjectHolder(const v8::WeakCallbackInfo<DOMObjectHolderBase>&);
     void registerDOMObjectHolderInternal(PassOwnPtr<DOMObjectHolderBase>);
     void unregisterDOMObjectHolder(DOMObjectHolderBase*);
 
