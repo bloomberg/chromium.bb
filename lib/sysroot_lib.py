@@ -85,9 +85,10 @@ def _CreateWrapper(wrapper_path, template, **kwargs):
     template: wrapper template.
     kwargs: fields to be set in the template.
   """
-  osutils.WriteFile(wrapper_path, template.format(**kwargs), makedirs=True)
-  os.chown(wrapper_path, 0, 0)
-  os.chmod(wrapper_path, 0o755)
+  osutils.WriteFile(wrapper_path, template.format(**kwargs), makedirs=True,
+                    sudo=True)
+  cros_build_lib.SudoRunCommand(['chmod', '+x', wrapper_path], print_cmd=False,
+                                redirect_stderr=True)
 
 
 def _NotEmpty(filepath):
@@ -186,14 +187,10 @@ class Sysroot(object):
     # them.
     debug_symlink = os.path.join('/usr/lib/debug', self.path.lstrip('/'))
     sysroot_debug = os.path.join(self.path, 'usr/lib/debug')
-    osutils.SafeMakedirs(os.path.dirname(debug_symlink))
-    osutils.SafeMakedirs(sysroot_debug)
+    osutils.SafeMakedirs(os.path.dirname(debug_symlink), sudo=True)
+    osutils.SafeMakedirs(sysroot_debug, sudo=True)
 
-    # If the symlink already exists, recreate it to be sure.
-    if os.path.islink(debug_symlink):
-      os.unlink(debug_symlink)
-
-    os.symlink(sysroot_debug, debug_symlink)
+    osutils.SafeSymlink(sysroot_debug, debug_symlink, sudo=True)
 
   def GenerateBoardConfig(self, board):
     """Generates the configuration for a given board.
@@ -256,7 +253,7 @@ class Sysroot(object):
       config: configuration to use.
     """
     path = os.path.join(self.path, _CONFIGURATION_PATH)
-    osutils.WriteFile(path, config, makedirs=True)
+    osutils.WriteFile(path, config, makedirs=True, sudo=True)
 
   def GenerateMakeConf(self, accepted_licenses=None):
     """Generates the board specific make.conf.
