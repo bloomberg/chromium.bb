@@ -178,7 +178,6 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   // Below, "matching" is in DoesManage-sense and "not ready" in
   // !HasCompletedMatching sense. We keep track of such PasswordFormManager
   // instances for UMA.
-  bool has_found_matching_managers_which_were_not_ready = false;
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
        iter != pending_login_managers_.end(); ++iter) {
@@ -192,11 +191,6 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     if ((*iter)->is_ignorable_change_password_form()) {
       if (logger)
         logger->LogMessage(Logger::STRING_CHANGE_PASSWORD_FORM);
-      continue;
-    }
-
-    if (!(*iter)->HasCompletedMatching()) {
-      has_found_matching_managers_which_were_not_ready = true;
       continue;
     }
 
@@ -241,22 +235,8 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     // |manager|.
     manager.reset(*matched_manager_it);
     pending_login_managers_.weak_erase(matched_manager_it);
-  } else if (has_found_matching_managers_which_were_not_ready) {
-    // We found some managers, but none finished matching yet. The user has
-    // tried to submit credentials before we had time to even find matching
-    // results for the given form and autofill. If this is the case, we just
-    // give up.
-    RecordFailure(MATCHING_NOT_COMPLETE, form.origin, logger.get());
-    return;
   } else {
     RecordFailure(NO_MATCHING_FORM, form.origin, logger.get());
-    return;
-  }
-
-  // Also get out of here if the user told us to 'never remember' passwords for
-  // this form.
-  if (manager->IsBlacklisted()) {
-    RecordFailure(FORM_BLACKLISTED, form.origin, logger.get());
     return;
   }
 
@@ -464,6 +444,26 @@ void PasswordManager::OnPasswordFormsRendered(
     if (logger) {
       logger->LogMessage(Logger::STRING_NO_PROVISIONAL_SAVE_MANAGER);
     }
+    return;
+  }
+
+  if (!provisional_save_manager_->HasCompletedMatching()) {
+    // We have a provisional save manager, but it didn't finish matching yet.
+    // We just give up.
+    RecordFailure(MATCHING_NOT_COMPLETE,
+                  provisional_save_manager_->observed_form().origin,
+                  logger.get());
+    provisional_save_manager_.reset();
+    return;
+  }
+
+  // Also get out of here if the user told us to 'never remember' passwords for
+  // this form.
+  if (provisional_save_manager_->IsBlacklisted()) {
+    RecordFailure(FORM_BLACKLISTED,
+                  provisional_save_manager_->observed_form().origin,
+                  logger.get());
+    provisional_save_manager_.reset();
     return;
   }
 

@@ -200,7 +200,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   }
 #endif
 
- protected:
   const autofill::PasswordForm& observed_form() const { return observed_form_; }
 
  private:
@@ -326,6 +325,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   bool UploadPasswordForm(const autofill::FormData& form_data,
                           const autofill::ServerFieldType& password_type);
 
+  // Create pending credentials from provisionally saved form and forms received
+  // from password store.
+  void CreatePendingCredentials();
+
   // Set of PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most
   // frequently require lookups by username value in IsNewLogin.
@@ -337,6 +340,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // The PasswordForm from the page or dialog managed by |this|.
   const autofill::PasswordForm observed_form_;
+
+  // Stores provisionally saved form until |pending_credentials_| is created.
+  scoped_ptr<const autofill::PasswordForm> provisionally_saved_form_;
+  // Stores if for creating |pending_credentials_| other possible usernames
+  // option should apply.
+  OtherPossibleUsernamesAction other_possible_username_action_;
 
   // The origin url path of observed_form_ tokenized, for convenience when
   // scoring.

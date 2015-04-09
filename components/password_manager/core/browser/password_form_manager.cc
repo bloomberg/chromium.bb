@@ -92,6 +92,9 @@ PasswordFormManager::PasswordFormManager(
     bool ssl_valid)
     : best_matches_deleter_(&best_matches_),
       observed_form_(CopyAndModifySSLValidity(observed_form, ssl_valid)),
+      provisionally_saved_form_(nullptr),
+      other_possible_username_action_(
+          PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES),
       is_new_login_(true),
       has_generated_password_(false),
       password_manager_(password_manager),
@@ -258,7 +261,7 @@ bool PasswordFormManager::HasGeneratedPassword() const {
 }
 
 bool PasswordFormManager::HasValidPasswordForm() const {
-  DCHECK_EQ(state_, POST_MATCHING_PHASE);
+  DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;
   // Non-HTML password forms (primarily HTTP and FTP autentication)
   // do not contain username_element and password_element values.
   if (observed_form_.scheme != PasswordForm::SCHEME_HTML)
@@ -270,120 +273,13 @@ bool PasswordFormManager::HasValidPasswordForm() const {
 void PasswordFormManager::ProvisionallySave(
     const PasswordForm& credentials,
     OtherPossibleUsernamesAction action) {
-  DCHECK_EQ(state_, POST_MATCHING_PHASE);
+  DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;
   DCHECK_NE(RESULT_NO_MATCH, DoesManage(credentials));
+  provisionally_saved_form_.reset(new PasswordForm(credentials));
+  other_possible_username_action_ = action;
 
-  base::string16 password_to_save(PasswordToSave(credentials));
-
-  // Make sure the important fields stay the same as the initially observed or
-  // autofilled ones, as they may have changed if the user experienced a login
-  // failure.
-  // Look for these credentials in the list containing auto-fill entries.
-  PasswordFormMap::const_iterator it =
-      best_matches_.find(credentials.username_value);
-  if (it != best_matches_.end()) {
-    // The user signed in with a login we autofilled.
-    pending_credentials_ = *it->second;
-    bool password_changed =
-        pending_credentials_.password_value != password_to_save;
-    if (IsPendingCredentialsPublicSuffixMatch()) {
-      // If the autofilled credentials were only a PSL match, store a copy with
-      // the current origin and signon realm. This ensures that on the next
-      // visit, a precise match is found.
-      is_new_login_ = true;
-      user_action_ = password_changed ? kUserActionChoosePslMatch
-                                      : kUserActionOverridePassword;
-
-      // Update credential to reflect that it has been used for submission.
-      // If this isn't updated, then password generation uploads are off for
-      // sites where PSL matching is required to fill the login form, as two
-      // PASSWORD votes are uploaded per saved password instead of one.
-      //
-      // TODO(gcasto): It would be nice if other state were shared such that if
-      // say a password was updated on one match it would update on all related
-      // passwords. This is a much larger change.
-      UpdateMetadataForUsage(pending_credentials_);
-
-      // Normally, the copy of the PSL matched credentials, adapted for the
-      // current domain, is saved automatically without asking the user, because
-      // the copy likely represents the same account, i.e., the one for which
-      // the user already agreed to store a password.
-      //
-      // However, if the user changes the suggested password, it might indicate
-      // that the autofilled credentials and |credentials| actually correspond
-      // to two different accounts (see http://crbug.com/385619). In that case
-      // the user should be asked again before saving the password. This is
-      // ensured by clearing |original_signon_realm| on |pending_credentials_|,
-      // which unmarks it as a PSL match.
-      //
-      // There is still the edge case when the autofilled credentials represent
-      // the same account as |credentials| but the stored password was out of
-      // date. In that case, the user just had to manually enter the new
-      // password, which is now in |credentials|. The best thing would be to
-      // save automatically, and also update the original credentials. However,
-      // we have no way to tell if this is the case. This will likely happen
-      // infrequently, and the inconvenience put on the user by asking them is
-      // not significant, so we are fine with asking here again.
-      if (password_changed) {
-        pending_credentials_.original_signon_realm.clear();
-        DCHECK(!IsPendingCredentialsPublicSuffixMatch());
-      }
-    } else {  // Not a PSL match.
-      is_new_login_ = false;
-      if (password_changed)
-        user_action_ = kUserActionOverridePassword;
-    }
-  } else if (action == ALLOW_OTHER_POSSIBLE_USERNAMES &&
-             UpdatePendingCredentialsIfOtherPossibleUsername(
-                 credentials.username_value)) {
-    // |pending_credentials_| is now set. Note we don't update
-    // |pending_credentials_.username_value| to |credentials.username_value|
-    // yet because we need to keep the original username to modify the stored
-    // credential.
-    selected_username_ = credentials.username_value;
-    is_new_login_ = false;
-  } else {
-    // User typed in a new, unknown username.
-    user_action_ = kUserActionOverrideUsernameAndPassword;
-    pending_credentials_ = observed_form_;
-    if (credentials.was_parsed_using_autofill_predictions)
-      pending_credentials_.username_element = credentials.username_element;
-    pending_credentials_.username_value = credentials.username_value;
-    pending_credentials_.other_possible_usernames =
-        credentials.other_possible_usernames;
-
-    // The password value will be filled in later, remove any garbage for now.
-    pending_credentials_.password_value.clear();
-    pending_credentials_.new_password_value.clear();
-
-    // If this was a sign-up or change password form, the names of the elements
-    // are likely different than those on a login form, so do not bother saving
-    // them. We will fill them with meaningful values in UpdateLogin() when the
-    // user goes onto a real login form for the first time.
-    if (!credentials.new_password_element.empty()) {
-      pending_credentials_.password_element.clear();
-      pending_credentials_.new_password_element.clear();
-    }
-  }
-
-  pending_credentials_.action = credentials.action;
-  // If the user selected credentials we autofilled from a PasswordForm
-  // that contained no action URL (IE6/7 imported passwords, for example),
-  // bless it with the action URL from the observed form. See bug 1107719.
-  if (pending_credentials_.action.is_empty())
-    pending_credentials_.action = observed_form_.action;
-
-  pending_credentials_.password_value = password_to_save;
-  pending_credentials_.preferred = credentials.preferred;
-
-  if (user_action_ == kUserActionOverridePassword &&
-      pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
-      !has_generated_password_) {
-    LogPasswordGenerationSubmissionEvent(PASSWORD_OVERRIDDEN);
-  }
-
-  if (has_generated_password_)
-    pending_credentials_.type = PasswordForm::TYPE_GENERATED;
+  if (HasCompletedMatching())
+    CreatePendingCredentials();
 }
 
 void PasswordFormManager::Save() {
@@ -622,6 +518,11 @@ void PasswordFormManager::OnGetPasswordStoreResults(
   if (!results.empty())
     OnRequestDone(results.Pass());
   state_ = POST_MATCHING_PHASE;
+
+  // If password store was slow and provisionally saved form is already here
+  // then create pending credentials (see http://crbug.com/470322).
+  if (provisionally_saved_form_)
+    CreatePendingCredentials();
 
   if (manager_action_ != kManagerActionBlacklisted) {
     for (auto const& driver : drivers_)
@@ -867,6 +768,128 @@ bool PasswordFormManager::UploadPasswordForm(
   bool success = autofill_manager->UploadPasswordForm(form_data, password_type);
   UMA_HISTOGRAM_BOOLEAN("PasswordGeneration.UploadStarted", success);
   return success;
+}
+
+void PasswordFormManager::CreatePendingCredentials() {
+  DCHECK(provisionally_saved_form_);
+  base::string16 password_to_save(PasswordToSave(*provisionally_saved_form_));
+
+  // Make sure the important fields stay the same as the initially observed or
+  // autofilled ones, as they may have changed if the user experienced a login
+  // failure.
+  // Look for these credentials in the list containing auto-fill entries.
+  PasswordFormMap::const_iterator it =
+      best_matches_.find(provisionally_saved_form_->username_value);
+  if (it != best_matches_.end()) {
+    // The user signed in with a login we autofilled.
+    pending_credentials_ = *it->second;
+    bool password_changed =
+        pending_credentials_.password_value != password_to_save;
+    if (IsPendingCredentialsPublicSuffixMatch()) {
+      // If the autofilled credentials were only a PSL match, store a copy with
+      // the current origin and signon realm. This ensures that on the next
+      // visit, a precise match is found.
+      is_new_login_ = true;
+      user_action_ = password_changed ? kUserActionChoosePslMatch
+                                      : kUserActionOverridePassword;
+
+      // Update credential to reflect that it has been used for submission.
+      // If this isn't updated, then password generation uploads are off for
+      // sites where PSL matching is required to fill the login form, as two
+      // PASSWORD votes are uploaded per saved password instead of one.
+      //
+      // TODO(gcasto): It would be nice if other state were shared such that if
+      // say a password was updated on one match it would update on all related
+      // passwords. This is a much larger change.
+      UpdateMetadataForUsage(pending_credentials_);
+
+      // Normally, the copy of the PSL matched credentials, adapted for the
+      // current domain, is saved automatically without asking the user, because
+      // the copy likely represents the same account, i.e., the one for which
+      // the user already agreed to store a password.
+      //
+      // However, if the user changes the suggested password, it might indicate
+      // that the autofilled credentials and |provisionally_saved_form_|
+      // actually correspond  to two different accounts (see
+      // http://crbug.com/385619). In that case the user should be asked again
+      // before saving the password. This is ensured by clearing
+      // |original_signon_realm| on |pending_credentials_|, which unmarks it as
+      // a PSL match.
+      //
+      // There is still the edge case when the autofilled credentials represent
+      // the same account as |provisionally_saved_form_| but the stored password
+      // was out of date. In that case, the user just had to manually enter the
+      // new password, which is now in |provisionally_saved_form_|. The best
+      // thing would be to save automatically, and also update the original
+      // credentials. However, we have no way to tell if this is the case.
+      // This will likely happen infrequently, and the inconvenience put on the
+      // user by asking them is not significant, so we are fine with asking
+      // here again.
+      if (password_changed) {
+        pending_credentials_.original_signon_realm.clear();
+        DCHECK(!IsPendingCredentialsPublicSuffixMatch());
+      }
+    } else {  // Not a PSL match.
+      is_new_login_ = false;
+      if (password_changed)
+        user_action_ = kUserActionOverridePassword;
+    }
+  } else if (other_possible_username_action_ ==
+                 ALLOW_OTHER_POSSIBLE_USERNAMES &&
+             UpdatePendingCredentialsIfOtherPossibleUsername(
+                 provisionally_saved_form_->username_value)) {
+    // |pending_credentials_| is now set. Note we don't update
+    // |pending_credentials_.username_value| to |credentials.username_value|
+    // yet because we need to keep the original username to modify the stored
+    // credential.
+    selected_username_ = provisionally_saved_form_->username_value;
+    is_new_login_ = false;
+  } else {
+    // User typed in a new, unknown username.
+    user_action_ = kUserActionOverrideUsernameAndPassword;
+    pending_credentials_ = observed_form_;
+    if (provisionally_saved_form_->was_parsed_using_autofill_predictions)
+      pending_credentials_.username_element =
+          provisionally_saved_form_->username_element;
+    pending_credentials_.username_value =
+        provisionally_saved_form_->username_value;
+    pending_credentials_.other_possible_usernames =
+        provisionally_saved_form_->other_possible_usernames;
+
+    // The password value will be filled in later, remove any garbage for now.
+    pending_credentials_.password_value.clear();
+    pending_credentials_.new_password_value.clear();
+
+    // If this was a sign-up or change password form, the names of the elements
+    // are likely different than those on a login form, so do not bother saving
+    // them. We will fill them with meaningful values in UpdateLogin() when the
+    // user goes onto a real login form for the first time.
+    if (!provisionally_saved_form_->new_password_element.empty()) {
+      pending_credentials_.password_element.clear();
+      pending_credentials_.new_password_element.clear();
+    }
+  }
+
+  pending_credentials_.action = provisionally_saved_form_->action;
+  // If the user selected credentials we autofilled from a PasswordForm
+  // that contained no action URL (IE6/7 imported passwords, for example),
+  // bless it with the action URL from the observed form. See bug 1107719.
+  if (pending_credentials_.action.is_empty())
+    pending_credentials_.action = observed_form_.action;
+
+  pending_credentials_.password_value = password_to_save;
+  pending_credentials_.preferred = provisionally_saved_form_->preferred;
+
+  if (user_action_ == kUserActionOverridePassword &&
+      pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
+      !has_generated_password_) {
+    LogPasswordGenerationSubmissionEvent(PASSWORD_OVERRIDDEN);
+  }
+
+  if (has_generated_password_)
+    pending_credentials_.type = PasswordForm::TYPE_GENERATED;
+
+  provisionally_saved_form_.reset();
 }
 
 int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {

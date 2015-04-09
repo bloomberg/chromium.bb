@@ -25,6 +25,7 @@ using base::ASCIIToUTF16;
 using testing::_;
 using testing::AnyNumber;
 using testing::Exactly;
+using testing::Invoke;
 using testing::Return;
 using testing::WithArg;
 
@@ -1007,6 +1008,54 @@ TEST_F(PasswordManagerTest, FormSubmittedChangedWithAutofillResponse) {
   form.was_parsed_using_autofill_predictions = true;
   // And the form submit contract is to call ProvisionallySavePassword.
   manager()->ProvisionallySavePassword(form);
+
+  scoped_ptr<PasswordFormManager> form_to_save;
+  EXPECT_CALL(client_,
+              PromptUserToSavePasswordPtr(
+                  _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  // The post-navigation load.
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  // The post-navigation layout.
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  ASSERT_TRUE(form_to_save);
+  EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
+
+  // Simulate saving the form, as if the info bar was accepted.
+  form_to_save->Save();
+}
+
+TEST_F(PasswordManagerTest, SubmitNotFetchedFromStoreForm) {
+  // Test that observing a newly submitted form that is fetched after on submit
+  // shows the save password bar.
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(Exactly(0));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+
+  PasswordStoreConsumer* form_manager = nullptr;
+  // Do not call back from store after GetLogins is called. Instead, save the
+  // pointer to the form manager for calling back later. This emulates that
+  // PasswordStore does not manage to fetch a form till moment of submission.
+  ON_CALL(*store_, GetLogins(_, _, _))
+      .WillByDefault(testing::SaveArg<2>(&form_manager));
+  // The initial load.
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  // The initial layout.
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+  ASSERT_TRUE(form_manager);
+
+  // And the form submit contract is to call ProvisionallySavePassword.
+  manager()->ProvisionallySavePassword(form);
+
+  // Emulate fetching password form from PasswordStore after submission but
+  // before post-navigation load.
+  form_manager->OnGetPasswordStoreResults(
+      ScopedVector<autofill::PasswordForm>());
 
   scoped_ptr<PasswordFormManager> form_to_save;
   EXPECT_CALL(client_,
