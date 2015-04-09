@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_BASE64URL_H
-#define COMPONENTS_PROXIMITY_BASE64URL_H
+#ifndef COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_BASE64URL_H
+#define COMPONENTS_PROXIMITY_AUTH_CRYPTAUTH_BASE64URL_H
 
 #include <string>
 

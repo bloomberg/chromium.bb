@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "components/proximity_auth/base64url.h"
+#include "components/proximity_auth/cryptauth/base64url.h"
 
 // The wire messages have a simple format:
 // [ message version ] [ body length ] [ JSON body ]

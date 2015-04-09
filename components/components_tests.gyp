@@ -391,11 +391,11 @@
       'precache/core/precache_url_table_unittest.cc',
     ],
     'proximity_auth_unittest_sources': [
-      'proximity_auth/base64url_unittest.cc',
       'proximity_auth/bluetooth_connection_finder_unittest.cc',
       'proximity_auth/bluetooth_connection_unittest.cc',
       'proximity_auth/client_unittest.cc',
       'proximity_auth/connection_unittest.cc',
+      'proximity_auth/cryptauth/base64url_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_api_call_flow_unittest.cc',
       'proximity_auth/cryptauth/cryptauth_client_impl_unittest.cc',

@@ -16,8 +16,6 @@
         '../net/net.gyp:net',
       ],
       'sources': [
-        "proximity_auth/base64url.cc",
-        "proximity_auth/base64url.h",
         "proximity_auth/bluetooth_connection.cc",
         "proximity_auth/bluetooth_connection.h",
         "proximity_auth/bluetooth_connection_finder.cc",
@@ -71,6 +69,8 @@
         '../net/net.gyp:net',
       ],
       'sources': [
+        "proximity_auth/cryptauth/base64url.cc",
+        "proximity_auth/cryptauth/base64url.h",
         "proximity_auth/cryptauth/cryptauth_access_token_fetcher.h",
         "proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl.cc",
         "proximity_auth/cryptauth/cryptauth_access_token_fetcher_impl.h",

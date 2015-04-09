@@ -17,7 +17,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/login/auth/key.h"
-#include "components/proximity_auth/base64url.h"
+#include "components/proximity_auth/cryptauth/base64url.h"
 #include "crypto/encryptor.h"
 #include "crypto/random.h"
 #include "crypto/symmetric_key.h"

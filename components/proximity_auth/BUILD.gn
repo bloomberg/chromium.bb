@@ -6,8 +6,6 @@ import("//testing/test.gni")
 
 source_set("proximity_auth") {
   sources = [
-    "base64url.cc",
-    "base64url.h",
     "bluetooth_connection.cc",
     "bluetooth_connection.h",
     "bluetooth_connection_finder.cc",
@@ -44,7 +42,6 @@ source_set("proximity_auth") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "base64url_unittest.cc",
     "bluetooth_connection_finder_unittest.cc",
     "bluetooth_connection_unittest.cc",
     "client_unittest.cc",

@@ -5,7 +5,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_utils.h"
 
 #include "base/sha1.h"
-#include "components/proximity_auth/base64url.h"
+#include "components/proximity_auth/cryptauth/base64url.h"
 
 namespace proximity_auth {
 
