@@ -42,16 +42,16 @@ class VisiblePosition;
 enum EWordSide { RightWordIfOnBoundary = false, LeftWordIfOnBoundary = true };
 
 // words
-VisiblePosition startOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBoundary);
-VisiblePosition endOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBoundary);
+CORE_EXPORT VisiblePosition startOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBoundary);
+CORE_EXPORT VisiblePosition endOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBoundary);
 VisiblePosition previousWordPosition(const VisiblePosition &);
 VisiblePosition nextWordPosition(const VisiblePosition &);
 VisiblePosition rightWordPosition(const VisiblePosition&, bool skipsSpaceWhenMovingRight);
 VisiblePosition leftWordPosition(const VisiblePosition&, bool skipsSpaceWhenMovingRight);
 
 // sentences
-VisiblePosition startOfSentence(const VisiblePosition &);
-VisiblePosition endOfSentence(const VisiblePosition &);
+CORE_EXPORT VisiblePosition startOfSentence(const VisiblePosition &);
+CORE_EXPORT VisiblePosition endOfSentence(const VisiblePosition &);
 VisiblePosition previousSentencePosition(const VisiblePosition &);
 VisiblePosition nextSentencePosition(const VisiblePosition &);
 

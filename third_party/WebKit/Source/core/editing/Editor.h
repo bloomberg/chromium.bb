@@ -26,6 +26,7 @@
 #ifndef Editor_h
 #define Editor_h
 
+#include "core/CoreExport.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/editing/EditAction.h"
@@ -56,7 +57,7 @@ class UndoStack;
 enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM };
 enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSeparatorIsP };
 
-class Editor final : public NoBaseWillBeGarbageCollectedFinalized<Editor> {
+class CORE_EXPORT Editor final : public NoBaseWillBeGarbageCollectedFinalized<Editor> {
     WTF_MAKE_NONCOPYABLE(Editor);
 public:
     static PassOwnPtrWillBeRawPtr<Editor> create(LocalFrame&);
@@ -119,7 +120,7 @@ public:
     void setShouldStyleWithCSS(bool flag) { m_shouldStyleWithCSS = flag; }
     bool shouldStyleWithCSS() const { return m_shouldStyleWithCSS; }
 
-    class Command {
+    class CORE_EXPORT Command {
         STACK_ALLOCATED();
     public:
         Command();

@@ -5,6 +5,7 @@
 #ifndef CompositionUnderlineRangeFilter_h
 #define CompositionUnderlineRangeFilter_h
 
+#include "core/CoreExport.h"
 #include "core/editing/CompositionUnderline.h"
 #include "wtf/NotFound.h"
 #include "wtf/Vector.h"
@@ -14,7 +15,7 @@ namespace blink {
 // A visitor class to yield elements of a sorted (by startOffset) list of
 // underlines, visiting only elements that intersect with specified *inclusive*
 // range [indexLo, indexHi].
-class CompositionUnderlineRangeFilter {
+class CORE_EXPORT CompositionUnderlineRangeFilter {
     WTF_MAKE_NONCOPYABLE(CompositionUnderlineRangeFilter);
 public:
     class ConstIterator {

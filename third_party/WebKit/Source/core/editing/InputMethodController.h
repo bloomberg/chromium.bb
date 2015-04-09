@@ -26,6 +26,7 @@
 #ifndef InputMethodController_h
 #define InputMethodController_h
 
+#include "core/CoreExport.h"
 #include "core/editing/CompositionUnderline.h"
 #include "core/editing/PlainTextRange.h"
 #include "platform/heap/Handle.h"
@@ -38,7 +39,7 @@ class LocalFrame;
 class Range;
 class Text;
 
-class InputMethodController final : public NoBaseWillBeGarbageCollectedFinalized<InputMethodController> {
+class CORE_EXPORT InputMethodController final : public NoBaseWillBeGarbageCollectedFinalized<InputMethodController> {
     WTF_MAKE_NONCOPYABLE(InputMethodController);
 public:
     enum ConfirmCompositionBehavior {

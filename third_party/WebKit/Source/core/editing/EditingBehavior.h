@@ -21,12 +21,13 @@
 #ifndef EditingBehavior_h
 #define EditingBehavior_h
 
+#include "core/CoreExport.h"
 #include "core/editing/EditingBehaviorTypes.h"
 
 namespace blink {
 class KeyboardEvent;
 
-class EditingBehavior {
+class CORE_EXPORT EditingBehavior {
 
 public:
     explicit EditingBehavior(EditingBehaviorType type)

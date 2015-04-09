@@ -41,10 +41,10 @@ class InlineTextBox;
 class LayoutText;
 class LayoutTextFragment;
 
-String plainText(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+CORE_EXPORT String plainText(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 String plainText(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-PassRefPtrWillBeRawPtr<Range> findPlainText(const Range*, const String&, FindOptions);
-void findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions, Position& resultStart, Position& resultEnd);
+CORE_EXPORT PassRefPtrWillBeRawPtr<Range> findPlainText(const Range*, const String&, FindOptions);
+CORE_EXPORT void findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions, Position& resultStart, Position& resultEnd);
 
 // Iterates through the DOM range, returning all the text, and 0-length boundaries
 // at points where replaced elements break up the text flow.  The text comes back in

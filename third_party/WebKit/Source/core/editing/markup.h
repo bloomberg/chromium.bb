@@ -27,6 +27,7 @@
 #define markup_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/editing/HTMLInterchange.h"
 #include "platform/heap/Handle.h"
@@ -61,8 +62,8 @@ bool isPlainTextMarkup(Node*);
 void replaceChildrenWithFragment(ContainerNode*, PassRefPtrWillBeRawPtr<DocumentFragment>, ExceptionState&);
 void replaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
 
-String createMarkup(const Range*, EAnnotateForInterchange = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
-String createMarkup(const Node*, EChildrenOnly = IncludeNode, EAbsoluteURLs = DoNotResolveURLs);
+CORE_EXPORT String createMarkup(const Range*, EAnnotateForInterchange = DoNotAnnotateForInterchange, bool convertBlocksToInlines = false, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
+CORE_EXPORT String createMarkup(const Node*, EChildrenOnly = IncludeNode, EAbsoluteURLs = DoNotResolveURLs);
 
 String createStyledMarkupForNavigationTransition(Node*);
 

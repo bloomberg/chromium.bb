@@ -26,13 +26,14 @@
 #ifndef TextIteratorTextState_h
 #define TextIteratorTextState_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Range.h"
 #include "core/layout/LayoutText.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class TextIteratorTextState {
+class CORE_EXPORT TextIteratorTextState {
     STACK_ALLOCATED();
 public:
     explicit TextIteratorTextState(bool emitsOriginalText);
