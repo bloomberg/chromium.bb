@@ -242,9 +242,8 @@ void AttemptExit() {
 #if defined(OS_CHROMEOS)
 // A function called when SIGTERM is received.
 void ExitCleanly() {
-  // We always mark exit cleanly because SessionManager may kill
-  // chrome in 3 seconds after SIGTERM.
-  g_browser_process->EndSession();
+  // We always mark exit cleanly.
+  MarkAsCleanShutdown();
 
   // Don't block when SIGTERM is received. AreaAllBrowsersCloseable()
   // can be false in following cases. a) power-off b) signout from
