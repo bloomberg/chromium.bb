@@ -50,8 +50,6 @@ void _sanitizer_options_link_helper() { }
 //     they reside in shared memory). This option is going to be deprecated in
 //     upstream AddressSanitizer and must not be used anywhere except the
 //     official builds.
-//   replace_intrin=0 - do not intercept memcpy(), memmove() and memset() to
-//     work around http://crbug.com/162461 (ASan report in OpenCL on Mac).
 //   check_printf=1 - check the memory accesses to printf (and other formatted
 //     output routines) arguments.
 //   use_sigaltstack=1 - handle signals on an alternate signal stack. Useful
@@ -83,7 +81,7 @@ const char *kAsanDefaultOptions =
 
 #elif defined(OS_MACOSX)
 const char *kAsanDefaultOptions =
-    "replace_intrin=0 check_printf=1 use_sigaltstack=1 "
+    "check_printf=1 use_sigaltstack=1 "
     "strip_path_prefix=Release/../../ fast_unwind_on_fatal=1 "
     "detect_stack_use_after_return=1 detect_odr_violation=0 ";
 static const char kNaClDefaultOptions[] = "handle_segv=0";
