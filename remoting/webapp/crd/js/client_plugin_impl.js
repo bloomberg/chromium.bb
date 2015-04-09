@@ -44,23 +44,12 @@ remoting.ClientPluginImpl = function(container,
   /** @private {remoting.ClientPlugin.ConnectionEventHandler} */
   this.connectionEventHandler_ = null;
 
-  /**
-   * @param {string} data Remote gnubbyd data.
-   * @private
-   */
-  this.onGnubbyAuthHandler_ = function(data) {};
-  /**
-   * @param {string} url
-   * @param {number} hotspotX
-   * @param {number} hotspotY
-   * @private
-   */
-  this.updateMouseCursorImage_ = function(url, hotspotX, hotspotY) {};
-  /**
-   * @param {string} data Remote cast extension message.
-   * @private
-   */
-  this.onCastExtensionHandler_ = function(data) {};
+  /** @private {?function(string, number, number)} */
+  this.updateMouseCursorImage_ = base.doNothing;
+  /** @private {?function(string, string)} */
+  this.updateClipboardData_ = base.doNothing;
+  /** @private {?function(string)} */
+  this.onCastExtensionHandler_ = base.doNothing;
   /** @private {?function({rects:Array<Array<number>>}):void} */
   this.debugRegionHandler_ = null;
 
@@ -165,6 +154,13 @@ remoting.ClientPluginImpl.prototype.setConnectionEventHandler =
  */
 remoting.ClientPluginImpl.prototype.setMouseCursorHandler = function(handler) {
   this.updateMouseCursorImage_ = handler;
+};
+
+/**
+ * @param {function(string, string):void} handler
+ */
+remoting.ClientPluginImpl.prototype.setClipboardHandler = function(handler) {
+  this.updateClipboardData_ = handler;
 };
 
 /**
@@ -310,9 +306,7 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
   } else if (message.method == 'injectClipboardItem') {
     var mimetype = base.getStringAttr(message.data, 'mimeType');
     var item = base.getStringAttr(message.data, 'item');
-    if (remoting.clipboard) {
-      remoting.clipboard.fromHost(mimetype, item);
-    }
+    this.updateClipboardData_(mimetype, item);
 
   } else if (message.method == 'onFirstFrameReceived') {
     if (remoting.clientSession) {

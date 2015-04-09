@@ -30,15 +30,9 @@ remoting.initGlobalObjects = function() {
       document.getElementById('statistics'));
   remoting.formatIq = new remoting.FormatIq();
 
-  remoting.clipboard = new remoting.Clipboard();
   var sandbox =
       /** @type {HTMLIFrameElement} */ (document.getElementById('wcs-sandbox'));
   remoting.wcsSandbox = new remoting.WcsSandboxContainer(sandbox.contentWindow);
-
-  // The plugin's onFocus handler sends a paste command to |window|, because
-  // it can't send one to the plugin element itself.
-  window.addEventListener('paste', pluginGotPaste_, false);
-  window.addEventListener('copy', pluginGotCopy_, false);
 
   remoting.initModalDialogs();
 
@@ -63,33 +57,6 @@ remoting.getExtensionInfo = function() {
     return 'Failed to get product version. Corrupt manifest?';
   }
 };
-
-/**
- * Callback function called when the browser window gets a paste operation.
- *
- * @param {Event} event
- * @return {void} Nothing.
- */
-function pluginGotPaste_(event) {
-  if (event && event.clipboardData) {
-    remoting.clipboard.toHost(event.clipboardData);
-  }
-}
-
-/**
- * Callback function called when the browser window gets a copy operation.
- *
- * @param {Event} event
- * @return {void} Nothing.
- */
-function pluginGotCopy_(event) {
-  if (event && event.clipboardData) {
-    if (remoting.clipboard.toOs(event.clipboardData)) {
-      // The default action may overwrite items that we added to clipboardData.
-      event.preventDefault();
-    }
-  }
-}
 
 /**
  * Return the current time as a formatted string suitable for logging.

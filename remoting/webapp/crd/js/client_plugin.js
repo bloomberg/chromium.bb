@@ -157,8 +157,14 @@ remoting.ClientPlugin.prototype.setConnectionEventHandler =
  *     URL encoding the mouse cursor; the second and third parameters are
  *     the cursor hotspot's x- and y-coordinates, respectively.
  */
-remoting.ClientPlugin.prototype.setMouseCursorHandler =
-    function(handler) {};
+remoting.ClientPlugin.prototype.setMouseCursorHandler = function(handler) {};
+
+/**
+ * @param {function(string, string):void} handler Callback for processing
+ *    clipboard data injected from the host. The first parameter is the mime
+ *    type and the second parameter is the actual data.
+ */
+remoting.ClientPlugin.prototype.setClipboardHandler = function(handler) {};
 
 /**
  * @param {function({rects:Array<Array<number>>}):void|null} handler Callback

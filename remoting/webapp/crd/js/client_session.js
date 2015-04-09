@@ -567,18 +567,6 @@ remoting.ClientSession.prototype.logHostOfflineErrors = function(enable) {
 };
 
 /**
- * Sends a clipboard item to the host.
- *
- * @param {string} mimeType The MIME type of the clipboard item.
- * @param {string} item The clipboard item.
- */
-remoting.ClientSession.prototype.sendClipboardItem = function(mimeType, item) {
-  if (!this.plugin_)
-    return;
-  this.plugin_.sendClipboardItem(mimeType, item);
-};
-
-/**
  * Sends an extension message to the host.
  *
  * @param {string} type The message type.

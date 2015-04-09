@@ -42,12 +42,11 @@ remoting.ConnectedView = function(plugin, viewportElement, cursorElement) {
   /** private */
   this.disposables_ = new base.Disposables(
     this.cursor_,
-    new base.DomEventHook(pluginElement, 'focus',
-                          this.onPluginGotFocus_.bind(this), false),
     new base.DomEventHook(pluginElement, 'blur',
                           this.onPluginLostFocus_.bind(this), false),
     new base.DomEventHook(document, 'visibilitychange',
-                          this.onVisibilityChanged_.bind(this), false)
+                          this.onVisibilityChanged_.bind(this), false),
+    new remoting.Clipboard(plugin)
   );
 
   // TODO(wez): Only allow mouse lock if the app has the pointerLock permission.
@@ -88,14 +87,6 @@ remoting.ConnectedView.prototype.onVisibilityChanged_ = function() {
  */
 remoting.ConnectedView.prototype.onConnectionReady = function(ready) {
   this.viewportElement_.classList.toggle('session-client-inactive', !ready);
-};
-
-/**
- * Callback function called when the plugin element gets focus.
- * @private
- */
-remoting.ConnectedView.prototype.onPluginGotFocus_ = function() {
-  remoting.clipboard.initiateToHost();
 };
 
 /**

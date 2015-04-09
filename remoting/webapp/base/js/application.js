@@ -159,7 +159,6 @@ remoting.Application.prototype.initSession_ = function(connectionInfo) {
                        this.onSessionFinished_.bind(this)),
     new base.RepeatingTimer(this.updateStatistics_.bind(this), 1000)
   );
-  remoting.clipboard.startSession();
 };
 
 /**
