@@ -20,6 +20,9 @@ public:
     using PositionType = Position;
     using PositionIteratorType = PositionIteratorAlgorithm<EditingStrategy>;
 
+    // |disconnected| is optional output parameter having true if specified
+    // positions don't have common ancestor.
+    static short comparePositions(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected = nullptr);
     static bool editingIgnoresContent(const Node*);
     static int lastOffsetForEditing(const Node*);
 };

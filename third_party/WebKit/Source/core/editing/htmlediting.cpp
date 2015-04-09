@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/editing/htmlediting.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLElementFactory.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
@@ -36,6 +34,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/editing/EditingStrategy.h"
 #include "core/editing/Editor.h"
 #include "core/editing/HTMLInterchange.h"
 #include "core/editing/PlainTextRange.h"
@@ -99,7 +98,7 @@ int comparePositions(const Position& a, const Position& b)
             bias = 1;
     }
 
-    int result = Range::compareBoundaryPoints(nodeA, offsetA, nodeB, offsetB, IGNORE_EXCEPTION);
+    int result = EditingStrategy::comparePositions(nodeA, offsetA, nodeB, offsetB);
     return result ? result : bias;
 }
 
