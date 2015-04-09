@@ -328,7 +328,7 @@ MediaElementAudioSourceNode* AudioContext::createMediaElementSource(HTMLMediaEle
 
     MediaElementAudioSourceNode* node = MediaElementAudioSourceNode::create(*this, *mediaElement);
 
-    mediaElement->setAudioSourceNode(&node->mediaElementAudioSourceHandler());
+    mediaElement->setAudioSourceNode(node);
 
     refNode(node); // context keeps reference until node is disconnected
     return node;
@@ -364,7 +364,7 @@ MediaStreamAudioSourceNode* AudioContext::createMediaStreamSource(MediaStream* m
     MediaStreamAudioSourceNode* node = MediaStreamAudioSourceNode::create(*this, *mediaStream, audioTrack, provider.release());
 
     // FIXME: Only stereo streams are supported right now. We should be able to accept multi-channel streams.
-    node->mediaStreamAudioSourceHandler().setFormat(2, sampleRate());
+    node->setFormat(2, sampleRate());
 
     refNode(node); // context keeps reference until node is disconnected
     return node;

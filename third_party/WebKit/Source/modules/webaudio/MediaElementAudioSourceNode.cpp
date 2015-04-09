@@ -184,7 +184,6 @@ DEFINE_TRACE(MediaElementAudioSourceHandler)
 {
     visitor->trace(m_mediaElement);
     AudioHandler::trace(visitor);
-    AudioSourceProviderClient::trace(visitor);
 }
 
 // ----------------------------------------------------------------
@@ -200,6 +199,12 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AudioContext& c
     return new MediaElementAudioSourceNode(context, mediaElement);
 }
 
+DEFINE_TRACE(MediaElementAudioSourceNode)
+{
+    AudioSourceProviderClient::trace(visitor);
+    AudioSourceNode::trace(visitor);
+}
+
 MediaElementAudioSourceHandler& MediaElementAudioSourceNode::mediaElementAudioSourceHandler() const
 {
     return static_cast<MediaElementAudioSourceHandler&>(handler());
@@ -208,6 +213,26 @@ MediaElementAudioSourceHandler& MediaElementAudioSourceNode::mediaElementAudioSo
 HTMLMediaElement* MediaElementAudioSourceNode::mediaElement() const
 {
     return mediaElementAudioSourceHandler().mediaElement();
+}
+
+void MediaElementAudioSourceNode::setFormat(size_t numberOfChannels, float sampleRate)
+{
+    mediaElementAudioSourceHandler().setFormat(numberOfChannels, sampleRate);
+}
+
+void MediaElementAudioSourceNode::onCurrentSrcChanged(const KURL& currentSrc)
+{
+    mediaElementAudioSourceHandler().onCurrentSrcChanged(currentSrc);
+}
+
+void MediaElementAudioSourceNode::lock()
+{
+    mediaElementAudioSourceHandler().lock();
+}
+
+void MediaElementAudioSourceNode::unlock()
+{
+    mediaElementAudioSourceHandler().unlock();
 }
 
 } // namespace blink

@@ -39,8 +39,7 @@ namespace blink {
 
 class AudioContext;
 
-class MediaStreamAudioSourceHandler final : public AudioHandler, public AudioSourceProviderClient {
-    USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceHandler);
+class MediaStreamAudioSourceHandler final : public AudioHandler {
 public:
     static MediaStreamAudioSourceHandler* create(AudioNode&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
     virtual ~MediaStreamAudioSourceHandler();
@@ -51,8 +50,9 @@ public:
     virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
 
-    // AudioSourceProviderClient
-    virtual void setFormat(size_t numberOfChannels, float sampleRate) override;
+    // A helper for AudioSourceProviderClient implementation of
+    // MediaStreamAudioSourceNode.
+    void setFormat(size_t numberOfChannels, float sampleRate);
 
     AudioSourceProvider* audioSourceProvider() const { return m_audioSourceProvider.get(); }
 
@@ -72,13 +72,18 @@ private:
     unsigned m_sourceNumberOfChannels;
 };
 
-class MediaStreamAudioSourceNode final : public AudioSourceNode {
+class MediaStreamAudioSourceNode final : public AudioSourceNode, public AudioSourceProviderClient {
     DEFINE_WRAPPERTYPEINFO();
+    USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
 public:
     static MediaStreamAudioSourceNode* create(AudioContext&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
+    DECLARE_VIRTUAL_TRACE();
     MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
 
     MediaStream* mediaStream() const;
+
+    // AudioSourceProviderClient functions:
+    void setFormat(size_t numberOfChannels, float sampleRate) override;
 
 private:
     MediaStreamAudioSourceNode(AudioContext&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);

@@ -120,7 +120,6 @@ DEFINE_TRACE(MediaStreamAudioSourceHandler)
     visitor->trace(m_mediaStream);
     visitor->trace(m_audioTrack);
     AudioHandler::trace(visitor);
-    AudioSourceProviderClient::trace(visitor);
 }
 
 // ----------------------------------------------------------------
@@ -136,6 +135,12 @@ MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AudioContext& con
     return new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, audioSourceProvider);
 }
 
+DEFINE_TRACE(MediaStreamAudioSourceNode)
+{
+    AudioSourceProviderClient::trace(visitor);
+    AudioSourceNode::trace(visitor);
+}
+
 MediaStreamAudioSourceHandler& MediaStreamAudioSourceNode::mediaStreamAudioSourceHandler() const
 {
     return static_cast<MediaStreamAudioSourceHandler&>(handler());
@@ -144,6 +149,11 @@ MediaStreamAudioSourceHandler& MediaStreamAudioSourceNode::mediaStreamAudioSourc
 MediaStream* MediaStreamAudioSourceNode::mediaStream() const
 {
     return mediaStreamAudioSourceHandler().mediaStream();
+}
+
+void MediaStreamAudioSourceNode::setFormat(size_t numberOfChannels, float sourceSampleRate)
+{
+    mediaStreamAudioSourceHandler().setFormat(numberOfChannels, sourceSampleRate);
 }
 
 } // namespace blink

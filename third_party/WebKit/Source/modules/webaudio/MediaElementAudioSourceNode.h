@@ -39,8 +39,7 @@ namespace blink {
 class AudioContext;
 class HTMLMediaElement;
 
-class MediaElementAudioSourceHandler final : public AudioHandler, public AudioSourceProviderClient {
-    USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceHandler);
+class MediaElementAudioSourceHandler final : public AudioHandler {
 public:
     static MediaElementAudioSourceHandler* create(AudioNode&, HTMLMediaElement&);
     virtual ~MediaElementAudioSourceHandler();
@@ -51,12 +50,12 @@ public:
     virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
 
-    // AudioSourceProviderClient
-    virtual void setFormat(size_t numberOfChannels, float sampleRate) override;
-    virtual void onCurrentSrcChanged(const KURL& currentSrc) override;
-
-    virtual void lock() override;
-    virtual void unlock() override;
+    // Helpers for AudioSourceProviderClient implementation of
+    // MediaElementAudioSourceNode.
+    void setFormat(size_t numberOfChannels, float sampleRate);
+    void onCurrentSrcChanged(const KURL& currentSrc);
+    void lock();
+    void unlock();
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -87,13 +86,21 @@ private:
     bool m_passesCurrentSrcCORSAccessCheck;
 };
 
-class MediaElementAudioSourceNode final : public AudioSourceNode {
+class MediaElementAudioSourceNode final : public AudioSourceNode, public AudioSourceProviderClient {
     DEFINE_WRAPPERTYPEINFO();
+    USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceNode);
 public:
     static MediaElementAudioSourceNode* create(AudioContext&, HTMLMediaElement&);
+    DECLARE_VIRTUAL_TRACE();
     MediaElementAudioSourceHandler& mediaElementAudioSourceHandler() const;
 
     HTMLMediaElement* mediaElement() const;
+
+    // AudioSourceProviderClient functions:
+    void setFormat(size_t numberOfChannels, float sampleRate) override;
+    void onCurrentSrcChanged(const KURL& currentSrc) override;
+    void lock() override;
+    void unlock() override;
 
 private:
     MediaElementAudioSourceNode(AudioContext&, HTMLMediaElement&);
