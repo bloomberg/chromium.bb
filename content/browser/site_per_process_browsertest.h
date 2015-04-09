@@ -2,16 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "content/public/test/content_browser_test.h"
 #include "url/gurl.h"
 
 namespace content {
 
+class FrameTreeNode;
 class Shell;
 
 class SitePerProcessBrowserTest : public ContentBrowserTest {
  public:
   SitePerProcessBrowserTest();
+
+  // Returns an alphabetically-sorted, newline-delimited list of the site
+  // instance URLs in which RenderFrameProxyHosts of |node| currently exist.
+  // TODO(nick): Make this a full-fledged tree walk.
+  static std::string DumpProxyHostSiteInstances(FrameTreeNode* node);
 
  protected:
   // Start at a data URL so each extra navigation creates a navigation entry.

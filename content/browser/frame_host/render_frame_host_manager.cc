@@ -608,13 +608,13 @@ void RenderFrameHostManager::SwapOutOldFrame(
   size_t active_frame_count =
       old_render_frame_host->GetSiteInstance()->active_frame_count();
   if (active_frame_count <= 1) {
+    // Clear out any proxies from this SiteInstance, in case this was the
+    // last one keeping other proxies alive.
+    ShutdownProxiesIfLastActiveFrameInSiteInstance(old_render_frame_host.get());
+
     // Tell the old RenderFrameHost to swap out, with no proxy to replace it.
     old_render_frame_host->SwapOut(NULL, true);
     MoveToPendingDeleteHosts(old_render_frame_host.Pass());
-
-    // Also clear out any proxies from this SiteInstance, in case this was the
-    // last one keeping other proxies alive.
-    ShutdownProxiesIfLastActiveFrameInSiteInstance(old_render_frame_host.get());
     return;
   }
 

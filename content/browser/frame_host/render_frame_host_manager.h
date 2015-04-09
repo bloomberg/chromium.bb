@@ -424,6 +424,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
  private:
   friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;
+  friend class SitePerProcessBrowserTest;
   friend class TestWebContents;
 
   FRIEND_TEST_ALL_PREFIXES(CrossProcessFrameTreeBrowserTest,

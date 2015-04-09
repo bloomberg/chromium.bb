@@ -4,6 +4,9 @@
 
 #include "content/browser/site_per_process_browsertest.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -165,6 +168,23 @@ void RenderFrameHostCreatedObserver::RenderFrameCreated(
 
 SitePerProcessBrowserTest::SitePerProcessBrowserTest() {
 };
+
+// static
+std::string SitePerProcessBrowserTest::DumpProxyHostSiteInstances(
+    FrameTreeNode* node) {
+  std::vector<std::string> sites;
+  for (auto& entry_pair : node->render_manager()->proxy_hosts_) {
+    sites.push_back(entry_pair.second->GetSiteInstance()->GetSiteURL().spec());
+  }
+  std::sort(sites.begin(), sites.end());
+  std::string result;
+  for (auto& site : sites) {
+    if (!result.empty())
+      result.append("\n");
+    result.append(site);
+  }
+  return result;
+}
 
 void SitePerProcessBrowserTest::StartFrameAtDataURL() {
   std::string data_url_script =
@@ -1904,6 +1924,40 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
       "window.domAutomationController.send(window.receivedMessages);",
       &subframe2_received_messages));
   EXPECT_EQ(2, subframe2_received_messages);
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  TestNavigationObserver observer(shell()->web_contents());
+
+  // Load cross-site page into iframe.
+  FrameTreeNode* child = root->child_at(0);
+  GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+  NavigateFrameToURL(root->child_at(0), url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(url, observer.last_navigation_url());
+  EXPECT_EQ("http://foo.com/", DumpProxyHostSiteInstances(root));
+
+  // Load another cross-site page.
+  url = embedded_test_server()->GetURL("bar.com", "/title3.html");
+  NavigateIframeToURL(shell()->web_contents(), "test", url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(url, observer.last_navigation_url());
+  EXPECT_EQ("http://bar.com/", DumpProxyHostSiteInstances(root));
+
+  // Navigate back to the parent's origin.
+  url = embedded_test_server()->GetURL("/title1.html");
+  NavigateFrameToURL(child, url);
+  EXPECT_EQ(url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ("", DumpProxyHostSiteInstances(root));
 }
 
 }  // namespace content
