@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/ocsp/nss_ocsp.h"
+#include "net/cert_net/nss_ocsp.h"
 
 #include <certt.h>
 #include <certdb.h>

@@ -197,8 +197,8 @@ component("net") {
       "cert/test_root_certs_nss.cc",
       "cert/x509_util_nss.cc",
       "cert/x509_util_nss.h",
-      "ocsp/nss_ocsp.cc",
-      "ocsp/nss_ocsp.h",
+      "cert_net/nss_ocsp.cc",
+      "cert_net/nss_ocsp.h",
       "quic/crypto/aead_base_decrypter_nss.cc",
       "quic/crypto/aead_base_encrypter_nss.cc",
       "quic/crypto/aes_128_gcm_12_decrypter_nss.cc",
@@ -342,8 +342,8 @@ component("net") {
       # keep them in that case.
       sources -= [
         "cert/test_root_certs_nss.cc",
-        "ocsp/nss_ocsp.cc",
-        "ocsp/nss_ocsp.h",
+        "cert_net/nss_ocsp.cc",
+        "cert_net/nss_ocsp.h",
       ]
     }
   }
@@ -474,8 +474,8 @@ component("net") {
       "cert/test_root_certs_nss.cc",
       "cert/x509_util_nss.cc",
       "cert/x509_util_nss.h",
-      "ocsp/nss_ocsp.cc",
-      "ocsp/nss_ocsp.h",
+      "cert_net/nss_ocsp.cc",
+      "cert_net/nss_ocsp.h",
       "proxy/proxy_resolver_mac.cc",
       "proxy/proxy_server_mac.cc",
     ]
@@ -1430,7 +1430,7 @@ if (!is_android && !is_win && !is_mac) {
     if (use_openssl || (!is_desktop_linux && !is_chromeos && !is_ios)) {
       # Only include this test when on Posix and using NSS for
       # cert verification or on iOS (which also uses NSS for certs).
-      sources -= [ "ocsp/nss_ocsp_unittest.cc" ]
+      sources -= [ "cert_net/nss_ocsp_unittest.cc" ]
     }
 
     if (!use_openssl_certs) {

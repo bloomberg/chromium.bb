@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_NSS) || defined(OS_IOS)
-#include "net/ocsp/nss_ocsp.h"
+#include "net/cert_net/nss_ocsp.h"
 #endif
 
 class StaticReset : public ::testing::EmptyTestEventListener {

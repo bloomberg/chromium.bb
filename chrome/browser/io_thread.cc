@@ -97,7 +97,7 @@
 #endif
 
 #if defined(USE_NSS) || defined(OS_IOS)
-#include "net/ocsp/nss_ocsp.h"
+#include "net/cert_net/nss_ocsp.h"
 #endif
 
 #if defined(OS_ANDROID)

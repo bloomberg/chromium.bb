@@ -233,7 +233,7 @@
           # Only include this test when on Posix and using NSS for
           # cert verification or on iOS (which also uses NSS for certs).
           'sources!': [
-            'ocsp/nss_ocsp_unittest.cc',
+            'cert_net/nss_ocsp_unittest.cc',
           ],
         }],
         [ 'use_openssl==1', {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_OCSP_NSS_OCSP_H_
-#define NET_OCSP_NSS_OCSP_H_
+#ifndef NET_CERT_NET_NSS_OCSP_H_
+#define NET_CERT_NET_NSS_OCSP_H_
 
 #include "net/base/net_export.h"
 
@@ -36,4 +36,4 @@ NET_EXPORT void SetURLRequestContextForNSSHttpIO(
 
 }  // namespace net
 
-#endif  // NET_OCSP_NSS_OCSP_H_
+#endif  // NET_CERT_NET_NSS_OCSP_H_
