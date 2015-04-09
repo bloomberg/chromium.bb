@@ -8,14 +8,12 @@
 
 function test()
 {
-    InspectorFrontendHost.recordActionTaken = function(actionCode)
+    InspectorFrontendHost.recordEnumeratedHistogram = function(name, code)
     {
-        InspectorTest.addResult("Action taken: " + nameOf(WebInspector.UserMetrics._ActionCodes, actionCode));
-    }
-
-    InspectorFrontendHost.recordPanelShown = function(panelCode)
-    {
-        InspectorTest.addResult("Panel shown: " + nameOf(WebInspector.UserMetrics._PanelCodes, panelCode));
+        if (name === "DevTools.ActionTaken")
+            InspectorTest.addResult("Action taken: " + nameOf(WebInspector.UserMetrics._ActionCodes, code));
+        else if (name === "DevTools.PanelShown")
+            InspectorTest.addResult("Panel shown: " + nameOf(WebInspector.UserMetrics._PanelCodes, code));
     }
 
     function nameOf(object, code)
