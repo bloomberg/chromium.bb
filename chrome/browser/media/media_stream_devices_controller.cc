@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -543,9 +542,11 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
         return false;
       }
       if (profile_->GetHostContentSettingsMap()->GetContentSetting(
-              request_.security_origin, request_.security_origin,
-              device_checks[i].settings_type, NO_RESOURCE_IDENTIFIER) !=
-              CONTENT_SETTING_ALLOW) {
+              request_.security_origin,
+              request_.security_origin,
+              device_checks[i].settings_type,
+              content_settings::ResourceIdentifier()) !=
+          CONTENT_SETTING_ALLOW) {
         return false;
       }
     }
@@ -561,10 +562,11 @@ int MediaStreamDevicesController::FilterBlockedByDefaultDevices() {
 
   if (IsDeviceAudioCaptureRequestedAndAllowed()) {
     if (profile_->GetHostContentSettingsMap()->GetContentSetting(
-        request_.security_origin,
-        request_.security_origin,
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-        NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_BLOCK) {
+            request_.security_origin,
+            request_.security_origin,
+            CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+            content_settings::ResourceIdentifier()) ==
+        CONTENT_SETTING_BLOCK) {
       request_permissions_[content::MEDIA_DEVICE_AUDIO_CAPTURE].permission =
           MEDIA_BLOCKED_BY_USER_SETTING;
     } else {
@@ -574,10 +576,11 @@ int MediaStreamDevicesController::FilterBlockedByDefaultDevices() {
 
   if (IsDeviceVideoCaptureRequestedAndAllowed()) {
     if (profile_->GetHostContentSettingsMap()->GetContentSetting(
-        request_.security_origin,
-        request_.security_origin,
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-        NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_BLOCK) {
+            request_.security_origin,
+            request_.security_origin,
+            CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+            content_settings::ResourceIdentifier()) ==
+        CONTENT_SETTING_BLOCK) {
       request_permissions_[content::MEDIA_DEVICE_VIDEO_CAPTURE].permission =
           MEDIA_BLOCKED_BY_USER_SETTING;
     } else {

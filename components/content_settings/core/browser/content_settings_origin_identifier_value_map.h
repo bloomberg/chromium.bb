@@ -9,8 +9,7 @@
 #include <string>
 
 #include "base/memory/linked_ptr.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
-#include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings.h"
 
 class GURL;
 
@@ -25,7 +24,6 @@ class RuleIterator;
 
 class OriginIdentifierValueMap {
  public:
-  typedef std::string ResourceIdentifier;
   struct EntryMapKey {
     ContentSettingsType content_type;
     ResourceIdentifier resource_identifier;

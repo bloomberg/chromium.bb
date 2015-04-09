@@ -179,7 +179,7 @@ PlatformNotificationServiceImpl::CheckPermissionOnIOThread(
       origin,
       origin,
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      NO_RESOURCE_IDENTIFIER);
+      content_settings::ResourceIdentifier());
 
   if (setting == CONTENT_SETTING_ALLOW)
     return blink::WebNotificationPermissionAllowed;

@@ -62,6 +62,8 @@ struct RendererContentSettingRules {
 
 namespace content_settings {
 
+typedef std::string ResourceIdentifier;
+
 // Enum containing the various source for content settings. Settings can be
 // set by policy, extension, the user or by the custodian of a supervised user.
 // Certain (internal) schemes are whilelisted. For whilelisted schemes the

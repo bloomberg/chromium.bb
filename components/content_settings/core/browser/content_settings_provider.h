@@ -7,12 +7,10 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_PROVIDER_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_PROVIDER_H_
 
-#define NO_RESOURCE_IDENTIFIER std::string()
-
 #include <string>
 
 #include "base/values.h"
-#include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings.h"
 
 class ContentSettingsPattern;
 
@@ -20,8 +18,6 @@ namespace content_settings {
 
 struct Rule;
 class RuleIterator;
-
-typedef std::string ResourceIdentifier;
 
 class ProviderInterface {
  public:

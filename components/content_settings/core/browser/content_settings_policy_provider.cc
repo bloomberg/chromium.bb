@@ -284,10 +284,8 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       ContentSettingsPattern secondary_pattern =
           !pattern_pair.second.IsValid() ? ContentSettingsPattern::Wildcard()
                                          : pattern_pair.second;
-      value_map->SetValue(pattern_pair.first,
-                          secondary_pattern,
-                          content_type,
-                          NO_RESOURCE_IDENTIFIER,
+      value_map->SetValue(pattern_pair.first, secondary_pattern, content_type,
+                          ResourceIdentifier(),
                           new base::FundamentalValue(
                               kPrefsForManagedContentSettingsMap[i].setting));
     }

@@ -5,7 +5,6 @@
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 
@@ -19,12 +18,9 @@ void DesktopNotificationProfileUtil::ResetToDefaultContentSetting(
 void DesktopNotificationProfileUtil::ClearSetting(
     Profile* profile, const ContentSettingsPattern& pattern) {
   profile->GetHostContentSettingsMap()->SetContentSetting(
-      pattern,
-      ContentSettingsPattern::Wildcard(),
+      pattern, ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      NO_RESOURCE_IDENTIFIER,
-      CONTENT_SETTING_DEFAULT);
-
+      content_settings::ResourceIdentifier(), CONTENT_SETTING_DEFAULT);
 }
 
 // Methods to setup and modify permission preferences.
@@ -33,11 +29,9 @@ void DesktopNotificationProfileUtil::GrantPermission(
     ContentSettingsPattern primary_pattern =
         ContentSettingsPattern::FromURLNoWildcard(origin);
     profile->GetHostContentSettingsMap()->SetContentSetting(
-        primary_pattern,
-        ContentSettingsPattern::Wildcard(),
+        primary_pattern, ContentSettingsPattern::Wildcard(),
         CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-        NO_RESOURCE_IDENTIFIER,
-        CONTENT_SETTING_ALLOW);
+        content_settings::ResourceIdentifier(), CONTENT_SETTING_ALLOW);
 }
 
 void DesktopNotificationProfileUtil::DenyPermission(
@@ -45,26 +39,21 @@ void DesktopNotificationProfileUtil::DenyPermission(
     ContentSettingsPattern primary_pattern =
         ContentSettingsPattern::FromURLNoWildcard(origin);
     profile->GetHostContentSettingsMap()->SetContentSetting(
-        primary_pattern,
-        ContentSettingsPattern::Wildcard(),
+        primary_pattern, ContentSettingsPattern::Wildcard(),
         CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-        NO_RESOURCE_IDENTIFIER,
-        CONTENT_SETTING_BLOCK);
+        content_settings::ResourceIdentifier(), CONTENT_SETTING_BLOCK);
 }
 
 void DesktopNotificationProfileUtil::GetNotificationsSettings(
     Profile* profile, ContentSettingsForOneType* settings) {
   profile->GetHostContentSettingsMap()->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      NO_RESOURCE_IDENTIFIER,
-      settings);
+      content_settings::ResourceIdentifier(), settings);
 }
 
 ContentSetting DesktopNotificationProfileUtil::GetContentSetting(
     Profile* profile, const GURL& origin) {
   return profile->GetHostContentSettingsMap()->GetContentSetting(
-      origin,
-      origin,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      NO_RESOURCE_IDENTIFIER);
+      origin, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      content_settings::ResourceIdentifier());
 }

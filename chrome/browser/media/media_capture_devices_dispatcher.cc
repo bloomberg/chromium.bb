@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
@@ -423,7 +422,7 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
           security_origin,
           security_origin,
           contentSettingsType,
-          NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_ALLOW) {
+          content_settings::ResourceIdentifier()) == CONTENT_SETTING_ALLOW) {
     return true;
   }
 
@@ -469,7 +468,7 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
           security_origin,
           security_origin,
           contentSettingsType,
-          NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_ALLOW) {
+          content_settings::ResourceIdentifier()) == CONTENT_SETTING_ALLOW) {
     return true;
   }
 
