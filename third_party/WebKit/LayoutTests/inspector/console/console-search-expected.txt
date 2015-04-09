@@ -204,7 +204,13 @@ CONSOLE MESSAGE: line 15: LAST MATCH
 Tests console search.
 
 
+Running: waitForMessages
+Message count: 203
+
 Running: assertViewportHeight
+
+Running: testSearchOutsideOfViewport
+Search matches: '200 matches'
 
 Running: scrollConsoleToTop
 first visible message index: 0
@@ -234,24 +240,27 @@ Running: testCanJumpForwardBetweenTreeElementMatches
 matched tree element: field_1
 matched tree element: field_199
 
-Running: testCaseSensitiveRegex
-Test case insensitive regex search
+Running: testCaseInsensitiveRegex
 number of visible matches: 2
   match 0: highlighted-search-result current-search-result
   match 1: highlighted-search-result
 
-Test case sensitive plain text search without matches
+
+Running: testCaseSensitiveTextWithoutMatches
 number of visible matches: 0
 
-Test case sensitive plain text search with matches
+
+Running: testCaseSensitiveTextWithMatches
 number of visible matches: 2
   match 0: highlighted-search-result current-search-result
   match 1: highlighted-search-result
 
-Test case sensitive regex search without matches
+
+Running: testCaseSensitiveRegexWithoutMatches
 number of visible matches: 0
 
-Test case sensitive regex search with matches
+
+Running: testCaseSensitiveRegexWithMatches
 number of visible matches: 2
   match 0: highlighted-search-result current-search-result
   match 1: highlighted-search-result

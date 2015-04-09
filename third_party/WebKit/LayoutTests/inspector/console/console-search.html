@@ -24,18 +24,40 @@ function test()
         InspectorTest.addResult(result);
     }
 
-    function setQuery(text, isRegex, caseSensitive)
+    function setQuery(text, isRegex, caseSensitive, callback)
     {
+        InspectorTest.addSniffer(consoleView, "_searchFinishedForTests", callback);
         consoleView._searchableView._searchInputElement.value = text;
-        consoleView._searchableView._regexButton.setToggled(isRegex || false);
-        consoleView._searchableView._caseSensitiveButton.setToggled(caseSensitive || false);
+        consoleView._searchableView._regexButton.setToggled(isRegex);
+        consoleView._searchableView._caseSensitiveButton.setToggled(caseSensitive);
         consoleView._searchableView.showSearchField();
+    }
+
+    function matchesText()
+    {
+        return consoleView._searchableView.contentElement.querySelector(".search-results-matches").textContent;
+    }
+
+    function dumpMatches()
+    {
+        var matches = document.querySelectorAll("html /deep/ .highlighted-search-result");
+        addResult("number of visible matches: " + matches.length);
+        for (var i = 0; i < matches.length; ++i)
+            addResult("  match " + i + ": " + matches[i].className);
+        addResult("");
     }
 
     var consoleView = WebInspector.ConsolePanel._view();
     var viewport = consoleView._viewport;
     const maximumViewportMessagesCount = 150;
     InspectorTest.runTestSuite([
+        function waitForMessages(next)
+        {
+            // NOTE: keep in sync with populateConsoleWithMessages above.
+            const expectedMessageCount = 203;
+            InspectorTest.waitForConsoleMessages(expectedMessageCount, next);
+        },
+
         function assertViewportHeight(next)
         {
             viewport.invalidate();
@@ -50,6 +72,14 @@ function test()
             next();
         },
 
+        function testSearchOutsideOfViewport(next)
+        {
+            setQuery("Message", false, false, function() {
+                InspectorTest.addResult("Search matches: '" + matchesText() + "'");
+                next();
+            });
+        },
+
         function scrollConsoleToTop(next)
         {
             viewport.forceScrollItemToBeFirst(0);
@@ -59,41 +89,41 @@ function test()
 
         function testCanJumpForward(next)
         {
-            setQuery("MATCH");
+            setQuery("MATCH", false, false, function() {
+                // Find first match.
+                consoleView._searchableView.handleFindNextShortcut();
+                addResult("first visible message index: " + viewport.firstVisibleIndex());
 
-            // Find first match.
-            consoleView._searchableView.handleFindNextShortcut();
-            addResult("first visible message index: " + viewport.firstVisibleIndex());
+                // Find second match.
+                consoleView._searchableView.handleFindNextShortcut();
+                addResult("first visible message index: " + viewport.firstVisibleIndex());
 
-            // Find second match.
-            consoleView._searchableView.handleFindNextShortcut();
-            addResult("first visible message index: " + viewport.firstVisibleIndex());
-
-            // Find last match.
-            consoleView._searchableView.handleFindNextShortcut();
-            addResult("last visible message index: " + viewport.lastVisibleIndex());
-            next();
+                // Find last match.
+                consoleView._searchableView.handleFindNextShortcut();
+                addResult("last visible message index: " + viewport.lastVisibleIndex());
+                next();
+            });
         },
 
         function testCanJumpBackward(next)
         {
-            setQuery("MATCH");
+            setQuery("MATCH", false, false, function() {
+                // Start out at the first match.
+                consoleView._searchableView.handleFindNextShortcut();
 
-            // Start out at the first match.
-            consoleView._searchableView.handleFindNextShortcut();
+                // Find last match.
+                consoleView._searchableView.handleFindPreviousShortcut();
+                addResult("last visible message index: " + viewport.lastVisibleIndex());
 
-            // Find last match.
-            consoleView._searchableView.handleFindPreviousShortcut();
-            addResult("last visible message index: " + viewport.lastVisibleIndex());
+                // Find second match.
+                consoleView._searchableView.handleFindPreviousShortcut();
+                addResult("first visible message index: " + viewport.firstVisibleIndex());
 
-            // Find second match.
-            consoleView._searchableView.handleFindPreviousShortcut();
-            addResult("first visible message index: " + viewport.firstVisibleIndex());
-
-            // Find first match.
-            consoleView._searchableView.handleFindPreviousShortcut();
-            addResult("first visible message index: " + viewport.firstVisibleIndex());
-            next();
+                // Find first match.
+                consoleView._searchableView.handleFindPreviousShortcut();
+                addResult("first visible message index: " + viewport.firstVisibleIndex());
+                next();
+            });
         },
 
         function scrollConsoleToTop(next)
@@ -105,7 +135,7 @@ function test()
 
         function testCanMarkCurrentMatch(next)
         {
-            function addCurrentMarked ()
+            function addCurrentMarked()
             {
                 var matches = document.querySelectorAll(".highlighted-search-result");
                 addResult("number of visible matches: " + matches.length);
@@ -113,76 +143,88 @@ function test()
                     addResult("match " + i + ": " + matches[i].className);
             }
 
-            setQuery("MATCH");
-
-            // Find first match.
-            consoleView._searchableView.handleFindNextShortcut();
-            addCurrentMarked();
-
-            // Find second match.
-            consoleView._searchableView.handleFindNextShortcut();
-            addCurrentMarked();
-
-            next();
-        },
-
-        function testCanJumpForwardBetweenTreeElementMatches(next)
-        {
-            InspectorTest.expandConsoleMessages(function()
-            {
+            setQuery("MATCH", false, false, function() {
                 // Find first match.
-                setQuery("field_1");
                 consoleView._searchableView.handleFindNextShortcut();
-                var currentResultElem = document.querySelector("html /deep/ .current-search-result");
-                addResult("matched tree element: " + currentResultElem.innerHTML);
+                addCurrentMarked();
 
-                // Find last match.
-                setQuery("field_199");
+                // Find second match.
                 consoleView._searchableView.handleFindNextShortcut();
-                currentResultElem = document.querySelector("html /deep/ .current-search-result");
-                addResult("matched tree element: " + currentResultElem.innerHTML);
+                addCurrentMarked();
 
                 next();
             });
         },
 
-        function testCaseSensitiveRegex(next)
+        function testCanJumpForwardBetweenTreeElementMatches(next)
         {
-            function dumpMatches()
+            function dumpElements(callback)
             {
-                var matches = document.querySelectorAll("html /deep/ .highlighted-search-result");
-                addResult("number of visible matches: " + matches.length);
-                for (var i = 0; i < matches.length; ++i)
-                    addResult("  match " + i + ": " + matches[i].className);
-                    addResult("");
+                consoleView._searchableView.handleFindNextShortcut();
+                var currentResultElem = document.querySelector("html /deep/ .current-search-result");
+                addResult("matched tree element: " + currentResultElem.innerHTML);
+                callback();
             }
 
-            InspectorTest.addResult("Test case insensitive regex search");
-            setQuery(". MATCH", true, false);
-            consoleView._searchableView.handleFindNextShortcut();
-            dumpMatches();
+            function searchField1(callback)
+            {
+                // Find first match.
+                setQuery("field_1", false, false, dumpElements.bind(null, callback));
+            }
 
-            InspectorTest.addResult("Test case sensitive plain text search without matches");
-            setQuery("match", false, true);
-            consoleView._searchableView.handleFindNextShortcut();
-            dumpMatches();
+            function searchField199(callback)
+            {
+                // Find last match.
+                setQuery("field_199", false, false, dumpElements.bind(null, callback));
+            }
 
-            InspectorTest.addResult("Test case sensitive plain text search with matches");
-            setQuery("MATCH", false, true);
-            consoleView._searchableView.handleFindNextShortcut();
-            dumpMatches();
+            InspectorTest.expandConsoleMessages(searchField1.bind(null, searchField199.bind(null, next)));
 
-            InspectorTest.addResult("Test case sensitive regex search without matches");
-            setQuery(". match", true, true);
-            consoleView._searchableView.handleFindNextShortcut();
-            dumpMatches();
+        },
 
-            InspectorTest.addResult("Test case sensitive regex search with matches");
-            setQuery(". MATCH", true, true);
-            consoleView._searchableView.handleFindNextShortcut();
-            dumpMatches();
+        function testCaseInsensitiveRegex(next)
+        {
+            setQuery(". MATCH", true, false, function() {
+                consoleView._searchableView.handleFindNextShortcut();
+                dumpMatches();
+                next();
+            });
+        },
 
-            next();
+        function testCaseSensitiveTextWithoutMatches(next)
+        {
+            setQuery("match", false, true, function() {
+                consoleView._searchableView.handleFindNextShortcut();
+                dumpMatches();
+                next();
+            });
+        },
+
+        function testCaseSensitiveTextWithMatches(next)
+        {
+            setQuery("MATCH", false, true, function() {
+                consoleView._searchableView.handleFindNextShortcut();
+                dumpMatches();
+                next();
+            });
+        },
+
+        function testCaseSensitiveRegexWithoutMatches(next)
+        {
+            setQuery(". match", true, true, function() {
+                consoleView._searchableView.handleFindNextShortcut();
+                dumpMatches();
+                next();
+            });
+        },
+
+        function testCaseSensitiveRegexWithMatches(next)
+        {
+            setQuery(". MATCH", true, true, function() {
+                consoleView._searchableView.handleFindNextShortcut();
+                dumpMatches();
+                next();
+            });
         }
     ]);
 }

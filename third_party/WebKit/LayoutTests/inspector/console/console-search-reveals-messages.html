@@ -17,6 +17,13 @@ function test()
     var viewport = consoleView._viewport;
     const maximumViewportMessagesCount = 150;
     InspectorTest.runTestSuite([
+        function waitForMessages(next)
+        {
+            // NOTE: keep in sync with populateConsoleWithMessages above.
+            const expectedMessageCount = 201;
+            InspectorTest.waitForConsoleMessages(expectedMessageCount, next);
+        },
+
         function verifyViewportIsTallEnough(next)
         {
             viewport.invalidate();
@@ -38,11 +45,16 @@ function test()
 
         function testFindLastMessage(next)
         {
+            InspectorTest.addSniffer(consoleView, "_searchFinishedForTests", callback);
             consoleView._searchableView._searchInputElement.value = "LAST MESSAGE";
             consoleView._searchableView.showSearchField();
-            consoleView._searchableView.handleFindNextShortcut();
-            dumpBottom();
-            next();
+
+            function callback()
+            {
+                consoleView._searchableView.handleFindNextShortcut();
+                dumpBottom();
+                next();
+            }
         }
     ]);
 

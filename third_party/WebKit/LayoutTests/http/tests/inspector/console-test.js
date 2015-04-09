@@ -310,4 +310,20 @@ InspectorTest.changeExecutionContext = function(namePrefix)
     WebInspector.ConsolePanel._view()._executionContextChanged();
 }
 
+InspectorTest.waitForConsoleMessages = function(expectedCount, callback)
+{
+    var consoleView = WebInspector.ConsolePanel._view();
+    checkAndReturn();
+
+    function checkAndReturn()
+    {
+        if (consoleView._visibleViewMessages.length === expectedCount) {
+            InspectorTest.addResult("Message count: " + expectedCount);
+            callback();
+        } else {
+            InspectorTest.addSniffer(consoleView, "_messageAppendedForTests", checkAndReturn);
+        }
+    }
+}
+
 }
