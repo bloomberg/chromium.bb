@@ -682,6 +682,8 @@ public:
         LegacyConst = 748,
         SVGFilterRes = 749,
         V8Permissions_Query_Method = 750,
+        LegacyCSSValueIntrinsic = 751,
+        LegacyCSSValueMinIntrinsic = 752,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

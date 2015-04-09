@@ -374,8 +374,15 @@ static bool isGeneratedImageValue(CSSParserValue* val)
 bool CSSPropertyParser::validWidthOrHeight(CSSParserValue* value, Units unitless)
 {
     int id = value->id;
-    if (id == CSSValueIntrinsic || id == CSSValueMinIntrinsic || id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent || id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent)
+    if (id == CSSValueIntrinsic || id == CSSValueMinIntrinsic || id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent || id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent) {
+        if (m_context.useCounter()) {
+            if (value->id == CSSValueIntrinsic)
+                m_context.useCounter()->count(UseCounter::LegacyCSSValueIntrinsic);
+            else if (value->id == CSSValueMinIntrinsic)
+                m_context.useCounter()->count(UseCounter::LegacyCSSValueMinIntrinsic);
+        }
         return true;
+    }
     return !id && validUnit(value, FLength | FPercent | FNonNeg | unitless);
 }
 
