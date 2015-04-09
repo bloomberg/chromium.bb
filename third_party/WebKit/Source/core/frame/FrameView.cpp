@@ -1424,12 +1424,11 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
     // of the LayoutView is not enough. We also need to invalidate all of the objects.
     // FIXME: Find out what are enough to invalidate in slow path scrolling. crbug.com/451090#9.
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (contentsInCompositedLayer()) {
-            ASSERT(layoutView());
+        ASSERT(layoutView());
+        if (contentsInCompositedLayer())
             layoutView()->layer()->compositedDeprecatedPaintLayerMapping()->setContentsNeedDisplay();
-        } else if (layoutView()) {
+        else
             setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(layoutView()->layer());
-        }
     }
 
     if (contentsInCompositedLayer()) {
