@@ -356,6 +356,22 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="WebComponents.DocumentRegisterElement"
+    type="ETLD_PLUS_ONE">
+  <owner>kojii@chromium.org</owner>
+  <summary>
+    The host of a URL that used Document::RegisterElement().
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="WebComponents.ElementCreateShadowRoot"
+    type="ETLD_PLUS_ONE">
+  <owner>kojii@chromium.org</owner>
+  <summary>
+    The host of a URL that used Element::CreateShadowRoot().
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="interstitial.harmful.domain" type="COARSE_RAPPOR_TYPE">
   <owner>nparker@chromium.org</owner>
   <summary>
