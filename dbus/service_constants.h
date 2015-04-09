@@ -438,6 +438,7 @@ const char kEapCaCertProperty[] = "EAP.CACert";
 const char kEapCaCertIdProperty[] = "EAP.CACertID";
 const char kEapCaCertNssProperty[] = "EAP.CACertNSS";
 const char kEapUseSystemCasProperty[] = "EAP.UseSystemCAs";
+const char kEapUseProactiveKeyCachingProperty[] = "EAP.UseProactiveKeyCaching";
 const char kEapPinProperty[] = "EAP.PIN";
 const char kEapPasswordProperty[] = "EAP.Password";
 const char kEapKeyMgmtProperty[] = "EAP.KeyMgmt";
