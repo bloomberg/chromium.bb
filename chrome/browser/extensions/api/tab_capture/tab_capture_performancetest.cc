@@ -187,7 +187,7 @@ class TabCapturePerformanceTest
     // Ideally we'd like to run a higher capture rate when vsync is disabled,
     // but libjingle currently doesn't allow that.
     // page += HasFlag(kDisableVsync) ? "&fps=300" : "&fps=30";
-    page += "&fps=30";
+    page += "&fps=60";
     ASSERT_TRUE(RunExtensionSubtest("tab_capture", page)) << message_;
     ASSERT_TRUE(tracing::EndTracing(&json_events));
     scoped_ptr<trace_analyzer::TraceAnalyzer> analyzer;

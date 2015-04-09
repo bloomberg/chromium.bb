@@ -10,6 +10,7 @@
 
 // Global to prevent gc from eating the video tag.
 var video = null;
+var capture_stream = null;
 
 function TestStream(stream) {
   // Create video and canvas elements, but no need to append them to the
@@ -38,6 +39,9 @@ function TestStream(stream) {
       // Note that the API testing framework might not terminate if we keep
       // animating and capturing, so we have to make sure that we stop doing
       // that here.
+      if (capture_stream) {
+        capture_stream.stop();
+      }
       stream.stop();
       return;
     }
@@ -64,6 +68,7 @@ function TestStream(stream) {
 
 // Set up a WebRTC connection and pipe |stream| through it.
 function testThroughWebRTC(stream) {
+  capture_stream = stream;
   console.log("Testing through webrtc.");
   var sender = new webkitRTCPeerConnection(null);
   var receiver = new webkitRTCPeerConnection(null);
