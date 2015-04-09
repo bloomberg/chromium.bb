@@ -27,11 +27,14 @@
             'sources': [
               # This is the subset of linux build target, needed for
               # nacl_helper_nonsfi's sandbox implementation.
+              'linux/services/credentials.cc',
+              'linux/services/namespace_utils.cc',
+              'linux/services/namespace_sandbox.cc',
               'linux/services/proc_util.cc',
+              'linux/services/syscall_wrappers.cc',
               'linux/services/thread_helpers.cc',
               'linux/suid/client/setuid_sandbox_client.cc',
-              # TODO(hidehiko): Support namespace sandbox and seccomp-bpf
-              # sandbox.
+              # TODO(hidehiko): Support seccomp-bpf sandbox.
             ],
           },
           'dependencies': [

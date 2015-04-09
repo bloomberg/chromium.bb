@@ -29,6 +29,11 @@ namespace sandbox {
 
 namespace {
 
+const char kSandboxUSERNSEnvironmentVarName[] = "SBX_USER_NS";
+const char kSandboxPIDNSEnvironmentVarName[] = "SBX_PID_NS";
+const char kSandboxNETNSEnvironmentVarName[] = "SBX_NET_NS";
+
+#if !defined(OS_NACL_NONSFI)
 class WriteUidGidMapDelegate : public base::LaunchOptions::PreExecDelegate {
  public:
   WriteUidGidMapDelegate()
@@ -61,10 +66,6 @@ void SetEnvironForNamespaceType(base::EnvironmentMap* environ,
   (*environ)[env_var] = value ? "1" : "";
 }
 
-const char kSandboxUSERNSEnvironmentVarName[] = "SBX_USER_NS";
-const char kSandboxPIDNSEnvironmentVarName[] = "SBX_PID_NS";
-const char kSandboxNETNSEnvironmentVarName[] = "SBX_NET_NS";
-
 // Linux supports up to 64 signals. This should be updated if that ever changes.
 int g_signal_exit_codes[64];
 
@@ -78,9 +79,11 @@ void TerminationSignalHandler(int sig) {
 
   _exit(NamespaceSandbox::kDefaultExitCode);
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace
 
+#if !defined(OS_NACL_NONSFI)
 // static
 base::Process NamespaceSandbox::LaunchProcess(
     const base::CommandLine& cmdline,
@@ -185,6 +188,7 @@ bool NamespaceSandbox::InstallTerminationSignalHandler(
   PCHECK(sigaction(sig, &action, nullptr) == 0);
   return true;
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 // static
 bool NamespaceSandbox::InNewUserNamespace() {

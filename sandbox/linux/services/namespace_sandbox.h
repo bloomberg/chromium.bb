@@ -37,6 +37,7 @@ namespace sandbox {
 //    Credentials::DropAllCapabilities().
 class SANDBOX_EXPORT NamespaceSandbox {
  public:
+#if !defined(OS_NACL_NONSFI)
   static const int kDefaultExitCode = 1;
 
   // Launch a new process inside its own user/PID/network namespaces (depending
@@ -82,6 +83,7 @@ class SANDBOX_EXPORT NamespaceSandbox {
   // signal handler was already present for |sig|, does nothing and returns
   // false.
   static bool InstallTerminationSignalHandler(int sig, int exit_code);
+#endif  // !defined(OS_NACL_NONSFI)
 
   // Returns whether the namespace sandbox created a new user, PID, and network
   // namespace. In particular, InNewUserNamespace should return true iff the

@@ -32,6 +32,11 @@ namespace sandbox {
 
 namespace {
 
+// Signal ABI for some toolchain is incompatible with Linux's. In particular,
+// PNaCl toolchain defines SIGCHLD = 20. So, here, directly define Linux's
+// value.
+const int kLinuxSIGCHLD = 17;
+
 bool IsRunningOnValgrind() { return RUNNING_ON_VALGRIND; }
 
 // Checks that the set of RES-uids and the set of RES-gids have
@@ -89,9 +94,10 @@ bool ChrootToSafeEmptyDir() {
 #else
 #error "Unsupported architecture"
 #endif
+
   pid = clone(ChrootToSelfFdinfo, stack,
-              CLONE_VM | CLONE_VFORK | CLONE_FS | SIGCHLD, nullptr, nullptr,
-              nullptr, nullptr);
+              CLONE_VM | CLONE_VFORK | CLONE_FS | kLinuxSIGCHLD,
+              nullptr, nullptr, nullptr, nullptr);
   PCHECK(pid != -1);
 
   int status = -1;

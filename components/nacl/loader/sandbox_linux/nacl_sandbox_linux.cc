@@ -145,11 +145,7 @@ void NaClSandbox::InitializeLayerOneSandbox() {
     CHECK(MaybeSetProcessNonDumpable());
     CHECK(IsSandboxed());
     layer_one_enabled_ = true;
-  }
-  // Currently namespace sandbox is not yet supported on nacl_helper_nonsfi.
-  // TODO(hidehiko): Enable the sandbox.
-#if !defined(OS_NACL_NONSFI)
-  else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
+  } else if (sandbox::NamespaceSandbox::InNewUserNamespace()) {
     CHECK(sandbox::Credentials::MoveToNewUserNS());
     // This relies on SealLayerOneSandbox() to be called later since this
     // class is keeping a file descriptor to /proc/.
@@ -158,7 +154,6 @@ void NaClSandbox::InitializeLayerOneSandbox() {
     CHECK(IsSandboxed());
     layer_one_enabled_ = true;
   }
-#endif  // !OS_NACL_NONSFI
 }
 
 #if !defined(OS_NACL_NONSFI)

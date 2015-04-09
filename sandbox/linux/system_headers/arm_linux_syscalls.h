@@ -10,8 +10,10 @@
 #error "Including header on wrong architecture"
 #endif
 
-// __NR_SYSCALL_BASE, __ARM_NR_BASE are defined in <asm/unistd.h>.
-#include <asm/unistd.h>
+#if !defined(__NR_SYSCALL_BASE)
+// On ARM EABI arch, __NR_SYSCALL_BASE is 0.
+#define __NR_SYSCALL_BASE 0
+#endif
 
 // This syscall list has holes, because ARM EABI makes some syscalls obsolete.
 
@@ -1380,6 +1382,10 @@
 #endif
 
 // ARM private syscalls.
+#if !defined(__ARM_NR_BASE)
+#define __ARM_NR_BASE (__NR_SYSCALL_BASE + 0xF0000)
+#endif
+
 #if !defined(__ARM_NR_breakpoint)
 #define __ARM_NR_breakpoint (__ARM_NR_BASE+1)
 #endif
@@ -1406,4 +1412,3 @@
 #endif
 
 #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_ARM_LINUX_SYSCALLS_H_
-

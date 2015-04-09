@@ -1386,9 +1386,6 @@ class TransitionalNonSfiPackagedAppTest : public NonSfiPackagedAppTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     NonSfiPackagedAppTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kUseNaClHelperNonSfi);
-    // TODO(hidehiko): Remove this flag, when namespace sandbox is supported
-    // by nacl_helper_nonsfi. (cf. crbug.com/464663)
-    command_line->AppendSwitch(switches::kDisableNamespaceSandbox);
   }
 };
 

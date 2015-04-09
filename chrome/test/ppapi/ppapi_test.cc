@@ -441,9 +441,6 @@ void PPAPINaClPNaClTransitionalNonSfiTest::SetUpCommandLine(
   PPAPINaClPNaClNonSfiTest::SetUpCommandLine(command_line);
 #if !defined(DISABLE_NACL)
   command_line->AppendSwitch(switches::kUseNaClHelperNonSfi);
-  // TODO(hidehiko): Remove this flag, when namespace sandbox is supported.
-  // by nacl_helper_nonsfi. (cf. crbug.com/464663)
-  command_line->AppendSwitch(switches::kDisableNamespaceSandbox);
 #endif
 }
 
@@ -458,9 +455,6 @@ void PPAPIPrivateNaClPNaClTransitionalNonSfiTest::SetUpCommandLine(
   PPAPIPrivateNaClPNaClNonSfiTest::SetUpCommandLine(command_line);
 #if !defined(DISABLE_NACL)
   command_line->AppendSwitch(switches::kUseNaClHelperNonSfi);
-  // TODO(hidehiko): Remove this flag, when namespace sandbox is supported
-  // by nacl_helper_nonsfi. (cf. crbug.com/464663)
-  command_line->AppendSwitch(switches::kDisableNamespaceSandbox);
 #endif
 }
 
