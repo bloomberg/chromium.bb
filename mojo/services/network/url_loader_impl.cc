@@ -169,6 +169,7 @@ void URLLoaderImpl::FollowRedirect(
 
   // TODO(darin): Verify that it makes sense to call FollowDeferredRedirect.
   url_request_->FollowDeferredRedirect();
+  callback_ = callback;
 }
 
 void URLLoaderImpl::QueryStatus(

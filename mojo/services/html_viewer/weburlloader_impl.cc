@@ -178,8 +178,13 @@ void WebURLLoaderImpl::OnReceivedRedirect(URLResponsePtr url_response) {
   new_request.setHTTPMethod(
       blink::WebString::fromUTF8(url_response->redirect_method));
 
+  base::WeakPtr<WebURLLoaderImpl> self(weak_factory_.GetWeakPtr());
   client_->willSendRequest(this, new_request, ToWebURLResponse(url_response));
   // TODO(darin): Check if new_request was rejected.
+
+  // We may have been deleted during willSendRequest.
+  if (!self)
+    return;
 
   url_loader_->FollowRedirect(
       base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
@@ -194,7 +199,11 @@ void WebURLLoaderImpl::ReadMore() {
                                    &buf_size,
                                    MOJO_READ_DATA_FLAG_NONE);
   if (rv == MOJO_RESULT_OK) {
+    base::WeakPtr<WebURLLoaderImpl> self(weak_factory_.GetWeakPtr());
     client_->didReceiveData(this, static_cast<const char*>(buf), buf_size, -1);
+    // We may have been deleted durining didReceiveData.
+    if (!self)
+      return;
     EndReadDataRaw(response_body_stream_.get(), buf_size);
     WaitToReadMore();
   } else if (rv == MOJO_RESULT_SHOULD_WAIT) {

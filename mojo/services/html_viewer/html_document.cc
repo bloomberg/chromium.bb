@@ -91,6 +91,12 @@ bool CanNavigateLocally(blink::WebFrame* frame,
   if (request.extraData())
     return true;
 
+  // mojo::NavigatorHost doesn't accept POSTs, so for now reuse this instance.
+  // TODO(jam): improve this (and copy logic from RenderFrameImpl's version)
+  // when we have multi-process.
+  if (EqualsASCII(request.httpMethod(), "POST"))
+    return true;
+
   // Otherwise we don't know if we're the right app to handle this request. Ask
   // host to do the navigation for us.
   return false;
