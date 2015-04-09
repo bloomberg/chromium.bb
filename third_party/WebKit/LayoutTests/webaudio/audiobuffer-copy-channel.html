@@ -76,6 +76,8 @@
       var audit = Audit.createTaskRunner();
 
       var context = new AudioContext();
+      // Temp array for testing exceptions for copyToChannel/copyFromChannel.  The length is arbitrary.
+      var x = new Float32Array(8);
 
       // Number of frames in the AudioBuffer for testing.  This is pretty arbitrary so choose a
       // fairly small value.
@@ -102,8 +104,6 @@
 
       // Test that expected exceptions are signaled for copyFrom.
       audit.defineTask("copyFrom-exceptions", function (done) {
-        var x = new Float32Array(8);
-
         shouldBeDefined("AudioBuffer.prototype.copyFromChannel");
 
         Should("buffer = context.createBuffer(" + numberOfChannels + ", " + bufferLength + ", context.sampleRate)",
@@ -129,13 +129,13 @@
           buffer.copyFromChannel(x, 0, bufferLength);
         }).throw("IndexSizeError");
 
+        shouldThrow("buffer.copyFromChannel(x, 3)");
+
         done();
       });
 
       // Test that expected exceptions are signaled for copyTo.
       audit.defineTask("copyTo-exceptions", function (done) {
-        var x = new Float32Array(8);
-
         shouldBeDefined("AudioBuffer.prototype.copyToChannel");
         Should("buffer.copyToChannel(null, 0)", function () {
           buffer.copyToChannel(null, 0);
@@ -155,6 +155,8 @@
         Should("buffer.copyToChannel(x, 0, " + bufferLength + ")", function () {
           buffer.copyToChannel(x, 0, bufferLength);
         }).throw("IndexSizeError");
+
+        shouldThrow("buffer.copyToChannel(x, 3)");
 
         done();
       });
@@ -181,7 +183,6 @@
 
         // Test copyFrom operation with a short destination array using a non-zero start index that
         // does not fill the destinatiom completely.  The extra elements should be unchanged.
-        // destination.
         for (var c = 0; c < numberOfChannels; ++c) {
           var dst8 = createInitializedF32Array(8);
           var startInChannel = bufferLength - 5;

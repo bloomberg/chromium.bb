@@ -222,9 +222,9 @@ void AudioBuffer::copyFromChannel(DOMFloat32Array* destination, long channelNumb
             ExceptionMessages::indexOutsideRange(
                 "channelNumber",
                 channelNumber,
-                1L,
+                0L,
                 ExceptionMessages::InclusiveBound,
-                static_cast<long>(m_channels.size()),
+                static_cast<long>(m_channels.size() - 1),
                 ExceptionMessages::InclusiveBound));
         return;
     }
@@ -279,9 +279,9 @@ void AudioBuffer::copyToChannel(DOMFloat32Array* source, long channelNumber, uns
             ExceptionMessages::indexOutsideRange(
                 "channelNumber",
                 channelNumber,
-                1L,
+                0L,
                 ExceptionMessages::InclusiveBound,
-                static_cast<long>(m_channels.size()),
+                static_cast<long>(m_channels.size() - 1),
                 ExceptionMessages::InclusiveBound));
         return;
     }
