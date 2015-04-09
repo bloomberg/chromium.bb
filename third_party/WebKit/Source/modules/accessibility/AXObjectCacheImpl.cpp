@@ -1092,19 +1092,19 @@ String AXObjectCacheImpl::computedNameForNode(Node* node)
     if (!obj)
         return "";
 
-    String title = obj->title();
+    String title = obj->deprecatedTitle();
 
     String titleUIText;
     if (title.isEmpty()) {
-        AXObject* titleUIElement = obj->titleUIElement();
+        AXObject* titleUIElement = obj->deprecatedTitleUIElement();
         if (titleUIElement) {
-            titleUIText = titleUIElement->textUnderElement();
+            titleUIText = titleUIElement->deprecatedTextUnderElement();
             if (!titleUIText.isEmpty())
                 return titleUIText;
         }
     }
 
-    String description = obj->accessibilityDescription();
+    String description = obj->deprecatedAccessibilityDescription();
     if (!description.isEmpty())
         return description;
 

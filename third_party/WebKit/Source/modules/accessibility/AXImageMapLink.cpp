@@ -100,7 +100,7 @@ KURL AXImageMapLink::url() const
     return m_areaElement->href();
 }
 
-String AXImageMapLink::accessibilityDescription() const
+String AXImageMapLink::deprecatedAccessibilityDescription() const
 {
     const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
     if (!ariaLabel.isEmpty())
@@ -112,7 +112,7 @@ String AXImageMapLink::accessibilityDescription() const
     return String();
 }
 
-String AXImageMapLink::title(TextUnderElementMode mode) const
+String AXImageMapLink::deprecatedTitle(TextUnderElementMode mode) const
 {
     const AtomicString& title = getAttribute(titleAttr);
     if (!title.isEmpty())

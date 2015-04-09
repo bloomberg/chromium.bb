@@ -346,6 +346,14 @@ STATIC_ASSERT_MATCHING_ENUM(WebAXInvalidStateSpelling, InvalidStateSpelling);
 STATIC_ASSERT_MATCHING_ENUM(WebAXInvalidStateGrammar, InvalidStateGrammar);
 STATIC_ASSERT_MATCHING_ENUM(WebAXInvalidStateOther, InvalidStateOther);
 
+STATIC_ASSERT_MATCHING_ENUM(WebAXNameFromAttribute, AXNameFromAttribute);
+STATIC_ASSERT_MATCHING_ENUM(WebAXNameFromContents, AXNameFromContents);
+STATIC_ASSERT_MATCHING_ENUM(WebAXNameFromPlaceholder, AXNameFromPlaceholder);
+STATIC_ASSERT_MATCHING_ENUM(WebAXNameFromRelatedElement, AXNameFromRelatedElement);
+
+STATIC_ASSERT_MATCHING_ENUM(WebAXDescriptionFromPlaceholder, AXDescriptionFromPlaceholder);
+STATIC_ASSERT_MATCHING_ENUM(WebAXDescriptionFromRelatedElement, AXDescriptionFromRelatedElement);
+
 STATIC_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Uncached, ApplicationCacheHost::UNCACHED);
 STATIC_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Idle, ApplicationCacheHost::IDLE);
 STATIC_ASSERT_MATCHING_ENUM(WebApplicationCacheHost::Checking, ApplicationCacheHost::CHECKING);

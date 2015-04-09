@@ -272,6 +272,24 @@ enum WebAXInvalidState {
     WebAXInvalidStateOther
 };
 
+// The source of the accessible name of an element. This is needed
+// because on some platforms this determines how the accessible name
+// is exposed.
+enum WebAXNameFrom {
+    WebAXNameFromAttribute = 0,
+    WebAXNameFromContents,
+    WebAXNameFromPlaceholder,
+    WebAXNameFromRelatedElement,
+};
+
+// The source of the accessible description of an element. This is needed
+// because on some platforms this determines how the accessible description
+// is exposed.
+enum WebAXDescriptionFrom {
+    WebAXDescriptionFromPlaceholder,
+    WebAXDescriptionFromRelatedElement
+};
+
 } // namespace blink
 
 #endif

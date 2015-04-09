@@ -181,7 +181,7 @@ bool AXNodeObject::computeAccessibilityIsIgnored() const
 
     // Ignore labels that are already referenced by a control's title UI element.
     AXObject* controlObject = correspondingControlForLabelElement();
-    if (controlObject && !controlObject->exposesTitleUIElement() && controlObject->isCheckboxOrRadio())
+    if (controlObject && !controlObject->deprecatedExposesTitleUIElement() && controlObject->isCheckboxOrRadio())
         return true;
 
     return m_role == UnknownRole;
@@ -1039,7 +1039,7 @@ bool AXNodeObject::canvasHasFallbackContent() const
     return ElementTraversal::firstChild(*node);
 }
 
-bool AXNodeObject::exposesTitleUIElement() const
+bool AXNodeObject::deprecatedExposesTitleUIElement() const
 {
     if (!isControl())
         return false;
@@ -1146,7 +1146,7 @@ String AXNodeObject::ariaAutoComplete() const
     return String();
 }
 
-String AXNodeObject::placeholder() const
+String AXNodeObject::deprecatedPlaceholder() const
 {
     String placeholder;
     if (node()) {
@@ -1183,7 +1183,7 @@ String AXNodeObject::text() const
     return toElement(node)->innerText();
 }
 
-AXObject* AXNodeObject::titleUIElement() const
+AXObject* AXNodeObject::deprecatedTitleUIElement() const
 {
     if (!node() || !node()->isElementNode())
         return 0;
@@ -1343,12 +1343,12 @@ String AXNodeObject::stringValue() const
     if (ariaRoleAttribute() == StaticTextRole) {
         String staticText = text();
         if (!staticText.length())
-            staticText = textUnderElement(TextUnderElementAll);
+            staticText = deprecatedTextUnderElement(TextUnderElementAll);
         return staticText;
     }
 
     if (node->isTextNode())
-        return textUnderElement(TextUnderElementAll);
+        return deprecatedTextUnderElement(TextUnderElementAll);
 
     if (isHTMLSelectElement(*node)) {
         HTMLSelectElement& selectElement = toHTMLSelectElement(*node);
@@ -1476,7 +1476,7 @@ static bool isSameLayoutBox(LayoutObject* r1, LayoutObject* r2)
     return b1 && b2 && b1 == b2;
 }
 
-String AXNodeObject::textUnderElement(TextUnderElementMode mode) const
+String AXNodeObject::deprecatedTextUnderElement(TextUnderElementMode mode) const
 {
     Node* node = this->node();
     if (node && node->isTextNode())
@@ -1509,7 +1509,7 @@ String AXNodeObject::textUnderElement(TextUnderElementMode mode) const
                 builder.append(' ');
         }
 
-        builder.append(child->textUnderElement(mode));
+        builder.append(child->deprecatedTextUnderElement(mode));
         previous = child;
 
         if (mode == TextUnderElementAny && !builder.isEmpty())
@@ -1529,7 +1529,7 @@ AXObject* AXNodeObject::findChildWithTagName(const HTMLQualifiedName& tagName) c
     return 0;
 }
 
-String AXNodeObject::accessibilityDescription() const
+String AXNodeObject::deprecatedAccessibilityDescription() const
 {
     // Static text should not have a description, it should only have a stringValue.
     if (roleValue() == StaticTextRole)
@@ -1547,23 +1547,23 @@ String AXNodeObject::accessibilityDescription() const
             return alt;
     }
 
-    // An element's descriptive text is comprised of title() (what's visible on the screen) and accessibilityDescription() (other descriptive text).
+    // An element's descriptive text is comprised of deprecatedTitle() (what's visible on the screen) and deprecatedAccessibilityDescription() (other descriptive text).
     // Both are used to generate what a screen reader speaks.
-    // If this point is reached (i.e. there's no accessibilityDescription) and there's no title(), we should fallback to using the title attribute.
+    // If this point is reached (i.e. there's no accessibilityDescription) and there's no deprecatedTitle(), we should fallback to using the title attribute.
     // The title attribute is normally used as help text (because it is a tooltip), but if there is nothing else available, this should be used (according to ARIA).
-    if (title(TextUnderElementAny).isEmpty())
+    if (deprecatedTitle(TextUnderElementAny).isEmpty())
         return getAttribute(titleAttr);
 
     if (roleValue() == FigureRole) {
         AXObject* figcaption = findChildWithTagName(figcaptionTag);
         if (figcaption)
-            return figcaption->accessibilityDescription();
+            return figcaption->deprecatedAccessibilityDescription();
     }
 
     return String();
 }
 
-String AXNodeObject::title(TextUnderElementMode mode) const
+String AXNodeObject::deprecatedTitle(TextUnderElementMode mode) const
 {
     Node* node = this->node();
     if (!node)
@@ -1578,7 +1578,7 @@ String AXNodeObject::title(TextUnderElementMode mode) const
 
     if (isInputElement || AXObject::isARIAInput(ariaRoleAttribute()) || isControl()) {
         HTMLLabelElement* label = labelForElement(toElement(node));
-        if (label && !exposesTitleUIElement())
+        if (label && !deprecatedExposesTitleUIElement())
             return label->innerText();
     }
 
@@ -1604,31 +1604,31 @@ String AXNodeObject::title(TextUnderElementMode mode) const
     case RadioButtonRole:
     case SwitchRole:
     case TabRole:
-        return textUnderElement(mode);
+        return deprecatedTextUnderElement(mode);
     // SVGRoots should not use the text under itself as a title. That could include the text of objects like <text>.
     case SVGRootRole:
         return String();
     case FigureRole: {
         AXObject* figcaption = findChildWithTagName(figcaptionTag);
         if (figcaption)
-            return figcaption->textUnderElement();
+            return figcaption->deprecatedTextUnderElement();
     }
     default:
         break;
     }
 
     if (isHeading() || isLink())
-        return textUnderElement(mode);
+        return deprecatedTextUnderElement(mode);
 
     // If it's focusable but it's not content editable or a known control type, then it will appear to
     // the user as a single atomic object, so we should use its text as the default title.
     if (isGenericFocusableElement())
-        return textUnderElement(mode);
+        return deprecatedTextUnderElement(mode);
 
     return String();
 }
 
-String AXNodeObject::helpText() const
+String AXNodeObject::deprecatedHelpText() const
 {
     Node* node = this->node();
     if (!node)
@@ -1642,7 +1642,7 @@ String AXNodeObject::helpText() const
     if (!describedBy.isEmpty())
         return describedBy;
 
-    String description = accessibilityDescription();
+    String description = deprecatedAccessibilityDescription();
     for (Node* curr = node; curr; curr = curr->parentNode()) {
         if (curr->isHTMLElement()) {
             const AtomicString& summary = toElement(curr)->getAttribute(summaryAttr);
@@ -1670,19 +1670,19 @@ String AXNodeObject::helpText() const
 
 String AXNodeObject::computedName() const
 {
-    String title = this->title(TextUnderElementAll);
+    String title = this->deprecatedTitle(TextUnderElementAll);
 
     String titleUIText;
     if (title.isEmpty()) {
-        AXObject* titleUIElement = this->titleUIElement();
+        AXObject* titleUIElement = this->deprecatedTitleUIElement();
         if (titleUIElement) {
-            titleUIText = titleUIElement->textUnderElement();
+            titleUIText = titleUIElement->deprecatedTextUnderElement();
             if (!titleUIText.isEmpty())
                 return titleUIText;
         }
     }
 
-    String description = accessibilityDescription();
+    String description = deprecatedAccessibilityDescription();
     if (!description.isEmpty())
         return description;
 

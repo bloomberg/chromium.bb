@@ -568,10 +568,10 @@ bool AXTable::computeAccessibilityIsIgnored() const
     return false;
 }
 
-String AXTable::title(TextUnderElementMode mode) const
+String AXTable::deprecatedTitle(TextUnderElementMode mode) const
 {
     if (!isAXTable())
-        return AXLayoutObject::title(mode);
+        return AXLayoutObject::deprecatedTitle(mode);
 
     String title;
     if (!m_layoutObject)
@@ -587,7 +587,7 @@ String AXTable::title(TextUnderElementMode mode) const
 
     // try the standard
     if (title.isEmpty())
-        title = AXLayoutObject::title(mode);
+        title = AXLayoutObject::deprecatedTitle(mode);
 
     return title;
 }

@@ -117,8 +117,8 @@ protected:
     virtual AXObject* activeDescendant() const override;
     virtual void ariaFlowToElements(AccessibilityChildrenVector&) const override;
     virtual void ariaControlsElements(AccessibilityChildrenVector&) const override;
-    virtual void ariaDescribedbyElements(AccessibilityChildrenVector&) const override;
-    virtual void ariaLabelledbyElements(AccessibilityChildrenVector&) const override;
+    virtual void deprecatedAriaDescribedbyElements(AccessibilityChildrenVector&) const override;
+    virtual void deprecatedAriaLabelledbyElements(AccessibilityChildrenVector&) const override;
     virtual void ariaOwnsElements(AccessibilityChildrenVector&) const override;
 
     virtual bool ariaHasPopup() const override;
@@ -137,10 +137,10 @@ protected:
     virtual bool liveRegionBusy() const override;
 
     // Accessibility Text.
-    virtual String textUnderElement(TextUnderElementMode) const override;
+    virtual String deprecatedTextUnderElement(TextUnderElementMode) const override;
 
     // Accessibility Text - (To be deprecated).
-    virtual String helpText() const override;
+    virtual String deprecatedHelpText() const override;
 
     // Location and click point in frame-relative coordinates.
     virtual void markCachedElementRectDirty() const override;

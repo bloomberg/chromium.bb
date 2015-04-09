@@ -79,7 +79,6 @@ public:
     // so always call isDetached if any other WebCore code has run.
     BLINK_EXPORT bool updateLayoutAndCheckValidity();
 
-    BLINK_EXPORT WebString accessibilityDescription() const;
     BLINK_EXPORT unsigned childCount() const;
 
     BLINK_EXPORT WebAXObject childAt(unsigned) const;
@@ -116,11 +115,9 @@ public:
     BLINK_EXPORT WebAXObject ariaActiveDescendant() const;
     BLINK_EXPORT WebString ariaAutoComplete() const;
     BLINK_EXPORT bool ariaControls(WebVector<WebAXObject>& controlsElements) const;
-    BLINK_EXPORT bool ariaDescribedby(WebVector<WebAXObject>& describedbyElements) const;
     BLINK_EXPORT WebString ariaDropEffect() const;
     BLINK_EXPORT bool ariaFlowTo(WebVector<WebAXObject>& flowToElements) const;
     BLINK_EXPORT bool ariaHasPopup() const;
-    BLINK_EXPORT bool ariaLabelledby(WebVector<WebAXObject>& labelledbyElements) const;
     BLINK_EXPORT bool isMultiline() const;
     BLINK_EXPORT bool ariaOwns(WebVector<WebAXObject>& ownsElements) const;
     BLINK_EXPORT WebRect boundingBoxRect() const;
@@ -131,22 +128,53 @@ public:
     // Only used when invalidState() returns WebAXInvalidStateOther.
     BLINK_EXPORT WebString ariaInvalidValue() const;
     BLINK_EXPORT double estimatedLoadingProgress() const;
-    BLINK_EXPORT WebString helpText() const;
     BLINK_EXPORT int headingLevel() const;
     BLINK_EXPORT int hierarchicalLevel() const;
     BLINK_EXPORT WebAXObject hitTest(const WebPoint&) const;
     BLINK_EXPORT WebString keyboardShortcut() const;
-    BLINK_EXPORT WebString placeholder() const;
     BLINK_EXPORT WebAXRole role() const;
     BLINK_EXPORT unsigned selectionEnd() const;
     BLINK_EXPORT unsigned selectionEndLineNumber() const;
     BLINK_EXPORT unsigned selectionStart() const;
     BLINK_EXPORT unsigned selectionStartLineNumber() const;
     BLINK_EXPORT WebString stringValue() const;
-    BLINK_EXPORT WebString title() const;
     BLINK_EXPORT WebString language() const;
-    BLINK_EXPORT WebAXObject titleUIElement() const;
     BLINK_EXPORT WebURL url() const;
+
+    // Deprecated text alternative calculation API. All of these will be replaced
+    // with the new API, below (under "New text alternative calculation API".
+    BLINK_EXPORT WebString deprecatedAccessibilityDescription() const;
+    BLINK_EXPORT bool deprecatedAriaDescribedby(WebVector<WebAXObject>& describedbyElements) const;
+    BLINK_EXPORT bool deprecatedAriaLabelledby(WebVector<WebAXObject>& labelledbyElements) const;
+    BLINK_EXPORT WebString deprecatedHelpText() const;
+    BLINK_EXPORT WebString deprecatedPlaceholder() const;
+    BLINK_EXPORT WebString deprecatedTitle() const;
+    BLINK_EXPORT WebAXObject deprecatedTitleUIElement() const;
+
+    // FIXME(dmazzoni): remove these ASAP once Chromium only calls either explicitly-deprecated
+    // functions, above, or the new APIs, below.
+    BLINK_EXPORT WebString accessibilityDescription() const;
+    BLINK_EXPORT bool ariaDescribedby(WebVector<WebAXObject>& describedbyElements) const;
+    BLINK_EXPORT bool ariaLabelledby(WebVector<WebAXObject>& labelledbyElements) const;
+    BLINK_EXPORT WebString helpText() const;
+    BLINK_EXPORT WebString placeholder() const;
+    BLINK_EXPORT WebString title() const;
+    BLINK_EXPORT WebAXObject titleUIElement() const;
+
+    // New text alternative calculation API (under development).
+
+    // Retrieves the accessible name of the object, an enum indicating where the name
+    // was derived from, and a list of related objects that were used to derive the name, if any.
+    BLINK_EXPORT WebString name(WebAXNameFrom&, WebVector<WebAXObject>& nameObjects);
+    // Takes the result of nameFrom from calling |name|, above, and retrieves the
+    // accessible description of the object, which is secondary to |name|, an enum indicating
+    // where the description was derived from, and a list of objects that were used to
+    // derive the description, if any.
+    BLINK_EXPORT WebString description(WebAXNameFrom, WebAXDescriptionFrom&, WebVector<WebAXObject>& descriptionObjects);
+    // Takes the result of nameFrom and descriptionFrom from calling |name| and |description|,
+    // above, and retrieves the placeholder of the object, if present and if it wasn't already
+    // exposed by one of the two functions above.
+    BLINK_EXPORT WebString placeholder(WebAXNameFrom, WebAXDescriptionFrom);
 
     // Live regions.
     BLINK_EXPORT bool isInLiveRegion() const;

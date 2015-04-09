@@ -55,7 +55,7 @@ public:
     virtual void setSelected(bool) override;
     virtual bool canSetSelectedAttribute() const override;
     virtual String stringValue() const override;
-    virtual String title(TextUnderElementMode) const override { return String(); }
+    virtual String deprecatedTitle(TextUnderElementMode) const override { return String(); }
 
 private:
     virtual bool canHaveChildren() const override { return false; }

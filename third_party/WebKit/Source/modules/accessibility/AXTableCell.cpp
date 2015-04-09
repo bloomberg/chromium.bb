@@ -218,7 +218,7 @@ SortDirection AXTableCell::sortDirection() const
     return SortDirectionUndefined;
 }
 
-AXObject* AXTableCell::titleUIElement() const
+AXObject* AXTableCell::deprecatedTitleUIElement() const
 {
     // Try to find if the first cell in this row is a <th>. If it is,
     // then it can act as the title ui element. (This is only in the

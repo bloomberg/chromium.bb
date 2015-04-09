@@ -137,7 +137,7 @@ PassRefPtr<AXValue> createRelatedNodeListValue(AXObject::AccessibilityChildrenVe
 void fillCoreProperties(AXObject* axObject, PassRefPtr<AXNode> nodeObject)
 {
     // core properties
-    String description = axObject->accessibilityDescription();
+    String description = axObject->deprecatedAccessibilityDescription();
     if (!description.isEmpty())
         nodeObject->setDescription(createValue(description));
 
@@ -149,7 +149,7 @@ void fillCoreProperties(AXObject* axObject, PassRefPtr<AXNode> nodeObject)
             nodeObject->setValue(createValue(stringValue));
     }
 
-    String help = axObject->helpText();
+    String help = axObject->deprecatedHelpText();
     if (!help.isEmpty())
         nodeObject->setHelp(createValue(help));
 }
@@ -365,12 +365,12 @@ void fillRelationships(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXPrope
         properties->addItem(createProperty(AXRelationshipAttributes::Controls, createRelatedNodeListValue(results)));
     results.clear();
 
-    axObject->ariaDescribedbyElements(results);
+    axObject->deprecatedAriaDescribedbyElements(results);
     if (!results.isEmpty())
         properties->addItem(createProperty(AXRelationshipAttributes::Describedby, createRelatedNodeListValue(results)));
     results.clear();
 
-    axObject->ariaLabelledbyElements(results);
+    axObject->deprecatedAriaLabelledbyElements(results);
     if (!results.isEmpty())
         properties->addItem(createProperty(AXRelationshipAttributes::Labelledby, createRelatedNodeListValue(results)));
     results.clear();

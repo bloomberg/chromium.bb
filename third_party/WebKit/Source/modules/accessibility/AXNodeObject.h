@@ -76,7 +76,7 @@ protected:
     AXObject* menuButtonForMenu() const;
     Element* menuItemElementForMenu() const;
     Element* mouseButtonListener() const;
-    String placeholder() const;
+    String deprecatedPlaceholder() const;
     AccessibilityRole remapAriaRoleDueToParent(AccessibilityRole) const;
     bool isNativeCheckboxOrRadio() const;
     void setNode(Node*);
@@ -131,11 +131,11 @@ protected:
 
     // Properties of static elements.
     virtual bool canvasHasFallbackContent() const override final;
-    virtual bool exposesTitleUIElement() const override;
+    virtual bool deprecatedExposesTitleUIElement() const override;
     virtual int headingLevel() const override final;
     virtual unsigned hierarchicalLevel() const override final;
     virtual String text() const override;
-    virtual AXObject* titleUIElement() const override;
+    virtual AXObject* deprecatedTitleUIElement() const override;
 
     // Properties of interactive elements.
     virtual AccessibilityButtonState checkboxOrRadioValue() const override final;
@@ -158,10 +158,10 @@ protected:
     virtual AccessibilityOptionalBool isAriaGrabbed() const override final;
 
     // Accessibility Text.
-    virtual String textUnderElement(TextUnderElementMode) const override;
-    virtual String accessibilityDescription() const override;
-    virtual String title(TextUnderElementMode) const override;
-    virtual String helpText() const override;
+    virtual String deprecatedTextUnderElement(TextUnderElementMode) const override;
+    virtual String deprecatedAccessibilityDescription() const override;
+    virtual String deprecatedTitle(TextUnderElementMode) const override;
+    virtual String deprecatedHelpText() const override;
     virtual String computedName() const override;
 
     // Location and click point in frame-relative coordinates.

@@ -115,16 +115,6 @@ bool WebAXObject::updateLayoutAndCheckValidity()
     return !isDetached();
 }
 
-WebString WebAXObject::accessibilityDescription() const
-{
-    if (isDetached())
-        return WebString();
-
-    ASSERT(isLayoutClean(m_private->document()));
-
-    return m_private->accessibilityDescription();
-}
-
 WebString WebAXObject::actionVerb() const
 {
     if (isDetached())
@@ -238,14 +228,6 @@ WebString WebAXObject::ariaAutoComplete() const
         return WebString();
 
     return m_private->ariaAutoComplete();
-}
-
-WebString WebAXObject::placeholder() const
-{
-    if (isDetached())
-        return WebString();
-
-    return WebString(m_private->placeholder());
 }
 
 bool WebAXObject::isButtonStateMixed() const
@@ -464,22 +446,6 @@ bool WebAXObject::ariaControls(WebVector<WebAXObject>& controlsElements) const
     return true;
 }
 
-bool WebAXObject::ariaDescribedby(WebVector<WebAXObject>& describedbyElements) const
-{
-    if (isDetached())
-        return false;
-
-    AXObject::AccessibilityChildrenVector describedby;
-    m_private->ariaDescribedbyElements(describedby);
-
-    WebVector<WebAXObject> result(describedby.size());
-    for (size_t i = 0; i < describedby.size(); i++)
-        result[i] = WebAXObject(describedby[i]);
-    describedbyElements.swap(result);
-
-    return true;
-}
-
 WebString WebAXObject::ariaDropEffect() const
 {
     if (isDetached())
@@ -508,22 +474,6 @@ bool WebAXObject::ariaFlowTo(WebVector<WebAXObject>& flowToElements) const
     for (size_t i = 0; i < flowTo.size(); i++)
         result[i] = WebAXObject(flowTo[i]);
     flowToElements.swap(result);
-
-    return true;
-}
-
-bool WebAXObject::ariaLabelledby(WebVector<WebAXObject>& labelledbyElements) const
-{
-    if (isDetached())
-        return false;
-
-    AXObject::AccessibilityChildrenVector labelledby;
-    m_private->ariaLabelledbyElements(labelledby);
-
-    WebVector<WebAXObject> result(labelledby.size());
-    for (size_t i = 0; i < labelledby.size(); i++)
-        result[i] = WebAXObject(labelledby[i]);
-    labelledbyElements.swap(result);
 
     return true;
 }
@@ -681,14 +631,6 @@ double WebAXObject::estimatedLoadingProgress() const
         return 0.0;
 
     return m_private->estimatedLoadingProgress();
-}
-
-WebString WebAXObject::helpText() const
-{
-    if (isDetached())
-        return WebString();
-
-    return m_private->helpText();
 }
 
 int WebAXObject::headingLevel() const
@@ -875,16 +817,6 @@ WebString WebAXObject::stringValue() const
     return m_private->stringValue();
 }
 
-WebString WebAXObject::title() const
-{
-    if (isDetached())
-        return WebString();
-
-    ASSERT(isLayoutClean(m_private->document()));
-
-    return m_private->title();
-}
-
 WebString WebAXObject::language() const
 {
     if (isDetached())
@@ -893,23 +825,170 @@ WebString WebAXObject::language() const
     return m_private->language();
 }
 
-WebAXObject WebAXObject::titleUIElement() const
-{
-    if (isDetached())
-        return WebAXObject();
-
-    if (!m_private->exposesTitleUIElement())
-        return WebAXObject();
-
-    return WebAXObject(m_private->titleUIElement());
-}
-
 WebURL WebAXObject::url() const
 {
     if (isDetached())
         return WebURL();
 
     return m_private->url();
+}
+
+WebString WebAXObject::deprecatedAccessibilityDescription() const
+{
+    if (isDetached())
+        return WebString();
+
+    ASSERT(isLayoutClean(m_private->document()));
+
+    return m_private->deprecatedAccessibilityDescription();
+}
+
+bool WebAXObject::deprecatedAriaDescribedby(WebVector<WebAXObject>& describedbyElements) const
+{
+    if (isDetached())
+        return false;
+
+    AXObject::AccessibilityChildrenVector describedby;
+    m_private->deprecatedAriaDescribedbyElements(describedby);
+
+    WebVector<WebAXObject> result(describedby.size());
+    for (size_t i = 0; i < describedby.size(); i++)
+        result[i] = WebAXObject(describedby[i]);
+    describedbyElements.swap(result);
+
+    return true;
+}
+
+bool WebAXObject::deprecatedAriaLabelledby(WebVector<WebAXObject>& labelledbyElements) const
+{
+    if (isDetached())
+        return false;
+
+    AXObject::AccessibilityChildrenVector labelledby;
+    m_private->deprecatedAriaLabelledbyElements(labelledby);
+
+    WebVector<WebAXObject> result(labelledby.size());
+    for (size_t i = 0; i < labelledby.size(); i++)
+        result[i] = WebAXObject(labelledby[i]);
+    labelledbyElements.swap(result);
+
+    return true;
+}
+
+WebString WebAXObject::deprecatedHelpText() const
+{
+    if (isDetached())
+        return WebString();
+
+    return m_private->deprecatedHelpText();
+}
+
+WebString WebAXObject::deprecatedPlaceholder() const
+{
+    if (isDetached())
+        return WebString();
+
+    return WebString(m_private->deprecatedPlaceholder());
+}
+
+WebString WebAXObject::deprecatedTitle() const
+{
+    if (isDetached())
+        return WebString();
+
+    ASSERT(isLayoutClean(m_private->document()));
+
+    return m_private->deprecatedTitle();
+}
+
+WebAXObject WebAXObject::deprecatedTitleUIElement() const
+{
+    if (isDetached())
+        return WebAXObject();
+
+    if (!m_private->deprecatedExposesTitleUIElement())
+        return WebAXObject();
+
+    return WebAXObject(m_private->deprecatedTitleUIElement());
+}
+
+WebString WebAXObject::accessibilityDescription() const
+{
+    return deprecatedAccessibilityDescription();
+}
+
+bool WebAXObject::ariaDescribedby(WebVector<WebAXObject>& describedbyElements) const
+{
+    return deprecatedAriaDescribedby(describedbyElements);
+}
+
+bool WebAXObject::ariaLabelledby(WebVector<WebAXObject>& labelledbyElements) const
+{
+    return deprecatedAriaLabelledby(labelledbyElements);
+}
+
+WebString WebAXObject::helpText() const
+{
+    return deprecatedHelpText();
+}
+
+WebString WebAXObject::placeholder() const
+{
+    return deprecatedPlaceholder();
+}
+
+WebString WebAXObject::title() const
+{
+    return deprecatedTitle();
+}
+
+WebAXObject WebAXObject::titleUIElement() const
+{
+    return deprecatedTitleUIElement();
+}
+
+WebString WebAXObject::name(WebAXNameFrom& outNameFrom, WebVector<WebAXObject>& outNameObjects)
+{
+    if (isDetached())
+        return WebString();
+
+    AXNameFrom nameFrom;
+    Vector<AXObject*> nameObjects;
+    WebString result = m_private->name(nameFrom, nameObjects);
+    outNameFrom = static_cast<WebAXNameFrom>(nameFrom);
+
+    WebVector<WebAXObject> webNameObjects(nameObjects.size());
+    for (size_t i = 0; i < nameObjects.size(); i++)
+        webNameObjects[i] = WebAXObject(nameObjects[i]);
+    outNameObjects.swap(webNameObjects);
+
+    return result;
+}
+
+WebString WebAXObject::description(WebAXNameFrom nameFrom, WebAXDescriptionFrom& outDescriptionFrom, WebVector<WebAXObject>& outDescriptionObjects)
+{
+    if (isDetached())
+        return WebString();
+
+    AXDescriptionFrom descriptionFrom;
+    Vector<AXObject*> descriptionObjects;
+    String result = m_private->description(static_cast<AXNameFrom>(nameFrom), descriptionFrom, descriptionObjects);
+    outDescriptionFrom = static_cast<WebAXDescriptionFrom>(descriptionFrom);
+
+    WebVector<WebAXObject> webDescriptionObjects(descriptionObjects.size());
+    for (size_t i = 0; i < descriptionObjects.size(); i++)
+        webDescriptionObjects[i] = WebAXObject(descriptionObjects[i]);
+    outDescriptionObjects.swap(webDescriptionObjects);
+
+    return result;
+}
+
+WebString WebAXObject::placeholder(WebAXNameFrom nameFrom, WebAXDescriptionFrom descriptionFrom)
+{
+    if (isDetached())
+        return WebString();
+
+    return m_private->placeholder(static_cast<AXNameFrom>(nameFrom), static_cast<AXDescriptionFrom>(descriptionFrom));
 }
 
 bool WebAXObject::supportsRangeValue() const

@@ -45,9 +45,9 @@ public:
 
     virtual AccessibilityRole roleValue() const override;
 
-    virtual String title(TextUnderElementMode) const override final;
-    virtual String accessibilityDescription() const override;
-    virtual String helpText() const override;
+    virtual String deprecatedTitle(TextUnderElementMode) const override final;
+    virtual String deprecatedAccessibilityDescription() const override;
+    virtual String deprecatedHelpText() const override;
 
 protected:
     AccessibilityMediaControl(LayoutObject*, AXObjectCacheImpl*);
@@ -62,7 +62,7 @@ public:
     static PassRefPtr<AXObject> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AccessibilityMediaTimeline() { }
 
-    virtual String helpText() const override;
+    virtual String deprecatedHelpText() const override;
     virtual String valueDescription() const override;
     const AtomicString& getAttribute(const QualifiedName& attribute) const;
 
@@ -79,8 +79,8 @@ public:
 
     virtual AccessibilityRole roleValue() const override { return ToolbarRole; }
 
-    virtual String helpText() const override;
-    virtual String accessibilityDescription() const override;
+    virtual String deprecatedHelpText() const override;
+    virtual String deprecatedAccessibilityDescription() const override;
 
 private:
     AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl*);
@@ -98,7 +98,7 @@ public:
     virtual AccessibilityRole roleValue() const override { return StaticTextRole; }
 
     virtual String stringValue() const override;
-    virtual String accessibilityDescription() const override;
+    virtual String deprecatedAccessibilityDescription() const override;
 
 private:
     AccessibilityMediaTimeDisplay(LayoutObject*, AXObjectCacheImpl*);

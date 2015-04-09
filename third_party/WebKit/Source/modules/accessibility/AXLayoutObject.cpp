@@ -525,7 +525,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored() const
     // find out if this element is inside of a label element.
     // if so, it may be ignored because it's the label for a checkbox or radio button
     AXObject* controlObject = correspondingControlForLabelElement();
-    if (controlObject && !controlObject->exposesTitleUIElement() && controlObject->isCheckboxOrRadio())
+    if (controlObject && !controlObject->deprecatedExposesTitleUIElement() && controlObject->isCheckboxOrRadio())
         return true;
 
     if (m_layoutObject->isBR())
@@ -868,12 +868,12 @@ String AXLayoutObject::stringValue() const
     if (ariaRoleAttribute() == StaticTextRole) {
         String staticText = text();
         if (!staticText.length())
-            staticText = textUnderElement(TextUnderElementAll);
+            staticText = deprecatedTextUnderElement(TextUnderElementAll);
         return staticText;
     }
 
     if (m_layoutObject->isText())
-        return textUnderElement(TextUnderElementAll);
+        return deprecatedTextUnderElement(TextUnderElementAll);
 
     if (cssBox && cssBox->isMenuList()) {
         // LayoutMenuList will go straight to the text() of its selected item.
@@ -977,12 +977,12 @@ void AXLayoutObject::ariaControlsElements(AccessibilityChildrenVector& controls)
     accessibilityChildrenFromAttribute(aria_controlsAttr, controls);
 }
 
-void AXLayoutObject::ariaDescribedbyElements(AccessibilityChildrenVector& describedby) const
+void AXLayoutObject::deprecatedAriaDescribedbyElements(AccessibilityChildrenVector& describedby) const
 {
     accessibilityChildrenFromAttribute(aria_describedbyAttr, describedby);
 }
 
-void AXLayoutObject::ariaLabelledbyElements(AccessibilityChildrenVector& labelledby) const
+void AXLayoutObject::deprecatedAriaLabelledbyElements(AccessibilityChildrenVector& labelledby) const
 {
     accessibilityChildrenFromAttribute(aria_labelledbyAttr, labelledby);
 }
@@ -1132,7 +1132,7 @@ bool AXLayoutObject::liveRegionBusy() const
 // Accessibility Text.
 //
 
-String AXLayoutObject::textUnderElement(TextUnderElementMode mode) const
+String AXLayoutObject::deprecatedTextUnderElement(TextUnderElementMode mode) const
 {
     if (!m_layoutObject)
         return String();
@@ -1146,14 +1146,14 @@ String AXLayoutObject::textUnderElement(TextUnderElementMode mode) const
     if (m_layoutObject->isText())
         return toLayoutText(m_layoutObject)->plainText();
 
-    return AXNodeObject::textUnderElement(mode);
+    return AXNodeObject::deprecatedTextUnderElement(mode);
 }
 
 //
 // Accessibility Text - (To be deprecated).
 //
 
-String AXLayoutObject::helpText() const
+String AXLayoutObject::deprecatedHelpText() const
 {
     if (!m_layoutObject)
         return String();
@@ -1166,7 +1166,7 @@ String AXLayoutObject::helpText() const
     if (!describedBy.isEmpty())
         return describedBy;
 
-    String description = accessibilityDescription();
+    String description = deprecatedAccessibilityDescription();
     for (LayoutObject* curr = m_layoutObject; curr; curr = curr->parent()) {
         if (curr->node() && curr->node()->isHTMLElement()) {
             const AtomicString& summary = toElement(curr->node())->getAttribute(summaryAttr);
@@ -1314,7 +1314,7 @@ AXObject* AXLayoutObject::accessibilityHitTest(const IntPoint& point) const
         // If this element is the label of a control, a hit test should return the control.
         if (result->isAXLayoutObject()) {
             AXObject* controlObject = toAXLayoutObject(result)->correspondingControlForLabelElement();
-            if (controlObject && !controlObject->exposesTitleUIElement())
+            if (controlObject && !controlObject->deprecatedExposesTitleUIElement())
                 return controlObject;
         }
 

@@ -65,8 +65,8 @@ private:
     bool isColumnHeaderCell() const;
 
     // If a table cell is not exposed as a table cell, a TH element can serve as its title UI element.
-    virtual AXObject* titleUIElement() const override final;
-    virtual bool exposesTitleUIElement() const override final { return true; }
+    virtual AXObject* deprecatedTitleUIElement() const override final;
+    virtual bool deprecatedExposesTitleUIElement() const override final { return true; }
     virtual bool computeAccessibilityIsIgnored() const override final;
 };
 
