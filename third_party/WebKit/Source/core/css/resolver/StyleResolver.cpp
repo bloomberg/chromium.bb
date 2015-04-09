@@ -1426,10 +1426,6 @@ void StyleResolver::applyCallbackSelectors(StyleResolverState& state)
         state.style()->addCallbackSelector(rules->m_list[i]->selectorList().selectorsText());
 }
 
-CSSPropertyValue::CSSPropertyValue(CSSPropertyID id, const StylePropertySet& propertySet)
-    : property(id), value(propertySet.getPropertyCSSValue(id).get())
-{ }
-
 void StyleResolver::enableStats(StatsReportType reportType)
 {
     if (m_styleResolverStats)
@@ -1459,26 +1455,26 @@ void StyleResolver::printStats()
     fprintf(stderr, "%s\n", m_styleResolverStatsTotals->report().utf8().data());
 }
 
-void StyleResolver::applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, ComputedStyle* style)
+void StyleResolver::computeFont(ComputedStyle* style, const StylePropertySet& propertySet)
 {
+    CSSPropertyID properties[] = {
+        CSSPropertyFontSize,
+        CSSPropertyFontFamily,
+        CSSPropertyFontStretch,
+        CSSPropertyFontStyle,
+        CSSPropertyFontVariant,
+        CSSPropertyFontWeight,
+        CSSPropertyLineHeight,
+    };
+
+    // TODO(timloh): This is weird, the style is being used as its own parent
     StyleResolverState state(document(), document().documentElement(), style);
     state.setStyle(style);
 
-    for (size_t i = 0; i < count; ++i) {
-        if (properties[i].value) {
-            // As described in BUG66291, setting font-size and line-height on a font may entail a CSSPrimitiveValue::computeLengthDouble call,
-            // which assumes the fontMetrics are available for the affected font, otherwise a crash occurs (see http://trac.webkit.org/changeset/96122).
-            // The updateFont() call below updates the fontMetrics and ensure the proper setting of font-size and line-height.
-            switch (properties[i].property) {
-            case CSSPropertyFontSize:
-            case CSSPropertyLineHeight:
-                updateFont(state);
-                break;
-            default:
-                break;
-            }
-            StyleBuilder::applyProperty(properties[i].property, state, properties[i].value);
-        }
+    for (CSSPropertyID property : properties) {
+        if (property == CSSPropertyLineHeight)
+            updateFont(state);
+        StyleBuilder::applyProperty(property, state, propertySet.getPropertyCSSValue(property).get());
     }
 }
 

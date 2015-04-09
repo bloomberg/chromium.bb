@@ -524,18 +524,7 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
 
     style->font().update(style->font().fontSelector());
 
-    // Now map the font property longhands into the style.
-    CSSPropertyValue properties[] = {
-        CSSPropertyValue(CSSPropertyFontFamily, *parsedStyle),
-        CSSPropertyValue(CSSPropertyFontStretch, *parsedStyle),
-        CSSPropertyValue(CSSPropertyFontStyle, *parsedStyle),
-        CSSPropertyValue(CSSPropertyFontVariant, *parsedStyle),
-        CSSPropertyValue(CSSPropertyFontWeight, *parsedStyle),
-        CSSPropertyValue(CSSPropertyFontSize, *parsedStyle),
-        CSSPropertyValue(CSSPropertyLineHeight, *parsedStyle),
-    };
-    StyleResolver& styleResolver = document()->ensureStyleResolver();
-    styleResolver.applyPropertiesToStyle(properties, WTF_ARRAY_LENGTH(properties), style.get());
+    document()->ensureStyleResolver().computeFont(style.get(), *parsedStyle);
 
     font = style->font();
     font.update(document()->styleEngine().fontSelector());

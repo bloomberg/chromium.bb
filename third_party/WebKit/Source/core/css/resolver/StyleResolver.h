@@ -79,17 +79,6 @@ const unsigned styleSharingListSize = 15;
 const unsigned styleSharingMaxDepth = 32;
 typedef WillBeHeapDeque<RawPtrWillBeMember<Element>, styleSharingListSize> StyleSharingList;
 
-struct CSSPropertyValue {
-    STACK_ALLOCATED();
-public:
-    CSSPropertyValue(CSSPropertyID property, CSSValue* value)
-        : property(property), value(value) { }
-    // Stores value=propertySet.getPropertyCSSValue(id).get().
-    CSSPropertyValue(CSSPropertyID, const StylePropertySet&);
-    CSSPropertyID property;
-    RawPtrWillBeMember<CSSValue> value;
-};
-
 // This class selects a ComputedStyle for a given element based on a collection of stylesheets.
 class StyleResolver final : public NoBaseWillBeGarbageCollectedFinalized<StyleResolver> {
     WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleResolver);
@@ -146,8 +135,7 @@ public:
     PassRefPtrWillBeRawPtr<CSSRuleList> pseudoCSSRulesForElement(Element*, PseudoId, unsigned rulesToInclude = AllButEmptyCSSRules);
     PassRefPtrWillBeRawPtr<StyleRuleList> styleRulesForElement(Element*, unsigned rulesToInclude);
 
-    // |properties| is an array with |count| elements.
-    void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, ComputedStyle*);
+    void computeFont(ComputedStyle*, const StylePropertySet&);
 
     ViewportStyleResolver* viewportStyleResolver() { return m_viewportStyleResolver.get(); }
 

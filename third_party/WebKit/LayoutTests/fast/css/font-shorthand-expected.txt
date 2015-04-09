@@ -84,6 +84,7 @@ font-style
 font-weight
 font-size
 font-family
+font-stretch
 font-variant
 line-height
 
@@ -92,6 +93,7 @@ font-style
 font-weight
 font-size
 font-family
+font-stretch
 font-variant
 line-height
 
@@ -100,6 +102,7 @@ font-style
 font-weight
 font-size
 font-family
+font-stretch
 font-variant
 line-height
 
@@ -108,6 +111,7 @@ font-style
 font-weight
 font-size
 font-family
+font-stretch
 font-variant
 line-height
 
@@ -116,6 +120,7 @@ font-style
 font-weight
 font-size
 font-family
+font-stretch
 font-variant
 line-height
 
@@ -124,6 +129,7 @@ font-style
 font-weight
 font-size
 font-family
+font-stretch
 font-variant
 line-height
 
@@ -132,6 +138,7 @@ font-style
 font-weight
 font-size
 font-family
+font-stretch
 font-variant
 line-height
 
@@ -140,6 +147,7 @@ font-style
 font-weight
 font-size
 font-family
+font-stretch
 font-variant
 line-height
 
@@ -148,6 +156,7 @@ font-style
 font-weight
 font-size
 font-family
+font-stretch
 font-variant
 line-height
 
