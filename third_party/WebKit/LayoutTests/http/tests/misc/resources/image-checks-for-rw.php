@@ -1,7 +1,8 @@
 <?php
     $rw = $_SERVER["HTTP_RW"];
+    $expected_rw = $_GET["rw"];
 
-    if($rw) {
+    if (($rw == $expected_rw) || ($rw && !$expected_rw)) {
         $fn = fopen("compass.jpg", "r");
         fpassthru($fn);
         fclose($fn);

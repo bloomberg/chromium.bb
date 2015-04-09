@@ -672,9 +672,11 @@ void FrameFetchContext::addClientHintsIfNecessary(FetchRequest& fetchRequest)
     if (frame()->shouldSendDPRHint())
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("DPR", AtomicString(String::number(m_document->devicePixelRatio())));
 
-    // FIXME: Send the RW hint based on the actual resource width, when we have it.
-    if (frame()->shouldSendRWHint() && frame()->view())
-        fetchRequest.mutableResourceRequest().addHTTPHeaderField("RW", AtomicString(String::number(frame()->view()->viewportWidth())));
+    if (frame()->shouldSendRWHint() && frame()->view()) {
+        FetchRequest::ResourceWidth resourceWidth = fetchRequest.resourceWidth();
+        float usedResourceWidth = resourceWidth.isSet ? resourceWidth.width : frame()->view()->viewportWidth();
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("RW", AtomicString(String::number(usedResourceWidth)));
+    }
 }
 
 void FrameFetchContext::addCSPHeaderIfNecessary(Resource::Type type, FetchRequest& fetchRequest)

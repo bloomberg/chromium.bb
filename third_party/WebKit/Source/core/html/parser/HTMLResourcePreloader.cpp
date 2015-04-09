@@ -60,6 +60,7 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
         request.setCrossOriginAccessControl(document->securityOrigin(), m_allowCredentials);
 
     request.setDefer(m_defer);
+    request.setResourceWidth(m_resourceWidth);
 
     return request;
 }

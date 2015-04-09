@@ -40,6 +40,17 @@ public:
     enum DeferOption { NoDefer, LazyLoad, DeferredByClient };
     enum OriginRestriction { UseDefaultOriginRestrictionForType, RestrictToSameOrigin, NoOriginRestriction };
 
+    struct ResourceWidth {
+        float width;
+        bool isSet;
+
+        ResourceWidth()
+            : width(0)
+            , isSet(false)
+        {
+        }
+    };
+
     explicit FetchRequest(const ResourceRequest&, const AtomicString& initiator, const String& charset = String(), ResourceLoadPriority = ResourceLoadPriorityUnresolved);
     FetchRequest(const ResourceRequest&, const AtomicString& initiator, const ResourceLoaderOptions&);
     FetchRequest(const ResourceRequest&, const FetchInitiatorInfo&);
@@ -56,6 +67,7 @@ public:
     bool forPreload() const { return m_forPreload; }
     void setForPreload(bool forPreload) { m_forPreload = forPreload; }
     DeferOption defer() const { return m_defer; }
+    ResourceWidth resourceWidth() const { return m_resourceWidth; }
     void setDefer(DeferOption defer) { m_defer = defer; }
     void setContentSecurityCheck(ContentSecurityPolicyDisposition contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
     void setCrossOriginAccessControl(SecurityOrigin*, StoredCredentials, CredentialRequest);
@@ -63,6 +75,7 @@ public:
     void setCrossOriginAccessControl(SecurityOrigin*, const AtomicString& crossOriginMode);
     OriginRestriction originRestriction() const { return m_originRestriction; }
     void setOriginRestriction(OriginRestriction restriction) { m_originRestriction = restriction; }
+    void setResourceWidth(ResourceWidth);
 
 private:
     ResourceRequest m_resourceRequest;
@@ -72,6 +85,7 @@ private:
     bool m_forPreload;
     DeferOption m_defer;
     OriginRestriction m_originRestriction;
+    ResourceWidth m_resourceWidth;
 };
 
 } // namespace blink

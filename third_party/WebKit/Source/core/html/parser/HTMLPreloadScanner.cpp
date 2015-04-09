@@ -168,7 +168,12 @@ public:
             return nullptr;
 
         TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
-        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType());
+        FetchRequest::ResourceWidth resourceWidth;
+        if (m_sourceSizeSet) {
+            resourceWidth.width = m_sourceSize;
+            resourceWidth.isSet = true;
+        }
+        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), resourceWidth);
         if (isCORSEnabled())
             request->setCrossOriginEnabled(allowStoredCredentials());
         request->setCharset(charset());

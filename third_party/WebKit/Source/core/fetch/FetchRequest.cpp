@@ -90,4 +90,12 @@ void FetchRequest::setCrossOriginAccessControl(SecurityOrigin* origin, const Ato
     setCrossOriginAccessControl(origin, equalIgnoringCase(crossOriginMode, "use-credentials") ? AllowStoredCredentials : DoNotAllowStoredCredentials);
 }
 
+void FetchRequest::setResourceWidth(ResourceWidth resourceWidth)
+{
+    if (resourceWidth.isSet) {
+        m_resourceWidth.width = resourceWidth.width;
+        m_resourceWidth.isSet = true;
+    }
+}
+
 } // namespace blink
