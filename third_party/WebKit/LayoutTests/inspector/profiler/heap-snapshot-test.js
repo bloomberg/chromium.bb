@@ -414,7 +414,7 @@ InspectorTest.createHeapSnapshotMockFactories();
 
 InspectorTest.startProfilerTest = function(callback)
 {
-    WebInspector.settings.showAdvancedHeapSnapshotProperties.set(true);
+    WebInspector.settingForTest("showAdvancedHeapSnapshotProperties").set(true);
 
     InspectorTest.addResult("Profiler was enabled.");
     // We mock out HeapProfilerAgent -- as DRT runs in single-process mode, Inspector

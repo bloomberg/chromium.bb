@@ -409,7 +409,6 @@ function test()
 
         function testSourceMapCouldNotBeLoaded(next)
         {
-            WebInspector.settings.jsSourceMapsEnabled.get = function() { return true; }
             createWorkspaceWithTarget(workspaceCreated);
             function workspaceCreated(target)
             {

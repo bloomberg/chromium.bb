@@ -25,7 +25,7 @@ function stop()
 function test()
 {
     var frameworkRegexString = "/framework\\.js$";
-    WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
+    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
     var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
 

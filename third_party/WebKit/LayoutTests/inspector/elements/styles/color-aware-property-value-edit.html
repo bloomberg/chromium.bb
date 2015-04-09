@@ -75,17 +75,9 @@ function test()
         }
     ]);
 
-    var format;
-    WebInspector.settings.colorFormat = {
-        get: function()
-        {
-            return format;
-        }
-    };
-
     function setFormat(newFormat)
     {
-        format = newFormat;
+        WebInspector.settingForTest("colorFormat").set(newFormat);
         WebInspector.panels.elements.sidebarPanes.styles._colorFormatSettingChanged();
     }
 

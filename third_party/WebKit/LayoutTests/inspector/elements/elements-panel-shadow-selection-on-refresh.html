@@ -10,7 +10,7 @@ function test()
     InspectorTest.runTestSuite([
         function setup(next)
         {
-            WebInspector.settings.showUAShadowDOM.set(true);
+            WebInspector.settingForTest("showUAShadowDOM").set(true);
             InspectorTest.expandElementsTree(next);
         },
 

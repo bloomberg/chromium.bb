@@ -6,10 +6,10 @@
 function test()
 {
     InspectorTest.consoleModel.addMessage(new WebInspector.ConsoleMessage(InspectorTest.consoleModel.target(), WebInspector.ConsoleMessage.MessageSource.Other, WebInspector.ConsoleMessage.MessageLevel.Log, "PASS"));
-    WebInspector.settings.preserveConsoleLog.set(true);
+    WebInspector.settingForTest("preserveConsoleLog").set(true);
     InspectorTest.reloadPage(function() {
         InspectorTest.dumpConsoleMessages();
-        WebInspector.settings.preserveConsoleLog.set(false);
+        WebInspector.settingForTest("preserveConsoleLog").set(false);
         InspectorTest.completeTest();
     });
 }

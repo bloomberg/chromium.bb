@@ -7,7 +7,7 @@
 
 function test()
 {
-    WebInspector.settings.showUAShadowDOM.set(true);
+    WebInspector.settingForTest("showUAShadowDOM").set(true);
     InspectorTest.selectNodeWithId("shadow", step1);
 
     function step1()

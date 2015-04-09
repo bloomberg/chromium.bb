@@ -12,8 +12,8 @@ function onload()
 
 function test()
 {
-    // Warm up highlighter module.
-    runtime.loadModulePromise("source_frame").then(function() {
+    // Warm up elements renderer.
+    runtime.loadModulePromise("elements").then(function() {
         InspectorTest.expandConsoleMessages(callback);
     });
 

@@ -5,7 +5,7 @@
 
 function test()
 {
-    WebInspector.settings.enableAsyncStackTraces.set(true);
+    WebInspector.settingForTest("enableAsyncStackTraces").set(true);
     var messages = [];
     function collectMessages(message)
     {
@@ -26,7 +26,7 @@ function test()
         message = message.replace(/"id":\d+,/, '"id":<number>,');
         InspectorTest.addResult(message);
     }
-    WebInspector.settings.enableAsyncStackTraces.set(false);
+    WebInspector.settingForTest("enableAsyncStackTraces").set(false);
     InspectorTest.completeTest();
 }
 

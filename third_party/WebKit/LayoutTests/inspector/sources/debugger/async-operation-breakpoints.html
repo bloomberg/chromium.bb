@@ -52,7 +52,7 @@ function test()
 {
     var maxAsyncCallStackDepth = 4;
     var frameworkRegexString = "/framework\\.js$";
-    WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
+    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
     InspectorTest.startDebuggerTest(step1, true);
 

@@ -74,7 +74,7 @@ function addFewBlackboxedListenersAndClick(addNonBlackboxedListener)
 function test()
 {
     var frameworkRegexString = "/framework\\.js$";
-    WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
+    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
     InspectorTest.setQuiet(true);
 

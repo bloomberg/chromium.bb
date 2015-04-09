@@ -16,7 +16,7 @@ function typeText()
 function test()
 {
     var containerNode;
-    WebInspector.settings.showUAShadowDOM.set(true);
+    WebInspector.settingForTest("showUAShadowDOM").set(true);
     InspectorTest.runTestSuite([
         function testDumpInitial(next)
         {

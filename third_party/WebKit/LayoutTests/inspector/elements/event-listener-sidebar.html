@@ -36,7 +36,7 @@ function test()
 {
     var sidebarPane = WebInspector.panels.elements.sidebarPanes.eventListeners;
 
-    WebInspector.settings.eventListenersFilter.set("all");
+    WebInspector.settingForTest("eventListenersFilter").set("all");
     InspectorTest.selectNodeWithId("node", step1);
 
     function step1()

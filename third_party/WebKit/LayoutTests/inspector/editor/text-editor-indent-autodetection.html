@@ -17,7 +17,7 @@ function test()
     textEditor.setMimeType("text/javascript");
     textEditor.setReadOnly(false);
     textEditor.element.focus();
-    WebInspector.settings.textEditorAutoDetectIndent.set(true);
+    WebInspector.settingForTest("textEditorAutoDetectIndent").set(true);
     function genericTest(snippetName, next)
     {
         var command = "codeSnippet('" + snippetName + "');";
