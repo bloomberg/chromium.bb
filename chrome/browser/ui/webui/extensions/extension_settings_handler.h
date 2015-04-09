@@ -99,14 +99,8 @@ class ExtensionSettingsHandler
   // Callback for "options" message.
   void HandleOptionsMessage(const base::ListValue* args);
 
-  // Callback for "permissions" message.
-  void HandlePermissionsMessage(const base::ListValue* args);
-
   // Callback for "autoupdate" message.
   void HandleAutoUpdateMessage(const base::ListValue* args);
-
-  // Callback for the "dismissADTPromo" message.
-  void HandleDismissADTPromoMessage(const base::ListValue* args);
 
   // Callback for the "showPath" message.
   void HandleShowPath(const base::ListValue* args);

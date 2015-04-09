@@ -75,13 +75,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-namespace {
-
-const char kAppsDeveloperToolsExtensionId[] =
-    "ohmmkhmmmpcnpikjeljgnaoabkaalbgc";
-
-}  // namespace
-
 namespace extensions {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -227,18 +220,6 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_COMMANDS_CONFIGURE));
   source->AddString("extensionSettingsUpdateButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UPDATE_BUTTON));
-  source->AddString(
-      "extensionSettingsAppsDevToolsPromoHTML",
-      l10n_util::GetStringFUTF16(
-          IDS_EXTENSIONS_APPS_DEV_TOOLS_PROMO_HTML,
-          base::ASCIIToUTF16(
-              google_util::AppendGoogleLocaleParam(
-                  GURL(extension_urls::GetWebstoreItemDetailURLPrefix() +
-                       kAppsDeveloperToolsExtensionId),
-                  g_browser_process->GetApplicationLocale()).spec())));
-  source->AddString(
-      "extensionSettingsAppDevToolsPromoClose",
-      l10n_util::GetStringUTF16(IDS_CLOSE));
   source->AddString("extensionSettingsCrashMessage",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_CRASHED_EXTENSION));
   source->AddString("extensionSettingsInDevelopment",
@@ -356,9 +337,6 @@ void ExtensionSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionSettingsAutoupdate",
       base::Bind(&ExtensionSettingsHandler::HandleAutoUpdateMessage,
                  AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsDismissADTPromo",
-      base::Bind(&ExtensionSettingsHandler::HandleDismissADTPromoMessage,
-                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsShowPath",
       base::Bind(&ExtensionSettingsHandler::HandleShowPath,
                  AsWeakPtr()));
@@ -468,17 +446,6 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   results.SetBoolean("developerMode", developer_mode);
   results.SetBoolean("enableAppInfoDialog", CanShowAppInfoDialog());
 
-  // Promote the Chrome Apps & Extensions Developer Tools if they are not
-  // installed and the user has not previously dismissed the warning.
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
-  bool promote_apps_dev_tools = false;
-  if (!registry->GetExtensionById(kAppsDeveloperToolsExtensionId,
-                                  ExtensionRegistry::EVERYTHING) &&
-      !profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDismissedADTPromo)) {
-    promote_apps_dev_tools = true;
-  }
-  results.SetBoolean("promoteAppsDevTools", promote_apps_dev_tools);
-
   const bool load_unpacked_disabled =
       ExtensionManagementFactory::GetForBrowserContext(profile)
           ->BlacklistedByDefault();
@@ -490,9 +457,10 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   MaybeRegisterForNotifications();
 
   scoped_ptr<ExtensionSet> extensions =
-      registry->GenerateInstalledExtensionsSet(ExtensionRegistry::ENABLED |
-                                               ExtensionRegistry::DISABLED |
-                                               ExtensionRegistry::TERMINATED);
+      ExtensionRegistry::Get(profile)->GenerateInstalledExtensionsSet(
+          ExtensionRegistry::ENABLED |
+          ExtensionRegistry::DISABLED |
+          ExtensionRegistry::TERMINATED);
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
   bool should_do_verification_check = false;
   for (const scoped_refptr<const Extension>& extension : *extensions) {
@@ -567,13 +535,6 @@ void ExtensionSettingsHandler::HandleAutoUpdateMessage(
   }
 }
 
-void ExtensionSettingsHandler::HandleDismissADTPromoMessage(
-    const base::ListValue* args) {
-  DCHECK(args->empty());
-  Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
-      prefs::kExtensionsUIDismissedADTPromo, true);
-}
-
 void ExtensionSettingsHandler::HandleShowPath(const base::ListValue* args) {
   DCHECK(!args->empty());
   std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
@@ -641,6 +602,10 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
 
   extension_management_observer_.Add(
       ExtensionManagementFactory::GetForBrowserContext(profile));
+
+  // Clear the preference for the ADT Promo before fully removing it.
+  // TODO(devlin): Take this out when everyone's been updated.
+  profile->GetPrefs()->ClearPref(prefs::kExtensionsUIDismissedADTPromo);
 }
 
 void ExtensionSettingsHandler::OnReinstallComplete(

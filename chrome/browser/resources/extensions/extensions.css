@@ -55,48 +55,6 @@ html:not(.focus-outline-visible)
   -webkit-margin-end: 5px;
 }
 
-#apps-developer-tools-promo {
-  -webkit-padding-end: 12px;
-  -webkit-padding-start: 6px;
-  align-items: center;
-  border-top: 1px solid #eee;
-  display: flex;
-  font-size: 13px;
-}
-
-#apps-developer-tools-promo img {
-  -webkit-margin-end: 5px;
-  content: url(apps_developer_tools_promo_48.png);
-  margin-bottom: -5px;
-  margin-top: -5px;
-}
-
-#apps-developer-tools-promo-text {
-  -webkit-margin-start: 14px;
-}
-
-#apps-developer-tools-promo-close-wrapper {
-  display: flex;
-  flex-grow: 1;
-  justify-content: flex-end;
-}
-
-#apps-developer-tools-promo .close-button {
-  background: url(chrome://theme/IDR_CLOSE_DIALOG) no-repeat center center;
-  border: 0;
-  height: 14px;
-  width: 14px;
-  z-index: 1;
-}
-
-#apps-developer-tools-promo .close-button:hover {
-  background-image: url(chrome://theme/IDR_CLOSE_DIALOG_H);
-}
-
-#apps-developer-tools-promo .close-button:active {
-  background-image: url(chrome://theme/IDR_CLOSE_DIALOG_P);
-}
-
 #dev-controls-spacer {
   flex: 1;
 }

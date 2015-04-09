@@ -5020,9 +5020,6 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_EXTENSIONS_UPDATE_BUTTON" desc="Text for the 'Update extensions' button.">
           Update extensions now
         </message>
-        <message name="IDS_EXTENSIONS_APPS_DEV_TOOLS_PROMO_HTML" desc="The text encouraging users to get the Apps Developer Tools.">
-          Try the new <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Chrome Apps &amp; Extensions Developer Tool<ph name="END_LINK">&lt;/a&gt;</ph>.
-        </message>
         <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
           Boo... You have no extensions :-(
         </message>

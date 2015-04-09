@@ -26,8 +26,7 @@
  *            enableAppInfoDialog: boolean,
  *            incognitoAvailable: boolean,
  *            loadUnpackedDisabled: boolean,
- *            profileIsSupervised: boolean,
- *            promoteAppsDevTools: boolean}}
+ *            profileIsSupervised: boolean}}
  */
 var ExtensionDataResponse;
 
@@ -120,13 +119,6 @@ cr.define('extensions', function() {
     __proto__: HTMLDivElement.prototype,
 
     /**
-     * Whether or not to try to display the Apps Developer Tools promotion.
-     * @type {boolean}
-     * @private
-     */
-    displayPromo_: false,
-
-    /**
      * The drag-drop wrapper for installing external Extensions, if available.
      * null if external Extension installation is not available.
      * @type {cr.ui.DragWrapper}
@@ -183,17 +175,6 @@ cr.define('extensions', function() {
           this.handlePackExtension_.bind(this));
       $('update-extensions-now').addEventListener('click',
           this.handleUpdateExtensionNow_.bind(this));
-
-      // Set up the close dialog for the apps developer tools promo.
-      $('apps-developer-tools-promo').querySelector('.close-button').
-          addEventListener('click', function(e) {
-        this.displayPromo_ = false;
-        this.updateDevControlsVisibility_(true);
-        chrome.send('extensionSettingsDismissADTPromo');
-
-        if (cr.ui.FocusOutlineManager.forDocument(document).visible)
-          $('update-extensions-now').focus();
-      }.bind(this));
 
       if (!loadTimeData.getBoolean('offStoreInstallEnabled')) {
         this.dragWrapper_ = new cr.ui.DragWrapper(document.documentElement,
@@ -285,8 +266,7 @@ cr.define('extensions', function() {
 
     /**
      * Updates the visibility of the developer controls based on whether the
-     * [x] Developer mode checkbox is checked. Also called if a user dismisses
-     * the apps developer tools promo.
+     * [x] Developer mode checkbox is checked.
      * @param {boolean} animated Whether to animate any updates.
      * @private
      */
@@ -298,21 +278,14 @@ cr.define('extensions', function() {
       devControls.classList.toggle('animated', animated);
 
       var buttons = devControls.querySelector('.button-container');
-      var adtPromo = $('apps-developer-tools-promo');
-      [
-        {root: buttons, focusable: showDevControls},
-        {root: adtPromo, focusable: showDevControls && this.displayPromo_},
-      ].forEach(function(entry) {
-        var controls = entry.root.querySelectorAll('a, button');
-        Array.prototype.forEach.call(controls, function(control) {
-          control.tabIndex = entry.focusable ? 0 : -1;
-        });
-        entry.root.setAttribute('aria-hidden', !entry.focusable);
+      Array.prototype.forEach.call(buttons.querySelectorAll('a, button'),
+                                   function(control) {
+        control.tabIndex = showDevControls ? 0 : -1;
       });
+      buttons.setAttribute('aria-hidden', !showDevControls);
 
       window.requestAnimationFrame(function() {
         devControls.style.height = !showDevControls ? '' :
-            (this.displayPromo_ ? adtPromo.offsetHeight : 0) +
             buttons.offsetHeight + 'px';
       }.bind(this));
     },
@@ -336,9 +309,7 @@ cr.define('extensions', function() {
     devControlsCheckbox.checked = extensionsData.developerMode;
     devControlsCheckbox.disabled = supervised;
 
-    var instance = ExtensionSettings.getInstance();
-    instance.displayPromo_ = extensionsData.promoteAppsDevTools;
-    instance.updateDevControlsVisibility_(false);
+    ExtensionSettings.getInstance().updateDevControlsVisibility_(false);
 
     $('load-unpacked').disabled = extensionsData.loadUnpackedDisabled;
     var extensionList = $('extension-settings-list');
