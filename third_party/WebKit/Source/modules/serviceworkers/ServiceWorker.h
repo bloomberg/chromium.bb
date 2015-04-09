@@ -69,8 +69,6 @@ public:
 
     void internalsTerminate();
 private:
-    class ThenFunction;
-
     static PassRefPtrWillBeRawPtr<ServiceWorker> getOrCreate(ExecutionContext*, WebType*);
     ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker>);
 

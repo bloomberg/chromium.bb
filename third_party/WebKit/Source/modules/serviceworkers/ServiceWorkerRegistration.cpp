@@ -20,19 +20,6 @@
 
 namespace blink {
 
-class BooleanValue {
-public:
-    typedef bool WebType;
-    static bool take(ScriptPromiseResolver* resolver, WebType* boolean)
-    {
-        return *boolean;
-    }
-    static void dispose(WebType* boolean) { }
-
-private:
-    BooleanValue();
-};
-
 static void deleteIfNoExistingOwner(WebServiceWorker* serviceWorker)
 {
     if (serviceWorker && !serviceWorker->proxy())
@@ -118,7 +105,7 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
         return promise;
     }
 
-    m_provider->unregisterServiceWorker(scopeURL, new CallbackPromiseAdapter<BooleanValue, ServiceWorkerError>(resolver));
+    m_provider->unregisterServiceWorker(scopeURL, new CallbackPromiseAdapter<bool, ServiceWorkerError>(resolver));
     return promise;
 }
 
