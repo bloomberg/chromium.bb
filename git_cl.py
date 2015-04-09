@@ -201,20 +201,6 @@ def add_git_similarity(parser):
   parser.parse_args = Parse
 
 
-def is_dirty_git_tree(cmd):
-  # Make sure index is up-to-date before running diff-index.
-  RunGit(['update-index', '--refresh', '-q'], error_ok=True)
-  dirty = RunGit(['diff-index', '--name-status', 'HEAD'])
-  if dirty:
-    print 'Cannot %s with a dirty tree. You must commit locally first.' % cmd
-    print 'Uncommitted files: (git diff-index --name-status HEAD)'
-    print dirty[:4096]
-    if len(dirty) > 4096:
-      print '... (run "git diff-index --name-status HEAD" to see full output).'
-    return True
-  return False
-
-
 def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
   """Return the corresponding git ref if |base_url| together with |glob_spec|
   matches the full |url|.
@@ -1655,7 +1641,7 @@ def CMDpresubmit(parser, args):
                     help='Run checks even if tree is dirty')
   (options, args) = parser.parse_args(args)
 
-  if not options.force and is_dirty_git_tree('presubmit'):
+  if not options.force and git_common.is_dirty_git_tree('presubmit'):
     print 'use --force to check even if tree is dirty.'
     return 1
 
@@ -2032,7 +2018,7 @@ def CMDupload(parser, args):
   add_git_similarity(parser)
   (options, args) = parser.parse_args(args)
 
-  if is_dirty_git_tree('upload'):
+  if git_common.is_dirty_git_tree('upload'):
     return 1
 
   options.reviewers = cleanup_list(options.reviewers)
@@ -2162,7 +2148,7 @@ def SendUpstream(parser, args, cmd):
   base_branch = args[0]
   base_has_submodules = IsSubmoduleMergeCommit(base_branch)
 
-  if is_dirty_git_tree(cmd):
+  if git_common.is_dirty_git_tree(cmd):
     return 1
 
   # This rev-list syntax means "show all commits not in my branch that
@@ -2538,7 +2524,7 @@ def CMDpatch(parser, args):
   issue_arg = args[0]
 
   # We don't want uncommitted changes mixed up with the patch.
-  if is_dirty_git_tree('patch'):
+  if git_common.is_dirty_git_tree('patch'):
     return 1
 
   # TODO(maruel): Use apply_issue.py
@@ -2558,7 +2544,7 @@ def CMDpatch(parser, args):
 def PatchIssue(issue_arg, reject, nocommit, directory):
   # There's a "reset --hard" when failing to apply the patch. In order
   # not to destroy users' data, make sure the tree is not dirty here.
-  assert(not is_dirty_git_tree('apply'))
+  assert(not git_common.is_dirty_git_tree('apply'))
 
   if type(issue_arg) is int or issue_arg.isdigit():
     # Input is an issue id.  Figure out the URL.
@@ -2921,7 +2907,7 @@ def CMDdiff(parser, args):
   # Staged changes would be committed along with the patch from last
   # upload, hence counted toward the "last upload" side in the final
   # diff output, and this is not what we want.
-  if is_dirty_git_tree('diff'):
+  if git_common.is_dirty_git_tree('diff'):
     return 1
 
   cl = Changelist()

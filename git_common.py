@@ -602,6 +602,24 @@ def set_config(option, value, scope='local'):
   run('config', '--' + scope, option, value)
 
 
+def get_dirty_files():
+  # Make sure index is up-to-date before running diff-index.
+  run_with_retcode('update-index', '--refresh', '-q')
+  return run('diff-index', '--name-status', 'HEAD')
+
+
+def is_dirty_git_tree(cmd):
+  dirty = get_dirty_files()
+  if dirty:
+    print 'Cannot %s with a dirty tree. You must commit locally first.' % cmd
+    print 'Uncommitted files: (git diff-index --name-status HEAD)'
+    print dirty[:4096]
+    if len(dirty) > 4096: # pragma: no cover
+      print '... (run "git diff-index --name-status HEAD" to see full output).'
+    return True
+  return False
+
+
 def squash_current_branch(header=None, merge_base=None):
   header = header or 'git squash commit.'
   merge_base = merge_base or get_or_create_merge_base(current_branch())
@@ -610,7 +628,14 @@ def squash_current_branch(header=None, merge_base=None):
     log_msg += '\n'
   log_msg += run('log', '--reverse', '--format=%H%n%B', '%s..HEAD' % merge_base)
   run('reset', '--soft', merge_base)
+
+  if not get_dirty_files():
+    # Sometimes the squash can result in the same tree, meaning that there is
+    # nothing to commit at this point.
+    print 'Nothing to commit; squashed branch is empty'
+    return False
   run('commit', '-a', '-F', '-', indata=log_msg)
+  return True
 
 
 def tags(*args):

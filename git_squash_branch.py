@@ -6,7 +6,7 @@
 import argparse
 import sys
 
-from git_common import squash_current_branch
+import git_common
 
 def main(args):
   parser = argparse.ArgumentParser()
@@ -14,7 +14,9 @@ def main(args):
       '-m', '--message', metavar='<msg>', default='git squash commit.',
       help='Use the given <msg> as the first line of the commit message.')
   opts = parser.parse_args(args)
-  squash_current_branch(opts.message)
+  if git_common.is_dirty_git_tree('squash-branch'):
+    return 1
+  git_common.squash_current_branch(opts.message)
   return 0
 
 

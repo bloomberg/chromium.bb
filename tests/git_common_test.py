@@ -561,10 +561,17 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
       ('root_A', 'root_X'),
     ])
 
+  def testIsGitTreeDirty(self):
+    self.assertEquals(False, self.repo.run(self.gc.is_dirty_git_tree, 'foo'))
+    self.repo.open('test.file', 'w').write('test data')
+    self.repo.git('add', 'test.file')
+    self.assertEquals(True, self.repo.run(self.gc.is_dirty_git_tree, 'foo'))
+
   def testSquashBranch(self):
     self.repo.git('checkout', 'branch_K')
 
-    self.repo.run(self.gc.squash_current_branch, 'cool message')
+    self.assertEquals(True, self.repo.run(self.gc.squash_current_branch,
+                                          'cool message'))
 
     lines = ['cool message', '']
     for l in 'HIJK':
@@ -579,6 +586,14 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
       self.repo.git('cat-file', 'blob', 'branch_K:file').stdout,
       'K'
     )
+
+  def testSquashBranchEmpty(self):
+    self.repo.git('checkout', 'branch_K')
+    self.repo.git('checkout', 'branch_G', '.')
+    self.repo.git('commit', '-m', 'revert all changes no branch')
+    # Should return False since the quash would result in an empty commit
+    stdout = self.repo.capture_stdio(self.gc.squash_current_branch)[0]
+    self.assertEquals(stdout, 'Nothing to commit; squashed branch is empty\n')
 
   def testRebase(self):
     self.assertSchema("""

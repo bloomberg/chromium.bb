@@ -349,7 +349,6 @@ class GitRepo(object):
         env['GIT_%s' % singleton] = str(val)
     return env
 
-
   def git(self, *args, **kwargs):
     """Runs a git command specified by |args| in this repo."""
     assert self.repo_path is not None

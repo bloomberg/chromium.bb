@@ -75,7 +75,7 @@ class TestGitCl(TestCase):
     self.mock(subprocess2, 'check_call', self._mocked_call)
     self.mock(subprocess2, 'check_output', self._mocked_call)
     self.mock(subprocess2, 'communicate', self._mocked_call)
-    self.mock(subprocess2, 'Popen', self._mocked_call)
+    self.mock(git_common, 'is_dirty_git_tree', lambda x: False)
     self.mock(git_common, 'get_or_create_merge_base',
               lambda *a: (
                   self._mocked_call(['get_or_create_merge_base']+list(a))))
@@ -156,8 +156,6 @@ class TestGitCl(TestCase):
       similarity_call,
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       find_copies_call,
-      ((['git', 'update-index', '--refresh', '-q'],), ''),
-      ((['git', 'diff-index', '--name-status', 'HEAD'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.merge'],), 'master'),
       ((['git', 'config', 'branch.master.remote'],), 'origin'),
@@ -280,8 +278,6 @@ class TestGitCl(TestCase):
       ((['git', 'rev-list', '--merges',
          '--grep=^SVN changes up to revision [0-9]*$',
          'refs/remotes/origin/master^!'],), ''),
-      ((['git', 'update-index', '--refresh', '-q'],), ''),
-      ((['git', 'diff-index', '--name-status', 'HEAD'],), ''),
       ((['git', 'rev-list', '^refs/heads/working',
          'refs/remotes/origin/master'],),
          ''),
@@ -544,8 +540,6 @@ class TestGitCl(TestCase):
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', '--int', '--get',
           'branch.master.git-find-copies'],), ''),
-        ((['git', 'update-index', '--refresh', '-q'],), ''),
-        ((['git', 'diff-index', '--name-status', 'HEAD'],), ''),
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', 'branch.master.merge'],), 'master'),
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
