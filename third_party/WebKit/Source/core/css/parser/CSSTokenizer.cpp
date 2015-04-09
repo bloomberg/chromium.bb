@@ -52,6 +52,11 @@ CSSParserTokenRange CSSTokenizer::Scope::tokenRange()
     return m_tokens;
 }
 
+unsigned CSSTokenizer::Scope::tokenCount()
+{
+    return m_tokens.size();
+}
+
 // http://dev.w3.org/csswg/css-syntax/#name-start-code-point
 static bool isNameStart(UChar c)
 {

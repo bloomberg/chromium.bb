@@ -26,6 +26,7 @@ public:
     public:
         Scope(const String&);
         CSSParserTokenRange tokenRange();
+        unsigned tokenCount();
 
     private:
         void storeString(const String& string) { m_stringPool.append(string); }

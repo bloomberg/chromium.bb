@@ -21,6 +21,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/UseCounter.h"
+#include "platform/TraceEvent.h"
 #include "wtf/BitArray.h"
 
 namespace blink {
@@ -122,14 +123,29 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& str
 
 void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext& context, StyleSheetContents* styleSheet)
 {
-    CSSParserImpl parser(context, styleSheet);
+    TRACE_EVENT_BEGIN2(
+        "blink", "CSSParserImpl::parseStyleSheet",
+        "baseUrl", context.baseURL().string().utf8(),
+        "mode", context.mode());
+
+    TRACE_EVENT_BEGIN0("blink", "CSSParserImpl::parseStyleSheet.tokenize");
     CSSTokenizer::Scope scope(string);
+    TRACE_EVENT_END0("blink", "CSSParserImpl::parseStyleSheet.tokenize");
+
+    TRACE_EVENT_BEGIN0("blink", "CSSParserImpl::parseStyleSheet.parse");
+    CSSParserImpl parser(context, styleSheet);
     bool firstRuleValid = parser.consumeRuleList(scope.tokenRange(), TopLevelRuleList, [&styleSheet](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
         if (rule->isCharsetRule())
             return;
         styleSheet->parserAppendRule(rule);
     });
     styleSheet->setHasSyntacticallyValidCSSHeader(firstRuleValid);
+    TRACE_EVENT_END0("blink", "CSSParserImpl::parseStyleSheet.parse");
+
+    TRACE_EVENT_END2(
+        "blink", "CSSParserImpl::parseStyleSheet",
+        "tokenCount", scope.tokenCount(),
+        "length", string.length());
 }
 
 PassOwnPtr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(const String& keyList)
