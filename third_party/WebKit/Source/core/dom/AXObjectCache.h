@@ -141,7 +141,7 @@ private:
     static AXObjectCacheCreateFunction m_createFunction;
 };
 
-class CORE_EXPORT ScopedAXObjectCache {
+class CORE_EXPORT ScopedAXObjectCache : public RefCounted<ScopedAXObjectCache> {
     WTF_MAKE_NONCOPYABLE(ScopedAXObjectCache);
 public:
     explicit ScopedAXObjectCache(Document&);

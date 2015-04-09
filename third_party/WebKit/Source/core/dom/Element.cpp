@@ -1038,15 +1038,15 @@ IntRect Element::screenRect() const
 const AtomicString& Element::computedRole()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    ScopedAXObjectCache cache(document());
-    return cache->computedRoleForNode(this);
+    RefPtr<ScopedAXObjectCache> cache(adoptRef(new ScopedAXObjectCache(document())));
+    return (*cache)->computedRoleForNode(this);
 }
 
 String Element::computedName()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    ScopedAXObjectCache cache(document());
-    return cache->computedNameForNode(this);
+    RefPtr<ScopedAXObjectCache> cache(adoptRef(new ScopedAXObjectCache(document())));
+    return (*cache)->computedNameForNode(this);
 }
 
 const AtomicString& Element::getAttribute(const AtomicString& localName) const

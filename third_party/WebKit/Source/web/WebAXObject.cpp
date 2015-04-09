@@ -33,7 +33,6 @@
 
 #include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/dom/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameHost.h"
@@ -44,6 +43,7 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "modules/accessibility/AXObject.h"
+#include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTable.h"
 #include "modules/accessibility/AXTableCell.h"
 #include "modules/accessibility/AXTableColumn.h"
@@ -70,6 +70,21 @@ static bool isLayoutClean(Document* document)
         || (document->lifecycle().state() == DocumentLifecycle::StyleClean && !document->view()->needsLayout());
 }
 #endif
+
+WebScopedAXContext::WebScopedAXContext(WebDocument& rootDocument)
+    : m_private(adoptRef(new ScopedAXObjectCache(*rootDocument.unwrap<Document>())))
+{
+}
+
+WebScopedAXContext::~WebScopedAXContext()
+{
+    m_private.reset();
+}
+
+WebAXObject WebScopedAXContext::root() const
+{
+    return WebAXObject(static_cast<AXObjectCacheImpl*>(m_private->get())->root());
+}
 
 void WebAXObject::reset()
 {

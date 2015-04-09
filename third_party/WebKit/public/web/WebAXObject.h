@@ -43,12 +43,28 @@ namespace WTF { template <typename T> class PassRefPtr; }
 namespace blink {
 
 class AXObject;
+class ScopedAXObjectCache;
+class WebAXObject;
 class WebNode;
 class WebDocument;
 class WebString;
 class WebURL;
 struct WebPoint;
 struct WebRect;
+
+// An instance of this class, while kept alive, indicates that accessibility
+// should be temporarily enabled. If accessibility was enabled globally
+// (WebSettings::setAccessibilityEnabled), this will have no effect.
+class WebScopedAXContext {
+public:
+    BLINK_EXPORT WebScopedAXContext(WebDocument& rootDocument);
+    BLINK_EXPORT ~WebScopedAXContext();
+
+    BLINK_EXPORT WebAXObject root() const;
+
+private:
+    WebPrivatePtr<ScopedAXObjectCache> m_private;
+};
 
 // A container for passing around a reference to AXObject.
 class WebAXObject {
