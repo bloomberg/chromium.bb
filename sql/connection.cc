@@ -725,7 +725,8 @@ scoped_refptr<Connection::StatementRef> Connection::GetUniqueStatement(
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
   if (rc != SQLITE_OK) {
     // This is evidence of a syntax error in the incoming SQL.
-    DLOG(FATAL) << "SQL compile error " << GetErrorMessage();
+    DLOG_IF(FATAL, !ShouldIgnoreSqliteError(rc))
+        << "SQL compile error " << GetErrorMessage();
 
     // It could also be database corruption.
     OnSqliteError(rc, NULL, sql);
@@ -744,7 +745,8 @@ scoped_refptr<Connection::StatementRef> Connection::GetUntrackedStatement(
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
   if (rc != SQLITE_OK) {
     // This is evidence of a syntax error in the incoming SQL.
-    DLOG(FATAL) << "SQL compile error " << GetErrorMessage();
+    DLOG_IF(FATAL, !ShouldIgnoreSqliteError(rc))
+        << "SQL compile error " << GetErrorMessage();
     return new StatementRef(NULL, NULL, false);
   }
   return new StatementRef(NULL, stmt, true);
@@ -798,8 +800,15 @@ bool Connection::DoesIndexExist(const char* index_name) const {
 
 bool Connection::DoesTableOrIndexExist(
     const char* name, const char* type) const {
-  const char* kSql = "SELECT name FROM sqlite_master WHERE type=? AND name=?";
+  const char* kSql =
+      "SELECT name FROM sqlite_master WHERE type=? AND name=? COLLATE NOCASE";
   Statement statement(GetUntrackedStatement(kSql));
+
+  // This can happen if the database is corrupt and the error is being ignored
+  // for testing purposes.
+  if (!statement.is_valid())
+    return false;
+
   statement.BindString(0, type);
   statement.BindString(1, name);
 
@@ -813,8 +822,14 @@ bool Connection::DoesColumnExist(const char* table_name,
   sql.append(")");
 
   Statement statement(GetUntrackedStatement(sql.c_str()));
+
+  // This can happen if the database is corrupt and the error is being ignored
+  // for testing purposes.
+  if (!statement.is_valid())
+    return false;
+
   while (statement.Step()) {
-    if (!statement.ColumnString(1).compare(column_name))
+    if (!base::strcasecmp(statement.ColumnString(1).c_str(), column_name))
       return true;
   }
   return false;

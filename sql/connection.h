@@ -361,10 +361,10 @@ class SQL_EXPORT Connection {
 
   // Info querying -------------------------------------------------------------
 
-  // Returns true if the given table exists.
+  // Returns true if the given table (or index) exists.  Instead of
+  // test-then-create, callers should almost always prefer "CREATE TABLE IF NOT
+  // EXISTS" or "CREATE INDEX IF NOT EXISTS".
   bool DoesTableExist(const char* table_name) const;
-
-  // Returns true if the given index exists.
   bool DoesIndexExist(const char* index_name) const;
 
   // Returns true if a column with the given name exists in the given table.
