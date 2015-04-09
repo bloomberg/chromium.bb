@@ -9,11 +9,7 @@
 
 namespace content {
 
-IndexedDBKeyRange::IndexedDBKeyRange()
-    : lower_(blink::WebIDBKeyTypeNull),
-      upper_(blink::WebIDBKeyTypeNull),
-      lower_open_(false),
-      upper_open_(false) {}
+IndexedDBKeyRange::IndexedDBKeyRange() = default;
 
 IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKey& lower,
                                      const IndexedDBKey& upper,
@@ -25,7 +21,8 @@ IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKey& lower,
       upper_open_(upper_open) {}
 
 IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKey& key)
-    : lower_(key), upper_(key), lower_open_(false), upper_open_(false) {}
+    : lower_(key), upper_(key) {
+}
 
 IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKeyRange& other) = default;
 IndexedDBKeyRange::~IndexedDBKeyRange() = default;
