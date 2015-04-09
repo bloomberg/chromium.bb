@@ -15,7 +15,8 @@ InspectorFrontendHost.copyText: {
   "3": {},
   "4": {},
   "5": {},
-  "6": {}
+  "6": {},
+  "length": 7
 }
 InspectorFrontendHost.copyText: NaN
 InspectorFrontendHost.copyText: Infinity
