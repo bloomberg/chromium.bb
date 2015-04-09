@@ -12,7 +12,6 @@ import android.widget.FrameLayout;
 
 import org.chromium.content_shell_apk.ContentShellTestBase;
 import org.chromium.ui.base.ViewAndroidDelegate;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * This suite verifies that when {@link ContentViewCore} replaces container
@@ -40,14 +39,6 @@ public class ContentViewCoreViewAndroidDelegateTest extends ContentShellTestBase
         // updated container view.
         mViewAndroidDelegate = mContentViewCore.getViewAndroidDelegate();
         mContentViewCore.setContainerView(mContainerView);
-    }
-
-    @SmallTest
-    public void testViewAndroidCreatedWithCorrectDelegate() {
-        mContentViewCore.createViewAndroid(
-                new WindowAndroid(getActivity().getApplicationContext()));
-        assertSame(mViewAndroidDelegate,
-                mContentViewCore.getViewAndroid().getViewAndroidDelegate());
     }
 
     @SmallTest

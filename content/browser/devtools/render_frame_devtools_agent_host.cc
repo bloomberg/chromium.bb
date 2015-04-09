@@ -208,12 +208,8 @@ void RenderFrameDevToolsAgentHost::InnerOnClientAttached() {
       PowerSaveBlocker::Create(
           PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
           PowerSaveBlocker::kReasonOther, "DevTools").release()));
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      render_frame_host_->GetRenderViewHost());
-  if (rvh->GetView()) {
-    power_save_blocker_.get()->
-        InitDisplaySleepBlocker(rvh->GetView()->GetNativeView());
-  }
+  power_save_blocker_->InitDisplaySleepBlocker(
+      WebContents::FromRenderFrameHost(render_frame_host_));
 #endif
 }
 

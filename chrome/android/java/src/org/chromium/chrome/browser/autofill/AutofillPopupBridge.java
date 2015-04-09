@@ -14,7 +14,6 @@ import org.chromium.ui.DropdownItem;
 import org.chromium.ui.autofill.AutofillPopup;
 import org.chromium.ui.autofill.AutofillPopup.AutofillPopupDelegate;
 import org.chromium.ui.autofill.AutofillSuggestion;
-import org.chromium.ui.base.ViewAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -47,9 +46,9 @@ public class AutofillPopupBridge implements AutofillPopupDelegate{
 
     @CalledByNative
     private static AutofillPopupBridge create(long nativeAutofillPopupViewAndroid,
-            WindowAndroid windowAndroid, ViewAndroid viewAndroid) {
-        return new AutofillPopupBridge(nativeAutofillPopupViewAndroid, windowAndroid,
-                viewAndroid.getViewAndroidDelegate());
+            WindowAndroid windowAndroid, ViewAndroidDelegate viewAndroidDelegate) {
+        return new AutofillPopupBridge(
+                nativeAutofillPopupViewAndroid, windowAndroid, viewAndroidDelegate);
     }
 
     @Override

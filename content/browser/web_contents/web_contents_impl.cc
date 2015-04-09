@@ -3220,7 +3220,7 @@ void WebContentsImpl::CreateVideoPowerSaveBlocker() {
       PowerSaveBlocker::kReasonVideoPlayback, "Playing video");
 #if defined(OS_ANDROID)
   static_cast<PowerSaveBlockerImpl*>(video_power_save_blocker_.get())
-      ->InitDisplaySleepBlocker(GetView()->GetNativeView());
+      ->InitDisplaySleepBlocker(this);
 #endif
 }
 

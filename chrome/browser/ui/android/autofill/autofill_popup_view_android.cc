@@ -33,10 +33,9 @@ void AutofillPopupViewAndroid::Show() {
   DCHECK(view_android);
 
   java_object_.Reset(Java_AutofillPopupBridge_create(
-      env,
-      reinterpret_cast<intptr_t>(this),
+      env, reinterpret_cast<intptr_t>(this),
       view_android->GetWindowAndroid()->GetJavaObject().obj(),
-      view_android->GetJavaObject().obj()));
+      view_android->GetViewAndroidDelegate().obj()));
 
   UpdateBoundsAndRedrawPopup();
 }

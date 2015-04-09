@@ -82,7 +82,6 @@ import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.ui.base.ViewAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.ime.TextInputType;
@@ -588,8 +587,6 @@ public class ContentViewCore
     // onNativeFlingStopped() is called asynchronously.
     private int mPotentiallyActiveFlingCount;
 
-    private ViewAndroid mViewAndroid;
-
     private SmartClipDataListener mSmartClipDataListener = null;
     private ObserverList<ContainerViewObserver> mContainerViewObservers;
 
@@ -749,11 +746,6 @@ public class ContentViewCore
         return mInputConnection;
     }
 
-    @VisibleForTesting
-    ViewAndroid getViewAndroid() {
-        return mViewAndroid;
-    }
-
     private ImeAdapter createImeAdapter() {
         return new ImeAdapter(mInputMethodManagerWrapper,
                 new ImeAdapter.ImeAdapterDelegate() {
@@ -832,12 +824,11 @@ public class ContentViewCore
         setContainerView(containerView);
         long windowNativePointer = windowAndroid.getNativePointer();
         assert windowNativePointer != 0;
-        createViewAndroid(windowAndroid);
 
         mZoomControlsDelegate = NO_OP_ZOOM_CONTROLS_DELEGATE;
 
         mNativeContentViewCore = nativeInit(
-                webContents, mViewAndroid, windowNativePointer, mRetainedJavaScriptObjects);
+                webContents, mViewAndroidDelegate, windowNativePointer, mRetainedJavaScriptObjects);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
 
         setContainerViewInternals(internalDispatcher);
@@ -855,11 +846,6 @@ public class ContentViewCore
     void createContentViewAndroidDelegate() {
         mViewAndroidDelegate =
                 new ContentViewAndroidDelegate(mContext, mContainerView, mRenderCoordinates);
-    }
-
-    @VisibleForTesting
-    void createViewAndroid(WindowAndroid windowAndroid) {
-        mViewAndroid = new ViewAndroid(mViewAndroidDelegate);
     }
 
     /**
@@ -3124,7 +3110,7 @@ public class ContentViewCore
         if (potentiallyActiveFlingCount > 0) updateGestureStateListener(GestureEventType.FLING_END);
     }
 
-    private native long nativeInit(WebContents webContents, ViewAndroid viewAndroid,
+    private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
             long windowAndroidPtr, HashSet<Object> retainedObjectSet);
     private static native ContentViewCore nativeFromWebContentsAndroid(WebContents webContents);
     ContentVideoViewClient getContentVideoViewClient() {

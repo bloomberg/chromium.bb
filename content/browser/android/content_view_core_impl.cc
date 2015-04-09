@@ -214,7 +214,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(
     JNIEnv* env,
     jobject obj,
     WebContents* web_contents,
-    jobject view_android,
+    jobject view_android_delegate,
     ui::WindowAndroid* window_android,
     jobject java_bridge_retained_object_set)
     : WebContentsObserver(web_contents),
@@ -222,7 +222,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       root_layer_(cc::SolidColorLayer::Create()),
       dpi_scale_(GetPrimaryDisplayDeviceScaleFactor()),
-      view_android_(new ui::ViewAndroid(view_android, window_android)),
+      view_android_(new ui::ViewAndroid(view_android_delegate, window_android)),
       window_android_(window_android),
       device_orientation_(0),
       accessibility_enabled_(false) {
@@ -1408,11 +1408,12 @@ void ContentViewCoreImpl::WebContentsDestroyed() {
 jlong Init(JNIEnv* env,
            jobject obj,
            jobject web_contents,
-           jobject view_android,
+           jobject view_android_delegate,
            jlong window_android,
            jobject retained_objects_set) {
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
-      env, obj, WebContents::FromJavaWebContents(web_contents), view_android,
+      env, obj, WebContents::FromJavaWebContents(web_contents),
+      view_android_delegate,
       reinterpret_cast<ui::WindowAndroid*>(window_android),
       retained_objects_set);
   return reinterpret_cast<intptr_t>(view);

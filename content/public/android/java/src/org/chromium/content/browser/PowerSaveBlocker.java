@@ -4,17 +4,45 @@
 
 package org.chromium.content.browser;
 
-import org.chromium.base.CalledByNative;
-import org.chromium.ui.base.ViewAndroid;
+import android.view.View;
 
+import org.chromium.base.CalledByNative;
+import org.chromium.base.JNINamespace;
+import org.chromium.ui.base.ViewAndroidDelegate;
+
+import java.lang.ref.WeakReference;
+
+@JNINamespace("content")
 class PowerSaveBlocker {
+    // WeakReference to prevent leaks in Android WebView.
+    private WeakReference<View> mKeepScreenOnView;
+
     @CalledByNative
-    private static void applyBlock(ViewAndroid view) {
-        view.incrementKeepScreenOnCount();
+    private static PowerSaveBlocker create() {
+        return new PowerSaveBlocker();
+    }
+
+    private PowerSaveBlocker() {}
+
+    @CalledByNative
+    private void applyBlock(ContentViewCore contentViewCore) {
+        assert mKeepScreenOnView == null;
+        ViewAndroidDelegate delegate = contentViewCore.getViewAndroidDelegate();
+        View anchorView = delegate.acquireAnchorView();
+        mKeepScreenOnView = new WeakReference<>(anchorView);
+        delegate.setAnchorViewPosition(anchorView, 0, 0, 0, 0);
+        anchorView.setKeepScreenOn(true);
     }
 
     @CalledByNative
-    private static void removeBlock(ViewAndroid view) {
-        view.decrementKeepScreenOnCount();
+    private void removeBlock(ContentViewCore contentViewCore) {
+        assert mKeepScreenOnView != null;
+        View anchorView = mKeepScreenOnView.get();
+        mKeepScreenOnView = null;
+        if (anchorView == null) return;
+
+        ViewAndroidDelegate delegate = contentViewCore.getViewAndroidDelegate();
+        anchorView.setKeepScreenOn(false);
+        delegate.releaseAnchorView(anchorView);
     }
 }

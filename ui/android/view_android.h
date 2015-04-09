@@ -23,10 +23,10 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   WindowAndroid* GetWindowAndroid();
 
-  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+  base::android::ScopedJavaLocalRef<jobject> GetViewAndroidDelegate();
 
  private:
-  base::android::ScopedJavaGlobalRef<jobject> java_view_;
+  base::android::ScopedJavaGlobalRef<jobject> view_android_delegate_;
   WindowAndroid* window_android_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewAndroid);

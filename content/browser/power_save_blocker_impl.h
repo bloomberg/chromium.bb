@@ -9,9 +9,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/power_save_blocker.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace content {
+
+class WebContents;
 
 class PowerSaveBlockerImpl : public PowerSaveBlocker {
  public:
@@ -22,9 +23,9 @@ class PowerSaveBlockerImpl : public PowerSaveBlocker {
 
 #if defined(OS_ANDROID)
   // In Android platform, the kPowerSaveBlockPreventDisplaySleep type of
-  // PowerSaveBlocker should associated with the ViewAndroid,
-  // so the blocker could be removed by platform if the view isn't visble
-  void InitDisplaySleepBlocker(gfx::NativeView view_android);
+  // PowerSaveBlocker should associated with a WebContents, so the blocker
+  // could be removed by platform if the WebContents is hidden.
+  void InitDisplaySleepBlocker(WebContents* web_contents);
 #endif
 
  private:

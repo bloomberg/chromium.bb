@@ -5,22 +5,24 @@
 #include "ui/android/view_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/logging.h"
 
 namespace ui {
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
-ViewAndroid::ViewAndroid(jobject obj, WindowAndroid* window)
+ViewAndroid::ViewAndroid(jobject view_android_delegate, WindowAndroid* window)
     : window_android_(window) {
-  java_view_.Reset(AttachCurrentThread(), obj);
+  DCHECK(view_android_delegate);
+  view_android_delegate_.Reset(AttachCurrentThread(), view_android_delegate);
 }
 
 ViewAndroid::~ViewAndroid() {
 }
 
-ScopedJavaLocalRef<jobject> ViewAndroid::GetJavaObject() {
-  return base::android::ScopedJavaLocalRef<jobject>(java_view_);
+ScopedJavaLocalRef<jobject> ViewAndroid::GetViewAndroidDelegate() {
+  return base::android::ScopedJavaLocalRef<jobject>(view_android_delegate_);
 }
 
 WindowAndroid* ViewAndroid::GetWindowAndroid() {
