@@ -56,12 +56,16 @@ int EvdevRead(EvdevPtr evdev) {
   EventStatePtr evstate = evdev->evstate;
   int i;
   int len;
+  int status = Success;
   bool sync_evdev_state = false;
 
   do {
     len = read(evdev->fd, &ev, sizeof(ev));
-    if (len <= 0)
+    if (len < 0) {
+      if (errno != EINTR && errno != EAGAIN)
+        status = errno;
       break;
+    }
 
     /* Read as many whole struct input_event objects as we can into the
        circular buffer */
@@ -97,7 +101,7 @@ int EvdevRead(EvdevPtr evdev) {
   if (sync_evdev_state)
     Event_Sync_State(evdev);
 
-  return Success;
+  return status;
 }
 
 int EvdevProbe(EvdevPtr device) {
