@@ -194,15 +194,17 @@ class AudioConverterTest
 };
 
 // Ensure the buffer delay provided by AudioConverter is accurate.
-TEST(AudioConverterTest, AudioDelay) {
+TEST(AudioConverterTest, AudioDelayAndDiscreteChannelCount) {
   // Choose input and output parameters such that the transform must make
   // multiple calls to fill the buffer.
-  AudioParameters input_parameters = AudioParameters(
-      AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
-      kBitsPerChannel, kLowLatencyBufferSize);
-  AudioParameters output_parameters = AudioParameters(
-      AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate * 2,
-      kBitsPerChannel, kHighLatencyBufferSize);
+  AudioParameters input_parameters(AudioParameters::AUDIO_PCM_LINEAR,
+                                   CHANNEL_LAYOUT_DISCRETE, 10, kSampleRate,
+                                   kBitsPerChannel, kLowLatencyBufferSize,
+                                   AudioParameters::NO_EFFECTS);
+  AudioParameters output_parameters(AudioParameters::AUDIO_PCM_LINEAR,
+                                    CHANNEL_LAYOUT_DISCRETE, 5, kSampleRate * 2,
+                                    kBitsPerChannel, kHighLatencyBufferSize,
+                                    AudioParameters::NO_EFFECTS);
 
   AudioConverter converter(input_parameters, output_parameters, false);
   FakeAudioRenderCallback callback(0.2);
@@ -225,6 +227,7 @@ TEST(AudioConverterTest, AudioDelay) {
 
   EXPECT_EQ(expected_last_delay_milliseconds,
             callback.last_audio_delay_milliseconds());
+  EXPECT_EQ(input_parameters.channels(), callback.last_channel_count());
 }
 
 TEST_P(AudioConverterTest, ArbitraryOutputRequestSize) {

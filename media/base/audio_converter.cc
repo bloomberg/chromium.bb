@@ -33,7 +33,8 @@ AudioConverter::AudioConverter(const AudioParameters& input_params,
   CHECK(output_params.IsValid());
 
   // Handle different input and output channel layouts.
-  if (input_params.channel_layout() != output_params.channel_layout()) {
+  if (input_params.channel_layout() != output_params.channel_layout() ||
+      input_params.channels() != output_params.channels()) {
     DVLOG(1) << "Remixing channel layout from " << input_params.channel_layout()
              << " to " << output_params.channel_layout() << "; from "
              << input_params.channels() << " channels to "

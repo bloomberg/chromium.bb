@@ -42,16 +42,21 @@ class FakeAudioRenderCallback
 
   // Returns the last |audio_delay_milliseconds| provided to Render() or -1 if
   // no Render() call occurred.
-  int last_audio_delay_milliseconds() { return last_audio_delay_milliseconds_; }
+  int last_audio_delay_milliseconds() const {
+    return last_audio_delay_milliseconds_;
+  }
 
   // Set volume information used by ProvideAudioTransformInput().
   void set_volume(double volume) { volume_ = volume; }
+
+  int last_channel_count() const { return last_channel_count_; }
 
  private:
   bool half_fill_;
   double x_;
   double step_;
   int last_audio_delay_milliseconds_;
+  int last_channel_count_;
   double volume_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioRenderCallback);
