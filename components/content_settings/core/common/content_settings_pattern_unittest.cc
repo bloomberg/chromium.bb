@@ -555,6 +555,7 @@ TEST(ContentSettingsPatternTest, Compare) {
   EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
             Pattern("[*.]google.com").Compare(
                 Pattern("mail.google.com")));
+  EXPECT_TRUE(Pattern("mail.google.com") > Pattern("[*.]google.com"));
 
   EXPECT_EQ(ContentSettingsPattern::PREDECESSOR,
             Pattern("[*.]mail.google.com").Compare(
@@ -562,6 +563,7 @@ TEST(ContentSettingsPatternTest, Compare) {
   EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
             Pattern("[*.]google.com").Compare(
                 Pattern("[*.]mail.google.com")));
+  EXPECT_TRUE(Pattern("[*.]mail.google.com") > Pattern("[*.]google.com"));
 
   EXPECT_EQ(ContentSettingsPattern::PREDECESSOR,
             Pattern("mail.google.com:80").Compare(
@@ -569,6 +571,7 @@ TEST(ContentSettingsPatternTest, Compare) {
   EXPECT_EQ(ContentSettingsPattern::SUCCESSOR,
             Pattern("mail.google.com:*").Compare(
                 Pattern("mail.google.com:80")));
+  EXPECT_TRUE(Pattern("mail.google.com:80") > Pattern("mail.google.com:*"));
 
   EXPECT_EQ(ContentSettingsPattern::PREDECESSOR,
             Pattern("https://mail.google.com:*").Compare(

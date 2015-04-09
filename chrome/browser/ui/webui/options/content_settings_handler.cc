@@ -1177,8 +1177,12 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
   std::vector<std::vector<base::Value*> > all_provider_exceptions;
   all_provider_exceptions.resize(HostContentSettingsMap::NUM_PROVIDER_TYPES);
 
-  for (AllPatternsSettings::iterator i = all_patterns_settings.begin();
-       i != all_patterns_settings.end();
+  // The all_patterns_settings is sorted from the lowest precedence pattern to
+  // the highest (see operator< in ContentSettingsPattern), so traverse it in
+  // reverse to show the patterns with the highest precedence (the more specific
+  // ones) on the top.
+  for (AllPatternsSettings::reverse_iterator i = all_patterns_settings.rbegin();
+       i != all_patterns_settings.rend();
        ++i) {
     const ContentSettingsPattern& primary_pattern = i->first.first;
     const OnePatternSettings& one_settings = i->second;
