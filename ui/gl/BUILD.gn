@@ -199,12 +199,6 @@ component("gl") {
 
     libs = [ "dwmapi.lib" ]
     ldflags = [ "/DELAYLOAD:dwmapi.dll" ]
-
-    data_deps += [
-      "//third_party/angle:libEGL",
-      "//third_party/angle:libGLESv2",
-      "//third_party/mesa:osmesa",
-    ]
   }
   if (is_mac) {
     sources += [
