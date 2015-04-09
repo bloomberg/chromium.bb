@@ -4,9 +4,8 @@
 
 #include "net/cert_net/cert_net_fetcher_impl.h"
 
-#include <deque>
-
 #include "base/callback_helpers.h"
+#include "base/containers/linked_list.h"
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
@@ -74,7 +73,8 @@ enum HttpMethod {
 }  // namespace
 
 // CertNetFetcherImpl::RequestImpl tracks an outstanding call to Fetch().
-class CertNetFetcherImpl::RequestImpl : public CertNetFetcher::Request {
+class CertNetFetcherImpl::RequestImpl : public CertNetFetcher::Request,
+                                        public base::LinkNode<RequestImpl> {
  public:
   RequestImpl(Job* job, const FetchCallback& callback)
       : callback_(callback), job_(job) {
@@ -170,7 +170,7 @@ class CertNetFetcherImpl::Job : public URLRequest::Delegate {
 
  private:
   // The pointers in RequestList are not owned by the Job.
-  using RequestList = std::deque<RequestImpl*>;
+  using RequestList = base::LinkedList<RequestImpl>;
 
   // Implementation of URLRequest::Delegate
   void OnReceivedRedirect(URLRequest* request,
@@ -244,9 +244,16 @@ CertNetFetcherImpl::Job::~Job() {
 void CertNetFetcherImpl::Job::Cancel() {
   parent_ = nullptr;
 
-  for (RequestImpl* request : requests_)
-    request->OnJobCancelled(this);
-  requests_.clear();
+  // Notify each request of cancellation and remove it from the list.
+  for (base::LinkNode<RequestImpl>* current = requests_.head();
+       current != requests_.end();) {
+    base::LinkNode<RequestImpl>* next = current->next();
+    current->value()->OnJobCancelled(this);
+    current->RemoveFromList();
+    current = next;
+  }
+
+  DCHECK(requests_.empty());
 
   Stop();
 }
@@ -254,18 +261,14 @@ void CertNetFetcherImpl::Job::Cancel() {
 scoped_ptr<CertNetFetcher::Request> CertNetFetcherImpl::Job::CreateRequest(
     const FetchCallback& callback) {
   scoped_ptr<RequestImpl> request(new RequestImpl(this, callback));
-  requests_.push_back(request.get());
+  requests_.Append(request.get());
   return request.Pass();
 }
 
 void CertNetFetcherImpl::Job::DetachRequest(RequestImpl* request) {
   scoped_ptr<Job> delete_this;
 
-  // TODO(eroman): If a lot of requests are cancelled this is not efficient.
-  RequestList::iterator it =
-      std::find(requests_.begin(), requests_.end(), request);
-  CHECK(it != requests_.end());
-  requests_.erase(it);
+  request->RemoveFromList();
 
   // If there are no longer any requests attached to the job then
   // cancel and delete it.
@@ -413,9 +416,9 @@ void CertNetFetcherImpl::Job::OnJobCompleted() {
   parent_->SetCurrentlyCompletingJob(this);
 
   while (!requests_.empty()) {
-    RequestImpl* request = requests_.front();
-    requests_.pop_front();
-    request->OnJobCompleted(this, result_net_error_, response_body_);
+    base::LinkNode<RequestImpl>* request = requests_.head();
+    request->RemoveFromList();
+    request->value()->OnJobCompleted(this, result_net_error_, response_body_);
   }
 
   if (parent_)
