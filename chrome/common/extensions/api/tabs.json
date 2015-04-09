@@ -759,7 +759,7 @@
           {
             "type": "number",
             "name": "zoomFactor",
-            "description": "The new zoom factor."
+            "description": "The new zoom factor. Use a value of 0 here to set the tab to its current default zoom factor. Values greater than zero specify a (possibly non-default) zoom factor for the tab."
           },
           {
             "type": "function",
