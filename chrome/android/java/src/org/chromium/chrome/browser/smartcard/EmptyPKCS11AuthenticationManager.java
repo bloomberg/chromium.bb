@@ -2,19 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.shell;
+package org.chromium.chrome.browser.smartcard;
 
 import android.content.Context;
 
-import org.chromium.chrome.browser.PKCS11AuthenticationManager;
+import org.chromium.base.ThreadUtils;
 import org.chromium.net.AndroidPrivateKey;
 
 import java.security.cert.X509Certificate;
 
 /**
- * ChromeShell stub implementation of PKCS11AuthenticationManager.
+ * Stub implementation of PKCS11AuthenticationManager.
  */
-public class ChromeShellPKCS11AuthenticationManager implements PKCS11AuthenticationManager {
+public class EmptyPKCS11AuthenticationManager implements PKCS11AuthenticationManager {
+    private static PKCS11AuthenticationManager sInstance;
+
+    public static PKCS11AuthenticationManager getInstance() {
+        ThreadUtils.assertOnUiThread();
+        if (sInstance == null) sInstance = new EmptyPKCS11AuthenticationManager();
+        return sInstance;
+    }
+
+    protected EmptyPKCS11AuthenticationManager() {}
+
     @Override
     public boolean isPKCS11AuthEnabled() {
         return false;
@@ -26,9 +36,7 @@ public class ChromeShellPKCS11AuthenticationManager implements PKCS11Authenticat
     }
 
     @Override
-    public void initialize(Context context) {
-    }
-
+    public void initialize(Context context) {}
 
     @Override
     public X509Certificate[] getCertificateChain(String alias) {

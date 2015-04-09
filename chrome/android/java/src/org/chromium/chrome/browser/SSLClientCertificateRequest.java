@@ -15,6 +15,7 @@ import android.util.Log;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 import org.chromium.net.AndroidPrivateKey;
 import org.chromium.net.DefaultAndroidKeyStore;
 import org.chromium.ui.base.WindowAndroid;

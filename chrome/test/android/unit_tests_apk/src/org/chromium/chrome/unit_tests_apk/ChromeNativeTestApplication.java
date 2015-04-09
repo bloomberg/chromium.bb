@@ -5,7 +5,7 @@
 package org.chromium.chrome.unit_tests_apk;
 
 import org.chromium.chrome.browser.ChromiumApplication;
-import org.chromium.chrome.browser.PKCS11AuthenticationManager;
+import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 
 /**
  * A stub implementation of the chrome application to be used in chrome unit_tests.

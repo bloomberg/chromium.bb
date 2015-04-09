@@ -10,11 +10,12 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.chrome.browser.ChromiumApplication;
-import org.chromium.chrome.browser.PKCS11AuthenticationManager;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.smartcard.EmptyPKCS11AuthenticationManager;
+import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.shell.preferences.ChromeShellPreferences;
 
@@ -115,6 +116,6 @@ public class ChromeShellApplication extends ChromiumApplication {
 
     @Override
     protected PKCS11AuthenticationManager getPKCS11AuthenticationManager() {
-        return new ChromeShellPKCS11AuthenticationManager();
+        return EmptyPKCS11AuthenticationManager.getInstance();
     }
 }

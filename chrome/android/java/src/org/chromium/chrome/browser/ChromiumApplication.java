@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPref
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
+import org.chromium.chrome.browser.smartcard.PKCS11AuthenticationManager;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 
