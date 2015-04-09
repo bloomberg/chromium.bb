@@ -169,6 +169,14 @@ bool ParseContentSettingValue(const base::Value* value,
   return *setting != CONTENT_SETTING_DEFAULT;
 }
 
+scoped_ptr<base::Value> ContentSettingToValue(ContentSetting setting) {
+  if (setting <= CONTENT_SETTING_DEFAULT ||
+      setting >= CONTENT_SETTING_NUM_SETTINGS) {
+    return nullptr;
+  }
+  return make_scoped_ptr(new base::FundamentalValue(setting));
+}
+
 base::Value* GetContentSettingValueAndPatterns(
     const ProviderInterface* provider,
     const GURL& primary_url,

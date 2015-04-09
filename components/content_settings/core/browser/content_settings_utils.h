@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -58,6 +59,10 @@ base::Value* GetContentSettingValueAndPatterns(
     const GURL& secondary_url,
     ContentSettingsPattern* primary_pattern,
     ContentSettingsPattern* secondary_pattern);
+
+// Returns a |base::Value*| representation of |setting| if |setting| is
+// a valid content setting. Otherwise, returns a nullptr.
+scoped_ptr<base::Value> ContentSettingToValue(ContentSetting setting);
 
 base::Value* GetContentSettingValueAndPatterns(
     const ProviderInterface* provider,
