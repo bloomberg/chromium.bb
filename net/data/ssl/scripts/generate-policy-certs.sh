@@ -11,8 +11,7 @@
 # When validating, supplying no policy OID should not result in an error.
 
 try() {
-  echo "$@"
-  "$@" || exit 1
+  "$@" || (e=$?; echo "$@" > /dev/stderr; exit $e)
 }
 
 try rm -rf out

@@ -794,6 +794,10 @@ void URLRequestHttpJob::ProcessStrictTransportSecurityHeader() {
       !security_state)
     return;
 
+  // Don't accept HSTS headers when the hostname is an IP address.
+  if (request_info_.url.HostIsIPAddress())
+    return;
+
   // http://tools.ietf.org/html/draft-ietf-websec-strict-transport-sec:
   //
   //   If a UA receives more than one STS header field in a HTTP response
@@ -815,6 +819,10 @@ void URLRequestHttpJob::ProcessPublicKeyPinsHeader() {
   // certificate errors.
   if (!ssl_info.is_valid() || IsCertStatusError(ssl_info.cert_status) ||
       !security_state)
+    return;
+
+  // Don't accept HSTS headers when the hostname is an IP address.
+  if (request_info_.url.HostIsIPAddress())
     return;
 
   // http://tools.ietf.org/html/draft-ietf-websec-key-pinning:

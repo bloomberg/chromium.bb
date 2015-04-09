@@ -1980,6 +1980,14 @@ class ServerRunner(testserver_base.TestServerRunner):
     port = self.options.port
     host = self.options.host
 
+    # Work around a bug in Mac OS 10.6. Spawning a WebSockets server
+    # will result in a call to |getaddrinfo|, which fails with "nodename
+    # nor servname provided" for localhost:0 on 10.6.
+    if self.options.server_type == SERVER_WEBSOCKET and \
+       host == "localhost" and \
+       port == 0:
+      host = "127.0.0.1"
+
     if self.options.server_type == SERVER_HTTP:
       if self.options.https:
         pem_cert_and_key = None
@@ -2085,6 +2093,8 @@ class ServerRunner(testserver_base.TestServerRunner):
               'specified trusted client CA file not found: ' +
               self.options.ssl_client_ca[0] + ' exiting...')
         websocket_options.tls_client_ca = self.options.ssl_client_ca[0]
+      print 'Trying to start websocket server on %s://%s:%d...' % \
+          (scheme, websocket_options.server_host, websocket_options.port)
       server = WebSocketServer(websocket_options)
       print 'WebSocket server started on %s://%s:%d...' % \
           (scheme, host, server.server_port)

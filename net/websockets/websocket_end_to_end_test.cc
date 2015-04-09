@@ -385,12 +385,14 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(TruncatedResponse)) {
 
 // Regression test for crbug.com/455215 "HSTS not applied to WebSocket"
 TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsHttpsToWebSocket)) {
-  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_COMMON_NAME_IS_DOMAIN);
   SpawnedTestServer https_server(
       SpawnedTestServer::TYPE_HTTPS, ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   SpawnedTestServer wss_server(SpawnedTestServer::TYPE_WSS, ssl_options,
                                GetWebSocketTestDataDirectory());
+
   ASSERT_TRUE(https_server.StartInBackground());
   ASSERT_TRUE(wss_server.StartInBackground());
   ASSERT_TRUE(https_server.BlockUntilStarted());
@@ -413,7 +415,8 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsHttpsToWebSocket)) {
 }
 
 TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsWebSocketToHttps)) {
-  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_COMMON_NAME_IS_DOMAIN);
   SpawnedTestServer https_server(
       SpawnedTestServer::TYPE_HTTPS, ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
@@ -442,7 +445,8 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsWebSocketToHttps)) {
 }
 
 TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsWebSocketToWebSocket)) {
-  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_COMMON_NAME_IS_DOMAIN);
   SpawnedTestServer wss_server(SpawnedTestServer::TYPE_WSS, ssl_options,
                                GetWebSocketTestDataDirectory());
   ASSERT_TRUE(wss_server.Start());

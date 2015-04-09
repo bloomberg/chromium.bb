@@ -61,6 +61,10 @@ class BaseTestServer {
       // TestRootStore) is expected to have a self-signed version of the
       // intermediate.
       CERT_CHAIN_WRONG_ROOT,
+
+      // Causes the testserver to use a hostname that is a domain
+      // instead of an IP.
+      CERT_COMMON_NAME_IS_DOMAIN,
     };
 
     // OCSPStatus enumerates the types of OCSP response that the testserver
