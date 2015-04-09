@@ -2465,8 +2465,24 @@ static bool ApproximatelyEqual(const gfx::Rect& r1, const gfx::Rect& r2) {
 
 static bool ApproximatelyEqual(const gfx::Transform& a,
                                const gfx::Transform& b) {
-  static const float tolerance = 0.1f;
-  return gfx::MatrixDistance(a, b) <= tolerance;
+  static const float component_tolerance = 0.1f;
+
+  // We may have a larger discrepancy in the scroll components due to snapping
+  // (floating point error might round the other way).
+  static const float translation_tolerance = 1.f;
+
+  for (int row = 0; row < 4; row++) {
+    for (int col = 0; col < 4; col++) {
+      static const float delta =
+          std::abs(a.matrix().get(row, col) - b.matrix().get(row, col));
+      const float tolerance =
+          col == 3 && row < 3 ? translation_tolerance : component_tolerance;
+      if (delta > tolerance)
+        return false;
+    }
+  }
+
+  return true;
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(
