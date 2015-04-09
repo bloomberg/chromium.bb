@@ -44,7 +44,7 @@ class AudioContext;
 
 class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
 public:
-    AudioBufferSourceHandler(AudioNode&, float sampleRate, AudioParamHandler& playbackRate);
+    static AudioBufferSourceHandler* create(AudioNode&, float sampleRate, AudioParamHandler& playbackRate);
     virtual ~AudioBufferSourceHandler();
 
     // AudioHandler
@@ -91,6 +91,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    AudioBufferSourceHandler(AudioNode&, float sampleRate, AudioParamHandler& playbackRate);
     void startSource(double when, double grainOffset, double grainDuration, bool isDurationGiven, ExceptionState&);
 
     // Returns true on success.

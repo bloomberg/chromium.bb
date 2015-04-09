@@ -44,6 +44,11 @@ GainHandler::GainHandler(AudioNode& node, float sampleRate, AudioParamHandler& g
     initialize();
 }
 
+GainHandler* GainHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& gain)
+{
+    return new GainHandler(node, sampleRate, gain);
+}
+
 void GainHandler::process(size_t framesToProcess)
 {
     // FIXME: for some cases there is a nice optimization to avoid processing here, and let the gain change
@@ -110,7 +115,7 @@ GainNode::GainNode(AudioContext& context, float sampleRate)
     : AudioNode(context)
     , m_gain(AudioParam::create(context, 1.0))
 {
-    setHandler(new GainHandler(*this, sampleRate, m_gain->handler()));
+    setHandler(GainHandler::create(*this, sampleRate, m_gain->handler()));
 }
 
 GainNode* GainNode::create(AudioContext& context, float sampleRate)

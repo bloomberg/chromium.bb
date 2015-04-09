@@ -58,6 +58,11 @@ OscillatorHandler::OscillatorHandler(AudioNode& node, float sampleRate, AudioPar
     initialize();
 }
 
+OscillatorHandler* OscillatorHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& frequency, AudioParamHandler& detune)
+{
+    return new OscillatorHandler(node, sampleRate, frequency, detune);
+}
+
 OscillatorHandler::~OscillatorHandler()
 {
     ASSERT(!isInitialized());
@@ -347,7 +352,7 @@ OscillatorNode::OscillatorNode(AudioContext& context, float sampleRate)
     // Default to no detuning.
     , m_detune(AudioParam::create(context, 0))
 {
-    setHandler(new OscillatorHandler(*this, sampleRate, m_frequency->handler(), m_detune->handler()));
+    setHandler(OscillatorHandler::create(*this, sampleRate, m_frequency->handler(), m_detune->handler()));
 }
 
 OscillatorNode* OscillatorNode::create(AudioContext& context, float sampleRate)

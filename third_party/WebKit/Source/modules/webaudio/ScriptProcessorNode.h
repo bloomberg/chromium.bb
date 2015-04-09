@@ -45,7 +45,7 @@ class AudioContext;
 
 class ScriptProcessorHandler final : public AudioHandler {
 public:
-    ScriptProcessorHandler(AudioNode&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
+    static ScriptProcessorHandler* create(AudioNode&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
     virtual ~ScriptProcessorHandler();
 
     // AudioHandler
@@ -62,6 +62,7 @@ public:
     DECLARE_TRACE();
 
 private:
+    ScriptProcessorHandler(AudioNode&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
     virtual double tailTime() const override;
     virtual double latencyTime() const override;
 

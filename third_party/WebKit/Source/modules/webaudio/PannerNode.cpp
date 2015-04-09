@@ -76,6 +76,11 @@ PannerHandler::PannerHandler(AudioNode& node, float sampleRate)
     initialize();
 }
 
+PannerHandler* PannerHandler::create(AudioNode& node, float sampleRate)
+{
+    return new PannerHandler(node, sampleRate);
+}
+
 PannerHandler::~PannerHandler()
 {
     ASSERT(!isInitialized());
@@ -586,7 +591,7 @@ void PannerHandler::setChannelCountMode(const String& mode, ExceptionState& exce
 PannerNode::PannerNode(AudioContext& context, float sampelRate)
     : AudioNode(context)
 {
-    setHandler(new PannerHandler(*this, sampelRate));
+    setHandler(PannerHandler::create(*this, sampelRate));
 }
 
 PannerNode* PannerNode::create(AudioContext& context, float sampleRate)

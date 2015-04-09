@@ -38,7 +38,7 @@ class AudioContext;
 
 class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
 public:
-    OfflineAudioDestinationHandler(AudioNode&, AudioBuffer* renderTarget);
+    static OfflineAudioDestinationHandler* create(AudioNode&, AudioBuffer* renderTarget);
     virtual ~OfflineAudioDestinationHandler();
 
     // AudioHandler
@@ -55,6 +55,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    OfflineAudioDestinationHandler(AudioNode&, AudioBuffer* renderTarget);
     void offlineRender();
     void offlineRenderInternal();
 

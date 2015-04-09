@@ -52,7 +52,7 @@ public:
         DopplerRateDirty = 0x4,
     };
 
-    PannerHandler(AudioNode&, float sampleRate);
+    static PannerHandler* create(AudioNode&, float sampleRate);
     virtual ~PannerHandler();
 
     // AudioHandler
@@ -105,6 +105,7 @@ public:
     virtual void setChannelCountMode(const String&, ExceptionState&) final;
 
 private:
+    PannerHandler(AudioNode&, float sampleRate);
     // AudioContext's listener
     AudioListener* listener();
 

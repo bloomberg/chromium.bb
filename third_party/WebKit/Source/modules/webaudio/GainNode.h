@@ -39,7 +39,7 @@ class AudioContext;
 
 class GainHandler final : public AudioHandler {
 public:
-    GainHandler(AudioNode&, float sampleRate, AudioParamHandler& gain);
+    static GainHandler* create(AudioNode&, float sampleRate, AudioParamHandler& gain);
 
     // AudioHandler
     virtual void process(size_t framesToProcess) override;
@@ -48,6 +48,8 @@ public:
     virtual void checkNumberOfChannelsForInput(AudioNodeInput*) override;
 
 private:
+    GainHandler(AudioNode&, float sampleRate, AudioParamHandler& gain);
+
     float m_lastGain; // for de-zippering
     RefPtr<AudioParamHandler> m_gain;
 

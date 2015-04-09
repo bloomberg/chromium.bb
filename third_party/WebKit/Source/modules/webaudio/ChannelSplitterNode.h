@@ -34,10 +34,13 @@ class AudioContext;
 
 class ChannelSplitterHandler final : public AudioHandler {
 public:
-    ChannelSplitterHandler(AudioNode&, float sampleRate, unsigned numberOfOutputs);
+    static ChannelSplitterHandler* create(AudioNode&, float sampleRate, unsigned numberOfOutputs);
 
     // AudioHandler
     virtual void process(size_t framesToProcess) override;
+
+private:
+    ChannelSplitterHandler(AudioNode&, float sampleRate, unsigned numberOfOutputs);
 };
 
 class ChannelSplitterNode final : public AudioNode {

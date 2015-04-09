@@ -39,7 +39,7 @@ DelayNode::DelayNode(AudioContext& context, float sampleRate, double maxDelayTim
     : AudioNode(context)
     , m_delayTime(AudioParam::create(context, 0.0))
 {
-    setHandler(new AudioBasicProcessorHandler(AudioHandler::NodeTypeDelay, *this, sampleRate, adoptPtr(new DelayProcessor(sampleRate, 1, m_delayTime->handler(), maxDelayTime))));
+    setHandler(AudioBasicProcessorHandler::create(AudioHandler::NodeTypeDelay, *this, sampleRate, adoptPtr(new DelayProcessor(sampleRate, 1, m_delayTime->handler(), maxDelayTime))));
 }
 
 DelayNode* DelayNode::create(AudioContext& context, float sampleRate, double maxDelayTime, ExceptionState& exceptionState)

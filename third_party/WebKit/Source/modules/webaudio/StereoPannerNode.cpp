@@ -35,6 +35,11 @@ StereoPannerHandler::StereoPannerHandler(AudioNode& node, float sampleRate, Audi
     initialize();
 }
 
+StereoPannerHandler* StereoPannerHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& pan)
+{
+    return new StereoPannerHandler(node, sampleRate, pan);
+}
+
 StereoPannerHandler::~StereoPannerHandler()
 {
     ASSERT(!isInitialized());
@@ -155,7 +160,7 @@ StereoPannerNode::StereoPannerNode(AudioContext& context, float sampleRate)
     : AudioNode(context)
     , m_pan(AudioParam::create(context, 0))
 {
-    setHandler(new StereoPannerHandler(*this, sampleRate, m_pan->handler()));
+    setHandler(StereoPannerHandler::create(*this, sampleRate, m_pan->handler()));
 }
 
 StereoPannerNode* StereoPannerNode::create(AudioContext& context, float sampleRate)

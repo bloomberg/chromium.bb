@@ -38,7 +38,7 @@ class Reverb;
 
 class ConvolverHandler final : public AudioHandler {
 public:
-    ConvolverHandler(AudioNode&, float sampleRate);
+    static ConvolverHandler* create(AudioNode&, float sampleRate);
     virtual ~ConvolverHandler();
 
     // AudioHandler
@@ -57,6 +57,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    ConvolverHandler(AudioNode&, float sampleRate);
     virtual double tailTime() const override;
     virtual double latencyTime() const override;
 

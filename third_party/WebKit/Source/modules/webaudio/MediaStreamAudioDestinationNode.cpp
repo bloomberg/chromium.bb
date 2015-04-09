@@ -51,6 +51,11 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(AudioNode
     initialize();
 }
 
+MediaStreamAudioDestinationHandler* MediaStreamAudioDestinationHandler::create(AudioNode& node, size_t numberOfChannels)
+{
+    return new MediaStreamAudioDestinationHandler(node, numberOfChannels);
+}
+
 MediaStreamAudioDestinationHandler::~MediaStreamAudioDestinationHandler()
 {
     ASSERT(!isInitialized());
@@ -79,7 +84,7 @@ void MediaStreamAudioDestinationHandler::process(size_t numberOfFrames)
 MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext& context, size_t numberOfChannels)
     : AudioBasicInspectorNode(context)
 {
-    setHandler(new MediaStreamAudioDestinationHandler(*this, numberOfChannels));
+    setHandler(MediaStreamAudioDestinationHandler::create(*this, numberOfChannels));
 }
 
 MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::create(AudioContext& context, size_t numberOfChannels)

@@ -64,6 +64,11 @@ ScriptProcessorHandler::ScriptProcessorHandler(AudioNode& node, float sampleRate
     initialize();
 }
 
+ScriptProcessorHandler* ScriptProcessorHandler::create(AudioNode& node, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
+{
+    return new ScriptProcessorHandler(node, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels);
+}
+
 ScriptProcessorHandler::~ScriptProcessorHandler()
 {
     ASSERT(!isInitialized());
@@ -262,7 +267,7 @@ DEFINE_TRACE(ScriptProcessorHandler)
 ScriptProcessorNode::ScriptProcessorNode(AudioContext& context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
     : AudioNode(context)
 {
-    setHandler(new ScriptProcessorHandler(*this, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels));
+    setHandler(ScriptProcessorHandler::create(*this, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels));
 }
 
 static size_t chooseBufferSize()

@@ -39,7 +39,7 @@ class AudioContext;
 
 class MediaStreamAudioDestinationHandler final : public AudioBasicInspectorHandler {
 public:
-    MediaStreamAudioDestinationHandler(AudioNode&, size_t numberOfChannels);
+    static MediaStreamAudioDestinationHandler* create(AudioNode&, size_t numberOfChannels);
     virtual ~MediaStreamAudioDestinationHandler();
     DECLARE_VIRTUAL_TRACE();
 
@@ -50,6 +50,7 @@ public:
     virtual void process(size_t framesToProcess) override;
 
 private:
+    MediaStreamAudioDestinationHandler(AudioNode&, size_t numberOfChannels);
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const override { return false; }
 

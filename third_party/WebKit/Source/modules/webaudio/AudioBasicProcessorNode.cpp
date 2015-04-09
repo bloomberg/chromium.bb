@@ -42,6 +42,11 @@ AudioBasicProcessorHandler::AudioBasicProcessorHandler(NodeType nodeType, AudioN
     addOutput(1);
 }
 
+AudioBasicProcessorHandler* AudioBasicProcessorHandler::create(NodeType nodeType, AudioNode& node, float sampleRate, PassOwnPtr<AudioProcessor> processor)
+{
+    return new AudioBasicProcessorHandler(nodeType, node, sampleRate, processor);
+}
+
 AudioBasicProcessorHandler::~AudioBasicProcessorHandler()
 {
     ASSERT(!isInitialized());

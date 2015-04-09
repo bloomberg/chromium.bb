@@ -52,7 +52,7 @@ public:
         CUSTOM = 4
     };
 
-    OscillatorHandler(AudioNode&, float sampleRate, AudioParamHandler& frequency, AudioParamHandler& detune);
+    static OscillatorHandler* create(AudioNode&, float sampleRate, AudioParamHandler& frequency, AudioParamHandler& detune);
     virtual ~OscillatorHandler();
 
     // AudioHandler
@@ -67,6 +67,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    OscillatorHandler(AudioNode&, float sampleRate, AudioParamHandler& frequency, AudioParamHandler& detune);
     bool setType(unsigned); // Returns true on success.
 
     // Returns true if there are sample-accurate timeline parameter changes.

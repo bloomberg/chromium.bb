@@ -60,6 +60,11 @@ ConvolverHandler::ConvolverHandler(AudioNode& node, float sampleRate)
     initialize();
 }
 
+ConvolverHandler* ConvolverHandler::create(AudioNode& node, float sampleRate)
+{
+    return new ConvolverHandler(node, sampleRate);
+}
+
 ConvolverHandler::~ConvolverHandler()
 {
     ASSERT(!isInitialized());
@@ -193,7 +198,7 @@ DEFINE_TRACE(ConvolverHandler)
 ConvolverNode::ConvolverNode(AudioContext& context, float sampleRate)
     : AudioNode(context)
 {
-    setHandler(new ConvolverHandler(*this, sampleRate));
+    setHandler(ConvolverHandler::create(*this, sampleRate));
 }
 
 ConvolverNode* ConvolverNode::create(AudioContext& context, float sampleRate)

@@ -66,6 +66,11 @@ AudioBufferSourceHandler::AudioBufferSourceHandler(AudioNode& node, float sample
     initialize();
 }
 
+AudioBufferSourceHandler* AudioBufferSourceHandler::create(AudioNode& node, float sampleRate, AudioParamHandler& playbackRate)
+{
+    return new AudioBufferSourceHandler(node, sampleRate, playbackRate);
+}
+
 AudioBufferSourceHandler::~AudioBufferSourceHandler()
 {
     ASSERT(!isInitialized());
@@ -569,7 +574,7 @@ AudioBufferSourceNode::AudioBufferSourceNode(AudioContext& context, float sample
     : AudioScheduledSourceNode(context)
     , m_playbackRate(AudioParam::create(context, 1.0))
 {
-    setHandler(new AudioBufferSourceHandler(*this, sampleRate, m_playbackRate->handler()));
+    setHandler(AudioBufferSourceHandler::create(*this, sampleRate, m_playbackRate->handler()));
 }
 
 AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext& context, float sampleRate)

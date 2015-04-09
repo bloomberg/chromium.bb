@@ -35,7 +35,7 @@ class ExceptionState;
 
 class AnalyserHandler final : public AudioBasicInspectorHandler {
 public:
-    AnalyserHandler(AudioNode&, float sampleRate);
+    static AnalyserHandler* create(AudioNode&, float sampleRate);
     virtual ~AnalyserHandler();
 
     // AudioHandler
@@ -62,6 +62,8 @@ public:
     void getByteTimeDomainData(DOMUint8Array* array) { m_analyser.getByteTimeDomainData(array); }
 
 private:
+    AnalyserHandler(AudioNode&, float sampleRate);
+
     RealtimeAnalyser m_analyser;
 };
 

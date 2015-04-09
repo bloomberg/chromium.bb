@@ -35,7 +35,7 @@ BiquadFilterNode::BiquadFilterNode(AudioContext& context, float sampleRate)
     , m_gain(AudioParam::create(context, 0.0))
     , m_detune(AudioParam::create(context, 0.0))
 {
-    setHandler(new AudioBasicProcessorHandler(AudioHandler::NodeTypeBiquadFilter, *this, sampleRate, adoptPtr(new BiquadProcessor(sampleRate, 1, m_frequency->handler(), m_q->handler(), m_gain->handler(), m_detune->handler()))));
+    setHandler(AudioBasicProcessorHandler::create(AudioHandler::NodeTypeBiquadFilter, *this, sampleRate, adoptPtr(new BiquadProcessor(sampleRate, 1, m_frequency->handler(), m_q->handler(), m_gain->handler(), m_detune->handler()))));
 }
 
 DEFINE_TRACE(BiquadFilterNode)

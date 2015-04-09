@@ -42,7 +42,7 @@ class AudioContext;
 class MediaStreamAudioSourceHandler final : public AudioHandler, public AudioSourceProviderClient {
     USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceHandler);
 public:
-    MediaStreamAudioSourceHandler(AudioNode&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
+    static MediaStreamAudioSourceHandler* create(AudioNode&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
     virtual ~MediaStreamAudioSourceHandler();
 
     MediaStream* mediaStream() { return m_mediaStream.get(); }
@@ -59,6 +59,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    MediaStreamAudioSourceHandler(AudioNode&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const override { return false; }
 

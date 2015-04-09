@@ -53,6 +53,11 @@ MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(AudioNode& node, 
     initialize();
 }
 
+MediaElementAudioSourceHandler* MediaElementAudioSourceHandler::create(AudioNode& node, HTMLMediaElement& mediaElement)
+{
+    return new MediaElementAudioSourceHandler(node, mediaElement);
+}
+
 MediaElementAudioSourceHandler::~MediaElementAudioSourceHandler()
 {
     ASSERT(!isInitialized());
@@ -187,7 +192,7 @@ DEFINE_TRACE(MediaElementAudioSourceHandler)
 MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext& context, HTMLMediaElement& mediaElement)
     : AudioSourceNode(context)
 {
-    setHandler(new MediaElementAudioSourceHandler(*this, mediaElement));
+    setHandler(MediaElementAudioSourceHandler::create(*this, mediaElement));
 }
 
 MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AudioContext& context, HTMLMediaElement& mediaElement)

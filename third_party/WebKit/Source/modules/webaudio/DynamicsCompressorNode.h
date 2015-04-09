@@ -35,7 +35,7 @@ class DynamicsCompressor;
 
 class DynamicsCompressorHandler final : public AudioHandler {
 public:
-    DynamicsCompressorHandler(AudioNode&, float sampleRate, AudioParamHandler& threshold, AudioParamHandler& knee, AudioParamHandler& ratio, AudioParamHandler& reduction, AudioParamHandler& attack, AudioParamHandler& release);
+    static DynamicsCompressorHandler* create(AudioNode&, float sampleRate, AudioParamHandler& threshold, AudioParamHandler& knee, AudioParamHandler& ratio, AudioParamHandler& reduction, AudioParamHandler& attack, AudioParamHandler& release);
     virtual ~DynamicsCompressorHandler();
 
     // AudioHandler
@@ -46,6 +46,7 @@ public:
     virtual void clearInternalStateWhenDisabled() override;
 
 private:
+    DynamicsCompressorHandler(AudioNode&, float sampleRate, AudioParamHandler& threshold, AudioParamHandler& knee, AudioParamHandler& ratio, AudioParamHandler& reduction, AudioParamHandler& attack, AudioParamHandler& release);
     virtual double tailTime() const override;
     virtual double latencyTime() const override;
 

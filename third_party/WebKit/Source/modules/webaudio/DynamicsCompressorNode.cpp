@@ -54,6 +54,15 @@ DynamicsCompressorHandler::DynamicsCompressorHandler(
     initialize();
 }
 
+DynamicsCompressorHandler* DynamicsCompressorHandler::create(
+    AudioNode& node, float sampleRate,
+    AudioParamHandler& threshold, AudioParamHandler& knee,
+    AudioParamHandler& ratio, AudioParamHandler& reduction,
+    AudioParamHandler& attack, AudioParamHandler& release)
+{
+    return new DynamicsCompressorHandler(node, sampleRate, threshold, knee, ratio, reduction, attack, release);
+}
+
 DynamicsCompressorHandler::~DynamicsCompressorHandler()
 {
     ASSERT(!isInitialized());
@@ -132,7 +141,7 @@ DynamicsCompressorNode::DynamicsCompressorNode(AudioContext& context, float samp
     , m_attack(AudioParam::create(context, 0.003))
     , m_release(AudioParam::create(context, 0.250))
 {
-    setHandler(new DynamicsCompressorHandler(*this, sampleRate, m_threshold->handler(), m_knee->handler(), m_ratio->handler(), m_reduction->handler(), m_attack->handler(), m_release->handler()));
+    setHandler(DynamicsCompressorHandler::create(*this, sampleRate, m_threshold->handler(), m_knee->handler(), m_ratio->handler(), m_reduction->handler(), m_attack->handler(), m_release->handler()));
 }
 
 DynamicsCompressorNode* DynamicsCompressorNode::create(AudioContext& context, float sampleRate)

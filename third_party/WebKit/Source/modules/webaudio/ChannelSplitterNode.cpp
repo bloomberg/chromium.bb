@@ -44,6 +44,11 @@ ChannelSplitterHandler::ChannelSplitterHandler(AudioNode& node, float sampleRate
     initialize();
 }
 
+ChannelSplitterHandler* ChannelSplitterHandler::create(AudioNode& node, float sampleRate, unsigned numberOfOutputs)
+{
+    return new ChannelSplitterHandler(node, sampleRate, numberOfOutputs);
+}
+
 void ChannelSplitterHandler::process(size_t framesToProcess)
 {
     AudioBus* source = input(0)->bus();
@@ -72,7 +77,7 @@ void ChannelSplitterHandler::process(size_t framesToProcess)
 ChannelSplitterNode::ChannelSplitterNode(AudioContext& context, float sampleRate, unsigned numberOfOutputs)
     : AudioNode(context)
 {
-    setHandler(new ChannelSplitterHandler(*this, sampleRate, numberOfOutputs));
+    setHandler(ChannelSplitterHandler::create(*this, sampleRate, numberOfOutputs));
 }
 
 ChannelSplitterNode* ChannelSplitterNode::create(AudioContext& context, float sampleRate, unsigned numberOfOutputs)

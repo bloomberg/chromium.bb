@@ -47,6 +47,11 @@ MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(AudioNode& node, Me
     initialize();
 }
 
+MediaStreamAudioSourceHandler* MediaStreamAudioSourceHandler::create(AudioNode& node, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+{
+    return new MediaStreamAudioSourceHandler(node, mediaStream, audioTrack, audioSourceProvider);
+}
+
 MediaStreamAudioSourceHandler::~MediaStreamAudioSourceHandler()
 {
     ASSERT(!isInitialized());
@@ -123,7 +128,7 @@ DEFINE_TRACE(MediaStreamAudioSourceHandler)
 MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
     : AudioSourceNode(context)
 {
-    setHandler(new MediaStreamAudioSourceHandler(*this, mediaStream, audioTrack, audioSourceProvider));
+    setHandler(MediaStreamAudioSourceHandler::create(*this, mediaStream, audioTrack, audioSourceProvider));
 }
 
 MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)

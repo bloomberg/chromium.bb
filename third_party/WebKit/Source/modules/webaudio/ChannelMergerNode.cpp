@@ -58,6 +58,11 @@ ChannelMergerHandler::ChannelMergerHandler(AudioNode& node, float sampleRate, un
     initialize();
 }
 
+ChannelMergerHandler* ChannelMergerHandler::create(AudioNode& node, float sampleRate, unsigned numberOfInputs)
+{
+    return new ChannelMergerHandler(node, sampleRate, numberOfInputs);
+}
+
 void ChannelMergerHandler::process(size_t framesToProcess)
 {
     AudioNodeOutput* output = this->output(0);
@@ -127,7 +132,7 @@ void ChannelMergerHandler::setChannelCountMode(const String& mode, ExceptionStat
 ChannelMergerNode::ChannelMergerNode(AudioContext& context, float sampleRate, unsigned numberOfInputs)
     : AudioNode(context)
 {
-    setHandler(new ChannelMergerHandler(*this, sampleRate, numberOfInputs));
+    setHandler(ChannelMergerHandler::create(*this, sampleRate, numberOfInputs));
 }
 
 ChannelMergerNode* ChannelMergerNode::create(AudioContext& context, float sampleRate, unsigned numberOfInputs)

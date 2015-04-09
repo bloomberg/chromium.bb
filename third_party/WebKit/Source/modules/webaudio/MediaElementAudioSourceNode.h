@@ -42,7 +42,7 @@ class HTMLMediaElement;
 class MediaElementAudioSourceHandler final : public AudioHandler, public AudioSourceProviderClient {
     USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceHandler);
 public:
-    MediaElementAudioSourceHandler(AudioNode&, HTMLMediaElement&);
+    static MediaElementAudioSourceHandler* create(AudioNode&, HTMLMediaElement&);
     virtual ~MediaElementAudioSourceHandler();
 
     HTMLMediaElement* mediaElement() { return m_mediaElement.get(); }
@@ -61,6 +61,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    MediaElementAudioSourceHandler(AudioNode&, HTMLMediaElement&);
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const override { return false; }
 

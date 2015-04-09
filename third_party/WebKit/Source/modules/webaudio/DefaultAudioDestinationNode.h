@@ -36,7 +36,7 @@ class ExceptionState;
 
 class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
 public:
-    explicit DefaultAudioDestinationHandler(AudioNode&);
+    static DefaultAudioDestinationHandler* create(AudioNode&);
     virtual ~DefaultAudioDestinationHandler();
 
     // AudioHandler
@@ -51,6 +51,7 @@ public:
     virtual unsigned long maxChannelCount() const override;
 
 private:
+    explicit DefaultAudioDestinationHandler(AudioNode&);
     void createDestination();
 
     OwnPtr<AudioDestination> m_destination;
