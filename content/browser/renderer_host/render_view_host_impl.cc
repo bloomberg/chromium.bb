@@ -357,9 +357,12 @@ bool RenderViewHostImpl::IsRenderViewLive() const {
 }
 
 void RenderViewHostImpl::SyncRendererPrefs() {
-  Send(new ViewMsg_SetRendererPrefs(GetRoutingID(),
-                                    delegate_->GetRendererPrefs(
-                                        GetProcess()->GetBrowserContext())));
+  RendererPreferences renderer_preferences =
+      delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
+#if defined(OS_WIN)
+  GetWindowsSpecificPrefs(&renderer_preferences);
+#endif
+  Send(new ViewMsg_SetRendererPrefs(GetRoutingID(), renderer_preferences));
 }
 
 WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
