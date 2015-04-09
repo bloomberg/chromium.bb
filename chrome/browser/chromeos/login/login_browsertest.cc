@@ -222,7 +222,13 @@ IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
       chromeos::kAccountsPrefShowUserNamesOnSignIn, false);
 }
 
-IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
+#if defined(OS_CHROMEOS)
+// http://crbug.com/475617
+#define MAYBE_GaiaAuthOffline DISABLED_GaiaAuthOffline
+#else
+#define MAYBE_GaiaAuthOffline GaiaAuthOffline
+#endif
+IN_PROC_BROWSER_TEST_F(LoginTest, MAYBE_GaiaAuthOffline) {
   bool show_user;
   ASSERT_TRUE(chromeos::CrosSettings::Get()->GetBoolean(
       chromeos::kAccountsPrefShowUserNamesOnSignIn, &show_user));
