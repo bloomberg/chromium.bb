@@ -20,8 +20,13 @@
   function reportResult(e) {
       var testCase = xhrBlobTestCases[asyncTestCase];
       if (xhr.status === 200) {
-          postedMimeType = JSON.parse(xhr.response)['content-type'] || "";
-          shouldBeEqualToString("postedMimeType", testCase.expectedMime);
+          postedMimeType = JSON.parse(xhr.response)['content-type'];
+          if (testCase.expectedMime === '') {
+              shouldBeTrue("postedMimeType === undefined");
+          } else {
+              shouldBeEqualToString("postedMimeType",
+                                    testCase.expectedMime);
+          }
       } else if (xhr.status === 0 && testCase.shouldThrow){
           testPassed("Cross-origin request without CORS headers should fail.");
       } else {

@@ -931,10 +931,6 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
             const String& blobType = body->type();
             if (!blobType.isEmpty() && isValidContentType(blobType)) {
                 setRequestHeaderInternal("Content-Type", AtomicString(blobType));
-            } else {
-                // From FileAPI spec, whenever media type cannot be determined,
-                // empty string must be returned.
-                setRequestHeaderInternal("Content-Type", "");
             }
         }
 

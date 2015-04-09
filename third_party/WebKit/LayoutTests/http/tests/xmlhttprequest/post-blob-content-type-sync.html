@@ -51,8 +51,12 @@
           blob.close();
       xhr.send(blob);
       if (xhr.status === 200) {
-          postedMimeType = JSON.parse(xhr.response)['content-type'] || "";
-          shouldBeEqualToString("postedMimeType", expectedMime);
+          postedMimeType = JSON.parse(xhr.response)['content-type'];
+          if (expectedMime === '') {
+              shouldBeTrue("postedMimeType === undefined");
+          } else {
+              shouldBeEqualToString("postedMimeType", expectedMime);
+          }
       } else
           testFailed("Unknown error");
 
