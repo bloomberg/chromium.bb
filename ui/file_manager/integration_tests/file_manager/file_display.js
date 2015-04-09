@@ -88,3 +88,111 @@ testcase.fileDisplayMtp = function() {
     }
   ]);
 };
+
+/**
+ * Searches for a string in Downloads and checks the correct results are
+ * being displayed.
+ *
+ * @param {string} searchTerm The string to search for.
+ * @param {Array<Object>} expectedResults The results set.
+ *
+ */
+function searchDownloads(searchTerm, expectedResults) {
+  var appId;
+
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Focus the search box.
+    function(inAppId, list) {
+      appId = inAppId;
+      remoteCall.callRemoteTestUtil('fakeEvent',
+                                    appId,
+                                    ['#search-box input', 'focus'],
+                                    this.next);
+    },
+    // Input a text.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.callRemoteTestUtil('inputText',
+                                    appId,
+                                    ['#search-box input', searchTerm],
+                                    this.next);
+    },
+    // Notify the element of the input.
+    function() {
+      remoteCall.callRemoteTestUtil('fakeEvent',
+                                    appId,
+                                    ['#search-box input', 'input'],
+                                    this.next);
+    },
+    function(result) {
+      remoteCall.waitForFileListChange(appId, BASIC_LOCAL_ENTRY_SET.length).
+      then(this.next);
+    },
+    function(actualFilesAfter) {
+      chrome.test.assertEq(
+          TestEntryInfo.getExpectedRows(expectedResults).sort(),
+          actualFilesAfter);
+
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+}
+
+testcase.searchNormal = function() {
+  searchDownloads('hello', [ENTRIES.hello]);
+};
+
+testcase.searchCaseInsensitive = function() {
+  searchDownloads('HELLO', [ENTRIES.hello]);
+};
+
+/**
+ * Searches for a string that doesn't match anything in Downloads
+ * and checks that the no items match string is displayed.
+ *
+ */
+testcase.searchNotFound = function() {
+  var appId;
+  var searchTerm = 'blahblah';
+
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Focus the search box.
+    function(inAppId, list) {
+      appId = inAppId;
+      console.log(list);
+      remoteCall.callRemoteTestUtil('fakeEvent',
+                                    appId,
+                                    ['#search-box input', 'focus'],
+                                    this.next);
+    },
+    // Input a text.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.callRemoteTestUtil('inputText',
+                                    appId,
+                                    ['#search-box input', searchTerm],
+                                    this.next);
+    },
+    // Notify the element of the input.
+    function() {
+      remoteCall.callRemoteTestUtil('fakeEvent',
+                                    appId,
+                                    ['#search-box input', 'input'],
+                                    this.next);
+    },
+    function(result) {
+      remoteCall.waitForElement(appId, ['#no-search-results b']).
+          then(this.next);
+    },
+    function(element) {
+      chrome.test.assertEq(element.text, '\"' + searchTerm + '\"');
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};

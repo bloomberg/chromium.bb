@@ -830,7 +830,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive"),
-                      TestParameter(NOT_IN_GUEST_MODE, "fileDisplayMtp")));
+                      TestParameter(NOT_IN_GUEST_MODE, "fileDisplayMtp"),
+                      TestParameter(NOT_IN_GUEST_MODE, "searchNormal"),
+                      TestParameter(NOT_IN_GUEST_MODE, "searchCaseInsensitive"),
+                      TestParameter(NOT_IN_GUEST_MODE, "searchNotFound")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
