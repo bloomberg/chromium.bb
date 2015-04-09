@@ -14,59 +14,59 @@ layer at (0,0) size 800x411
           LayoutText {#text} at (0,0) size 61x18
             text run at (0,0) width 61: "Segoe UI"
         LayoutBlockFlow {P} at (0,20) size 784x17
-          LayoutBlockFlow {SPAN} at (0,0) size 193.59x17
+          LayoutBlockFlow {SPAN} at (0,0) size 188.45x17
             LayoutText {#text} at (0,0) size 162x17
               text run at (0,0) width 162: "font-stretch: ultra-condensed"
-          LayoutText {#text} at (193,0) size 347x17
-            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+          LayoutText {#text} at (188,0) size 347x17
+            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
         LayoutBlockFlow {P} at (0,37) size 784x17
-          LayoutBlockFlow {SPAN} at (0,0) size 193.59x17
+          LayoutBlockFlow {SPAN} at (0,0) size 188.45x17
             LayoutText {#text} at (0,0) size 164x17
               text run at (0,0) width 164: "font-stretch: extra-condensed"
-          LayoutText {#text} at (193,0) size 347x17
-            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+          LayoutText {#text} at (188,0) size 347x17
+            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
         LayoutBlockFlow {P} at (0,54) size 784x17
-          LayoutBlockFlow {SPAN} at (0,0) size 193.59x17
+          LayoutBlockFlow {SPAN} at (0,0) size 188.45x17
             LayoutText {#text} at (0,0) size 132x17
               text run at (0,0) width 132: "font-stretch: condensed"
-          LayoutText {#text} at (193,0) size 347x17
-            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+          LayoutText {#text} at (188,0) size 347x17
+            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
         LayoutBlockFlow {P} at (0,71) size 784x17
-          LayoutBlockFlow {SPAN} at (0,0) size 193.59x17
+          LayoutBlockFlow {SPAN} at (0,0) size 188.45x17
             LayoutText {#text} at (0,0) size 163x17
               text run at (0,0) width 163: "font-stretch: semi-condensed"
-          LayoutText {#text} at (193,0) size 347x17
-            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+          LayoutText {#text} at (188,0) size 347x17
+            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
         LayoutBlockFlow {P} at (0,88) size 784x17
-          LayoutBlockFlow {SPAN} at (0,0) size 193.59x17
+          LayoutBlockFlow {SPAN} at (0,0) size 188.45x17
             LayoutText {#text} at (0,0) size 112x17
               text run at (0,0) width 112: "font-stretch: normal"
-          LayoutText {#text} at (193,0) size 347x17
-            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+          LayoutText {#text} at (188,0) size 347x17
+            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
         LayoutBlockFlow {P} at (0,105) size 784x17
-          LayoutBlockFlow {SPAN} at (0,0) size 193.59x17
+          LayoutBlockFlow {SPAN} at (0,0) size 188.45x17
             LayoutText {#text} at (0,0) size 157x17
               text run at (0,0) width 157: "font-stretch: semi-expanded"
-          LayoutText {#text} at (193,0) size 347x17
-            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+          LayoutText {#text} at (188,0) size 347x17
+            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
         LayoutBlockFlow {P} at (0,122) size 784x17
-          LayoutBlockFlow {SPAN} at (0,0) size 193.59x17
+          LayoutBlockFlow {SPAN} at (0,0) size 188.45x17
             LayoutText {#text} at (0,0) size 126x17
               text run at (0,0) width 126: "font-stretch: expanded"
-          LayoutText {#text} at (193,0) size 347x17
-            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+          LayoutText {#text} at (188,0) size 347x17
+            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
         LayoutBlockFlow {P} at (0,139) size 784x17
-          LayoutBlockFlow {SPAN} at (0,0) size 193.59x17
+          LayoutBlockFlow {SPAN} at (0,0) size 188.45x17
             LayoutText {#text} at (0,0) size 159x17
               text run at (0,0) width 159: "font-stretch: extra-expanded"
-          LayoutText {#text} at (193,0) size 347x17
-            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+          LayoutText {#text} at (188,0) size 347x17
+            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
         LayoutBlockFlow {P} at (0,156) size 784x17
-          LayoutBlockFlow {SPAN} at (0,0) size 193.59x17
+          LayoutBlockFlow {SPAN} at (0,0) size 188.45x17
             LayoutText {#text} at (0,0) size 156x17
               text run at (0,0) width 156: "font-stretch: ultra-expanded"
-          LayoutText {#text} at (193,0) size 347x17
-            text run at (193,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
+          LayoutText {#text} at (188,0) size 347x17
+            text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
       LayoutBlockFlow {SECTION} at (0,231) size 784x164
         LayoutBlockFlow {H2} at (0,0) size 784x18
           LayoutText {#text} at (0,0) size 36x17

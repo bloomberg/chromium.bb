@@ -24,8 +24,8 @@ layer at (0,0) size 800x298
               text run at (45,6) width 30: "X"
         LayoutBlockFlow {DIV} at (0,69) size 90x30
           LayoutImage {IMG} at (0,0) size 30x30
-          LayoutText {#text} at (30,10) size 15x15
-            text run at (30,10) width 15: "X"
+          LayoutText {#text} at (30,9) size 15x15
+            text run at (30,9) width 15: "X"
         LayoutBlockFlow {DIV} at (0,99) size 90x36
           LayoutImage {IMG} at (0,0) size 30x30
           LayoutInline {SPAN} at (0,0) size 45x30

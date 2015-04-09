@@ -51,8 +51,8 @@ layer at (0,0) size 785x997 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 588x18
           text run at (0,0) width 588: "This words in this sentence should have extra space between them."
       LayoutBlockFlow {P} at (0,449) size 769x18
-        LayoutText {#text} at (0,0) size 502x18
-          text run at (0,0) width 502: "This words in this sentence should have extra space between them."
+        LayoutText {#text} at (0,0) size 500x18
+          text run at (0,0) width 500: "This words in this sentence should have extra space between them."
       LayoutBlockFlow {P} at (0,483) size 769x36
         LayoutText {#text} at (0,0) size 763x18
           text run at (0,0) width 763: "This words in this sentence should have extra space between them, but the last few words in the sentence"
@@ -98,8 +98,8 @@ layer at (0,0) size 785x997 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 588x18
                   text run at (0,0) width 588: "This words in this sentence should have extra space between them."
               LayoutBlockFlow {P} at (4,208) size 747x18
-                LayoutText {#text} at (0,0) size 502x18
-                  text run at (0,0) width 502: "This words in this sentence should have extra space between them."
+                LayoutText {#text} at (0,0) size 500x18
+                  text run at (0,0) width 500: "This words in this sentence should have extra space between them."
               LayoutBlockFlow {P} at (4,242) size 747x36
                 LayoutText {#text} at (0,0) size 699x36
                   text run at (0,0) width 699: "This words in this sentence should have extra space between them, but the last few words in the"

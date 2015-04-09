@@ -59,9 +59,9 @@ layer at (0,0) size 785x1378 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,18) width 706: "should have extra space between"
           text run at (0,36) width 116: "them."
       LayoutBlockFlow {P} at (0,596) size 769x36
-        LayoutText {#text} at (0,0) size 722x36
-          text run at (0,0) width 722: "This letters in this sentence should have extra space"
-          text run at (0,18) width 190: "between them."
+        LayoutText {#text} at (0,0) size 712x36
+          text run at (0,0) width 712: "This letters in this sentence should have extra space"
+          text run at (0,18) width 187: "between them."
       LayoutBlockFlow {P} at (0,648) size 769x36
         LayoutText {#text} at (0,0) size 763x36
           text run at (0,0) width 763: "This letters in this sentence should have extra space between them,"
@@ -118,9 +118,9 @@ layer at (0,0) size 785x1378 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,18) width 706: "should have extra space between"
                   text run at (0,36) width 116: "them."
               LayoutBlockFlow {P} at (4,370) size 747x36
-                LayoutText {#text} at (0,0) size 722x36
-                  text run at (0,0) width 722: "This letters in this sentence should have extra space"
-                  text run at (0,18) width 190: "between them."
+                LayoutText {#text} at (0,0) size 712x36
+                  text run at (0,0) width 712: "This letters in this sentence should have extra space"
+                  text run at (0,18) width 187: "between them."
               LayoutBlockFlow {P} at (4,422) size 747x36
                 LayoutText {#text} at (0,0) size 693x36
                   text run at (0,0) width 693: "This letters in this sentence should have extra space between"
