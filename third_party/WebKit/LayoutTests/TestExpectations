@@ -1738,6 +1738,9 @@ crbug.com/420749 compositing/geometry/vertical-scroll-composited.html [ NeedsMan
 crbug.com/420749 compositing/color-matching/image-color-matching.html [ NeedsManualRebaseline ]
 crbug.com/420749 virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsManualRebaseline ]
 
+crbug.com/475638 inspector/tracing/timeline-script-id.html [ Pass Failure Slow ]
+crbug.com/475638 virtual/deferred/inspector/tracing/timeline-script-id.html [ Pass Failure Slow ]
+
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Pass Slow ]
 
 crbug.com/248969 printing/page-count-with-one-word.html [ Pass Timeout ]
