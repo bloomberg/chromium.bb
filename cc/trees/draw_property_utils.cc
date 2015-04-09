@@ -45,7 +45,12 @@ void CalculateVisibleRects(
           target_is_root_surface ? 0 : transform_node->data.content_target_id;
       const TransformNode* target_node = transform_tree.Node(target_id);
 
-      gfx::Transform content_to_target = transform_node->data.to_target;
+      // TODO(ajuma): Try to re-use transforms already stored in the transform
+      // tree instead of computing transforms below.
+      gfx::Transform content_to_target;
+      bool success = transform_tree.ComputeTransform(
+          transform_node->id, target_node->id, &content_to_target);
+      DCHECK(success);
 
       content_to_target.Translate(layer->offset_to_transform_parent().x(),
                                   layer->offset_to_transform_parent().y());
@@ -53,18 +58,8 @@ void CalculateVisibleRects(
 
       gfx::Rect clip_rect_in_target_space;
       gfx::Transform clip_to_target;
-      bool success = true;
-      if (clip_transform_node->data.target_id == target_node->id) {
-        clip_to_target = clip_transform_node->data.to_target;
-      } else {
-        success = transform_tree.ComputeTransform(
-            clip_transform_node->id, target_node->id, &clip_to_target);
-        if (target_node->data.needs_sublayer_scale) {
-          clip_to_target.Scale(target_node->data.sublayer_scale.x(),
-                               target_node->data.sublayer_scale.y());
-        }
-      }
-
+      success = transform_tree.ComputeTransform(
+          clip_transform_node->id, target_node->id, &clip_to_target);
       if (target_node->id > clip_node->data.transform_id) {
         if (!success) {
           DCHECK(target_node->data.to_screen_is_animated);
@@ -101,19 +96,8 @@ void CalculateVisibleRects(
       gfx::Transform target_to_content;
       gfx::Transform target_to_layer;
 
-      if (transform_node->data.ancestors_are_invertible) {
-        target_to_layer = transform_node->data.from_target;
-        success = true;
-      } else {
-        success = transform_tree.ComputeTransform(
-            target_node->id, transform_node->id, &target_to_layer);
-        if (target_node->data.needs_sublayer_scale) {
-          target_to_layer.matrix().postScale(
-              1.f / target_node->data.sublayer_scale.x(),
-              1.f / target_node->data.sublayer_scale.y(), 1.f);
-        }
-      }
-
+      success = transform_tree.ComputeTransform(
+          target_node->id, transform_node->id, &target_to_layer);
       if (!success) {
         DCHECK(transform_node->data.to_screen_is_animated);
 
