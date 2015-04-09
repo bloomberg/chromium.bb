@@ -144,16 +144,12 @@ Position positionAfterContainingSpecialElement(const Position&, HTMLElement** co
 
 inline Position firstPositionInOrBeforeNode(Node* node)
 {
-    if (!node)
-        return Position();
-    return editingIgnoresContent(node) ? positionBeforeNode(node) : firstPositionInNode(node);
+    return Position::firstPositionInOrBeforeNode(node);
 }
 
 inline Position lastPositionInOrAfterNode(Node* node)
 {
-    if (!node)
-        return Position();
-    return editingIgnoresContent(node) ? positionAfterNode(node) : lastPositionInNode(node);
+    return Position::lastPositionInOrAfterNode(node);
 }
 
 Position lastEditablePositionBeforePositionInRoot(const Position&, Node*);

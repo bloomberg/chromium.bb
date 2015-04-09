@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ContainerNode.h"
 #include "core/editing/EditingBoundary.h"
+#include "core/editing/EditingStrategy.h"
 #include "core/editing/TextAffinity.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Assertions.h"
@@ -74,13 +75,13 @@ public:
     public:
         int value() const { return m_offset; }
 
-    private:
         explicit LegacyEditingOffset(int offset) : m_offset(offset) { }
 
-        friend Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node>, int offset);
-
+    private:
         int m_offset;
     };
+
+    static Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node>, int offset);
 
     static const TreeScope* commonAncestorTreeScope(const Position&, const Position&);
 
@@ -208,6 +209,14 @@ public:
     static bool nodeIsUserSelectNone(Node*);
     static bool nodeIsUserSelectAll(const Node*);
     static Node* rootUserSelectAllForNode(Node*);
+    static Position beforeNode(Node*);
+    static Position afterNode(Node*);
+    static Position inParentBeforeNode(const Node&);
+    static Position inParentAfterNode(const Node&);
+    static Position firstPositionInNode(Node* anchorNode);
+    static Position lastPositionInNode(Node* anchorNode);
+    static Position firstPositionInOrBeforeNode(Node* anchorNode);
+    static Position lastPositionInOrAfterNode(Node* anchorNode);
 
     static ContainerNode* findParent(const Node*);
 
@@ -237,9 +246,14 @@ private:
     unsigned m_isLegacyEditingPosition : 1;
 };
 
+inline Position Position::createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
+{
+    return Position(node, LegacyEditingOffset(offset));
+}
+
 inline Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
 {
-    return Position(node, Position::LegacyEditingOffset(offset));
+    return Position::createLegacyEditingPosition(node, offset);
 }
 
 inline bool operator==(const Position& a, const Position& b)
@@ -258,32 +272,52 @@ inline bool operator!=(const Position& a, const Position& b)
 // These are inline to prevent ref-churn when returning a Position object.
 // If we ever add a PassPosition we can make these non-inline.
 
-inline Position positionInParentBeforeNode(const Node& node)
+inline Position Position::inParentBeforeNode(const Node& node)
 {
     // FIXME: This should ASSERT(node.parentNode())
     // At least one caller currently hits this ASSERT though, which indicates
     // that the caller is trying to make a position relative to a disconnected node (which is likely an error)
     // Specifically, editing/deleting/delete-ligature-001.html crashes with ASSERT(node->parentNode())
-    return Position(node.parentNode(), node.nodeIndex(), Position::PositionIsOffsetInAnchor);
+    return Position(node.parentNode(), node.nodeIndex(), PositionIsOffsetInAnchor);
+}
+
+inline Position positionInParentBeforeNode(const Node& node)
+{
+    return Position::inParentBeforeNode(node);
+}
+
+inline Position Position::inParentAfterNode(const Node& node)
+{
+    ASSERT(node.parentNode());
+    return Position(node.parentNode(), node.nodeIndex() + 1, PositionIsOffsetInAnchor);
 }
 
 inline Position positionInParentAfterNode(const Node& node)
 {
-    ASSERT(node.parentNode());
-    return Position(node.parentNode(), node.nodeIndex() + 1, Position::PositionIsOffsetInAnchor);
+    return Position::inParentAfterNode(node);
 }
 
 // positionBeforeNode and positionAfterNode return neighbor-anchored positions, construction is O(1)
-inline Position positionBeforeNode(Node* anchorNode)
+inline Position Position::beforeNode(Node* anchorNode)
 {
     ASSERT(anchorNode);
-    return Position(anchorNode, Position::PositionIsBeforeAnchor);
+    return Position(anchorNode, PositionIsBeforeAnchor);
+}
+
+inline Position positionBeforeNode(Node* anchorNode)
+{
+    return Position::beforeNode(anchorNode);
+}
+
+inline Position Position::afterNode(Node* anchorNode)
+{
+    ASSERT(anchorNode);
+    return Position(anchorNode, PositionIsAfterAnchor);
 }
 
 inline Position positionAfterNode(Node* anchorNode)
 {
-    ASSERT(anchorNode);
-    return Position(anchorNode, Position::PositionIsAfterAnchor);
+    return Position::afterNode(anchorNode);
 }
 
 inline int lastOffsetInNode(Node* node)
@@ -292,18 +326,28 @@ inline int lastOffsetInNode(Node* node)
 }
 
 // firstPositionInNode and lastPositionInNode return parent-anchored positions, lastPositionInNode construction is O(n) due to countChildren()
-inline Position firstPositionInNode(Node* anchorNode)
+inline Position Position::firstPositionInNode(Node* anchorNode)
 {
     if (anchorNode->isTextNode())
         return Position(anchorNode, 0, Position::PositionIsOffsetInAnchor);
-    return Position(anchorNode, Position::PositionIsBeforeChildren);
+    return Position(anchorNode, PositionIsBeforeChildren);
+}
+
+inline Position firstPositionInNode(Node* anchorNode)
+{
+    return Position::firstPositionInNode(anchorNode);
+}
+
+inline Position Position::lastPositionInNode(Node* anchorNode)
+{
+    if (anchorNode->isTextNode())
+        return Position(anchorNode, lastOffsetInNode(anchorNode), PositionIsOffsetInAnchor);
+    return Position(anchorNode, PositionIsAfterChildren);
 }
 
 inline Position lastPositionInNode(Node* anchorNode)
 {
-    if (anchorNode->isTextNode())
-        return Position(anchorNode, lastOffsetInNode(anchorNode), Position::PositionIsOffsetInAnchor);
-    return Position(anchorNode, Position::PositionIsAfterChildren);
+    return Position::lastPositionInNode(anchorNode);
 }
 
 inline int minOffsetForNode(Node* anchorNode, int offset)
@@ -329,6 +373,20 @@ inline bool offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode)
 
 
     return offset < currentOffset;
+}
+
+inline Position Position::firstPositionInOrBeforeNode(Node* node)
+{
+    if (!node)
+        return Position();
+    return EditingStrategy::editingIgnoresContent(node) ? beforeNode(node) : firstPositionInNode(node);
+}
+
+inline Position Position::lastPositionInOrAfterNode(Node* node)
+{
+    if (!node)
+        return Position();
+    return EditingStrategy::editingIgnoresContent(node) ? afterNode(node) : lastPositionInNode(node);
 }
 
 } // namespace blink

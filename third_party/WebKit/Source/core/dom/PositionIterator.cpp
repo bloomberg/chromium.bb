@@ -37,7 +37,6 @@ PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(Node* anchorNode,
     , m_offsetInAnchor(m_nodeAfterPositionInAnchor ? 0 : offsetInAnchor)
 {
 }
-
 template <typename Strategy>
 PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(const PositionType& pos)
     : PositionIteratorAlgorithm(pos.anchorNode(), pos.deprecatedEditingOffset())
@@ -59,12 +58,12 @@ PositionIteratorAlgorithm<Strategy>::operator typename PositionIteratorAlgorithm
         ASSERT(Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode);
         // FIXME: This check is inadaquete because any ancestor could be ignored by editing
         if (Strategy::editingIgnoresContent(Strategy::parent(*m_nodeAfterPositionInAnchor)))
-            return Strategy::positionBeforeNode(m_anchorNode);
-        return Strategy::positionInParentBeforeNode(m_nodeAfterPositionInAnchor);
+            return PositionType::beforeNode(m_anchorNode);
+        return Strategy::PositionType::inParentBeforeNode(*m_nodeAfterPositionInAnchor);
     }
     if (Strategy::hasChildren(*m_anchorNode))
-        return Strategy::lastPositionInOrAfterNode(m_anchorNode);
-    return Strategy::createLegacyEditingPosition(m_anchorNode, m_offsetInAnchor);
+        return PositionType::lastPositionInOrAfterNode(m_anchorNode);
+    return PositionType::createLegacyEditingPosition(m_anchorNode, m_offsetInAnchor);
 }
 
 template <typename Strategy>
@@ -81,7 +80,7 @@ void PositionIteratorAlgorithm<Strategy>::increment()
     }
 
     if (!Strategy::hasChildren(*m_anchorNode) && m_offsetInAnchor < Strategy::lastOffsetForEditing(m_anchorNode)) {
-        m_offsetInAnchor = Strategy::uncheckedNextOffset(m_anchorNode, m_offsetInAnchor);
+        m_offsetInAnchor = PositionType::uncheckedNextOffset(m_anchorNode, m_offsetInAnchor);
     } else {
         m_nodeAfterPositionInAnchor = m_anchorNode;
         m_anchorNode = Strategy::parent(*m_nodeAfterPositionInAnchor);
@@ -114,7 +113,7 @@ void PositionIteratorAlgorithm<Strategy>::decrement()
         m_offsetInAnchor = Strategy::hasChildren(*m_anchorNode)? 0 : Strategy::lastOffsetForEditing(m_anchorNode);
     } else {
         if (m_offsetInAnchor) {
-            m_offsetInAnchor = Strategy::uncheckedPreviousOffset(m_anchorNode, m_offsetInAnchor);
+            m_offsetInAnchor = PositionType::uncheckedPreviousOffset(m_anchorNode, m_offsetInAnchor);
         } else {
             m_nodeAfterPositionInAnchor = m_anchorNode;
             m_anchorNode = Strategy::parent(*m_anchorNode);
@@ -186,10 +185,10 @@ bool PositionIteratorAlgorithm<Strategy>::isCandidate() const
         // because previousCandidate returns a Position converted from
         // a "Candidate" PositionIterator and cannonicalizeCandidate(Position)
         // assumes the Position is "Candidate".
-        return !m_offsetInAnchor && (!Strategy::hasChildren(*m_anchorNode) || m_nodeAfterPositionInAnchor) && !Strategy::nodeIsUserSelectNone(Strategy::parent(*m_anchorNode));
+        return !m_offsetInAnchor && (!Strategy::hasChildren(*m_anchorNode) || m_nodeAfterPositionInAnchor) && !PositionType::nodeIsUserSelectNone(Strategy::parent(*m_anchorNode));
     }
     if (renderer->isText())
-        return !Strategy::nodeIsUserSelectNone(m_anchorNode) && Strategy::inRenderedText(PositionType(*this));
+        return !PositionType::nodeIsUserSelectNone(m_anchorNode) && PositionType(*this).inRenderedText();
 
     if (renderer->isSVG()) {
         // We don't consider SVG elements are contenteditable except for
@@ -198,83 +197,19 @@ bool PositionIteratorAlgorithm<Strategy>::isCandidate() const
     }
 
     if (isRenderedHTMLTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
-        return (atStartOfNode() || atEndOfNode()) && !Strategy::nodeIsUserSelectNone(Strategy::parent(*m_anchorNode));
+        return (atStartOfNode() || atEndOfNode()) && !PositionType::nodeIsUserSelectNone(Strategy::parent(*m_anchorNode));
 
     if (!isHTMLHtmlElement(*m_anchorNode) && renderer->isLayoutBlockFlow()) {
         if (toLayoutBlock(renderer)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
             if (!PositionType::hasRenderedNonAnonymousDescendantsWithHeight(renderer))
-                return atStartOfNode() && !Strategy::nodeIsUserSelectNone(m_anchorNode);
-            return m_anchorNode->hasEditableStyle() && !Strategy::nodeIsUserSelectNone(m_anchorNode) && Strategy::atEditingBoundary(PositionType(*this));
+                return atStartOfNode() && !PositionType::nodeIsUserSelectNone(m_anchorNode);
+            return m_anchorNode->hasEditableStyle() && !PositionType::nodeIsUserSelectNone(m_anchorNode) && PositionType(*this).atEditingBoundary();
         }
     }
 
     return false;
 }
 
-// ---
-
-bool PositionIteratorStrategy::atEditingBoundary(const PositionType& pos)
-{
-    return pos.atEditingBoundary();
-}
-
-Position PositionIteratorStrategy::createLegacyEditingPosition(Node* node, int offset)
-{
-    return ::blink::createLegacyEditingPosition(node, offset);
-}
-
-int PositionIteratorStrategy::editingOffset(const Position& position)
-{
-    return position.deprecatedEditingOffset();
-}
-
-bool PositionIteratorStrategy::editingIgnoresContent(Node* node)
-{
-    return ::blink::editingIgnoresContent(node);
-}
-
-bool PositionIteratorStrategy::inRenderedText(const Position& pos)
-{
-    return pos.inRenderedText();
-}
-
-int PositionIteratorStrategy::lastOffsetForEditing(Node* node)
-{
-    return ::blink::lastOffsetForEditing(node);
-}
-
-Position PositionIteratorStrategy::lastPositionInOrAfterNode(Node* node)
-{
-    return ::blink::lastPositionInOrAfterNode(node);
-}
-
-bool PositionIteratorStrategy::nodeIsUserSelectNone(Node* node)
-{
-    return Position::nodeIsUserSelectNone(node);
-}
-
-Position PositionIteratorStrategy::positionBeforeNode(Node* node)
-{
-    return ::blink::positionBeforeNode(node);
-}
-
-Position PositionIteratorStrategy::positionInParentBeforeNode(Node* node)
-{
-    return ::blink::positionInParentBeforeNode(*node);
-}
-
-int PositionIteratorStrategy::uncheckedNextOffset(const Node* node, int offset)
-{
-    return Position::uncheckedNextOffset(node, offset);
-}
-
-int PositionIteratorStrategy::uncheckedPreviousOffset(const Node* node, int offset)
-{
-    return Position::uncheckedPreviousOffset(node, offset);
-}
-
-// ---
-
-template class PositionIteratorAlgorithm<PositionIteratorStrategy>;
+template class PositionIteratorAlgorithm<EditingStrategy>;
 
 } // namespace blink

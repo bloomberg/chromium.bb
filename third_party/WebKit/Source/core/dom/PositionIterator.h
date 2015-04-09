@@ -34,8 +34,6 @@
 
 namespace blink {
 
-class Position;
-
 // A Position iterator with constant-time
 // increment, decrement, and several predicates on the Position it is at.
 // Conversion to/from Position is O(n) in the offset.
@@ -63,33 +61,16 @@ public:
     bool isCandidate() const;
 
 private:
-    PositionIteratorAlgorithm(Node*, int);
+    PositionIteratorAlgorithm(Node* anchorNode, int offsetInAnchorNode);
 
     RawPtrWillBeMember<Node> m_anchorNode;
     RawPtrWillBeMember<Node> m_nodeAfterPositionInAnchor; // If this is non-null, Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode;
     int m_offsetInAnchor;
 };
 
-// Node traversal for |PositionIteratorAlgorithm|
-class PositionIteratorStrategy : public EditingStrategy {
-public:
-    static bool atEditingBoundary(const PositionType&);
-    static PositionType createLegacyEditingPosition(Node*, int);
-    static int editingOffset(const PositionType&);
-    static bool editingIgnoresContent(Node*);
-    static bool inRenderedText(const PositionType&);
-    static int lastOffsetForEditing(Node*);
-    static Position lastPositionInOrAfterNode(Node*);
-    static bool nodeIsUserSelectNone(Node*);
-    static PositionType positionBeforeNode(Node*);
-    static PositionType positionInParentBeforeNode(Node*);
-    static int uncheckedNextOffset(const Node*, int);
-    static int uncheckedPreviousOffset(const Node*, int);
-};
+extern template class PositionIteratorAlgorithm<EditingStrategy>;
 
-extern template class PositionIteratorAlgorithm<PositionIteratorStrategy>;
-
-using PositionIterator = PositionIteratorAlgorithm<PositionIteratorStrategy>;
+using PositionIterator = PositionIteratorAlgorithm<EditingStrategy>;
 
 } // namespace blink
 
