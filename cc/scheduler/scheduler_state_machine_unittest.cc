@@ -1791,6 +1791,25 @@ TEST(SchedulerStateMachineTest,
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
 
+TEST(SchedulerStateMachineTest, TestTriggerDeadlineImmediatelyWhenInvisible) {
+  SchedulerSettings settings;
+  settings.impl_side_painting = true;
+  StateMachine state(settings);
+  SET_UP_STATE(state)
+
+  state.SetNeedsCommit();
+
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+
+  state.SetVisible(false);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+}
+
 TEST(SchedulerStateMachineTest, TestSetNeedsAnimate) {
   SchedulerSettings settings;
   settings.impl_side_painting = true;
