@@ -1241,9 +1241,6 @@ crbug.com/382491 virtual/slimmingpaint/fast/gradients/background-clipped.html [ 
 
 crbug.com/467477 virtual/regionbasedmulticol/fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
 
-crbug.com/453794 virtual/slimmingpaint/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
-crbug.com/453794 fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
-
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/border-padding-pagination.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/column-rules-stacking.html [ Skip ]
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/max-height-columns-block.html [ Skip ]
@@ -2091,8 +2088,6 @@ crbug.com/471066 [ SnowLeopard ] virtual/antialiasedtext/fast/text/fake-italic.h
 crbug.com/470549 inspector/tracing/worker-events.html [ Pass Crash Timeout ]
 
 crbug.com/471093 [ Win Debug ] inspector/sources/debugger/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
-
-crbug.com/471375 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
 
 crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Timeout ]
 
