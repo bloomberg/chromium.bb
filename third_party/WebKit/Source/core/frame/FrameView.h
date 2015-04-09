@@ -135,8 +135,8 @@ public:
     bool isEnclosedInCompositingLayer() const;
 
     void resetScrollbars();
-    void prepareForDetach();
-    void detachCustomScrollbars();
+    void dispose() override;
+    void detachScrollbars();
     void recalculateCustomScrollbarStyle();
     void invalidateAllCustomScrollbarsOnActiveChanged();
     virtual void recalculateScrollbarOverlayStyle();
@@ -625,7 +625,6 @@ protected:
 private:
     explicit FrameView(LocalFrame*);
 
-    void dispose() override;
     void reset();
     void init();
 

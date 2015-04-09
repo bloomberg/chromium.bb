@@ -1547,14 +1547,14 @@ TEST_F(PinchViewportTest, TestMainFrameInitializationSizing)
     navigateTo(m_baseURL + "content-width-1000-min-scale.html");
 
     WebLocalFrameImpl* localFrame = webViewImpl()->mainFrameImpl();
-    // The detach() and prepareForDetach() calls are a hack to prevent this test
+    // The detach() and dispose() calls are a hack to prevent this test
     // from violating invariants about frame state during navigation/detach.
     localFrame->frame()->document()->detach();
     localFrame->createFrameView();
 
     FrameView& frameView = *localFrame->frameView();
     EXPECT_SIZE_EQ(IntSize(200, 400), frameView.frameRect().size());
-    frameView.prepareForDetach();
+    frameView.dispose();
 }
 
 // Tests that the maximum scroll offset of the viewport can be fractional.

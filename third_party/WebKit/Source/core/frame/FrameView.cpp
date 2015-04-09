@@ -174,41 +174,6 @@ FrameView::~FrameView()
 #endif
 }
 
-void FrameView::dispose()
-{
-    // Destroy |m_autoSizeInfo| as early as possible, to avoid dereferencing
-    // partially destroyed |this| via |m_autoSizeInfo->m_frameView|.
-    m_autoSizeInfo.clear();
-
-    if (m_postLayoutTasksTimer.isActive())
-        m_postLayoutTasksTimer.stop();
-
-    if (m_didScrollTimer.isActive())
-        m_didScrollTimer.stop();
-
-    // TODO(dcheng): Figure out why the dispose() method is virtual, and why it needs to
-    // call removeFromAXObjectCache() again.
-    removeFromAXObjectCache();
-
-    // Custom scrollbars should already be destroyed at this point
-    ASSERT(!horizontalScrollbar() || !horizontalScrollbar()->isCustomScrollbar());
-    ASSERT(!verticalScrollbar() || !verticalScrollbar()->isCustomScrollbar());
-
-    setHasHorizontalScrollbar(false); // Remove native scrollbars now before we lose the connection to the HostWindow.
-    setHasVerticalScrollbar(false);
-
-    ASSERT(!m_scrollCorner);
-
-    // FIXME: Do we need to do something here for OOPI?
-    HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
-    if (ownerElement && ownerElement->ownedWidget() == this)
-        ownerElement->setWidget(nullptr);
-
-#if ENABLE(ASSERT)
-    m_hasBeenDisposed = true;
-#endif
-}
-
 DEFINE_TRACE(FrameView)
 {
 #if ENABLE(OILPAN)
@@ -278,7 +243,7 @@ void FrameView::init()
     }
 }
 
-void FrameView::prepareForDetach()
+void FrameView::dispose()
 {
     RELEASE_ASSERT(!isInPerformLayout());
 
@@ -286,7 +251,8 @@ void FrameView::prepareForDetach()
         scrollAnimator->cancelAnimations();
     cancelProgrammaticScrollAnimation();
 
-    detachCustomScrollbars();
+    detachScrollbars();
+
     // When the view is no longer associated with a frame, it needs to be removed from the ax object cache
     // right now, otherwise it won't be able to reach the topDocument()'s axObject cache later.
     removeFromAXObjectCache();
@@ -294,19 +260,39 @@ void FrameView::prepareForDetach()
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
         scrollingCoordinator->willDestroyScrollableArea(this);
 
-    // FIXME: Oilpan: is this safe to dispose() if there are FrameView protections on the stack?
-    dispose();
+    // Destroy |m_autoSizeInfo| as early as possible, to avoid dereferencing
+    // partially destroyed |this| via |m_autoSizeInfo->m_frameView|.
+    m_autoSizeInfo.clear();
+
+    if (m_postLayoutTasksTimer.isActive())
+        m_postLayoutTasksTimer.stop();
+
+    if (m_didScrollTimer.isActive())
+        m_didScrollTimer.stop();
+
+    // FIXME: Do we need to do something here for OOPI?
+    HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
+    // TODO(dcheng): It seems buggy that we can have an owner element that
+    // points to another Widget.
+    if (ownerElement && ownerElement->ownedWidget() == this)
+        ownerElement->setWidget(nullptr);
+
+#if ENABLE(ASSERT)
+    m_hasBeenDisposed = true;
+#endif
 }
 
-void FrameView::detachCustomScrollbars()
+void FrameView::detachScrollbars()
 {
-    Scrollbar* horizontalBar = horizontalScrollbar();
-    if (horizontalBar && horizontalBar->isCustomScrollbar())
-        setHasHorizontalScrollbar(false);
-
-    Scrollbar* verticalBar = verticalScrollbar();
-    if (verticalBar && verticalBar->isCustomScrollbar())
-        setHasVerticalScrollbar(false);
+    // Previously, we detached custom scrollbars as early as possible to prevent
+    // Document::detach() from messing with the view such that its scroll bars
+    // won't be torn down. However, scripting in Document::detach() is forbidden
+    // now, so it's not clear if these edge cases can still happen.
+    // However, for Oilpan, we still need to remove the native scrollbars before
+    // we lose the connection to the HostWindow, so we just unconditionally
+    // detach any scrollbars now.
+    setHasHorizontalScrollbar(false);
+    setHasVerticalScrollbar(false);
 
     if (m_scrollCorner) {
         m_scrollCorner->destroy();

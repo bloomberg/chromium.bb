@@ -2083,17 +2083,11 @@ void Document::attach(const AttachContext& context)
 void Document::detach(const AttachContext& context)
 {
     ASSERT(!m_frame || m_frame->tree().childCount() == 0);
-
     if (!isActive())
         return;
 
     ScriptForbiddenScope forbidScript;
-    // We detach the FrameView's custom scroll bars as early as
-    // possible to prevent detach() from messing with the view
-    // such that its scroll bars won't be torn down.
-    //
-    // FIXME: We should revisit this.
-    view()->prepareForDetach();
+    view()->dispose();
     m_markers->prepareForDestruction();
     if (LocalDOMWindow* window = this->domWindow())
         window->willDetachDocumentFromFrame();
@@ -2126,9 +2120,6 @@ void Document::detach(const AttachContext& context)
 
     if (m_layoutView)
         m_layoutView->setIsInWindow(false);
-
-    if (view())
-        view()->detachCustomScrollbars();
 
     if (registrationContext())
         registrationContext()->documentWasDetached();
