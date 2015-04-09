@@ -216,6 +216,7 @@ public class ExternalNavigationHandler {
         // TODO(changwan): check if we need to handle URL even when external intent is off.
         if (CommandLine.getInstance().hasSwitch(
                 ChromeSwitches.DISABLE_EXTERNAL_INTENT_REQUESTS)) {
+            Log.w(TAG, "External intent handling is disabled by a command-line flag.");
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
