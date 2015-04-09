@@ -244,6 +244,7 @@
 
     [TypeChecking=Interface] DOMString getImageSourceURL(Element element);
 
+    [TypeChecking=Interface] DOMString selectMenuListText(HTMLSelectElement select);
     [TypeChecking=Interface] boolean isSelectPopupVisible(Node node);
     boolean selectPopupItemStyleIsRtl(Node select, long itemIndex);
     long selectPopupItemStyleFontHeight(Node select, long itemIndex);

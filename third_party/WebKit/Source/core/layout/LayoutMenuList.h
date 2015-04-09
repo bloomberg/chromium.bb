@@ -118,6 +118,8 @@ private:
     void setText(const String&);
     void setTextFromOption(int optionIndex);
     void updateOptionsWidth();
+    void updateText();
+    void setIndexToSelectOnCancel(int listIndex);
 
     void didUpdateActiveOption(int optionIndex);
 

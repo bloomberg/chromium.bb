@@ -211,6 +211,17 @@ void LayoutMenuList::updateFromElement()
     if (m_popupIsVisible)
         m_popup->updateFromElement();
 
+    updateText();
+}
+
+void LayoutMenuList::setIndexToSelectOnCancel(int listIndex)
+{
+    m_indexToSelectOnCancel = listIndex;
+    updateText();
+}
+
+void LayoutMenuList::updateText()
+{
     if (m_indexToSelectOnCancel >= 0)
         setTextFromOption(selectElement()->listToOptionIndex(m_indexToSelectOnCancel));
     else if (selectElement()->suggestedIndex() >= 0)
@@ -370,6 +381,8 @@ void LayoutMenuList::valueChanged(unsigned listIndex, bool fireOnChange)
     Document& doc = toElement(node())->document();
     if (&doc != doc.frame()->document())
         return;
+
+    setIndexToSelectOnCancel(-1);
 
     HTMLSelectElement* select = selectElement();
     select->optionSelectedByUser(select->listToOptionIndex(listIndex), fireOnChange);
@@ -586,7 +599,7 @@ void LayoutMenuList::popupDidCancel()
 {
     if (m_indexToSelectOnCancel >= 0) {
         valueChanged(m_indexToSelectOnCancel);
-        m_indexToSelectOnCancel = -1;
+        setIndexToSelectOnCancel(-1);
     }
 }
 
@@ -613,8 +626,7 @@ bool LayoutMenuList::itemIsSelected(unsigned listIndex) const
 
 void LayoutMenuList::provisionalSelectionChanged(unsigned listIndex)
 {
-    m_indexToSelectOnCancel = listIndex;
-    setTextFromOption(selectElement()->listToOptionIndex(m_indexToSelectOnCancel));
+    setIndexToSelectOnCancel(listIndex);
 }
 
 } // namespace blink

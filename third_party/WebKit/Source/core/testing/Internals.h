@@ -285,6 +285,7 @@ public:
 
     String getImageSourceURL(Element*);
 
+    String selectMenuListText(HTMLSelectElement*);
     bool isSelectPopupVisible(Node*);
     bool selectPopupItemStyleIsRtl(Node*, int);
     int selectPopupItemStyleFontHeight(Node*, int);

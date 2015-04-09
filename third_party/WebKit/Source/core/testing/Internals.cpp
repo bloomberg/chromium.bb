@@ -1986,6 +1986,17 @@ String Internals::getImageSourceURL(Element* element)
     return element->imageSourceURL();
 }
 
+String Internals::selectMenuListText(HTMLSelectElement* select)
+{
+    ASSERT(select);
+    LayoutObject* renderer = select->layoutObject();
+    if (!renderer || !renderer->isMenuList())
+        return String();
+
+    LayoutMenuList* menuList = toLayoutMenuList(renderer);
+    return menuList->text();
+}
+
 bool Internals::isSelectPopupVisible(Node* node)
 {
     ASSERT(node);
