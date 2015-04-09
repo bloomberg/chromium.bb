@@ -65,21 +65,13 @@ bool TransformTree::ComputeTransform(int source_id,
   if (source_id == dest_id)
     return true;
 
-  if (source_id > dest_id && IsDescendant(source_id, dest_id))
+  if (source_id > dest_id) {
+    DCHECK(IsDescendant(source_id, dest_id));
     return CombineTransformsBetween(source_id, dest_id, transform);
+  }
 
-  if (dest_id > source_id && IsDescendant(dest_id, source_id))
-    return CombineInversesBetween(source_id, dest_id, transform);
-
-  int lca = LowestCommonAncestor(source_id, dest_id);
-
-  bool no_singular_matrices_to_lca =
-      CombineTransformsBetween(source_id, lca, transform);
-
-  bool no_singular_matrices_from_lca =
-      CombineInversesBetween(lca, dest_id, transform);
-
-  return no_singular_matrices_to_lca && no_singular_matrices_from_lca;
+  DCHECK(IsDescendant(dest_id, source_id));
+  return CombineInversesBetween(source_id, dest_id, transform);
 }
 
 bool TransformTree::Are2DAxisAligned(int source_id, int dest_id) const {
@@ -108,27 +100,6 @@ bool TransformTree::IsDescendant(int desc_id, int source_id) const {
     desc_id = Node(desc_id)->parent_id;
   }
   return true;
-}
-
-int TransformTree::LowestCommonAncestor(int a, int b) const {
-  std::set<int> chain_a;
-  std::set<int> chain_b;
-  while (a || b) {
-    if (a) {
-      a = Node(a)->parent_id;
-      if (a > -1 && chain_b.find(a) != chain_b.end())
-        return a;
-      chain_a.insert(a);
-    }
-    if (b) {
-      b = Node(b)->parent_id;
-      if (b > -1 && chain_a.find(b) != chain_a.end())
-        return b;
-      chain_b.insert(b);
-    }
-  }
-  NOTREACHED();
-  return 0;
 }
 
 bool TransformTree::CombineTransformsBetween(int source_id,

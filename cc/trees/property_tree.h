@@ -165,9 +165,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   // |anc_id|.
   bool IsDescendant(int desc_id, int anc_id) const;
 
-  // Returns the index of the lowest common ancestor of the nodes |a| and |b|.
-  int LowestCommonAncestor(int a, int b) const;
-
   // Computes the combined transform between |source_id| and |dest_id| and
   // returns false if the inverse of a singular transform was used. These two
   // nodes must be on the same ancestor chain.
