@@ -7,11 +7,13 @@
 
 #include "ChromeClassTester.h"
 
-#include <sys/param.h>
-
 #include "clang/AST/AST.h"
 #include "clang/Basic/FileManager.h"
 #include "clang/Basic/SourceManager.h"
+
+#ifdef LLVM_ON_UNIX
+#include <sys/param.h>
+#endif
 
 using namespace clang;
 
@@ -258,6 +260,7 @@ bool ChromeClassTester::InBannedDirectory(SourceLocation loc) {
     return true;
   }
 
+#ifdef LLVM_ON_UNIX
   // We need to munge the paths so that they are relative to the repository
   // srcroot. We first resolve the symlinktastic relative path and then
   // remove our known srcroot from it if needed.
@@ -265,11 +268,11 @@ bool ChromeClassTester::InBannedDirectory(SourceLocation loc) {
   if (realpath(filename.c_str(), resolvedPath)) {
     filename = resolvedPath;
   }
+#endif
 
-  for (size_t i = 0; i < banned_directories_.size(); ++i) {
+  for (const std::string& banned_dir : banned_directories_) {
     // If any of the banned directories occur as a component in filename,
     // this file is rejected.
-    const std::string& banned_dir = banned_directories_[i];
     assert(banned_dir.front() == '/' && "Banned dir must start with '/'");
     assert(banned_dir.back() == '/' && "Banned dir must end with '/'");
 
