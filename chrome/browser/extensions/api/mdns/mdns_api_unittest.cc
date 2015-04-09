@@ -63,10 +63,7 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
         MDnsAPITestingFactoryFunction);
 
     // Create an event router and associate it with the context.
-    extensions::EventRouter* event_router = new extensions::EventRouter(
-        browser_context(),
-        ExtensionPrefsFactory::GetInstance()->GetForBrowserContext(
-            browser_context()));
+    extensions::EventRouter* event_router = CreateEventRouter_();
     static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(browser_context()))->SetEventRouter(
             scoped_ptr<extensions::EventRouter>(event_router));
@@ -131,6 +128,14 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
 
   content::RenderProcessHost* render_process_host() const {
     return render_process_host_.get();
+  }
+
+ protected:
+  virtual extensions::EventRouter* CreateEventRouter_() {
+    return new extensions::EventRouter(
+        browser_context(),
+        ExtensionPrefsFactory::GetInstance()->GetForBrowserContext(
+            browser_context()));
   }
 
  private:
@@ -210,6 +215,103 @@ TEST_F(MDnsAPITest, PlatformAppsNotSubjectToWhitelist) {
   EventRouter::Get(browser_context())->RemoveFilteredEventListener(
       api::mdns::OnServiceList::kEventName, render_process_host(), ext_id,
       filter, false);
+}
+
+class MockEventRouter : public EventRouter {
+ public:
+  explicit MockEventRouter(content::BrowserContext* browser_context,
+                           ExtensionPrefs* extension_prefs) :
+      EventRouter(browser_context, extension_prefs) {}
+  virtual ~MockEventRouter() {}
+
+  virtual void BroadcastEvent(scoped_ptr<Event> event) {
+    BroadcastEventPtr(event.get());
+  }
+  MOCK_METHOD1(BroadcastEventPtr, void(Event* event));
+};
+
+class MDnsAPIMaxServicesTest : public MDnsAPITest {
+ public:
+  MockEventRouter* event_router() {
+    return static_cast<MockEventRouter*>(EventRouter::Get(browser_context()));
+  }
+ protected:
+  extensions::EventRouter* CreateEventRouter_() override {
+    return new MockEventRouter(
+        browser_context(),
+        ExtensionPrefsFactory::GetInstance()->GetForBrowserContext(
+            browser_context()));
+  }
+};
+
+class EventServiceListSizeMatcher :
+      public testing::MatcherInterface<const Event&> {
+ public:
+  explicit EventServiceListSizeMatcher(size_t expected_size)
+      : expected_size_(expected_size) {}
+
+  virtual bool MatchAndExplain(const Event& e,
+                               testing::MatchResultListener* listener) const {
+    if (e.event_args.get() == nullptr) {
+      *listener << "event.event_arg is null when it shouldn't be";
+      return false;
+    }
+    if (e.event_args->GetSize() != 1) {
+      *listener << "event.event_arg.GetSize() should be 1 but is "
+                << e.event_args->GetSize();
+      return false;
+    }
+    const base::ListValue* services = nullptr;
+    {
+      const base::Value* out;
+      e.event_args->Get(0, &out);
+      services = static_cast<const base::ListValue*>(out);
+    }
+    if (services == nullptr) {
+      *listener << "event's service list argument is not a ListValue";
+      return false;
+    }
+    *listener << "number of services is "
+              << services->GetSize();
+    return static_cast<testing::Matcher<size_t>>(testing::Eq(expected_size_))
+        .MatchAndExplain(services->GetSize(), listener);
+  }
+
+  virtual void DescribeTo(::std::ostream* os) const {
+    *os << "is an onServiceList event where the number of services is "
+        << expected_size_;
+  }
+
+  virtual void DescribeNegationTo(::std::ostream* os) const {
+    *os << "isn't an onServiceList event where the number of services is "
+        << expected_size_;
+  }
+ private:
+  size_t expected_size_;
+};
+
+inline testing::Matcher<const Event&> EventServiceListSize(
+    size_t expected_size) {
+  return testing::MakeMatcher(new EventServiceListSizeMatcher(expected_size));
+}
+
+TEST_F(MDnsAPIMaxServicesTest, OnServiceListDoesNotExceedLimit) {
+   // This check should change when the [value=64] changes in the IDL file.
+  EXPECT_EQ(64, api::mdns::MAX_SERVICE_INSTANCES_PER_EVENT);
+
+  // Dispatch an mDNS event with more service instances than the max, and ensure
+  // that the list is truncated by inspecting the argument to MockEventRouter's
+  // BroadcastEvent method.
+  DnsSdRegistry::DnsSdServiceList services;
+  for (int i=0; i < api::mdns::MAX_SERVICE_INSTANCES_PER_EVENT + 10; ++i) {
+    services.push_back(DnsSdService());
+  }
+  EXPECT_CALL(
+      *event_router(),
+      BroadcastEventPtr(
+          testing::Pointee(EventServiceListSize(size_t(64)))))
+      .Times(1);
+  dns_sd_registry()->DispatchMDnsEvent("_testing._tcp.local", services);
 }
 
 } // empty namespace

@@ -165,3 +165,17 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterTooManyListeners) {
   EXPECT_TRUE(RunPlatformAppTest("mdns/api-packaged-apps"))
       << message_;
 }
+
+// TODO(justinlin): Win Dbg has a workaround that makes RunExtensionSubtest
+// always return true without actually running the test. Remove when fixed.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_MaxServiceInstancesPerEventConst \
+  DISABLED_MaxServiceInstancesPerEventConst
+#else
+#define MAYBE_MaxServiceInstancesPerEventConst MaxServiceInstancesPerEventConst
+#endif
+// Test loading extension and registering multiple listeners.
+IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_MaxServiceInstancesPerEventConst) {
+  EXPECT_TRUE(RunExtensionSubtest("mdns/api",
+                                  "get_max_service_instances.html"));
+}

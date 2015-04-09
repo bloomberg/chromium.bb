@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/mdns/dns_sd_registry.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_function.h"
 
 namespace content {
 class BrowserContext;
@@ -66,6 +67,20 @@ class MDnsAPI : public BrowserContextKeyedAPI,
 
   // Update the current list of service types and update the registry.
   void UpdateMDnsListeners(const EventListenerInfo& details);
+
+  // Write a message to the consoles of extensions listening to a given service
+  // type.
+  void WriteToConsole(const std::string& service_type,
+                      content::ConsoleMessageLevel level,
+                      const std::string& message);
+
+  // Finds all all the valid listeners of the mdns.onServiceList event and
+  // filters them by service type if |service_type_filter| is non-empty.  The
+  // extension ids and matched service types are output to |extension_ids| and
+  // |service_types|, respectively, if the supplied pointers is non-null.
+  void GetValidOnServiceListListeners(const std::string& service_type_filter,
+                                      std::set<std::string>* extension_ids,
+                                      std::set<std::string>* service_types);
 
   // Ensure methods are only called on UI thread.
   base::ThreadChecker thread_checker_;
