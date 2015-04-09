@@ -313,9 +313,9 @@ int main(int argc, char* argv[]) {
 
     printf("\t\tCues\n");
     do {
-      for (track_num = 1; track_num != num_tracks; ++track_num) {
+      for (track_num = 0; track_num < num_tracks; ++track_num) {
         const mkvparser::Track* const track =
-            pTracks->GetTrackByNumber(track_num);
+            pTracks->GetTrackByIndex(track_num);
         const mkvparser::CuePoint::TrackPosition* const track_pos =
             cue->Find(track);
 
@@ -325,7 +325,7 @@ int main(int argc, char* argv[]) {
           printf(
               "\t\t\tCue Point %4d Track %3lu(%c) Time %14lld "
               "Block %4lld Pos %8llx\n",
-              cue_point_num, track_num, track_type,
+              cue_point_num, track->GetNumber(), track_type,
               cue->GetTime(pSegment.get()), track_pos->m_block,
               track_pos->m_pos);
         }
