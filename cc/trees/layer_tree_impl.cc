@@ -8,7 +8,6 @@
 #include <limits>
 #include <set>
 
-#include "base/auto_reset.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/keyframed_animation_curve.h"
@@ -500,9 +499,6 @@ void LayerTreeImpl::SetViewportLayersFromIds(
          outer_viewport_scroll_layer_id == Layer::INVALID_ID);
 
   HideInnerViewportScrollbarsIfNearMinimumScale();
-
-  if (!root_layer_scroll_offset_delegate_)
-    return;
 }
 
 void LayerTreeImpl::ClearViewportLayers() {
