@@ -233,6 +233,7 @@ eval $(sed -e "s/^\([^=]\+\)=\(.*\)$/export \1='\2'/" \
   "${BUILDDIR}/installer/theme/BRANDING")
 
 REPOCONFIG="deb http://dl.google.com/linux/chrome/deb/ stable main"
+SSLREPOCONFIG="deb https://dl.google.com/linux/chrome/deb/ stable main"
 verify_channel
 
 # Some Debian packaging tools want these set.
