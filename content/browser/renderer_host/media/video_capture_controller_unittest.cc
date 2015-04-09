@@ -326,8 +326,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // side effect this will cause the first buffer to be shared with clients.
   uint8 buffer_no = 1;
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer;
-  buffer =
-      device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
+  buffer = device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
+                                        capture_resolution);
   ASSERT_TRUE(buffer.get());
   memset(buffer->data(), buffer_no++, buffer->size());
   {
@@ -358,8 +358,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // Second buffer which ought to use the same shared memory buffer. In this
   // case pretend that the Buffer pointer is held by the device for a long
   // delay. This shouldn't affect anything.
-  buffer =
-      device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
+  buffer = device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
+                                        capture_resolution);
   ASSERT_TRUE(buffer.get());
   memset(buffer->data(), buffer_no++, buffer->size());
   device_->OnIncomingCapturedVideoFrame(
@@ -386,7 +386,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
 
   // Third, fourth, and fifth buffers. Pretend they all arrive at the same time.
   for (int i = 0; i < kPoolSize; i++) {
-    buffer = device_->ReserveOutputBuffer(media::VideoFrame::I420,
+    buffer = device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
                                           capture_resolution);
     ASSERT_TRUE(buffer.get());
     memset(buffer->data(), buffer_no++, buffer->size());
@@ -397,7 +397,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     buffer = NULL;
   }
   // ReserveOutputBuffer ought to fail now, because the pool is depleted.
-  ASSERT_FALSE(device_->ReserveOutputBuffer(media::VideoFrame::I420,
+  ASSERT_FALSE(device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
                                             capture_resolution).get());
 
   // The new client needs to be told of 3 buffers; the old clients only 2.
@@ -423,8 +423,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   EXPECT_CALL(*client_b_, DoEnded(client_b_route_1)).Times(1);
   controller_->StopSession(300);
   // Queue up another buffer.
-  buffer =
-      device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
+  buffer = device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
+                                        capture_resolution);
   ASSERT_TRUE(buffer.get());
   memset(buffer->data(), buffer_no++, buffer->size());
   device_->OnIncomingCapturedVideoFrame(
@@ -432,8 +432,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
       WrapI420Buffer(buffer, capture_resolution),
       base::TimeTicks());
   buffer = NULL;
-  buffer =
-      device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
+  buffer = device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
+                                        capture_resolution);
   {
     // Kill A2 via session close (posts a task to disconnect, but A2 must not
     // be sent either of these two buffers).
@@ -469,7 +469,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   }
 
   for (int i = 0; i < shm_buffers; ++i) {
-    buffer = device_->ReserveOutputBuffer(media::VideoFrame::I420,
+    buffer = device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
                                           capture_resolution);
     ASSERT_TRUE(buffer.get());
     device_->OnIncomingCapturedVideoFrame(
@@ -481,8 +481,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   std::vector<uint32> mailbox_syncpoints(mailbox_buffers);
   std::vector<uint32> release_syncpoints(mailbox_buffers);
   for (int i = 0; i < mailbox_buffers; ++i) {
-    buffer = device_->ReserveOutputBuffer(media::VideoFrame::NATIVE_TEXTURE,
-                                          gfx::Size(0, 0));
+    buffer = device_->ReserveOutputBuffer(media::PIXEL_FORMAT_TEXTURE,
+                                          capture_resolution);
     ASSERT_TRUE(buffer.get());
 #if !defined(OS_ANDROID)
     mailbox_syncpoints[i] = gl_helper->InsertSyncPoint();
@@ -498,10 +498,10 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   }
   // ReserveOutputBuffers ought to fail now regardless of buffer format, because
   // the pool is depleted.
-  ASSERT_FALSE(device_->ReserveOutputBuffer(media::VideoFrame::I420,
+  ASSERT_FALSE(device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
                                             capture_resolution).get());
-  ASSERT_FALSE(device_->ReserveOutputBuffer(media::VideoFrame::NATIVE_TEXTURE,
-                                            gfx::Size(0, 0)).get());
+  ASSERT_FALSE(device_->ReserveOutputBuffer(media::PIXEL_FORMAT_TEXTURE,
+                                            capture_resolution).get());
   EXPECT_CALL(*client_b_, DoBufferReady(client_b_route_2,_)).Times(shm_buffers);
   EXPECT_CALL(*client_b_, DoMailboxBufferReady(client_b_route_2))
       .Times(mailbox_buffers);
@@ -550,7 +550,8 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   Mock::VerifyAndClearExpectations(client_b_.get());
 
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer =
-      device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
+      device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420,
+                                   capture_resolution);
   ASSERT_TRUE(buffer.get());
 
   device_->OnIncomingCapturedVideoFrame(
@@ -587,7 +588,7 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
 
   const gfx::Size dims(320, 240);
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer =
-      device_->ReserveOutputBuffer(media::VideoFrame::I420, dims);
+      device_->ReserveOutputBuffer(media::PIXEL_FORMAT_I420, dims);
   ASSERT_TRUE(buffer.get());
 
   device_->OnError("Test error");

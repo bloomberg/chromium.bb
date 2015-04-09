@@ -336,14 +336,12 @@ class StubClient : public media::VideoCaptureDevice::Client {
   }
 
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> ReserveOutputBuffer(
-      media::VideoFrame::Format format,
+      media::VideoPixelFormat format,
       const gfx::Size& dimensions) override {
-    CHECK_EQ(format, media::VideoFrame::I420);
-    const size_t frame_bytes =
-        media::VideoFrame::AllocationSize(media::VideoFrame::I420, dimensions);
+    CHECK_EQ(format, media::PIXEL_FORMAT_I420);
     int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;  // Ignored.
-    int buffer_id =
-        buffer_pool_->ReserveForProducer(frame_bytes, &buffer_id_to_drop);
+    int buffer_id = buffer_pool_->ReserveForProducer(format, dimensions,
+                                                     &buffer_id_to_drop);
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
       return NULL;
     void* data;

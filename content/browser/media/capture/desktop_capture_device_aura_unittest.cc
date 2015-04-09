@@ -52,7 +52,7 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                      int clockwise_rotation,
                      const base::TimeTicks& timestamp));
   MOCK_METHOD2(ReserveOutputBuffer,
-               scoped_refptr<Buffer>(media::VideoFrame::Format format,
+               scoped_refptr<Buffer>(media::VideoPixelFormat format,
                                      const gfx::Size& dimensions));
   MOCK_METHOD3(OnIncomingCapturedVideoFrame,
                void(const scoped_refptr<Buffer>& buffer,

@@ -75,12 +75,11 @@ class MockClient : public VideoCaptureDevice::Client {
   }
 
   // Virtual methods for capturing using Client's Buffers.
-  scoped_refptr<Buffer> ReserveOutputBuffer(VideoFrame::Format format,
+  scoped_refptr<Buffer> ReserveOutputBuffer(media::VideoPixelFormat format,
                                             const gfx::Size& dimensions) {
-    EXPECT_EQ(format, VideoFrame::I420);
+    EXPECT_EQ(format, PIXEL_FORMAT_I420);
     EXPECT_GT(dimensions.GetArea(), 0);
-    return make_scoped_refptr(
-        new MockBuffer(0, VideoFrame::AllocationSize(format, dimensions)));
+    return make_scoped_refptr(new MockBuffer(0, dimensions.GetArea() * 3 / 2));
   }
   void OnIncomingCapturedVideoFrame(
       const scoped_refptr<Buffer>& buffer,

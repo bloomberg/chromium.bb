@@ -244,7 +244,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // The output buffer stays reserved for use until the Buffer object is
     // destroyed.
     virtual scoped_refptr<Buffer> ReserveOutputBuffer(
-        media::VideoFrame::Format format,
+        media::VideoPixelFormat format,
         const gfx::Size& dimensions) = 0;
 
     // Captured a new video frame, held in |frame|.

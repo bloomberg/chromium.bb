@@ -45,12 +45,11 @@ class VideoCaptureBufferPoolTest : public testing::Test {
   }
 
   scoped_ptr<Buffer> ReserveI420Buffer(const gfx::Size& dimensions) {
-    const size_t frame_bytes =
-        media::VideoFrame::AllocationSize(media::VideoFrame::I420, dimensions);
     // To verify that ReserveI420Buffer always sets |buffer_id_to_drop|,
     // initialize it to something different than the expected value.
     int buffer_id_to_drop = ~expected_dropped_id_;
-    int buffer_id = pool_->ReserveForProducer(frame_bytes, &buffer_id_to_drop);
+    int buffer_id = pool_->ReserveForProducer(media::PIXEL_FORMAT_I420,
+                                              dimensions, &buffer_id_to_drop);
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
       return scoped_ptr<Buffer>();
 

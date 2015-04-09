@@ -65,8 +65,8 @@ namespace {
 class MockClient : public VideoCaptureDevice::Client {
  public:
   MOCK_METHOD2(ReserveOutputBuffer,
-               scoped_refptr<Buffer>(VideoFrame::Format format,
-                                     const gfx::Size& dimensions));
+               scoped_refptr<Buffer>(media::VideoPixelFormat format,
+                 const gfx::Size& dimensions));
   MOCK_METHOD9(OnIncomingCapturedYuvData,
                void (const uint8* y_data,
                      const uint8* u_data,

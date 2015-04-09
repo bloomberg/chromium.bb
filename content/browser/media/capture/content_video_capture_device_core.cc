@@ -67,10 +67,6 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   if (!client_)
     return false;  // Capture is stopped.
 
-  const media::VideoFrame::Format video_frame_format =
-      params_.requested_format.pixel_format == media::PIXEL_FORMAT_TEXTURE ?
-          media::VideoFrame::NATIVE_TEXTURE : media::VideoFrame::I420;
-
   if (capture_size_.IsEmpty())
     capture_size_ = max_frame_size();
   const gfx::Size visible_size = capture_size_;
@@ -80,7 +76,8 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                              (visible_size.height() + 15) & ~15);
 
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> output_buffer =
-      client_->ReserveOutputBuffer(video_frame_format, coded_size);
+      client_->ReserveOutputBuffer(params_.requested_format.pixel_format,
+                                   coded_size);
   const bool should_capture =
       oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time);
   const char* event_name =
@@ -120,9 +117,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                            "trigger", event_name);
   // NATIVE_TEXTURE frames wrap a texture mailbox, which we don't have at the
   // moment.  We do not construct those frames.
-  if (video_frame_format != media::VideoFrame::NATIVE_TEXTURE) {
+  if (params_.requested_format.pixel_format != media::PIXEL_FORMAT_TEXTURE) {
     *storage = media::VideoFrame::WrapExternalPackedMemory(
-        video_frame_format,
+        media::VideoFrame::I420,
         coded_size,
         gfx::Rect(visible_size),
         visible_size,

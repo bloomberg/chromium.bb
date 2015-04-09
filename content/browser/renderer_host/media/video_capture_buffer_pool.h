@@ -14,21 +14,18 @@
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
+#include "media/base/video_capture_types.h"
+#include "media/base/video_frame.h"
 #include "ui/gfx/geometry/size.h"
-
-namespace media {
-
-class VideoFrame;
-
-}  // namespace media
 
 namespace content {
 
 // A thread-safe class that does the bookkeeping and lifetime management for a
-// pool of shared-memory pixel buffers cycled between an in-process producer
-// (e.g. a VideoCaptureDevice) and a set of out-of-process consumers. The pool
-// is intended to be orchestrated by a VideoCaptureController, but is designed
-// to outlive the controller if necessary.
+// pool of pixel buffers cycled between an in-process producer (e.g. a
+// VideoCaptureDevice) and a set of out-of-process consumers. The pool is
+// intended to be orchestrated by a VideoCaptureController, but is designed
+// to outlive the controller if necessary. The pixel buffers may be backed by a
+// SharedMemory, but this is not compulsory.
 //
 // Producers get a buffer by calling ReserveForProducer(), and may pass on their
 // ownership to the consumer by calling HoldForConsumers(), or drop the buffer
@@ -58,12 +55,12 @@ class CONTENT_EXPORT VideoCaptureBufferPool
 
   // Query the memory parameters of |buffer_id|. Fills in parameters in the
   // pointer arguments, and returns true iff the buffer exists.
-  bool GetBufferInfo(int buffer_id, void** memory, size_t* size);
+  bool GetBufferInfo(int buffer_id, void** storage, size_t* size);
 
-  // Reserve or allocate a buffer of at least |size| bytes and return its id.
-  // This will fail (returning kInvalidId) if the pool already is at its |count|
-  // limit of the number of allocations, and all allocated buffers are in use by
-  // the producer and/or consumers.
+  // Reserve or allocate a buffer to support a packed frame of |dimensions| of
+  // pixel |format| and return its id. This will fail (returning kInvalidId) if
+  // the pool already is at its |count| limit of the number of allocations, and
+  // all allocated buffers are in use by the producer and/or consumers.
   //
   // If successful, the reserved buffer remains reserved (and writable by the
   // producer) until ownership is transferred either to the consumer via
@@ -73,7 +70,9 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   // On occasion, this call will decide to free an old buffer to make room for a
   // new allocation at a larger size. If so, the ID of the destroyed buffer is
   // returned via |buffer_id_to_drop|.
-  int ReserveForProducer(size_t size, int* buffer_id_to_drop);
+  int ReserveForProducer(media::VideoPixelFormat format,
+                         const gfx::Size& dimensions,
+                         int* buffer_id_to_drop);
 
   // Indicate that a buffer held for the producer should be returned back to the
   // pool without passing on to the consumer. This effectively is the opposite
@@ -90,32 +89,50 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   // done, a buffer is returned to the pool for reuse.
   void RelinquishConsumerHold(int buffer_id, int num_clients);
 
-  int count() const { return count_; }
-
  private:
-  friend class base::RefCountedThreadSafe<VideoCaptureBufferPool>;
+  class SharedMemTracker;
+  // Generic class to keep track of the state of a given mappable resource.
+  class Tracker {
+   public:
+    static scoped_ptr<Tracker> CreateTracker();
 
-  // Per-buffer state.
-  struct Buffer {
-    Buffer();
+    Tracker() : held_by_producer_(false), consumer_hold_count_(0) {}
+    virtual bool Init(media::VideoFrame::Format format,
+                      const gfx::Size& dimensions) = 0;
+    virtual ~Tracker();
 
-    // The memory created to be shared with renderer processes.
-    base::SharedMemory shared_memory;
+    bool held_by_producer() const { return held_by_producer_; }
+    void set_held_by_producer(bool value) { held_by_producer_ = value; }
+    int consumer_hold_count() const { return consumer_hold_count_; }
+    void set_consumer_hold_count(int value) { consumer_hold_count_ = value; }
 
-    // Tracks whether this buffer is currently referenced by the producer.
-    bool held_by_producer;
+    // Returns a void* to the underlying storage, be that a memory block for
+    // Shared Memory, or a GpuMemoryBuffer.
+    virtual void* storage() = 0;
+    // Amount of bytes requested when first created. Can be zero if it does not
+    // need RAM, e.g. is allocated in GPU memory.
+    virtual size_t requested_size() = 0;
+    // The actual size of the underlying backing resource.
+    virtual size_t mapped_size() = 0;
 
-    // Number of consumer processes which hold this shared memory.
-    int consumer_hold_count;
+    virtual bool ShareToProcess(base::ProcessHandle process_handle,
+                                base::SharedMemoryHandle* new_handle) = 0;
+
+   private:
+    // Indicates whether this Tracker is currently referenced by the producer.
+    bool held_by_producer_;
+    // Number of consumer processes which hold this Tracker.
+    int consumer_hold_count_;
   };
 
-  typedef std::map<int, Buffer*> BufferMap;
-
+  friend class base::RefCountedThreadSafe<VideoCaptureBufferPool>;
   virtual ~VideoCaptureBufferPool();
 
-  int ReserveForProducerInternal(size_t size, int* buffer_id_to_drop);
+  int ReserveForProducerInternal(media::VideoPixelFormat format,
+                                 const gfx::Size& dimensions,
+                                 int* tracker_id_to_drop);
 
-  Buffer* GetBuffer(int buffer_id);
+  Tracker* GetTracker(int buffer_id);
 
   // The max number of buffers that the pool is allowed to have at any moment.
   const int count_;
@@ -126,8 +143,9 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   // The ID of the next buffer.
   int next_buffer_id_;
 
-  // The buffers, indexed by |buffer_id|.
-  BufferMap buffers_;
+  // The buffers, indexed by the first parameter, a buffer id.
+  using TrackerMap = std::map<int, Tracker*>;
+  TrackerMap trackers_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureBufferPool);
 };

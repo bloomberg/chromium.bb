@@ -105,8 +105,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     return;
   }
 
-  scoped_refptr<Buffer> buffer = ReserveOutputBuffer(VideoFrame::I420,
-                                                     dimensions);
+  scoped_refptr<Buffer> buffer =
+      ReserveOutputBuffer(media::PIXEL_FORMAT_I420, dimensions);
   if (!buffer.get())
     return;
 
@@ -243,8 +243,8 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
   DCHECK_EQ(frame_format.pixel_format, media::PIXEL_FORMAT_I420);
   DCHECK_EQ(clockwise_rotation, 0) << "Rotation not supported";
 
-  scoped_refptr<Buffer> buffer = ReserveOutputBuffer(VideoFrame::I420,
-                                                     frame_format.frame_size);
+  scoped_refptr<Buffer> buffer =
+      ReserveOutputBuffer(frame_format.pixel_format, frame_format.frame_size);
   if (!buffer.get())
     return;
 
@@ -301,19 +301,17 @@ VideoCaptureDeviceClient::OnIncomingCapturedYuvData(
 };
 
 scoped_refptr<media::VideoCaptureDevice::Client::Buffer>
-VideoCaptureDeviceClient::ReserveOutputBuffer(VideoFrame::Format format,
+VideoCaptureDeviceClient::ReserveOutputBuffer(media::VideoPixelFormat format,
                                               const gfx::Size& dimensions) {
-  const size_t frame_bytes = VideoFrame::AllocationSize(format, dimensions);
-  if (format == VideoFrame::NATIVE_TEXTURE) {
-    DCHECK_EQ(dimensions.width(), 0);
-    DCHECK_EQ(dimensions.height(), 0);
-  } else {
-    DLOG_IF(ERROR, frame_bytes == 0) << "Error calculating allocation size";
-  }
+  DCHECK(format == media::PIXEL_FORMAT_TEXTURE ||
+         format == media::PIXEL_FORMAT_I420 ||
+         format == media::PIXEL_FORMAT_ARGB);
+  DCHECK_GT(dimensions.width(), 0);
+  DCHECK_GT(dimensions.height(), 0);
 
   int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;
   const int buffer_id =
-      buffer_pool_->ReserveForProducer(frame_bytes, &buffer_id_to_drop);
+      buffer_pool_->ReserveForProducer(format, dimensions, &buffer_id_to_drop);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return NULL;
   void* data;

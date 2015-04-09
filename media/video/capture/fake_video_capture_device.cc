@@ -156,7 +156,7 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const scoped_refptr<VideoCaptureDevice::Client::Buffer> capture_buffer =
-      client_->ReserveOutputBuffer(VideoFrame::I420,
+      client_->ReserveOutputBuffer(capture_format_.pixel_format,
                                    capture_format_.frame_size);
   DLOG_IF(ERROR, !capture_buffer) << "Couldn't allocate Capture Buffer";
   if (!capture_buffer)

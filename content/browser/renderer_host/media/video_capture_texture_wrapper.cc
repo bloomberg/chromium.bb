@@ -210,7 +210,7 @@ void VideoCaptureTextureWrapper::OnIncomingCapturedData(
 
   // Reserve a temporary Buffer for conversion to ARGB.
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> argb_buffer =
-      ReserveOutputBuffer(media::VideoFrame::ARGB, frame_format.frame_size);
+      ReserveOutputBuffer(media::PIXEL_FORMAT_ARGB, frame_format.frame_size);
   DVLOG_IF(1, !argb_buffer) << "Couldn't allocate ARGB Buffer";
   if (!argb_buffer)
     return;
@@ -236,7 +236,7 @@ void VideoCaptureTextureWrapper::OnIncomingCapturedData(
 
   // Reserve output buffer for the texture on the IPC borderlands.
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> texture_buffer =
-      ReserveOutputBuffer(media::VideoFrame::NATIVE_TEXTURE, gfx::Size());
+      ReserveOutputBuffer(media::PIXEL_FORMAT_TEXTURE, frame_format.frame_size);
   DVLOG_IF(1, !texture_buffer) << "Couldn't allocate Texture Buffer";
   if (!texture_buffer)
     return;
