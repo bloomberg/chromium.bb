@@ -2984,6 +2984,13 @@ ScriptValue WebGLRenderingContextBase::getVertexAttrib(ScriptState* scriptState,
         return WebGLAny(scriptState, state.type);
     case GL_CURRENT_VERTEX_ATTRIB:
         return WebGLAny(scriptState, DOMFloat32Array::create(m_vertexAttribValue[index].value, 4));
+    case GL_VERTEX_ATTRIB_ARRAY_INTEGER:
+        if (isWebGL2OrHigher()) {
+            GLint value = 0;
+            webContext()->getVertexAttribiv(index, pname, &value);
+            return WebGLAny(scriptState, static_cast<bool>(value));
+        }
+        // fall through to default error case
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getVertexAttrib", "invalid parameter name");
         return ScriptValue::createNull(scriptState);
