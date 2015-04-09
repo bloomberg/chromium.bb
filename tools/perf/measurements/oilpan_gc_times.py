@@ -23,11 +23,13 @@ _CR_RENDERER_MAIN = 'CrRendererMain'
 _RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
 
 
-def _AddTracingResults(events, results):
+def _AddTracingResults(thread, results):
   _GC_REASONS = ['precise', 'conservative', 'idle', 'forced']
   _GC_STAGES = ['mark', 'lazy_sweep', 'complete_sweep']
 
-  def GetGcReason(args):
+  def GetGcReason(event, async_slices):
+    args = event.args
+
     # Old format
     if 'precise' in args:
       if args['forced']:
@@ -39,7 +41,11 @@ def _AddTracingResults(events, results):
     if args['gcReason'] == 'PreciseGC':
       return 'precise'
     if args['gcReason'] == 'ForcedGCForTesting':
-      return 'forced'
+      for s in async_slices:
+        if s.start <= event.start and event.end <= s.end:
+          return 'forced'
+      # Ignore this forced GC being out of target ranges
+      return None
     if args['gcReason'] == 'IdleGC':
       return 'idle'
     return None  # Unknown
@@ -52,6 +58,10 @@ def _AddTracingResults(events, results):
           page, name + '_max', unit, max(values[name])))
       results.AddValue(scalar.ScalarValue(
           page, name + '_total', unit, sum(values[name])))
+
+  events = thread.all_slices
+  async_slices = [s for s in thread.async_slices
+                  if s.name == 'BlinkGCTimeMeasurement']
 
   # Prepare
   values = {'oilpan_coalesce': []}
@@ -75,7 +85,7 @@ def _AddTracingResults(events, results):
         values['oilpan_%s_lazy_sweep' % reason].append(lazy_sweep_time)
         values['oilpan_%s_complete_sweep' % reason].append(complete_sweep_time)
 
-      reason = GetGcReason(event.args)
+      reason = GetGcReason(event, async_slices)
       mark_time = duration
       lazy_sweep_time = 0
       complete_sweep_time = 0
@@ -152,7 +162,7 @@ class _OilpanGCTimesBase(page_test.PageTest):
     threads = self._timeline_model.GetAllThreads()
     for thread in threads:
       if thread.name == _CR_RENDERER_MAIN:
-        _AddTracingResults(thread.all_slices, results)
+        _AddTracingResults(thread, results)
 
   def CleanUpAfterPage(self, page, tab):
     if tab.browser.platform.tracing_controller.is_tracing_running:
@@ -189,7 +199,7 @@ class OilpanGCTimesForBlinkPerf(_OilpanGCTimesBase):
     super(OilpanGCTimesForBlinkPerf, self).DidRunActions(page, tab)
 
 
-class OilpanGCTimesForInternals(_OilpanGCTimesBase):
+class OilpanGCTimesForInternals(OilpanGCTimesForBlinkPerf):
   def __init__(self):
     super(OilpanGCTimesForInternals, self).__init__()
 

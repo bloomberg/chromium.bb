@@ -17,4 +17,8 @@ window.GCController = {};
 GCController.collect = function() {
   gc();
 };
+GCController.collectAll = function() {
+  for (var i = 0; i < 7; ++i)
+    gc();
+};
 })();
