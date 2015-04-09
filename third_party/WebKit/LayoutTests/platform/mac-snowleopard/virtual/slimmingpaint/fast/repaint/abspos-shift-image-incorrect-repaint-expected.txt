@@ -8,12 +8,11 @@
       "repaintRects": [
         [704, 0, 700, 236],
         [704, 0, 214, 232],
-        [700, 218, 4, 17],
+        [700, 218, 4, 18],
         [454, 0, 700, 236],
         [454, 0, 214, 232],
-        [450, 218, 4, 17],
+        [450, 218, 4, 18],
         [0, 0, 1500, 236],
-        [0, 0, 800, 52],
         [0, 0, 700, 236],
         [0, 0, 214, 232],
         [-250, 0, 1500, 236],
@@ -21,7 +20,6 @@
         [-250, 0, 214, 232]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow HTML",
         "LayoutBlockFlow (positioned) DIV id='shiftMe'",
         "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
         "LayoutImage IMG",

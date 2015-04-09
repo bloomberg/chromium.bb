@@ -13,6 +13,7 @@
         [454, 0, 214, 232],
         [450, 217, 4, 19],
         [0, 0, 1500, 237],
+        [0, 0, 800, 56],
         [0, 0, 700, 237],
         [0, 0, 214, 232],
         [-250, 0, 1500, 237],
@@ -20,6 +21,7 @@
         [-250, 0, 214, 232]
       ],
       "paintInvalidationClients": [
+        "LayoutBlockFlow HTML",
         "LayoutBlockFlow (positioned) DIV id='shiftMe'",
         "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
         "LayoutImage IMG",

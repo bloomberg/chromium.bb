@@ -22,7 +22,8 @@
         [14, 363, 48, 64],
         [8, 586, 418, 14],
         [8, 583, 418, 17],
-        [8, 80, 418, 519]
+        [8, 80, 418, 519],
+        [0, 0, 485, 600]
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (floating) SPAN id='blueFloat'",
@@ -89,6 +90,7 @@
         "RootInlineBox",
         "VerticalScrollbar",
         "LayoutIFrame IFRAME id='iframe'",
+        "LayoutBlockFlow HTML",
         "LayoutBlockFlow P",
         "LayoutBlockFlow P",
         "LayoutText #text",

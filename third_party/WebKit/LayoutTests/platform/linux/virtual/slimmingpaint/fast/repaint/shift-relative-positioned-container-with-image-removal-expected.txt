@@ -14,7 +14,8 @@
         [8, 92, 769, 642],
         [8, 92, 769, 99],
         [8, 92, 732, 94],
-        [0, 742, 785, 99]
+        [0, 0, 785, 841],
+        [0, 0, 785, 742]
       ],
       "paintInvalidationClients": [
         "LayoutIFrame IFRAME id='iframe'",
