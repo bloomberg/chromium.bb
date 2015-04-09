@@ -18,84 +18,19 @@ var remoting = remoting || {};
 remoting.SessionConnector = function() {};
 
 /**
- * Initiate a Me2Me connection.
- *
- * @param {remoting.Host} host The Me2Me host to which to connect.
- * @param {function(boolean, function(string):void):void} fetchPin Function to
- *     interactively obtain the PIN from the user.
- * @param {function(string, string, string,
- *                  function(string, string): void): void}
- *     fetchThirdPartyToken Function to obtain a token from a third party
- *     authentication server.
- * @param {string} clientPairingId The client id issued by the host when
- *     this device was paired, if it is already paired.
- * @param {string} clientPairedSecret The shared secret issued by the host when
- *     this device was paired, if it is already paired.
- * @return {void} Nothing.
- */
-remoting.SessionConnector.prototype.connectMe2Me =
-    function(host, fetchPin, fetchThirdPartyToken,
-             clientPairingId, clientPairedSecret) {};
-
-/**
- * Retry connecting to a Me2Me host after a connection failure.
- *
- * @param {remoting.Host} host The Me2Me host to refresh.
- * @return {void} Nothing.
- */
-remoting.SessionConnector.prototype.retryConnectMe2Me = function(host) {};
-
-/**
- * Initiate a Me2App connection.
- *
- * @param {remoting.Host} host The Me2Me host to which to connect.
- * @param {function(string, string, string,
- *                  function(string, string): void): void}
- *     fetchThirdPartyToken Function to obtain a token from a third party
- *     authentication server.
- * @return {void} Nothing.
- */
-remoting.SessionConnector.prototype.connectMe2App =
-    function(host, fetchThirdPartyToken) {};
-
-/**
- * Update the pairing info so that the reconnect function will work correctly.
- *
- * @param {string} clientId The paired client id.
- * @param {string} sharedSecret The shared secret.
- */
-remoting.SessionConnector.prototype.updatePairingInfo =
-    function(clientId, sharedSecret) {};
-
-/**
  * Initiates a remote connection.
  *
  * @param {remoting.Application.Mode} mode
  * @param {remoting.Host} host
  * @param {remoting.CredentialsProvider} credentialsProvider
+ * @param {boolean=} opt_suppressOfflineError  Suppress the host offline error
+ *    as we use stale JID's when initiating a Me2Me.  This parameter will be
+ *    removed when we get rid of sessionConnector altogether in a future CL.
  * @return {void} Nothing.
  */
 remoting.SessionConnector.prototype.connect =
-    function(mode, host, credentialsProvider) {};
+    function(mode, host, credentialsProvider, opt_suppressOfflineError) {};
 
-/**
- * Reconnect a closed connection.
- *
- * @return {void} Nothing.
- */
-remoting.SessionConnector.prototype.reconnect = function() {};
-
-/**
- * Cancel a connection-in-progress.
- */
-remoting.SessionConnector.prototype.cancel = function() {};
-
-/**
- * Get host ID.
- *
- * @return {string}
- */
-remoting.SessionConnector.prototype.getHostId = function() {};
 
 /**
  * Closes the session and removes the plugin element.

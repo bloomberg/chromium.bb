@@ -157,7 +157,11 @@ remoting.AppRemoting.prototype.startApplication_ = function(token) {
                                    host['sharedSecret']);
         };
 
-        that.sessionConnector_.connectMe2App(host, fetchThirdPartyToken);
+        that.sessionConnector_.connect(
+            remoting.Application.Mode.APP_REMOTING, host,
+            new remoting.CredentialsProvider(
+                {fetchThirdPartyToken: fetchThirdPartyToken}));
+
       } else if (response && response.status == 'pending') {
         that.onError_(new remoting.Error(
             remoting.Error.Tag.SERVICE_UNAVAILABLE));

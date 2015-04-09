@@ -17,7 +17,7 @@ var remoting = remoting || {};
  *     connector has invoked its onOk callback.
  * TODO(garykac): Have this owned by someone instead of being global.
  */
-remoting.clientSession = null;
+remoting.clientSession;
 
 /**
  * @param {HTMLElement} clientContainer Container element for the client view.
@@ -49,19 +49,13 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
   /** @private {Array<string>} */
   this.requiredCapabilities_ = requiredCapabilities;
 
-  /** @private {remoting.SignalStrategy} */
-  this.signalStrategy_ = null;
-
-  /** @private {remoting.SmartReconnector} */
-  this.reconnector_ = null;
-
   /** @private */
   this.bound_ = {
     onStateChange : this.onStateChange_.bind(this)
   };
 
   // Initialize/declare per-connection state.
-  this.resetConnection_();
+  this.closeSession();
 };
 
 /**
@@ -69,9 +63,7 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
  * second connection. Note the none of the shared WCS state is reset.
  * @private
  */
-remoting.SessionConnectorImpl.prototype.resetConnection_ = function() {
-  this.closeSession();
-
+remoting.SessionConnectorImpl.prototype.closeSession = function() {
   // It's OK to initialize these member variables here because the
   // constructor calls this method.
 
@@ -81,89 +73,21 @@ remoting.SessionConnectorImpl.prototype.resetConnection_ = function() {
   /** @private {boolean} */
   this.logHostOfflineErrors_ = false;
 
+  base.dispose(this.clientSession_);
+  /** @private {remoting.ClientSession} */
+  this.clientSession_ = null;
+  remoting.clientSession = null;
+
+  base.dispose(this.plugin_);
   /** @private {remoting.ClientPlugin} */
   this.plugin_ = null;
 
-  /** @private {remoting.ClientSession} */
-  this.clientSession_ = null;
-
   /** @private {remoting.CredentialsProvider} */
   this.credentialsProvider_ = null;
-};
 
-/**
- * Initiate a Me2Me connection.
- *
- * This doesn't report host-offline errors because the connection will
- * be retried and retryConnectMe2Me is responsible for reporting these errors.
- *
- * @param {remoting.Host} host The Me2Me host to which to connect.
- * @param {function(boolean, function(string):void):void} fetchPin Function to
- *     interactively obtain the PIN from the user.
- * @param {string} clientPairingId The client id issued by the host when
- *     this device was paired, if it is already paired.
- * @param {string} clientPairedSecret The shared secret issued by the host when
- *     this device was paired, if it is already paired.
- * @return {void} Nothing.
- */
-remoting.SessionConnectorImpl.prototype.connectMe2Me =
-    function(host, fetchPin, fetchThirdPartyToken,
-             clientPairingId, clientPairedSecret) {
-  this.logHostOfflineErrors_ = false;
-  var credentialsProvider = new remoting.CredentialsProvider({
-    fetchPin: fetchPin,
-    pairingInfo: {clientId: clientPairingId, sharedSecret: clientPairedSecret},
-    fetchThirdPartyToken: fetchThirdPartyToken
-  });
-  this.connect(remoting.Application.Mode.ME2ME, host, credentialsProvider);
-};
-
-/**
- * Retry connecting to a Me2Me host after a connection failure.
- *
- * This is the same as connectMe2Me except that is will log errors if the
- * host is offline.
- *
- * @param {remoting.Host} host The Me2Me host to refresh.
- * @return {void} Nothing.
- */
-remoting.SessionConnectorImpl.prototype.retryConnectMe2Me = function(host) {
-  this.logHostOfflineErrors_ = true;
-  this.connect(remoting.Application.Mode.ME2ME, host,
-               this.credentialsProvider_);
-};
-
-/**
- * Initiate a Me2App connection.
- *
- * @param {remoting.Host} host The Me2Me host to which to connect.
- * @param {function(string, string, string,
- *                  function(string, string): void): void}
- *     fetchThirdPartyToken Function to obtain a token from a third party
- *     authenticaiton server.
- * @return {void} Nothing.
- */
-remoting.SessionConnectorImpl.prototype.connectMe2App =
-    function(host, fetchThirdPartyToken) {
-  this.logHostOfflineErrors_ = true;
-  var credentialsProvider = new remoting.CredentialsProvider({
-    fetchThirdPartyToken : fetchThirdPartyToken
-  });
-  this.connect(remoting.Application.Mode.APP_REMOTING, host,
-               credentialsProvider);
-};
-
-/**
- * Update the pairing info so that the reconnect function will work correctly.
- *
- * @param {string} clientId The paired client id.
- * @param {string} sharedSecret The shared secret.
- */
-remoting.SessionConnectorImpl.prototype.updatePairingInfo =
-    function(clientId, sharedSecret) {
-  var pairingInfo = this.credentialsProvider_.getPairingInfo();
-  pairingInfo.clientId = clientId;
-  pairingInfo.sharedSecret = sharedSecret;
+  base.dispose(this.signalStrategy_);
+  /** @private {remoting.SignalStrategy} */
+  this.signalStrategy_ = null;
 };
 
 /**
@@ -172,48 +96,22 @@ remoting.SessionConnectorImpl.prototype.updatePairingInfo =
  * @param {remoting.Application.Mode} mode
  * @param {remoting.Host} host the Host to connect to.
  * @param {remoting.CredentialsProvider} credentialsProvider
+ * @param {boolean=} opt_suppressOfflineError
  * @return {void} Nothing.
  * @private
  */
 remoting.SessionConnectorImpl.prototype.connect =
-    function(mode, host, credentialsProvider) {
-  // Cancel any existing connect operation.
-  this.cancel();
+    function(mode, host, credentialsProvider, opt_suppressOfflineError) {
+  // In some circumstances, the WCS <iframe> can get reloaded, which results
+  // in a new clientJid and a new callback. In this case, cancel any existing
+  // connect operation and remove the old client plugin before instantiating a
+  // new one.
+  this.closeSession();
   remoting.app.setConnectionMode(mode);
   this.host_ = host;
   this.credentialsProvider_ = credentialsProvider;
+  this.logHostOfflineErrors_ = !Boolean(opt_suppressOfflineError);
   this.connectSignaling_();
-};
-
-/**
- * Reconnect a closed connection.
- *
- * @return {void} Nothing.
- */
-remoting.SessionConnectorImpl.prototype.reconnect = function() {
-  if (remoting.app.getConnectionMode() === remoting.Application.Mode.IT2ME) {
-    console.error('reconnect not supported for IT2Me.');
-    return;
-  }
-  this.logHostOfflineErrors_ = false;
-  this.connect(remoting.app.getConnectionMode(), this.host_,
-               this.credentialsProvider_);
-};
-
-/**
- * Cancel a connection-in-progress.
- */
-remoting.SessionConnectorImpl.prototype.cancel = function() {
-  this.resetConnection_();
-};
-
-/**
- * Get host ID.
- *
- * @return {string}
- */
-remoting.SessionConnectorImpl.prototype.getHostId = function() {
-  return this.host_.hostId;
 };
 
 /**
@@ -279,11 +177,6 @@ remoting.SessionConnectorImpl.prototype.onSignalingState_ = function(state) {
  * Creates ClientSession object.
  */
 remoting.SessionConnectorImpl.prototype.createSession_ = function() {
-  // In some circumstances, the WCS <iframe> can get reloaded, which results
-  // in a new clientJid and a new callback. In this case, remove the old
-  // client plugin before instantiating a new one.
-  this.closeSession();
-
   var pluginContainer = this.clientContainer_.querySelector(
       '.client-plugin-container');
 
@@ -338,15 +231,6 @@ remoting.SessionConnectorImpl.prototype.pluginError_ = function(error) {
   this.closeSession();
 };
 
-remoting.SessionConnectorImpl.prototype.closeSession = function() {
-  base.dispose(this.clientSession_);
-  this.clientSession_ = null;
-  remoting.clientSession = null;
-
-  base.dispose(this.plugin_);
-  this.plugin_ = null;
-};
-
 /**
  * Handle a change in the state of the client session prior to successful
  * connection (after connection, this class no longer handles state change
@@ -368,11 +252,6 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
           remoting.ClientSession.Events.stateChanged,
           this.bound_.onStateChange);
 
-      base.dispose(this.reconnector_);
-      if (remoting.app.getConnectionMode() != remoting.Application.Mode.IT2ME) {
-        this.reconnector_ =
-            new remoting.SmartReconnector(this, this.clientSession_);
-      }
       var connectionInfo = new remoting.ConnectionInfo(
           this.host_, this.credentialsProvider_, this.clientSession_,
           this.plugin_);

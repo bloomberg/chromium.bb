@@ -30,6 +30,9 @@ remoting.Me2MeActivity = function(sessionConnector, host) {
 
   /** @private */
   this.retryOnHostOffline_ = true;
+
+  /** @private {remoting.SmartReconnector} */
+  this.reconnector_ = null;
 };
 
 remoting.Me2MeActivity.prototype.dispose = function() {};
@@ -41,7 +44,7 @@ remoting.Me2MeActivity.prototype.start = function() {
   this.hostUpdateDialog_.showIfNecessary(webappVersion).then(function() {
     return that.host_.options.load();
   }).then(function() {
-    that.connect_();
+    that.connect_(true);
   }).catch(function(/** remoting.Error */ error) {
     if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
       remoting.setMode(remoting.AppMode.HOME);
@@ -49,8 +52,11 @@ remoting.Me2MeActivity.prototype.start = function() {
   });
 };
 
-/** @private */
-remoting.Me2MeActivity.prototype.connect_ = function() {
+/**
+ * @param {boolean} suppressHostOfflineError
+ * @private
+ */
+remoting.Me2MeActivity.prototype.connect_ = function(suppressHostOfflineError) {
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
   var host = this.host_;
 
@@ -83,28 +89,35 @@ remoting.Me2MeActivity.prototype.connect_ = function() {
     });
   };
 
-  var pairingInfo = host.options.pairingInfo;
-  this.connector_.connectMe2Me(host, requestPin, fetchThirdPartyToken,
-                               pairingInfo.clientId, pairingInfo.sharedSecret);
+  var pairingInfo = /** @type{remoting.PairingInfo} */ (
+      base.deepCopy(host.options.pairingInfo));
+  var credentialsProvider = new remoting.CredentialsProvider({
+    fetchPin: requestPin,
+    pairingInfo: pairingInfo,
+    fetchThirdPartyToken: fetchThirdPartyToken
+  });
+
+  this.connector_.connect(
+      remoting.Application.Mode.ME2ME,
+      host, credentialsProvider, suppressHostOfflineError);
 };
 
 /**
  * @param {!remoting.Error} error
  */
 remoting.Me2MeActivity.prototype.onConnectionFailed = function(error) {
-  var that = this;
-  var onHostListRefresh = function(/** boolean */ success) {
-    if (success) {
-      // Get the host from the hostList for the refreshed JID.
-      var host = remoting.hostList.getHostForId(that.host_.hostId);
-      that.connector_.retryConnectMe2Me(host);
-      return;
-    }
-    that.onError(error);
-  };
-
   if (error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
       this.retryOnHostOffline_) {
+    var that = this;
+    var onHostListRefresh = function(/** boolean */ success) {
+      if (success) {
+        // Get the host from the hostList for the refreshed JID.
+        that.host_ = remoting.hostList.getHostForId(that.host_.hostId);
+        that.connect_(false);
+        return;
+      }
+      that.onError(error);
+    };
     this.retryOnHostOffline_ = false;
 
     // The plugin will be re-created when the host finished refreshing
@@ -128,6 +141,10 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
   plugin.extensions().register(new remoting.GnubbyAuthHandler());
   this.pinDialog_.requestPairingIfNecessary(connectionInfo.plugin(),
                                             this.connector_);
+
+  base.dispose(this.reconnector_);
+  this.reconnector_ = new remoting.SmartReconnector(
+      this.connect_.bind(this, false), connectionInfo.session());
 };
 
 remoting.Me2MeActivity.prototype.onDisconnected = function() {
@@ -161,8 +178,7 @@ remoting.Me2MeActivity.prototype.showFinishDialog_ = function(mode) {
     if (result === Result.PRIMARY) {
       remoting.setMode(remoting.AppMode.HOME);
     } else {
-      that.connector_.reconnect();
-      remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+      that.connect_(true);
     }
   });
 };
@@ -263,7 +279,6 @@ remoting.PinDialog.prototype.requestPairingIfNecessary =
       that.host_.options.pairingInfo.clientId = clientId;
       that.host_.options.pairingInfo.sharedSecret = sharedSecret;
       that.host_.options.save();
-      connector.updatePairingInfo(clientId, sharedSecret);
     };
 
     // Use the platform name as a proxy for the local computer name.

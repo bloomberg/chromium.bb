@@ -117,6 +117,7 @@ remoting.MessageDialog = function(mode, primaryButton, opt_secondaryButton) {
  * the button clicked.
  */
 remoting.MessageDialog.prototype.show = function() {
+  base.debug.assert(this.eventHooks_ === null);
   this.eventHooks_ = new base.Disposables(new base.DomEventHook(
       this.primaryButton_, 'click',
       this.onClicked_.bind(this, remoting.MessageDialog.Result.PRIMARY),
