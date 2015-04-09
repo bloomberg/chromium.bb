@@ -43,8 +43,9 @@ class TimelineController(object):
   def Start(self, tab):
     # Start the smooth marker for all actions.
     runner = action_runner.ActionRunner(tab)
-    self._interaction = runner.BeginInteraction(
+    self._interaction = runner.CreateInteraction(
         RUN_SMOOTH_ACTIONS)
+    self._interaction.Begin()
 
   def Stop(self, tab, results):
     # End the smooth marker for all actions.

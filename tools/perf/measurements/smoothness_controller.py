@@ -43,8 +43,9 @@ class SmoothnessController(object):
   def Start(self, tab):
     # Start the smooth marker for all smooth actions.
     runner = action_runner.ActionRunner(tab)
-    self._interaction = runner.BeginInteraction(
+    self._interaction = runner.CreateInteraction(
         RUN_SMOOTH_ACTIONS)
+    self._interaction.Begin()
 
   def Stop(self, tab):
     # End the smooth marker for  all smooth actions.

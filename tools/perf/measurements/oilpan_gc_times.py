@@ -176,7 +176,8 @@ class OilpanGCTimesForSmoothness(_OilpanGCTimesBase):
 
   def WillRunActions(self, page, tab):
     runner = action_runner.ActionRunner(tab)
-    self._interaction = runner.BeginInteraction(_RUN_SMOOTH_ACTIONS)
+    self._interaction = runner.CreateInteraction(_RUN_SMOOTH_ACTIONS)
+    self._interaction.Begin()
 
   def DidRunActions(self, page, tab):
     self._interaction.End()
