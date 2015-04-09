@@ -51,10 +51,6 @@ class ScopedSnapshot {
 LeveldbValueStore::LeveldbValueStore(const base::FilePath& db_path)
     : db_path_(db_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-  scoped_ptr<Error> open_error = EnsureDbIsOpen();
-  if (open_error)
-    LOG(WARNING) << open_error->message;
 }
 
 LeveldbValueStore::~LeveldbValueStore() {
