@@ -1545,13 +1545,6 @@ int HostProcessMain() {
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier(
       net::NetworkChangeNotifier::Create());
 
-  // BasicURLRequestContext holds references to threads, so it needs to be
-  // dereferences on UI threads. Store the reference to the URLRequestGetter to
-  // make sure it's not destroyed on other threads.
-  // TODO(sergeyu): Consider fixing it in BasicURLRequestContext.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
-      context->url_request_context_getter();
-
   // Create & start the HostProcess using these threads.
   // TODO(wez): The HostProcess holds a reference to itself until Shutdown().
   // Remove this hack as part of the multi-process refactoring.

@@ -21,6 +21,7 @@
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/host_event_logger.h"
+#include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/transport.h"
@@ -132,6 +133,9 @@ bool DaemonProcess::OnMessageReceived(const IPC::Message& message) {
 
 void DaemonProcess::OnPermanentError(int exit_code) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
+  DCHECK(kMinPermanentErrorExitCode <= exit_code &&
+         exit_code <= kMaxPermanentErrorExitCode);
+
   Stop();
 }
 

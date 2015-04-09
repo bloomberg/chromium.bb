@@ -140,11 +140,17 @@ void DaemonProcessWin::OnChannelConnected(int32 peer_pid) {
 }
 
 void DaemonProcessWin::OnPermanentError(int exit_code) {
-  // Change the service start type to 'manual' if the host has been deleted
-  // remotely. This way the host will not be started every time the machine
-  // boots until the user re-enable it again.
-  if (exit_code == kInvalidHostIdExitCode)
+  DCHECK(kMinPermanentErrorExitCode <= exit_code &&
+         exit_code <= kMaxPermanentErrorExitCode);
+
+  // Both kInvalidHostIdExitCode and kInvalidOauthCredentialsExitCode are
+  // errors then will never go away with the current config.
+  // Disabling automatic service start until the host is re-enabled and config
+  // updated.
+  if (exit_code == kInvalidHostIdExitCode ||
+      exit_code == kInvalidOauthCredentialsExitCode) {
     DisableAutoStart();
+  }
 
   DaemonProcess::OnPermanentError(exit_code);
 }
