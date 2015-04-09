@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/resource_bundle_source_map.h"
 
+#include "base/logging.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {
@@ -24,11 +25,18 @@ void ResourceBundleSourceMap::RegisterSource(const std::string& name,
 v8::Handle<v8::Value> ResourceBundleSourceMap::GetSource(
     v8::Isolate* isolate,
     const std::string& name) {
-  if (!Contains(name))
+  if (!Contains(name)) {
+    NOTREACHED() << "No module is registered with name \"" << name << "\"";
     return v8::Undefined(isolate);
-  int resource_id = resource_id_map_[name];
-  return ConvertString(isolate,
-                       resource_bundle_->GetRawDataResource(resource_id));
+  }
+  base::StringPiece resource =
+      resource_bundle_->GetRawDataResource(resource_id_map_[name]);
+  if (resource.empty()) {
+    NOTREACHED()
+        << "Module resource registered as \"" << name << "\" not found";
+    return v8::Undefined(isolate);
+  }
+  return ConvertString(isolate, resource);
 }
 
 bool ResourceBundleSourceMap::Contains(const std::string& name) {
