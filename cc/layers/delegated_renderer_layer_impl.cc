@@ -409,20 +409,18 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
   const SharedQuadState* delegated_shared_quad_state = nullptr;
   SharedQuadState* output_shared_quad_state = nullptr;
 
+  gfx::Transform delegated_frame_to_target_transform = draw_transform();
+  delegated_frame_to_target_transform.Scale(inverse_device_scale_factor_,
+                                            inverse_device_scale_factor_);
+  bool is_root_delegated_render_pass =
+      delegated_render_pass == render_passes_in_draw_order_.back();
   for (const auto& delegated_quad : delegated_render_pass->quad_list) {
-    bool is_root_delegated_render_pass =
-        delegated_render_pass == render_passes_in_draw_order_.back();
-
     if (delegated_quad->shared_quad_state != delegated_shared_quad_state) {
       delegated_shared_quad_state = delegated_quad->shared_quad_state;
       output_shared_quad_state = render_pass->CreateAndAppendSharedQuadState();
       output_shared_quad_state->CopyFrom(delegated_shared_quad_state);
 
       if (is_root_delegated_render_pass) {
-        gfx::Transform delegated_frame_to_target_transform = draw_transform();
-        delegated_frame_to_target_transform.Scale(inverse_device_scale_factor_,
-                                                  inverse_device_scale_factor_);
-
         output_shared_quad_state->content_to_target_transform.ConcatTransform(
             delegated_frame_to_target_transform);
 
@@ -455,7 +453,8 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     if (!is_root_delegated_render_pass) {
       quad_content_to_delegated_target_space.ConcatTransform(
           delegated_render_pass->transform_to_root_target);
-      quad_content_to_delegated_target_space.ConcatTransform(draw_transform());
+      quad_content_to_delegated_target_space.ConcatTransform(
+          delegated_frame_to_target_transform);
     }
 
     Occlusion occlusion_in_quad_space =

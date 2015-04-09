@@ -1656,6 +1656,71 @@ TEST_F(DelegatedRendererLayerImplTest, Occlusion) {
   }
 }
 
+TEST_F(DelegatedRendererLayerImplTest, DeviceScaleFactorOcclusion) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+  gfx::Rect quad_screen_rect(211, 300, 400, 500);
+
+  gfx::Transform transform;
+  transform.Translate(211.f, 300.f);
+
+  LayerTestCommon::LayerImplTest impl;
+
+  FakeDelegatedRendererLayerImpl* delegated_renderer_layer_impl =
+      impl.AddChildToRoot<FakeDelegatedRendererLayerImpl>();
+  delegated_renderer_layer_impl->SetBounds(layer_size);
+  delegated_renderer_layer_impl->SetContentBounds(layer_size);
+  delegated_renderer_layer_impl->SetDrawsContent(true);
+
+  // Contributing render pass is offset by a transform and holds a quad that
+  // covers it entirely.
+  RenderPassList delegated_render_passes;
+  // pass2 is just the size of the quad. It contributes to |pass1| with a
+  // translation of (211,300).
+  RenderPassId pass2_id =
+      delegated_renderer_layer_impl->FirstContributingRenderPassId();
+  TestRenderPass* pass2 =
+      AddRenderPass(&delegated_render_passes, pass2_id,
+                    gfx::Rect(quad_screen_rect.size()), transform);
+  AddQuad(pass2, gfx::Rect(quad_screen_rect.size()), SK_ColorRED);
+  // |pass1| covers the whole layer.
+  RenderPassId pass1_id = RenderPassId(impl.root_layer()->id(), 0);
+  TestRenderPass* pass1 =
+      AddRenderPass(&delegated_render_passes, pass1_id, gfx::Rect(layer_size),
+                    gfx::Transform());
+  AddRenderPassQuad(pass1, pass2, 0, FilterOperations(), transform,
+                    SkXfermode::kSrcOver_Mode);
+  delegated_renderer_layer_impl->SetFrameDataForRenderPasses(
+      1.2f, delegated_render_passes);
+
+  {
+    SCOPED_TRACE("Partial occlusion");
+    {
+      gfx::Rect occlusion_in_root_target(0, 0, 500, 1000);
+      // Move the occlusion to where it is in the contributing surface.
+      gfx::Rect occlusion_in_target_of_delegated_quad =
+          occlusion_in_root_target - quad_screen_rect.OffsetFromOrigin();
+
+      SCOPED_TRACE("Contributing render pass");
+      impl.AppendQuadsForPassWithOcclusion(delegated_renderer_layer_impl, pass2,
+                                           occlusion_in_root_target);
+      size_t partially_occluded_count = 0;
+      LayerTestCommon::VerifyQuadsAreOccluded(
+          pass2->quad_list, occlusion_in_target_of_delegated_quad,
+          &partially_occluded_count);
+      // The layer outputs one quad, which is partially occluded.
+      EXPECT_EQ(1u, pass2->quad_list.size());
+      EXPECT_EQ(1u, partially_occluded_count);
+      // The quad in the contributing surface is at (211,300) in the root.
+      // The occlusion extends to 500 * 1.2 (dsf) = 600 in the x-axis, pushing
+      // the left of the visible part of the quad to 600 - 211 = 400 - 11 inside
+      // the quad.
+      EXPECT_EQ(gfx::Rect(400 - 11, 0, 11, 500).ToString(),
+                pass2->quad_list.front()->visible_rect.ToString());
+    }
+  }
+}
+
 TEST_F(DelegatedRendererLayerImplTest, PushPropertiesTo) {
   gfx::Size layer_size(1000, 1000);
 
