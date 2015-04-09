@@ -581,6 +581,7 @@ def BuildStepBuildToolchains(pepperdir, toolchains, build, clean):
   if clean:
     for dirname in glob.glob(os.path.join(OUT_DIR, GYPBUILD_DIR + '*')):
       buildbot_common.RemoveDir(dirname)
+    build = True
 
   if build:
     GypNinjaBuild_NaCl(GYPBUILD_DIR)
