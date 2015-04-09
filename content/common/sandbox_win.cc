@@ -8,6 +8,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/debug/profiler.h"
 #include "base/files/file_util.h"
 #include "base/hash.h"
@@ -728,7 +729,6 @@ base::Process StartSandboxedProcess(
                cmd_line->GetCommandLineString().c_str(),
                policy, &temp_process_info);
   DWORD last_error = ::GetLastError();
-  policy->Release();
   base::win::ScopedProcessInformation target(temp_process_info);
 
   TRACE_EVENT_END_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
@@ -745,10 +745,18 @@ base::Process StartSandboxedProcess(
                                       "Process.Sandbox.Lowbox.Launch.Error" :
                                       "Process.Sandbox.Launch.Error",
                                   last_error);
+      // Trigger a minidump without crashing the browser.
+      // Note that this function will only generate minidump if content host
+      // has already done pre-setup by calling
+      // base::debug::SetDumpWithoutCrashingFunction
+      base::debug::DumpWithoutCrashing();
     } else
       DLOG(ERROR) << "Failed to launch process. Error: " << result;
+
+    policy->Release();
     return base::Process();
   }
+  policy->Release();
 
   if (delegate)
     delegate->PostSpawnTarget(target.process_handle());

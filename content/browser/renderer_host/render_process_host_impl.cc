@@ -335,6 +335,20 @@ class RendererSandboxedProcessLauncherDelegate
                               bool* success) {
     AddBaseHandleClosePolicy(policy);
 
+    if (base::win::GetVersion() == base::win::VERSION_WIN8 ||
+        base::win::GetVersion() == base::win::VERSION_WIN8_1) {
+      // TODO(shrikant): Check if these constants should be different across
+      // various versions of Chromium code base or could be same.
+      // If there should be different SID per channel then move this code
+      // in chrome rather than content and assign SID based on
+      // VersionInfo::GetChannel().
+      const wchar_t kAppContainerSid[] =
+          L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
+          L"924012148-129201922";
+
+      policy->SetLowBox(kAppContainerSid);
+    }
+
     GetContentClient()->browser()->PreSpawnRenderer(policy, success);
   }
 
