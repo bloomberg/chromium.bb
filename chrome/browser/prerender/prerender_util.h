@@ -6,13 +6,7 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_UTIL_H_
 
 #include "base/basictypes.h"
-#include "content/public/common/resource_type.h"
 #include "url/gurl.h"
-
-namespace net {
-class HttpResponseHeaders;
-class URLRequest;
-}
 
 namespace prerender {
 
@@ -47,17 +41,6 @@ bool IsNoSwapInExperiment(uint8 experiment_id);
 // control group, regardless of the field trial.  This function will return true
 // iff this is the case for the experiment_id specified.
 bool IsControlGroupExperiment(uint8 experiment_id);
-
-// Called by URLRequestResponseStarted to gather data about Pagespeed headers
-// into the Prerender.PagespeedHeader histogram. Public so it can be accessed
-// by the unit test.
-void GatherPagespeedData(const content::ResourceType resource_type,
-                         const GURL& request_url,
-                         const net::HttpResponseHeaders* response_headers);
-
-// Static method gathering stats about a URLRequest for which a response has
-// just started.
-void URLRequestResponseStarted(net::URLRequest* request);
 
 // Report a URL was canceled due to trying to handle an external URL.
 void ReportPrerenderExternalURL();

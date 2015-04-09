@@ -148,6 +148,7 @@
       'browser/metrics/variations/variations_request_scheduler_unittest.cc',
       'browser/metrics/variations/variations_seed_store_unittest.cc',
       'browser/metrics/variations/variations_service_unittest.cc',
+      'browser/mod_pagespeed/mod_pagespeed_metrics_unittest.cc',
       'browser/net/certificate_error_reporter_unittest.cc',
       'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
       'browser/net/chrome_network_delegate_unittest.cc',

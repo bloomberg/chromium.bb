@@ -539,6 +539,8 @@
       'browser/memory_details_linux.cc',
       'browser/memory_details_mac.cc',
       'browser/memory_details_win.cc',
+      'browser/mod_pagespeed/mod_pagespeed_metrics.cc',
+      'browser/mod_pagespeed/mod_pagespeed_metrics.h',
       'browser/native_window_notification_source.h',
       'browser/net/predictor_tab_helper.cc',
       'browser/net/predictor_tab_helper.h',

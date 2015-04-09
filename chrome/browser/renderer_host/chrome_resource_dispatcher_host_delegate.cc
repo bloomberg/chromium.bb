@@ -15,6 +15,7 @@
 #include "chrome/browser/component_updater/component_updater_resource_throttle.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
+#include "chrome/browser/mod_pagespeed/mod_pagespeed_metrics.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefetch/prefetch.h"
@@ -688,7 +689,8 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
       response_headers->RemoveHeader("x-frame-options");
   }
 
-  prerender::URLRequestResponseStarted(request);
+  mod_pagespeed::RecordMetrics(info->GetResourceType(), request->url(),
+                               request->response_headers());
 }
 
 void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(

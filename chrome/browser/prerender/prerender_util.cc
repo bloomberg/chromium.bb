@@ -22,53 +22,6 @@ namespace prerender {
 
 namespace {
 
-const char kModPagespeedHeader[] = "X-Mod-Pagespeed";
-const char kPageSpeedHeader[] = "X-Page-Speed";
-const char kPagespeedServerHistogram[] =
-    "Prerender.PagespeedHeader.ServerCounts";
-const char kPagespeedVersionHistogram[] =
-    "Prerender.PagespeedHeader.VersionCounts";
-
-enum PagespeedHeaderServerType {
-  PAGESPEED_TOTAL_RESPONSES = 0,
-  PAGESPEED_MOD_PAGESPEED_SERVER = 1,
-  PAGESPEED_NGX_PAGESPEED_SERVER = 2,
-  PAGESPEED_PAGESPEED_SERVICE_SERVER = 3,
-  PAGESPEED_UNKNOWN_SERVER = 4,
-  PAGESPEED_SERVER_MAXIMUM = 5
-};
-
-// Private function to parse the PageSpeed version number and encode it in
-// buckets 2 through 99: if it is in the format a.b.c.d-e the bucket will be
-// 2 + 2 * (max(c, 10) - 10) + (d > 1 ? 1 : 0); if it is not in this format
-// we return zero.
-int GetXModPagespeedBucketFromVersion(const std::string& version) {
-  int a, b, c, d, e;
-  int num_parsed = sscanf(version.c_str(), "%d.%d.%d.%d-%d",
-                          &a, &b, &c, &d, &e);
-  int output = 0;
-  if (num_parsed == 5) {
-    output = 2;
-    if (c > 10)
-      output += 2 * (c - 10);
-    if (d > 1)
-      output++;
-    if (output < 2 || output > 99)
-      output = 0;
-  }
-  return output;
-}
-
-// Private function to parse the X-Page-Speed header value and determine
-// whether it is in the PageSpeed Service format, namely m_n_dc were m_n is
-// a version number and dc is an encoded 2-character value.
-bool IsPageSpeedServiceVersionNumber(const std::string& version) {
-  int a, b;
-  char c, d, e;  // e is to detect EOL as we check that it /isn't/ converted.
-  int num_parsed = sscanf(version.c_str(), "%d_%d_%c%c%c", &a, &b, &c, &d, &e);
-  return (num_parsed == 4);
-}
-
 enum PrerenderSchemeCancelReason {
   PRERENDER_SCHEME_CANCEL_REASON_EXTERNAL_PROTOCOL,
   PRERENDER_SCHEME_CANCEL_REASON_DATA,
@@ -161,82 +114,6 @@ bool IsNoSwapInExperiment(uint8 experiment_id) {
 bool IsControlGroupExperiment(uint8 experiment_id) {
   // Currently, experiments 7 and 8 fall in this category.
   return experiment_id == 7 || experiment_id == 8;
-}
-
-void GatherPagespeedData(const ResourceType resource_type,
-                         const GURL& request_url,
-                         const net::HttpResponseHeaders* response_headers) {
-  if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME ||
-      !request_url.SchemeIsHTTPOrHTTPS())
-    return;
-
-  // bucket 0 counts every response seen.
-  UMA_HISTOGRAM_ENUMERATION(kPagespeedServerHistogram,
-                            PAGESPEED_TOTAL_RESPONSES,
-                            PAGESPEED_SERVER_MAXIMUM);
-  if (!response_headers)
-    return;
-
-  void* iter = NULL;
-  std::string name;
-  std::string value;
-  while (response_headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    if (name == kModPagespeedHeader) {
-      // Bucket 1 counts occurences of the X-Mod-Pagespeed header.
-      UMA_HISTOGRAM_ENUMERATION(kPagespeedServerHistogram,
-                                PAGESPEED_MOD_PAGESPEED_SERVER,
-                                PAGESPEED_SERVER_MAXIMUM);
-      if (!value.empty()) {
-        // If the header value is in the X-Mod-Pagespeed version number format
-        // then increment the appropriate bucket, otherwise increment bucket 1,
-        // which is the catch-all "unknown version number" bucket.
-        int bucket = GetXModPagespeedBucketFromVersion(value);
-        if (bucket > 0) {
-          UMA_HISTOGRAM_SPARSE_SLOWLY(kPagespeedVersionHistogram, bucket);
-        } else {
-          UMA_HISTOGRAM_SPARSE_SLOWLY(kPagespeedVersionHistogram, 1);
-        }
-      }
-      break;
-    } else if (name == kPageSpeedHeader) {
-      // X-Page-Speed header versions are either in the X-Mod-Pagespeed format,
-      // indicating an nginx installation, or they're in the PageSpeed Service
-      // format, indicating a PSS installation, or in some other format,
-      // indicating an unknown installation [possibly IISpeed].
-      if (!value.empty()) {
-        int bucket = GetXModPagespeedBucketFromVersion(value);
-        if (bucket > 0) {
-          // Bucket 2 counts occurences of the X-Page-Speed header with a
-          // value in the X-Mod-Pagespeed version number format. We also
-          // count these responses in the version histogram.
-          UMA_HISTOGRAM_ENUMERATION(kPagespeedServerHistogram,
-                                    PAGESPEED_NGX_PAGESPEED_SERVER,
-                                    PAGESPEED_SERVER_MAXIMUM);
-          UMA_HISTOGRAM_SPARSE_SLOWLY(kPagespeedVersionHistogram, bucket);
-        } else if (IsPageSpeedServiceVersionNumber(value)) {
-          // Bucket 3 counts occurences of the X-Page-Speed header with a
-          // value in the PageSpeed Service version number format.
-          UMA_HISTOGRAM_ENUMERATION(kPagespeedServerHistogram,
-                                    PAGESPEED_PAGESPEED_SERVICE_SERVER,
-                                    PAGESPEED_SERVER_MAXIMUM);
-        } else {
-          // Bucket 4 counts occurences of all other values.
-          UMA_HISTOGRAM_ENUMERATION(kPagespeedServerHistogram,
-                                    PAGESPEED_UNKNOWN_SERVER,
-                                    PAGESPEED_SERVER_MAXIMUM);
-        }
-      }
-      break;
-    }
-  }
-}
-
-void URLRequestResponseStarted(net::URLRequest* request) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  GatherPagespeedData(info->GetResourceType(),
-                      request->url(),
-                      request->response_headers());
 }
 
 void ReportPrerenderExternalURL() {
