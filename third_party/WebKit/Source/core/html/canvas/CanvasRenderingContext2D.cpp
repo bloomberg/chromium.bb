@@ -1269,7 +1269,7 @@ static inline CanvasImageSource* toImageSourceInternal(const CanvasImageSourceUn
 void CanvasRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource, float x, float y, ExceptionState& exceptionState)
 {
     CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
-    FloatSize sourceRectSize = imageSourceInternal->sourceSize();
+    FloatSize sourceRectSize = imageSourceInternal->elementSize();
     FloatSize destRectSize = imageSourceInternal->defaultDestinationSize();
     drawImage(imageSourceInternal, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, destRectSize.width(), destRectSize.height(), exceptionState);
 }
@@ -1278,7 +1278,7 @@ void CanvasRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSour
     float x, float y, float width, float height, ExceptionState& exceptionState)
 {
     CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
-    FloatSize sourceRectSize = imageSourceInternal->sourceSize();
+    FloatSize sourceRectSize = imageSourceInternal->elementSize();
     drawImage(imageSourceInternal, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, width, height, exceptionState);
 }
 
@@ -1349,7 +1349,7 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     FloatRect srcRect = normalizeRect(FloatRect(sx, sy, sw, sh));
     FloatRect dstRect = normalizeRect(FloatRect(dx, dy, dw, dh));
 
-    clipRectsToImageRect(FloatRect(FloatPoint(), imageSource->sourceSize()), &srcRect, &dstRect);
+    clipRectsToImageRect(FloatRect(FloatPoint(), imageSource->elementSize()), &srcRect, &dstRect);
 
     imageSource->adjustDrawRects(&srcRect, &dstRect);
 
@@ -1447,7 +1447,7 @@ PassRefPtrWillBeRawPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(co
     case NormalSourceImageStatus:
         break;
     case ZeroSizeCanvasSourceImageStatus:
-        exceptionState.throwDOMException(InvalidStateError, String::format("The canvas %s is 0.", imageSourceInternal->sourceSize().width() ? "height" : "width"));
+        exceptionState.throwDOMException(InvalidStateError, String::format("The canvas %s is 0.", imageSourceInternal->elementSize().width() ? "height" : "width"));
         return nullptr;
     case UndecodableSourceImageStatus:
         exceptionState.throwDOMException(InvalidStateError, "Source image is in the 'broken' state.");

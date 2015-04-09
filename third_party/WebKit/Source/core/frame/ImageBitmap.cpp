@@ -223,7 +223,7 @@ void ImageBitmap::adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const
     *dstRect = newDstRect;
 }
 
-FloatSize ImageBitmap::sourceSize() const
+FloatSize ImageBitmap::elementSize() const
 {
     return FloatSize(width(), height());
 }

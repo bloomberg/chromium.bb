@@ -39,7 +39,7 @@ public:
     PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;
 
     bool wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const override { return false; }
-    FloatSize sourceSize() const override { return FloatSize(m_size); }
+    FloatSize elementSize() const override { return FloatSize(m_size); }
     bool isOpaque() const override { return m_isOpaque; }
 
     virtual ~FakeImageSource() { }

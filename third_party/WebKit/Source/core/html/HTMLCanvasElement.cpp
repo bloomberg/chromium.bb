@@ -861,7 +861,7 @@ bool HTMLCanvasElement::wouldTaintOrigin(SecurityOrigin*) const
     return !originClean();
 }
 
-FloatSize HTMLCanvasElement::sourceSize() const
+FloatSize HTMLCanvasElement::elementSize() const
 {
     return FloatSize(width(), height());
 }

@@ -96,7 +96,7 @@ public:
     // CanvasImageSource implementation
     virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;
     virtual bool wouldTaintOrigin(SecurityOrigin*) const override;
-    virtual FloatSize sourceSize() const override;
+    virtual FloatSize elementSize() const override;
     virtual FloatSize defaultDestinationSize() const override;
     virtual const KURL& sourceURL() const override;
     virtual bool isOpaque() const override;
