@@ -1141,7 +1141,7 @@ class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
 
   void DestroyDatabase() {
     if (!database_path_.empty())
-      base::DeleteFile(database_path_, false);
+      sql::Connection::Delete(database_path_);
   }
 
   // Returns an empty vector on failure. Otherwise returns the values of the

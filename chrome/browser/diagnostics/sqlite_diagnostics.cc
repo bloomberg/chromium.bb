@@ -56,7 +56,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
         case DIAG_SQLITE_DB_CORRUPTED:
           LOG(WARNING) << "Removing broken SQLite database: "
                        << db_path_.value();
-          base::DeleteFile(db_path_, false);
+          sql::Connection::Delete(db_path_);
           break;
         case DIAG_SQLITE_SUCCESS:
         case DIAG_SQLITE_FILE_NOT_FOUND_OK:
