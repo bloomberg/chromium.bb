@@ -44,7 +44,7 @@ class DevicePermissionsTableModel
 
  private:
   scoped_refptr<DevicePermissionsPrompt::Prompt> prompt_;
-  ui::TableModelObserver* observer_;
+  ui::TableModelObserver* observer_ = nullptr;
 };
 
 int DevicePermissionsTableModel::RowCount() {
