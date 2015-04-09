@@ -2301,6 +2301,7 @@ _paladin_hwtest_boards = frozenset([
   'stumpy',
   'wolf',
   'x86-alex',
+  'x86-alex_freon',
   'x86-zgb',
 ])
 
@@ -3387,6 +3388,7 @@ _waterfall_config_map = {
       'nyan_freon-paladin',
       'tricky-paladin',
       'whirlwind-paladin',
+      'x86-alex_freon-paladin',
 
       # Experimental Canaries (Group)
       'daisy-freon-release-group',
@@ -3411,6 +3413,7 @@ _waterfall_config_map = {
       # Experimental PFQs.
       'peach_pit-chrome-pfq',
       'tricky-chrome-pfq',
+      'x86-alex_freon-chrome-pfq',
 
       # Incremental Builders.
       'mario-incremental',
