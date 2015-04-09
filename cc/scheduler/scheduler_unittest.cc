@@ -360,6 +360,7 @@ class SchedulerTest : public testing::Test {
     // it will be already in the task queue.
     if (scheduler_->settings().use_external_begin_frame_source &&
         scheduler_->FrameProductionThrottled()) {
+      EXPECT_TRUE(client_->needs_begin_frames());
       SendNextBeginFrame();
     }
 
@@ -2209,12 +2210,16 @@ TEST_F(SchedulerTest, ScheduledActionActivateAfterBecomingInvisible) {
   scheduler_->NotifyBeginMainFrameStarted();
   scheduler_->NotifyReadyToCommit();
   EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
 
   client_->Reset();
   scheduler_->SetVisible(false);
+  task_runner().RunPendingTasks();  // Run posted deadline.
+
   // Sync tree should be forced to activate.
-  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 1, 2);
+  EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 0, 3);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 }
 
 // Tests to ensure frame sources can be successfully changed while drawing.

@@ -49,21 +49,6 @@ BeginFrameSource* SchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
 }
 
 BeginFrameSource*
-SchedulerFrameSourcesConstructor::ConstructBackgroundFrameSource(
-    Scheduler* scheduler) {
-  TRACE_EVENT1("cc",
-               "Scheduler::Scheduler()",
-               "BackgroundFrameSource",
-               "SyntheticBeginFrameSource");
-  DCHECK(!(scheduler->background_frame_source_internal_));
-  scheduler->background_frame_source_internal_ =
-      SyntheticBeginFrameSource::Create(
-          scheduler->task_runner_.get(), scheduler->Now(),
-          scheduler->settings_.background_frame_interval);
-  return scheduler->background_frame_source_internal_.get();
-}
-
-BeginFrameSource*
 SchedulerFrameSourcesConstructor::ConstructUnthrottledFrameSource(
     Scheduler* scheduler) {
   TRACE_EVENT1("cc", "Scheduler::Scheduler()", "UnthrottledFrameSource",
@@ -83,13 +68,11 @@ Scheduler::Scheduler(
     SchedulerFrameSourcesConstructor* frame_sources_constructor)
     : frame_source_(),
       primary_frame_source_(NULL),
-      background_frame_source_(NULL),
       primary_frame_source_internal_(external_begin_frame_source.Pass()),
-      background_frame_source_internal_(),
       vsync_observer_(NULL),
       authoritative_vsync_interval_(base::TimeDelta()),
       last_vsync_timebase_(base::TimeTicks()),
-      throttle_frame_production_(scheduler_settings.throttle_frame_production),
+      throttle_frame_production_(false),
       settings_(scheduler_settings),
       client_(client),
       layer_tree_host_id_(layer_tree_host_id),
@@ -123,15 +106,12 @@ Scheduler::Scheduler(
   frame_source_->AddSource(primary_frame_source_);
   primary_frame_source_->SetClientReady();
 
-  // Background ticking frame source
-  background_frame_source_ =
-      frame_sources_constructor->ConstructBackgroundFrameSource(this);
-  frame_source_->AddSource(background_frame_source_);
-
   // Unthrottled frame source
   unthrottled_frame_source_ =
       frame_sources_constructor->ConstructUnthrottledFrameSource(this);
   frame_source_->AddSource(unthrottled_frame_source_);
+
+  SetThrottleFrameProduction(scheduler_settings.throttle_frame_production);
 }
 
 Scheduler::~Scheduler() {
@@ -173,22 +153,9 @@ void Scheduler::SetCanStart() {
   ProcessScheduledActions();
 }
 
-void Scheduler::UpdateActiveFrameSource() {
-  if (state_machine_.visible()) {
-    if (throttle_frame_production_) {
-      frame_source_->SetActiveSource(primary_frame_source_);
-    } else {
-      frame_source_->SetActiveSource(unthrottled_frame_source_);
-    }
-  } else {
-    frame_source_->SetActiveSource(background_frame_source_);
-  }
-  ProcessScheduledActions();
-}
-
 void Scheduler::SetVisible(bool visible) {
   state_machine_.SetVisible(visible);
-  UpdateActiveFrameSource();
+  ProcessScheduledActions();
 }
 
 void Scheduler::SetCanDraw(bool can_draw) {
@@ -209,7 +176,12 @@ void Scheduler::NotifyReadyToDraw() {
 
 void Scheduler::SetThrottleFrameProduction(bool throttle) {
   throttle_frame_production_ = throttle;
-  UpdateActiveFrameSource();
+  if (throttle) {
+    frame_source_->SetActiveSource(primary_frame_source_);
+  } else {
+    frame_source_->SetActiveSource(unthrottled_frame_source_);
+  }
+  ProcessScheduledActions();
 }
 
 void Scheduler::SetNeedsCommit() {

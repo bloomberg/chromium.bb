@@ -141,8 +141,6 @@ class TestSchedulerFrameSourcesConstructor
 
  protected:
   BeginFrameSource* ConstructPrimaryFrameSource(Scheduler* scheduler) override;
-  BeginFrameSource* ConstructBackgroundFrameSource(
-      Scheduler* scheduler) override;
   BeginFrameSource* ConstructUnthrottledFrameSource(
       Scheduler* scheduler) override;
 

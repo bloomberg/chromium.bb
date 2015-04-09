@@ -98,21 +98,6 @@ TestSchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
 }
 
 BeginFrameSource*
-TestSchedulerFrameSourcesConstructor::ConstructBackgroundFrameSource(
-    Scheduler* scheduler) {
-  TRACE_EVENT1(
-      "cc",
-      "TestSchedulerFrameSourcesConstructor::ConstructBackgroundFrameSource",
-      "source",
-      "TestSyntheticBeginFrameSource");
-  DCHECK(!(scheduler->background_frame_source_internal_));
-  scheduler->background_frame_source_internal_ =
-      TestSyntheticBeginFrameSource::Create(
-          now_src_, test_task_runner_, base::TimeDelta::FromSeconds(1));
-  return scheduler->background_frame_source_internal_.get();
-}
-
-BeginFrameSource*
 TestSchedulerFrameSourcesConstructor::ConstructUnthrottledFrameSource(
     Scheduler* scheduler) {
   TRACE_EVENT1(

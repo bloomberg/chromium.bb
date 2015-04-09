@@ -729,6 +729,11 @@ bool SchedulerStateMachine::BeginFrameNeeded() const {
   // TODO(brianderson): Support output surface creation inside a BeginFrame.
   if (!HasInitializedOutputSurface())
     return false;
+
+  // If we are not visible, we don't need BeginFrame messages.
+  if (!visible_)
+    return false;
+
   return (BeginFrameRequiredForAction() || BeginFrameRequiredForChildren() ||
           ProactiveBeginFrameWanted());
 }
@@ -750,15 +755,7 @@ bool SchedulerStateMachine::BeginFrameRequiredForAction() const {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     return true;
 
-  // TODO(mithro): Remove background animation ticking. crbug.com/371747
-  if (needs_animate_)
-    return true;
-
-  // Only background tick for animations - not draws, which will never happen.
-  if (!visible_)
-    return false;
-
-  return needs_redraw_ || (needs_commit_ && !defer_commits_);
+  return needs_animate_ || needs_redraw_ || (needs_commit_ && !defer_commits_);
 }
 
 // These are cases where we are very likely want a BeginFrame message in the

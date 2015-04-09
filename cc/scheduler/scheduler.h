@@ -64,8 +64,6 @@ class CC_EXPORT SchedulerFrameSourcesConstructor {
  public:
   virtual ~SchedulerFrameSourcesConstructor() {}
   virtual BeginFrameSource* ConstructPrimaryFrameSource(Scheduler* scheduler);
-  virtual BeginFrameSource* ConstructBackgroundFrameSource(
-      Scheduler* scheduler);
   virtual BeginFrameSource* ConstructUnthrottledFrameSource(
       Scheduler* scheduler);
 
@@ -188,12 +186,10 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
 
   scoped_ptr<BeginFrameSourceMultiplexer> frame_source_;
   BeginFrameSource* primary_frame_source_;
-  BeginFrameSource* background_frame_source_;
   BeginFrameSource* unthrottled_frame_source_;
 
   // Storage when frame sources are internal
   scoped_ptr<BeginFrameSource> primary_frame_source_internal_;
-  scoped_ptr<SyntheticBeginFrameSource> background_frame_source_internal_;
   scoped_ptr<BeginFrameSource> unthrottled_frame_source_internal_;
 
   VSyncParameterObserver* vsync_observer_;
@@ -243,7 +239,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
   void FinishImplFrame();
   void OnBeginImplFrameDeadline();
   void PollToAdvanceCommitState();
-  void UpdateActiveFrameSource();
 
   base::TimeDelta EstimatedParentDrawTime() {
     return estimated_parent_draw_time_;
