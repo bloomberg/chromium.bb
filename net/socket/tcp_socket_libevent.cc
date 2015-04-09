@@ -56,6 +56,7 @@ bool SetTCPNoDelay(int fd, bool no_delay) {
 
 // SetTCPKeepAlive sets SO_KEEPALIVE.
 bool SetTCPKeepAlive(int fd, bool enable, int delay) {
+  // Enabling TCP keepalives is the same on all platforms.
   int on = enable ? 1 : 0;
   if (setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &on, sizeof(on))) {
     PLOG(ERROR) << "Failed to set SO_KEEPALIVE on fd: " << fd;
@@ -67,6 +68,8 @@ bool SetTCPKeepAlive(int fd, bool enable, int delay) {
     return true;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
+  // Setting the keepalive interval varies by platform.
+
   // Set seconds until first TCP keep alive.
   if (setsockopt(fd, SOL_TCP, TCP_KEEPIDLE, &delay, sizeof(delay))) {
     PLOG(ERROR) << "Failed to set TCP_KEEPIDLE on fd: " << fd;
@@ -75,6 +78,11 @@ bool SetTCPKeepAlive(int fd, bool enable, int delay) {
   // Set seconds between TCP keep alives.
   if (setsockopt(fd, SOL_TCP, TCP_KEEPINTVL, &delay, sizeof(delay))) {
     PLOG(ERROR) << "Failed to set TCP_KEEPINTVL on fd: " << fd;
+    return false;
+  }
+#elif defined(OS_MACOSX) || defined(OS_IOS)
+  if (setsockopt(fd, IPPROTO_TCP, TCP_KEEPALIVE, &delay, sizeof(delay))) {
+    PLOG(ERROR) << "Failed to set TCP_KEEPALIVE on fd: " << fd;
     return false;
   }
 #endif
