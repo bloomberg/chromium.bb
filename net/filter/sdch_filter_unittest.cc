@@ -13,6 +13,8 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "net/base/io_buffer.h"
+#include "net/base/sdch_dictionary.h"
+#include "net/base/sdch_manager.h"
 #include "net/base/sdch_observer.h"
 #include "net/filter/mock_filter_context.h"
 #include "net/filter/sdch_filter.h"
@@ -1220,9 +1222,8 @@ TEST_F(SdchFilterTest, UnexpectedDictionary) {
   ASSERT_TRUE(hash_set);
   ASSERT_EQ(SDCH_OK, problem_code);
 
-  const_cast<SdchManager::Dictionary*>(
-      hash_set->GetDictionary(server_hash))->SetClockForTesting(
-      clock.Pass());
+  const_cast<SdchDictionary*>(hash_set->GetDictionary(server_hash))
+      ->SetClockForTesting(clock.Pass());
 
   // Encode output with the second dictionary.
   std::string sdch_compressed(NewSdchCompressedData(expired_dictionary));

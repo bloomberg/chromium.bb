@@ -18,6 +18,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
+#include "net/base/sdch_dictionary.h"
 #include "net/base/sdch_manager.h"
 #include "net/filter/filter.h"
 
@@ -95,7 +96,7 @@ class NET_EXPORT_PRIVATE SdchFilter : public Filter {
   // Validity of this pointer is guaranteed by either the FilterContext holding
   // a containing SdchManager::DictionarySet, or this object holding a
   // container in |unexpected_dictionary_handle_| below.
-  const SdchManager::Dictionary *dictionary_;
+  const SdchDictionary* dictionary_;
 
   // We keep a copy of the URLRequestContext for use in the destructor, (at
   // which point GetURLRequestContext() will likely return null because of
