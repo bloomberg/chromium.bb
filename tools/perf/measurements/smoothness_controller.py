@@ -13,9 +13,8 @@ from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 from telemetry.value import trace
 from telemetry.web_perf.metrics import smoothness
+from telemetry.web_perf import smooth_gesture_util
 from telemetry.web_perf import timeline_interaction_record as tir_module
-
-from measurements import smooth_gesture_util
 
 
 RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'

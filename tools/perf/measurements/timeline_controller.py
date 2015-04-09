@@ -7,9 +7,8 @@ from telemetry.core.platform import tracing_options
 from telemetry.page import action_runner
 from telemetry.timeline.model import TimelineModel
 from telemetry.value import trace
+from telemetry.web_perf import smooth_gesture_util
 from telemetry.web_perf import timeline_interaction_record as tir_module
-
-from measurements import smooth_gesture_util
 
 
 RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
