@@ -6,6 +6,7 @@
 
 #ifdef GBM_I915
 
+#include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
@@ -49,6 +50,7 @@ int gbm_i915_init(struct gbm_device *gbm)
 	get_param.value = &device_id;
 	ret = drmIoctl(gbm->fd, DRM_IOCTL_I915_GETPARAM, &get_param);
 	if (ret) {
+		fprintf(stderr, "minigbm: DRM_IOCTL_I915_GETPARAM failed\n");
 		free(i915_gbm);
 		return -1;
 	}
@@ -143,9 +145,11 @@ int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint3
 	gem_create.size = size;
 
 	ret = drmIoctl(gbm->fd, DRM_IOCTL_I915_GEM_CREATE, &gem_create);
-	if (ret)
+	if (ret) {
+		fprintf(stderr, "minigbm: DRM_IOCTL_I915_GEM_CREATE failed "
+				"(size=%zu)\n", size);
 		return ret;
-
+	}
 	bo->handle.u32 = gem_create.handle;
 	bo->size = size;
 
@@ -160,6 +164,12 @@ int gbm_i915_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint3
 	if (ret == -1) {
 		struct drm_gem_close gem_close;
 		gem_close.handle = bo->handle.u32;
+		fprintf(stderr, "minigbm: DRM_IOCTL_I915_GEM_SET_TILING failed "
+				"errno=%x (handle=%x, tiling=%x, stride=%x)\n",
+				errno,
+				gem_set_tiling.handle,
+				gem_set_tiling.tiling_mode,
+				gem_set_tiling.stride);
 		drmIoctl(gbm->fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
 		return -errno;
 	}

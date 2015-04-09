@@ -100,8 +100,11 @@ int gbm_dumb_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, uint3
 	create_dumb.flags = 0;
 
 	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_dumb);
-	if (ret)
+	if (ret) {
+		fprintf(stderr, "minigbm: DRM_IOCTL_MODE_CREATE_DUMB failed "
+				"(handle=%x)\n", bo->handle.u32);
 		return ret;
+	}
 
 	bo->handle.u32 = create_dumb.handle;
 	bo->size = create_dumb.size;
@@ -119,8 +122,11 @@ int gbm_dumb_bo_destroy(struct gbm_bo *bo)
 	destroy_dumb.handle = bo->handle.u32;
 
 	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_dumb);
-	if (ret)
+	if (ret) {
+		fprintf(stderr, "minigbm: DRM_IOCTL_MODE_DESTROY_DUMB failed "
+				"(handle=%x)\n", bo->handle.u32);
 		return ret;
+	}
 
 	return 0;
 }
@@ -134,8 +140,11 @@ int gbm_gem_bo_destroy(struct gbm_bo *bo)
 	gem_close.handle = bo->handle.u32;
 
 	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
-	if (ret)
+	if (ret) {
+		fprintf(stderr, "minigbm: DRM_IOCTL_GEM_CLOSE failed "
+				"(handle=%x)\n", bo->handle.u32);
 		return ret;
+	}
 
 	return 0;
 }

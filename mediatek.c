@@ -6,6 +6,7 @@
 
 #ifdef GBM_MEDIATEK
 
+#include <stdio.h>
 #include <string.h>
 #include <xf86drm.h>
 #include <mediatek_drm.h>
@@ -23,8 +24,11 @@ int gbm_mediatek_bo_create(struct gbm_bo *bo, uint32_t width, uint32_t height, u
 	gem_create.size = size;
 
 	ret = drmIoctl(bo->gbm->fd, DRM_IOCTL_MTK_GEM_CREATE, &gem_create);
-	if (ret)
+	if (ret) {
+		fprintf(stderr, "minigbm: DRM_IOCTL_MTK_GEM_CREATE failed "
+				"(size=%zu)\n", size);
 		return ret;
+	}
 
 	bo->handle.u32 = gem_create.handle;
 	bo->size = size;
