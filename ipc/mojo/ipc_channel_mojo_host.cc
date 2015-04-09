@@ -30,6 +30,7 @@ class ChannelMojoHost::ChannelDelegate
   // ChannelMojo::Delegate
   base::WeakPtr<Delegate> ToWeakPtr() override;
   void OnChannelCreated(base::WeakPtr<ChannelMojo> channel) override;
+  scoped_refptr<base::TaskRunner> GetIOTaskRunner() override;
 
   // Returns an weak ptr of ChannelDelegate instead of Delegate
   base::WeakPtr<ChannelDelegate> GetWeakPtr();
@@ -70,6 +71,11 @@ void ChannelMojoHost::ChannelDelegate::OnChannelCreated(
     base::WeakPtr<ChannelMojo> channel) {
   DCHECK(!channel_);
   channel_ = channel;
+}
+
+scoped_refptr<base::TaskRunner>
+ChannelMojoHost::ChannelDelegate::GetIOTaskRunner() {
+  return io_task_runner_;
 }
 
 void ChannelMojoHost::ChannelDelegate::OnClientLaunched(

@@ -66,9 +66,12 @@ class ListenerThatExpectsOK : public IPC::Listener {
 class ChannelClient {
  public:
   explicit ChannelClient(IPC::Listener* listener, const char* name) {
-    channel_ = IPC::ChannelMojo::Create(NULL, main_message_loop_.task_runner(),
+    ipc_support_.reset(
+        new IPC::ScopedIPCSupport(main_message_loop_.task_runner()));
+    channel_ = IPC::ChannelMojo::Create(NULL,
                                         IPCTestBase::GetChannelName(name),
-                                        IPC::Channel::MODE_CLIENT, listener);
+                                        IPC::Channel::MODE_CLIENT,
+                                        listener);
   }
 
   void Connect() {
@@ -87,6 +90,7 @@ class ChannelClient {
 
  private:
   base::MessageLoopForIO main_message_loop_;
+  scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
   scoped_ptr<IPC::ChannelMojo> channel_;
 };
 
@@ -94,17 +98,22 @@ class IPCChannelMojoTestBase : public IPCTestBase {
  public:
   void InitWithMojo(const std::string& test_client_name) {
     Init(test_client_name);
+    ipc_support_.reset(new IPC::ScopedIPCSupport(task_runner()));
   }
 
   void TearDown() override {
     // Make sure Mojo IPC support is properly shutdown on the I/O loop before
     // TearDown continues.
+    ipc_support_.reset();
     base::RunLoop run_loop;
     task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
 
     IPCTestBase::TearDown();
   }
+
+ private:
+  scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
 };
 
 class IPCChannelMojoTest : public IPCChannelMojoTestBase {
@@ -114,7 +123,7 @@ class IPCChannelMojoTest : public IPCChannelMojoTestBase {
       base::SequencedTaskRunner* runner) override {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
     return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
-                                                 task_runner(), handle);
+                                                 handle);
   }
 
   bool DidStartClient() override {
@@ -222,7 +231,7 @@ class IPCChannelMojoErrorTest : public IPCChannelMojoTestBase {
       base::SequencedTaskRunner* runner) override {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
     return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
-                                                 task_runner(), handle);
+                                                 handle);
   }
 
   bool DidStartClient() override {
@@ -556,7 +565,7 @@ class IPCChannelMojoDeadHandleTest : public IPCChannelMojoTestBase {
       base::SequencedTaskRunner* runner) override {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
     return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
-                                                 task_runner(), handle);
+                                                 handle);
   }
 
   virtual bool DidStartClient() override {

@@ -54,7 +54,6 @@ void RenderThreadImplBrowserIPCTestHelper::SetupMojo() {
 
   channel_ = IPC::ChannelProxy::Create(
       IPC::ChannelMojo::CreateServerFactory(mojo_host_->channel_delegate(),
-                                            ipc_thread_->task_runner(),
                                             channel_id_),
       dummy_listener_.get(), ipc_thread_->task_runner());
 

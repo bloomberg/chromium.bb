@@ -54,6 +54,7 @@ class IPC_MOJO_EXPORT ChannelMojo
    public:
     virtual ~Delegate() {}
     virtual base::WeakPtr<Delegate> ToWeakPtr() = 0;
+    virtual scoped_refptr<base::TaskRunner> GetIOTaskRunner() = 0;
     virtual void OnChannelCreated(base::WeakPtr<ChannelMojo> channel) = 0;
   };
 
@@ -62,24 +63,20 @@ class IPC_MOJO_EXPORT ChannelMojo
 
   // Create ChannelMojo. A bootstrap channel is created as well.
   // |host| must not be null for server channels.
-  static scoped_ptr<ChannelMojo> Create(
-      Delegate* delegate,
-      scoped_refptr<base::TaskRunner> io_runner,
-      const ChannelHandle& channel_handle,
-      Mode mode,
-      Listener* listener);
+  static scoped_ptr<ChannelMojo> Create(Delegate* delegate,
+                                        const ChannelHandle& channel_handle,
+                                        Mode mode,
+                                        Listener* listener);
 
   // Create a factory object for ChannelMojo.
   // The factory is used to create Mojo-based ChannelProxy family.
   // |host| must not be null.
   static scoped_ptr<ChannelFactory> CreateServerFactory(
       Delegate* delegate,
-      scoped_refptr<base::TaskRunner> io_runner,
       const ChannelHandle& channel_handle);
 
   static scoped_ptr<ChannelFactory> CreateClientFactory(
       Delegate* delegate,
-      scoped_refptr<base::TaskRunner> io_runner,
       const ChannelHandle& channel_handle);
 
   ~ChannelMojo() override;
@@ -118,7 +115,6 @@ class IPC_MOJO_EXPORT ChannelMojo
 
  protected:
   ChannelMojo(Delegate* delegate,
-              scoped_refptr<base::TaskRunner> io_runner,
               const ChannelHandle& channel_handle,
               Mode mode,
               Listener* listener);
@@ -140,7 +136,7 @@ class IPC_MOJO_EXPORT ChannelMojo
   // notifications invoked by them.
   typedef internal::MessagePipeReader::DelayedDeleter ReaderDeleter;
 
-  void InitOnIOThread(ChannelMojo::Delegate* delegate);
+  void InitDelegate(ChannelMojo::Delegate* delegate);
 
   scoped_ptr<MojoBootstrap> bootstrap_;
   base::WeakPtr<Delegate> delegate_;
