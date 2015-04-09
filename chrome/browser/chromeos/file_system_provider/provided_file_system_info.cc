@@ -9,7 +9,10 @@ namespace chromeos {
 namespace file_system_provider {
 
 MountOptions::MountOptions()
-    : writable(false), supports_notify_tag(false), opened_files_limit(0) {
+    : writable(false),
+      source(SOURCE_UNKNOWN),
+      supports_notify_tag(false),
+      opened_files_limit(0) {
 }
 
 MountOptions::MountOptions(const std::string& file_system_id,
@@ -17,12 +20,13 @@ MountOptions::MountOptions(const std::string& file_system_id,
     : file_system_id(file_system_id),
       display_name(display_name),
       writable(false),
+      source(SOURCE_UNKNOWN),
       supports_notify_tag(false),
       opened_files_limit(0) {
 }
 
 ProvidedFileSystemInfo::ProvidedFileSystemInfo()
-    : writable_(false), supports_notify_tag_(false) {
+    : writable_(false), source_(SOURCE_UNKNOWN), supports_notify_tag_(false) {
 }
 
 ProvidedFileSystemInfo::ProvidedFileSystemInfo(
@@ -33,6 +37,7 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo(
       file_system_id_(mount_options.file_system_id),
       display_name_(mount_options.display_name),
       writable_(mount_options.writable),
+      source_(mount_options.source),
       supports_notify_tag_(mount_options.supports_notify_tag),
       opened_files_limit_(mount_options.opened_files_limit),
       mount_path_(mount_path) {

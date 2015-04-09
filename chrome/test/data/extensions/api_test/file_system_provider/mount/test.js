@@ -65,7 +65,11 @@ chrome.test.runTests([
   function successfulMount() {
     var fileSystemId = 'caramel-candy';
     chrome.fileSystemProvider.mount(
-        {fileSystemId: fileSystemId, displayName: 'caramel-candy.zip'},
+        {
+          fileSystemId: fileSystemId,
+          displayName: 'caramel-candy.zip',
+          source: 'FILE'
+        },
         chrome.test.callbackPass(function() {
           chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeList) {
             var volumeInfo;

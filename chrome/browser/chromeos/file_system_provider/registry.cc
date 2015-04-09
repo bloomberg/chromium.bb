@@ -26,6 +26,7 @@ namespace file_system_provider {
 const char kPrefKeyFileSystemId[] = "file-system-id";
 const char kPrefKeyDisplayName[] = "display-name";
 const char kPrefKeyWritable[] = "writable";
+const char kPrefKeySource[] = "source";
 const char kPrefKeySupportsNotifyTag[] = "supports-notify-tag";
 const char kPrefKeyWatchers[] = "watchers";
 const char kPrefKeyWatcherEntryPath[] = "entry-path";
@@ -38,6 +39,41 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
       prefs::kFileSystemProviderMounted,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+std::string SourceToString(Source source) {
+  switch (source) {
+    case SOURCE_UNKNOWN:
+      return "unknown";
+    case SOURCE_FILE:
+      return "file";
+    case SOURCE_DEVICE:
+      return "device";
+    case SOURCE_NETWORK:
+      return "network";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
+bool StringToSource(const std::string& source, Source* result) {
+  if (source.compare("unknown") == 0) {
+    *result = SOURCE_UNKNOWN;
+    return true;
+  }
+  if (source.compare("file") == 0) {
+    *result = SOURCE_FILE;
+    return true;
+  }
+  if (source.compare("device") == 0) {
+    *result = SOURCE_DEVICE;
+    return true;
+  }
+  if (source.compare("network") == 0) {
+    *result = SOURCE_NETWORK;
+    return true;
+  }
+  return false;
 }
 
 Registry::Registry(Profile* profile) : profile_(profile) {
@@ -56,6 +92,8 @@ void Registry::RememberFileSystem(
                                              file_system_info.display_name());
   file_system->SetBooleanWithoutPathExpansion(kPrefKeyWritable,
                                               file_system_info.writable());
+  file_system->SetStringWithoutPathExpansion(
+      kPrefKeySource, SourceToString(file_system_info.source()));
   file_system->SetBooleanWithoutPathExpansion(
       kPrefKeySupportsNotifyTag, file_system_info.supports_notify_tag());
   file_system->SetIntegerWithoutPathExpansion(
@@ -153,6 +191,8 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
     bool writable = false;
     bool supports_notify_tag = false;
     int opened_files_limit = 0;
+    std::string source_as_string;
+    Source source = SOURCE_UNKNOWN;
 
     // TODO(mtomasz): Move opened files limit to the mandatory list above in
     // M42.
@@ -166,9 +206,12 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
          !file_system->GetBooleanWithoutPathExpansion(kPrefKeySupportsNotifyTag,
                                                       &supports_notify_tag) ||
          file_system_id.empty() || display_name.empty()) ||
+        // Optional fields.
         (file_system->GetIntegerWithoutPathExpansion(kPrefKeyOpenedFilesLimit,
                                                      &opened_files_limit) &&
-         opened_files_limit < 0)) {
+         (file_system->GetStringWithoutPathExpansion(kPrefKeySource,
+                                                     &source_as_string) &&
+          !StringToSource(source_as_string, &source)))) {
       LOG(ERROR)
           << "Malformed provided file system information in preferences.";
       continue;
@@ -178,6 +221,7 @@ scoped_ptr<Registry::RestoredFileSystems> Registry::RestoreFileSystems(
     options.file_system_id = file_system_id;
     options.display_name = display_name;
     options.writable = writable;
+    options.source = source;
     options.supports_notify_tag = supports_notify_tag;
     options.opened_files_limit = opened_files_limit;
 

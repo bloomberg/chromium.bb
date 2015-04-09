@@ -173,6 +173,20 @@ enum EntryTagVisibility {
   public
 };
 
+// Source of the volume data.
+enum VolumeSource {
+  // Represents a mounted file. In most cases, simply an archive.
+  file,
+
+  // Representing a device, eg. an MTP device. Also, used for Downloads as it's
+  // containing files stored on the Chrome OS device.
+  device,
+
+  // Used for volumes which contain files on a remote machine, eg. Drive or
+  // cloud services implemented via the File System Provider API.
+  network
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -280,11 +294,14 @@ dictionary VolumeMetadata {
   // ID of the disk volume.
   DOMString volumeId;
 
-  // Id the provided file system (for proviided file systems).
+  // Id the provided file system (for provided file systems).
   DOMString? fileSystemId;
 
   // Extension providing this volume (for provided file systems).
   DOMString? extensionId;
+
+  // Source of the volume data.
+  VolumeSource? volumeSource;
 
   // Label of the volume (if available).
   DOMString? volumeLabel;
