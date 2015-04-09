@@ -46,8 +46,6 @@ class WebviewLoginTest : public OobeBaseTest {
           "});"));
 
     content::DOMMessageQueue message_queue;
-    GetLoginDisplay()->ShowSigninScreenForCreds("", "");
-
     std::string message;
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
     EXPECT_EQ("\"GaiaReady\"", message);
