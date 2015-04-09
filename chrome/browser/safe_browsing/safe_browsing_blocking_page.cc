@@ -56,10 +56,10 @@ namespace {
 // diagnostic page.
 #if defined(GOOGLE_CHROME_BUILD)
 const char kSbDiagnosticUrl[] =
-    "http://safebrowsing.clients.google.com/safebrowsing/diagnostic?site=%s&client=googlechrome";
+    "https://www.google.com/safebrowsing/diagnostic?site=%s&client=googlechrome";
 #else
 const char kSbDiagnosticUrl[] =
-    "http://safebrowsing.clients.google.com/safebrowsing/diagnostic?site=%s&client=chromium";
+    "https://www.google.com/safebrowsing/diagnostic?site=%s&client=chromium";
 #endif
 
 // URL for malware and phishing, V2.
