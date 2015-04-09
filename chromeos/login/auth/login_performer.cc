@@ -29,7 +29,8 @@ using base::UserMetricsAction;
 namespace chromeos {
 
 LoginPerformer::LoginPerformer(scoped_refptr<base::TaskRunner> task_runner,
-                               Delegate* delegate)
+                               Delegate* delegate,
+                               bool disable_client_login)
     : delegate_(delegate),
       task_runner_(task_runner),
       online_attempt_host_(this),
@@ -37,6 +38,7 @@ LoginPerformer::LoginPerformer(scoped_refptr<base::TaskRunner> task_runner,
       password_changed_(false),
       password_changed_callback_count_(0),
       auth_mode_(AUTH_MODE_INTERNAL),
+      disable_client_login_(disable_client_login),
       weak_factory_(this) {
 }
 
@@ -292,9 +294,11 @@ void LoginPerformer::StartAuthentication() {
                                       authenticator_.get(),
                                       base::Unretained(browser_context),
                                       user_context_));
-    // Make unobtrusive online check. It helps to determine password change
-    // state in the case when offline login fails.
-    online_attempt_host_.Check(GetSigninRequestContext(), user_context_);
+    if (!disable_client_login_) {
+      // Make unobtrusive online check. It helps to determine password change
+      // state in the case when offline login fails.
+      online_attempt_host_.Check(GetSigninRequestContext(), user_context_);
+    }
   } else {
     NOTREACHED();
   }
