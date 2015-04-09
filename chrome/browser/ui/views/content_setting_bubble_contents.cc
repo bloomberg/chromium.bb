@@ -237,10 +237,10 @@ void ContentSettingBubbleContents::Init() {
         layout->AddView(new Favicon(list_item.image, this, link));
         layout->AddView(link);
       } else {
-        views::Label* label =
-            new views::Label(base::UTF8ToUTF16(list_item.title));
-        layout->AddView(new Favicon(list_item.image, this, NULL));
-        layout->AddView(label);
+        views::ImageView* icon = new views::ImageView();
+        icon->SetImage(list_item.image.AsImageSkia());
+        layout->AddView(icon);
+        layout->AddView(new views::Label(base::UTF8ToUTF16(list_item.title)));
       }
       row++;
       bubble_content_empty = false;
