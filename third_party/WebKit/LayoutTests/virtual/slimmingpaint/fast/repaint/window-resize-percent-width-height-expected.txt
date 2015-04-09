@@ -12,6 +12,7 @@
       "paintInvalidationClients": [
         "VerticalScrollbar",
         "LayoutView #document",
+        "LayoutBlockFlow HTML",
         "LayoutBlockFlow (positioned) DIV"
       ]
     }
@@ -52,6 +53,7 @@
       ],
       "paintInvalidationClients": [
         "LayoutView #document",
+        "LayoutBlockFlow HTML",
         "LayoutBlockFlow (positioned) DIV"
       ]
     }
