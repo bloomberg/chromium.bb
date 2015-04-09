@@ -56,6 +56,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win / AMD failures
     self.Fail('conformance/textures/texparameter-test.html',
         ['win', 'amd', 'd3d9'], bug=839) # angle bug ID
+    self.Fail('conformance/extensions/angle-instanced-arrays.html',
+        ['win', 'amd', 'd3d9'], bug=475095)
+    self.Fail('conformance/rendering/more-than-65536-indices.html',
+        ['win', 'amd', 'd3d9'], bug=475095)
 
     # Win / D3D9 failures
     # Skipping these tests because they're causing assertion failures.
