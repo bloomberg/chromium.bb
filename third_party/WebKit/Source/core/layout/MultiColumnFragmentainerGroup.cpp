@@ -10,20 +10,21 @@
 
 namespace blink {
 
-MultiColumnFragmentainerGroup::MultiColumnFragmentainerGroup(LayoutMultiColumnSet& columnSet)
+MultiColumnFragmentainerGroup::MultiColumnFragmentainerGroup(LayoutMultiColumnSet* columnSet)
     : m_columnSet(columnSet)
 {
+    ASSERT(columnSet);
 }
 
 bool MultiColumnFragmentainerGroup::isLastGroup() const
 {
-    return &m_columnSet.lastFragmentainerGroup() == this;
+    return &m_columnSet->lastFragmentainerGroup() == this;
 }
 
 LayoutSize MultiColumnFragmentainerGroup::offsetFromColumnSet() const
 {
     LayoutSize offset(LayoutUnit(), logicalTop());
-    if (!m_columnSet.flowThread()->isHorizontalWritingMode())
+    if (!m_columnSet->flowThread()->isHorizontalWritingMode())
         return offset.transposedSize();
     return offset;
 }
@@ -33,7 +34,7 @@ bool MultiColumnFragmentainerGroup::heightIsAuto() const
     // Only the last row may have auto height, and thus be balanced. There are no good reasons to
     // balance the preceding rows, and that could potentially lead to an insane number of layout
     // passes as well.
-    return isLastGroup() && m_columnSet.heightIsAuto();
+    return isLastGroup() && m_columnSet->heightIsAuto();
 }
 
 void MultiColumnFragmentainerGroup::resetColumnHeight()
@@ -48,10 +49,10 @@ void MultiColumnFragmentainerGroup::resetColumnHeight()
     if (heightIsAuto())
         m_columnHeight = LayoutUnit();
     else
-        setAndConstrainColumnHeight(heightAdjustedForRowOffset(m_columnSet.multiColumnFlowThread()->columnHeightAvailable()));
+        setAndConstrainColumnHeight(heightAdjustedForRowOffset(m_columnSet->multiColumnFlowThread()->columnHeightAvailable()));
 
     if (m_columnHeight != oldColumnHeight)
-        m_columnSet.setChildNeedsLayout(MarkOnlyThis);
+        m_columnSet->setChildNeedsLayout(MarkOnlyThis);
 
     // Content runs are only needed in the initial layout pass, in order to find an initial column
     // height, and should have been deleted afterwards. We're about to rebuild the content runs, so
@@ -65,7 +66,7 @@ void MultiColumnFragmentainerGroup::addContentRun(LayoutUnit endOffsetInFlowThre
         return;
     // Append another item as long as we haven't exceeded used column count. What ends up in the
     // overflow area shouldn't affect column balancing.
-    if (m_contentRuns.size() < m_columnSet.usedColumnCount())
+    if (m_contentRuns.size() < m_columnSet->usedColumnCount())
         m_contentRuns.append(ContentRun(endOffsetInFlowThread));
 }
 
@@ -125,7 +126,7 @@ void MultiColumnFragmentainerGroup::expandToEncompassFlowThreadOverflow()
     // to encompass that remaining height and overflow. The idea is that we will generate
     // additional columns and pages to hold that overflow, since people do write bad
     // content like <body style="height:0px"> in multi-column layouts.
-    LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
+    LayoutMultiColumnFlowThread* flowThread = m_columnSet->multiColumnFlowThread();
     LayoutRect layoutRect = flowThread->layoutOverflowRect();
     m_logicalBottomInFlowThread = flowThread->isHorizontalWritingMode() ? layoutRect.maxY() : layoutRect.maxX();
 }
@@ -134,9 +135,9 @@ LayoutSize MultiColumnFragmentainerGroup::flowThreadTranslationAtOffset(LayoutUn
 {
     unsigned columnIndex = columnIndexAtOffset(offsetInFlowThread);
     LayoutRect portionRect(flowThreadPortionRectAt(columnIndex));
-    m_columnSet.flipForWritingMode(portionRect);
+    m_columnSet->flipForWritingMode(portionRect);
     LayoutRect columnRect(columnRectAt(columnIndex));
-    m_columnSet.flipForWritingMode(columnRect);
+    m_columnSet->flipForWritingMode(columnRect);
     return columnRect.location() - portionRect.location();
 }
 
@@ -157,15 +158,15 @@ LayoutPoint MultiColumnFragmentainerGroup::visualPointToFlowThreadPoint(const La
     // start position in the column. The effect of this is that if the block position is before the
     // column rectangle, we'll get to the beginning of this column, while if the block position is
     // after the column rectangle, we'll get to the beginning of the next column.
-    if (!m_columnSet.isHorizontalWritingMode()) {
-        LayoutUnit columnStart = m_columnSet.style()->isLeftToRightDirection() ? LayoutUnit() : columnRect.height();
+    if (!m_columnSet->isHorizontalWritingMode()) {
+        LayoutUnit columnStart = m_columnSet->style()->isLeftToRightDirection() ? LayoutUnit() : columnRect.height();
         if (localPoint.x() < 0)
             localPoint = LayoutPoint(LayoutUnit(), columnStart);
         else if (localPoint.x() > logicalHeight())
             localPoint = LayoutPoint(logicalHeight(), columnStart);
         return LayoutPoint(localPoint.x() + logicalTopInFlowThreadAt(columnIndex), localPoint.y());
     }
-    LayoutUnit columnStart = m_columnSet.style()->isLeftToRightDirection() ? LayoutUnit() : columnRect.width();
+    LayoutUnit columnStart = m_columnSet->style()->isLeftToRightDirection() ? LayoutUnit() : columnRect.width();
     if (localPoint.y() < 0)
         localPoint = LayoutPoint(columnStart, LayoutUnit());
     else if (localPoint.y() > logicalHeight())
@@ -192,8 +193,8 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
     // e.g. LayoutBox::frameRect(). These rectangles also pretend that there's only one long column,
     // i.e. they are for the flow thread.
 
-    LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
-    bool isHorizontalWritingMode = m_columnSet.isHorizontalWritingMode();
+    LayoutMultiColumnFlowThread* flowThread = m_columnSet->multiColumnFlowThread();
+    bool isHorizontalWritingMode = m_columnSet->isHorizontalWritingMode();
 
     // Put the layer bounds into flow thread-local coordinates by flipping it first. Since we're in
     // a renderer, most rectangles are represented this way.
@@ -203,7 +204,7 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
     // Now we can compare with the flow thread portions owned by each column. First let's
     // see if the rect intersects our flow thread portion at all.
     LayoutRect clippedRect(layerBoundsInFlowThread);
-    clippedRect.intersect(m_columnSet.LayoutRegion::flowThreadPortionOverflowRect()); // FIXME: clean up this mess.
+    clippedRect.intersect(m_columnSet->LayoutRegion::flowThreadPortionOverflowRect()); // FIXME: clean up this mess.
     if (clippedRect.isEmpty())
         return;
 
@@ -217,14 +218,14 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
     unsigned startColumn = columnIndexAtOffset(layerLogicalTop);
     unsigned endColumn = columnIndexAtOffset(layerLogicalBottom);
 
-    LayoutUnit colLogicalWidth = m_columnSet.pageLogicalWidth();
-    LayoutUnit colGap = m_columnSet.columnGap();
+    LayoutUnit colLogicalWidth = m_columnSet->pageLogicalWidth();
+    LayoutUnit colGap = m_columnSet->columnGap();
     unsigned colCount = actualColumnCount();
 
     bool progressionIsInline = flowThread->progressionIsInline();
-    bool leftToRight = m_columnSet.style()->isLeftToRightDirection();
+    bool leftToRight = m_columnSet->style()->isLeftToRightDirection();
 
-    LayoutUnit initialBlockOffset = m_columnSet.logicalTop() + logicalTop() - flowThread->logicalTop();
+    LayoutUnit initialBlockOffset = m_columnSet->logicalTop() + logicalTop() - flowThread->logicalTop();
 
     for (unsigned i = startColumn; i <= endColumn; i++) {
         // Get the portion of the flow thread that corresponds to this column.
@@ -256,7 +257,7 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
             // with the old multicolumn implementation.
             blockOffset = i * colGap;
         }
-        if (isFlippedBlocksWritingMode(m_columnSet.style()->writingMode()))
+        if (isFlippedBlocksWritingMode(m_columnSet->style()->writingMode()))
             blockOffset = -blockOffset;
         translationOffset.setY(blockOffset);
         if (!isHorizontalWritingMode)
@@ -321,9 +322,9 @@ LayoutUnit MultiColumnFragmentainerGroup::heightAdjustedForRowOffset(LayoutUnit 
     // a wasted layout iteration. Of course all other sets (if any) have this problem in the first
     // layout pass too, but there's really nothing we can do there until the flow thread has been
     // laid out anyway.
-    if (m_columnSet.previousSiblingMultiColumnSet()) {
-        LayoutBlockFlow* multicolBlock = m_columnSet.multiColumnBlockFlow();
-        LayoutUnit contentLogicalTop = m_columnSet.logicalTop() - multicolBlock->borderAndPaddingBefore();
+    if (m_columnSet->previousSiblingMultiColumnSet()) {
+        LayoutBlockFlow* multicolBlock = m_columnSet->multiColumnBlockFlow();
+        LayoutUnit contentLogicalTop = m_columnSet->logicalTop() - multicolBlock->borderAndPaddingBefore();
         height -= contentLogicalTop;
     }
     height -= logicalTop();
@@ -332,9 +333,9 @@ LayoutUnit MultiColumnFragmentainerGroup::heightAdjustedForRowOffset(LayoutUnit 
 
 LayoutUnit MultiColumnFragmentainerGroup::calculateMaxColumnHeight() const
 {
-    LayoutBlockFlow* multicolBlock = m_columnSet.multiColumnBlockFlow();
+    LayoutBlockFlow* multicolBlock = m_columnSet->multiColumnBlockFlow();
     const ComputedStyle& multicolStyle = multicolBlock->styleRef();
-    LayoutUnit availableHeight = m_columnSet.multiColumnFlowThread()->columnHeightAvailable();
+    LayoutUnit availableHeight = m_columnSet->multiColumnFlowThread()->columnHeightAvailable();
     LayoutUnit maxColumnHeight = availableHeight ? availableHeight : LayoutFlowThread::maxLogicalHeight();
     if (!multicolStyle.logicalMaxHeight().isMaxSizeNone()) {
         LayoutUnit logicalMaxHeight = multicolBlock->computeContentLogicalHeight(multicolStyle.logicalMaxHeight(), -1);
@@ -390,7 +391,7 @@ void MultiColumnFragmentainerGroup::distributeImplicitBreaks()
     // column count by one and shrink its columns' height. Repeat until we have the desired total
     // number of breaks. The largest column height among the runs will then be the initial column
     // height for the balancer to use.
-    while (columnCount < m_columnSet.usedColumnCount()) {
+    while (columnCount < m_columnSet->usedColumnCount()) {
         unsigned index = findRunWithTallestColumns();
         m_contentRuns[index].assumeAnotherImplicitBreak();
         columnCount++;
@@ -409,12 +410,12 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateColumnHeight(BalancedColumnHe
         return std::max<LayoutUnit>(m_contentRuns[index].columnLogicalHeight(startOffset), m_minimumColumnHeight);
     }
 
-    if (actualColumnCount() <= m_columnSet.usedColumnCount()) {
+    if (actualColumnCount() <= m_columnSet->usedColumnCount()) {
         // With the current column height, the content fits without creating overflowing columns. We're done.
         return m_columnHeight;
     }
 
-    if (m_contentRuns.size() >= m_columnSet.usedColumnCount()) {
+    if (m_contentRuns.size() >= m_columnSet->usedColumnCount()) {
         // Too many forced breaks to allow any implicit breaks. Initial balancing should already
         // have set a good height. There's nothing more we should do.
         return m_columnHeight;
@@ -440,23 +441,23 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateColumnHeight(BalancedColumnHe
 
 LayoutRect MultiColumnFragmentainerGroup::columnRectAt(unsigned columnIndex) const
 {
-    LayoutUnit columnLogicalWidth = m_columnSet.pageLogicalWidth();
+    LayoutUnit columnLogicalWidth = m_columnSet->pageLogicalWidth();
     LayoutUnit columnLogicalHeight = m_columnHeight;
     LayoutUnit columnLogicalTop;
     LayoutUnit columnLogicalLeft;
-    LayoutUnit columnGap = m_columnSet.columnGap();
+    LayoutUnit columnGap = m_columnSet->columnGap();
 
-    if (m_columnSet.multiColumnFlowThread()->progressionIsInline()) {
-        if (m_columnSet.style()->isLeftToRightDirection())
+    if (m_columnSet->multiColumnFlowThread()->progressionIsInline()) {
+        if (m_columnSet->style()->isLeftToRightDirection())
             columnLogicalLeft += columnIndex * (columnLogicalWidth + columnGap);
         else
-            columnLogicalLeft += m_columnSet.contentLogicalWidth() - columnLogicalWidth - columnIndex * (columnLogicalWidth + columnGap);
+            columnLogicalLeft += m_columnSet->contentLogicalWidth() - columnLogicalWidth - columnIndex * (columnLogicalWidth + columnGap);
     } else {
         columnLogicalTop += columnIndex * (columnLogicalHeight + columnGap);
     }
 
     LayoutRect columnRect(columnLogicalLeft, columnLogicalTop, columnLogicalWidth, columnLogicalHeight);
-    if (!m_columnSet.isHorizontalWritingMode())
+    if (!m_columnSet->isHorizontalWritingMode())
         return columnRect.transposedRect();
     return columnRect;
 }
@@ -464,9 +465,9 @@ LayoutRect MultiColumnFragmentainerGroup::columnRectAt(unsigned columnIndex) con
 LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionRectAt(unsigned columnIndex) const
 {
     LayoutUnit logicalTop = logicalTopInFlowThreadAt(columnIndex);
-    if (m_columnSet.isHorizontalWritingMode())
-        return LayoutRect(LayoutUnit(), logicalTop, m_columnSet.pageLogicalWidth(), m_columnHeight);
-    return LayoutRect(logicalTop, LayoutUnit(), m_columnHeight, m_columnSet.pageLogicalWidth());
+    if (m_columnSet->isHorizontalWritingMode())
+        return LayoutRect(LayoutUnit(), logicalTop, m_columnSet->pageLogicalWidth(), m_columnHeight);
+    return LayoutRect(logicalTop, LayoutUnit(), m_columnHeight, m_columnSet->pageLogicalWidth());
 }
 
 LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRect(const LayoutRect& portionRect, unsigned columnIndex, unsigned columnCount, LayoutUnit columnGap) const
@@ -483,17 +484,17 @@ LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRect(const La
     // This problem applies to regions and pages as well and is not unique to columns.
     bool isFirstColumn = !columnIndex;
     bool isLastColumn = columnIndex == columnCount - 1;
-    bool isLTR = m_columnSet.style()->isLeftToRightDirection();
+    bool isLTR = m_columnSet->style()->isLeftToRightDirection();
     bool isLeftmostColumn = isLTR ? isFirstColumn : isLastColumn;
     bool isRightmostColumn = isLTR ? isLastColumn : isFirstColumn;
 
     // Calculate the overflow rectangle, based on the flow thread's, clipped at column logical
     // top/bottom unless it's the first/last column.
-    LayoutRect overflowRect = m_columnSet.overflowRectForFlowThreadPortion(portionRect, isFirstColumn && m_columnSet.isFirstRegion(), isLastColumn && m_columnSet.isLastRegion());
+    LayoutRect overflowRect = m_columnSet->overflowRectForFlowThreadPortion(portionRect, isFirstColumn && m_columnSet->isFirstRegion(), isLastColumn && m_columnSet->isLastRegion());
 
     // Avoid overflowing into neighboring columns, by clipping in the middle of adjacent column
     // gaps. Also make sure that we avoid rounding errors.
-    if (m_columnSet.isHorizontalWritingMode()) {
+    if (m_columnSet->isHorizontalWritingMode()) {
         if (!isLeftmostColumn)
             overflowRect.shiftXEdgeTo(portionRect.x() - columnGap / 2);
         if (!isRightmostColumn)
@@ -526,13 +527,13 @@ unsigned MultiColumnFragmentainerGroup::columnIndexAtOffset(LayoutUnit offsetInF
 
 unsigned MultiColumnFragmentainerGroup::columnIndexAtVisualPoint(const LayoutPoint& visualPoint) const
 {
-    bool isColumnProgressionInline = m_columnSet.multiColumnFlowThread()->progressionIsInline();
-    bool isHorizontalWritingMode = m_columnSet.isHorizontalWritingMode();
-    LayoutUnit columnLengthInColumnProgressionDirection = isColumnProgressionInline ? m_columnSet.pageLogicalWidth() : m_columnSet.pageLogicalHeight();
+    bool isColumnProgressionInline = m_columnSet->multiColumnFlowThread()->progressionIsInline();
+    bool isHorizontalWritingMode = m_columnSet->isHorizontalWritingMode();
+    LayoutUnit columnLengthInColumnProgressionDirection = isColumnProgressionInline ? m_columnSet->pageLogicalWidth() : m_columnSet->pageLogicalHeight();
     LayoutUnit offsetInColumnProgressionDirection = isHorizontalWritingMode == isColumnProgressionInline ? visualPoint.x() : visualPoint.y();
-    if (!m_columnSet.style()->isLeftToRightDirection() && isColumnProgressionInline)
-        offsetInColumnProgressionDirection = m_columnSet.logicalWidth() - offsetInColumnProgressionDirection;
-    LayoutUnit columnGap = m_columnSet.columnGap();
+    if (!m_columnSet->style()->isLeftToRightDirection() && isColumnProgressionInline)
+        offsetInColumnProgressionDirection = m_columnSet->logicalWidth() - offsetInColumnProgressionDirection;
+    LayoutUnit columnGap = m_columnSet->columnGap();
     if (columnLengthInColumnProgressionDirection + columnGap <= 0)
         return 0;
     // Column boundaries are in the middle of the column gap.
@@ -545,12 +546,12 @@ unsigned MultiColumnFragmentainerGroup::columnIndexAtVisualPoint(const LayoutPoi
 MultiColumnFragmentainerGroupList::MultiColumnFragmentainerGroupList(LayoutMultiColumnSet& columnSet)
     : m_columnSet(columnSet)
 {
-    append(MultiColumnFragmentainerGroup(m_columnSet));
+    append(MultiColumnFragmentainerGroup(&m_columnSet));
 }
 
 MultiColumnFragmentainerGroup& MultiColumnFragmentainerGroupList::addExtraGroup()
 {
-    append(MultiColumnFragmentainerGroup(m_columnSet));
+    append(MultiColumnFragmentainerGroup(&m_columnSet));
     return last();
 }
 
