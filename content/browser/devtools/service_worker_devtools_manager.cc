@@ -91,7 +91,7 @@ bool ServiceWorkerDevToolsManager::WorkerCreated(
   workers_[id] = agent_host;
   DevToolsManager::GetInstance()->AgentHostChanged(agent_host);
 
-  return it->second->IsAttached();
+  return agent_host->IsAttached();
 }
 
 void ServiceWorkerDevToolsManager::WorkerReadyForInspection(
