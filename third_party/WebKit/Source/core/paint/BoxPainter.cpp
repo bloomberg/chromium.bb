@@ -1500,7 +1500,15 @@ void drawDoubleBorder(GraphicsContext* context, const BoxBorderInfo& borderInfo,
         doubleStripeInsets(borderInfo.edges, BorderEdge::DoubleBorderStripeOuter);
     const FloatRoundedRect outerThirdRect = borderInfo.style.getRoundedInnerBorderFor(borderRect,
         outerThirdInsets, borderInfo.includeLogicalLeftEdge, borderInfo.includeLogicalRightEdge);
-    context->fillDRRect(outerBorder, outerThirdRect, color);
+
+    if (borderInfo.bleedAvoidance == BackgroundBleedClipBackground && outerBorder.isRounded()) {
+        // BackgroundBleedClipBackground clips the outer rrect corners for us.
+        FloatRoundedRect adjustedOuterBorder = outerBorder;
+        adjustedOuterBorder.setRadii(FloatRoundedRect::Radii());
+        context->fillDRRect(adjustedOuterBorder, outerThirdRect, color);
+    } else {
+        context->fillDRRect(outerBorder, outerThirdRect, color);
+    }
 
     // inner stripe
     const LayoutRectOutsets innerThirdInsets =
@@ -1545,6 +1553,11 @@ void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, c
             drawSolidBorderRect(graphicsContext, outerBorder.rect(), firstEdge.width, firstEdge.color);
         } else {
             // Non-rounded/rounded, solid, uniform color, non-uniform/uniform width => one drawDRRect()
+
+            // BackgroundBleedClipBackground clips the outer rrect corners for us.
+            if (borderInfo.bleedAvoidance == BackgroundBleedClipBackground && outerBorder.isRounded())
+                outerBorder.setRadii(FloatRoundedRect::Radii());
+
             graphicsContext->fillDRRect(outerBorder, innerBorder, firstEdge.color);
         }
 
