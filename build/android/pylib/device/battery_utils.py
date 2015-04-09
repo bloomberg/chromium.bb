@@ -200,7 +200,6 @@ class BatteryUtils(object):
     Raises:
       device_errors.CommandFailedError: If method of disabling charging cannot
         be determined.
-      device_errors.DeviceVersionError: If device is not L or higher.
     """
     if 'charging_config' not in self._cache:
       for c in _CONTROL_CHARGING_COMMANDS:
@@ -271,6 +270,9 @@ class BatteryUtils(object):
     Args:
       timeout: timeout in seconds
       retries: number of retries
+
+    Raises:
+      device_errors.DeviceVersionError: If device is not L or higher.
     """
     def battery_updates_enabled():
       return self.GetCharging() is True
