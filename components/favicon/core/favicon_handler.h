@@ -19,7 +19,6 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
-class FaviconTabHelperTest;
 class SkBitmap;
 class TestFaviconHandler;
 
@@ -118,6 +117,10 @@ class FaviconHandler {
     return image_urls_;
   }
 
+  // Returns whether the handler is waiting for a download to complete or for
+  // data from the FaviconService. Reserved for testing.
+  bool HasPendingTasksForTest();
+
  protected:
   // These virtual methods make FaviconHandler testable and are overridden by
   // TestFaviconHandler.
@@ -155,7 +158,6 @@ class FaviconHandler {
 
  private:
   // For testing:
-  friend class ::FaviconTabHelperTest;
   friend class ::TestFaviconHandler;
 
   // Represents an in progress download of an image from the renderer.

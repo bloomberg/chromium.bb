@@ -187,11 +187,8 @@ class FaviconTabHelperTest : public InProcessBrowserTest,
 
   // FaviconTabHelperPendingTaskChecker:
   bool HasPendingTasks() override {
-    favicon::FaviconHandler* favicon_handler =
-        FaviconTabHelper::FromWebContents(web_contents())
-            ->favicon_handler_.get();
-    return !favicon_handler->download_requests_.empty() ||
-        favicon_handler->cancelable_task_tracker_.HasTrackedTasks();
+    return FaviconTabHelper::FromWebContents(web_contents())
+        ->HasPendingTasksForTest();
   }
 
  private:

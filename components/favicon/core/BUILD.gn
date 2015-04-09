@@ -8,7 +8,10 @@ static_library("core") {
     "fallback_icon_service.cc",
     "fallback_icon_service.h",
     "favicon_client.h",
+    "favicon_driver.cc",
     "favicon_driver.h",
+    "favicon_driver_impl.cc",
+    "favicon_driver_impl.h",
     "favicon_driver_observer.h",
     "favicon_handler.cc",
     "favicon_handler.h",
@@ -19,11 +22,13 @@ static_library("core") {
   ]
 
   deps = [
+    "//base",
     "//components/bookmarks/browser",
     "//components/favicon_base",
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//skia",
+    "//ui/base",
     "//ui/gfx",
     "//url",
   ]

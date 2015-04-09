@@ -450,6 +450,11 @@ void FaviconHandler::OnDidDownloadFavicon(
   }
 }
 
+bool FaviconHandler::HasPendingTasksForTest() {
+  return !download_requests_.empty() ||
+         cancelable_task_tracker_.HasTrackedTasks();
+}
+
 bool FaviconHandler::PageChangedSinceFaviconWasRequested() {
   if (UrlMatches(driver_->GetActiveURL(), url_) && url_.is_valid()) {
     return false;

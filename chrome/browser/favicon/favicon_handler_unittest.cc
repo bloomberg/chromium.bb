@@ -183,6 +183,35 @@ class TestFaviconDriver : public favicon::FaviconDriver {
 
   ~TestFaviconDriver() override {}
 
+  // favicon::FaviconDriver implementation.
+  void FetchFavicon(const GURL& url) override {
+    ADD_FAILURE() << "TestFaviconDriver::FetchFavicon() "
+                  << "should never be called in tests.";
+  }
+
+  void SaveFavicon() override {
+    ADD_FAILURE() << "TestFaviconDriver::SaveFavicon() "
+                  << "should never be called in tests.";
+  }
+
+  gfx::Image GetFavicon() const override {
+    ADD_FAILURE() << "TestFaviconDriver::GetFavicon() "
+                  << "should never be called in tests.";
+    return gfx::Image();
+  }
+
+  bool FaviconIsValid() const override {
+    ADD_FAILURE() << "TestFaviconDriver::FaviconIsValid() "
+                  << "should never be called in tests.";
+    return false;
+  }
+
+  bool HasPendingTasksForTest() override {
+    ADD_FAILURE() << "TestFaviconDriver::HasPendingTasksForTest() "
+                  << "should never be called in tests.";
+    return false;
+  }
+
   int StartDownload(const GURL& url, int max_bitmap_size) override {
     ADD_FAILURE() << "TestFaviconDriver::StartDownload() "
                   << "should never be called in tests.";
@@ -230,8 +259,6 @@ class TestFaviconDriver : public favicon::FaviconDriver {
     SetActiveFaviconValidity(true);
     SetActiveFaviconImage(image);
   }
-
-  void NotifyFaviconUpdated(bool icon_url_changed) override {}
 
   size_t num_active_favicon() const { return num_active_favicon_; }
   size_t num_favicon_available() const { return num_favicon_available_; }

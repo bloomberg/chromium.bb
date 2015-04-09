@@ -9,7 +9,9 @@
       'target_name': 'favicon_core',
       'type': 'static_library',
       'dependencies': [
+        '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
+        '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../url/url.gyp:url_lib',
         'bookmarks_browser',
@@ -23,7 +25,10 @@
         'favicon/core/fallback_icon_service.cc',
         'favicon/core/fallback_icon_service.h',
         'favicon/core/favicon_client.h',
+        'favicon/core/favicon_driver.cc',
         'favicon/core/favicon_driver.h',
+        'favicon/core/favicon_driver_impl.cc',
+        'favicon/core/favicon_driver_impl.h',
         'favicon/core/favicon_driver_observer.h',
         'favicon/core/favicon_handler.cc',
         'favicon/core/favicon_handler.h',
@@ -45,13 +50,17 @@
           'target_name': 'favicon_content',
           'type': 'static_library',
           'dependencies': [
+            '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
+            '../ui/gfx/gfx.gyp:gfx',
             'favicon_base',
             'favicon_core',
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
+            'favicon/content/content_favicon_driver.cc',
+            'favicon/content/content_favicon_driver.h',
             'favicon/content/favicon_url_util.cc',
             'favicon/content/favicon_url_util.h',
           ],
@@ -67,13 +76,17 @@
           'target_name': 'favicon_ios',
           'type': 'static_library',
           'dependencies': [
+            '../base/base.gyp:base',
             '../ios/web/ios_web.gyp:ios_web',
+            '../ui/gfx/gfx.gyp:gfx',
             'favicon_base',
             'favicon_core',
           ],
           'sources': [
-            'favicon/ios/favicon_url_util.h',
             'favicon/ios/favicon_url_util.cc',
+            'favicon/ios/favicon_url_util.h',
+            'favicon/ios/web_favicon_driver.cc',
+            'favicon/ios/web_favicon_driver.h',
           ],
           'include_dirs': [
             '..',

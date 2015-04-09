@@ -4,14 +4,18 @@
 
 static_library("content") {
   sources = [
+    "content_favicon_driver.cc",
+    "content_favicon_driver.h",
     "favicon_url_util.cc",
     "favicon_url_util.h",
   ]
 
   deps = [
+    "//base",
     "//components/favicon/core",
     "//components/favicon_base",
     "//content/public/browser",
     "//content/public/common",
+    "//ui/gfx",
   ]
 }

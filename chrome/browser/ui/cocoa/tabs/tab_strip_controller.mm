@@ -1554,10 +1554,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   NSInteger index = [self indexFromModelIndex:modelIndex];
   TabController* tabController = [tabArray_ objectAtIndex:index];
 
-  FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(contents);
   bool oldHasIcon = [tabController iconView] != nil;
-  bool newHasIcon = favicon_tab_helper->ShouldDisplayFavicon() ||
+  bool newHasIcon = FaviconTabHelper::ShouldDisplayFavicon(contents) ||
       tabStripModel_->IsMiniTab(modelIndex);  // Always show icon if mini.
 
   TabLoadingState oldState = [tabController loadingState];
