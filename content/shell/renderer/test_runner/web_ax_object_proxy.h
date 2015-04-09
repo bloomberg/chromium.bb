@@ -72,6 +72,8 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   int MaxValue();
   std::string ValueDescription();
   int ChildrenCount();
+  int SelectionStart();
+  int SelectionEnd();
   int InsertionPointLineNumber();
   std::string SelectedTextRange();
   bool IsEnabled();

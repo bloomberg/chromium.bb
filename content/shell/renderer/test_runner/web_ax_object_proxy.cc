@@ -489,6 +489,8 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("maxValue", &WebAXObjectProxy::MaxValue)
       .SetProperty("valueDescription", &WebAXObjectProxy::ValueDescription)
       .SetProperty("childrenCount", &WebAXObjectProxy::ChildrenCount)
+      .SetProperty("selectionStart", &WebAXObjectProxy::SelectionStart)
+      .SetProperty("selectionEnd", &WebAXObjectProxy::SelectionEnd)
       .SetProperty("insertionPointLineNumber",
                    &WebAXObjectProxy::InsertionPointLineNumber)
       .SetProperty("selectedTextRange", &WebAXObjectProxy::SelectedTextRange)
@@ -692,6 +694,16 @@ int WebAXObjectProxy::ChildrenCount() {
   if (!IsRoot())
     count = accessibility_object_.childCount();
   return count;
+}
+
+int WebAXObjectProxy::SelectionStart() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.selectionStart();
+}
+
+int WebAXObjectProxy::SelectionEnd() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.selectionEnd();
 }
 
 int WebAXObjectProxy::InsertionPointLineNumber() {
