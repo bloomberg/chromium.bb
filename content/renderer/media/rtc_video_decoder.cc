@@ -13,13 +13,16 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
-#include "content/renderer/media/native_handle_impl.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/webrtc/base/bind.h"
 #include "third_party/webrtc/system_wrappers/interface/ref_count.h"
 #include "third_party/webrtc/video_frame.h"
+
+static void ReleaseFrame(scoped_refptr<media::VideoFrame> frame) {
+}
 
 namespace content {
 
@@ -388,13 +391,13 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   DCHECK(inserted);
 
   // Create a WebRTC video frame.
-  webrtc::RefCountImpl<NativeHandleImpl>* handle =
-      new webrtc::RefCountImpl<NativeHandleImpl>(frame);
-  webrtc::I420VideoFrame decoded_image(handle,
+  webrtc::I420VideoFrame decoded_image(frame.get(),
                                        picture.visible_rect().width(),
                                        picture.visible_rect().height(),
                                        timestamp,
-                                       0);
+                                       0,
+                                       webrtc::kVideoRotation_0,
+                                       rtc::Bind(&ReleaseFrame, frame));
 
   // Invoke decode callback. WebRTC expects no callback after Reset or Release.
   {

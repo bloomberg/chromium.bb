@@ -65,9 +65,7 @@ class VideoFrameWrapper : public webrtc::VideoFrameBuffer {
     return frame_->stride(WebRtcToMediaPlaneType(type));
   }
 
-  rtc::scoped_refptr<webrtc::NativeHandle> native_handle() const override {
-    return nullptr;
-  }
+  void* native_handle() const override { return nullptr; }
 
   ~VideoFrameWrapper() override {}
   friend class rtc::RefCountedObject<VideoFrameWrapper>;

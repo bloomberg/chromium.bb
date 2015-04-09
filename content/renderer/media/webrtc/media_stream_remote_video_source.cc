@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
-#include "content/renderer/media/native_handle_impl.h"
 #include "content/renderer/media/webrtc/track_observer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
@@ -71,9 +70,8 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::RenderFrame(
 
   scoped_refptr<media::VideoFrame> video_frame;
   if (incoming_frame->GetNativeHandle() != NULL) {
-    NativeHandleImpl* handle =
-        static_cast<NativeHandleImpl*>(incoming_frame->GetNativeHandle());
-    video_frame = static_cast<media::VideoFrame*>(handle->GetHandle());
+    video_frame =
+        static_cast<media::VideoFrame*>(incoming_frame->GetNativeHandle());
     video_frame->set_timestamp(timestamp);
   } else {
     const cricket::VideoFrame* frame =
