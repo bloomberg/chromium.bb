@@ -1057,7 +1057,8 @@ void WrenchMenuModel::CreateZoomMenu() {
 
 void WrenchMenuModel::UpdateZoomControls() {
   int zoom_percent = 100;
-  if (browser_->tab_strip_model()->GetActiveWebContents()) {
+  if (browser_->tab_strip_model() &&
+      browser_->tab_strip_model()->GetActiveWebContents()) {
     zoom_percent = ui_zoom::ZoomController::FromWebContents(
                        browser_->tab_strip_model()->GetActiveWebContents())
                        ->GetZoomPercent();
