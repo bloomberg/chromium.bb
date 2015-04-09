@@ -887,10 +887,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method webkitResolveLocalFileSystemSyncURL
 [Worker]     method webkitResolveLocalFileSystemURL
 [Worker]     setter console
-[Worker]     setter location
-[Worker]     setter navigator
 [Worker]     setter onerror
-[Worker]     setter self
 [Worker] interface WorkerLocation
 [Worker]     getter hash
 [Worker]     getter host

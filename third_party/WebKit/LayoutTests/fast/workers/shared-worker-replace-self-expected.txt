@@ -1,6 +1,6 @@
-Test that self is replaceable.
+Test that self is not replaceable.
 
 self='PASS': PASS
-self: PASS
+self: [object global]
 DONE
 

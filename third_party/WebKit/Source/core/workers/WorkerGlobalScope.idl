@@ -30,8 +30,8 @@
 ] interface WorkerGlobalScope : EventTarget {
 
     // WorkerGlobalScope
-    [Replaceable] readonly attribute WorkerGlobalScope self;
-    [Replaceable] readonly attribute WorkerLocation location;
+    readonly attribute WorkerGlobalScope self;
+    readonly attribute WorkerLocation location;
     void close();
     attribute EventHandler onerror;
     [Replaceable] readonly attribute WorkerConsole console;
@@ -39,7 +39,7 @@
 
     // WorkerUtils
     [RaisesException] void importScripts(DOMString... urls);
-    [Replaceable] readonly attribute WorkerNavigator navigator;
+    readonly attribute WorkerNavigator navigator;
 };
 
 WorkerGlobalScope implements WindowBase64;
