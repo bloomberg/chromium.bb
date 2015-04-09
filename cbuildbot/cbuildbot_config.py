@@ -1464,24 +1464,17 @@ _x86_internal_release_boards = frozenset([
   'butterfly',
   'butterfly_freon',
   'candy',
-  'candy_freon',
   'cid',
   'clapper',
-  'clapper_freon',
   'enguarde',
-  'enguarde_freon',
   'expresso',
-  'expresso_freon',
   'falco',
   'falco_li',
   'glimmer',
-  'glimmer_freon',
   'gnawty',
-  'gnawty_freon',
   'guado',
   'jecht',
   'kip',
-  'kip_freon',
   'lemmings',
   'leon',
   'link',
@@ -1497,18 +1490,15 @@ _x86_internal_release_boards = frozenset([
   'parrot',
   'parrot_freon',
   'parrot_ivb',
-  'parrot_ivb-freon',
   'parry',
   'peppy',
   'quawks',
   'quawks_freon',
   'rambi',
-  'rambi_freon',
   'rikku',
   'samus',
   'slippy',
   'squawks',
-  'squawks_freon',
   'stout',
   'stout_freon',
   'strago',
@@ -1517,11 +1507,9 @@ _x86_internal_release_boards = frozenset([
   'stumpy_moblab',
   'sumo',
   'swanky',
-  'swanky_freon',
   'tidus',
   'tricky',
   'winky',
-  'winky_freon',
   'wolf',
   'x86-alex',
   'x86-alex_freon',
@@ -1651,21 +1639,14 @@ _freon_boards = frozenset([
   'auron_paine',
   'auron_yuna',
   'butterfly_freon',
-  'candy_freon',
   'cid',
-  'clapper_freon',
   'daisy_freon',
   'daisy_skate-freon',
   'daisy_spring-freon',
-  'enguarde_freon',
-  'expresso_freon',
   'falco',
   'falco_li',
-  'glimmer_freon',
   'guado',
-  'gnawty_freon',
   'jecht',
-  'kip_freon',
   'leon',
   'link',
   'lumpy_freon',
@@ -1674,19 +1655,15 @@ _freon_boards = frozenset([
   'monroe',
   'panther',
   'parrot_freon',
-  'parrot_ivb-freon',
   'peach_pi-freon',
   'peach_pit-freon',
   'peppy',
   'quawks_freon',
-  'rambi_freon',
   'rikku',
   'samus',
   'strago',
-  'squawks_freon',
   'stout_freon',
   'stumpy_freon',
-  'swanky_freon',
   'tidus',
   'tricky',
   'veyron',
@@ -2732,6 +2709,12 @@ _release.add_config('samus-release',
   important=True,
 )
 
+# Builder for non-freon 'stout' for test coverage (crbug.com/474713).
+_release.add_config('stout-release',
+  _base_configs['stout'],
+  important=True,
+)
+
 ### Arm release configs.
 
 _release.add_config('veyron_rialto-release',
@@ -2938,16 +2921,10 @@ _AddGroupConfig('sandybridge-freon', 'parrot_freon', (
 ))
 
 # ivybridge chipset boards
-_AddGroupConfig('ivybridge', 'stout', (
-), (
-    'parrot_ivb',
-))
-
-# ivybridge chipset boards (freon variant)
 _AddGroupConfig('ivybridge-freon', 'stout_freon', (
   'link',
 ), (
-    'parrot_ivb-freon',
+    'parrot_ivb',
 ))
 
 # slippy-based haswell boards
@@ -2978,53 +2955,29 @@ _AddGroupConfig('beltino-b', 'monroe', (
 ))
 
 # rambi-based boards
-_AddGroupConfig('rambi-a', 'rambi', (
+_AddGroupConfig('rambi-freon-a', 'rambi', (
     'clapper',
     'enguarde',
     'expresso',
 ))
 
-_AddGroupConfig('rambi-b', 'glimmer', (
+_AddGroupConfig('rambi-freon-b', 'glimmer', (
     'gnawty',
     'kip',
-    'quawks',
+    'quawks_freon',
 ))
 
-_AddGroupConfig('rambi-c', 'squawks', (
+_AddGroupConfig('rambi-freon-c', 'squawks', (
     'swanky',
     'winky',
     'candy',
 ))
 
-_AddGroupConfig('rambi-d', 'banjo', (
+_AddGroupConfig('rambi-a', 'banjo', (
     'sumo',
     'ninja',
-),
-    important=False,
-)
-
-# rambi-based boards (freon variant)
-_AddGroupConfig('rambi-freon-a', 'rambi_freon', (
-    'clapper_freon',
-    'enguarde_freon',
-    'expresso_freon',
-    ),
-)
-
-_AddGroupConfig('rambi-freon-b', 'glimmer_freon', (
-    'gnawty_freon',
-    'kip_freon',
-    'quawks_freon',
-),
-  important=False,
-)
-
-_AddGroupConfig('rambi-freon-c', 'squawks_freon', (
-    'swanky_freon',
-    'winky_freon',
-    'candy_freon',
-    ),
-)
+    'quawks',
+))
 
 # daisy-based boards
 _AddGroupConfig('daisy', 'daisy', (
@@ -3395,8 +3348,6 @@ _waterfall_config_map = {
       'jecht-release-group',
       'peach-freon-release-group',
       'pineview-freon-release-group',
-      'rambi-d-release-group',
-      'rambi-freon-b-release-group',
       'veyron-b-release-group',
 
       # Experimental Canaries
