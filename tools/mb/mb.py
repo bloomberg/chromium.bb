@@ -23,9 +23,9 @@ import subprocess
 
 
 def main(args):
-  mb = MetaBuildWrapper()
-  mb.ParseArgs(args)
-  return mb.args.func()
+  mbw = MetaBuildWrapper()
+  mbw.ParseArgs(args)
+  return mbw.args.func()
 
 
 class MetaBuildWrapper(object):
@@ -284,8 +284,8 @@ class MetaBuildWrapper(object):
     for m in mixins:
       if m not in self.mixins:
         raise MBErr('Unknown mixin "%s"' % m)
-      if m in visited:
-        raise MBErr('Cycle in mixins for "%s": %s' % (m, visited))
+
+      # TODO: check for cycles in mixins.
 
       visited.append(m)
 
@@ -316,7 +316,7 @@ class MetaBuildWrapper(object):
   def GNCmd(self, path, gn_args):
     # TODO(dpranke): Find gn explicitly in the path ...
     cmd = ['gn', 'gen', path]
-    gn_args = gn_args.replace("$(goma_dir)", gn_args)
+    gn_args = gn_args.replace("$(goma_dir)", self.args.goma_dir)
     if gn_args:
       cmd.append('--args=%s' % gn_args)
     return cmd
@@ -343,13 +343,15 @@ class MetaBuildWrapper(object):
     ret, _, _ = self.Run(cmd)
     return ret
 
-  def ParseGYPOutputPath(self, path):
+  def ToSrcRelPath(self, path):
+    """Returns a relative path from the top of the repo."""
+    # TODO: Support normal paths in addition to source-absolute paths.
     assert(path.startswith('//'))
     return path[2:]
 
   def ParseGYPConfigPath(self, path):
-    assert(path.startswith('//'))
-    output_dir, _, config = path[2:].rpartition('/')
+    rpath = self.ToSrcRelPath(path)
+    output_dir, _, config = rpath.rpartition('/')
     self.CheckGYPConfigIsSupported(config, path)
     return output_dir, config
 
@@ -389,20 +391,17 @@ class MetaBuildWrapper(object):
       self.WriteJSONOutput({'status': 'Found dependency (all)'})
       return 0
 
-    cmd = (['gn', 'refs', self.args.path[0]] + inp['files'] +
+    cmd = (['gn', 'refs', self.args.path[0] ] +
+           ['//' + f for f in inp['files']] +
            ['--type=executable', '--all', '--as=output'])
     needed_targets = []
     ret, out, _ = self.Run(cmd)
-
     if ret:
       self.WriteFailureAndRaise('gn refs returned %d: %s' % (ret, out))
 
-    rpath = os.path.relpath(self.args.path[0], self.chromium_src_dir) + os.sep
+    rpath = self.ToSrcRelPath(self.args.path[0]) + os.sep
     needed_targets = [t.replace(rpath, '') for t in out.splitlines()]
     needed_targets = [nt for nt in needed_targets if nt in inp['targets']]
-
-    for nt in needed_targets:
-      self.Print(nt)
 
     if needed_targets:
       # TODO: it could be that a target X might depend on a target Y
@@ -444,7 +443,7 @@ class MetaBuildWrapper(object):
     output_path = self.args.output_path[0]
     if output_path:
       try:
-        self.WriteFile(output_path, json.dumps(obj))
+        self.WriteFile(output_path, json.dumps(obj, indent=2) + '\n')
       except Exception as e:
         raise MBErr('Error %s writing to the output path "%s"' %
                    (e, output_path))
@@ -467,9 +466,9 @@ class MetaBuildWrapper(object):
     ret, out, err = self.Call(cmd)
     if self.args.verbose:
       if out:
-        self.Print(out)
+        self.Print(out, end='')
       if err:
-        self.Print(err, file=sys.stderr)
+        self.Print(err, end='', file=sys.stderr)
     return ret, out, err
 
   def Call(self, cmd):

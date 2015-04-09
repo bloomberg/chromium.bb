@@ -28,7 +28,7 @@ a directory, then runs GYP or GN as appropriate:
 Either the `-c/--config` flag or the `-m/--master` and `-b/--builder` flags
 must be specified so that `mb` can figure out which config to use.
 
-The path must be a GN-style path relative to the checkout root (as above).
+The path must be a GN-style "source-absolute" path (as above).
 
 If gen ends up using GYP, the path must have a valid GYP configuration as the
 last component of the path (i.e., specify `//out/Release_x64`, not `//out`).
@@ -46,17 +46,19 @@ Either the `-c/--config` flag or the `-m/--master` and `-b/--builder` flags
 must be specified so that `mb` can figure out which config to use.
 
 
-The first positional argument is the path to the build directory.
+The first positional argument must be a GN-style "source-absolute" path
+to the build directory.
 
-The second positional argument is a path to a JSON file containing a single
-object with two fields:
+The second positional argument is a (normal) path to a JSON file containing
+a single object with two fields:
 
   * `files`: an array of the modified filenames to check (as
     paths relative to the checkout root).
   * `targets`: an array of the unqualified target names to check.
 
-The third positional argument is a path where the mb will write the result,
-also as a JSON object. This object may contain the following fields:
+The third positional argument is a (normal) path to where mb will write
+the result, also as a JSON object. This object may contain the following
+fields:
 
   * `error`: this should only be present if something failed.
   * `targets`: the subset of the input `targets` that depend on the

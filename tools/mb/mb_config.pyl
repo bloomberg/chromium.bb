@@ -103,7 +103,7 @@
     },
 
     'release_trybot': {
-      'mixins': ['release_bot', 'dcheck_always_on', 'goma']
+      'mixins': ['release_bot', 'dcheck_always_on']
     },
     
     'shared': {

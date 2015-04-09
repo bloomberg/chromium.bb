@@ -4,19 +4,20 @@
 
 """Tests for mb.py."""
 
+import json
 import sys
 import unittest
 
 import mb
 
 
-class FakeMB(mb.MetaBuildWrapper):
+class FakeMBW(mb.MetaBuildWrapper):
   def __init__(self):
-    super(FakeMB, self).__init__()
+    super(FakeMBW, self).__init__()
     self.files = {}
     self.calls = []
-    self.out = []
-    self.err = []
+    self.out = ''
+    self.err = ''
     self.chromium_src_dir = '/fake_src'
     self.default_config = '/fake_src/tools/mb/mb_config.pyl'
 
@@ -41,9 +42,9 @@ class FakeMB(mb.MetaBuildWrapper):
     end = kwargs.get('end', '\n')
     f = kwargs.get('file', sys.stdout)
     if f == sys.stderr:
-      self.err.append(sep.join(args) + end)
+      self.err += sep.join(args) + end
     else:
-      self.out.append(sep.join(args) + end)
+      self.out += sep.join(args) + end
 
 class IntegrationTest(unittest.TestCase):
   def test_validate(self):
@@ -58,12 +59,14 @@ TEST_CONFIG = """\
   'configs': {
     'gyp_rel_bot': ['gyp', 'rel', 'goma'],
     'gn_debug': ['gn', 'debug'],
+    'gn_rel_bot': ['gn', 'rel', 'goma'],
     'private': ['gyp', 'fake_feature1'],
     'unsupported': ['gn', 'fake_feature2'],
   },
   'masters': {
     'fake_master': {
       'fake_builder': 'gyp_rel_bot',
+      'fake_gn_builder': 'gn_rel_bot',
     },
   },
   'mixins': {
@@ -96,28 +99,45 @@ TEST_CONFIG = """\
 
 
 class UnitTest(unittest.TestCase):
-  def check(self, args, files=None, cmds=None, out=None, err=None, ret=None):
-    m = FakeMB()
+  def fake_mbw(self, files):
+    mbw = FakeMBW()
     if files:
       for path, contents in files.items():
-        m.files[path] = contents
-    m.files.setdefault(mb.default_config, TEST_CONFIG)
-    m.ParseArgs(args)
-    actual_ret = m.args.func()
+        mbw.files[path] = contents
+    mbw.files.setdefault(mbw.default_config, TEST_CONFIG)
+    return mbw
+
+  def check(self, args, mbw=None, files=None, out=None, err=None, ret=None):
+    if not mbw:
+      mbw = self.fake_mbw(files)
+    mbw.ParseArgs(args)
+    actual_ret = mbw.args.func()
     if ret is not None:
       self.assertEqual(actual_ret, ret)
     if out is not None:
-      self.assertEqual(m.out, out)
+      self.assertEqual(mbw.out, out)
     if err is not None:
-      self.assertEqual(m.err, err)
-    if cmds is not None:
-      self.assertEqual(m.cmds, cmds)
+      self.assertEqual(mbw.err, err)
+    return mbw
 
-  def test_analyze(self):
-    files = {'/tmp/in.json': '{"files": [], "targets": []}'}
+  def test_gn_analyze(self):
+    files = {'/tmp/in.json': """{\
+               "files": ["foo/foo_unittest.cc"],
+               "targets": ["foo_unittests", "bar_unittests"]
+             }"""}
+    mbw = self.fake_mbw(files)
+    mbw.Call = lambda cmd: (0, 'out/Default/foo_unittests\n', '')
+
     self.check(['analyze', '-c', 'gn_debug', '//out/Default',
-                '/tmp/in.json', '/tmp/out.json'],
-               files=files, ret=0)
+                '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
+    out = json.loads(mbw.files['/tmp/out.json'])
+    self.assertEqual(out, {
+      'status': 'Found dependency',
+      'targets': ['foo_unittests'],
+      'build_targets': ['foo_unittests']
+    })
+
+  def test_gyp_analyze(self):
     self.check(['analyze', '-c', 'gyp_rel_bot', '//out/Release',
                 '/tmp/in.json', '/tmp/out.json'],
                ret=0)
@@ -125,6 +145,14 @@ class UnitTest(unittest.TestCase):
   def test_gen(self):
     self.check(['gen', '-c', 'gn_debug', '//out/Default'], ret=0)
     self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], ret=0)
+
+  def test_goma_dir_expansion(self):
+    self.check(['lookup', '-c', 'gyp_rel_bot', '-g', '/foo'], ret=0,
+               out=("python build/gyp_chromium -G 'output_dir=<path>' "
+                    "-G config=Release -D goma=1 -D gomadir=/foo\n"))
+    self.check(['lookup', '-c', 'gn_rel_bot', '-g', '/foo'], ret=0,
+               out=("gn gen '<path>' '--args=is_debug=false use_goma=true "
+                    "goma_dir=\"/foo\"'\n" ))
 
   def test_help(self):
     self.assertRaises(SystemExit, self.check, ['-h'])
