@@ -42,7 +42,6 @@ class PluginObserver : public content::WebContentsObserver,
                      base::ProcessId plugin_pid) override;
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   explicit PluginObserver(content::WebContents* web_contents);
