@@ -51,16 +51,25 @@ static ClipNode* GetClipParent(const DataForRecursion& data, Layer* layer) {
 }
 
 static bool RequiresClipNode(Layer* layer,
-                             bool axis_aligned_with_respect_to_parent) {
-  const bool render_surface_applies_non_axis_aligned_clip =
-      layer->render_surface() && !axis_aligned_with_respect_to_parent &&
-      layer->is_clipped();
+                             const DataForRecursion& data,
+                             int parent_transform_id) {
+  const bool render_surface_applies_clip =
+      layer->render_surface() && layer->is_clipped();
   const bool render_surface_may_grow_due_to_clip_children =
       layer->render_surface() && layer->num_unclipped_descendants() > 0;
 
-  return !layer->parent() || layer->masks_to_bounds() || layer->mask_layer() ||
-         render_surface_applies_non_axis_aligned_clip ||
-         render_surface_may_grow_due_to_clip_children;
+  if (!layer->parent() || layer->masks_to_bounds() || layer->mask_layer() ||
+      render_surface_may_grow_due_to_clip_children)
+    return true;
+
+  if (!render_surface_applies_clip)
+    return false;
+
+  bool axis_aligned_with_respect_to_parent =
+      data.transform_tree->Are2DAxisAligned(layer->transform_tree_index(),
+                                            parent_transform_id);
+
+  return !axis_aligned_with_respect_to_parent;
 }
 
 void AddClipNodeIfNeeded(const DataForRecursion& data_from_ancestor,
@@ -69,9 +78,6 @@ void AddClipNodeIfNeeded(const DataForRecursion& data_from_ancestor,
                          DataForRecursion* data_for_children) {
   ClipNode* parent = GetClipParent(data_from_ancestor, layer);
   int parent_id = parent->id;
-  const bool axis_aligned_with_respect_to_parent =
-      data_from_ancestor.transform_tree->Are2DAxisAligned(
-          layer->transform_tree_index(), parent->data.transform_id);
 
   // TODO(vollick): once Andrew refactors the surface determinations out of
   // CDP, the the layer->render_surface() check will be invalid.
@@ -83,7 +89,7 @@ void AddClipNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   if (has_unclipped_surface)
     parent_id = 0;
 
-  if (!RequiresClipNode(layer, axis_aligned_with_respect_to_parent)) {
+  if (!RequiresClipNode(layer, data_from_ancestor, parent->data.transform_id)) {
     // Unclipped surfaces reset the clip rect.
     data_for_children->clip_tree_parent = parent_id;
   } else if (layer->parent()) {
