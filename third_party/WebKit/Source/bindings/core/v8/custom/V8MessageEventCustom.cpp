@@ -47,7 +47,7 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
 {
     MessageEvent* event = V8MessageEvent::toImpl(info.Holder());
 
-    v8::Handle<v8::Value> result;
+    v8::Local<v8::Value> result;
     switch (event->dataType()) {
     case MessageEvent::DataTypeScriptValue: {
         result = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::data(info.GetIsolate()));
@@ -113,7 +113,7 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     TOSTRING_VOID(V8StringResource<>, typeArg, info[0]);
     TONATIVE_VOID(bool, canBubbleArg, info[1]->BooleanValue());
     TONATIVE_VOID(bool, cancelableArg, info[2]->BooleanValue());
-    v8::Handle<v8::Value> dataArg = info[3];
+    v8::Local<v8::Value> dataArg = info[3];
     TOSTRING_VOID(V8StringResource<>, originArg, info[4]);
     TOSTRING_VOID(V8StringResource<>, lastEventIdArg, info[5]);
     DOMWindow* sourceArg = toDOMWindow(info.GetIsolate(), info[6]);

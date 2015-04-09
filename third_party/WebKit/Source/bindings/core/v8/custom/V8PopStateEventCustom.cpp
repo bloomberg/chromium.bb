@@ -41,7 +41,7 @@
 namespace blink {
 
 // Save the state value to a hidden attribute in the V8PopStateEvent, and return it, for convenience.
-static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> popStateEvent, v8::Handle<v8::Value> state, v8::Isolate* isolate)
+static v8::Local<v8::Value> cacheState(v8::Local<v8::Object> popStateEvent, v8::Local<v8::Value> state, v8::Isolate* isolate)
 {
     V8HiddenValue::setHiddenValue(isolate, popStateEvent, V8HiddenValue::state(isolate), state);
     return state;
@@ -49,7 +49,7 @@ static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> popStateEvent, v8
 
 void V8PopStateEvent::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Value> result = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::state(info.GetIsolate()));
+    v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::state(info.GetIsolate()));
 
     if (!result.IsEmpty()) {
         v8SetReturnValue(info, result);
@@ -83,7 +83,7 @@ void V8PopStateEvent::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<
     bool isSameState = history->isSameAsCurrentState(event->serializedState());
 
     if (isSameState) {
-        v8::Handle<v8::Object> v8History = toV8(history, info.Holder(), info.GetIsolate()).As<v8::Object>();
+        v8::Local<v8::Object> v8History = toV8(history, info.Holder(), info.GetIsolate()).As<v8::Object>();
         if (!history->stateChanged()) {
             result = V8HiddenValue::getHiddenValue(info.GetIsolate(), v8History, V8HiddenValue::state(info.GetIsolate()));
             if (!result.IsEmpty()) {

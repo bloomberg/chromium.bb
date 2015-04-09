@@ -79,7 +79,7 @@ void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Val
     if (context.IsEmpty())
         return;
 
-    v8::Handle<v8::Value> jsEvent = V8HiddenValue::getHiddenValue(info.GetIsolate(), context->Global(), V8HiddenValue::event(info.GetIsolate()));
+    v8::Local<v8::Value> jsEvent = V8HiddenValue::getHiddenValue(info.GetIsolate(), context->Global(), V8HiddenValue::event(info.GetIsolate()));
     if (jsEvent.IsEmpty())
         return;
     v8SetReturnValue(info, jsEvent);
@@ -115,9 +115,9 @@ void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<
 
     // The wrapper for an <iframe> should get its prototype from the context of the frame it's in, rather than its own frame.
     // So, use its containing document as the creation context when wrapping.
-    v8::Handle<v8::Value> creationContext = toV8(&impl->frameElement()->document(), info.Holder(), info.GetIsolate());
+    v8::Local<v8::Value> creationContext = toV8(&impl->frameElement()->document(), info.Holder(), info.GetIsolate());
     RELEASE_ASSERT(!creationContext.IsEmpty());
-    v8::Handle<v8::Value> wrapper = toV8(impl->frameElement(), v8::Handle<v8::Object>::Cast(creationContext), info.GetIsolate());
+    v8::Local<v8::Value> wrapper = toV8(impl->frameElement(), v8::Local<v8::Object>::Cast(creationContext), info.GetIsolate());
     v8SetReturnValue(info, wrapper);
 }
 
@@ -146,10 +146,10 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
 
     // Put property on the front (this) object.
     if (info.This()->IsObject())
-        v8::Handle<v8::Object>::Cast(info.This())->Set(v8AtomicString(isolate, "opener"), value);
+        v8::Local<v8::Object>::Cast(info.This())->Set(v8AtomicString(isolate, "opener"), value);
 }
 
-static bool isLegacyTargetOriginDesignation(v8::Handle<v8::Value> value)
+static bool isLegacyTargetOriginDesignation(v8::Local<v8::Value> value)
 {
     if (value->IsString() || value->IsStringObject())
         return true;
@@ -218,7 +218,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
 // switching context of receiver. I consider it is dangerous.
 void V8Window::toStringMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Object> domWrapper = V8Window::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
+    v8::Local<v8::Object> domWrapper = V8Window::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     v8::Local<v8::Object> target = domWrapper.IsEmpty() ? info.This() : domWrapper;
     v8::Local<v8::String> value;
     if (target->ObjectProtoToString(info.GetIsolate()->GetCurrentContext()).ToLocal(&value))
@@ -315,7 +315,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
 static bool securityCheck(v8::Local<v8::Object> host)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::Handle<v8::Object> window = V8Window::findInstanceInPrototypeChain(host, isolate);
+    v8::Local<v8::Object> window = V8Window::findInstanceInPrototypeChain(host, isolate);
     if (window.IsEmpty())
         return false; // the frame is gone.
 
@@ -357,11 +357,11 @@ v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationCon
     if (!frame)
         return v8Undefined();
 
-    v8::Handle<v8::Context> context = toV8Context(frame, DOMWrapperWorld::current(isolate));
+    v8::Local<v8::Context> context = toV8Context(frame, DOMWrapperWorld::current(isolate));
     if (context.IsEmpty())
         return v8Undefined();
 
-    v8::Handle<v8::Object> global = context->Global();
+    v8::Local<v8::Object> global = context->Global();
     ASSERT(!global.IsEmpty());
     return global;
 }

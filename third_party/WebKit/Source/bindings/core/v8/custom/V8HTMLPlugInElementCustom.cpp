@@ -200,7 +200,7 @@ void invokeOnScriptableObject(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (instance.IsEmpty())
         return;
 
-    WTF::OwnPtr<v8::Handle<v8::Value>[] > arguments = adoptArrayPtr(new v8::Handle<v8::Value>[info.Length()]);
+    WTF::OwnPtr<v8::Local<v8::Value>[] > arguments = adoptArrayPtr(new v8::Local<v8::Value>[info.Length()]);
     for (int i = 0; i < info.Length(); ++i)
         arguments[i] = info[i];
 

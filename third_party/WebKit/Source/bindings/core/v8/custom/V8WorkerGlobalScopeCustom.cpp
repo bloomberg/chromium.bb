@@ -56,7 +56,7 @@ v8::Handle<v8::Value> toV8(WorkerGlobalScope* impl, v8::Handle<v8::Object> creat
     if (!script)
         return v8::Null(isolate);
 
-    v8::Handle<v8::Object> global = script->context()->Global();
+    v8::Local<v8::Object> global = script->context()->Global();
     ASSERT(!global.IsEmpty());
     return global;
 }

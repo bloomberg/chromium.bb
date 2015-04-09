@@ -45,7 +45,7 @@ namespace blink {
 
 void V8ErrorEvent::errorAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::Value> error = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::error(info.GetIsolate()));
+    v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::error(info.GetIsolate()));
     if (!error.IsEmpty()) {
         v8SetReturnValue(info, error);
         return;

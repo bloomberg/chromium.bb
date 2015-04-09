@@ -140,7 +140,7 @@ static CSSPropertyID cssResolvedPropertyID(const String& propertyName, v8::Isola
 // Example: 'backgroundPositionY' -> 'background-position-y'
 //
 // Also, certain prefixes such as 'css-' are stripped.
-static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName, v8::Isolate* isolate)
+static CSSPropertyInfo* cssPropertyInfo(v8::Local<v8::String> v8PropertyName, v8::Isolate* isolate)
 {
     String propertyName = toCoreString(v8PropertyName);
     typedef HashMap<String, CSSPropertyInfo*> CSSPropertyInfoMap;
@@ -173,7 +173,7 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCall
         propertyNamesLength = propertyNames.size();
     }
 
-    v8::Handle<v8::Array> properties = v8::Array::New(info.GetIsolate(), propertyNamesLength);
+    v8::Local<v8::Array> properties = v8::Array::New(info.GetIsolate(), propertyNamesLength);
     for (unsigned i = 0; i < propertyNamesLength; ++i) {
         String key = propertyNames.at(i);
         ASSERT(!key.isNull());

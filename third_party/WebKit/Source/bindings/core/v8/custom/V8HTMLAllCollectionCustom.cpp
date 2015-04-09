@@ -41,7 +41,7 @@
 namespace blink {
 
 template<class CallbackInfo>
-static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicString name, const CallbackInfo& info)
+static v8::Local<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicString name, const CallbackInfo& info)
 {
     WillBeHeapVector<RefPtrWillBeMember<Element>> namedItems;
     collection->namedItems(name, namedItems);
@@ -67,12 +67,12 @@ static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, Atomic
 }
 
 template<class CallbackInfo>
-static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v8::Value> argument, const CallbackInfo& info)
+static v8::Local<v8::Value> getItem(HTMLAllCollection* collection, v8::Local<v8::Value> argument, const CallbackInfo& info)
 {
     v8::Local<v8::Uint32> index;
     if (!argument->ToArrayIndex(info.GetIsolate()->GetCurrentContext()).ToLocal(&index)) {
         TOSTRING_DEFAULT(V8StringResource<>, name, argument, v8::Undefined(info.GetIsolate()));
-        v8::Handle<v8::Value> result = getNamedItems(collection, name, info);
+        v8::Local<v8::Value> result = getNamedItems(collection, name, info);
 
         if (result.IsEmpty())
             return v8::Undefined(info.GetIsolate());

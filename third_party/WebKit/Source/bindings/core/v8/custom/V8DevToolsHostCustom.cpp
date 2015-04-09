@@ -160,7 +160,7 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallba
         document = V8HTMLDocument::toImpl(documentWrapper);
     } else {
         v8::Isolate* isolate = info.GetIsolate();
-        v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(isolate->GetEnteredContext()->Global(), isolate);
+        v8::Local<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(isolate->GetEnteredContext()->Global(), isolate);
         if (windowWrapper.IsEmpty())
             return;
         DOMWindow* window = V8Window::toImpl(windowWrapper);

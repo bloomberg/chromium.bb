@@ -43,7 +43,7 @@
 
 namespace blink {
 
-static v8::Handle<v8::Value> cacheState(v8::Handle<v8::Object> customEvent, v8::Handle<v8::Value> detail, v8::Isolate* isolate)
+static v8::Local<v8::Value> cacheState(v8::Local<v8::Object> customEvent, v8::Local<v8::Value> detail, v8::Isolate* isolate)
 {
     V8HiddenValue::setHiddenValue(isolate, customEvent, V8HiddenValue::detail(isolate), detail);
     return detail;
@@ -54,7 +54,7 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::PropertyCallbackInfo<v
 {
     CustomEvent* event = V8CustomEvent::toImpl(info.Holder());
 
-    v8::Handle<v8::Value> result = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::detail(info.GetIsolate()));
+    v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::detail(info.GetIsolate()));
 
     if (!result.IsEmpty()) {
         v8SetReturnValue(info, result);
@@ -86,7 +86,7 @@ void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v
     TOSTRING_VOID(V8StringResource<>, typeArg, info[0]);
     TONATIVE_VOID(bool, canBubbleArg, info[1]->BooleanValue());
     TONATIVE_VOID(bool, cancelableArg, info[2]->BooleanValue());
-    v8::Handle<v8::Value> detailsArg = info[3];
+    v8::Local<v8::Value> detailsArg = info[3];
 
     event->initEvent(typeArg, canBubbleArg, cancelableArg);
 

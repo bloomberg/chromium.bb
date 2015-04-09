@@ -120,15 +120,15 @@ bool processBlobParts(v8::Isolate* isolate, v8::Local<v8::Object> blobParts, boo
             return false;
 
         if (V8ArrayBuffer::hasInstance(item, isolate)) {
-            DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(item));
+            DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(item));
             ASSERT(arrayBuffer);
             blobData.appendBytes(arrayBuffer->data(), arrayBuffer->byteLength());
         } else if (V8ArrayBufferView::hasInstance(item, isolate)) {
-            DOMArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(v8::Handle<v8::Object>::Cast(item));
+            DOMArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(item));
             ASSERT(arrayBufferView);
             blobData.appendBytes(arrayBufferView->baseAddress(), arrayBufferView->byteLength());
         } else if (V8Blob::hasInstance(item, isolate)) {
-            Blob* blob = V8Blob::toImpl(v8::Handle<v8::Object>::Cast(item));
+            Blob* blob = V8Blob::toImpl(v8::Local<v8::Object>::Cast(item));
             ASSERT(blob);
             blob->appendTo(blobData);
         } else {
