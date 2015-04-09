@@ -371,7 +371,7 @@ private:
     bool m_inputIsImage;
     String m_imgSrcUrl;
     String m_srcsetAttributeValue;
-    unsigned m_sourceSize;
+    float m_sourceSize;
     bool m_sourceSizeSet;
     bool m_isCORSEnabled;
     FetchRequest::DeferOption m_defer;

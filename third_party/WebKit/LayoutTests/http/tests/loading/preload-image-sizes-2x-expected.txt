@@ -52,8 +52,11 @@ PASS internals.isPreloaded('resources/dup-image3.png?8'); is false
 PASS internals.isPreloaded('resources/preload-test.jpg?10'); is false
 PASS internals.isPreloaded('resources/base-image1.png?10'); is true
 PASS internals.isPreloaded('resources/base-image2.png?10'); is false
-PASS internals.isPreloaded('resources/base-image3.png?10'); is false
+PASS internals.isPreloaded('resources/base-image3.png?11'); is false
+PASS internals.isPreloaded('resources/preload-test.jpg?11'); is false
+PASS internals.isPreloaded('resources/base-image1.png?11'); is false
+PASS internals.isPreloaded('resources/base-image2.png?11'); is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
-           
+             
