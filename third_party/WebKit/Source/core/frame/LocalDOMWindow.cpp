@@ -1215,10 +1215,13 @@ void LocalDOMWindow::scrollTo(double x, double y) const
     if (!isCurrentlyDisplayedInFrame())
         return;
 
-    document()->updateLayoutIgnorePendingStylesheets();
-
     if (std::isnan(x) || std::isnan(y))
         return;
+
+    // It is only necessary to have an up-to-date layout if the position may be clamped,
+    // which is never the case for (0, 0).
+    if (x || y)
+        document()->updateLayoutIgnorePendingStylesheets();
 
     DoublePoint layoutPos(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
     scrollViewportTo(frame(), layoutPos, ScrollBehaviorAuto);
@@ -1229,8 +1232,6 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
     if (!isCurrentlyDisplayedInFrame())
         return;
 
-    document()->updateLayoutIgnorePendingStylesheets();
-
     FrameView* view = frame()->view();
     if (!view)
         return;
@@ -1238,6 +1239,15 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
     FrameHost* host = frame()->host();
     if (!host)
         return;
+
+    // It is only necessary to have an up-to-date layout if the position may be clamped,
+    // which is never the case for (0, 0).
+    if (!scrollToOptions.hasLeft()
+        || !scrollToOptions.hasTop()
+        || scrollToOptions.left()
+        || scrollToOptions.top()) {
+        document()->updateLayoutIgnorePendingStylesheets();
+    }
 
     double scaledX = 0.0;
     double scaledY = 0.0;
