@@ -1043,11 +1043,14 @@ void ProfileIOData::Init(
           command_line,
           quick_check_enabled_.GetValue()));
   transport_security_state_.reset(new net::TransportSecurityState());
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   transport_security_persister_.reset(
       new net::TransportSecurityPersister(
           transport_security_state_.get(),
           profile_params_->path,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+          pool->GetSequencedTaskRunnerWithShutdownBehavior(
+              pool->GetSequenceToken(),
+              base::SequencedWorkerPool::BLOCK_SHUTDOWN),
           IsOffTheRecord()));
 
   // Take ownership over these parameters.
