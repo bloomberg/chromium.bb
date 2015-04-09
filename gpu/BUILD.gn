@@ -129,14 +129,6 @@ test("gl_tests") {
     deps += [ "//testing/android:native_test_native_code" ]
     libs += [ "android" ]
   }
-
-  # TODO(GYP)
-  #     ['OS == "win"', {
-  #       'dependencies': [
-  #         '../third_party/angle/src/build_angle.gyp:libEGL',
-  #         '../third_party/angle/src/build_angle.gyp:libGLESv2',
-  #       ],
-  #     }],
 }
 
 test("gpu_unittests") {
