@@ -18,6 +18,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_message_type.h"
+#include "content/public/common/message_port_types.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/transition_element.h"
@@ -203,6 +204,37 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
 
   // Timestamp at which the UI action that triggered the navigation originated.
   IPC_STRUCT_MEMBER(base::TimeTicks, ui_timestamp)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)
+  // Whether the data format is supplied as serialized script value, or as
+  // a simple string. If it is a raw string, must be converted from string to a
+  // WebSerializedScriptValue in the renderer process.
+  IPC_STRUCT_MEMBER(bool, is_data_raw_string)
+
+  // The serialized script value.
+  IPC_STRUCT_MEMBER(base::string16, data)
+
+  // When sent to the browser, this is the routing ID of the source frame in
+  // the source process.  The browser replaces it with the routing ID of the
+  // equivalent frame proxy in the destination process.
+  IPC_STRUCT_MEMBER(int, source_routing_id)
+
+  // When sent from the browser, this is the routing ID of the source view in
+  // the destination process.  This currently exists only to support legacy
+  // postMessage to Android WebView and will be removed once crbug.com/473258
+  // is fixed.
+  IPC_STRUCT_MEMBER(int, source_view_routing_id)
+
+  // The origin of the source frame.
+  IPC_STRUCT_MEMBER(base::string16, source_origin)
+
+  // The origin for the message's target.
+  IPC_STRUCT_MEMBER(base::string16, target_origin)
+
+  // Information about the MessagePorts this message contains.
+  IPC_STRUCT_MEMBER(std::vector<content::TransferredMessagePort>, message_ports)
+  IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
@@ -507,6 +539,9 @@ IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateName, std::string /* name */)
 // Sent for top-level frames.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
                     FrameMsg_TextTrackSettings_Params /* params */)
+
+// Posts a message from a frame in another process to the current renderer.
+IPC_MESSAGE_ROUTED1(FrameMsg_PostMessageEvent, FrameMsg_PostMessage_Params)
 
 #if defined(OS_ANDROID)
 
@@ -852,6 +887,11 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_ToggleFullscreen, bool /* enter_fullscreen */)
 // Dispatch a load event for this frame in the iframe element of an
 // out-of-process parent frame.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DispatchLoad)
+
+// Sent to the browser from a frame proxy to post a message to the frame's
+// active renderer.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_RouteMessageEvent,
+                    FrameMsg_PostMessage_Params)
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 

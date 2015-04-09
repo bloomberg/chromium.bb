@@ -542,29 +542,6 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   IPC_STRUCT_MEMBER(gfx::Size, max_size)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(ViewMsg_PostMessage_Params)
-  // Whether the data format is supplied as serialized script value, or as
-  // a simple string. If it is a raw string, must be converted from string to a
-  // WebSerializedScriptValue in renderer.
-  IPC_STRUCT_MEMBER(bool, is_data_raw_string)
-  // The serialized script value.
-  IPC_STRUCT_MEMBER(base::string16, data)
-  // When sent to the browser, this is the routing ID of the source frame in
-  // the source process.  The browser replaces it with the routing ID of the
-  // equivalent (swapped out) frame in the destination process.
-  IPC_STRUCT_MEMBER(int, source_routing_id)
-
-  // The origin of the source frame.
-  IPC_STRUCT_MEMBER(base::string16, source_origin)
-
-  // The origin for the message's target.
-  IPC_STRUCT_MEMBER(base::string16, target_origin)
-
-  // Information about the MessagePorts this message contains.
-  IPC_STRUCT_MEMBER(std::vector<content::TransferredMessagePort>, message_ports)
-  IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
-IPC_STRUCT_END()
-
 // Messages sent from the browser to the renderer.
 
 #if defined(OS_ANDROID)
@@ -717,10 +694,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_MediaPlayerActionAt,
 IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
                     gfx::Point, /* location */
                     blink::WebPluginAction)
-
-// Posts a message from a frame in another process to the current renderer.
-IPC_MESSAGE_ROUTED1(ViewMsg_PostMessageEvent,
-                    ViewMsg_PostMessage_Params)
 
 // Resets the page scale for the current main frame to the default page scale.
 IPC_MESSAGE_ROUTED0(ViewMsg_ResetPageScale)
@@ -1292,11 +1265,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_GoToEntryAtOffset,
 // Sent from an inactive renderer for the browser to route to the active
 // renderer, instructing it to close.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
-
-// Sent to the browser from an inactive renderer to post a message to the
-// active renderer.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_RouteMessageEvent,
-                    ViewMsg_PostMessage_Params)
 
 // Notifies that the preferred size of the content changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,

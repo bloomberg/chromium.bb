@@ -44,6 +44,7 @@ class GURL;
 class TransportDIB;
 struct FrameHostMsg_AddNavigationTransitionData_Params;
 struct FrameMsg_NewFrame_WidgetParams;
+struct FrameMsg_PostMessage_Params;
 struct FrameMsg_TextTrackSettings_Params;
 
 namespace blink {
@@ -645,6 +646,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnDidUpdateSandboxFlags(SandboxFlags flags);
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
+  void OnPostMessageEvent(const FrameMsg_PostMessage_Params& params);
 #if defined(OS_ANDROID)
   void OnSelectPopupMenuItems(bool canceled,
                               const std::vector<int>& selected_indices);

@@ -348,7 +348,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnPasteFromSelectionClipboard();
   void OnRouteCloseEvent();
-  void OnRouteMessageEvent(const ViewMsg_PostMessage_Params& params);
   void OnStartDragging(const DropData& drop_data,
                        blink::WebDragOperationsMask operations_allowed,
                        const SkBitmap& bitmap,

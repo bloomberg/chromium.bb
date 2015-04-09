@@ -9,8 +9,10 @@
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
+#include "content/browser/message_port_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/site_instance_impl.h"
@@ -119,6 +121,7 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxyHost, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_RouteMessageEvent, OnRouteMessageEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -176,6 +179,87 @@ void RenderFrameProxyHost::OnOpenURL(
   // TODO(creis): Verify that we are in the same BrowsingInstance as the current
   // RenderFrameHost.  See NavigatorImpl::RequestOpenURL.
   frame_tree_node_->current_frame_host()->OpenURL(params, site_instance_.get());
+}
+
+void RenderFrameProxyHost::OnRouteMessageEvent(
+    const FrameMsg_PostMessage_Params& params) {
+  RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
+
+  // Only deliver the message if the request came from a RenderFrameHost in the
+  // same BrowsingInstance or if this WebContents is dedicated to a browser
+  // plugin guest.
+  //
+  // TODO(alexmos, lazyboy):  The check for browser plugin guest currently
+  // requires going through the delegate.  It should be refactored and
+  // performed here once OOPIF support in <webview> is further along.
+  SiteInstance* target_site_instance = target_rfh->GetSiteInstance();
+  if (!target_site_instance->IsRelatedSiteInstance(GetSiteInstance()) &&
+      !target_rfh->delegate()->ShouldRouteMessageEvent(target_rfh,
+                                                       GetSiteInstance()))
+    return;
+
+  FrameMsg_PostMessage_Params new_params(params);
+
+  // If there is a source_routing_id, translate it to the routing ID of the
+  // equivalent RenderFrameProxyHost in the target process.
+  if (new_params.source_routing_id != MSG_ROUTING_NONE) {
+    RenderFrameHostImpl* source_rfh = RenderFrameHostImpl::FromID(
+        GetProcess()->GetID(), new_params.source_routing_id);
+    if (!source_rfh) {
+      new_params.source_routing_id = MSG_ROUTING_NONE;
+    } else {
+      // Ensure that we have a swapped-out RVH and proxy for the source frame.
+      // If it doesn't exist, create it on demand and also create its opener
+      // chain, since those will also be accessible to the target page.
+      //
+      // TODO(alexmos): This currently only works for top-level frames and
+      // won't create the right proxy if the message source is a subframe on a
+      // cross-process tab.  This will be cleaned up as part of moving opener
+      // tracking to FrameTreeNode (https://crbug.com/225940). For now, if the
+      // message is sent from a subframe on a cross-process tab, set the source
+      // routing ID to the main frame of the source tab, which matches legacy
+      // postMessage behavior prior to --site-per-process.
+      int source_view_routing_id =
+          target_rfh->delegate()->EnsureOpenerRenderViewsExist(source_rfh);
+
+      RenderFrameProxyHost* source_proxy_in_target_site_instance =
+          source_rfh->frame_tree_node()
+              ->render_manager()
+              ->GetRenderFrameProxyHost(target_rfh->GetSiteInstance());
+      if (source_proxy_in_target_site_instance) {
+        new_params.source_routing_id =
+            source_proxy_in_target_site_instance->GetRoutingID();
+      } else if (source_view_routing_id != MSG_ROUTING_NONE) {
+        RenderViewHostImpl* source_rvh = RenderViewHostImpl::FromID(
+            target_rfh->GetProcess()->GetID(), source_view_routing_id);
+        CHECK(source_rvh);
+        new_params.source_routing_id = source_rvh->main_frame_routing_id();
+      } else {
+        new_params.source_routing_id = MSG_ROUTING_NONE;
+      }
+    }
+  }
+
+  if (!params.message_ports.empty()) {
+    // Updating the message port information has to be done in the IO thread;
+    // MessagePortMessageFilter::RouteMessageEventWithMessagePorts will send
+    // FrameMsg_PostMessageEvent after it's done. Note that a trivial solution
+    // would've been to post a task on the IO thread to do the IO-thread-bound
+    // work, and make that post a task back to WebContentsImpl in the UI
+    // thread. But we cannot do that, since there's nothing to guarantee that
+    // WebContentsImpl stays alive during the round trip.
+    scoped_refptr<MessagePortMessageFilter> message_port_message_filter(
+        static_cast<RenderProcessHostImpl*>(target_rfh->GetProcess())
+            ->message_port_message_filter());
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&MessagePortMessageFilter::RouteMessageEventWithMessagePorts,
+                   message_port_message_filter, target_rfh->GetRoutingID(),
+                   new_params));
+  } else {
+    target_rfh->Send(
+        new FrameMsg_PostMessageEvent(target_rfh->GetRoutingID(), new_params));
+  }
 }
 
 }  // namespace content

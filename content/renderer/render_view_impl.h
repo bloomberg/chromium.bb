@@ -76,7 +76,6 @@ class PepperDeviceTest;
 class SkBitmap;
 struct PP_NetAddress_Private;
 struct ViewMsg_New_Params;
-struct ViewMsg_PostMessage_Params;
 struct ViewMsg_Resize_Params;
 struct ViewMsg_StopFinding_Params;
 
@@ -652,7 +651,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnPluginActionAt(const gfx::Point& location,
                         const blink::WebPluginAction& action);
   void OnMoveOrResizeStarted();
-  void OnPostMessageEvent(const ViewMsg_PostMessage_Params& params);
   void OnReleaseDisambiguationPopupBitmap(const cc::SharedBitmapId& id);
   void OnResetPageEncodingToDefault();
   void OnSetActive(bool active);

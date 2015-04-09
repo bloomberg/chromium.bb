@@ -323,7 +323,7 @@ void RenderFrameProxy::postMessageEvent(
     blink::WebDOMMessageEvent event) {
   DCHECK(!web_frame_ || web_frame_ == target_frame);
 
-  ViewMsg_PostMessage_Params params;
+  FrameMsg_PostMessage_Params params;
   params.is_data_raw_string = false;
   params.data = event.data().toString();
   params.source_origin = event.origin();
@@ -338,13 +338,14 @@ void RenderFrameProxy::postMessageEvent(
   // frame in the target process.
   params.source_routing_id = MSG_ROUTING_NONE;
   if (source_frame) {
-    RenderViewImpl* source_view =
-        RenderViewImpl::FromWebView(source_frame->view());
-    if (source_view)
-      params.source_routing_id = source_view->routing_id();
+    RenderFrameImpl* source_render_frame =
+        RenderFrameImpl::FromWebFrame(source_frame);
+    if (source_render_frame)
+      params.source_routing_id = source_render_frame->GetRoutingID();
   }
+  params.source_view_routing_id = MSG_ROUTING_NONE;
 
-  Send(new ViewHostMsg_RouteMessageEvent(render_view_->GetRoutingID(), params));
+  Send(new FrameHostMsg_RouteMessageEvent(routing_id_, params));
 }
 
 void RenderFrameProxy::initializeChildFrame(

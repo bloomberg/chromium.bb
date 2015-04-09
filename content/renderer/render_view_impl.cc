@@ -147,7 +147,6 @@
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
@@ -164,7 +163,6 @@
 #include "third_party/WebKit/public/web/WebSearchableFormData.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
-#include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -224,8 +222,6 @@ using blink::WebConsoleMessage;
 using blink::WebData;
 using blink::WebDataSource;
 using blink::WebDocument;
-using blink::WebDOMEvent;
-using blink::WebDOMMessageEvent;
 using blink::WebDragData;
 using blink::WebDragOperation;
 using blink::WebDragOperationsMask;
@@ -265,7 +261,6 @@ using blink::WebScriptSource;
 using blink::WebSearchableFormData;
 using blink::WebSecurityOrigin;
 using blink::WebSecurityPolicy;
-using blink::WebSerializedScriptValue;
 using blink::WebSettings;
 using blink::WebSize;
 using blink::WebStorageNamespace;
@@ -1280,7 +1275,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
-    IPC_MESSAGE_HANDLER(ViewMsg_PostMessageEvent, OnPostMessageEvent)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
@@ -2528,61 +2522,6 @@ void RenderViewImpl::OnSetPageEncoding(const std::string& encoding_name) {
 void RenderViewImpl::OnResetPageEncodingToDefault() {
   WebString no_encoding;
   webview()->setPageEncoding(no_encoding);
-}
-
-void RenderViewImpl::OnPostMessageEvent(
-    const ViewMsg_PostMessage_Params& params) {
-  // TODO(nasko): Support sending to subframes.
-  WebFrame* frame = webview()->mainFrame();
-
-  // Find the source frame if it exists.
-  WebFrame* source_frame = NULL;
-  if (params.source_routing_id != MSG_ROUTING_NONE) {
-    RenderViewImpl* source_view = FromRoutingID(params.source_routing_id);
-    if (source_view)
-      source_frame = source_view->webview()->mainFrame();
-  }
-
-  // If the message contained MessagePorts, create the corresponding endpoints.
-  blink::WebMessagePortChannelArray channels =
-      WebMessagePortChannelImpl::CreatePorts(
-          params.message_ports, params.new_routing_ids,
-          base::MessageLoopProxy::current().get());
-
-  WebSerializedScriptValue serialized_script_value;
-  if (params.is_data_raw_string) {
-    v8::HandleScope handle_scope(blink::mainThreadIsolate());
-    v8::Local<v8::Context> context = frame->mainWorldScriptContext();
-    v8::Context::Scope context_scope(context);
-    V8ValueConverterImpl converter;
-    converter.SetDateAllowed(true);
-    converter.SetRegExpAllowed(true);
-    scoped_ptr<base::Value> value(new base::StringValue(params.data));
-    v8::Handle<v8::Value> result_value = converter.ToV8Value(value.get(),
-                                                             context);
-    serialized_script_value = WebSerializedScriptValue::serialize(result_value);
-  } else {
-    serialized_script_value = WebSerializedScriptValue::fromString(params.data);
-  }
-
-  // Create an event with the message.  The final parameter to initMessageEvent
-  // is the last event ID, which is not used with postMessage.
-  WebDOMEvent event = frame->document().createEvent("MessageEvent");
-  WebDOMMessageEvent msg_event = event.to<WebDOMMessageEvent>();
-  msg_event.initMessageEvent("message",
-                             // |canBubble| and |cancellable| are always false
-                             false, false,
-                             serialized_script_value,
-                             params.source_origin, source_frame, "", channels);
-
-  // We must pass in the target_origin to do the security check on this side,
-  // since it may have changed since the original postMessage call was made.
-  WebSecurityOrigin target_origin;
-  if (!params.target_origin.empty()) {
-    target_origin =
-        WebSecurityOrigin::createFromString(WebString(params.target_origin));
-  }
-  frame->dispatchMessageEventWithOriginCheck(target_origin, msg_event);
 }
 
 void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {

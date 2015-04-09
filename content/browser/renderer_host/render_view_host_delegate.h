@@ -21,7 +21,6 @@ class GURL;
 class SkBitmap;
 struct ViewHostMsg_CreateWindow_Params;
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
-struct ViewMsg_PostMessage_Params;
 
 namespace base {
 class ListValue;
@@ -128,11 +127,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // The page wants to close the active view in this tab.
   virtual void RouteCloseEvent(RenderViewHost* rvh) {}
-
-  // The page wants to post a message to the active view in this tab.
-  virtual void RouteMessageEvent(
-      RenderViewHost* rvh,
-      const ViewMsg_PostMessage_Params& params) {}
 
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.

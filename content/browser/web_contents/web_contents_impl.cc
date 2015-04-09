@@ -3997,74 +3997,36 @@ void WebContentsImpl::RouteCloseEvent(RenderViewHost* rvh) {
     GetRenderViewHost()->ClosePage();
 }
 
-void WebContentsImpl::RouteMessageEvent(
-    RenderViewHost* rvh,
-    const ViewMsg_PostMessage_Params& params) {
-  // Only deliver the message to the active RenderViewHost if the request
-  // came from a RenderViewHost in the same BrowsingInstance or if this
-  // WebContents is dedicated to a browser plugin guest.
+bool WebContentsImpl::ShouldRouteMessageEvent(
+    RenderFrameHost* target_rfh,
+    SiteInstance* source_site_instance) const {
+  // Allow the message if this WebContents is dedicated to a browser plugin
+  // guest.
   // Note: This check means that an embedder could theoretically receive a
   // postMessage from anyone (not just its own guests). However, this is
   // probably not a risk for apps since other pages won't have references
   // to App windows.
-  if (!rvh->GetSiteInstance()->IsRelatedSiteInstance(GetSiteInstance()) &&
-      !GetBrowserPluginGuest() && !GetBrowserPluginEmbedder())
-    return;
+  return GetBrowserPluginGuest() || GetBrowserPluginEmbedder();
+}
 
-  ViewMsg_PostMessage_Params new_params(params);
+int WebContentsImpl::EnsureOpenerRenderViewsExist(
+    RenderFrameHost* source_rfh) {
+  WebContentsImpl* source_web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(source_rfh));
 
-  // If there is a source_routing_id, translate it to the routing ID for
-  // the equivalent swapped out RVH in the target process.  If we need
-  // to create a swapped out RVH for the source tab, we create its opener
-  // chain as well, since those will also be accessible to the target page.
-  if (new_params.source_routing_id != MSG_ROUTING_NONE) {
-    // Try to look up the WebContents for the source page.
-    WebContentsImpl* source_contents = NULL;
-    RenderViewHostImpl* source_rvh = RenderViewHostImpl::FromID(
-        rvh->GetProcess()->GetID(), params.source_routing_id);
-    if (source_rvh) {
-      source_contents = static_cast<WebContentsImpl*>(
-          source_rvh->GetDelegate()->GetAsWebContents());
-    }
-
-    if (source_contents) {
-      if (GetBrowserPluginGuest()) {
-        // We create a swapped out RenderView for the embedder in the guest's
-        // render process but we intentionally do not expose the embedder's
-        // opener chain to it.
-        new_params.source_routing_id =
-            source_contents->CreateSwappedOutRenderView(GetSiteInstance());
-      } else {
-        new_params.source_routing_id =
-            source_contents->CreateOpenerRenderViews(GetSiteInstance());
-      }
+  if (source_web_contents) {
+    if (GetBrowserPluginGuest()) {
+      // We create a swapped out RenderView for the embedder in the guest's
+      // render process but we intentionally do not expose the embedder's
+      // opener chain to it.
+      return
+          source_web_contents->CreateSwappedOutRenderView(GetSiteInstance());
     } else {
-      // We couldn't find it, so don't pass a source frame.
-      new_params.source_routing_id = MSG_ROUTING_NONE;
+      return source_web_contents->CreateOpenerRenderViews(GetSiteInstance());
     }
   }
 
-  // In most cases, we receive this from a swapped out RenderViewHost.
-  // It is possible to receive it from one that has just been swapped in,
-  // in which case we might as well deliver the message anyway.
-  if (!params.message_ports.empty()) {
-    // Updating the message port information has to be done in the IO thread;
-    // MessagePortMessageFilter::RouteMessageEventWithMessagePorts will send
-    // ViewMsg_PostMessageEvent after it's done. Note that a trivial solution
-    // would've been to post a task on the IO thread to do the IO-thread-bound
-    // work, and make that post a task back to WebContentsImpl in the UI
-    // thread. But we cannot do that, since there's nothing to guarantee that
-    // WebContentsImpl stays alive during the round trip.
-    scoped_refptr<MessagePortMessageFilter> message_port_message_filter(
-        static_cast<RenderProcessHostImpl*>(GetRenderProcessHost())
-        ->message_port_message_filter());
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&MessagePortMessageFilter::RouteMessageEventWithMessagePorts,
-                   message_port_message_filter, GetRoutingID(), new_params));
-  } else {
-    Send(new ViewMsg_PostMessageEvent(GetRoutingID(), new_params));
-  }
+  return MSG_ROUTING_NONE;
 }
 
 bool WebContentsImpl::AddMessageToConsole(int32 level,

@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/media_stream_request.h"
 #include "net/http/http_response_headers.h"
@@ -167,6 +168,26 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Notification that the frame wants to go out of fullscreen mode.
   virtual void ExitFullscreenMode() {}
+
+  // Let the delegate decide whether postMessage should be delivered to
+  // |target_rfh| from a source frame in the given SiteInstance.  This defaults
+  // to false and overrides the RenderFrameHost's decision if true.
+  virtual bool ShouldRouteMessageEvent(
+      RenderFrameHost* target_rfh,
+      SiteInstance* source_site_instance) const;
+
+  // Ensure that |source_rfh| has swapped-out RenderViews and proxies for
+  // itself and for each frame on its opener chain in the current frame's
+  // SiteInstance. Returns the routing ID of the swapped-out RenderView
+  // corresponding to |source_rfh|.
+  //
+  // TODO(alexmos): This method will be removed once opener tracking and
+  // CreateOpenerRenderViews moves out of WebContents and into lower layers, as
+  // part of https://crbug.com/225940.  Currently, this method temporarily
+  // supports cross-process postMessage in non-site-per-process mode, where we
+  // need to create any missing proxies for the message's source frame and its
+  // opener chain on demand.
+  virtual int EnsureOpenerRenderViewsExist(RenderFrameHost* source_rfh);
 
 #if defined(OS_WIN)
   // Returns the frame's parent's NativeViewAccessible.

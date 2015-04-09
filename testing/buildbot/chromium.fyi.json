@@ -2286,7 +2286,7 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-*.AllowTargetedNavigationsAfterSwap:*.SupportCrossProcessPostMessage:*.DisownOpener:*.DontPreemptNavigationWithFrameTreeUpdate:*.ProcessExitWithSwappedOutViews:*.SupportCrossProcessPostMessageWithMessagePort"
+          "--gtest_filter=-*.AllowTargetedNavigationsAfterSwap:*.DisownOpener:*.DontPreemptNavigationWithFrameTreeUpdate:*.ProcessExitWithSwappedOutViews:*.SupportCrossProcessPostMessageWithMessagePort"
         ],
         "test": "content_browsertests"
       },
@@ -2316,7 +2316,7 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-*.AllowTargetedNavigationsAfterSwap:*.SupportCrossProcessPostMessage:*.DisownOpener:*.DontPreemptNavigationWithFrameTreeUpdate:*.ProcessExitWithSwappedOutViews:*.SupportCrossProcessPostMessageWithMessagePort"
+          "--gtest_filter=-*.AllowTargetedNavigationsAfterSwap:*.DisownOpener:*.DontPreemptNavigationWithFrameTreeUpdate:*.ProcessExitWithSwappedOutViews:*.SupportCrossProcessPostMessageWithMessagePort"
         ],
         "test": "content_browsertests"
       },

@@ -31,7 +31,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_DocumentDetached::ID:
     // Allow cross-process JavaScript calls.
     case ViewHostMsg_RouteCloseEvent::ID:
-    case ViewHostMsg_RouteMessageEvent::ID:
     // Handled by RenderFrameHost.
     case FrameHostMsg_BeforeUnload_ACK::ID:
     case FrameHostMsg_SwapOut_ACK::ID:

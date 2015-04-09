@@ -15,7 +15,7 @@
 #undef SendMessage
 #endif
 
-struct ViewMsg_PostMessage_Params;
+struct FrameMsg_PostMessage_Params;
 
 namespace content {
 struct TransferredMessagePort;
@@ -54,7 +54,7 @@ class CONTENT_EXPORT MessagePortMessageFilter
 
   void RouteMessageEventWithMessagePorts(
       int routing_id,
-      const ViewMsg_PostMessage_Params& params);
+      const FrameMsg_PostMessage_Params& params);
 
  protected:
   // This is protected, so we can define sub classes for testing.

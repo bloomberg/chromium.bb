@@ -125,6 +125,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebGlyphCache.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
@@ -137,6 +138,7 @@
 #include "third_party/WebKit/public/web/WebSearchableFormData.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
+#include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebSurroundingText.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
@@ -186,6 +188,8 @@ using blink::WebContextMenuData;
 using blink::WebData;
 using blink::WebDataSource;
 using blink::WebDocument;
+using blink::WebDOMEvent;
+using blink::WebDOMMessageEvent;
 using blink::WebElement;
 using blink::WebExternalPopupMenu;
 using blink::WebExternalPopupMenuClient;
@@ -206,6 +210,7 @@ using blink::WebScriptSource;
 using blink::WebSearchableFormData;
 using blink::WebSecurityOrigin;
 using blink::WebSecurityPolicy;
+using blink::WebSerializedScriptValue;
 using blink::WebServiceWorkerProvider;
 using blink::WebStorageQuotaCallbacks;
 using blink::WebString;
@@ -1049,6 +1054,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
+    IPC_MESSAGE_HANDLER(FrameMsg_PostMessageEvent, OnPostMessageEvent)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
 #elif defined(OS_MACOSX)
@@ -1261,6 +1267,12 @@ void RenderFrameImpl::OnSwapOut(
       render_view_->SetSwappedOut(true);
     is_swapped_out_ = true;
 
+    // Set the proxy here, since OnStop() below could cause an onload event
+    // handler to execute, which could trigger code such as
+    // willCheckAndDispatchMessageEvent() that needs the proxy.
+    if (proxy)
+      set_render_frame_proxy(proxy);
+
     // Now that we're swapped out and filtering IPC messages, stop loading to
     // ensure that no other in-progress navigation continues.  We do this here
     // to avoid sending a DidStopLoading message to the browser process.
@@ -1310,8 +1322,6 @@ void RenderFrameImpl::OnSwapOut(
         // TODO(nasko): delete the frame here, since we've replaced it with a
         // proxy.
       }
-    } else {
-      set_render_frame_proxy(proxy);
     }
   }
 
@@ -1600,6 +1610,77 @@ void RenderFrameImpl::OnTextTrackSettingsChanged(
       WebString::fromUTF8(params.text_track_text_shadow));
   render_view_->webview()->settings()->setTextTrackTextSize(
       WebString::fromUTF8(params.text_track_text_size));
+}
+
+void RenderFrameImpl::OnPostMessageEvent(
+    const FrameMsg_PostMessage_Params& params) {
+  // Find the source frame if it exists.
+  WebFrame* source_frame = NULL;
+  if (params.source_view_routing_id != MSG_ROUTING_NONE) {
+    // Support a legacy postMessage path for specifying a source RenderView;
+    // this is currently used when sending messages to Android WebView.
+    // TODO(alexmos): This path can be removed once crbug.com/473258 is fixed.
+    RenderViewImpl* source_view =
+        RenderViewImpl::FromRoutingID(params.source_view_routing_id);
+    if (source_view)
+      source_frame = source_view->webview()->mainFrame();
+  } else if (params.source_routing_id != MSG_ROUTING_NONE) {
+    RenderFrameProxy* source_proxy =
+        RenderFrameProxy::FromRoutingID(params.source_routing_id);
+    if (source_proxy) {
+      // Currently, navigating a top-level frame cross-process does not swap
+      // the WebLocalFrame for a WebRemoteFrame in the frame tree, and the
+      // WebRemoteFrame will not have an associated blink::Frame. If this is
+      // the case for |source_proxy|, use the corresponding (swapped-out)
+      // WebLocalFrame instead, so that event.source for this message can be
+      // set and used properly.
+      if (source_proxy->IsMainFrameDetachedFromTree())
+        source_frame = source_proxy->render_view()->webview()->mainFrame();
+      else
+        source_frame = source_proxy->web_frame();
+    }
+  }
+
+  // If the message contained MessagePorts, create the corresponding endpoints.
+  blink::WebMessagePortChannelArray channels =
+      WebMessagePortChannelImpl::CreatePorts(
+          params.message_ports, params.new_routing_ids,
+          base::MessageLoopProxy::current().get());
+
+  WebSerializedScriptValue serialized_script_value;
+  if (params.is_data_raw_string) {
+    v8::HandleScope handle_scope(blink::mainThreadIsolate());
+    v8::Local<v8::Context> context = frame_->mainWorldScriptContext();
+    v8::Context::Scope context_scope(context);
+    V8ValueConverterImpl converter;
+    converter.SetDateAllowed(true);
+    converter.SetRegExpAllowed(true);
+    scoped_ptr<base::Value> value(new base::StringValue(params.data));
+    v8::Handle<v8::Value> result_value = converter.ToV8Value(value.get(),
+                                                             context);
+    serialized_script_value = WebSerializedScriptValue::serialize(result_value);
+  } else {
+    serialized_script_value = WebSerializedScriptValue::fromString(params.data);
+  }
+
+  // Create an event with the message.  The next-to-last parameter to
+  // initMessageEvent is the last event ID, which is not used with postMessage.
+  WebDOMEvent event = frame_->document().createEvent("MessageEvent");
+  WebDOMMessageEvent msg_event = event.to<WebDOMMessageEvent>();
+  msg_event.initMessageEvent("message",
+                             // |canBubble| and |cancellable| are always false
+                             false, false,
+                             serialized_script_value,
+                             params.source_origin, source_frame, "", channels);
+
+  // We must pass in the target_origin to do the security check on this side,
+  // since it may have changed since the original postMessage call was made.
+  WebSecurityOrigin target_origin;
+  if (!params.target_origin.empty()) {
+    target_origin =
+        WebSecurityOrigin::createFromString(WebString(params.target_origin));
+  }
+  frame_->dispatchMessageEventWithOriginCheck(target_origin, msg_event);
 }
 
 #if defined(OS_ANDROID)
@@ -3562,31 +3643,23 @@ bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
     blink::WebDOMMessageEvent event) {
   DCHECK(!frame_ || frame_ == target_frame);
 
+  // Currently, a postMessage that targets a cross-process frame can be plumbed
+  // either through this function or RenderFrameProxy::postMessageEvent. This
+  // function is used when the target cross-process frame is a top-level frame
+  // which has been swapped out.  In that case, the corresponding WebLocalFrame
+  // currently remains in the frame tree even in site-per-process mode (see
+  // OnSwapOut). RenderFrameProxy::postMessageEvent is used in
+  // --site-per-process mode for all other cases.
+  //
+  // TODO(alexmos, nasko): When swapped-out:// disappears, this should be
+  // cleaned up so that RenderFrameProxy::postMessageEvent is the only path for
+  // cross-process postMessages.
   if (!is_swapped_out_)
     return false;
 
-  ViewMsg_PostMessage_Params params;
-  params.is_data_raw_string = false;
-  params.data = event.data().toString();
-  params.source_origin = event.origin();
-  if (!target_origin.isNull())
-    params.target_origin = target_origin.toString();
-
-  params.message_ports =
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(event.releaseChannels());
-
-  // Include the routing ID for the source frame (if one exists), which the
-  // browser process will translate into the routing ID for the equivalent
-  // frame in the target process.
-  params.source_routing_id = MSG_ROUTING_NONE;
-  if (source_frame) {
-    RenderViewImpl* source_view =
-        RenderViewImpl::FromWebView(source_frame->view());
-    if (source_view)
-      params.source_routing_id = source_view->routing_id();
-  }
-
-  Send(new ViewHostMsg_RouteMessageEvent(render_view_->routing_id_, params));
+  CHECK(render_frame_proxy_);
+  render_frame_proxy_->postMessageEvent(
+      source_frame, render_frame_proxy_->web_frame(), target_origin, event);
   return true;
 }
 

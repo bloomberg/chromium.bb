@@ -15,6 +15,18 @@
     return true;
   }
   
+  // Send a message to parent.
+  function postToParent(msg) {
+    parent.postMessage(msg, "*");
+    return true;
+  }
+
+  // Send a message to sibling.
+  function postToSibling(msg, sibling) {
+    parent.frames[sibling].postMessage(msg, "*");
+    return true;
+  }
+
   // Send a message to a subframe of window named "foo".
   function postToFooFrame(msg) {
     var w = window.open("", "foo");
@@ -30,6 +42,11 @@
     receivedMessages++;
     if (event.data === "2-1-reply") {
       event.source.postMessage("msg4", "*");
+    } else if (event.data === "subframe-msg") {
+      event.source.postMessage("subframe-msg-reply", "*");
+    } else if (event.data === "subframe-msg-reply") {
+      domAutomationController.setAutomationId(0);
+      domAutomationController.send("done-" + window.name);
     }
     if (event.ports.length > 0) {
       receivedMessagesWithPort++;

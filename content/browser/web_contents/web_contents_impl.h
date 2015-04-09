@@ -43,7 +43,6 @@
 
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct ViewHostMsg_DateTimeDialogValue_Params;
-struct ViewMsg_PostMessage_Params;
 
 namespace content {
 class BrowserPluginEmbedder;
@@ -412,6 +411,10 @@ class CONTENT_EXPORT WebContentsImpl
   GeolocationServiceContext* GetGeolocationServiceContext() override;
   void EnterFullscreenMode(const GURL& origin) override;
   void ExitFullscreenMode() override;
+  bool ShouldRouteMessageEvent(
+      RenderFrameHost* target_rfh,
+      SiteInstance* source_site_instance) const override;
+  int EnsureOpenerRenderViewsExist(RenderFrameHost* source_rfh) override;
 #if defined(OS_WIN)
   gfx::NativeViewAccessible GetParentNativeViewAccessible() override;
 #endif
@@ -440,8 +443,6 @@ class CONTENT_EXPORT WebContentsImpl
   void DidCancelLoading() override;
   void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) override;
   void RouteCloseEvent(RenderViewHost* rvh) override;
-  void RouteMessageEvent(RenderViewHost* rvh,
-                         const ViewMsg_PostMessage_Params& params) override;
   bool AddMessageToConsole(int32 level,
                            const base::string16& message,
                            int32 line_no,

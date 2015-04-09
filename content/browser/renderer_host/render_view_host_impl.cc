@@ -897,7 +897,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent,
                         OnRouteCloseEvent)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RouteMessageEvent, OnRouteMessageEvent)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(DragHostMsg_TargetDrop_ACK, OnTargetDropACK)
@@ -1089,12 +1088,6 @@ void RenderViewHostImpl::OnRenderAutoResized(const gfx::Size& new_size) {
 void RenderViewHostImpl::OnRouteCloseEvent() {
   // Have the delegate route this to the active RenderViewHost.
   delegate_->RouteCloseEvent(this);
-}
-
-void RenderViewHostImpl::OnRouteMessageEvent(
-    const ViewMsg_PostMessage_Params& params) {
-  // Give to the delegate to route to the active RenderViewHost.
-  delegate_->RouteMessageEvent(this, params);
 }
 
 void RenderViewHostImpl::OnStartDragging(

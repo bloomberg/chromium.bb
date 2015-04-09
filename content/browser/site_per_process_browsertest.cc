@@ -1821,4 +1821,89 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, LoadEventForwarding) {
   }
 }
 
+// Check that postMessage can be routed between cross-site iframes.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_post_message_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  TestNavigationObserver observer(shell()->web_contents());
+  ASSERT_EQ(2U, root->child_count());
+
+  // Verify the frames start at correct URLs.  First frame should be
+  // same-site; second frame should be cross-site.
+  GURL same_site_url(embedded_test_server()->GetURL("/post_message.html"));
+  EXPECT_EQ(same_site_url, root->child_at(0)->current_url());
+  GURL foo_url(embedded_test_server()->GetURL("foo.com",
+                                              "/post_message.html"));
+  EXPECT_EQ(foo_url, root->child_at(1)->current_url());
+  EXPECT_NE(root->child_at(0)->current_frame_host()->GetSiteInstance(),
+            root->child_at(1)->current_frame_host()->GetSiteInstance());
+
+  // Send a message from first, same-site frame to second, cross-site frame.
+  // Expect the second frame to reply back to the first frame.
+  //
+  // TODO(alexmos): Also try sending from second to first frame.  Currently,
+  // this fails due to https://crbug.com/473518, which prevents
+  // parent.frames[x] from working when "parent" is a remote frame.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send("
+      "    postToSibling('subframe-msg','subframe2'));",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Wait for first frame to receive a reply from the second frame. It will
+  // send "done-subframe1" from the DOMAutomationController when the reply
+  // arrives.
+  content::DOMMessageQueue msg_queue;
+  std::string status;
+  while (msg_queue.WaitForMessage(&status)) {
+    if (status == "\"done-subframe1\"")
+      break;
+  }
+
+  // Send a postMessage from second, cross-site frame to its parent.  Expect
+  // parent to send a reply to the frame.
+  base::string16 expected_title(base::ASCIIToUTF16("subframe-msg"));
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(1)->current_frame_host(),
+      "window.domAutomationController.send(postToParent('subframe-msg'));",
+      &success));
+  EXPECT_TRUE(success);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // Wait for second frame to receive a reply from the parent. The frame will
+  // return "done-subframe2" from the DOMAutomationController when the reply
+  // arrives.
+  while (msg_queue.WaitForMessage(&status)) {
+    if (status == "\"done-subframe2\"")
+      break;
+  }
+
+  // Verify the total number of received messages for each subframe.  First
+  // frame should have one message (reply from second frame), and second frame
+  // should have two messages (message from first frame and reply from parent).
+  int subframe1_received_messages = 0;
+  int subframe2_received_messages = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(window.receivedMessages);",
+      &subframe1_received_messages));
+  EXPECT_EQ(1, subframe1_received_messages);
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->child_at(1)->current_frame_host(),
+      "window.domAutomationController.send(window.receivedMessages);",
+      &subframe2_received_messages));
+  EXPECT_EQ(2, subframe2_received_messages);
+}
+
 }  // namespace content
