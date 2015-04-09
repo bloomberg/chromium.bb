@@ -131,6 +131,7 @@ class BatteryUtils(object):
     return {p: {'uid': uid, 'data': pwi_entries[uid]}
             for p, uid in uid_entries.iteritems()}
 
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def GetPackagePowerData(self, package, timeout=None, retries=None):
     """ Get power data for particular package.
 
@@ -147,6 +148,7 @@ class BatteryUtils(object):
     """
     return self.GetPowerData().get(package)
 
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def GetBatteryInfo(self, timeout=None, retries=None):
     """Gets battery info for the device.
 
@@ -172,6 +174,7 @@ class BatteryUtils(object):
         result[k.strip()] = v.strip()
     return result
 
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def GetCharging(self, timeout=None, retries=None):
     """Gets the charging state of the device.
 
@@ -188,6 +191,7 @@ class BatteryUtils(object):
         return True
     return False
 
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def SetCharging(self, enabled, timeout=None, retries=None):
     """Enables or disables charging on the device.
 
@@ -222,6 +226,7 @@ class BatteryUtils(object):
     timeout_retry.WaitFor(set_and_verify_charging, wait_period=1)
 
   # TODO(rnephew): Make private when all use cases can use the context manager.
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def DisableBatteryUpdates(self, timeout=None, retries=None):
     """ Resets battery data and makes device appear like it is not
     charging so that it will collect power data since last charge.
@@ -264,6 +269,7 @@ class BatteryUtils(object):
     timeout_retry.WaitFor(battery_updates_disabled, wait_period=1)
 
   # TODO(rnephew): Make private when all use cases can use the context manager.
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def EnableBatteryUpdates(self, timeout=None, retries=None):
     """ Restarts device charging so that dumpsys no longer collects power data.
 
