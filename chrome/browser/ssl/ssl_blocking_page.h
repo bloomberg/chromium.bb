@@ -104,6 +104,14 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // care of calling certificate_report_callback_for_testing_.
   void FinishCertCollection();
 
+  // Check whether a checkbox should be shown on the page that allows
+  // the user to opt in to Safe Browsing extended reporting.
+  bool ShouldShowCertificateReporterCheckbox();
+
+  // Returns true if an certificate report should be sent for the SSL
+  // error for this page.
+  bool ShouldReportCertificateError();
+
   base::Callback<void(bool)> callback_;
 
   const int cert_error_;

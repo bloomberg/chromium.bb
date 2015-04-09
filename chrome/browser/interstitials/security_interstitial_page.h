@@ -35,6 +35,7 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   // See chrome/browser/resources/security_warnings/interstitial_v2.js
   enum SecurityInterstitialCommands {
     // Used by tests
+    CMD_ERROR = -3,
     CMD_TEXT_FOUND = -2,
     CMD_TEXT_NOT_FOUND = -1,
     // Decisions

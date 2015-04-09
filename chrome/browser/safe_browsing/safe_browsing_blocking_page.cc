@@ -192,7 +192,8 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
 
 bool SafeBrowsingBlockingPage::CanShowMalwareDetailsOption() {
   return (!web_contents()->GetBrowserContext()->IsOffTheRecord() &&
-          web_contents()->GetURL().SchemeIs(url::kHttpScheme));
+          web_contents()->GetURL().SchemeIs(url::kHttpScheme) &&
+          IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
 }
 
 SafeBrowsingBlockingPage::~SafeBrowsingBlockingPage() {
@@ -402,7 +403,8 @@ void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
   DCHECK_EQ(interstitial_reason_, SB_REASON_MALWARE);
 
   const bool enabled =
-      IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled);
+      IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled) &&
+      IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
   if (!enabled)
     return;
 

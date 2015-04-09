@@ -320,6 +320,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDisableSafeBrowsingProceedAnyway,
     prefs::kSafeBrowsingProceedAnywayDisabled,
     base::Value::TYPE_BOOLEAN },
+  { key::kSafeBrowsingExtendedReportingOptInAllowed,
+    prefs::kSafeBrowsingExtendedReportingOptInAllowed,
+    base::Value::TYPE_BOOLEAN },
 
 #if defined(ENABLE_SPELLCHECK)
   { key::kSpellCheckServiceEnabled,

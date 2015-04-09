@@ -108,35 +108,6 @@ enum SSLExpirationAndDecision {
 // Rappor prefix
 const char kSSLRapporPrefix[] = "ssl";
 
-// Check whether to show the certificate reporter checkbox
-bool ShouldShowCertificateReporterCheckbox(bool in_incognito) {
-  // Only show the checkbox iff the user is part of the respective Finch group
-  // and the window is not incognito.
-  return base::FieldTrialList::FindFullName(
-             kHTTPSErrorReporterFinchExperimentName) ==
-             kHTTPSErrorReporterFinchGroupShowPossiblySend &&
-         !in_incognito;
-}
-
-// Check whether to report certificate verification errors to Google
-bool ShouldReportCertificateErrors(bool in_incognito) {
-  DCHECK(ShouldShowCertificateReporterCheckbox(in_incognito));
-  // Even in case the checkbox was shown, we don't send error reports
-  // for all of these users. Check the Finch configuration for a sending
-  // threshold and only send reports in case the threshold isn't exceeded.
-  const std::string param =
-      variations::GetVariationParamValue(kHTTPSErrorReporterFinchExperimentName,
-                                         kHTTPSErrorReporterFinchParamName);
-  if (!param.empty()) {
-    double sendingThreshold;
-    if (base::StringToDouble(param, &sendingThreshold)) {
-      if (sendingThreshold >= 0.0 && sendingThreshold <= 1.0)
-        return base::RandDouble() <= sendingThreshold;
-    }
-  }
-  return false;
-}
-
 void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
                                        bool proceed,
                                        bool overridable) {
@@ -493,9 +464,9 @@ void SSLBlockingPage::PopulateInterstitialStrings(
 void SSLBlockingPage::PopulateExtendedReportingOption(
     base::DictionaryValue* load_time_data) {
   // Only show the checkbox if not off-the-record and if this client is
-  // part of the respective Finch group.
-  const bool show = ShouldShowCertificateReporterCheckbox(
-      web_contents()->GetBrowserContext()->IsOffTheRecord());
+  // part of the respective Finch group, and the feature is not disabled
+  // by policy.
+  const bool show = ShouldShowCertificateReporterCheckbox();
 
   load_time_data->SetBoolean(interstitials::kDisplayCheckBox, show);
   if (!show)
@@ -681,10 +652,8 @@ void SSLBlockingPage::FinishCertCollection() {
   base::ScopedClosureRunner scoped_callback(
       certificate_report_callback_for_testing_);
 
-  if (!ShouldShowCertificateReporterCheckbox(
-          web_contents()->GetBrowserContext()->IsOffTheRecord())) {
+  if (!ShouldShowCertificateReporterCheckbox())
     return;
-  }
 
   const bool enabled =
       IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingEnabled);
@@ -695,13 +664,42 @@ void SSLBlockingPage::FinishCertCollection() {
   metrics_helper()->RecordUserInteraction(
       SecurityInterstitialMetricsHelper::EXTENDED_REPORTING_IS_ENABLED);
 
-  if (ShouldReportCertificateErrors(
-          web_contents()->GetBrowserContext()->IsOffTheRecord())) {
+  if (ShouldReportCertificateError()) {
     if (certificate_report_callback_for_testing_.is_null())
       scoped_callback.Reset(base::Bind(&base::DoNothing));
     safe_browsing_ui_manager_->ReportInvalidCertificateChain(
         request_url().host(), ssl_info_, scoped_callback.Release());
   }
+}
+
+bool SSLBlockingPage::ShouldShowCertificateReporterCheckbox() {
+  // Only show the checkbox iff the user is part of the respective Finch group
+  // and the window is not incognito and the feature is not disabled by policy.
+  const bool in_incognito =
+      web_contents()->GetBrowserContext()->IsOffTheRecord();
+  return base::FieldTrialList::FindFullName(
+             kHTTPSErrorReporterFinchExperimentName) ==
+             kHTTPSErrorReporterFinchGroupShowPossiblySend &&
+         !in_incognito &&
+         IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
+}
+
+bool SSLBlockingPage::ShouldReportCertificateError() {
+  DCHECK(ShouldShowCertificateReporterCheckbox());
+  // Even in case the checkbox was shown, we don't send error reports
+  // for all of these users. Check the Finch configuration for a sending
+  // threshold and only send reports in case the threshold isn't exceeded.
+  const std::string param =
+      variations::GetVariationParamValue(kHTTPSErrorReporterFinchExperimentName,
+                                         kHTTPSErrorReporterFinchParamName);
+  if (!param.empty()) {
+    double sendingThreshold;
+    if (base::StringToDouble(param, &sendingThreshold)) {
+      if (sendingThreshold >= 0.0 && sendingThreshold <= 1.0)
+        return base::RandDouble() <= sendingThreshold;
+    }
+  }
+  return false;
 }
 
 // static

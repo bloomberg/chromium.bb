@@ -567,6 +567,24 @@ class SafeBrowsingBlockingPageBrowserTest
     return true;
   }
 
+  void TestReportingDisabledAndDontProceed(const GURL& url) {
+    SetURLThreatType(url, GetParam());
+    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_TRUE(WaitForReady());
+
+    EXPECT_EQ(HIDDEN, GetVisibility("extended-reporting-opt-in"));
+    EXPECT_EQ(HIDDEN, GetVisibility("opt-in-checkbox"));
+    EXPECT_EQ(HIDDEN, GetVisibility("proceed-link"));
+    EXPECT_TRUE(Click("details-button"));
+    EXPECT_EQ(VISIBLE, GetVisibility("help-link"));
+    EXPECT_EQ(VISIBLE, GetVisibility("proceed-link"));
+
+    EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
+    AssertNoInterstitial(false);          // Assert the interstitial is gone
+    EXPECT_EQ(GURL(url::kAboutBlankURL),  // Back to "about:blank"
+              browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+  }
+
  protected:
   TestMalwareDetailsFactory details_factory_;
 
@@ -764,21 +782,27 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ReportingDisabled) {
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(https_server.Start());
   GURL url = https_server.GetURL(kEmptyPage);
-  SetURLThreatType(url, GetParam());
-  ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_TRUE(WaitForReady());
 
-  EXPECT_EQ(HIDDEN, GetVisibility("extended-reporting-opt-in"));
-  EXPECT_EQ(HIDDEN, GetVisibility("opt-in-checkbox"));
-  EXPECT_EQ(HIDDEN, GetVisibility("proceed-link"));
-  EXPECT_TRUE(Click("details-button"));
-  EXPECT_EQ(VISIBLE, GetVisibility("help-link"));
-  EXPECT_EQ(VISIBLE, GetVisibility("proceed-link"));
+  TestReportingDisabledAndDontProceed(url);
+}
 
-  EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
-  AssertNoInterstitial(false);   // Assert the interstitial is gone
-  EXPECT_EQ(GURL(url::kAboutBlankURL),  // Back to "about:blank"
-            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+// Verifies that the reporting checkbox is hidden when opt-in is
+// disabled by policy.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       ReportingDisabledByPolicy) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
+    return;
+#endif
+
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingEnabled, true);
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingOptInAllowed, false);
+
+  TestReportingDisabledAndDontProceed(test_server()->GetURL(kEmptyPage));
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, LearnMore) {

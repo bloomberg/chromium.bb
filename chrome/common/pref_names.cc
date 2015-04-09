@@ -345,6 +345,11 @@ const char kSafeBrowsingProceedAnywayDisabled[] =
 // A dictionary mapping incident types to a dict of incident key:digest pairs.
 const char kSafeBrowsingIncidentsSent[] = "safebrowsing.incidents_sent";
 
+// Boolean that tells us whether users are given the option to opt in to Safe
+// Browsing extended reporting.
+const char kSafeBrowsingExtendedReportingOptInAllowed[] =
+    "safebrowsing.extended_reporting_opt_in_allowed";
+
 // Enum that specifies whether Incognito mode is:
 // 0 - Enabled. Default behaviour. Default mode is available on demand.
 // 1 - Disabled. Used cannot browse pages in Incognito mode.

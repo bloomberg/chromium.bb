@@ -44,6 +44,7 @@
 #include "chrome/browser/extensions/updater/extension_cache_fake.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
@@ -106,6 +107,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -113,6 +115,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -144,6 +147,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request.h"
@@ -3528,6 +3532,59 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 INSTANTIATE_TEST_CASE_P(MediaStreamDevicesControllerBrowserTestInstance,
                         MediaStreamDevicesControllerBrowserTest,
                         testing::Bool());
+
+// Test that when extended reporting opt-in is disabled by policy, the
+// opt-in checkbox does not appear on SSL blocking pages.
+IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingOptInAllowed) {
+  net::SpawnedTestServer https_server_expired(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server_expired.Start());
+
+  // Set the enterprise policy to disallow opt-in.
+  const PrefService* const prefs = browser()->profile()->GetPrefs();
+  EXPECT_TRUE(
+      prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
+  PolicyMap policies;
+  policies.Set(key::kSafeBrowsingExtendedReportingOptInAllowed,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               new base::FundamentalValue(false), NULL);
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(
+      prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
+
+  // Navigate to an SSL error page.
+  ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
+
+  const content::InterstitialPage* const interstitial =
+      content::InterstitialPage::GetInterstitialPage(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(interstitial);
+  ASSERT_TRUE(content::WaitForRenderFrameReady(interstitial->GetMainFrame()));
+  content::RenderViewHost* const rvh =
+      interstitial->GetMainFrame()->GetRenderViewHost();
+  ASSERT_TRUE(rvh);
+
+  // Check that the checkbox is not visible.
+  int result = 0;
+  const std::string command = base::StringPrintf(
+      "var node = document.getElementById('extended-reporting-opt-in');"
+      "if (node) {"
+      "  window.domAutomationController.send(node.offsetWidth > 0 || "
+      "      node.offsetHeight > 0 ? %d : %d);"
+      "} else {"
+      // The node should be present but not visible, so trigger an error
+      // by sending false if it's not present.
+      "  window.domAutomationController.send(%d);"
+      "}",
+      SecurityInterstitialPage::CMD_TEXT_FOUND,
+      SecurityInterstitialPage::CMD_TEXT_NOT_FOUND,
+      SecurityInterstitialPage::CMD_ERROR);
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(rvh, command, &result));
+  EXPECT_EQ(SecurityInterstitialPage::CMD_TEXT_NOT_FOUND, result);
+}
 
 #if !defined(OS_CHROMEOS)
 // Similar to PolicyTest but sets the proper policy before the browser is

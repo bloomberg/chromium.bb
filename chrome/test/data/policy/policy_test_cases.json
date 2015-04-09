@@ -1577,6 +1577,14 @@
     ]
   },
 
+  "SafeBrowsingExtendedReportingOptInAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "SafeBrowsingExtendedReportingOptInAllowed": true },
+    "pref_mappings": [
+      { "pref": "safebrowsing.extended_reporting_opt_in_allowed" }
+    ]
+  },
+
   "SpellCheckServiceEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "official_only": true,
@@ -2425,7 +2433,7 @@
 
   "ExtensionCacheSize": {
   },
-  
+
   "DeviceLoginScreenDomainAutoComplete": {
   },
 

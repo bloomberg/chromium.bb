@@ -1251,6 +1251,18 @@ IN_PROC_BROWSER_TEST_F(
                            browser());
 }
 
+// Test that reports don't get sent when extended reporting opt-in is
+// disabled by policy.
+IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
+                       TestBrokenHTTPSNoReportingWhenDisallowed) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingExtendedReportingOptInAllowed, false);
+  TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
+                           CertificateReporting::SSL_INTERSTITIAL_PROCEED,
+                           CertificateReporting::CERT_REPORT_NOT_EXPECTED,
+                           browser());
+}
+
 // Visits a page that runs insecure content and tries to suppress the insecure
 // content warnings by randomizing location.hash.
 // Based on http://crbug.com/8706

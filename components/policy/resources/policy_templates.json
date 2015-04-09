@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 298
+#   For your editing convenience: highest ID currently used: 299
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4974,6 +4974,20 @@
       'desc': '''The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
 
       If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.''',
+    },
+    {
+      'name': 'SafeBrowsingExtendedReportingOptInAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:44-', 'chrome_os:44-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 299,
+      'caption': '''Allow users to opt in to Safe Browsing extended reporting''',
+      'desc': '''Setting this policy to false stops users from choosing to send information about security errors they encounter to Google servers. If this setting is true or not configured, then users will be allowed to send information when they encounter an SSL error or Safe Browsing warning.''',
     },
     {
       'name': 'SpellCheckServiceEnabled',
