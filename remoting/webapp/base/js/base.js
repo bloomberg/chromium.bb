@@ -710,6 +710,22 @@ base.generateXsrfToken = function() {
 };
 
 /**
+ * @return {string} A random UUID.
+ */
+base.generateUuid = function() {
+  var random = new Uint16Array(8);
+  window.crypto.getRandomValues(random);
+  /** @type {Array<string>} */
+  var e = new Array();
+  for (var i = 0; i < 8; i++) {
+    e[i] = (/** @type {number} */ (random[i]) + 0x10000).
+        toString(16).substring(1);
+  }
+  return e[0] + e[1] + '-' + e[2] + '-' + e[3] + '-' +
+      e[4] + '-' + e[5] + e[6] + e[7];
+};
+
+/**
  * @param {string} jsonString A JSON-encoded string.
  * @return {Object|undefined} The decoded object, or undefined if the string
  *     cannot be parsed.

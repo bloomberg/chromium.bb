@@ -43,6 +43,13 @@ remoting.Error.prototype.getTag = function() {
 };
 
 /**
+ * @return {?string} The detail string passed to the constructor, if any.
+ */
+remoting.Error.prototype.getDetail = function() {
+  return this.detail_;
+};
+
+/**
  * Checks the type of an error.
  * @param {remoting.Error.Tag} tag
  * @param {...remoting.Error.Tag} var_args
@@ -75,10 +82,11 @@ remoting.Error.none = function() {
 
 /**
  * Convenience method for creating the most common error type.
+ * @param {string=} opt_detail
  * @return {!remoting.Error}
  */
-remoting.Error.unexpected = function() {
-  return new remoting.Error(remoting.Error.Tag.UNEXPECTED);
+remoting.Error.unexpected = function(opt_detail) {
+  return new remoting.Error(remoting.Error.Tag.UNEXPECTED, opt_detail);
 };
 
 /**

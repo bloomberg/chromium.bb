@@ -6,7 +6,16 @@
 
 'use strict';
 
-QUnit.module('base');
+var getRandomValuesStub = null;
+
+QUnit.module('base', {
+  afterEach: function() {
+    if (getRandomValuesStub) {
+      getRandomValuesStub.restore();
+      getRandomValuesStub = null;
+    }
+  }
+});
 
 QUnit.test('mix(dest, src) should copy properties from |src| to |dest|',
   function(assert) {
@@ -198,6 +207,16 @@ QUnit.test('Promise.negate should fulfill iff the promise does not.',
     }).catch(function() {
       assert.ok(true);
     });
+});
+
+QUnit.test('generateUuid generates a UUID', function(assert) {
+  getRandomValuesStub = sinon.stub(
+      window.crypto, 'getRandomValues', function(/** Uint16Array*/ out) {
+        for (var i = 0; i < out.length; i++) {
+          out[i] = i;
+        }
+      });
+  assert.equal(base.generateUuid(), '00000001-0002-0003-0004-000500060007');
 });
 
 QUnit.module('base.Deferred');

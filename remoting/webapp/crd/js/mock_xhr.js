@@ -190,17 +190,19 @@ remoting.MockXhr.setResponseFor = function(
 };
 
 /**
- * Installs a 204 (no content) response.  See |setResponseFor| for
+ * Installs an emptresponse.  See |setResponseFor| for
  * more details on how the parameters work.
  *
  * @param {?string} method
  * @param {?string|!RegExp} urlPattern
+ * @param {number=} opt_status
  * @param {boolean=} opt_reuse
  */
-remoting.MockXhr.setEmptyResponseFor = function(method, urlPattern, opt_reuse) {
+remoting.MockXhr.setEmptyResponseFor = function(
+    method, urlPattern, opt_status, opt_reuse) {
   remoting.MockXhr.setResponseFor(
       method, urlPattern, function(/** remoting.MockXhr */ xhr) {
-        xhr.setEmptyResponse(204);
+        xhr.setEmptyResponse(opt_status === undefined ? 204 : opt_status);
       }, opt_reuse);
 };
 

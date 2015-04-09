@@ -77,6 +77,7 @@
       'webapp/crd/js/fallback_signal_strategy_unittest.js',
       'webapp/crd/js/gcd_client_unittest.js',
       'webapp/crd/js/gcd_client_with_mock_xhr_unittest.js',
+      'webapp/crd/js/host_controller_unittest.js',
       'webapp/crd/js/host_daemon_facade_unittest.js',
       'webapp/crd/js/host_table_entry_unittest.js',
       'webapp/crd/js/identity_unittest.js',
@@ -92,6 +93,7 @@
     'remoting_webapp_unittests_js_mock_files': [
       # Some proto files can be repurposed as simple mocks for the unittests.
       # Note that some defs in chrome_proto are overwritten by chrome_mocks.
+      'webapp/crd/js/mock_host_daemon_facade.js',
       'webapp/crd/js/mock_signal_strategy.js',
       'webapp/js_proto/chrome_proto.js',
       'webapp/js_proto/chrome_mocks.js',

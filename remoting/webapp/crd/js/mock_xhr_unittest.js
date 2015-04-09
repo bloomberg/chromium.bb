@@ -72,16 +72,16 @@ QUnit.test('setEmptyResponseFor', function(assert) {
 });
 
 QUnit.test('setEmptyResponseFor with repeat', function(assert) {
-  remoting.MockXhr.setEmptyResponseFor('GET', 'http://foo.com', true);
+  remoting.MockXhr.setEmptyResponseFor('GET', 'http://foo.com', 404, true);
   var promise1 = sendRequest();
   var promise2 = sendRequest();
   return promise1.then(function(/** remoting.Xhr.Response */ result) {
-    assert.equal(result.status, 204);
+    assert.equal(result.status, 404);
     assert.equal(result.getText(), '');
     assert.throws(result.getJson.bind(result));
     return promise2;
   }).then(function(/** remoting.Xhr.Response */ result) {
-    assert.equal(result.status, 204);
+    assert.equal(result.status, 404);
     assert.equal(result.getText(), '');
     assert.throws(result.getJson.bind(result));
   });

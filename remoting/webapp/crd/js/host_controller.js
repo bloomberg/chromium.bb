@@ -125,21 +125,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
   /** @type {remoting.HostController} */
   var that = this;
 
-  /** @return {string} */
-  function generateUuid() {
-    var random = new Uint16Array(8);
-    window.crypto.getRandomValues(random);
-    /** @type {Array<string>} */
-    var e = new Array();
-    for (var i = 0; i < 8; i++) {
-      e[i] = (/** @type {number} */ (random[i]) + 0x10000).
-          toString(16).substring(1);
-    }
-    return e[0] + e[1] + '-' + e[2] + '-' + e[3] + '-' +
-        e[4] + '-' + e[5] + e[6] + e[7];
-  };
-
-  var newHostId = generateUuid();
+  var newHostId = base.generateUuid();
 
   /** @param {!remoting.Error} error */
   function onStartError(error) {

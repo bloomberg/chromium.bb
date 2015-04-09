@@ -61,6 +61,11 @@ sinon.Mock = function() {};
  */
 sinon.Mock.prototype.expects = function(method) {};
 
+/**
+ * @return {void}
+ */
+sinon.Mock.prototype.restore = function() {};
+
 /** @type {function(...):Function} */
 sinon.spy = function() {};
 
@@ -103,12 +108,12 @@ sinon.Spy.prototype.restore = function() {};
 sinon.Spy.prototype.args;
 
 /**
- * @param {Object} obj
- * @param {string} method
+ * @param {Object=} opt_obj
+ * @param {string=} opt_method
  * @param {Function=} opt_stubFunction
  * @return {sinon.TestStub}
  */
-sinon.stub = function(obj, method, opt_stubFunction) {};
+sinon.stub = function(opt_obj, opt_method, opt_stubFunction) {};
 
 /**
  * TODO(jrw): rename to |sinon.Stub| for consistency
@@ -130,6 +135,9 @@ sinon.TestStub.prototype.withArgs = function() {};
 
 /** @type {function(...):sinon.Expectation} */
 sinon.TestStub.prototype.onFirstCall = function() {};
+
+/** @type {function(...):sinon.Expectation} */
+sinon.TestStub.prototype.callsArgWith = function() {};
 
 /** @returns {Object}  */
 sinon.createStubInstance = function (/** * */ constructor) {};
