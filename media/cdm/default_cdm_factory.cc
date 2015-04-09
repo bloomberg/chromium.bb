@@ -6,6 +6,7 @@
 
 #include "media/base/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
+#include "url/gurl.h"
 
 namespace media {
 
@@ -25,9 +26,13 @@ scoped_ptr<MediaKeys> DefaultCdmFactory::Create(
     const LegacySessionErrorCB& legacy_session_error_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb) {
+  if (!security_origin.is_valid())
+    return nullptr;
+
   if (CanUseAesDecryptor(key_system)) {
-    return make_scoped_ptr(new AesDecryptor(
-        session_message_cb, session_closed_cb, session_keys_change_cb));
+    return make_scoped_ptr(new AesDecryptor(security_origin, session_message_cb,
+                                            session_closed_cb,
+                                            session_keys_change_cb));
   }
 
   return nullptr;

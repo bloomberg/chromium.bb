@@ -12,6 +12,7 @@
 #include "media/mojo/services/mojo_cdm_promise.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
+#include "url/gurl.h"
 
 namespace media {
 
@@ -23,7 +24,9 @@ MojoCdmService::MojoCdmService(const mojo::String& key_system)
   base::WeakPtr<MojoCdmService> weak_this = weak_factory_.GetWeakPtr();
 
   if (CanUseAesDecryptor(key_system)) {
+    // TODO(jrummell): Determine proper origin.
     cdm_.reset(new AesDecryptor(
+        GURL::EmptyGURL(),
         base::Bind(&MojoCdmService::OnSessionMessage, weak_this),
         base::Bind(&MojoCdmService::OnSessionClosed, weak_this),
         base::Bind(&MojoCdmService::OnSessionKeysChange, weak_this)));

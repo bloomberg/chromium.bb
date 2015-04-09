@@ -224,12 +224,15 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   return output;
 }
 
-AesDecryptor::AesDecryptor(const SessionMessageCB& session_message_cb,
+AesDecryptor::AesDecryptor(const GURL& /* security_origin */,
+                           const SessionMessageCB& session_message_cb,
                            const SessionClosedCB& session_closed_cb,
                            const SessionKeysChangeCB& session_keys_change_cb)
     : session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb) {
+  // AesDecryptor doesn't keep any persistent data, so no need to do anything
+  // with |security_origin|.
   DCHECK(!session_message_cb_.is_null());
   DCHECK(!session_closed_cb_.is_null());
   DCHECK(!session_keys_change_cb_.is_null());

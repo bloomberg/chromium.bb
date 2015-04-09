@@ -18,6 +18,8 @@
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
 
+class GURL;
+
 namespace crypto {
 class SymmetricKey;
 }
@@ -30,7 +32,8 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
                                   public CdmContext,
                                   public Decryptor {
  public:
-  AesDecryptor(const SessionMessageCB& session_message_cb,
+  AesDecryptor(const GURL& security_origin,
+               const SessionMessageCB& session_message_cb,
                const SessionClosedCB& session_closed_cb,
                const SessionKeysChangeCB& session_keys_change_cb);
   ~AesDecryptor() override;

@@ -21,6 +21,7 @@
 #include "media/renderers/renderer_impl.h"
 #include "media/test/pipeline_integration_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/gurl.h"
 
 #if defined(MOJO_RENDERER)
 #include "media/mojo/services/mojo_renderer_impl.h"
@@ -169,7 +170,8 @@ class FakeEncryptedMedia {
   };
 
   FakeEncryptedMedia(AppBase* app)
-      : decryptor_(base::Bind(&FakeEncryptedMedia::OnSessionMessage,
+      : decryptor_(GURL::EmptyGURL(),
+                   base::Bind(&FakeEncryptedMedia::OnSessionMessage,
                               base::Unretained(this)),
                    base::Bind(&FakeEncryptedMedia::OnSessionClosed,
                               base::Unretained(this)),

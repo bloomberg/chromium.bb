@@ -48,18 +48,18 @@ scoped_ptr<media::MediaKeys> RenderCdmFactory::Create(
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(jrummell): Pass |security_origin| to all constructors.
-  // TODO(jrummell): Enable the following line once blink code updated to
-  // check the security origin before calling.
-  // DCHECK(security_origin.is_valid());
+
+  if (!security_origin.is_valid())
+    return nullptr;
 
   if (media::CanUseAesDecryptor(key_system)) {
     // TODO(sandersd): Currently the prefixed API always allows distinctive
     // identifiers and persistent state. Once that changes we can sanity check
     // here that neither is allowed for AesDecryptor, since it does not support
     // them and should never be configured that way. http://crbug.com/455271
-    return scoped_ptr<media::MediaKeys>(new media::AesDecryptor(
-        session_message_cb, session_closed_cb, session_keys_change_cb));
+    return scoped_ptr<media::MediaKeys>(
+        new media::AesDecryptor(security_origin, session_message_cb,
+                                session_closed_cb, session_keys_change_cb));
   }
 
 #if defined(ENABLE_PEPPER_CDMS)

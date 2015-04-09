@@ -17,6 +17,7 @@
 #include "media/cdm/aes_decryptor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using ::testing::_;
 using ::testing::Gt;
@@ -33,8 +34,6 @@ MATCHER(IsJSONDictionary, "") {
   scoped_ptr<base::Value> root(base::JSONReader().ReadToValue(result));
   return (root.get() && root->GetType() == base::Value::TYPE_DICTIONARY);
 }
-
-class GURL;
 
 namespace media {
 
@@ -215,7 +214,8 @@ enum PromiseResult { RESOLVED, REJECTED };
 class AesDecryptorTest : public testing::Test {
  public:
   AesDecryptorTest()
-      : decryptor_(base::Bind(&AesDecryptorTest::OnSessionMessage,
+      : decryptor_(GURL::EmptyGURL(),
+                   base::Bind(&AesDecryptorTest::OnSessionMessage,
                               base::Unretained(this)),
                    base::Bind(&AesDecryptorTest::OnSessionClosed,
                               base::Unretained(this)),
