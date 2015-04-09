@@ -285,6 +285,19 @@ class RenderViewImplTest : public RenderViewTest {
     view()->OnSetZoomLevelForView(false, level);
   }
 
+  void NavigateFrame(const CommonNavigationParams& common_params,
+                     const StartNavigationParams& start_params,
+                     const RequestNavigationParams& request_params) {
+    // PlzNavigate
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBrowserSideNavigation)) {
+      frame()->OnCommitNavigation(ResourceResponseHead(), common_params.url,
+                                  common_params, request_params);
+      return;
+    }
+    frame()->OnNavigate(common_params, start_params, request_params);
+  }
+
  private:
   scoped_ptr<MockKeyboard> mock_keyboard_;
 };
@@ -432,7 +445,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   start_params.is_post = true;
   start_params.browser_initiated_post_data = post_data;
 
-  frame()->OnNavigate(common_params, start_params, request_params);
+  NavigateFrame(common_params, start_params, request_params);
   ProcessPendingMessages();
 
   const IPC::Message* frame_navigate_msg =
@@ -633,7 +646,7 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   request_params.current_history_list_offset = 0;
   request_params.pending_history_list_offset = 1;
   request_params.page_id = -1;
-  frame()->OnNavigate(common_params, StartNavigationParams(), request_params);
+  NavigateFrame(common_params, StartNavigationParams(), request_params);
   ProcessPendingMessages();
   const IPC::Message* msg3 = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
@@ -671,8 +684,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   request_params_A.pending_history_list_offset = 0;
   request_params_A.page_id = 1;
   request_params_A.page_state = state_A;
-  frame()->OnNavigate(common_params_A, StartNavigationParams(),
-                      request_params_A);
+  NavigateFrame(common_params_A, StartNavigationParams(), request_params_A);
   EXPECT_EQ(1, view()->historyBackListCount());
   EXPECT_EQ(2, view()->historyBackListCount() +
       view()->historyForwardListCount() + 1);
@@ -702,7 +714,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   request_params.pending_history_list_offset = 0;
   request_params.page_id = 1;
   request_params.page_state = state_A;
-  frame()->OnNavigate(common_params, StartNavigationParams(), request_params);
+  NavigateFrame(common_params, StartNavigationParams(), request_params);
   ProcessPendingMessages();
 
   // Verify page A committed, not swappedout://.
@@ -820,8 +832,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params_C.pending_history_list_offset = 2;
   request_params_C.page_id = 3;
   request_params_C.page_state = state_C;
-  frame()->OnNavigate(common_params_C, StartNavigationParams(),
-                      request_params_C);
+  NavigateFrame(common_params_C, StartNavigationParams(), request_params_C);
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
 
@@ -839,8 +850,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params_B.pending_history_list_offset = 1;
   request_params_B.page_id = 2;
   request_params_B.page_state = state_B;
-  frame()->OnNavigate(common_params_B, StartNavigationParams(),
-                      request_params_B);
+  NavigateFrame(common_params_B, StartNavigationParams(), request_params_B);
 
   // Back to page A (page_id 1) and commit.
   CommonNavigationParams common_params;
@@ -852,7 +862,7 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   request_params.pending_history_list_offset = 0;
   request_params.page_id = 1;
   request_params.page_state = state_A;
-  frame()->OnNavigate(common_params, StartNavigationParams(), request_params);
+  NavigateFrame(common_params, StartNavigationParams(), request_params);
   ProcessPendingMessages();
 
   // Now ensure that the UpdateState message we receive is consistent
@@ -904,8 +914,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   request_params_A.pending_history_list_offset = 0;
   request_params_A.page_id = 1;
   request_params_A.page_state = state_A;
-  frame()->OnNavigate(common_params_A, StartNavigationParams(),
-                      request_params_A);
+  NavigateFrame(common_params_A, StartNavigationParams(), request_params_A);
   ProcessPendingMessages();
 
   // A new navigation commits, clearing the forward history.
@@ -925,8 +934,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   request_params_B.page_id = 2;
   request_params_B.page_state =
       state_A;  // Doesn't matter, just has to be present.
-  frame()->OnNavigate(common_params_B, StartNavigationParams(),
-                      request_params_B);
+  NavigateFrame(common_params_B, StartNavigationParams(), request_params_B);
 
   // State should be unchanged.
   EXPECT_EQ(2, view()->history_list_length_);
@@ -1641,8 +1649,8 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   CommonNavigationParams common_params;
   common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   common_params.url = GURL("data:text/html,test data");
-  frame()->OnNavigate(common_params, StartNavigationParams(),
-                      RequestNavigationParams());
+  NavigateFrame(common_params, StartNavigationParams(),
+                RequestNavigationParams());
 
   // An error occurred.
   view()->GetMainRenderFrame()->didFailProvisionalLoad(
@@ -1664,8 +1672,8 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   CommonNavigationParams common_params;
   common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   common_params.url = GURL("data:text/html,test data");
-  frame()->OnNavigate(common_params, StartNavigationParams(),
-                      RequestNavigationParams());
+  NavigateFrame(common_params, StartNavigationParams(),
+                RequestNavigationParams());
 
   // A cancellation occurred.
   view()->GetMainRenderFrame()->didFailProvisionalLoad(
@@ -1862,8 +1870,8 @@ TEST_F(RenderViewImplTest, ZoomLimit) {
   CommonNavigationParams common_params;
   common_params.url = GURL("data:text/html,min_zoomlimit_test");
   view()->OnSetZoomLevelForLoadingURL(common_params.url, kMinZoomLevel);
-  frame()->OnNavigate(common_params, StartNavigationParams(),
-                      RequestNavigationParams());
+  NavigateFrame(common_params, StartNavigationParams(),
+                RequestNavigationParams());
   ProcessPendingMessages();
   EXPECT_DOUBLE_EQ(kMinZoomLevel, view()->GetWebView()->zoomLevel());
 
@@ -1872,8 +1880,8 @@ TEST_F(RenderViewImplTest, ZoomLimit) {
                                           ZoomFactorToZoomLevel(1.0));
   common_params.url = GURL("data:text/html,max_zoomlimit_test");
   view()->OnSetZoomLevelForLoadingURL(common_params.url, kMaxZoomLevel);
-  frame()->OnNavigate(common_params, StartNavigationParams(),
-                      RequestNavigationParams());
+  NavigateFrame(common_params, StartNavigationParams(),
+                RequestNavigationParams());
   ProcessPendingMessages();
   EXPECT_DOUBLE_EQ(kMaxZoomLevel, view()->GetWebView()->zoomLevel());
 }
@@ -1945,7 +1953,7 @@ TEST_F(RenderViewImplTest, NavigateFrame) {
   request_params.frame_to_navigate = "frame";
   request_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
-  frame()->OnNavigate(common_params, StartNavigationParams(), request_params);
+  NavigateFrame(common_params, StartNavigationParams(), request_params);
   FrameLoadWaiter(
       RenderFrame::FromWebFrame(frame()->GetWebFrame()->firstChild())).Wait();
 
@@ -2009,7 +2017,7 @@ TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
   EXPECT_LT(last_input_type, last_selection);
 }
 
-class SuppressErrorPageTest : public RenderViewTest {
+class SuppressErrorPageTest : public RenderViewImplTest {
  public:
   ContentRendererClient* CreateContentRendererClient() override {
     return new TestContentRendererClient;
@@ -2062,8 +2070,8 @@ TEST_F(SuppressErrorPageTest, MAYBE_Suppresses) {
   CommonNavigationParams common_params;
   common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   common_params.url = GURL("data:text/html,test data");
-  frame()->OnNavigate(common_params, StartNavigationParams(),
-                      RequestNavigationParams());
+  NavigateFrame(common_params, StartNavigationParams(),
+                RequestNavigationParams());
 
   // An error occurred.
   view()->GetMainRenderFrame()->didFailProvisionalLoad(
@@ -2092,8 +2100,8 @@ TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
   CommonNavigationParams common_params;
   common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   common_params.url = GURL("data:text/html,test data");
-  frame()->OnNavigate(common_params, StartNavigationParams(),
-                      RequestNavigationParams());
+  NavigateFrame(common_params, StartNavigationParams(),
+                RequestNavigationParams());
 
   // An error occurred.
   view()->GetMainRenderFrame()->didFailProvisionalLoad(
@@ -2303,8 +2311,7 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
   early_request_params.browser_navigation_start =
       base::TimeTicks::FromInternalValue(1);
 
-  frame()->OnNavigate(early_common_params, early_start_params,
-                      early_request_params);
+  NavigateFrame(early_common_params, early_start_params, early_request_params);
   ProcessPendingMessages();
 
   base::Time early_nav_reported_start =
@@ -2324,8 +2331,7 @@ TEST_F(RenderViewImplTest, NavigationStartOverride) {
   late_request_params.browser_navigation_start =
       base::TimeTicks::Now() + base::TimeDelta::FromDays(42);
 
-  frame()->OnNavigate(late_common_params, late_start_params,
-                      late_request_params);
+  NavigateFrame(late_common_params, late_start_params, late_request_params);
   ProcessPendingMessages();
   base::Time after_navigation =
       base::Time::Now() + base::TimeDelta::FromDays(1);
@@ -2362,8 +2368,8 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
   request_params.current_history_list_offset = 1;
   request_params.pending_history_list_offset = 2;
   request_params.page_id = -1;
-  frame()->OnNavigate(CommonNavigationParams(), StartNavigationParams(),
-                      request_params);
+  NavigateFrame(CommonNavigationParams(), StartNavigationParams(),
+                request_params);
 
   // The history list in RenderView should have been updated.
   EXPECT_EQ(1, view()->historyBackListCount());

@@ -449,13 +449,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     url = stream_override_->stream_url;
   }
 
-  // PlzNavigate: the only navigation requests going through the WebURLLoader
-  // are the ones created by CommitNavigation.
-  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableBrowserSideNavigation) ||
-         stream_override_.get() ||
-         request.frameType() == WebURLRequest::FrameTypeNone);
-
   if (CanHandleDataURLRequestLocally()) {
     if (sync_load_response) {
       // This is a sync load. Do the work now.
@@ -469,6 +462,15 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     }
     return;
   }
+
+  // PlzNavigate: outside of tests, the only navigation requests going through
+  // the WebURLLoader are the ones created by CommitNavigation. Several browser
+  // tests load HTML directly through a data url which will be handled by the
+  // block above.
+  DCHECK_IMPLIES(base::CommandLine::ForCurrentProcess()->HasSwitch(
+                     switches::kEnableBrowserSideNavigation),
+                 stream_override_.get() ||
+                     request.frameType() == WebURLRequest::FrameTypeNone);
 
   GURL referrer_url(
       request.httpHeaderField(WebString::fromUTF8("Referer")).latin1());

@@ -565,6 +565,7 @@ class CONTENT_EXPORT RenderFrameImpl
  private:
   friend class RenderFrameImplTest;
   friend class RenderFrameObserver;
+  friend class RenderViewImplTest;
   friend class RendererAccessibilityTest;
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuDisplayNoneTest, SelectItem);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
