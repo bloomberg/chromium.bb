@@ -1156,6 +1156,7 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject* pai
     // FIXME: Unify "devtools.timeline.invalidationTracking" and "blink.invalidation". crbug.com/413527.
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
         "PaintInvalidationTracking",
+        TRACE_EVENT_SCOPE_THREAD,
         "data", InspectorPaintInvalidationTrackingEvent::data(this, paintInvalidationContainer));
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "LayoutObject::invalidatePaintUsingContainer()",
         "object", this->debugName().ascii(),

@@ -66,7 +66,7 @@ static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size,
 
 PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size, OpacityMode opacityMode, int msaaSampleCount)
 {
-    TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
+    TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation", TRACE_EVENT_SCOPE_GLOBAL);
     OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!contextProvider)
         return nullptr;
@@ -103,7 +103,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     ASSERT(m_surface);
     ASSERT(m_contextProvider);
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
-    TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
+    TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation", TRACE_EVENT_SCOPE_GLOBAL);
     m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
     m_layer->setOpaque(opacityMode == Opaque);
     m_layer->setBlendBackgroundColor(opacityMode != Opaque);

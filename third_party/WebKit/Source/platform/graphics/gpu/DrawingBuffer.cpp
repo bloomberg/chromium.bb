@@ -152,7 +152,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     , m_filterQuality(kLow_SkFilterQuality)
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
-    TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation");
+    TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation", TRACE_EVENT_SCOPE_GLOBAL);
 #ifndef NDEBUG
     drawingBufferCounter.increment();
 #endif

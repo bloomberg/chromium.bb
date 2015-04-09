@@ -23,7 +23,7 @@ FrameRequestCallbackCollection::CallbackId FrameRequestCallbackCollection::regis
     callback->m_id = id;
     m_callbacks.append(callback);
 
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RequestAnimationFrame", "data", InspectorAnimationFrameEvent::data(m_context, id));
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RequestAnimationFrame", TRACE_EVENT_SCOPE_THREAD, "data", InspectorAnimationFrameEvent::data(m_context, id));
     InspectorInstrumentation::didRequestAnimationFrame(m_context, id);
 
     return id;
@@ -34,14 +34,14 @@ void FrameRequestCallbackCollection::cancelCallback(CallbackId id)
     for (size_t i = 0; i < m_callbacks.size(); ++i) {
         if (m_callbacks[i]->m_id == id) {
             m_callbacks.remove(i);
-            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CancelAnimationFrame", "data", InspectorAnimationFrameEvent::data(m_context, id));
+            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CancelAnimationFrame", TRACE_EVENT_SCOPE_THREAD, "data", InspectorAnimationFrameEvent::data(m_context, id));
             InspectorInstrumentation::didCancelAnimationFrame(m_context, id);
             return;
         }
     }
     for (size_t i = 0; i < m_callbacksToInvoke.size(); ++i) {
         if (m_callbacksToInvoke[i]->m_id == id) {
-            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CancelAnimationFrame", "data", InspectorAnimationFrameEvent::data(m_context, id));
+            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CancelAnimationFrame", TRACE_EVENT_SCOPE_THREAD, "data", InspectorAnimationFrameEvent::data(m_context, id));
             InspectorInstrumentation::didCancelAnimationFrame(m_context, id);
             m_callbacksToInvoke[i]->m_cancelled = true;
             // will be removed at the end of executeCallbacks()
@@ -67,7 +67,7 @@ void FrameRequestCallbackCollection::executeCallbacks(double highResNowMs, doubl
             else
                 callback->handleEvent(highResNowMs);
             InspectorInstrumentation::didFireAnimationFrame(cookie);
-            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
+            TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
         }
     }
 

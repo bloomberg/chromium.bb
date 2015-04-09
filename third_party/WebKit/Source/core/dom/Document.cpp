@@ -1565,7 +1565,7 @@ void Document::scheduleRenderTreeUpdate()
     page()->animator().scheduleVisualUpdate();
     m_lifecycle.ensureStateAtMost(DocumentLifecycle::VisualUpdatePending);
 
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ScheduleStyleRecalculation", "data", InspectorRecalculateStylesEvent::data(frame()));
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ScheduleStyleRecalculation", TRACE_EVENT_SCOPE_THREAD, "data", InspectorRecalculateStylesEvent::data(frame()));
     InspectorInstrumentation::didScheduleStyleRecalculation(this);
 }
 
@@ -4504,7 +4504,7 @@ void Document::finishedParsing()
 
         frame->loader().finishedParsing();
 
-        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "MarkDOMContent", "data", InspectorMarkLoadEvent::data(frame.get()));
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "MarkDOMContent", TRACE_EVENT_SCOPE_THREAD, "data", InspectorMarkLoadEvent::data(frame.get()));
         InspectorInstrumentation::domContentLoadedEventFired(frame.get());
     }
 

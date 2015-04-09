@@ -1379,6 +1379,7 @@ bool FrameView::invalidateViewportConstrainedObjects()
         TRACE_EVENT_INSTANT1(
             TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
             "ScrollInvalidationTracking",
+            TRACE_EVENT_SCOPE_THREAD,
             "data",
             InspectorScrollInvalidationTrackingEvent::data(*renderer));
 
@@ -1817,7 +1818,7 @@ void FrameView::scheduleRelayout()
         return;
     if (!m_frame->document()->shouldScheduleLayout())
         return;
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", "data", InspectorInvalidateLayoutEvent::data(m_frame.get()));
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", TRACE_EVENT_SCOPE_THREAD, "data", InspectorInvalidateLayoutEvent::data(m_frame.get()));
 
     clearLayoutSubtreeRootsAndMarkContainingBlocks();
 
@@ -1854,7 +1855,7 @@ void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
         page()->animator().scheduleVisualUpdate(m_frame.get());
         lifecycle().ensureStateAtMost(DocumentLifecycle::StyleClean);
     }
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", "data", InspectorInvalidateLayoutEvent::data(m_frame.get()));
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "InvalidateLayout", TRACE_EVENT_SCOPE_THREAD, "data", InspectorInvalidateLayoutEvent::data(m_frame.get()));
 }
 
 bool FrameView::layoutPending() const
@@ -2569,7 +2570,7 @@ void FrameView::updateLayoutAndStyleForPainting()
 
     LayoutView* view = layoutView();
     if (view) {
-        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateLayerTree", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
 
         view->compositor()->updateIfNeededRecursive();
 
@@ -2871,7 +2872,7 @@ void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations)
     }
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
-        "FrameView::setTracksPaintInvalidations", "enabled", trackPaintInvalidations);
+        "FrameView::setTracksPaintInvalidations", TRACE_EVENT_SCOPE_GLOBAL, "enabled", trackPaintInvalidations);
 
     resetTrackedPaintInvalidations();
     m_isTrackingPaintInvalidations = trackPaintInvalidations;

@@ -172,7 +172,7 @@ void PageScriptDebugServer::runScript(ScriptState* scriptState, const String& sc
 
     if (frame)
         InspectorInstrumentation::didEvaluateScript(cookie);
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
 
 ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Local<v8::Context> context)

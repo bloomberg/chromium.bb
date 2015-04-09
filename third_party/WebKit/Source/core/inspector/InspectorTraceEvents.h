@@ -66,6 +66,7 @@ private:
     TRACE_EVENT_INSTANT1( \
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
         "ScheduleStyleInvalidationTracking", \
+        TRACE_EVENT_SCOPE_THREAD, \
         "data", \
         InspectorScheduleStyleInvalidationTrackingEvent::changeType((element), (invalidationSet), __VA_ARGS__))
 
@@ -98,6 +99,7 @@ private:
     TRACE_EVENT_INSTANT1( \
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
         "StyleInvalidatorInvalidationTracking", \
+        TRACE_EVENT_SCOPE_THREAD, \
         "data", \
         InspectorStyleInvalidatorInvalidateEvent::data((element), (InspectorStyleInvalidatorInvalidateEvent::reason)))
 
@@ -105,6 +107,7 @@ private:
     TRACE_EVENT_INSTANT1( \
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
         "StyleInvalidatorInvalidationTracking", \
+        TRACE_EVENT_SCOPE_THREAD, \
         "data", \
         InspectorStyleInvalidatorInvalidateEvent::selectorPart((element), (InspectorStyleInvalidatorInvalidateEvent::reason), (invalidationSet), (singleSelectorPart)))
 
@@ -250,6 +253,7 @@ public:
     TRACE_EVENT_INSTANT1( \
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"), \
         "LayerInvalidationTracking", \
+        TRACE_EVENT_SCOPE_THREAD, \
         "data", \
         InspectorLayerInvalidationTrackingEvent::data((LAYER), (REASON)))
 

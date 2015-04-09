@@ -92,7 +92,7 @@ inline void PlatformInstrumentation::didResizeImage()
 
 inline void PlatformInstrumentation::didDrawLazyPixelRef(unsigned long long lazyPixelRefId)
 {
-    TRACE_EVENT_INSTANT1(CategoryName, DrawLazyPixelRefEvent, LazyPixelRef, lazyPixelRefId);
+    TRACE_EVENT_INSTANT1(CategoryName, DrawLazyPixelRefEvent, TRACE_EVENT_SCOPE_THREAD, LazyPixelRef, lazyPixelRefId);
 }
 
 inline void PlatformInstrumentation::willDecodeLazyPixelRef(unsigned long long lazyPixelRefId)

@@ -92,7 +92,7 @@ void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId, co
 {
     if (!m_workerThread)
         return;
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TracingSessionIdForWorker", "data", InspectorTracingSessionIdForWorkerEvent::data(sessionId, workerId, m_workerThread));
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TracingSessionIdForWorker", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTracingSessionIdForWorkerEvent::data(sessionId, workerId, m_workerThread));
 }
 
 } // namespace blink

@@ -69,7 +69,7 @@ String InspectorTracingAgent::sessionId()
 
 void InspectorTracingAgent::emitMetadataEvents()
 {
-    TRACE_EVENT_INSTANT1(devtoolsMetadataEventCategory, "TracingStartedInPage", "data", InspectorTracingStartedInFrame::data(sessionId(), m_pageAgent->inspectedFrame()));
+    TRACE_EVENT_INSTANT1(devtoolsMetadataEventCategory, "TracingStartedInPage", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTracingStartedInFrame::data(sessionId(), m_pageAgent->inspectedFrame()));
     if (m_layerTreeId)
         setLayerTreeId(m_layerTreeId);
     m_workerAgent->setTracingSessionId(sessionId());
@@ -78,7 +78,7 @@ void InspectorTracingAgent::emitMetadataEvents()
 void InspectorTracingAgent::setLayerTreeId(int layerTreeId)
 {
     m_layerTreeId = layerTreeId;
-    TRACE_EVENT_INSTANT1(devtoolsMetadataEventCategory, "SetLayerTreeId", "data", InspectorSetLayerTreeId::data(sessionId(), m_layerTreeId));
+    TRACE_EVENT_INSTANT1(devtoolsMetadataEventCategory, "SetLayerTreeId", TRACE_EVENT_SCOPE_THREAD, "data", InspectorSetLayerTreeId::data(sessionId(), m_layerTreeId));
 }
 
 void InspectorTracingAgent::disable(ErrorString*)

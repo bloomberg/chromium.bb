@@ -678,14 +678,14 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
                 action = XMLHttpRequestProgressEventThrottle::Flush;
         }
         m_progressEventThrottle.dispatchReadyStateChangeEvent(Event::create(EventTypeNames::readystatechange), action);
-        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
     }
 
     if (m_state == DONE && !m_error) {
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "XHRLoad", "data", InspectorXhrLoadEvent::data(executionContext(), this));
         dispatchProgressEventFromSnapshot(EventTypeNames::load);
         dispatchProgressEventFromSnapshot(EventTypeNames::loadend);
-        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
+        TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
     }
 }
 

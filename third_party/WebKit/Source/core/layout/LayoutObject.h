@@ -1498,6 +1498,7 @@ inline void LayoutObject::setNeedsLayout(LayoutInvalidationReasonForTracing reas
         TRACE_EVENT_INSTANT1(
             TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
             "LayoutInvalidationTracking",
+            TRACE_EVENT_SCOPE_THREAD,
             "data",
             InspectorLayoutInvalidationTrackingEvent::data(this, reason));
         if (markParents == MarkContainerChain && (!layouter || layouter->root() != this))

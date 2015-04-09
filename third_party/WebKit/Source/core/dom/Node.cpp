@@ -751,6 +751,7 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType, const StyleChangeReas
     TRACE_EVENT_INSTANT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
         "StyleRecalcInvalidationTracking",
+        TRACE_EVENT_SCOPE_THREAD,
         "data",
         InspectorStyleRecalcInvalidationTrackingEvent::data(this, reason));
 

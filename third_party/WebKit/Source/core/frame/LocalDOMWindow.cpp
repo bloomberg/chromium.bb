@@ -1440,7 +1440,7 @@ void LocalDOMWindow::dispatchLoadEvent()
     if (owner)
         owner->dispatchLoad();
 
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "MarkLoad", "data", InspectorMarkLoadEvent::data(frame()));
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "MarkLoad", TRACE_EVENT_SCOPE_THREAD, "data", InspectorMarkLoadEvent::data(frame()));
     InspectorInstrumentation::loadEventFired(frame());
 }
 

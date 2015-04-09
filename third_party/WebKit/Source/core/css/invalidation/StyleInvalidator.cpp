@@ -133,6 +133,7 @@ ALWAYS_INLINE bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element
             if (UNLIKELY(*s_tracingEnabled)) {
                 TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
                     "StyleInvalidatorInvalidationTracking",
+                    TRACE_EVENT_SCOPE_THREAD,
                     "data", InspectorStyleInvalidatorInvalidateEvent::invalidationList(element, *invalidationList));
             }
             return true;
