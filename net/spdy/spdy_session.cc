@@ -2960,8 +2960,6 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   base::TimeDelta delay = hung_interval_ - (now - last_activity_time_);
 
   if (delay.InMilliseconds() < 0 || last_activity_time_ < last_check_time) {
-    // Track all failed PING messages in a separate bucket.
-    RecordPingRTTHistogram(base::TimeDelta::Max());
     DoDrainSession(ERR_SPDY_PING_FAILED, "Failed ping.");
     return;
   }
@@ -2975,7 +2973,9 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
 }
 
 void SpdySession::RecordPingRTTHistogram(base::TimeDelta duration) {
-  UMA_HISTOGRAM_TIMES("Net.SpdyPing.RTT", duration);
+  UMA_HISTOGRAM_CUSTOM_TIMES("Net.SpdyPing.RTT", duration,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromMinutes(10), 100);
 }
 
 void SpdySession::RecordProtocolErrorHistogram(
