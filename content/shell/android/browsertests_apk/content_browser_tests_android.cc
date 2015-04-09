@@ -27,7 +27,7 @@
 #include "content/shell/app/shell_main_delegate.h"
 #include "jni/ContentBrowserTestsActivity_jni.h"
 #include "media/base/media_switches.h"
-#include "testing/android/native_test_util.h"
+#include "testing/android/native_test/native_test_util.h"
 
 using testing::native_test_util::ArgsToArgv;
 using testing::native_test_util::ParseArgsFromCommandLineFile;

@@ -5,7 +5,7 @@
 #include "base/android/base_jni_onload.h"
 #include "base/android/jni_android.h"
 #include "base/bind.h"
-#include "testing/android/native_test_launcher.h"
+#include "testing/android/native_test/native_test_launcher.h"
 
 namespace {
 

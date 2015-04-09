@@ -31,7 +31,7 @@
          'apk_name': '<(test_suite_name)',
          'intermediate_dir': '<(PRODUCT_DIR)/<(test_suite_name)_apk',
          'final_apk_path': '<(intermediate_dir)/<(test_suite_name)-debug.apk',
-         'java_in_dir': '<(DEPTH)/testing/android/java',
+         'java_in_dir': '<(DEPTH)/testing/android/native_test/java',
          'native_lib_target': 'lib<(test_suite_name)',
          # TODO(yfriedman, cjhopman): Support managed installs for gtests.
          'gyp_managed_install': 0,

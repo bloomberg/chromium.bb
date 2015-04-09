@@ -67,7 +67,7 @@ template("test") {
       }
       deps = []
       if (!defined(invoker.use_launcher) || invoker.use_launcher) {
-        deps += [ "//testing/android:native_test_native_code" ]
+        deps += [ "//testing/android/native_test:native_test_native_code" ]
       }
       if (defined(invoker.deps)) {
         deps += invoker.deps

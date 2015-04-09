@@ -12,9 +12,9 @@
           'message': 'building native pieces of native test package',
           'type': 'static_library',
           'sources': [
-            'native_test_jni_onload.cc',
-            'native_test_launcher.cc',
-            'native_test_launcher.h',
+            'native_test/native_test_jni_onload.cc',
+            'native_test/native_test_launcher.cc',
+            'native_test/native_test_launcher.h',
           ],
           'dependencies': [
             '../../base/base.gyp:base',
@@ -30,7 +30,7 @@
           'target_name': 'native_test_jni_headers',
           'type': 'none',
           'sources': [
-            'java/src/org/chromium/native_test/ChromeNativeTestActivity.java'
+            'native_test/java/src/org/chromium/native_test/ChromeNativeTestActivity.java'
           ],
           'variables': {
             'jni_gen_package': 'testing',
@@ -42,8 +42,8 @@
           'target_name': 'native_test_util',
           'type': 'static_library',
           'sources': [
-            'native_test_util.cc',
-            'native_test_util.h',
+            'native_test/native_test_util.cc',
+            'native_test/native_test_util.h',
           ],
           'dependencies': [
             '../../base/base.gyp:base',

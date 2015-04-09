@@ -370,7 +370,7 @@ if (!is_mac) {
       deps += [
         "//content/shell/android:content_shell_jni_headers",
         "//content/shell:content_shell_lib",
-        "//testing/android:native_test_util",
+        "//testing/android/native_test:native_test_util",
       ]
 
       use_launcher = false
@@ -584,7 +584,7 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
         "../browser/geolocation/wifi_data_provider_common_unittest.cc",
         "../browser/webui/url_data_manager_backend_unittest.cc",
       ]
-      deps += [ "//testing/android:native_test_native_code" ]
+      deps += [ "//testing/android/native_test:native_test_native_code" ]
     }
     if (!is_android && !is_ios) {
       deps += [ "//third_party/libvpx" ]
@@ -657,7 +657,7 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
     ]
 
     if (is_android) {
-      deps += [ "//testing/android:native_test_native_code" ]
+      deps += [ "//testing/android/native_test:native_test_native_code" ]
     }
   }
 
@@ -684,7 +684,7 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
     ]
 
     if (is_android) {
-      deps += [ "//testing/android:native_test_native_code" ]
+      deps += [ "//testing/android/native_test:native_test_native_code" ]
     } else {
       data_deps = [
         "//third_party/ffmpeg",

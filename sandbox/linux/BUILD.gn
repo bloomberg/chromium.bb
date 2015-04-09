@@ -147,7 +147,7 @@ shared_library("sandbox_linux_jni_unittests") {
     ":sandbox_linux_unittests_sources",
   ]
   if (is_android) {
-    deps += [ "//testing/android:native_test_native_code" ]
+    deps += [ "//testing/android/native_test:native_test_native_code" ]
   }
 }
 

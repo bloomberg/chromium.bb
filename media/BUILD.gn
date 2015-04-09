@@ -625,7 +625,7 @@ test("media_unittests") {
     deps += [
       "//media/base/android",
       # TODO(GYP)
-      #"//testing/android:native_test_native_code"
+      #"//testing/android/native_test:native_test_native_code"
     ]
   }
 

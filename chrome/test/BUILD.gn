@@ -1253,7 +1253,7 @@ if (!is_android) {
       # Some android targets still depend on --gc-sections to link.
       # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
       ldflags = [ "-Wl,--gc-sections" ]
-      deps += [ "//testing/android:native_test_native_code" ]
+      deps += [ "//testing/android/native_test:native_test_native_code" ]
     } else {
       sources +=
           rebase_path(unit_gypi_values.chrome_unit_tests_non_android_sources,

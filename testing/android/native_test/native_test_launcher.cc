@@ -26,7 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"
 #include "jni/ChromeNativeTestActivity_jni.h"
-#include "testing/android/native_test_util.h"
+#include "testing/android/native_test/native_test_util.h"
 
 using testing::native_test_util::ArgsToArgv;
 using testing::native_test_util::ParseArgsFromCommandLineFile;
