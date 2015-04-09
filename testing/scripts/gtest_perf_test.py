@@ -22,9 +22,9 @@ def main_run(args):
 
   perf_id = args.properties.get('perf-id')
   script_args = args.args
+  test_suite = script_args[0]
   if IsWindows():
     script_args[0] += '.exe'
-  test_suite = script_args[0]
 
   with common.temporary_file() as tempfile_path:
     gtest_args = [
