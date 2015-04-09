@@ -1239,6 +1239,14 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
         return;
     }
 
+    // FIXME: This is an odd set of steps to shut down parsing and it's unclear why it works.
+    // It's also unclear why other steps don't work.
+    if (m_frame->document()->parsing()) {
+        finishedParsing();
+        m_frame->document()->setParsingState(Document::FinishedParsing);
+    }
+    m_frame->document()->setReadyState(Document::Complete);
+
     if (m_provisionalDocumentLoader) {
         m_provisionalDocumentLoader->stopLoading();
         if (m_provisionalDocumentLoader)
