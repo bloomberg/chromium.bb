@@ -33,7 +33,8 @@ public class PassphraseActivity extends FragmentActivity implements
     public static final String FRAGMENT_PASSWORD = "password_fragment";
     public static final String FRAGMENT_SPINNER = "spinner_fragment";
     private static final String TAG = "PassphraseActivity";
-    private static ProfileSyncService.SyncStateChangedListener sSyncStateChangedListener;
+
+    private ProfileSyncService.SyncStateChangedListener mSyncStateChangedListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,11 +72,19 @@ public class PassphraseActivity extends FragmentActivity implements
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Make sure we don't receive callbacks while in the background.
+        // See http://crbug.com/469890.
+        removeSyncStateChangedListener();
+    }
+
     private void addSyncStateChangedListener() {
-        if (sSyncStateChangedListener != null) {
+        if (mSyncStateChangedListener != null) {
             return;
         }
-        sSyncStateChangedListener = new ProfileSyncService.SyncStateChangedListener() {
+        mSyncStateChangedListener = new ProfileSyncService.SyncStateChangedListener() {
             @Override
             public void syncStateChanged() {
                 if (ProfileSyncService.get(getApplicationContext()).isSyncInitialized()) {
@@ -84,12 +93,14 @@ public class PassphraseActivity extends FragmentActivity implements
                 }
             }
         };
-        ProfileSyncService.get(this).addSyncStateChangedListener(sSyncStateChangedListener);
+        ProfileSyncService.get(this).addSyncStateChangedListener(mSyncStateChangedListener);
     }
 
     private void removeSyncStateChangedListener() {
-        ProfileSyncService.get(this).removeSyncStateChangedListener(sSyncStateChangedListener);
-        sSyncStateChangedListener = null;
+        if (mSyncStateChangedListener != null) {
+            ProfileSyncService.get(this).removeSyncStateChangedListener(mSyncStateChangedListener);
+            mSyncStateChangedListener = null;
+        }
     }
 
     private boolean isShowingDialog(String tag) {

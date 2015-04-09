@@ -53,7 +53,7 @@ public class ProfileSyncService {
     @VisibleForTesting
     public static final String SESSION_TAG_PREFIX = "session_sync";
 
-    private static ProfileSyncService sSyncSetupManager;
+    private static ProfileSyncService sProfileSyncService;
 
     @VisibleForTesting
     protected final Context mContext;
@@ -76,16 +76,21 @@ public class ProfileSyncService {
     @SuppressFBWarnings("LI_LAZY_INIT")
     public static ProfileSyncService get(Context context) {
         ThreadUtils.assertOnUiThread();
-        if (sSyncSetupManager == null) {
-            sSyncSetupManager = new ProfileSyncService(context);
+        if (sProfileSyncService == null) {
+            sProfileSyncService = new ProfileSyncService(context);
         }
-        return sSyncSetupManager;
+        return sProfileSyncService;
+    }
+
+    @VisibleForTesting
+    public static void overrideForTests(ProfileSyncService profileSyncService) {
+        sProfileSyncService = profileSyncService;
     }
 
     /**
      * This is called pretty early in our application. Avoid any blocking operations here.
      */
-    private ProfileSyncService(Context context) {
+    protected ProfileSyncService(Context context) {
         ThreadUtils.assertOnUiThread();
         // We should store the application context, as we outlive any activity which may create us.
         mContext = context.getApplicationContext();
