@@ -1,13 +1,14 @@
 Name: jsoncpp
-URL: http://jsoncpp.svn.sourceforge.net/svnroot/jsoncpp/trunk/jsoncpp
-Version: 248
+URL: https://github.com/open-source-parsers/jsoncpp
+Version: f572e8e42e22cfcf5ab0aea26574f408943edfa4
 License: MIT
 License File: LICENSE
 Security Critical: yes
 
 Description:
 The libjingle/webrtc/liblouis_nacl uses jsoncpp for signaling message
-serialization and deserialization.
+serialization and deserialization. This library is also shipped in NaCl
+SDK and used in several examples.
 
 Local modifications:
 The overrides are used to eliminate static initializers in json_value.cpp and

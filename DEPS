@@ -240,7 +240,7 @@ deps = {
     Var('chromium_git') + '/external/webrtc/deps/third_party/openmax.git' + '@' +  Var('openmax_dl_revision'),
 
   'src/third_party/jsoncpp/source':
-    Var('chromium_git') + '/external/jsoncpp/jsoncpp.git' + '@' + 'ab1e40f3bce061ea6f9bdc60351d6cde2a4f872b', # from svn 248
+    Var('chromium_git') + '/external/github.com/open-source-parsers/jsoncpp.git' + '@' + 'f572e8e42e22cfcf5ab0aea26574f408943edfa4', # from svn 248
 
   'src/third_party/libyuv':
     Var('chromium_git') + '/external/libyuv.git' + '@' + 'd204db647e591ccf0e2589236ecea90330d65a66', # from svn revision 1171
