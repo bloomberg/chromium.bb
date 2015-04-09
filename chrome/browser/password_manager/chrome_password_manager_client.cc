@@ -229,8 +229,6 @@ bool ChromePasswordManagerClient::PromptUserToSavePassword(
         ManagePasswordsUIController::FromWebContents(web_contents());
     manage_passwords_ui_controller->OnPasswordSubmitted(form_to_save.Pass());
   } else {
-    // TODO(melandory): If type is CREDENTIAL_SOURCE_API then new bubble should
-    // be shown.
     std::string uma_histogram_suffix(
         password_manager::metrics_util::GroupIdToString(
             password_manager::metrics_util::MonitoredDomainGroupId(
