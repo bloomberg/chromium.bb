@@ -4,7 +4,6 @@
 
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 
-#include <asm/unistd.h>
 #include <errno.h>
 #include <stdint.h>
 

@@ -5,8 +5,6 @@
 #ifndef SANDBOX_LINUX_BPF_DSL_LINUX_SYSCALL_RANGES_H_
 #define SANDBOX_LINUX_BPF_DSL_LINUX_SYSCALL_RANGES_H_
 
-#include <asm/unistd.h>  // For __NR_SYSCALL_BASE
-
 #if defined(__x86_64__)
 
 #define MIN_SYSCALL         0u
@@ -25,15 +23,19 @@
 // and a "ghost syscall private to the kernel", cmpxchg,
 // at |__ARM_NR_BASE+0x00fff0|.
 // See </arch/arm/include/asm/unistd.h> in the Linux kernel.
-#define MIN_SYSCALL         ((unsigned int)__NR_SYSCALL_BASE)
+
+// __NR_SYSCALL_BASE is 0 in thumb and ARM EABI.
+#define MIN_SYSCALL         0u
 #define MAX_PUBLIC_SYSCALL  (MIN_SYSCALL + 1024u)
-#define MIN_PRIVATE_SYSCALL ((unsigned int)__ARM_NR_BASE)
+// __ARM_NR_BASE is __NR_SYSCALL_BASE + 0xf0000u
+#define MIN_PRIVATE_SYSCALL 0xf0000u
 #define MAX_PRIVATE_SYSCALL (MIN_PRIVATE_SYSCALL + 16u)
-#define MIN_GHOST_SYSCALL   ((unsigned int)__ARM_NR_BASE + 0xfff0u)
+#define MIN_GHOST_SYSCALL   (MIN_PRIVATE_SYSCALL + 0xfff0u)
 #define MAX_SYSCALL         (MIN_GHOST_SYSCALL + 4u)
 
 #elif defined(__mips__) && (_MIPS_SIM == _ABIO32)
 
+#include <asm/unistd.h>  // for __NR_O32_Linux and __NR_Linux_syscalls
 #define MIN_SYSCALL         __NR_O32_Linux
 #define MAX_PUBLIC_SYSCALL  (MIN_SYSCALL + __NR_Linux_syscalls)
 #define MAX_SYSCALL         MAX_PUBLIC_SYSCALL
