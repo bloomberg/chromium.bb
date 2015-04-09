@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import copy
+import contextlib
 import itertools
 import mock
 import os
@@ -254,10 +255,9 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
   def testCleanlyApply(self):
     _, git2, patch = self._CommonGitSetup()
     # Clone git3 before we modify git2; else we'll just wind up
-    # cloning it's master.
+    # cloning its master.
     git3 = self._MakeRepo('git3', git2)
     patch.Apply(git2, self.DEFAULT_TRACKING)
-    self.assertEqual(patch.sha1, self._GetSha1(git2, 'HEAD'))
     # Verify reuse; specifically that Fetch doesn't actually run since
     # the object is available in alternates.  testFetch partially
     # validates this; the Apply usage here fully validates it via
@@ -265,7 +265,6 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     # required sha1.
     patch.project_url = '/dev/null'
     patch.Apply(git3, self.DEFAULT_TRACKING)
-    self.assertEqual(patch.sha1, self._GetSha1(git3, 'HEAD'))
 
   def testFailsApply(self):
     _, git2, patch1 = self._CommonGitSetup()
@@ -378,7 +377,7 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
                 if dep.sha1 is not None]
     for input_id in ids:
       change_tuple = cros_patch.StripPrefix(input_id)
-      self.assertTrue(change_tuple in dep_ids)
+      self.assertIn(change_tuple, dep_ids)
 
     return patch
 
@@ -440,6 +439,21 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
                       git1, cid1, [], ' CQ-DEPEND=1')
 
+  def testChangeIdMetadata(self):
+    """Verify Change-Id is set in git metadata."""
+    git1, git2, _ = self._CommonGitSetup()
+    changeid = 'I%s' % ('1'.rjust(40, '0'))
+    patch = self.CommitChangeIdFile(git1, changeid=changeid, change_id=changeid,
+                                    raw_changeid_text='')
+    patch.change_id = changeid
+    patch.Fetch(git1)
+    self.assertIn('Change-Id: %s\n' % changeid, patch.commit_message)
+    patch = self.CommitChangeIdFile(git2, changeid=changeid, change_id=changeid)
+    patch.Fetch(git2)
+    self.assertEqual(patch.change_id, changeid)
+    self.assertIn('Change-Id: %s\n' % changeid, patch.commit_message)
+
+
 
 class TestGetOptionLinesFromCommitMessage(cros_test_lib.TestCase):
   """Tests of GetOptionFromCommitMessage."""
@@ -486,7 +500,7 @@ jabberwocky: Calloh! Callay!
     o = cros_patch.GetOptionLinesFromCommitMessage(self._M3, 'jabberwocky:')
     self.assertEqual([], o)
 
-  def testMultiOptino(self):
+  def testMultiOption(self):
     o = cros_patch.GetOptionLinesFromCommitMessage(self._M4, 'jabberwocky:')
     self.assertEqual(['O frabjuous day!', 'Calloh! Callay!'], o)
 
@@ -553,10 +567,10 @@ class TestApplyAgainstManifest(GitRepoPatchTestCase,
     readme3.ApplyAgainstManifest(manifest)
 
     # Verify that both readme2 and readme3 are on the patch branch.
-    shas = self._run(['git', 'log', '--format=%H',
-                      '%s..%s' % (readme1.sha1, constants.PATCH_BRANCH)],
-                     git1).splitlines()
-    self.assertEqual(shas, [str(readme3.sha1), str(readme2.sha1)])
+    cmd = ['git', 'log', '--format=%T',
+           '%s..%s' % (readme1.sha1, constants.PATCH_BRANCH)]
+    trees = self._run(cmd, git1).splitlines()
+    self.assertEqual(trees, [str(readme3.tree_hash), str(readme2.tree_hash)])
 
 
 class TestLocalPatchGit(GitRepoPatchTestCase):
@@ -640,7 +654,8 @@ class TestUploadedLocalPatch(UploadedLocalPatchTestCase):
                       msg="Couldn't find %s in %s" % (element, str_rep))
 
 
-class TestGerritPatch(GitRepoPatchTestCase):
+# pylint: disable=protected-access
+class TestGerritPatch(TestGitRepoPatch):
   """Test Gerrit patch handling."""
 
   has_native_change_id = True
@@ -735,6 +750,69 @@ class TestGerritPatch(GitRepoPatchTestCase):
 
   def testInternalGerritDependencies(self):
     self._assertGerritDependencies(constants.INTERNAL_REMOTE)
+
+  def testReviewedOnMetadata(self):
+    """Verify Change-Id and Reviewed-On are set in git metadata."""
+    git1, _, patch = self._CommonGitSetup()
+    patch.Apply(git1, self.DEFAULT_TRACKING)
+    reviewed_on = '/'.join([constants.EXTERNAL_GERRIT_URL, patch.gerrit_number])
+    self.assertIn('Reviewed-on: %s\n' % reviewed_on, patch.commit_message)
+
+  def _MakeFooters(self):
+    return (
+        (),
+        (('Footer-1', 'foo'),),
+        (('Change-id', '42'),),
+        (('Footer-1', 'foo'), ('Change-id', '42')),)
+
+  def _MakeCommitMessages(self):
+    headers = (
+        'A standard commit message header',
+        '',
+        'Footer-1: foo',
+        'Change-id: 42')
+
+    bodies = (
+        '',
+        '\n',
+        'Lots of comments\n about the commit\n' * 100)
+
+    for header, body, preexisting in itertools.product(headers,
+                                                       bodies,
+                                                       self._MakeFooters()):
+      yield '\n'.join((header,
+                       body,
+                       '\n'.join('%s: %s' for tag, ident in preexisting)))
+
+  def testAddFooters(self):
+    repo = self._MakeRepo('git', self.source)
+    patch = self._MkPatch(repo, self._GetSha1(repo, 'HEAD'))
+    approval = {'type': 'VRIF', 'value': '1', 'grantedOn': 1391733002}
+
+    for msg in self._MakeCommitMessages():
+      for footers in self._MakeFooters():
+        ctx = contextlib.nested(
+            mock.patch('chromite.lib.patch.FooterForApproval',
+                       new=mock.Mock(side_effect=itertools.cycle(footers))),
+            mock.patch.object(patch, '_approvals',
+                              new=[approval] * len(footers)))
+
+        with ctx:
+          patch._commit_message = msg
+
+          # Idempotence
+          self.assertEqual(patch._AddFooters(msg),
+                           patch._AddFooters(patch._AddFooters(msg)))
+
+          # there may be pre-existing footers.  This asserts that we
+          # can Get all of the footers after we Set them.
+          self.assertFalse(bool(
+              set(footers) -
+              set(patch._GetFooters(patch._AddFooters(msg)))))
+
+          if set(footers) - set(patch._GetFooters(msg)):
+            self.assertNotEqual(msg, patch._AddFooters(msg))
+
 
 
 class PrepareRemotePatchesTest(cros_test_lib.TestCase):

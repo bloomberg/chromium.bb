@@ -569,6 +569,7 @@ class PatchQuery(object):
       self.tracking_branch = os.path.basename(tracking_branch)
     self.project = project
     self.sha1 = None if sha1 is None else ParseSHA1(sha1)
+    self.tree_hash = None
     self.change_id = None if change_id is None else ParseChangeID(change_id)
     self.gerrit_number = (None if gerrit_number is None else
                           ParseGerritNumber(gerrit_number))
@@ -715,11 +716,74 @@ class GitRepoPatch(PatchQuery):
     self._subject_line = None
     self.ref = ref
     self._is_fetched = set()
+    self._committer_email = None
+    self._committer_name = None
+    self._commit_message = None
+
+  @property
+  def commit_message(self):
+    return self._commit_message
+
+  @commit_message.setter
+  def commit_message(self, value):
+    self._commit_message = self._AddFooters(value) if value else value
 
   @property
   def internal(self):
     """Whether patch is to an internal cros project."""
     return self.remote == constants.INTERNAL_REMOTE
+
+  def _GetFooters(self, msg):
+    """Get the Git footers of the specified commit message.
+
+    Args:
+      msg: A commit message
+
+    Returns:
+      The parsed footers from the commit message.  Footers are
+      lines of the form 'key: value' and are at the end of the commit
+      message in a separate paragraph.  We return a list of pairs like
+      ('key', 'value').
+    """
+    footers = []
+    data = re.split(r'\n{2,}', msg.rstrip('\n'))[-1]
+    for line in data.splitlines():
+      m = re.match(r'([A-Za-z0-9-]+): *(.*)', line.rstrip('\n'))
+      if m:
+        footers.append(m.groups())
+    return footers
+
+  def _AddFooters(self, msg):
+    """Ensure that commit messages have a change ID.
+
+    Args:
+      msg: The commit message.
+
+    Returns:
+      The modified commit message with necessary Gerrit footers.
+    """
+    if not msg:
+      msg = '<no commit message provided>'
+
+    if msg[-1] != '\n':
+      msg += '\n'
+
+    # This function is adapted from the version in Gerrit:
+    # goto/createCherryPickCommitMessage
+    old_footers = self._GetFooters(msg)
+
+    if not old_footers:
+      # Doesn't end in a "Signed-off-by: ..." style line? Add another line
+      # break to start a new paragraph for the reviewed-by tag lines.
+      msg += '\n'
+
+    # This replicates the behavior of
+    # goto/createCherryPickCommitMessage, but can result in multiple
+    # Change-Id footers.  We should consider changing this behavior.
+    if ('Change-Id', self.change_id) not in old_footers and self.change_id:
+      msg += 'Change-Id: %s\n' % self.change_id
+
+    return msg
 
   def Fetch(self, git_repo):
     """Fetch this patch into the given git repository.
@@ -746,25 +810,26 @@ class GitRepoPatch(PatchQuery):
       return self.sha1
 
     def _PullData(rev):
-      ret = git.RunGit(
-          git_repo, ['log', '--pretty=format:%H%x00%s%x00%B', '-n1', rev],
-          error_code_ok=True)
+      f = '%H%x00%T%x00%s%x00%B%x00%ce%x00%cn'
+      cmd = ['log', '--pretty=format:%s' % f, '-n1', rev]
+      ret = git.RunGit(git_repo, cmd, error_code_ok=True)
       if ret.returncode != 0:
-        return None, None, None
+        return None, None, None, None, None, None
       output = ret.output.split('\0')
-      if len(output) != 3:
-        return None, None, None
+      if len(output) != 6:
+        return None, None, None, None, None, None
       return [unicode(x.strip(), 'ascii', 'ignore') for x in output]
 
     sha1 = None
     if self.sha1 is not None:
       # See if we've already got the object.
-      sha1, subject, msg = _PullData(self.sha1)
+      sha1, tree_hash, subject, msg, email, name = _PullData(self.sha1)
 
     if sha1 is None:
       git.RunGit(git_repo, ['fetch', '-f', self.project_url, self.ref],
                  print_cmd=True)
-      sha1, subject, msg = _PullData(self.sha1 or 'FETCH_HEAD')
+      items = _PullData(self.sha1 or 'FETCH_HEAD')
+      sha1, tree_hash, subject, msg, email, name = items
 
     sha1 = ParseSHA1(sha1, error_ok=False)
 
@@ -775,9 +840,13 @@ class GitRepoPatch(PatchQuery):
                            'Patch %s specifies sha1 %s, yet in fetching from '
                            '%s we could not find that sha1.  Internal error '
                            'most likely.' % (self, self.sha1, self.ref))
+
+    self._committer_email = email
+    self._committer_name = name
     self.sha1 = sha1
-    self._EnsureId(msg)
+    self.tree_hash = tree_hash
     self.commit_message = msg
+    self._EnsureId(self.commit_message)
     self._subject_line = subject
     self._is_fetched.add(git_repo)
     return self.sha1
@@ -836,6 +905,9 @@ class GitRepoPatch(PatchQuery):
     reset_target = None if leave_dirty else 'HEAD'
     try:
       git.RunGit(git_repo, cmd)
+      git.RunGit(git_repo, ['commit', '--amend', '-m', self.commit_message],
+                 extra_env={'GIT_COMMITTER_NAME': self._committer_name or '',
+                            'GIT_COMMITTER_EMAIL': self._committer_email or ''})
       reset_target = None
       return
     except cros_build_lib.RunCommandError as error:
@@ -1431,6 +1503,7 @@ class GerritPatch(GerritFetchOnlyPatch):
     self.approval_timestamp = max(
         self.commit_timestamp,
         max(x['grantedOn'] for x in self._approvals) if self._approvals else 0)
+    self._commit_message = None
     self.commit_message = patch_dict.get('commitMessage')
 
   @staticmethod
@@ -1451,9 +1524,9 @@ class GerritPatch(GerritFetchOnlyPatch):
       _convert_tm = lambda tm: calendar.timegm(
           time.strptime(tm.partition('.')[0], '%Y-%m-%d %H:%M:%S'))
       _convert_user = lambda u: {
-          'name': u.get('name', '??unknown??'),
+          'name': u.get('name'),
           'email': u.get('email'),
-          'username': u.get('name', '??unknown??'),
+          'username': u.get('name'),
       }
       change_id = change['change_id'].split('~')[-1]
       patch_dict = {
@@ -1642,6 +1715,33 @@ class GerritPatch(GerritFetchOnlyPatch):
     """Return a CL link for this patch."""
     return 'CL:%s' % (self.gerrit_number_str,)
 
+  def _AddFooters(self, msg):
+    """Ensure that commit messages have necessary Gerrit footers on the end.
+
+    Args:
+      msg: The commit message.
+
+    Returns:
+      The modified commit message with necessary Gerrit footers.
+    """
+    msg = super(GerritPatch, self)._AddFooters(msg)
+
+    # This function is adapted from the version in Gerrit:
+    # goto/createCherryPickCommitMessage
+    old_footers = self._GetFooters(msg)
+
+    gerrit_host = constants.GERRIT_HOSTS[self.remote]
+    reviewed_on = 'https://%s/%s' % (gerrit_host, self.gerrit_number)
+    if ('Reviewed-on', reviewed_on) not in old_footers:
+      msg += 'Reviewed-on: %s\n' % reviewed_on
+
+    for approval in self._approvals:
+      footer = FooterForApproval(approval, old_footers)
+      if footer and footer not in old_footers:
+        msg += '%s: %s\n' % footer
+
+    return msg
+
   def __str__(self):
     """Returns custom string to identify this patch."""
     s = '%s:%s' % (self.owner, self.gerrit_number_str)
@@ -1650,6 +1750,43 @@ class GerritPatch(GerritFetchOnlyPatch):
     if self._subject_line:
       s += ':"%s"' % (self._subject_line,)
     return s
+
+
+FOOTER_TAGS_BY_APPROVAL_TYPE = {
+    'CRVW': 'Reviewed-by',
+    'VRIF': 'Tested-by',
+    'COMR': 'Commit-Ready',
+}
+
+
+def FooterForApproval(approval, footers):
+  """Return a commit-message footer for a given approver.
+
+  Args:
+    approval: A dict containing the information about an approver
+    footers: A sequence of existing footers in the commit message.
+
+  Returns:
+    A 'footer', which is a tuple (tag, id).
+  """
+  if int(approval.get('value', 0)) <= 0:
+    # Negative votes aren't counted.
+    return
+
+  name = approval.get('by', {}).get('name')
+  email = approval.get('by', {}).get('email')
+  ident = ' '.join(x for x in [name, email and '<%s>' % email] if x)
+
+  # Nothing reasonable to describe them by? Ignore them.
+  if not ident:
+    return
+
+  # Don't bother adding additional footers if the CL has already been
+  # signed off.
+  if ('Signed-off-by', ident) in footers:
+    return
+
+  return FOOTER_TAGS_BY_APPROVAL_TYPE.get(approval['type']), ident
 
 
 def GeneratePatchesFromRepo(git_repo, project, tracking_branch, branch, remote,
