@@ -355,13 +355,14 @@ bool GetPathFromHandle(HANDLE handle, base::string16* path) {
   OBJECT_NAME_INFORMATION* name = &initial_buffer;
   ULONG size = sizeof(initial_buffer);
   // Query the name information a first time to get the size of the name.
+  // Windows XP requires that the size of the buffer passed in here be != 0.
   NTSTATUS status = NtQueryObject(handle, ObjectNameInformation, name, size,
                                   &size);
 
-  scoped_ptr<OBJECT_NAME_INFORMATION> name_ptr;
+  scoped_ptr<BYTE[]> name_ptr;
   if (size) {
-    name = reinterpret_cast<OBJECT_NAME_INFORMATION*>(new BYTE[size]);
-    name_ptr.reset(name);
+    name_ptr.reset(new BYTE[size]);
+    name = reinterpret_cast<OBJECT_NAME_INFORMATION*>(name_ptr.get());
 
     // Query the name information a second time to get the name of the
     // object referenced by the handle.
