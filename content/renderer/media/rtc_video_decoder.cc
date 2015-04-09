@@ -18,8 +18,8 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/webrtc/common_video/interface/i420_video_frame.h"
 #include "third_party/webrtc/system_wrappers/interface/ref_count.h"
+#include "third_party/webrtc/video_frame.h"
 
 namespace content {
 
