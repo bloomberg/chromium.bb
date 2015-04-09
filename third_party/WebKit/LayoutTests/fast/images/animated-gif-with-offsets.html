@@ -24,6 +24,7 @@ function displayOneFrame() {
 
 if (window.testRunner) {
   testRunner.waitUntilDone();
+  testRunner.dumpAsText();
   setTimeout(displayOneFrame, 50);
 }
 
