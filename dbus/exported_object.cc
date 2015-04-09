@@ -91,12 +91,21 @@ void ExportedObject::SendSignal(Signal* signal) {
   dbus_message_ref(signal_message);
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  bus_->GetDBusTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ExportedObject::SendSignalInternal,
-                 this,
-                 start_time,
-                 signal_message));
+  if (bus_->GetDBusTaskRunner()->RunsTasksOnCurrentThread()) {
+    // The Chrome OS power manager doesn't use a dedicated TaskRunner for
+    // sending DBus messages.  Sending signals asynchronously can cause an
+    // inversion in the message order if the power manager calls
+    // ObjectProxy::CallMethodAndBlock() before going back to the top level of
+    // the MessageLoop: crbug.com/472361.
+    SendSignalInternal(start_time, signal_message);
+  } else {
+    bus_->GetDBusTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ExportedObject::SendSignalInternal,
+                   this,
+                   start_time,
+                   signal_message));
+  }
 }
 
 void ExportedObject::Unregister() {

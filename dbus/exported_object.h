@@ -92,7 +92,8 @@ class CHROME_DBUS_EXPORT ExportedObject
                             OnExportedCallback on_exported_callback);
 
   // Requests to send the signal from this object. The signal will be sent
-  // asynchronously from the message loop in the D-Bus thread.
+  // synchronously if this method is called from the message loop in the D-Bus
+  // thread and asynchronously otherwise.
   virtual void SendSignal(Signal* signal);
 
   // Unregisters the object from the bus. The Bus object will take care of
