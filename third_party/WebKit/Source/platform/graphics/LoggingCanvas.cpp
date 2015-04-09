@@ -846,12 +846,17 @@ String LoggingCanvas::stringForText(const void* text, size_t byteLength, const S
 }
 
 #ifndef NDEBUG
-void showSkPicture(const SkPicture* picture)
+String pictureAsDebugString(const SkPicture* picture)
 {
     const SkIRect bounds = picture->cullRect().roundOut();
     LoggingCanvas canvas(bounds.width(), bounds.height());
     picture->playback(&canvas);
-    WTFLogAlways("%s\n", canvas.log()->toPrettyJSONString().utf8().data());
+    return canvas.log()->toPrettyJSONString();
+}
+
+void showSkPicture(const SkPicture* picture)
+{
+    WTFLogAlways("%s\n", pictureAsDebugString(picture).utf8().data());
 }
 #endif
 

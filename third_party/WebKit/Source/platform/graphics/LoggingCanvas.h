@@ -132,6 +132,7 @@ private:
 };
 
 #ifndef NDEBUG
+String pictureAsDebugString(const SkPicture*);
 void showSkPicture(const SkPicture*);
 #endif
 
