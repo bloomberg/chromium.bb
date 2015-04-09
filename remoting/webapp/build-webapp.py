@@ -355,7 +355,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
     if not app_client_id:
       raise Exception('Invalid app_client_id passed in: "' +
           app_client_id + '"')
-    apiClientIdV2 = app_client_id
+    apiClientIdV2 = app_client_id + '.apps.googleusercontent.com'
   else:
     apiClientIdV2 = google_api_keys.GetClientID('REMOTING_IDENTITY_API')
 
