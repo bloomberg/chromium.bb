@@ -422,14 +422,14 @@ void WebViewGuest::GuestReady() {
   // WebContents::GetRenderWidgetHostView will return the RWHV of an
   // interstitial page if one is showing at this time. We only want opacity
   // to apply to web pages.
-  if (guest_opaque_) {
+  if (allow_transparency_) {
+    web_contents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
+        SK_ColorTRANSPARENT);
+  } else {
     web_contents()
         ->GetRenderViewHost()
         ->GetView()
         ->SetBackgroundColorToDefault();
-  } else {
-    web_contents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
-        SK_ColorTRANSPARENT);
   }
 }
 
@@ -721,7 +721,7 @@ WebViewGuest::WebViewGuest(content::WebContents* owner_web_contents)
       rules_registry_id_(RulesRegistryService::kInvalidRulesRegistryID),
       find_helper_(this),
       is_overriding_user_agent_(false),
-      guest_opaque_(true),
+      allow_transparency_(false),
       javascript_dialog_helper_(this),
       allow_scaling_(false),
       is_guest_fullscreen_(false),
@@ -1018,14 +1018,16 @@ void WebViewGuest::ApplyAttributes(const base::DictionaryValue& params) {
   SetUserAgentOverride(user_agent_override);
 
   bool allow_transparency = false;
-  params.GetBoolean(webview::kAttributeAllowTransparency, &allow_transparency);
-  // We need to set the background opaque flag after navigation to ensure that
-  // there is a RenderWidgetHostView available.
-  SetAllowTransparency(allow_transparency);
+  if (params.GetBoolean(webview::kAttributeAllowTransparency,
+      &allow_transparency)) {
+    // We need to set the background opaque flag after navigation to ensure that
+    // there is a RenderWidgetHostView available.
+    SetAllowTransparency(allow_transparency);
+  }
 
   bool allow_scaling = false;
-  params.GetBoolean(webview::kAttributeAllowScaling, &allow_scaling);
-  SetAllowScaling(allow_scaling);
+  if (params.GetBoolean(webview::kAttributeAllowScaling, &allow_scaling))
+    SetAllowScaling(allow_scaling);
 
   bool is_pending_new_window = false;
   if (GetOpener()) {
@@ -1082,21 +1084,21 @@ void WebViewGuest::SetZoomMode(ZoomController::ZoomMode zoom_mode) {
 }
 
 void WebViewGuest::SetAllowTransparency(bool allow) {
-  if (guest_opaque_ != allow)
+  if (allow_transparency_ == allow)
     return;
 
-  guest_opaque_ = !allow;
+  allow_transparency_ = allow;
   if (!web_contents()->GetRenderViewHost()->GetView())
     return;
 
-  if (guest_opaque_) {
+  if (allow_transparency_) {
+    web_contents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
+        SK_ColorTRANSPARENT);
+  } else {
     web_contents()
         ->GetRenderViewHost()
         ->GetView()
         ->SetBackgroundColorToDefault();
-  } else {
-    web_contents()->GetRenderViewHost()->GetView()->SetBackgroundColor(
-        SK_ColorTRANSPARENT);
   }
 }
 

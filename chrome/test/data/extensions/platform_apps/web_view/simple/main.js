@@ -4,6 +4,8 @@
 
 function CreateWebViewAndGuest(callback) {
   var webview = document.createElement('webview');
+  webview.allowtransparency = true;
+  webview.allowscaling = true;
   var onLoadStop = function(e) {
     chrome.test.sendMessage('WebViewTest.LAUNCHED');
     webview.removeEventListener('loadstop', onLoadStop);

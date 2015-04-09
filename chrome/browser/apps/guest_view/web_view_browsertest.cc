@@ -2737,3 +2737,15 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_WebViewInBackgroundPage) {
   ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/background"))
       << message_;
 }
+
+// This test verifies that the allowtransparency attribute properly propagates
+IN_PROC_BROWSER_TEST_F(WebViewTest, AllowTransparencyAndAllowScalingPropagate) {
+  LoadAppWithGuest("web_view/simple");
+
+  ASSERT_TRUE(!!GetGuestWebContents());
+  extensions::WebViewGuest* guest =
+      extensions::WebViewGuest::FromWebContents(GetGuestWebContents());
+  ASSERT_TRUE(guest->allow_transparency());
+  ASSERT_TRUE(guest->allow_scaling());
+}
+

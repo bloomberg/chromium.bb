@@ -89,9 +89,11 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void SetZoomMode(ui_zoom::ZoomController::ZoomMode zoom_mode);
 
   void SetAllowScaling(bool allow);
+  bool allow_scaling() const { return allow_scaling_; }
 
   // Sets the transparency of the guest.
   void SetAllowTransparency(bool allow);
+  bool allow_transparency() const { return allow_transparency_; }
 
   // Loads a data URL with a specified base URL and virtual URL.
   bool LoadDataWithBaseURL(const std::string& data_url,
@@ -364,7 +366,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   std::string name_;
 
   // Stores whether the contents of the guest can be transparent.
-  bool guest_opaque_;
+  bool allow_transparency_;
 
   // Stores the src URL of the WebView.
   GURL src_;
