@@ -715,11 +715,11 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
 void VaapiVideoDecodeAccelerator::Cleanup() {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
+  base::AutoLock auto_lock(lock_);
   if (state_ == kUninitialized || state_ == kDestroying)
     return;
 
   DVLOG(1) << "Destroying VAVDA";
-  base::AutoLock auto_lock(lock_);
   state_ = kDestroying;
 
   client_ptr_factory_.reset();
