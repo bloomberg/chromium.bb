@@ -168,7 +168,7 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
     EXPECT_TRUE(context()->FindEnabledPlugin(
         0, GURL(), GURL(), "foo/bar", &status, &plugin, &actual_mime_type,
         NULL));
-    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed, status.value);
+    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed, status);
     EXPECT_EQ(foo_plugin_path_.value(), plugin.path.value());
   }
 
@@ -180,7 +180,7 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
     EXPECT_TRUE(context()->FindEnabledPlugin(
         0, GURL(), GURL(), "foo/bar", &status, &plugin, &actual_mime_type,
         NULL));
-    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed, status.value);
+    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed, status);
     EXPECT_EQ(bar_plugin_path_.value(), plugin.path.value());
   }
 
@@ -194,7 +194,7 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
     EXPECT_FALSE(context()->FindEnabledPlugin(
         0, GURL(), GURL(), "foo/bar", &status, &plugin, &actual_mime_type,
         NULL));
-    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kDisabled, status.value);
+    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kDisabled, status);
     EXPECT_EQ(foo_plugin_path_.value(), plugin.path.value());
   }
   {
@@ -204,7 +204,7 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
     EXPECT_FALSE(context()->FindEnabledPlugin(
         0, GURL(), GURL(), "baz/blurp", &status, &plugin, &actual_mime_type,
         NULL));
-    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kNotFound, status.value);
+    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kNotFound, status);
     EXPECT_EQ(FILE_PATH_LITERAL(""), plugin.path.value());
   }
 }

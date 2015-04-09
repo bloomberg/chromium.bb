@@ -64,7 +64,7 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
                                          params,
                                          html_data,
                                          GURL(kPluginPlaceholderDataURL)),
-      status_(new ChromeViewHostMsg_GetPluginInfo_Status),
+      status_(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed),
       title_(title),
 #if defined(ENABLE_PLUGIN_INSTALLATION)
       placeholder_routing_id_(MSG_ROUTING_NONE),
@@ -186,8 +186,8 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
 }
 
 void ChromePluginPlaceholder::SetStatus(
-    const ChromeViewHostMsg_GetPluginInfo_Status& status) {
-  status_->value = status.value;
+    ChromeViewHostMsg_GetPluginInfo_Status status) {
+  status_ = status;
 }
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -242,7 +242,7 @@ void ChromePluginPlaceholder::OnDidNotFindMissingPlugin() {
 
 void ChromePluginPlaceholder::OnFoundMissingPlugin(
     const base::string16& plugin_name) {
-  if (status_->value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound)
+  if (status_ == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound)
     SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_FOUND, plugin_name));
   has_host_ = true;
   plugin_name_ = plugin_name;
@@ -254,7 +254,7 @@ void ChromePluginPlaceholder::OnStartedDownloadingPlugin() {
 
 void ChromePluginPlaceholder::OnFinishedDownloadingPlugin() {
   bool is_installing =
-      status_->value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
+      status_ == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
   SetMessage(l10n_util::GetStringFUTF16(
       is_installing ? IDS_PLUGIN_INSTALLING : IDS_PLUGIN_UPDATING,
       plugin_name_));
@@ -287,7 +287,7 @@ void ChromePluginPlaceholder::PluginListChanged() {
                                           document.url(),
                                           mime_type,
                                           &output));
-  if (output.status.value == status_->value)
+  if (output.status == status_)
     return;
   WebPlugin* new_plugin = ChromeContentRendererClient::CreatePlugin(
       render_frame(),  GetFrame(), GetPluginParams(), output);

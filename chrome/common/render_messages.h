@@ -45,25 +45,17 @@
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_
 #define CHROME_COMMON_RENDER_MESSAGES_H_
 
-// This enum is inside a struct so that we can forward-declare the struct in
-// others headers without having to include this one.
-struct ChromeViewHostMsg_GetPluginInfo_Status {
-  enum Value {
-    kAllowed,
-    kBlocked,
-    kBlockedByPolicy,
-    kDisabled,
-    kNotFound,
-    kNPAPINotSupported,
-    kOutdatedBlocked,
-    kOutdatedDisallowed,
-    kPlayImportantContent,
-    kUnauthorized,
-  };
-
-  ChromeViewHostMsg_GetPluginInfo_Status() : value(kAllowed) {}
-
-  Value value;
+enum class ChromeViewHostMsg_GetPluginInfo_Status {
+  kAllowed,
+  kBlocked,
+  kBlockedByPolicy,
+  kDisabled,
+  kNotFound,
+  kNPAPINotSupported,
+  kOutdatedBlocked,
+  kOutdatedDisallowed,
+  kPlayImportantContent,
+  kUnauthorized,
 };
 
 namespace IPC {
@@ -82,7 +74,7 @@ struct ParamTraits<ContentSettingsPattern> {
 
 #define IPC_MESSAGE_START ChromeMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(ChromeViewHostMsg_GetPluginInfo_Status::Value,
+IPC_ENUM_TRAITS_MAX_VALUE(ChromeViewHostMsg_GetPluginInfo_Status,
                           ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized)
 IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusChangeReason,
                           OMNIBOX_FOCUS_CHANGE_REASON_LAST)
@@ -94,10 +86,6 @@ IPC_ENUM_TRAITS(ThemeBackgroundImageAlignment)
 IPC_ENUM_TRAITS(ThemeBackgroundImageTiling)
 IPC_ENUM_TRAITS(blink::WebConsoleMessage::Level)
 IPC_ENUM_TRAITS(content::TopControlsState)
-
-IPC_STRUCT_TRAITS_BEGIN(ChromeViewHostMsg_GetPluginInfo_Status)
-IPC_STRUCT_TRAITS_MEMBER(value)
-IPC_STRUCT_TRAITS_END()
 
 // Output parameters for ChromeViewHostMsg_GetPluginInfo message.
 IPC_STRUCT_BEGIN(ChromeViewHostMsg_GetPluginInfo_Output)

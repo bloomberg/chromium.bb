@@ -13,7 +13,7 @@ namespace gfx {
 class Size;
 }
 
-struct ChromeViewHostMsg_GetPluginInfo_Status;
+enum class ChromeViewHostMsg_GetPluginInfo_Status;
 
 // This contains information specifying the poster image of plugin placeholders.
 // The default constructor specifies no poster image.
@@ -55,7 +55,7 @@ class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path);
 
-  void SetStatus(const ChromeViewHostMsg_GetPluginInfo_Status& status);
+  void SetStatus(ChromeViewHostMsg_GetPluginInfo_Status status);
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   int32 CreateRoutingId();
@@ -101,9 +101,7 @@ class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
   void OnCancelledDownloadingPlugin();
 #endif
 
-  // We use a scoped_ptr so we can forward-declare the struct; it's defined in
-  // an IPC message file which can't be easily included in other header files.
-  scoped_ptr<ChromeViewHostMsg_GetPluginInfo_Status> status_;
+  ChromeViewHostMsg_GetPluginInfo_Status status_;
 
   base::string16 title_;
 

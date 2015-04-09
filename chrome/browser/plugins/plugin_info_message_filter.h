@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_message_filter.h"
 
 struct ChromeViewHostMsg_GetPluginInfo_Output;
-struct ChromeViewHostMsg_GetPluginInfo_Status;
+enum class ChromeViewHostMsg_GetPluginInfo_Status;
 class GURL;
 class HostContentSettingsMap;
 class PluginFinder;
@@ -66,7 +66,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
                                  ContentSetting* setting,
                                  bool* is_default,
                                  bool* is_managed) const;
-    void MaybeGrantAccess(const ChromeViewHostMsg_GetPluginInfo_Status& status,
+    void MaybeGrantAccess(ChromeViewHostMsg_GetPluginInfo_Status status,
                           const base::FilePath& path) const;
     bool IsPluginEnabled(const content::WebPluginInfo& plugin) const;
 

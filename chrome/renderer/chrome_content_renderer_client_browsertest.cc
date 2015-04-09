@@ -133,7 +133,7 @@ TEST_F(CreatePluginPlaceholderTest, MissingPlugin) {
   params.mimeType = base::ASCIIToUTF16(mime_type);
 
   ChromeViewHostMsg_GetPluginInfo_Output output;
-  output.status.value = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
+  output.status = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
 
   ScopedMockPluginInfoFilter filter(render_thread_.get());
 #if defined(ENABLE_PLUGINS)
@@ -158,7 +158,7 @@ TEST_F(CreatePluginPlaceholderTest, PluginFound) {
   params.mimeType = base::ASCIIToUTF16(mime_type);
 
   ChromeViewHostMsg_GetPluginInfo_Output output;
-  output.status.value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+  output.status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
 
   ScopedMockPluginInfoFilter filter(render_thread_.get());
 #if defined(ENABLE_PLUGINS)

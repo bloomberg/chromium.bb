@@ -656,7 +656,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
       frame->top()->document().url(), orig_mime_type, &output));
 
 #else
-  output.status.value = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
+  output.status = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
 #endif
   *plugin = CreatePlugin(render_frame, frame, params, output);
   return true;
@@ -693,12 +693,11 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     blink::WebLocalFrame* frame,
     const WebPluginParams& original_params,
     const ChromeViewHostMsg_GetPluginInfo_Output& output) {
-  const ChromeViewHostMsg_GetPluginInfo_Status& status = output.status;
   const WebPluginInfo& info = output.plugin;
   const std::string& actual_mime_type = output.actual_mime_type;
   const base::string16& group_name = output.group_name;
   const std::string& identifier = output.group_identifier;
-  ChromeViewHostMsg_GetPluginInfo_Status::Value status_value = status.value;
+  ChromeViewHostMsg_GetPluginInfo_Status status = output.status;
   GURL url(original_params.url);
   std::string orig_mime_type = original_params.mimeType.utf8();
   ChromePluginPlaceholder* placeholder = NULL;
@@ -706,7 +705,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   // If the browser plugin is to be enabled, this should be handled by the
   // renderer, so the code won't reach here due to the early exit in
   // OverrideCreatePlugin.
-  if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound ||
+  if (status == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound ||
       orig_mime_type == content::kBrowserPluginMimeType) {
 #if defined(OS_ANDROID)
     if (plugins::MobileYouTubePlugin::IsYouTubeURL(url, orig_mime_type)) {
@@ -752,24 +751,22 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             ? CONTENT_SETTINGS_TYPE_JAVASCRIPT
             : CONTENT_SETTINGS_TYPE_PLUGINS;
 
-    if ((status_value ==
-             ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized ||
-         status_value == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked) &&
+    if ((status == ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized ||
+         status == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked) &&
         observer->IsPluginTemporarilyAllowed(identifier)) {
-      status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+      status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
 
 #if defined(OS_WIN)
     // In Windows we need to check if we can load NPAPI plugins.
     // For example, if the render view is in the Ash desktop, we should not.
     // If user is on ALLOW or DETECT setting, loading needs to be blocked here.
-    if ((status_value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
-         status_value ==
+    if ((status == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
+         status ==
              ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent) &&
         info.type == content::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
         if (observer->AreNPAPIPluginsBlocked())
-          status_value =
-              ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported;
+          status = ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported;
     }
 #endif
 
@@ -780,7 +777,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
               render_frame, frame, params, info, identifier, group_name,
               template_id, message, PlaceholderPosterInfo());
         };
-    switch (status_value) {
+    switch (status) {
       case ChromeViewHostMsg_GetPluginInfo_Status::kNotFound: {
         NOTREACHED();
         break;
@@ -838,11 +835,11 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                                   error_message));
             placeholder = create_blocked_plugin(
                 IDR_BLOCKED_PLUGIN_HTML,
-  #if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
                 l10n_util::GetStringUTF16(IDS_NACL_PLUGIN_BLOCKED));
-  #else
+#else
                 l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
-  #endif
+#endif
             break;
           }
         }
@@ -866,7 +863,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         // https://crbug.com/471427
         bool power_saver_enabled =
             !is_prerendering &&
-            status_value ==
+            status ==
                 ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
 
         if (info.name == ASCIIToUTF16(content::kFlashPluginName))

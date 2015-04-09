@@ -53,10 +53,10 @@ scoped_ptr<blink::WebPluginPlaceholder> CreateShadowDOMPlaceholderForPluginInfo(
                                           orig_mime_type,
                                           &output));
 #else
-  output.status.value = Status::kNotFound;
+  output.status = Status::kNotFound;
 #endif
 
-  if (output.status.value == Status::kNotFound) {
+  if (output.status == Status::kNotFound) {
     // TODO(jbroman): Handle YouTube specially here, as in
     // ChromeContentRendererClient::CreatePlugin.
     PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type,
