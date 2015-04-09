@@ -28,6 +28,7 @@ import android.provider.Browser.BookmarkColumns;
 import android.provider.Browser.SearchColumns;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.LongSparseArray;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CalledByNativeUnchecked;
@@ -39,7 +40,6 @@ import org.chromium.sync.AndroidSyncSettings;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -966,11 +966,11 @@ public class ChromeBrowserProvider extends ContentProvider {
         }
 
         public static final Creator<BookmarkNode> CREATOR = new Creator<BookmarkNode>() {
-            private HashMap<Long, BookmarkNode> mNodeMap;
+            private LongSparseArray<BookmarkNode> mNodeMap;
 
             @Override
             public BookmarkNode createFromParcel(Parcel source) {
-                mNodeMap = new HashMap<Long, BookmarkNode>();
+                mNodeMap = new LongSparseArray<>();
                 long currentNodeId = source.readLong();
                 readNodeContentsRecursive(source);
                 BookmarkNode node = getNode(currentNodeId);
@@ -986,7 +986,7 @@ public class ChromeBrowserProvider extends ContentProvider {
             private BookmarkNode getNode(long id) {
                 if (id == INVALID_BOOKMARK_ID) return null;
                 Long nodeId = Long.valueOf(id);
-                if (!mNodeMap.containsKey(nodeId)) {
+                if (mNodeMap.indexOfKey(nodeId) < 0) {
                     Log.e(TAG, "Invalid BookmarkNode hierarchy. Unknown id " + id);
                     return null;
                 }
@@ -1018,7 +1018,7 @@ public class ChromeBrowserProvider extends ContentProvider {
                 if (node == null) return null;
 
                 Long nodeId = Long.valueOf(node.id());
-                if (mNodeMap.containsKey(nodeId)) {
+                if (mNodeMap.indexOfKey(nodeId) >= 0) {
                     Log.e(TAG, "Invalid BookmarkNode hierarchy. Duplicate id " + node.id());
                     return null;
                 }
