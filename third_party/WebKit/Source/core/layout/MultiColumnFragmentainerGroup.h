@@ -5,7 +5,6 @@
 #ifndef MultiColumnFragmentainerGroup_h
 #define MultiColumnFragmentainerGroup_h
 
-#include "core/CoreExport.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 
 namespace blink {
@@ -28,16 +27,7 @@ namespace blink {
 // (and make them appear in the next outer fragmentainer).
 class MultiColumnFragmentainerGroup {
 public:
-    // Need this explicit default constructor for msvc, because:
-    // - MultiColumnFragmentainerGroupList is used in web. Need to dllexport the class.
-    // - MultiColumnFragmentainerGroupList inherits Vector<MultiColumnFragmentainerGroup, 1>.
-    // - Since Vector is defined in another DLL (wtf.dll), MSVC expands VectorInitializer::initialize().
-    // - VectorInitializer::initialize() depends on default constructor.
-    // To add default constructor, LayoutMultiColumnSet should be a pointer (or add null-reference).
-    // Because blink::MultiColumnFragmentainerGroup::m_columnSet: a member of reference type must be initialized.
-    // (error C2758).
-    MultiColumnFragmentainerGroup() : m_columnSet(0) { }
-    MultiColumnFragmentainerGroup(LayoutMultiColumnSet*);
+    MultiColumnFragmentainerGroup(LayoutMultiColumnSet&);
 
     bool isLastGroup() const;
 
@@ -109,7 +99,7 @@ private:
     // not inside any of the columns.
     unsigned columnIndexAtVisualPoint(const LayoutPoint& visualPoint) const;
 
-    LayoutMultiColumnSet* m_columnSet;
+    LayoutMultiColumnSet& m_columnSet;
 
     LayoutUnit m_logicalTop;
     LayoutUnit m_logicalTopInFlowThread;
@@ -153,7 +143,7 @@ private:
 // List of all fragmentainer groups within a column set. There will always be at least one
 // group. Deleting the one group is not allowed (or possible). There will be more than one group if
 // the owning column set lives in multiple outer fragmentainers (e.g. multicol inside paged media).
-class CORE_EXPORT MultiColumnFragmentainerGroupList {
+class MultiColumnFragmentainerGroupList {
 public:
     MultiColumnFragmentainerGroupList(LayoutMultiColumnSet&);
 
