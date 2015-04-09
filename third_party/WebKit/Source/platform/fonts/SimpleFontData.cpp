@@ -171,6 +171,23 @@ void SimpleFontData::platformInit()
     float xHeight;
     if (metrics.fXHeight) {
         xHeight = metrics.fXHeight;
+#if OS(MACOSX)
+        // Mac OS CTFontGetXHeight reports the bounding box height of x,
+        // including parts extending below the baseline and apparently no x-height
+        // value from the OS/2 table. However, the CSS ex unit
+        // expects only parts above the baseline, hence measuring the glyph:
+        // http://www.w3.org/TR/css3-values/#ex-unit
+        GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
+        if (glyphPageZero) {
+            static const UChar32 xChar = 'x';
+            const Glyph xGlyph = glyphPageZero->glyphForCharacter(xChar);
+            if (xGlyph) {
+                FloatRect glyphBounds(boundsForGlyph(xGlyph));
+                // SkGlyph bounds, y down, based on rendering at (0,0).
+                xHeight = - glyphBounds.y();
+            }
+        }
+#endif
         m_fontMetrics.setXHeight(xHeight);
     } else {
         xHeight = ascent * 0.56; // Best guess from Windows font metrics.
