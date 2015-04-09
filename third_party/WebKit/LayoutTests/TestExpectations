@@ -71,22 +71,6 @@ crbug.com/450725 virtual/slimmingpaint/svg/text/text-text-05-t.svg [ ImageOnlyFa
 crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Crash Timeout Pass ]
 crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing.html [ Crash Timeout Pass ]
 
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/overflow-auto-in-overflow-auto-scrolled.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/overflow-hidden-in-overflow-hidden-scrolled.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/overflow-scroll-in-overflow-scroll-scrolled.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/scroll-absolute-layer-with-reflection.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/scroll-fixed-layer-with-no-visible-content.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/scroll-fixed-layer-with-reflection.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/scroll-fixed-layer-with-transformed-parent-layer.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/scroll-in-clipped-layer.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/scroll-in-fixed-layer.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/scroll-in-transformed-layer.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/scroll-inside-table-cell.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/scroll-relative-table-inside-table-cell.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/scroll-with-transformed-parent-layer.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/table-overflow-auto-in-overflow-auto-scrolled.html [ NeedsRebaseline ]
-crbug.com/474722 virtual/slimmingpaint/fast/repaint/table-overflow-scroll-in-overflow-scroll-scrolled.html [ NeedsRebaseline ]
-
 # Some slimming paint reftest fail when the reference is run with slimming paint disabled.
 crbug.com/454866 virtual/slimmingpaint/css3/filters/effect-all-on-background.html [ ImageOnlyFailure ]
 crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer-second-column.html [ ImageOnlyFailure ]
