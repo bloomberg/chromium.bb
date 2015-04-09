@@ -12,10 +12,8 @@ const char kEnableCmaMediaPipeline[] = "enable-cma-media-pipeline";
 // The bitmask of codecs (media_caps.h) supported by the current HDMI sink.
 const char kHdmiSinkSupportedCodecs[] = "hdmi-sink-supported-codecs";
 
-#if defined(OS_ANDROID)
 // Enable file accesses for debug.
 const char kEnableLocalFileAccesses[] = "enable-local-file-accesses";
-#endif  // defined(OS_ANDROID)
 
 // Override the URL to which metrics logs are sent for debugging.
 const char kOverrideMetricsUploadUrl[] = "override-metrics-upload-url";

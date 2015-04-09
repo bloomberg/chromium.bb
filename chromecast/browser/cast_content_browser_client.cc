@@ -106,9 +106,6 @@ bool CastContentBrowserClient::IsHandledURL(const GURL& url) {
       content::kChromeUIScheme,
       content::kChromeDevToolsScheme,
       url::kDataScheme,
-#if defined(OS_ANDROID)
-      url::kFileScheme,
-#endif  // defined(OS_ANDROID)
   };
 
   const std::string& scheme = url.scheme();
@@ -116,6 +113,12 @@ bool CastContentBrowserClient::IsHandledURL(const GURL& url) {
     if (scheme == kProtocolList[i])
       return true;
   }
+
+  if (scheme == url::kFileScheme) {
+    return base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableLocalFileAccesses);
+  }
+
   return false;
 }
 
