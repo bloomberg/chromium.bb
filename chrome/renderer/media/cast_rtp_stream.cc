@@ -151,9 +151,18 @@ std::vector<CastRtpParams> SupportedAudioParams() {
 
 std::vector<CastRtpParams> SupportedVideoParams() {
   std::vector<CastRtpParams> supported_params;
+
+  // Prefer VP8 over H.264 for hardware encoder.
+  if (IsHardwareVP8EncodingSupported())
+    supported_params.push_back(CastRtpParams(DefaultVp8Payload()));
   if (IsHardwareH264EncodingSupported())
     supported_params.push_back(CastRtpParams(DefaultH264Payload()));
-  supported_params.push_back(CastRtpParams(DefaultVp8Payload()));
+
+  // Propose the default software VP8 encoder, if no hardware encoders are
+  // available.
+  if (supported_params.empty())
+    supported_params.push_back(CastRtpParams(DefaultVp8Payload()));
+
   return supported_params;
 }
 
