@@ -115,14 +115,17 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
   static const char kHttpProtocolVersion[] = "HTTP/1.1";
 
   if (protocol_version < SPDY3) {
+    // TODO(bcn): Remove this code now that SPDY/2 is deprecated.
     (*headers)["version"] = kHttpProtocolVersion;
     (*headers)["method"] = info.method;
     (*headers)["host"] = GetHostAndOptionalPort(info.url);
-    (*headers)["scheme"] = info.url.scheme();
-    if (direct)
-      (*headers)["url"] = HttpUtil::PathForRequest(info.url);
-    else
-      (*headers)["url"] = HttpUtil::SpecForRequest(info.url);
+    if (info.method == "CONNECT") {
+      (*headers)["url"] = GetHostAndPort(info.url);
+    } else {
+      (*headers)["scheme"] = info.url.scheme();
+      (*headers)["url"] = direct ? HttpUtil::PathForRequest(info.url)
+                                 : HttpUtil::SpecForRequest(info.url);
+    }
   } else {
     if (protocol_version < SPDY4) {
       (*headers)[":version"] = kHttpProtocolVersion;
@@ -131,8 +134,13 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
       (*headers)[":authority"] = GetHostAndOptionalPort(info.url);
     }
     (*headers)[":method"] = info.method;
-    (*headers)[":scheme"] = info.url.scheme();
-    (*headers)[":path"] = HttpUtil::PathForRequest(info.url);
+    if (info.method == "CONNECT") {
+      // TODO(bnc): https://crbug.com/433784
+      (*headers)[":path"] = GetHostAndPort(info.url);
+    } else {
+      (*headers)[":scheme"] = info.url.scheme();
+      (*headers)[":path"] = HttpUtil::PathForRequest(info.url);
+    }
   }
 }
 

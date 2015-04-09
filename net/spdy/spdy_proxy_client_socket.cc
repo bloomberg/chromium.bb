@@ -363,14 +363,6 @@ int SpdyProxyClientSocket::DoSendRequest() {
   CreateSpdyHeadersFromHttpRequest(request_, request_.extra_headers,
                                    spdy_stream_->GetProtocolVersion(), true,
                                    headers.get());
-  // Reset the URL to be the endpoint of the connection
-  if (spdy_stream_->GetProtocolVersion() > 2) {
-    (*headers)[":path"] = endpoint_.ToString();
-    headers->erase(":scheme");
-  } else {
-    (*headers)["url"] = endpoint_.ToString();
-    headers->erase("scheme");
-  }
 
   return spdy_stream_->SendRequestHeaders(headers.Pass(), MORE_DATA_TO_SEND);
 }
