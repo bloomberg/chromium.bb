@@ -118,7 +118,6 @@ private:
 
 CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document)
     : CanvasRenderingContext(canvas)
-    , m_usesCSSCompatibilityParseMode(document.inQuirksMode())
     , m_clipAntialiasing(NotAntiAliased)
     , m_hasAlpha(attrs.alpha())
     , m_contextLostMode(NotLostContext)
@@ -1684,8 +1683,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
         m_fetchedFontsLRUList.remove(newFont);
     } else {
         parsedStyle = MutableStylePropertySet::create();
-        CSSParserMode mode = m_usesCSSCompatibilityParseMode ? HTMLQuirksMode : HTMLStandardMode;
-        CSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, newFont, true, mode, 0);
+        CSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, newFont, true, HTMLStandardMode, 0);
         if (m_fetchedFonts.size() >= FetchedFontsCacheLimit) {
             m_fetchedFonts.remove(m_fetchedFontsLRUList.first());
             m_fetchedFontsLRUList.removeFirst();

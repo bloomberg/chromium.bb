@@ -288,7 +288,6 @@ private:
 
     WillBeHeapVector<OwnPtrWillBeMember<CanvasRenderingContext2DState>> m_stateStack;
     OwnPtrWillBeMember<HitRegionManager> m_hitRegionManager;
-    bool m_usesCSSCompatibilityParseMode;
     AntiAliasingMode m_clipAntialiasing;
     bool m_hasAlpha;
     LostContextMode m_contextLostMode;
