@@ -236,7 +236,6 @@ const InternalRoleEntry internalRoles[] = {
     { TabRole, "Tab" },
     { TableHeaderContainerRole, "TableHeaderContainer" },
     { TableRole, "Table" },
-    { TextAreaRole, "TextArea" },
     { TextFieldRole, "TextField" },
     { TimeRole, "Time" },
     { TimerRole, "Timer" },

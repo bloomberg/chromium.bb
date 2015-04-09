@@ -177,7 +177,6 @@ enum WebAXRole {
     WebAXRoleTab,
     WebAXRoleTableHeaderContainer,
     WebAXRoleTable,
-    WebAXRoleTextArea,
     WebAXRoleTextField,
     WebAXRoleTime,
     WebAXRoleTimer,

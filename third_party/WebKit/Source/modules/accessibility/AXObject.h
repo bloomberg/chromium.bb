@@ -159,7 +159,6 @@ enum AccessibilityRole {
     TabRole,
     TableHeaderContainerRole, // No mapping to ARIA role
     TableRole,
-    TextAreaRole,
     TextFieldRole,
     TimeRole, // No mapping to ARIA role
     TimerRole,
