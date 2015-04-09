@@ -241,6 +241,7 @@ private:
     bool draw(const DrawFunc&, const ContainsFunc&, const SkRect& bounds, CanvasRenderingContext2DState::PaintType, CanvasRenderingContext2DState::ImageType = CanvasRenderingContext2DState::NoImage);
     void drawPathInternal(const Path&, CanvasRenderingContext2DState::PaintType, SkPath::FillType = SkPath::kWinding_FillType);
     void drawImageOnContext(CanvasImageSource*, Image*, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint*);
+    void drawVideo(CanvasImageSource*, const FloatRect& srcRect, const FloatRect& dstRect);
     void clipInternal(const Path&, const String& windingRuleString);
 
     bool isPointInPathInternal(const Path&, const float x, const float y, const String& windingRuleString);

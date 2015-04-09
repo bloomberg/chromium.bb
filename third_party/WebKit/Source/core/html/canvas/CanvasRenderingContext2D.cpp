@@ -874,6 +874,8 @@ void CanvasRenderingContext2D::fullCanvasCompositedDraw(const DrawFunc& drawFunc
         SkPaint shadowPaint = *state().getPaint(paintType, DrawShadowOnly, imageType);
         shadowPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
         drawFunc(&shadowPaint);
+        if (!drawingCanvas())
+            return;
         drawingCanvas()->restore();
     }
 
@@ -881,6 +883,8 @@ void CanvasRenderingContext2D::fullCanvasCompositedDraw(const DrawFunc& drawFunc
     SkPaint foregroundPaint = *state().getPaint(paintType, DrawForegroundOnly, imageType);
     foregroundPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
     drawFunc(&foregroundPaint);
+    if (!drawingCanvas())
+        return;
     drawingCanvas()->restore();
 }
 
@@ -1290,16 +1294,22 @@ void CanvasRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSour
     drawImage(imageSourceInternal, sx, sy, sw, sh, dx, dy, dw, dh, exceptionState);
 }
 
-static void drawVideo(SkCanvas* c, GraphicsContext* gc, CanvasImageSource* imageSource, FloatRect srcRect, FloatRect dstRect)
+void CanvasRenderingContext2D::drawVideo(CanvasImageSource* imageSource, const FloatRect& srcRect, const FloatRect& dstRect)
 {
     HTMLVideoElement* video = static_cast<HTMLVideoElement*>(imageSource);
+    ASSERT(video);
+    SkCanvas* c = drawingCanvas();
+    if (!c)
+        return;
     c->save();
     c->clipRect(WebCoreFloatRectToSKRect(dstRect));
     c->translate(dstRect.x(), dstRect.y());
     c->scale(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height());
     c->translate(-srcRect.x(), -srcRect.y());
-    video->paintCurrentFrameInContext(gc, IntRect(IntPoint(), IntSize(video->videoWidth(), video->videoHeight())));
-    c->restore();
+    video->paintCurrentFrameInContext(drawingContext(), IntRect(IntPoint(), IntSize(video->videoWidth(), video->videoHeight())));
+    // In case the paint propagated a queued context loss signal
+    if (drawingCanvas())
+        drawingCanvas()->restore();
 }
 
 void CanvasRenderingContext2D::drawImageOnContext(CanvasImageSource* imageSource, Image* image, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint* paint)
@@ -1307,7 +1317,6 @@ void CanvasRenderingContext2D::drawImageOnContext(CanvasImageSource* imageSource
     SkXfermode::Mode mode;
     if (!SkXfermode::AsMode(paint->getXfermode(), &mode))
         mode = SkXfermode::kSrcOver_Mode;
-    SkXfermode::Mode oldMode = drawingContext()->compositeOperation();
 
     RefPtr<SkImageFilter> imageFilter(paint->getImageFilter());
     drawingContext()->setDropShadowImageFilter(imageFilter.release());
@@ -1317,9 +1326,12 @@ void CanvasRenderingContext2D::drawImageOnContext(CanvasImageSource* imageSource
     if (!imageSource->isVideoElement()) {
         drawingContext()->drawImage(image, dstRect, srcRect, mode);
     } else {
+        SkXfermode::Mode oldMode = drawingContext()->compositeOperation();
         drawingContext()->setCompositeOperation(mode);
-        drawVideo(drawingCanvas(), drawingContext(), static_cast<HTMLVideoElement*>(imageSource), srcRect, dstRect);
-        drawingContext()->setCompositeOperation(oldMode);
+        drawVideo(imageSource, srcRect, dstRect);
+        // Must re-check drawingContext() in case drawVideo propagated a pending context loss signal
+        if (drawingContext())
+            drawingContext()->setCompositeOperation(oldMode);
     }
 }
 
