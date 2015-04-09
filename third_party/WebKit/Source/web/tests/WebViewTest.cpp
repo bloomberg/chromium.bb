@@ -2349,6 +2349,15 @@ TEST_F(WebViewTest, PreferredSize)
     size = webView->contentsPreferredMinimumSize();
     EXPECT_EQ(200, size.width);
     EXPECT_EQ(200, size.height);
+
+    url = m_baseURL + "specify_size.html?1.5px:1.5px";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "specify_size.html");
+    webView = m_webViewHelper.initializeAndLoad(url, true);
+
+    webView->setZoomLevel(WebView::zoomFactorToZoomLevel(1));
+    size = webView->contentsPreferredMinimumSize();
+    EXPECT_EQ(2, size.width);
+    EXPECT_EQ(2, size.height);
 }
 
 class UnhandledTapWebViewClient : public FrameTestHelpers::TestWebViewClient {

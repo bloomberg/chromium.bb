@@ -3374,15 +3374,12 @@ IntSize WebViewImpl::contentsSize() const
 WebSize WebViewImpl::contentsPreferredMinimumSize()
 {
     Document* document = m_page->mainFrame()->isLocalFrame() ? m_page->deprecatedLocalMainFrame()->document() : 0;
-    if (!document || !document->layoutView() || !document->documentElement() || !document->documentElement()->layoutBox())
+    if (!document || !document->layoutView() || !document->documentElement())
         return WebSize();
 
     layout();
-    int widthScaled = document->layoutView()->minPreferredLogicalWidth(); // Already accounts for zoom.
-    LayoutBox* documentBox = document->documentElement()->layoutBox();
-    // TODO(leviw): We truncate then zoom the height instead of rounding to match the width behavior. We
-    // should be able to call documentElement's scrollHeight() method. crbug.com/471336
-    int heightScaled = adjustLayoutUnitForAbsoluteZoom(documentBox->scrollHeight(), *documentBox).toInt() * zoomLevelToZoomFactor(zoomLevel());
+    int widthScaled = document->layoutView()->minPreferredLogicalWidth().round(); // Already accounts for zoom.
+    int heightScaled = static_cast<int>(document->documentElement()->scrollHeight() * zoomLevelToZoomFactor(zoomLevel()));
     return IntSize(widthScaled, heightScaled);
 }
 
