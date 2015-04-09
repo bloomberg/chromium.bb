@@ -63,11 +63,16 @@ const base::TimeDelta kLidRecentlyOpenedDuration =
 #if defined(OS_CHROMEOS)
 // When the device approaches vertical orientation (i.e. portrait orientation)
 // the accelerometers for the base and lid approach the same values (i.e.
-// gravity pointing in the direction of the hinge). When this happens we cannot
-// compute the hinge angle reliably and must turn ignore accelerometer readings.
-// This is the minimum acceleration perpendicular to the hinge under which to
-// detect hinge angle in m/s^2.
-const float kHingeAngleDetectionThreshold = 2.5f;
+// gravity pointing in the direction of the hinge). When this happens abrupt
+// small acceleration perpendicular to the hinge can lead to incorrect hinge
+// angle calculations. To prevent this the accelerometer updates will be
+// smoothed over time in order to reduce this noise.
+// This is the minimum acceleration parallel to the hinge under which to begin
+// smoothing in m/s^2.
+const float kHingeVerticalSmoothingStart = 7.0f;
+// This is the maximum acceleration parallel to the hinge under which smoothing
+// will incorporate new acceleration values, in m/s^2.
+const float kHingeVerticalSmoothingMaximum = 9.5f;
 
 // The maximum deviation between the magnitude of the two accelerometers under
 // which to detect hinge angle in m/s^2. These accelerometers are attached to
@@ -212,22 +217,37 @@ void MaximizeModeController::SuspendDone(
 void MaximizeModeController::HandleHingeRotation(
     scoped_refptr<const chromeos::AccelerometerUpdate> update) {
   static const gfx::Vector3dF hinge_vector(1.0f, 0.0f, 0.0f);
-  // Ignore the component of acceleration parallel to the hinge for the purposes
-  // of hinge angle calculation.
-  gfx::Vector3dF base_flattened(ui::ConvertAccelerometerReadingToVector3dF(
+  gfx::Vector3dF base_reading(ui::ConvertAccelerometerReadingToVector3dF(
       update->get(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD)));
-  gfx::Vector3dF lid_flattened(ui::ConvertAccelerometerReadingToVector3dF(
+  gfx::Vector3dF lid_reading(ui::ConvertAccelerometerReadingToVector3dF(
       update->get(chromeos::ACCELEROMETER_SOURCE_SCREEN)));
-  base_flattened.set_x(0.0f);
-  lid_flattened.set_x(0.0f);
 
   // As the hinge approaches a vertical angle, the base and lid accelerometers
   // approach the same values making any angle calculations highly inaccurate.
-  // Bail out early when it is too close.
-  if (base_flattened.Length() < kHingeAngleDetectionThreshold ||
-      lid_flattened.Length() < kHingeAngleDetectionThreshold) {
-    return;
-  }
+  // Smooth out instantaneous acceleration when nearly vertical to increase
+  // accuracy.
+  float largest_hinge_acceleration =
+      std::max(std::abs(base_reading.x()), std::abs(lid_reading.x()));
+  float smoothing_ratio =
+      std::max(0.0f, std::min(1.0f, (largest_hinge_acceleration -
+                                     kHingeVerticalSmoothingStart) /
+                                        (kHingeVerticalSmoothingMaximum -
+                                         kHingeVerticalSmoothingStart)));
+
+  base_smoothed_.Scale(smoothing_ratio);
+  base_reading.Scale(1.0f - smoothing_ratio);
+  base_smoothed_.Add(base_reading);
+
+  lid_smoothed_.Scale(smoothing_ratio);
+  lid_reading.Scale(1.0f - smoothing_ratio);
+  lid_smoothed_.Add(lid_reading);
+
+  // Ignore the component of acceleration parallel to the hinge for the purposes
+  // of hinge angle calculation.
+  gfx::Vector3dF base_flattened(base_smoothed_);
+  gfx::Vector3dF lid_flattened(lid_smoothed_);
+  base_flattened.set_x(0.0f);
+  lid_flattened.set_x(0.0f);
 
   // Compute the angle between the base and the lid.
   float lid_angle = 180.0f - gfx::ClockwiseAngleBetweenVectorsInDegrees(

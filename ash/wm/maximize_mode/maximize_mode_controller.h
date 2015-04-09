@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/accelerometer/accelerometer_reader.h"
@@ -165,6 +166,12 @@ class ASH_EXPORT MaximizeModeController :
 
   // Tracks when the lid is closed. Used to prevent entering maximize mode.
   bool lid_is_closed_;
+
+  // Tracks smoothed accelerometer data over time. This is done when the hinge
+  // is approaching vertical to remove abrupt acceleration that can lead to
+  // incorrect calculations of hinge angles.
+  gfx::Vector3dF base_smoothed_;
+  gfx::Vector3dF lid_smoothed_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeController);
 };

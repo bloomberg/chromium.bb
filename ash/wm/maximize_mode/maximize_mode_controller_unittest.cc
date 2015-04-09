@@ -94,17 +94,24 @@ void UserActionObserver::OnUserAction(const std::string& action) {
 
 // Test accelerometer data taken with the lid at less than 180 degrees while
 // shaking the device around. The data is to be interpreted in groups of 6 where
-// each 6 values corresponds to the X, Y, and Z readings from the base and lid
-// accelerometers in this order.
+// each 6 values corresponds to the base accelerometer (-y / g, -x / g, -z / g)
+// followed by the lid accelerometer (-y / g , x / g, z / g).
 extern const float kAccelerometerLaptopModeTestData[];
 extern const size_t kAccelerometerLaptopModeTestDataLength;
 
 // Test accelerometer data taken with the lid open 360 degrees while
 // shaking the device around. The data is to be interpreted in groups of 6 where
-// each 6 values corresponds to the X, Y, and Z readings from the base and lid
-// accelerometers in this order.
+// each 6 values corresponds to the base accelerometer (-y / g, -x / g, -z / g)
+// followed by the lid accelerometer (-y / g , x / g, z / g).
 extern const float kAccelerometerFullyOpenTestData[];
 extern const size_t kAccelerometerFullyOpenTestDataLength;
+
+// Test accelerometer data taken with the lid open 360 degrees while the device
+// hinge was nearly vertical, while shaking the device around. The data is to be
+// interpreted in groups of 6 where each 6 values corresponds to the X, Y, and Z
+// readings from the base and lid accelerometers in this order.
+extern const float kAccelerometerVerticalHingeTestData[];
+extern const size_t kAccelerometerVerticalHingeTestDataLength;
 
 class MaximizeModeControllerTest : public test::AshTestBase {
  public:
@@ -426,6 +433,26 @@ TEST_F(MaximizeModeControllerTest, MaximizeModeTest) {
                        kAccelerometerFullyOpenTestData[i * 6 + 3],
                        kAccelerometerFullyOpenTestData[i * 6 + 5]);
     lid.Scale(kMeanGravity);
+    TriggerBaseAndLidUpdate(base, lid);
+    // There are a lot of samples, so ASSERT rather than EXPECT to only generate
+    // one failure rather than potentially hundreds.
+    ASSERT_TRUE(IsMaximizeModeStarted());
+  }
+}
+
+TEST_F(MaximizeModeControllerTest, VerticalHingeTest) {
+  // Feeds in sample accelerometer data and verifies that there are no
+  // transitions out of touchview / maximize mode while shaking the device
+  // around, while the hinge is nearly vertical. The data was captured from
+  // maxmimize_mode_controller.cc and does not require conversion.
+  ASSERT_EQ(0u, kAccelerometerVerticalHingeTestDataLength % 6);
+  for (size_t i = 0; i < kAccelerometerVerticalHingeTestDataLength / 6; ++i) {
+    gfx::Vector3dF base(kAccelerometerVerticalHingeTestData[i * 6],
+                        kAccelerometerVerticalHingeTestData[i * 6 + 1],
+                        kAccelerometerVerticalHingeTestData[i * 6 + 2]);
+    gfx::Vector3dF lid(kAccelerometerVerticalHingeTestData[i * 6 + 3],
+                       kAccelerometerVerticalHingeTestData[i * 6 + 4],
+                       kAccelerometerVerticalHingeTestData[i * 6 + 5]);
     TriggerBaseAndLidUpdate(base, lid);
     // There are a lot of samples, so ASSERT rather than EXPECT to only generate
     // one failure rather than potentially hundreds.
