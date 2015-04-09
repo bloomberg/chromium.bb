@@ -10,6 +10,7 @@ import os
 import shutil
 import subprocess
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import utils
@@ -119,7 +120,8 @@ class TestFileLib(cros_test_lib.MoxTempDirTestCase):
     if not os.path.exists(md5_path):
       self.fail('%s is required to test MD5 logic.')
     cmd = [md5_path, file_path]
-    return utils.RunCommand(cmd, redirect_stdout=True).split(' ')[0]
+    return cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True).output.split(' ')[0]
 
   def _SHA1Sum(self, file_path):
     """Use sha1sum utility to get SHA1 of a file."""

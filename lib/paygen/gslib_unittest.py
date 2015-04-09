@@ -11,12 +11,12 @@ import errno
 import mox
 import os
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib.paygen import gslib
-from chromite.lib.paygen import utils
 
 
 # Typical output for a GS failure that is not our fault, and we should retry.
@@ -33,6 +33,10 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.bucket_name = 'somebucket'
     self.bucket_uri = 'gs://%s' % self.bucket_name
 
+    self.cmd_result = cros_build_lib.CommandResult()
+    self.cmd_error = cros_build_lib.RunCommandError('', self.cmd_result)
+
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     # Because of autodetection, we no longer know which gsutil binary
     # will be used.
     self.gsutil = mox.IsA(str)
@@ -104,32 +108,30 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     args = ['TheCommand', 'Arg1', 'Arg2']
     cmd = [self.gsutil] + args
 
-    self.mox.StubOutWithMock(utils, 'RunCommand')
-
     # Set up the test replay script.
     # Run 1.
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True).AndReturn(1)
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True).AndReturn(1)
     # Run 2.
-    utils.RunCommand(cmd, redirect_stdout=False, redirect_stderr=True,
-                     return_result=True).AndReturn(2)
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=False, redirect_stderr=True).AndReturn(2)
     # Run 3.
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True, error_ok=True).AndReturn(3)
+    cros_build_lib.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
+                              error_code_ok=True).AndReturn(3)
     # Run 4.
-    utils.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True,
-        return_result=True).AndRaise(utils.CommandFailedException())
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(
+            self.cmd_error)
     # Run 5.
-    utils.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True,
-        return_result=True).AndRaise(OSError(errno.ENOENT, 'errmsg'))
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(
+            OSError(errno.ENOENT, 'errmsg'))
     self.mox.ReplayAll()
 
     # Run the test verification.
     self.assertEqual(1, gslib.RunGsutilCommand(args))
     self.assertEqual(2, gslib.RunGsutilCommand(args, redirect_stdout=False))
-    self.assertEqual(3, gslib.RunGsutilCommand(args, error_ok=True))
+    self.assertEqual(3, gslib.RunGsutilCommand(args, error_code_ok=True))
     self.assertRaises(gslib.GSLibError, gslib.RunGsutilCommand, args)
     self.assertRaises(gslib.GsutilMissingError, gslib.RunGsutilCommand, args)
     self.mox.VerifyAll()
@@ -138,19 +140,16 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     src_path = '/path/to/some/file'
     dest_path = 'gs://bucket/some/gs/path'
 
-    self.mox.StubOutWithMock(utils, 'RunCommand')
-
     # Set up the test replay script.
     # Run 1, success.
     cmd = [self.gsutil, 'cp', src_path, dest_path]
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True)
+    cros_build_lib.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True)
     # Run 2, failure.
+    error = cros_build_lib.RunCommandError(GS_RETRY_FAILURE, self.cmd_result)
     for _ix in xrange(gslib.RETRY_ATTEMPTS + 1):
       cmd = [self.gsutil, 'cp', src_path, dest_path]
-      utils.RunCommand(
-          cmd, redirect_stdout=True, redirect_stderr=True, return_result=True
-      ).AndRaise(utils.CommandFailedException(GS_RETRY_FAILURE))
+      cros_build_lib.RunCommand(
+          cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(error)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -159,14 +158,12 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testMove(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     src_path = 'gs://bucket/some/gs/path'
     dest_path = '/some/other/path'
 
     # Set up the test replay script.
     cmd = [self.gsutil, 'mv', src_path, dest_path]
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True)
+    cros_build_lib.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -174,23 +171,19 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testRemove(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     path1 = 'gs://bucket/some/gs/path'
     path2 = 'gs://bucket/some/other/path'
 
     # Set up the test replay script.
     # Run 1, one path.
-    utils.RunCommand([self.gsutil, 'rm', path1],
-                     redirect_stdout=True, redirect_stderr=True,
-                     return_result=True)
+    cros_build_lib.RunCommand([self.gsutil, 'rm', path1],
+                              redirect_stdout=True, redirect_stderr=True)
     # Run 2, two paths.
-    utils.RunCommand([self.gsutil, 'rm', path1, path2],
-                     redirect_stdout=True, redirect_stderr=True,
-                     return_result=True)
+    cros_build_lib.RunCommand([self.gsutil, 'rm', path1, path2],
+                              redirect_stdout=True, redirect_stderr=True)
     # Run 3, one path, recursive.
-    utils.RunCommand([self.gsutil, 'rm', '-R', path1],
-                     redirect_stdout=True, redirect_stderr=True,
-                     return_result=True)
+    cros_build_lib.RunCommand([self.gsutil, 'rm', '-R', path1],
+                              redirect_stdout=True, redirect_stderr=True)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -200,13 +193,11 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testRemoveNoMatch(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     path = 'gs://bucket/some/gs/path'
 
     # Set up the test replay script.
     cmd = [self.gsutil, 'rm', path]
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True)
+    cros_build_lib.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -214,15 +205,14 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testRemoveFail(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     path = 'gs://bucket/some/gs/path'
 
     # Set up the test replay script.
     cmd = [self.gsutil, 'rm', path]
+    error = cros_build_lib.RunCommandError(GS_RETRY_FAILURE, self.cmd_result)
     for _ix in xrange(gslib.RETRY_ATTEMPTS + 1):
-      utils.RunCommand(
-          cmd, redirect_stdout=True, redirect_stderr=True, return_result=True,
-      ).AndRaise(utils.CommandFailedException(GS_RETRY_FAILURE))
+      cros_build_lib.RunCommand(
+          cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(error)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -243,14 +233,13 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testCat(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     path = 'gs://bucket/some/gs/path'
 
     # Set up the test replay script.
     cmd = [self.gsutil, 'cat', path]
     result = cros_test_lib.EasyAttr(error='', output='TheContent')
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True).AndReturn(result)
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True).AndReturn(result)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -259,15 +248,14 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testCatFail(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     path = 'gs://bucket/some/gs/path'
 
     # Set up the test replay script.
     cmd = [self.gsutil, 'cat', path]
     for _ix in xrange(gslib.RETRY_ATTEMPTS + 1):
-      utils.RunCommand(
-          cmd, redirect_stdout=True, redirect_stderr=True,
-          return_result=True).AndRaise(utils.CommandFailedException())
+      cros_build_lib.RunCommand(
+          cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(
+              self.cmd_error)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -275,14 +263,12 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testStat(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     path = 'gs://bucket/some/gs/path'
 
     # Set up the test replay script.
     cmd = [self.gsutil, 'stat', path]
-    result = cros_test_lib.EasyAttr(error='', output='')
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True).AndReturn(result)
+    cros_build_lib.RunCommand(cmd, redirect_stdout=True,
+                              redirect_stderr=True).AndReturn(self.cmd_result)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -290,14 +276,13 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testStatFail(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     path = 'gs://bucket/some/gs/path'
 
     # Set up the test replay script.
     cmd = [self.gsutil, 'stat', path]
-    utils.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True,
-        return_result=True).AndRaise(utils.CommandFailedException())
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(
+            self.cmd_error)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -305,7 +290,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testFileSize(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     gs_uri = '%s/%s' % (self.bucket_uri, 'some/file/path')
 
     # Set up the test replay script.
@@ -317,9 +301,8 @@ class TestGsLib(cros_test_lib.MoxTestCase):
                         'header: x-goog-stored-content-length: %d' % size,
                         'header: Content-Type: application/octet-stream'])
 
-    utils.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True,
-        return_result=True).AndReturn(
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True).AndReturn(
             cros_test_lib.EasyAttr(output=output))
     self.mox.ReplayAll()
 
@@ -329,8 +312,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def _TestCatWithHeaders(self, gs_uri, cmd_output, cmd_error):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
-
     # Set up the test replay script.
     # Run 1, versioning not enabled in bucket, one line of output.
     cmd = ['gsutil', '-d', 'cat', gs_uri]
@@ -338,8 +319,8 @@ class TestGsLib(cros_test_lib.MoxTestCase):
                                         error=cmd_error,
                                         cmdstr=' '.join(cmd))
     cmd[0] = mox.IsA(str)
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True).AndReturn(cmd_result)
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True).AndReturn(cmd_result)
     self.mox.ReplayAll()
 
   def testCatWithHeaders(self):
@@ -362,15 +343,14 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testFileSizeNoSuchFile(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     gs_uri = '%s/%s' % (self.bucket_uri, 'some/file/path')
 
     # Set up the test replay script.
     cmd = [self.gsutil, '-d', 'stat', gs_uri]
     for _ in xrange(0, gslib.RETRY_ATTEMPTS + 1):
-      utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                       return_result=True).AndRaise(
-                           utils.CommandFailedException)
+      cros_build_lib.RunCommand(
+          cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(
+              self.cmd_error)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -378,7 +358,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testListFiles(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     files = [
         '%s/some/path' % self.bucket_uri,
         '%s/some/file/path' % self.bucket_uri,
@@ -398,25 +377,29 @@ class TestGsLib(cros_test_lib.MoxTestCase):
 
     # Prepare exception for a run that finds nothing.
     stderr = 'CommandException: One or more URLs matched no objects.\n'
-    empty_exception = utils.CommandFailedException(stderr)
+    cmd_result_empty = cros_build_lib.CommandResult(error=stderr)
+    empty_exception = cros_build_lib.RunCommandError(stderr, cmd_result_empty)
 
     # Prepare exception for a run that triggers a GS failure.
-    failure_exception = utils.CommandFailedException(GS_RETRY_FAILURE)
+    error = cros_build_lib.RunCommandError(GS_RETRY_FAILURE, self.cmd_result)
 
     # Set up the test replay script.
     # Run 1, runs ok.
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True).AndReturn(cmd_result_ok)
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True).AndReturn(
+            cmd_result_ok)
     # Run 2, runs ok, sorts files.
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True).AndReturn(cmd_result_ok)
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True).AndReturn(
+            cmd_result_ok)
     # Run 3, finds nothing.
-    utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                     return_result=True).AndRaise(empty_exception)
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(
+            empty_exception)
     # Run 4, failure in GS.
     for _ix in xrange(gslib.RETRY_ATTEMPTS + 1):
-      utils.RunCommand(cmd, redirect_stdout=True, redirect_stderr=True,
-                       return_result=True).AndRaise(failure_exception)
+      cros_build_lib.RunCommand(
+          cmd, redirect_stdout=True, redirect_stderr=True).AndRaise(error)
     self.mox.ReplayAll()
 
     # Run the test verification.
@@ -468,7 +451,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testMD5SumAccessError(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     gs_uri = 'gs://bucket/foo/bar/somefile'
     crc32c = 'c96fd51e'
     crc32c_64 = base64.b64encode(base64.b16decode(crc32c, casefold=True))
@@ -492,9 +474,9 @@ class TestGsLib(cros_test_lib.MoxTestCase):
 
     # Set up the test replay script.
     cmd = [self.gsutil, 'ls', '-L', gs_uri]
-    utils.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True, error_ok=True,
-        return_result=True).AndReturn(
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True,
+        error_code_ok=True).AndReturn(
             cros_test_lib.EasyAttr(output=output))
     self.mox.ReplayAll()
 
@@ -504,7 +486,6 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   def testMD5SumAccessOK(self):
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     gs_uri = 'gs://bucket/foo/bar/somefile'
     crc32c = 'c96fd51e'
     crc32c_64 = base64.b64encode(base64.b16decode(crc32c, casefold=True))
@@ -534,9 +515,9 @@ class TestGsLib(cros_test_lib.MoxTestCase):
     ])
     # Set up the test replay script.
     cmd = [self.gsutil, 'ls', '-L', gs_uri]
-    utils.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True, error_ok=True,
-        return_result=True).AndReturn(
+    cros_build_lib.RunCommand(
+        cmd, redirect_stdout=True, redirect_stderr=True,
+        error_code_ok=True).AndReturn(
             cros_test_lib.EasyAttr(output=output))
     self.mox.ReplayAll()
 

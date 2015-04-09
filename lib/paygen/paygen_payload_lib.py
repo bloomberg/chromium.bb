@@ -140,8 +140,9 @@ class _PaygenPayload(object):
 
     # Extract zipped delta generator files to the expected directory.
     tmp_zip = self.cache.GetFileInTempFile(generator_uri)
-    utils.RunCommand(['unzip', '-o', '-d', self.generator_dir, tmp_zip.name],
-                     redirect_stdout=True, redirect_stderr=True)
+    cros_build_lib.RunCommand(
+        ['unzip', '-o', '-d', self.generator_dir, tmp_zip.name],
+        redirect_stdout=True, redirect_stderr=True)
     tmp_zip.close()
 
   def _RunGeneratorCmd(self, cmd):

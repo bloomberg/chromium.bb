@@ -172,7 +172,7 @@ class CommandResult(object):
   @property
   def cmdstr(self):
     """Return self.cmd as a space-separated string, useful for log messages."""
-    return CmdToStr(self.cmd)
+    return CmdToStr(self.cmd or '')
 
 
 class RunCommandError(Exception):

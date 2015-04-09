@@ -11,10 +11,8 @@ import datetime
 import itertools
 import os
 import Queue
-import subprocess
 import tempfile
 import threading
-import time
 import traceback
 
 from chromite.lib import cros_logging as logging
@@ -28,43 +26,8 @@ ONE_GIG = 2 ** 30      # One gig in bytes
 TWO_GIGS = ONE_GIG * 2  # Two gigs in bytes
 
 
-class CommandFailedException(Exception):
-  """Exception gets thrown for a command that fails to execute."""
-
-
 class UnableToCreateTmpDir(Exception):
   """Raised if we are unable to find a suitable tmp area."""
-
-
-class Timer(object):
-  """Timer class to measure the time that is spent during a task."""
-  # pylint: disable=W0201
-
-  def __enter__(self):
-    self.__start = time.time()
-
-  def __exit__(self, exc_type, exc_value, exc_traceback):
-    self.__finish = time.time()
-
-  def ElapsedTime(self):
-    """Returns the time since the invocation of the object."""
-    return self.__finish - self.__start
-
-
-class CommandResult(object):
-  """An object to store various attributes of a child process."""
-
-  def __init__(self, cmd=None, error=None, output=None, returncode=None):
-    self.cmd = cmd
-    self.error = error
-    self.output = output
-    self.returncode = returncode
-
-  @property
-  def cmdstr(self):
-    """Return self.cmd as space-separated string."""
-    if self.cmd:
-      return ' '.join(self.cmd)
 
 
 def CreateTmpDir(prefix='cros-rel', tmps=TMPS, minimum_size=0):
@@ -91,87 +54,6 @@ def CreateTmpDir(prefix='cros-rel', tmps=TMPS, minimum_size=0):
 
   raise UnableToCreateTmpDir('Unable to find a suitable %s tmp dir.'
                              '  Considered: %s', prefix, ', '.join(tmps))
-
-
-# TODO(mtennant): The RunCommand function in chromite/lib/cros_build_lib is
-# more mature and has more functionality than this function.  Try using it here.
-# In particular, note that this function handles redirect_stdout differently
-# from redirect_stderr.  For stdout the output is returned, but for stderr
-# the output is simply discarded (in both cases the output does not go to
-# the standard stdout/stderr handlers if "redirected").
-def RunCommand(cmd, error_ok=False, redirect_stdout=False,
-               redirect_stderr=False, cwd=None, input=None, dryrun=False,
-               shell=False, env=None, return_result=False):
-  """Runs the given command passed in 'cmd'.
-
-  Args:
-    cmd: list of command and arguments to run.
-    error_ok: ignore failures.
-    redirect_stdout: boolean. If true redirects stdout.
-    redirect_stderr: boolean. If true mutes stderr.  Returned
-      output will not include stderr output, just stdout.
-    cwd: Path to change to when running command. Default: None.
-    input: input handle to the child process.
-    dryrun: boolean.if True print the command an not execute.
-    shell: boolean. if True run in a shell. default: False
-    env: Environ dict to pass to the command. Default: None.
-    return_result: If True, return CommandResult object instead of stdout.
-      This behavior should become standard someday.
-
-  Returns:
-    If return_result is True then a CommandResult object is returned.
-      Otherwise, return the stdout output of the child process.
-
-  Raises:
-    CommandFailedException: on child process failure and error_ok is False.
-  """
-  # pylint: disable=W0622
-  cmd_result = CommandResult()
-
-  # Prepare log_cmd for logging purposes only.
-  log_cmd = cmd
-  if type(cmd) is list:
-    log_cmd = ' '.join(cmd)
-  if cwd is not None:
-    log_cmd = 'cd %s && %s' % (cwd, log_cmd)
-
-  logging.debug('Begin: %s', log_cmd)
-
-  if dryrun:
-    return
-
-  timer = Timer()
-  with timer:
-    if redirect_stdout:
-      stdout = subprocess.PIPE
-    else:
-      stdout = None
-    if redirect_stderr:
-      stderr = subprocess.PIPE
-    else:
-      stderr = None
-    if input:
-      stdin = subprocess.PIPE
-    else:
-      stdin = None
-
-    cmd_result.cmd = cmd
-    proc = subprocess.Popen(cmd, cwd=cwd, stdin=stdin, stdout=stdout,
-                            stderr=stderr, shell=shell, env=env)
-    (cmd_result.output, cmd_result.error) = proc.communicate(input)
-    cmd_result.returncode = proc.returncode
-
-  logging.debug('Done : %s', log_cmd)
-  logging.debug('Time Taken: %s seconds, Return Code: %r',
-                timer.ElapsedTime(), cmd_result.returncode)
-
-  if not error_ok and cmd_result.returncode != 0:
-    raise CommandFailedException(cmd_result.error)
-
-  if return_result:
-    return cmd_result
-
-  return cmd_result.output
 
 
 def GetFreeSpace(path):

@@ -11,6 +11,7 @@ import errno
 import os
 import re
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -204,7 +205,7 @@ def RunGsutilCommand(args,
   Raises:
     GsutilMissingError is the gsutil utility cannot be found.
     GSLibError (or whatever is in failed_exception) if RunCommand failed (and
-      error_ok was not True).
+      error_code_ok was not True).
   """
   # The -d flag causes gsutil to dump various metadata, including user
   # credentials.  We therefore don't allow users to pass it in directly.
@@ -224,20 +225,16 @@ def RunGsutilCommand(args,
   }
   run_opts.update(kwargs)
 
-  # Always use RunCommand with return_result on, which will be the default
-  # behavior for RunCommand itself someday.
-  run_opts['return_result'] = True
-
   try:
-    result = utils.RunCommand(cmd, **run_opts)
+    result = cros_build_lib.RunCommand(cmd, **run_opts)
   except OSError as e:
     if e.errno == errno.ENOENT:
       raise GsutilMissingError()
     raise
-  except utils.CommandFailedException as e:
+  except cros_build_lib.RunCommandError as e:
     # If headers is set, we have to hide the output here because it may contain
     # credentials that we don't want to show in buildbot logs.
-    raise failed_exception('%r failed' % cmd if headers else e)
+    raise failed_exception('%r failed' % cmd if headers else e.result.error)
 
   if headers is not None and result is not None:
     assert redirect_stdout if get_headers_from_stdout else redirect_stderr
@@ -299,7 +296,7 @@ def MD5Sum(gs_uri):
   gs_md5_regex = re.compile(r'.*?Hash \(md5\):\s+(.*)', re.IGNORECASE)
   args = ['ls', '-L', gs_uri]
 
-  result = RunGsutilCommand(args, error_ok=True)
+  result = RunGsutilCommand(args, error_code_ok=True)
 
   # If object was not found then output is completely empty.
   if not result.output:

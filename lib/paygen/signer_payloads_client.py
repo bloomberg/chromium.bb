@@ -18,7 +18,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
-from chromite.lib.paygen import utils
 
 
 # How long to sleep between polling GS to see if signer results are present.
@@ -193,10 +192,8 @@ class SignerPayloadsClientGoogleStorage(object):
           f.write(h)
 
       cmd = ['tar', '-cjf', archive_file] + hash_names
-      utils.RunCommand(cmd,
-                       redirect_stdout=True,
-                       redirect_stderr=True,
-                       cwd=tmp_dir)
+      cros_build_lib.RunCommand(
+          cmd, redirect_stdout=True, redirect_stderr=True, cwd=tmp_dir)
     finally:
       # Cleanup.
       shutil.rmtree(tmp_dir)

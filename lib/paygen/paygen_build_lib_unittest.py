@@ -30,7 +30,6 @@ from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import paygen_build_lib
 from chromite.lib.paygen import paygen_payload_lib
-from chromite.lib.paygen import utils
 
 
 # We access a lot of protected members during testing.
@@ -1465,7 +1464,6 @@ DOC = "Faux doc"
         config_lib_unittest.MockSiteConfig())
 
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
@@ -1492,7 +1490,6 @@ DOC = "Faux doc"
         config_lib_unittest.MockSiteConfig())
 
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    self.mox.StubOutWithMock(utils, 'RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
     timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60

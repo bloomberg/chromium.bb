@@ -12,13 +12,13 @@ import shutil
 import socket
 import tempfile
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import gs_unittest
 
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import signer_payloads_client
-from chromite.lib.paygen import utils
 
 
 # pylint: disable=protected-access
@@ -240,10 +240,8 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
         tmp_dir = tempfile.mkdtemp()
 
         cmd = ['tar', '-xjf', archive_file.name]
-        utils.RunCommand(cmd,
-                         redirect_stdout=True,
-                         redirect_stderr=True,
-                         cwd=tmp_dir)
+        cros_build_lib.RunCommand(
+            cmd, redirect_stdout=True, redirect_stderr=True, cwd=tmp_dir)
 
         # Check that the expected (and only the expected) contents are present
         extracted_file_names = os.listdir(tmp_dir)
