@@ -7,8 +7,6 @@
 
 #include "base/callback.h"
 #include "base/prefs/pref_member.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/network_change_notifier.h"
@@ -45,14 +43,12 @@ class DataReductionProxyBypassStats
       bool is_primary,
       const net::HttpResponseHeaders* headers);
 
-  // |params| outlives this class instance. |unreachable_callback| provides a
-  // hook to inform the user that the Data Reduction Proxy is unreachable, which
-  // occurs on the UI thread, hence the |ui_task_runner|.
+  // |config| outlives this class instance. |unreachable_callback| provides a
+  // hook to inform the user that the Data Reduction Proxy is unreachable.
   // |config| must not be null.
   DataReductionProxyBypassStats(
       DataReductionProxyConfig* config,
-      UnreachableCallback unreachable_callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
+      UnreachableCallback unreachable_callback);
 
   ~DataReductionProxyBypassStats() override;
 
@@ -145,7 +141,6 @@ class DataReductionProxyBypassStats
   DataReductionProxyBypassType last_bypass_type_;
   // True if the last request triggered the current bypass.
   bool triggering_request_;
-  const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // The following 2 fields are used to determine if data reduction proxy is
   // unreachable. We keep a count of requests which should go through
@@ -162,8 +157,6 @@ class DataReductionProxyBypassStats
 
   // Whether or not the data reduction proxy is unavailable.
   bool unavailable_;
-
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyBypassStats);
 };

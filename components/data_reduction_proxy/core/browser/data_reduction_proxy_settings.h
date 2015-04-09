@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/threading/thread_checker.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -27,20 +28,10 @@ class DataReductionProxyIOData;
 class DataReductionProxyService;
 class DataReductionProxyCompressionStats;
 
-// The number of days of bandwidth usage statistics that are tracked.
-const unsigned int kNumDaysInHistory = 60;
-
 // The header used to request a data reduction proxy pass through. When a
 // request is sent to the data reduction proxy with this header, it will respond
 // with the original uncompressed response.
 extern const char kDataReductionPassThroughHeader[];
-
-// The number of days of bandwidth usage statistics that are presented.
-const unsigned int kNumDaysInHistorySummary = 30;
-
-static_assert(kNumDaysInHistorySummary <= kNumDaysInHistory,
-              "kNumDaysInHistorySummary should be no larger than "
-              "kNumDaysInHistory");
 
 // Values of the UMA DataReductionProxy.StartupState histogram.
 // This enum must remain synchronized with DataReductionProxyStartupState
@@ -59,7 +50,6 @@ enum ProxyStartupState {
 // associated factory class, and refactor the Java call sites accordingly.
 class DataReductionProxySettings {
  public:
-  typedef std::vector<long long> ContentLengthList;
   typedef base::Callback<bool(const std::string&, const std::string&)>
       SyntheticFieldTrialRegistrationCallback;
 
@@ -112,11 +102,6 @@ class DataReductionProxySettings {
   // daily original and received content lengths.
   int64 GetDataReductionLastUpdateTime();
 
-  // Returns a vector containing the total size of all HTTP content that was
-  // received over the last |kNumDaysInHistory| before any compression by the
-  // data reduction proxy. Each element in the vector contains one day of data.
-  ContentLengthList GetDailyOriginalContentLengths();
-
   // Returns aggregate received and original content lengths over the specified
   // number of days, as well as the time these stats were last updated.
   void GetContentLengths(unsigned int days,
@@ -131,10 +116,6 @@ class DataReductionProxySettings {
   // if no request has successfully completed through proxy, even though atleast
   // some of them should have.
   bool IsDataReductionProxyUnreachable();
-
-  // Returns an vector containing the aggregate received HTTP content in the
-  // last |kNumDaysInHistory| days.
-  ContentLengthList GetDailyReceivedContentLengths();
 
   ContentLengthList GetDailyContentLengths(const char* pref_name);
 

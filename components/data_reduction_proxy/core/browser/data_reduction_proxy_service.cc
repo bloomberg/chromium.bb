@@ -6,6 +6,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -35,9 +36,28 @@ void DataReductionProxyService::EnableCompressionStatisticsLogging(
     PrefService* prefs,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     const base::TimeDelta& commit_delay) {
+  DCHECK(CalledOnValidThread());
   DCHECK(!compression_stats_);
   compression_stats_.reset(new DataReductionProxyCompressionStats(
       prefs, ui_task_runner, commit_delay));
+}
+
+void DataReductionProxyService::UpdateContentLengths(
+    int received_content_length,
+    int original_content_length,
+    bool data_reduction_proxy_enabled,
+    DataReductionProxyRequestType request_type) {
+  DCHECK(CalledOnValidThread());
+  if (compression_stats_) {
+    compression_stats_->UpdateContentLengths(
+        received_content_length, original_content_length,
+        data_reduction_proxy_enabled, request_type);
+  }
+}
+
+void DataReductionProxyService::SetUnreachable(bool unreachable) {
+  DCHECK(CalledOnValidThread());
+  settings_->SetUnreachable(unreachable);
 }
 
 base::WeakPtr<DataReductionProxyService>

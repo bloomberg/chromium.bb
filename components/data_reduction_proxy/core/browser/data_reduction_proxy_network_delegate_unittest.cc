@@ -4,15 +4,10 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/metrics/field_trial.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
@@ -143,16 +138,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     return test_context_->io_data();
   }
 
-  TestingPrefServiceSimple* pref_service() const {
-    return test_context_->pref_service();
-  }
-
   TestDataReductionProxyConfig* config() {
     return test_context_->config();
-  }
-
-  DataReductionProxyCompressionStats* compression_stats() const {
-    return test_context_->data_reduction_proxy_service()->compression_stats();
   }
 
   scoped_ptr<DataReductionProxyNetworkDelegate>
@@ -409,45 +396,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnResolveProxyHandler) {
                         empty_proxy_retry_info, config(),
                         &other_proxy_info);
   EXPECT_FALSE(other_proxy_info.is_direct());
-}
-
-TEST_F(DataReductionProxyNetworkDelegateTest, TotalLengths) {
-  const int64 kOriginalLength = 200;
-  const int64 kReceivedLength = 100;
-
-  data_reduction_proxy_network_delegate_->data_reduction_proxy_io_data_ =
-      io_data();
-
-  data_reduction_proxy_network_delegate_->UpdateContentLengthPrefs(
-      kReceivedLength, kOriginalLength,
-      pref_service()->GetBoolean(
-          data_reduction_proxy::prefs::kDataReductionProxyEnabled),
-      UNKNOWN_TYPE);
-
-  EXPECT_EQ(kReceivedLength,
-            compression_stats()->GetInt64(
-                data_reduction_proxy::prefs::kHttpReceivedContentLength));
-  EXPECT_FALSE(pref_service()->GetBoolean(
-      data_reduction_proxy::prefs::kDataReductionProxyEnabled));
-  EXPECT_EQ(kOriginalLength,
-            compression_stats()->GetInt64(
-                data_reduction_proxy::prefs::kHttpOriginalContentLength));
-
-  // Record the same numbers again, and total lengths should be doubled.
-  data_reduction_proxy_network_delegate_->UpdateContentLengthPrefs(
-      kReceivedLength, kOriginalLength,
-      pref_service()->GetBoolean(
-          data_reduction_proxy::prefs::kDataReductionProxyEnabled),
-      UNKNOWN_TYPE);
-
-  EXPECT_EQ(kReceivedLength * 2,
-            compression_stats()->GetInt64(
-                data_reduction_proxy::prefs::kHttpReceivedContentLength));
-  EXPECT_FALSE(pref_service()->GetBoolean(
-      data_reduction_proxy::prefs::kDataReductionProxyEnabled));
-  EXPECT_EQ(kOriginalLength * 2,
-            compression_stats()->GetInt64(
-                data_reduction_proxy::prefs::kHttpOriginalContentLength));
 }
 
 }  // namespace data_reduction_proxy

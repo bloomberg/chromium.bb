@@ -120,8 +120,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
     context_->set_http_user_agent_settings(&http_user_agent_settings_);
     bypass_stats_.reset(new DataReductionProxyBypassStats(
         test_context_->config(),
-        test_context_->unreachable_callback(),
-        test_context_->task_runner()));
+        test_context_->unreachable_callback()));
 
     DataReductionProxyInterceptor* interceptor =
         new DataReductionProxyInterceptor(test_context_->config(),

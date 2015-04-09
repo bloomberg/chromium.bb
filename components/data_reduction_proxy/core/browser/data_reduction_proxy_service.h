@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
@@ -66,6 +67,16 @@ class DataReductionProxyService : public base::NonThreadSafe,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       const base::TimeDelta& commit_delay);
 
+  // Records daily data savings statistics in |compression_stats_|.
+  void UpdateContentLengths(int received_content_length,
+                            int original_content_length,
+                            bool data_reduction_proxy_enabled,
+                            DataReductionProxyRequestType request_type);
+
+  // Records whether the Data Reduction Proxy is unreachable or not.
+  void SetUnreachable(bool unreachable);
+
+  // Accessor methods.
   DataReductionProxyCompressionStats* compression_stats() const {
     return compression_stats_.get();
   }

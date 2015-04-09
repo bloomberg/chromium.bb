@@ -114,8 +114,7 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
     return make_scoped_ptr(
         new DataReductionProxyBypassStats(
             test_context_->config(),
-            test_context_->unreachable_callback(),
-            test_context_->task_runner())).Pass();
+            test_context_->unreachable_callback()));
   }
 
   net::URLRequest* url_request() {

@@ -10,6 +10,7 @@
 #include "base/prefs/pref_member.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
@@ -20,12 +21,12 @@ class URLRequestInterceptor;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigServiceClient;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventStore;
 class DataReductionProxyService;
-class DataReductionProxyBypassStats;
 
 // Contains and initializes all Data Reduction Proxy objects that operate on
 // the IO thread.
@@ -67,9 +68,16 @@ class DataReductionProxyIOData {
       scoped_ptr<net::NetworkDelegate> wrapped_network_delegate,
       bool track_proxy_bypass_statistics);
 
+  // Bridge methods to safely call to the UI thread objects.
+  void UpdateContentLengths(int received_content_length,
+                            int original_content_length,
+                            bool data_reduction_proxy_enabled,
+                            DataReductionProxyRequestType request_type);
+
   // Returns true if the Data Reduction Proxy is enabled and false otherwise.
   bool IsEnabled() const;
 
+  // Various accessor methods.
   DataReductionProxyConfigurator* configurator() const {
     return configurator_.get();
   }
@@ -172,4 +180,3 @@ class DataReductionProxyIOData {
 
 }  // namespace data_reduction_proxy
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_IO_DATA_H_
-

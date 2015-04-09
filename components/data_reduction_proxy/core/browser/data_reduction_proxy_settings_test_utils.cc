@@ -75,9 +75,8 @@ void DataReductionProxySettingsTestBase::SetUp() {
     received_update->Insert(0, new base::StringValue(base::Int64ToString(i)));
   }
   last_update_time_ = base::Time::Now().LocalMidnight();
-  settings_->data_reduction_proxy_service()->compression_stats()->SetInt64(
-      prefs::kDailyHttpContentLengthLastUpdateDate,
-      last_update_time_.ToInternalValue());
+  pref_service->SetInt64(prefs::kDailyHttpContentLengthLastUpdateDate,
+                         last_update_time_.ToInternalValue());
 }
 
 template <class C>

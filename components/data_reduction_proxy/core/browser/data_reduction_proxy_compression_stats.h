@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 
 class PrefChangeRegistrar;
@@ -44,9 +45,56 @@ class DataReductionProxyCompressionStats {
       const base::TimeDelta& delay);
   ~DataReductionProxyCompressionStats();
 
+  // Records daily data savings statistics to prefs and reports data savings
+  // UMA.
+  void UpdateContentLengths(int received_content_length,
+                            int original_content_length,
+                            bool data_reduction_proxy_enabled,
+                            DataReductionProxyRequestType request_type);
+
+  // Creates a |Value| summary of the persistent state of the network session.
+  // The caller is responsible for deleting the returned value.
+  // Must be called on the UI thread.
+  base::Value* HistoricNetworkStatsInfoToValue();
+
+  // Returns the time in milliseconds since epoch that the last update was made
+  // to the daily original and received content lengths.
+  int64 GetLastUpdateTime();
+
+  // Resets daily content length statistics.
+  void ResetStatistics();
+
+  // Clears all data saving statistics.
+  void ClearDataSavingStatistics();
+
+  // Returns a list of all the daily content lengths.
+  ContentLengthList GetDailyContentLengths(const char* pref_name);
+
+  // Returns aggregate received and original content lengths over the specified
+  // number of days, as well as the time these stats were last updated.
+  void GetContentLengths(unsigned int days,
+                         int64* original_content_length,
+                         int64* received_content_length,
+                         int64* last_update_time);
+
+ private:
+  friend class DataReductionProxyCompressionStatsTest;
+
+  typedef std::map<const char*, int64> DataReductionProxyPrefMap;
+  typedef base::ScopedPtrHashMap<const char*, base::ListValue>
+      DataReductionProxyListPrefMap;
+
   // Loads all data_reduction_proxy::prefs into the |pref_map_| and
   // |list_pref_map_|.
   void Init();
+
+  // Gets the value of |pref| from the pref service and adds it to the
+  // |pref_map|.
+  void InitInt64Pref(const char* pref);
+
+  // Gets the value of |pref| from the pref service and adds it to the
+  // |list_pref_map|.
+  void InitListPref(const char* pref);
 
   void OnUpdateContentLengths();
 
@@ -64,29 +112,6 @@ class DataReductionProxyCompressionStats {
   // |DataReductionProxyListPrefMap| to |pref_service|.
   void WritePrefs();
 
-  // Creates a |Value| summary of the persistent state of the network session.
-  // The caller is responsible for deleting the returned value.
-  // Must be called on the UI thread.
-  base::Value* HistoricNetworkStatsInfoToValue();
-
-  // Clears all data saving statistics.
-  void ClearDataSavingStatistics();
-
-  base::WeakPtr<DataReductionProxyCompressionStats> GetWeakPtr();
-
- private:
-  typedef std::map<const char*, int64> DataReductionProxyPrefMap;
-  typedef base::ScopedPtrHashMap<const char*, base::ListValue>
-      DataReductionProxyListPrefMap;
-
-  // Gets the value of |pref| from the pref service and adds it to the
-  // |pref_map|.
-  void InitInt64Pref(const char* pref);
-
-  // Gets the value of |pref| from the pref service and adds it to the
-  // |list_pref_map|.
-  void InitListPref(const char* pref);
-
   // Writes the stored prefs to |pref_service| and then posts another a delayed
   // task to write prefs again in |kMinutesBetweenWrites|.
   void DelayedWritePrefs();
@@ -99,6 +124,14 @@ class DataReductionProxyCompressionStats {
   // Gets an int64, stored as a string, in a ListPref at the specified
   // index.
   int64 GetListPrefInt64Value(const base::ListValue& list_update, size_t index);
+
+  // Records content length updates to prefs.
+  void RecordContentLengthPrefs(
+      int received_content_length,
+      int original_content_length,
+      bool with_data_reduction_proxy_enabled,
+      DataReductionProxyRequestType request_type,
+      base::Time now);
 
   PrefService* pref_service_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

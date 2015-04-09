@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_METRICS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_METRICS_H_
 
-#include "base/time/time.h"
+#include <vector>
+
+#include "base/basictypes.h"
 
 namespace net {
 class ProxyConfig;
@@ -16,8 +18,22 @@ class PrefService;
 
 namespace data_reduction_proxy {
 
+typedef std::vector<long long> ContentLengthList;
+
 class DataReductionProxyConfig;
-class DataReductionProxyCompressionStats;
+
+// A bypass delay more than this is treated as a long delay.
+const int kLongBypassDelayInSeconds = 30 * 60;
+
+// The number of days of bandwidth usage statistics that are tracked.
+const unsigned int kNumDaysInHistory = 60;
+
+// The number of days of bandwidth usage statistics that are presented.
+const unsigned int kNumDaysInHistorySummary = 30;
+
+static_assert(kNumDaysInHistorySummary <= kNumDaysInHistory,
+              "kNumDaysInHistorySummary should be no larger than "
+              "kNumDaysInHistory");
 
 enum DataReductionProxyRequestType {
   VIA_DATA_REDUCTION_PROXY,  // A request served by the data reduction proxy.
@@ -44,16 +60,6 @@ int64 GetAdjustedOriginalContentLength(
     DataReductionProxyRequestType request_type,
     int64 original_content_length,
     int64 received_content_length);
-
-// This is only exposed for testing. It is normally called by
-// UpdateContentLengthPrefs.
-void UpdateContentLengthPrefsForDataReductionProxy(
-    int received_content_length,
-    int original_content_length,
-    bool with_data_reduction_proxy_enabled,
-    DataReductionProxyRequestType request_type,
-    base::Time now,
-    DataReductionProxyCompressionStats* compression_stats);
 
 }  // namespace data_reduction_proxy
 

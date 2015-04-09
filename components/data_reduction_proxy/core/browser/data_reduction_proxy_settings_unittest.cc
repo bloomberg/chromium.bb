@@ -357,7 +357,7 @@ TEST_F(DataReductionProxySettingsTest, TestEnableLoFiFromCommandLineProxyOff) {
 }
 
 TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {
-  DataReductionProxySettings::ContentLengthList result =
+  ContentLengthList result =
       settings_->GetDailyContentLengths(prefs::kDailyHttpOriginalContentLength);
 
   ASSERT_FALSE(result.empty());

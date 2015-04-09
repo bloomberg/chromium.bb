@@ -185,6 +185,9 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
   request_options_ = request_options.Pass();
   configurator_ = configurator.Pass();
   config_client_ = config_client.Pass();
+  bypass_stats_.reset(new DataReductionProxyBypassStats(
+      config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
+                                base::Unretained(this))));
   io_task_runner_ = task_runner;
   ui_task_runner_ = task_runner;
 }

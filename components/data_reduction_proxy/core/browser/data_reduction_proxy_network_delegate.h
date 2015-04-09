@@ -7,9 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "net/base/layered_network_delegate.h"
@@ -21,10 +19,6 @@ typedef PrefMember<bool> BooleanPrefMember;
 
 class GURL;
 class PrefService;
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace net {
 class HttpResponseHeaders;
@@ -39,11 +33,11 @@ class URLRequest;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
 class DataReductionProxyIOData;
 class DataReductionProxyRequestOptions;
-class DataReductionProxyBypassStats;
 
 // DataReductionProxyNetworkDelegate is a LayeredNetworkDelegate that wraps a
 // NetworkDelegate and adds Data Reduction Proxy specific logic.
@@ -69,7 +63,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // Initializes member variables to record data reduction proxy prefs and
   // report UMA.
   void InitIODataAndUMA(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       DataReductionProxyIOData* io_data,
       BooleanPrefMember* data_reduction_proxy_enabled,
       DataReductionProxyBypassStats* bypass_stats);
@@ -116,15 +109,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   void AccumulateContentLength(int64 received_content_length,
                                int64 original_content_length,
                                DataReductionProxyRequestType request_type);
-
-  // Records daily data savings statistics to prefs and reports data savings
-  // UMA.
-  void UpdateContentLengthPrefs(int received_content_length,
-                                int original_content_length,
-                                bool data_reduction_proxy_enabled,
-                                DataReductionProxyRequestType request_type);
-
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Total size of all content (excluding headers) that has been received
   // over the network.

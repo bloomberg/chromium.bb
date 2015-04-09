@@ -64,10 +64,15 @@ DataReductionProxyIOData::DataReductionProxyIOData(
         configurator_.get(), event_store_.get()));
   }
 
+  // It is safe to use base::Unretained here, since it gets executed
+  // synchronously on the IO thread, and |this| outlives the caller (since the
+  // caller is owned by |this|.
+  bypass_stats_.reset(new DataReductionProxyBypassStats(
+      config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
+                                base::Unretained(this))));
   request_options_.reset(new DataReductionProxyRequestOptions(
       client_, config_.get(), io_task_runner_));
   request_options_->Init();
-
   if (use_config_client) {
     config_client_.reset(new DataReductionProxyConfigServiceClient(
         params.Pass(), GetBackoffPolicy(), request_options_.get(),
@@ -127,20 +132,30 @@ DataReductionProxyIOData::CreateNetworkDelegate(
       new DataReductionProxyNetworkDelegate(
           wrapped_network_delegate.Pass(), config_.get(),
           request_options_.get(), configurator_.get()));
-  if (track_proxy_bypass_statistics && !bypass_stats_) {
-    bypass_stats_.reset(new DataReductionProxyBypassStats(
-        config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
-                                  base::Unretained(this)), ui_task_runner_));
-    network_delegate->InitIODataAndUMA(ui_task_runner_, this, &enabled_,
-                                       bypass_stats_.get());
-  }
+  if (track_proxy_bypass_statistics)
+    network_delegate->InitIODataAndUMA(this, &enabled_, bypass_stats_.get());
   return network_delegate.Pass();
 }
 
+void DataReductionProxyIOData::UpdateContentLengths(
+    int received_content_length,
+    int original_content_length,
+    bool data_reduction_proxy_enabled,
+    DataReductionProxyRequestType request_type) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyService::UpdateContentLengths,
+                 service_, received_content_length, original_content_length,
+                 data_reduction_proxy_enabled, request_type));
+}
+
 void DataReductionProxyIOData::SetUnreachable(bool unreachable) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  if (service_)
-    service_->settings()->SetUnreachable(unreachable);
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyService::SetUnreachable,
+                 service_, unreachable));
 }
 
 }  // namespace data_reduction_proxy

@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "jni/DataReductionProxySettings_jni.h"
@@ -113,7 +113,7 @@ DataReductionProxySettingsAndroid::GetDailyContentLengths(
   jlongArray result = env->NewLongArray(
       data_reduction_proxy::kNumDaysInHistory);
 
-  DataReductionProxySettings::ContentLengthList lengths  =
+ data_reduction_proxy::ContentLengthList lengths  =
       Settings()->GetDailyContentLengths(pref_name);
 
   if (!lengths.empty()) {
