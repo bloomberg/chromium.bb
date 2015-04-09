@@ -47,9 +47,9 @@ static unsigned copyFromSharedBuffer(char* buffer, unsigned bufferLength, const 
     return bytesExtracted;
 }
 
-inline bool matchesGIFSignature(char* contents)
+inline bool matchesJPEGSignature(char* contents)
 {
-    return !memcmp(contents, "GIF87a", 6) || !memcmp(contents, "GIF89a", 6);
+    return !memcmp(contents, "\xFF\xD8\xFF", 3);
 }
 
 inline bool matchesPNGSignature(char* contents)
@@ -57,19 +57,14 @@ inline bool matchesPNGSignature(char* contents)
     return !memcmp(contents, "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 8);
 }
 
-inline bool matchesJPEGSignature(char* contents)
+inline bool matchesGIFSignature(char* contents)
 {
-    return !memcmp(contents, "\xFF\xD8\xFF", 3);
+    return !memcmp(contents, "GIF87a", 6) || !memcmp(contents, "GIF89a", 6);
 }
 
 inline bool matchesWebPSignature(char* contents)
 {
     return !memcmp(contents, "RIFF", 4) && !memcmp(contents + 8, "WEBPVP", 6);
-}
-
-inline bool matchesBMPSignature(char* contents)
-{
-    return !memcmp(contents, "BM", 2);
 }
 
 inline bool matchesICOSignature(char* contents)
@@ -80,6 +75,11 @@ inline bool matchesICOSignature(char* contents)
 inline bool matchesCURSignature(char* contents)
 {
     return !memcmp(contents, "\x00\x00\x02\x00", 4);
+}
+
+inline bool matchesBMPSignature(char* contents)
+{
+    return !memcmp(contents, "BM", 2);
 }
 
 PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
