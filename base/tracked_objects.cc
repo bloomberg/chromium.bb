@@ -28,9 +28,6 @@ class TimeDelta;
 namespace tracked_objects {
 
 namespace {
-// Flag to compile out almost all of the task tracking code.
-const bool kTrackAllTaskObjects = true;
-
 // TODO(jar): Evaluate the perf impact of enabling this.  If the perf impact is
 // negligible, enable by default.
 // Flag to compile out parent-child link recording.
@@ -366,8 +363,6 @@ void ThreadData::OnThreadTermination(void* thread_data) {
   DCHECK(thread_data);  // TLS should *never* call us with a NULL.
   // We must NOT do any allocations during this callback. There is a chance
   // that the allocator is no longer active on this thread.
-  if (!kTrackAllTaskObjects)
-    return;  // Not compiled in.
   reinterpret_cast<ThreadData*>(thread_data)->OnThreadTerminationCleanup();
 }
 
@@ -465,9 +460,6 @@ void ThreadData::TallyADeath(const Births& birth,
 
 // static
 Births* ThreadData::TallyABirthIfActive(const Location& location) {
-  if (!kTrackAllTaskObjects)
-    return NULL;  // Not compiled in.
-
   if (!TrackingStatus())
     return NULL;
   ThreadData* current_thread_data = Get();
@@ -480,9 +472,6 @@ Births* ThreadData::TallyABirthIfActive(const Location& location) {
 void ThreadData::TallyRunOnNamedThreadIfTracking(
     const base::TrackingInfo& completed_task,
     const TaskStopwatch& stopwatch) {
-  if (!kTrackAllTaskObjects)
-    return;  // Not compiled in.
-
   // Even if we have been DEACTIVATED, we will process any pending births so
   // that our data structures (which counted the outstanding births) remain
   // consistent.
@@ -512,9 +501,6 @@ void ThreadData::TallyRunOnWorkerThreadIfTracking(
     const Births* birth,
     const TrackedTime& time_posted,
     const TaskStopwatch& stopwatch) {
-  if (!kTrackAllTaskObjects)
-    return;  // Not compiled in.
-
   // Even if we have been DEACTIVATED, we will process any pending births so
   // that our data structures (which counted the outstanding births) remain
   // consistent.
@@ -546,9 +532,6 @@ void ThreadData::TallyRunOnWorkerThreadIfTracking(
 void ThreadData::TallyRunInAScopedRegionIfTracking(
     const Births* birth,
     const TaskStopwatch& stopwatch) {
-  if (!kTrackAllTaskObjects)
-    return;  // Not compiled in.
-
   // Even if we have been DEACTIVATED, we will process any pending births so
   // that our data structures (which counted the outstanding births) remain
   // consistent.
@@ -567,9 +550,6 @@ void ThreadData::TallyRunInAScopedRegionIfTracking(
 void ThreadData::SnapshotAllExecutedTasks(
     ProcessDataPhaseSnapshot* process_data_phase,
     BirthCountMap* birth_counts) {
-  if (!kTrackAllTaskObjects)
-    return;  // Not compiled in.
-
   // Get an unchanging copy of a ThreadData list.
   ThreadData* my_list = ThreadData::first();
 
@@ -659,8 +639,6 @@ static void OptionallyInitializeAlternateTimer() {
 }
 
 bool ThreadData::Initialize() {
-  if (!kTrackAllTaskObjects)
-    return false;  // Not compiled in.
   if (status_ >= DEACTIVATED)
     return true;  // Someone else did the initialization.
   // Due to racy lazy initialization in tests, we'll need to recheck status_
@@ -761,7 +739,7 @@ void ThreadData::EnableProfilerTiming() {
 TrackedTime ThreadData::Now() {
   if (kAllowAlternateTimeSourceHandling && now_function_)
     return TrackedTime::FromMilliseconds((*now_function_)());
-  if (kTrackAllTaskObjects && IsProfilerTimingEnabled() && TrackingStatus())
+  if (IsProfilerTimingEnabled() && TrackingStatus())
     return TrackedTime::Now();
   return TrackedTime();  // Super fast when disabled, or not compiled.
 }
