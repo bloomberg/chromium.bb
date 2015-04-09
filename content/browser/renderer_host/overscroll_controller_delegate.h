@@ -8,13 +8,14 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
 
 // The delegate receives overscroll gesture updates from the controller and
 // should perform appropriate actions.
-class OverscrollControllerDelegate {
+class CONTENT_EXPORT OverscrollControllerDelegate {
  public:
   OverscrollControllerDelegate() {}
   virtual ~OverscrollControllerDelegate() {}

@@ -15,7 +15,6 @@
 #include "content/common/content_export.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/wm/public/drag_drop_delegate.h"
 
 namespace aura {
@@ -41,7 +40,6 @@ class WebContentsViewAura
     : public WebContentsView,
       public RenderViewHostDelegateView,
       public OverscrollControllerDelegate,
-      public ui::ImplicitAnimationObserver,
       public aura::WindowDelegate,
       public aura::client::DragDropDelegate,
       public aura::WindowObserver {
@@ -63,40 +61,14 @@ class WebContentsViewAura
 
   void InstallOverscrollControllerDelegate(RenderWidgetHostViewAura* view);
 
-  // Creates and sets up the overlay window that will be displayed during the
-  // overscroll gesture.
-  void PrepareOverscrollWindow();
-
   // Sets up the content window in preparation for starting an overscroll
   // gesture.
   void PrepareContentWindowForOverscroll();
-
-  // Resets any in-progress animation for the overscroll gesture. Note that this
-  // doesn't immediately reset the internal states; that happens after an
-  // animation.
-  void ResetOverscrollTransform();
 
   // Completes the navigation in response to a completed overscroll gesture.
   // The navigation happens after an animation (either the overlay window
   // animates in, or the content window animates out).
   void CompleteOverscrollNavigation(OverscrollMode mode);
-
-  // Returns the window that should be animated for the overscroll gesture.
-  // (note that during the overscroll gesture, either the overlay window or the
-  // content window can be animated).
-  aura::Window* GetWindowToAnimateForOverscroll();
-
-  // Returns the amount the animating window should be translated in response to
-  // the overscroll gesture.
-  gfx::Vector2dF GetTranslationForOverscroll(float delta_x, float delta_y);
-
-  // A window showing the screenshot is overlayed during a navigation triggered
-  // by overscroll. This function sets this up.
-  void PrepareOverscrollNavigationOverlay();
-
-  // Changes the brightness of the layer depending on the amount of horizontal
-  // overscroll (|delta_x|, in pixels).
-  void UpdateOverscrollWindowBrightness(float delta_x);
 
   void AttachTouchEditableToRenderView();
 
@@ -151,9 +123,6 @@ class WebContentsViewAura
   void OnOverscrollModeChange(OverscrollMode old_mode,
                               OverscrollMode new_mode) override;
 
-  // Overridden from ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override;
-
   // Overridden from aura::WindowDelegate:
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
@@ -193,10 +162,6 @@ class WebContentsViewAura
 
   scoped_ptr<aura::Window> window_;
 
-  // The window that shows the screenshot of the history page during an
-  // overscroll navigation gesture.
-  scoped_ptr<aura::Window> overscroll_window_;
-
   scoped_ptr<WindowObserver> window_observer_;
 
   // The WebContentsImpl whose contents we display.
@@ -216,8 +181,6 @@ class WebContentsViewAura
   // pointers.
   void* current_rvh_for_drag_;
 
-  bool overscroll_change_brightness_;
-
   // The overscroll gesture currently in progress.
   OverscrollMode current_overscroll_gesture_;
 
@@ -228,8 +191,6 @@ class WebContentsViewAura
   // This manages the overlay window that shows the screenshot during a history
   // navigation triggered by the overscroll gesture.
   scoped_ptr<OverscrollNavigationOverlay> navigation_overlay_;
-
-  scoped_ptr<ShadowLayerDelegate> overscroll_shadow_;
 
   scoped_ptr<TouchEditableImplAura> touch_editable_;
   scoped_ptr<GestureNavSimple> gesture_nav_simple_;
