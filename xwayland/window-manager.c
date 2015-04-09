@@ -1001,6 +1001,14 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	if (!wm_lookup_window(wm, unmap_notify->window, &window))
 		return;
 
+	if (window->surface_id) {
+		/* Make sure we're not on the unpaired surface list or we
+		 * could be assigned a surface during surface creation that
+		 * was mapped before this unmap request.
+		 */
+		wl_list_remove(&window->link);
+		window->surface_id = 0;
+	}
 	if (wm->focus_window == window)
 		wm->focus_window = NULL;
 	if (window->surface)
@@ -1206,6 +1214,9 @@ weston_wm_window_destroy(struct weston_wm_window *window)
 
 	if (window->surface_id)
 		wl_list_remove(&window->link);
+
+	if (window->surface)
+		wl_list_remove(&window->surface_destroy_listener.link);
 
 	hash_table_remove(window->wm->window_hash, window->id);
 	free(window);
