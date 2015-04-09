@@ -195,6 +195,15 @@ wm_log_continue(const char *fmt, ...)
 #endif
 }
 
+static bool __attribute__ ((warn_unused_result))
+wm_lookup_window(struct weston_wm *wm, xcb_window_t hash,
+		 struct weston_wm_window **window)
+{
+	*window = hash_table_lookup(wm->window_hash, hash);
+	if (*window)
+		return true;
+	return false;
+}
 
 const char *
 get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
@@ -448,8 +457,9 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 			break;
 		case XCB_ATOM_WINDOW:
 			xid = xcb_get_property_value(reply);
-			*(struct weston_wm_window **) p =
-				hash_table_lookup(wm->window_hash, *xid);
+			if (!wm_lookup_window(wm, *xid, p))
+				weston_log("XCB_ATOM_WINDOW contains window"
+					   " id not found in hash table.\n");
 			break;
 		case XCB_ATOM_CARDINAL:
 		case XCB_ATOM_ATOM:
@@ -594,7 +604,8 @@ weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *ev
 	       configure_request->x, configure_request->y,
 	       configure_request->width, configure_request->height);
 
-	window = hash_table_lookup(wm->window_hash, configure_request->window);
+	if (!wm_lookup_window(wm, configure_request->window, &window))
+		return;
 
 	if (window->fullscreen) {
 		weston_wm_window_send_configure_notify(window);
@@ -660,7 +671,9 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	       configure_notify->x, configure_notify->y,
 	       configure_notify->width, configure_notify->height);
 
-	window = hash_table_lookup(wm->window_hash, configure_notify->window);
+	if (!wm_lookup_window(wm, configure_notify->window, &window))
+		return;
+
 	window->x = configure_notify->x;
 	window->y = configure_notify->y;
 	if (window->override_redirect) {
@@ -932,7 +945,8 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 		return;
 	}
 
-	window = hash_table_lookup(wm->window_hash, map_request->window);
+	if (!wm_lookup_window(wm, map_request->window, &window))
+		return;
 
 	weston_wm_window_read_properties(window);
 
@@ -984,7 +998,9 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 		 * as it may come in after we've destroyed the window. */
 		return;
 
-	window = hash_table_lookup(wm->window_hash, unmap_notify->window);
+	if (!wm_lookup_window(wm, unmap_notify->window, &window))
+		return;
+
 	if (wm->focus_window == window)
 		wm->focus_window = NULL;
 	if (window->surface)
@@ -1113,8 +1129,7 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 		(xcb_property_notify_event_t *) event;
 	struct weston_wm_window *window;
 
-	window = hash_table_lookup(wm->window_hash, property_notify->window);
-	if (!window)
+	if (!wm_lookup_window(wm, property_notify->window, &window))
 		return;
 
 	window->properties_dirty = 1;
@@ -1232,7 +1247,9 @@ weston_wm_handle_destroy_notify(struct weston_wm *wm, xcb_generic_event_t *event
 	if (our_resource(wm, destroy_notify->window))
 		return;
 
-	window = hash_table_lookup(wm->window_hash, destroy_notify->window);
+	if (!wm_lookup_window(wm, destroy_notify->window, &window))
+		return;
+
 	weston_wm_window_destroy(window);
 }
 
@@ -1253,8 +1270,8 @@ weston_wm_handle_reparent_notify(struct weston_wm *wm, xcb_generic_event_t *even
 					reparent_notify->x, reparent_notify->y,
 					reparent_notify->override_redirect);
 	} else if (!our_resource(wm, reparent_notify->parent)) {
-		window = hash_table_lookup(wm->window_hash,
-					   reparent_notify->window);
+		if (!wm_lookup_window(wm, reparent_notify->window, &window))
+			return;
 		weston_wm_window_destroy(window);
 	}
 }
@@ -1492,8 +1509,6 @@ weston_wm_handle_client_message(struct weston_wm *wm,
 		(xcb_client_message_event_t *) event;
 	struct weston_wm_window *window;
 
-	window = hash_table_lookup(wm->window_hash, client_message->window);
-
 	wm_log("XCB_CLIENT_MESSAGE (%s %d %d %d %d %d win %d)\n",
 	       get_atom_name(wm->conn, client_message->type),
 	       client_message->data.data32[0],
@@ -1506,7 +1521,7 @@ weston_wm_handle_client_message(struct weston_wm *wm,
 	/* The window may get created and destroyed before we actually
 	 * handle the message.  If it doesn't exist, bail.
 	 */
-	if (!window)
+	if (!wm_lookup_window(wm, client_message->window, &window))
 		return;
 
 	if (client_message->type == wm->atom.net_wm_moveresize)
@@ -1722,8 +1737,8 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	       button->response_type == XCB_BUTTON_PRESS ?
 	       "PRESS" : "RELEASE", button->detail);
 
-	window = hash_table_lookup(wm->window_hash, button->event);
-	if (!window || !window->decorate)
+	if (!wm_lookup_window(wm, button->event, &window) ||
+	    !window->decorate)
 		return;
 
 	if (button->detail != 1 && button->detail != 2)
@@ -1786,8 +1801,8 @@ weston_wm_handle_motion(struct weston_wm *wm, xcb_generic_event_t *event)
 	enum theme_location location;
 	int cursor;
 
-	window = hash_table_lookup(wm->window_hash, motion->event);
-	if (!window || !window->decorate)
+	if (!wm_lookup_window(wm, motion->event, &window) ||
+	    !window->decorate)
 		return;
 
 	location = frame_pointer_motion(window->frame, NULL,
@@ -1807,8 +1822,8 @@ weston_wm_handle_enter(struct weston_wm *wm, xcb_generic_event_t *event)
 	enum theme_location location;
 	int cursor;
 
-	window = hash_table_lookup(wm->window_hash, enter->event);
-	if (!window || !window->decorate)
+	if (!wm_lookup_window(wm, enter->event, &window) ||
+	    !window->decorate)
 		return;
 
 	location = frame_pointer_enter(window->frame, NULL,
@@ -1826,8 +1841,8 @@ weston_wm_handle_leave(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_leave_notify_event_t *leave = (xcb_leave_notify_event_t *) event;
 	struct weston_wm_window *window;
 
-	window = hash_table_lookup(wm->window_hash, leave->event);
-	if (!window || !window->decorate)
+	if (!wm_lookup_window(wm, leave->event, &window) ||
+	    !window->decorate)
 		return;
 
 	frame_pointer_leave(window->frame, NULL);
