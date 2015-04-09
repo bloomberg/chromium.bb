@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
-#include "third_party/icu/source/i18n/unicode/plurfmt.h"
+#include "third_party/icu/source/i18n/unicode/msgfmt.h"
 #include "third_party/icu/source/i18n/unicode/plurrule.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/ui_base_export.h"
@@ -56,24 +56,24 @@ class Formatter {
             const Pluralities& day_hour_pluralities1,
             const Pluralities& day_hour_pluralities2);
 
-  void Format(Unit unit, int value, icu::UnicodeString& formatted_string) const;
+  void Format(Unit unit, int value, icu::UnicodeString* formatted_string) const;
 
   void Format(TwoUnits units,
               int value_1,
               int value_2,
-              icu::UnicodeString& formatted_string) const;
+              icu::UnicodeString* formatted_string) const;
 
  private:
-  // Create a hard-coded fallback plural format.  This will never be called
-  // unless translators make a mistake.
-  scoped_ptr<icu::PluralFormat> CreateFallbackFormat(
+  // Create a hard-coded fallback message format for plural formatting.
+  // This will never be called unless translators make a mistake.
+  scoped_ptr<icu::MessageFormat> CreateFallbackFormat(
       const icu::PluralRules& rules,
       const Pluralities& pluralities) const;
 
-  scoped_ptr<icu::PluralFormat> InitFormat(const Pluralities& pluralities);
+  scoped_ptr<icu::MessageFormat> InitFormat(const Pluralities& pluralities);
 
-  scoped_ptr<icu::PluralFormat> simple_format_[UNIT_COUNT];
-  scoped_ptr<icu::PluralFormat> detailed_format_[TWO_UNITS_COUNT][2];
+  scoped_ptr<icu::MessageFormat> simple_format_[UNIT_COUNT];
+  scoped_ptr<icu::MessageFormat> detailed_format_[TWO_UNITS_COUNT][2];
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Formatter);
 };
@@ -111,4 +111,4 @@ extern UI_BASE_EXPORT bool formatter_force_fallback;
 
 }  // namespace ui
 
-#endif
+#endif  // UI_BASE_L10N_FORMATTER_H_

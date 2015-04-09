@@ -61,7 +61,7 @@ base::string16 TimeFormat::Detailed(TimeFormat::Format format,
   if (delta < one_minute - half_second) {
     // Anything up to 59.500 seconds is formatted as seconds.
     const int seconds = static_cast<int>((delta + half_second).InSeconds());
-    formatter->Format(Formatter::UNIT_SEC, seconds, time_string);
+    formatter->Format(Formatter::UNIT_SEC, seconds, &time_string);
 
   } else if (delta < one_hour - (cutoff < 60 ? half_minute : half_second)) {
     // Anything up to 59.5 minutes (respectively 59:59.500 when |cutoff| permits
@@ -69,13 +69,13 @@ base::string16 TimeFormat::Detailed(TimeFormat::Format format,
     // seconds).
     if (delta >= cutoff * one_minute - half_second) {
       const int minutes = (delta + half_minute).InMinutes();
-      formatter->Format(Formatter::UNIT_MIN, minutes, time_string);
+      formatter->Format(Formatter::UNIT_MIN, minutes, &time_string);
     } else {
       const int minutes = (delta + half_second).InMinutes();
       const int seconds = static_cast<int>(
           (delta + half_second).InSeconds() % 60);
       formatter->Format(Formatter::TWO_UNITS_MIN_SEC,
-                        minutes, seconds, time_string);
+                        minutes, seconds, &time_string);
     }
 
   } else if (delta < one_day - (cutoff < 24 ? half_hour : half_minute)) {
@@ -84,24 +84,24 @@ base::string16 TimeFormat::Detailed(TimeFormat::Format format,
     // minutes).
     if (delta >= cutoff * one_hour - half_minute) {
       const int hours = (delta + half_hour).InHours();
-      formatter->Format(Formatter::UNIT_HOUR, hours, time_string);
+      formatter->Format(Formatter::UNIT_HOUR, hours, &time_string);
     } else {
       const int hours = (delta + half_minute).InHours();
       const int minutes = (delta + half_minute).InMinutes() % 60;
       formatter->Format(Formatter::TWO_UNITS_HOUR_MIN,
-                        hours, minutes, time_string);
+                        hours, minutes, &time_string);
     }
 
   } else {
     // Anything bigger is formatted as days (respectively days and hours).
     if (delta >= cutoff * one_day - half_hour) {
       const int days = (delta + half_day).InDays();
-      formatter->Format(Formatter::UNIT_DAY, days, time_string);
+      formatter->Format(Formatter::UNIT_DAY, days, &time_string);
     } else {
       const int days = (delta + half_hour).InDays();
       const int hours = (delta + half_hour).InHours() % 24;
       formatter->Format(Formatter::TWO_UNITS_DAY_HOUR,
-                        days, hours, time_string);
+                        days, hours, &time_string);
     }
   }
 

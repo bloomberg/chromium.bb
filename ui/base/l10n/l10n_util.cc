@@ -823,25 +823,24 @@ base::string16 GetStringFUTF16Int(int message_id, int64 a) {
   return GetStringFUTF16(message_id, base::UTF8ToUTF16(base::Int64ToString(a)));
 }
 
-base::string16 GetPluralStringFUTF16(const std::vector<int>& message_ids,
-                               int number) {
-  scoped_ptr<icu::PluralFormat> format = BuildPluralFormat(message_ids);
-  DCHECK(format);
-
+base::string16 GetPluralStringFUTF16(int message_id, int number) {
+  base::string16 pattern = GetStringUTF16(message_id);
   UErrorCode err = U_ZERO_ERROR;
-  icu::UnicodeString result_files_string = format->format(number, err);
-  int capacity = result_files_string.length() + 1;
+  icu::MessageFormat format(
+      icu::UnicodeString(FALSE, pattern.data(), pattern.length()), err);
+  icu::UnicodeString result_unistring;
+  FormatNumberInPlural(format, number, &result_unistring, &err);
+  int capacity = result_unistring.length() + 1;
   DCHECK_GT(capacity, 1);
   base::string16 result;
-  result_files_string.extract(
+  result_unistring.extract(
       static_cast<UChar*>(WriteInto(&result, capacity)), capacity, err);
   DCHECK(U_SUCCESS(err));
   return result;
 }
 
-std::string GetPluralStringFUTF8(const std::vector<int>& message_ids,
-                                 int number) {
-  return base::UTF16ToUTF8(GetPluralStringFUTF16(message_ids, number));
+std::string GetPluralStringFUTF8(int message_id, int number) {
+  return base::UTF16ToUTF8(GetPluralStringFUTF16(message_id, number));
 }
 
 void SortStrings16(const std::string& locale,

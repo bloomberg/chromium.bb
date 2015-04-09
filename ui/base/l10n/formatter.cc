@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/i18n/unicode/msgfmt.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_plurals.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -15,165 +17,124 @@ namespace ui {
 
 UI_BASE_EXPORT bool formatter_force_fallback = false;
 
-static const size_t kNumberPluralities = 6;
 struct Pluralities {
-  int ids[kNumberPluralities];
+  int id;
   const char* fallback_one;
   const char* fallback_other;
 };
 
 static const Pluralities IDS_ELAPSED_SHORT_SEC = {
-  { IDS_TIME_ELAPSED_SECS_DEFAULT, IDS_TIME_ELAPSED_SECS_SINGULAR,
-    IDS_TIME_ELAPSED_SECS_ZERO, IDS_TIME_ELAPSED_SECS_TWO,
-    IDS_TIME_ELAPSED_SECS_FEW, IDS_TIME_ELAPSED_SECS_MANY },
+  IDS_TIME_ELAPSED_SECS,
   "one{# sec ago}",
   " other{# secs ago}"
 };
 static const Pluralities IDS_ELAPSED_SHORT_MIN = {
-  { IDS_TIME_ELAPSED_MINS_DEFAULT, IDS_TIME_ELAPSED_MINS_SINGULAR,
-    IDS_TIME_ELAPSED_MINS_ZERO, IDS_TIME_ELAPSED_MINS_TWO,
-    IDS_TIME_ELAPSED_MINS_FEW, IDS_TIME_ELAPSED_MINS_MANY },
+  IDS_TIME_ELAPSED_MINS,
   "one{# min ago}",
   " other{# mins ago}"
 };
 static const Pluralities IDS_ELAPSED_HOUR = {
-  { IDS_TIME_ELAPSED_HOURS_DEFAULT, IDS_TIME_ELAPSED_HOURS_SINGULAR,
-    IDS_TIME_ELAPSED_HOURS_ZERO, IDS_TIME_ELAPSED_HOURS_TWO,
-    IDS_TIME_ELAPSED_HOURS_FEW, IDS_TIME_ELAPSED_HOURS_MANY },
+  IDS_TIME_ELAPSED_HOURS,
   "one{# hour ago}",
   " other{# hours ago}"
 };
 static const Pluralities IDS_ELAPSED_DAY = {
-  { IDS_TIME_ELAPSED_DAYS_DEFAULT, IDS_TIME_ELAPSED_DAYS_SINGULAR,
-    IDS_TIME_ELAPSED_DAYS_ZERO, IDS_TIME_ELAPSED_DAYS_TWO,
-    IDS_TIME_ELAPSED_DAYS_FEW, IDS_TIME_ELAPSED_DAYS_MANY },
+  IDS_TIME_ELAPSED_DAYS,
   "one{# day ago}",
   " other{# days ago}"
 };
 
 static const Pluralities IDS_REMAINING_SHORT_SEC = {
-  { IDS_TIME_REMAINING_SECS_DEFAULT, IDS_TIME_REMAINING_SECS_SINGULAR,
-    IDS_TIME_REMAINING_SECS_ZERO, IDS_TIME_REMAINING_SECS_TWO,
-    IDS_TIME_REMAINING_SECS_FEW, IDS_TIME_REMAINING_SECS_MANY },
+  IDS_TIME_REMAINING_SECS,
   "one{# sec left}",
   " other{# secs left}"
 };
 static const Pluralities IDS_REMAINING_SHORT_MIN = {
-  { IDS_TIME_REMAINING_MINS_DEFAULT, IDS_TIME_REMAINING_MINS_SINGULAR,
-    IDS_TIME_REMAINING_MINS_ZERO, IDS_TIME_REMAINING_MINS_TWO,
-    IDS_TIME_REMAINING_MINS_FEW, IDS_TIME_REMAINING_MINS_MANY },
+  IDS_TIME_REMAINING_MINS,
   "one{# min left}",
   " other{# mins left}"
 };
 
 static const Pluralities IDS_REMAINING_LONG_SEC = {
-  { IDS_TIME_REMAINING_LONG_SECS_DEFAULT, IDS_TIME_REMAINING_LONG_SECS_SINGULAR,
-    IDS_TIME_REMAINING_LONG_SECS_ZERO, IDS_TIME_REMAINING_LONG_SECS_TWO,
-    IDS_TIME_REMAINING_LONG_SECS_FEW, IDS_TIME_REMAINING_LONG_SECS_MANY },
+  IDS_TIME_REMAINING_LONG_SECS,
   "one{# second left}",
   " other{# seconds left}"
 };
 static const Pluralities IDS_REMAINING_LONG_MIN = {
-  { IDS_TIME_REMAINING_LONG_MINS_DEFAULT, IDS_TIME_REMAINING_LONG_MINS_SINGULAR,
-    IDS_TIME_REMAINING_LONG_MINS_ZERO, IDS_TIME_REMAINING_LONG_MINS_TWO,
-    IDS_TIME_REMAINING_LONG_MINS_FEW, IDS_TIME_REMAINING_LONG_MINS_MANY },
+  IDS_TIME_REMAINING_LONG_MINS,
   "one{# minute left}",
   " other{# minutes left}"
 };
 static const Pluralities IDS_REMAINING_HOUR = {
-  { IDS_TIME_REMAINING_HOURS_DEFAULT, IDS_TIME_REMAINING_HOURS_SINGULAR,
-    IDS_TIME_REMAINING_HOURS_ZERO, IDS_TIME_REMAINING_HOURS_TWO,
-    IDS_TIME_REMAINING_HOURS_FEW, IDS_TIME_REMAINING_HOURS_MANY },
+  IDS_TIME_REMAINING_HOURS,
   "one{# hour left}",
   " other{# hours left}"
 };
 static const Pluralities IDS_REMAINING_DAY = {
-  { IDS_TIME_REMAINING_DAYS_DEFAULT, IDS_TIME_REMAINING_DAYS_SINGULAR,
-    IDS_TIME_REMAINING_DAYS_ZERO, IDS_TIME_REMAINING_DAYS_TWO,
-    IDS_TIME_REMAINING_DAYS_FEW, IDS_TIME_REMAINING_DAYS_MANY },
+  IDS_TIME_REMAINING_DAYS,
   "one{# day left}",
   " other{# days left}"
 };
 
 static const Pluralities IDS_DURATION_SHORT_SEC = {
-  { IDS_TIME_SECS_DEFAULT, IDS_TIME_SECS_SINGULAR, IDS_TIME_SECS_ZERO,
-    IDS_TIME_SECS_TWO, IDS_TIME_SECS_FEW, IDS_TIME_SECS_MANY },
+  IDS_TIME_SECS,
   "one{# sec}",
   " other{# secs}"
 };
 static const Pluralities IDS_DURATION_SHORT_MIN = {
-  { IDS_TIME_MINS_DEFAULT, IDS_TIME_MINS_SINGULAR, IDS_TIME_MINS_ZERO,
-    IDS_TIME_MINS_TWO, IDS_TIME_MINS_FEW, IDS_TIME_MINS_MANY },
+  IDS_TIME_MINS,
   "one{# min}",
   " other{# mins}"
 };
 
 static const Pluralities IDS_LONG_SEC = {
-  { IDS_TIME_LONG_SECS_DEFAULT, IDS_TIME_LONG_SECS_SINGULAR,
-    IDS_TIME_LONG_SECS_ZERO, IDS_TIME_LONG_SECS_TWO,
-    IDS_TIME_LONG_SECS_FEW, IDS_TIME_LONG_SECS_MANY },
+  IDS_TIME_LONG_SECS,
   "one{# second}",
   " other{# seconds}"
 };
 static const Pluralities IDS_LONG_MIN = {
-  { IDS_TIME_LONG_MINS_DEFAULT, IDS_TIME_LONG_MINS_SINGULAR,
-    IDS_TIME_LONG_MINS_ZERO, IDS_TIME_LONG_MINS_TWO,
-    IDS_TIME_LONG_MINS_FEW, IDS_TIME_LONG_MINS_MANY },
+  IDS_TIME_LONG_MINS,
   "one{# minute}",
   " other{# minutes}"
 };
 static const Pluralities IDS_DURATION_HOUR = {
-  { IDS_TIME_HOURS_DEFAULT, IDS_TIME_HOURS_SINGULAR, IDS_TIME_HOURS_ZERO,
-    IDS_TIME_HOURS_TWO, IDS_TIME_HOURS_FEW, IDS_TIME_HOURS_MANY },
+  IDS_TIME_HOURS,
   "one{# hour}",
   " other{# hours}"
 };
 static const Pluralities IDS_DURATION_DAY = {
-  { IDS_TIME_DAYS_DEFAULT, IDS_TIME_DAYS_SINGULAR, IDS_TIME_DAYS_ZERO,
-    IDS_TIME_DAYS_TWO, IDS_TIME_DAYS_FEW, IDS_TIME_DAYS_MANY },
+  IDS_TIME_DAYS,
   "one{# day}",
   " other{# days}"
 };
 
 static const Pluralities IDS_LONG_MIN_1ST = {
-  { IDS_TIME_LONG_MINS_1ST_DEFAULT, IDS_TIME_LONG_MINS_1ST_SINGULAR,
-    IDS_TIME_LONG_MINS_1ST_ZERO, IDS_TIME_LONG_MINS_1ST_TWO,
-    IDS_TIME_LONG_MINS_1ST_FEW, IDS_TIME_LONG_MINS_1ST_MANY },
-  "one{# minute }",
-  " other{# minutes }"
+  IDS_TIME_LONG_MINS_1ST,
+  "one{# minute and }",
+  " other{# minutes and }"
 };
 static const Pluralities IDS_LONG_SEC_2ND = {
-  { IDS_TIME_LONG_SECS_2ND_DEFAULT, IDS_TIME_LONG_SECS_2ND_SINGULAR,
-    IDS_TIME_LONG_SECS_2ND_ZERO, IDS_TIME_LONG_SECS_2ND_TWO,
-    IDS_TIME_LONG_SECS_2ND_FEW, IDS_TIME_LONG_SECS_2ND_MANY },
+  IDS_TIME_LONG_SECS_2ND,
   "one{# second}",
   " other{# seconds}"
 };
 static const Pluralities IDS_DURATION_HOUR_1ST = {
-  { IDS_TIME_HOURS_1ST_DEFAULT, IDS_TIME_HOURS_1ST_SINGULAR,
-    IDS_TIME_HOURS_1ST_ZERO, IDS_TIME_HOURS_1ST_TWO,
-    IDS_TIME_HOURS_1ST_FEW, IDS_TIME_HOURS_1ST_MANY },
-  "one{# hour }",
-  " other{# hours }"
+  IDS_TIME_HOURS_1ST,
+  "one{# hour and }",
+  " other{# hours and }"
 };
 static const Pluralities IDS_LONG_MIN_2ND = {
-  { IDS_TIME_LONG_MINS_2ND_DEFAULT, IDS_TIME_LONG_MINS_2ND_SINGULAR,
-    IDS_TIME_LONG_MINS_2ND_ZERO, IDS_TIME_LONG_MINS_2ND_TWO,
-    IDS_TIME_LONG_MINS_2ND_FEW, IDS_TIME_LONG_MINS_2ND_MANY },
+  IDS_TIME_LONG_MINS_2ND,
   "one{# minute}",
   " other{# minutes}"
 };
 static const Pluralities IDS_DURATION_DAY_1ST = {
-  { IDS_TIME_DAYS_1ST_DEFAULT, IDS_TIME_DAYS_1ST_SINGULAR,
-    IDS_TIME_DAYS_1ST_ZERO, IDS_TIME_DAYS_1ST_TWO,
-    IDS_TIME_DAYS_1ST_FEW, IDS_TIME_DAYS_1ST_MANY },
-  "one{# day }",
-  " other{# days }"
+  IDS_TIME_DAYS_1ST,
+  "one{# day and }",
+  " other{# days and }"
 };
 static const Pluralities IDS_DURATION_HOUR_2ND = {
-  { IDS_TIME_HOURS_2ND_DEFAULT, IDS_TIME_HOURS_2ND_SINGULAR,
-    IDS_TIME_HOURS_2ND_ZERO, IDS_TIME_HOURS_2ND_TWO,
-    IDS_TIME_HOURS_2ND_FEW, IDS_TIME_HOURS_2ND_MANY },
+  IDS_TIME_HOURS_2ND,
   "one{# hour}",
   " other{# hours}"
 };
@@ -212,10 +173,12 @@ Formatter::Formatter(const Pluralities& sec_pluralities,
 
 void Formatter::Format(Unit unit,
                        int value,
-                       icu::UnicodeString& formatted_string) const {
+                       icu::UnicodeString* formatted_string) const {
   DCHECK(simple_format_[unit]);
+  DCHECK(formatted_string->isEmpty() == TRUE);
   UErrorCode error = U_ZERO_ERROR;
-  formatted_string = simple_format_[unit]->format(value, error);
+  l10n_util::FormatNumberInPlural(*simple_format_[unit],
+                                  value, formatted_string, &error);
   DCHECK(U_SUCCESS(error)) << "Error in icu::PluralFormat::format().";
   return;
 }
@@ -223,42 +186,46 @@ void Formatter::Format(Unit unit,
 void Formatter::Format(TwoUnits units,
                        int value_1,
                        int value_2,
-                       icu::UnicodeString& formatted_string) const {
+                       icu::UnicodeString* formatted_string) const {
   DCHECK(detailed_format_[units][0])
       << "Detailed() not implemented for your (format, length) combination!";
   DCHECK(detailed_format_[units][1])
       << "Detailed() not implemented for your (format, length) combination!";
+  DCHECK(formatted_string->isEmpty() == TRUE);
   UErrorCode error = U_ZERO_ERROR;
-  formatted_string = detailed_format_[units][0]->format(value_1, error);
+  l10n_util::FormatNumberInPlural(*detailed_format_[units][0], value_1,
+                                  formatted_string, &error);
   DCHECK(U_SUCCESS(error));
-  formatted_string += detailed_format_[units][1]->format(value_2, error);
+  l10n_util::FormatNumberInPlural(*detailed_format_[units][1], value_2,
+                                  formatted_string, &error);
   DCHECK(U_SUCCESS(error));
   return;
 }
 
-scoped_ptr<icu::PluralFormat> Formatter::CreateFallbackFormat(
+scoped_ptr<icu::MessageFormat> Formatter::CreateFallbackFormat(
     const icu::PluralRules& rules,
     const Pluralities& pluralities) const {
-  icu::UnicodeString pattern;
+  icu::UnicodeString pattern("{NUMBER, plural, ");
   if (rules.isKeyword(UNICODE_STRING_SIMPLE("one")))
     pattern += icu::UnicodeString(pluralities.fallback_one);
   pattern += icu::UnicodeString(pluralities.fallback_other);
+  pattern.append(UChar(0x7du));  // "}" = U+007D
 
   UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::PluralFormat> format(
-      new icu::PluralFormat(rules, pattern, error));
+  scoped_ptr<icu::MessageFormat> format(
+      new icu::MessageFormat(pattern, error));
   DCHECK(U_SUCCESS(error));
   return format.Pass();
 }
 
-scoped_ptr<icu::PluralFormat> Formatter::InitFormat(
+scoped_ptr<icu::MessageFormat> Formatter::InitFormat(
     const Pluralities& pluralities) {
   if (!formatter_force_fallback) {
-    icu::UnicodeString pattern;
-    std::vector<int> ids;
-    for (size_t j = 0; j < kNumberPluralities; ++j)
-      ids.push_back(pluralities.ids[j]);
-    scoped_ptr<icu::PluralFormat> format = l10n_util::BuildPluralFormat(ids);
+    base::string16 pattern = l10n_util::GetStringUTF16(pluralities.id);
+    UErrorCode error = U_ZERO_ERROR;
+    scoped_ptr<icu::MessageFormat> format(new icu::MessageFormat(
+        icu::UnicodeString(FALSE, pattern.data(), pattern.length()), error));
+    DCHECK(U_SUCCESS(error));
     if (format.get())
       return format.Pass();
   }

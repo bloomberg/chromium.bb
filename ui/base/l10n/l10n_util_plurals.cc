@@ -23,43 +23,15 @@ scoped_ptr<icu::PluralRules> BuildPluralRules() {
   return rules.Pass();
 }
 
-scoped_ptr<icu::PluralFormat> BuildPluralFormat(
-    const std::vector<int>& message_ids) {
-  const icu::UnicodeString kKeywords[] = {
-      UNICODE_STRING_SIMPLE("other"),
-      UNICODE_STRING_SIMPLE("one"),
-      UNICODE_STRING_SIMPLE("zero"),
-      UNICODE_STRING_SIMPLE("two"),
-      UNICODE_STRING_SIMPLE("few"),
-      UNICODE_STRING_SIMPLE("many"),
-  };
-  DCHECK_EQ(message_ids.size(), arraysize(kKeywords));
-  UErrorCode err = U_ZERO_ERROR;
-  scoped_ptr<icu::PluralRules> rules(BuildPluralRules());
-
-  icu::UnicodeString pattern;
-  for (size_t i = 0; i < arraysize(kKeywords); ++i) {
-    int msg_id = message_ids[i];
-    std::string sub_pattern = GetStringUTF8(msg_id);
-    // NA means this keyword is not used in the current locale.
-    // Even if a translator translated for this keyword, we do not
-    // use it unless it's 'other' (i=0) or it's defined in the rules
-    // for the current locale. Special-casing of 'other' will be removed
-    // once ICU's isKeyword is fixed to return true for isKeyword('other').
-    if (sub_pattern.compare("NA") != 0 &&
-        (i == 0 || rules->isKeyword(kKeywords[i]))) {
-      pattern += kKeywords[i];
-      pattern += UNICODE_STRING_SIMPLE("{");
-      pattern += icu::UnicodeString(sub_pattern.c_str(), "UTF-8");
-      pattern += UNICODE_STRING_SIMPLE("}");
-    }
-  }
-  scoped_ptr<icu::PluralFormat> format =
-      make_scoped_ptr(new icu::PluralFormat(*rules, pattern, err));
-  if (!U_SUCCESS(err)) {
-    return nullptr;
-  }
-  return format.Pass();
+void FormatNumberInPlural(const icu::MessageFormat& format, int number,
+                          icu::UnicodeString* result, UErrorCode* err) {
+  if (U_FAILURE(*err)) return;
+  icu::Formattable formattable(number);
+  icu::FieldPosition ignore(icu::FieldPosition::DONT_CARE);
+  format.format(&formattable, 1, *result, ignore, *err);
+  DCHECK(U_SUCCESS(*err));
+  return;
 }
+
 
 }  // namespace l10n_util

@@ -441,37 +441,14 @@ base::string16 ExtensionInstallPrompt::Prompt::GetPermissionsHeading(
 }
 
 base::string16 ExtensionInstallPrompt::Prompt::GetRetainedFilesHeading() const {
-  const int kRetainedFilesMessageIDs[6] = {
-      IDS_EXTENSION_PROMPT_RETAINED_FILES_DEFAULT,
-      IDS_EXTENSION_PROMPT_RETAINED_FILE_SINGULAR,
-      IDS_EXTENSION_PROMPT_RETAINED_FILES_ZERO,
-      IDS_EXTENSION_PROMPT_RETAINED_FILES_TWO,
-      IDS_EXTENSION_PROMPT_RETAINED_FILES_FEW,
-      IDS_EXTENSION_PROMPT_RETAINED_FILES_MANY,
-  };
-  std::vector<int> message_ids(
-      kRetainedFilesMessageIDs,
-      kRetainedFilesMessageIDs + arraysize(kRetainedFilesMessageIDs));
-
-  return l10n_util::GetPluralStringFUTF16(message_ids, GetRetainedFileCount());
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_EXTENSION_PROMPT_RETAINED_FILES, GetRetainedFileCount());
 }
 
 base::string16 ExtensionInstallPrompt::Prompt::GetRetainedDevicesHeading()
     const {
-  const int kRetainedDevicesMessageIDs[6] = {
-      IDS_EXTENSION_PROMPT_RETAINED_DEVICES_DEFAULT,
-      IDS_EXTENSION_PROMPT_RETAINED_DEVICE_SINGULAR,
-      IDS_EXTENSION_PROMPT_RETAINED_DEVICES_ZERO,
-      IDS_EXTENSION_PROMPT_RETAINED_DEVICES_TWO,
-      IDS_EXTENSION_PROMPT_RETAINED_DEVICES_FEW,
-      IDS_EXTENSION_PROMPT_RETAINED_DEVICES_MANY,
-  };
-  std::vector<int> message_ids(
-      kRetainedDevicesMessageIDs,
-      kRetainedDevicesMessageIDs + arraysize(kRetainedDevicesMessageIDs));
-
-  return l10n_util::GetPluralStringFUTF16(message_ids,
-                                          GetRetainedDeviceCount());
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_EXTENSION_PROMPT_RETAINED_DEVICES, GetRetainedDeviceCount());
 }
 
 bool ExtensionInstallPrompt::Prompt::ShouldShowPermissions() const {

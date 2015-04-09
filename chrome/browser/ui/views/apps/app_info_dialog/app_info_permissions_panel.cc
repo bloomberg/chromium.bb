@@ -294,19 +294,8 @@ int AppInfoPermissionsPanel::GetRetainedFileCount() const {
 }
 
 base::string16 AppInfoPermissionsPanel::GetRetainedFileHeading() const {
-  const int kRetainedFilesMessageIDs[6] = {
-      IDS_APPLICATION_INFO_RETAINED_FILES_DEFAULT,
-      IDS_APPLICATION_INFO_RETAINED_FILE_SINGULAR,
-      IDS_APPLICATION_INFO_RETAINED_FILES_ZERO,
-      IDS_APPLICATION_INFO_RETAINED_FILES_TWO,
-      IDS_APPLICATION_INFO_RETAINED_FILES_FEW,
-      IDS_APPLICATION_INFO_RETAINED_FILES_MANY,
-  };
-  std::vector<int> message_ids(
-      kRetainedFilesMessageIDs,
-      kRetainedFilesMessageIDs + arraysize(kRetainedFilesMessageIDs));
-
-  return l10n_util::GetPluralStringFUTF16(message_ids, GetRetainedFileCount());
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_APPLICATION_INFO_RETAINED_FILES, GetRetainedFileCount());
 }
 
 const std::vector<base::string16>
@@ -346,20 +335,8 @@ int AppInfoPermissionsPanel::GetRetainedDeviceCount() const {
 }
 
 base::string16 AppInfoPermissionsPanel::GetRetainedDeviceHeading() const {
-  const int kRetainedDevicesMessageIDs[6] = {
-      IDS_APPLICATION_INFO_RETAINED_DEVICES_DEFAULT,
-      IDS_APPLICATION_INFO_RETAINED_DEVICE_SINGULAR,
-      IDS_APPLICATION_INFO_RETAINED_DEVICES_ZERO,
-      IDS_APPLICATION_INFO_RETAINED_DEVICES_TWO,
-      IDS_APPLICATION_INFO_RETAINED_DEVICES_FEW,
-      IDS_APPLICATION_INFO_RETAINED_DEVICES_MANY,
-  };
-  std::vector<int> message_ids(
-      kRetainedDevicesMessageIDs,
-      kRetainedDevicesMessageIDs + arraysize(kRetainedDevicesMessageIDs));
-
-  return l10n_util::GetPluralStringFUTF16(message_ids,
-                                          GetRetainedDeviceCount());
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_APPLICATION_INFO_RETAINED_DEVICES, GetRetainedDeviceCount());
 }
 
 const std::vector<base::string16> AppInfoPermissionsPanel::GetRetainedDevices()

@@ -159,17 +159,17 @@ class TimeFormatTest : public ::testing::Test {
         TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT, delta_2d_));
 
     // Test English strings (detailed, singular and plural).
-    EXPECT_EQ(ASCIIToUTF16("1 minute 2 seconds"), TimeFormat::Detailed(
+    EXPECT_EQ(ASCIIToUTF16("1 minute and 2 seconds"), TimeFormat::Detailed(
         TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 3, delta_1m2s_));
-    EXPECT_EQ(ASCIIToUTF16("2 minutes 1 second"), TimeFormat::Detailed(
+    EXPECT_EQ(ASCIIToUTF16("2 minutes and 1 second"), TimeFormat::Detailed(
         TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 3, delta_2m1s_));
-    EXPECT_EQ(ASCIIToUTF16("1 hour 2 minutes"), TimeFormat::Detailed(
+    EXPECT_EQ(ASCIIToUTF16("1 hour and 2 minutes"), TimeFormat::Detailed(
         TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 3, delta_1h2m_));
-    EXPECT_EQ(ASCIIToUTF16("2 hours 1 minute"), TimeFormat::Detailed(
+    EXPECT_EQ(ASCIIToUTF16("2 hours and 1 minute"), TimeFormat::Detailed(
         TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 3, delta_2h1m_));
-    EXPECT_EQ(ASCIIToUTF16("1 day 2 hours"), TimeFormat::Detailed(
+    EXPECT_EQ(ASCIIToUTF16("1 day and 2 hours"), TimeFormat::Detailed(
         TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 3, delta_1d2h_));
-    EXPECT_EQ(ASCIIToUTF16("2 days 1 hour"), TimeFormat::Detailed(
+    EXPECT_EQ(ASCIIToUTF16("2 days and 1 hour"), TimeFormat::Detailed(
         TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 3, delta_2d1h_));
   }
 
@@ -267,19 +267,19 @@ TEST_F(TimeFormatTest, SimpleAndDetailedRounding) {
   EXPECT_EQ(ASCIIToUTF16("59 seconds"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 100,
       delta_59s499ms_));
-  EXPECT_EQ(ASCIIToUTF16("1 minute 0 seconds"), TimeFormat::Detailed(
+  EXPECT_EQ(ASCIIToUTF16("1 minute and 0 seconds"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 2,
       delta_59s500ms_));
   EXPECT_EQ(ASCIIToUTF16("1 minute"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 1,
       delta_59s500ms_));
-  EXPECT_EQ(ASCIIToUTF16("59 minutes 59 seconds"), TimeFormat::Detailed(
+  EXPECT_EQ(ASCIIToUTF16("59 minutes and 59 seconds"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 60,
       delta_59m59s499ms_));
-  EXPECT_EQ(ASCIIToUTF16("1 hour 0 minutes"), TimeFormat::Detailed(
+  EXPECT_EQ(ASCIIToUTF16("1 hour and 0 minutes"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 59,
       delta_59m59s499ms_));
-  EXPECT_EQ(ASCIIToUTF16("1 hour 0 minutes"), TimeFormat::Detailed(
+  EXPECT_EQ(ASCIIToUTF16("1 hour and 0 minutes"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 2,
       delta_59m59s499ms_));
   EXPECT_EQ(ASCIIToUTF16("1 hour"), TimeFormat::Detailed(
@@ -288,16 +288,16 @@ TEST_F(TimeFormatTest, SimpleAndDetailedRounding) {
   EXPECT_EQ(ASCIIToUTF16("1 hour"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 1,
       delta_59m59s500ms_));
-  EXPECT_EQ(ASCIIToUTF16("1 hour 0 minutes"), TimeFormat::Detailed(
+  EXPECT_EQ(ASCIIToUTF16("1 hour and 0 minutes"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 2,
       delta_59m59s500ms_));
-  EXPECT_EQ(ASCIIToUTF16("23 hours 59 minutes"), TimeFormat::Detailed(
+  EXPECT_EQ(ASCIIToUTF16("23 hours and 59 minutes"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 24,
       delta_23h59m29s999ms_));
-  EXPECT_EQ(ASCIIToUTF16("1 day 0 hours"), TimeFormat::Detailed(
+  EXPECT_EQ(ASCIIToUTF16("1 day and 0 hours"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 23,
       delta_23h59m29s999ms_));
-  EXPECT_EQ(ASCIIToUTF16("1 day 0 hours"), TimeFormat::Detailed(
+  EXPECT_EQ(ASCIIToUTF16("1 day and 0 hours"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 2,
       delta_23h59m29s999ms_));
   EXPECT_EQ(ASCIIToUTF16("1 day"), TimeFormat::Detailed(
@@ -306,10 +306,10 @@ TEST_F(TimeFormatTest, SimpleAndDetailedRounding) {
   EXPECT_EQ(ASCIIToUTF16("1 day"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 1,
       delta_23h59m30s_));
-  EXPECT_EQ(ASCIIToUTF16("1 day 0 hours"), TimeFormat::Detailed(
+  EXPECT_EQ(ASCIIToUTF16("1 day and 0 hours"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, 2,
       delta_23h59m30s_));
-  EXPECT_EQ(ASCIIToUTF16("1 day 0 hours"), TimeFormat::Detailed(
+  EXPECT_EQ(ASCIIToUTF16("1 day and 0 hours"), TimeFormat::Detailed(
       TimeFormat::FORMAT_DURATION, TimeFormat::LENGTH_LONG, -1,
       delta_23h59m30s_));
 }

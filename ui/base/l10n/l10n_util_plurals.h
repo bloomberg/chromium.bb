@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "third_party/icu/source/i18n/unicode/plurfmt.h"
+#include "third_party/icu/source/i18n/unicode/msgfmt.h"
 #include "third_party/icu/source/i18n/unicode/plurrule.h"
 
 namespace l10n_util {
@@ -20,10 +20,12 @@ namespace l10n_util {
 // Returns a PluralRules for the current locale.
 scoped_ptr<icu::PluralRules> BuildPluralRules();
 
-// Returns a PluralFormat from |message_ids|.  |message_ids| must be size 6 and
-// in order: default, singular, zero, two, few, many.
-scoped_ptr<icu::PluralFormat> BuildPluralFormat(
-    const std::vector<int>& message_ids);
+// Formats |number| using MessageFormat |format| and appends the result
+// to |append_to|.
+// |format| has to be generated with ICU's plural message format.
+// See http://userguide.icu-project.org/formatparse/messages
+void FormatNumberInPlural(const icu::MessageFormat& format, int number,
+                          icu::UnicodeString* append_to, UErrorCode* err);
 
 }  // namespace l10n_util
 
