@@ -11,6 +11,15 @@
 
 namespace rappor {
 
+void SampleString(RapporService* rappor_service,
+                  const std::string& metric,
+                  RapporType type,
+                  const std::string& sample) {
+  if (!rappor_service)
+    return;
+  rappor_service->RecordSample(metric, type, sample);
+}
+
 std::string GetDomainAndRegistrySampleFromGURL(const GURL& gurl) {
   if (gurl.SchemeIsHTTPOrHTTPS()) {
     if (net::IsLocalhost(gurl.host()))

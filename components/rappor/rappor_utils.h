@@ -7,11 +7,20 @@
 
 #include <string>
 
+#include "components/rappor/rappor_service.h"
+
 class GURL;
 
 namespace rappor {
 
 class RapporService;
+
+// Records a string to a Rappor metric.
+// If |rappor_service| is NULL, this call does nothing.
+void SampleString(RapporService* rappor_service,
+                  const std::string& metric,
+                  RapporType type,
+                  const std::string& sample);
 
 // Extract the domain and registry for a sample from a GURL.
 // For file:// urls this will just return "file://" and for other special
