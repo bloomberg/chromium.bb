@@ -139,6 +139,30 @@ cr.define('extensions', function() {
   'use strict';
 
   /**
+   * Compares two extensions for the order they should appear in the list.
+   * @param {ExtensionInfo} a The first extension.
+   * @param {ExtensionInfo} b The second extension.
+   * returns {number} -1 if A comes before B, 1 if A comes after B, 0 if equal.
+   */
+  function compareExtensions(a, b) {
+    function compare(x, y) {
+      return x < y ? -1 : (x > y ? 1 : 0);
+    }
+    function compareLocation(x, y) {
+      if (x.location == y.location)
+        return 0;
+      if (x.location == chrome.developerPrivate.Location.UNPACKED)
+        return -1;
+      if (y.location == chrome.developerPrivate.Location.UNPACKED)
+        return 1;
+      return 0;
+    }
+    return compareLocation(a, b) ||
+           compare(a.name.toLowerCase(), b.name.toLowerCase()) ||
+           compare(a.id, b.id);
+  }
+
+  /**
    * Creates a new list of extensions.
    * @constructor
    * @extends {HTMLDivElement}
@@ -257,18 +281,7 @@ cr.define('extensions', function() {
             function(extensions) {
           // Sort in order of unpacked vs. packed, followed by name, followed by
           // id.
-          extensions.sort(function(a, b) {
-            function compare(x, y) {
-              return x < y ? -1 : (x > y ? 1 : 0);
-            }
-            function compareLocation(x, y) {
-              return x.location == chrome.developerPrivate.Location.UNPACKED ?
-                  -1 : (x.location == y.location ? 0 : 1);
-            }
-            return compareLocation(a, b) ||
-                   compare(a.name.toLowerCase(), b.name.toLowerCase()) ||
-                   compare(a.id, b.id);
-          });
+          extensions.sort(compareExtensions);
           this.extensions_ = extensions;
           this.showExtensionNodes_();
           resolve();
@@ -1018,6 +1031,25 @@ cr.define('extensions', function() {
      * @private
      */
     updateExtension_: function(extension) {
+      var currIndex = -1;
+      for (var i = 0; i < this.extensions_.length; ++i) {
+        if (this.extensions_[i].id == extension.id) {
+          currIndex = i;
+          break;
+        }
+      }
+      if (currIndex != -1) {
+        // If there is a current version of the extension, update it with the
+        // new version.
+        this.extensions_[currIndex] = extension;
+      } else {
+        // If the extension isn't found, push it back and sort. Technically, we
+        // could optimize by inserting it at the right location, but since this
+        // only happens on extension install, it's not worth it.
+        this.extensions_.push(extension);
+        this.extensions_.sort(compareExtensions);
+      }
+
       var node = /** @type {ExtensionFocusRow} */ ($(extension.id));
       if (node) {
         this.updateNode_(extension, node);
