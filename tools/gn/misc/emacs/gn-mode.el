@@ -20,8 +20,6 @@
 
 ;; - We syntax highlight builtin actions, but don't highlight instantiations of
 ;;   templates. Should we?
-;; - `fill-paragraph' works for comments, but when pointed at code, breaks
-;;   spectacularly.
 
 
 
@@ -118,6 +116,14 @@ variable name or the '{{' and '}}' which surround it."
      (and (not (smie-rule-bolp)) (smie-rule-prev-p "else")
           (smie-rule-parent)))))
 
+(defun gn-fill-paragraph (&optional justify)
+  "We only fill inside of comments in GN mode."
+  (interactive "P")
+  (or (fill-comment-paragraph justify)
+      ;; Never return nil; `fill-paragraph' will perform its default behavior
+      ;; if we do.
+      t))
+
 ;;;###autoload
 (define-derived-mode gn-mode prog-mode "GN"
   "Major mode for editing gn (Generate Ninja)."
@@ -126,6 +132,8 @@ variable name or the '{{' and '}}' which surround it."
   (setq-local comment-use-syntax t)
   (setq-local comment-start "#")
   (setq-local comment-end "")
+
+  (setq-local fill-paragraph-function 'gn-fill-paragraph)
 
   (setq-local font-lock-defaults '(gn-font-lock-keywords))
 
