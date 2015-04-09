@@ -6,7 +6,12 @@
 #define UI_COMPOSITOR_PAINT_CONTEXT_H_
 
 #include "base/logging.h"
+#include "ui/compositor/compositor_export.h"
 #include "ui/gfx/geometry/rect.h"
+
+namespace cc {
+class DisplayItemList;
+}
 
 namespace gfx {
 class Canvas;
@@ -17,23 +22,26 @@ class ClipTransformRecorder;
 class CompositingRecorder;
 class PaintRecorder;
 
-class PaintContext {
+class COMPOSITOR_EXPORT PaintContext {
  public:
-  // Construct a PaintContext that can only re-paint the area in the
+  // Construct a PaintContext that may only re-paint the area in the
   // |invalidation|.
-  PaintContext(gfx::Canvas* canvas, const gfx::Rect& invalidation)
-      : canvas_(canvas), invalidation_(invalidation) {
-#if DCHECK_IS_ON()
-    root_visited_ = nullptr;
-#endif
-  }
+  PaintContext(gfx::Canvas* canvas, const gfx::Rect& invalidation);
+
+  // Construct a PaintContext that may only re-paint the area in the
+  // |invalidation|.
+  PaintContext(cc::DisplayItemList* list,
+               float device_scale_factor,
+               const gfx::Rect& bounds,
+               const gfx::Rect& invalidation);
 
   // Construct a PaintContext that will re-paint everything (no consideration
   // for invalidation).
-  explicit PaintContext(gfx::Canvas* canvas)
-      : PaintContext(canvas, gfx::Rect()) {}
+  explicit PaintContext(gfx::Canvas* canvas);
 
-  ~PaintContext() {}
+  PaintContext(const PaintContext& other);
+
+  ~PaintContext();
 
   // Clone a PaintContext with an additional |offset|.
   PaintContext CloneWithPaintOffset(const gfx::Vector2d& offset) const {
@@ -76,17 +84,17 @@ class PaintContext {
   friend class CompositingRecorder;
   friend class PaintRecorder;
 
+  PaintContext& operator=(const PaintContext& other) = delete;
+
   // Clone a PaintContext with an additional |offset|.
-  PaintContext(const PaintContext& other, const gfx::Vector2d& offset)
-      : canvas_(other.canvas_),
-        invalidation_(other.invalidation_),
-        offset_(other.offset_ + offset) {
-#if DCHECK_IS_ON()
-    root_visited_ = other.root_visited_;
-#endif
-  }
+  PaintContext(const PaintContext& other, const gfx::Vector2d& offset);
 
   gfx::Canvas* canvas_;
+  cc::DisplayItemList* list_;
+  float device_scale_factor_;
+  // The bounds of the area being painted. Not all of it may be invalidated from
+  // the previous frame.
+  gfx::Rect bounds_;
   // Invalidation in the space of the paint root (ie the space of the layer
   // backing the paint taking place).
   gfx::Rect invalidation_;

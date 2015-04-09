@@ -20,6 +20,7 @@
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace cc_blink {
@@ -87,8 +88,13 @@ void WebDisplayItemListImpl::appendCompositingItem(
     SkXfermode::Mode xfermode,
     SkRect* bounds,
     SkColorFilter* color_filter) {
+  DCHECK_GE(opacity, 0.f);
+  DCHECK_LE(opacity, 1.f);
+  // TODO(ajuma): This should really be rounding instead of flooring the alpha
+  // value, but that breaks slimming paint reftests.
   display_item_list_->AppendItem(cc::CompositingDisplayItem::Create(
-      opacity, xfermode, bounds, skia::SharePtr(color_filter)));
+      static_cast<uint8_t>(gfx::ToFlooredInt(255 * opacity)), xfermode, bounds,
+      skia::SharePtr(color_filter)));
 }
 
 void WebDisplayItemListImpl::appendEndCompositingItem() {

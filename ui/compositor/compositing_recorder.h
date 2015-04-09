@@ -9,10 +9,6 @@
 #include "base/macros.h"
 #include "ui/compositor/compositor_export.h"
 
-namespace gfx {
-class Canvas;
-}
-
 namespace ui {
 class PaintContext;
 
@@ -29,7 +25,7 @@ class COMPOSITOR_EXPORT CompositingRecorder {
   ~CompositingRecorder();
 
  private:
-  gfx::Canvas* canvas_;
+  const PaintContext& context_;
   bool saved_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositingRecorder);

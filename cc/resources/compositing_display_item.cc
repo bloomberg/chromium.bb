@@ -13,11 +13,11 @@
 
 namespace cc {
 
-CompositingDisplayItem::CompositingDisplayItem(float opacity,
+CompositingDisplayItem::CompositingDisplayItem(uint8_t alpha,
                                                SkXfermode::Mode xfermode,
                                                SkRect* bounds,
                                                skia::RefPtr<SkColorFilter> cf)
-    : opacity_(opacity),
+    : alpha_(alpha),
       xfermode_(xfermode),
       has_bounds_(!!bounds),
       color_filter_(cf) {
@@ -32,7 +32,7 @@ void CompositingDisplayItem::Raster(SkCanvas* canvas,
                                     SkDrawPictureCallback* callback) const {
   SkPaint paint;
   paint.setXfermodeMode(xfermode_);
-  paint.setAlpha(opacity_ * 255);
+  paint.setAlpha(alpha_);
   paint.setColorFilter(color_filter_.get());
   canvas->saveLayer(has_bounds_ ? &bounds_ : nullptr, &paint);
 }
@@ -54,7 +54,7 @@ size_t CompositingDisplayItem::PictureMemoryUsage() const {
 void CompositingDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf(
-      "CompositingDisplayItem opacity: %f, xfermode: %d", opacity_, xfermode_));
+      "CompositingDisplayItem alpha: %d, xfermode: %d", alpha_, xfermode_));
   if (has_bounds_)
     array->AppendString(base::StringPrintf(
         ", bounds: [%f, %f, %f, %f]", static_cast<float>(bounds_.x()),

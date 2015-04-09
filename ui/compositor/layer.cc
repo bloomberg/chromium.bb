@@ -754,8 +754,18 @@ void Layer::PaintContents(
 scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
-  NOTIMPLEMENTED();
-  return cc::DisplayItemList::Create();
+  TRACE_EVENT1("ui", "Layer::PaintContentsToDisplayList", "name", name_);
+  scoped_refptr<cc::DisplayItemList> list = cc::DisplayItemList::Create();
+  if (delegate_) {
+    // TODO(danakj): Save the invalidation on the layer and pass that down
+    // instead of the |clip| here. That will break everything until View
+    // early-outs emit cached display items instead of nothing.
+    gfx::Rect invalidation = clip;
+    DCHECK(clip.Contains(invalidation));
+    delegate_->OnPaintLayer(
+        PaintContext(list.get(), device_scale_factor_, clip, invalidation));
+  }
+  return list;
 }
 
 bool Layer::FillsBoundsCompletely() const { return fills_bounds_completely_; }

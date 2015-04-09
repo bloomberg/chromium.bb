@@ -14,6 +14,7 @@ COMPOSITOR_EXPORT extern const char kEnablePixelOutputInTests[];
 COMPOSITOR_EXPORT extern const char kUIDisableThreadedCompositing[];
 COMPOSITOR_EXPORT extern const char kUIEnableCompositorAnimationTimelines[];
 COMPOSITOR_EXPORT extern const char kUIEnableImplSidePainting[];
+COMPOSITOR_EXPORT extern const char kUIEnableSlimmingPaint[];
 COMPOSITOR_EXPORT extern const char kUIEnableZeroCopy[];
 COMPOSITOR_EXPORT extern const char kUIShowPaintRects[];
 
@@ -24,6 +25,7 @@ namespace ui {
 COMPOSITOR_EXPORT bool IsUIImplSidePaintingEnabled();
 bool IsUIZeroCopyEnabled();
 bool IsUIOneCopyEnabled();
+bool IsUISlimmingPaintEnabled();
 
 }  // namespace ui
 

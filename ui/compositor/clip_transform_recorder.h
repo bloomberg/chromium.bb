@@ -5,11 +5,17 @@
 #ifndef UI_COMPOSITOR_CLIP_TRANSFORM_RECORDER_H_
 #define UI_COMPOSITOR_CLIP_TRANSFORM_RECORDER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "ui/compositor/compositor_export.h"
 
+namespace cc {
+class DisplayItem;
+class DisplayItemList;
+}
+
 namespace gfx {
-class Canvas;
 class Path;
 class Rect;
 class Transform;
@@ -34,7 +40,8 @@ class COMPOSITOR_EXPORT ClipTransformRecorder {
   void Transform(const gfx::Transform& transform);
 
  private:
-  gfx::Canvas* canvas_;
+  const PaintContext& context_;
+  std::vector<cc::DisplayItem*> closers_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipTransformRecorder);
 };

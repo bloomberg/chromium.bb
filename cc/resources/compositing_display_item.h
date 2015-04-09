@@ -24,12 +24,12 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
   ~CompositingDisplayItem() override;
 
   static scoped_ptr<CompositingDisplayItem> Create(
-      float opacity,
+      uint8_t alpha,
       SkXfermode::Mode xfermode,
       SkRect* bounds,
       skia::RefPtr<SkColorFilter> color_filter) {
     return make_scoped_ptr(
-        new CompositingDisplayItem(opacity, xfermode, bounds, color_filter));
+        new CompositingDisplayItem(alpha, xfermode, bounds, color_filter));
   }
 
   void Raster(SkCanvas* canvas, SkDrawPictureCallback* callback) const override;
@@ -40,13 +40,13 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
  protected:
-  CompositingDisplayItem(float opacity,
+  CompositingDisplayItem(uint8_t alpha,
                          SkXfermode::Mode,
                          SkRect* bounds,
                          skia::RefPtr<SkColorFilter>);
 
  private:
-  float opacity_;
+  uint8_t alpha_;
   SkXfermode::Mode xfermode_;
   bool has_bounds_;
   SkRect bounds_;
