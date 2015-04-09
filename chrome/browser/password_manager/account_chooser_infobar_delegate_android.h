@@ -12,7 +12,7 @@
 class InfoBarService;
 
 namespace password_manager {
-enum class CredentialType : unsigned int;
+enum class CredentialType;
 }
 
 namespace autofill {

@@ -16,7 +16,7 @@ class WebContents;
 }  // namespace content
 
 namespace password_manager {
-enum class CredentialType : unsigned int;
+enum class CredentialType;
 }
 
 // This mock is used in tests to ensure that we're just testing the controller

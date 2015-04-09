@@ -22,8 +22,7 @@ namespace password_manager {
 // something reasonably sane.
 const size_t kMaxFederations = 50u;
 
-// TODO(melandory): Remove unsigned int.
-enum class CredentialType : unsigned int {
+enum class CredentialType {
   CREDENTIAL_TYPE_EMPTY = 0,
   CREDENTIAL_TYPE_LOCAL,
   CREDENTIAL_TYPE_FEDERATED,

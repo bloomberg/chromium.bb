@@ -22,7 +22,7 @@ class WebContents;
 }
 
 namespace password_manager {
-enum class CredentialType : unsigned int;
+enum class CredentialType;
 }
 
 // This model provides data for the ManagePasswordsBubble and controls the

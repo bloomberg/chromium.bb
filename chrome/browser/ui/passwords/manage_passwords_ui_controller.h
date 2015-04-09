@@ -19,7 +19,7 @@ class WebContents;
 }
 
 namespace password_manager {
-enum class CredentialType : unsigned int;
+enum class CredentialType;
 struct CredentialInfo;
 class PasswordFormManager;
 }
