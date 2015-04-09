@@ -28,20 +28,26 @@ namespace {
 class MojoChannelFactory : public ChannelFactory {
  public:
   MojoChannelFactory(ChannelMojo::Delegate* delegate,
+                     scoped_refptr<base::TaskRunner> io_runner,
                      ChannelHandle channel_handle,
                      Channel::Mode mode)
-      : delegate_(delegate), channel_handle_(channel_handle), mode_(mode) {}
+      : delegate_(delegate),
+        io_runner_(io_runner),
+        channel_handle_(channel_handle),
+        mode_(mode) {}
 
   std::string GetName() const override {
     return channel_handle_.name;
   }
 
   scoped_ptr<Channel> BuildChannel(Listener* listener) override {
-    return ChannelMojo::Create(delegate_, channel_handle_, mode_, listener);
+    return ChannelMojo::Create(delegate_, io_runner_, channel_handle_, mode_,
+                               listener);
   }
 
  private:
   ChannelMojo::Delegate* delegate_;
+  scoped_refptr<base::TaskRunner> io_runner_;
   ChannelHandle channel_handle_;
   Channel::Mode mode_;
 };
@@ -53,6 +59,7 @@ class ClientChannelMojo : public ChannelMojo,
                           public mojo::ErrorHandler {
  public:
   ClientChannelMojo(ChannelMojo::Delegate* delegate,
+                    scoped_refptr<base::TaskRunner> io_runner,
                     const ChannelHandle& handle,
                     Listener* listener);
   ~ClientChannelMojo() override;
@@ -73,9 +80,10 @@ class ClientChannelMojo : public ChannelMojo,
 };
 
 ClientChannelMojo::ClientChannelMojo(ChannelMojo::Delegate* delegate,
+                                     scoped_refptr<base::TaskRunner> io_runner,
                                      const ChannelHandle& handle,
                                      Listener* listener)
-    : ChannelMojo(delegate, handle, Channel::MODE_CLIENT, listener),
+    : ChannelMojo(delegate, io_runner, handle, Channel::MODE_CLIENT, listener),
       binding_(this) {
 }
 
@@ -104,6 +112,7 @@ void ClientChannelMojo::Init(
 class ServerChannelMojo : public ChannelMojo, public mojo::ErrorHandler {
  public:
   ServerChannelMojo(ChannelMojo::Delegate* delegate,
+                    scoped_refptr<base::TaskRunner> io_runner,
                     const ChannelHandle& handle,
                     Listener* listener);
   ~ServerChannelMojo() override;
@@ -126,9 +135,10 @@ class ServerChannelMojo : public ChannelMojo, public mojo::ErrorHandler {
 };
 
 ServerChannelMojo::ServerChannelMojo(ChannelMojo::Delegate* delegate,
+                                     scoped_refptr<base::TaskRunner> io_runner,
                                      const ChannelHandle& handle,
                                      Listener* listener)
-    : ChannelMojo(delegate, handle, Channel::MODE_SERVER, listener) {
+    : ChannelMojo(delegate, io_runner, handle, Channel::MODE_SERVER, listener) {
 }
 
 ServerChannelMojo::~ServerChannelMojo() {
@@ -196,17 +206,19 @@ bool ChannelMojo::ShouldBeUsed() {
 }
 
 // static
-scoped_ptr<ChannelMojo> ChannelMojo::Create(ChannelMojo::Delegate* delegate,
-                                            const ChannelHandle& channel_handle,
-                                            Mode mode,
-                                            Listener* listener) {
+scoped_ptr<ChannelMojo> ChannelMojo::Create(
+    ChannelMojo::Delegate* delegate,
+    scoped_refptr<base::TaskRunner> io_runner,
+    const ChannelHandle& channel_handle,
+    Mode mode,
+    Listener* listener) {
   switch (mode) {
     case Channel::MODE_CLIENT:
       return make_scoped_ptr(
-          new ClientChannelMojo(delegate, channel_handle, listener));
+          new ClientChannelMojo(delegate, io_runner, channel_handle, listener));
     case Channel::MODE_SERVER:
       return make_scoped_ptr(
-          new ServerChannelMojo(delegate, channel_handle, listener));
+          new ServerChannelMojo(delegate, io_runner, channel_handle, listener));
     default:
       NOTREACHED();
       return nullptr;
@@ -216,20 +228,23 @@ scoped_ptr<ChannelMojo> ChannelMojo::Create(ChannelMojo::Delegate* delegate,
 // static
 scoped_ptr<ChannelFactory> ChannelMojo::CreateServerFactory(
     ChannelMojo::Delegate* delegate,
+    scoped_refptr<base::TaskRunner> io_runner,
     const ChannelHandle& channel_handle) {
-  return make_scoped_ptr(
-      new MojoChannelFactory(delegate, channel_handle, Channel::MODE_SERVER));
+  return make_scoped_ptr(new MojoChannelFactory(
+      delegate, io_runner, channel_handle, Channel::MODE_SERVER));
 }
 
 // static
 scoped_ptr<ChannelFactory> ChannelMojo::CreateClientFactory(
     ChannelMojo::Delegate* delegate,
+    scoped_refptr<base::TaskRunner> io_runner,
     const ChannelHandle& channel_handle) {
-  return make_scoped_ptr(
-      new MojoChannelFactory(delegate, channel_handle, Channel::MODE_CLIENT));
+  return make_scoped_ptr(new MojoChannelFactory(
+      delegate, io_runner, channel_handle, Channel::MODE_CLIENT));
 }
 
 ChannelMojo::ChannelMojo(ChannelMojo::Delegate* delegate,
+                         scoped_refptr<base::TaskRunner> io_runner,
                          const ChannelHandle& handle,
                          Mode mode,
                          Listener* listener)
@@ -240,16 +255,12 @@ ChannelMojo::ChannelMojo(ChannelMojo::Delegate* delegate,
   // Create MojoBootstrap after all members are set as it touches
   // ChannelMojo from a different thread.
   bootstrap_ = MojoBootstrap::Create(handle, mode, this);
-  if (delegate) {
-    if (delegate->GetIOTaskRunner() ==
-        base::MessageLoop::current()->message_loop_proxy()) {
-      InitDelegate(delegate);
-    } else {
-      delegate->GetIOTaskRunner()->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &ChannelMojo::InitDelegate, base::Unretained(this), delegate));
-    }
+  if (io_runner == base::MessageLoop::current()->message_loop_proxy()) {
+    InitOnIOThread(delegate);
+  } else {
+    io_runner->PostTask(FROM_HERE,
+                        base::Bind(&ChannelMojo::InitOnIOThread,
+                                   base::Unretained(this), delegate));
   }
 }
 
@@ -257,9 +268,11 @@ ChannelMojo::~ChannelMojo() {
   Close();
 }
 
-void ChannelMojo::InitDelegate(ChannelMojo::Delegate* delegate) {
+void ChannelMojo::InitOnIOThread(ChannelMojo::Delegate* delegate) {
   ipc_support_.reset(
       new ScopedIPCSupport(base::MessageLoop::current()->task_runner()));
+  if (!delegate)
+    return;
   delegate_ = delegate->ToWeakPtr();
   delegate_->OnChannelCreated(weak_factory_.GetWeakPtr());
 }
