@@ -77,7 +77,6 @@ public:
         SelectionGap,
         SelectionTint,
         VideoBitmap,
-        ViewBackground,
         WebPlugin,
         DrawingLast = WebPlugin,
 
