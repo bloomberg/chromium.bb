@@ -77,6 +77,8 @@ Example of a ``program`` for Portable Native Client:
     }
   }
 
+.. _pnacl_nmf_optlevels:
+
 Portable Native Client applications can also specify an ``optlevel`` field.
 The ``optlevel`` field is an optimization level *hint*, which is a number
 (zero and higher). Higher numbers indicate more optimization effort.

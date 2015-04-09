@@ -33,8 +33,20 @@ PNaCl
   deprecated and will be removed in the next release. PNaCl has used libc++
   (which is much more up-to-date, currently based on LLVM 3.6) as the default
   since Pepper 33.
+* PNaCl's experimental `Subzero translator`_ is available for x86-32 NaCl in
+  Chrome version 43, behind a flag. To give it a try, run Chrome with the
+  ``--enable-pnacl-subzero`` commandline flag, and use the ``optlevel 0``
+  :ref:`NaCl manifest option<pnacl_nmf_optlevels>`. Application startup time
+  should be several times faster than the previous LLVM-based ``optlevel 0``
+  mode, with similar code quality. Note that x86-32 NaCl requires a 32-bit
+  Chrome. On Windows, it also requires a 32-bit Windows OS, but 64-bit Linux
+  OSes can run x86-32 NaCl. If you try it out, please send us feedback
+  on `native-client-dev`_. We are working on improvements and adding
+  new targets.
 
 .. _`code generation bug on ARM`: https://code.google.com/p/chromium/issues/detail?id=460432
+.. _`Subzero translator`: https://chromium.googlesource.com/native_client/pnacl-subzero/+/master/README.rst
+.. _`native-client-dev`: https://groups.google.com/forum/#!forum/native-client-dev
 
 Pepper
 ------
