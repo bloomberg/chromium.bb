@@ -53,18 +53,16 @@ class PolymerCalculatorPage(PolymerPage):
     self.SlidePanel(action_runner)
 
   def TapButton(self, action_runner):
-    interaction = action_runner.BeginInteraction(
-        'Action_TapAction')
-    action_runner.TapElement(element_function='''
-        document.querySelector(
-            'body /deep/ #outerPanels'
-        ).querySelector(
-            '#standard'
-        ).shadowRoot.querySelector(
-            'paper-calculator-key[label="5"]'
-        )''')
-    action_runner.Wait(2)
-    interaction.End()
+    with action_runner.CreateInteraction('Action_TapAction'):
+      action_runner.TapElement(element_function='''
+          document.querySelector(
+              'body /deep/ #outerPanels'
+          ).querySelector(
+              '#standard'
+          ).shadowRoot.querySelector(
+              'paper-calculator-key[label="5"]'
+          )''')
+      action_runner.Wait(2)
 
   def SlidePanel(self, action_runner):
     # only bother with this interaction if the drawer is hidden
@@ -74,23 +72,21 @@ class PolymerCalculatorPage(PolymerPage):
           return outer.opened || outer.wideMode;
           }());''')
     if not opened:
-      interaction = action_runner.BeginInteraction(
-          'Action_SwipeAction')
-      action_runner.SwipeElement(
-          left_start_ratio=0.1, top_start_ratio=0.2,
-          direction='left', distance=300, speed_in_pixels_per_second=5000,
-          element_function='''
-              document.querySelector(
-                'body /deep/ #outerPanels'
-              ).querySelector(
-                '#advanced'
-              ).shadowRoot.querySelector(
-                '.handle-bar'
-              )''')
-      action_runner.WaitForJavaScriptCondition('''
-          var outer = document.querySelector("body /deep/ #outerPanels");
-          outer.opened || outer.wideMode;''')
-      interaction.End()
+      with action_runner.CreateInteraction('Action_SwipeAction'):
+        action_runner.SwipeElement(
+            left_start_ratio=0.1, top_start_ratio=0.2,
+            direction='left', distance=300, speed_in_pixels_per_second=5000,
+            element_function='''
+                document.querySelector(
+                  'body /deep/ #outerPanels'
+                ).querySelector(
+                  '#advanced'
+                ).shadowRoot.querySelector(
+                  '.handle-bar'
+                )''')
+        action_runner.WaitForJavaScriptCondition('''
+            var outer = document.querySelector("body /deep/ #outerPanels");
+            outer.opened || outer.wideMode;''')
 
 
 class PolymerShadowPage(PolymerPage):
@@ -158,18 +154,16 @@ class PolymerSampler(PolymerPage):
   def ScrollContentPane(self, action_runner):
     element_function = (self.iframe_js + '.querySelector('
         '"core-scroll-header-panel").$.mainContainer')
-    interaction = action_runner.BeginInteraction('Scroll_Page')
-    action_runner.ScrollElement(use_touch=True,
-                                direction='down',
-                                distance='900',
-                                element_function=element_function)
-    interaction.End()
-    interaction = action_runner.BeginInteraction('Scroll_Page')
-    action_runner.ScrollElement(use_touch=True,
-                                direction='up',
-                                distance='900',
-                                element_function=element_function)
-    interaction.End()
+    with action_runner.CreateInteraction('Scroll_Page'):
+      action_runner.ScrollElement(use_touch=True,
+                                  direction='down',
+                                  distance='900',
+                                  element_function=element_function)
+    with action_runner.CreateInteraction('Scroll_Page'):
+      action_runner.ScrollElement(use_touch=True,
+                                  direction='up',
+                                  distance='900',
+                                  element_function=element_function)
 
   def TouchEverything(self, action_runner):
     tappable_types = [
@@ -206,19 +200,15 @@ class PolymerSampler(PolymerPage):
         action_function(action_runner, element_query)
 
   def TapWidget(self, action_runner, element_function):
-    interaction = action_runner.BeginInteraction(
-        'Tap_Widget')
-    action_runner.TapElement(element_function=element_function)
-    action_runner.Wait(1) # wait for e.g. animations on the widget
-    interaction.End()
+    with action_runner.CreateInteraction('Tap_Widget'):
+      action_runner.TapElement(element_function=element_function)
+      action_runner.Wait(1) # wait for e.g. animations on the widget
 
   def SwipeWidget(self, action_runner, element_function):
-    interaction = action_runner.BeginInteraction(
-        'Swipe_Widget')
-    action_runner.SwipeElement(element_function=element_function,
-                               left_start_ratio=0.75,
-                               speed_in_pixels_per_second=300)
-    interaction.End()
+    with action_runner.CreateInteraction('Swipe_Widget'):
+      action_runner.SwipeElement(element_function=element_function,
+                                 left_start_ratio=0.75,
+                                 speed_in_pixels_per_second=300)
 
 
 class PolymerPageSet(page_set_module.PageSet):
