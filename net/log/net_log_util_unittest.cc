@@ -88,9 +88,9 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsOneContext) {
 TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsMultipleContexts) {
   TestDelegate delegate;
   for (size_t num_requests = 0; num_requests < 5; ++num_requests) {
+    NetLog net_log;
     ScopedVector<TestURLRequestContext> contexts;
     ScopedVector<URLRequest> requests;
-    NetLog net_log;
     std::set<URLRequestContext*> context_set;
     for (size_t i = 0; i < num_requests; ++i) {
       contexts.push_back(new TestURLRequestContext(true));
