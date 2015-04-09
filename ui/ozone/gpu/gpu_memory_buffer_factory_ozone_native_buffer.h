@@ -31,6 +31,7 @@ class OZONE_GPU_EXPORT GpuMemoryBufferFactoryOzoneNativeBuffer {
   virtual ~GpuMemoryBufferFactoryOzoneNativeBuffer();
 
   // Creates a GPU memory buffer identified by |id|.
+  // It can be called on any thread.
   bool CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                              const gfx::Size& size,
                              gfx::GpuMemoryBuffer::Format format,
@@ -39,6 +40,7 @@ class OZONE_GPU_EXPORT GpuMemoryBufferFactoryOzoneNativeBuffer {
                              gfx::PluginWindowHandle surface_handle);
 
   // Destroys GPU memory buffer identified by |id|.
+  // It can be called on any thread.
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
 
   // Creates a GLImage instance for GPU memory buffer identified by |id|.

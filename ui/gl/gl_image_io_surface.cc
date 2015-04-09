@@ -16,22 +16,26 @@ GLImageIOSurface::GLImageIOSurface(const gfx::Size& size) : size_(size) {
 }
 
 GLImageIOSurface::~GLImageIOSurface() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!io_surface_);
 }
 
 bool GLImageIOSurface::Initialize(IOSurfaceRef io_surface) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!io_surface_);
   io_surface_.reset(io_surface);
   return true;
 }
 
 void GLImageIOSurface::Destroy(bool have_context) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   io_surface_.reset();
 }
 
 gfx::Size GLImageIOSurface::GetSize() { return size_; }
 
 bool GLImageIOSurface::BindTexImage(unsigned target) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (target != GL_TEXTURE_RECTANGLE_ARB) {
     // This might be supported in the future. For now, perform strict
     // validation so we know what's going on.

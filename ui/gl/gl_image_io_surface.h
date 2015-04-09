@@ -8,6 +8,7 @@
 #include <IOSurface/IOSurfaceAPI.h>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/threading/thread_checker.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_image.h"
 
@@ -41,6 +42,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
  private:
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
   const gfx::Size size_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageIOSurface);
 };

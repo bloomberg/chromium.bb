@@ -6,6 +6,7 @@
 #define UI_GL_GL_IMAGE_SURFACE_TEXTURE_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_checker.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
@@ -41,6 +42,7 @@ class GL_EXPORT GLImageSurfaceTexture : public GLImage {
   scoped_refptr<SurfaceTexture> surface_texture_;
   const gfx::Size size_;
   GLint texture_id_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageSurfaceTexture);
 };

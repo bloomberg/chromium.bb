@@ -59,6 +59,8 @@ class GpuChannelManagerMessageFilter : public IPC::MessageFilter {
  protected:
   ~GpuChannelManagerMessageFilter() override {}
 
+  // GPU IO thread bounces off GpuMsg_CreateGpuMemoryBuffer message, because
+  // the UI thread in the browser process must remain fast at all times.
   void OnCreateGpuMemoryBuffer(
       const GpuMsg_CreateGpuMemoryBuffer_Params& params) {
     TRACE_EVENT2("gpu",

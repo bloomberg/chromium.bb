@@ -31,7 +31,6 @@ class CONTENT_EXPORT GpuMemoryBufferFactory {
     gfx::GpuMemoryBuffer::Usage usage;
   };
 
-  GpuMemoryBufferFactory() {}
   virtual ~GpuMemoryBufferFactory() {}
 
   // Gets system supported GPU memory buffer factory types. Preferred type at
@@ -47,7 +46,7 @@ class CONTENT_EXPORT GpuMemoryBufferFactory {
       std::vector<Configuration>* configurations) = 0;
 
   // Creates a new GPU memory buffer instance. A valid handle is returned on
-  // success.
+  // success. It can be called on any thread.
   virtual gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
@@ -57,11 +56,15 @@ class CONTENT_EXPORT GpuMemoryBufferFactory {
       gfx::PluginWindowHandle surface_handle) = 0;
 
   // Destroys GPU memory buffer identified by |id|.
+  // It can be called on any thread.
   virtual void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                       int client_id) = 0;
 
   // Type-checking downcast routine.
   virtual gpu::ImageFactory* AsImageFactory() = 0;
+
+ protected:
+  GpuMemoryBufferFactory() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactory);
