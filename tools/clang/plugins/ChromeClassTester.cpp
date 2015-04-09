@@ -19,16 +19,6 @@ using namespace clang;
 
 namespace {
 
-bool starts_with(const std::string& one, const std::string& two) {
-  return one.compare(0, two.size(), two) == 0;
-}
-
-std::string lstrip(const std::string& one, const std::string& two) {
-  if (starts_with(one, two))
-    return one.substr(two.size());
-  return one;
-}
-
 bool ends_with(const std::string& one, const std::string& two) {
   if (two.size() > one.size())
     return false;
