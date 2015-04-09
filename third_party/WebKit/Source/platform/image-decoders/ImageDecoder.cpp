@@ -84,7 +84,7 @@ inline bool matchesBMPSignature(char* contents)
 
 PassOwnPtr<ImageDecoder> ImageDecoder::create(const SharedBuffer& data, ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption)
 {
-    static const unsigned longestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
+    const unsigned longestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
     ASSERT(longestSignatureLength == 14);
 
     size_t maxDecodedBytes = Platform::current()->maxDecodedImageBytes();
