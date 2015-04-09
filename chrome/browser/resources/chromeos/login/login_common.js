@@ -323,6 +323,13 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Begin enterprise enrollment for telemetry.
+   */
+  Oobe.switchToEnterpriseEnrollmentForTesting = function() {
+    chrome.send('toggleEnrollmentScreen');
+  };
+
+  /**
    * Finish enterprise enrollment for telemetry.
    */
   Oobe.enterpriseEnrollmentDone = function() {
