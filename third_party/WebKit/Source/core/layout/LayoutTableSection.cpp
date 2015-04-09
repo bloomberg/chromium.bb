@@ -324,15 +324,19 @@ void LayoutTableSection::distributeExtraRowSpanHeightToPercentRows(LayoutTableCe
     }
 }
 
-// Sometimes the multiplication of the 2 values below will overflow an integer.
-// So we convert the parameters to 'long long' instead of 'int' to avoid the
-// problem in this function.
-static void updatePositionIncreasedWithRowHeight(long long extraHeight, long long rowHeight, long long totalHeight, int& accumulatedPositionIncrease, int& remainder)
+
+static void updatePositionIncreasedWithRowHeight(int extraHeight, float rowHeight, float totalHeight, int& accumulatedPositionIncrease, int& remainder)
 {
     static_assert(sizeof(long long int) > sizeof(int), "int should be smaller than long long");
 
-    accumulatedPositionIncrease += (extraHeight * rowHeight) / totalHeight;
-    remainder += (extraHeight * rowHeight) % totalHeight;
+    // Sometimes the multiplication of the 2 values below will overflow a float.
+    // So we convert them to 'long long' instead of 'float' to avoid the overflow
+    // and multiply with 100 for taking 2 decimal degits in calculation.
+    long long rHeight = rowHeight * 100;
+    long long tHeight = totalHeight * 100;
+
+    accumulatedPositionIncrease += (extraHeight * rHeight) / tHeight;
+    remainder += ((extraHeight * rHeight) % tHeight) / 100;
 }
 
 // This is mainly used to distribute whole extra rowspanning height in percent rows when all spanning rows are
@@ -340,7 +344,7 @@ static void updatePositionIncreasedWithRowHeight(long long extraHeight, long lon
 // Distributing whole extra rowspanning height in percent rows based on the ratios of percent because this method works
 // same as percent distribution when only percent rows are present and percent is 100. Also works perfectly fine when
 // percent is not equal to 100.
-void LayoutTableSection::distributeWholeExtraRowSpanHeightToPercentRows(LayoutTableCell* cell, int totalPercent, int& extraRowSpanningHeight, Vector<int>& rowsHeight)
+void LayoutTableSection::distributeWholeExtraRowSpanHeightToPercentRows(LayoutTableCell* cell, float totalPercent, int& extraRowSpanningHeight, Vector<int>& rowsHeight)
 {
     if (!extraRowSpanningHeight || !totalPercent)
         return;
@@ -620,7 +624,7 @@ void LayoutTableSection::distributeRowSpanHeightToRows(SpanningLayoutTableCells&
         }
 
         // Below we are handling only row(s) who have at least one visible cell without rowspan value.
-        int totalPercent = 0;
+        float totalPercent = 0;
         int totalAutoRowsHeight = 0;
         int totalRemainingRowsHeight = spanningRowsHeight.totalRowsHeight;
 

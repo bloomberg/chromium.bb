@@ -261,7 +261,7 @@ private:
 
     void populateSpanningRowsHeightFromCell(LayoutTableCell*, struct SpanningRowsHeight&);
     void distributeExtraRowSpanHeightToPercentRows(LayoutTableCell*, int, int&, Vector<int>&);
-    void distributeWholeExtraRowSpanHeightToPercentRows(LayoutTableCell*, int, int&, Vector<int>&);
+    void distributeWholeExtraRowSpanHeightToPercentRows(LayoutTableCell*, float, int&, Vector<int>&);
     void distributeExtraRowSpanHeightToAutoRows(LayoutTableCell*, int, int&, Vector<int>&);
     void distributeExtraRowSpanHeightToRemainingRows(LayoutTableCell*, int, int&, Vector<int>&);
     void distributeRowSpanHeightToRows(SpanningLayoutTableCells& rowSpanCells);
