@@ -2305,6 +2305,7 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableFirewallHolePunching)
   },
 #endif  // defined(OS_CHROMEOS)
+#if defined(ENABLE_MEDIA_ROUTER)
   {
     "enable-media-router",
     IDS_FLAGS_ENABLE_MEDIA_ROUTER_NAME,
@@ -2312,6 +2313,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableMediaRouter)
   },
+#endif  // defined(ENABLE_MEDIA_ROUTER)
 // Since kEnableLauncherSearchProviderApi is not available when app list is
 // disabled, flag guard enable-launcher-search-provider-api.
 #if defined(ENABLE_APP_LIST)

@@ -152,6 +152,10 @@ const char kChromeUICopresenceURL[] = "chrome://copresence/";
 const char kChromeUIWebRtcLogsURL[] = "chrome://webrtc-logs/";
 #endif
 
+#if defined(ENABLE_MEDIA_ROUTER)
+const char kChromeUIMediaRouterURL[] = "chrome://media-router/";
+#endif
+
 // Add Chrome UI hosts here, in alphabetical order.
 // Add hosts to kChromePaths in browser_about_handler.cc to be listed by
 // chrome://chrome-urls (about:about) and the built-in AutocompleteProvider.
@@ -332,6 +336,10 @@ const char kChromeUICopresenceHost[] = "copresence";
 
 #if defined(ENABLE_WEBRTC)
 const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";
+#endif
+
+#if defined(ENABLE_MEDIA_ROUTER)
+const char kChromeUIMediaRouterHost[] = "media-router";
 #endif
 
 // Option sub pages.

@@ -772,6 +772,9 @@ source_set("browser") {
               "//chrome")
     }
   }
+  if (enable_media_router) {
+    defines += [ "ENABLE_MEDIA_ROUTER=1" ]
+  }
 }
 
 if (is_android) {

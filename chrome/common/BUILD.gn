@@ -234,6 +234,9 @@ static_library("common") {
   if (safe_browsing_mode == 2) {
     defines += [ "MOBILE_SAFE_BROWSING" ]
   }
+  if (enable_media_router) {
+    defines += [ "ENABLE_MEDIA_ROUTER=1" ]
+  }
 }
 
 import("//chrome/version.gni")
