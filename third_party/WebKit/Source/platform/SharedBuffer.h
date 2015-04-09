@@ -39,6 +39,8 @@ namespace blink {
 
 class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 public:
+    static const unsigned kSegmentSize = 0x1000;
+
     static PassRefPtr<SharedBuffer> create() { return adoptRef(new SharedBuffer); }
     static PassRefPtr<SharedBuffer> create(size_t size) { return adoptRef(new SharedBuffer(size)); }
     static PassRefPtr<SharedBuffer> create(const char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }

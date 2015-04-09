@@ -40,22 +40,21 @@
 
 namespace blink {
 
-static const unsigned segmentSize = 0x1000;
-static const unsigned segmentPositionMask = 0x0FFF;
+STATIC_CONST_MEMBER_DEFINITION const unsigned SharedBuffer::kSegmentSize;
 
 static inline unsigned segmentIndex(unsigned position)
 {
-    return position / segmentSize;
+    return position / SharedBuffer::kSegmentSize;
 }
 
 static inline unsigned offsetInSegment(unsigned position)
 {
-    return position & segmentPositionMask;
+    return position % SharedBuffer::kSegmentSize;
 }
 
 static inline char* allocateSegment()
 {
-    return static_cast<char*>(fastMalloc(segmentSize));
+    return static_cast<char*>(fastMalloc(SharedBuffer::kSegmentSize));
 }
 
 static inline void freeSegment(char* p)
@@ -247,7 +246,7 @@ void SharedBuffer::append(const char* data, unsigned length)
     unsigned positionInSegment = offsetInSegment(m_size - m_buffer.size());
     m_size += length;
 
-    if (m_size <= segmentSize) {
+    if (m_size <= kSegmentSize) {
         // No need to use segments for small resource data.
         m_buffer.append(data, length);
         return;
@@ -260,7 +259,7 @@ void SharedBuffer::append(const char* data, unsigned length)
     } else
         segment = m_segments.last() + positionInSegment;
 
-    unsigned segmentFreeSpace = segmentSize - positionInSegment;
+    unsigned segmentFreeSpace = kSegmentSize - positionInSegment;
     unsigned bytesToCopy = std::min(length, segmentFreeSpace);
 
     for (;;) {
@@ -272,7 +271,7 @@ void SharedBuffer::append(const char* data, unsigned length)
         data += bytesToCopy;
         segment = allocateSegment();
         m_segments.append(segment);
-        bytesToCopy = std::min(length, segmentSize);
+        bytesToCopy = std::min(length, kSegmentSize);
     }
 }
 
@@ -315,7 +314,7 @@ void SharedBuffer::mergeSegmentsIntoBuffer() const
     if (m_size > bufferSize) {
         unsigned bytesLeft = m_size - bufferSize;
         for (unsigned i = 0; i < m_segments.size(); ++i) {
-            unsigned bytesToCopy = std::min(bytesLeft, segmentSize);
+            unsigned bytesToCopy = std::min(bytesLeft, kSegmentSize);
             m_buffer.append(m_segments[i], bytesToCopy);
             bytesLeft -= bytesToCopy;
             freeSegment(m_segments[i]);
@@ -342,7 +341,7 @@ unsigned SharedBuffer::getSomeData(const char*& someData, unsigned position) con
 
     position -= consecutiveSize;
     unsigned segments = m_segments.size();
-    unsigned maxSegmentedSize = segments * segmentSize;
+    unsigned maxSegmentedSize = segments * kSegmentSize;
     unsigned segment = segmentIndex(position);
     if (segment < segments) {
         unsigned bytesLeft = totalSize - consecutiveSize;
@@ -350,7 +349,7 @@ unsigned SharedBuffer::getSomeData(const char*& someData, unsigned position) con
 
         unsigned positionInSegment = offsetInSegment(position);
         someData = m_segments[segment] + positionInSegment;
-        return segment == segments - 1 ? segmentedSize - position : segmentSize - positionInSegment;
+        return segment == segments - 1 ? segmentedSize - position : kSegmentSize - positionInSegment;
     }
     ASSERT_NOT_REACHED();
     return 0;

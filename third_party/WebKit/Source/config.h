@@ -135,3 +135,10 @@
 #include <cstddef>
 
 #endif
+
+// Adopted from base/compiler_specific.h where you can find a detailed explanation.
+#if COMPILER(MSVC)
+#define STATIC_CONST_MEMBER_DEFINITION __declspec(selectany)
+#else
+#define STATIC_CONST_MEMBER_DEFINITION
+#endif

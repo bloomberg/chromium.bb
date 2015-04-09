@@ -70,6 +70,8 @@ public:
     }
 
 private:
+    void getSomeDataInternal(unsigned dataPosition);
+
     RefPtr<SharedBuffer> m_data;
 
     // Caches the last segment of |m_data| accessed, since subsequent reads are
@@ -77,7 +79,7 @@ private:
     const char* m_segment;
     size_t m_segmentLength;
 
-    // Data position in |m_data| pointed by |m_segment|.
+    // Data position in |m_data| pointed to by |m_segment|.
     size_t m_dataPosition;
 };
 

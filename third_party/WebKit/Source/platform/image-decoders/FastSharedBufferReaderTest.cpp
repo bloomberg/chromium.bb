@@ -38,6 +38,8 @@ namespace blink {
 
 namespace {
 
+const unsigned kDefaultTestSize = 4 * SharedBuffer::kSegmentSize;
+
 void prepareReferenceData(char* buffer, size_t size)
 {
     for (size_t i = 0; i < size; ++i)
@@ -48,8 +50,7 @@ void prepareReferenceData(char* buffer, size_t size)
 
 TEST(FastSharedBufferReaderTest, nonSequentialReads)
 {
-    // This is 4 times SharedBuffer's segment size.
-    char referenceData[16384];
+    char referenceData[kDefaultTestSize];
     prepareReferenceData(referenceData, sizeof(referenceData));
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     data->append(referenceData, sizeof(referenceData));
@@ -68,8 +69,7 @@ TEST(FastSharedBufferReaderTest, nonSequentialReads)
 
 TEST(FastSharedBufferReaderTest, readBackwards)
 {
-    // This is 4 times SharedBuffer's segment size.
-    char referenceData[16384];
+    char referenceData[kDefaultTestSize];
     prepareReferenceData(referenceData, sizeof(referenceData));
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     data->append(referenceData, sizeof(referenceData));
@@ -88,8 +88,7 @@ TEST(FastSharedBufferReaderTest, readBackwards)
 
 TEST(FastSharedBufferReaderTest, byteByByte)
 {
-    // This is 4 times SharedBuffer's segment size.
-    char referenceData[16384];
+    char referenceData[kDefaultTestSize];
     prepareReferenceData(referenceData, sizeof(referenceData));
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     data->append(referenceData, sizeof(referenceData));
@@ -98,6 +97,23 @@ TEST(FastSharedBufferReaderTest, byteByByte)
     for (size_t i = 0; i < sizeof(referenceData); ++i) {
         ASSERT_EQ(referenceData[i], reader.getOneByte(i));
     }
+}
+
+// Tests that a read from inside the penultimate segment to the very end of the
+// buffer doesn't try to read off the end of the buffer.
+TEST(FastSharedBufferReaderTest, readAllOverlappingLastSegmentBoundary)
+{
+    const unsigned dataSize = 2 * SharedBuffer::kSegmentSize;
+    char referenceData[dataSize];
+    prepareReferenceData(referenceData, dataSize);
+    RefPtr<SharedBuffer> data = SharedBuffer::create();
+    data->append(referenceData, dataSize);
+
+    char buffer[dataSize];
+    FastSharedBufferReader reader(data);
+    reader.getConsecutiveData(0, dataSize, buffer);
+
+    ASSERT_FALSE(memcmp(buffer, referenceData, dataSize));
 }
 
 } // namespace blink

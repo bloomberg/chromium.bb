@@ -50,32 +50,35 @@ const char* FastSharedBufferReader::getConsecutiveData(size_t dataPosition, size
         return m_segment + dataPosition - m_dataPosition;
 
     // Return a pointer into |m_data| if the request doesn't span segments.
-    m_dataPosition = dataPosition;
-    m_segmentLength = m_data->getSomeData(m_segment, m_dataPosition);
-    ASSERT(m_segmentLength);
+    getSomeDataInternal(dataPosition);
     if (length <= m_segmentLength)
         return m_segment;
 
-    for (char* tempBuffer = buffer; length;) {
+    for (char* dest = buffer; ; ) {
         size_t copy = std::min(length, m_segmentLength);
-        memcpy(tempBuffer, m_segment, copy);
-        m_dataPosition += copy;
+        memcpy(dest, m_segment, copy);
         length -= copy;
-        tempBuffer += copy;
+        if (!length)
+            return buffer;
 
-        m_segmentLength = m_data->getSomeData(m_segment, m_dataPosition);
-        ASSERT(m_segmentLength);
+        // Continue reading the next segment.
+        dest += copy;
+        getSomeDataInternal(m_dataPosition + copy);
     }
-    return buffer;
 }
 
 size_t FastSharedBufferReader::getSomeData(const char*& someData, size_t dataPosition)
 {
-    m_segmentLength = m_data->getSomeData(m_segment, dataPosition);
+    getSomeDataInternal(dataPosition);
     someData = m_segment;
-    m_dataPosition = dataPosition;
-    ASSERT(m_segmentLength);
     return m_segmentLength;
+}
+
+void FastSharedBufferReader::getSomeDataInternal(unsigned dataPosition)
+{
+    m_dataPosition = dataPosition;
+    m_segmentLength = m_data->getSomeData(m_segment, dataPosition);
+    ASSERT(m_segmentLength);
 }
 
 } // namespace blink
