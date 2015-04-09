@@ -163,12 +163,19 @@ html[dir=rtl] #back-button-item {
 }
 
 webview#signin-frame {
+  -webkit-transition: opacity 500ms ease-in;
   display: block;
   height: 609px;
   margin-left: 0;
+  opacity: 0;
   overflow: hidden;
   padding: 0;
   width: 522px;
+}
+
+webview#signin-frame.show {
+  -webkit-transition: opacity 500ms ease-out;
+  opacity: 1;
 }
 
 /* Simpler alignment if no right panel. */

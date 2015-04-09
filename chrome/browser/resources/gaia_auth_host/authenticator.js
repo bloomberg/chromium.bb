@@ -395,6 +395,8 @@ cr.define('cr.login', function() {
       this.dispatchEvent(new Event('dialogHidden'));
     } else if (msg.method == 'backButton') {
       this.dispatchEvent(new CustomEvent('backButton', {detail: msg.show}));
+    } else if (msg.method == 'showView') {
+      this.dispatchEvent(new Event('showView'));
     } else {
       console.warn('Unrecognized message from GAIA: ' + msg.method);
     }

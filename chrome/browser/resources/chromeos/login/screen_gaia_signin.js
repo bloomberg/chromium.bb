@@ -123,6 +123,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           'dialogHidden', this.onDialogHidden_.bind(this));
       this.gaiaAuthHost_.addEventListener(
           'backButton', this.onBackButton_.bind(this));
+      this.gaiaAuthHost_.addEventListener(
+          'showView', this.onShowView_.bind(this));
       this.gaiaAuthHost_.confirmPasswordCallback =
           this.onAuthConfirmPassword_.bind(this);
       this.gaiaAuthHost_.noPasswordCallback =
@@ -498,6 +500,14 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onBackButton_: function(e) {
       $('back-button-item').hidden = !e.detail;
+    },
+
+    /**
+     * Invoked when the auth host emits 'showView' event.
+     * @private
+     */
+    onShowView_: function(e) {
+      $('signin-frame').classList.add('show');
     },
 
     /**
