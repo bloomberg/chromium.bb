@@ -9,7 +9,6 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"

@@ -5,7 +5,8 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SIGSYS_HANDLERS_H_
 #define SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SIGSYS_HANDLERS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
 #include "sandbox/sandbox_export.h"

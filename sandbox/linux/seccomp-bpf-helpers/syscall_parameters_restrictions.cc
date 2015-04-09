@@ -11,6 +11,7 @@
 #include <linux/net.h>
 #include <sched.h>
 #include <signal.h>
+#include <stdint.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
@@ -21,7 +22,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/time.h"
