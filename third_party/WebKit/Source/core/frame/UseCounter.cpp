@@ -812,15 +812,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case AudioListenerSetVelocity:
         return "setVelocity() is deprecated and will be removed in M45 when all doppler effects are removed";
 
-    case ShadowRootGetElementsByClassName:
-        return "ShadowRoot.getElementsByClassName() is deprecated. Please use 'querySelectorAll' instead";
-
-    case ShadowRootGetElementsByTagName:
-        return "ShadowRoot.getElementsByTagName() is deprecated. Please use 'querySelectorAll' instead";
-
-    case ShadowRootGetElementsByTagNameNS:
-        return "ShadowRoot.getElementsByTagNameNS() is deprecated. Please use 'querySelectorAll' instead";
-
     case PrefixedWindowURL:
         return replacedBy("webkitURL", "URL");
 

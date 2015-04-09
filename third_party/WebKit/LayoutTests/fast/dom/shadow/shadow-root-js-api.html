@@ -39,17 +39,6 @@ shadowRoot.appendChild(div2);
 shouldBe("shadowRoot.getElementById('div1')", "div1");
 shouldBeNull("shadowRoot.getElementById('foo')");
 
-shouldBe("shadowRoot.getElementsByClassName('class2')", "[div2]");
-shouldBe("shadowRoot.getElementsByClassName('foo')", "[]");
-
-shouldBe("shadowRoot.getElementsByTagName('div')", "[div1, div2]");
-shouldBe("shadowRoot.getElementsByTagName('foo')", "[]");
-
-// FIXME: Add more tests using XML documents.
-shouldBe("shadowRoot.getElementsByTagNameNS('*', 'div')", "[div1, div2]");
-shouldBe("shadowRoot.getElementsByTagNameNS('', 'div')", "[]");
-shouldBe("shadowRoot.getElementsByTagNameNS('*', 'foo')", "[]");
-
 shouldBe("shadowRoot.querySelector('#div1')", "div1");
 shouldBeNull("shadowRoot.querySelector('#foo')");
 shouldBe("shadowRoot.querySelector('.class2')", "div2");

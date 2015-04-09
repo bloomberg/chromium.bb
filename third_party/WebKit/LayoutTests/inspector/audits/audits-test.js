@@ -8,7 +8,7 @@ InspectorTest.collectAuditResults = function(callback)
     WebInspector.panels.audits.showResults(WebInspector.panels.audits.auditResultsTreeElement.firstChild().results);
     var trees = WebInspector.panels.audits.visibleView.element.querySelectorAll(".audit-result-tree");
     for (var i = 0; i < trees.length; ++i) {
-        var liElements = trees[i].shadowRoot.getElementsByTagName("li");
+        var liElements = trees[i].shadowRoot.querySelectorAll("li");
         for (var j = 0; j < liElements.length; ++j) {
             if (liElements[j].treeElement)
                 liElements[j].treeElement.expand();

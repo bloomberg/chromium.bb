@@ -5120,9 +5120,6 @@ interface ShadowRoot
     method constructor
     method elementFromPoint
     method elementsFromPoint
-    method getElementsByClassName
-    method getElementsByTagName
-    method getElementsByTagNameNS
     method getSelection
     setter innerHTML
 interface SharedWorker

@@ -227,6 +227,13 @@ crbug.com/330083 imported/web-platform-tests/shadow-dom/styles/test-003.html [ F
 crbug.com/330083 imported/web-platform-tests/shadow-dom/styles/test-010.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure ]
 
+crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-002.html [ Failure ]
+crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-003.html [ Failure ]
+crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-005.html [ Failure ]
+crbug.com/442235 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
+crbug.com/442235 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
+crbug.com/442235 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
+
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-video-black.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/mediastream/mediastream-id-manual.html [ Skip ]
