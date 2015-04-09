@@ -318,13 +318,11 @@ void PropertyTreeBuilder::BuildPropertyTrees(
     float device_scale_factor,
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
-    TransformTree* transform_tree,
-    ClipTree* clip_tree,
-    OpacityTree* opacity_tree) {
+    PropertyTrees* property_trees) {
   DataForRecursion data_for_recursion;
-  data_for_recursion.transform_tree = transform_tree;
-  data_for_recursion.clip_tree = clip_tree;
-  data_for_recursion.opacity_tree = opacity_tree;
+  data_for_recursion.transform_tree = &property_trees->transform_tree;
+  data_for_recursion.clip_tree = &property_trees->clip_tree;
+  data_for_recursion.opacity_tree = &property_trees->opacity_tree;
   data_for_recursion.transform_tree_parent = nullptr;
   data_for_recursion.transform_fixed_parent = nullptr;
   data_for_recursion.render_target = root_layer;
@@ -340,7 +338,8 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   ClipNode root_clip;
   root_clip.data.clip = viewport;
   root_clip.data.transform_id = 0;
-  data_for_recursion.clip_tree_parent = clip_tree->Insert(root_clip, 0);
+  data_for_recursion.clip_tree_parent =
+      data_for_recursion.clip_tree->Insert(root_clip, 0);
   BuildPropertyTreesInternal(root_layer, data_for_recursion);
 }
 

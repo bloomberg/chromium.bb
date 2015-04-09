@@ -796,6 +796,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
     // that we won't be able to detect if a layer is part of |update_list|.
     // Change this if this information is required.
     int render_surface_layer_list_id = 0;
+    PropertyTrees property_trees;
     LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
         root_layer, device_viewport_size(), gfx::Transform(),
         device_scale_factor_, page_scale_factor_, page_scale_layer,
@@ -805,7 +806,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
         can_render_to_separate_surface,
         settings_.layer_transforms_should_scale_layer_contents,
         settings_.verify_property_trees, &update_list,
-        render_surface_layer_list_id);
+        render_surface_layer_list_id, &property_trees);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 

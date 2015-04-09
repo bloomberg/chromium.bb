@@ -197,6 +197,13 @@ class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {};
 
 class CC_EXPORT OpacityTree final : public PropertyTree<OpacityNode> {};
 
+class CC_EXPORT PropertyTrees final {
+ public:
+  TransformTree transform_tree;
+  OpacityTree opacity_tree;
+  ClipTree clip_tree;
+};
+
 }  // namespace cc
 
 #endif  // CC_TREES_PROPERTY_TREE_H_

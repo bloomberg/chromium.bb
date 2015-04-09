@@ -2504,9 +2504,6 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
     // The translation from layer to property trees is an intermediate state. We
     // will eventually get these data passed directly to the compositor.
-    TransformTree transform_tree;
-    ClipTree clip_tree;
-    OpacityTree opacity_tree;
     {
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
                    "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
@@ -2514,7 +2511,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
           inputs->root_layer, inputs->page_scale_application_layer,
           inputs->page_scale_factor, inputs->device_scale_factor,
           gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
-          &transform_tree, &clip_tree, &opacity_tree);
+          inputs->property_trees);
     }
 
     LayerIterator<Layer> it, end;
@@ -2533,14 +2530,16 @@ void LayerTreeHostCommon::CalculateDrawProperties(
           << " actual: "
           << current_layer->visible_rect_from_property_trees().ToString();
 
-      const bool draw_transforms_match = ApproximatelyEqual(
-          current_layer->draw_transform(),
-          current_layer->draw_transform_from_property_trees(transform_tree));
+      const bool draw_transforms_match =
+          ApproximatelyEqual(current_layer->draw_transform(),
+                             current_layer->draw_transform_from_property_trees(
+                                 inputs->property_trees->transform_tree));
       CHECK(draw_transforms_match);
 
       const bool draw_opacities_match =
           current_layer->draw_opacity() ==
-          current_layer->DrawOpacityFromPropertyTrees(opacity_tree);
+          current_layer->DrawOpacityFromPropertyTrees(
+              inputs->property_trees->opacity_tree);
       CHECK(draw_opacities_match);
     }
   }

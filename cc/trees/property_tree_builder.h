@@ -24,9 +24,7 @@ class PropertyTreeBuilder {
                                  float device_scale_factor,
                                  const gfx::Rect& viewport,
                                  const gfx::Transform& device_transform,
-                                 TransformTree* transform_tree,
-                                 ClipTree* clip_tree,
-                                 OpacityTree* opacity_tree);
+                                 PropertyTrees* property_trees);
 };
 
 }  // namespace cc

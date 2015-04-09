@@ -306,21 +306,20 @@ void ComputeVisibleRectsUsingPropertyTrees(
     float device_scale_factor,
     const gfx::Rect& viewport,
     const gfx::Transform& device_transform,
-    TransformTree* transform_tree,
-    ClipTree* clip_tree,
-    OpacityTree* opacity_tree) {
+    PropertyTrees* property_trees) {
   PropertyTreeBuilder::BuildPropertyTrees(
       root_layer, page_scale_layer, page_scale_factor, device_scale_factor,
-      viewport, device_transform, transform_tree, clip_tree, opacity_tree);
-  ComputeTransforms(transform_tree);
-  ComputeClips(clip_tree, *transform_tree);
+      viewport, device_transform, property_trees);
+  ComputeTransforms(&property_trees->transform_tree);
+  ComputeClips(&property_trees->clip_tree, property_trees->transform_tree);
 
   std::vector<Layer*> layers_to_update;
   const bool subtree_is_visible_from_ancestor = true;
-  FindLayersThatNeedVisibleRects(root_layer, *transform_tree,
+  FindLayersThatNeedVisibleRects(root_layer, property_trees->transform_tree,
                                  subtree_is_visible_from_ancestor,
                                  &layers_to_update);
-  CalculateVisibleRects(layers_to_update, *clip_tree, *transform_tree);
+  CalculateVisibleRects(layers_to_update, property_trees->clip_tree,
+                        property_trees->transform_tree);
 }
 
 }  // namespace cc

@@ -18,6 +18,7 @@ class ClipTree;
 class Layer;
 class OpacityTree;
 class TransformTree;
+class PropertyTrees;
 
 // Computes combined clips for every node in |clip_tree|. This function requires
 // that |transform_tree| has been updated via |ComputeTransforms|.
@@ -40,9 +41,7 @@ ComputeVisibleRectsUsingPropertyTrees(Layer* root_layer,
                                       float device_scale_factor,
                                       const gfx::Rect& viewport,
                                       const gfx::Transform& device_transform,
-                                      TransformTree* transform_tree,
-                                      ClipTree* clip_tree,
-                                      OpacityTree* opacity_tree);
+                                      PropertyTrees* property_trees);
 
 }  // namespace cc
 
