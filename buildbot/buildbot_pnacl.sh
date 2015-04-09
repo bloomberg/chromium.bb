@@ -275,7 +275,7 @@ mode-buildbot-arm-hw-try() {
 # These 2 functions are also suitable for local TC sanity testing.
 tc-tests-all() {
   # All the SCons tests (the same ones run by the main waterfall bot)
-  for arch in 32 64 arm; do
+  for arch in arm 32 64; do
     buildbot/buildbot_pnacl.py opt "${arch}" pnacl || handle-error
   done
 
