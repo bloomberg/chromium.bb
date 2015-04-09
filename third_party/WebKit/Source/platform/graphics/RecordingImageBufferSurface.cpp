@@ -147,7 +147,7 @@ void RecordingImageBufferSurface::willOverwriteCanvas()
     m_previousFramePixelCount = 0;
     if (m_didRecordDrawCommandsInCurrentFrame) {
         // Discard previous draw commands
-        m_currentFrame->endRecording();
+        adoptRef(m_currentFrame->endRecording());
         initializeCurrentFrame();
     }
 }
