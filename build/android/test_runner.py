@@ -775,6 +775,9 @@ def _RunJUnitTests(args):
       test_type='JUnit',
       test_package=args.test_suite)
 
+  if args.json_results_file:
+    json_results.GenerateJsonResultsFile(results, args.json_results_file)
+
   return exit_code
 
 
