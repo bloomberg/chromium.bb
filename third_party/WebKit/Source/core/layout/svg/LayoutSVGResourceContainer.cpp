@@ -220,6 +220,13 @@ void LayoutSVGResourceContainer::registerResource()
         if (!layoutObject)
             continue;
 
+        // If the client has a layer (is a non-SVGElement) we need to signal
+        // invalidation in the same way as is done in markAllClientLayersForInvalidation above.
+        if (layoutObject->hasLayer() && resourceType() == FilterResourceType) {
+            toLayoutBoxModelObject(layoutObject)->layer()->filterNeedsPaintInvalidation();
+            continue;
+        }
+
         StyleDifference diff;
         diff.setNeedsFullLayout();
         SVGResourcesCache::clientStyleChanged(layoutObject, diff, layoutObject->styleRef());
