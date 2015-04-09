@@ -22,6 +22,7 @@
 #include "base/android/path_service_android.h"
 #include "base/android/path_utils.h"
 #include "base/android/record_histogram.h"
+#include "base/android/record_user_action.h"
 #include "base/android/sys_utils.h"
 #include "base/android/thread_utils.h"
 #include "base/android/trace_event_binding.h"
@@ -55,6 +56,7 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
     {"PathUtils", base::android::RegisterPathUtils},
     {"PowerMonitor", base::RegisterPowerMonitor},
     {"RecordHistogram", base::android::RegisterRecordHistogram},
+    {"RecordUserAction", base::android::RegisterRecordUserAction},
     {"SystemMessageHandler", base::MessagePumpForUI::RegisterBindings},
     {"SysUtils", base::android::SysUtils::Register},
     {"ThreadUtils", base::RegisterThreadUtils},

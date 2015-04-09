@@ -116,6 +116,8 @@ component("base") {
     "android/path_utils.h",
     "android/record_histogram.cc",
     "android/record_histogram.h",
+    "android/record_user_action.cc",
+    "android/record_user_action.h",
     "android/scoped_java_ref.cc",
     "android/scoped_java_ref.h",
     "android/sys_utils.cc",
@@ -1403,6 +1405,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/TraceEvent.java",
       "android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
       "android/java/src/org/chromium/base/metrics/RecordHistogram.java",
+      "android/java/src/org/chromium/base/metrics/RecordUserAction.java",
     ]
     jni_package = "base"
   }

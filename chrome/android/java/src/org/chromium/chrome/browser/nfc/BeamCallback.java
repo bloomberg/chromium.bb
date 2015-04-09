@@ -17,8 +17,8 @@ import android.text.TextUtils;
 import android.widget.Toast;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.metrics.UmaBridge;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -98,7 +98,7 @@ class BeamCallback implements CreateNdefMessageCallback, OnNdefPushCompleteCallb
             return null;
         }
 
-        UmaBridge.beamCallbackSuccess();
+        RecordUserAction.record("MobileBeamCallbackSuccess");
         mErrorRunnableIfBeamSent = null;
         return new NdefMessage(new NdefRecord[] {NdefRecord.createUri(status.result)});
     }
@@ -113,7 +113,7 @@ class BeamCallback implements CreateNdefMessageCallback, OnNdefPushCompleteCallb
      * @param errorStringId The resid of the string to display as error.
      */
     private void onInvalidBeam(final int errorStringId) {
-        UmaBridge.beamInvalidAppState();
+        RecordUserAction.record("MobileBeamInvalidAppState");
         Runnable errorRunnable = new Runnable() {
             @Override
             public void run() {

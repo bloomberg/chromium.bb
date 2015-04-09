@@ -1374,6 +1374,7 @@
             'android/java/src/org/chromium/base/TraceEvent.java',
             'android/java/src/org/chromium/base/library_loader/LibraryLoader.java',
             'android/java/src/org/chromium/base/metrics/RecordHistogram.java',
+            'android/java/src/org/chromium/base/metrics/RecordUserAction.java',
           ],
           'variables': {
             'jni_gen_package': 'base',

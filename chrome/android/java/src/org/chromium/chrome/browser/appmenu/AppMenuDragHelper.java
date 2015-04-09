@@ -17,8 +17,8 @@ import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
 import android.widget.ListView;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.metrics.UmaBridge;
 
 import java.util.ArrayList;
 
@@ -162,7 +162,7 @@ class AppMenuDragHelper {
         mIsSingleTapCanceled |= timeSinceDown > mTapTimeout;
         mIsSingleTapCanceled |= !pointInView(button, event.getX(), event.getY(), mScaledTouchSlop);
         if (!mIsSingleTapCanceled && eventActionMasked == MotionEvent.ACTION_UP) {
-            UmaBridge.usingMenu(false, false);
+            RecordUserAction.record("MobileUsingMenuBySwButtonTap");
             finishDragging();
         }
 
@@ -185,7 +185,7 @@ class AppMenuDragHelper {
         didPerformClick = menuItemAction(roundedRawX, roundedRawY, itemAction);
 
         if (eventActionMasked == MotionEvent.ACTION_UP && !didPerformClick) {
-            UmaBridge.usingMenu(false, true);
+            RecordUserAction.record("MobileUsingMenuBySwButtonDragging");
             mAppMenu.dismiss();
         } else if (eventActionMasked == MotionEvent.ACTION_MOVE) {
             // Auto scrolling on the top or the bottom of the listView.
@@ -255,7 +255,7 @@ class AppMenuDragHelper {
                     break;
                 case ITEM_ACTION_PERFORM:
                     if (shouldPerform) {
-                        UmaBridge.usingMenu(false, true);
+                        RecordUserAction.record("MobileUsingMenuBySwButtonDragging");
                         itemView.performClick();
                         didPerformClick = true;
                     }

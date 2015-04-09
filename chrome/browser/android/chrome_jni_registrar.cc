@@ -34,7 +34,6 @@
 #include "chrome/browser/android/location_settings_impl.h"
 #include "chrome/browser/android/logo_bridge.h"
 #include "chrome/browser/android/metrics/launch_metrics.h"
-#include "chrome/browser/android/metrics/uma_bridge.h"
 #include "chrome/browser/android/metrics/uma_session_stats.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/metrics/variations_session.h"
@@ -254,7 +253,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"TransitionPageHelper", TransitionPageHelper::Register},
     {"TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate},
     {"TtsPlatformImpl", TtsPlatformImplAndroid::Register},
-    {"UmaBridge", RegisterUmaBridge},
     {"UmaSessionStats", RegisterUmaSessionStats},
     {"UrlUtilities", RegisterUrlUtilities},
     {"Variations", variations::android::RegisterVariations},

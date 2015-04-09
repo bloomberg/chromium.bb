@@ -16,8 +16,8 @@ import android.view.View;
 import android.widget.PopupMenu;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.metrics.UmaBridge;
 
 import java.util.ArrayList;
 
@@ -120,7 +120,7 @@ public class AppMenuHandler {
         mAppMenu.show(
                 wrapper, anchorView, isByHardwareButton, rotation, appRect, pt.y);
         mAppMenuDragHelper.onShow(startDragging);
-        UmaBridge.menuShow();
+        RecordUserAction.record("MobileMenuShow");
         return true;
     }
 

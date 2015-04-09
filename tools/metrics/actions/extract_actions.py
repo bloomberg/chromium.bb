@@ -44,7 +44,11 @@ import pretty_print_xml
 
 USER_METRICS_ACTION_RE = re.compile(r"""
   [^a-zA-Z]                   # Preceded by a non-alphabetical character.
-  UserMetricsAction           # Name of the function.
+  (?:                         # Begin non-capturing group.
+  UserMetricsAction           # C++ / Objective C function name.
+  |                           # or...
+  RecordUserAction\.record    # Java function name.
+  )                           # End non-capturing group.
   \(                          # Opening parenthesis.
   \s*                         # Any amount of whitespace, including new lines.
   (.+?)                       # A sequence of characters for the param.
@@ -78,6 +82,7 @@ KNOWN_COMPUTED_USERS = (
   'mock_render_thread.cc',  # mock of RenderThread::RecordComputedAction()
   'ppb_pdf_impl.cc',  # see AddClosedSourceActions()
   'pepper_pdf_host.cc',  # see AddClosedSourceActions()
+  'record_user_action.cc', # see RecordUserAction.java
 )
 
 # Language codes used in Chrome. The list should be updated when a new
@@ -233,8 +238,6 @@ def AddAndroidActions(actions):
   actions.add('DataReductionProxy_TurnedOnFromPromo');
   actions.add('DataReductionProxy_TurnedOff');
   actions.add('MobileActionBarShown')
-  actions.add('MobileBeamCallbackSuccess')
-  actions.add('MobileBeamInvalidAppState')
   actions.add('MobileBreakpadUploadAttempt')
   actions.add('MobileBreakpadUploadFailure')
   actions.add('MobileBreakpadUploadSuccess')
@@ -284,7 +287,6 @@ def AddAndroidActions(actions):
   actions.add('MobileMenuRequestDesktopSite')
   actions.add('MobileMenuSettings')
   actions.add('MobileMenuShare')
-  actions.add('MobileMenuShow')
   actions.add('MobileNTPBookmark')
   actions.add('MobileNTPForeignSession')
   actions.add('MobileNTPMostVisited')
@@ -323,9 +325,6 @@ def AddAndroidActions(actions):
   actions.add('MobileToolbarShowStackView')
   actions.add('MobileToolbarStackViewNewTab')
   actions.add('MobileToolbarToggleBookmark')
-  actions.add('MobileUsingMenuByHwButtonTap')
-  actions.add('MobileUsingMenuBySwButtonDragging')
-  actions.add('MobileUsingMenuBySwButtonTap')
   actions.add('SystemBack')
   actions.add('SystemBackForNavigation')
 
@@ -571,9 +570,9 @@ def AddLiteralActions(actions):
   Arguments:
     actions: set of actions to add to.
   """
-  EXTENSIONS = ('.cc', '.mm', '.c', '.m')
+  EXTENSIONS = ('.cc', '.mm', '.c', '.m', '.java')
 
-  # Walk the source tree to process all .cc files.
+  # Walk the source tree to process all files.
   ash_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'ash'))
   WalkDirectory(ash_root, actions, EXTENSIONS, GrepForActions)
   chrome_root = os.path.normpath(os.path.join(REPOSITORY_ROOT, 'chrome'))

@@ -70,6 +70,8 @@
           'android/path_utils.h',
           'android/record_histogram.cc',
           'android/record_histogram.h',
+          'android/record_user_action.cc',
+          'android/record_user_action.h',
           'android/scoped_java_ref.cc',
           'android/scoped_java_ref.h',
           'android/sys_utils.cc',

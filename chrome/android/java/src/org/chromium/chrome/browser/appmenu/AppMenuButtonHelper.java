@@ -9,7 +9,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
-import org.chromium.chrome.browser.metrics.UmaBridge;
+import org.chromium.base.metrics.RecordUserAction;
 
 /**
  * A helper class for a menu button to decide when to show the app menu and forward touch
@@ -49,7 +49,7 @@ public class AppMenuButtonHelper implements OnTouchListener {
             // Initial start dragging can be canceled in case if it was just single tap.
             // So we only record non-dragging here, and will deal with those dragging cases in
             // AppMenuDragHelper class.
-            if (!startDragging) UmaBridge.usingMenu(false, false);
+            if (!startDragging) RecordUserAction.record("MobileUsingMenuBySwButtonTap");
 
             if (mOnAppMenuShownListener != null) {
                 mOnAppMenuShownListener.run();
