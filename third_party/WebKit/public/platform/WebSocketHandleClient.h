@@ -44,15 +44,6 @@ class WebSocketHandleClient {
 public:
     // Called when the handle is opened.
     virtual void didConnect(WebSocketHandle*, const WebString& selectedProtocol, const WebString& extensions) = 0;
-    // FIXME: Remove this once content side change is committed.
-    virtual void didConnect(WebSocketHandle* handle, bool fail, const WebString& selectedProtocol, const WebString& extensions)
-    {
-        if (fail) {
-            didFail(handle, WebString());
-        } else {
-            didConnect(handle, selectedProtocol, extensions);
-        }
-    }
 
     // Called when the browser starts the opening handshake.
     // This notification can be omitted when the inspector is not active.
