@@ -122,18 +122,31 @@ static void appendServerMapMousePosition(StringBuilder& url, Event* event)
     if (!imageElement.isServerMap())
         return;
 
-    if (!imageElement.layoutObject() || !imageElement.layoutObject()->isLayoutImage())
+    LayoutObject* layoutObject = imageElement.layoutObject();
+    if (!layoutObject || !layoutObject->isBox())
         return;
-    LayoutImage* renderer = toLayoutImage(imageElement.layoutObject());
 
-    // FIXME: This should probably pass true for useTransforms.
-    FloatPoint absolutePosition = renderer->absoluteToLocal(FloatPoint(toMouseEvent(event)->pageX(), toMouseEvent(event)->pageY()));
-    int x = absolutePosition.x();
-    int y = absolutePosition.y();
+    // The coordinates sent in the query string are relative to the height and
+    // width of the image element, ignoring CSS transform/zoom.
+    LayoutPoint mapPoint(layoutObject->absoluteToLocal(FloatPoint(toMouseEvent(event)->absoluteLocation()), UseTransforms));
+
+    // The origin (0,0) is at the upper left of the content area, inside the
+    // padding and border.
+    mapPoint -= toLayoutBox(layoutObject)->contentBoxOffset();
+
+    // CSS zoom is not reflected in the map coordinates.
+    float scaleFactor = 1 / layoutObject->style()->effectiveZoom();
+    mapPoint.scale(scaleFactor, scaleFactor);
+
+    // Negative coordinates are clamped to 0 such that clicks in the left and
+    // top padding/border areas receive an X or Y coordinate of 0.
+    IntPoint clampedPoint(roundedIntPoint(mapPoint));
+    clampedPoint.clampNegativeToZero();
+
     url.append('?');
-    url.appendNumber(x);
+    url.appendNumber(clampedPoint.x());
     url.append(',');
-    url.appendNumber(y);
+    url.appendNumber(clampedPoint.y());
 }
 
 void HTMLAnchorElement::defaultEventHandler(Event* event)
