@@ -11,7 +11,6 @@ from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
 
 from measurements import smoothness
-from metrics import power
 
 
 class FakeTracingController(object):
@@ -23,8 +22,6 @@ class FakeTracingController(object):
 class FakePlatform(object):
   def __init__(self):
     self.tracing_controller = FakeTracingController()
-  def CanMonitorPower(self):
-    return False
 
 
 class FakeBrowser(object):
@@ -166,39 +163,3 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
 
   def testCleanUpTrace(self):
     self.TestTracingCleanedUp(smoothness.Smoothness, self._options)
-
-  def testCleanUpPowerMetric(self):
-    class FailPage(page.Page):
-      def __init__(self, page_set):
-        # pylint: disable=bad-super-call
-        super(FailPage, self).__init__(
-            url='file://blank.html',
-            page_set=page_set, base_dir=page_set.base_dir)
-      def RunPageInteractions(self, _):
-        raise exceptions.IntentionalException
-
-    class FakePowerMetric(power.PowerMetric):
-      start_called = False
-      stop_called = True
-      def Start(self, _1, _2):
-        self.start_called = True
-      def Stop(self, _1, _2):
-        self.stop_called = True
-
-    ps = self.CreateEmptyPageSet()
-    ps.AddUserStory(FailPage(ps))
-
-    class BuggyMeasurement(smoothness.Smoothness):
-      fake_power = None
-      # Inject fake power metric.
-      def WillStartBrowser(self, platform):
-        self.fake_power = self._power_metric = FakePowerMetric(platform)
-
-    measurement = BuggyMeasurement()
-    try:
-      self.RunMeasurement(measurement, ps)
-    except exceptions.IntentionalException:
-      pass
-
-    self.assertTrue(measurement.fake_power.start_called)
-    self.assertTrue(measurement.fake_power.stop_called)
