@@ -152,13 +152,7 @@ public class ShortcutHelper {
             shortcutIntent.putExtra(EXTRA_TITLE, title);
             shortcutIntent.putExtra(EXTRA_URL, url);
             shortcutIntent.putExtra(EXTRA_ORIENTATION, orientation);
-
-            // The only reason we convert to a String here is because Android inexplicably eats a
-            // byte[] when adding the shortcut -- the Bundle received by the launched Activity even
-            // lacks the key for the extra.
-            byte[] mac = WebappAuthenticator.getMacForUrl(context, url);
-            String encodedMac = Base64.encodeToString(mac, Base64.DEFAULT);
-            shortcutIntent.putExtra(EXTRA_MAC, encodedMac);
+            shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
         } else {
             // Add the shortcut as a launcher icon to open in the browser Activity.
             shortcutIntent = BookmarkUtils.createShortcutIntent(context, url);
@@ -188,6 +182,17 @@ public class ShortcutHelper {
                 }
             });
         }
+    }
+
+    /**
+     * @return String that can be used to verify that a WebappActivity is being started by Chrome.
+     */
+    public static String getEncodedMac(Context context, String url) {
+        // The only reason we convert to a String here is because Android inexplicably eats a
+        // byte[] when adding the shortcut -- the Bundle received by the launched Activity even
+        // lacks the key for the extra.
+        byte[] mac = WebappAuthenticator.getMacForUrl(context, url);
+        return Base64.encodeToString(mac, Base64.DEFAULT);
     }
 
     private native long nativeInitialize(WebContents webContents);
