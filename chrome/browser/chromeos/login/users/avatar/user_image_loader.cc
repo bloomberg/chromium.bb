@@ -34,7 +34,7 @@ UserImageLoader::ImageInfo::~ImageInfo() {
 UserImageLoader::UserImageRequest::UserImageRequest(
     const ImageInfo& image_info,
     const std::string& image_data,
-    UserImageLoader* user_image_loader)
+    const scoped_refptr<UserImageLoader>& user_image_loader)
     : ImageRequest(user_image_loader->background_task_runner_),
       image_info_(image_info),
       image_data_(image_data.begin(), image_data.end()),

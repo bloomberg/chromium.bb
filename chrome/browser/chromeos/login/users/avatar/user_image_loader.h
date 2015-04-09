@@ -69,7 +69,7 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
    public:
     UserImageRequest(const ImageInfo& image_info,
                      const std::string& image_data,
-                     UserImageLoader* user_image_loader);
+                     const scoped_refptr<UserImageLoader>& user_image_loader);
 
     // ImageDecoder::ImageRequest implementation. These callbacks will only be
     // invoked via user_image_loader_'s background_task_runner_.
@@ -81,7 +81,7 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader> {
 
     const ImageInfo image_info_;
     std::vector<unsigned char> image_data_;
-    UserImageLoader* user_image_loader_;
+    scoped_refptr<UserImageLoader> user_image_loader_;
   };
 
   ~UserImageLoader();
