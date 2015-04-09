@@ -22,7 +22,6 @@
     "skip_throttle_users": [
         "commit-bot@chromium.org"
     ],
-    "tryserver_url": "http://build.chromium.org/p/tryserver.chromium/",
     "use_buildbucket_for_tryjobs": true,
     "verifiers_no_patch": {
         "experimental_try_job_verifier": {
