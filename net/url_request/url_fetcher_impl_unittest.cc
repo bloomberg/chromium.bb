@@ -1041,7 +1041,8 @@ TEST_F(URLFetcherTest, PostEntireFile) {
   base::FilePath upload_path = GetUploadFileTestPath();
 
   WaitingURLFetcherDelegate delegate;
-  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST, this);
+  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST,
+                         &delegate);
   fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
       request_context(), base::MessageLoopProxy::current()));
   fetcher.SetUploadFilePath("application/x-www-form-urlencoded", upload_path, 0,
@@ -1064,7 +1065,8 @@ TEST_F(URLFetcherTest, PostFileRange) {
   base::FilePath upload_path = GetUploadFileTestPath();
 
   WaitingURLFetcherDelegate delegate;
-  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST, this);
+  URLFetcherImpl fetcher(test_server_->GetURL("echo"), URLFetcher::POST,
+                         &delegate);
   fetcher.SetRequestContext(new TrivialURLRequestContextGetter(
       request_context(), base::MessageLoopProxy::current()));
   fetcher.SetUploadFilePath("application/x-www-form-urlencoded", upload_path,
