@@ -136,11 +136,6 @@ def LibCxxCflags(bias_arch):
                    '-DHAS_THREAD_LOCAL=1', '-D__ARM_DWARF_EH__'])
 
 
-def LibStdcxxCflags(bias_arch):
-  return ' '.join([TargetLibCflags(bias_arch),
-                   NewlibIsystemCflags(bias_arch)])
-
-
 # Build a single object file for the target.
 def BuildTargetObjectCmd(source, output, bias_arch, output_dir='%(cwd)s'):
   flags = ['-Wall', '-Werror', '-O2', '-c']
@@ -419,58 +414,6 @@ def TargetLibs(bias_arch, is_canonical):
                   'install']),
           ] + LibcxxDirectoryCmds(bias_arch)
       },
-      T('libstdcxx'): {
-          'type': TargetLibBuildType(is_canonical),
-          'dependencies': ['gcc_src', 'gcc_src', 'target_lib_compiler',
-                           T('newlib')],
-          'commands' : [
-              command.SkipForIncrementalCommand([
-                  'sh',
-                  command.path.join('%(gcc_src)s', 'libstdc++-v3',
-                                    'configure')] +
-                  TargetTools(bias_arch) + [
-                  'CC_FOR_BUILD=cc',
-                  'CC=' + PnaclTool('clang'),
-                  'CXX=' + PnaclTool('clang++'),
-                  'AR=' + PnaclTool('ar'),
-                  'NM=' + PnaclTool('nm'),
-                  'RAW_CXX_FOR_TARGET=' + PnaclTool('clang++'),
-                  'LD=' + PnaclTool('illegal'),
-                  'RANLIB=' + PnaclTool('ranlib'),
-                  'CFLAGS=' + LibStdcxxCflags(bias_arch),
-                  'CXXFLAGS=' + LibStdcxxCflags(bias_arch),
-                  'CPPFLAGS=' + NewlibIsystemCflags(bias_arch),
-                  'CFLAGS_FOR_TARGET=' + LibStdcxxCflags(bias_arch),
-                  'CXXFLAGS_FOR_TARGET=' + LibStdcxxCflags(bias_arch),
-                  '--host=arm-none-linux-gnueabi',
-                  '--prefix=',
-                  '--enable-cxx-flags=-D__SIZE_MAX__=4294967295',
-                  '--disable-multilib',
-                  '--disable-linux-futex',
-                  '--disable-libstdcxx-time',
-                  '--disable-sjlj-exceptions',
-                  '--disable-libstdcxx-pch',
-                  '--with-newlib',
-                  '--disable-shared',
-                  '--disable-rpath']),
-              command.Copy(os.path.join('%(gcc_src)s', 'gcc',
-                                        'unwind-generic.h'),
-                           os.path.join('include', 'unwind.h')),
-              command.Command(MakeCommand()),
-              command.Command([
-                  'make',
-                  'DESTDIR=' + os.path.join('%(abs_output)s', target_triple),
-                  'install-data']),
-              command.RemoveDirectory(
-                  os.path.join('%(output)s', target_triple, 'share')),
-              command.Remove(os.path.join('%(output)s', target_triple, 'lib',
-                                          'libstdc++*-gdb.py')),
-              command.Copy(
-                  os.path.join('src', '.libs', 'libstdc++.a'),
-                  os.path.join('%(output)s', target_triple, 'lib',
-                               'libstdc++.a')),
-          ],
-      },
   }
   if IsBCArch(bias_arch):
     libs.update({
@@ -573,12 +516,6 @@ def TargetLibs(bias_arch, is_canonical):
           ],
       }
     })
-
-  if bias_arch != 'le32':
-    # We do not need libstdc++ for biased bitcode because we don't use it for
-    # the IRT anymore. Direct-to-nacl has never supported it.
-    # TODO(dschuff): Remove it entirely after suitable deprecation warning.
-    del libs[T('libstdcxx')]
 
   return libs
 

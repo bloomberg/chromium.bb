@@ -45,12 +45,7 @@ EXTRA_ENV = {
   'STDINC'      : '1',    # Include standard headers (-nostdinc sets to 0)
   'STDINCCXX'   : '1',    # Include standard cxx headers (-nostdinc++ sets to 0)
   'USE_STDLIB'  : '1',    # Include standard libraries (-nostdlib sets to 0)
-  'STDLIB'      : '',     # C++ Standard Library.
-  'STDLIB_TRUNC': '',     # C++ Standard Library, truncated to pass as -lXXX.
-  'STDLIB_IDIR' : '',     # C++ Standard Library include directory.
-                          # Note: the above C++ Standard Library
-                          # settings use a default if their value
-                          # remains uset.
+  'STDLIB'      : 'libc++',     # C++ Standard Library.
   'DEFAULTLIBS' : '1',    # Link with default libraries
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
   'PIC'         : '0',    # Generate PIC
@@ -107,11 +102,7 @@ EXTRA_ENV = {
   'ISYSTEM_CXX' :
     '${INCLUDE_CXX_HEADERS && STDINCCXX ? ${ISYSTEM_CXX_include_paths}}',
 
-  'ISYSTEM_CXX_include_paths' :
-    '${BASE_USR}/include/c++/${STDLIB_IDIR} ' +
-    '${BASE_USR}/include/c++/${STDLIB_IDIR}/arm-none-linux-gnueabi ' +
-    '${BASE_USR}/include/c++/${STDLIB_IDIR}/backward',
-
+  'ISYSTEM_CXX_include_paths' : '${BASE_USR}/include/c++/v1',
 
   # Only propagate opt level to linker if explicitly set, so that the
   # linker will know if an opt level was explicitly set or not.
@@ -147,7 +138,7 @@ EXTRA_ENV = {
   'STDLIBS'   : '${DEFAULTLIBS ? '
                 '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC} '
                 '${LIBGCC_BC} ${LIBPNACLMM}}',
-  'LIBSTDCPP' : '${IS_CXX ? -l${STDLIB_TRUNC} -lm }',
+  'LIBSTDCPP' : '${IS_CXX ? -lc++ -lm -lpthread }',
   # The few functions in the bitcode version of compiler-rt unfortunately
   # depend on libm. TODO(jvoung): try rewriting the compiler-rt functions
   # to be standalone.
@@ -193,19 +184,8 @@ def SetTarget(*args):
 def SetStdLib(*args):
   """Set the C++ Standard Library."""
   lib = args[0]
-  assert lib == 'libc++' or lib == 'libstdc++', (
-      'Invalid C++ standard library: -stdlib=%s' % lib)
-  env.set('STDLIB', lib)
-  env.set('STDLIB_TRUNC', lib[3:])
-  if lib == 'libc++':
-    env.set('STDLIB_IDIR', 'v1')
-    if env.getbool('IS_CXX'):
-      # libc++ depends on pthread for C++11 features as well as some
-      # exception handling (which may get removed later by the PNaCl ABI
-      # simplification) and initialize-once.
-      env.set('PTHREAD', '1')
-  elif lib == 'libstdc++':
-    env.set('STDLIB_IDIR', '4.6.2')
+  if lib != 'libc++':
+    Log.Fatal('Only libc++ is supported as standard library')
 
 def IsPortable():
   return env.getone('FRONTEND_TRIPLE').startswith('le32-')
@@ -511,10 +491,6 @@ def main(argv):
     env.append('STDLIBS', '-lgcc')
     env.append('STDLIBS', '-lcrt_platform')
 
-
-  if not env.get('STDLIB'):
-    # Default C++ Standard Library.
-    SetStdLib('libc++')
 
   flags_and_inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
