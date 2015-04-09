@@ -564,7 +564,10 @@
                   Script="jscript">
       <![CDATA[
         var ADS_SERVICE_STOPPED = 0x00000001;
+        var ADS_SERVICE_AUTO_START = 2;
         var service = GetObject("WinNT://./$(var.ServiceName),Service");
+        service.StartType = ADS_SERVICE_AUTO_START;
+        service.SetInfo();
         if (service.Status == ADS_SERVICE_STOPPED) {
           service.Start();
         }
