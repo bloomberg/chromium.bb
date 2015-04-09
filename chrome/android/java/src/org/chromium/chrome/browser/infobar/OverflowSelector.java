@@ -14,6 +14,7 @@ import android.widget.PopupMenu.OnMenuItemClickListener;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.password.ManageSavedPasswordsPreferences;
 import org.chromium.chrome.browser.widget.ButtonCompat;
 
 /**
@@ -56,9 +57,8 @@ public class OverflowSelector {
 
     private static boolean processMenuItem(MenuItem item, Context context) {
         if (item.getItemId() == R.id.settings) {
-            // TODO(melandory) When Smart Lock setting will be implemented for Chrome on Android
-            // this code should open settings fragment with Smart Lock parameters.
-            PreferencesLauncher.launchSettingsPage(context, null);
+            PreferencesLauncher.launchSettingsPage(
+                    context, ManageSavedPasswordsPreferences.class.getName());
             return true;
         }
         // TODO(melandory): Learn more should open link to help center
