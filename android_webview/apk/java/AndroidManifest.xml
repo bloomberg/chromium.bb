@@ -30,5 +30,7 @@
         <provider android:name="com.android.webview.chromium.LicenseContentProvider"
                   android:exported="true"
                   android:authorities="com.android.webview.chromium.LicenseContentProvider" />
+        <meta-data android:name="com.android.webview.WebViewLibrary"
+                   android:value="libwebviewchromium.so" />
     </application>
 </manifest>
