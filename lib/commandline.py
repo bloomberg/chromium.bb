@@ -817,8 +817,8 @@ def RunInsideChroot(command, auto_detect_brick=False,
   argv = sys.argv[:]
   argv[0] = git.ReinterpretPathForChroot(argv[0])
 
-  target_arg = next((getattr(command.options, arg, None)
-                     for arg in ('blueprint', 'board', 'brick', 'host')), None)
+  target_arg = any(getattr(command.options, arg, None)
+                   for arg in ('blueprint', 'board', 'brick', 'host'))
   if auto_detect_brick and not target_arg and command.curr_brick_locator:
     argv += ['--brick', command.curr_brick_locator]
 
