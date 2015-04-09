@@ -141,6 +141,40 @@ class CommandVMTest(object):
       logging.error('Failed to remove the file on the VM device.')
       raise CommandError(result.error)
 
+  @TestCommandDecorator('debug')
+  def TestDebug(self):
+    """Tests the debug command."""
+    logging.info('Test to start and debug a new process on the VM device.')
+    exe_path = '/bin/bash'
+    start_cmd = self.BuildCommand('debug', device=self.vm.device_addr,
+                                  opt_args=['--exe', exe_path])
+    result = cros_build_lib.RunCommand(start_cmd, capture_output=True,
+                                       error_code_ok=True, input='\n')
+    if result.returncode:
+      logging.error('Failed to start and debug a new process on the VM device.')
+      raise CommandError(result.error)
+
+    logging.info('Test to attach a running process on the VM device.')
+    with remote_access.ChromiumOSDeviceHandler(
+        remote_access.LOCALHOST, port=self.vm.port) as device:
+      try:
+        exe = 'update_engine'
+        pids = device.GetRunningPids(exe, full_path=False)
+        if not pids:
+          logging.error('Failed to find any running process to debug.')
+          raise CommandError()
+        pid = pids[0]
+        attach_cmd = self.BuildCommand('debug', device=self.vm.device_addr,
+                                       opt_args=['--pid', str(pid)])
+        result = cros_build_lib.RunCommand(attach_cmd, capture_output=True,
+                                           error_code_ok=True, input='\n')
+        if result.returncode:
+          logging.error('Failed to attach a running process on the VM device.')
+          raise CommandError(result.error)
+      except remote_access.SSHConnectionError:
+        logging.error('Unable to connect to the VM to get running processes.')
+        raise CommandError()
+
   @TestCommandDecorator('flash')
   def TestFlash(self):
     """Tests the flash command."""
@@ -198,6 +232,7 @@ class CommandVMTest(object):
   def RunTests(self):
     """Calls the test functions."""
     self.TestShell()
+    self.TestDebug()
     self.TestFlash()
     self.TestDeploy()
 
@@ -208,6 +243,6 @@ class CommandVMTest(object):
       self.RunTests()
       logging.info('All tests completed successfully.')
     except Exception as e:
-      logging.error(e)
+      cros_build_lib.Die(e)
     finally:
       self.TearDown()
