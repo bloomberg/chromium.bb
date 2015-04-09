@@ -647,11 +647,14 @@ bool Textfield::OnMouseDragged(const ui::MouseEvent& event) {
   }
 
   // A timer is used to continuously scroll while selecting beyond side edges.
-  if ((event.location().x() > 0 && event.location().x() < size().width()) ||
-      GetDragSelectionDelay() == 0) {
+  const int x = event.location().x();
+  if ((x >= 0 && x <= width()) || GetDragSelectionDelay() == 0) {
     drag_selection_timer_.Stop();
     SelectThroughLastDragLocation();
   } else if (!drag_selection_timer_.IsRunning()) {
+    // Select through the edge of the visible text, then start the scroll timer.
+    last_drag_location_.set_x(std::min(std::max(0, x), width()));
+    SelectThroughLastDragLocation();
     drag_selection_timer_.Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(GetDragSelectionDelay()),
         this, &Textfield::SelectThroughLastDragLocation);
