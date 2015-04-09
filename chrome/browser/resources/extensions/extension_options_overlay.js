@@ -127,17 +127,11 @@ cr.define('extensions', function() {
       extensionoptions.onpreferredsizechanged = function(evt) {
         var oldOverlayWidth = parseInt(overlayStyle.width, 10);
         var oldOverlayHeight = parseInt(overlayStyle.height, 10);
-        // The overlay must be slightly larger than the extension options to
-        // avoid creating scrollbars.
-        // TODO(paulmeyer): This shouldn't be necessary, but the preferred size
-        // (coming from Blink) seems to be too small for some zoom levels. The
-        // 2-pixel addition should be removed once this problem is investigated
-        // and corrected.
-        var newOverlayWidth = Math.max(evt.width + 2, minWidth);
+        var newOverlayWidth = Math.max(evt.width, minWidth);
         // |evt.height| is just the new overlay guest height, and does not
         // include the overlay header height, so it needs to be added.
         var newOverlayHeight =
-            Math.min(evt.height + overlayHeader.offsetHeight + 2, maxHeight);
+            Math.min(evt.height + overlayHeader.offsetHeight, maxHeight);
 
         // animationTime is the amount of time in ms that will be used to resize
         // the overlay. It is calculated by multiplying the pythagorean distance
