@@ -447,8 +447,8 @@ class DeviceUtils(object):
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def RunShellCommand(self, cmd, check_return=False, cwd=None, env=None,
-                      as_root=False, single_line=False, timeout=None,
-                      retries=None):
+                      as_root=False, single_line=False, large_output=False,
+                      timeout=None, retries=None):
     """Run an ADB shell command.
 
     The command to run |cmd| should be a sequence of program arguments or else
@@ -481,6 +481,8 @@ class DeviceUtils(object):
         with root privileges.
       single_line: A boolean indicating if only a single line of output is
         expected.
+      large_output: Uses a work-around for large shell command output. Without
+        this large output will be truncated.
       timeout: timeout in seconds
       retries: number of retries
 
@@ -503,14 +505,48 @@ class DeviceUtils(object):
       # using double quotes here to allow interpolation of shell variables
       return '%s=%s' % (key, cmd_helper.DoubleQuote(value))
 
-    def do_run(cmd):
+    def run(cmd):
+      return self.adb.Shell(cmd)
+
+    def handle_check_return(cmd):
       try:
-        return self.adb.Shell(cmd)
+        return run(cmd)
       except device_errors.AdbCommandFailedError as exc:
         if check_return:
           raise
         else:
           return exc.output
+
+    def handle_large_command(cmd):
+      if len(cmd) < self._MAX_ADB_COMMAND_LENGTH:
+        return handle_check_return(cmd)
+      else:
+        with device_temp_file.DeviceTempFile(self.adb, suffix='.sh') as script:
+          self._WriteFileWithPush(script.name, cmd)
+          logging.info('Large shell command will be run from file: %s ...',
+                       cmd[:100])
+          return handle_check_return('sh %s' % script.name_quoted)
+
+    def handle_large_output(cmd, large_output_mode):
+      if large_output_mode:
+        with device_temp_file.DeviceTempFile(self.adb) as large_output_file:
+          cmd = '%s > %s' % (cmd, large_output_file.name)
+          logging.info('Large output mode enabled. Will write output to device '
+                       ' and read results from file.')
+          handle_large_command(cmd)
+          return self.ReadFile(large_output_file.name)
+      else:
+        try:
+          return handle_large_command(cmd)
+        except device_errors.AdbCommandFailedError as exc:
+          if exc.status is None:
+            logging.exception('No output found for %s', cmd)
+            logging.warning('Attempting to run in large_output mode.')
+            logging.warning('Use RunShellCommand(..., large_output=True) for '
+                            'shell commands that expect a lot of output.')
+            return handle_large_output(cmd, True)
+          else:
+            raise
 
     if not isinstance(cmd, basestring):
       cmd = ' '.join(cmd_helper.SingleQuote(s) for s in cmd)
@@ -522,19 +558,9 @@ class DeviceUtils(object):
     if as_root and self.NeedsSU():
       # "su -c sh -c" allows using shell features in |cmd|
       cmd = 'su -c sh -c %s' % cmd_helper.SingleQuote(cmd)
-    if timeout is None:
-      timeout = self._default_timeout
 
-    if len(cmd) < self._MAX_ADB_COMMAND_LENGTH:
-      output = do_run(cmd)
-    else:
-      with device_temp_file.DeviceTempFile(self.adb, suffix='.sh') as script:
-        self._WriteFileWithPush(script.name, cmd)
-        logging.info('Large shell command will be run from file: %s ...',
-                     cmd[:100])
-        output = do_run('sh %s' % script.name_quoted)
+    output = handle_large_output(cmd, large_output).splitlines()
 
-    output = output.splitlines()
     if single_line:
       if not output:
         return ''

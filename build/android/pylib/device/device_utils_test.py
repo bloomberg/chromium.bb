@@ -114,6 +114,10 @@ class MockTempFile(object):
   def __exit__(self, exc_type, exc_val, exc_tb):
     pass
 
+  @property
+  def name(self):
+    return self.file.name
+
 
 class _PatchedFunction(object):
   def __init__(self, patched=None, mocked=None):
@@ -581,6 +585,39 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsTest):
     with self.assertCall(self.call.adb.Shell(cmd), self.ShellError(output)):
       self.assertEquals([output.rstrip()],
                         self.device.RunShellCommand(cmd, check_return=False))
+
+  def testRunShellCommand_largeOutput_enabled(self):
+    cmd = 'echo $VALUE'
+    temp_file = MockTempFile('/sdcard/temp-123')
+    cmd_redirect = '%s > %s' % (cmd, temp_file.name)
+    with self.assertCalls(
+        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.adb),
+            temp_file),
+        (self.call.adb.Shell(cmd_redirect)),
+        (self.call.device.ReadFile(temp_file.name), 'something')):
+      self.assertEquals(
+          ['something'],
+          self.device.RunShellCommand(
+              cmd, large_output=True, check_return=True))
+
+  def testRunShellCommand_largeOutput_disabledNoTrigger(self):
+    cmd = 'something'
+    with self.assertCall(self.call.adb.Shell(cmd), self.ShellError('')):
+      with self.assertRaises(device_errors.AdbCommandFailedError):
+        self.device.RunShellCommand(cmd, check_return=True)
+
+  def testRunShellCommand_largeOutput_disabledTrigger(self):
+    cmd = 'echo $VALUE'
+    temp_file = MockTempFile('/sdcard/temp-123')
+    cmd_redirect = '%s > %s' % (cmd, temp_file.name)
+    with self.assertCalls(
+        (self.call.adb.Shell(cmd), self.ShellError('', None)),
+        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.adb),
+            temp_file),
+        (self.call.adb.Shell(cmd_redirect)),
+        (self.call.device.ReadFile(mock.ANY), 'something')):
+      self.assertEquals(['something'],
+                        self.device.RunShellCommand(cmd, check_return=True))
 
 
 class DeviceUtilsGetDevicePieWrapper(DeviceUtilsTest):
