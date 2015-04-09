@@ -102,11 +102,7 @@ enum ExtensionState {
 };
 
 ExtensionState GetExtensionState(const extensions::Extension* extension) {
-  if (extension->is_theme())
-    return EXTENSION_ALLOWED;
-
   bool was_installed_by_default = extension->was_installed_by_default();
-  bool was_installed_by_custodian = extension->was_installed_by_custodian();
 #if defined(OS_CHROMEOS)
   // On Chrome OS all external sources are controlled by us so it means that
   // they are "default". Method was_installed_by_default returns false because
@@ -117,14 +113,16 @@ ExtensionState GetExtensionState(const extensions::Extension* extension) {
   was_installed_by_default =
       extensions::Manifest::IsExternalLocation(extension->location());
 #endif
+  // Note: Component extensions are protected from modification/uninstallation
+  // anyway, so there's no need to enforce them again for supervised users.
   if (extensions::Manifest::IsComponentLocation(extension->location()) ||
-      was_installed_by_default ||
-      was_installed_by_custodian) {
-    // Enforce default extensions as well as custodian-installed extensions
-    // (if we'd allow the supervised user to uninstall them, there'd be no way
-    // to get them back).
-    return EXTENSION_FORCED;
+      extension->is_theme() ||
+      was_installed_by_default) {
+    return EXTENSION_ALLOWED;
   }
+
+  if (extension->was_installed_by_custodian())
+    return EXTENSION_FORCED;
 
   return EXTENSION_BLOCKED;
 }
