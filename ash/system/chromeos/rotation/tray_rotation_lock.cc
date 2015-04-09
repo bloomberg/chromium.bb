@@ -95,21 +95,12 @@ void RotationLockDefaultView::UpdateImage() {
 }  // namespace tray
 
 TrayRotationLock::TrayRotationLock(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED),
-      on_primary_display_(false) {
-  gfx::NativeView native_view = system_tray->GetWidget()->GetNativeView();
-  gfx::Display parent_display = Shell::GetScreen()->
-      GetDisplayNearestWindow(native_view);
-
-  on_primary_display_ = parent_display.IsInternal();
-
-  if (on_primary_display_)
-    Shell::GetInstance()->AddShellObserver(this);
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED) {
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 TrayRotationLock::~TrayRotationLock() {
-  if (on_primary_display_)
-    Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void TrayRotationLock::OnRotationLockChanged(bool rotation_locked) {
@@ -117,7 +108,7 @@ void TrayRotationLock::OnRotationLockChanged(bool rotation_locked) {
 }
 
 views::View* TrayRotationLock::CreateDefaultView(user::LoginStatus status) {
-  if (on_primary_display_)
+  if (OnPrimaryDisplay())
     return new tray::RotationLockDefaultView(this);
   return NULL;
 }
@@ -138,13 +129,20 @@ bool TrayRotationLock::GetInitialVisibility() {
 }
 
 bool TrayRotationLock::ShouldBeVisible() {
-  return on_primary_display_ &&
+  return OnPrimaryDisplay() &&
          Shell::GetInstance()
              ->maximize_mode_controller()
              ->IsMaximizeModeWindowManagerEnabled() &&
          Shell::GetInstance()
              ->screen_orientation_controller()
              ->rotation_locked();
+}
+
+bool TrayRotationLock::OnPrimaryDisplay() const {
+  gfx::NativeView native_view = system_tray()->GetWidget()->GetNativeView();
+  gfx::Display parent_display =
+      Shell::GetScreen()->GetDisplayNearestWindow(native_view);
+  return parent_display.IsInternal();
 }
 
 }  // namespace ash

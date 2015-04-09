@@ -49,8 +49,8 @@ class ASH_EXPORT TrayRotationLock
   // locked.
   bool ShouldBeVisible();
 
-  // True if this has been created by a SystemTray on the primary display.
-  bool on_primary_display_;
+  // True if this is owned by a SystemTray on the primary display.
+  bool OnPrimaryDisplay() const;
 
   DISALLOW_COPY_AND_ASSIGN(TrayRotationLock);
 };

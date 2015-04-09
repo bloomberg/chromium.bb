@@ -42,6 +42,9 @@ class TrayRotationLockTest : public test::AshTestBase {
     return default_view_.get();
   }
 
+  // Creates the tray view associated to |tray_rotation_lock|.
+  views::View* CreateTrayView(TrayRotationLock* tray_rotation_lock);
+
   // Sets up a TrayRotationLock, its tray view, and its default view, for the
   // given SystemTray and its display. On a primary display all will be
   // created. On a secondary display both the tray view and default view will
@@ -64,6 +67,12 @@ class TrayRotationLockTest : public test::AshTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(TrayRotationLockTest);
 };
+
+views::View* TrayRotationLockTest::CreateTrayView(
+    TrayRotationLock* tray_rotation_lock) {
+  return tray_rotation_lock->CreateTrayView(
+      StatusAreaWidgetTestHelper::GetUserLoginStatus());
+}
 
 void TrayRotationLockTest::SetUpForStatusAreaWidget(
     StatusAreaWidget* status_area_widget) {
@@ -220,6 +229,27 @@ TEST_F(TrayRotationLockTest, PerformActionOnDefaultView) {
   EXPECT_TRUE(tray_view()->visible());
 
   maximize_mode_controller->EnableMaximizeModeWindowManager(false);
+}
+
+// Tests that when the tray is created without the internal display being known,
+// that it will still display correctly once the internal display is known.
+TEST_F(TrayRotationLockTest, InternalDisplayNotAvailableAtCreation) {
+  int64 internal_display_id = gfx::Display::InternalDisplayId();
+  TearDownViews();
+  gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
+
+  scoped_ptr<TrayRotationLock> tray(new TrayRotationLock(
+      StatusAreaWidgetTestHelper::GetStatusAreaWidget()->system_tray()));
+
+  gfx::Display::SetInternalDisplayId(internal_display_id);
+  scoped_ptr<views::View> tray_view(CreateTrayView(tray.get()));
+  scoped_ptr<views::View> default_view(tray->CreateDefaultView(
+      StatusAreaWidgetTestHelper::GetUserLoginStatus()));
+  EXPECT_TRUE(default_view);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
+  EXPECT_TRUE(default_view->visible());
 }
 
 }  // namespace ash
