@@ -61,8 +61,6 @@ class InternetOptionsHandler : public ::options::OptionsPageUIHandler,
 
   // Callbacks to set network state properties.
   void ShowMorePlanInfoCallback(const base::ListValue* args);
-  void CarrierStatusCallback();
-  void SetCarrierCallback(const base::ListValue* args);
   void SimOperationCallback(const base::ListValue* args);
 
   // Sets details_guid_ for event forwarding.
@@ -89,9 +87,6 @@ class InternetOptionsHandler : public ::options::OptionsPageUIHandler,
                                   const std::string& service_path,
                                   const base::DictionaryValue& onc_properties);
 
-  // Called when carrier data has been updated to informs the JS.
-  void UpdateCarrier();
-
   // NetworkStateHandlerObserver
   void DeviceListChanged() override;
   void NetworkListChanged() override;
@@ -113,7 +108,6 @@ class InternetOptionsHandler : public ::options::OptionsPageUIHandler,
   void AddVPNConnection(const base::ListValue* args);
   void AddNonVPNConnection(const base::ListValue* args);
   void ConfigureNetwork(const base::ListValue* args);
-  void ActivateNetwork(const base::ListValue* args);
 
   // Requests that a list of VPN providers enabled in the primary user's
   // profile be sent to JavaScript.

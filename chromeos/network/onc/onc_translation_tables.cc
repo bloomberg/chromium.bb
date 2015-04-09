@@ -149,6 +149,12 @@ const FieldTranslationEntry cellular_found_network_fields[] = {
     {::onc::cellular_found_network::kLongName, shill::kLongNameProperty},
     {NULL}};
 
+const FieldTranslationEntry cellular_payment_portal_fields[] = {
+    {::onc::cellular_payment_portal::kMethod, shill::kPaymentPortalMethod},
+    {::onc::cellular_payment_portal::kPostData, shill::kPaymentPortalPostData},
+    {::onc::cellular_payment_portal::kUrl, shill::kPaymentPortalURL},
+    {NULL}};
+
 const FieldTranslationEntry cellular_provider_fields[] = {
     {::onc::cellular_provider::kCode, shill::kOperatorCodeKey},
     {::onc::cellular_provider::kCountry, shill::kOperatorCountryKey},
@@ -171,6 +177,8 @@ const FieldTranslationEntry cellular_fields[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kNetworkTechnology,
     //   shill::kNetworkTechnologyProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // { ::onc::cellular::kPaymentPortal, shill::kPaymentPortal},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kRoamingState, shill::kRoamingStateProperty},
     {::onc::cellular::kSignalStrength, shill::kSignalStrengthProperty},
@@ -237,6 +245,7 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
     {&kWiMAXWithStateSignature, wimax_fields},
     {&kCellularApnSignature, cellular_apn_fields},
     {&kCellularFoundNetworkSignature, cellular_found_network_fields},
+    {&kCellularPaymentPortalSignature, cellular_payment_portal_fields},
     {&kCellularProviderSignature, cellular_provider_fields},
     {&kSIMLockStatusSignature, sim_lock_status_fields},
     {&kCellularSignature, cellular_fields},

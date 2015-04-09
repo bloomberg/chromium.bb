@@ -18,6 +18,8 @@ cr.define('options.internet', function() {
 
   /** @const */ var GoogleNameServers = ['8.8.4.4', '8.8.8.8'];
   /** @const */ var CarrierGenericUMTS = 'Generic UMTS';
+  /** @const */ var CarrierSprint = 'Sprint';
+  /** @const */ var CarrierVerizon = 'Verizon Wireless';
 
   /**
    * Helper function to set hidden attribute for elements matching a selector.
@@ -169,6 +171,35 @@ cr.define('options.internet', function() {
     return prefixLength;
   }
 
+  // Returns true if we should show the 'View Account' button for |onc|.
+  // TODO(stevenjb): We should query the Mobile Config API for whether or not to
+  // show the 'View Account' button once it is integrated with Settings.
+  function shouldShowViewAccountButton(onc) {
+    var activationState = onc.getActiveValue('Cellular.ActivationState');
+    if (activationState != 'Activating' && activationState != 'Activated')
+      return false;
+
+    // If no online payment URL was provided by Shill, only show 'View Account'
+    // for Verizon Wireless.
+    if (!onc.getActiveValue('Cellular.PaymentPortal.Url') &&
+        onc.getActiveValue('Cellular.Carrier') != CarrierVerizon) {
+      return false;
+    }
+
+    // 'View Account' should only be shown for connected networks, or
+    // disconnected LTE networks with a valid MDN.
+    var connectionState = onc.getActiveValue('ConnectionState');
+    if (connectionState != 'Connected') {
+      var technology = onc.getActiveValue('Cellular.NetworkTechnology');
+      if (technology != 'LTE' && technology != 'LTEAdvanced')
+        return false;
+      if (!onc.getActiveValue('Cellular.MDN'))
+        return false;
+    }
+
+    return true;
+  }
+
   /////////////////////////////////////////////////////////////////////////////
   // DetailsInternetPage class:
 
@@ -208,7 +239,7 @@ cr.define('options.internet', function() {
     },
 
     /**
-     * Auto-activates the network details dialog if network information
+     * Automatically shows the network details dialog if network information
      * is included in the URL.
      */
     showNetworkDetails_: function() {
@@ -699,14 +730,15 @@ cr.define('options.internet', function() {
         $('details-internet-disconnect').hidden = false;
       }
 
+      var showConfigure = false;
       var connectable = onc.getActiveValue('Connectable');
-      if (connectState != 'Connected' &&
-          (!connectable || onc.getWiFiSecurity() != 'None' ||
-          (this.type_ == 'WiMAX' || this.type_ == 'VPN'))) {
-        $('details-internet-configure').hidden = false;
-      } else {
-        $('details-internet-configure').hidden = true;
+      if (this.type_ == 'WiMAX' || this.type_ == 'VPN') {
+        showConfigure = true;
+      } else if (this.type_ == 'WiFi') {
+        showConfigure = (connectState != 'Connected' &&
+                         (!connectable || onc.getWiFiSecurity() != 'None'));
       }
+      $('details-internet-configure').hidden = !showConfigure;
     },
 
     /**
@@ -736,10 +768,10 @@ cr.define('options.internet', function() {
           $('sim-card-lock-enabled').checked = lockEnabled;
           $('change-pin').hidden = !lockEnabled;
         }
-        showViewAccount = onc.getActiveValue('showViewAccountButton');
+        showViewAccount = shouldShowViewAccountButton(onc);
         var activationState = onc.getActiveValue('Cellular.ActivationState');
-        showActivate = activationState == 'NotActivated' ||
-            activationState == 'PartiallyActivated';
+        showActivate = (activationState == 'NotActivated' ||
+                        activationState == 'PartiallyActivated');
       }
 
       $('view-account-details').hidden = !showViewAccount;
@@ -760,7 +792,6 @@ cr.define('options.internet', function() {
       $('network-details-title').textContent =
           this.networkTitle_ || onc.getTranslatedValue('Name');
 
-      var connectionState = onc.getActiveValue('ConnectionState');
       var connectionStateString = onc.getTranslatedValue('ConnectionState');
       $('network-details-subtitle-status').textContent = connectionStateString;
 
@@ -1044,6 +1075,8 @@ cr.define('options.internet', function() {
    * Shows a spinner while the carrier is changed.
    */
   DetailsInternetPage.showCarrierChangeSpinner = function(visible) {
+    if (!DetailsInternetPage.getInstance().visible)
+      return;
     $('switch-carrier-spinner').hidden = !visible;
     // Disable any buttons that allow us to operate on cellular networks.
     DetailsInternetPage.changeCellularButtonsState(visible);
@@ -1056,7 +1089,37 @@ cr.define('options.internet', function() {
     var carrierSelector = $('select-carrier');
     var carrier = carrierSelector[carrierSelector.selectedIndex].textContent;
     DetailsInternetPage.showCarrierChangeSpinner(true);
-    chrome.send('setCarrier', [carrier]);
+    var guid = DetailsInternetPage.getInstance().onc_.guid();
+    var oncData = new OncData({});
+    oncData.setProperty('Cellular.Carrier', carrier);
+    chrome.networkingPrivate.setProperties(guid, oncData.getData(), function() {
+      // Start activation or show the activation UI after changing carriers.
+      DetailsInternetPage.activateCellular(guid);
+    });
+  };
+
+  /**
+   * If the network is not already activated, starts the activation process or
+   * shows the activation UI. Otherwise does nothing.
+   */
+  DetailsInternetPage.activateCellular = function(guid) {
+    chrome.networkingPrivate.getProperties(guid, function(properties) {
+      var oncData = new OncData(properties);
+      if (oncData.getActiveValue('Cellular.ActivationState') == 'Activated') {
+        DetailsInternetPage.showCarrierChangeSpinner(false);
+        return;
+      }
+      var carrier = oncData.getActiveValue('Cellular.Carrier');
+      if (carrier == CarrierSprint) {
+        // Sprint is directly ativated, call startActivate().
+        chrome.networkingPrivate.startActivate(guid, '', function() {
+          DetailsInternetPage.showCarrierChangeSpinner(false);
+        });
+      } else {
+        DetailsInternetPage.showCarrierChangeSpinner(false);
+        chrome.send('showMorePlanInfo', [guid]);
+      }
+    });
   };
 
   /**
@@ -1125,10 +1188,6 @@ cr.define('options.internet', function() {
       }
   };
 
-  DetailsInternetPage.updateCarrier = function() {
-    DetailsInternetPage.showCarrierChangeSpinner(false);
-  };
-
   DetailsInternetPage.loginFromDetails = function() {
     var detailsPage = DetailsInternetPage.getInstance();
     if (detailsPage.type_ == 'WiFi')
@@ -1158,9 +1217,8 @@ cr.define('options.internet', function() {
 
   DetailsInternetPage.activateFromDetails = function() {
     var detailsPage = DetailsInternetPage.getInstance();
-    if (detailsPage.type_ == 'Cellular') {
-      chrome.send('activateNetwork', [detailsPage.onc_.guid()]);
-    }
+    if (detailsPage.type_ == 'Cellular')
+      DetailsInternetPage.activateCellular(detailsPage.onc_.guid());
     PageManager.closeOverlay();
   };
 

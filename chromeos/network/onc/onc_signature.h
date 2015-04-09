@@ -69,6 +69,7 @@ CHROMEOS_EXPORT extern const OncValueSignature kWiFiWithStateSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kWiMAXWithStateSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularWithStateSignature;
+CHROMEOS_EXPORT extern const OncValueSignature kCellularPaymentPortalSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularProviderSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularApnSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularFoundNetworkSignature;

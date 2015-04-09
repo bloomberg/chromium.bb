@@ -2328,6 +2328,15 @@
       </span>
     </dd>
 
+    <dt class="field">PaymentPortal</dt>
+    <dd>
+      <span class="field_meta">(optional, read-only)
+        <span class="type">PaymentPortal</span>
+      </span>
+      Properties describing the online payment portal (OLP) at which a user can
+      sign up for or modify a mobile data plan.
+    </dd>
+
     <dt class="field">PRLVersion</dt>
     <dd>
       <span class="field_meta">(optional, read-only)
@@ -2491,6 +2500,35 @@
         <span class="type">string</span>
       </span>
       Long-format name of the network operator.
+    </dd>
+  </dl>
+
+  <p><span class="type">PaymentPortal</span> type contains the following:</p>
+  <dl class="field_list">
+    <dt class="field">Method</dt>
+    <dd>
+      <span class="field_meta">(required)
+        <span class="type">string</span>
+      </span>
+      The HTTP method to use, "GET" or "POST"
+    </dd>
+
+    <dt class="field">PostData</dt>
+    <dd>
+      <span class="field_meta">
+        (required if <span class="field">Method</span> is
+        <span class="value">POST</span>, otherwise ignored)
+        <span class="type">string</span>
+      </span>
+      The postdata to send.
+    </dd>
+
+    <dt class="field">Url</dt>
+    <dd>
+      <span class="field_meta">(required)
+        <span class="type">string</span>
+      </span>
+      The URL for the portal.
     </dd>
   </dl>
 

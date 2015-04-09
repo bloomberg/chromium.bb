@@ -114,6 +114,7 @@ const char kMEID[] = "MEID";
 const char kMIN[] = "MIN";
 const char kModelID[] = "ModelID";
 const char kNetworkTechnology[] = "NetworkTechnology";
+const char kPaymentPortal[] = "PaymentPortal";
 const char kPRLVersion[] = "PRLVersion";
 const char kRoamingHome[] = "Home";
 const char kRoamingRequired[] = "Required";
@@ -158,13 +159,19 @@ const char kNetworkId[] = "NetworkId";
 const char kShortName[] = "ShortName";
 const char kLongName[] = "LongName";
 const char kTechnology[] = "Technology";
-}  // namespace cellular_apn
+}  // namespace cellular_found_network
+
+namespace cellular_payment_portal {
+const char kMethod[] = "Method";
+const char kPostData[] = "PostData";
+const char kUrl[] = "Url";
+}  // namespace cellular_payment_portal
 
 namespace sim_lock_status {
 const char kLockEnabled[] = "LockEnabled";
 const char kLockType[] = "LockType";
 const char kRetriesLeft[] = "RetriesLeft";
-}
+}  // namespace sim_lock_status
 
 namespace connection_state {
 const char kConnected[] = "Connected";

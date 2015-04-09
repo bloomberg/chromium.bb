@@ -370,6 +370,11 @@ void ShillToONCTranslator::TranslateCellularWithState() {
           shill::kCellularLastGoodApnProperty, &dictionary)) {
     TranslateAndAddNestedObject(::onc::cellular::kLastGoodAPN, *dictionary);
   }
+  if (shill_dictionary_->GetDictionaryWithoutPathExpansion(
+          shill::kPaymentPortalProperty, &dictionary)) {
+    TranslateAndAddNestedObject(::onc::cellular::kPaymentPortal, *dictionary);
+  }
+
   const base::DictionaryValue* device_dictionary = NULL;
   bool requires_roaming = false;
   shill_dictionary_->GetDictionaryWithoutPathExpansion(shill::kDeviceProperty,

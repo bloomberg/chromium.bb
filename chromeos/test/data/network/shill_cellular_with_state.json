@@ -5,6 +5,10 @@
   "Cellular.ActivationState": "activated",
   "Cellular.ActivationType": "OTASP",
   "Cellular.NetworkTechnology": "LTE Advanced",
+  "Cellular.Olp": {
+    "method": "GET",
+    "url": "http://test.com/payment"
+  },
   "Cellular.RoamingState": "home",
   "Cellular.ServingOperator": {
     "code": "test-code",

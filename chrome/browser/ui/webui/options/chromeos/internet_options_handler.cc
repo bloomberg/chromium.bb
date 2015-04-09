@@ -86,12 +86,8 @@ const char kRefreshNetworkDataFunction[] =
     "options.network.NetworkList.refreshNetworkData";
 const char kUpdateConnectionDataFunction[] =
     "options.internet.DetailsInternetPage.updateConnectionData";
-const char kUpdateCarrierFunction[] =
-    "options.internet.DetailsInternetPage.updateCarrier";
 
-// Setter methods called from JS that still need to be converted to match
-// networkingPrivate methods.
-const char kSetCarrierMessage[] = "setCarrier";
+// JS methods to show additional UI.
 const char kShowMorePlanInfoMessage[] = "showMorePlanInfo";
 const char kSimOperationMessage[] = "simOperation";
 
@@ -106,7 +102,6 @@ const char kSetNetworkGuidMessage[] = "setNetworkGuid";
 const char kAddVPNConnectionMessage[] = "addVPNConnection";
 const char kAddNonVPNConnectionMessage[] = "addNonVPNConnection";
 const char kConfigureNetworkMessage[] = "configureNetwork";
-const char kActivateNetworkMessage[] = "activateNetwork";
 
 const char kLoadVPNProviders[] = "loadVPNProviders";
 
@@ -131,9 +126,6 @@ const char kTagWimaxAvailable[] = "wimaxAvailable";
 const char kTagWimaxEnabled[] = "wimaxEnabled";
 const char kTagWiredList[] = "wiredList";
 const char kTagWirelessList[] = "wirelessList";
-
-// Pseudo-ONC chrome specific properties appended to the ONC dictionary.
-const char kTagShowViewAccountButton[] = "showViewAccountButton";
 
 void ShillError(const std::string& function,
                 const std::string& error_name,
@@ -173,48 +165,6 @@ base::DictionaryValue* BuildNetworkDictionary(
   network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, has_policy);
 
   return network_info.release();
-}
-
-bool ShowViewAccountButton(const NetworkState* cellular) {
-  if (cellular->activation_state() != shill::kActivationStateActivating &&
-      cellular->activation_state() != shill::kActivationStateActivated)
-    return false;
-
-  const DeviceState* device =
-      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
-          cellular->device_path());
-
-  // If no online payment URL was provided by shill, Check to see if the
-  // MobileConfig carrier indicates that "View Account" should be shown.
-  if (cellular->payment_url().empty()) {
-    if (!device || !MobileConfig::GetInstance()->IsReady())
-      return false;
-    const MobileConfig::Carrier* carrier =
-        MobileConfig::GetInstance()->GetCarrier(device->home_provider_id());
-    if (!carrier || !carrier->show_portal_button())
-      return false;
-  }
-
-  if (!cellular->IsConnectedState()) {
-    // Disconnected LTE networks should show the button if we are online and
-    // the device's MDN is set. This is to enable users to update their plan
-    // if they are out of credits.
-    if (!NetworkHandler::Get()->network_state_handler()->DefaultNetwork())
-      return false;
-    const std::string& technology = cellular->network_technology();
-    if (technology != shill::kNetworkTechnologyLte &&
-        technology != shill::kNetworkTechnologyLteAdvanced)
-      return false;
-    std::string mdn;
-    if (device) {
-      device->properties().GetStringWithoutPathExpansion(shill::kMdnProperty,
-                                                         &mdn);
-    }
-    if (mdn.empty())
-      return false;
-  }
-
-  return true;
 }
 
 bool IsVPNProvider(const extensions::Extension* extension) {
@@ -296,14 +246,8 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kConfigureNetworkMessage,
       base::Bind(&InternetOptionsHandler::ConfigureNetwork,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kActivateNetworkMessage,
-      base::Bind(&InternetOptionsHandler::ActivateNetwork,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kShowMorePlanInfoMessage,
       base::Bind(&InternetOptionsHandler::ShowMorePlanInfoCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kSetCarrierMessage,
-      base::Bind(&InternetOptionsHandler::SetCarrierCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSimOperationMessage,
       base::Bind(&InternetOptionsHandler::SimOperationCallback,
@@ -355,41 +299,6 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(
   std::string service_path = ServicePathFromGuid(guid);
   if (!service_path.empty())
     ui::NetworkConnect::Get()->ShowMobileSetup(service_path);
-}
-
-void InternetOptionsHandler::CarrierStatusCallback() {
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  const DeviceState* device =
-      handler->GetDeviceStateByType(NetworkTypePattern::Cellular());
-  if (device && (device->carrier() == shill::kCarrierSprint)) {
-    const NetworkState* network =
-        handler->FirstNetworkByType(NetworkTypePattern::Cellular());
-    if (network && network->guid() == details_guid_) {
-      ui::NetworkConnect::Get()->ActivateCellular(network->path());
-      UpdateConnectionData(network->path());
-    }
-  }
-  UpdateCarrier();
-}
-
-void InternetOptionsHandler::SetCarrierCallback(const base::ListValue* args) {
-  std::string carrier;
-  if (args->GetSize() != 1 || !args->GetString(1, &carrier)) {
-    NOTREACHED();
-    return;
-  }
-  const DeviceState* device = NetworkHandler::Get()->network_state_handler()->
-      GetDeviceStateByType(NetworkTypePattern::Cellular());
-  if (!device) {
-    LOG(WARNING) << "SetCarrierCallback with no cellular device.";
-    return;
-  }
-  NetworkHandler::Get()->network_device_handler()->SetCarrier(
-      device->path(),
-      carrier,
-      base::Bind(&InternetOptionsHandler::CarrierStatusCallback,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&ShillError, "SetCarrierCallback"));
 }
 
 void InternetOptionsHandler::SimOperationCallback(const base::ListValue* args) {
@@ -498,19 +407,7 @@ void InternetOptionsHandler::GetManagedPropertiesResult(
     const std::string& service_path,
     const base::DictionaryValue& onc_properties) {
   scoped_ptr<base::DictionaryValue> dictionary(onc_properties.DeepCopy());
-  const NetworkState* network = GetNetworkState(service_path);
-  if (network) {
-    // Add additional non-ONC cellular properties to inform the UI.
-    if (network->type() == shill::kTypeCellular) {
-      dictionary->SetBoolean(kTagShowViewAccountButton,
-                             ShowViewAccountButton(network));
-    }
-  }
   web_ui()->CallJavascriptFunction(js_callback_function, *dictionary);
-}
-
-void InternetOptionsHandler::UpdateCarrier() {
-  web_ui()->CallJavascriptFunction(kUpdateCarrierFunction);
 }
 
 void InternetOptionsHandler::DeviceListChanged() {
@@ -623,17 +520,6 @@ void InternetOptionsHandler::ConfigureNetwork(const base::ListValue* args) {
   }
 
   NetworkConfigView::Show(service_path, GetNativeWindow());
-}
-
-void InternetOptionsHandler::ActivateNetwork(const base::ListValue* args) {
-  std::string guid;
-  if (args->GetSize() != 1 || !args->GetString(0, &guid)) {
-    NOTREACHED();
-    return;
-  }
-  std::string service_path = ServicePathFromGuid(guid);
-  if (!service_path.empty())
-    ui::NetworkConnect::Get()->ActivateCellular(service_path);
 }
 
 void InternetOptionsHandler::LoadVPNProvidersCallback(

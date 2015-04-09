@@ -12,6 +12,10 @@
       "Name": "cellular_provider"
     },
     "NetworkTechnology": "LTEAdvanced",
+    "PaymentPortal": {
+      "Method": "GET",
+      "Url": "http://test.com/payment"
+    },
     "RoamingState": "Home",
     "ServingOperator": {
       "Code": "test-code",
