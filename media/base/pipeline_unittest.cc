@@ -630,9 +630,6 @@ TEST_F(PipelineTest, EndedCallback) {
   message_loop_.RunUntilIdle();
 
   EXPECT_CALL(callbacks_, OnEnded());
-  // Since the |ended_cb_| is manually invoked above, the duration does not
-  // match the expected duration and is updated upon ended.
-  EXPECT_CALL(callbacks_, OnDurationChange());
   text_stream()->SendEosNotification();
   message_loop_.RunUntilIdle();
 }
