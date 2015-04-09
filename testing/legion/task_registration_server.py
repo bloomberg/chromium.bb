@@ -39,7 +39,7 @@ class TaskRegistrationServer(object):
 
   def Start(self):
     """Starts the registration server."""
-    logging.debug('Starting task registration server')
+    logging.info('Starting task registration server')
     self._rpc_server = SimpleXMLRPCServer.SimpleXMLRPCServer(
         (common_lib.SERVER_ADDRESS, common_lib.SERVER_PORT),
         allow_none=True, logRequests=False)
@@ -51,5 +51,5 @@ class TaskRegistrationServer(object):
   def Shutdown(self):
     """Shuts the discovery server down."""
     if self._thread and self._thread.is_alive():
-      logging.debug('Shutting down task registration server')
+      logging.info('Shutting down task registration server')
       self._rpc_server.shutdown()

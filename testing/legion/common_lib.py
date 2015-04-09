@@ -26,7 +26,7 @@ def InitLogging():
     argparse.ArgumentError if the --verbosity arg is incorrect.
   """
   parser = argparse.ArgumentParser()
-  logging_action = parser.add_argument('--verbosity', default='ERROR')
+  logging_action = parser.add_argument('--verbosity', default='INFO')
   args, _ = parser.parse_known_args()
   if args.verbosity not in LOGGING_LEVELS:
     raise argparse.ArgumentError(
