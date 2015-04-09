@@ -625,8 +625,9 @@
                   '|content/zygote/'\
     },
     'scheduler': {
-      'filepath': 'cc/scheduler|'\
-                  'content/renderer/scheduler'
+      'filepath': 'cc/scheduler'\
+                  '|content/child/scheduler'\
+                  '|content/renderer/scheduler'
     },
     'search': {
       'filepath': 'chrome/browser/ui/search/',
