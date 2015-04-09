@@ -255,8 +255,8 @@ class CC_EXPORT SchedulerStateMachine {
   }
 
  protected:
-  bool BeginFrameNeededToAnimateOrDraw() const;
-  bool BeginFrameNeededForChildren() const;
+  bool BeginFrameRequiredForAction() const;
+  bool BeginFrameRequiredForChildren() const;
   bool ProactiveBeginFrameWanted() const;
 
   bool ShouldTriggerBeginImplFrameDeadlineImmediately() const;

@@ -720,7 +720,7 @@ void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
   skip_next_begin_main_frame_to_reduce_latency_ = true;
 }
 
-bool SchedulerStateMachine::BeginFrameNeededForChildren() const {
+bool SchedulerStateMachine::BeginFrameRequiredForChildren() const {
   return children_need_begin_frames_;
 }
 
@@ -729,7 +729,7 @@ bool SchedulerStateMachine::BeginFrameNeeded() const {
   // TODO(brianderson): Support output surface creation inside a BeginFrame.
   if (!HasInitializedOutputSurface())
     return false;
-  return (BeginFrameNeededToAnimateOrDraw() || BeginFrameNeededForChildren() ||
+  return (BeginFrameRequiredForAction() || BeginFrameRequiredForChildren() ||
           ProactiveBeginFrameWanted());
 }
 
@@ -742,9 +742,9 @@ void SchedulerStateMachine::SetDeferCommits(bool defer_commits) {
   defer_commits_ = defer_commits;
 }
 
-// These are the cases where we definitely (or almost definitely) have a
-// new frame to animate and/or draw and can draw.
-bool SchedulerStateMachine::BeginFrameNeededToAnimateOrDraw() const {
+// These are the cases where we require a BeginFrame message to make progress
+// on requested actions.
+bool SchedulerStateMachine::BeginFrameRequiredForAction() const {
   // The forced draw respects our normal draw scheduling, so we need to
   // request a BeginImplFrame for it.
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
@@ -758,13 +758,15 @@ bool SchedulerStateMachine::BeginFrameNeededToAnimateOrDraw() const {
   if (!visible_)
     return false;
 
-  return needs_redraw_;
+  return needs_redraw_ || (needs_commit_ && !defer_commits_);
 }
 
-// These are cases where we are very likely to draw soon, but might not
-// actually have a new frame to draw when we receive the next BeginImplFrame.
-// Proactively requesting the BeginImplFrame helps hide the round trip latency
-// of the SetNeedsBeginFrame request that has to go to the Browser.
+// These are cases where we are very likely want a BeginFrame message in the
+// near future. Proactively requesting the BeginImplFrame helps hide the round
+// trip latency of the SetNeedsBeginFrame request that has to go to the
+// Browser.
+// This includes things like drawing soon, but might not actually have a new
+// frame to draw when we receive the next BeginImplFrame.
 bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   // Do not be proactive when invisible.
   if (!visible_)
@@ -775,7 +777,7 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   // request frames when commits are disabled, because the frame requests will
   // not provide the needed commit (and will wake up the process when it could
   // stay idle).
-  if ((needs_commit_ || commit_state_ != COMMIT_STATE_IDLE) && !defer_commits_)
+  if ((commit_state_ != COMMIT_STATE_IDLE) && !defer_commits_)
     return true;
 
   // If the pending tree activates quickly, we'll want a BeginImplFrame soon
