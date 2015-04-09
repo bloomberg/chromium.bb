@@ -14,6 +14,7 @@ import optparse
 import os
 import sys
 
+import auth
 import rietveld
 
 
@@ -214,9 +215,10 @@ def print_issue(issue, reviewer, stats):
       ', '.join(sorted(issue['reviewers'])))
 
 
-def print_reviews(reviewer, created_after, created_before, instance_url):
+def print_reviews(
+    reviewer, created_after, created_before, instance_url, auth_config):
   """Prints issues |reviewer| received and potentially reviewed."""
-  remote = rietveld.Rietveld(instance_url, None, None)
+  remote = rietveld.Rietveld(instance_url, auth_config)
 
   # The stats we gather. Feel free to send me a CL to get more stats.
   stats = Stats()
@@ -268,8 +270,9 @@ def print_reviews(reviewer, created_after, created_before, instance_url):
       to_time(stats.median_latency))
 
 
-def print_count(reviewer, created_after, created_before, instance_url):
-  remote = rietveld.Rietveld(instance_url, None, None)
+def print_count(
+    reviewer, created_after, created_before, instance_url, auth_config):
+  remote = rietveld.Rietveld(instance_url, auth_config)
   print len(list(remote.search(
       reviewer=reviewer,
       created_after=created_after,
@@ -332,10 +335,12 @@ def main():
       '-i', '--instance_url', metavar='<host>',
       default='http://codereview.chromium.org',
       help='Host to use, default is %default')
+  auth.add_auth_options(parser)
   # Remove description formatting
   parser.format_description = (
       lambda _: parser.description)  # pylint: disable=E1101
   options, args = parser.parse_args()
+  auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Args unsupported')
   if options.reviewer is None:
@@ -363,13 +368,15 @@ def main():
         options.reviewer,
         options.begin,
         options.end,
-        options.instance_url)
+        options.instance_url,
+        auth_config)
   else:
     print_reviews(
         options.reviewer,
         options.begin,
         options.end,
-        options.instance_url)
+        options.instance_url,
+        auth_config)
   return 0
 
 

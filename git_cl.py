@@ -34,6 +34,7 @@ except ImportError:
 
 from third_party import colorama
 from third_party import upload
+import auth
 import breakpad  # pylint: disable=W0611
 import clang_format
 import dart_format
@@ -484,7 +485,7 @@ def ShortBranchName(branch):
 
 
 class Changelist(object):
-  def __init__(self, branchref=None, issue=None):
+  def __init__(self, branchref=None, issue=None, auth_config=None):
     # Poke settings so we get the "configure your server" message if necessary.
     global settings
     if not settings:
@@ -504,11 +505,16 @@ class Changelist(object):
     self.description = None
     self.lookedup_patchset = False
     self.patchset = None
-    self._rpc_server = None
     self.cc = None
     self.watchers = ()
-    self._remote = None
+    self._auth_config = auth_config
     self._props = None
+    self._remote = None
+    self._rpc_server = None
+
+  @property
+  def auth_config(self):
+    return self._auth_config
 
   def GetCCList(self):
     """Return the users cc'd on this CL.
@@ -971,7 +977,8 @@ or verify this branch is set up to track another (via the --track argument to
     """
     if not self._rpc_server:
       self._rpc_server = rietveld.CachingRietveld(
-          self.GetRietveldServer(), None, None)
+          self.GetRietveldServer(),
+          self._auth_config or auth.make_auth_config())
     return self._rpc_server
 
   def _IssueSetting(self):
@@ -1328,9 +1335,9 @@ def color_for_status(status):
     'error': Fore.WHITE,
   }.get(status, Fore.WHITE)
 
-def fetch_cl_status(b):
+def fetch_cl_status(b, auth_config=None):
   """Fetches information for an issue and returns (branch, issue, color)."""
-  c = Changelist(branchref=b)
+  c = Changelist(branchref=b, auth_config=auth_config)
   i = c.GetIssueURL()
   status = c.GetStatus()
   color = color_for_status(status)
@@ -1341,7 +1348,8 @@ def fetch_cl_status(b):
 
   return (b, i, color)
 
-def get_cl_statuses(branches, fine_grained, max_processes=None):
+def get_cl_statuses(
+    branches, fine_grained, max_processes=None, auth_config=None):
   """Returns a blocking iterable of (branch, issue, color) for given branches.
 
   If fine_grained is true, this will fetch CL statuses from the server.
@@ -1358,19 +1366,20 @@ def get_cl_statuses(branches, fine_grained, max_processes=None):
     # Process one branch synchronously to work through authentication, then
     # spawn processes to process all the other branches in parallel.
     if branches:
-      yield fetch_cl_status(branches[0])
+      fetch = lambda branch: fetch_cl_status(branch, auth_config=auth_config)
+      yield fetch(branches[0])
 
       branches_to_fetch = branches[1:]
       pool = ThreadPool(
           min(max_processes, len(branches_to_fetch))
               if max_processes is not None
               else len(branches_to_fetch))
-      for x in pool.imap_unordered(fetch_cl_status, branches_to_fetch):
+      for x in pool.imap_unordered(fetch, branches_to_fetch):
         yield x
   else:
     # Do not use GetApprovingReviewers(), since it requires an HTTP request.
     for b in branches:
-      c = Changelist(branchref=b)
+      c = Changelist(branchref=b, auth_config=auth_config)
       url = c.GetIssueURL()
       yield (b, url, Fore.BLUE if url else Fore.WHITE)
 
@@ -1394,12 +1403,15 @@ def CMDstatus(parser, args):
   parser.add_option(
       '-j', '--maxjobs', action='store', type=int,
       help='The maximum number of jobs to use when retrieving review status')
-  (options, args) = parser.parse_args(args)
+
+  auth.add_auth_options(parser)
+  options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported args: %s' % args)
+  auth_config = auth.extract_auth_config_from_options(options)
 
   if options.field:
-    cl = Changelist()
+    cl = Changelist(auth_config=auth_config)
     if options.field.startswith('desc'):
       print cl.GetDescription()
     elif options.field == 'id':
@@ -1421,13 +1433,16 @@ def CMDstatus(parser, args):
     print('No local branch found.')
     return 0
 
-  changes = (Changelist(branchref=b) for b in branches.splitlines())
+  changes = (
+      Changelist(branchref=b, auth_config=auth_config)
+      for b in branches.splitlines())
   branches = [c.GetBranch() for c in changes]
   alignment = max(5, max(len(b) for b in branches))
   print 'Branches associated with reviews:'
   output = get_cl_statuses(branches,
                            fine_grained=not options.fast,
-                           max_processes=options.maxjobs)
+                           max_processes=options.maxjobs,
+                           auth_config=auth_config)
 
   branch_statuses = {}
   alignment = max(5, max(len(ShortBranchName(b)) for b in branches))
@@ -1443,7 +1458,7 @@ def CMDstatus(parser, args):
     print '  %*s : %s%s%s' % (
           alignment, ShortBranchName(branch), color, issue, reset)
 
-  cl = Changelist()
+  cl = Changelist(auth_config=auth_config)
   print
   print 'Current branch:',
   if not cl.GetIssue():
@@ -1520,7 +1535,9 @@ def CMDcomments(parser, args):
                     help='comment to add to an issue')
   parser.add_option('-i', dest='issue',
                     help="review issue id (defaults to current issue)")
+  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
+  auth_config = auth.extract_auth_config_from_options(options)
 
   issue = None
   if options.issue:
@@ -1529,7 +1546,7 @@ def CMDcomments(parser, args):
     except ValueError:
       DieWithError('A review issue id is expected to be a number')
 
-  cl = Changelist(issue=issue)
+  cl = Changelist(issue=issue, auth_config=auth_config)
 
   if options.comment:
     cl.AddComment(options.comment)
@@ -1555,8 +1572,10 @@ def CMDcomments(parser, args):
 
 def CMDdescription(parser, args):
   """Brings up the editor for the current CL's description."""
-  parser.parse_args(args)
-  cl = Changelist()
+  auth.add_auth_options(parser)
+  options, _ = parser.parse_args(args)
+  auth_config = auth.extract_auth_config_from_options(options)
+  cl = Changelist(auth_config=auth_config)
   if not cl.GetIssue():
     DieWithError('This branch has no associated changelist.')
   description = ChangeDescription(cl.GetDescription())
@@ -1584,7 +1603,9 @@ def CMDlint(parser, args):
   """Runs cpplint on the current changelist."""
   parser.add_option('--filter', action='append', metavar='-x,+y',
                     help='Comma-separated list of cpplint\'s category-filters')
-  (options, args) = parser.parse_args(args)
+  auth.add_auth_options(parser)
+  options, args = parser.parse_args(args)
+  auth_config = auth.extract_auth_config_from_options(options)
 
   # Access to a protected member _XX of a client class
   # pylint: disable=W0212
@@ -1600,7 +1621,7 @@ def CMDlint(parser, args):
   previous_cwd = os.getcwd()
   os.chdir(settings.GetRoot())
   try:
-    cl = Changelist()
+    cl = Changelist(auth_config=auth_config)
     change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
     files = [f.LocalPath() for f in change.AffectedFiles()]
     if not files:
@@ -1639,13 +1660,15 @@ def CMDpresubmit(parser, args):
                     help='Run upload hook instead of the push/dcommit hook')
   parser.add_option('-f', '--force', action='store_true',
                     help='Run checks even if tree is dirty')
-  (options, args) = parser.parse_args(args)
+  auth.add_auth_options(parser)
+  options, args = parser.parse_args(args)
+  auth_config = auth.extract_auth_config_from_options(options)
 
   if not options.force and git_common.is_dirty_git_tree('presubmit'):
     print 'use --force to check even if tree is dirty.'
     return 1
 
-  cl = Changelist()
+  cl = Changelist(auth_config=auth_config)
   if args:
     base_branch = args[0]
   else:
@@ -1845,6 +1868,7 @@ def RietveldUpload(options, args, cl, change):
   """upload the patch to rietveld."""
   upload_args = ['--assume_yes']  # Don't ask about untracked files.
   upload_args.extend(['--server', cl.GetRietveldServer()])
+  upload_args.extend(auth.auth_config_to_command_options(cl.auth_config))
   if options.emulate_svn_auto_props:
     upload_args.append('--emulate_svn_auto_props')
 
@@ -2016,7 +2040,9 @@ def CMDupload(parser, args):
                          'upload.')
 
   add_git_similarity(parser)
+  auth.add_auth_options(parser)
   (options, args) = parser.parse_args(args)
+  auth_config = auth.extract_auth_config_from_options(options)
 
   if git_common.is_dirty_git_tree('upload'):
     return 1
@@ -2024,7 +2050,7 @@ def CMDupload(parser, args):
   options.reviewers = cleanup_list(options.reviewers)
   options.cc = cleanup_list(options.cc)
 
-  cl = Changelist()
+  cl = Changelist(auth_config=auth_config)
   if args:
     # TODO(ukai): is it ok for gerrit case?
     base_branch = args[0]
@@ -2118,8 +2144,11 @@ def SendUpstream(parser, args, cmd):
                          "description and used as author for git). Should be " +
                          "formatted as 'First Last <email@example.com>'")
   add_git_similarity(parser)
+  auth.add_auth_options(parser)
   (options, args) = parser.parse_args(args)
-  cl = Changelist()
+  auth_config = auth.extract_auth_config_from_options(options)
+
+  cl = Changelist(auth_config=auth_config)
 
   current = cl.GetBranch()
   remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
@@ -2517,7 +2546,10 @@ def CMDpatch(parser, args):
                         'attempting a 3-way merge')
   parser.add_option('-n', '--no-commit', action='store_true', dest='nocommit',
                     help="don't commit after patch applies")
+  auth.add_auth_options(parser)
   (options, args) = parser.parse_args(args)
+  auth_config = auth.extract_auth_config_from_options(options)
+
   if len(args) != 1:
     parser.print_help()
     return 1
@@ -2538,10 +2570,10 @@ def CMDpatch(parser, args):
             Changelist().GetUpstreamBranch()])
 
   return PatchIssue(issue_arg, options.reject, options.nocommit,
-                    options.directory)
+                    options.directory, auth_config)
 
 
-def PatchIssue(issue_arg, reject, nocommit, directory):
+def PatchIssue(issue_arg, reject, nocommit, directory, auth_config):
   # There's a "reset --hard" when failing to apply the patch. In order
   # not to destroy users' data, make sure the tree is not dirty here.
   assert(not git_common.is_dirty_git_tree('apply'))
@@ -2549,7 +2581,7 @@ def PatchIssue(issue_arg, reject, nocommit, directory):
   if type(issue_arg) is int or issue_arg.isdigit():
     # Input is an issue id.  Figure out the URL.
     issue = int(issue_arg)
-    cl = Changelist(issue=issue)
+    cl = Changelist(issue=issue, auth_config=auth_config)
     patchset = cl.GetMostRecentPatchset()
     patch_data = cl.GetPatchSetDiff(issue, patchset)
   else:
@@ -2602,7 +2634,7 @@ def PatchIssue(issue_arg, reject, nocommit, directory):
     RunGit(['commit', '-m', ('patch from issue %(i)s at patchset '
                              '%(p)s (http://crrev.com/%(i)s#ps%(p)s)'
                              % {'i': issue, 'p': patchset})])
-    cl = Changelist()
+    cl = Changelist(auth_config=auth_config)
     cl.SetIssue(issue)
     cl.SetPatchset(patchset)
     print "Committed patch locally."
@@ -2722,12 +2754,14 @@ def CMDtry(parser, args):
   group.add_option(
       "-n", "--name", help="Try job name; default to current branch name")
   parser.add_option_group(group)
+  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
+  auth_config = auth.extract_auth_config_from_options(options)
 
   if args:
     parser.error('Unknown arguments: %s' % args)
 
-  cl = Changelist()
+  cl = Changelist(auth_config=auth_config)
   if not cl.GetIssue():
     parser.error('Need to upload first')
 
@@ -2875,10 +2909,12 @@ def CMDweb(parser, args):
 
 def CMDset_commit(parser, args):
   """Sets the commit bit to trigger the Commit Queue."""
-  _, args = parser.parse_args(args)
+  auth.add_auth_options(parser)
+  options, args = parser.parse_args(args)
+  auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
-  cl = Changelist()
+  cl = Changelist(auth_config=auth_config)
   props = cl.GetIssueProperties()
   if props.get('private'):
     parser.error('Cannot set commit on private issue')
@@ -2888,10 +2924,12 @@ def CMDset_commit(parser, args):
 
 def CMDset_close(parser, args):
   """Closes the issue."""
-  _, args = parser.parse_args(args)
+  auth.add_auth_options(parser)
+  options, args = parser.parse_args(args)
+  auth_config = auth.extract_auth_config_from_options(options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
-  cl = Changelist()
+  cl = Changelist(auth_config=auth_config)
   # Ensure there actually is an issue to close.
   cl.GetDescription()
   cl.CloseIssue()
@@ -2900,7 +2938,11 @@ def CMDset_close(parser, args):
 
 def CMDdiff(parser, args):
   """Shows differences between local tree and last upload."""
-  parser.parse_args(args)
+  auth.add_auth_options(parser)
+  options, args = parser.parse_args(args)
+  auth_config = auth.extract_auth_config_from_options(options)
+  if args:
+    parser.error('Unrecognized args: %s' % ' '.join(args))
 
   # Uncommitted (staged and unstaged) changes will be destroyed by
   # "git reset --hard" if there are merging conflicts in PatchIssue().
@@ -2910,7 +2952,7 @@ def CMDdiff(parser, args):
   if git_common.is_dirty_git_tree('diff'):
     return 1
 
-  cl = Changelist()
+  cl = Changelist(auth_config=auth_config)
   issue = cl.GetIssue()
   branch = cl.GetBranch()
   if not issue:
@@ -2922,7 +2964,7 @@ def CMDdiff(parser, args):
   RunGit(['checkout', '-q', '-b', TMP_BRANCH, base_branch])
   try:
     # Patch in the latest changes from rietveld.
-    rtn = PatchIssue(issue, False, False, None)
+    rtn = PatchIssue(issue, False, False, None, auth_config)
     if rtn != 0:
       return rtn
 
@@ -2942,11 +2984,13 @@ def CMDowners(parser, args):
       '--no-color',
       action='store_true',
       help='Use this option to disable color output')
+  auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
+  auth_config = auth.extract_auth_config_from_options(options)
 
   author = RunGit(['config', 'user.email']).strip() or None
 
-  cl = Changelist()
+  cl = Changelist(auth_config=auth_config)
 
   if args:
     if len(args) > 1:

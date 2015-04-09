@@ -17,6 +17,7 @@ import urllib2
 
 import breakpad  # pylint: disable=W0611
 
+import auth
 import fix_encoding
 import rietveld
 
@@ -36,9 +37,10 @@ def need_issue(fn):
 
     def new_parse_args(args=None, values=None):
       options, args = old_parse_args(args, values)
+      auth_config = auth.extract_auth_config_from_options(options)
       if not options.issue:
         parser.error('Require --issue')
-      obj = rietveld.Rietveld(options.server, options.user, None)
+      obj = rietveld.Rietveld(options.server, auth_config, options.user)
       return options, args, obj
 
     parser.parse_args = new_parse_args
@@ -59,6 +61,7 @@ def need_issue(fn):
         metavar='S',
         default='http://codereview.chromium.org',
         help='Rietveld server, default: %default')
+    auth.add_auth_options(parser)
 
     # Call the original function with the modified parser.
     return fn(parser, args, *extra_args, **kwargs)

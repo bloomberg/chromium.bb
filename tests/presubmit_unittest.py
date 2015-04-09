@@ -171,7 +171,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'main',
       'NonexistantCannedCheckFilter', 'OutputApi', 'ParseFiles',
       'PresubmitFailure', 'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
-      'SvnAffectedFile', 'SvnChange', 'cPickle', 'cpplint', 'cStringIO',
+      'SvnAffectedFile', 'SvnChange', 'auth', 'cPickle', 'cpplint', 'cStringIO',
       'contextlib', 'canned_check_filter', 'fix_encoding', 'fnmatch',
       'gclient_utils', 'glob', 'inspect', 'json', 'load_files', 'logging',
       'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',

@@ -37,27 +37,10 @@ upload.LOGGER.setLevel(logging.WARNING)  # pylint: disable=E1103
 
 class Rietveld(object):
   """Accesses rietveld."""
-  def __init__(self, url, email, password, extra_headers=None, maxtries=None):
+  def __init__(
+      self, url, auth_config, email=None, extra_headers=None, maxtries=None):
     self.url = url.rstrip('/')
-
-    # TODO(maruel): It's not awesome but maybe necessary to retrieve the value.
-    # It happens when the presubmit check is ran out of process, the cookie
-    # needed to be recreated from the credentials. Instead, it should pass the
-    # email and the cookie.
-    if email and password:
-      get_creds = lambda: (email, password)
-      self.rpc_server = upload.HttpRpcServer(
-            self.url,
-            get_creds,
-            extra_headers=extra_headers or {})
-    else:
-      if email == '':
-        # If email is given as an empty string, then assume we want to make
-        # requests that do not need authentication.  Bypass authentication by
-        # setting the auth_function to None.
-        self.rpc_server = upload.HttpRpcServer(url, None)
-      else:
-        self.rpc_server = upload.GetRpcServer(url, email)
+    self.rpc_server = upload.GetRpcServer(self.url, auth_config, email)
 
     self._xsrf_token = None
     self._xsrf_token_time = None

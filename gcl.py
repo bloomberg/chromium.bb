@@ -23,6 +23,7 @@ import urllib2
 import breakpad  # pylint: disable=W0611
 
 
+import auth
 import fix_encoding
 import gclient_utils
 import git_cl
@@ -351,7 +352,10 @@ class ChangeInfo(object):
     if not self._rpc_server:
       if not self.rietveld:
         ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
-      self._rpc_server = rietveld.CachingRietveld(self.rietveld, None, None)
+      # TODO(vadimsh): glc.py should be deleted soon. Do not bother much about
+      # authentication options and always use defaults.
+      self._rpc_server = rietveld.CachingRietveld(
+          self.rietveld, auth.make_auth_config())
     return self._rpc_server
 
   def CloseIssue(self):
@@ -1465,6 +1469,10 @@ def main(argv):
         '\nYour python version %s is unsupported, please upgrade.\n' %
         sys.version.split(' ', 1)[0])
     return 2
+
+  sys.stderr.write('Warning: gcl is going away soon. Get off subversion!\n')
+  sys.stderr.write('See http://crbug.com/475321 for more details.\n')
+
   if not argv:
     argv = ['help']
   command = Command(argv[0])

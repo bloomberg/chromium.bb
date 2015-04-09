@@ -47,7 +47,7 @@ class BaseFixture(unittest.TestCase):
     super(BaseFixture, self).setUp()
     # Access to a protected member XX of a client class
     # pylint: disable=W0212
-    self.rietveld = self.TESTED_CLASS('url', 'email', 'password')
+    self.rietveld = self.TESTED_CLASS('url', None, 'email')
     self.rietveld._send = self._rietveld_send
     self.requests = []
 
@@ -456,7 +456,7 @@ class DefaultTimeoutTest(auto_stub.TestCase):
 
   def setUp(self):
     super(DefaultTimeoutTest, self).setUp()
-    self.rietveld = self.TESTED_CLASS('url', 'email', 'password')
+    self.rietveld = self.TESTED_CLASS('url', None, 'email')
     self.mock(self.rietveld.rpc_server, 'Send', MockSend)
     self.sleep_time = 0
 

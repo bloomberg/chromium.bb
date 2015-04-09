@@ -5,10 +5,12 @@
 
 """Upload a cherry pick CL to rietveld."""
 
-import argparse
 import md5
+import optparse
 import subprocess2
 import sys
+
+import auth
 
 from git_cl import Changelist
 from git_common import config, run
@@ -16,12 +18,13 @@ from third_party.upload import EncodeMultipartFormData, GitVCS
 from rietveld import Rietveld
 
 
-def cherry_pick(target_branch, commit):
+def cherry_pick(target_branch, commit, auth_config):
   """Attempt to upload a cherry pick CL to rietveld.
 
   Args:
     target_branch: The branch to cherry pick onto.
     commit: The git hash of the commit to cherry pick.
+    auth_config: auth.AuthConfig object with authentication configuration.
   """
   author = config('user.email')
 
@@ -48,7 +51,7 @@ def cherry_pick(target_branch, commit):
           run('diff', parent, commit))),
   ])
 
-  rietveld = Rietveld(config('rietveld.server'), author, None)
+  rietveld = Rietveld(config('rietveld.server'), auth_config, author)
   # pylint: disable=W0212
   output = rietveld._send(
     '/upload',
@@ -124,21 +127,23 @@ def cherry_pick(target_branch, commit):
 
 
 def main():
-  parser = argparse.ArgumentParser()
-  parser.add_argument(
+  parser = optparse.OptionParser(
+      usage='usage: %prog --branch <branch> <commit>')
+  parser.add_option(
       '--branch',
       '-b',
       help='The upstream branch to cherry pick to.',
-      metavar='<branch>',
-      required=True,
-  )
-  parser.add_argument(
-      'commit',
-      help='SHA to cherry pick.',
-      metavar='<commit>',
-  )
-  args = parser.parse_args()
-  cherry_pick(args.branch, args.commit)
+      metavar='<branch>')
+  auth.add_auth_options(parser)
+  options, args = parser.parse_args()
+  auth_config = auth.extract_auth_config_from_options
+
+  if not options.branch:
+    parser.error('--branch is required')
+  if len(args) != 1:
+    parser.error('Expecting single argument <commit>')
+
+  cherry_pick(options.branch, args[0], auth_config)
   return 0
 
 

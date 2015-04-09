@@ -72,6 +72,10 @@ try:
 except:
   keyring = None
 
+# auth.py is a part of depot_tools.
+# TODO(vadimsh): Merge upload.py into depot_tools
+import auth
+
 # The logging verbosity:
 #  0: Errors only.
 #  1: Status messages.
@@ -618,32 +622,11 @@ group.add_option("-s", "--server", action="store", dest="server",
 group.add_option("-e", "--email", action="store", dest="email",
                  metavar="EMAIL", default=None,
                  help="The username to use. Will prompt if omitted.")
-group.add_option("-H", "--host", action="store", dest="host",
-                 metavar="HOST", default=None,
-                 help="Overrides the Host header sent with all RPCs.")
-group.add_option("--no_cookies", action="store_false",
-                 dest="save_cookies", default=True,
-                 help="Do not save authentication cookies to local disk.")
-group.add_option("--oauth2", action="store_true",
-                 dest="use_oauth2", default=False,
-                 help="Use OAuth 2.0 instead of a password.")
-group.add_option("--oauth2_port", action="store", type="int",
-                 dest="oauth2_port", default=DEFAULT_OAUTH2_PORT,
-                 help=("Port to use to handle OAuth 2.0 redirect. Must be an "
-                       "integer in the range 1024-49151, defaults to "
-                       "'%default'."))
-group.add_option("--no_oauth2_webbrowser", action="store_false",
-                 dest="open_oauth2_local_webbrowser", default=True,
-                 help="Don't open a browser window to get an access token.")
-group.add_option("--account_type", action="store", dest="account_type",
-                 metavar="TYPE", default=AUTH_ACCOUNT_TYPE,
-                 choices=["GOOGLE", "HOSTED"],
-                 help=("Override the default account type "
-                       "(defaults to '%default', "
-                       "valid choices are 'GOOGLE' and 'HOSTED')."))
 group.add_option("-j", "--number-parallel-uploads",
                  dest="num_upload_threads", default=8,
                  help="Number of uploads to do in parallel.")
+# Authentication
+auth.add_auth_options(parser)
 # Issue
 group = parser.add_option_group("Issue options")
 group.add_option("-t", "--title", action="store", dest="title",
@@ -934,32 +917,28 @@ class OAuth2Creds(object):
                           open_local_webbrowser=self.open_local_webbrowser)
 
 
-def GetRpcServer(server, email=None, host_override=None, save_cookies=True,
-                 account_type=AUTH_ACCOUNT_TYPE, use_oauth2=False,
-                 oauth2_port=DEFAULT_OAUTH2_PORT,
-                 open_oauth2_local_webbrowser=True):
+def GetRpcServer(server, auth_config=None, email=None):
   """Returns an instance of an AbstractRpcServer.
 
   Args:
     server: String containing the review server URL.
-    email: String containing user's email address.
-    host_override: If not None, string containing an alternate hostname to use
-      in the host header.
-    save_cookies: Whether authentication cookies should be saved to disk.
-    account_type: Account type for authentication, either 'GOOGLE'
-      or 'HOSTED'. Defaults to AUTH_ACCOUNT_TYPE.
-    use_oauth2: Boolean indicating whether OAuth 2.0 should be used for
-      authentication.
-    oauth2_port: Integer, the port where the localhost server receiving the
-      redirect is serving. Defaults to DEFAULT_OAUTH2_PORT.
-    open_oauth2_local_webbrowser: Boolean, defaults to True. If True and using
-      OAuth, this opens a page in the user's browser to obtain a token.
+    auth_config: auth.AuthConfig tuple with OAuth2 configuration.
+    email: String containing user's email address [deprecated].
 
   Returns:
     A new HttpRpcServer, on which RPC calls can be made.
   """
+  # If email is given as an empty string or no auth config is passed, then
+  # assume we want to make requests that do not need authentication. Bypass
+  # authentication by setting the auth_function to None.
+  if email == '' or not auth_config:
+    return HttpRpcServer(server, None)
+
+  if auth_config.use_oauth2:
+    raise NotImplementedError('See https://crbug.com/356813')
+
   # If this is the dev_appserver, use fake authentication.
-  host = (host_override or server).lower()
+  host = server.lower()
   if re.match(r'(http://)?localhost([:/]|$)', host):
     if email is None:
       email = "test@example.com"
@@ -967,25 +946,19 @@ def GetRpcServer(server, email=None, host_override=None, save_cookies=True,
     server = HttpRpcServer(
         server,
         lambda: (email, "password"),
-        host_override=host_override,
         extra_headers={"Cookie":
                        'dev_appserver_login="%s:False"' % email},
-        save_cookies=save_cookies,
-        account_type=account_type)
+        save_cookies=auth_config.save_cookies,
+        account_type=AUTH_ACCOUNT_TYPE)
     # Don't try to talk to ClientLogin.
     server.authenticated = True
     return server
 
-  positional_args = [server]
-  if use_oauth2:
-    positional_args.append(
-        OAuth2Creds(server, oauth2_port, open_oauth2_local_webbrowser))
-  else:
-    positional_args.append(KeyringCreds(server, host, email).GetUserCredentials)
-  return HttpRpcServer(*positional_args,
-                       host_override=host_override,
-                       save_cookies=save_cookies,
-                       account_type=account_type)
+  return HttpRpcServer(
+      server,
+      KeyringCreds(server, host, email).GetUserCredentials,
+      save_cookies=auth_config.save_cookies,
+      account_type=AUTH_ACCOUNT_TYPE)
 
 
 def EncodeMultipartFormData(fields, files):
@@ -2598,16 +2571,9 @@ def RealMain(argv, data=None):
   files = vcs.GetBaseFiles(data)
   if verbosity >= 1:
     print "Upload server:", options.server, "(change with -s/--server)"
-  if options.use_oauth2:
-    options.save_cookies = False
-  rpc_server = GetRpcServer(options.server,
-                            options.email,
-                            options.host,
-                            options.save_cookies,
-                            options.account_type,
-                            options.use_oauth2,
-                            options.oauth2_port,
-                            options.open_oauth2_local_webbrowser)
+
+  auth_config = auth.extract_auth_config_from_options(options)
+  rpc_server = GetRpcServer(options.server, auth_config, options.email)
   form_fields = []
 
   repo_guid = vcs.GetGUID()

@@ -13,6 +13,9 @@ Example:
   - my_activity.py -b 4/5/12 -e 6/7/12 for stats between 4/5/12 and 6/7/12.
 """
 
+# TODO(vadimsh): This script knows too much about ClientLogin and cookies. It
+# will stop to work on ~20 Apr 2015.
+
 # These services typically only provide a created time and a last modified time
 # for each item for general queries. This is not enough to determine if there
 # was activity in a given time period. So, we first query for all things created
@@ -33,6 +36,7 @@ import sys
 import urllib
 import urllib2
 
+import auth
 import gerrit_util
 import rietveld
 from third_party import upload
@@ -267,7 +271,8 @@ class MyActivity(object):
 
 
     email = None if instance['auth'] else ''
-    remote = rietveld.Rietveld('https://' + instance['url'], email, None)
+    auth_config = auth.extract_auth_config_from_options(self.options)
+    remote = rietveld.Rietveld('https://' + instance['url'], auth_config, email)
 
     # See def search() in rietveld.py to see all the filters you can use.
     query_modified_after = None
@@ -780,6 +785,7 @@ def main():
       help='Use markdown-friendly output (overrides --output-format '
            'and --output-format-heading)')
   parser.add_option_group(output_format_group)
+  auth.add_auth_options(parser)
 
   # Remove description formatting
   parser.format_description = (

@@ -39,6 +39,7 @@ import urllib2  # Exposed through the API.
 from warnings import warn
 
 # Local imports.
+import auth
 import fix_encoding
 import gclient_utils
 import owners
@@ -1637,7 +1638,6 @@ def main(argv=None):
                     "to skip multiple canned checks.")
   parser.add_option("--rietveld_url", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_email", help=optparse.SUPPRESS_HELP)
-  parser.add_option("--rietveld_password", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_fetch", action='store_true', default=False,
                     help=optparse.SUPPRESS_HELP)
   # These are for OAuth2 authentication for bots. See also apply_issue.py
@@ -1646,7 +1646,9 @@ def main(argv=None):
 
   parser.add_option("--trybot-json",
                     help="Output trybot information to the file specified.")
+  auth.add_auth_options(parser)
   options, args = parser.parse_args(argv)
+  auth_config = auth.extract_auth_config_from_options(options)
 
   if options.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
@@ -1658,9 +1660,6 @@ def main(argv=None):
   if options.rietveld_email and options.rietveld_email_file:
     parser.error("Only one of --rietveld_email or --rietveld_email_file "
                  "can be passed to this program.")
-  if options.rietveld_private_key_file and options.rietveld_password:
-    parser.error("Only one of --rietveld_private_key_file or "
-                 "--rietveld_password can be passed to this program.")
 
   if options.rietveld_email_file:
     with open(options.rietveld_email_file, "rb") as f:
@@ -1682,8 +1681,8 @@ def main(argv=None):
     else:
       rietveld_obj = rietveld.CachingRietveld(
         options.rietveld_url,
-        options.rietveld_email,
-        options.rietveld_password)
+        auth_config,
+        options.rietveld_email)
     if options.rietveld_fetch:
       assert options.issue
       props = rietveld_obj.get_issue_properties(options.issue, False)

@@ -361,6 +361,7 @@ class TestGitCl(TestCase):
     return [
         'upload', '--assume_yes', '--server',
         'https://codereview.example.com',
+        '--no-oauth2', '--auth-host-port', '8090',
         '--message', description
     ] + args + [
         '--cc', 'joe@example.com',

@@ -104,7 +104,7 @@ class GclUnittest(GclTestsBase):
         'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT',
         'RunShell', 'RunShellWithReturnCode', 'SVN',
         'TryChange', 'UnknownFiles', 'Warn',
-        'attrs', 'breakpad', 'defer_attributes', 'fix_encoding',
+        'attrs', 'auth', 'breakpad', 'defer_attributes', 'fix_encoding',
         'gclient_utils', 'git_cl', 'json', 'main', 'need_change',
         'need_change_and_args', 'no_args', 'optparse', 'os',
         'presubmit_support', 'random', 're', 'rietveld',
