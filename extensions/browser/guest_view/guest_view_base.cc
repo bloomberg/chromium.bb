@@ -592,7 +592,7 @@ void GuestViewBase::WebContentsDestroyed() {
 void GuestViewBase::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (attached())
+  if (attached() && ZoomPropagatesFromEmbedderToGuest())
     SetGuestZoomLevelToMatchEmbedder();
 }
 
