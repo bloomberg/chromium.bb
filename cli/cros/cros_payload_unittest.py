@@ -22,6 +22,20 @@ sys.path.insert(0, os.path.join(constants.SOURCE_ROOT, 'src', 'platform'))
 from dev.host.lib import update_payload
 
 
+class FakeOp(object):
+  """Fake manifest operation for testing."""
+
+  def __init__(self, src_extents, dst_extents, op_type, **kwargs):
+    self.src_extents = src_extents
+    self.dst_extents = dst_extents
+    self.type = op_type
+    for key, val in kwargs.iteritems():
+      setattr(self, key, val)
+
+  def HasField(self, field):
+    return hasattr(self, field)
+
+
 class FakePayload(object):
   """Fake payload for testing."""
 
@@ -37,18 +51,16 @@ class FakePayload(object):
                                           ['install_operations',
                                            'kernel_install_operations',
                                            'block_size', 'minor_version'])
-    FakeOp = collections.namedtuple('FakeOp',
-                                    ['src_extents', 'dst_extents', 'type',
-                                     'data_offset', 'data_length'])
     FakeExtent = collections.namedtuple('FakeExtent',
                                         ['start_block', 'num_blocks'])
     self.header = FakeHeader('111', '222')
     self.manifest = FakeManifest(
-        [FakeOp([FakeExtent(1, 1)], [],
-                update_payload.common.OpType.REPLACE_BZ, 1, 1)],
-        [FakeOp([], [FakeExtent(2, 2)],
-                update_payload.common.OpType.MOVE, 2, 2)],
-        '333', '4')
+        [FakeOp([], [FakeExtent(1, 1), FakeExtent(2, 2)],
+                update_payload.common.OpType.REPLACE_BZ, dst_length=3*4096,
+                data_offset=1, data_length=1)],
+        [FakeOp([FakeExtent(1, 1)], [FakeExtent(x, x) for x in xrange(20)],
+                update_payload.common.OpType.SOURCE_COPY, src_length=4096)],
+        '4096', '4')
 
 
 class PayloadCommandTest(cros_test_lib.MockOutputTestCase):
@@ -76,7 +88,7 @@ class PayloadCommandTest(cros_test_lib.MockOutputTestCase):
 Manifest length:         222
 Number of operations:    1
 Number of kernel ops:    1
-Block size:              333
+Block size:              4096
 Minor version:           4
 """
     self.assertEquals(stdout, expected_out)
@@ -96,16 +108,21 @@ Minor version:           4
 Manifest length:         222
 Number of operations:    1
 Number of kernel ops:    1
-Block size:              333
+Block size:              4096
 Minor version:           4
 
 Install operations:
-Columns:    Op Type,     Offset,   Data len,   Src exts,   Dst exts
-Row   0: REPLACE_BZ,          1,          1,     (1, 1),         ()
-
+  0: REPLACE_BZ
+    Data offset: 1
+    Data length: 1
+    Destination: 2 extents (3 blocks)
+      (1,1) (2,2)
 Kernel install operations:
-Columns:    Op Type,     Offset,   Data len,   Src exts,   Dst exts
-Row   0:       MOVE,          2,          2,         (),     (2, 2)
-
+  0: SOURCE_COPY
+    Source: 1 extent (1 block)
+      (1,1)
+    Destination: 20 extents (190 blocks)
+      (0,0) (1,1) (2,2) (3,3) (4,4) (5,5) (6,6) (7,7) (8,8) (9,9) (10,10)
+      (11,11) (12,12) (13,13) (14,14) (15,15) (16,16) (17,17) (18,18) (19,19)
 """
     self.assertEquals(stdout, expected_out)

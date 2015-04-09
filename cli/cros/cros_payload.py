@@ -6,12 +6,13 @@
 
 from __future__ import print_function
 
+import itertools
 import os
 import sys
+import textwrap
 
 from chromite.cbuildbot import constants
 from chromite.cli import command
-from chromite.lib import table
 
 # Needed for the dev.host.lib import below.
 sys.path.insert(0, os.path.join(constants.SOURCE_ROOT, 'src', 'platform'))
@@ -77,29 +78,38 @@ Example:
   def _DisplayOps(self, name, operations):
     """Show information about the install operations from the manifest.
 
-    The table shown includes operation type, data offset, data length, source
-    extents, and destinations extents.
+    The list shown includes operation type, data offset, data length, source
+    extents, source length, destination extents, and destinations length.
 
     Args:
       name: The name you want displayed above the operation table.
       operations: The install_operations object that you want to display
                   information about.
     """
-    optable = table.Table(['Op Type', 'Offset', 'Data len', 'Src exts',
-                           'Dst exts'])
+    def _DisplayExtents(extents, name):
+      num_blocks = sum([ext.num_blocks for ext in extents])
+      ext_str = ' '.join(
+          '(%s,%s)' % (ext.start_block, ext.num_blocks) for ext in extents)
+      # Make extent list wrap around at 80 chars.
+      ext_str = '\n      '.join(textwrap.wrap(ext_str, 74))
+      extent_plural = 's' if len(extents) > 1 else ''
+      block_plural = 's' if num_blocks > 1 else ''
+      print('    %s: %d extent%s (%d block%s)' %
+            (name, len(extents), extent_plural, num_blocks, block_plural))
+      print('      %s' % ext_str)
+
     op_dict = self._update_payload.common.OpType.NAMES
-    for op in operations:
-      src_extents = ''.join('(%s, %s)' % (extent.start_block, extent.num_blocks)
-                            for extent in op.src_extents)
-      dst_extents = ''.join('(%s, %s)' % (extent.start_block, extent.num_blocks)
-                            for extent in op.dst_extents)
-      if not src_extents:
-        src_extents = '()'
-      if not dst_extents:
-        dst_extents = '()'
-      optable.AppendRow([op_dict[op.type], op.data_offset, op.data_length,
-                         src_extents, dst_extents])
-    print('%s:\n%s' % (name, optable))
+    print('%s:' % name)
+    for op, op_count in itertools.izip(operations, itertools.count()):
+      print('  %d: %s' % (op_count, op_dict[op.type]))
+      if op.HasField('data_offset'):
+        print('    Data offset: %s' % op.data_offset)
+      if op.HasField('data_length'):
+        print('    Data length: %s' % op.data_length)
+      if len(op.src_extents):
+        _DisplayExtents(op.src_extents, 'Source')
+      if len(op.dst_extents):
+        _DisplayExtents(op.dst_extents, 'Destination')
 
   def Run(self):
     """Parse the update payload and display information from it."""
