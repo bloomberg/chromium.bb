@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This Polymer element is used as a button to toggle a drop down, such as
+// the cast-mode-picker.
 Polymer('drop-down-button', {
   created: function() {
     /** @type {boolean} */
@@ -15,5 +17,5 @@ Polymer('drop-down-button', {
   onButtonClick: function() {
     this.iconShown = !this.iconShown;
     this.fire('drop-down-button-click');
-  }
+  },
 });

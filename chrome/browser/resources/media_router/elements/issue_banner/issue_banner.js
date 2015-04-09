@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This Polymer element is used to show information about issues related
+// to casting.
 Polymer('issue-banner', {
   publish: {
     /**
@@ -9,9 +11,9 @@ Polymer('issue-banner', {
      *
      * @attribute issue
      * @type {media_router.Issue}
-     * @default: null
+     * @default null
      */
-    issue: null
+    issue: null,
   },
 
   /**
@@ -28,5 +30,5 @@ Polymer('issue-banner', {
       actionType: parseInt(sender.title),
       helpURL: this.issue.helpURL
     });
-  }
+  },
 });

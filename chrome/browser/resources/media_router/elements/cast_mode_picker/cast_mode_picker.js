@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This Polymer element is a drop down that shows the currently available
+// cast modes.
 Polymer('cast-mode-picker', {
   publish: {
     /**
@@ -20,7 +22,7 @@ Polymer('cast-mode-picker', {
      * @type {!Object<number, !media_router.CastMode>}
      * @default {}
     */
-    castModeMap: {}
+    castModeMap: {},
   },
 
   created: function() {
@@ -46,5 +48,5 @@ Polymer('cast-mode-picker', {
     this.fire('cast-mode-click', {
       headerText: this.castModeMap[sender.value].title
     });
-  }
+  },
 });
