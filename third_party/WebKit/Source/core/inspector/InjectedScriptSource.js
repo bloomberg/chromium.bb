@@ -1306,21 +1306,28 @@ InjectedScript.RemoteObject.prototype = {
     _customPreview: function(object, objectGroupName)
     {
         try {
-            var formatter = inspectedWindow["devtoolsFormatter"];
-            if (!formatter)
+            var formatters = inspectedWindow["devtoolsFormatters"];
+            if (!formatters || !isArrayLike(formatters))
                 return null;
 
-            var formatted = formatter.header(object);
-            if (!formatted)
-                return null;
+            for (var i = 0; i < formatters.length; ++i) {
+                try {
+                    var formatted = formatters[i].header(object);
+                    if (!formatted)
+                        continue;
 
-            var hasBody = formatter.hasBody(object);
-            injectedScript._substituteObjectTagsInCustomPreview(objectGroupName, formatted);
-            return {header: JSON.stringify(formatted), hasBody: !!hasBody};
+                    var hasBody = formatters[i].hasBody(object);
+                    injectedScript._substituteObjectTagsInCustomPreview(objectGroupName, formatted);
+                    var formatterObjectId = injectedScript._bind(formatters[i], objectGroupName);
+                    return {header: JSON.stringify(formatted), hasBody: !!hasBody, formatterObjectId: formatterObjectId};
+                } catch (e) {
+                    inspectedWindow.console.error("Custom Formatter Failed: " + e);
+                }
+            }
         } catch (e) {
             inspectedWindow.console.error("Custom Formatter Failed: " + e);
-            return null;
         }
+        return null;
     },
 
     /**

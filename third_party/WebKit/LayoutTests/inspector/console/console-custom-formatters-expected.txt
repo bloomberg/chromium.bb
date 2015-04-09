@@ -1,0 +1,9 @@
+CONSOLE MESSAGE: line 60: [object Object]
+CONSOLE MESSAGE: line 61: [object Object]
+CONSOLE MESSAGE: line 62: [object Object]
+Tests that console logging dumps properly when there are multiple custom formatters on the page
+
+console-custom-formatters.html:60 Header formatted by 1 aBody formatted by 1 a
+console-custom-formatters.html:61 Header formatted by 2 bBody formatted by 2 b
+console-custom-formatters.html:62 Header formatted by 1 cBody formatted by 1 c
+

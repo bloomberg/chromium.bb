@@ -1,0 +1,99 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+var a = {name: "a"};
+var b = {name: "b"};
+var c = {name: "c"};
+
+a.formattableBy1 = true;
+b.formattableBy2 = true;
+c.formattableBy1 = true;
+c.formattableBy2 = true;
+
+var formatter1 = {
+    header: function(x)
+    {
+        if (!x.formattableBy1)
+            return null;
+
+        return ["span", {}, "Header formatted by 1 ", x.name];
+    },
+
+    hasBody: function(x)
+    {
+        return true;
+    },
+
+    body: function(x)
+    {
+        return ["span", {}, "Body formatted by 1 ", x.name]
+    }
+};
+
+var formatter2 = {
+    header: function(x)
+    {
+        if (!x.formattableBy2)
+            return null;
+
+        return ["span", {}, "Header formatted by 2 ", x.name];
+    },
+
+    hasBody: function(x)
+    {
+        return true;
+    },
+
+    body: function(x)
+    {
+        return ["span", {}, "Body formatted by 2 ", x.name]
+    }
+};
+
+window.devtoolsFormatters = [formatter1, formatter2];
+
+function logVars()
+{
+    console.log(a);
+    console.log(b);
+    console.log(c);
+    window.devtoolsFormatters = [formatter2, formatter1];
+}
+
+function test()
+{
+    InspectorTest.mainTarget.runtimeAgent().setCustomObjectFormatterEnabled(true);
+    InspectorTest.evaluateInPage("logVars()", expandVariablesInConsole);
+
+    function expandVariablesInConsole()
+    {
+        var consoleView = WebInspector.ConsolePanel._view();
+        if (consoleView._needsFullUpdate)
+            consoleView._updateMessageList();
+        var viewMessages = consoleView._visibleViewMessages;
+        for (var i = 0; i < viewMessages.length; ++i) {
+            var uiMessage = viewMessages[i];
+            var customElement = uiMessage.contentElement().querySelector("span /deep/ .custom-expandable-section");
+            if (customElement)
+                customElement.click();
+        }
+
+        InspectorTest.runAfterPendingDispatches(dumpExpanded);
+    }
+
+    function dumpExpanded()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Tests that console logging dumps properly when there are multiple custom formatters on the page</p>
+</body>
+</html>
