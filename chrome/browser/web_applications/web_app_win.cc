@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/md5.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -334,16 +335,16 @@ void GetShortcutLocationsAndDeleteShortcuts(
   }
 }
 
-void CreateIconAndSetRelaunchDetails(const base::FilePath& web_app_path,
-                                     const base::FilePath& icon_file,
-                                     const web_app::ShortcutInfo& shortcut_info,
-                                     HWND hwnd) {
+void CreateIconAndSetRelaunchDetails(
+    const base::FilePath& web_app_path,
+    const base::FilePath& icon_file,
+    scoped_ptr<web_app::ShortcutInfo> shortcut_info,
+    HWND hwnd) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
-  base::CommandLine command_line =
-      ShellIntegration::CommandLineArgsForLauncher(shortcut_info.url,
-                                                   shortcut_info.extension_id,
-                                                   shortcut_info.profile_path);
+  base::CommandLine command_line = ShellIntegration::CommandLineArgsForLauncher(
+      shortcut_info->url, shortcut_info->extension_id,
+      shortcut_info->profile_path);
 
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -351,36 +352,31 @@ void CreateIconAndSetRelaunchDetails(const base::FilePath& web_app_path,
     return;
   }
   command_line.SetProgram(chrome_exe);
-  ui::win::SetRelaunchDetailsForWindow(
-      command_line.GetCommandLineString(), shortcut_info.title, hwnd);
+  ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
+                                       shortcut_info->title, hwnd);
 
   if (!base::PathExists(web_app_path) && !base::CreateDirectory(web_app_path))
     return;
 
   ui::win::SetAppIconForWindow(icon_file.value(), hwnd);
-  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon, true);
+  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info->favicon, true);
 }
 
 void OnShortcutInfoLoadedForSetRelaunchDetails(
     HWND hwnd,
-    const web_app::ShortcutInfo& shortcut_info) {
+    scoped_ptr<web_app::ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Set window's icon to the one we're about to create/update in the web app
   // path. The icon cache will refresh on icon creation.
-  base::FilePath web_app_path =
-      web_app::GetWebAppDataDirectory(shortcut_info.profile_path,
-                                      shortcut_info.extension_id,
-                                      shortcut_info.url);
+  base::FilePath web_app_path = web_app::GetWebAppDataDirectory(
+      shortcut_info->profile_path, shortcut_info->extension_id,
+      shortcut_info->url);
   base::FilePath icon_file =
-      web_app::internals::GetIconFilePath(web_app_path, shortcut_info.title);
+      web_app::internals::GetIconFilePath(web_app_path, shortcut_info->title);
   content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&CreateIconAndSetRelaunchDetails,
-                 web_app_path,
-                 icon_file,
-                 shortcut_info,
-                 hwnd));
+      FROM_HERE, base::Bind(&CreateIconAndSetRelaunchDetails, web_app_path,
+                            icon_file, base::Passed(&shortcut_info), hwnd));
 }
 
 // Creates an "app shim exe" by linking or copying the generic app shim exe.
@@ -525,26 +521,24 @@ bool CreateFileAssociationsForApp(
 
 namespace web_app {
 
-base::FilePath CreateShortcutInWebAppDir(const base::FilePath& web_app_dir,
-                                         const ShortcutInfo& shortcut_info) {
+base::FilePath CreateShortcutInWebAppDir(
+    const base::FilePath& web_app_dir,
+    scoped_ptr<ShortcutInfo> shortcut_info) {
   std::vector<base::FilePath> paths;
   paths.push_back(web_app_dir);
   std::vector<base::FilePath> out_filenames;
   base::FilePath web_app_dir_shortcut =
-      web_app_dir.Append(internals::GetSanitizedFileName(shortcut_info.title))
+      web_app_dir.Append(internals::GetSanitizedFileName(shortcut_info->title))
           .AddExtension(installer::kLnkExt);
   if (!PathExists(web_app_dir_shortcut)) {
-    CreateShortcutsInPaths(web_app_dir,
-                           shortcut_info,
-                           paths,
-                           SHORTCUT_CREATION_BY_USER,
-                           &out_filenames);
+    CreateShortcutsInPaths(web_app_dir, *shortcut_info, paths,
+                           SHORTCUT_CREATION_BY_USER, &out_filenames);
     DCHECK_EQ(out_filenames.size(), 1u);
     DCHECK_EQ(out_filenames[0].value(), web_app_dir_shortcut.value());
   } else {
     internals::CheckAndSaveIcon(
-        internals::GetIconFilePath(web_app_dir, shortcut_info.title),
-        shortcut_info.favicon, true);
+        internals::GetIconFilePath(web_app_dir, shortcut_info->title),
+        shortcut_info->favicon, true);
   }
   return web_app_dir_shortcut;
 }
@@ -586,7 +580,7 @@ bool CheckAndSaveIcon(const base::FilePath& icon_file,
 
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const ShortcutInfo& shortcut_info,
+    scoped_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info,
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason) {
@@ -613,12 +607,12 @@ bool CreatePlatformShortcuts(
   if (shortcut_paths.empty())
     return false;
 
-  if (!CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths,
+  if (!CreateShortcutsInPaths(web_app_path, *shortcut_info, shortcut_paths,
                               creation_reason, NULL))
     return false;
 
   if (pin_to_taskbar) {
-    base::FilePath file_name = GetSanitizedFileName(shortcut_info.title);
+    base::FilePath file_name = GetSanitizedFileName(shortcut_info->title);
     // Use the web app path shortcut for pinning to avoid having unique numbers
     // in the application name.
     base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
@@ -630,8 +624,8 @@ bool CreatePlatformShortcuts(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAppsFileAssociations)) {
     CreateFileAssociationsForApp(
-        shortcut_info.extension_id, shortcut_info.title,
-        shortcut_info.profile_path, file_handlers_info);
+        shortcut_info->extension_id, shortcut_info->title,
+        shortcut_info->profile_path, file_handlers_info);
   }
 
   return true;
@@ -640,30 +634,30 @@ bool CreatePlatformShortcuts(
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const base::string16& old_app_title,
-    const ShortcutInfo& shortcut_info,
+    scoped_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   // Generates file name to use with persisted ico and shortcut file.
   base::FilePath file_name =
-      web_app::internals::GetSanitizedFileName(shortcut_info.title);
+      web_app::internals::GetSanitizedFileName(shortcut_info->title);
 
-  if (old_app_title != shortcut_info.title) {
+  if (old_app_title != shortcut_info->title) {
     // The app's title has changed. Delete all existing app shortcuts and
     // recreate them in any locations they already existed (but do not add them
     // to locations where they do not currently exist).
     bool was_pinned_to_taskbar;
     std::vector<base::FilePath> shortcut_paths;
     GetShortcutLocationsAndDeleteShortcuts(
-        web_app_path, shortcut_info.profile_path, old_app_title,
+        web_app_path, shortcut_info->profile_path, old_app_title,
         &was_pinned_to_taskbar, &shortcut_paths);
-    CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths,
+    CreateShortcutsInPaths(web_app_path, *shortcut_info, shortcut_paths,
                            SHORTCUT_CREATION_BY_USER, NULL);
     // If the shortcut was pinned to the taskbar,
     // GetShortcutLocationsAndDeleteShortcuts will have deleted it. In that
     // case, re-pin it.
     if (was_pinned_to_taskbar) {
-      base::FilePath file_name = GetSanitizedFileName(shortcut_info.title);
+      base::FilePath file_name = GetSanitizedFileName(shortcut_info->title);
       // Use the web app path shortcut for pinning to avoid having unique
       // numbers in the application name.
       base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
@@ -673,15 +667,16 @@ void UpdatePlatformShortcuts(
   }
 
   // Update the icon if necessary.
-  base::FilePath icon_file = GetIconFilePath(web_app_path, shortcut_info.title);
-  CheckAndSaveIcon(icon_file, shortcut_info.favicon, true);
+  base::FilePath icon_file =
+      GetIconFilePath(web_app_path, shortcut_info->title);
+  CheckAndSaveIcon(icon_file, shortcut_info->favicon, true);
 }
 
 void DeletePlatformShortcuts(const base::FilePath& web_app_path,
-                             const ShortcutInfo& shortcut_info) {
-  GetShortcutLocationsAndDeleteShortcuts(
-      web_app_path, shortcut_info.profile_path, shortcut_info.title, NULL,
-      NULL);
+                             scoped_ptr<ShortcutInfo> shortcut_info) {
+  GetShortcutLocationsAndDeleteShortcuts(web_app_path,
+                                         shortcut_info->profile_path,
+                                         shortcut_info->title, NULL, NULL);
 
   // If there are no more shortcuts in the Chrome Apps subdirectory, remove it.
   base::FilePath chrome_apps_dir;

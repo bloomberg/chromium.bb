@@ -20,31 +20,31 @@ namespace internals {
 
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const ShortcutInfo& shortcut_info,
+    scoped_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info,
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason /*creation_reason*/) {
 #if !defined(OS_CHROMEOS)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  return shell_integration_linux::CreateDesktopShortcut(
-      shortcut_info, creation_locations);
+  return shell_integration_linux::CreateDesktopShortcut(*shortcut_info,
+                                                        creation_locations);
 #else
   return false;
 #endif
 }
 
 void DeletePlatformShortcuts(const base::FilePath& web_app_path,
-                             const ShortcutInfo& shortcut_info) {
+                             scoped_ptr<ShortcutInfo> shortcut_info) {
 #if !defined(OS_CHROMEOS)
-  shell_integration_linux::DeleteDesktopShortcuts(shortcut_info.profile_path,
-      shortcut_info.extension_id);
+  shell_integration_linux::DeleteDesktopShortcuts(shortcut_info->profile_path,
+                                                  shortcut_info->extension_id);
 #endif
 }
 
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const base::string16& /*old_app_title*/,
-    const ShortcutInfo& shortcut_info,
+    scoped_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
@@ -53,7 +53,7 @@ void UpdatePlatformShortcuts(
   // Find out whether shortcuts are already installed.
   ShortcutLocations creation_locations =
       shell_integration_linux::GetExistingShortcutLocations(
-          env.get(), shortcut_info.profile_path, shortcut_info.extension_id);
+          env.get(), shortcut_info->profile_path, shortcut_info->extension_id);
 
   // Always create a hidden shortcut in applications if a visible one is not
   // being created. This allows the operating system to identify the app, but
@@ -61,10 +61,8 @@ void UpdatePlatformShortcuts(
   if (creation_locations.applications_menu_location == APP_MENU_LOCATION_NONE)
     creation_locations.applications_menu_location = APP_MENU_LOCATION_HIDDEN;
 
-  CreatePlatformShortcuts(web_app_path,
-                          shortcut_info,
-                          file_handlers_info,
-                          creation_locations,
+  CreatePlatformShortcuts(web_app_path, shortcut_info.Pass(),
+                          file_handlers_info, creation_locations,
                           SHORTCUT_CREATION_AUTOMATED);
 }
 

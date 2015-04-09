@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -43,12 +44,12 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
 
   RenderViewHostTester::TestOnMessageReceived(
       rvh(), ChromeViewHostMsg_DidGetWebApplicationInfo(0, web_app_info));
-  web_app::ShortcutInfo info;
-  web_app::GetShortcutInfoForTab(web_contents(), &info);
+  scoped_ptr<web_app::ShortcutInfo> info =
+      web_app::GetShortcutInfoForTab(web_contents());
 
-  EXPECT_EQ(title, info.title);
-  EXPECT_EQ(description, info.description);
-  EXPECT_EQ(url, info.url);
+  EXPECT_EQ(title, info->title);
+  EXPECT_EQ(description, info->description);
+  EXPECT_EQ(url, info->url);
 }
 #endif
 

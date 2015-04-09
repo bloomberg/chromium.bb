@@ -26,8 +26,9 @@ namespace web_app {
 
 // Create a shortcut in the given web app data dir, returning the name of the
 // created shortcut.
-base::FilePath CreateShortcutInWebAppDir(const base::FilePath& web_app_path,
-                                         const ShortcutInfo& shortcut_info);
+base::FilePath CreateShortcutInWebAppDir(
+    const base::FilePath& web_app_path,
+    scoped_ptr<ShortcutInfo> shortcut_info);
 
 // Update the relaunch details for the given app's window, making the taskbar
 // group's "Pin to the taskbar" button function correctly.

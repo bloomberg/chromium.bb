@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
@@ -53,6 +54,12 @@ struct ShortcutInfo {
   base::FilePath profile_path;
   std::string profile_name;
   std::string version_for_display;
+
+ private:
+  // ShortcutInfo must not be copied; generally it is passed around via
+  // scoped_ptrs. This is to allow passing ShortcutInfos between threads,
+  // despite ImageFamily having a non-thread-safe reference count.
+  DISALLOW_COPY_AND_ASSIGN(ShortcutInfo);
 };
 
 // This specifies a folder in the system applications menu (e.g the Start Menu
@@ -98,16 +105,16 @@ enum ShortcutCreationReason {
 };
 
 // Called by GetInfoForApp after fetching the ShortcutInfo and FileHandlersInfo.
-typedef base::Callback<void(const ShortcutInfo&,
+typedef base::Callback<void(scoped_ptr<ShortcutInfo>,
                             const extensions::FileHandlersInfo&)> InfoCallback;
 
 // Called by GetShortcutInfoForApp after fetching the ShortcutInfo.
-typedef base::Callback<void(const ShortcutInfo&)> ShortcutInfoCallback;
+typedef base::Callback<void(scoped_ptr<ShortcutInfo>)> ShortcutInfoCallback;
 
 #if defined(TOOLKIT_VIEWS)
 // Extracts shortcut info of the given WebContents.
-void GetShortcutInfoForTab(content::WebContents* web_contents,
-                           ShortcutInfo* info);
+scoped_ptr<ShortcutInfo> GetShortcutInfoForTab(
+    content::WebContents* web_contents);
 #endif
 
 // Updates web app shortcut of the WebContents. This function checks and
@@ -117,7 +124,7 @@ void GetShortcutInfoForTab(content::WebContents* web_contents,
 // updates (recreates) them if they exits.
 void UpdateShortcutForTabContents(content::WebContents* web_contents);
 
-ShortcutInfo ShortcutInfoForExtensionAndProfile(
+scoped_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app,
     Profile* profile);
 
@@ -173,13 +180,13 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name);
 void CreateShortcutsWithInfo(
     ShortcutCreationReason reason,
     const ShortcutLocations& locations,
-    const ShortcutInfo& shortcut_info,
+    scoped_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info);
 
 // Currently only called by app_list_service_mac to create a shim for the
 // app launcher.
 void CreateNonAppShortcut(const ShortcutLocations& locations,
-                          const ShortcutInfo& shortcut_info);
+                          scoped_ptr<ShortcutInfo> shortcut_info);
 
 // Creates shortcuts for an app. This loads the app's icon from disk, and calls
 // CreateShortcutsWithInfo(). If you already have a ShortcutInfo with the app's
@@ -239,7 +246,7 @@ std::vector<base::FilePath> GetShortcutPaths(
 // |creation_locations| contains information about where to create them.
 bool CreatePlatformShortcuts(
     const base::FilePath& shortcut_data_path,
-    const ShortcutInfo& shortcut_info,
+    scoped_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info,
     const ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason);
@@ -248,7 +255,7 @@ bool CreatePlatformShortcuts(
 // platform specific implementation of the DeleteAllShortcuts function, and
 // is executed on the FILE thread.
 void DeletePlatformShortcuts(const base::FilePath& shortcut_data_path,
-                             const ShortcutInfo& shortcut_info);
+                             scoped_ptr<ShortcutInfo> shortcut_info);
 
 // Updates all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the UpdateAllShortcuts function, and
@@ -256,7 +263,7 @@ void DeletePlatformShortcuts(const base::FilePath& shortcut_data_path,
 void UpdatePlatformShortcuts(
     const base::FilePath& shortcut_data_path,
     const base::string16& old_app_title,
-    const ShortcutInfo& shortcut_info,
+    scoped_ptr<ShortcutInfo> shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info);
 
 // Delete all the shortcuts for an entire profile.

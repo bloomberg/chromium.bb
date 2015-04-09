@@ -265,10 +265,11 @@ bool HasAppShimHost(Profile* profile, const std::string& app_id) {
 base::FilePath GetAppShimPath(Profile* profile,
                               const extensions::Extension* app) {
   // Use a WebAppShortcutCreator to get the path.
+  scoped_ptr<web_app::ShortcutInfo> shortcut_info =
+      web_app::ShortcutInfoForExtensionAndProfile(app, profile);
   web_app::WebAppShortcutCreator shortcut_creator(
       web_app::GetWebAppDataDirectory(profile->GetPath(), app->id(), GURL()),
-      web_app::ShortcutInfoForExtensionAndProfile(app, profile),
-      extensions::FileHandlersInfo());
+      shortcut_info.get(), extensions::FileHandlersInfo());
   return shortcut_creator.GetInternalShortcutPath();
 }
 
@@ -649,10 +650,11 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
   const extensions::Extension* app = InstallPlatformApp("minimal");
 
   // Use WebAppShortcutCreator to create a 64 bit shim.
+  scoped_ptr<web_app::ShortcutInfo> shortcut_info =
+      web_app::ShortcutInfoForExtensionAndProfile(app, profile());
   web_app::WebAppShortcutCreator shortcut_creator(
       web_app::GetWebAppDataDirectory(profile()->GetPath(), app->id(), GURL()),
-      web_app::ShortcutInfoForExtensionAndProfile(app, profile()),
-      extensions::FileHandlersInfo());
+      shortcut_info.get(), extensions::FileHandlersInfo());
   shortcut_creator.UpdateShortcuts();
   base::FilePath shim_path = shortcut_creator.GetInternalShortcutPath();
   NSMutableDictionary* plist_64 = [NSMutableDictionary

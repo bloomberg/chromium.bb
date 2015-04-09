@@ -239,9 +239,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/363999
 "race:v8::internal::EnterDebugger::*EnterDebugger\n"
 
-// http://crbug.com/364006
-"race:gfx::ImageFamily::~ImageFamily\n"
-
 // https://code.google.com/p/v8/issues/detail?id=3143
 "race:v8::internal::FLAG_track_double_fields\n"
 

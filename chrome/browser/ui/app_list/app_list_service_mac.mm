@@ -86,20 +86,21 @@ const NSTimeInterval kAnimationDuration = 0.2;
 // Distance towards the screen edge that the app list moves from when showing.
 const CGFloat kDistanceMovedOnShow = 20;
 
-web_app::ShortcutInfo GetAppListShortcutInfo(
+scoped_ptr<web_app::ShortcutInfo> GetAppListShortcutInfo(
     const base::FilePath& profile_path) {
-  web_app::ShortcutInfo shortcut_info;
+  scoped_ptr<web_app::ShortcutInfo> shortcut_info(new web_app::ShortcutInfo);
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
-    shortcut_info.title =
+    shortcut_info->title =
         l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME_CANARY);
   } else {
-    shortcut_info.title = l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME);
+    shortcut_info->title =
+        l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME);
   }
 
-  shortcut_info.extension_id = app_mode::kAppListModeId;
-  shortcut_info.description = shortcut_info.title;
-  shortcut_info.profile_path = profile_path;
+  shortcut_info->extension_id = app_mode::kAppListModeId;
+  shortcut_info->description = shortcut_info->title;
+  shortcut_info->profile_path = profile_path;
 
   return shortcut_info;
 }
@@ -107,32 +108,32 @@ web_app::ShortcutInfo GetAppListShortcutInfo(
 void CreateAppListShim(const base::FilePath& profile_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   WebApplicationInfo web_app_info;
-  web_app::ShortcutInfo shortcut_info =
+  scoped_ptr<web_app::ShortcutInfo> shortcut_info =
       GetAppListShortcutInfo(profile_path);
 
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
 #if defined(GOOGLE_CHROME_BUILD)
-    shortcut_info.favicon.Add(
+    shortcut_info->favicon.Add(
         *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_CANARY_16));
-    shortcut_info.favicon.Add(
+    shortcut_info->favicon.Add(
         *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_CANARY_32));
-    shortcut_info.favicon.Add(
+    shortcut_info->favicon.Add(
         *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_CANARY_128));
-    shortcut_info.favicon.Add(
+    shortcut_info->favicon.Add(
         *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_CANARY_256));
 #else
     NOTREACHED();
 #endif
   } else {
-    shortcut_info.favicon.Add(
+    shortcut_info->favicon.Add(
         *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_16));
-    shortcut_info.favicon.Add(
+    shortcut_info->favicon.Add(
         *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_32));
-    shortcut_info.favicon.Add(
+    shortcut_info->favicon.Add(
         *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_128));
-    shortcut_info.favicon.Add(
+    shortcut_info->favicon.Add(
         *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_256));
   }
 
@@ -148,7 +149,7 @@ void CreateAppListShim(const base::FilePath& profile_path) {
   if (installed_version == 0)
     shortcut_locations.in_quick_launch_bar = true;
 
-  web_app::CreateNonAppShortcut(shortcut_locations, shortcut_info);
+  web_app::CreateNonAppShortcut(shortcut_locations, shortcut_info.Pass());
 
   local_state->SetInteger(prefs::kAppLauncherShortcutVersion,
                           kShortcutVersion);

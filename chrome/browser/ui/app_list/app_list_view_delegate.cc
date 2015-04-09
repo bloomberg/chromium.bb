@@ -94,11 +94,11 @@ const int kAutoLaunchDefaultTimeoutMilliSec = 50;
 void CreateShortcutInWebAppDir(
     const base::FilePath& app_data_dir,
     base::Callback<void(const base::FilePath&)> callback,
-    const web_app::ShortcutInfo& info) {
+    scoped_ptr<web_app::ShortcutInfo> info) {
   content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(web_app::CreateShortcutInWebAppDir, app_data_dir, info),
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(web_app::CreateShortcutInWebAppDir, app_data_dir,
+                 base::Passed(&info)),
       callback);
 }
 #endif
