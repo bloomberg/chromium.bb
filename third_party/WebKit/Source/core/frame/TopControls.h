@@ -5,6 +5,7 @@
 #ifndef TopControls_h
 #define TopControls_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebTopControlsState.h"
 #include "wtf/OwnPtr.h"
@@ -18,7 +19,7 @@ class FloatSize;
 // duplicating cc::TopControlsManager behaviour.  Top controls' self-animation
 // to completion is still handled by compositor and kicks in when scrolling is
 // complete (i.e, upon ScrollEnd or FlingEnd).
-class TopControls final : public NoBaseWillBeGarbageCollectedFinalized<TopControls> {
+class CORE_EXPORT TopControls final : public NoBaseWillBeGarbageCollectedFinalized<TopControls> {
 public:
     static PassOwnPtrWillBeRawPtr<TopControls> create(const FrameHost& host)
     {

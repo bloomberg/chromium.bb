@@ -31,13 +31,14 @@
 #ifndef SmartClip_h
 #define SmartClip_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class SmartClipData {
+class CORE_EXPORT SmartClipData {
 public:
     SmartClipData()
         : m_isEmpty(true)
@@ -65,7 +66,7 @@ private:
 // class is quirky and poorly tested. It's approximately
 // trying to do a poor-mans implementation of columnar
 // selection followed by a copy operation.
-class SmartClip {
+class CORE_EXPORT SmartClip {
     STACK_ALLOCATED();
 public:
     explicit SmartClip(PassRefPtrWillBeRawPtr<LocalFrame>);

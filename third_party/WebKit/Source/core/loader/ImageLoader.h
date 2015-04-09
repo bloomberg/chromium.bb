@@ -23,6 +23,7 @@
 #ifndef ImageLoader_h
 #define ImageLoader_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ImageResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
@@ -37,7 +38,7 @@ class IncrementLoadEventDelayCount;
 class FetchRequest;
 class Document;
 
-class ImageLoaderClient : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT ImageLoaderClient : public WillBeGarbageCollectedMixin {
 public:
     virtual void notifyImageSourceChanged() = 0;
 

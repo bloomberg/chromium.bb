@@ -5,6 +5,7 @@
 #ifndef RemoteFrame_h
 #define RemoteFrame_h
 
+#include "core/CoreExport.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/frame/Frame.h"
 
@@ -17,7 +18,7 @@ class RemoteFrameView;
 class WebLayer;
 class WindowProxyManager;
 
-class RemoteFrame: public Frame {
+class CORE_EXPORT RemoteFrame: public Frame {
 public:
     static PassRefPtrWillBeRawPtr<RemoteFrame> create(RemoteFrameClient*, FrameHost*, FrameOwner*);
 

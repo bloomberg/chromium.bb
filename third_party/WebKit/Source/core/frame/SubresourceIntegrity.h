@@ -5,6 +5,7 @@
 #ifndef SubresourceIntegrity_h
 #define SubresourceIntegrity_h
 
+#include "core/CoreExport.h"
 #include "platform/Crypto.h"
 
 namespace WTF {
@@ -18,7 +19,7 @@ class Element;
 class KURL;
 class Resource;
 
-class SubresourceIntegrity {
+class CORE_EXPORT SubresourceIntegrity {
 public:
     enum IntegrityParseResult {
         IntegrityParseErrorNone,

@@ -27,12 +27,13 @@
 #ifndef SuspendableTimer_h
 #define SuspendableTimer_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "platform/Timer.h"
 
 namespace blink {
 
-class SuspendableTimer : public TimerBase, public ActiveDOMObject {
+class CORE_EXPORT SuspendableTimer : public TimerBase, public ActiveDOMObject {
 public:
     explicit SuspendableTimer(ExecutionContext*);
     virtual ~SuspendableTimer();

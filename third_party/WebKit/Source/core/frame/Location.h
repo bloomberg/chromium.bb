@@ -31,6 +31,7 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMStringList.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "wtf/PassRefPtr.h"
@@ -48,7 +49,7 @@ class KURL;
 // in a RemoteFrame. Rather than making DOMWindowProperty support RemoteFrames and generating a lot
 // code churn, Location is implemented as a one-off with some custom lifetime management code. Namely,
 // it needs a manual call to reset() from DOMWindow::reset() to ensure it doesn't retain a stale Frame pointer.
-class Location final : public RefCountedWillBeGarbageCollected<Location>, public ScriptWrappable {
+class CORE_EXPORT Location final : public RefCountedWillBeGarbageCollected<Location>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Location> create(Frame* frame)
