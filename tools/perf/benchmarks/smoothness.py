@@ -216,6 +216,17 @@ class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
     return 'smoothness.tough_pinch_zoom_cases'
 
 
+@benchmark.Enabled('chromeos')
+class SmoothnessToughScrollingWhileZoomedInCases(benchmark.Benchmark):
+  """Measures rendering statistics for pinch-zooming then diagonal scrolling"""
+  test = smoothness.Smoothness
+  page_set = page_sets.ToughScrollingWhileZoomedInCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.tough_scrolling_while_zoomed_in_cases'
+
+
 @benchmark.Enabled('android')
 class SmoothnessPolymer(benchmark.Benchmark):
   """Measures rendering statistics for Polymer cases.
