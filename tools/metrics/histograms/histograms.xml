@@ -43747,22 +43747,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebCore.Scripts.Async.NotStreamingReason"
-    units="NotStreamingReason">
+    enum="NotStreamingReason">
   <owner>marja@chromium.org</owner>
   <summary>Reason for not streaming an async script.</summary>
 </histogram>
 
-<histogram name="WebCore.Scripts.Async.StartedStreaming"
-    units="BooleanStreamed">
+<histogram name="WebCore.Scripts.Async.StartedStreaming" enum="BooleanStreamed">
   <owner>marja@chromium.org</owner>
   <summary>Whether an async script was streamed or not.</summary>
 </histogram>
 
+<histogram name="WebCore.Scripts.Deferred.NotStreamingReason"
+    enum="NotStreamingReason">
+  <owner>marja@chromium.org</owner>
+  <summary>Reason for not streaming a deferred script.</summary>
+</histogram>
+
 <histogram name="WebCore.Scripts.Deferred.StartedStreaming"
-    units="BooleanStreamed">
-  <obsolete>
-    Deprecated as deferred scripts are not streamed.
-  </obsolete>
+    enum="BooleanStreamed">
   <owner>marja@chromium.org</owner>
   <summary>Whether a deferred script was streamed or not.</summary>
 </histogram>
@@ -43780,11 +43782,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebCore.Scripts.ParsingBlocking.NotStreamingReason"
+    enum="NotStreamingReason">
+  <owner>marja@chromium.org</owner>
+  <summary>Reason for not streaming a parsing blocking script.</summary>
+</histogram>
+
 <histogram name="WebCore.Scripts.ParsingBlocking.StartedStreaming"
-    units="BooleanStreamed">
-  <obsolete>
-    Deprecated as parsing blocking scripts are not streamed.
-  </obsolete>
+    enum="BooleanStreamed">
   <owner>marja@chromium.org</owner>
   <summary>Whether a parsing blocking script was streamed or not.</summary>
 </histogram>
