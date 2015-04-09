@@ -26,6 +26,7 @@
 #ifndef ContextMenuController_h
 #define ContextMenuController_h
 
+#include "core/CoreExport.h"
 #include "core/layout/HitTestResult.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
@@ -44,7 +45,7 @@ namespace blink {
     class LocalFrame;
     class Page;
 
-    class ContextMenuController final : public NoBaseWillBeGarbageCollectedFinalized<ContextMenuController> {
+    class CORE_EXPORT ContextMenuController final : public NoBaseWillBeGarbageCollectedFinalized<ContextMenuController> {
         WTF_MAKE_NONCOPYABLE(ContextMenuController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ContextMenuController);
     public:
         static PassOwnPtrWillBeRawPtr<ContextMenuController> create(Page*, ContextMenuClient*);

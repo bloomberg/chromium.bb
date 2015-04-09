@@ -31,6 +31,7 @@
 #ifndef TouchDisambiguation_h
 #define TouchDisambiguation_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
@@ -40,7 +41,7 @@ class LocalFrame;
 class IntRect;
 class Node;
 
-void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, WillBeHeapVector<RawPtrWillBeMember<Node>>& highlightNodes);
+CORE_EXPORT void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, WillBeHeapVector<RawPtrWillBeMember<Node>>& highlightNodes);
 
 } // namespace blink
 

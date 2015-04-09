@@ -26,6 +26,7 @@
 #ifndef AutoscrollController_h
 #define AutoscrollController_h
 
+#include "core/CoreExport.h"
 #include "platform/geometry/IntPoint.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -50,7 +51,7 @@ enum AutoscrollType {
 };
 
 // AutscrollController handels autoscroll and pan scroll for EventHandler.
-class AutoscrollController {
+class CORE_EXPORT AutoscrollController {
 public:
     static PassOwnPtr<AutoscrollController> create(Page&);
 

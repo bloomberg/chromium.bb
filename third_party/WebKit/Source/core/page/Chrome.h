@@ -22,6 +22,7 @@
 #ifndef Chrome_h
 #define Chrome_h
 
+#include "core/CoreExport.h"
 #include "core/loader/NavigationPolicy.h"
 #include "platform/Cursor.h"
 #include "platform/HostWindow.h"
@@ -51,7 +52,7 @@ struct DateTimeChooserParameters;
 struct ViewportDescription;
 struct WindowFeatures;
 
-class Chrome final : public HostWindow {
+class CORE_EXPORT Chrome final : public HostWindow {
 public:
     virtual ~Chrome();
 

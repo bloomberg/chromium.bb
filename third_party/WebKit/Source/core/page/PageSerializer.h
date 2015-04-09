@@ -31,6 +31,7 @@
 #ifndef PageSerializer_h
 #define PageSerializer_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KURLHash.h"
@@ -56,7 +57,7 @@ struct SerializedResource;
 
 // This class is used to serialize a page contents back to text (typically HTML).
 // It serializes all the page frames and retrieves resources such as images and CSS stylesheets.
-class PageSerializer final {
+class CORE_EXPORT PageSerializer final {
     STACK_ALLOCATED();
 public:
     explicit PageSerializer(Vector<SerializedResource>*);

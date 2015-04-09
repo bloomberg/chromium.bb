@@ -31,6 +31,7 @@
 #ifndef PagePopupClient_h
 #define PagePopupClient_h
 
+#include "core/CoreExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/text/CString.h"
@@ -42,7 +43,7 @@ class Document;
 class Element;
 class Locale;
 
-class PagePopupClient {
+class CORE_EXPORT PagePopupClient {
 public:
     virtual IntSize contentSize() = 0;
 

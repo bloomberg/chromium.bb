@@ -7,12 +7,13 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/Element.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class ScrollState final : public RefCountedWillBeGarbageCollected<ScrollState>, public ScriptWrappable {
+class CORE_EXPORT ScrollState final : public RefCountedWillBeGarbageCollected<ScrollState>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:

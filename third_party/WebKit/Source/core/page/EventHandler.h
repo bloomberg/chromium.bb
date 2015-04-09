@@ -26,6 +26,7 @@
 #ifndef EventHandler_h
 #define EventHandler_h
 
+#include "core/CoreExport.h"
 #include "core/editing/TextGranularity.h"
 #include "core/events/TextEventInputType.h"
 #include "core/layout/HitTestRequest.h"
@@ -83,7 +84,7 @@ class Widget;
 enum AppendTrailingWhitespace { ShouldAppendTrailingWhitespace, DontAppendTrailingWhitespace };
 enum class DragInitiator;
 
-class EventHandler : public NoBaseWillBeGarbageCollectedFinalized<EventHandler> {
+class CORE_EXPORT EventHandler : public NoBaseWillBeGarbageCollectedFinalized<EventHandler> {
     WTF_MAKE_NONCOPYABLE(EventHandler);
 public:
     explicit EventHandler(LocalFrame*);

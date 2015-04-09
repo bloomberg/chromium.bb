@@ -26,11 +26,12 @@
 #ifndef WindowFocusAllowedIndicator_h
 #define WindowFocusAllowedIndicator_h
 
+#include "core/CoreExport.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class WindowFocusAllowedIndicator {
+class CORE_EXPORT WindowFocusAllowedIndicator {
     WTF_MAKE_NONCOPYABLE(WindowFocusAllowedIndicator);
 public:
     WindowFocusAllowedIndicator();

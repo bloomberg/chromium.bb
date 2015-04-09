@@ -26,10 +26,12 @@
 #ifndef ScrollingCoordinator_h
 #define ScrollingCoordinator_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/PlatformWheelEvent.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -47,7 +49,8 @@ class Page;
 class Region;
 class ScrollableArea;
 
-class ScrollingCoordinator {
+class CORE_EXPORT ScrollingCoordinator {
+    WTF_MAKE_NONCOPYABLE(ScrollingCoordinator);
 public:
     ~ScrollingCoordinator();
 
