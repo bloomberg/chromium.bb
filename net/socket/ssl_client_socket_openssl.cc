@@ -456,11 +456,6 @@ int SSLClientSocketOpenSSL::Connect(const CompletionCallback& callback) {
   // Set SSL to client mode. Handshake happens in the loop below.
   SSL_set_connect_state(ssl_);
 
-  // Enable fastradio padding.
-  SSL_enable_fastradio_padding(ssl_,
-                               ssl_config_.fastradio_padding_enabled &&
-                                   ssl_config_.fastradio_padding_eligible);
-
   GotoState(STATE_HANDSHAKE);
   rv = DoHandshakeLoop(OK);
   if (rv == ERR_IO_PENDING) {
@@ -849,6 +844,11 @@ int SSLClientSocketOpenSSL::Init() {
 
   if (IsOCSPStaplingSupported())
     SSL_enable_ocsp_stapling(ssl_);
+
+  // Enable fastradio padding.
+  SSL_enable_fastradio_padding(ssl_,
+                               ssl_config_.fastradio_padding_enabled &&
+                                   ssl_config_.fastradio_padding_eligible);
 
   return OK;
 }
