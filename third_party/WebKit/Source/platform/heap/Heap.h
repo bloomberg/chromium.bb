@@ -1505,6 +1505,7 @@ template<typename T, typename Traits = WTF::VectorTraits<T>> class HeapVectorBac
 template<typename Table> class HeapHashTableBacking {
 public:
     static void finalize(void* pointer);
+    void finalizeGarbageCollectedObject() { finalize(this); }
 };
 
 class HeapAllocatorQuantizer {

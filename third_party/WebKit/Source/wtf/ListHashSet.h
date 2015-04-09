@@ -382,6 +382,10 @@ namespace WTF {
 
             self->m_value.~ValueArg();
         }
+        void finalizeGarbageCollectedObject()
+        {
+            finalize(this);
+        }
 
         void destroy(NodeAllocator* allocator)
         {

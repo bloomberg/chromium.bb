@@ -182,6 +182,7 @@ public:
     ~LinkedHashSet();
 
     static void finalize(void* pointer) { reinterpret_cast<LinkedHashSet*>(pointer)->~LinkedHashSet(); }
+    void finalizeGarbageCollectedObject() { finalize(this); }
 
     void swap(LinkedHashSet&);
 

@@ -126,89 +126,37 @@ template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocato
 template<typename T, typename Traits> class HeapVectorBacking;
 template<typename Table> class HeapHashTableBacking;
 
-// These GCInfoTraits are defined to control finalizers to be invoked.
-// TODO(haraken): Replace these GCInfoTraits with FinalizerTraits.
-
 template<typename T, typename U, typename V>
-struct GCInfoTrait<LinkedHashSet<T, U, V, HeapAllocator>> {
-    static size_t index()
-    {
-        using TargetType = LinkedHashSet<T, U, V, HeapAllocator>;
-        static const GCInfo gcInfo = {
-            TraceTrait<TargetType>::trace,
-            LinkedHashSet<T, U, V, HeapAllocator>::finalize,
-            true, // Needs finalization. The anchor needs to unlink itself from the chain.
-            WTF::IsPolymorphic<TargetType>::value,
-#if ENABLE(GC_PROFILING)
-            TypenameStringTrait<TargetType>::get()
-#endif
-        };
-        RETURN_GCINFO_INDEX();
-    }
+struct FinalizerTrait<LinkedHashSet<T, U, V, HeapAllocator>> {
+    static const bool nonTrivialFinalizer = true;
+    static void finalize(void* obj) { FinalizerTraitImpl<LinkedHashSet<T, U, V, HeapAllocator>, nonTrivialFinalizer>::finalize(obj); }
 };
 
 template<typename T, typename Allocator>
-struct GCInfoTrait<WTF::ListHashSetNode<T, Allocator>> {
-    static size_t index()
-    {
-        using TargetType = WTF::ListHashSetNode<T, Allocator>;
-        static const GCInfo gcInfo = {
-            TraceTrait<TargetType>::trace,
-            TargetType::finalize,
-            !WTF::IsTriviallyDestructible<T>::value, // The node needs destruction if its data does.
-            false, // no vtable.
-#if ENABLE(GC_PROFILING)
-            TypenameStringTrait<TargetType>::get()
-#endif
-        };
-        RETURN_GCINFO_INDEX();
-    }
+struct FinalizerTrait<WTF::ListHashSetNode<T, Allocator>> {
+    static const bool nonTrivialFinalizer = !WTF::IsTriviallyDestructible<T>::value;
+    static void finalize(void* obj) { FinalizerTraitImpl<WTF::ListHashSetNode<T, Allocator>, nonTrivialFinalizer>::finalize(obj); }
 };
 
 template<typename T, size_t inlineCapacity>
-struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator>> : public FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>, true> { };
-
-template<typename T, size_t inlineCapacity>
-struct GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator>> {
-    static size_t index()
-    {
-        using TargetType = Vector<T, inlineCapacity, HeapAllocator>;
-        static const GCInfo gcInfo = {
-            TraceTrait<TargetType>::trace,
-            FinalizerTrait<TargetType>::finalize,
-            // Finalizer is needed to destruct things stored in the inline capacity.
-            inlineCapacity && VectorTraits<T>::needsDestruction,
-            WTF::IsPolymorphic<TargetType>::value,
-#if ENABLE(GC_PROFILING)
-            TypenameStringTrait<TargetType>::get()
-#endif
-        };
-        RETURN_GCINFO_INDEX();
-    }
+struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator>> {
+    static const bool nonTrivialFinalizer = inlineCapacity && VectorTraits<T>::needsDestruction;
+    static void finalize(void* obj) { FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>, nonTrivialFinalizer>::finalize(obj); }
 };
 
 template<typename T, size_t inlineCapacity>
-struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator>> : public FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>, true> { };
-
-template<typename T, size_t inlineCapacity>
-struct GCInfoTrait<Deque<T, inlineCapacity, HeapAllocator>> {
-    static size_t index()
-    {
-        using TargetType = Deque<T, inlineCapacity, HeapAllocator>;
-        static const GCInfo gcInfo = {
-            TraceTrait<TargetType>::trace,
-            FinalizerTrait<TargetType>::finalize,
-            // Finalizer is needed to destruct things stored in the inline capacity.
-            inlineCapacity && VectorTraits<T>::needsDestruction,
-            WTF::IsPolymorphic<TargetType>::value,
-#if ENABLE(GC_PROFILING)
-            TypenameStringTrait<TargetType>::get()
-#endif
-        };
-        RETURN_GCINFO_INDEX();
-    }
+struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator>> {
+    static const bool nonTrivialFinalizer = inlineCapacity && VectorTraits<T>::needsDestruction;
+    static void finalize(void* obj) { FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>, nonTrivialFinalizer>::finalize(obj); }
 };
 
+template<typename Table>
+struct FinalizerTrait<HeapHashTableBacking<Table>> {
+    static const bool nonTrivialFinalizer = !WTF::IsTriviallyDestructible<typename Table::ValueType>::value;
+    static void finalize(void* obj) { FinalizerTraitImpl<HeapHashTableBacking<Table>, nonTrivialFinalizer>::finalize(obj); }
+};
+
+// TODO(haraken): Replace this GCInfoTraits with FinalizerTraits.
 template<typename T, typename Traits>
 struct GCInfoTrait<HeapVectorBacking<T, Traits>> {
     static size_t index()
@@ -219,24 +167,6 @@ struct GCInfoTrait<HeapVectorBacking<T, Traits>> {
             FinalizerTrait<TargetType>::finalize,
             Traits::needsDestruction,
             false, // We don't support embedded objects in HeapVectors with vtables.
-#if ENABLE(GC_PROFILING)
-            TypenameStringTrait<TargetType>::get()
-#endif
-        };
-        RETURN_GCINFO_INDEX();
-    }
-};
-
-template<typename Table>
-struct GCInfoTrait<HeapHashTableBacking<Table>> {
-    static size_t index()
-    {
-        using TargetType = HeapHashTableBacking<Table>;
-        static const GCInfo gcInfo = {
-            TraceTrait<TargetType>::trace,
-            HeapHashTableBacking<Table>::finalize,
-            !WTF::IsTriviallyDestructible<typename Table::ValueType>::value,
-            WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
 #endif
