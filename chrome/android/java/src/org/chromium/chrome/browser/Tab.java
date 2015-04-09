@@ -652,6 +652,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             for (TabObserver observer : mObservers) {
                 observer.onDidAttachInterstitialPage(Tab.this);
             }
+
+            updateFullscreenEnabledState();
         }
 
         @Override
@@ -661,6 +663,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             for (TabObserver observer : mObservers) {
                 observer.onDidDetachInterstitialPage(Tab.this);
             }
+
+            updateFullscreenEnabledState();
         }
 
         @Override
@@ -2436,6 +2440,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 !AccessibilityUtil.isAccessibilityEnabled(getApplicationContext());
         enableHidingTopControls &= !mIsImeShowing;
         enableHidingTopControls &= !mIsShowingErrorPage;
+        enableHidingTopControls &= !getWebContents().isShowingInterstitialPage();
 
         return enableHidingTopControls;
     }

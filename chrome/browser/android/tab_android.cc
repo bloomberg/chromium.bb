@@ -59,10 +59,12 @@
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/top_controls_state.h"
@@ -741,6 +743,14 @@ void TabAndroid::UpdateTopControlsState(JNIEnv* env,
   WebContents* sender = web_contents();
   sender->Send(new ChromeViewMsg_UpdateTopControlsState(
       sender->GetRoutingID(), constraints_state, current_state, animate));
+
+  if (sender->ShowingInterstitialPage()) {
+    content::RenderViewHost* interstitial_view_host =
+        sender->GetInterstitialPage()->GetMainFrame()->GetRenderViewHost();
+    interstitial_view_host->Send(new ChromeViewMsg_UpdateTopControlsState(
+        interstitial_view_host->GetRoutingID(), constraints_state,
+        current_state, animate));
+  }
 }
 
 void TabAndroid::SearchByImageInNewTabAsync(JNIEnv* env, jobject obj) {
