@@ -54,11 +54,11 @@ class SavePasswordInfoBarDelegateTest : public ChromeRenderViewHostTestHarness {
   void TearDown() override;
 
   const autofill::PasswordForm& test_form() { return test_form_; }
-  MockPasswordFormManager* CreateMockFormManager();
+  scoped_ptr<MockPasswordFormManager> CreateMockFormManager();
 
  protected:
   scoped_ptr<ConfirmInfoBarDelegate> CreateDelegate(
-      MockPasswordFormManager* password_form_manager,
+      scoped_ptr<password_manager::PasswordFormManager> password_form_manager,
       password_manager::CredentialSourceType type);
 
   password_manager::StubPasswordManagerClient client_;
@@ -74,20 +74,18 @@ SavePasswordInfoBarDelegateTest::SavePasswordInfoBarDelegateTest() {
   test_form_.password_value = base::ASCIIToUTF16("12345");
 }
 
-MockPasswordFormManager*
+scoped_ptr<MockPasswordFormManager>
 SavePasswordInfoBarDelegateTest::CreateMockFormManager() {
-  return new MockPasswordFormManager(&client_, test_form());
+  return scoped_ptr<MockPasswordFormManager>(
+      new MockPasswordFormManager(&client_, test_form()));
 }
 
 scoped_ptr<ConfirmInfoBarDelegate>
 SavePasswordInfoBarDelegateTest::CreateDelegate(
-    MockPasswordFormManager* password_form_manager,
+    scoped_ptr<password_manager::PasswordFormManager> password_form_manager,
     password_manager::CredentialSourceType type) {
   scoped_ptr<ConfirmInfoBarDelegate> delegate(
-      new TestSavePasswordInfobarDelegate(
-          scoped_ptr<password_manager::PasswordFormManager>(
-              password_form_manager),
-          type));
+      new TestSavePasswordInfobarDelegate(password_form_manager.Pass(), type));
   return delegate.Pass();
 }
 
@@ -100,26 +98,24 @@ void SavePasswordInfoBarDelegateTest::TearDown() {
 }
 
 TEST_F(SavePasswordInfoBarDelegateTest, CancelTestCredentialSourceAPI) {
-  // SavePasswordInfoBarDelegate::Create takes ownership of
-  // password_form_manager_ptr;
-  MockPasswordFormManager* password_form_manager_ptr = CreateMockFormManager();
-  scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
-      password_form_manager_ptr,
-      password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API));
-  EXPECT_CALL(*password_form_manager_ptr, PermanentlyBlacklist())
+  scoped_ptr<MockPasswordFormManager> password_form_manager(
+      CreateMockFormManager());
+  EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist())
       .Times(testing::Exactly(0));
+  scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
+      password_form_manager.Pass(),
+      password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API));
   EXPECT_TRUE(infobar->Cancel());
 }
 
 TEST_F(SavePasswordInfoBarDelegateTest,
        CancelTestCredentialSourcePasswordManager) {
-  // SavePasswordInfoBarDelegate::Create takes ownership of
-  // password_form_manager_ptr;
-  MockPasswordFormManager* password_form_manager_ptr = CreateMockFormManager();
-  scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
-      password_form_manager_ptr, password_manager::CredentialSourceType::
-                                     CREDENTIAL_SOURCE_PASSWORD_MANAGER));
-  EXPECT_CALL(*password_form_manager_ptr, PermanentlyBlacklist())
+  scoped_ptr<MockPasswordFormManager> password_form_manager(
+      CreateMockFormManager());
+  EXPECT_CALL(*password_form_manager.get(), PermanentlyBlacklist())
       .Times(testing::Exactly(1));
+  scoped_ptr<ConfirmInfoBarDelegate> infobar(CreateDelegate(
+      password_form_manager.Pass(), password_manager::CredentialSourceType::
+                                        CREDENTIAL_SOURCE_PASSWORD_MANAGER));
   EXPECT_TRUE(infobar->Cancel());
 }
