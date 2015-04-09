@@ -85,14 +85,26 @@ def ProvisionDevice(device, options):
       device.Reboot(False, retries=0)
       device.adb.WaitForDevice()
 
-  if should_run_phase(_PHASES.WIPE):
-    run_phase(WipeDevice)
+  try:
+    if should_run_phase(_PHASES.WIPE):
+      run_phase(WipeDevice)
 
-  if should_run_phase(_PHASES.PROPERTIES):
-    run_phase(SetProperties)
+    if should_run_phase(_PHASES.PROPERTIES):
+      run_phase(SetProperties)
 
-  if should_run_phase(_PHASES.FINISH):
-    run_phase(FinishProvisioning, reboot=False)
+    if should_run_phase(_PHASES.FINISH):
+      run_phase(FinishProvisioning, reboot=False)
+
+  except (errors.WaitForResponseTimedOutError,
+          device_errors.CommandTimeoutError):
+    logging.exception('Timed out waiting for device %s. Adding to blacklist.',
+                      str(device))
+    device_blacklist.ExtendBlacklist([str(device)])
+
+  except device_errors.CommandFailedError:
+    logging.exception('Failed to provision device %s. Adding to blacklist.',
+                      str(device))
+    device_blacklist.ExtendBlacklist([str(device)])
 
 
 def WipeDevice(device, options):
@@ -110,29 +122,29 @@ def WipeDevice(device, options):
   if options.skip_wipe:
     return
 
-  device.EnableRoot()
-  device_authorized = device.FileExists(constants.ADB_KEYS_FILE)
-  if device_authorized:
-    adb_keys = device.ReadFile(constants.ADB_KEYS_FILE,
-                               as_root=True).splitlines()
   try:
+    device.EnableRoot()
+    device_authorized = device.FileExists(constants.ADB_KEYS_FILE)
+    if device_authorized:
+      adb_keys = device.ReadFile(constants.ADB_KEYS_FILE,
+                                 as_root=True).splitlines()
     device.RunShellCommand(['wipe', 'data'],
                            as_root=True, check_return=True)
+    device.adb.WaitForDevice()
+
+    if device_authorized:
+      adb_keys_set = set(adb_keys)
+      for adb_key_file in options.adb_key_files or []:
+        try:
+          with open(adb_key_file, 'r') as f:
+            adb_public_keys = f.readlines()
+          adb_keys_set.update(adb_public_keys)
+        except IOError:
+          logging.warning('Unable to find adb keys file %s.' % adb_key_file)
+      _WriteAdbKeysFile(device, '\n'.join(adb_keys_set))
   except device_errors.CommandFailedError:
     logging.exception('Possible failure while wiping the device. '
                       'Attempting to continue.')
-  device.adb.WaitForDevice()
-
-  if device_authorized:
-    adb_keys_set = set(adb_keys)
-    for adb_key_file in options.adb_key_files or []:
-      try:
-        with open(adb_key_file, 'r') as f:
-          adb_public_keys = f.readlines()
-        adb_keys_set.update(adb_public_keys)
-      except IOError:
-        logging.warning('Unable to find adb keys file %s.' % adb_key_file)
-    _WriteAdbKeysFile(device, '\n'.join(adb_keys_set))
 
 
 def _WriteAdbKeysFile(device, adb_keys_string):
@@ -194,30 +206,19 @@ def _ConfigureLocalProperties(device, java_debug=True):
     device.RunShellCommand(
         ['chmod', '644', constants.DEVICE_LOCAL_PROPERTIES_PATH],
         as_root=True, check_return=True)
-  except device_errors.CommandFailedError as e:
-    logging.warning(str(e))
+  except device_errors.CommandFailedError:
+    logging.exception('Failed to configure local properties.')
 
 
 def FinishProvisioning(device, options):
-  try:
-    device.RunShellCommand(
-        ['date', '-s', time.strftime('%Y%m%d.%H%M%S', time.gmtime())],
-        as_root=True, check_return=True)
-    props = device.RunShellCommand('getprop', check_return=True)
-    for prop in props:
-      logging.info('  %s' % prop)
-    if options.auto_reconnect:
-      _PushAndLaunchAdbReboot(device, options.target)
-  except (errors.WaitForResponseTimedOutError,
-          device_errors.CommandTimeoutError):
-    logging.info('Timed out waiting for device %s. Adding to blacklist.',
-                 str(device))
-    # Device black list is reset by bb_device_status_check.py per build.
-    device_blacklist.ExtendBlacklist([str(device)])
-  except device_errors.CommandFailedError:
-    logging.exception('Failed to provision device %s. Adding to blacklist.',
-                      str(device))
-    device_blacklist.ExtendBlacklist([str(device)])
+  device.RunShellCommand(
+      ['date', '-s', time.strftime('%Y%m%d.%H%M%S', time.gmtime())],
+      as_root=True, check_return=True)
+  props = device.RunShellCommand('getprop', check_return=True)
+  for prop in props:
+    logging.info('  %s' % prop)
+  if options.auto_reconnect:
+    _PushAndLaunchAdbReboot(device, options.target)
 
 
 def _PushAndLaunchAdbReboot(device, target):
