@@ -36,12 +36,15 @@ def AddLibcTest(env, src, exit_status='0', golden_file=None, test_suffix='',
                          ['toolchain_tests', 'small_tests'],
                          'run_' + name + '_test',
                          is_broken=is_broken)
-uenv = env.Clone()
-# Prevent the compiler from replacing or modifying calls to memcpy et al. so
-# we actually test the libc imlementation.
-uenv.Append(CFLAGS=['-fno-builtin'])
-AddLibcTest(uenv, 'memcpy_move_set.c', '0',
-            golden_file=env.File('memcpy_move_set.stdout'))
+for envtype in ['builtin', 'nobuiltin']:
+  uenv = env.Clone()
+  # Prevent the compiler from replacing or modifying calls to memcpy et al. so
+  # we actually test the libc imlementation.
+  if envtype == 'nobuiltin':
+    uenv.Append(CFLAGS=['-fno-builtin'])
+  AddLibcTest(uenv, 'memcpy_move_set.c', '0', test_suffix='_' + envtype,
+              golden_file=env.File('memcpy_move_set.stdout'))
+
 AddLibcTest(env, 'malloc_realloc_calloc_free.c', '0')
 
 AddLibcTest(env, 'inet.c', '0')
