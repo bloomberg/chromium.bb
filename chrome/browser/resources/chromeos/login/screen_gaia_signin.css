@@ -242,3 +242,29 @@ webview#signin-frame {
 #saml-notice-message {
   margin: 0 auto;
 }
+
+#gaia-whitelist-error {
+  bottom: 0;
+  display: none;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.new-gaia-flow #gaia-whitelist-error {
+  display: block;
+  visibility: hidden;
+}
+
+.new-gaia-flow .whitelist-error #gaia-whitelist-error {
+  visibility: visible;
+}
+
+.new-gaia-flow #gaia-signin.whitelist-error .step-contents {
+  visibility: hidden;
+}
+
+.new-gaia-flow #gaia-signin.whitelist-error .step-loading {
+  visibility: hidden;
+}

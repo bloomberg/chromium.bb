@@ -691,18 +691,18 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
   PerformLoginFinishedActions(true /* start public session timer */);
   offline_failed_ = false;
 
-  if (g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->IsEnterpriseManaged()) {
-    ShowError(IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST, email);
+  if (StartupUtils::IsWebviewSigninEnabled()) {
+    login_display_->ShowWhitelistCheckFailedError();
   } else {
-    ShowError(IDS_LOGIN_ERROR_WHITELIST, email);
-  }
-
-  if (StartupUtils::IsWebviewSigninEnabled())
-    login_display_->ShowSigninUI("");
-  else
+    if (g_browser_process->platform_part()
+            ->browser_policy_connector_chromeos()
+            ->IsEnterpriseManaged()) {
+      ShowError(IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST, email);
+    } else {
+      ShowError(IDS_LOGIN_ERROR_WHITELIST, email);
+    }
     login_display_->ShowSigninUI(email);
+  }
 
   if (auth_status_consumer_) {
     auth_status_consumer_->OnAuthFailure(
@@ -941,17 +941,9 @@ gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
 
 void ExistingUserController::ShowError(int error_id,
                                        const std::string& details) {
-  // TODO(dpolukhin): show detailed error info. |details| string contains
-  // low level error info that is not localized and even is not user friendly.
-  // For now just ignore it because error_text contains all required information
-  // for end users, developers can see details string in Chrome logs.
   VLOG(1) << details;
   HelpAppLauncher::HelpTopic help_topic_id;
-  bool is_offline = !network_state_helper_->IsConnected();
   switch (login_performer_->error().state()) {
-    case GoogleServiceAuthError::CONNECTION_FAILED:
-      help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE;
-      break;
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
       help_topic_id = HelpAppLauncher::HELP_ACCOUNT_DISABLED;
       break;
@@ -959,9 +951,7 @@ void ExistingUserController::ShowError(int error_id,
       help_topic_id = HelpAppLauncher::HELP_HOSTED_ACCOUNT;
       break;
     default:
-      help_topic_id = is_offline ?
-          HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE :
-          HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
+      help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
       break;
   }
 

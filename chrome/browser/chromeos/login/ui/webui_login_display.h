@@ -44,6 +44,7 @@ class WebUILoginDisplay : public LoginDisplay,
   void ShowGaiaPasswordChanged(const std::string& username) override;
   void ShowPasswordChangedDialog(bool show_password_error) override;
   void ShowSigninUI(const std::string& email) override;
+  void ShowWhitelistCheckFailedError() override;
 
   // NativeWindowDelegate implementation:
   gfx::NativeWindow GetNativeWindow() const override;

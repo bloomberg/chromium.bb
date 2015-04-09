@@ -195,6 +195,11 @@ void WebUILoginDisplay::ShowSigninUI(const std::string& email) {
     webui_handler_->ShowSigninUI(email);
 }
 
+void WebUILoginDisplay::ShowWhitelistCheckFailedError() {
+  if (webui_handler_)
+    webui_handler_->ShowWhitelistCheckFailedError();
+}
+
 // WebUILoginDisplay, NativeWindowDelegate implementation: ---------------------
 gfx::NativeWindow WebUILoginDisplay::GetNativeWindow() const {
   return parent_window();

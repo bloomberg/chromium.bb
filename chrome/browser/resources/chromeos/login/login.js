@@ -7,6 +7,7 @@
  */
 
 <include src="login_common.js">
+<include src="gaia_whiteist_error.js">
 
 cr.define('cr.ui.Oobe', function() {
   return {

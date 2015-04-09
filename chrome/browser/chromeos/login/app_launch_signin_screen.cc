@@ -184,10 +184,8 @@ void AppLaunchSigninScreen::OnAuthFailure(const AuthFailure& error) {
   LOG(ERROR) << "Unlock failure: " << error.reason();
   webui_handler_->ClearAndEnablePassword();
   webui_handler_->ShowError(
-     0,
-     l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_AUTHENTICATING_KIOSK),
-     std::string(),
-     HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE);
+      0, l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_AUTHENTICATING_KIOSK),
+      std::string(), HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 }
 
 void AppLaunchSigninScreen::OnAuthSuccess(const UserContext& user_context) {

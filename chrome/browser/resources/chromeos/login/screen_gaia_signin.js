@@ -23,7 +23,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       'doReload',
       'onWebviewError',
       'onFrameError',
-      'updateCancelButtonState'
+      'updateCancelButtonState',
+      'showWhitelistCheckFailedError'
     ],
 
     /**
@@ -750,6 +751,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       $('pod-row').loadLastWallpaper();
       Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
+      this.classList.remove('whitelist-error');
       Oobe.resetSigninUI(true);
     },
 
@@ -772,6 +774,25 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onWebviewError: function(data) {
       chrome.send('webviewLoadAborted', [data.error]);
+    },
+
+    /**
+     * Show/Hide error when user is not in whitelist. When UI is hidden
+     * GAIA is reloaded.
+     * @param {boolean} show Show/hide error UI.
+     * @param {!Object} opt_data Optional additional information.
+     */
+    showWhitelistCheckFailedError: function(show, opt_data) {
+      if (opt_data) {
+        $('gaia-whitelist-error').enterpriseManaged =
+            opt_data.enterpriseManaged;
+      }
+
+      this.classList.toggle('whitelist-error', show);
+      this.loading = !show;
+
+      if (!show)
+        Oobe.showSigninUI();
     },
   };
 });

@@ -26,9 +26,7 @@ class HelpAppLauncher : public base::RefCountedThreadSafe<HelpAppLauncher> {
     HELP_CONNECTIVITY = 188752,
     // Showed at EULA screen as "Learn more" about stats/crash reports.
     HELP_STATS_USAGE = 183078,
-    // Showed whenever there're troubles signing in (offline case).
-    HELP_CANT_ACCESS_ACCOUNT_OFFLINE = 188755,
-    // Showed whenever there're troubles signing in (online case).
+    // Showed whenever there're troubles signing in.
     HELP_CANT_ACCESS_ACCOUNT = 188036,
     // Showed in case when account was disabled.
     HELP_ACCOUNT_DISABLED = 188756,

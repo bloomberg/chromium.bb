@@ -92,6 +92,7 @@ class LoginDisplayWebUIHandler {
   // Show sign-in screen for the given credentials.
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) = 0;
+  virtual void ShowWhitelistCheckFailedError() = 0;
   virtual void LoadUsers(const base::ListValue& users_list,
                          bool show_guest) = 0;
  protected:
@@ -300,6 +301,7 @@ class SigninScreenHandler
   void ShowErrorScreen(LoginDisplay::SigninError error_id) override;
   void ShowSigninScreenForCreds(const std::string& username,
                                 const std::string& password) override;
+  void ShowWhitelistCheckFailedError() override;
   void LoadUsers(const base::ListValue& users_list, bool show_guest) override;
 
   // content::NotificationObserver implementation:

@@ -324,6 +324,11 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_CONSUMER_MANAGEMENT_ENROLLMENT);
   builder->Add("backButton", IDS_ACCNAME_BACK);
   builder->Add("closeButton", IDS_CLOSE);
+  builder->Add("whitelistErrorConsumer", IDS_LOGIN_ERROR_WHITELIST);
+  builder->Add("whitelistErrorEnterprise",
+               IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST);
+  builder->Add("tryAgainButton", IDS_WHITELIST_ERROR_TRY_AGAIN_BUTTON);
+  builder->Add("learnMoreButton", IDS_WHITELIST_ERROR_LEARN_MORE_BUTTON);
   builder->Add("gaiaLoadingNewGaia", IDS_LOGIN_GAIA_LOADING_MESSAGE);
 
   // Strings used by the SAML fatal error dialog.
@@ -836,6 +841,15 @@ void GaiaScreenHandler::MaybePreloadAuthExtension() {
     gaia_silent_load_network_ = network_state_informer_->network_path();
     LoadAuthExtension(true, true, false);
   }
+}
+
+void GaiaScreenHandler::ShowWhitelistCheckFailedError() {
+  base::DictionaryValue params;
+  params.SetBoolean("enterpriseManaged",
+                    g_browser_process->platform_part()
+                        ->browser_policy_connector_chromeos()
+                        ->IsEnterpriseManaged());
+  CallJS("showWhitelistCheckFailedError", true, params);
 }
 
 void GaiaScreenHandler::LoadAuthExtension(bool force,

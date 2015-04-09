@@ -1,0 +1,72 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/core-icons/core-icons.html">
+
+<polymer-element name="gaia-whitelist-error" attributes="errorMsg
+    enterpriseErrorMsg tryAgainBtn learnMoreBtn">
+  <template>
+    <style>
+      #container {
+        padding: 40px;
+      }
+
+      #icon-container {
+        margin-bottom: 14px;
+      }
+
+      core-icon {
+        color: #fbc02d;
+        height: 28px;
+        width: 28px;
+      }
+
+      #text-container {
+        color: grey;
+        line-height: 130%;
+        text-align: center;
+        width: 240px;
+      }
+
+      #controls-container {
+        width: 100%;
+      }
+
+      .learn-more-button {
+        color: rgb(66, 133, 244);
+        text-transform: none;
+      }
+
+      .try-again-button {
+        background-color: rgb(66, 133, 244);
+        color: rgb(255, 255, 255);
+        width: 126px;
+      }
+    </style>
+    <div id="container" vertical layout center fit>
+      <div flex layout center-justified vertical>
+        <div id="icon-container" vertical layout center>
+          <core-icon icon="warning"></core-icon>
+        </div>
+        <div id="text-container">
+          <div id="error-msg" hidden?="{{enterpriseManaged}}">
+            {{errorMsg}}
+          </div>
+          <div id="enterprise-error-msg" hidden?="{{!enterpriseManaged}}">
+            {{enterpriseErrorMsg}}
+          </div>
+        </div>
+      </div>
+      <div id="controls-container" horizontal layout justified
+          center>
+        <paper-button class="learn-more-button"
+            on-tap={{onLearnMoreClicked}}>
+          {{learnMoreBtn}}
+        </paper-button>
+        <paper-button class="try-again-button" raised
+            on-tap="{{tryAgainButtonClicked}}">
+          {{tryAgainBtn}}
+        </paper-button>
+      </div>
+    </div>
+  </template>
+</polymer-element>

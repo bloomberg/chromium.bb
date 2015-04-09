@@ -928,6 +928,11 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
   gaia_screen_handler_->ShowSigninScreenForCreds(username, password);
 }
 
+void SigninScreenHandler::ShowWhitelistCheckFailedError() {
+  DCHECK(gaia_screen_handler_);
+  gaia_screen_handler_->ShowWhitelistCheckFailedError();
+}
+
 void SigninScreenHandler::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {

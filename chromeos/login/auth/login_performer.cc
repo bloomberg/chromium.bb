@@ -143,6 +143,7 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
                                     AuthorizationMode auth_mode) {
   std::string email = gaia::CanonicalizeEmail(user_context.GetUserID());
   bool wildcard_match = false;
+
   if (!IsUserWhitelisted(email, &wildcard_match)) {
     NotifyWhitelistCheckFailure();
     return;

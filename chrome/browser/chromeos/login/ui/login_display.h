@@ -138,6 +138,10 @@ class LoginDisplay {
   // Shows signin UI with specified email.
   virtual void ShowSigninUI(const std::string& email) = 0;
 
+  // Show whitelist check failed error. Happens after user completes online
+  // signin but whitelist check fails.
+  virtual void ShowWhitelistCheckFailedError() = 0;
+
   gfx::Rect background_bounds() const { return background_bounds_; }
   void set_background_bounds(const gfx::Rect& background_bounds) {
     background_bounds_ = background_bounds;

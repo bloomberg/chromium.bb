@@ -14,7 +14,7 @@
     Chromebase
   </message>
   <message name="IDS_CHROMEBIT" desc="The localized name for Chromebit">
-    Chromebit  
+    Chromebit
   </message>
   <!-- Idle logout dialog for retail mode -->
   <message name="IDS_IDLE_LOGOUT_TITLE" desc="Dialog title for the idle logout dialog. Used in retail mode only.">
@@ -1622,6 +1622,12 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON">
     Skip sign-in and browse as Guest
+  </message>
+  <message name="IDS_WHITELIST_ERROR_TRY_AGAIN_BUTTON" desc="The text of the try again button on the whitelist error UI.">
+    Try again
+  </message>
+  <message name="IDS_WHITELIST_ERROR_LEARN_MORE_BUTTON" desc="The text of the learn more link on the whitelist error UI.">
+    Learn more
   </message>
   <message name="IDS_CREATE_ACCOUNT_HTML" desc="Text shown on side of Google sign-in UI.">
     If you don't have a Google Account you can <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>create a Google Account<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> now.

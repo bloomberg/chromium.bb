@@ -85,6 +85,9 @@ class GaiaScreenHandler : public BaseScreenHandler {
   // pre-loads it.
   void MaybePreloadAuthExtension();
 
+  // Show error UI at the end of GAIA flow when user is not whitelisted.
+  void ShowWhitelistCheckFailedError();
+
   FrameState frame_state() const { return frame_state_; }
   net::Error frame_error() const { return frame_error_; }
 
