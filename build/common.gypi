@@ -1022,8 +1022,8 @@
           'optimize_jni_generation%': 0,
         }],
 
-        # TODO(rmcilroy): Remove ios check. http://crbug.com/421063.
-        ['OS!="ios"', {
+        # TODO(rmcilroy): Remove ios/chromecast checks. http://crbug.com/421063.
+        ['OS!="ios" and chromecast==0', {
           'v8_use_external_startup_data%': 1,
         }, {
           'v8_use_external_startup_data%': 0,

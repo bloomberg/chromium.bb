@@ -354,14 +354,11 @@
           'type': 'none',
           'dependencies': [
             '../third_party/icu/icu.gyp:icudata',
-            '../v8/tools/gyp/v8.gyp:v8_external_snapshot',
           ],
           'copies': [{
             'destination': '<(PRODUCT_DIR)/assets',
             'files': [
               '<(PRODUCT_DIR)/icudtl.dat',
-              '<(PRODUCT_DIR)/natives_blob.bin',
-              '<(PRODUCT_DIR)/snapshot_blob.bin',
             ],
           }],
         },
