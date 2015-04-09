@@ -943,7 +943,8 @@ void WrenchMenuModel::Build() {
       // In Windows 8 desktop, add the 'Relaunch Chrome in Windows 8 mode'.
       // In Windows 7 desktop, add the 'Relaunch Chrome in Windows ASH mode'
       AddSeparator(ui::NORMAL_SEPARATOR);
-      if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+      if (base::win::GetVersion() == base::win::VERSION_WIN8 ||
+          base::win::GetVersion() == base::win::VERSION_WIN8_1)
         AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
       else
         AddItemWithStringId(IDC_WIN_CHROMEOS_RESTART, IDS_WIN_CHROMEOS_RESTART);
