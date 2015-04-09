@@ -47,7 +47,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/LiveNodeList.h"
 #include "core/dom/NodeRareData.h"
-#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Range.h"
@@ -795,7 +794,7 @@ bool Node::shouldHaveFocusAppearance() const
 bool Node::isInert() const
 {
     const HTMLDialogElement* dialog = document().activeModalDialog();
-    if (dialog && this != document() && !NodeRenderingTraversal::contains(*dialog, *this))
+    if (dialog && this != document() && canParticipateInComposedTree() && !ComposedTreeTraversal::contains(*dialog, *this))
         return true;
     return document().ownerElement() && document().ownerElement()->isInert();
 }
@@ -1820,7 +1819,7 @@ void Node::showTreeForThisAcrossFrame() const
 
 Element* Node::enclosingLinkEventParentOrSelf()
 {
-    for (Node* node = this; node; node = NodeRenderingTraversal::parent(*node)) {
+    for (Node* node = this; node; node = ComposedTreeTraversal::parent(*node)) {
         // For imagemaps, the enclosing link node is the associated area element not the image itself.
         // So we don't let images be the enclosingLinkNode, even though isLink sometimes returns true
         // for them.

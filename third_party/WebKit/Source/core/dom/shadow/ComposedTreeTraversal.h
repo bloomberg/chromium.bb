@@ -84,6 +84,13 @@ public:
     // false. If |other| is |node|, this function returns false.
     static bool isDescendantOf(const Node& /*node*/, const Node& other);
 
+    static bool contains(const ContainerNode& container, const Node& node)
+    {
+        assertPrecondition(container);
+        assertPrecondition(node);
+        return container == node || isDescendantOf(node, container);
+    }
+
     // Returns a common ancestor of |nodeA| and |nodeB| if exists, otherwise
     // returns |nullptr|.
     static Node* commonAncestor(const Node& nodeA, const Node& nodeB);

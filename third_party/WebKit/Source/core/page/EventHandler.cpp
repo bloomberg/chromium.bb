@@ -1877,7 +1877,7 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
     } else {
         // If the target node is a text node, dispatch on the parent node - rdar://4196646
         if (result && result->isTextNode())
-            result = NodeRenderingTraversal::parent(*result);
+            result = ComposedTreeTraversal::parent(*result);
     }
     m_nodeUnderMouse = result;
 
@@ -1949,10 +1949,10 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
     // Create lists of all exited/entered ancestors.
     WillBeHeapVector<RefPtrWillBeMember<Node>, 32> exitedAncestors;
     WillBeHeapVector<RefPtrWillBeMember<Node>, 32> enteredAncestors;
-    for (Node* node = exitedNode; node; node = NodeRenderingTraversal::parent(*node)) {
+    for (Node* node = exitedNode; node; node = ComposedTreeTraversal::parent(*node)) {
         exitedAncestors.append(node);
     }
-    for (Node* node = enteredNode; node; node = NodeRenderingTraversal::parent(*node)) {
+    for (Node* node = enteredNode; node; node = ComposedTreeTraversal::parent(*node)) {
         enteredAncestors.append(node);
     }
 
@@ -2126,7 +2126,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
     Node* node = result.innerNode();
     // Wheel events should not dispatch to text nodes.
     if (node && node->isTextNode())
-        node = NodeRenderingTraversal::parent(*node);
+        node = ComposedTreeTraversal::parent(*node);
 
     bool isOverWidget;
     if (event.useLatchedEventNode()) {

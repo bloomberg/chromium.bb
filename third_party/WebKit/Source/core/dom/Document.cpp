@@ -101,6 +101,7 @@
 #include "core/dom/XMLDocument.h"
 #include "core/dom/custom/CustomElementMicrotaskRunQueue.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
@@ -3350,12 +3351,12 @@ void Document::hoveredNodeDetached(Node* node)
         return;
 
     m_hoverNode->updateDistribution();
-    if (node != m_hoverNode && (!m_hoverNode->isTextNode() || node != NodeRenderingTraversal::parent(*m_hoverNode)))
+    if (node != m_hoverNode && (!m_hoverNode->isTextNode() || node != ComposedTreeTraversal::parent(*m_hoverNode)))
         return;
 
-    m_hoverNode = NodeRenderingTraversal::parent(*node);
+    m_hoverNode = ComposedTreeTraversal::parent(*node);
     while (m_hoverNode && !m_hoverNode->layoutObject())
-        m_hoverNode = NodeRenderingTraversal::parent(*m_hoverNode);
+        m_hoverNode = ComposedTreeTraversal::parent(*m_hoverNode);
 
     // If the mouse cursor is not visible, do not clear existing
     // hover effects on the ancestors of |node| and do not invoke
@@ -3375,9 +3376,9 @@ void Document::activeChainNodeDetached(Node* node)
     if (node != m_activeHoverElement)
         return;
 
-    Node* activeNode = NodeRenderingTraversal::parent(*node);
+    Node* activeNode = ComposedTreeTraversal::parent(*node);
     while (activeNode && activeNode->isElementNode() && !activeNode->layoutObject())
-        activeNode = NodeRenderingTraversal::parent(*activeNode);
+        activeNode = ComposedTreeTraversal::parent(*activeNode);
 
     m_activeHoverElement = activeNode && activeNode->isElementNode() ? toElement(activeNode) : 0;
 }
@@ -5228,7 +5229,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     if (oldActiveElement && !request.active()) {
         // The oldActiveElement renderer is null, dropped on :active by setting display: none,
         // for instance. We still need to clear the ActiveChain as the mouse is released.
-        for (Node* node = oldActiveElement; node; node = NodeRenderingTraversal::parent(*node)) {
+        for (Node* node = oldActiveElement; node; node = ComposedTreeTraversal::parent(*node)) {
             ASSERT(!node->isTextNode());
             node->setActive(false);
             m_userActionElements.setInActiveChain(node, false);
@@ -5239,7 +5240,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
         if (!oldActiveElement && newActiveElement && !newActiveElement->isDisabledFormControl() && request.active() && !request.touchMove()) {
             // We are setting the :active chain and freezing it. If future moves happen, they
             // will need to reference this chain.
-            for (Node* node = newActiveElement; node; node = NodeRenderingTraversal::parent(*node)) {
+            for (Node* node = newActiveElement; node; node = ComposedTreeTraversal::parent(*node)) {
                 ASSERT(!node->isTextNode());
                 m_userActionElements.setInActiveChain(node, true);
             }

@@ -31,7 +31,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
-#include "core/dom/NodeRenderingTraversal.h"
+#include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/weborigin/Referrer.h"
@@ -89,9 +89,9 @@ void HTMLTablePartElement::collectStyleForPresentationAttribute(const QualifiedN
 
 HTMLTableElement* HTMLTablePartElement::findParentTable() const
 {
-    ContainerNode* parent = NodeRenderingTraversal::parent(*this);
+    ContainerNode* parent = ComposedTreeTraversal::parent(*this);
     while (parent && !isHTMLTableElement(*parent))
-        parent = NodeRenderingTraversal::parent(*parent);
+        parent = ComposedTreeTraversal::parent(*parent);
     return toHTMLTableElement(parent);
 }
 

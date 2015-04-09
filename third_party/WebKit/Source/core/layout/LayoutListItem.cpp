@@ -25,7 +25,7 @@
 #include "core/layout/LayoutListItem.h"
 
 #include "core/HTMLNames.h"
-#include "core/dom/NodeRenderingTraversal.h"
+#include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutView.h"
@@ -98,7 +98,7 @@ static Node* enclosingList(const LayoutListItem* listItem)
         return nullptr;
     Node* firstNode = nullptr;
     // We use parentNode because the enclosing list could be a ShadowRoot that's not Element.
-    for (Node* parent = NodeRenderingTraversal::parent(*listItemNode); parent; parent = NodeRenderingTraversal::parent(*parent)) {
+    for (Node* parent = ComposedTreeTraversal::parent(*listItemNode); parent; parent = ComposedTreeTraversal::parent(*parent)) {
         if (isList(*parent))
             return parent;
         if (!firstNode)
