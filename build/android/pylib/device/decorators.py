@@ -11,6 +11,7 @@ import os
 import sys
 import threading
 
+from pylib import cmd_helper
 from pylib import constants
 from pylib.device import device_errors
 from pylib.utils import reraiser_thread
@@ -56,13 +57,16 @@ def _TimeoutRetryWrapper(f, timeout_func, retries_func, pass_values=False):
         return timeout_retry.Run(impl, timeout, retries)
     except old_errors.WaitForResponseTimedOutError as e:
       raise device_errors.CommandTimeoutError(str(e)), None, (
-             sys.exc_info()[2])
+          sys.exc_info()[2])
     except old_errors.DeviceUnresponsiveError as e:
       raise device_errors.DeviceUnreachableError(str(e)), None, (
-             sys.exc_info()[2])
+          sys.exc_info()[2])
     except reraiser_thread.TimeoutError as e:
       raise device_errors.CommandTimeoutError(str(e)), None, (
-             sys.exc_info()[2])
+          sys.exc_info()[2])
+    except cmd_helper.TimeoutError as e:
+      raise device_errors.CommandTimeoutError(str(e)), None, (
+          sys.exc_info()[2])
   return TimeoutRetryWrapper
 
 
