@@ -279,7 +279,7 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
 
     stopAllLoaders();
     m_frame->detachChildren();
-    m_frame->document()->prepareForDestruction();
+    m_frame->document()->detach();
     clear();
 
     // detachChildren() potentially detaches the frame from the document. The
@@ -975,7 +975,7 @@ void FrameLoader::commitProvisionalLoad()
         // Document, since no child frames should be attached. The assert below
         // enforces this invariant.
         m_frame->detachChildren();
-        m_frame->document()->prepareForDestruction();
+        m_frame->document()->detach();
     }
     ASSERT(m_frame->tree().childCount() == 0);
 

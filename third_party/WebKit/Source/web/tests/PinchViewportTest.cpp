@@ -1547,10 +1547,9 @@ TEST_F(PinchViewportTest, TestMainFrameInitializationSizing)
     navigateTo(m_baseURL + "content-width-1000-min-scale.html");
 
     WebLocalFrameImpl* localFrame = webViewImpl()->mainFrameImpl();
-    // The prepareForDestruction() and prepareForDetach() calls are a hack to
-    // prevent createView() from violating invariants about frame state during
-    // navigation/detach.
-    localFrame->frame()->document()->prepareForDestruction();
+    // The detach() and prepareForDetach() calls are a hack to prevent this test
+    // from violating invariants about frame state during navigation/detach.
+    localFrame->frame()->document()->detach();
     localFrame->createFrameView();
 
     FrameView& frameView = *localFrame->frameView();

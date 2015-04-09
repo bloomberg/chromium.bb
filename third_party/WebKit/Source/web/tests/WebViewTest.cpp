@@ -304,10 +304,9 @@ TEST_F(WebViewTest, SetBaseBackgroundColor)
     EXPECT_EQ(kTransparent, webView->backgroundColor());
 
     LocalFrame* frame = webView->mainFrameImpl()->frame();
-    // The prepareForDestruction() and prepareForDetach() calls are a hack to
-    // prevent createView() from violating invariants about frame state during
-    // navigation/detach.
-    frame->document()->prepareForDestruction();
+    // The detach() and prepareForDetach() calls are a hack to prevent this test
+    // from violating invariants about frame state during navigation/detach.
+    frame->document()->detach();
 
     // Creating a new frame view with the background color having 0 alpha.
     frame->createView(IntSize(1024, 768), Color::transparent, true);

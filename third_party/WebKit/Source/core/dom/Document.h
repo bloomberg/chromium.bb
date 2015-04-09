@@ -495,9 +495,8 @@ public:
 
     ResourceFetcher* fetcher() { return m_fetcher.get(); }
 
-    virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual void detach(const AttachContext& = AttachContext()) override;
-    void prepareForDestruction();
+    void attach(const AttachContext& = AttachContext()) override;
+    void detach(const AttachContext& = AttachContext()) override;
 
     // If you have a Document, use layoutView() instead which is faster.
     void layoutObject() const = delete;

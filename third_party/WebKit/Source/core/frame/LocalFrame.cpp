@@ -259,7 +259,7 @@ void LocalFrame::detach()
     // handlers might start a new subresource load in this frame.
     m_loader.stopAllLoaders();
     m_loader.detach();
-    document()->prepareForDestruction();
+    document()->detach();
     m_loader.clear();
     if (!client())
         return;
