@@ -117,7 +117,7 @@ def WipeDevice(device, options):
                                as_root=True).splitlines()
   try:
     device.RunShellCommand(['wipe', 'data'],
-                           as_root=True, check_return=True, retries=0)
+                           as_root=True, check_return=True)
   except device_errors.CommandFailedError:
     logging.exception('Possible failure while wiping the device. '
                       'Attempting to continue.')
@@ -253,14 +253,14 @@ def _PushAndLaunchAdbReboot(device, target):
 
 def _LaunchHostHeartbeat():
   # Kill if existing host_heartbeat
-  _KillHostHeartbeat()
+  KillHostHeartbeat()
   # Launch a new host_heartbeat
   logging.info('Spawning host heartbeat...')
   subprocess.Popen([os.path.join(constants.DIR_SOURCE_ROOT,
                                  'build/android/host_heartbeat.py')])
 
 
-def _KillHostHeartbeat():
+def KillHostHeartbeat():
   ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE)
   stdout, _ = ps.communicate()
   matches = re.findall('\\n.*host_heartbeat.*', stdout)
