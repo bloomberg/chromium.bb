@@ -175,6 +175,9 @@
       'copresence/rpc/rpc_handler_unittest.cc',
       'copresence/timed_map_unittest.cc',
     ],
+    'cronet_unittest_sources': [
+      'cronet/histogram_manager_unittest.cc',
+    ],
     'enhanced_bookmarks_unittest_sources': [
       'enhanced_bookmarks/enhanced_bookmark_model_unittest.cc',
       'enhanced_bookmarks/image_store_ios_unittest.mm',
@@ -255,7 +258,6 @@
       'metrics/daily_event_unittest.cc',
       'metrics/gpu/gpu_metrics_provider_unittest.cc',
       'metrics/histogram_encoder_unittest.cc',
-      'metrics/histogram_manager_unittest.cc',
       'metrics/machine_id_provider_win_unittest.cc',
       'metrics/metrics_hashes_unittest.cc',
       'metrics/metrics_log_manager_unittest.cc',
@@ -880,6 +882,7 @@
             }],
             ['OS == "android"', {
               'sources': [
+                '<@(cronet_unittest_sources)',
                 'data_reduction_proxy/content/browser/data_reduction_proxy_debug_blocking_page_unittest.cc',
                 'data_reduction_proxy/content/browser/data_reduction_proxy_debug_resource_throttle_unittest.cc',
                 'data_reduction_proxy/content/browser/data_reduction_proxy_debug_ui_manager_unittest.cc',
@@ -901,6 +904,7 @@
                 'web_modal/web_contents_modal_dialog_manager_unittest.cc',
               ],
               'dependencies': [
+                'components.gyp:cronet_static',
                 'components.gyp:data_reduction_proxy_content',
                 '../testing/android/native_test.gyp:native_test_native_code',
               ],

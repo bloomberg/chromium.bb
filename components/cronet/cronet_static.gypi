@@ -39,6 +39,8 @@
     'android/url_request_context_adapter.h',
     'android/wrapped_channel_upload_element_reader.cc',
     'android/wrapped_channel_upload_element_reader.h',
+    'histogram_manager.cc',
+    'histogram_manager.h',
     'url_request_context_config.cc',
     'url_request_context_config.h',
     'url_request_context_config_list.h',

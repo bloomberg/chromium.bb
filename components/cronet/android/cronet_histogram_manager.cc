@@ -9,7 +9,7 @@
 
 #include "base/android/jni_array.h"
 #include "base/metrics/statistics_recorder.h"
-#include "components/metrics/histogram_manager.h"
+#include "components/cronet/histogram_manager.h"
 
 #include "jni/CronetHistogramManager_jni.h"
 
@@ -26,7 +26,7 @@ static void EnsureInitialized(JNIEnv* env, jobject jcaller) {
 
 static jbyteArray GetHistogramDeltas(JNIEnv* env, jobject jcaller) {
   std::vector<uint8> data;
-  if (!metrics::HistogramManager::GetInstance()->GetDeltas(&data))
+  if (!HistogramManager::GetInstance()->GetDeltas(&data))
     return NULL;
   return base::android::ToJavaByteArray(env, &data[0], data.size()).Release();
 }

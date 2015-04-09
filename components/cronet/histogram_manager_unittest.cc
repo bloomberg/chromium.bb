@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/histogram_manager.h"
+#include "components/cronet/histogram_manager.h"
 
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/metrics/statistics_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace metrics {
+namespace cronet {
 
-// TODO(mef): crbug.com/441441. Move components/metrics/histogram_manager.*
-// files into components/android/cronet.
-// TODO(rtenneti): enable flaky HistogramBucketFields unit test.
-TEST(HistogramManager, DISABLED_HistogramBucketFields) {
+using metrics::ChromeUserMetricsExtension;
+using metrics::HistogramEventProto;
+
+TEST(HistogramManager, HistogramBucketFields) {
+  base::StatisticsRecorder::Initialize();
   // Capture histograms at the start of the test to avoid later GetDeltas()
   // calls picking them up.
   std::vector<uint8> data_init;
@@ -55,4 +57,4 @@ TEST(HistogramManager, DISABLED_HistogramBucketFields) {
   EXPECT_EQ(1, histogram_proto2.bucket(0).count());
 }
 
-}  // namespace metrics
+}  // namespace cronet
