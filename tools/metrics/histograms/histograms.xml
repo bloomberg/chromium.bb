@@ -48996,8 +48996,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
   <int value="0" label="No payload; not expired"/>
   <int value="1" label="Payload; not expired"/>
-  <int value="2" label="No payload; expired"/>
-  <int value="3" label="Payload; expired"/>
+  <int value="3" label="No payload; expired"/>
+  <int value="4" label="Payload; expired"/>
 </enum>
 
 <enum name="EnterprisePolicyLoadStatus" type="int">
