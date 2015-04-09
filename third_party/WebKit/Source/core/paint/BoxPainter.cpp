@@ -553,21 +553,23 @@ void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint
     paintInfo.context->fillRect(paintRect, Color::black);
 }
 
-void BoxPainter::paintRootBackgroundColor(LayoutObject& obj, const PaintInfo& paintInfo, const LayoutRect& rect, const Color& bgColor)
+void BoxPainter::paintRootBackgroundColor(LayoutObject& obj, const PaintInfo& paintInfo, const LayoutRect& rootBackgroundRect, const Color& bgColor)
 {
-    GraphicsContext* context = paintInfo.context;
-    if (rect.isEmpty())
+    if (rootBackgroundRect.isEmpty())
         return;
 
     ASSERT(obj.isDocumentElement());
 
-    IntRect backgroundRect(pixelSnappedIntRect(rect));
-    backgroundRect.intersect(paintInfo.rect);
+    IntRect backgroundRect(pixelSnappedIntRect(rootBackgroundRect));
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+        backgroundRect.intersect(paintInfo.rect);
 
     Color baseColor = obj.view()->frameView()->baseBackgroundColor();
     bool shouldClearDocumentBackground = obj.document().settings() && obj.document().settings()->shouldClearDocumentBackground();
     SkXfermode::Mode operation = shouldClearDocumentBackground ?
         SkXfermode::kSrc_Mode : SkXfermode::kSrcOver_Mode;
+
+    GraphicsContext* context = paintInfo.context;
 
     // If we have an alpha go ahead and blend with the base background color.
     if (baseColor.alpha()) {
