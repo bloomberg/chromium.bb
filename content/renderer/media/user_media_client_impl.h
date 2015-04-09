@@ -96,11 +96,19 @@ class CONTENT_EXPORT UserMediaClientImpl
   // |request| have completed.
   virtual void GetUserMediaRequestSucceeded(
        const blink::WebMediaStream& stream,
-       blink::WebUserMediaRequest* request_info);
+       blink::WebUserMediaRequest request_info);
+  void DelayedGetUserMediaRequestSucceeded(
+      const blink::WebMediaStream& stream,
+      blink::WebUserMediaRequest request_info);
   virtual void GetUserMediaRequestFailed(
-      blink::WebUserMediaRequest* request_info,
+      blink::WebUserMediaRequest request_info,
       MediaStreamRequestResult result,
       const blink::WebString& result_name);
+  void DelayedGetUserMediaRequestFailed(
+      blink::WebUserMediaRequest request_info,
+      MediaStreamRequestResult result,
+      const blink::WebString& result_name);
+
   virtual void EnumerateDevicesSucceded(
       blink::WebMediaDevicesRequest* request,
       blink::WebVector<blink::WebMediaDeviceInfo>& devices);

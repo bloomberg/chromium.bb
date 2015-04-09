@@ -499,7 +499,7 @@ void UserMediaClientImpl::OnStreamGenerationFailed(
     return;
   }
 
-  GetUserMediaRequestFailed(&request_info->request, result, "");
+  GetUserMediaRequestFailed(request_info->request, result, "");
   DeleteUserMediaRequestInfo(request_info);
 }
 
@@ -654,19 +654,12 @@ void UserMediaClientImpl::OnCreateNativeTracksCompleted(
            << "{request_id = " << request->request_id << "} "
            << "{result = " << result << "})";
 
-  // Completing the request can lead to that blink call
-  // cancelUserMediaRequest with the blink request and the UserMediaClientImpl
-  // is destroyed. Therefore, we copy (blink objects are smart pointers) the
-  // following objects and delete |request| before completing the blink request.
-  blink::WebMediaStream stream = request->web_stream;
-  blink::WebUserMediaRequest blink_request = request->request;
-  blink::WebString result_name_copy = result_name;
-  DeleteUserMediaRequestInfo(request);
-
   if (result == content::MEDIA_DEVICE_OK)
-    GetUserMediaRequestSucceeded(stream, &blink_request);
+    GetUserMediaRequestSucceeded(request->web_stream, request->request);
   else
-    GetUserMediaRequestFailed(&blink_request, result, result_name_copy);
+    GetUserMediaRequestFailed(request->request, result, result_name);
+
+  DeleteUserMediaRequestInfo(request);
 }
 
 void UserMediaClientImpl::OnDevicesEnumerated(
@@ -724,14 +717,42 @@ void UserMediaClientImpl::OnDeviceOpenFailed(int request_id) {
 
 void UserMediaClientImpl::GetUserMediaRequestSucceeded(
     const blink::WebMediaStream& stream,
-    blink::WebUserMediaRequest* request_info) {
-  DVLOG(1) << "UserMediaClientImpl::GetUserMediaRequestSucceeded";
+    blink::WebUserMediaRequest request_info) {
+  // Completing the getUserMedia request can lead to that the RenderFrame and
+  // the UserMediaClientImpl is destroyed if the JavaScript code request the
+  // frame to be destroyed within the scope of the callback. Therefore,
+  // post a task to complete the request with a clean stack.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&UserMediaClientImpl::DelayedGetUserMediaRequestSucceeded,
+                 weak_factory_.GetWeakPtr(), stream, request_info));
+}
+
+void UserMediaClientImpl::DelayedGetUserMediaRequestSucceeded(
+    const blink::WebMediaStream& stream,
+    blink::WebUserMediaRequest request_info) {
+  DVLOG(1) << "UserMediaClientImpl::DelayedGetUserMediaRequestSucceeded";
   LogUserMediaRequestResult(MEDIA_DEVICE_OK);
-  request_info->requestSucceeded(stream);
+  request_info.requestSucceeded(stream);
 }
 
 void UserMediaClientImpl::GetUserMediaRequestFailed(
-    blink::WebUserMediaRequest* request_info,
+    blink::WebUserMediaRequest request_info,
+    MediaStreamRequestResult result,
+    const blink::WebString& result_name) {
+  // Completing the getUserMedia request can lead to that the RenderFrame and
+  // the UserMediaClientImpl is destroyed if the JavaScript code request the
+  // frame to be destroyed within the scope of the callback. Therefore,
+  // post a task to complete the request with a clean stack.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&UserMediaClientImpl::DelayedGetUserMediaRequestFailed,
+                 weak_factory_.GetWeakPtr(), request_info, result,
+                 result_name));
+}
+
+void UserMediaClientImpl::DelayedGetUserMediaRequestFailed(
+    blink::WebUserMediaRequest request_info,
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   LogUserMediaRequestResult(result);
@@ -741,44 +762,44 @@ void UserMediaClientImpl::GetUserMediaRequestFailed(
       NOTREACHED();
       return;
     case MEDIA_DEVICE_PERMISSION_DENIED:
-      request_info->requestDenied();
+      request_info.requestDenied();
       return;
     case MEDIA_DEVICE_PERMISSION_DISMISSED:
-      request_info->requestFailedUASpecific("PermissionDismissedError");
+      request_info.requestFailedUASpecific("PermissionDismissedError");
       return;
     case MEDIA_DEVICE_INVALID_STATE:
-      request_info->requestFailedUASpecific("InvalidStateError");
+      request_info.requestFailedUASpecific("InvalidStateError");
       return;
     case MEDIA_DEVICE_NO_HARDWARE:
-      request_info->requestFailedUASpecific("DevicesNotFoundError");
+      request_info.requestFailedUASpecific("DevicesNotFoundError");
       return;
     case MEDIA_DEVICE_INVALID_SECURITY_ORIGIN:
-      request_info->requestFailedUASpecific("InvalidSecurityOriginError");
+      request_info.requestFailedUASpecific("InvalidSecurityOriginError");
       return;
     case MEDIA_DEVICE_TAB_CAPTURE_FAILURE:
-      request_info->requestFailedUASpecific("TabCaptureError");
+      request_info.requestFailedUASpecific("TabCaptureError");
       return;
     case MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE:
-      request_info->requestFailedUASpecific("ScreenCaptureError");
+      request_info.requestFailedUASpecific("ScreenCaptureError");
       return;
     case MEDIA_DEVICE_CAPTURE_FAILURE:
-      request_info->requestFailedUASpecific("DeviceCaptureError");
+      request_info.requestFailedUASpecific("DeviceCaptureError");
       return;
     case MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED:
-      request_info->requestFailedConstraint(result_name);
+      request_info.requestFailedConstraint(result_name);
       return;
     case MEDIA_DEVICE_TRACK_START_FAILURE:
-      request_info->requestFailedUASpecific("TrackStartError");
+      request_info.requestFailedUASpecific("TrackStartError");
       return;
     case MEDIA_DEVICE_NOT_SUPPORTED:
-      request_info->requestFailedUASpecific("MediaDeviceNotSupported");
+      request_info.requestFailedUASpecific("MediaDeviceNotSupported");
       return;
     case MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN:
-      request_info->requestFailedUASpecific("MediaDeviceFailedDueToShutdown");
+      request_info.requestFailedUASpecific("MediaDeviceFailedDueToShutdown");
       return;
   }
   NOTREACHED();
-  request_info->requestFailed();
+  request_info.requestFailed();
 }
 
 void UserMediaClientImpl::EnumerateDevicesSucceded(
