@@ -50,7 +50,7 @@ PACKAGE_INFO = {
         'chrome_devtools_remote',
         None),
     'chrome_dev': PackageInfo(
-        'com.google.android.apps.chrome_dev',
+        'com.chrome.dev',
         'com.google.android.apps.chrome.Main',
         '/data/local/chrome-command-line',
         'chrome_devtools_remote',

@@ -56,7 +56,7 @@ const BrowserDescriptor kBrowserDescriptors[] = {
     "Chrome Canary"
   },
   {
-    "com.google.android.apps.chrome_dev",
+    "com.chrome.dev",
     kChromeDefaultSocket,
     "Chrome Dev"
   },
