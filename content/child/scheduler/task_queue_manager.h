@@ -191,7 +191,8 @@ class CONTENT_EXPORT TaskQueueManager {
   scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner_;
   TaskQueueSelector* selector_;
 
-  base::WeakPtr<TaskQueueManager> task_queue_manager_weak_ptr_;
+  base::Closure do_work_from_main_thread_closure_;
+  base::Closure do_work_from_other_thread_closure_;
 
   // The pending_dowork_count_ is only tracked on the main thread since that's
   // where re-entrant problems happen.

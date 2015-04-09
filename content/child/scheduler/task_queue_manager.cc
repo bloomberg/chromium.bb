@@ -469,7 +469,6 @@ TaskQueueManager::TaskQueueManager(
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(disabled_by_default_tracing_category,
                                      "TaskQueueManager", this);
 
-  task_queue_manager_weak_ptr_ = weak_factory_.GetWeakPtr();
   for (size_t i = 0; i < task_queue_count; i++) {
     scoped_refptr<internal::TaskQueue> queue(make_scoped_refptr(
         new internal::TaskQueue(this, disabled_by_default_tracing_category)));
@@ -480,6 +479,11 @@ TaskQueueManager::TaskQueueManager(
   for (const auto& queue : queues_)
     work_queues.push_back(&queue->work_queue());
   selector_->RegisterWorkQueues(work_queues);
+
+  do_work_from_main_thread_closure_ =
+      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), true);
+  do_work_from_other_thread_closure_ =
+      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), false);
 }
 
 TaskQueueManager::~TaskQueueManager() {
@@ -568,11 +572,10 @@ void TaskQueueManager::MaybePostDoWorkOnMainRunner() {
       return;
     }
     pending_dowork_count_++;
+    main_task_runner_->PostTask(FROM_HERE, do_work_from_main_thread_closure_);
+  } else {
+    main_task_runner_->PostTask(FROM_HERE, do_work_from_other_thread_closure_);
   }
-
-  main_task_runner_->PostTask(
-      FROM_HERE, Bind(&TaskQueueManager::DoWork, task_queue_manager_weak_ptr_,
-                      on_main_thread));
 }
 
 void TaskQueueManager::DoWork(bool posted_from_main_thread) {
