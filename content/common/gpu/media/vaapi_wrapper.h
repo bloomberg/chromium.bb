@@ -13,6 +13,7 @@
 #include <set>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -301,6 +302,11 @@ class CONTENT_EXPORT VaapiWrapper {
   VAConfigID va_vpp_config_id_;
   VAContextID va_vpp_context_id_;
   VABufferID va_vpp_buffer_id_;
+
+#if defined(USE_OZONE)
+  // Drm file used to obtain access to the driver interface by VA.
+  base::File drm_file_;
+#endif  // USE_OZONE
 
   // Singleton variable to store supported profile information for encode and
   // decode.

@@ -291,10 +291,11 @@ bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
 #if defined(USE_X11)
   va_display_ = vaGetDisplay(gfx::GetXDisplay());
 #elif defined(USE_OZONE)
-  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
-  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
-
-  va_display_ = vaGetDisplayDRM(factory->GetDrmFd());
+  const char* kDriRenderNode0Path = "/dev/dri/renderD128";
+  drm_file_ = base::File(base::FilePath::FromUTF8Unsafe(kDriRenderNode0Path),
+                         base::File::FLAG_OPEN | base::File::FLAG_READ |
+                         base::File::FLAG_WRITE);
+  va_display_ = vaGetDisplayDRM(drm_file_.GetPlatformFile());
 #endif  // USE_X11
 
   if (!vaDisplayIsValid(va_display_)) {
