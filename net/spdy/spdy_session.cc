@@ -659,7 +659,8 @@ SpdySession::SpdySession(
       session_max_recv_window_size_(session_max_recv_window_size),
       session_recv_window_size_(0),
       session_unacked_recv_window_bytes_(0),
-      stream_initial_send_window_size_(GetInitialWindowSize(default_protocol)),
+      stream_initial_send_window_size_(
+          GetDefaultInitialWindowSize(default_protocol)),
       stream_max_recv_window_size_(stream_max_recv_window_size),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_HTTP2_SESSION)),
       verify_domain_authentication_(verify_domain_authentication),
@@ -725,7 +726,7 @@ void SpdySession::InitializeWithSocket(
       connection_->socket()->GetNegotiatedProtocol();
   if (protocol_negotiated != kProtoUnknown) {
     protocol_ = protocol_negotiated;
-    stream_initial_send_window_size_ = GetInitialWindowSize(protocol_);
+    stream_initial_send_window_size_ = GetDefaultInitialWindowSize(protocol_);
   }
   DCHECK_GE(protocol_, kProtoSPDYMinimumVersion);
   DCHECK_LE(protocol_, kProtoSPDYMaximumVersion);
@@ -736,8 +737,8 @@ void SpdySession::InitializeWithSocket(
 
   if (protocol_ >= kProtoSPDY31) {
     flow_control_state_ = FLOW_CONTROL_STREAM_AND_SESSION;
-    session_send_window_size_ = GetInitialWindowSize(protocol_);
-    session_recv_window_size_ = GetInitialWindowSize(protocol_);
+    session_send_window_size_ = GetDefaultInitialWindowSize(protocol_);
+    session_recv_window_size_ = GetDefaultInitialWindowSize(protocol_);
   } else if (protocol_ >= kProtoSPDY3) {
     flow_control_state_ = FLOW_CONTROL_STREAM;
   } else {
@@ -2772,7 +2773,7 @@ void SpdySession::SendInitialData() {
   settings_map[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
   if (flow_control_state_ >= FLOW_CONTROL_STREAM &&
-      stream_max_recv_window_size_ != GetInitialWindowSize(protocol_)) {
+      stream_max_recv_window_size_ != GetDefaultInitialWindowSize(protocol_)) {
     settings_map[SETTINGS_INITIAL_WINDOW_SIZE] =
         SettingsFlagsAndValue(SETTINGS_FLAG_NONE, stream_max_recv_window_size_);
   }

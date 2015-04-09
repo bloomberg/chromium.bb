@@ -162,7 +162,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
              const GURL& url,
              RequestPriority priority,
              int32 initial_send_window_size,
-             int32 initial_recv_window_size,
+             int32 max_recv_window_size,
              const BoundNetLog& net_log);
 
   ~SpdyStream();
@@ -501,10 +501,24 @@ class NET_EXPORT_PRIVATE SpdyStream {
   const GURL url_;
   const RequestPriority priority_;
 
-  // Flow control variables.
   bool send_stalled_by_flow_control_;
+
+  // Current send window size.
   int32 send_window_size_;
+
+  // Maximum receive window size.  Each time a WINDOW_UPDATE is sent, it
+  // restores the receive window size to this value.
+  int32 max_recv_window_size_;
+
+  // Sum of |session_unacked_recv_window_bytes_| and current receive window
+  // size.
+  // TODO(bnc): Rename or change semantics so that |window_size_| is actual
+  // window size.
   int32 recv_window_size_;
+
+  // When bytes are consumed, SpdyIOBuffer destructor calls back to SpdySession,
+  // and this member keeps count of them until the corresponding WINDOW_UPDATEs
+  // are sent.
   int32 unacked_recv_window_bytes_;
 
   const base::WeakPtr<SpdySession> session_;

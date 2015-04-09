@@ -83,7 +83,7 @@ SpdyStream::SpdyStream(SpdyStreamType type,
                        const GURL& url,
                        RequestPriority priority,
                        int32 initial_send_window_size,
-                       int32 initial_recv_window_size,
+                       int32 max_recv_window_size,
                        const BoundNetLog& net_log)
     : type_(type),
       stream_id_(0),
@@ -91,7 +91,8 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       priority_(priority),
       send_stalled_by_flow_control_(false),
       send_window_size_(initial_send_window_size),
-      recv_window_size_(initial_recv_window_size),
+      max_recv_window_size_(max_recv_window_size),
+      recv_window_size_(max_recv_window_size),
       unacked_recv_window_bytes_(0),
       session_(session),
       delegate_(NULL),
@@ -333,8 +334,7 @@ void SpdyStream::IncreaseRecvWindowSize(int32 delta_window_size) {
                  delta_window_size, recv_window_size_));
 
   unacked_recv_window_bytes_ += delta_window_size;
-  if (unacked_recv_window_bytes_ >
-      session_->stream_max_recv_window_size() / 2) {
+  if (unacked_recv_window_bytes_ > max_recv_window_size_ / 2) {
     session_->SendStreamWindowUpdate(
         stream_id_, static_cast<uint32>(unacked_recv_window_bytes_));
     unacked_recv_window_bytes_ = 0;
@@ -526,8 +526,8 @@ void SpdyStream::OnPaddingConsumed(size_t len) {
   if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
     // Decrease window size because padding bytes are received.
     // Increase window size because padding bytes are consumed (by discarding).
-    // Net result: |session_unacked_recv_window_bytes_| increases by |len|,
-    // |session_recv_window_size_| does not change.
+    // Net result: |unacked_recv_window_bytes_| increases by |len|,
+    // |recv_window_size_| does not change.
     DecreaseRecvWindowSize(static_cast<int32>(len));
     IncreaseRecvWindowSize(static_cast<int32>(len));
   }

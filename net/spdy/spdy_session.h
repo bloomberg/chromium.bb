@@ -461,11 +461,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     return stream_initial_send_window_size_;
   }
 
-  // Returns the current |stream_max_recv_window_size_|.
-  int32 stream_max_recv_window_size() const {
-    return stream_max_recv_window_size_;
-  }
-
   // Returns true if no stream in the session can send data due to
   // session flow control.
   bool IsSendStalled() const {
@@ -509,7 +504,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     return buffered_spdy_framer_->GetDataFrameMaximumPayload();
   }
 
-  static int32 GetInitialWindowSize(NextProto protocol) {
+  // Default value of SETTINGS_INITIAL_WINDOW_SIZE per protocol specification.
+  // A session is always created with this initial window size.
+  static int32 GetDefaultInitialWindowSize(NextProto protocol) {
     return protocol < kProtoSPDY4MinimumVersion ? 65536 : 65535;
   }
 

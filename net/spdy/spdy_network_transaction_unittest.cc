@@ -6124,10 +6124,11 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
   SpdyHttpStream* stream = static_cast<SpdyHttpStream*>(trans->stream_.get());
   ASSERT_TRUE(stream != NULL);
   ASSERT_TRUE(stream->stream() != NULL);
-  EXPECT_EQ(
-      static_cast<int>(SpdySession::GetInitialWindowSize(GetParam().protocol)) +
-          kDeltaWindowSize * kDeltaCount - kMaxSpdyFrameChunkSize * kFrameCount,
-      stream->stream()->send_window_size());
+  EXPECT_EQ(static_cast<int>(
+                SpdySession::GetDefaultInitialWindowSize(GetParam().protocol)) +
+                kDeltaWindowSize * kDeltaCount -
+                kMaxSpdyFrameChunkSize * kFrameCount,
+            stream->stream()->send_window_size());
 
   data.RunFor(1);
 
@@ -6141,7 +6142,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
 // the recv_window_size_ correctly.
 TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   const int32 default_initial_window_size =
-      SpdySession::GetInitialWindowSize(GetParam().protocol);
+      SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
   // Session level maximum window size that is more than twice the default
   // initial window size so that an initial window update is sent.
   const int32 session_max_recv_window_size = 5 * 64 * 1024;
@@ -6348,7 +6349,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
 // WINDOW_UPDATE to be read and I/O process resumes.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   const int32 initial_window_size =
-      SpdySession::GetInitialWindowSize(GetParam().protocol);
+      SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
   // Number of frames we need to send to zero out the window size: data
   // frames plus SYN_STREAM plus the last data frame; also we need another
   // data frame that we will send once the WINDOW_UPDATE is received,
@@ -6459,7 +6460,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
 // unstalling the send window.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   const int32 initial_window_size =
-      SpdySession::GetInitialWindowSize(GetParam().protocol);
+      SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
 
   // Number of frames we need to send to zero out the window size: data
   // frames plus SYN_STREAM plus the last data frame; also we need another
@@ -6577,7 +6578,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
 // negative send window size.
 TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   const int32 initial_window_size =
-      SpdySession::GetInitialWindowSize(GetParam().protocol);
+      SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
   // Number of frames we need to send to zero out the window size: data
   // frames plus SYN_STREAM plus the last data frame; also we need another
   // data frame that we will send once the SETTING is received, therefore +3.

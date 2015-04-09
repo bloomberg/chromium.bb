@@ -188,8 +188,8 @@ TEST_P(SpdyStreamTest, PushedStream) {
 
   // Conjure up a stream.
   SpdyStream stream(SPDY_PUSH_STREAM, spdy_session, GURL(), DEFAULT_PRIORITY,
-                    SpdySession::GetInitialWindowSize(kProtoSPDY31),
-                    SpdySession::GetInitialWindowSize(kProtoSPDY31),
+                    SpdySession::GetDefaultInitialWindowSize(kProtoSPDY31),
+                    SpdySession::GetDefaultInitialWindowSize(kProtoSPDY31),
                     BoundNetLog());
   stream.set_stream_id(2);
   EXPECT_FALSE(stream.HasUrlFromHeaders());

@@ -368,8 +368,10 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
       protocol(protocol),
-      session_max_recv_window_size(SpdySession::GetInitialWindowSize(protocol)),
-      stream_max_recv_window_size(SpdySession::GetInitialWindowSize(protocol)),
+      session_max_recv_window_size(
+          SpdySession::GetDefaultInitialWindowSize(protocol)),
+      stream_max_recv_window_size(
+          SpdySession::GetDefaultInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
       force_spdy_over_ssl(false),
       force_spdy_always(false),
@@ -402,8 +404,10 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol,
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
       protocol(protocol),
-      session_max_recv_window_size(SpdySession::GetInitialWindowSize(protocol)),
-      stream_max_recv_window_size(SpdySession::GetInitialWindowSize(protocol)),
+      session_max_recv_window_size(
+          SpdySession::GetDefaultInitialWindowSize(protocol)),
+      stream_max_recv_window_size(
+          SpdySession::GetDefaultInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
       force_spdy_over_ssl(false),
       force_spdy_always(false),
