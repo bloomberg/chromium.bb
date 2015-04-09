@@ -669,6 +669,36 @@ pre-cq-configs: link-pre-cq
     self.PerformSync(pre_cq_status=None, changes=[change], runs=2)
     self.assertAllStatuses([change], constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
 
+  def testLaunchPerCycleLimit(self):
+    # Create 4x as many changes as we can launch in one cycle.
+    change_count = (
+        sync_stages.PreCQLauncherStage.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE * 4)
+    changes = self._PrepareChangesWithPendingVerifications(
+        [['lumpy-pre-cq']] * change_count)
+    for c in changes:
+      c.approval_timestamp = 0
+
+    def count_launches():
+      action_history = self.fake_db.GetActionsForChanges(changes)
+      return len(
+          [a for a in action_history
+           if a.action == constants.CL_ACTION_TRYBOT_LAUNCHING])
+
+    # After one cycle of the launcher, exactly MAX_LAUNCHES_PER_CYCLE_DERIVATIVE
+    # should have launched.
+    self.PerformSync(pre_cq_status=None, changes=changes, runs=1)
+    self.assertEqual(
+        count_launches(),
+        sync_stages.PreCQLauncherStage.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE)
+
+    # After the next cycle, exactly 3 * MAX_LAUNCHES_PER_CYCLE_DERIVATIVE should
+    # have launched in total.
+    self.PerformSync(pre_cq_status=None, changes=changes, runs=1,
+                     patch_objects=False)
+    self.assertEqual(
+        count_launches(),
+        3 * sync_stages.PreCQLauncherStage.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE)
+
   def testNoLaunchClosedTree(self):
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=False)
 

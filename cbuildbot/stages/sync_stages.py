@@ -1085,9 +1085,15 @@ class PreCQLauncherStage(SyncStage):
   # once.
   MAX_PATCHES_PER_TRYBOT_RUN = 50
 
+  # The maximum derivative of the number of tryjobs we will launch in a given
+  # cycle of ProcessChanges. Used to rate-limit the launcher when reopening the
+  # tree after building up a large backlog.
+  MAX_LAUNCHES_PER_CYCLE_DERIVATIVE = 20
+
   def __init__(self, builder_run, **kwargs):
     super(PreCQLauncherStage, self).__init__(builder_run, **kwargs)
     self.skip_sync = True
+    self.last_cycle_launch_count = 0
 
 
   def _HasTimedOut(self, start, now, timeout_minutes):
@@ -1509,13 +1515,25 @@ class PreCQLauncherStage(SyncStage):
         if k.HasReadyFlag() or status_map[k] != constants.CL_STATUS_FAILED}
 
     is_tree_open = tree_status.IsTreeOpen(throttled_ok=True)
+    launch_count = 0
+    launch_count_limit = (self.last_cycle_launch_count +
+                          self.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE)
     for plan, config in self.GetDisjointTransactionsToTest(
         pool, launchable_progress_map):
       if is_tree_open:
-        self.LaunchTrybot(plan, config)
+        if launch_count < launch_count_limit:
+          self.LaunchTrybot(plan, config)
+          launch_count += 1
+        else:
+          logging.info('Hit maximum launch count of %s this cycle, not '
+                       'launching config %s for plan %s.',
+                       launch_count_limit, config,
+                       cros_patch.GetChangesAsString(plan))
       else:
         logging.info('Tree is closed, not launching config %s for plan %s.',
                      config, cros_patch.GetChangesAsString(plan))
+
+    self.last_cycle_launch_count = launch_count
 
     # Mark passed changes as passed
     self.UpdateChangeStatuses(will_pass, constants.CL_STATUS_PASSED)
