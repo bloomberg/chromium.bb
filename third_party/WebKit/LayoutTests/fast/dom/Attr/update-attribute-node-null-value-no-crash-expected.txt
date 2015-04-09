@@ -1,0 +1,17 @@
+Updating value of an attached Attr node having a null value
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS attr.value is ""
+PASS attr.value = null; attr.value is null
+PASS element.setAttributeNode(attr); is null
+PASS element.getAttribute('nullable'); is null
+PASS attr.value = 'noCrash'; attr.value is "noCrash"
+PASS element.getAttribute('nullable') is "noCrash"
+PASS attr.value = null; attr.value is null
+PASS element.getAttribute('nullable') is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

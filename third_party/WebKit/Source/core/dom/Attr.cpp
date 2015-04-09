@@ -111,7 +111,7 @@ void Attr::setValue(const AtomicString& value)
     // attributes as the JS callback could alter the attributes and leave us in a bad state.
     removeChildren(OmitSubtreeModifiedEvent);
     if (m_element)
-        elementAttribute().setValue(value);
+        updateElementAttribute(value);
     else
         m_standaloneValueOrAttachedLocalName = value;
     createTextChild();
@@ -187,7 +187,7 @@ void Attr::childrenChanged(const ChildrenChange&)
         m_element->willModifyAttribute(qualifiedName(), value(), newValue);
 
     if (m_element)
-        elementAttribute().setValue(newValue);
+        updateElementAttribute(newValue);
     else
         m_standaloneValueOrAttachedLocalName = newValue;
 
@@ -202,11 +202,19 @@ const AtomicString& Attr::value() const
     return m_standaloneValueOrAttachedLocalName;
 }
 
-Attribute& Attr::elementAttribute()
+void Attr::updateElementAttribute(const AtomicString& value)
 {
     ASSERT(m_element);
     ASSERT(m_element->elementData());
-    return *m_element->ensureUniqueElementData().attributes().find(qualifiedName());
+    MutableAttributeCollection attributes = m_element->ensureUniqueElementData().attributes();
+    size_t index = attributes.findIndex(qualifiedName());
+    if (index == kNotFound) {
+        // Element attributes with null values are not stored.
+        if (!value.isNull())
+            attributes.append(qualifiedName(), value);
+        return;
+    }
+    return attributes[index].setValue(value);
 }
 
 void Attr::detachFromElementWithValue(const AtomicString& value)

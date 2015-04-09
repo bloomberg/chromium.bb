@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Updating value of an attached Attr node having a null value");
+
+var element = document.createElement("div");
+var attr = document.createAttribute("nullable");
+shouldBeEmptyString("attr.value");
+shouldBeNull("attr.value = null; attr.value");
+shouldBeNull("element.setAttributeNode(attr);");
+shouldBeNull("element.getAttribute('nullable');");
+shouldBeEqualToString("attr.value = 'noCrash'; attr.value", "noCrash");
+shouldBeEqualToString("element.getAttribute('nullable')", "noCrash");
+shouldBeNull("attr.value = null; attr.value");
+shouldBeNull("element.getAttribute('nullable')");
+</script>
+</body>
+</html>
