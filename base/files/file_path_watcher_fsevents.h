@@ -24,8 +24,34 @@ class FilePathWatcherFSEvents : public FilePathWatcher::PlatformDelegate {
  public:
   FilePathWatcherFSEvents();
 
-  // Called from the FSEvents callback whenever there is a change to the paths.
+  // FilePathWatcher::PlatformDelegate overrides.
+  bool Watch(const FilePath& path,
+             bool recursive,
+             const FilePathWatcher::Callback& callback) override;
+  void Cancel() override;
+
+ private:
+  static void FSEventsCallback(ConstFSEventStreamRef stream,
+                               void* event_watcher,
+                               size_t num_events,
+                               void* event_paths,
+                               const FSEventStreamEventFlags flags[],
+                               const FSEventStreamEventId event_ids[]);
+
+  ~FilePathWatcherFSEvents() override;
+
+  // Called from FSEventsCallback whenever there is a change to the paths.
   void OnFilePathsChanged(const std::vector<FilePath>& paths);
+
+  // Called on the message_loop() thread to dispatch path events. Can't access
+  // target_ and resolved_target_ directly as those are modified on the
+  // libdispatch thread.
+  void DispatchEvents(const std::vector<FilePath>& paths,
+                      const FilePath& target,
+                      const FilePath& resolved_target);
+
+  // Cleans up and stops the event stream.
+  void CancelOnMessageLoopThread() override;
 
   // (Re-)Initialize the event stream to start reporting events from
   // |start_event|.
@@ -35,34 +61,29 @@ class FilePathWatcherFSEvents : public FilePathWatcher::PlatformDelegate {
   // last time it was done.
   bool ResolveTargetPath();
 
-  // FilePathWatcher::PlatformDelegate overrides.
-  bool Watch(const FilePath& path,
-             bool recursive,
-             const FilePathWatcher::Callback& callback) override;
-  void Cancel() override;
-
- private:
-  ~FilePathWatcherFSEvents() override;
+  // Report an error watching the given target.
+  void ReportError(const FilePath& target);
 
   // Destroy the event stream.
   void DestroyEventStream();
 
   // Start watching the FSEventStream.
-  void StartEventStream(FSEventStreamEventId start_event);
-
-  // Cleans up and stops the event stream.
-  void CancelOnMessageLoopThread() override;
+  void StartEventStream(FSEventStreamEventId start_event, const FilePath& path);
 
   // Callback to notify upon changes.
+  // (Only accessed from the message_loop() thread.)
   FilePathWatcher::Callback callback_;
 
   // Target path to watch (passed to callback).
+  // (Only accessed from the libdispatch thread.)
   FilePath target_;
 
   // Target path with all symbolic links resolved.
+  // (Only accessed from the libdispatch thread.)
   FilePath resolved_target_;
 
   // Backend stream we receive event callbacks from (strong reference).
+  // (Only accessed from the libdispatch thread.)
   FSEventStreamRef fsevent_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcherFSEvents);
