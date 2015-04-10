@@ -1781,8 +1781,8 @@ bool RenderWidget::SendAckForMouseMoveFromDebugger() {
       ack.type = handling_event_type_;
       ack.state = INPUT_EVENT_ACK_STATE_CONSUMED;
       Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
+      return true;
     }
-    return true;
   }
   return false;
 }
