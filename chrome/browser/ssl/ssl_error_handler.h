@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -22,8 +23,6 @@ namespace content {
 class RenderViewHost;
 class WebContents;
 }
-
-class SafeBrowsingUIManager;
 
 // This class is responsible for deciding whether to show an SSL warning or a
 // captive portal error page. It makes this decision by delaying the display of
@@ -53,7 +52,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                              const net::SSLInfo& ssl_info,
                              const GURL& request_url,
                              int options_mask,
-                             SafeBrowsingUIManager* safe_browsing_ui_manager,
+                             scoped_ptr<SSLCertReporter> ssl_cert_reporter,
                              const base::Callback<void(bool)>& callback);
 
   static void SetInterstitialDelayTypeForTest(InterstitialDelayType delay);
@@ -68,7 +67,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                   const net::SSLInfo& ssl_info,
                   const GURL& request_url,
                   int options_mask,
-                  SafeBrowsingUIManager* safe_browsing_ui_manager,
+                  scoped_ptr<SSLCertReporter> ssl_cert_reporter,
                   const base::Callback<void(bool)>& callback);
 
   ~SSLErrorHandler() override;
@@ -112,7 +111,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   content::NotificationRegistrar registrar_;
   base::OneShotTimer<SSLErrorHandler> timer_;
 
-  SafeBrowsingUIManager* safe_browsing_ui_manager_;
+  scoped_ptr<SSLCertReporter> ssl_cert_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLErrorHandler);
 };

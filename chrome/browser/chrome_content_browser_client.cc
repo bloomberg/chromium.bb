@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/icu_util.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -62,6 +64,7 @@
 #include "chrome/browser/speech/tts_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_certificate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
+#include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
@@ -518,6 +521,29 @@ void HandleBlockedPopupOnUIThread(const BlockedWindowParams& params) {
   popup_helper->AddBlockedPopup(params);
 }
 
+// An implementation of the SSLCertReporter interface used by
+// SSLErrorHandler. Uses the SafeBrowsing UI manager to send invalid
+// certificate reports.
+class SafeBrowsingSSLCertReporter : public SSLCertReporter {
+ public:
+  explicit SafeBrowsingSSLCertReporter(
+      const scoped_refptr<SafeBrowsingUIManager>& safe_browsing_ui_manager)
+      : safe_browsing_ui_manager_(safe_browsing_ui_manager) {}
+  ~SafeBrowsingSSLCertReporter() override {}
+
+  // SSLCertReporter implementation
+  void ReportInvalidCertificateChain(const std::string& hostname,
+                                     const net::SSLInfo& ssl_info) override {
+    if (safe_browsing_ui_manager_) {
+      safe_browsing_ui_manager_->ReportInvalidCertificateChain(
+          hostname, ssl_info, base::Bind(&base::DoNothing));
+    }
+  }
+
+ private:
+  const scoped_refptr<SafeBrowsingUIManager> safe_browsing_ui_manager_;
+};
+
 #if defined(OS_ANDROID)
 
 void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
@@ -571,7 +597,7 @@ void GetGuestViewDefaultContentSettingRules(
                                   std::string(),
                                   incognito));
 }
-#endif  // defined(ENALBE_EXTENSIONS)
+#endif  // defined(ENABLE_EXTENSIONS)
 
 }  // namespace
 
@@ -1711,11 +1737,12 @@ void ChromeContentBrowserClient::AllowCertificateError(
 
   SafeBrowsingService* safe_browsing_service =
       g_browser_process->safe_browsing_service();
-  SSLErrorHandler::HandleSSLError(
-      tab, cert_error, ssl_info, request_url, options_mask,
-      safe_browsing_service ? safe_browsing_service->ui_manager().get()
-                            : nullptr,
-      callback);
+  scoped_ptr<SafeBrowsingSSLCertReporter> cert_reporter(
+      new SafeBrowsingSSLCertReporter(safe_browsing_service
+                                          ? safe_browsing_service->ui_manager()
+                                          : nullptr));
+  SSLErrorHandler::HandleSSLError(tab, cert_error, ssl_info, request_url,
+                                  options_mask, cert_reporter.Pass(), callback);
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(

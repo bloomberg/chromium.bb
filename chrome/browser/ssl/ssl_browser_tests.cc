@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -195,7 +196,9 @@ enum Proceed { SSL_INTERSTITIAL_PROCEED, SSL_INTERSTITIAL_DO_NOT_PROCEED };
 enum ExpectReport { CERT_REPORT_EXPECTED, CERT_REPORT_NOT_EXPECTED };
 
 // This class is used to test invalid certificate chain reporting when
-// the user opts in to do so on the interstitial.
+// the user opts in to do so on the interstitial. It keeps track of the
+// most recent hostname for which a report would have been sent over the
+// network.
 class MockReporter : public CertificateErrorReporter {
  public:
   explicit MockReporter(net::URLRequestContext* request_context,
@@ -225,6 +228,40 @@ void SetUpMockReporter(SafeBrowsingService* safe_browsing_service,
   safe_browsing_service->ping_manager()->SetCertificateErrorReporterForTesting(
       scoped_ptr<CertificateErrorReporter>(reporter));
 }
+
+// This is a test implementation of the interface that blocking pages
+// use to send certificate reports. It checks that the blocking page
+// calls the report method when a report should be sent.
+class MockSSLCertReporter : public SSLCertReporter {
+ public:
+  MockSSLCertReporter(
+      const scoped_refptr<SafeBrowsingUIManager>& safe_browsing_ui_manager,
+      const base::Closure& report_sent_callback)
+      : safe_browsing_ui_manager_(safe_browsing_ui_manager),
+        reported_(false),
+        expect_report_(false),
+        report_sent_callback_(report_sent_callback) {}
+
+  ~MockSSLCertReporter() override { EXPECT_EQ(expect_report_, reported_); }
+
+  // SSLCertReporter implementation
+  void ReportInvalidCertificateChain(const std::string& hostname,
+                                     const net::SSLInfo& ssl_info) override {
+    reported_ = true;
+    if (expect_report_) {
+      safe_browsing_ui_manager_->ReportInvalidCertificateChain(
+          hostname, ssl_info, report_sent_callback_);
+    }
+  }
+
+  void set_expect_report(bool expect_report) { expect_report_ = expect_report; }
+
+ private:
+  const scoped_refptr<SafeBrowsingUIManager> safe_browsing_ui_manager_;
+  bool reported_;
+  bool expect_report_;
+  base::Closure report_sent_callback_;
+};
 
 }  // namespace CertificateReporting
 
@@ -434,6 +471,9 @@ class SSLUITest : public InProcessBrowserTest {
       CertificateReporting::Proceed proceed,
       CertificateReporting::ExpectReport expect_report,
       Browser* browser) {
+    base::RunLoop run_loop;
+    bool report_expected =
+        expect_report == CertificateReporting::CERT_REPORT_EXPECTED;
     ASSERT_TRUE(https_server_expired_.Start());
 
     // Opt in to sending reports for invalid certificate chains.
@@ -447,13 +487,21 @@ class SSLUITest : public InProcessBrowserTest {
     CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                    AuthState::SHOWING_INTERSTITIAL);
 
-    // Set up a callback so that the test is notified when the report
-    // has been sent on the IO thread (or not sent).
-    base::RunLoop report_run_loop;
-    base::Closure report_callback = report_run_loop.QuitClosure();
+    // Set up a MockSSLCertReporter to keep track of when the blocking
+    // page invokes the cert reporter.
+    SafeBrowsingService* sb_service =
+        g_browser_process->safe_browsing_service();
+    ASSERT_TRUE(sb_service);
+    scoped_ptr<CertificateReporting::MockSSLCertReporter> ssl_cert_reporter(
+        new CertificateReporting::MockSSLCertReporter(
+            sb_service->ui_manager(), report_expected
+                                          ? run_loop.QuitClosure()
+                                          : base::Bind(&base::DoNothing)));
+    ssl_cert_reporter->set_expect_report(report_expected);
+
     SSLBlockingPage* interstitial_page = static_cast<SSLBlockingPage*>(
         tab->GetInterstitialPage()->GetDelegateForTesting());
-    interstitial_page->SetCertificateReportCallbackForTesting(report_callback);
+    interstitial_page->SetSSLCertReporterForTesting(ssl_cert_reporter.Pass());
 
     EXPECT_EQ(std::string(), reporter_->latest_hostname_reported());
 
@@ -467,11 +515,9 @@ class SSLUITest : public InProcessBrowserTest {
       interstitial_page->DontProceed();
     }
 
-    // Wait until the report has been sent on the IO thread.
-    report_run_loop.Run();
-
     if (expect_report == CertificateReporting::CERT_REPORT_EXPECTED) {
       // Check that the mock reporter received a request to send a report.
+      run_loop.Run();
       EXPECT_EQ(https_server_expired_.GetURL("/").host(),
                 reporter_->latest_hostname_reported());
     } else {

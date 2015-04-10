@@ -2640,6 +2640,7 @@
       'browser/ssl/chrome_ssl_host_state_delegate_factory.h',
       'browser/ssl/ssl_blocking_page.cc',
       'browser/ssl/ssl_blocking_page.h',
+      'browser/ssl/ssl_cert_reporter.h',
       'browser/ssl/ssl_client_certificate_selector.h',
       'browser/ssl/ssl_error_classification.cc',
       'browser/ssl/ssl_error_classification.h',

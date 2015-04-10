@@ -28,7 +28,7 @@
 #include "chrome/browser/interstitials/security_interstitial_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_error_classification.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -236,15 +236,14 @@ InterstitialPageDelegate::TypeID SSLBlockingPage::kTypeForTesting =
 
 // Note that we always create a navigation entry with SSL errors.
 // No error happening loading a sub-resource triggers an interstitial so far.
-SSLBlockingPage::SSLBlockingPage(
-    content::WebContents* web_contents,
-    int cert_error,
-    const net::SSLInfo& ssl_info,
-    const GURL& request_url,
-    int options_mask,
-    const base::Time& time_triggered,
-    SafeBrowsingUIManager* safe_browsing_ui_manager,
-    const base::Callback<void(bool)>& callback)
+SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
+                                 int cert_error,
+                                 const net::SSLInfo& ssl_info,
+                                 const GURL& request_url,
+                                 int options_mask,
+                                 const base::Time& time_triggered,
+                                 scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+                                 const base::Callback<void(bool)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       callback_(callback),
       cert_error_(cert_error),
@@ -255,7 +254,7 @@ SSLBlockingPage::SSLBlockingPage(
       expired_but_previously_allowed_(
           (options_mask & EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
       time_triggered_(time_triggered),
-      safe_browsing_ui_manager_(safe_browsing_ui_manager) {
+      ssl_cert_reporter_(ssl_cert_reporter.Pass()) {
   interstitial_reason_ =
       IsErrorDueToBadClock(time_triggered_, cert_error_) ?
       SSL_REASON_BAD_CLOCK : SSL_REASON_SSL;
@@ -498,9 +497,9 @@ void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
   entry->GetSSL().security_bits = ssl_info_.security_bits;
 }
 
-void SSLBlockingPage::SetCertificateReportCallbackForTesting(
-    const base::Closure& callback) {
-  certificate_report_callback_for_testing_ = callback;
+void SSLBlockingPage::SetSSLCertReporterForTesting(
+    scoped_ptr<SSLCertReporter> ssl_cert_reporter) {
+  ssl_cert_reporter_ = ssl_cert_reporter.Pass();
 }
 
 // This handles the commands sent from the interstitial JavaScript.
@@ -649,9 +648,6 @@ std::string SSLBlockingPage::GetSamplingEventName() const {
 }
 
 void SSLBlockingPage::FinishCertCollection() {
-  base::ScopedClosureRunner scoped_callback(
-      certificate_report_callback_for_testing_);
-
   if (!ShouldShowCertificateReporterCheckbox())
     return;
 
@@ -665,10 +661,8 @@ void SSLBlockingPage::FinishCertCollection() {
       SecurityInterstitialMetricsHelper::EXTENDED_REPORTING_IS_ENABLED);
 
   if (ShouldReportCertificateError()) {
-    if (certificate_report_callback_for_testing_.is_null())
-      scoped_callback.Reset(base::Bind(&base::DoNothing));
-    safe_browsing_ui_manager_->ReportInvalidCertificateChain(
-        request_url().host(), ssl_info_, scoped_callback.Release());
+    ssl_cert_reporter_->ReportInvalidCertificateChain(request_url().host(),
+                                                      ssl_info_);
   }
 }
 
