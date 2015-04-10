@@ -35,10 +35,8 @@ class KeySilkCasesPage(page_module.Page):
     """ Perform interactions on page after navigate steps.
     Override this to define custom actions to be run after navigate steps.
     """
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage()
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage()
 
 
 class Page1(KeySilkCasesPage):
@@ -51,10 +49,8 @@ class Page1(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(selector='#scrollable')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(selector='#scrollable')
 
 
 class Page2(KeySilkCasesPage):
@@ -84,10 +80,8 @@ class Page3(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(selector='#container')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(selector='#container')
 
 
 class Page4(KeySilkCasesPage):
@@ -291,13 +285,11 @@ class Page16(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def SwipeToDismiss(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'SwipeAction')
-    action_runner.SwipeElement(
-        left_start_ratio=0.8, top_start_ratio=0.2,
-        direction='left', distance=400, speed_in_pixels_per_second=5000,
-        element_function='document.getElementsByClassName("message")[2]')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('SwipeAction'):
+      action_runner.SwipeElement(
+          left_start_ratio=0.8, top_start_ratio=0.2,
+          direction='left', distance=400, speed_in_pixels_per_second=5000,
+          element_function='document.getElementsByClassName("message")[2]')
 
   def PerformPageInteractions(self, action_runner):
     self.SwipeToDismiss(action_runner)
@@ -314,21 +306,16 @@ class Page17(KeySilkCasesPage):
     self.StressHideyBars(action_runner)
 
   def StressHideyBars(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(
         selector='#messages', direction='down', speed_in_pixels_per_second=200)
-    interaction.End()
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(
-        selector='#messages', direction='up', speed_in_pixels_per_second=200)
-    interaction.End()
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(
-        selector='#messages', direction='down', speed_in_pixels_per_second=200)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(
+          selector='#messages', direction='up', speed_in_pixels_per_second=200)
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(
+          selector='#messages', direction='down',
+          speed_in_pixels_per_second=200)
 
 
 class Page18(KeySilkCasesPage):
@@ -343,11 +330,9 @@ class Page18(KeySilkCasesPage):
       self.ToggleDrawer(action_runner)
 
   def ToggleDrawer(self, action_runner):
-    interaction = action_runner.BeginInteraction(
-        'Action_TapAction')
-    action_runner.TapElement('#menu-button')
-    action_runner.Wait(1)
-    interaction.End()
+    with action_runner.CreateInteraction('Action_TapAction'):
+      action_runner.TapElement('#menu-button')
+      action_runner.Wait(1)
 
 
 class Page19(KeySilkCasesPage):
@@ -358,17 +343,14 @@ class Page19(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def ToggleDrawer(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'TapAction')
-    action_runner.TapElement('#menu-button')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('TapAction'):
+      action_runner.TapElement('#menu-button')
 
-    interaction = action_runner.BeginInteraction('Wait')
-    action_runner.WaitForJavaScriptCondition('''
-        document.getElementById("nav-drawer").active &&
-        document.getElementById("nav-drawer").children[0]
-            .getBoundingClientRect().left == 0''')
-    interaction.End()
+    with action_runner.CreateInteraction('Wait'):
+      action_runner.WaitForJavaScriptCondition('''
+          document.getElementById("nav-drawer").active &&
+          document.getElementById("nav-drawer").children[0]
+              .getBoundingClientRect().left == 0''')
 
   def RunNavigateSteps(self, action_runner):
     super(Page19, self).RunNavigateSteps(action_runner)
@@ -379,15 +361,13 @@ class Page19(KeySilkCasesPage):
     self.SlideDrawer(action_runner)
 
   def SlideDrawer(self, action_runner):
-    interaction = action_runner.BeginInteraction(
-        'Action_SwipeAction')
-    action_runner.SwipeElement(
-        left_start_ratio=0.8, top_start_ratio=0.2,
-        direction='left', distance=200,
-        element_function='document.getElementById("nav-drawer").children[0]')
-    action_runner.WaitForJavaScriptCondition(
-        '!document.getElementById("nav-drawer").active')
-    interaction.End()
+    with action_runner.CreateInteraction('Action_SwipeAction'):
+      action_runner.SwipeElement(
+          left_start_ratio=0.8, top_start_ratio=0.2,
+          direction='left', distance=200,
+          element_function='document.getElementById("nav-drawer").children[0]')
+      action_runner.WaitForJavaScriptCondition(
+          '!document.getElementById("nav-drawer").active')
 
 
 class Page20(KeySilkCasesPage):
@@ -400,11 +380,9 @@ class Page20(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(
-        selector='#container', speed_in_pixels_per_second=5000)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(
+          selector='#container', speed_in_pixels_per_second=5000)
 
 
 class GwsExpansionPage(KeySilkCasesPage):
@@ -416,12 +394,10 @@ class GwsExpansionPage(KeySilkCasesPage):
 
   def ExpandKnowledgeCard(self, action_runner):
     # expand card
-    interaction = action_runner.BeginInteraction(
-        'Action_TapAction')
-    action_runner.TapElement(
-        element_function='document.getElementsByClassName("vk_arc")[0]')
-    action_runner.Wait(2)
-    interaction.End()
+    with action_runner.CreateInteraction('Action_TapAction'):
+      action_runner.TapElement(
+          element_function='document.getElementsByClassName("vk_arc")[0]')
+      action_runner.Wait(2)
 
   def ScrollKnowledgeCardToTop(self, action_runner, card_id):
     # scroll until the knowledge card is at the top
@@ -476,10 +452,8 @@ class Page22(KeySilkCasesPage):
     action_runner.Wait(2)
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(selector='#mainContent')
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(selector='#mainContent')
 
 
 class Page23(KeySilkCasesPage):
@@ -495,16 +469,13 @@ class Page23(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage(
-        distance_expr='window.innerHeight / 2',
-        direction='down',
-        use_touch=True)
-    interaction.End()
-    interaction = action_runner.BeginInteraction('Wait')
-    action_runner.Wait(1)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage(
+          distance_expr='window.innerHeight / 2',
+          direction='down',
+          use_touch=True)
+    with action_runner.CreateInteraction('Wait'):
+      action_runner.Wait(1)
 
 
 class Page24(KeySilkCasesPage):
@@ -525,13 +496,11 @@ class Page24(KeySilkCasesPage):
     action_runner.Wait(1)
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollElement(
-        element_function='document.getElementById(":5")',
-        distance=2500,
-        use_touch=True)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollElement(
+          element_function='document.getElementById(":5")',
+          distance=2500,
+          use_touch=True)
 
 
 class Page25(KeySilkCasesPage):
@@ -548,15 +517,12 @@ class Page25(KeySilkCasesPage):
     action_runner.Wait(1)
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'SwipeAction')
-    action_runner.SwipeElement(
-        direction='left', distance=100,
-        element_function='document.getElementById(":f")')
-    interaction.End()
-    interaction = action_runner.BeginInteraction('Wait')
-    action_runner.Wait(1)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('SwipeAction'):
+      action_runner.SwipeElement(
+          direction='left', distance=100,
+          element_function='document.getElementById(":f")')
+    with action_runner.CreateInteraction('Wait'):
+      action_runner.Wait(1)
 
 
 class Page26(KeySilkCasesPage):
@@ -575,10 +541,8 @@ class Page26(KeySilkCasesPage):
     action_runner.Wait(1)
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction')
-    action_runner.ScrollPage(distance=5000)
-    interaction.End()
+    with action_runner.CreateGestureInteraction('ScrollAction'):
+      action_runner.ScrollPage(distance=5000)
 
 
 class SVGIconRaster(KeySilkCasesPage):
@@ -600,11 +564,9 @@ class SVGIconRaster(KeySilkCasesPage):
     for i in xrange(9):
       button_func = ('document.getElementById("demo").$.'
                      'buttons.children[%d]') % i
-      interaction = action_runner.BeginInteraction(
-            'Action_TapAction')
-      action_runner.TapElement(element_function=button_func)
-      action_runner.Wait(1)
-      interaction.End()
+      with action_runner.CreateInteraction('Action_TapAction'):
+        action_runner.TapElement(element_function=button_func)
+        action_runner.Wait(1)
 
 
 class UpdateHistoryState(KeySilkCasesPage):
@@ -627,9 +589,8 @@ class UpdateHistoryState(KeySilkCasesPage):
         'window.__history_state_loaded == true;')
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginInteraction('animation_interaction')
-    action_runner.Wait(5) # JS runs the animation continuously on the page
-    interaction.End()
+    with action_runner.CreateInteraction('animation_interaction'):
+      action_runner.Wait(5) # JS runs the animation continuously on the page
 
 
 class SilkFinance(KeySilkCasesPage):
@@ -642,9 +603,8 @@ class SilkFinance(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginInteraction('animation_interaction')
-    action_runner.Wait(10) # animation runs automatically
-    interaction.End()
+    with action_runner.CreateInteraction('animation_interaction'):
+      action_runner.Wait(10) # animation runs automatically
 
 
 class PolymerTopeka(KeySilkCasesPage):
@@ -670,46 +630,46 @@ class PolymerTopeka(KeySilkCasesPage):
         var li = document.querySelector('%s paper-input#last /deep/ input');
         li.value = 'E';
         li.fire('input');''' % profile)
-    interaction = action_runner.BeginInteraction('animation_interaction')
-    # Click the check-mark to login:
-    action_runner.ExecuteJavaScript('''
-        window.topeka_page_transitions = 0;
-        [].forEach.call(document.querySelectorAll(
-            'html /deep/ core-animated-pages'), function(p){
-                p.addEventListener(
-                    'core-animated-pages-transition-end', function(e) {
-                        window.topeka_page_transitions++;
-                    });
-            });
-        document.querySelector('%s paper-fab').fire('tap')''' % profile)
-    # Wait for category list to animate in:
-    action_runner.WaitForJavaScriptCondition('''
-        window.topeka_page_transitions === 1''')
-    # Click a category to start a quiz:
-    action_runner.ExecuteJavaScript('''
-        document.querySelector('html /deep/ core-selector.category-list').fire(
-            'tap',1,document.querySelector('html /deep/ \
-                    div.category-item.red-theme'));''')
-    # Wait for the category splash to animate in:
-    action_runner.WaitForJavaScriptCondition('''
-        window.topeka_page_transitions === 2''')
-    # Click to start the quiz:
-    action_runner.ExecuteJavaScript('''
-        document.querySelector('html /deep/ topeka-category-front-page /deep/\
-            paper-fab').fire('tap');''')
-    action_runner.WaitForJavaScriptCondition('''
-        window.topeka_page_transitions === 4''')
-    # Input a mostly correct answer:
-    action_runner.ExecuteJavaScript('''
-        document.querySelector('html /deep/ topeka-quiz-fill-blank /deep/\
-            input').value = 'arkinsaw';
-        document.querySelector('html /deep/ topeka-quiz-fill-blank /deep/\
-            input').fire('input');
-        document.querySelector('html /deep/ topeka-quizzes /deep/ \
-            paper-fab').fire('tap');''')
-    action_runner.WaitForJavaScriptCondition('''
-        window.topeka_page_transitions === 6''')
-    interaction.End()
+    with action_runner.CreateInteraction('animation_interaction'):
+      # Click the check-mark to login:
+      action_runner.ExecuteJavaScript('''
+          window.topeka_page_transitions = 0;
+          [].forEach.call(document.querySelectorAll(
+              'html /deep/ core-animated-pages'), function(p){
+                  p.addEventListener(
+                      'core-animated-pages-transition-end', function(e) {
+                          window.topeka_page_transitions++;
+                      });
+              });
+          document.querySelector('%s paper-fab').fire('tap')''' % profile)
+      # Wait for category list to animate in:
+      action_runner.WaitForJavaScriptCondition('''
+          window.topeka_page_transitions === 1''')
+      # Click a category to start a quiz:
+      action_runner.ExecuteJavaScript('''
+          document.querySelector('\
+              html /deep/ core-selector.category-list').fire(
+              'tap',1,document.querySelector('html /deep/ \
+                      div.category-item.red-theme'));''')
+      # Wait for the category splash to animate in:
+      action_runner.WaitForJavaScriptCondition('''
+          window.topeka_page_transitions === 2''')
+      # Click to start the quiz:
+      action_runner.ExecuteJavaScript('''
+          document.querySelector('html /deep/ topeka-category-front-page /deep/\
+              paper-fab').fire('tap');''')
+      action_runner.WaitForJavaScriptCondition('''
+          window.topeka_page_transitions === 4''')
+      # Input a mostly correct answer:
+      action_runner.ExecuteJavaScript('''
+          document.querySelector('html /deep/ topeka-quiz-fill-blank /deep/\
+              input').value = 'arkinsaw';
+          document.querySelector('html /deep/ topeka-quiz-fill-blank /deep/\
+              input').fire('input');
+          document.querySelector('html /deep/ topeka-quizzes /deep/ \
+              paper-fab').fire('tap');''')
+      action_runner.WaitForJavaScriptCondition('''
+          window.topeka_page_transitions === 6''')
 
 class Masonry(KeySilkCasesPage):
 
@@ -721,10 +681,9 @@ class Masonry(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginInteraction('animation_interaction')
-    action_runner.ExecuteJavaScript('window.brick()')
-    action_runner.WaitForJavaScriptCondition('window.done')
-    interaction.End()
+    with action_runner.CreateInteraction('animation_interaction'):
+      action_runner.ExecuteJavaScript('window.brick()')
+      action_runner.WaitForJavaScriptCondition('window.done')
 
 
 class KeySilkCasesPageSet(page_set_module.PageSet):
