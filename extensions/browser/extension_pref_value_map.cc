@@ -71,7 +71,10 @@ bool ExtensionPrefValueMap::CanExtensionControlPref(
     bool incognito) const {
   ExtensionEntryMap::const_iterator ext = entries_.find(extension_id);
   if (ext == entries_.end()) {
-    NOTREACHED();
+    NOTREACHED() << "Extension " << extension_id
+                 << " is not registered but accesses pref " << pref_key
+                 << " (incognito: " << incognito << ")."
+                 << " http://crbug.com/454513";
     return false;
   }
 
