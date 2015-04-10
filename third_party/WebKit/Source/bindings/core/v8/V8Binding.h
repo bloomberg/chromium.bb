@@ -423,7 +423,7 @@ CORE_EXPORT int32_t toInt32Slow(v8::Isolate*, v8::Handle<v8::Value>, IntegerConv
 inline int32_t toInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Fast case. The value is already a 32-bit integer.
-    if (value->IsInt32())
+    if (LIKELY(value->IsInt32()))
         return value.As<v8::Int32>()->Value();
     return toInt32Slow(isolate, value, configuration, exceptionState);
 }
@@ -435,11 +435,11 @@ CORE_EXPORT uint32_t toUInt32Slow(v8::Isolate*, v8::Handle<v8::Value>, IntegerCo
 inline uint32_t toUInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Fast case. The value is already a 32-bit unsigned integer.
-    if (value->IsUint32())
+    if (LIKELY(value->IsUint32()))
         return value.As<v8::Uint32>()->Value();
 
     // Fast case. The value is a 32-bit signed integer with NormalConversion configuration.
-    if (value->IsInt32() && configuration == NormalConversion)
+    if (LIKELY(value->IsInt32() && configuration == NormalConversion))
         return value.As<v8::Int32>()->Value();
 
     return toUInt32Slow(isolate, value, configuration, exceptionState);
@@ -455,7 +455,7 @@ inline int64_t toInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, Intege
     ASSERT(configuration != Clamp);
 
     // Fast case. The value is a 32-bit integer.
-    if (value->IsInt32())
+    if (LIKELY(value->IsInt32()))
         return value.As<v8::Int32>()->Value();
 
     return toInt64Slow(isolate, value, configuration, exceptionState);
@@ -468,10 +468,10 @@ CORE_EXPORT uint64_t toUInt64Slow(v8::Isolate*, v8::Handle<v8::Value>, IntegerCo
 inline uint64_t toUInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Fast case. The value is a 32-bit unsigned integer.
-    if (value->IsUint32())
+    if (LIKELY(value->IsUint32()))
         return value.As<v8::Uint32>()->Value();
 
-    if (value->IsInt32() && configuration == NormalConversion)
+    if (LIKELY(value->IsInt32() && configuration == NormalConversion))
         return value.As<v8::Int32>()->Value();
 
     return toUInt64Slow(isolate, value, configuration, exceptionState);
@@ -481,7 +481,7 @@ inline uint64_t toUInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, Inte
 CORE_EXPORT double toDoubleSlow(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
 inline double toDouble(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    if (value->IsNumber())
+    if (LIKELY(value->IsNumber()))
         return value.As<v8::Number>()->Value();
     return toDoubleSlow(isolate, value, exceptionState);
 }
