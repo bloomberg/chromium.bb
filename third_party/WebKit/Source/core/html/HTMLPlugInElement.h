@@ -24,6 +24,7 @@
 #define HTMLPlugInElement_h
 
 #include "bindings/core/v8/SharedPersistent.h"
+#include "core/CoreExport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include <v8.h>
 
@@ -42,7 +43,7 @@ enum PreferPlugInsForImagesOption {
     ShouldNotPreferPlugInsForImages
 };
 
-class HTMLPlugInElement : public HTMLFrameOwnerElement {
+class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
 public:
     virtual ~HTMLPlugInElement();
     DECLARE_VIRTUAL_TRACE();

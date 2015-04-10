@@ -24,6 +24,7 @@
 #ifndef HTMLLinkElement_h
 #define HTMLLinkElement_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/DOMSettableTokenList.h"
 #include "core/dom/IconURL.h"
@@ -121,7 +122,7 @@ private:
 };
 
 
-class HTMLLinkElement final : public HTMLElement, public LinkLoaderClient {
+class CORE_EXPORT HTMLLinkElement final : public HTMLElement, public LinkLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLLinkElement> create(Document&, bool createdByParser);

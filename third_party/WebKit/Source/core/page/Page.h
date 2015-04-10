@@ -184,7 +184,7 @@ public:
 
     double timerAlignmentInterval() const;
 
-    class MultisamplingChangedObserver : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT MultisamplingChangedObserver : public WillBeGarbageCollectedMixin {
     public:
         virtual void multisamplingChanged(bool) = 0;
     };

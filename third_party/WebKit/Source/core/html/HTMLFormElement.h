@@ -24,6 +24,7 @@
 #ifndef HTMLFormElement_h
 #define HTMLFormElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/forms/RadioButtonGroupScope.h"
@@ -41,7 +42,7 @@ class HTMLFormControlsCollection;
 class HTMLImageElement;
 class RadioNodeListOrElement;
 
-class HTMLFormElement final : public HTMLElement {
+class CORE_EXPORT HTMLFormElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLFormElement> create(Document&);

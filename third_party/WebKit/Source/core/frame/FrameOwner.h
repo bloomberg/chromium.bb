@@ -5,6 +5,7 @@
 #ifndef FrameOwner_h
 #define FrameOwner_h
 
+#include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
 #include "platform/heap/Handle.h"
 
@@ -13,7 +14,7 @@ namespace blink {
 // Oilpan: all FrameOwner instances are GCed objects. FrameOwner additionally
 // derives from GarbageCollectedMixin so that Member<FrameOwner> references can
 // be kept (e.g., Frame::m_owner.)
-class FrameOwner : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT FrameOwner : public WillBeGarbageCollectedMixin {
 public:
     virtual ~FrameOwner() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }

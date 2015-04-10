@@ -24,6 +24,7 @@
 #ifndef HTMLBodyElement_h
 #define HTMLBodyElement_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
 
@@ -31,7 +32,7 @@ namespace blink {
 
 class Document;
 
-class HTMLBodyElement final : public HTMLElement {
+class CORE_EXPORT HTMLBodyElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLBodyElement);

@@ -31,7 +31,7 @@ namespace blink {
 
 class HTMLBodyElement;
 
-class HTMLDocument : public Document, public ResourceClient {
+class CORE_EXPORT HTMLDocument : public Document, public ResourceClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLDocument> create(const DocumentInit& initializer = DocumentInit())

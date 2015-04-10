@@ -33,6 +33,7 @@
 #ifndef InputTypeView_h
 #define InputTypeView_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFocusType.h"
 #include "wtf/FastAllocBase.h"
@@ -69,7 +70,7 @@ public:
 // An InputTypeView object represents the UI-specific part of an
 // HTMLInputElement. Do not expose instances of InputTypeView and classes
 // derived from it to classes other than HTMLInputElement.
-class InputTypeView : public RefCountedWillBeGarbageCollectedFinalized<InputTypeView> {
+class CORE_EXPORT InputTypeView : public RefCountedWillBeGarbageCollectedFinalized<InputTypeView> {
     WTF_MAKE_NONCOPYABLE(InputTypeView);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InputTypeView);
 

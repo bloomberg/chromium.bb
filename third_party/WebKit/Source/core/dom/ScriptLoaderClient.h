@@ -21,11 +21,12 @@
 #ifndef ScriptLoaderClient_h
 #define ScriptLoaderClient_h
 
+#include "core/CoreExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class ScriptLoaderClient {
+class CORE_EXPORT ScriptLoaderClient {
 public:
     virtual ~ScriptLoaderClient() { }
 

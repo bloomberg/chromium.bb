@@ -31,6 +31,7 @@
 #ifndef HTMLParserThread_h
 #define HTMLParserThread_h
 
+#include "core/CoreExport.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
@@ -38,7 +39,7 @@
 
 namespace blink {
 
-class HTMLParserThread {
+class CORE_EXPORT HTMLParserThread {
 public:
     static void init();
     static void shutdown();

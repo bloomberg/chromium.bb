@@ -24,11 +24,12 @@
 #ifndef HTMLBRElement_h
 #define HTMLBRElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {
 
-class HTMLBRElement final : public HTMLElement {
+class CORE_EXPORT HTMLBRElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLBRElement);

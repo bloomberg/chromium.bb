@@ -31,12 +31,13 @@
 #ifndef BaseClickableWithKeyInputType_h
 #define BaseClickableWithKeyInputType_h
 
+#include "core/CoreExport.h"
 #include "core/html/forms/InputType.h"
 
 namespace blink {
 
 // Base of input types that dispatches a simulated click on space/return key.
-class BaseClickableWithKeyInputType : public InputType {
+class CORE_EXPORT BaseClickableWithKeyInputType : public InputType {
 public:
     static void handleKeydownEvent(HTMLInputElement&, KeyboardEvent*);
     static void handleKeypressEvent(HTMLInputElement&, KeyboardEvent*);

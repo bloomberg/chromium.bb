@@ -24,14 +24,16 @@
 #ifndef HTMLOptGroupElement_h
 #define HTMLOptGroupElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLElement.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
 class HTMLSelectElement;
 class HTMLDivElement;
 
-class HTMLOptGroupElement final : public HTMLElement {
+class CORE_EXPORT HTMLOptGroupElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLOptGroupElement> create(Document&);

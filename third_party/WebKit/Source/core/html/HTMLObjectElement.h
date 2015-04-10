@@ -23,6 +23,7 @@
 #ifndef HTMLObjectElement_h
 #define HTMLObjectElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/FormAssociatedElement.h"
 #include "core/html/HTMLPlugInElement.h"
 
@@ -30,7 +31,7 @@ namespace blink {
 
 class HTMLFormElement;
 
-class HTMLObjectElement final : public HTMLPlugInElement, public FormAssociatedElement {
+class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement, public FormAssociatedElement {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
 public:

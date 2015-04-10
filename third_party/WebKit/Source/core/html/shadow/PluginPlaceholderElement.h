@@ -5,12 +5,13 @@
 #ifndef PluginPlaceholderElement_h
 #define PluginPlaceholderElement_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLDivElement.h"
 
 namespace blink {
 
-class PluginPlaceholderElement final : public HTMLDivElement {
+class CORE_EXPORT PluginPlaceholderElement final : public HTMLDivElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PluginPlaceholderElement> create(Document&);

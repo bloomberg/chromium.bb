@@ -30,6 +30,7 @@
 #ifndef ColorChooser_h
 #define ColorChooser_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -37,7 +38,7 @@ namespace blink {
 class AXObject;
 class Color;
 
-class ColorChooser : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT ColorChooser : public WillBeGarbageCollectedMixin {
 public:
     ColorChooser();
     virtual ~ColorChooser();

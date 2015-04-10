@@ -31,9 +31,11 @@
 #ifndef LinkLoaderClient_h
 #define LinkLoaderClient_h
 
+#include "core/CoreExport.h"
+
 namespace blink {
 
-class LinkLoaderClient {
+class CORE_EXPORT LinkLoaderClient {
 public:
     virtual ~LinkLoaderClient() { }
 

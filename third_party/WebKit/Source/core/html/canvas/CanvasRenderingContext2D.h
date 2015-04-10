@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/UnionTypesCore.h"
+#include "core/CoreExport.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasPathMethods.h"
@@ -62,7 +63,7 @@ typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap Canva
 
 typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet>> MutableStylePropertyMap;
 
-class CanvasRenderingContext2D final : public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
+class CORE_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document)

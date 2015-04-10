@@ -33,6 +33,7 @@
 #ifndef InputType_h
 #define InputType_h
 
+#include "core/CoreExport.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/forms/ColorChooserClient.h"
@@ -51,7 +52,7 @@ class FormDataList;
 // Do not expose instances of InputType and classes derived from it to classes
 // other than HTMLInputElement.
 // FIXME: InputType should not inherit InputTypeView. It's conceptually wrong.
-class InputType : public InputTypeView {
+class CORE_EXPORT InputType : public InputTypeView {
     WTF_MAKE_NONCOPYABLE(InputType);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InputType);
 

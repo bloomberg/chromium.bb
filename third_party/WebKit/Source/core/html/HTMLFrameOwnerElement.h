@@ -21,6 +21,7 @@
 #ifndef HTMLFrameOwnerElement_h
 #define HTMLFrameOwnerElement_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameOwner.h"
 #include "core/html/HTMLElement.h"
@@ -36,7 +37,7 @@ class Frame;
 class LayoutPart;
 class Widget;
 
-class HTMLFrameOwnerElement : public HTMLElement, public FrameOwner {
+class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement, public FrameOwner {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLFrameOwnerElement);
 public:
     virtual ~HTMLFrameOwnerElement();

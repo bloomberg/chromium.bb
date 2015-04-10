@@ -24,14 +24,14 @@
 #ifndef HTMLScriptElement_h
 #define HTMLScriptElement_h
 
+#include "core/CoreExport.h"
+#include "core/dom/ScriptLoader.h"
 #include "core/dom/ScriptLoaderClient.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {
 
-class ScriptLoader;
-
-class HTMLScriptElement final : public HTMLElement, public ScriptLoaderClient {
+class CORE_EXPORT HTMLScriptElement final : public HTMLElement, public ScriptLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLScriptElement> create(Document&, bool wasInsertedByParser, bool alreadyStarted = false);

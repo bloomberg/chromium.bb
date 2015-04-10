@@ -32,12 +32,13 @@
 #ifndef LinkRelAttribute_h
 #define LinkRelAttribute_h
 
+#include "core/CoreExport.h"
 #include "core/dom/IconURL.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class LinkRelAttribute {
+class CORE_EXPORT LinkRelAttribute {
 public:
     explicit LinkRelAttribute(const String& = "");
 

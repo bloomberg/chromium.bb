@@ -30,6 +30,7 @@
 #ifndef VTTScanner_h
 #define VTTScanner_h
 
+#include "core/CoreExport.h"
 #include "platform/ParsingUtilities.h"
 #include "wtf/text/WTFString.h"
 
@@ -46,7 +47,7 @@ namespace blink {
 //
 // The 'scan' operation performs a 'match', and if the match is successful it
 // advance the input pointer past the matched sequence.
-class VTTScanner {
+class CORE_EXPORT VTTScanner {
     WTF_MAKE_NONCOPYABLE(VTTScanner);
 public:
     explicit VTTScanner(const String& line);

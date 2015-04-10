@@ -31,6 +31,7 @@
 #ifndef BufferedLineReader_h
 #define BufferedLineReader_h
 
+#include "core/CoreExport.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -42,7 +43,7 @@ namespace blink {
 // lines. CR, LR or CRLF are considered linebreaks. Normalizes NULs (U+0000)
 // to 'REPLACEMENT CHARACTER' (U+FFFD) and does not return the linebreaks as
 // part of the result.
-class BufferedLineReader {
+class CORE_EXPORT BufferedLineReader {
     WTF_MAKE_NONCOPYABLE(BufferedLineReader);
 public:
     BufferedLineReader()

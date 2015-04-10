@@ -31,6 +31,7 @@
 #ifndef HTMLDimension_h
 #define HTMLDimension_h
 
+#include "core/CoreExport.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
@@ -75,7 +76,7 @@ private:
     double m_value;
 };
 
-Vector<HTMLDimension> parseListOfDimensions(const String&);
+CORE_EXPORT Vector<HTMLDimension> parseListOfDimensions(const String&);
 
 } // namespace blink
 

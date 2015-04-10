@@ -23,6 +23,7 @@
 #ifndef HTMLMetaElement_h
 #define HTMLMetaElement_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/html/HTMLElement.h"
 
@@ -36,7 +37,7 @@ enum ViewportErrorCode {
     TargetDensityDpiUnsupported
 };
 
-class HTMLMetaElement final : public HTMLElement {
+class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLMetaElement);

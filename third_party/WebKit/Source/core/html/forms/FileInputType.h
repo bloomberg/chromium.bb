@@ -32,6 +32,7 @@
 #ifndef FileInputType_h
 #define FileInputType_h
 
+#include "core/CoreExport.h"
 #include "core/html/forms/BaseClickableWithKeyInputType.h"
 #include "platform/FileChooser.h"
 #include "platform/heap/Handle.h"
@@ -42,7 +43,7 @@ namespace blink {
 class DragData;
 class FileList;
 
-class FileInputType final : public BaseClickableWithKeyInputType, private FileChooserClient {
+class CORE_EXPORT FileInputType final : public BaseClickableWithKeyInputType, private FileChooserClient {
 public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
     DECLARE_VIRTUAL_TRACE();

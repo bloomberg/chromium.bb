@@ -30,6 +30,7 @@
 #define ImageData_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
@@ -40,7 +41,7 @@ namespace blink {
 
 class ExceptionState;
 
-class ImageData final : public RefCountedWillBeGarbageCollectedFinalized<ImageData>, public ScriptWrappable {
+class CORE_EXPORT ImageData final : public RefCountedWillBeGarbageCollectedFinalized<ImageData>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ImageData> create(const IntSize&);
