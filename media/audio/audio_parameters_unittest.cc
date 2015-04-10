@@ -203,4 +203,25 @@ TEST(AudioParameters, Compare) {
   }
 }
 
+TEST(AudioParameters, Constructor_ValidChannelCounts) {
+  int expected_channels = 8;
+  ChannelLayout expected_layout = CHANNEL_LAYOUT_5_1;
+
+  AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                         expected_layout, expected_channels, 44100, 16, 880,
+                         AudioParameters::NO_EFFECTS);
+
+  EXPECT_EQ(expected_channels, params.channels());
+  EXPECT_EQ(expected_layout, params.channel_layout());
+  EXPECT_FALSE(params.IsValid());
+
+  expected_layout = CHANNEL_LAYOUT_DISCRETE;
+  params.Reset(AudioParameters::AUDIO_PCM_LOW_LATENCY, expected_layout,
+               expected_channels, 44100, 16, 880);
+
+  EXPECT_EQ(expected_channels, params.channels());
+  EXPECT_EQ(expected_layout, params.channel_layout());
+  EXPECT_TRUE(params.IsValid());
+}
+
 }  // namespace media
