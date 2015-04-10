@@ -395,6 +395,10 @@ void LayoutSVGText::layout()
     if (m_needsReordering)
         m_needsReordering = false;
 
+    // If we don't have any line boxes, then make sure the frame rect is still cleared.
+    if (!firstLineBox())
+        setFrameRect(LayoutRect());
+
     if (!updateCachedBoundariesInParents)
         updateCachedBoundariesInParents = oldBoundaries != objectBoundingBox();
 
