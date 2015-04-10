@@ -33,6 +33,8 @@ TEST(JpegParserTest, Parsing) {
   // SOF fields
   EXPECT_EQ(1280, result.frame_header.visible_width);
   EXPECT_EQ(720, result.frame_header.visible_height);
+  EXPECT_EQ(1280, result.frame_header.coded_width);
+  EXPECT_EQ(720, result.frame_header.coded_height);
   EXPECT_EQ(3, result.frame_header.num_components);
   EXPECT_EQ(1, result.frame_header.components[0].id);
   EXPECT_EQ(2, result.frame_header.components[0].horizontal_sampling_factor);
@@ -74,6 +76,31 @@ TEST(JpegParserTest, Parsing) {
   EXPECT_EQ(1, result.scan.components[2].dc_selector);
   EXPECT_EQ(1, result.scan.components[2].ac_selector);
   EXPECT_EQ(121150u, result.data_size);
+}
+
+TEST(JpegParserTest, CodedSizeNotEqualVisibleSize) {
+  base::FilePath data_dir;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_dir));
+
+  base::FilePath file_path = data_dir.AppendASCII("media")
+                                 .AppendASCII("test")
+                                 .AppendASCII("data")
+                                 .AppendASCII("blank-1x1.jpg");
+
+  base::MemoryMappedFile stream;
+  ASSERT_TRUE(stream.Initialize(file_path))
+      << "Couldn't open stream file: " << file_path.MaybeAsASCII();
+
+  JpegParseResult result;
+  ASSERT_TRUE(ParseJpegPicture(stream.data(), stream.length(), &result));
+
+  EXPECT_EQ(1, result.frame_header.visible_width);
+  EXPECT_EQ(1, result.frame_header.visible_height);
+  // The sampling factor of the given image is 2:2, so coded size is 16x16
+  EXPECT_EQ(16, result.frame_header.coded_width);
+  EXPECT_EQ(16, result.frame_header.coded_height);
+  EXPECT_EQ(2, result.frame_header.components[0].horizontal_sampling_factor);
+  EXPECT_EQ(2, result.frame_header.components[0].vertical_sampling_factor);
 }
 
 TEST(JpegParserTest, ParsingFail) {

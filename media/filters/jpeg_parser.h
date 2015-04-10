@@ -40,6 +40,8 @@ struct JpegComponent {
 struct JpegFrameHeader {
   uint16_t visible_width;
   uint16_t visible_height;
+  uint16_t coded_width;
+  uint16_t coded_height;
   uint8_t num_components;
   JpegComponent components[kJpegMaxComponents];
 };

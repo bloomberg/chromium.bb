@@ -59,8 +59,8 @@ class VaapiJpegDecoderTest : public ::testing::Test {
 bool VaapiJpegDecoderTest::VerifyDecode(
     const media::JpegParseResult& parse_result,
     const std::string& expected_md5sum) {
-  gfx::Size size(parse_result.frame_header.visible_width,
-                 parse_result.frame_header.visible_height);
+  gfx::Size size(parse_result.frame_header.coded_width,
+                 parse_result.frame_header.coded_height);
 
   std::vector<VASurfaceID> va_surfaces;
   if (!wrapper_->CreateSurfaces(size, 1, &va_surfaces))
@@ -116,8 +116,8 @@ TEST_F(VaapiJpegDecoderTest, DecodeFail) {
   parse_result.frame_header.num_components = 1;
   parse_result.scan.num_components = 1;
 
-  gfx::Size size(parse_result.frame_header.visible_width,
-                 parse_result.frame_header.visible_height);
+  gfx::Size size(parse_result.frame_header.coded_width,
+                 parse_result.frame_header.coded_height);
 
   std::vector<VASurfaceID> va_surfaces;
   ASSERT_TRUE(wrapper_->CreateSurfaces(size, 1, &va_surfaces));

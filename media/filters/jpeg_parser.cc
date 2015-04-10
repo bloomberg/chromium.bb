@@ -49,6 +49,14 @@ static bool InRange(int value, int a, int b) {
   return a <= value && value <= b;
 }
 
+// Round up |value| to multiple of |mul|. |value| must be non-negative.
+// |mul| must be positive.
+static int RoundUp(int value, int mul) {
+  DCHECK_GE(value, 0);
+  DCHECK_GE(mul, 1);
+  return (value + mul - 1) / mul * mul;
+}
+
 // |frame_header| is already initialized to 0 in ParseJpegPicture.
 static bool ParseSOF(const char* buffer,
                      size_t length,
@@ -69,13 +77,16 @@ static bool ParseSOF(const char* buffer,
                 << static_cast<int>(precision) << " bit for baseline";
     return false;
   }
-  if (frame_header->num_components >= arraysize(frame_header->components)) {
+  if (!InRange(frame_header->num_components, 1,
+               arraysize(frame_header->components))) {
     DLOG(ERROR) << "num_components="
                 << static_cast<int>(frame_header->num_components)
                 << " is not supported";
     return false;
   }
 
+  int max_h_factor = 0;
+  int max_v_factor = 0;
   for (size_t i = 0; i < frame_header->num_components; i++) {
     JpegComponent& component = frame_header->components[i];
     READ_U8_OR_RETURN_FALSE(&component.id);
@@ -89,6 +100,10 @@ static bool ParseSOF(const char* buffer,
     READ_U8_OR_RETURN_FALSE(&hv);
     component.horizontal_sampling_factor = hv / 16;
     component.vertical_sampling_factor = hv % 16;
+    if (component.horizontal_sampling_factor > max_h_factor)
+      max_h_factor = component.horizontal_sampling_factor;
+    if (component.vertical_sampling_factor > max_v_factor)
+      max_v_factor = component.vertical_sampling_factor;
     if (!InRange(component.horizontal_sampling_factor, 1, 4)) {
       DVLOG(1) << "Invalid horizontal sampling factor "
                << static_cast<int>(component.horizontal_sampling_factor);
@@ -101,6 +116,13 @@ static bool ParseSOF(const char* buffer,
     }
     READ_U8_OR_RETURN_FALSE(&component.quantization_table_selector);
   }
+
+  // The size of data unit is 8*8 and the coded size should be extended
+  // to complete minimum coded unit, MCU. See Spec A.2.
+  frame_header->coded_width =
+      RoundUp(frame_header->visible_width, max_h_factor * 8);
+  frame_header->coded_height =
+      RoundUp(frame_header->visible_height, max_v_factor * 8);
 
   return true;
 }

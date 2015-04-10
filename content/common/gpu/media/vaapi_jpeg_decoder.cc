@@ -101,11 +101,11 @@ static bool IsVaapiSupportedJpeg(const media::JpegParseResult& jpeg) {
   // Size 64k*64k is the maximum in the JPEG standard. VAAPI doesn't support
   // resolutions larger than 16k*16k.
   const int kMaxDimension = 16384;
-  if (jpeg.frame_header.visible_width > kMaxDimension ||
-      jpeg.frame_header.visible_height > kMaxDimension) {
+  if (jpeg.frame_header.coded_width > kMaxDimension ||
+      jpeg.frame_header.coded_height > kMaxDimension) {
     DLOG(ERROR) << "VAAPI doesn't support size("
-                << jpeg.frame_header.visible_width << "*"
-                << jpeg.frame_header.visible_height << ") larger than "
+                << jpeg.frame_header.coded_width << "*"
+                << jpeg.frame_header.coded_height << ") larger than "
                 << kMaxDimension << "*" << kMaxDimension;
     return false;
   }
@@ -142,8 +142,8 @@ static void FillPictureParameters(
     const media::JpegFrameHeader& frame_header,
     VAPictureParameterBufferJPEGBaseline* pic_param) {
   memset(pic_param, 0, sizeof(*pic_param));
-  pic_param->picture_width = frame_header.visible_width;
-  pic_param->picture_height = frame_header.visible_height;
+  pic_param->picture_width = frame_header.coded_width;
+  pic_param->picture_height = frame_header.coded_height;
   pic_param->num_components = frame_header.num_components;
 
   for (int i = 0; i < pic_param->num_components; i++) {
@@ -244,11 +244,9 @@ static void FillSliceParameters(
       parse_result.frame_header.components[0].horizontal_sampling_factor;
   int max_v_factor =
       parse_result.frame_header.components[0].vertical_sampling_factor;
-  int visible_width = parse_result.frame_header.visible_width;
-  int visible_height = parse_result.frame_header.visible_height;
-  int mcu_cols = (visible_width + max_h_factor * 8 - 1) / (max_h_factor * 8);
+  int mcu_cols = parse_result.frame_header.coded_width / (max_h_factor * 8);
   DCHECK_GT(mcu_cols, 0);
-  int mcu_rows = (visible_height + max_v_factor * 8 - 1) / (max_v_factor * 8);
+  int mcu_rows = parse_result.frame_header.coded_height / (max_v_factor * 8);
   DCHECK_GT(mcu_rows, 0);
   slice_param->num_mcus = mcu_rows * mcu_cols;
 }
