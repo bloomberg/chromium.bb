@@ -88,7 +88,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebSelectionBound.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
@@ -106,6 +105,7 @@
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSearchableFormData.h"
 #include "public/web/WebSecurityPolicy.h"
+#include "public/web/WebSelection.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebSpellCheckClient.h"
 #include "public/web/WebTextCheckingCompletion.h"
@@ -4199,16 +4199,14 @@ public:
     virtual void setNeedsAnimate()  override { }
     virtual bool commitRequested() const  override { return false; }
     virtual void finishAllRendering()  override { }
-    virtual void registerSelection(const WebSelectionBound& start, const WebSelectionBound& end) override
+    virtual void registerSelection(const WebSelection& selection) override
     {
-        m_start = adoptPtr(new WebSelectionBound(start));
-        m_end = adoptPtr(new WebSelectionBound(end));
+        m_selection = adoptPtr(new WebSelection(selection));
     }
     virtual void clearSelection() override
     {
         m_selectionCleared = true;
-        m_start.clear();
-        m_end.clear();
+        m_selection.clear();
     }
 
     bool getAndResetSelectionCleared()
@@ -4218,13 +4216,13 @@ public:
         return selectionCleared;
     }
 
-    const WebSelectionBound* start() const { return m_start.get(); }
-    const WebSelectionBound* end() const { return m_end.get(); }
+    const WebSelection* selection() const { return m_selection.get(); }
+    const WebSelectionBound* start() const { return m_selection ? &m_selection->start() : nullptr; }
+    const WebSelectionBound* end() const { return m_selection ? &m_selection->end() : nullptr; }
 
 private:
     bool m_selectionCleared;
-    OwnPtr<WebSelectionBound> m_start;
-    OwnPtr<WebSelectionBound> m_end;
+    OwnPtr<WebSelection> m_selection;
 };
 
 class CompositedSelectionBoundsTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
@@ -4258,23 +4256,28 @@ protected:
         FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(), m_baseURL + testFile);
         m_webViewHelper.webView()->layout();
 
+        const WebSelection* selection = m_fakeSelectionLayerTreeView.selection();
         const WebSelectionBound* selectStart = m_fakeSelectionLayerTreeView.start();
         const WebSelectionBound* selectEnd = m_fakeSelectionLayerTreeView.end();
 
         v8::HandleScope handleScope(v8::Isolate::GetCurrent());
         v8::Handle<v8::Value> result = m_webViewHelper.webView()->mainFrame()->toWebLocalFrame()->executeScriptAndReturnValue(WebScriptSource("expectedResult"));
         if (result.IsEmpty() || (*result)->IsUndefined()) {
+            EXPECT_FALSE(selection);
             EXPECT_FALSE(selectStart);
             EXPECT_FALSE(selectEnd);
             return;
         }
 
+        ASSERT_TRUE(selection);
         ASSERT_TRUE(selectStart);
         ASSERT_TRUE(selectEnd);
 
+        EXPECT_FALSE(selection->isNone());
+
         ASSERT_TRUE((*result)->IsArray());
         v8::Array& expectedResult = *v8::Array::Cast(*result);
-        ASSERT_EQ(10u, expectedResult.Length());
+        ASSERT_GE(expectedResult.Length(), 10u);
 
         blink::Node* layerOwnerNodeForStart = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(0));
         ASSERT_TRUE(layerOwnerNodeForStart);
@@ -4282,7 +4285,6 @@ protected:
         EXPECT_EQ(expectedResult.Get(1)->Int32Value(), selectStart->edgeTopInLayer.x);
         EXPECT_EQ(expectedResult.Get(2)->Int32Value(), selectStart->edgeTopInLayer.y);
         EXPECT_EQ(expectedResult.Get(3)->Int32Value(), selectStart->edgeBottomInLayer.x);
-        EXPECT_EQ(expectedResult.Get(4)->Int32Value(), selectStart->edgeBottomInLayer.y);
 
         blink::Node* layerOwnerNodeForEnd = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(5));
         ASSERT_TRUE(layerOwnerNodeForEnd);
@@ -4290,7 +4292,22 @@ protected:
         EXPECT_EQ(expectedResult.Get(6)->Int32Value(), selectEnd->edgeTopInLayer.x);
         EXPECT_EQ(expectedResult.Get(7)->Int32Value(), selectEnd->edgeTopInLayer.y);
         EXPECT_EQ(expectedResult.Get(8)->Int32Value(), selectEnd->edgeBottomInLayer.x);
-        EXPECT_EQ(expectedResult.Get(9)->Int32Value(), selectEnd->edgeBottomInLayer.y);
+
+        // Platform differences can introduce small stylistic deviations in
+        // y-axis positioning, the details of which aren't relevant to
+        // selection behavior. However, such deviations from the expected value
+        // should be consistent for the corresponding y coordinates.
+        int yBottomEpsilon = 0;
+        if (expectedResult.Length() == 13)
+            yBottomEpsilon = expectedResult.Get(12)->Int32Value();
+        int yBottomDeviation = expectedResult.Get(4)->Int32Value() - selectStart->edgeBottomInLayer.y;
+        EXPECT_GE(yBottomEpsilon, std::abs(yBottomDeviation));
+        EXPECT_EQ(yBottomDeviation, expectedResult.Get(9)->Int32Value() - selectEnd->edgeBottomInLayer.y);
+
+        if (expectedResult.Length() >= 12) {
+            EXPECT_EQ(expectedResult.Get(10)->BooleanValue(), m_fakeSelectionLayerTreeView.selection()->isEditable());
+            EXPECT_EQ(expectedResult.Get(11)->BooleanValue(), m_fakeSelectionLayerTreeView.selection()->isEmptyTextFormControl());
+        }
     }
 
     void runTestWithMultipleFiles(const char* testFile, ...)
@@ -4316,7 +4333,10 @@ TEST_F(CompositedSelectionBoundsTest, SplitLayer) { runTest("composited_selectio
 TEST_F(CompositedSelectionBoundsTest, EmptyLayer) { runTest("composited_selection_bounds_empty_layer.html"); }
 TEST_F(CompositedSelectionBoundsTest, Iframe) { runTestWithMultipleFiles("composited_selection_bounds_iframe.html", "composited_selection_bounds_basic.html", nullptr); }
 TEST_F(CompositedSelectionBoundsTest, DetachedFrame) { runTest("composited_selection_bounds_detached_frame.html"); }
-
+TEST_F(CompositedSelectionBoundsTest, Editable) { runTest("composited_selection_bounds_editable.html"); }
+TEST_F(CompositedSelectionBoundsTest, EditableDiv) { runTest("composited_selection_bounds_editable_div.html"); }
+TEST_F(CompositedSelectionBoundsTest, EmptyEditableInput) { runTest("composited_selection_bounds_empty_editable_input.html"); }
+TEST_F(CompositedSelectionBoundsTest, EmptyEditableArea) { runTest("composited_selection_bounds_empty_editable_area.html"); }
 
 TEST_F(WebFrameTest, CompositedSelectionBoundsCleared)
 {

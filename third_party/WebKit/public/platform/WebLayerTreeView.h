@@ -43,6 +43,7 @@ class WebCompositorAnimationTimeline;
 class WebLayer;
 struct WebPoint;
 struct WebSelectionBound;
+class WebSelection;
 class WebWidget;
 
 class WebLayerTreeView {
@@ -133,10 +134,9 @@ public:
     virtual void clearViewportLayers() { }
 
     // Used to update the active selection bounds.
-    // If the (empty) selection is an insertion point, |start| and |end| will be identical with type |Caret|.
-    // If the (non-empty) selection has mixed RTL/LTR text, |start| and |end| may share the same type,
-    // |SelectionLeft| or |SelectionRight|.
+    // FIXME: Remove this overload when downstream consumers have been updated to use WebSelection, crbug.com/466672.
     virtual void registerSelection(const WebSelectionBound& start, const WebSelectionBound& end) { }
+    virtual void registerSelection(const WebSelection&) { }
     virtual void clearSelection() { }
 
     // Debugging / dangerous ---------------------------------------------

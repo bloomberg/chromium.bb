@@ -86,9 +86,8 @@ class WebLocalFrameImpl;
 class WebImage;
 class WebPagePopupImpl;
 class WebPlugin;
+class WebSelection;
 class WebSettingsImpl;
-
-struct WebSelectionBound;
 
 class WebViewImpl final : public WebView
     , public RefCounted<WebViewImpl>
@@ -485,8 +484,8 @@ public:
     void enterFullScreenForElement(Element*);
     void exitFullScreenForElement(Element*);
 
-    void clearCompositedSelectionBounds();
-    void updateCompositedSelectionBounds(const WebSelectionBound& anchor, const WebSelectionBound& focus);
+    void clearCompositedSelection();
+    void updateCompositedSelection(const WebSelection&);
 
     // Exposed for the purpose of overriding device metrics.
     void sendResizeEventAndRepaint();

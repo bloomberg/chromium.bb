@@ -10,7 +10,10 @@
 namespace blink {
 
 // An endpoint for an active selection region.
+// TODO(jdduke): Move this to web/ after downstream code adopts |WebSelection|.
 struct WebSelectionBound {
+    // TODO(jdduke): Remove the type identifier after downstream code adopts
+    // |WebSelection| for determining bound orientation.
     enum Type {
         Caret,
         SelectionLeft,
@@ -20,6 +23,7 @@ struct WebSelectionBound {
     explicit WebSelectionBound(Type type)
         : type(type)
         , layerId(0)
+        , isTextDirectionRTL(false)
     {
     }
 
@@ -34,6 +38,9 @@ struct WebSelectionBound {
     // that define the selection bound.
     WebPoint edgeTopInLayer;
     WebPoint edgeBottomInLayer;
+
+    // Whether the text direction at this location is RTL.
+    bool isTextDirectionRTL;
 };
 
 } // namespace blink

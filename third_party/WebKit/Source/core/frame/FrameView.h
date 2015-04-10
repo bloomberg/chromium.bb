@@ -64,7 +64,7 @@ class LayoutScrollbarPart;
 class LayoutView;
 class ScrollingCoordinator;
 class TracedValue;
-struct CompositedSelectionBound;
+struct CompositedSelection;
 
 typedef unsigned long long DOMTimeStamp;
 
@@ -679,8 +679,8 @@ private:
 
     void updateLayersAndCompositingAfterScrollIfNeeded();
 
-    static bool computeCompositedSelectionBounds(LocalFrame&, CompositedSelectionBound& start, CompositedSelectionBound& end);
-    void updateCompositedSelectionBoundsIfNeeded();
+    static bool computeCompositedSelection(LocalFrame&, CompositedSelection&);
+    void updateCompositedSelectionIfNeeded();
 
     // Returns true if the FrameView's own scrollbars overlay its content when visible.
     bool hasOverlayScrollbars() const;

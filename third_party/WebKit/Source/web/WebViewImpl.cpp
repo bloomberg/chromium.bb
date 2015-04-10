@@ -133,6 +133,7 @@
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPluginAction.h"
 #include "public/web/WebRange.h"
+#include "public/web/WebSelection.h"
 #include "public/web/WebTextInputInfo.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWindowFeatures.h"
@@ -2005,16 +2006,19 @@ void WebViewImpl::exitFullScreenForElement(Element* element)
     m_fullscreenController->exitFullScreenForElement(element);
 }
 
-void WebViewImpl::clearCompositedSelectionBounds()
+void WebViewImpl::clearCompositedSelection()
 {
     if (m_layerTreeView)
         m_layerTreeView->clearSelection();
 }
 
-void WebViewImpl::updateCompositedSelectionBounds(const WebSelectionBound& anchor, const WebSelectionBound& focus)
+void WebViewImpl::updateCompositedSelection(const WebSelection& selection)
 {
-    if (m_layerTreeView)
-        m_layerTreeView->registerSelection(anchor, focus);
+    if (m_layerTreeView) {
+        m_layerTreeView->registerSelection(selection);
+        // TODO(jdduke): Remove this overload when downstream consumers have been updated, crbug.com/466672.
+        m_layerTreeView->registerSelection(selection.start(), selection.end());
+    }
 }
 
 bool WebViewImpl::hasHorizontalScrollbar()

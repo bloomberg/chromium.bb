@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Google Inc. All rights reserved.
+ * Copyright (C) 2015 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,31 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CompositedSelectionBound_h
-#define CompositedSelectionBound_h
+#ifndef CompositedSelection_h
+#define CompositedSelection_h
 
+#include "core/editing/SelectionType.h"
+#include "core/layout/compositing/CompositedSelectionBound.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/GraphicsLayer.h"
 
 namespace blink {
 
-struct CompositedSelectionBound {
-    CompositedSelectionBound()
-        : layer(nullptr)
-        , isTextDirectionRTL(false)
+// The active selection region, containing compositing data for the selection
+// end points as well as metadata for the selection region.
+// See |WebSelection|.
+struct CompositedSelection {
+
+    CompositedSelection()
+        : type(NoSelection)
+        , isEditable(false)
+        , isEmptyTextFormControl(false)
     {
     }
 
-    // The structure describes the position of a caret in space of the GraphicsLayer the caret resides in.
-    // Where edgeTopInLayer is the top point of the caret, usually on the ascend line of the line box,
-    // and edgeBottomInLayer it the bottom point, on the baseline of the line box.
-    GraphicsLayer* layer;
-    FloatPoint edgeTopInLayer;
-    FloatPoint edgeBottomInLayer;
-
-    bool isTextDirectionRTL;
+    SelectionType type;
+    CompositedSelectionBound start;
+    CompositedSelectionBound end;
+    bool isEditable;
+    bool isEmptyTextFormControl;
 };
 
 } // namespace blink
 
-#endif
+#endif // CompositedSelection_h

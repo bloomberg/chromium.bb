@@ -44,6 +44,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
+#include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -58,7 +59,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
-#include "core/layout/compositing/CompositedSelectionBound.h"
+#include "core/layout/compositing/CompositedSelection.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/style/ComputedStyle.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
@@ -1645,39 +1646,39 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
     }
 }
 
-bool FrameView::computeCompositedSelectionBounds(LocalFrame& frame, CompositedSelectionBound& start, CompositedSelectionBound& end)
+bool FrameView::computeCompositedSelection(LocalFrame& frame, CompositedSelection& selection)
 {
-    const VisibleSelection &selection = frame.selection().selection();
-    if (!selection.isCaretOrRange())
+    const VisibleSelection& visibleSelection = frame.selection().selection();
+    if (!visibleSelection.isCaretOrRange())
         return false;
 
-    VisiblePosition visibleStart(selection.visibleStart());
-    VisiblePosition visibleEnd(selection.visibleEnd());
+    VisiblePosition visibleStart(visibleSelection.visibleStart());
+    VisiblePosition visibleEnd(visibleSelection.visibleEnd());
 
     RenderedPosition renderedStart(visibleStart);
     RenderedPosition renderedEnd(visibleEnd);
 
-    renderedStart.positionInGraphicsLayerBacking(start);
-    if (!start.layer)
+    renderedStart.positionInGraphicsLayerBacking(selection.start);
+    if (!selection.start.layer)
         return false;
 
-    renderedEnd.positionInGraphicsLayerBacking(end);
-    if (!end.layer)
+    renderedEnd.positionInGraphicsLayerBacking(selection.end);
+    if (!selection.end.layer)
         return false;
 
-    if (selection.isCaret()) {
-        start.type = end.type = CompositedSelectionBound::Caret;
-        return true;
+    selection.type = visibleSelection.selectionType();
+    selection.isEditable = visibleSelection.isContentEditable();
+    if (selection.isEditable) {
+        if (HTMLTextFormControlElement* enclosingTextFormControlElement = enclosingTextFormControl(visibleSelection.rootEditableElement()))
+            selection.isEmptyTextFormControl = enclosingTextFormControlElement->value().isEmpty();
     }
+    selection.start.isTextDirectionRTL = visibleStart.deepEquivalent().primaryDirection() == RTL;
+    selection.end.isTextDirectionRTL = visibleEnd.deepEquivalent().primaryDirection() == RTL;
 
-    TextDirection startDir = visibleStart.deepEquivalent().primaryDirection();
-    TextDirection endDir = visibleEnd.deepEquivalent().primaryDirection();
-    start.type = startDir == RTL ? CompositedSelectionBound::SelectionRight : CompositedSelectionBound::SelectionLeft;
-    end.type = endDir == RTL ? CompositedSelectionBound::SelectionLeft : CompositedSelectionBound::SelectionRight;
     return true;
 }
 
-void FrameView::updateCompositedSelectionBoundsIfNeeded()
+void FrameView::updateCompositedSelectionIfNeeded()
 {
     if (!RuntimeEnabledFeatures::compositedSelectionUpdateEnabled())
         return;
@@ -1685,14 +1686,14 @@ void FrameView::updateCompositedSelectionBoundsIfNeeded()
     Page* page = frame().page();
     ASSERT(page);
 
-    CompositedSelectionBound start, end;
+    CompositedSelection selection;
     LocalFrame* frame = toLocalFrame(page->focusController().focusedOrMainFrame());
-    if (!frame || !computeCompositedSelectionBounds(*frame, start, end)) {
-        page->chrome().client().clearCompositedSelectionBounds();
+    if (!frame || !computeCompositedSelection(*frame, selection)) {
+        page->chrome().client().clearCompositedSelection();
         return;
     }
 
-    page->chrome().client().updateCompositedSelectionBounds(start, end);
+    page->chrome().client().updateCompositedSelection(selection);
 }
 
 HostWindow* FrameView::hostWindow() const
@@ -2550,7 +2551,7 @@ void FrameView::updateLayoutAndStyleForPainting()
         if (view->compositor()->inCompositingMode() && m_frame->isLocalRoot())
             scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
 
-        updateCompositedSelectionBoundsIfNeeded();
+        updateCompositedSelectionIfNeeded();
 
         scrollContentsIfNeededRecursive();
 

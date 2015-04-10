@@ -38,6 +38,7 @@
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/IconURL.h"
+#include "core/editing/SelectionType.h"
 #include "core/editing/TextAffinity.h"
 #include "core/fileapi/FileError.h"
 #include "core/frame/Settings.h"
@@ -125,6 +126,7 @@
 #include "public/web/WebNavigatorContentUtilsClient.h"
 #include "public/web/WebSandboxFlags.h"
 #include "public/web/WebSecurityPolicy.h"
+#include "public/web/WebSelection.h"
 #include "public/web/WebSerializedScriptValueVersion.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebSpeechRecognizerClient.h"
@@ -651,9 +653,9 @@ STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanX, TouchActionPanX);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPanY, TouchActionPanY);
 STATIC_ASSERT_MATCHING_ENUM(WebTouchActionPinchZoom, TouchActionPinchZoom);
 
-STATIC_ASSERT_MATCHING_ENUM(WebSelectionBound::Caret, CompositedSelectionBound::Caret);
-STATIC_ASSERT_MATCHING_ENUM(WebSelectionBound::SelectionLeft, CompositedSelectionBound::SelectionLeft);
-STATIC_ASSERT_MATCHING_ENUM(WebSelectionBound::SelectionRight, CompositedSelectionBound::SelectionRight);
+STATIC_ASSERT_MATCHING_ENUM(WebSelection::NoSelection, NoSelection);
+STATIC_ASSERT_MATCHING_ENUM(WebSelection::CaretSelection, CaretSelection);
+STATIC_ASSERT_MATCHING_ENUM(WebSelection::RangeSelection, RangeSelection);
 
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::ImageAnimationPolicyAllowed, ImageAnimationPolicyAllowed);
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::ImageAnimationPolicyAnimateOnce, ImageAnimationPolicyAnimateOnce);

@@ -48,7 +48,7 @@
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
-#include "core/layout/compositing/CompositedSelectionBound.h"
+#include "core/layout/compositing/CompositedSelection.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Page.h"
@@ -64,7 +64,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebRect.h"
-#include "public/platform/WebSelectionBound.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebAXObject.h"
 #include "public/web/WebAutofillClient.h"
@@ -78,6 +77,7 @@
 #include "public/web/WebNode.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPopupMenuInfo.h"
+#include "public/web/WebSelection.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebTextDirection.h"
 #include "public/web/WebTouchAction.h"
@@ -114,18 +114,6 @@ static WebAXEvent toWebAXEvent(AXObjectCache::AXNotification notification)
 {
     // These enums have the same values; enforced in AssertMatchingEnums.cpp.
     return static_cast<WebAXEvent>(notification);
-}
-
-static WebSelectionBound toWebSelectionBound(const CompositedSelectionBound& bound)
-{
-    ASSERT(bound.layer);
-
-    // These enums have the same values; enforced in AssertMatchingEnums.cpp.
-    WebSelectionBound result(static_cast<WebSelectionBound::Type>(bound.type));
-    result.layerId = bound.layer->platformLayer()->id();
-    result.edgeTopInLayer = roundedIntPoint(bound.edgeTopInLayer);
-    result.edgeBottomInLayer = roundedIntPoint(bound.edgeBottomInLayer);
-    return result;
 }
 
 ChromeClientImpl::ChromeClientImpl(WebViewImpl* webView)
@@ -758,14 +746,14 @@ void ChromeClientImpl::exitFullScreenForElement(Element* element)
     m_webView->exitFullScreenForElement(element);
 }
 
-void ChromeClientImpl::clearCompositedSelectionBounds()
+void ChromeClientImpl::clearCompositedSelection()
 {
-    m_webView->clearCompositedSelectionBounds();
+    m_webView->clearCompositedSelection();
 }
 
-void ChromeClientImpl::updateCompositedSelectionBounds(const CompositedSelectionBound& anchor, const CompositedSelectionBound& focus)
+void ChromeClientImpl::updateCompositedSelection(const CompositedSelection& selection)
 {
-    m_webView->updateCompositedSelectionBounds(toWebSelectionBound(anchor), toWebSelectionBound(focus));
+    m_webView->updateCompositedSelection(WebSelection(selection));
 }
 
 bool ChromeClientImpl::hasOpenedPopup() const

@@ -231,6 +231,7 @@
       'WebSearchableFormData.cpp',
       'WebSecurityPolicy.cpp',
       'WebSelectElement.cpp',
+      'WebSelection.cpp',
       'WebSelector.cpp',
       'WebSerializedScriptValue.cpp',
       'WebSettingsImpl.cpp',

@@ -63,7 +63,7 @@ class PagePopupDriver;
 class PopupMenuClient;
 class WebCompositorAnimationTimeline;
 
-struct CompositedSelectionBound;
+struct CompositedSelection;
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct GraphicsDeviceAdapter;
@@ -187,8 +187,8 @@ public:
     virtual void enterFullScreenForElement(Element*) { }
     virtual void exitFullScreenForElement(Element*) { }
 
-    virtual void clearCompositedSelectionBounds() { }
-    virtual void updateCompositedSelectionBounds(const CompositedSelectionBound& anchor, const CompositedSelectionBound& focus) { }
+    virtual void clearCompositedSelection() { }
+    virtual void updateCompositedSelection(const CompositedSelection&) { }
 
     virtual void needTouchEvents(bool) = 0;
 
