@@ -378,7 +378,12 @@ public class MediaDrmBridge {
         mPendingCreateSessionDataQueue = null;
 
         for (ByteBuffer sessionId : mSessionIds.keySet()) {
-            mMediaDrm.removeKeys(sessionId.array());
+            try {
+                // Some implementations don't have removeKeys, crbug/475632
+                mMediaDrm.removeKeys(sessionId.array());
+            } catch (Exception e) {
+                Log.e(TAG, "removeKeys failed: ", e);
+            }
             mMediaDrm.closeSession(sessionId.array());
             onSessionClosed(sessionId.array());
         }
@@ -568,7 +573,12 @@ public class MediaDrmBridge {
             return;
         }
 
-        mMediaDrm.removeKeys(sessionId);
+        try {
+            // Some implementations don't have removeKeys, crbug/475632
+            mMediaDrm.removeKeys(sessionId);
+        } catch (Exception e) {
+            Log.e(TAG, "removeKeys failed: ", e);
+        }
         mMediaDrm.closeSession(sessionId);
         mSessionIds.remove(ByteBuffer.wrap(sessionId));
         onPromiseResolved(promiseId);
