@@ -68,11 +68,38 @@ namespace {
 // Path to google.com's doodle JSON.
 const char kDoodleJsonPath[] = "async/ddljson";
 
-// Delay between checking for a new doodle when no doodle is found.
-const int kDefaultDoodleRecheckDelayMinutes = 30;
+// Maximum delay between checking for a new doodle when the doodle cannot be
+// retrieved. This is also used as the delay once a doodle is retrieved.
+const int kMaximumRecheckDelayMs = 1000 * 60 * 30;  // 30 minutes.
 
 // Delay before loading the start page WebContents on initialization.
 const int kLoadContentsDelaySeconds = 5;
+
+const net::BackoffEntry::Policy kDoodleBackoffPolicy = {
+  // Number of initial errors (in sequence) to ignore before applying
+  // exponential back-off rules.
+  0,
+
+  // Initial delay for exponential back-off in ms.
+  2500,
+
+  // Factor by which the waiting time will be multiplied.
+  2,
+
+  // Fuzzing percentage. ex: 10% will spread requests randomly
+  // between 90%-100% of the calculated time.
+  0.4,
+
+  // Maximum amount of time we are willing to delay our request in ms.
+  kMaximumRecheckDelayMs,
+
+  // Time to keep an entry from being discarded even when it
+  // has no significant state, -1 to never discard.
+  -1,
+
+  // Don't use initial delay unless the last request was an error.
+  false,
+};
 
 bool InSpeechRecognition(SpeechRecognitionState state) {
   return state == SPEECH_RECOGNITION_RECOGNIZING ||
@@ -289,6 +316,7 @@ StartPageService::StartPageService(Profile* profile)
       network_available_(true),
       microphone_available_(true),
       search_engine_is_google_(false),
+      backoff_entry_(&kDoodleBackoffPolicy),
       weak_factory_(this) {
   if (switches::IsExperimentalAppListEnabled()) {
     TemplateURLService* template_url_service =
@@ -618,19 +646,16 @@ void StartPageService::OnURLFetchComplete(const net::URLFetcher* source) {
   scoped_ptr<base::Value> doodle_json(
       deserializer.Deserialize(&error_code, nullptr));
 
-  base::TimeDelta recheck_delay =
-      base::TimeDelta::FromMinutes(kDefaultDoodleRecheckDelayMinutes);
-
-  if (error_code == 0) {
-    base::DictionaryValue* doodle_dictionary = nullptr;
-    // Use the supplied TTL as the recheck delay if available.
-    if (doodle_json->GetAsDictionary(&doodle_dictionary)) {
-      int time_to_live = 0;
-      if (doodle_dictionary->GetInteger("ddljson.time_to_live_ms",
-                                        &time_to_live)) {
-        recheck_delay = base::TimeDelta::FromMilliseconds(time_to_live);
-      }
-    }
+  base::TimeDelta recheck_delay;
+  if (error_code != 0) {
+    // On failure, use expotential backoff.
+    backoff_entry_.InformOfRequest(false);
+    recheck_delay = backoff_entry_.GetTimeUntilRelease();
+  } else {
+    // If we received information, even if there's no doodle, reset the backoff
+    // entry and start rechecking for the doodle at the maximum interval.
+    backoff_entry_.Reset();
+    recheck_delay = base::TimeDelta::FromMilliseconds(kMaximumRecheckDelayMs);
 
     if (contents_ && contents_->GetWebUI()) {
       contents_->GetWebUI()->CallJavascriptFunction(

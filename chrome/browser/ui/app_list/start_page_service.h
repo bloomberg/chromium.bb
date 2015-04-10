@@ -21,6 +21,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 
@@ -180,6 +181,7 @@ class StartPageService : public KeyedService,
 
   bool search_engine_is_google_;
   scoped_ptr<net::URLFetcher> doodle_fetcher_;
+  net::BackoffEntry backoff_entry_;
 
   base::WeakPtrFactory<StartPageService> weak_factory_;
 
