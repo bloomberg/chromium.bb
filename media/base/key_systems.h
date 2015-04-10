@@ -49,26 +49,25 @@ class MEDIA_EXPORT KeySystems {
       EmeMediaType media_type,
       const std::string& requested_robustness) const = 0;
 
-  // Returns the configuration rule for supporting persistent-license sessions.
-  virtual EmeConfigRule GetPersistentLicenseSessionConfigRule(
+  // Returns the support |key_system| provides for persistent-license sessions.
+  virtual EmeSessionTypeSupport GetPersistentLicenseSessionSupport(
       const std::string& key_system) const = 0;
 
-  // Returns the configuration rule for supporting persistent-release-message
+  // Returns the support |key_system| provides for persistent-release-message
   // sessions.
-  virtual EmeConfigRule GetPersistentReleaseMessageSessionConfigRule(
+  virtual EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport(
       const std::string& key_system) const = 0;
 
-  // Returns the configuration rule for supporting a persistent state
-  // requirement.
-  virtual EmeConfigRule GetPersistentStateConfigRule(
-      const std::string& key_system,
-      EmeFeatureRequirement requirement) const = 0;
+  // Returns the support |key_system| provides for persistent state.
+  virtual EmeFeatureSupport GetPersistentStateSupport(
+      const std::string& key_system) const = 0;
 
-  // Returns the configuration rule for supporting a distinctive identifier
-  // requirement.
-  virtual EmeConfigRule GetDistinctiveIdentifierConfigRule(
-      const std::string& key_system,
-      EmeFeatureRequirement requirement) const = 0;
+  // Returns the support |key_system| provides for distinctive identifiers.
+  virtual EmeFeatureSupport GetDistinctiveIdentifierSupport(
+      const std::string& key_system) const = 0;
+
+ protected:
+  virtual ~KeySystems() {};
 };
 
 // Prefixed EME API only supports prefixed (webkit-) key system name for

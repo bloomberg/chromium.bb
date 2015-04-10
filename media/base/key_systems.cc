@@ -63,23 +63,6 @@ static NamedCodec kCodecStrings[] = {
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
-static EmeConfigRule ConvertSessionTypeSupport(
-    EmeSessionTypeSupport support) {
-  switch (support) {
-    case EME_SESSION_TYPE_INVALID:
-      NOTREACHED();
-      return EmeConfigRule::NOT_SUPPORTED;
-    case EME_SESSION_TYPE_NOT_SUPPORTED:
-      return EmeConfigRule::NOT_SUPPORTED;
-    case EME_SESSION_TYPE_SUPPORTED_WITH_IDENTIFIER:
-      return EmeConfigRule::IDENTIFIER_AND_PERSISTENCE_REQUIRED;
-    case EME_SESSION_TYPE_SUPPORTED:
-      return EmeConfigRule::PERSISTENCE_REQUIRED;
-  }
-  NOTREACHED();
-  return EmeConfigRule::NOT_SUPPORTED;
-}
-
 static EmeRobustness ConvertRobustness(const std::string& robustness) {
   if (robustness.empty())
     return EmeRobustness::EMPTY;
@@ -229,21 +212,22 @@ class KeySystemsImpl : public KeySystems {
       EmeMediaType media_type,
       const std::string& requested_robustness) const override;
 
-  EmeConfigRule GetPersistentLicenseSessionConfigRule(
+  EmeSessionTypeSupport GetPersistentLicenseSessionSupport(
       const std::string& key_system) const override;
 
-  EmeConfigRule GetPersistentReleaseMessageSessionConfigRule(
+  EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport(
       const std::string& key_system) const override;
 
-  EmeConfigRule GetPersistentStateConfigRule(
-      const std::string& key_system,
-      EmeFeatureRequirement requirement) const override;
+  EmeFeatureSupport GetPersistentStateSupport(
+      const std::string& key_system) const override;
 
-  EmeConfigRule GetDistinctiveIdentifierConfigRule(
-      const std::string& key_system,
-      EmeFeatureRequirement requirement) const override;
+  EmeFeatureSupport GetDistinctiveIdentifierSupport(
+      const std::string& key_system) const override;
 
  private:
+  KeySystemsImpl();
+  ~KeySystemsImpl() override;
+
   void InitializeUMAInfo();
 
   void UpdateSupportedKeySystems();
@@ -259,9 +243,6 @@ class KeySystemsImpl : public KeySystems {
   typedef base::hash_map<std::string, EmeCodec> CodecsMap;
   typedef base::hash_map<std::string, EmeInitDataType> InitDataTypesMap;
   typedef base::hash_map<std::string, std::string> KeySystemNameForUMAMap;
-
-  KeySystemsImpl();
-  ~KeySystemsImpl() {}
 
   // TODO(sandersd): Separate container enum from codec mask value.
   // http://crbug.com/417440
@@ -336,6 +317,9 @@ KeySystemsImpl::KeySystemsImpl() :
 
   // Always update supported key systems during construction.
   UpdateSupportedKeySystems();
+}
+
+KeySystemsImpl::~KeySystemsImpl() {
 }
 
 SupportedCodecs KeySystemsImpl::GetCodecMaskForContainer(
@@ -784,7 +768,7 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
   return EmeConfigRule::SUPPORTED;
 }
 
-EmeConfigRule KeySystemsImpl::GetPersistentLicenseSessionConfigRule(
+EmeSessionTypeSupport KeySystemsImpl::GetPersistentLicenseSessionSupport(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -792,13 +776,12 @@ EmeConfigRule KeySystemsImpl::GetPersistentLicenseSessionConfigRule(
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
     NOTREACHED();
-    return EmeConfigRule::NOT_SUPPORTED;
+    return EME_SESSION_TYPE_INVALID;
   }
-  return ConvertSessionTypeSupport(
-      key_system_iter->second.persistent_license_support);
+  return key_system_iter->second.persistent_license_support;
 }
 
-EmeConfigRule KeySystemsImpl::GetPersistentReleaseMessageSessionConfigRule(
+EmeSessionTypeSupport KeySystemsImpl::GetPersistentReleaseMessageSessionSupport(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -806,104 +789,35 @@ EmeConfigRule KeySystemsImpl::GetPersistentReleaseMessageSessionConfigRule(
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
     NOTREACHED();
-    return EmeConfigRule::NOT_SUPPORTED;
+    return EME_SESSION_TYPE_INVALID;
   }
-  return ConvertSessionTypeSupport(
-      key_system_iter->second.persistent_release_message_support);
+  return key_system_iter->second.persistent_release_message_support;
 }
 
-EmeConfigRule KeySystemsImpl::GetPersistentStateConfigRule(
-    const std::string& key_system,
-    EmeFeatureRequirement requirement) const {
+EmeFeatureSupport KeySystemsImpl::GetPersistentStateSupport(
+    const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
     NOTREACHED();
-    return EmeConfigRule::NOT_SUPPORTED;
+    return EME_FEATURE_INVALID;
   }
-
-  // For NOT_ALLOWED and REQUIRED, the result is as expected. For OPTIONAL, we
-  // return the most restrictive rule that is not more restrictive than for
-  // NOT_ALLOWED or REQUIRED. Those values will be checked individually when
-  // the option is resolved.
-  //
-  // Note that even though a distinctive identifier can not be required for
-  // persistent state, it may still be required for persistent sessions.
-  //
-  //                   NOT_ALLOWED    OPTIONAL       REQUIRED
-  //    NOT_SUPPORTED  P_NOT_ALLOWED  P_NOT_ALLOWED  NOT_SUPPORTED
-  //      REQUESTABLE  P_NOT_ALLOWED  SUPPORTED      P_REQUIRED
-  //   ALWAYS_ENABLED  NOT_SUPPORTED  P_REQUIRED     P_REQUIRED
-  EmeFeatureSupport support = key_system_iter->second.persistent_state_support;
-  DCHECK(support == EME_FEATURE_NOT_SUPPORTED ||
-         support == EME_FEATURE_REQUESTABLE ||
-         support == EME_FEATURE_ALWAYS_ENABLED);
-  DCHECK(requirement == EME_FEATURE_NOT_ALLOWED ||
-         requirement == EME_FEATURE_OPTIONAL ||
-         requirement == EME_FEATURE_REQUIRED);
-  if ((support == EME_FEATURE_NOT_SUPPORTED &&
-       requirement == EME_FEATURE_REQUIRED) ||
-      (support == EME_FEATURE_ALWAYS_ENABLED &&
-       requirement == EME_FEATURE_NOT_ALLOWED)) {
-    return EmeConfigRule::NOT_SUPPORTED;
-  }
-  if (support == EME_FEATURE_REQUESTABLE &&
-      requirement == EME_FEATURE_OPTIONAL) {
-    return EmeConfigRule::SUPPORTED;
-  }
-  if (support == EME_FEATURE_NOT_SUPPORTED ||
-      requirement == EME_FEATURE_NOT_ALLOWED) {
-    return EmeConfigRule::PERSISTENCE_NOT_ALLOWED;
-  }
-  return EmeConfigRule::PERSISTENCE_REQUIRED;
+  return key_system_iter->second.persistent_state_support;
 }
 
-EmeConfigRule KeySystemsImpl::GetDistinctiveIdentifierConfigRule(
-    const std::string& key_system,
-    EmeFeatureRequirement requirement) const {
+EmeFeatureSupport KeySystemsImpl::GetDistinctiveIdentifierSupport(
+    const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   KeySystemInfoMap::const_iterator key_system_iter =
       concrete_key_system_map_.find(key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
     NOTREACHED();
-    return EmeConfigRule::NOT_SUPPORTED;
+    return EME_FEATURE_INVALID;
   }
-
-  // For NOT_ALLOWED and REQUIRED, the result is as expected. For OPTIONAL, we
-  // return the most restrictive rule that is not more restrictive than for
-  // NOT_ALLOWED or REQUIRED. Those values will be checked individually when
-  // the option is resolved.
-  //
-  //                   NOT_ALLOWED    OPTIONAL       REQUIRED
-  //    NOT_SUPPORTED  I_NOT_ALLOWED  I_NOT_ALLOWED  NOT_SUPPORTED
-  //      REQUESTABLE  I_NOT_ALLOWED  SUPPORTED      I_REQUIRED
-  //   ALWAYS_ENABLED  NOT_SUPPORTED  I_REQUIRED     I_REQUIRED
-  EmeFeatureSupport support =
-      key_system_iter->second.distinctive_identifier_support;
-  DCHECK(support == EME_FEATURE_NOT_SUPPORTED ||
-         support == EME_FEATURE_REQUESTABLE ||
-         support == EME_FEATURE_ALWAYS_ENABLED);
-  DCHECK(requirement == EME_FEATURE_NOT_ALLOWED ||
-         requirement == EME_FEATURE_OPTIONAL ||
-         requirement == EME_FEATURE_REQUIRED);
-  if ((support == EME_FEATURE_NOT_SUPPORTED &&
-       requirement == EME_FEATURE_REQUIRED) ||
-      (support == EME_FEATURE_ALWAYS_ENABLED &&
-       requirement == EME_FEATURE_NOT_ALLOWED)) {
-    return EmeConfigRule::NOT_SUPPORTED;
-  }
-  if (support == EME_FEATURE_REQUESTABLE &&
-             requirement == EME_FEATURE_OPTIONAL) {
-    return EmeConfigRule::SUPPORTED;
-  }
-  if (support == EME_FEATURE_NOT_SUPPORTED ||
-             requirement == EME_FEATURE_NOT_ALLOWED) {
-    return EmeConfigRule::IDENTIFIER_NOT_ALLOWED;
-  }
-  return EmeConfigRule::IDENTIFIER_REQUIRED;
+  return key_system_iter->second.distinctive_identifier_support;
 }
 
 KeySystems* KeySystems::GetInstance() {

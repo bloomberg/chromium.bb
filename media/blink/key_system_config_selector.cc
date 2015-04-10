@@ -37,6 +37,105 @@ static EmeFeatureRequirement ConvertRequirement(
   return EME_FEATURE_NOT_ALLOWED;
 }
 
+static EmeConfigRule GetSessionTypeConfigRule(EmeSessionTypeSupport support) {
+  switch (support) {
+    case EME_SESSION_TYPE_INVALID:
+      NOTREACHED();
+      return EmeConfigRule::NOT_SUPPORTED;
+    case EME_SESSION_TYPE_NOT_SUPPORTED:
+      return EmeConfigRule::NOT_SUPPORTED;
+    case EME_SESSION_TYPE_SUPPORTED_WITH_IDENTIFIER:
+      return EmeConfigRule::IDENTIFIER_AND_PERSISTENCE_REQUIRED;
+    case EME_SESSION_TYPE_SUPPORTED:
+      return EmeConfigRule::PERSISTENCE_REQUIRED;
+  }
+  NOTREACHED();
+  return EmeConfigRule::NOT_SUPPORTED;
+}
+
+static EmeConfigRule GetDistinctiveIdentifierConfigRule(
+    EmeFeatureSupport support,
+    EmeFeatureRequirement requirement) {
+  if (support == EME_FEATURE_INVALID) {
+    NOTREACHED();
+    return EmeConfigRule::NOT_SUPPORTED;
+  }
+
+  // For NOT_ALLOWED and REQUIRED, the result is as expected. For OPTIONAL, we
+  // return the most restrictive rule that is not more restrictive than for
+  // NOT_ALLOWED or REQUIRED. Those values will be checked individually when
+  // the option is resolved.
+  //
+  //                   NOT_ALLOWED    OPTIONAL       REQUIRED
+  //    NOT_SUPPORTED  I_NOT_ALLOWED  I_NOT_ALLOWED  NOT_SUPPORTED
+  //      REQUESTABLE  I_NOT_ALLOWED  SUPPORTED      I_REQUIRED
+  //   ALWAYS_ENABLED  NOT_SUPPORTED  I_REQUIRED     I_REQUIRED
+  DCHECK(support == EME_FEATURE_NOT_SUPPORTED ||
+         support == EME_FEATURE_REQUESTABLE ||
+         support == EME_FEATURE_ALWAYS_ENABLED);
+  DCHECK(requirement == EME_FEATURE_NOT_ALLOWED ||
+         requirement == EME_FEATURE_OPTIONAL ||
+         requirement == EME_FEATURE_REQUIRED);
+  if ((support == EME_FEATURE_NOT_SUPPORTED &&
+       requirement == EME_FEATURE_REQUIRED) ||
+      (support == EME_FEATURE_ALWAYS_ENABLED &&
+       requirement == EME_FEATURE_NOT_ALLOWED)) {
+    return EmeConfigRule::NOT_SUPPORTED;
+  }
+  if (support == EME_FEATURE_REQUESTABLE &&
+      requirement == EME_FEATURE_OPTIONAL) {
+    return EmeConfigRule::SUPPORTED;
+  }
+  if (support == EME_FEATURE_NOT_SUPPORTED ||
+      requirement == EME_FEATURE_NOT_ALLOWED) {
+    return EmeConfigRule::IDENTIFIER_NOT_ALLOWED;
+  }
+  return EmeConfigRule::IDENTIFIER_REQUIRED;
+}
+
+static EmeConfigRule GetPersistentStateConfigRule(
+    EmeFeatureSupport support,
+    EmeFeatureRequirement requirement) {
+  if (support == EME_FEATURE_INVALID) {
+    NOTREACHED();
+    return EmeConfigRule::NOT_SUPPORTED;
+  }
+
+  // For NOT_ALLOWED and REQUIRED, the result is as expected. For OPTIONAL, we
+  // return the most restrictive rule that is not more restrictive than for
+  // NOT_ALLOWED or REQUIRED. Those values will be checked individually when
+  // the option is resolved.
+  //
+  // Note that even though a distinctive identifier can not be required for
+  // persistent state, it may still be required for persistent sessions.
+  //
+  //                   NOT_ALLOWED    OPTIONAL       REQUIRED
+  //    NOT_SUPPORTED  P_NOT_ALLOWED  P_NOT_ALLOWED  NOT_SUPPORTED
+  //      REQUESTABLE  P_NOT_ALLOWED  SUPPORTED      P_REQUIRED
+  //   ALWAYS_ENABLED  NOT_SUPPORTED  P_REQUIRED     P_REQUIRED
+  DCHECK(support == EME_FEATURE_NOT_SUPPORTED ||
+         support == EME_FEATURE_REQUESTABLE ||
+         support == EME_FEATURE_ALWAYS_ENABLED);
+  DCHECK(requirement == EME_FEATURE_NOT_ALLOWED ||
+         requirement == EME_FEATURE_OPTIONAL ||
+         requirement == EME_FEATURE_REQUIRED);
+  if ((support == EME_FEATURE_NOT_SUPPORTED &&
+       requirement == EME_FEATURE_REQUIRED) ||
+      (support == EME_FEATURE_ALWAYS_ENABLED &&
+       requirement == EME_FEATURE_NOT_ALLOWED)) {
+    return EmeConfigRule::NOT_SUPPORTED;
+  }
+  if (support == EME_FEATURE_REQUESTABLE &&
+      requirement == EME_FEATURE_OPTIONAL) {
+    return EmeConfigRule::SUPPORTED;
+  }
+  if (support == EME_FEATURE_NOT_SUPPORTED ||
+      requirement == EME_FEATURE_NOT_ALLOWED) {
+    return EmeConfigRule::PERSISTENCE_NOT_ALLOWED;
+  }
+  return EmeConfigRule::PERSISTENCE_REQUIRED;
+}
+
 }  // namespace
 
 struct KeySystemConfigSelector::SelectionRequest {
@@ -102,6 +201,7 @@ class KeySystemConfigSelector::ConfigState {
     DCHECK(IsRuleSupported(rule));
     switch (rule) {
       case EmeConfigRule::NOT_SUPPORTED:
+        NOTREACHED();
         return;
       case EmeConfigRule::IDENTIFIER_NOT_ALLOWED:
         is_identifier_not_allowed_ = true;
@@ -324,8 +424,9 @@ KeySystemConfigSelector::GetSupportedConfiguration(
   //        null.
   // We also reject OPTIONAL when distinctive identifiers are ALWAYS_ENABLED and
   // permission has already been denied. This would happen anyway at step 11.
-  EmeConfigRule di_rule = key_systems_->GetDistinctiveIdentifierConfigRule(
-      key_system, ConvertRequirement(candidate.distinctiveIdentifier));
+  EmeConfigRule di_rule = GetDistinctiveIdentifierConfigRule(
+      key_systems_->GetDistinctiveIdentifierSupport(key_system),
+      ConvertRequirement(candidate.distinctiveIdentifier));
   if (!config_state->IsRuleSupported(di_rule)) {
     DVLOG(2) << "Rejecting requested configuration because "
              << "the distinctiveIdentifier requirement was not supported.";
@@ -345,8 +446,9 @@ KeySystemConfigSelector::GetSupportedConfiguration(
   //      - "optional": Continue.
   //      - "not-allowed": If the implementation requires persisting state in
   //        combination with accumulated configuration, return null.
-  EmeConfigRule ps_rule = key_systems_->GetPersistentStateConfigRule(
-      key_system, ConvertRequirement(candidate.persistentState));
+  EmeConfigRule ps_rule = GetPersistentStateConfigRule(
+      key_systems_->GetPersistentStateSupport(key_system),
+      ConvertRequirement(candidate.persistentState));
   if (!config_state->IsRuleSupported(ps_rule)) {
     DVLOG(2) << "Rejecting requested configuration because "
              << "the persistentState requirement was not supported.";
@@ -395,13 +497,13 @@ KeySystemConfigSelector::GetSupportedConfiguration(
         session_type_rule = EmeConfigRule::SUPPORTED;
         break;
       case blink::WebEncryptedMediaSessionType::PersistentLicense:
-        session_type_rule =
-            key_systems_->GetPersistentLicenseSessionConfigRule(key_system);
+        session_type_rule = GetSessionTypeConfigRule(
+            key_systems_->GetPersistentLicenseSessionSupport(key_system));
         break;
       case blink::WebEncryptedMediaSessionType::PersistentReleaseMessage:
-        session_type_rule =
-            key_systems_->GetPersistentReleaseMessageSessionConfigRule(
-                key_system);
+        session_type_rule = GetSessionTypeConfigRule(
+            key_systems_->GetPersistentReleaseMessageSessionSupport(
+                key_system));
         break;
     }
     if (!config_state->IsRuleSupported(session_type_rule)) {
@@ -461,12 +563,12 @@ KeySystemConfigSelector::GetSupportedConfiguration(
   //         value to "not-allowed".
   if (accumulated_configuration->distinctiveIdentifier ==
       blink::WebMediaKeySystemConfiguration::Requirement::Optional) {
-    EmeConfigRule not_allowed_rule =
-        key_systems_->GetDistinctiveIdentifierConfigRule(
-            key_system, EME_FEATURE_NOT_ALLOWED);
-    EmeConfigRule required_rule =
-        key_systems_->GetDistinctiveIdentifierConfigRule(key_system,
-                                                         EME_FEATURE_REQUIRED);
+    EmeConfigRule not_allowed_rule = GetDistinctiveIdentifierConfigRule(
+        key_systems_->GetDistinctiveIdentifierSupport(key_system),
+        EME_FEATURE_NOT_ALLOWED);
+    EmeConfigRule required_rule = GetDistinctiveIdentifierConfigRule(
+        key_systems_->GetDistinctiveIdentifierSupport(key_system),
+        EME_FEATURE_REQUIRED);
     bool not_allowed_supported =
         config_state->IsRuleSupported(not_allowed_rule);
     bool required_supported = config_state->IsRuleSupported(required_rule);
@@ -501,10 +603,12 @@ KeySystemConfigSelector::GetSupportedConfiguration(
   //         to "not-allowed".
   if (accumulated_configuration->persistentState ==
       blink::WebMediaKeySystemConfiguration::Requirement::Optional) {
-    EmeConfigRule not_allowed_rule = key_systems_->GetPersistentStateConfigRule(
-        key_system, EME_FEATURE_NOT_ALLOWED);
-    EmeConfigRule required_rule = key_systems_->GetPersistentStateConfigRule(
-        key_system, EME_FEATURE_REQUIRED);
+    EmeConfigRule not_allowed_rule = GetPersistentStateConfigRule(
+        key_systems_->GetPersistentStateSupport(key_system),
+        EME_FEATURE_NOT_ALLOWED);
+    EmeConfigRule required_rule = GetPersistentStateConfigRule(
+        key_systems_->GetPersistentStateSupport(key_system),
+        EME_FEATURE_REQUIRED);
     // |distinctiveIdentifier| should not be affected after it is decided.
     DCHECK(not_allowed_rule == EmeConfigRule::NOT_SUPPORTED ||
            not_allowed_rule == EmeConfigRule::PERSISTENCE_NOT_ALLOWED);

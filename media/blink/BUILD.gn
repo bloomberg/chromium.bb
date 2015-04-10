@@ -114,6 +114,7 @@ if (!is_mac) {
       "buffered_data_source_unittest.cc",
       "buffered_resource_loader_unittest.cc",
       "cache_util_unittest.cc",
+      "key_system_config_selector_unittest.cc",
       "mock_webframeclient.h",
       "mock_weburlloader.cc",
       "mock_weburlloader.h",
