@@ -29,7 +29,7 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
 
   // Begins the external data collection.  This service is started and stopped
   // by the chrome metrics service.  Calls to RecordAction originate in the
-  // File thread but are executed in the UI thread.
+  // blocking pool but are executed in the UI thread.
   void Start();
 
   // Creates an ExternalMetrics instance reading from |filename| for testing

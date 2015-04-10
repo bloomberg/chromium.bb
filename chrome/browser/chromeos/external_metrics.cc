@@ -172,8 +172,8 @@ void ExternalMetrics::CollectEventsAndReschedule() {
 }
 
 void ExternalMetrics::ScheduleCollector() {
-  bool result = BrowserThread::PostDelayedTask(
-      BrowserThread::FILE, FROM_HERE,
+  bool result = BrowserThread::GetBlockingPool()->PostDelayedWorkerTask(
+      FROM_HERE,
       base::Bind(&chromeos::ExternalMetrics::CollectEventsAndReschedule, this),
       base::TimeDelta::FromSeconds(kExternalMetricsCollectionIntervalSeconds));
   DCHECK(result);
