@@ -25187,6 +25187,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.EmptyUsernames.ParsedUsernameField"
+    enum="PasswordManagerEmptyUsernameField">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    When parsing a password form, whether a username field is detected.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.Enabled" enum="BooleanEnabled">
   <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
@@ -57482,6 +57490,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Bubble lost focus / No infobar interaction"/>
   <int value="1" label="Clicked collect URL"/>
   <int value="2" label="Clicked do not collect URL"/>
+</enum>
+
+<enum name="PasswordManagerEmptyUsernameField" type="int">
+  <int value="0" label="Has username field"/>
+  <int value="1" label="No username field"/>
 </enum>
 
 <enum name="PasswordManagerOsPasswordStatus" type="int">

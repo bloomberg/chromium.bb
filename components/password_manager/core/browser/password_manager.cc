@@ -405,6 +405,8 @@ void PasswordManager::CreatePendingLoginManagers(
     if (old_manager_found)
       continue;  // The current form is already managed.
 
+    UMA_HISTOGRAM_BOOLEAN("PasswordManager.EmptyUsernames.ParsedUsernameField",
+                          iter->username_element.empty());
     bool ssl_valid = iter->origin.SchemeIsSecure();
     PasswordFormManager* manager = new PasswordFormManager(
         this, client_, driver->AsWeakPtr(), *iter, ssl_valid);
