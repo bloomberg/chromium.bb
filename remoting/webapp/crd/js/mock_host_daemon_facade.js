@@ -33,8 +33,11 @@ remoting.MockHostDaemonFacade = function() {
   /** @type {?string} */
   this.hostName = null;
 
-  /** @type {?string} */
-  this.pinHash = null;
+  /**
+   * A function to generate a fake PIN hash given a host ID and a PIN.
+   * @type {?function(string,string):string}
+   */
+  this.pinHashFunc = null;
 
   /** @type {?string} */
   this.privateKey = null;
@@ -65,6 +68,9 @@ remoting.MockHostDaemonFacade = function() {
 
   /** @type {?remoting.HostController.State} */
   this.daemonState = null;
+
+  /** @type {?remoting.HostController.AsyncResult} */
+  this.updateDaemonConfigResult = null;
 
   /** @type {Array<remoting.PairedClient>} */
   this.pairedClients = null;
@@ -119,10 +125,10 @@ remoting.MockHostDaemonFacade.prototype.getPinHash =
     function(hostId, pin, onDone, onError) {
   var that = this;
   Promise.resolve().then(function() {
-    if (that.pinHash === null) {
+    if (that.pinHashFunc === null) {
       onError(remoting.Error.unexpected('getPinHash'));
     } else {
-      onDone(that.pinHash);
+      onDone(that.pinHashFunc(hostId, pin));
     }
   });
 };
@@ -155,9 +161,13 @@ remoting.MockHostDaemonFacade.prototype.updateDaemonConfig =
   var that = this;
   Promise.resolve().then(function() {
     if (that.daemonConfig === null ||
+        that.updateDaemonConfigResult === null ||
         'host_id' in config ||
         'xmpp_login' in config) {
       onError(remoting.Error.unexpected('updateDaemonConfig'));
+    } else if (that.updateDaemonConfigResult !=
+               remoting.HostController.AsyncResult.OK) {
+      onDone(that.updateDaemonConfigResult);
     } else {
       base.mix(that.daemonConfig, config);
       onDone(remoting.HostController.AsyncResult.OK);

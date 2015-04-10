@@ -190,12 +190,12 @@ remoting.MockXhr.setResponseFor = function(
 };
 
 /**
- * Installs an emptresponse.  See |setResponseFor| for
+ * Installs a response with no content.  See |setResponseFor| for
  * more details on how the parameters work.
  *
  * @param {?string} method
  * @param {?string|!RegExp} urlPattern
- * @param {number=} opt_status
+ * @param {number=} opt_status The status code to return.
  * @param {boolean=} opt_reuse
  */
 remoting.MockXhr.setEmptyResponseFor = function(

@@ -391,6 +391,8 @@ remoting.HostDaemonFacade.prototype.generateKeyPair =
  * includes these parameters. Changes take effect before the callback
  * is called.
  *
+ * TODO(jrw): Consider eliminating onError callback.
+ *
  * @param {Object} config The new config parameters.
  * @param {function(remoting.HostController.AsyncResult):void} onDone
  *     Callback to be called when finished.
@@ -454,6 +456,8 @@ remoting.HostDaemonFacade.prototype.getUsageStatsConsent =
 /**
  * Starts the daemon process with the specified configuration.
  *
+ * TODO(jrw): Consider eliminating onError callback.
+ *
  * @param {Object} config Host configuration.
  * @param {boolean} consent Consent to report crash dumps.
  * @param {function(remoting.HostController.AsyncResult):void} onDone
@@ -472,6 +476,8 @@ remoting.HostDaemonFacade.prototype.startDaemon =
 
 /**
  * Stops the daemon process.
+ *
+ * TODO(jrw): Consider eliminating onError callback.
  *
  * @param {function(remoting.HostController.AsyncResult):void} onDone
  *     Callback to return result.
