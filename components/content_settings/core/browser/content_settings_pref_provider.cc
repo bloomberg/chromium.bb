@@ -300,7 +300,7 @@ void PrefProvider::MigrateObsoleteMediaContentSetting() {
   std::vector<Rule> rules_to_delete;
   {
     scoped_ptr<RuleIterator> rule_iterator(GetRuleIterator(
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM, std::string(), false));
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM, ResourceIdentifier(), false));
     while (rule_iterator->HasNext()) {
       // Skip default setting and rules without a value.
       const content_settings::Rule& rule = rule_iterator->Next();
@@ -325,7 +325,7 @@ void PrefProvider::MigrateObsoleteMediaContentSetting() {
       SetWebsiteSetting(it->primary_pattern,
                         it->secondary_pattern,
                         CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                        std::string(),
+                        ResourceIdentifier(),
                         new base::FundamentalValue(CONTENT_SETTING_ALLOW));
     }
     // Add the exception to the new camera content setting.
@@ -333,7 +333,7 @@ void PrefProvider::MigrateObsoleteMediaContentSetting() {
       SetWebsiteSetting(it->primary_pattern,
                         it->secondary_pattern,
                         CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                        std::string(),
+                        ResourceIdentifier(),
                         new base::FundamentalValue(CONTENT_SETTING_ALLOW));
     }
 
@@ -341,7 +341,7 @@ void PrefProvider::MigrateObsoleteMediaContentSetting() {
     SetWebsiteSetting(it->primary_pattern,
                       it->secondary_pattern,
                       CONTENT_SETTINGS_TYPE_MEDIASTREAM,
-                      std::string(),
+                      ResourceIdentifier(),
                       NULL);
   }
 }

@@ -267,7 +267,7 @@ bool DefaultProvider::SetWebsiteSetting(
   NotifyObservers(ContentSettingsPattern(),
                   ContentSettingsPattern(),
                   content_type,
-                  std::string());
+                  ResourceIdentifier());
 
   return true;
 }
@@ -423,7 +423,7 @@ void DefaultProvider::OnPreferenceChanged(const std::string& name) {
     NotifyObservers(ContentSettingsPattern(),
                     ContentSettingsPattern(),
                     content_type,
-                    std::string());
+                    ResourceIdentifier());
   }
 }
 

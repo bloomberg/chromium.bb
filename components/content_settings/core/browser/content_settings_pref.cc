@@ -165,31 +165,33 @@ void ContentSettingsPref::ClearAllContentSettingsRules() {
   {
     base::AutoLock auto_lock(lock_);
     scoped_ptr<RuleIterator> rule_iterator(
-        map_to_modify->GetRuleIterator(content_type_, std::string(), NULL));
+        map_to_modify->GetRuleIterator(content_type_,
+            ResourceIdentifier(),
+            NULL));
     // Copy the rules; we cannot call |UpdatePref| while holding |lock_|.
     while (rule_iterator->HasNext())
       rules_to_delete.push_back(rule_iterator->Next());
 
-    map_to_modify->DeleteValues(content_type_, std::string());
+    map_to_modify->DeleteValues(content_type_, ResourceIdentifier());
   }
 
   for (std::vector<Rule>::const_iterator it = rules_to_delete.begin();
        it != rules_to_delete.end(); ++it) {
     UpdatePref(it->primary_pattern,
                it->secondary_pattern,
-               std::string(),
+               ResourceIdentifier(),
                NULL);
     if (IsContentSettingsTypeSyncable(content_type_)) {
       UpdateOldPref(it->primary_pattern,
                     it->secondary_pattern,
-                    std::string(),
+                    ResourceIdentifier(),
                     NULL);
     }
   }
   notify_callback_.Run(ContentSettingsPattern(),
                        ContentSettingsPattern(),
                        content_type_,
-                       std::string());
+                       ResourceIdentifier());
 }
 
 void ContentSettingsPref::UpdateLastUsage(
@@ -419,7 +421,7 @@ void ContentSettingsPref::OnPrefChanged() {
   notify_callback_.Run(ContentSettingsPattern(),
                        ContentSettingsPattern(),
                        content_type_,
-                       std::string());
+                       ResourceIdentifier());
 }
 
 void ContentSettingsPref::UpdatePref(

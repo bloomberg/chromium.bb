@@ -91,7 +91,7 @@ std::string ContentSettingToString(ContentSetting setting) {
       NOTREACHED();
   }
 
-  return std::string();
+  return ResourceIdentifier();
 }
 
 ContentSetting ContentSettingFromString(const std::string& name) {
@@ -229,9 +229,13 @@ base::Value* GetContentSettingValueAndPatterns(
 void GetRendererContentSettingRules(const HostContentSettingsMap* map,
                                     RendererContentSettingRules* rules) {
   map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_IMAGES, std::string(), &(rules->image_rules));
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      ResourceIdentifier(),
+      &(rules->image_rules));
   map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string(), &(rules->script_rules));
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+      ResourceIdentifier(),
+      &(rules->script_rules));
 }
 
 }  // namespace content_settings
