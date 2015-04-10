@@ -149,15 +149,15 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
 
 // Before:
 //
-// ni:///[algorithm];[hash]
-//       ^                 ^
-//       position          end
+// [algorithm]-[hash]
+// ^                 ^
+// position          end
 //
 // After (if successful: if the method returns false, we make no promises and the caller should exit early):
 //
-// ni:///[algorithm];[hash]
-//                  ^      ^
-//           position    end
+// [algorithm]-[hash]
+//            ^      ^
+//     position    end
 bool SubresourceIntegrity::parseAlgorithm(const UChar*& position, const UChar* end, HashAlgorithm& algorithm)
 {
     // Any additions or subtractions from this struct should also modify the
@@ -187,15 +187,15 @@ bool SubresourceIntegrity::parseAlgorithm(const UChar*& position, const UChar* e
 
 // Before:
 //
-// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
-//                   ^     ^                              ^              ^
-//            position   end                       position            end
+// [algorithm]-[hash]      OR     [algorithm]-[hash]?[options]
+//             ^     ^                        ^               ^
+//      position   end                 position             end
 //
 // After (if successful: if the method returns false, we make no promises and the caller should exit early):
 //
-// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
-//                         ^                                    ^        ^
-//                         position/end                  position      end
+// [algorithm]-[hash]      OR     [algorithm]-[hash]?[options]
+//                   ^                              ^         ^
+//        position/end                       position       end
 bool SubresourceIntegrity::parseDigest(const UChar*& position, const UChar* end, String& digest)
 {
     const UChar* begin = position;
@@ -214,18 +214,19 @@ bool SubresourceIntegrity::parseDigest(const UChar*& position, const UChar* end,
 
 // Before:
 //
-// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
-//                         ^                                    ^        ^
-//              position/end                             position      end
+// [algorithm]-[hash]     OR      [algorithm]-[hash]?[options]
+//                   ^                              ^         ^
+//        position/end                       position       end
 //
 // After (if successful: if the method returns false, we make no promises and the caller should exit early):
 //
-// ni:///[algorithm];[hash]     OR      ni:///[algorithm];[hash]?[params]
-//                         ^                                             ^
-//              position/end                                  position/end
+// [algorithm]-[hash]     OR      [algorithm]-[hash]?[options]
+//                   ^                                        ^
+//        position/end                             position/end
 bool SubresourceIntegrity::parseMimeType(const UChar*& position, const UChar* end, String& type)
 {
     type = emptyString();
+
     if (position == end)
         return true;
 
@@ -258,11 +259,6 @@ SubresourceIntegrity::IntegrityParseResult SubresourceIntegrity::parseIntegrityA
     const UChar* position = characters.data();
     const UChar* end = characters.end();
 
-    if (!skipToken<UChar>(position, end, "ni:///")) {
-        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The value must begin with 'ni:///'.", document);
-        return IntegrityParseErrorFatal;
-    }
-
     // Algorithm parsing errors are non-fatal (the subresource should
     // still be loaded) because strong hash algorithms should be used
     // without fear of breaking older user agents that don't support
@@ -272,8 +268,8 @@ SubresourceIntegrity::IntegrityParseResult SubresourceIntegrity::parseIntegrityA
         return IntegrityParseErrorNonfatal;
     }
 
-    if (!skipExactly<UChar>(position, end, ';')) {
-        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The hash algorithm must be followed by a ';' character.", document);
+    if (!skipExactly<UChar>(position, end, '-')) {
+        logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The hash algorithm must be followed by a '-' character.", document);
         return IntegrityParseErrorFatal;
     }
 
