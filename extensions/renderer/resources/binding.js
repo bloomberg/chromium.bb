@@ -300,8 +300,17 @@ Binding.prototype = {
             // [{'name': 'foo'}, {'name': 'bar'}].
             enumValue = $Object.hasOwnProperty(enumValue, 'name') ?
                 enumValue.name : enumValue;
-            if (enumValue)  // Avoid setting any empty enums.
-              mod[id][enumValue] = enumValue;
+            if (enumValue) {  // Avoid setting any empty enums.
+              // Make all properties in ALL_CAPS_STYLE.
+              // Replace myEnum-Foo with my_Enum-Foo:
+              var propertyName =
+                  $String.replace(enumValue, /([a-z])([A-Z])/g, '$1_$2');
+              // Replace my_Enum-Foo with my_Enum_Foo:
+              propertyName = $String.replace(propertyName, /\W/g, '_');
+              // Uppercase (replace my_Enum_Foo with MY_ENUM_FOO):
+              propertyName = $String.toUpperCase(propertyName);
+              mod[id][propertyName] = enumValue;
+            }
           });
         }
       }, this);

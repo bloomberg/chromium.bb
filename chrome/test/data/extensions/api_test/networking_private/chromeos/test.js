@@ -100,7 +100,7 @@ var availableTests = [
               'stub_cellular1_guid', callbackPass(function() {
                 chrome.networkingPrivate.getState(
                     'stub_cellular1_guid', callbackPass(function(state) {
-                      assertEq(ActivationStateType.Activated,
+                      assertEq(ActivationStateType.ACTIVATED,
                                state.Cellular.ActivationState);
                     }));
               }));
@@ -124,7 +124,7 @@ var availableTests = [
   function createNetwork() {
     chrome.networkingPrivate.createNetwork(
       false,  // shared
-      { Type: NetworkType.WiFi,
+      { Type: NetworkType.WI_FI,
         GUID: 'ignored_guid',
         WiFi: {
           SSID: 'wifi_created',
@@ -136,7 +136,7 @@ var availableTests = [
         assertFalse(guid == 'ignored_guid');
         chrome.networkingPrivate.getProperties(
             guid, callbackPass(function(properties) {
-              assertEq(NetworkType.WiFi, properties.Type);
+              assertEq(NetworkType.WI_FI, properties.Type);
               assertEq(guid, properties.GUID);
               assertEq('wifi_created', properties.WiFi.SSID);
               assertEq('WEP-PSK', properties.WiFi.Security);
@@ -154,7 +154,7 @@ var availableTests = [
       return false;
     }
     var filter = {
-      networkType: NetworkType.WiFi,
+      networkType: NetworkType.WI_FI,
       visible: true,
       configured: true
     };
@@ -175,7 +175,7 @@ var availableTests = [
   function getNetworks() {
     // Test 'type' and 'configured'.
     var filter = {
-      networkType: NetworkType.WiFi,
+      networkType: NetworkType.WI_FI,
       configured: true
     };
     chrome.networkingPrivate.getNetworks(
@@ -183,10 +183,10 @@ var availableTests = [
       callbackPass(function(result) {
         assertEq([{
           Connectable: true,
-          ConnectionState: ConnectionStateType.Connected,
+          ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_wifi1_guid',
           Name: 'wifi1',
-          Type: NetworkType.WiFi,
+          Type: NetworkType.WI_FI,
           Source: 'User',
           WiFi: {
             Security: 'WEP-PSK',
@@ -195,7 +195,7 @@ var availableTests = [
         }, {
           GUID: 'stub_wifi2_guid',
           Name: 'wifi2_PSK',
-          Type: NetworkType.WiFi,
+          Type: NetworkType.WI_FI,
           Source: 'User',
           WiFi: {
             Security: 'WPA-PSK',
@@ -209,11 +209,11 @@ var availableTests = [
           callbackPass(function(result) {
             assertEq([{
               Connectable: true,
-              ConnectionState: ConnectionStateType.Connected,
+              ConnectionState: ConnectionStateType.CONNECTED,
               GUID: 'stub_wifi1_guid',
               Name: 'wifi1',
               Source: 'User',
-              Type: NetworkType.WiFi,
+              Type: NetworkType.WI_FI,
               WiFi: {
                 Security: 'WEP-PSK',
                 SignalStrength: 40
@@ -222,21 +222,21 @@ var availableTests = [
 
             // Test 'limit'.
             filter = {
-              networkType: NetworkType.All,
+              networkType: NetworkType.ALL,
               limit: 1
             };
             chrome.networkingPrivate.getNetworks(
               filter,
               callbackPass(function(result) {
                 assertEq([{
-                  ConnectionState: ConnectionStateType.Connected,
+                  ConnectionState: ConnectionStateType.CONNECTED,
                   Ethernet: {
                     Authentication: 'None'
                   },
                   GUID: 'stub_ethernet_guid',
                   Name: 'eth0',
                   Source: 'Device',
-                  Type: NetworkType.Ethernet
+                  Type: NetworkType.ETHERNET
                 }], result);
               }));
           }));
@@ -244,40 +244,40 @@ var availableTests = [
   },
   function getVisibleNetworks() {
     chrome.networkingPrivate.getVisibleNetworks(
-      NetworkType.All,
+      NetworkType.ALL,
       callbackPass(function(result) {
         assertEq([{
-          ConnectionState: ConnectionStateType.Connected,
+          ConnectionState: ConnectionStateType.CONNECTED,
           Ethernet: {
             Authentication: 'None'
           },
           GUID: 'stub_ethernet_guid',
           Name: 'eth0',
           Source: 'Device',
-          Type: NetworkType.Ethernet
+          Type: NetworkType.ETHERNET
         }, {
           Connectable: true,
-          ConnectionState: ConnectionStateType.Connected,
+          ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_wifi1_guid',
           Name: 'wifi1',
           Source: 'User',
-          Type: NetworkType.WiFi,
+          Type: NetworkType.WI_FI,
           WiFi: {
             Security: 'WEP-PSK',
             SignalStrength: 40
           }
         }, {
           Connectable: true,
-          ConnectionState: ConnectionStateType.Connected,
+          ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_wimax_guid',
           Name: 'wimax',
           Source: 'User',
-          Type: NetworkType.WiMAX,
+          Type: NetworkType.WI_MAX,
           WiMAX: {
             SignalStrength: 40
           }
         }, {
-          ConnectionState: ConnectionStateType.Connected,
+          ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_vpn1_guid',
           Name: 'vpn1',
           Source: 'User',
@@ -286,7 +286,7 @@ var availableTests = [
             Type: 'OpenVPN'
           }
         }, {
-          ConnectionState: ConnectionStateType.NotConnected,
+          ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: 'stub_vpn2_guid',
           Name: 'vpn2',
           Source: 'User',
@@ -299,11 +299,11 @@ var availableTests = [
           }
         }, {
           Connectable: true,
-          ConnectionState: ConnectionStateType.NotConnected,
+          ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: 'stub_wifi2_guid',
           Name: 'wifi2_PSK',
           Source: 'User',
-          Type: NetworkType.WiFi,
+          Type: NetworkType.WI_FI,
           WiFi: {
             Security: 'WPA-PSK',
             SignalStrength: 80
@@ -313,26 +313,26 @@ var availableTests = [
   },
   function getVisibleNetworksWifi() {
     chrome.networkingPrivate.getVisibleNetworks(
-      NetworkType.WiFi,
+      NetworkType.WI_FI,
       callbackPass(function(result) {
         assertEq([{
           Connectable: true,
-          ConnectionState: ConnectionStateType.Connected,
+          ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_wifi1_guid',
           Name: 'wifi1',
           Source: 'User',
-          Type: NetworkType.WiFi,
+          Type: NetworkType.WI_FI,
           WiFi: {
             Security: 'WEP-PSK',
             SignalStrength: 40
           }
         }, {
           Connectable: true,
-          ConnectionState: ConnectionStateType.NotConnected,
+          ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: 'stub_wifi2_guid',
           Name: 'wifi2_PSK',
           Source: 'User',
-          Type: NetworkType.WiFi,
+          Type: NetworkType.WI_FI,
           WiFi: {
             Security: 'WPA-PSK',
             SignalStrength: 80
@@ -392,9 +392,9 @@ var availableTests = [
       callbackPass(function(result) {
         assertEq({
           Connectable: true,
-          ConnectionState: ConnectionStateType.Connected,
+          ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_wifi1_guid',
-          IPAddressConfigType: chrome.networkingPrivate.IPConfigType.Static,
+          IPAddressConfigType: chrome.networkingPrivate.IPConfigType.STATIC,
           IPConfigs: [{
             Gateway: '0.0.0.1',
             IPAddress: '0.0.0.0',
@@ -407,7 +407,7 @@ var availableTests = [
             IPAddress: '1.2.3.4',
             Type: 'IPv4'
           },
-          Type: NetworkType.WiFi,
+          Type: NetworkType.WI_FI,
           WiFi: {
             HexSSID: '7769666931', // 'wifi1'
             Frequency: 2400,
@@ -425,7 +425,7 @@ var availableTests = [
       callbackPass(function(result) {
         assertEq({
           Cellular: {
-            ActivationState: ActivationStateType.NotActivated,
+            ActivationState: ActivationStateType.NOT_ACTIVATED,
             AllowRoaming: false,
             AutoConnect: true,
             Carrier: 'Cellular1_Carrier',
@@ -436,10 +436,10 @@ var availableTests = [
             NetworkTechnology: 'GSM',
             RoamingState: 'Home'
           },
-          ConnectionState: ConnectionStateType.NotConnected,
+          ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: 'stub_cellular1_guid',
           Name: 'cellular1',
-          Type: NetworkType.Cellular,
+          Type: NetworkType.CELLULAR,
         }, result);
       }));
   },
@@ -449,7 +449,7 @@ var availableTests = [
       callbackPass(function(result) {
         assertEq({
           Connectable: true,
-          ConnectionState: ConnectionStateType.NotConnected,
+          ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: 'stub_wifi2',
           Name: {
             Active: 'wifi2_PSK',
@@ -458,9 +458,9 @@ var availableTests = [
           },
           Source: 'UserPolicy',
           Type: {
-            Active: NetworkType.WiFi,
+            Active: NetworkType.WI_FI,
             Effective: 'UserPolicy',
-            UserPolicy: NetworkType.WiFi
+            UserPolicy: NetworkType.WI_FI
           },
           WiFi: {
             AutoConnect: {
@@ -599,11 +599,11 @@ var availableTests = [
       callbackPass(function(result) {
         assertEq({
           Connectable: true,
-          ConnectionState: ConnectionStateType.NotConnected,
+          ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: 'stub_wifi2_guid',
           Name: 'wifi2_PSK',
           Source: 'User',
-          Type: NetworkType.WiFi,
+          Type: NetworkType.WI_FI,
           WiFi: {
             Security: 'WPA-PSK',
             SignalStrength: 80
@@ -619,7 +619,7 @@ var availableTests = [
   function onNetworksChangedEventConnect() {
     var network = 'stub_wifi2_guid';
     var done = chrome.test.callbackAdded();
-    var expectedStates = [ConnectionStateType.Connected];
+    var expectedStates = [ConnectionStateType.CONNECTED];
     var listener =
         new privateHelpers.watchForStateChanges(network, expectedStates, done);
     chrome.networkingPrivate.startConnect(network, callbackPass());
@@ -627,7 +627,7 @@ var availableTests = [
   function onNetworksChangedEventDisconnect() {
     var network = 'stub_wifi1_guid';
     var done = chrome.test.callbackAdded();
-    var expectedStates = [ConnectionStateType.NotConnected];
+    var expectedStates = [ConnectionStateType.NOT_CONNECTED];
     var listener =
         new privateHelpers.watchForStateChanges(network, expectedStates, done);
     chrome.networkingPrivate.startDisconnect(network, callbackPass());
@@ -683,13 +683,13 @@ var availableTests = [
   function setWifiTDLSEnabledState() {
     chrome.networkingPrivate.setWifiTDLSEnabledState(
         'aa:bb:cc:dd:ee:ff', true, callbackPass(function(result) {
-          assertEq(ConnectionStateType.Connected, result);
+          assertEq(ConnectionStateType.CONNECTED, result);
         }));
   },
   function getWifiTDLSStatus() {
     chrome.networkingPrivate.getWifiTDLSStatus(
         'aa:bb:cc:dd:ee:ff', callbackPass(function(result) {
-          assertEq(ConnectionStateType.Connected, result);
+          assertEq(ConnectionStateType.CONNECTED, result);
         }));
   },
   function getCaptivePortalStatus() {
