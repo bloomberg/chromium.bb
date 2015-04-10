@@ -21,13 +21,11 @@ struct WebSyncError;
 struct WebSyncRegistration;
 class WebString;
 
-using WebSyncGetRegistrationsCallbacks = WebCallbacks<WebVector<WebSyncRegistration>, WebSyncError>;
-
 // SyncRegistrationCallbacks is an implementation of WebSyncRegistrationCallbacks
 // that will resolve the underlying promise depending on the result passed to
 // the callback. It takes a ServiceWorkerRegistration in its constructor and
 // will pass it to the SyncRegistration.
-class SyncRegistrationCallbacks final : public WebCallbacks<WebSyncRegistration, WebSyncError> {
+class SyncRegistrationCallbacks final : public WebSyncRegistrationCallbacks {
     WTF_MAKE_NONCOPYABLE(SyncRegistrationCallbacks);
 public:
     SyncRegistrationCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, ServiceWorkerRegistration*);
@@ -46,7 +44,7 @@ private:
 // depending on the result passed to the callback. It takes a
 // ServiceWorkerRegistration in its constructor and will pass it to the
 // SyncProvider.
-class SyncUnregistrationCallbacks final : public WebCallbacks<bool, WebSyncError> {
+class SyncUnregistrationCallbacks final : public WebSyncUnregistrationCallbacks {
     WTF_MAKE_NONCOPYABLE(SyncUnregistrationCallbacks);
 public:
     SyncUnregistrationCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, ServiceWorkerRegistration*);
@@ -64,13 +62,13 @@ private:
 // that will resolve the underlying promise depending on the result passed to
 // the callback. It takes a ServiceWorkerRegistration in its constructor and
 // will pass it to the SyncRegistration.
-class SyncGetRegistrationsCallbacks final : public WebCallbacks<WebVector<WebSyncRegistration>, WebSyncError> {
+class SyncGetRegistrationsCallbacks final : public WebSyncGetRegistrationsCallbacks {
     WTF_MAKE_NONCOPYABLE(SyncGetRegistrationsCallbacks);
 public:
     SyncGetRegistrationsCallbacks(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, ServiceWorkerRegistration*);
     ~SyncGetRegistrationsCallbacks() override;
 
-    void onSuccess(WebVector<WebSyncRegistration>*) override;
+    void onSuccess(WebVector<WebSyncRegistration*>*) override;
     void onError(WebSyncError*) override;
 
 private:

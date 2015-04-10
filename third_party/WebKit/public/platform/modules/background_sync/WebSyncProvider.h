@@ -18,7 +18,7 @@ struct WebSyncRegistration;
 
 using WebSyncRegistrationCallbacks = WebCallbacks<WebSyncRegistration, WebSyncError>;
 using WebSyncUnregistrationCallbacks = WebCallbacks<bool, WebSyncError>;
-using WebSyncGetRegistrationsCallbacks = WebCallbacks<WebVector<WebSyncRegistration>, WebSyncError>;
+using WebSyncGetRegistrationsCallbacks = WebCallbacks<WebVector<WebSyncRegistration*>, WebSyncError>;
 
 class WebSyncProvider {
 public:

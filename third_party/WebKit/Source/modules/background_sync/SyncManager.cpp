@@ -71,7 +71,7 @@ ScriptPromise SyncManager::registerFunction(blink::ScriptState* scriptState, con
     } else {
         networkType = WebSyncRegistration::NetworkType::NetworkTypeOnline;
     }
-    WebSyncRegistration webSyncRegistration = WebSyncRegistration(options.id(), options.minDelay(), options.maxDelay(), options.minPeriod(), networkType, options.allowOnBattery(), options.idleRequired());
+    WebSyncRegistration webSyncRegistration(options.id(), options.minDelay(), options.maxDelay(), options.minPeriod(), networkType, options.allowOnBattery(), options.idleRequired());
     backgroundSyncProvider()->registerBackgroundSync(&webSyncRegistration, m_registration->webRegistration(), new SyncRegistrationCallbacks(resolver, m_registration));
 
     return promise;

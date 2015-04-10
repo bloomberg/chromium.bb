@@ -89,12 +89,13 @@ SyncGetRegistrationsCallbacks::~SyncGetRegistrationsCallbacks()
 {
 }
 
-void SyncGetRegistrationsCallbacks::onSuccess(WebVector<WebSyncRegistration>* webSyncRegistrations)
+void SyncGetRegistrationsCallbacks::onSuccess(WebVector<WebSyncRegistration*>* webSyncRegistrations)
 {
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-        for (size_t i = 0; i < webSyncRegistrations->size(); ++i) {
-            WebSyncRegistration webSyncRegistration = (*webSyncRegistrations)[i];
-            SyncRegistration::dispose(&webSyncRegistration);
+        if (webSyncRegistrations) {
+            for (size_t i = 0; i < webSyncRegistrations->size(); ++i)
+                SyncRegistration::dispose((*webSyncRegistrations)[i]);
+            delete(webSyncRegistrations);
         }
         return;
     }
@@ -106,10 +107,11 @@ void SyncGetRegistrationsCallbacks::onSuccess(WebVector<WebSyncRegistration>* we
 
     Vector<SyncRegistration*> syncRegistrations;
     for (size_t i = 0; i < webSyncRegistrations->size(); ++i) {
-        WebSyncRegistration webSyncRegistration = (*webSyncRegistrations)[i];
-        SyncRegistration* reg = SyncRegistration::take(m_resolver.get(), &webSyncRegistration, m_serviceWorkerRegistration);
+        WebSyncRegistration* webSyncRegistration = (*webSyncRegistrations)[i];
+        SyncRegistration* reg = SyncRegistration::take(m_resolver.get(), webSyncRegistration, m_serviceWorkerRegistration);
         syncRegistrations.append(reg);
     }
+    delete(webSyncRegistrations);
     m_resolver->resolve(syncRegistrations);
 }
 

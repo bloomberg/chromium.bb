@@ -19,6 +19,17 @@ struct WebSyncRegistration {
         NetworkTypeLast = NetworkTypeNonMobile
     };
 
+    WebSyncRegistration()
+        : id("")
+        , minDelayMs(0)
+        , maxDelayMs(0)
+        , minPeriodMs(0)
+        , minRequiredNetwork(NetworkType::NetworkTypeAny)
+        , allowOnBattery(true)
+        , idleRequired(false)
+    {
+    }
+
     WebSyncRegistration(const WebString& registrationId, unsigned long minDelayMs,
         unsigned long maxDelayMs, unsigned long minPeriodMs, NetworkType minRequiredNetwork,
         bool allowOnBattery, bool idleRequired)
