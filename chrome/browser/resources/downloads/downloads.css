@@ -106,6 +106,10 @@ html[dir=rtl] .progress {
   background-size: 48px;
 }
 
+.title-area {
+  white-space: nowrap;
+}
+
 .name,
 .src-url,
 .controls a,
