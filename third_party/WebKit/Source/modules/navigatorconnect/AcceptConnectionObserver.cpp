@@ -24,7 +24,7 @@ public:
         Rejected,
     };
 
-    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, AcceptConnectionObserver* observer, ResolveType type)
+    static v8::Local<v8::Function> createFunction(ScriptState* scriptState, AcceptConnectionObserver* observer, ResolveType type)
     {
         ThenFunction* self = new ThenFunction(scriptState, observer, type);
         return self->bindToV8Function();

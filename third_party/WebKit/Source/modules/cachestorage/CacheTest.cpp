@@ -208,7 +208,7 @@ private:
     // A ScriptFunction that creates a test failure if it is ever called.
     class UnreachableFunction : public ScriptFunction {
     public:
-        static v8::Handle<v8::Function> create(ScriptState* scriptState)
+        static v8::Local<v8::Function> create(ScriptState* scriptState)
         {
             UnreachableFunction* self = new UnreachableFunction(scriptState);
             return self->bindToV8Function();
@@ -227,7 +227,7 @@ private:
     // values being passed.
     class TestFunction : public ScriptFunction {
     public:
-        static v8::Handle<v8::Function> create(ScriptState* scriptState, ScriptValue* outValue)
+        static v8::Local<v8::Function> create(ScriptState* scriptState, ScriptValue* outValue)
         {
             TestFunction* self = new TestFunction(scriptState, outValue);
             return self->bindToV8Function();

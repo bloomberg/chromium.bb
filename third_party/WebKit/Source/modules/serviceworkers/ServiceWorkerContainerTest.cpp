@@ -43,7 +43,7 @@ public:
 
     // The returned ScriptFunction can outlive the StubScriptFunction,
     // but it should not be called after the StubScriptFunction dies.
-    v8::Handle<v8::Function> function(ScriptState* scriptState)
+    v8::Local<v8::Function> function(ScriptState* scriptState)
     {
         return ScriptFunctionImpl::createFunction(scriptState, *this);
     }
@@ -57,7 +57,7 @@ private:
 
     class ScriptFunctionImpl : public ScriptFunction {
     public:
-        static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, StubScriptFunction& owner)
+        static v8::Local<v8::Function> createFunction(ScriptState* scriptState, StubScriptFunction& owner)
         {
             ScriptFunctionImpl* self = new ScriptFunctionImpl(scriptState, owner);
             return self->bindToV8Function();

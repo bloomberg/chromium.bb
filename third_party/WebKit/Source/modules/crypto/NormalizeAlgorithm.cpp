@@ -282,12 +282,12 @@ bool getOptionalBufferSource(const Dictionary& raw, const char* propertyName, bo
     hasProperty = true;
 
     if (v8Value->IsArrayBufferView()) {
-        buffer.setArrayBufferView(V8ArrayBufferView::toImpl(v8::Handle<v8::Object>::Cast(v8Value)));
+        buffer.setArrayBufferView(V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(v8Value)));
         return true;
     }
 
     if (v8Value->IsArrayBuffer()) {
-        buffer.setArrayBuffer(V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(v8Value)));
+        buffer.setArrayBuffer(V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8Value)));
         return true;
     }
 
