@@ -128,13 +128,6 @@ remoting.WindowFrame.prototype.getClientArea = function() {
  * @private
  */
 remoting.WindowFrame.prototype.disconnectSession_ = function() {
-  // When the user disconnects, exit full-screen mode. This should not be
-  // necessary, as we do the same thing in client_session.js when the plugin
-  // is removed. However, there seems to be a bug in chrome.AppWindow.restore
-  // that causes it to get stuck in full-screen mode without this.
-  if (chrome.app.window.current().isFullscreen()) {
-    chrome.app.window.current().restore();
-  }
   remoting.app.disconnect();
 };
 
