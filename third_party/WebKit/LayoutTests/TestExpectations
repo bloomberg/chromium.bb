@@ -63,9 +63,7 @@ crbug.com/469454 [ Mac ] virtual/slimmingpaint/fast/repaint/fixed-element-repain
 
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ Pass ImageOnlyFailure ]
 
-crbug.com/450725 virtual/slimmingpaint/svg/text/remove-tspan-from-text.html [ ImageOnlyFailure NeedsManualRebaseline ]
-crbug.com/450725 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ Crash Timeout NeedsManualRebaseline ]
-crbug.com/450725 virtual/slimmingpaint/svg/text/text-text-05-t.svg [ ImageOnlyFailure NeedsManualRebaseline ]
+crbug.com/475711 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ Crash ]
 
 # Slimming Paint printing failures
 crbug.com/471100 virtual/slimmingpaint/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Crash Timeout Pass ]
@@ -1022,6 +1020,7 @@ crbug.com/334269 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/zero-wi
 
 crbug.com/334269 [ Mac ] editing/spelling/spellcheck-editable-on-focus-sync.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ Mac ] fast/repaint/4776765.html [ NeedsManualRebaseline ]
+crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/repaint/4776765.html [ NeedsManualRebaseline ]
 
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/008.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/009.html [ NeedsManualRebaseline ]
@@ -1039,8 +1038,11 @@ crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/text-combine-shrink-t
 
 crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Failure ]
 crbug.com/446406 [ Win ] fast/repaint/quotes.html [ Pass Failure ]
-crbug.com/452135 virtual/slimmingpaint/fast/repaint/4776765.html [ NeedsManualRebaseline ]
-crbug.com/452135 virtual/slimmingpaint/fast/repaint/quotes.html [ Pass Failure NeedsManualRebaseline ]
+crbug.com/446406 [ Win ] virtual/slimmingpaint/fast/repaint/quotes.html [ Pass Failure ]
+
+crbug.com/451235 [ Linux Win Android ] virtual/slimmingpaint/fast/repaint/4776765.html [ NeedsRebaseline ]
+crbug.com/451235 [ Mac Linux Android ] virtual/slimmingpaint/fast/repaint/quotes.html [ NeedsRebaseline ]
+
 crbug.com/446408 [ Win Debug ] virtual/display_list_2d_canvas/fast/canvas/webgl/read-pixels-test.html [ Pass Timeout ]
 crbug.com/446408 [ Linux Debug ] virtual/display_list_2d_canvas/fast/canvas/webgl/read-pixels-test.html [ Pass Timeout ]
 
