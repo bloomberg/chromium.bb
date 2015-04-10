@@ -23,16 +23,6 @@ class V8GCTimes(page_test.PageTest):
 
   def __init__(self):
     super(V8GCTimes, self).__init__()
-    self._v8_event_stats = [
-        V8EventStat('V8.GCIncrementalMarking',
-                    'v8_gc_incremental_marking',
-                    'incremental marking steps'),
-        V8EventStat('V8.GCScavenger',
-                    'v8_gc_scavenger',
-                    'scavenges'),
-        V8EventStat('V8.GCCompactor',
-                    'v8_gc_mark_compactor',
-                    'mark-sweep-compactor')]
     self._renderer_process = None
 
   def WillNavigateToPage(self, page, tab):
@@ -68,9 +58,19 @@ class V8GCTimes(page_test.PageTest):
       self._AddCpuTimeStatsToResults(thread, results)
 
   def _AddV8EventStatsToResults(self, thread, results):
+    v8_event_stats = [
+        V8EventStat('V8.GCIncrementalMarking',
+                    'v8_gc_incremental_marking',
+                    'incremental marking steps'),
+        V8EventStat('V8.GCScavenger',
+                    'v8_gc_scavenger',
+                    'scavenges'),
+        V8EventStat('V8.GCCompactor',
+                    'v8_gc_mark_compactor',
+                    'mark-sweep-compactor')]
     # Find all V8 GC events in the trace.
     for event in thread.IterAllSlices():
-      event_stat = _FindV8EventStatForEvent(self._v8_event_stats, event.name)
+      event_stat = _FindV8EventStatForEvent(v8_event_stats, event.name)
       if not event_stat:
         continue
 
@@ -92,7 +92,7 @@ class V8GCTimes(page_test.PageTest):
         event_stat.thread_duration_inside_idle += inside_idle
         event_stat.idle_task_overrun_duration += idle_task_wall_overrun
 
-    for v8_event_stat in self._v8_event_stats:
+    for v8_event_stat in v8_event_stats:
       results.AddValue(scalar.ScalarValue(
           results.current_page, v8_event_stat.result_name, 'ms',
           v8_event_stat.thread_duration,
@@ -116,11 +116,11 @@ class V8GCTimes(page_test.PageTest):
                        v8_event_stat.result_description)))
 
     # Add total metrics.
-    gc_total = sum(x.thread_duration for x in self._v8_event_stats)
+    gc_total = sum(x.thread_duration for x in v8_event_stats)
     gc_total_outside_idle = sum(
-        x.thread_duration_outside_idle for x in self._v8_event_stats)
+        x.thread_duration_outside_idle for x in v8_event_stats)
     gc_total_idle_deadline_overrun = sum(
-        x.idle_task_overrun_duration for x in self._v8_event_stats)
+        x.idle_task_overrun_duration for x in v8_event_stats)
     gc_total_percentage_idle = statistics.DivideIfPossibleOrZero(
         100 * (gc_total - gc_total_outside_idle), gc_total)
 
