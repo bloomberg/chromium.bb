@@ -31,15 +31,19 @@ function test()
         var target = InspectorTest.timelineModel().target();
         var contentHelper = new WebInspector.TimelineDetailsContentHelper(target, linkifier, null, true);
         WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), target, contentHelper);
-        var invalidationGroups = contentHelper.element.getElementsByClassName("invalidations-group");
-
-        InspectorTest.assertEquals(invalidationGroups.length, 2);
-        InspectorTest.assertEquals(invalidationGroups[0].textContent,
-            "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:12");
-        InspectorTest.assertEquals(invalidationGroups[1].textContent,
-            "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:13");
+        var invalidationsTree = contentHelper.element.getElementsByClassName("invalidations-tree")[0];
+        var invalidations = invalidationsTree.shadowRoot.textContent;
+        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:12");
+        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:13");
         InspectorTest.completeTest();
     });
+
+    function checkStringContains(string, contains)
+    {
+        var doesContain = string.indexOf(contains) >= 0;
+        InspectorTest.check(doesContain, contains + " should be present in " + string);
+        InspectorTest.addResult("PASS - record contained " + contains);
+    }
 }
 </script>
 </head>
