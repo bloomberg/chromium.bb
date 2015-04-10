@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/leveldatabase/chromium_logger.h"
 #include "third_party/re2/re2/re2.h"
@@ -48,6 +49,7 @@ static base::File::Error LastFileError() {
 // latter can fail quietly without return an error result.
 static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
                                              std::vector<FilePath>* result) {
+  base::ThreadRestrictions::AssertIOAllowed();
   result->clear();
 #if defined(OS_WIN)
   FilePath dir_filepath = dir_param.Append(FILE_PATH_LITERAL("*"));
