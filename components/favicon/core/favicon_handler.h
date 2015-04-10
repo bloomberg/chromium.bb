@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_FAVICON_CORE_FAVICON_HANDLER_H_
 #define COMPONENTS_FAVICON_CORE_FAVICON_HANDLER_H_
 
-#include <deque>
 #include <map>
 #include <vector>
 
@@ -20,7 +19,6 @@
 #include "url/gurl.h"
 
 class SkBitmap;
-class TestFaviconHandler;
 
 namespace base {
 class RefCountedMemory;
@@ -30,6 +28,7 @@ namespace favicon {
 
 class FaviconDriver;
 class FaviconService;
+class TestFaviconHandler;
 
 // FaviconHandler works with FaviconDriver to fetch the specific type of
 // favicon.
@@ -158,7 +157,7 @@ class FaviconHandler {
 
  private:
   // For testing:
-  friend class ::TestFaviconHandler;
+  friend class TestFaviconHandler;
 
   // Represents an in progress download of an image from the renderer.
   struct DownloadRequest {

@@ -158,6 +158,10 @@
     'favicon_base_unittest_sources': [
       'favicon_base/select_favicon_frames_unittest.cc',
     ],
+    'favicon_unittest_sources': [
+      'favicon/content/content_favicon_driver_unittest.cc',
+      'favicon/core/favicon_handler_unittest.cc',
+    ],
 
     # Note: GN tests converted to here, need to do the rest.
     'audio_modem_unittest_sources': [
@@ -601,6 +605,7 @@
         '<@(domain_reliability_unittest_sources)',
         '<@(enhanced_bookmarks_unittest_sources)',
         '<@(favicon_base_unittest_sources)',
+        '<@(favicon_unittest_sources)',
         '<@(gcm_driver_unittest_sources)',
         '<@(google_unittest_sources)',
         '<@(history_unittest_sources)',
@@ -689,6 +694,7 @@
         'components.gyp:enhanced_bookmarks',
         'components.gyp:enhanced_bookmarks_test_support',
         'components.gyp:favicon_base',
+        'components.gyp:favicon_core',
         'components.gyp:gcm_driver',
         'components.gyp:gcm_driver_test_support',
         'components.gyp:google_core_browser',
@@ -794,6 +800,7 @@
             'components.gyp:data_reduction_proxy_content_browser',
             'components.gyp:dom_distiller_content',
             'components.gyp:error_page_renderer',
+            'components.gyp:favicon_content',
             'components.gyp:history_content_browser',
             'components.gyp:keyed_service_content',
             'components.gyp:navigation_interception',
