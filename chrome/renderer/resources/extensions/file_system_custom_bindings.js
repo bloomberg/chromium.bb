@@ -82,7 +82,7 @@ binding.registerCustomHook(function(bindingsAPI) {
 
   apiFunctions.setCustomCallback('requestFileSystem',
       function(name, request, callback, response) {
-    var fileSystem = null;
+    var fileSystem;
     if (response && response.file_system_id) {
       fileSystem = fileSystemNatives.GetIsolatedFileSystem(
           response.file_system_id, response.file_system_path);
@@ -92,16 +92,6 @@ binding.registerCustomHook(function(bindingsAPI) {
         request,
         callback,
         [fileSystem]);
-  });
-
-  apiFunctions.setCustomCallback('getVolumeList',
-      function(name, request, callback, response) {
-    var volumeList = response || null;
-    sendRequest.safeCallbackApply(
-        'fileSystem.getVolumeList',
-        request,
-        callback,
-        [volumeList]);
   });
 
   // TODO(benwells): Remove these deprecated versions of the functions.

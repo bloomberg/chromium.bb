@@ -7047,14 +7047,14 @@ chrome.fileSystem.retainEntry = function(entry) {};
 /**
  * @param {!chrome.fileSystem.RequestFileSystemOptions} options Options for the
  *     request.
- * @param {function(FileSystem)} callback A completion callback.
+ * @param {function(!FileSystem=)} callback A completion callback.
  * @see http://developer.chrome.com/apps/fileSystem.html#method-requestFileSystem
  */
 chrome.fileSystem.requestFileSystem = function(options, callback) {};
 
 
 /**
- * @param {function(Array<!chrome.fileSystem.Volume>)} callback A completion
+ * @param {function(!Array<!chrome.fileSystem.Volume>=)} callback A completion
  *     callback.
  * @see http://developer.chrome.com/apps/fileSystem.html#method-getVolumeList
  */

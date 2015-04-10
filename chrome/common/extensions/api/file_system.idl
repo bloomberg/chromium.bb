@@ -131,8 +131,8 @@ namespace fileSystem {
   [nodoc] callback GetObservedEntriesCallback = void (
       [instanceOf=Entry] object[] entries);
   [nodoc] callback RequestFileSystemCallback = void(
-      [instanceOf=FileSystem] object fileSystem);
-  [nodoc] callback GetVolumeListCallback = void(Volume[] volumes);
+      [instanceOf=FileSystem] optional object fileSystem);
+  [nodoc] callback GetVolumeListCallback = void(optional Volume[] volumes);
 
   interface Functions {
     // Get the display path of an Entry object. The display path is based on
