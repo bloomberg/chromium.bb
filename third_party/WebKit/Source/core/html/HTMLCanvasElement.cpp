@@ -505,7 +505,7 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const ScriptValue& q
     if (!qualityArgument.isEmpty()) {
         v8::Local<v8::Value> v8Value = qualityArgument.v8Value();
         if (v8Value->IsNumber()) {
-            quality = v8Value->NumberValue();
+            quality = v8Value.As<v8::Number>()->Value();
             qualityPtr = &quality;
         }
     }

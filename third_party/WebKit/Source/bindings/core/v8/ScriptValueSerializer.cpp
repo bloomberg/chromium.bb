@@ -697,7 +697,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
             return handleError(DataCloneError, "An object could not be cloned.", next);
         greyObject(jsObject);
         if (value->IsDate()) {
-            m_writer.writeDate(value->NumberValue());
+            m_writer.writeDate(value.As<v8::Date>()->ValueOf());
         } else if (value->IsStringObject()) {
             writeStringObject(value);
         } else if (value->IsNumberObject()) {

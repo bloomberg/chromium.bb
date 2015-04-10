@@ -169,12 +169,12 @@ static const size_t maximumDepth = 2000;
 
 static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> value, Vector<v8::Local<v8::Array>>& stack, bool allowExperimentalTypes = false)
 {
-    if (value->IsNumber() && !std::isnan(value->NumberValue()))
-        return IDBKey::createNumber(value->NumberValue());
+    if (value->IsNumber() && !std::isnan(value.As<v8::Number>()->Value()))
+        return IDBKey::createNumber(value.As<v8::Number>()->Value());
     if (value->IsString())
         return IDBKey::createString(toCoreString(value.As<v8::String>()));
-    if (value->IsDate() && !std::isnan(value->NumberValue()))
-        return IDBKey::createDate(value->NumberValue());
+    if (value->IsDate() && !std::isnan(value.As<v8::Date>()->ValueOf()))
+        return IDBKey::createDate(value.As<v8::Date>()->ValueOf());
     if (value->IsUint8Array() && (allowExperimentalTypes || RuntimeEnabledFeatures::indexedDBExperimentalEnabled())) {
         // Per discussion in https://www.w3.org/Bugs/Public/show_bug.cgi?id=23332 the
         // input type is constrained to Uint8Array to match the output type.
@@ -420,7 +420,7 @@ SQLValue NativeValueTraits<SQLValue>::nativeValue(v8::Isolate* isolate, v8::Loca
     if (value.IsEmpty() || value->IsNull())
         return SQLValue();
     if (value->IsNumber())
-        return SQLValue(value->NumberValue());
+        return SQLValue(value.As<v8::Number>()->Value());
     V8StringResource<> stringValue(value);
     if (!stringValue.prepare(exceptionState))
         return SQLValue();

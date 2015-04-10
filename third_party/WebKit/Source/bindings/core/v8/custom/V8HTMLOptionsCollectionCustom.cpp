@@ -46,16 +46,18 @@ namespace blink {
 void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     HTMLOptionsCollection* impl = V8HTMLOptionsCollection::toImpl(info.Holder());
-    double v = value->NumberValue();
     unsigned newLength = 0;
+    double currentLength;
+    if (!v8Call(value->NumberValue(info.GetIsolate()->GetCurrentContext()), currentLength))
+        return;
     ExceptionState exceptionState(ExceptionState::SetterContext, "length", "HTMLOptionsCollection", info.Holder(), info.GetIsolate());
-    if (!std::isnan(v) && !std::isinf(v)) {
-        if (v < 0.0)
-            exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(v) + ") is negative. Lengths must be greater than or equal to 0.");
-        else if (v > static_cast<double>(UINT_MAX))
+    if (!std::isnan(currentLength) && !std::isinf(currentLength)) {
+        if (currentLength < 0.0)
+            exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(currentLength) + ") is negative. Lengths must be greater than or equal to 0.");
+        else if (currentLength > static_cast<double>(UINT_MAX))
             newLength = UINT_MAX;
         else
-            newLength = static_cast<unsigned>(v);
+            newLength = static_cast<unsigned>(currentLength);
     }
 
     if (exceptionState.throwIfNeeded())

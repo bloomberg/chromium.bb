@@ -55,7 +55,7 @@ void convertV8ObjectToNPVariant(v8::Isolate* isolate, v8::Local<v8::Value> objec
         return;
 
     if (object->IsNumber()) {
-        DOUBLE_TO_NPVARIANT(object->NumberValue(), *result);
+        DOUBLE_TO_NPVARIANT(object.As<v8::Number>()->Value(), *result);
     } else if (object->IsBoolean()) {
         BOOLEAN_TO_NPVARIANT(object->BooleanValue(), *result);
     } else if (object->IsNull()) {
