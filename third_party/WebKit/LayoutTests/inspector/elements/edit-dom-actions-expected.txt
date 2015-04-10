@@ -143,7 +143,7 @@ Running: testEditScript
 ==== after ====
 - <div id="testEditScript">
     - <script id="node-to-edit-script">
-          \n    var i = 0;\n    var j = 0;\n
+          var i = 0;\n    var j = 0;\n
       </script>
   </div>
 
