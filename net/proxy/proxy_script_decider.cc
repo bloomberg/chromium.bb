@@ -10,7 +10,6 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -88,10 +87,6 @@ ProxyScriptDecider::ProxyScriptDecider(
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_PROXY_SCRIPT_DECIDER)),
       fetch_pac_bytes_(false),
       quick_check_enabled_(true) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 ProxyScriptDecider::ProxyScriptDecider"));
   if (proxy_script_fetcher &&
       proxy_script_fetcher->GetRequestContext() &&
       proxy_script_fetcher->GetRequestContext()->host_resolver()) {

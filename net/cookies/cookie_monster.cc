@@ -766,10 +766,6 @@ class CookieMonster::SetCookieWithOptionsTask : public CookieMonsterTask {
 };
 
 void CookieMonster::SetCookieWithOptionsTask::Run() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "456373 CookieMonster::SetCookieWithOptionsTask::Run"));
   bool result = this->cookie_monster()->SetCookieWithOptions(url_, cookie_line_,
                                                              options_);
   if (!callback_.is_null()) {
@@ -848,7 +844,7 @@ class CookieMonster::GetCookiesWithOptionsTask : public CookieMonsterTask {
 };
 
 void CookieMonster::GetCookiesWithOptionsTask::Run() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  // TODO(mkwst): Remove ScopedTracker below once crbug.com/456373 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "456373 CookieMonster::GetCookiesWithOptionsTask::Run"));
@@ -1812,7 +1808,7 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
     const std::string& key,
     CanonicalCookie* cc,
     bool sync_to_store) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456373 is fixed.
+  // TODO(mkwst): Remove ScopedTracker below once crbug.com/456373 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "456373 CookieMonster::InternalInsertCookie"));

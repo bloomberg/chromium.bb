@@ -487,6 +487,10 @@ void URLRequest::set_delegate(Delegate* delegate) {
 }
 
 void URLRequest::Start() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/456327 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("456327 URLRequest::Start"));
+
   // Some values can be NULL, but the job factory must not be.
   DCHECK(context_->job_factory());
 

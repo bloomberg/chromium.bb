@@ -2172,20 +2172,15 @@ ResourceDispatcherHostImpl::GetLoadInfoForAllRoutes() {
 }
 
 void ResourceDispatcherHostImpl::UpdateLoadInfo() {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455952 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455952 ResourceDispatcherHostImpl::UpdateLoadInfo"));
-
   scoped_ptr<LoadInfoMap> info_map(GetLoadInfoForAllRoutes());
 
   if (info_map->empty())
     return;
 
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455952 ResourceDispatcherHostImpl::UpdateLoadInfo2"));
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/455952 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455952 BrowserThread::PostTask()"));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

@@ -393,11 +393,6 @@ class ProxyService::InitProxyResolver {
             const ProxyConfig& config,
             TimeDelta wait_delay,
             const CompletionCallback& callback) {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455942 ProxyService::InitProxyResolver::Start"));
     DCHECK_EQ(STATE_NONE, next_state_);
     proxy_resolver_ = proxy_resolver;
     proxy_resolver_factory_ = proxy_resolver_factory;
@@ -505,8 +500,7 @@ class ProxyService::InitProxyResolver {
   }
 
   int DoDecideProxyScript() {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is
-    // fixed.
+    // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
     tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "455942 ProxyService::InitProxyResolver::DoDecideProxyScript"));
@@ -519,12 +513,6 @@ class ProxyService::InitProxyResolver {
   }
 
   int DoDecideProxyScriptComplete(int result) {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455942 "
-            "ProxyService::InitProxyResolver::DoDecideProxyScriptComplete"));
     if (result != OK)
       return result;
 
@@ -536,11 +524,6 @@ class ProxyService::InitProxyResolver {
   }
 
   int DoSetPacScript() {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455942 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455942 ProxyService::InitProxyResolver::DoSetPacScript"));
     DCHECK(script_data_.get());
     // TODO(eroman): Should log this latency to the NetLog.
     next_state_ = STATE_SET_PAC_SCRIPT_COMPLETE;

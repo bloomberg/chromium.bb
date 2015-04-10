@@ -363,11 +363,6 @@ void HttpStreamParser::OnIOComplete(int result) {
   // The client callback can do anything, including destroying this class,
   // so any pending callback must be issued after everything else is done.
   if (result != ERR_IO_PENDING && !callback_.is_null()) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424359 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "424359 HttpStreamParser::OnIOComplete callback"));
-
     CompletionCallback c = callback_;
     callback_.Reset();
     c.Run(result);
@@ -375,7 +370,7 @@ void HttpStreamParser::OnIOComplete(int result) {
 }
 
 int HttpStreamParser::DoLoop(int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/424359 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("424359 HttpStreamParser::DoLoop"));
 
@@ -431,6 +426,11 @@ int HttpStreamParser::DoLoop(int result) {
 }
 
 int HttpStreamParser::DoSendHeaders() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424359 HttpStreamParser::DoSendHeaders"));
+
   int bytes_remaining = request_headers_->BytesRemaining();
   DCHECK_GT(bytes_remaining, 0);
 
@@ -445,6 +445,11 @@ int HttpStreamParser::DoSendHeaders() {
 }
 
 int HttpStreamParser::DoSendHeadersComplete(int result) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424359 HttpStreamParser::DoSendHeadersComplete"));
+
   if (result < 0) {
     // In the unlikely case that the headers and body were merged, all the
     // the headers were sent, but not all of the body way, and |result| is
@@ -484,6 +489,10 @@ int HttpStreamParser::DoSendHeadersComplete(int result) {
 }
 
 int HttpStreamParser::DoSendBody() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("424359 HttpStreamParser::DoSendBody"));
+
   if (request_body_send_buf_->BytesRemaining() > 0) {
     io_state_ = STATE_SEND_BODY_COMPLETE;
     return connection_->socket()
@@ -505,6 +514,11 @@ int HttpStreamParser::DoSendBody() {
 }
 
 int HttpStreamParser::DoSendBodyComplete(int result) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424359 HttpStreamParser::DoSendBodyComplete"));
+
   if (result < 0) {
     // If |result| is an error that this should try reading after, stash the
     // error for now and act like the request was successfully sent.
@@ -522,6 +536,11 @@ int HttpStreamParser::DoSendBodyComplete(int result) {
 }
 
 int HttpStreamParser::DoSendRequestReadBodyComplete(int result) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424359 HttpStreamParser::DoSendRequestReadBodyComplete"));
+
   // |result| is the result of read from the request body from the last call to
   // DoSendBody().
   DCHECK_GE(result, 0);  // There won't be errors.
@@ -555,6 +574,11 @@ int HttpStreamParser::DoSendRequestReadBodyComplete(int result) {
 }
 
 int HttpStreamParser::DoReadHeaders() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424359 HttpStreamParser::DoReadHeaders"));
+
   io_state_ = STATE_READ_HEADERS_COMPLETE;
 
   // Grow the read buffer if necessary.
@@ -570,6 +594,11 @@ int HttpStreamParser::DoReadHeaders() {
 }
 
 int HttpStreamParser::DoReadHeadersComplete(int result) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424359 HttpStreamParser::DoReadHeadersComplete"));
+
   result = HandleReadHeaderResult(result);
 
   // TODO(mmenke):  The code below is ugly and hacky.  A much better and more
@@ -617,6 +646,10 @@ int HttpStreamParser::DoReadHeadersComplete(int result) {
 }
 
 int HttpStreamParser::DoReadBody() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("424359 HttpStreamParser::DoReadBody"));
+
   io_state_ = STATE_READ_BODY_COMPLETE;
 
   // There may be some data left over from reading the response headers.
@@ -650,6 +683,11 @@ int HttpStreamParser::DoReadBody() {
 }
 
 int HttpStreamParser::DoReadBodyComplete(int result) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/424359 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "424359 HttpStreamParser::DoReadBodyComplete"));
+
   // When the connection is closed, there are numerous ways to interpret it.
   //
   //  - If a Content-Length header is present and the body contains exactly that

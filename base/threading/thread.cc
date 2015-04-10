@@ -95,11 +95,6 @@ bool Thread::Start() {
 }
 
 bool Thread::StartWithOptions(const Options& options) {
-  // TODO(eroman): Remove once crbug.com/465458 is solved.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-        "465458 base::Thread::StartWithOptions"));
-
   DCHECK(!message_loop_);
 #if defined(OS_WIN)
   DCHECK((com_status_ != STA) ||
@@ -117,7 +112,7 @@ bool Thread::StartWithOptions(const Options& options) {
     return false;
   }
 
-  // TODO(eroman): Remove once crbug.com/465458 is solved.
+  // TODO(kinuko): Remove once crbug.com/465458 is solved.
   tracked_objects::ScopedTracker tracking_profile_wait(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "465458 base::Thread::StartWithOptions (Wait)"));

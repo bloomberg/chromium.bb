@@ -837,11 +837,6 @@ void URLRequestHttpJob::ProcessPublicKeyPinsHeader() {
 }
 
 void URLRequestHttpJob::OnStartCompleted(int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424359 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424359 URLRequestHttpJob::OnStartCompleted"));
-
   RecordTimer();
 
   // If the request was destroyed, then there is no more work to do.
@@ -944,11 +939,6 @@ void URLRequestHttpJob::OnHeadersReceivedCallback(int result) {
 }
 
 void URLRequestHttpJob::OnReadCompleted(int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424359 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424359 URLRequestHttpJob::OnReadCompleted"));
-
   read_in_progress_ = false;
 
   if (ShouldFixMismatchedContentLength(result))
