@@ -163,8 +163,7 @@ Response InputHandler::DispatchKeyEvent(
   if (!host_)
     return Response::ServerError("Could not connect to view");
 
-  if (!host_->is_focused())
-    host_->Focus();
+  host_->Focus();
   host_->ForwardKeyboardEvent(event);
   return Response::OK();
 }
@@ -199,8 +198,7 @@ Response InputHandler::DispatchMouseEvent(
   if (!host_)
     return Response::ServerError("Could not connect to view");
 
-  if (!host_->is_focused())
-    host_->Focus();
+  host_->Focus();
   host_->ForwardMouseEvent(event);
   return Response::OK();
 }
