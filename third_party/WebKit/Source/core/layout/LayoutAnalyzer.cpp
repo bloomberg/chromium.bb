@@ -90,10 +90,12 @@ void LayoutAnalyzer::push(const LayoutObject& o)
     // LayoutBlock::layoutPositionedObjects() hoists positioned descendants.
     // LayoutBlockFlow::layoutInlineChildren() walks through inlines.
     // LayoutTableSection::layoutRows() walks through rows.
+    // LayoutFlexibleBox::computeNextFlexLine() walks through OrderInterator.
     if (!o.isPositioned()
         && !o.isTableCell()
         && !o.isSVGResourceContainer()
         && (m_stack.size() != 0)
+        && !m_stack.peek()->isFlexibleBox()
         && !(o.parent()->childrenInline()
             && (o.isReplaced() || o.isFloating() || o.isOutOfFlowPositioned()))) {
         ASSERT(o.parent() == m_stack.peek());
