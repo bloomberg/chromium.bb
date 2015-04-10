@@ -14,9 +14,6 @@ var remoting = remoting || {};
 
 'use strict';
 
-// A 10-second interval to test the connection speed.
-var CONNECTION_SPEED_PING_INTERVAL = 10 * 1000;
-
 /**
  * @param {HTMLElement} containerElement
  * @param {remoting.ConnectionInfo} connectionInfo
@@ -32,15 +29,9 @@ remoting.AppConnectedView = function(containerElement, connectionInfo) {
   /** @private */
   this.host_ = connectionInfo.host();
 
-  var pingTimer = new base.RepeatingTimer(function () {
-    var message = { timestamp: new Date().getTime() };
-    var clientSession = connectionInfo.session();
-    clientSession.sendClientMessage('pingRequest', JSON.stringify(message));
-  }, CONNECTION_SPEED_PING_INTERVAL);
-
   var baseView = new remoting.ConnectedView(
       this.plugin_, containerElement,
-      containerElement.querySelector('.mouse-cursor-overlay'));;
+      containerElement.querySelector('.mouse-cursor-overlay'));
 
   var eventHook = new base.EventHook(
       this.plugin_.hostDesktop(),
@@ -48,7 +39,7 @@ remoting.AppConnectedView = function(containerElement, connectionInfo) {
       remoting.windowShape.setDesktopRects.bind(remoting.windowShape));
 
   /** @private */
-  this.disposables_ = new base.Disposables(pingTimer, baseView, eventHook);
+  this.disposables_ = new base.Disposables(baseView, eventHook);
 
   this.resizeHostToClientArea_().then(
     this.setPluginSize_.bind(this)
@@ -101,6 +92,6 @@ remoting.AppConnectedView.prototype.setPluginSize_ = function(hostDesktop) {
 
   this.plugin_.element().style.width = newSize.width + 'px';
   this.plugin_.element().style.height = newSize.height + 'px';
-}
+};
 
 })();

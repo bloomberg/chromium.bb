@@ -29,6 +29,9 @@ remoting.KeyboardLayoutsMenu = function(adapter) {
   /** @private {string} */
   this.currentLayout_ = '';
 
+  /** @private {function(string, string)} */
+  this.sendExtensionMessage_ = base.doNothing;
+
   adapter.addListener(this.onContextMenu_.bind(this));
 };
 
@@ -49,6 +52,12 @@ remoting.KeyboardLayoutsMenu.prototype.setLayouts =
                       this.setLayout_.bind(this, false));
 };
 
+/** @param {function(string, string)} callback */
+remoting.KeyboardLayoutsMenu.prototype.setExtensionMessageSender =
+    function(callback) {
+  this.sendExtensionMessage_ = callback;
+};
+
 /**
  * Notify the host that a new keyboard layout has been selected.
  *
@@ -67,9 +76,8 @@ remoting.KeyboardLayoutsMenu.prototype.setLayout_ =
   this.currentLayout_ = layout;
 
   console.log("Setting the keyboard layout to '" + layout + "'");
-  remoting.clientSession.sendClientMessage(
-      'setKeyboardLayout',
-      JSON.stringify({layout: layout}));
+  this.sendExtensionMessage_('setKeyboardLayout',
+                             JSON.stringify({layout: layout}));
   if (saveToLocalStorage) {
     var params = {};
     params[remoting.KeyboardLayoutsMenu.KEY_] = layout;

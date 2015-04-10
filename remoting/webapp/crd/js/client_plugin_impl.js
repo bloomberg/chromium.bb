@@ -88,7 +88,7 @@ remoting.ClientPluginImpl = function(container,
 
   /** @private */
   this.extensions_ = new remoting.ProtocolExtensionManager(
-      this.sendClientMessage.bind(this));
+      this.sendClientMessage_.bind(this));
 
   /** @private {remoting.CredentialsProvider} */
   this.credentials_ = null;
@@ -782,8 +782,9 @@ remoting.ClientPluginImpl.prototype.requestPairing =
  *
  * @param {string} type The message type.
  * @param {string} message The message payload.
+ * @private
  */
-remoting.ClientPluginImpl.prototype.sendClientMessage =
+remoting.ClientPluginImpl.prototype.sendClientMessage_ =
     function(type, message) {
   if (!this.hasFeature(remoting.ClientPlugin.Feature.EXTENSION_MESSAGE)) {
     return;

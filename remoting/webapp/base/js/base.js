@@ -660,12 +660,20 @@ base.ChromeEventHook.prototype.dispose = function() {
 /**
  * A disposable repeating timer.
  *
+ * @param {Function} callback
+ * @param {number} interval
+ * @param {boolean=} opt_invokeNow Whether to invoke the callback now, default
+ *    to false.
+ *
  * @constructor
  * @implements {base.Disposable}
  */
-base.RepeatingTimer = function(/** Function */callback, /** number */interval) {
+base.RepeatingTimer = function(callback, interval, opt_invokeNow) {
   /** @private */
   this.intervalId_ = window.setInterval(callback, interval);
+  if (opt_invokeNow) {
+    callback();
+  }
 };
 
 base.RepeatingTimer.prototype.dispose = function() {

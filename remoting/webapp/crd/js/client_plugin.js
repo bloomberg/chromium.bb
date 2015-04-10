@@ -137,15 +137,6 @@ remoting.ClientPlugin.prototype.pauseVideo = function(pause) {};
 remoting.ClientPlugin.prototype.getPerfStats = function() {};
 
 /**
- * Send an extension message to the host.
- *
- * @param {string} name
- * @param {string} data
- */
-remoting.ClientPlugin.prototype.sendClientMessage =
-    function(name, data) {};
-
-/**
  * @param {remoting.ClientPlugin.ConnectionEventHandler} handler
  */
 remoting.ClientPlugin.prototype.setConnectionEventHandler =

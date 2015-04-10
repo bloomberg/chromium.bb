@@ -14,6 +14,18 @@
 var remoting = remoting || {};
 
 /**
+ * Interval to test the connection speed.
+ * @const {number}
+ */
+var CONNECTION_SPEED_PING_INTERVAL_MS = 10 * 1000;
+
+/**
+ * Interval to refresh the google drive access token.
+ * @const {number}
+ */
+var DRIVE_ACCESS_TOKEN_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
+
+/**
  * @param {Array<string>} appCapabilities Array of application capabilities.
  * @constructor
  * @implements {remoting.ApplicationInterface}
@@ -34,6 +46,12 @@ remoting.AppRemoting = function(appCapabilities) {
 
   /** @private {remoting.AppConnectedView} */
   this.connectedView_ = null;
+
+  /** @private {base.Disposables} */
+  this.extensionDisposables_ = null;
+
+  /** @private */
+  this.supportsGoogleDrive_ = false;
 };
 
 /**
@@ -84,13 +102,6 @@ remoting.AppRemoting.prototype.initApplication_ = function() {
   // TODO(jamiewalch): Remove ClientSession's dependency on remoting.fullscreen
   // so that this is no longer required.
   remoting.fullscreen = new remoting.FullscreenAppsV2();
-
-  var restoreHostWindows = function() {
-    if (remoting.clientSession) {
-      remoting.clientSession.sendClientMessage('restoreAllWindows', '');
-    }
-  };
-  chrome.app.window.current().onRestored.addListener(restoreHostWindows);
 
   remoting.windowShape.updateClientWindowShape();
 
@@ -211,12 +222,8 @@ remoting.AppRemoting.prototype.exitApplication_ = function() {
 remoting.AppRemoting.prototype.onConnected_ = function(connectionInfo) {
   this.initSession_(connectionInfo);
 
-  remoting.identity.getUserInfo().then(
-      function(userInfo) {
-        remoting.clientSession.sendClientMessage(
-            'setUserDisplayInfo',
-            JSON.stringify({fullName: userInfo.name}));
-      });
+  this.supportsGoogleDrive_ = connectionInfo.session().hasCapability(
+      remoting.ClientSession.Capability.GOOGLE_DRIVE);
 
   connectionInfo.plugin().extensions().register(this);
 
@@ -236,7 +243,7 @@ remoting.AppRemoting.prototype.onConnected_ = function(connectionInfo) {
 remoting.AppRemoting.prototype.onDisconnected_ = function() {
   base.dispose(this.connectedView_);
   this.connectedView_ = null;
-
+  this.stopExtension_();
   chrome.app.window.current().close();
 };
 
@@ -258,6 +265,7 @@ remoting.AppRemoting.prototype.onError_ = function(error) {
   remoting.MessageWindow.showErrorMessage(
       chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
       chrome.i18n.getMessage(error.getTag()));
+  this.stopExtension_();
 };
 
 
@@ -276,6 +284,42 @@ remoting.AppRemoting.prototype.getExtensionTypes = function() {
  * @override {remoting.ProtocolExtension}
  */
 remoting.AppRemoting.prototype.startExtension = function(sendMessageToHost) {
+  this.windowActivationMenu_.setExtensionMessageSender(sendMessageToHost);
+  this.keyboardLayoutsMenu_.setExtensionMessageSender(sendMessageToHost);
+
+  remoting.identity.getUserInfo().then(function(userInfo) {
+    sendMessageToHost('setUserDisplayInfo',
+                      JSON.stringify({fullName: userInfo.name}));
+  });
+
+  base.dispose(this.extensionDisposables_);
+
+  var onRestoreHook = new base.ChromeEventHook(
+      chrome.app.window.current().onRestored, function() {
+        sendMessageToHost('restoreAllWindows', '');
+      });
+
+  var pingTimer = new base.RepeatingTimer(function() {
+    var message = {timestamp: new Date().getTime()};
+    sendMessageToHost('pingRequest', JSON.stringify(message));
+  }, CONNECTION_SPEED_PING_INTERVAL_MS);
+
+  this.extensionDisposables_ = new base.Disposables(onRestoreHook, pingTimer);
+
+  if (this.supportsGoogleDrive_) {
+    this.extensionDisposables_.add(new base.RepeatingTimer(
+        this.sendGoogleDriveAccessToken_.bind(this, sendMessageToHost),
+        DRIVE_ACCESS_TOKEN_REFRESH_INTERVAL_MS, true));
+  }
+};
+
+/** @private */
+remoting.AppRemoting.prototype.stopExtension_ = function() {
+  this.windowActivationMenu_.setExtensionMessageSender(base.doNothing);
+  this.keyboardLayoutsMenu_.setExtensionMessageSender(base.doNothing);
+
+  base.dispose(this.extensionDisposables_);
+  this.extensionDisposables_ = null;
 };
 
 /**
@@ -328,6 +372,25 @@ remoting.AppRemoting.prototype.onExtensionMessage = function(type, message) {
   }
 
   return false;
+};
+
+/**
+ * Timer callback to send the access token to the host.
+ * @param {function(string, string)} sendExtensionMessage
+ * @private
+ */
+remoting.AppRemoting.prototype.sendGoogleDriveAccessToken_
+    = function(sendExtensionMessage) {
+  var googleDriveScopes = [
+    'https://docs.google.com/feeds/',
+    'https://www.googleapis.com/auth/drive'
+  ];
+  remoting.identity.getNewToken(googleDriveScopes).then(
+    function(/** string */ token){
+      sendExtensionMessage('accessToken', token);
+  }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
+    console.log('Failed to refresh access token: ' + error.toString());
+  }));
 };
 
 /**

@@ -23,6 +23,8 @@ remoting.WindowActivationMenu = function(adapter) {
       adapter,
       chrome.i18n.getMessage(/*i18n-content*/'WINDOWS_SUBMENU_TITLE'),
       false);
+  /** @private {function(string, string)} */
+  this.sendExtensionMessage_ = base.doNothing;
 
   adapter.addListener(this.onContextMenu_.bind(this));
 };
@@ -60,6 +62,12 @@ remoting.WindowActivationMenu.prototype.makeMenuId_ = function(windowId) {
   return 'window-' + windowId;
 };
 
+/** @param {function(string, string)} callback */
+remoting.WindowActivationMenu.prototype.setExtensionMessageSender =
+    function(callback) {
+  this.sendExtensionMessage_ = callback;
+};
+
 /**
  * Handle a click on the application's context menu.
  *
@@ -71,7 +79,7 @@ remoting.WindowActivationMenu.prototype.onContextMenu_ = function(info) {
   var components = info.menuItemId.split('-');
   if (components.length == 2 &&
       this.makeMenuId_(parseInt(components[1], 10)) == info.menuItemId) {
-    remoting.clientSession.sendClientMessage(
+    this.sendExtensionMessage_(
         'activateWindow',
         JSON.stringify({ id: parseInt(components[1], 0) }));
     if (chrome.app.window.current().isMinimized()) {

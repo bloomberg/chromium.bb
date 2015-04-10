@@ -23,15 +23,6 @@
 var remoting = remoting || {};
 
 /**
- * Interval that determines how often the web-app should send a new access token
- * to the host.
- *
- * @const
- * @type {number}
- */
-remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
-
-/**
  * @param {remoting.ClientPlugin} plugin
  * @param {remoting.Host} host The host to connect to.
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
@@ -497,11 +488,7 @@ remoting.ClientSession.prototype.onSetCapabilities = function(capabilities) {
     console.error('onSetCapabilities_() is called more than once');
     return;
   }
-
   this.capabilities_ = capabilities;
-  if (this.hasCapability(remoting.ClientSession.Capability.GOOGLE_DRIVE)) {
-    this.sendGoogleDriveAccessToken_();
-  }
 };
 
 /**
@@ -564,47 +551,5 @@ remoting.ClientSession.prototype.logStatistics = function(stats) {
  */
 remoting.ClientSession.prototype.logHostOfflineErrors = function(enable) {
   this.logHostOfflineErrors_ = enable;
-};
-
-/**
- * Sends an extension message to the host.
- *
- * @param {string} type The message type.
- * @param {string} message The message payload.
- */
-remoting.ClientSession.prototype.sendClientMessage = function(type, message) {
-  if (!this.plugin_)
-    return;
-  this.plugin_.sendClientMessage(type, message);
-};
-
-/**
- * Timer callback to send the access token to the host.
- * @private
- */
-remoting.ClientSession.prototype.sendGoogleDriveAccessToken_ = function() {
-  if (this.state_ != remoting.ClientSession.State.CONNECTED) {
-    return;
-  }
-  /** @type {remoting.ClientSession} */
-  var that = this;
-
-  /** @param {string} token */
-  var sendToken = function(token) {
-    remoting.clientSession.sendClientMessage('accessToken', token);
-  };
-  /** @param {!remoting.Error} error */
-  var sendError = function(error) {
-    console.log('Failed to refresh access token: ' + error.toString());
-  };
-  var googleDriveScopes = [
-    'https://docs.google.com/feeds/',
-    'https://www.googleapis.com/auth/drive'
-  ];
-  remoting.identity.getNewToken(googleDriveScopes).
-      then(sendToken).
-      catch(remoting.Error.handler(sendError));
-  window.setTimeout(this.sendGoogleDriveAccessToken_.bind(this),
-                    remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS);
 };
 
