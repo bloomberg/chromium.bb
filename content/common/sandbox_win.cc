@@ -58,6 +58,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"cmcsyshk.dll",                // CMC Internet Security.
   L"cmsetac.dll",                 // Unknown (suspected malware).
   L"cooliris.dll",                // CoolIris.
+  L"cplushook.dll",               // Unknown (suspected malware).
   L"dockshellhook.dll",           // Stardock Objectdock.
   L"easyhook32.dll",              // GDIPP and others.
   L"esspd.dll",                   // Samsung Smart Security ESCORT.
