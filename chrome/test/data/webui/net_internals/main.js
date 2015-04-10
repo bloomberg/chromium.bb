@@ -35,7 +35,6 @@ TEST_F('NetInternalsTest', 'netInternalsTourTabs', function() {
     sdch: true,
     httpCache: true,
     modules: true,
-    tests: true,
     hsts: true,
     prerender: true,
     bandwidth: true,

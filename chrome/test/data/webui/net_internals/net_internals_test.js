@@ -297,7 +297,6 @@ var NetInternalsTest = (function() {
       sdch: SdchView.TAB_ID,
       httpCache: HttpCacheView.TAB_ID,
       modules: ModulesView.TAB_ID,
-      tests: TestView.TAB_ID,
       hsts: HSTSView.TAB_ID,
       prerender: PrerenderView.TAB_ID,
       bandwidth: BandwidthView.TAB_ID,

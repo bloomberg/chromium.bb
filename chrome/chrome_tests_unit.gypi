@@ -152,7 +152,6 @@
       'browser/net/certificate_error_reporter_unittest.cc',
       'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
       'browser/net/chrome_network_delegate_unittest.cc',
-      'browser/net/connection_tester_unittest.cc',
       'browser/net/dns_probe_runner_unittest.cc',
       'browser/net/dns_probe_service_unittest.cc',
       'browser/net/evicted_domain_cookie_counter_unittest.cc',

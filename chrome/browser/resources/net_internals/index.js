@@ -11,7 +11,6 @@
 <include src="capture_view.js">
 <include src="export_view.js">
 <include src="http_cache_view.js">
-<include src="test_view.js">
 <include src="hsts_view.js">
 <include src="browser_bridge.js">
 <include src="events_tracker.js">

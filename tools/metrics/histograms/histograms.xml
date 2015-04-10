@@ -18859,6 +18859,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.NetInternalsUi.Feature" enum="NetInternalsUiFeature">
+  <obsolete>
+    Removed in Chrome 44.
+  </obsolete>
   <owner>eroman@chromium.org</owner>
   <summary>
     Counts the number of browser launches where chrome://net-internals and

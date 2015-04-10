@@ -1811,8 +1811,6 @@
       'browser/net/chrome_url_request_context_getter.h',
       'browser/net/connect_interceptor.cc',
       'browser/net/connect_interceptor.h',
-      'browser/net/connection_tester.cc',
-      'browser/net/connection_tester.h',
       'browser/net/cookie_store_util.cc',
       'browser/net/cookie_store_util.h',
       'browser/net/crl_set_fetcher.cc',

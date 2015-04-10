@@ -883,7 +883,6 @@
       'test/data/webui/net_internals/main.js',
       'test/data/webui/net_internals/net_internals_test.js',
       'test/data/webui/net_internals/prerender_view.js',
-      'test/data/webui/net_internals/test_view.js',
       'test/data/webui/net_internals/timeline_view.js',
       'test/data/webui/net_internals/waterfall_view.js',
       'test/data/webui/net_internals/sdch_view.js',

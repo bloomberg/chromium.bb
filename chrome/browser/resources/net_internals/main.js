@@ -197,7 +197,6 @@ var MainView = (function() {
       addTab(SdchView);
       addTab(HttpCacheView);
       addTab(ModulesView);
-      addTab(TestView);
       addTab(HSTSView);
       addTab(BandwidthView);
       addTab(PrerenderView);
