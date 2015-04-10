@@ -524,6 +524,7 @@ bool FontFaceSet::resolveFontStyle(const String& fontString, Font& font)
 
     style->font().update(style->font().fontSelector());
 
+    document()->updateRenderTreeIfNeeded();
     document()->ensureStyleResolver().computeFont(style.get(), *parsedStyle);
 
     font = style->font();
