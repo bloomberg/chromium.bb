@@ -16,10 +16,19 @@ goog.require('cvox.ChromeVox');
 goog.require('cvox.HostFactory');
 goog.require('cvox.InitGlobals');
 
+/**
+ * The time to pause before trying again to initialize, in ms. This
+ * number starts small and keeps growing so that we don't waste CPU
+ * time on a page that takes a long time to load.
+ * @type {number}
+ * @private
+ */
 cvox.ChromeVox.initTimeout_ = 100;
 
 /**
- * Call the init function later, safely
+ * Call the init function later, safely.
+ * @param {string} reason A developer-readable string to log to the console
+ *    explaining why we're trying again.
  * @private
  */
 cvox.ChromeVox.recallInit_ = function(reason) {
@@ -35,6 +44,11 @@ cvox.ChromeVox.recallInit_ = function(reason) {
  * Initializes cvox.ChromeVox when the document is ready.
  */
 cvox.ChromeVox.initDocument = function() {
+  // Don't start the content script on the ChromeVox background page.
+  if (/^chrome-extension:\/\/.*background\.html$/.test(window.location.href)) {
+    return;
+  }
+
   if (!document.body) {
     cvox.ChromeVox.recallInit_('ChromeVox not starting on unloaded page: ' +
         document.location.href + '.');
