@@ -1055,5 +1055,43 @@ TEST_F(TaskQueueManagerTest, DeleteTaskQueueManagerInsideATask) {
   test_task_runner_->RunUntilIdle();
 }
 
+TEST_F(TaskQueueManagerTest, GetAndClearTaskWasRunBitmap) {
+  Initialize(3u, SelectorType::Automatic);
+
+  scoped_refptr<base::SingleThreadTaskRunner> runners[3] = {
+      manager_->TaskRunnerForQueue(0),
+      manager_->TaskRunnerForQueue(1),
+      manager_->TaskRunnerForQueue(2)};
+
+  EXPECT_EQ(0ul, manager_->GetAndClearTaskWasRunOnQueueBitmap());
+
+  runners[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1ul << 0, manager_->GetAndClearTaskWasRunOnQueueBitmap());
+
+  runners[1]->PostTask(FROM_HERE, base::Bind(&NopTask));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1ul << 1, manager_->GetAndClearTaskWasRunOnQueueBitmap());
+
+  runners[2]->PostTask(FROM_HERE, base::Bind(&NopTask));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1ul << 2, manager_->GetAndClearTaskWasRunOnQueueBitmap());
+
+  runners[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
+  runners[2]->PostTask(FROM_HERE, base::Bind(&NopTask));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1ul << 0 | 1ul << 2,
+            manager_->GetAndClearTaskWasRunOnQueueBitmap());
+  EXPECT_EQ(0ul, manager_->GetAndClearTaskWasRunOnQueueBitmap());
+}
+
+TEST_F(TaskQueueManagerTest, GetAndClearTaskWasRunBitmap_ManyQueues) {
+  Initialize(64u, SelectorType::Automatic);
+
+  manager_->TaskRunnerForQueue(63)->PostTask(FROM_HERE, base::Bind(&NopTask));
+  test_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1ull << 63, manager_->GetAndClearTaskWasRunOnQueueBitmap());
+}
+
 }  // namespace
 }  // namespace content

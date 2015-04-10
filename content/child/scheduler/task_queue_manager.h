@@ -124,6 +124,10 @@ class CONTENT_EXPORT TaskQueueManager {
 
   void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
 
+  // Returns a bitmap where a bit is set iff a task on the corresponding queue
+  // was run since the last call to GetAndClearTaskWasRunOnQueueBitmap.
+  uint64 GetAndClearTaskWasRunOnQueueBitmap();
+
  private:
   friend class internal::LazyNow;
   friend class internal::TaskQueue;
@@ -193,6 +197,8 @@ class CONTENT_EXPORT TaskQueueManager {
 
   base::Closure do_work_from_main_thread_closure_;
   base::Closure do_work_from_other_thread_closure_;
+
+  uint64 task_was_run_bitmap_;
 
   // The pending_dowork_count_ is only tracked on the main thread since that's
   // where re-entrant problems happen.

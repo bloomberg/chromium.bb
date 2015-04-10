@@ -458,6 +458,7 @@ TaskQueueManager::TaskQueueManager(
     const char* disabled_by_default_tracing_category)
     : main_task_runner_(main_task_runner),
       selector_(selector),
+      task_was_run_bitmap_(0),
       pending_dowork_count_(0),
       work_batch_size_(1),
       time_source_(nullptr),
@@ -466,6 +467,8 @@ TaskQueueManager::TaskQueueManager(
       deletion_sentinel_(new DeletionSentinel()),
       weak_factory_(this) {
   DCHECK(main_task_runner->RunsTasksOnCurrentThread());
+  DCHECK_LE(task_queue_count, sizeof(task_was_run_bitmap_) * CHAR_BIT)
+      << "You need a bigger int for task_was_run_bitmap_";
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(disabled_by_default_tracing_category,
                                      "TaskQueueManager", this);
 
@@ -629,6 +632,7 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
   scoped_refptr<DeletionSentinel> protect(deletion_sentinel_);
   internal::TaskQueue* queue = Queue(queue_index);
   base::PendingTask pending_task = queue->TakeTaskFromWorkQueue();
+  task_was_run_bitmap_ |= UINT64_C(1) << queue_index;
   if (!pending_task.nestable && main_task_runner_->IsNested()) {
     // Defer non-nestable work to the main task runner.  NOTE these tasks can be
     // arbitrarily delayed so the additional delay should not be a problem.
@@ -700,6 +704,12 @@ void TaskQueueManager::SetTimeSourceForTesting(
     scoped_refptr<cc::TestNowSource> time_source) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   time_source_ = time_source;
+}
+
+uint64 TaskQueueManager::GetAndClearTaskWasRunOnQueueBitmap() {
+  uint64 bitmap = task_was_run_bitmap_;
+  task_was_run_bitmap_ = 0;
+  return bitmap;
 }
 
 base::TimeTicks TaskQueueManager::Now() const {
