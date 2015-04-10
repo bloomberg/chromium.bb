@@ -212,8 +212,6 @@ public abstract class AwContentsClient {
 
         @Override
         public Intent createIntent() {
-            // TODO: Move this code to Aw. Once code is moved
-            // and merged to M37 get rid of this.
             String mimeType = "*/*";
             if (mAcceptTypes != null && !mAcceptTypes.trim().isEmpty()) {
                 mimeType = mAcceptTypes.split(";")[0];
