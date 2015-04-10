@@ -44,6 +44,7 @@ crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-005.htm [ Pass Failur
 crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-007.htm [ Pass Failure ImageOnlyFailure ]
 crbug.com/452967 [ Mac ] ietestcenter/css3/text/textshadow-008.htm [ Pass Failure ImageOnlyFailure ]
 crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFailure ]
+crbug.com/475005 [ Mac ] fast/forms/select/popup-menu-size.html [ NeedsRebaseline ]
 
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
 crbug.com/443780 [ Mac ] virtual/slimmingpaint/fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]

@@ -305,10 +305,10 @@ ListPicker.prototype._configureItem = function(element, config, inGroup) {
         element.disabled = config.disabled;
         element.setAttribute("aria-label", config.ariaLabel);
         element.style.webkitPaddingStart = this._config.paddingStart + "px";
-        element.style.webkitPaddingEnd = this._config.paddingEnd + "px";
         if (inGroup) {
             element.style.webkitMarginStart = (- this._config.paddingStart) + "px";
-            element.style.webkitMarginEnd = (- this._config.paddingEnd) + "px";
+            // Should be synchronized with padding-end in listPicker.css.
+            element.style.webkitMarginEnd = "-2px";
         }
     } else if (config.type === "optgroup") {
         element.label = config.label;
@@ -317,14 +317,14 @@ ListPicker.prototype._configureItem = function(element, config, inGroup) {
         element.setAttribute("aria-label", config.ariaLabel);
         this._updateChildren(element, config);
         element.style.webkitPaddingStart = this._config.paddingStart + "px";
-        element.style.webkitPaddingEnd = this._config.paddingEnd + "px";
     } else if (config.type === "separator") {
         element.title = config.title;
         element.disabled = config.disabled;
         element.setAttribute("aria-label", config.ariaLabel);
         if (inGroup) {
             element.style.webkitMarginStart = (- this._config.paddingStart) + "px";
-            element.style.webkitMarginEnd = (- this._config.paddingEnd) + "px";
+            // Should be synchronized with padding-end in listPicker.css.
+            element.style.webkitMarginEnd = "-2px";
         }
     }
     this._applyItemStyle(element, config.style);

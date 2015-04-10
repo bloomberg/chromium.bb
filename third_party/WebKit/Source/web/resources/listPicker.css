@@ -8,3 +8,7 @@ select hr {
     border-bottom: 1px solid black;
     margin: 0 0.5em;
 }
+
+option, optgroup {
+    -webkit-padding-end: 2px;
+}

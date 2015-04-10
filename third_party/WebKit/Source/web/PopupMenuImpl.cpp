@@ -118,7 +118,6 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     bool isRTL = !ownerStyle->isLeftToRightDirection();
     addProperty("isRTL", isRTL, data);
     addProperty("paddingStart", isRTL ? m_client->clientPaddingRight().toDouble() : m_client->clientPaddingLeft().toDouble(), data);
-    addProperty("paddingEnd", isRTL ? m_client->clientPaddingLeft().toDouble() : m_client->clientPaddingRight().toDouble(), data);
     PagePopupClient::addString("};\n", data);
     data->append(Platform::current()->loadResource("pickerCommon.js"));
     data->append(Platform::current()->loadResource("listPicker.js"));
