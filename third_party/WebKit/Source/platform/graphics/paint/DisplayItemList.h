@@ -78,7 +78,7 @@ private:
     size_t findOutOfOrderCachedItem(size_t& currentDisplayItemsIndex, const DisplayItem&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
     size_t findOutOfOrderCachedItemForward(size_t& currentDisplayItemsIndex, const DisplayItem&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // The following two methods are for checking under-invalidations
     // (when RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled).
     void checkCachedDisplayItemIsUnchanged(const DisplayItem&, DisplayItemIndicesByClientMap&);
