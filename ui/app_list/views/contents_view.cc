@@ -270,8 +270,6 @@ void ContentsView::UpdatePageBounds() {
 
   // Update app list pages.
   for (AppListPage* page : app_list_pages_) {
-    page->OnAnimationUpdated(progress, current_state, target_state);
-
     gfx::Rect to_rect = page->GetPageBoundsForState(target_state);
     gfx::Rect from_rect = page->GetPageBoundsForState(current_state);
     if (from_rect == to_rect)
@@ -282,6 +280,7 @@ void ContentsView::UpdatePageBounds() {
         gfx::Tween::RectValueBetween(progress, from_rect, to_rect));
 
     page->SetBoundsRect(bounds);
+    page->OnAnimationUpdated(progress, current_state, target_state);
   }
 
   // Update the search box.
