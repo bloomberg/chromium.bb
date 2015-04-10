@@ -151,7 +151,7 @@ void LayoutScrollbarTheme::paintThumb(GraphicsContext* context, ScrollbarThemeCl
 
 void LayoutScrollbarTheme::paintTickmarks(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
-    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTickMark, rect);
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTickMarks, rect);
     if (!recorder.canUseCachedDrawing())
         ScrollbarTheme::theme()->paintTickmarks(context, scrollbar, rect);
 }

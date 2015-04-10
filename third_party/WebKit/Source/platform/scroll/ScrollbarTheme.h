@@ -134,6 +134,9 @@ public:
     static void setMockScrollbarsEnabled(bool flag);
     static bool mockScrollbarsEnabled();
 
+    DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
+    String debugName() const { return String("ScrollbarTheme"); }
+
 protected:
     bool paintInternal(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect);
 
