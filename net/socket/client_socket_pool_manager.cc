@@ -73,7 +73,6 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
                          RequestPriority request_priority,
                          HttpNetworkSession* session,
                          const ProxyInfo& proxy_info,
-                         bool force_spdy_over_ssl,
                          bool want_spdy_over_npn,
                          const SSLConfig& ssl_config_for_origin,
                          const SSLConfig& ssl_config_for_proxy,
@@ -193,7 +192,6 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
                                          ssl_config_for_proxy,
                                          PRIVACY_MODE_DISABLED,
                                          load_flags,
-                                         force_spdy_over_ssl,
                                          want_spdy_over_npn);
         proxy_tcp_params = NULL;
       }
@@ -253,7 +251,6 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
                             ssl_config_for_origin,
                             privacy_mode,
                             load_flags,
-                            force_spdy_over_ssl,
                             want_spdy_over_npn);
     SSLClientSocketPool* ssl_pool = NULL;
     if (proxy_info.is_direct()) {
@@ -400,7 +397,6 @@ int InitSocketHandleForHttpRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    bool force_spdy_over_ssl,
     bool want_spdy_over_npn,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
@@ -412,8 +408,8 @@ int InitSocketHandleForHttpRequest(
   DCHECK(socket_handle);
   return InitSocketPoolHelper(
       group_type, endpoint, request_extra_headers, request_load_flags,
-      request_priority, session, proxy_info, force_spdy_over_ssl,
-      want_spdy_over_npn, ssl_config_for_origin, ssl_config_for_proxy, false,
+      request_priority, session, proxy_info, want_spdy_over_npn,
+      ssl_config_for_origin, ssl_config_for_proxy, /*force_tunnel=*/false,
       privacy_mode, net_log, 0, socket_handle,
       HttpNetworkSession::NORMAL_SOCKET_POOL, resolution_callback, callback);
 }
@@ -426,7 +422,6 @@ int InitSocketHandleForWebSocketRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    bool force_spdy_over_ssl,
     bool want_spdy_over_npn,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
@@ -438,8 +433,8 @@ int InitSocketHandleForWebSocketRequest(
   DCHECK(socket_handle);
   return InitSocketPoolHelper(
       group_type, endpoint, request_extra_headers, request_load_flags,
-      request_priority, session, proxy_info, force_spdy_over_ssl,
-      want_spdy_over_npn, ssl_config_for_origin, ssl_config_for_proxy, true,
+      request_priority, session, proxy_info, want_spdy_over_npn,
+      ssl_config_for_origin, ssl_config_for_proxy, /*force_tunnel=*/true,
       privacy_mode, net_log, 0, socket_handle,
       HttpNetworkSession::WEBSOCKET_SOCKET_POOL, resolution_callback, callback);
 }
@@ -461,8 +456,8 @@ int InitSocketHandleForRawConnect(
   return InitSocketPoolHelper(
       ClientSocketPoolManager::NORMAL_GROUP, host_port_pair,
       request_extra_headers, request_load_flags, request_priority, session,
-      proxy_info, false, false, ssl_config_for_origin, ssl_config_for_proxy,
-      true, privacy_mode, net_log, 0, socket_handle,
+      proxy_info, false, ssl_config_for_origin, ssl_config_for_proxy,
+      /*force_tunnel=*/true, privacy_mode, net_log, 0, socket_handle,
       HttpNetworkSession::NORMAL_SOCKET_POOL, OnHostResolutionCallback(),
       callback);
 }
@@ -482,10 +477,11 @@ int InitSocketHandleForTlsConnect(const HostPortPair& endpoint,
   RequestPriority request_priority = MEDIUM;
   return InitSocketPoolHelper(
       ClientSocketPoolManager::SSL_GROUP, endpoint, request_extra_headers,
-      request_load_flags, request_priority, session, proxy_info, false, false,
-      ssl_config_for_origin, ssl_config_for_proxy, true, privacy_mode, net_log,
-      0, socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
-      OnHostResolutionCallback(), callback);
+      request_load_flags, request_priority, session, proxy_info,
+      /*want_spdy_over_npn=*/false, ssl_config_for_origin, ssl_config_for_proxy,
+      /*force_tunnel=*/true, privacy_mode, net_log, 0, socket_handle,
+      HttpNetworkSession::NORMAL_SOCKET_POOL, OnHostResolutionCallback(),
+      callback);
 }
 
 int PreconnectSocketsForHttpRequest(
@@ -496,7 +492,6 @@ int PreconnectSocketsForHttpRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    bool force_spdy_over_ssl,
     bool want_spdy_over_npn,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
@@ -505,8 +500,8 @@ int PreconnectSocketsForHttpRequest(
     int num_preconnect_streams) {
   return InitSocketPoolHelper(
       group_type, endpoint, request_extra_headers, request_load_flags,
-      request_priority, session, proxy_info, force_spdy_over_ssl,
-      want_spdy_over_npn, ssl_config_for_origin, ssl_config_for_proxy, false,
+      request_priority, session, proxy_info, want_spdy_over_npn,
+      ssl_config_for_origin, ssl_config_for_proxy, /*force_tunnel=*/false,
       privacy_mode, net_log, num_preconnect_streams, NULL,
       HttpNetworkSession::NORMAL_SOCKET_POOL, OnHostResolutionCallback(),
       CompletionCallback());

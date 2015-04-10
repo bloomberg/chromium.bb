@@ -84,7 +84,6 @@ class NET_EXPORT HttpNetworkSession
     uint16 testing_fixed_https_port;
     bool enable_tcp_fast_open_for_ssl;
 
-    bool force_spdy_single_domain;
     bool enable_spdy_compression;
     bool enable_spdy_ping_based_connection_checking;
     NextProto spdy_default_protocol;
@@ -100,10 +99,6 @@ class NET_EXPORT HttpNetworkSession
     size_t spdy_max_concurrent_streams_limit;
     SpdySessionPool::TimeFunc time_func;
     std::string trusted_spdy_proxy;
-    // Controls whether or not ssl is used when in SPDY mode.
-    bool force_spdy_over_ssl;
-    // Controls whether or not SPDY is used without NPN.
-    bool force_spdy_always;
     // URLs to exclude from forced SPDY.
     std::set<HostPortPair> forced_spdy_exclusions;
     // Noe: Using this in the case of NPN for HTTP only results in the browser

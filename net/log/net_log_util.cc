@@ -444,10 +444,6 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
     status_dict->SetBoolean(
         "use_alternate_protocols",
         http_network_session->params().use_alternate_protocols);
-    status_dict->SetBoolean("force_spdy_over_ssl",
-                            http_network_session->params().force_spdy_over_ssl);
-    status_dict->SetBoolean("force_spdy_always",
-                            http_network_session->params().force_spdy_always);
 
     NextProtoVector next_protos;
     http_network_session->GetNextProtos(&next_protos);

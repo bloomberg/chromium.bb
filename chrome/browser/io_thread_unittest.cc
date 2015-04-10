@@ -175,19 +175,6 @@ TEST_F(IOThreadTest, SpdyCommandLineUseSpdyOff) {
   EXPECT_EQ(0u, globals_.next_protos.size());
 }
 
-TEST_F(IOThreadTest, SpdyCommandLineUseSpdySSL) {
-  command_line_.AppendSwitchASCII("use-spdy", "ssl");
-  // Command line should overwrite field trial group.
-  field_trial_group_ = "SpdyDisabled";
-  ConfigureSpdyGlobals();
-  bool force_spdy_over_ssl = false;
-  globals_.force_spdy_over_ssl.CopyToIfSet(&force_spdy_over_ssl);
-  EXPECT_TRUE(force_spdy_over_ssl);
-  bool force_spdy_always = false;
-  globals_.force_spdy_always.CopyToIfSet(&force_spdy_always);
-  EXPECT_TRUE(force_spdy_always);
-}
-
 TEST_F(IOThreadTest, SpdyCommandLineUseSpdyDisableAltProtocols) {
   command_line_.AppendSwitchASCII("use-spdy", "no-alt-protocols");
   ConfigureSpdyGlobals();

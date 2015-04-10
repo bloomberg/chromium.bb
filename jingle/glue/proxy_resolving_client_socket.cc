@@ -84,8 +84,6 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
         reference_params->testing_fixed_https_port;
     session_params.next_protos = reference_params->next_protos;
     session_params.trusted_spdy_proxy = reference_params->trusted_spdy_proxy;
-    session_params.force_spdy_over_ssl = reference_params->force_spdy_over_ssl;
-    session_params.force_spdy_always = reference_params->force_spdy_always;
     session_params.forced_spdy_exclusions =
         reference_params->forced_spdy_exclusions;
     session_params.use_alternate_protocols =

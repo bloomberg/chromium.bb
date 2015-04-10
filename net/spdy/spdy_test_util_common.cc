@@ -373,8 +373,6 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       stream_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
-      force_spdy_over_ssl(false),
-      force_spdy_always(false),
       use_alternate_protocols(false),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
@@ -409,8 +407,6 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol,
       stream_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
-      force_spdy_over_ssl(false),
-      force_spdy_always(false),
       use_alternate_protocols(false),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
@@ -470,16 +466,12 @@ net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.time_func = session_deps->time_func;
   params.next_protos = session_deps->next_protos;
   params.trusted_spdy_proxy = session_deps->trusted_spdy_proxy;
-  params.force_spdy_over_ssl = session_deps->force_spdy_over_ssl;
-  params.force_spdy_always = session_deps->force_spdy_always;
   params.use_alternate_protocols = session_deps->use_alternate_protocols;
   params.net_log = session_deps->net_log;
   return params;
 }
 
-SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol,
-                                             bool force_spdy_over_ssl,
-                                             bool force_spdy_always)
+SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
     : storage_(this) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 
@@ -505,8 +497,6 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol,
   params.enable_spdy_compression = false;
   params.enable_spdy_ping_based_connection_checking = false;
   params.spdy_default_protocol = protocol;
-  params.force_spdy_over_ssl = force_spdy_over_ssl;
-  params.force_spdy_always = force_spdy_always;
   params.http_server_properties = http_server_properties();
   scoped_refptr<HttpNetworkSession> network_session(
       new HttpNetworkSession(params));
@@ -553,7 +543,6 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
                             ssl_config,
                             key.privacy_mode(),
                             0,
-                            false,
                             false));
     rv = connection->Init(key.host_port_pair().ToString(),
                           ssl_params,
@@ -729,7 +718,8 @@ void SpdySessionPoolPeer::SetStreamInitialRecvWindowSize(size_t window) {
 
 SpdyTestUtil::SpdyTestUtil(NextProto protocol)
     : protocol_(protocol),
-      spdy_version_(NextProtoToSpdyMajorVersion(protocol)) {
+      spdy_version_(NextProtoToSpdyMajorVersion(protocol)),
+      default_url_(GURL(kDefaultURL)) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 }
 
@@ -971,10 +961,8 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGet(const char* const extra_headers[],
                                           RequestPriority request_priority,
                                           bool direct) const {
   SpdyHeaderBlock block;
+  AddUrlToHeaderBlock(default_url_.spec(), &block);
   block[GetMethodKey()] = "GET";
-  block[GetPathKey()] = "/";
-  block[GetHostKey()] = "www.google.com";
-  block[GetSchemeKey()] = "http";
   MaybeAddVersionHeader(&block);
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
   return ConstructSpdySyn(stream_id, block, request_priority, compressed, true);
@@ -1206,9 +1194,7 @@ SpdyFrame* SpdyTestUtil::ConstructChunkedSpdyPost(
     int extra_header_count) {
   SpdyHeaderBlock block;
   block[GetMethodKey()] = "POST";
-  block[GetPathKey()] = "/";
-  block[GetHostKey()] = "www.google.com";
-  block[GetSchemeKey()] = "http";
+  AddUrlToHeaderBlock(default_url_.spec(), &block);
   MaybeAddVersionHeader(&block);
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
   return ConstructSpdySyn(1, block, LOWEST, false, false);

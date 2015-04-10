@@ -97,9 +97,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
 // connection will be aborted with that value.
 // If |want_spdy_over_ssl| is true, then after the SSL handshake is complete,
 // SPDY must have been negotiated or else it will be considered an error.
-// If |force_spdy_over_ssl| is true, then SPDY will be assumed to be supported
-// for all SSL connections.
-// TODO(rch): remove force_spdy_over_ssl.
 int InitSocketHandleForHttpRequest(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
@@ -108,7 +105,6 @@ int InitSocketHandleForHttpRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    bool force_spdy_over_ssl,
     bool want_spdy_over_npn,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
@@ -135,7 +131,6 @@ int InitSocketHandleForWebSocketRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    bool force_spdy_over_ssl,
     bool want_spdy_over_npn,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
@@ -185,7 +180,6 @@ int PreconnectSocketsForHttpRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    bool force_spdy_over_ssl,
     bool want_spdy_over_npn,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,

@@ -168,14 +168,11 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_tcp_fast_open_for_ssl;
 
     Optional<size_t> initial_max_spdy_concurrent_streams;
-    Optional<bool> force_spdy_single_domain;
     Optional<bool> enable_spdy_compression;
     Optional<bool> enable_spdy_ping_based_connection_checking;
     Optional<net::NextProto> spdy_default_protocol;
     net::NextProtoVector next_protos;
     Optional<std::string> trusted_spdy_proxy;
-    Optional<bool> force_spdy_over_ssl;
-    Optional<bool> force_spdy_always;
     std::set<net::HostPortPair> forced_spdy_exclusions;
     Optional<bool> use_alternate_protocols;
     Optional<double> alternate_protocol_probability_threshold;

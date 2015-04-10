@@ -148,7 +148,6 @@ class SSLClientSocketPoolTest
         ssl_config_,
         PRIVACY_MODE_DISABLED,
         0,
-        false,
         want_spdy_over_npn));
   }
 

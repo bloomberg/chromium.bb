@@ -52,7 +52,6 @@ class NET_EXPORT SpdySessionPool
       SSLConfigService* ssl_config_service,
       const base::WeakPtr<HttpServerProperties>& http_server_properties,
       TransportSecurityState* transport_security_state,
-      bool force_single_domain,
       bool enable_compression,
       bool enable_ping_based_connection_checking,
       NextProto default_protocol,
@@ -160,10 +159,6 @@ class NET_EXPORT SpdySessionPool
   // Returns true iff |session| is in |available_sessions_|.
   bool IsSessionAvailable(const base::WeakPtr<SpdySession>& session) const;
 
-  // Returns a normalized version of the given key suitable for lookup
-  // into |available_sessions_|.
-  const SpdySessionKey& NormalizeListKey(const SpdySessionKey& key) const;
-
   // Map the given key to the given session. There must not already be
   // a mapping for |key|.
   void MapKeyToAvailableSession(const SpdySessionKey& key,
@@ -209,15 +204,12 @@ class NET_EXPORT SpdySessionPool
   // A map of IPEndPoint aliases for sessions.
   AliasMap aliases_;
 
-  static bool g_force_single_domain;
-
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   HostResolver* const resolver_;
 
   // Defaults to true. May be controlled via SpdySessionPoolPeer for tests.
   bool verify_domain_authentication_;
   bool enable_sending_initial_data_;
-  bool force_single_domain_;
   bool enable_compression_;
   bool enable_ping_based_connection_checking_;
   const NextProto default_protocol_;

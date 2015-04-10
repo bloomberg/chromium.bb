@@ -33,7 +33,6 @@ SpdySessionPool::SpdySessionPool(
     SSLConfigService* ssl_config_service,
     const base::WeakPtr<HttpServerProperties>& http_server_properties,
     TransportSecurityState* transport_security_state,
-    bool force_single_domain,
     bool enable_compression,
     bool enable_ping_based_connection_checking,
     NextProto default_protocol,
@@ -49,7 +48,6 @@ SpdySessionPool::SpdySessionPool(
       resolver_(resolver),
       verify_domain_authentication_(true),
       enable_sending_initial_data_(true),
-      force_single_domain_(force_single_domain),
       enable_compression_(enable_compression),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
@@ -319,36 +317,19 @@ bool SpdySessionPool::IsSessionAvailable(
   return false;
 }
 
-const SpdySessionKey& SpdySessionPool::NormalizeListKey(
-    const SpdySessionKey& key) const {
-  if (!force_single_domain_)
-    return key;
-
-  static SpdySessionKey* single_domain_key = NULL;
-  if (!single_domain_key) {
-    HostPortPair single_domain = HostPortPair("singledomain.com", 80);
-    single_domain_key = new SpdySessionKey(single_domain,
-                                           ProxyServer::Direct(),
-                                           PRIVACY_MODE_DISABLED);
-  }
-  return *single_domain_key;
-}
-
 void SpdySessionPool::MapKeyToAvailableSession(
     const SpdySessionKey& key,
     const base::WeakPtr<SpdySession>& session) {
   DCHECK(ContainsKey(sessions_, session.get()));
-  const SpdySessionKey& normalized_key = NormalizeListKey(key);
   std::pair<AvailableSessionMap::iterator, bool> result =
-      available_sessions_.insert(std::make_pair(normalized_key, session));
+      available_sessions_.insert(std::make_pair(key, session));
   CHECK(result.second);
 }
 
 SpdySessionPool::AvailableSessionMap::iterator
 SpdySessionPool::LookupAvailableSessionByKey(
     const SpdySessionKey& key) {
-  const SpdySessionKey& normalized_key = NormalizeListKey(key);
-  return available_sessions_.find(normalized_key);
+  return available_sessions_.find(key);
 }
 
 void SpdySessionPool::UnmapKey(const SpdySessionKey& key) {

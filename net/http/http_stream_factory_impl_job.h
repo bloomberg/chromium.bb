@@ -225,12 +225,6 @@ class HttpStreamFactoryImpl::Job {
   // Moves this stream request into SPDY mode.
   void SwitchToSpdyMode();
 
-  // Should we force SPDY to run over SSL for this stream request.
-  bool ShouldForceSpdySSL() const;
-
-  // Should we force SPDY to run without SSL for this stream request.
-  bool ShouldForceSpdyWithoutSSL() const;
-
   // Should we force QUIC for this stream request.
   bool ShouldForceQuic() const;
 

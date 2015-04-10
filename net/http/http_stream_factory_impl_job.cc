@@ -283,13 +283,12 @@ bool HttpStreamFactoryImpl::Job::CanUseExistingSpdySession() const {
   // We need to make sure that if a spdy session was created for
   // https://somehost/ that we don't use that session for http://somehost:443/.
   // The only time we can use an existing session is if the request URL is
-  // https (the normal case) or if we're connection to a SPDY proxy, or
-  // if we're running with force_spdy_always_.  crbug.com/133176
+  // https (the normal case) or if we're connection to a SPDY proxy.
+  // https://crbug.com/133176
   // TODO(ricea): Add "wss" back to this list when SPDY WebSocket support is
   // working.
   return alternative_service_url_.SchemeIs("https") ||
-         proxy_info_.proxy_server().is_https() ||
-         session_->params().force_spdy_always;
+         proxy_info_.proxy_server().is_https();
 }
 
 void HttpStreamFactoryImpl::Job::OnStreamReadyCallback() {
@@ -727,18 +726,6 @@ int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
   return OK;
 }
 
-bool HttpStreamFactoryImpl::Job::ShouldForceSpdySSL() const {
-  bool rv = session_->params().force_spdy_always &&
-      session_->params().force_spdy_over_ssl;
-  return rv && !session_->HasSpdyExclusion(server_);
-}
-
-bool HttpStreamFactoryImpl::Job::ShouldForceSpdyWithoutSSL() const {
-  bool rv = session_->params().force_spdy_always &&
-      !session_->params().force_spdy_over_ssl;
-  return rv && !session_->HasSpdyExclusion(server_);
-}
-
 bool HttpStreamFactoryImpl::Job::ShouldForceQuic() const {
   return session_->params().enable_quic &&
          session_->params().origin_to_force_quic_on.Equals(server_) &&
@@ -769,7 +756,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
   using_ssl_ = alternative_service_url_.SchemeIs("https") ||
-               alternative_service_url_.SchemeIs("wss") || ShouldForceSpdySSL();
+               alternative_service_url_.SchemeIs("wss");
   using_spdy_ = false;
 
   if (ShouldForceQuic())
@@ -824,8 +811,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     next_state_ = STATE_CREATE_STREAM;
     existing_spdy_session_ = spdy_session;
     return OK;
-  } else if (request_ && !request_->HasSpdySessionKey() &&
-             (using_ssl_ || ShouldForceSpdyWithoutSSL())) {
+  } else if (request_ && !request_->HasSpdySessionKey() && using_ssl_) {
     // Update the spdy session key for the request that launched this job.
     request_->SetSpdySessionKey(spdy_session_key);
   }
@@ -871,8 +857,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     return PreconnectSocketsForHttpRequest(
         GetSocketGroup(), server_, request_info_.extra_headers,
         request_info_.load_flags, priority_, session_, proxy_info_,
-        ShouldForceSpdySSL(), want_spdy_over_npn, server_ssl_config_,
-        proxy_ssl_config_, request_info_.privacy_mode, net_log_, num_streams_);
+        want_spdy_over_npn, server_ssl_config_, proxy_ssl_config_,
+        request_info_.privacy_mode, net_log_, num_streams_);
   }
 
   // If we can't use a SPDY session, don't bother checking for one after
@@ -888,17 +874,17 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     return InitSocketHandleForWebSocketRequest(
         GetSocketGroup(), server_, request_info_.extra_headers,
         request_info_.load_flags, priority_, session_, proxy_info_,
-        ShouldForceSpdySSL(), want_spdy_over_npn, websocket_server_ssl_config,
-        proxy_ssl_config_, request_info_.privacy_mode, net_log_,
-        connection_.get(), resolution_callback, io_callback_);
+        want_spdy_over_npn, websocket_server_ssl_config, proxy_ssl_config_,
+        request_info_.privacy_mode, net_log_, connection_.get(),
+        resolution_callback, io_callback_);
   }
 
   return InitSocketHandleForHttpRequest(
       GetSocketGroup(), server_, request_info_.extra_headers,
       request_info_.load_flags, priority_, session_, proxy_info_,
-      ShouldForceSpdySSL(), want_spdy_over_npn, server_ssl_config_,
-      proxy_ssl_config_, request_info_.privacy_mode, net_log_,
-      connection_.get(), resolution_callback, io_callback_);
+      want_spdy_over_npn, server_ssl_config_, proxy_ssl_config_,
+      request_info_.privacy_mode, net_log_, connection_.get(),
+      resolution_callback, io_callback_);
 }
 
 int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
@@ -975,8 +961,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
         if (ssl_socket->was_spdy_negotiated())
           SwitchToSpdyMode();
       }
-      if (ShouldForceSpdySSL())
-        SwitchToSpdyMode();
     }
   } else if (proxy_info_.is_https() && connection_->socket() &&
         result == OK) {
@@ -988,10 +972,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
       SwitchToSpdyMode();
     }
   }
-
-  // We may be using spdy without SSL
-  if (ShouldForceSpdyWithoutSSL())
-    SwitchToSpdyMode();
 
   if (result == ERR_PROXY_AUTH_REQUESTED ||
       result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE) {
@@ -1491,9 +1471,6 @@ void HttpStreamFactoryImpl::Job::MaybeMarkAlternativeServiceBroken() {
 
 ClientSocketPoolManager::SocketGroupType
 HttpStreamFactoryImpl::Job::GetSocketGroup() const {
-  if (ShouldForceSpdySSL())
-    return ClientSocketPoolManager::SSL_GROUP;
-
   std::string scheme = alternative_service_url_.scheme();
   if (scheme == "ftp")
     return ClientSocketPoolManager::FTP_GROUP;

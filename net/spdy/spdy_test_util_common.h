@@ -220,17 +220,13 @@ struct SpdySessionDependencies {
   SpdySession::TimeFunc time_func;
   NextProtoVector next_protos;
   std::string trusted_spdy_proxy;
-  bool force_spdy_over_ssl;
-  bool force_spdy_always;
   bool use_alternate_protocols;
   NetLog* net_log;
 };
 
 class SpdyURLRequestContext : public URLRequestContext {
  public:
-  SpdyURLRequestContext(NextProto protocol,
-                        bool force_spdy_over_ssl,
-                        bool force_spdy_always);
+  explicit SpdyURLRequestContext(NextProto protocol);
   ~SpdyURLRequestContext() override;
 
   MockClientSocketFactory& socket_factory() { return socket_factory_; }
@@ -567,6 +563,9 @@ class SpdyTestUtil {
   }
   scoped_ptr<SpdyFramer> CreateFramer(bool compressed) const;
 
+  const GURL& default_url() const { return default_url_; }
+  void set_default_url(const GURL& url) { default_url_ = url; }
+
   const char* GetMethodKey() const;
   const char* GetStatusKey() const;
   const char* GetHostKey() const;
@@ -584,6 +583,7 @@ class SpdyTestUtil {
 
   const NextProto protocol_;
   const SpdyMajorVersion spdy_version_;
+  GURL default_url_;
 };
 
 }  // namespace net

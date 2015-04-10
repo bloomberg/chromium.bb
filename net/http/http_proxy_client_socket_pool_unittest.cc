@@ -225,7 +225,6 @@ class HttpProxyClientSocketPoolTest
         SSLConfig(),
         PRIVACY_MODE_DISABLED,
         0,
-        false,
         false);
   }
 

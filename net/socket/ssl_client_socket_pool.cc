@@ -34,7 +34,6 @@ SSLSocketParams::SSLSocketParams(
     const SSLConfig& ssl_config,
     PrivacyMode privacy_mode,
     int load_flags,
-    bool force_spdy_over_ssl,
     bool want_spdy_over_npn)
     : direct_params_(direct_params),
       socks_proxy_params_(socks_proxy_params),
@@ -43,7 +42,6 @@ SSLSocketParams::SSLSocketParams(
       ssl_config_(ssl_config),
       privacy_mode_(privacy_mode),
       load_flags_(load_flags),
-      force_spdy_over_ssl_(force_spdy_over_ssl),
       want_spdy_over_npn_(want_spdy_over_npn),
       ignore_limits_(false) {
   if (direct_params_.get()) {
@@ -356,16 +354,12 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
   if (params_->want_spdy_over_npn() && !ssl_socket_->was_spdy_negotiated())
     return ERR_NPN_NEGOTIATION_FAILED;
 
-  // Spdy might be turned on by default, or it might be over npn.
-  bool using_spdy = params_->force_spdy_over_ssl() ||
-      params_->want_spdy_over_npn();
-
   if (result == OK ||
       ssl_socket_->IgnoreCertError(result, params_->load_flags())) {
     DCHECK(!connect_timing_.ssl_start.is_null());
     base::TimeDelta connect_duration =
         connect_timing_.ssl_end - connect_timing_.ssl_start;
-    if (using_spdy) {
+    if (params_->want_spdy_over_npn()) {
       UMA_HISTOGRAM_CUSTOM_TIMES("Net.SpdyConnectionLatency_2",
                                  connect_duration,
                                  base::TimeDelta::FromMilliseconds(1),

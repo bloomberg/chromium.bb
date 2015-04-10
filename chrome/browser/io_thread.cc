@@ -323,29 +323,22 @@ bool IsCertificateTransparencyRequiredForEV(
 // Parse kUseSpdy command line flag options, which may contain the following:
 //
 //   "off"                      : Disables SPDY support entirely.
-//   "ssl"                      : Forces SPDY for all HTTPS requests.
-//   "no-ssl"                   : Forces SPDY for all HTTP requests.
 //   "no-ping"                  : Disables SPDY ping connection testing.
 //   "exclude=<host>"           : Disables SPDY support for the host <host>.
 //   "no-compress"              : Disables SPDY header compression.
 //   "no-alt-protocols          : Disables alternate protocol support.
 //   "force-alt-protocols       : Forces an alternate protocol of SPDY/3
 //                                on port 443.
-//   "single-domain"            : Forces all spdy traffic to a single domain.
 //   "init-max-streams=<limit>" : Specifies the maximum number of concurrent
 //                                streams for a SPDY session, unless the
 //                                specifies a different value via SETTINGS.
 void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
                                              IOThread::Globals* globals) {
   static const char kOff[] = "off";
-  static const char kSSL[] = "ssl";
-  static const char kDisableSSL[] = "no-ssl";
   static const char kDisablePing[] = "no-ping";
   static const char kExclude[] = "exclude";  // Hosts to exclude
   static const char kDisableCompression[] = "no-compress";
   static const char kDisableAltProtocols[] = "no-alt-protocols";
-  static const char kSingleDomain[] = "single-domain";
-
   static const char kInitialMaxConcurrentStreams[] = "init-max-streams";
 
   std::vector<std::string> spdy_options;
@@ -363,18 +356,6 @@ void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
       net::HttpStreamFactory::set_spdy_enabled(false);
       continue;
     }
-    if (option == kDisableSSL) {
-      globals->spdy_default_protocol.set(net::kProtoSPDY31);
-      globals->force_spdy_over_ssl.set(false);
-      globals->force_spdy_always.set(true);
-      continue;
-    }
-    if (option == kSSL) {
-      globals->spdy_default_protocol.set(net::kProtoSPDY31);
-      globals->force_spdy_over_ssl.set(true);
-      globals->force_spdy_always.set(true);
-      continue;
-    }
     if (option == kDisablePing) {
       globals->enable_spdy_ping_based_connection_checking.set(false);
       continue;
@@ -390,11 +371,6 @@ void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
     }
     if (option == kDisableAltProtocols) {
       globals->use_alternate_protocols.set(false);
-      continue;
-    }
-    if (option == kSingleDomain) {
-      DVLOG(1) << "FORCING SINGLE DOMAIN";
-      globals->force_spdy_single_domain.set(true);
       continue;
     }
     if (option == kInitialMaxConcurrentStreams) {
@@ -1173,8 +1149,6 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
 
   globals.initial_max_spdy_concurrent_streams.CopyToIfSet(
       &params->spdy_initial_max_concurrent_streams);
-  globals.force_spdy_single_domain.CopyToIfSet(
-      &params->force_spdy_single_domain);
   globals.enable_spdy_compression.CopyToIfSet(
       &params->enable_spdy_compression);
   globals.enable_spdy_ping_based_connection_checking.CopyToIfSet(
@@ -1183,8 +1157,6 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->spdy_default_protocol);
   params->next_protos = globals.next_protos;
   globals.trusted_spdy_proxy.CopyToIfSet(&params->trusted_spdy_proxy);
-  globals.force_spdy_over_ssl.CopyToIfSet(&params->force_spdy_over_ssl);
-  globals.force_spdy_always.CopyToIfSet(&params->force_spdy_always);
   params->forced_spdy_exclusions = globals.forced_spdy_exclusions;
   globals.use_alternate_protocols.CopyToIfSet(
       &params->use_alternate_protocols);
