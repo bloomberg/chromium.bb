@@ -2062,6 +2062,15 @@ def CMDupload(parser, args):
     base_branch = cl.GetCommonAncestorWithUpstream()
     args = [base_branch, 'HEAD']
 
+  # Make sure authenticated to Rietveld before running expensive hooks. It is
+  # a fast, best efforts check. Rietveld still can reject the authentication
+  # during the actual upload.
+  if not settings.GetIsGerrit() and auth_config.use_oauth2:
+    authenticator = auth.get_authenticator_for_host(
+        cl.GetRietveldServer(), auth_config)
+    if not authenticator.has_cached_credentials():
+      raise auth.LoginRequiredError(cl.GetRietveldServer())
+
   # Apply watchlists on upload.
   change = cl.GetChange(base_branch, None)
   watchlist = watchlists.Watchlists(change.RepositoryRoot())
@@ -3179,6 +3188,8 @@ def main(argv):
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
     return dispatcher.execute(OptionParser(), argv)
+  except auth.AuthenticationError as e:
+    DieWithError(str(e))
   except urllib2.HTTPError, e:
     if e.code != 500:
       raise

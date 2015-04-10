@@ -66,6 +66,13 @@ class CodereviewSettingsFileMock(object):
             "GERRIT_PORT: 29418\n")
 
 
+class AuthenticatorMock(object):
+  def __init__(self, *_args):
+    pass
+  def has_cached_credentials(self):
+    return True
+
+
 class TestGitCl(TestCase):
   def setUp(self):
     super(TestGitCl, self).setUp()
@@ -88,6 +95,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.rietveld, 'CachingRietveld', RietveldMock)
     self.mock(git_cl.upload, 'RealMain', self.fail)
     self.mock(git_cl.watchlists, 'Watchlists', WatchlistsMock)
+    self.mock(git_cl.auth, 'get_authenticator_for_host', AuthenticatorMock)
     # It's important to reset settings to not have inter-tests interference.
     git_cl.settings = None
 
@@ -161,13 +169,14 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.master.remote'],), 'origin'),
       ((['get_or_create_merge_base', 'master', 'master'],),
        'fake_ancestor_sha'),
+      ((['git', 'config', 'gerrit.host'],), ''),
+      ((['git', 'config', 'branch.master.rietveldissue'],), ''),
       ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
       ((['git', 'rev-parse', '--show-cdup'],), ''),
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
       ((['git', 'diff', '--name-status', '--no-renames', '-r',
          'fake_ancestor_sha...', '.'],),
         'M\t.gitignore\n'),
-      ((['git', 'config', 'branch.master.rietveldissue'],), ''),
       ((['git', 'config', 'branch.master.rietveldpatchset'],),
        ''),
       ((['git', 'log', '--pretty=format:%s%n%n%b',
@@ -175,7 +184,6 @@ class TestGitCl(TestCase):
        'foo'),
       ((['git', 'config', 'user.email'],), 'me@example.com'),
       stat_call,
-      ((['git', 'config', 'gerrit.host'],), ''),
       ((['git', 'log', '--pretty=format:%s\n\n%b',
          'fake_ancestor_sha..HEAD'],),
        'desc\n'),
@@ -361,7 +369,6 @@ class TestGitCl(TestCase):
     return [
         'upload', '--assume_yes', '--server',
         'https://codereview.example.com',
-        '--no-oauth2', '--auth-host-port', '8090',
         '--message', description
     ] + args + [
         '--cc', 'joe@example.com',
@@ -546,6 +553,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
         ((['get_or_create_merge_base', 'master', 'master'],),
          'fake_ancestor_sha'),
+        ((['git', 'config', 'gerrit.host'],), 'gerrit.example.com'),
         ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
         ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((['git', 'rev-parse', 'HEAD'],), '12345'),
@@ -569,8 +577,6 @@ class TestGitCl(TestCase):
   @staticmethod
   def _gerrit_upload_calls(description, reviewers, squash):
     calls = [
-        ((['git', 'config', 'gerrit.host'],),
-         'gerrit.example.com'),
         ((['git', 'log', '--pretty=format:%s\n\n%b',
            'fake_ancestor_sha..HEAD'],),
          description)

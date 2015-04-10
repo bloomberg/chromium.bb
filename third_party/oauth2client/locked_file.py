@@ -35,7 +35,7 @@ import logging
 import os
 import time
 
-from oauth2client import util
+from . import util
 
 logger = logging.getLogger(__name__)
 

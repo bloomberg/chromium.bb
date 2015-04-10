@@ -1,11 +1,58 @@
-# Copyright (c) 2015 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Authentication related functions."""
+"""Google OAuth2 related functions."""
 
+import BaseHTTPServer
 import collections
+import datetime
+import functools
+import json
+import logging
 import optparse
+import os
+import socket
+import sys
+import threading
+import urllib
+import urlparse
+import webbrowser
+
+from third_party import httplib2
+from third_party.oauth2client import client
+from third_party.oauth2client import multistore_file
+
+
+# depot_tools/.
+DEPOT_TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+# Google OAuth2 clients always have a secret, even if the client is an installed
+# application/utility such as this. Of course, in such cases the "secret" is
+# actually publicly known; security depends entirely on the secrecy of refresh
+# tokens, which effectively become bearer tokens. An attacker can impersonate
+# service's identity in OAuth2 flow. But that's generally fine as long as a list
+# of allowed redirect_uri's associated with client_id is limited to 'localhost'
+# or 'urn:ietf:wg:oauth:2.0:oob'. In that case attacker needs some process
+# running on user's machine to successfully complete the flow and grab refresh
+# token. When you have a malicious code running on your machine, you're screwed
+# anyway.
+# This particular set is managed by API Console project "chrome-infra-auth".
+OAUTH_CLIENT_ID = (
+    '446450136466-2hr92jrq8e6i4tnsa56b52vacp7t3936.apps.googleusercontent.com')
+OAUTH_CLIENT_SECRET = 'uBfbay2KCy9t4QveJ-dOqHtp'
+
+# List of space separated OAuth scopes for generated tokens. GAE apps usually
+# use userinfo.email scope for authentication.
+OAUTH_SCOPES = 'https://www.googleapis.com/auth/userinfo.email'
+
+# Path to a file with cached OAuth2 credentials used by default. It should be
+# a safe location accessible only to a current user: knowing content of this
+# file is roughly equivalent to knowing account password. Single file can hold
+# multiple independent tokens identified by token_cache_key (see Authenticator).
+OAUTH_TOKENS_CACHE = os.path.join(
+    os.path.expanduser('~'), '.depot_tools_oauth2_tokens')
 
 
 # Authentication configuration extracted from command line options.
@@ -16,6 +63,28 @@ AuthConfig = collections.namedtuple('AuthConfig', [
     'use_local_webserver',
     'webserver_port',
 ])
+
+
+# OAuth access token with its expiration time (UTC datetime or None if unknown).
+AccessToken = collections.namedtuple('AccessToken', [
+    'token',
+    'expires_at',
+])
+
+
+class AuthenticationError(Exception):
+  """Raised on errors related to authentication."""
+
+
+class LoginRequiredError(AuthenticationError):
+  """Interaction with the user is required to authenticate."""
+
+  def __init__(self, token_cache_key):
+    # HACK(vadimsh): It is assumed here that the token cache key is a hostname.
+    msg = (
+        'You are not logged in. Please login first by running:\n'
+        '  depot-tools-auth login %s' % token_cache_key)
+    super(LoginRequiredError, self).__init__(msg)
 
 
 def make_auth_config(
@@ -31,34 +100,42 @@ def make_auth_config(
   """
   default = lambda val, d: val if val is not None else d
   return AuthConfig(
-      default(use_oauth2, False),
+      default(use_oauth2, _should_use_oauth2()),
       default(save_cookies, True),
-      default(use_local_webserver, True),
+      default(use_local_webserver, not _is_headless()),
       default(webserver_port, 8090))
 
 
-def add_auth_options(parser):
+def add_auth_options(parser, default_config=None):
   """Appends OAuth related options to OptionParser."""
-  default_config = make_auth_config()
+  default_config = default_config or make_auth_config()
   parser.auth_group = optparse.OptionGroup(parser, 'Auth options')
+  parser.add_option_group(parser.auth_group)
+
+  # OAuth2 vs password switch.
+  auth_default = 'use OAuth2' if default_config.use_oauth2 else 'use password'
   parser.auth_group.add_option(
       '--oauth2',
       action='store_true',
       dest='use_oauth2',
       default=default_config.use_oauth2,
-      help='Use OAuth 2.0 instead of a password.')
+      help='Use OAuth 2.0 instead of a password. [default: %s]' % auth_default)
   parser.auth_group.add_option(
       '--no-oauth2',
       action='store_false',
       dest='use_oauth2',
       default=default_config.use_oauth2,
-      help='Use password instead of OAuth 2.0.')
+      help='Use password instead of OAuth 2.0. [default: %s]' % auth_default)
+
+  # Password related options, deprecated.
   parser.auth_group.add_option(
       '--no-cookies',
       action='store_false',
       dest='save_cookies',
       default=default_config.save_cookies,
       help='Do not save authentication cookies to local disk.')
+
+  # OAuth2 related options.
   parser.auth_group.add_option(
       '--auth-no-local-webserver',
       action='store_false',
@@ -71,7 +148,6 @@ def add_auth_options(parser):
       default=default_config.webserver_port,
       help='Port a local web server should listen on. Used only if '
           '--auth-no-local-webserver is not set. [default: %default]')
-  parser.add_option_group(parser.auth_group)
 
 
 def extract_auth_config_from_options(options):
@@ -87,13 +163,387 @@ def extract_auth_config_from_options(options):
 
 
 def auth_config_to_command_options(auth_config):
-  """AuthConfig -> list of strings with command line options."""
+  """AuthConfig -> list of strings with command line options.
+
+  Omits options that are set to default values.
+  """
   if not auth_config:
     return []
-  opts = ['--oauth2' if auth_config.use_oauth2 else '--no-oauth2']
-  if not auth_config.save_cookies:
-    opts.append('--no-cookies')
-  if not auth_config.use_local_webserver:
-    opts.append('--auth-no-local-webserver')
-  opts.extend(['--auth-host-port', str(auth_config.webserver_port)])
+  defaults = make_auth_config()
+  opts = []
+  if auth_config.use_oauth2 != defaults.use_oauth2:
+    opts.append('--oauth2' if auth_config.use_oauth2 else '--no-oauth2')
+  if auth_config.save_cookies != auth_config.save_cookies:
+    if not auth_config.save_cookies:
+      opts.append('--no-cookies')
+  if auth_config.use_local_webserver != defaults.use_local_webserver:
+    if not auth_config.use_local_webserver:
+      opts.append('--auth-no-local-webserver')
+  if auth_config.webserver_port != defaults.webserver_port:
+    opts.extend(['--auth-host-port', str(auth_config.webserver_port)])
   return opts
+
+
+def get_authenticator_for_host(hostname, config):
+  """Returns Authenticator instance to access given host.
+
+  Args:
+    hostname: a naked hostname or http(s)://<hostname>[/] URL. Used to derive
+        a cache key for token cache.
+    config: AuthConfig instance.
+
+  Returns:
+    Authenticator object.
+  """
+  hostname = hostname.lower().rstrip('/')
+  # Append some scheme, otherwise urlparse puts hostname into parsed.path.
+  if '://' not in hostname:
+    hostname = 'https://' + hostname
+  parsed = urlparse.urlparse(hostname)
+  if parsed.path or parsed.params or parsed.query or parsed.fragment:
+    raise AuthenticationError(
+        'Expecting a hostname or root host URL, got %s instead' % hostname)
+  return Authenticator(parsed.netloc, config)
+
+
+class Authenticator(object):
+  """Object that knows how to refresh access tokens when needed.
+
+  Args:
+    token_cache_key: string key of a section of the token cache file to use
+        to keep the tokens. See hostname_to_token_cache_key.
+    config: AuthConfig object that holds authentication configuration.
+  """
+
+  def __init__(self, token_cache_key, config):
+    assert isinstance(config, AuthConfig)
+    assert config.use_oauth2
+    self._access_token = None
+    self._config = config
+    self._lock = threading.Lock()
+    self._token_cache_key = token_cache_key
+
+  def login(self):
+    """Performs interactive login flow if necessary.
+
+    Raises:
+      AuthenticationError on error or if interrupted.
+    """
+    return self.get_access_token(
+        force_refresh=True, allow_user_interaction=True)
+
+  def logout(self):
+    """Revokes the refresh token and deletes it from the cache.
+
+    Returns True if actually revoked a token.
+    """
+    revoked = False
+    with self._lock:
+      self._access_token = None
+      storage = self._get_storage()
+      credentials = storage.get()
+      if credentials:
+        credentials.revoke(httplib2.Http())
+        revoked = True
+      storage.delete()
+    return revoked
+
+  def has_cached_credentials(self):
+    """Returns True if long term credentials (refresh token) are in cache.
+
+    Doesn't make network calls.
+
+    If returns False, get_access_token() later will ask for interactive login by
+    raising LoginRequiredError.
+
+    If returns True, most probably get_access_token() won't ask for interactive
+    login, though it is not guaranteed, since cached token can be already
+    revoked and there's no way to figure this out without actually trying to use
+    it.
+    """
+    with self._lock:
+      credentials = self._get_storage().get()
+      return credentials and not credentials.invalid
+
+  def get_access_token(self, force_refresh=False, allow_user_interaction=False):
+    """Returns AccessToken, refreshing it if necessary.
+
+    Args:
+      force_refresh: forcefully refresh access token even if it is not expired.
+      allow_user_interaction: True to enable blocking for user input if needed.
+
+    Raises:
+      AuthenticationError on error or if authentication flow was interrupted.
+      LoginRequiredError if user interaction is required, but
+          allow_user_interaction is False.
+    """
+    with self._lock:
+      if force_refresh:
+        self._access_token = self._create_access_token(allow_user_interaction)
+        return self._access_token
+
+      # Load from on-disk cache on a first access.
+      if not self._access_token:
+        self._access_token = self._load_access_token()
+
+      # Refresh if expired or missing.
+      if not self._access_token or _needs_refresh(self._access_token):
+        # Maybe some other process already updated it, reload from the cache.
+        self._access_token = self._load_access_token()
+        # Nope, still expired, need to run the refresh flow.
+        if not self._access_token or _needs_refresh(self._access_token):
+          self._access_token = self._create_access_token(allow_user_interaction)
+
+      return self._access_token
+
+  def get_token_info(self):
+    """Returns a result of /oauth2/v2/tokeninfo call with token info."""
+    access_token = self.get_access_token()
+    resp, content = httplib2.Http().request(
+        uri='https://www.googleapis.com/oauth2/v2/tokeninfo?%s' % (
+            urllib.urlencode({'access_token': access_token.token})))
+    if resp.status == 200:
+      return json.loads(content)
+    raise AuthenticationError('Failed to fetch the token info: %r' % content)
+
+  def authorize(self, http):
+    """Monkey patches authentication logic of httplib2.Http instance.
+
+    The modified http.request method will add authentication headers to each
+    request and will refresh access_tokens when a 401 is received on a
+    request.
+
+    Args:
+       http: An instance of httplib2.Http.
+
+    Returns:
+       A modified instance of http that was passed in.
+    """
+    # Adapted from oauth2client.OAuth2Credentials.authorize.
+
+    request_orig = http.request
+
+    @functools.wraps(request_orig)
+    def new_request(
+        uri, method='GET', body=None, headers=None,
+        redirections=httplib2.DEFAULT_MAX_REDIRECTS,
+        connection_type=None):
+      headers = (headers or {}).copy()
+      headers['Authorizaton'] = 'Bearer %s' % self.get_access_token().token
+      resp, content = request_orig(
+          uri, method, body, headers, redirections, connection_type)
+      if resp.status in client.REFRESH_STATUS_CODES:
+        logging.info('Refreshing due to a %s', resp.status)
+        access_token = self.get_access_token(force_refresh=True)
+        headers['Authorizaton'] = 'Bearer %s' % access_token.token
+        return request_orig(
+            uri, method, body, headers, redirections, connection_type)
+      else:
+        return (resp, content)
+
+    http.request = new_request
+    return http
+
+  ## Private methods.
+
+  def _get_storage(self):
+    """Returns oauth2client.Storage with cached tokens."""
+    return multistore_file.get_credential_storage_custom_string_key(
+        OAUTH_TOKENS_CACHE, self._token_cache_key)
+
+  def _load_access_token(self):
+    """Returns cached AccessToken if it is not expired yet."""
+    credentials = self._get_storage().get()
+    if not credentials or credentials.invalid:
+      return None
+    if not credentials.access_token or credentials.access_token_expired:
+      return None
+    return AccessToken(credentials.access_token, credentials.token_expiry)
+
+  def _create_access_token(self, allow_user_interaction=False):
+    """Mints and caches a new access token, launching OAuth2 dance if necessary.
+
+    Uses cached refresh token, if present. In that case user interaction is not
+    required and function will finish quietly. Otherwise it will launch 3-legged
+    OAuth2 flow, that needs user interaction.
+
+    Args:
+      allow_user_interaction: if True, allow interaction with the user (e.g.
+          reading standard input, or launching a browser).
+
+    Returns:
+      AccessToken.
+
+    Raises:
+      AuthenticationError on error or if authentication flow was interrupted.
+      LoginRequiredError if user interaction is required, but
+          allow_user_interaction is False.
+    """
+    storage = self._get_storage()
+    credentials = None
+
+    # 3-legged flow with (perhaps cached) refresh token.
+    credentials = storage.get()
+    refreshed = False
+    if credentials and not credentials.invalid:
+      try:
+        credentials.refresh(httplib2.Http())
+        refreshed = True
+      except client.Error as err:
+        logging.warning(
+            'OAuth error during access token refresh: %s. '
+            'Attempting a full authentication flow.', err)
+
+    # Refresh token is missing or invalid, go through the full flow.
+    if not refreshed:
+      if not allow_user_interaction:
+        raise LoginRequiredError(self._token_cache_key)
+      credentials = _run_oauth_dance(self._config)
+
+    logging.info(
+        'OAuth access_token refreshed. Expires in %s.',
+        credentials.token_expiry - datetime.datetime.utcnow())
+    credentials.set_store(storage)
+    storage.put(credentials)
+    return AccessToken(credentials.access_token, credentials.token_expiry)
+
+
+## Private functions.
+
+
+def _should_use_oauth2():
+  """Default value for use_oauth2 config option.
+
+  Used to selectively enable OAuth2 by default.
+  """
+  return os.path.exists(os.path.join(DEPOT_TOOLS_DIR, 'USE_OAUTH2'))
+
+
+def _is_headless():
+  """True if machine doesn't seem to have a display."""
+  return sys.platform == 'linux2' and not os.environ.get('DISPLAY')
+
+
+def _needs_refresh(access_token):
+  """True if AccessToken should be refreshed."""
+  if access_token.expires_at is not None:
+    # Allow 5 min of clock skew between client and backend.
+    now = datetime.datetime.utcnow() + datetime.timedelta(seconds=300)
+    return now >= access_token.expires_at
+  # Token without expiration time never expires.
+  return False
+
+
+def _run_oauth_dance(config):
+  """Perform full 3-legged OAuth2 flow with the browser.
+
+  Returns:
+    oauth2client.Credentials.
+
+  Raises:
+    AuthenticationError on errors.
+  """
+  flow = client.OAuth2WebServerFlow(
+      OAUTH_CLIENT_ID,
+      OAUTH_CLIENT_SECRET,
+      OAUTH_SCOPES,
+      approval_prompt='force')
+
+  use_local_webserver = config.use_local_webserver
+  port = config.webserver_port
+  if config.use_local_webserver:
+    success = False
+    try:
+      httpd = _ClientRedirectServer(('localhost', port), _ClientRedirectHandler)
+    except socket.error:
+      pass
+    else:
+      success = True
+    use_local_webserver = success
+    if not success:
+      print(
+        'Failed to start a local webserver listening on port %d.\n'
+        'Please check your firewall settings and locally running programs that '
+        'may be blocking or using those ports.\n\n'
+        'Falling back to --auth-no-local-webserver and continuing with '
+        'authentication.\n' % port)
+
+  if use_local_webserver:
+    oauth_callback = 'http://localhost:%s/' % port
+  else:
+    oauth_callback = client.OOB_CALLBACK_URN
+  flow.redirect_uri = oauth_callback
+  authorize_url = flow.step1_get_authorize_url()
+
+  if use_local_webserver:
+    webbrowser.open(authorize_url, new=1, autoraise=True)
+    print(
+      'Your browser has been opened to visit:\n\n'
+      '    %s\n\n'
+      'If your browser is on a different machine then exit and re-run this '
+      'application with the command-line parameter\n\n'
+      '  --auth-no-local-webserver\n' % authorize_url)
+  else:
+    print(
+      'Go to the following link in your browser:\n\n'
+      '    %s\n' % authorize_url)
+
+  try:
+    code = None
+    if use_local_webserver:
+      httpd.handle_request()
+      if 'error' in httpd.query_params:
+        raise AuthenticationError(
+            'Authentication request was rejected: %s' %
+            httpd.query_params['error'])
+      if 'code' not in httpd.query_params:
+        raise AuthenticationError(
+            'Failed to find "code" in the query parameters of the redirect.\n'
+            'Try running with --auth-no-local-webserver.')
+      code = httpd.query_params['code']
+    else:
+      code = raw_input('Enter verification code: ').strip()
+  except KeyboardInterrupt:
+    raise AuthenticationError('Authentication was canceled.')
+
+  try:
+    return flow.step2_exchange(code)
+  except client.FlowExchangeError as e:
+    raise AuthenticationError('Authentication has failed: %s' % e)
+
+
+class _ClientRedirectServer(BaseHTTPServer.HTTPServer):
+  """A server to handle OAuth 2.0 redirects back to localhost.
+
+  Waits for a single request and parses the query parameters
+  into query_params and then stops serving.
+  """
+  query_params = {}
+
+
+class _ClientRedirectHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+  """A handler for OAuth 2.0 redirects back to localhost.
+
+  Waits for a single request and parses the query parameters
+  into the servers query_params and then stops serving.
+  """
+
+  def do_GET(self):
+    """Handle a GET request.
+
+    Parses the query parameters and prints a message
+    if the flow has completed. Note that we can't detect
+    if an error occurred.
+    """
+    self.send_response(200)
+    self.send_header('Content-type', 'text/html')
+    self.end_headers()
+    query = self.path.split('?', 1)[-1]
+    query = dict(urlparse.parse_qsl(query))
+    self.server.query_params = query
+    self.wfile.write('<html><head><title>Authentication Status</title></head>')
+    self.wfile.write('<body><p>The authentication flow has completed.</p>')
+    self.wfile.write('</body></html>')
+
+  def log_message(self, _format, *args):
+    """Do not log messages to stdout while running as command line program."""

@@ -14,7 +14,7 @@ index 4e8e616..6901f3f 100644
  import time
  import urllib
  import urlparse
- 
+
 -from oauth2client import GOOGLE_AUTH_URI
 -from oauth2client import GOOGLE_REVOKE_URI
 -from oauth2client import GOOGLE_TOKEN_URI
@@ -25,7 +25,7 @@ index 4e8e616..6901f3f 100644
 +from . import GOOGLE_TOKEN_URI
 +from . import util
 +from .anyjson import simplejson
- 
+
  HAS_OPENSSL = False
  HAS_CRYPTO = False
  try:
@@ -34,3 +34,33 @@ index 4e8e616..6901f3f 100644
    HAS_CRYPTO = True
    if crypt.OpenSSLVerifier is not None:
      HAS_OPENSSL = True
+diff --git a/third_party/oauth2client/locked_file.py b/third_party/oauth2client/locked_file.py
+index 31514dc..858b702 100644
+--- a/third_party/oauth2client/locked_file.py
++++ b/third_party/oauth2client/locked_file.py
+@@ -35,7 +35,7 @@ import logging
+ import os
+ import time
+
+-from oauth2client import util
++from . import util
+
+ logger = logging.getLogger(__name__)
+
+diff --git a/third_party/oauth2client/multistore_file.py b/third_party/oauth2client/multistore_file.py
+index ce7a519..ea89027 100644
+--- a/third_party/oauth2client/multistore_file.py
++++ b/third_party/oauth2client/multistore_file.py
+@@ -50,9 +50,9 @@ import os
+ import threading
+
+ from anyjson import simplejson
+-from oauth2client.client import Storage as BaseStorage
+-from oauth2client.client import Credentials
+-from oauth2client import util
++from .client import Storage as BaseStorage
++from .client import Credentials
++from . import util
+ from locked_file import LockedFile
+
+ logger = logging.getLogger(__name__)

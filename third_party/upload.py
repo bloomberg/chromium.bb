@@ -34,7 +34,6 @@ against by using the '--rev' option.
 # This code is derived from appcfg.py in the App Engine SDK (open source),
 # and from ASPN recipe #146306.
 
-import BaseHTTPServer
 import ConfigParser
 import cookielib
 import errno
@@ -52,7 +51,6 @@ import sys
 import urllib
 import urllib2
 import urlparse
-import webbrowser
 
 from multiprocessing.pool import ThreadPool
 
@@ -125,48 +123,6 @@ for vcs in VCS:
   VCS_SHORT_NAMES.append(min(vcs['aliases'], key=len))
   VCS_ABBREVIATIONS.update((alias, vcs['name']) for alias in vcs['aliases'])
 
-
-# OAuth 2.0-Related Constants
-LOCALHOST_IP = '127.0.0.1'
-DEFAULT_OAUTH2_PORT = 8001
-ACCESS_TOKEN_PARAM = 'access_token'
-ERROR_PARAM = 'error'
-OAUTH_DEFAULT_ERROR_MESSAGE = 'OAuth 2.0 error occurred.'
-OAUTH_PATH = '/get-access-token'
-OAUTH_PATH_PORT_TEMPLATE = OAUTH_PATH + '?port=%(port)d'
-AUTH_HANDLER_RESPONSE = """\
-<html>
-  <head>
-    <title>Authentication Status</title>
-    <script>
-    window.onload = function() {
-      window.close();
-    }
-    </script>
-  </head>
-  <body>
-    <p>The authentication flow has completed.</p>
-  </body>
-</html>
-"""
-# Borrowed from google-api-python-client
-OPEN_LOCAL_MESSAGE_TEMPLATE = """\
-Your browser has been opened to visit:
-
-    %s
-
-If your browser is on a different machine then exit and re-run
-upload.py with the command-line parameter
-
-  --no_oauth2_webbrowser
-"""
-NO_OPEN_LOCAL_MESSAGE_TEMPLATE = """\
-Go to the following link in your browser:
-
-    %s
-
-and copy the access token.
-"""
 
 # The result of parsing Subversion's [auto-props] setting.
 svn_auto_props_map = None
@@ -361,7 +317,7 @@ class AbstractRpcServer(object):
                               response.headers, response.fp)
     self.authenticated = True
 
-  def _Authenticate(self):
+  def _Authenticate(self, force_refresh):
     """Authenticates the user.
 
     The authentication process works as follows:
@@ -466,10 +422,11 @@ class AbstractRpcServer(object):
     # TODO: Don't require authentication.  Let the server say
     # whether it is necessary.
     if not self.authenticated and self.auth_function:
-      self._Authenticate()
+      self._Authenticate(force_refresh=False)
 
     old_timeout = socket.getdefaulttimeout()
     socket.setdefaulttimeout(timeout)
+    auth_attempted = False
     try:
       tries = 0
       while True:
@@ -491,10 +448,16 @@ class AbstractRpcServer(object):
         except urllib2.HTTPError, e:
           if tries > 3:
             raise
-          elif e.code == 401 or e.code == 302:
+          elif e.code in (302, 401, 403):
             if not self.auth_function:
               raise
-            self._Authenticate()
+            # Already tried force refresh, didn't help -> give up with error.
+            if auth_attempted:
+              raise auth.AuthenticationError(
+                  'Access to %s is denied (server returned HTTP %d).'
+                  % (self.host, e.code))
+            self._Authenticate(force_refresh=True)
+            auth_attempted = True
           elif e.code == 301:
             # Handle permanent redirect manually.
             url = e.info()["location"]
@@ -513,15 +476,22 @@ class AbstractRpcServer(object):
 class HttpRpcServer(AbstractRpcServer):
   """Provides a simplified RPC-style interface for HTTP requests."""
 
-  def _Authenticate(self):
+  def _Authenticate(self, force_refresh):
     """Save the cookie jar after authentication."""
-    if isinstance(self.auth_function, OAuth2Creds):
-      access_token = self.auth_function()
-      if access_token is not None:
-        self.extra_headers['Authorization'] = 'OAuth %s' % (access_token,)
-        self.authenticated = True
+    if isinstance(self.auth_function, auth.Authenticator):
+      try:
+        access_token = self.auth_function.get_access_token(force_refresh)
+      except auth.LoginRequiredError:
+        # Attempt to make unauthenticated request first if there's no cached
+        # credentials. HttpRpcServer calls __Authenticate(force_refresh=True)
+        # again if unauthenticated request doesn't work.
+        if not force_refresh:
+          return
+        raise
+      self.extra_headers['Authorization'] = 'Bearer %s' % (
+          access_token.token,)
     else:
-      super(HttpRpcServer, self)._Authenticate()
+      super(HttpRpcServer, self)._Authenticate(force_refresh)
       if self.save_cookies:
         StatusUpdate("Saving authentication cookies to %s" % self.cookie_file)
         self.cookie_jar.save()
@@ -714,150 +684,6 @@ group.add_option("--p4_user", action="store", dest="p4_user",
                  help=("Perforce user"))
 
 
-# OAuth 2.0 Methods and Helpers
-class ClientRedirectServer(BaseHTTPServer.HTTPServer):
-  """A server for redirects back to localhost from the associated server.
-
-  Waits for a single request and parses the query parameters for an access token
-  or an error and then stops serving.
-  """
-  access_token = None
-  error = None
-
-
-class ClientRedirectHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-  """A handler for redirects back to localhost from the associated server.
-
-  Waits for a single request and parses the query parameters into the server's
-  access_token or error and then stops serving.
-  """
-
-  def SetResponseValue(self):
-    """Stores the access token or error from the request on the server.
-
-    Will only do this if exactly one query parameter was passed in to the
-    request and that query parameter used 'access_token' or 'error' as the key.
-    """
-    query_string = urlparse.urlparse(self.path).query
-    query_params = urlparse.parse_qs(query_string)
-
-    if len(query_params) == 1:
-      if query_params.has_key(ACCESS_TOKEN_PARAM):
-        access_token_list = query_params[ACCESS_TOKEN_PARAM]
-        if len(access_token_list) == 1:
-          self.server.access_token = access_token_list[0]
-      else:
-        error_list = query_params.get(ERROR_PARAM, [])
-        if len(error_list) == 1:
-          self.server.error = error_list[0]
-
-  def do_GET(self):
-    """Handle a GET request.
-
-    Parses and saves the query parameters and prints a message that the server
-    has completed its lone task (handling a redirect).
-
-    Note that we can't detect if an error occurred.
-    """
-    self.send_response(200)
-    self.send_header('Content-type', 'text/html')
-    self.end_headers()
-    self.SetResponseValue()
-    self.wfile.write(AUTH_HANDLER_RESPONSE)
-
-  def log_message(self, format, *args):
-    """Do not log messages to stdout while running as command line program."""
-    pass
-
-
-def OpenOAuth2ConsentPage(server=DEFAULT_REVIEW_SERVER,
-                          port=DEFAULT_OAUTH2_PORT):
-  """Opens the OAuth 2.0 consent page or prints instructions how to.
-
-  Uses the webbrowser module to open the OAuth server side page in a browser.
-
-  Args:
-    server: String containing the review server URL. Defaults to
-      DEFAULT_REVIEW_SERVER.
-    port: Integer, the port where the localhost server receiving the redirect
-      is serving. Defaults to DEFAULT_OAUTH2_PORT.
-
-  Returns:
-    A boolean indicating whether the page opened successfully.
-  """
-  path = OAUTH_PATH_PORT_TEMPLATE % {'port': port}
-  parsed_url = urlparse.urlparse(server)
-  scheme = parsed_url[0] or 'https'
-  if scheme != 'https':
-    ErrorExit('Using OAuth requires a review server with SSL enabled.')
-  # If no scheme was given on command line the server address ends up in
-  # parsed_url.path otherwise in netloc.
-  host = parsed_url[1] or parsed_url[2]
-  page = '%s://%s%s' % (scheme, host, path)
-  page_opened = webbrowser.open(page, new=1, autoraise=True)
-  if page_opened:
-    print OPEN_LOCAL_MESSAGE_TEMPLATE % (page,)
-  return page_opened
-
-
-def WaitForAccessToken(port=DEFAULT_OAUTH2_PORT):
-  """Spins up a simple HTTP Server to handle a single request.
-
-  Intended to handle a single redirect from the production server after the
-  user authenticated via OAuth 2.0 with the server.
-
-  Args:
-    port: Integer, the port where the localhost server receiving the redirect
-      is serving. Defaults to DEFAULT_OAUTH2_PORT.
-
-  Returns:
-    The access token passed to the localhost server, or None if no access token
-      was passed.
-  """
-  httpd = ClientRedirectServer((LOCALHOST_IP, port), ClientRedirectHandler)
-  # Wait to serve just one request before deferring control back
-  # to the caller of wait_for_refresh_token
-  httpd.handle_request()
-  if httpd.access_token is None:
-    ErrorExit(httpd.error or OAUTH_DEFAULT_ERROR_MESSAGE)
-  return httpd.access_token
-
-
-def GetAccessToken(server=DEFAULT_REVIEW_SERVER, port=DEFAULT_OAUTH2_PORT,
-                   open_local_webbrowser=True):
-  """Gets an Access Token for the current user.
-
-  Args:
-    server: String containing the review server URL. Defaults to
-      DEFAULT_REVIEW_SERVER.
-    port: Integer, the port where the localhost server receiving the redirect
-      is serving. Defaults to DEFAULT_OAUTH2_PORT.
-    open_local_webbrowser: Boolean, defaults to True. If set, opens a page in
-      the user's browser.
-
-  Returns:
-    A string access token that was sent to the local server. If the serving page
-      via WaitForAccessToken does not receive an access token, this method
-      returns None.
-  """
-  access_token = None
-  if open_local_webbrowser:
-    page_opened = OpenOAuth2ConsentPage(server=server, port=port)
-    if page_opened:
-      try:
-        access_token = WaitForAccessToken(port=port)
-      except socket.error, e:
-        print 'Can\'t start local webserver. Socket Error: %s\n' % (e.strerror,)
-
-  if access_token is None:
-    # TODO(dhermes): Offer to add to clipboard using xsel, xclip, pbcopy, etc.
-    page = 'https://%s%s' % (server, OAUTH_PATH)
-    print NO_OPEN_LOCAL_MESSAGE_TEMPLATE % (page,)
-    access_token = raw_input('Enter access token: ').strip()
-
-  return access_token
-
-
 class KeyringCreds(object):
   def __init__(self, server, host, email):
     self.server = server
@@ -903,20 +729,6 @@ class KeyringCreds(object):
     return (email, password)
 
 
-class OAuth2Creds(object):
-  """Simple object to hold server and port to be passed to GetAccessToken."""
-
-  def __init__(self, server, port, open_local_webbrowser=True):
-    self.server = server
-    self.port = port
-    self.open_local_webbrowser = open_local_webbrowser
-
-  def __call__(self):
-    """Uses stored server and port to retrieve OAuth 2.0 access token."""
-    return GetAccessToken(server=self.server, port=self.port,
-                          open_local_webbrowser=self.open_local_webbrowser)
-
-
 def GetRpcServer(server, auth_config=None, email=None):
   """Returns an instance of an AbstractRpcServer.
 
@@ -933,9 +745,6 @@ def GetRpcServer(server, auth_config=None, email=None):
   # authentication by setting the auth_function to None.
   if email == '' or not auth_config:
     return HttpRpcServer(server, None)
-
-  if auth_config.use_oauth2:
-    raise NotImplementedError('See https://crbug.com/356813')
 
   # If this is the dev_appserver, use fake authentication.
   host = server.lower()
@@ -954,9 +763,14 @@ def GetRpcServer(server, auth_config=None, email=None):
     server.authenticated = True
     return server
 
+  if auth_config.use_oauth2:
+    auth_func = auth.get_authenticator_for_host(server, auth_config)
+  else:
+    auth_func = KeyringCreds(server, host, email).GetUserCredentials
+
   return HttpRpcServer(
       server,
-      KeyringCreds(server, host, email).GetUserCredentials,
+      auth_func,
       save_cookies=auth_config.save_cookies,
       account_type=AUTH_ACCOUNT_TYPE)
 
@@ -2712,6 +2526,9 @@ def main():
   except KeyboardInterrupt:
     print
     StatusUpdate("Interrupted.")
+    sys.exit(1)
+  except auth.AuthenticationError as e:
+    print >> sys.stderr, e
     sys.exit(1)
 
 

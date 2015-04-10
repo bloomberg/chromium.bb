@@ -50,9 +50,9 @@ import os
 import threading
 
 from anyjson import simplejson
-from oauth2client.client import Storage as BaseStorage
-from oauth2client.client import Credentials
-from oauth2client import util
+from .client import Storage as BaseStorage
+from .client import Credentials
+from . import util
 from locked_file import LockedFile
 
 logger = logging.getLogger(__name__)
