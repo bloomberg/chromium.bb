@@ -380,7 +380,7 @@ class CacheTest(cros_test_lib.MockTempDirTestCase):
     self._CheckCall(self.CACHE_DIR)
 
 
-class ParseArgsTest(cros_test_lib.TestCase):
+class ParseArgsTest(cros_test_lib.OutputTestCase):
   """Test parse_args behavior of our custom argument parsing classes."""
 
   def _CreateOptionParser(self, cls):
@@ -480,6 +480,32 @@ class ParseArgsTest(cros_test_lib.TestCase):
   def testArgumentParser(self):
     self._TestParser(self._CreateArgumentParser(commandline.ArgumentParser))
 
+  def testArgumentParserSetupLocatorTranslation(self):
+    """Tests ArgumentParser._SetupLocatorTranslation().
+
+    This verifies that ArgumentParser objects automatically add the
+    locator translation arguments and that they properly override
+    the original argument.
+    """
+    for option in commandline._LOCATOR_OVERRIDE_OPTIONS:
+      parser = commandline.ArgumentParser()
+      parser.add_argument(option)
+      options = parser.parse_args(
+          ['original', '--%s-locator-override' % option, 'override'])
+      self.assertEqual('override', getattr(options, option))
+      # Make sure the order doesn't matter.
+      options = parser.parse_args(
+          ['--%s-locator-override' % option, 'override', 'original'])
+      self.assertEqual('override', getattr(options, option))
+
+  def testArgumentParserLocatorGroupIsHidden(self):
+    """Tests that the locator group doesn't show up in --help."""
+    parser = commandline.ArgumentParser()
+    with self.OutputCapturer():
+      with self.assertRaises(SystemExit):
+        parser.parse_args(['--help'])
+    self.AssertOutputContainsLine('locator-override', invert=True)
+
 
 class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
   """Test the behavior of the ScriptWrapperMain function."""
@@ -534,6 +560,28 @@ class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
     rc.assertCommandContains(enter_chroot=True)
     rc.assertCommandContains(self.CMD_ARGS)
     rc.assertCommandContains(chroot_args=self.CHROOT_ARGS)
+
+
+class TestAddCliCommandOption(cros_test_lib.TestCase):
+  """Test commandline._AddCliCommandOption()."""
+
+  def testAddOption(self):
+    """Tests adding an option without a value."""
+    self.assertListEqual(
+        ['brillo', 'chroot', '--debug', 'ls'],
+        commandline._AddCliCommandOption(['brillo', 'chroot', 'ls'], '--debug'))
+
+  def testAddOptionAndValue(self):
+    """Tests adding an option with a value."""
+    self.assertListEqual(
+        ['brillo', 'chroot', '--brick', '//foo', 'ls'],
+        commandline._AddCliCommandOption(['brillo', 'chroot', 'ls'],
+                                         '--brick', '//foo'))
+
+  def testInvalidArg(self):
+    """Tests that trying to add a positional arg fails."""
+    with self.assertRaises(ValueError):
+      commandline._AddCliCommandOption(['brillo', 'chroot', 'ls'], 'positional')
 
 
 class TestRunInsideChroot(cros_test_lib.MockTestCase):
@@ -607,9 +655,10 @@ class TestRunInsideChroot(cros_test_lib.MockTestCase):
     self.mock_inside_chroot.return_value = False
     self.mock_workspace_path.return_value = None
     self.cmd.curr_brick_locator = '//bricks/foo'
-    expected_args = ['/inside/cmd', 'arg1', 'arg2']
     if expect_auto_detect:
-      expected_args.extend(['--brick', '//bricks/foo'])
+      expected_args = ['/inside/cmd', 'arg1', '--brick', '//bricks/foo', 'arg2']
+    else:
+      expected_args = ['/inside/cmd', 'arg1', 'arg2']
     self._VerifyRunInsideChroot(expected_args, None, auto_detect_brick=True)
 
   def testRunInsideChrootAutoDetectBrick(self):
@@ -635,3 +684,48 @@ class TestRunInsideChroot(cros_test_lib.MockTestCase):
     """Test that --host disables brick auto-detect."""
     self.cmd.options.host = True
     self._VerifyBrickAutoDetect(expect_auto_detect=False)
+
+  def _VerifyBrickLocatorOverride(self, expected_override=None, **kwargs):
+    """Verifies that brick locator override is working as expected.
+
+    This sets common state for all brick locator override tests and
+    calls _VerifyRunInsideChroot() to check the resulting command line.
+
+    Args:
+      expected_override: What value --brick-locator-override should
+        have, or None if it shouldn't be present.
+      kwargs: keyword args to pass to _VerifyRunInsideChroot().
+    """
+    self.mock_inside_chroot.return_value = False
+    self.mock_workspace_path.return_value = None
+    if expected_override:
+      expected_args = ['/inside/cmd', 'arg1',
+                       '--brick-locator-override', expected_override, 'arg2']
+    else:
+      expected_args = ['/inside/cmd', 'arg1', 'arg2']
+    self._VerifyRunInsideChroot(expected_args, None, **kwargs)
+
+  def testRunInsideChrootBrickLocatorOverride(self):
+    """Test RunInsideChroot() populates --brick-locator-override."""
+    self.cmd.options.brick = '/absolute/path'
+    self.PatchObject(workspace_lib, 'PathToLocator', return_value='//my/brick')
+    self._VerifyBrickLocatorOverride(expected_override='//my/brick')
+
+  def testRunInsideChrootBrickLocatorOverrideDisabled(self):
+    """Test RunInsideChroot() when locator override is disabled."""
+    self.cmd.options.brick = '/absolute/path'
+    self.PatchObject(workspace_lib, 'PathToLocator', return_value='//my/brick')
+    self._VerifyBrickLocatorOverride(expected_override=None,
+                                     auto_locator_override=False)
+
+  def testRunInsideChrootBrickLocatorOverrideNotNeeded(self):
+    """Test RunInsideChroot() when locators aren't needed."""
+    self.cmd.options.brick = '//already/a/locator'
+    self.PatchObject(workspace_lib, 'PathToLocator', return_value='//my/brick')
+    self._VerifyBrickLocatorOverride(expected_override=None)
+
+  def testRunInsideChrootBrickLocatorOverrideUnavailable(self):
+    """Test RunInsideChroot() when locators can't be found."""
+    self.cmd.options.brick = '/absolute/path'
+    self.PatchObject(workspace_lib, 'PathToLocator', return_value=None)
+    self._VerifyBrickLocatorOverride(expected_override=None)

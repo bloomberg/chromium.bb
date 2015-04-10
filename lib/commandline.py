@@ -44,6 +44,11 @@ DEVICE_SCHEME_SSH = 'ssh'
 DEVICE_SCHEME_USB = 'usb'
 
 
+# Command line options to automatically convert from relative or absolute paths
+# to locator paths when RunInsideChroot() is used.
+_LOCATOR_OVERRIDE_OPTIONS = ('brick', 'blueprint')
+
+
 CheckoutInfo = collections.namedtuple(
     'CheckoutInfo', ['type', 'root', 'chrome_src_dir'])
 
@@ -578,6 +583,12 @@ class BaseParser(object):
       if opts.cache_dir is not None:
         self.ConfigureCacheDir(opts.cache_dir)
 
+    # Overrides for automatic path-to-locator conversion.
+    for option in _LOCATOR_OVERRIDE_OPTIONS:
+      value = getattr(opts, '%s_locator_override' % option, None)
+      if value:
+        setattr(opts, option, value)
+
     return opts, args
 
   @staticmethod
@@ -733,11 +744,19 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
     argparse.ArgumentParser.__init__(self, usage=usage, **kwargs)
     self._SetupTypes()
     self.SetupOptions()
+    self._SetupLocatorOverride()
 
   def _SetupTypes(self):
     """Register types with ArgumentParser."""
     for t, check_f in VALID_TYPES.iteritems():
       self.register('type', t, check_f)
+
+  def _SetupLocatorOverride(self):
+    """Create hidden arguments for automatic path-to-locator conversion."""
+    group = self.add_argument_group('Locators', description=argparse.SUPPRESS)
+    for option in _LOCATOR_OVERRIDE_OPTIONS:
+      group.add_argument('--%s-locator-override' % option,
+                         help=argparse.SUPPRESS)
 
   def add_option_group(self, *args, **kwargs):
     """Return an argument group rather than an option group."""
@@ -793,8 +812,42 @@ def _RestartInChroot(cmd, chroot_args):
                                    mute_output=False).returncode
 
 
+def _AddCliCommandOption(argv, option, value=None):
+  """Adds an option to command line |argv|.
+
+  Use this to add options to a CliCommand argument list rather than
+  extending the list directly in order to avoid bugs when using
+  argparse.REMAINDER.
+
+  For example, with `brillo chroot` we want this:
+    brillo chroot --extra-arg -- ls
+  not this:
+    brillo chroot -- ls --extra-arg
+
+  Args:
+    argv: Current argument list; will be modified by this function.
+    option: New option to add.
+    value: Option value if required; None to omit.
+
+  Returns:
+    |argv|.
+
+  Raises:
+    ValueError: |option| is not an optional argument.
+  """
+  if not option.startswith('-'):
+    raise ValueError('"%s" must be an option (starting with -)' % option)
+
+  # Insert at index 2 to put the option after the subcommand for readability,
+  # e.g. `brillo chroot --option` rather than `brillo --option chroot`.
+  argv.insert(2, option)
+  if value is not None:
+    argv.insert(3, value)
+  return argv
+
+
 def RunInsideChroot(command, auto_detect_brick=False,
-                    auto_detect_workspace=True):
+                    auto_detect_workspace=True, auto_locator_override=True):
   """Restart the current command inside the chroot.
 
   This method is only valid for any code that is run via ScriptWrapperMain.
@@ -809,6 +862,8 @@ def RunInsideChroot(command, auto_detect_brick=False,
     command: An instance of CliCommand to be restarted inside the chroot.
     auto_detect_brick: If true, sets --brick explicitly.
     auto_detect_workspace: If true, sets up workspace automatically.
+    auto_locator_override: If true, adds arguments to override absolute
+      or relative paths with locators for certain options.
   """
   if cros_build_lib.IsInsideChroot():
     return
@@ -820,7 +875,16 @@ def RunInsideChroot(command, auto_detect_brick=False,
   target_arg = any(getattr(command.options, arg, None)
                    for arg in ('blueprint', 'board', 'brick', 'host'))
   if auto_detect_brick and not target_arg and command.curr_brick_locator:
-    argv += ['--brick', command.curr_brick_locator]
+    _AddCliCommandOption(argv, '--brick', command.curr_brick_locator)
+
+  # Provide locators so that paths can be found from inside the chroot.
+  if auto_locator_override:
+    for option in _LOCATOR_OVERRIDE_OPTIONS:
+      path = getattr(command.options, option, None)
+      if path and not workspace_lib.IsLocator(path):
+        locator = workspace_lib.PathToLocator(path)
+        if locator:
+          _AddCliCommandOption(argv, '--%s-locator-override' % option, locator)
 
   # Enter the chroot for the workspace, if we are in a workspace.
   chroot_args = None
