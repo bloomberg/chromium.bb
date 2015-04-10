@@ -9,6 +9,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_client.h"
+#include "content/shell/common/shell_messages.h"
 
 namespace content {
 
@@ -46,6 +47,8 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     // The browser should always have an accurate mirror of the renderer's
     // notion of the current page id.
     case FrameHostMsg_DidAssignPageId::ID:
+    // Used in layout tests; handled in WebKitTestController.
+    case ShellViewHostMsg_PrintMessage::ID:
       return true;
     default:
       break;
