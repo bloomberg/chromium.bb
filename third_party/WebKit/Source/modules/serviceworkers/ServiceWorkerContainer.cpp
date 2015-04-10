@@ -49,9 +49,7 @@
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebServiceWorker.h"
-#include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebServiceWorkerRegistration.h"
 #include "public/platform/WebString.h"
@@ -278,25 +276,6 @@ void ServiceWorkerContainer::dispatchMessageEvent(const WebString& message, cons
 const AtomicString& ServiceWorkerContainer::interfaceName() const
 {
     return EventTargetNames::ServiceWorkerContainer;
-}
-
-bool ServiceWorkerContainer::getClientInfo(WebServiceWorkerClientInfo* info)
-{
-    ExecutionContext* context = executionContext();
-    // FIXME: Make this work for non-document context (e.g. shared workers).
-    if (!context || !context->isDocument())
-        return false;
-    Document* document = toDocument(context);
-    info->pageVisibilityState = static_cast<WebPageVisibilityState>(document->pageVisibilityState());
-    info->isFocused = document->hasFocus();
-    info->url = document->url();
-    if (!document->frame())
-        info->frameType = WebURLRequest::FrameTypeNone;
-    else if (document->frame()->isMainFrame())
-        info->frameType = WebURLRequest::FrameTypeTopLevel;
-    else
-        info->frameType = WebURLRequest::FrameTypeNested;
-    return true;
 }
 
 ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContext)

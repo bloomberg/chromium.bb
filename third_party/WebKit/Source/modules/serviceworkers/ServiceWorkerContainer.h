@@ -77,7 +77,6 @@ public:
     // WebServiceWorkerProviderClient overrides.
     virtual void setController(WebServiceWorker*, bool shouldNotifyControllerChange) override;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) override;
-    virtual bool getClientInfo(WebServiceWorkerClientInfo*);
 
     // EventTarget overrides.
     virtual ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }

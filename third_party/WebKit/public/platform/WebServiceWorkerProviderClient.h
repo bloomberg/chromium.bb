@@ -36,10 +36,7 @@
 namespace blink {
 
 class WebServiceWorker;
-class WebServiceWorkerRegistration;
 class WebString;
-
-struct WebServiceWorkerClientInfo;
 
 // This class is the interface for embedders to talk to
 // ServiceWorkerContainer.
@@ -50,7 +47,6 @@ public:
     virtual void setController(WebServiceWorker*, bool shouldNotifyControllerChange) = 0;
 
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) = 0;
-    virtual bool getClientInfo(WebServiceWorkerClientInfo*) = 0;
 };
 
 } // namespace blink

@@ -171,17 +171,6 @@ protected:
         m_page->document().setSecurityOrigin(SecurityOrigin::createFromString(url));
     }
 
-    void setPageVisibilityState(PageVisibilityState visibilityState)
-    {
-        m_page->page().setVisibilityState(visibilityState, true); // Set as initial state
-    }
-
-    void setFocused(bool focused)
-    {
-        m_page->page().focusController().setActive(focused);
-        m_page->page().focusController().setFocused(focused);
-    }
-
     void testRegisterRejected(const String& scriptURL, const String& scope, const ScriptValueTest& valueTest)
     {
         // When the registration is rejected, a register call must not reach
@@ -360,28 +349,6 @@ TEST_F(ServiceWorkerContainerTest, GetRegistration_OmittedDocumentURLDefaultsToP
     }
 
     container->willBeDetachedFromFrame();
-}
-
-TEST_F(ServiceWorkerContainerTest, GetClientInfo)
-{
-    setPageVisibilityState(PageVisibilityStateVisible);
-    setFocused(true);
-    setPageURL("http://localhost/x/index.html");
-
-    ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
-
-    WebServiceWorkerClientInfo info;
-    ASSERT_TRUE(container->getClientInfo(&info));
-    EXPECT_EQ(WebPageVisibilityStateVisible, info.pageVisibilityState);
-    EXPECT_TRUE(info.isFocused);
-    EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/index.html")), info.url);
-    EXPECT_EQ(WebURLRequest::FrameTypeTopLevel, info.frameType);
-
-    setPageVisibilityState(PageVisibilityStateHidden);
-    setFocused(false);
-    ASSERT_TRUE(container->getClientInfo(&info));
-    EXPECT_EQ(WebPageVisibilityStateHidden, info.pageVisibilityState);
-    EXPECT_FALSE(info.isFocused);
 }
 
 } // namespace
