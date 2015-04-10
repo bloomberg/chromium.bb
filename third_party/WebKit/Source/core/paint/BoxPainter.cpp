@@ -1485,6 +1485,20 @@ void drawSolidBorderRect(GraphicsContext* context, const FloatRect& borderRect,
         context->setShouldAntialias(wasAntialias);
 }
 
+void drawBleedAdjustedDRRect(GraphicsContext* context, BackgroundBleedAvoidance bleedAvoidance,
+    const FloatRoundedRect& outer, const FloatRoundedRect& inner, Color color)
+{
+    if (bleedAvoidance != BackgroundBleedClipBackground || !outer.isRounded()) {
+        context->fillDRRect(outer, inner, color);
+        return;
+    }
+
+    // BackgroundBleedClipBackground clips the outer rrect corners for us.
+    FloatRoundedRect adjustedOuter = outer;
+    adjustedOuter.setRadii(FloatRoundedRect::Radii());
+    context->fillDRRect(adjustedOuter, inner, color);
+}
+
 void drawDoubleBorder(GraphicsContext* context, const BoxBorderInfo& borderInfo, const LayoutRect& borderRect,
     const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder)
 {
@@ -1500,15 +1514,7 @@ void drawDoubleBorder(GraphicsContext* context, const BoxBorderInfo& borderInfo,
         doubleStripeInsets(borderInfo.edges, BorderEdge::DoubleBorderStripeOuter);
     const FloatRoundedRect outerThirdRect = borderInfo.style.getRoundedInnerBorderFor(borderRect,
         outerThirdInsets, borderInfo.includeLogicalLeftEdge, borderInfo.includeLogicalRightEdge);
-
-    if (borderInfo.bleedAvoidance == BackgroundBleedClipBackground && outerBorder.isRounded()) {
-        // BackgroundBleedClipBackground clips the outer rrect corners for us.
-        FloatRoundedRect adjustedOuterBorder = outerBorder;
-        adjustedOuterBorder.setRadii(FloatRoundedRect::Radii());
-        context->fillDRRect(adjustedOuterBorder, outerThirdRect, color);
-    } else {
-        context->fillDRRect(outerBorder, outerThirdRect, color);
-    }
+    drawBleedAdjustedDRRect(context, borderInfo.bleedAvoidance, outerBorder, outerThirdRect, color);
 
     // inner stripe
     const LayoutRectOutsets innerThirdInsets =
@@ -1516,6 +1522,57 @@ void drawDoubleBorder(GraphicsContext* context, const BoxBorderInfo& borderInfo,
     const FloatRoundedRect innerThirdRect = borderInfo.style.getRoundedInnerBorderFor(borderRect,
         innerThirdInsets, borderInfo.includeLogicalLeftEdge, borderInfo.includeLogicalRightEdge);
     context->fillDRRect(innerThirdRect, innerBorder, color);
+}
+
+bool paintBorderFastPath(GraphicsContext* context, const BoxBorderInfo& info,
+    const LayoutRect& borderRect, const FloatRoundedRect& outer, const FloatRoundedRect& inner)
+{
+    // isRenderable() check avoids issue described in https://bugs.webkit.org/show_bug.cgi?id=38787
+    if (!info.isUniformColor || !info.isUniformStyle || !inner.isRenderable())
+        return false;
+
+    const BorderEdge& firstEdge = info.edges[info.firstVisibleEdge];
+    if (firstEdge.borderStyle() != SOLID && firstEdge.borderStyle() != DOUBLE)
+        return false;
+
+    if (info.visibleEdgeSet == AllBorderEdges) {
+        if (firstEdge.borderStyle() == SOLID) {
+            if (info.isUniformWidth && !outer.isRounded()) {
+                // 4-side, solid, uniform-width, rectangular border => one drawRect()
+                drawSolidBorderRect(context, outer.rect(), firstEdge.width, firstEdge.color);
+            } else {
+                // 4-side, solid border => one drawDRRect()
+                drawBleedAdjustedDRRect(context, info.bleedAvoidance, outer, inner, firstEdge.color);
+            }
+        } else {
+            // 4-side, double border => 2x drawDRRect()
+            ASSERT(firstEdge.borderStyle() == DOUBLE);
+            drawDoubleBorder(context, info, borderRect, outer, inner);
+        }
+
+        return true;
+    }
+
+    // TODO(fmalita): why is this predicated on hasAlpha?
+    if (firstEdge.borderStyle() == SOLID && !outer.isRounded() && info.hasAlpha) {
+        ASSERT(info.visibleEdgeSet != AllBorderEdges);
+        // solid, rectangular border => one drawPath()
+        Path path;
+
+        for (int i = BSTop; i <= BSLeft; ++i) {
+            const BorderEdge& currEdge = info.edges[i];
+            if (currEdge.shouldRender())
+                path.addRect(calculateSideRect(outer, currEdge, i));
+        }
+
+        context->setFillRule(RULE_NONZERO);
+        context->setFillColor(firstEdge.color);
+        context->fillPath(path);
+
+        return true;
+    }
+
+    return false;
 }
 
 } // anonymous namespace
@@ -1536,65 +1593,14 @@ void BoxPainter::paintBorder(LayoutBoxModelObject& obj, const PaintInfo& info, c
 
     const BorderEdge& firstEdge = borderInfo.edges[borderInfo.firstVisibleEdge];
     bool haveAllSolidEdges = borderInfo.isUniformStyle && firstEdge.borderStyle() == SOLID;
-    bool haveAllDoubleEdges = borderInfo.isUniformStyle && firstEdge.borderStyle() == DOUBLE;
 
     // If no corner intersects the clip region, we can pretend outerBorder is
     // rectangular to improve performance.
     if (haveAllSolidEdges && outerBorder.isRounded() && allCornersClippedOut(outerBorder, info.rect))
         outerBorder.setRadii(FloatRoundedRect::Radii());
 
-    // TODO(fmalita): rationalize all fastpath branches.
-
-    // Fast path for drawing 4-side all-solid uniform-color borders.
-    if (haveAllSolidEdges && borderInfo.visibleEdgeSet == AllBorderEdges && borderInfo.isUniformColor && innerBorder.isRenderable()) {
-        if (borderInfo.isUniformWidth && !outerBorder.isRounded() && !innerBorder.isRounded()) {
-            // Non-rounded, solid, uniform color and width => one drawRect()
-            // TODO(fmalita): we should be able to handle uniform-width rrects similarly.
-            drawSolidBorderRect(graphicsContext, outerBorder.rect(), firstEdge.width, firstEdge.color);
-        } else {
-            // Non-rounded/rounded, solid, uniform color, non-uniform/uniform width => one drawDRRect()
-
-            // BackgroundBleedClipBackground clips the outer rrect corners for us.
-            if (borderInfo.bleedAvoidance == BackgroundBleedClipBackground && outerBorder.isRounded())
-                outerBorder.setRadii(FloatRoundedRect::Radii());
-
-            graphicsContext->fillDRRect(outerBorder, innerBorder, firstEdge.color);
-        }
-
+    if (paintBorderFastPath(graphicsContext, borderInfo, rect, outerBorder, innerBorder))
         return;
-    }
-
-    // isRenderable() check avoids issue described in https://bugs.webkit.org/show_bug.cgi?id=38787
-    if ((haveAllSolidEdges || haveAllDoubleEdges) && borderInfo.isUniformColor && innerBorder.isRenderable()) {
-        // Fast path for drawing double edges.
-        if (borderInfo.visibleEdgeSet == AllBorderEdges) {
-            // Solid edges are handled by prevous fast paths.
-            ASSERT(!haveAllSolidEdges);
-
-            drawDoubleBorder(graphicsContext, borderInfo, rect, outerBorder, innerBorder);
-            return;
-        }
-
-        // Avoid creating transparent layers
-        // TODO(fmalita): why is this predicated on hasAlpha?
-        if (haveAllSolidEdges && borderInfo.visibleEdgeSet != AllBorderEdges && !outerBorder.isRounded() && borderInfo.hasAlpha) {
-            Path path;
-
-            for (int i = BSTop; i <= BSLeft; ++i) {
-                const BorderEdge& currEdge = borderInfo.edges[i];
-                if (currEdge.shouldRender()) {
-                    FloatRect sideRect = calculateSideRect(outerBorder, currEdge, i);
-                    path.addRect(sideRect);
-                }
-            }
-
-            // TODO(fmalita): 1-3 drawRects should be significantly faster than a concave drawPath.
-            graphicsContext->setFillRule(RULE_NONZERO);
-            graphicsContext->setFillColor(firstEdge.color);
-            graphicsContext->fillPath(path);
-            return;
-        }
-    }
 
     bool clipToOuterBorder = outerBorder.isRounded();
     GraphicsContextStateSaver stateSaver(*graphicsContext, clipToOuterBorder);
