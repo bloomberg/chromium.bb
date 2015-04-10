@@ -55,6 +55,7 @@ class SnapshotCacheTest : public PlatformTest {
   // random colors.
   void SetUp() override {
     PlatformTest::SetUp();
+    snapshotCache_.reset([[SnapshotCache alloc] init]);
     testImages_.reset([[NSMutableArray alloc] initWithCapacity:kSessionCount]);
     testSessions_.reset(
         [[NSMutableArray alloc] initWithCapacity:kSessionCount]);
@@ -79,7 +80,12 @@ class SnapshotCacheTest : public PlatformTest {
 
   void TearDown() override {
     ClearDumpedImages();
+    snapshotCache_.reset();
     PlatformTest::TearDown();
+  }
+
+  SnapshotCache* GetSnapshotCache() {
+    return snapshotCache_.get();
   }
 
   // Generates an image filled with a random color.
@@ -103,7 +109,7 @@ class SnapshotCacheTest : public PlatformTest {
 
   // This function removes the snapshots both from dictionary and from disk.
   void ClearDumpedImages() {
-    SnapshotCache* cache = [SnapshotCache sharedInstance];
+    SnapshotCache* cache = GetSnapshotCache();
 
     NSString* sessionID;
     for (sessionID in testSessions_.get())
@@ -147,7 +153,7 @@ class SnapshotCacheTest : public PlatformTest {
   // Loads |count| color images into the cache.  If |waitForFilesOnDisk|
   // is YES, will not return until the images have been written to disk.
   void LoadColorImagesIntoCache(NSUInteger count, bool waitForFilesOnDisk) {
-    SnapshotCache* cache = [SnapshotCache sharedInstance];
+    SnapshotCache* cache = GetSnapshotCache();
     // Put color images in the cache.
     for (NSUInteger i = 0; i < count; ++i) {
       base::mac::ScopedNSAutoreleasePool pool;
@@ -169,7 +175,7 @@ class SnapshotCacheTest : public PlatformTest {
   // Waits for the first |count| grey images for sessions in |testSessions_|
   // to be placed in the cache.
   void WaitForGreyImagesInCache(NSUInteger count) {
-    SnapshotCache* cache = [SnapshotCache sharedInstance];
+    SnapshotCache* cache = GetSnapshotCache();
     FlushRunLoops();
     for (NSUInteger i = 0; i < count; i++)
       EXPECT_TRUE([cache hasGreyImageInMemory:testSessions_[i]]);
@@ -212,6 +218,7 @@ class SnapshotCacheTest : public PlatformTest {
   }
 
   web::TestWebThreadBundle thread_bundle_;
+  base::scoped_nsobject<SnapshotCache> snapshotCache_;
   base::scoped_nsobject<NSMutableArray> testSessions_;
   base::scoped_nsobject<NSMutableArray> testImages_;
 };
@@ -226,7 +233,7 @@ TEST_F(SnapshotCacheTest, Cache) {
     return;
   }
 
-  SnapshotCache* cache = [SnapshotCache sharedInstance];
+  SnapshotCache* cache = GetSnapshotCache();
 
   // Put all images in the cache.
   for (NSUInteger i = 0; i < kSessionCount; ++i) {
@@ -255,7 +262,7 @@ TEST_F(SnapshotCacheTest, Cache) {
 // This test puts all the snapshots in the cache and flushes them to disk.
 // The snapshots are then reloaded from the disk, and the colors are compared.
 TEST_F(SnapshotCacheTest, SaveToDisk) {
-  SnapshotCache* cache = [SnapshotCache sharedInstance];
+  SnapshotCache* cache = GetSnapshotCache();
 
   // Put all images in the cache.
   for (NSUInteger i = 0; i < kSessionCount; ++i) {
@@ -305,7 +312,7 @@ TEST_F(SnapshotCacheTest, SaveToDisk) {
 }
 
 TEST_F(SnapshotCacheTest, Purge) {
-  SnapshotCache* cache = [SnapshotCache sharedInstance];
+  SnapshotCache* cache = GetSnapshotCache();
 
   // Put all images in the cache.
   for (NSUInteger i = 0; i < kSessionCount; ++i) {
@@ -361,7 +368,7 @@ TEST_F(SnapshotCacheTest, HandleLowMemory) {
 
   LoadAllColorImagesIntoCache(true);
 
-  SnapshotCache* cache = [SnapshotCache sharedInstance];
+  SnapshotCache* cache = GetSnapshotCache();
 
   NSString* firstPinnedID = [testSessions_ objectAtIndex:4];
   NSString* secondPinnedID = [testSessions_ objectAtIndex:6];
@@ -396,7 +403,7 @@ TEST_F(SnapshotCacheTest, CreateGreyCache) {
   LoadAllColorImagesIntoCache(true);
 
   // Request the creation of a grey image cache for all images.
-  SnapshotCache* cache = [SnapshotCache sharedInstance];
+  SnapshotCache* cache = GetSnapshotCache();
   [cache createGreyCache:testSessions_];
 
   // Wait for them to be put into the grey image cache.
@@ -422,7 +429,7 @@ TEST_F(SnapshotCacheTest, CreateGreyCacheFromDisk) {
   LoadAllColorImagesIntoCache(true);
 
   // Remove color images from in-memory cache.
-  SnapshotCache* cache = [SnapshotCache sharedInstance];
+  SnapshotCache* cache = GetSnapshotCache();
   [cache handleLowMemory];
 
   // Request the creation of a grey image cache for all images.
@@ -458,7 +465,7 @@ TEST_F(SnapshotCacheTest, MostRecentGreyBlock) {
   [sessionIDs addObject:[testSessions_ objectAtIndex:1]];
   [sessionIDs addObject:[testSessions_ objectAtIndex:2]];
 
-  SnapshotCache* cache = [SnapshotCache sharedInstance];
+  SnapshotCache* cache = GetSnapshotCache();
 
   // Put 3 images in the cache.
   LoadColorImagesIntoCache(kNumImages, true);
@@ -500,7 +507,7 @@ TEST_F(SnapshotCacheTest, MostRecentGreyBlock) {
 TEST_F(SnapshotCacheTest, GreyImageAllInBackground) {
   LoadAllColorImagesIntoCache(true);
 
-  SnapshotCache* cache = [SnapshotCache sharedInstance];
+  SnapshotCache* cache = GetSnapshotCache();
 
   // Now convert every image into a grey image, on disk, in the background.
   for (NSUInteger i = 0; i < kSessionCount; ++i) {
@@ -531,7 +538,7 @@ TEST_F(SnapshotCacheTest, SizeAndScalePreservation) {
 
   // Add the image to the cache then call handle low memory to ensure the image
   // is read from disk instead of the in-memory cache.
-  SnapshotCache* cache = [SnapshotCache sharedInstance];
+  SnapshotCache* cache = GetSnapshotCache();
   NSString* const kSession = @"foo";
   [cache setImage:image withSessionID:kSession];
   FlushRunLoops();  // ensure the file is written to disk.
@@ -567,7 +574,7 @@ TEST_F(SnapshotCacheTest, DeleteRetinaImages) {
 
   // Add the image to the cache then call handle low memory to ensure the image
   // is read from disk instead of the in-memory cache.
-  SnapshotCache* cache = [SnapshotCache sharedInstance];
+  SnapshotCache* cache = GetSnapshotCache();
   NSString* const kSession = @"foo";
   [cache setImage:image withSessionID:kSession];
   FlushRunLoops();  // ensure the file is written to disk.

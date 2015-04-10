@@ -164,6 +164,22 @@ void ConvertAndSaveGreyImage(
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:UIApplicationDidReceiveMemoryWarningNotification
+              object:nil];
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:UIApplicationDidEnterBackgroundNotification
+              object:nil];
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+                name:UIApplicationDidBecomeActiveNotification
+              object:nil];
+  [super dealloc];
+}
+
 + (CGFloat)snapshotScaleForDevice {
   // On handset, the color snapshot is used for the stack view, so the scale of
   // the snapshot images should match the scale of the device.
