@@ -463,12 +463,12 @@ void WebGL2RenderingContextBase::vertexAttribI4i(GLuint index, GLint x, GLint y,
     }
 
     webContext()->vertexAttribI4i(index, x, y, z, w);
-    // FIXME: Pretty sure this won't do what we want it to do. Same with the next 3 functions.
     VertexAttribValue& attribValue = m_vertexAttribValue[index];
-    attribValue.value[0] = x;
-    attribValue.value[1] = y;
-    attribValue.value[2] = z;
-    attribValue.value[3] = w;
+    attribValue.type = Int32ArrayType;
+    attribValue.value.intValue[0] = x;
+    attribValue.value.intValue[1] = y;
+    attribValue.value.intValue[2] = z;
+    attribValue.value.intValue[3] = w;
 }
 
 void WebGL2RenderingContextBase::vertexAttribI4iv(GLuint index, const Vector<GLint>& value)
@@ -491,10 +491,11 @@ void WebGL2RenderingContextBase::vertexAttribI4iv(GLuint index, const Vector<GLi
 
     webContext()->vertexAttribI4iv(index, value.data());
     VertexAttribValue& attribValue = m_vertexAttribValue[index];
-    attribValue.value[0] = value[0];
-    attribValue.value[1] = value[1];
-    attribValue.value[2] = value[2];
-    attribValue.value[3] = value[3];
+    attribValue.type = Int32ArrayType;
+    attribValue.value.intValue[0] = value[0];
+    attribValue.value.intValue[1] = value[1];
+    attribValue.value.intValue[2] = value[2];
+    attribValue.value.intValue[3] = value[3];
 }
 
 void WebGL2RenderingContextBase::vertexAttribI4ui(GLuint index, GLuint x, GLuint y, GLuint z, GLuint w)
@@ -509,10 +510,11 @@ void WebGL2RenderingContextBase::vertexAttribI4ui(GLuint index, GLuint x, GLuint
 
     webContext()->vertexAttribI4ui(index, x, y, z, w);
     VertexAttribValue& attribValue = m_vertexAttribValue[index];
-    attribValue.value[0] = x;
-    attribValue.value[1] = y;
-    attribValue.value[2] = z;
-    attribValue.value[3] = w;
+    attribValue.type = Uint32ArrayType;
+    attribValue.value.uintValue[0] = x;
+    attribValue.value.uintValue[1] = y;
+    attribValue.value.uintValue[2] = z;
+    attribValue.value.uintValue[3] = w;
 }
 
 void WebGL2RenderingContextBase::vertexAttribI4uiv(GLuint index, const Vector<GLuint>& value)
@@ -535,10 +537,11 @@ void WebGL2RenderingContextBase::vertexAttribI4uiv(GLuint index, const Vector<GL
 
     webContext()->vertexAttribI4uiv(index, value.data());
     VertexAttribValue& attribValue = m_vertexAttribValue[index];
-    attribValue.value[0] = value[0];
-    attribValue.value[1] = value[1];
-    attribValue.value[2] = value[2];
-    attribValue.value[3] = value[3];
+    attribValue.type = Uint32ArrayType;
+    attribValue.value.uintValue[0] = value[0];
+    attribValue.value.uintValue[1] = value[1];
+    attribValue.value.uintValue[2] = value[2];
+    attribValue.value.uintValue[3] = value[3];
 }
 
 void WebGL2RenderingContextBase::vertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, GLintptr offset)

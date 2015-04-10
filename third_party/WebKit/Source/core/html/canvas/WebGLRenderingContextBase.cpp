@@ -2983,7 +2983,21 @@ ScriptValue WebGLRenderingContextBase::getVertexAttrib(ScriptState* scriptState,
     case GL_VERTEX_ATTRIB_ARRAY_TYPE:
         return WebGLAny(scriptState, state.type);
     case GL_CURRENT_VERTEX_ATTRIB:
-        return WebGLAny(scriptState, DOMFloat32Array::create(m_vertexAttribValue[index].value, 4));
+        {
+            VertexAttribValue& attribValue = m_vertexAttribValue[index];
+            switch (attribValue.type) {
+            case Float32ArrayType:
+                return WebGLAny(scriptState, DOMFloat32Array::create(attribValue.value.floatValue, 4));
+            case Int32ArrayType:
+                return WebGLAny(scriptState, DOMInt32Array::create(attribValue.value.intValue, 4));
+            case Uint32ArrayType:
+                return WebGLAny(scriptState, DOMUint32Array::create(attribValue.value.uintValue, 4));
+            default:
+                ASSERT_NOT_REACHED();
+                break;
+            }
+            return ScriptValue::createNull(scriptState);
+        }
     case GL_VERTEX_ATTRIB_ARRAY_INTEGER:
         if (isWebGL2OrHigher()) {
             GLint value = 0;
@@ -5671,10 +5685,11 @@ void WebGLRenderingContextBase::vertexAttribfImpl(const char* functionName, GLui
         break;
     }
     VertexAttribValue& attribValue = m_vertexAttribValue[index];
-    attribValue.value[0] = v0;
-    attribValue.value[1] = v1;
-    attribValue.value[2] = v2;
-    attribValue.value[3] = v3;
+    attribValue.type = Float32ArrayType;
+    attribValue.value.floatValue[0] = v0;
+    attribValue.value.floatValue[1] = v1;
+    attribValue.value.floatValue[2] = v2;
+    attribValue.value.floatValue[3] = v3;
 }
 
 void WebGLRenderingContextBase::vertexAttribfvImpl(const char* functionName, GLuint index, DOMFloat32Array* v, GLsizei expectedSize)
@@ -5721,8 +5736,9 @@ void WebGLRenderingContextBase::vertexAttribfvImpl(const char* functionName, GLu
     }
     VertexAttribValue& attribValue = m_vertexAttribValue[index];
     attribValue.initValue();
+    attribValue.type = Float32ArrayType;
     for (int ii = 0; ii < expectedSize; ++ii)
-        attribValue.value[ii] = v[ii];
+        attribValue.value.floatValue[ii] = v[ii];
 }
 
 void WebGLRenderingContextBase::dispatchContextLostEvent(Timer<WebGLRenderingContextBase>*)

@@ -495,22 +495,34 @@ protected:
             m_boundVertexArrayObject = m_defaultVertexArrayObject;
     }
 
+    enum VertexAttribValueType {
+        Float32ArrayType,
+        Int32ArrayType,
+        Uint32ArrayType,
+    };
+
     class VertexAttribValue {
     public:
         VertexAttribValue()
+            : type(Float32ArrayType)
         {
             initValue();
         }
 
         void initValue()
         {
-            value[0] = 0.0f;
-            value[1] = 0.0f;
-            value[2] = 0.0f;
-            value[3] = 1.0f;
+            value.floatValue[0] = 0.0f;
+            value.floatValue[1] = 0.0f;
+            value.floatValue[2] = 0.0f;
+            value.floatValue[3] = 1.0f;
         }
 
-        GLfloat value[4];
+        VertexAttribValueType type;
+        union {
+            GLfloat floatValue[4];
+            GLint intValue[4];
+            GLuint uintValue[4];
+        } value;
     };
     Vector<VertexAttribValue> m_vertexAttribValue;
     unsigned m_maxVertexAttribs;
