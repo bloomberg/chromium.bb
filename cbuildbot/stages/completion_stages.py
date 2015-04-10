@@ -532,16 +532,20 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     Returns:
       A tuple of (config_map, action_history), where the config_map
       is a dictionary mapping build_id to config name for all slaves
-      in this run, and action_history is a list of all CL actions
-      associated with |changes|.
+      in this run plus the master, and action_history is a list of all
+      CL actions associated with |changes|.
     """
     # build_id is the master build id for the run.
     build_id, db = self._run.GetCIDBHandle()
     assert db, 'No database connection to use.'
     slave_list = db.GetSlaveStatuses(build_id)
+    # TODO(akeshet): We are getting the full action history for all changes that
+    # were in this CQ run. It would make more sense to only get the actions from
+    # build_ids of this master and its slaves.
     action_history = db.GetActionsForChanges(changes)
 
     config_map = dict()
+
     # Build the build_id to config_name mapping. Note that if add the
     # "relaunch" feature in cbuildbot, there may be multiple build ids
     # for the same slave config. We will have to make sure
@@ -549,6 +553,13 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     # latest start time).
     for d in slave_list:
       config_map[d['id']] = d['build_config']
+
+    # TODO(akeshet): We are giving special treatment to the CQ master, which
+    # makes this logic CQ specific. We only use this logic in the CQ anyway at
+    # the moment, but may need to reconsider if we need to generalize to other
+    # master-slave builds.
+    assert self._run.config.name == constants.CQ_MASTER
+    config_map[build_id] = constants.CQ_MASTER
 
     return config_map, action_history
 
