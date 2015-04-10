@@ -121,18 +121,20 @@ ifeq ($(PLATFORM), win)
   # I'm explicitly coding the path.
   BUILDPATH = $(DESTDIR)$(PREFIX)/bin:/usr/local/bin:/usr/bin:/bin
   SCONS ?= scons.bat
-  REVISION ?= $(shell git rev-parse HEAD | tr -d $$"\r")
+  GIT ?= $(shell python ../build/find_depot_tools.py)/git.bat
+  REVISION ?= $(shell $(GIT) rev-parse HEAD | tr -d $$"\r")
   PREFIX_NATIVE = $(shell cygpath -m $(PREFIX))
   CREATE_REDIRECTORS = ./create_redirectors_cygwin.sh
 else
   BUILDPATH = $(DESTDIR)$(PREFIX)/bin:$(PATH)
   SCONS ?= scons
+  GIT ?= git
   REVISION ?= $(shell git rev-parse HEAD)
   PREFIX_NATIVE = $(DESTDIR)$(PREFIX)
   CREATE_REDIRECTORS = ./create_redirectors.sh
 endif
 
-REVISION_DATE ?= $(shell git show --no-patch --format=%cd --date=short $(REVISION) | sed -e s'+\(....\)-\(..\)-\(..\).*+\1\2\3+')
+REVISION_DATE ?= $(shell $(GIT) show --no-patch --format=%cd --date=short $(REVISION) | sed -e s'+\(....\)-\(..\)-\(..\).*+\1\2\3+')
 
 ##################################################################
 #  The version numbers for the tools we will be building.

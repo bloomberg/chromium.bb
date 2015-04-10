@@ -125,7 +125,7 @@ def Update():
       bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
   if sys.platform in ('win32', 'cygwin') and depot_tools_win_toolchain:
     import find_depot_tools
-    depot_tools_path = find_depot_tools.add_depot_tools_to_path()
+    depot_tools_path = find_depot_tools.FindDepotTools()
     json_data_file = os.path.join(script_dir, 'win_toolchain.json')
     get_toolchain_args = [
         sys.executable,
