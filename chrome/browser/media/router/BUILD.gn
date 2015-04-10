@@ -6,15 +6,30 @@ import("//testing/test.gni")
 
 source_set("router") {
   deps = [
+    ":router_core",
+    ":keyed_service_factories",
+  ]
+}
+
+source_set("router_core") {
+  deps = [
     "//base",
+    "//components/keyed_service/core",
     "//url",
   ]
   sources = [
     "media_route.cc",
     "media_route.h",
     "media_route_id.h",
+    "media_router.h",
+    "media_router_impl.cc",
+    "media_router_impl.h",
+    "media_routes_observer.cc",
+    "media_routes_observer.h",
     "media_sink.cc",
     "media_sink.h",
+    "media_sinks_observer.cc",
+    "media_sinks_observer.h",
     "media_source.cc",
     "media_source.h",
     "media_source_helper.cc",
@@ -24,10 +39,21 @@ source_set("router") {
   ]
 }
 
+source_set("keyed_service_factories") {
+  deps = [
+    ":router_core",
+    "//components/keyed_service/content",
+  ]
+  sources = [
+    "media_router_impl_factory.cc",
+    "media_router_impl_factory.h",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   deps = [
-    ":router",
+    ":router_core",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

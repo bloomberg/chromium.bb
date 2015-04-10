@@ -8,14 +8,28 @@
 
 namespace media_router {
 
-MediaSource::MediaSource(const std::string& source_id)
-    : id_(source_id) {
+MediaSource::MediaSource(const MediaSourceId& source_id) : id_(source_id) {
+}
+
+MediaSource::MediaSource() {
 }
 
 MediaSource::~MediaSource() {}
 
-std::string MediaSource::id() const {
+MediaSourceId MediaSource::id() const {
   return id_;
+}
+
+bool MediaSource::Equals(const MediaSource& other) const {
+  return id_ == other.id();
+}
+
+bool MediaSource::Empty() const {
+  return id_.empty();
+}
+
+std::string MediaSource::ToString() const {
+  return "MediaSource[" + id_ + "]";
 }
 
 }  // namespace media_router
