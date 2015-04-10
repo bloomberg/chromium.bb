@@ -56,7 +56,9 @@ class MediaNetworkSimulation(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-@benchmark.Disabled('l', 'android-webview') # WebView: crbug.com/419689
+# WebView: crbug.com/419689
+# XP: crbug.com/475191
+@benchmark.Disabled('l', 'android-webview', 'xp')
 class MediaAndroid(benchmark.Benchmark):
   """Obtains media metrics for key user scenarios on Android."""
   test = media.Media
