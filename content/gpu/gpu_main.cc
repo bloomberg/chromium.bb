@@ -306,7 +306,8 @@ int GpuMain(const MainFunctionParams& parameters) {
 
     base::TimeDelta initialize_one_off_time =
         base::TimeTicks::Now() - before_initialize_one_off;
-    UMA_HISTOGRAM_TIMES("GPU.InitializeOneOffTime", initialize_one_off_time);
+    UMA_HISTOGRAM_MEDIUM_TIMES("GPU.InitializeOneOffMediumTime",
+                               initialize_one_off_time);
 
     if (enable_watchdog && delayed_watchdog_enable) {
       watchdog_thread = new GpuWatchdogThread(kGpuTimeout);
