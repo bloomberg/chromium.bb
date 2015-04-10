@@ -2285,8 +2285,8 @@ void CookieMonster::InitializeHistograms() {
       "Cookie.DeletionCause", 1, DELETE_COOKIE_LAST_ENTRY - 1,
       DELETE_COOKIE_LAST_ENTRY, base::Histogram::kUmaTargetedHistogramFlag);
   histogram_cookie_type_ = base::LinearHistogram::FactoryGet(
-      "Cookie.Type", 1, COOKIE_TYPE_LAST_ENTRY - 1, COOKIE_TYPE_LAST_ENTRY,
-      base::Histogram::kUmaTargetedHistogramFlag);
+      "Cookie.Type", 1, (1 << COOKIE_TYPE_LAST_ENTRY) - 1,
+      1 << COOKIE_TYPE_LAST_ENTRY, base::Histogram::kUmaTargetedHistogramFlag);
 
   // From UMA_HISTOGRAM_{CUSTOM_,}TIMES
   histogram_time_blocked_on_load_ = base::Histogram::FactoryTimeGet(
