@@ -36,10 +36,10 @@ class Task {
     GPU,            /* A graphics process. */
   };
 
-  // Create a task with the given |title| and the given Fav |icon|. This task
-  // runs on a process whose handle is |handle|.
+  // Create a task with the given |title| and the given favicon |icon|. This
+  // task runs on a process whose handle is |handle|.
   Task(const base::string16& title,
-       const gfx::ImageSkia& icon,
+       const gfx::ImageSkia* icon,
        base::ProcessHandle handle);
   virtual ~Task();
 
@@ -96,6 +96,7 @@ class Task {
   const base::string16& title() const { return title_; }
   const gfx::ImageSkia& icon() const { return icon_; }
   const base::ProcessHandle& process_handle() const { return process_handle_; }
+  const base::ProcessId& process_id() const { return process_id_; }
 
  private:
   // The unique ID of this task.
@@ -113,11 +114,14 @@ class Task {
   // The title of the task.
   base::string16 title_;
 
-  // The Fav icon.
+  // The favicon.
   gfx::ImageSkia icon_;
 
   // The handle of the process on which this task is running.
   const base::ProcessHandle process_handle_;
+
+  // The PID of the process on which this task is running.
+  const base::ProcessId process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Task);
 };

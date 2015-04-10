@@ -66,6 +66,7 @@ TEST_F(BrowserProcessTaskProviderTest, TestProvidedTask) {
   ASSERT_NE(nullptr, provided_task_);
 
   EXPECT_EQ(base::GetCurrentProcessHandle(), provided_task_->process_handle());
+  EXPECT_EQ(base::GetCurrentProcId(), provided_task_->process_id());
   EXPECT_FALSE(provided_task_->ReportsWebCacheStats());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT),
             provided_task_->title());

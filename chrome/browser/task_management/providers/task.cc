@@ -15,14 +15,15 @@ int64 g_last_id = 0;
 
 
 Task::Task(const base::string16& title,
-           const gfx::ImageSkia& icon,
+           const gfx::ImageSkia* icon,
            base::ProcessHandle handle)
     : task_id_(g_last_id++),
       network_usage_(-1),
       current_byte_count_(-1),
       title_(title),
-      icon_(icon),
-      process_handle_(handle) {
+      icon_(icon ? *icon : gfx::ImageSkia()),
+      process_handle_(handle),
+      process_id_(base::GetProcId(handle)) {
 }
 
 Task::~Task() {
