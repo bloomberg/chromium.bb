@@ -23,9 +23,8 @@ class SpinningBallsPage(page_module.Page):
         "document.readyState == 'complete'")
 
   def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginInteraction('RunSmoothAllActions')
-    action_runner.Wait(15)
-    interaction.End()
+    with action_runner.CreateInteraction('RunSmoothAllActions'):
+      action_runner.Wait(15)
 
 
 class GarbageCollectionCasesPageSet(page_set_module.PageSet):

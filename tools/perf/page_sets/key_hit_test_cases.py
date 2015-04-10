@@ -35,10 +35,8 @@ class PaperCalculatorHitTest(polymer.PolymerPage):
         self.TapButton(action_runner)
 
   def TapButton(self, action_runner):
-    interaction = action_runner.BeginInteraction(
-        'Action_TapAction')
-    action_runner.TapElement(element_function='''window.__tapTarget''')
-    interaction.End()
+    with action_runner.CreateInteraction('Action_TapAction'):
+      action_runner.TapElement(element_function='''window.__tapTarget''')
 
 
 class KeyHitTestCasesPageSet(page_set_module.PageSet):
