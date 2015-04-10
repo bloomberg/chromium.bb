@@ -730,6 +730,8 @@ void AnimationPlayer::setCompositorPending(bool sourceChanged)
         || !playing() || m_compositorState->playbackRate != m_playbackRate
         || m_compositorState->startTime != m_startTime) {
         m_compositorPending = true;
+        ASSERT(timeline());
+        ASSERT(timeline()->document());
         timeline()->document()->compositorPendingAnimations().add(this);
     }
 }
