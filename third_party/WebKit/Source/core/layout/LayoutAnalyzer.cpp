@@ -9,6 +9,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "platform/TracedValue.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -28,6 +29,7 @@ LayoutAnalyzer::Scope::~Scope()
 
 void LayoutAnalyzer::reset()
 {
+    m_startMs = currentTimeMS();
     m_counters.resize(NumCounters);
     m_counters[LayoutBlockRectangleChanged] = 0;
     m_counters[LayoutBlockRectangleDidNotChange] = 0;
@@ -115,6 +117,30 @@ void LayoutAnalyzer::pop(const LayoutObject& o)
 {
     ASSERT(m_stack.peek() == &o);
     m_stack.pop();
+}
+
+void LayoutAnalyzer::recordCounters()
+{
+    unsigned totalNodes = m_counters[TotalLayoutObjectsThatWereLaidOut];
+    if (totalNodes < 100)
+        return;
+    unsigned usPerNode = (1000.0 * (currentTimeMS() - m_startMs)) / totalNodes;
+    Platform::current()->histogramCustomCounts("Layout.MicroSecondsPerNode", usPerNode, 0, 1000 * 1000, 50);
+    unsigned halfTotalNodes = totalNodes / 2;
+    const char* histogram = nullptr;
+    if (m_counters[LayoutAnalyzer::LayoutObjectsThatAreFloating] > halfTotalNodes) {
+        histogram = "Layout.MicroSecondsPerFloat";
+    } else if (m_counters[LayoutAnalyzer::LayoutObjectsThatAreTableCells] > halfTotalNodes) {
+        histogram = "Layout.MicroSecondsPerTD";
+    } else if (m_counters[LayoutAnalyzer::LayoutObjectsThatAreOutOfFlowPositioned] > halfTotalNodes) {
+        histogram = "Layout.MicroSecondsPerPositioned";
+    } else if (m_counters[LayoutAnalyzer::LayoutObjectsThatAreTextAndCanUseTheSimpleFontCodePath] > halfTotalNodes) {
+        histogram = "Layout.MicroSecondsPerSimpleText";
+    } else if (m_counters[LayoutAnalyzer::LayoutObjectsThatAreTextAndCanNotUseTheSimpleFontCodePath] > halfTotalNodes) {
+        histogram = "Layout.MicroSecondsPerComplexText";
+    }
+    if (histogram)
+        Platform::current()->histogramCustomCounts(histogram, usPerNode, 0, 1000 * 1000, 50);
 }
 
 PassRefPtr<TracedValue> LayoutAnalyzer::toTracedValue()

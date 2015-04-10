@@ -884,6 +884,9 @@ void FrameView::performLayout(bool inSubtreeLayout)
     ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
+
+    if (layoutAnalyzer())
+        layoutAnalyzer()->recordCounters();
     TRACE_EVENT_END1(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout",
         "counters", analyzerCounters());
 }

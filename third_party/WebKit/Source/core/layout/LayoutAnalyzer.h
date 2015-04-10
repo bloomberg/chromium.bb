@@ -62,11 +62,14 @@ public:
         m_counters[counter] += delta;
     }
 
+    void recordCounters();
+
     PassRefPtr<TracedValue> toTracedValue();
 
 private:
     const char* nameForCounter(Counter) const;
 
+    double m_startMs;
     WTF::Vector<unsigned> m_counters;
     WTF::LinkedStack<const LayoutObject*> m_stack;
 };
