@@ -236,6 +236,8 @@ extern const char kUtilityProcessAllowedDir[];
 CONTENT_EXPORT extern const char kUtilityProcessEnableMDns[];
 CONTENT_EXPORT extern const char kUtilityProcessRunningElevated[];
 CONTENT_EXPORT extern const char kV8CacheOptions[];
+CONTENT_EXPORT extern const char kV8NativesPassedByFD[];
+CONTENT_EXPORT extern const char kV8SnapshotPassedByFD[];
 CONTENT_EXPORT extern const char kValidateInputEventStream[];
 CONTENT_EXPORT extern const char kWaitForDebuggerChildren[];
 CONTENT_EXPORT extern const char kZygoteCmdPrefix[];

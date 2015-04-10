@@ -700,14 +700,15 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #if !defined(OS_ANDROID)
-    // kV8NativesDataDescriptor and kV8SnapshotDataDescriptor are shared with
-    // child processes. On Android they are set in
+    // kV8NativesDataDescriptor and kV8SnapshotDataDescriptor could be shared
+    // with child processes via file descriptors. On Android they are set in
     // ChildProcessService::InternalInitChildProcess, otherwise set them here.
-    if (!process_type.empty() && process_type != switches::kZygoteProcess
-        && process_type != "service") {
+    if (command_line.HasSwitch(switches::kV8NativesPassedByFD)) {
       g_fds->Set(
           kV8NativesDataDescriptor,
           kV8NativesDataDescriptor + base::GlobalDescriptors::kBaseDescriptor);
+    }
+    if (command_line.HasSwitch(switches::kV8SnapshotPassedByFD)) {
       g_fds->Set(
           kV8SnapshotDataDescriptor,
           kV8SnapshotDataDescriptor + base::GlobalDescriptors::kBaseDescriptor);

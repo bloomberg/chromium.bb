@@ -5,7 +5,9 @@
 #include "ash/shell/content_client/shell_content_browser_client.h"
 
 #include "ash/shell/content_client/shell_browser_main_parts.h"
+#include "base/command_line.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "gin/v8_initializer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -39,6 +41,21 @@ net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
       static_cast<content::ShellBrowserContext*>(content_browser_context);
   return shell_context->CreateRequestContext(protocol_handlers,
                                              request_interceptors.Pass());
+}
+
+void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
+    base::CommandLine* command_line,
+    int child_process_id) {
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+  if (process_type != switches::kZygoteProcess) {
+    command_line->AppendSwitch(::switches::kV8NativesPassedByFD);
+    command_line->AppendSwitch(::switches::kV8SnapshotPassedByFD);
+  }
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+#endif  // OS_POSIX && !OS_MACOSX
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

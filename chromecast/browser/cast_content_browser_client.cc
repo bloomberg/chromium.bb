@@ -134,6 +134,13 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
   base::CommandLine* browser_command_line =
       base::CommandLine::ForCurrentProcess();
 
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  if (process_type != switches::kZygoteProcess) {
+    command_line->AppendSwitch(::switches::kV8NativesPassedByFD);
+    command_line->AppendSwitch(::switches::kV8SnapshotPassedByFD);
+  }
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+
   // IsCrashReporterEnabled() is set when InitCrashReporter() is called, and
   // controlled by GetBreakpadClient()->EnableBreakpadForProcess(), therefore
   // it's ok to add switch to every process here.

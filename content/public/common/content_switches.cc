@@ -397,6 +397,14 @@ const char kEnablePushMessagingHasPermission[] =
 // Set options to cache V8 data. (off, preparse data, or code)
 const char kV8CacheOptions[] = "v8-cache-options";
 
+// Signals that the V8 natives file has been transfered to the child process
+// by a file descriptor.
+const char kV8NativesPassedByFD[] = "v8-natives-passed-by-fd";
+
+// Signals that the V8 startup snapshot file has been transfered to the child
+// process by a file descriptor.
+const char kV8SnapshotPassedByFD[] = "v8-snapshot-passed-by-fd";
+
 // Enables the CSS multicol implementation that uses the regions implementation.
 const char kEnableRegionBasedColumns[] =
     "enable-region-based-columns";

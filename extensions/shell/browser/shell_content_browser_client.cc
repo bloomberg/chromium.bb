@@ -203,6 +203,16 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     int child_process_id) {
   std::string process_type =
       command_line->GetSwitchValueASCII(::switches::kProcessType);
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  if (process_type != ::switches::kZygoteProcess) {
+    command_line->AppendSwitch(::switches::kV8NativesPassedByFD);
+    command_line->AppendSwitch(::switches::kV8SnapshotPassedByFD);
+  }
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+#endif  // OS_POSIX && !OS_MACOSX
+
   if (process_type == ::switches::kRendererProcess)
     AppendRendererSwitches(command_line);
 }
