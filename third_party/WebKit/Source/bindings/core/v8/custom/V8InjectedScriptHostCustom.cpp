@@ -91,7 +91,7 @@ void V8InjectedScriptHost::inspectedObjectMethodCustom(const v8::FunctionCallbac
     }
 
     InjectedScriptHost* host = V8InjectedScriptHost::toImpl(info.Holder());
-    InjectedScriptHost::InspectableObject* object = host->inspectedObject(info[0]->ToInt32(info.GetIsolate())->Value());
+    InjectedScriptHost::InspectableObject* object = host->inspectedObject(info[0].As<v8::Int32>()->Value());
     v8SetReturnValue(info, object->get(ScriptState::current(info.GetIsolate())).v8Value());
 }
 
@@ -580,12 +580,12 @@ void V8InjectedScriptHost::bindMethodCustom(const v8::FunctionCallbackInfo<v8::V
 
 void V8InjectedScriptHost::objectForIdMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() < 1)
+    if (info.Length() < 1 || !info[0]->IsInt32())
         return;
     InjectedScriptNative* injectedScriptNative = InjectedScriptNative::fromInjectedScriptHost(info.Holder());
     if (!injectedScriptNative)
         return;
-    int id = info[0]->ToInt32(info.GetIsolate())->Value();
+    int id = info[0].As<v8::Int32>()->Value();
     v8::Local<v8::Value> value = injectedScriptNative->objectForId(id);
     if (!value.IsEmpty())
         info.GetReturnValue().Set(value);
@@ -598,7 +598,7 @@ void V8InjectedScriptHost::idToObjectGroupNameMethodCustom(const v8::FunctionCal
     InjectedScriptNative* injectedScriptNative = InjectedScriptNative::fromInjectedScriptHost(info.Holder());
     if (!injectedScriptNative)
         return;
-    int id = info[0]->ToInt32(info.GetIsolate())->Value();
+    int id = info[0].As<v8::Int32>()->Value();
     String groupName = injectedScriptNative->groupName(id);
     if (!groupName.isEmpty())
         info.GetReturnValue().Set(v8String(info.GetIsolate(), groupName));
