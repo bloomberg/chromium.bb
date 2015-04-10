@@ -110,7 +110,12 @@ void WebDialogBrowserTest::SetUpOnMainThread() {
 
 // Windows has some issues resizing windows. An off by one problem, and a
 // minimum size that seems too big. See http://crbug.com/52602.
-IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, SizeWindow) {
+#if defined(OS_WIN)
+#define MAYBE_SizeWindow DISABLED_SizeWindow
+#else
+#define MAYBE_SizeWindow SizeWindow
+#endif
+IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   // TestWebDialogView should quit current message loop on size change.
   view_->set_should_quit_on_size_change(true);
 
