@@ -1949,11 +1949,17 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
     // Create lists of all exited/entered ancestors.
     WillBeHeapVector<RefPtrWillBeMember<Node>, 32> exitedAncestors;
     WillBeHeapVector<RefPtrWillBeMember<Node>, 32> enteredAncestors;
-    for (Node* node = exitedNode; node; node = ComposedTreeTraversal::parent(*node)) {
-        exitedAncestors.append(node);
+    if (exitedNode) {
+        exitedNode->updateDistribution();
+        for (Node* node = exitedNode; node; node = ComposedTreeTraversal::parent(*node)) {
+            exitedAncestors.append(node);
+        }
     }
-    for (Node* node = enteredNode; node; node = ComposedTreeTraversal::parent(*node)) {
-        enteredAncestors.append(node);
+    if (enteredNode) {
+        enteredNode->updateDistribution();
+        for (Node* node = enteredNode; node; node = ComposedTreeTraversal::parent(*node)) {
+            enteredAncestors.append(node);
+        }
     }
 
     size_t numExitedAncestors = exitedAncestors.size();
