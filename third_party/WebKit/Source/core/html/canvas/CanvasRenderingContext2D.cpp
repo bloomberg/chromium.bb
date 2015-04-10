@@ -1894,13 +1894,13 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     if (!canvas()->document().frame())
         return;
 
+    // accessFont needs the style to be up to date, but updating style can cause script to run,
+    // (e.g. due to autofocus) which can free the canvas (set size to 0, for example), so update
+    // style before grabbing the drawingCanvas.
+    canvas()->document().updateRenderTreeIfNeeded();
+
     if (!drawingCanvas())
         return;
-
-    // accessFont needs the style to be up to date, but updating style can cause script to run,
-    // (e.g. due to autofocus) which can free the GraphicsContext, so update style before grabbing
-    // the GraphicsContext.
-    canvas()->document().updateRenderTreeIfNeeded();
 
     if (!std::isfinite(x) || !std::isfinite(y))
         return;
