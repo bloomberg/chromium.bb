@@ -4,8 +4,12 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -16,15 +20,27 @@ namespace data_reduction_proxy {
 DataReductionProxyService::DataReductionProxyService(
     scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
     DataReductionProxySettings* settings,
-    net::URLRequestContextGetter* request_context_getter)
+    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : url_request_context_getter_(request_context_getter),
       settings_(settings),
+      io_task_runner_(io_task_runner),
+      initialized_(false),
       weak_factory_(this) {
   DCHECK(settings);
   compression_stats_ = compression_stats.Pass();
 }
 
 DataReductionProxyService::~DataReductionProxyService() {
+}
+
+void DataReductionProxyService::SetIOData(
+    base::WeakPtr<DataReductionProxyIOData> io_data) {
+  DCHECK(CalledOnValidThread());
+  io_data_ = io_data;
+  initialized_ = true;
+  FOR_EACH_OBSERVER(DataReductionProxyServiceObserver,
+                    observer_list_, OnServiceInitialized());
 }
 
 void DataReductionProxyService::Shutdown() {
@@ -58,6 +74,33 @@ void DataReductionProxyService::UpdateContentLengths(
 void DataReductionProxyService::SetUnreachable(bool unreachable) {
   DCHECK(CalledOnValidThread());
   settings_->SetUnreachable(unreachable);
+}
+
+void DataReductionProxyService::SetProxyPrefs(bool enabled,
+                                              bool alternative_enabled,
+                                              bool at_startup) {
+  DCHECK(CalledOnValidThread());
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyIOData::SetProxyPrefs,
+                 io_data_, enabled, alternative_enabled, at_startup));
+}
+
+void DataReductionProxyService::AddObserver(
+    DataReductionProxyServiceObserver* observer) {
+  DCHECK(CalledOnValidThread());
+  observer_list_.AddObserver(observer);
+}
+
+void DataReductionProxyService::RemoveObserver(
+    DataReductionProxyServiceObserver* observer) {
+  DCHECK(CalledOnValidThread());
+  observer_list_.RemoveObserver(observer);
+}
+
+bool DataReductionProxyService::Initialized() const {
+  DCHECK(CalledOnValidThread());
+  return initialized_;
 }
 
 base::WeakPtr<DataReductionProxyService>

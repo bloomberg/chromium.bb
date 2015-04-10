@@ -44,6 +44,7 @@ const char kDataReductionPassThroughHeader[] =
 
 DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),
+      deferred_initialization_(false),
       allowed_(false),
       alternative_allowed_(false),
       promo_allowed_(false),
@@ -93,9 +94,20 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   config_ = io_data->config();
   event_store_ = io_data->event_store();
   data_reduction_proxy_service_ = data_reduction_proxy_service.Pass();
+  data_reduction_proxy_service_->AddObserver(this);
   InitPrefMembers();
   UpdateConfigValues();
   RecordDataReductionInit();
+}
+
+void DataReductionProxySettings::OnServiceInitialized() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!deferred_initialization_)
+    return;
+  deferred_initialization_ = false;
+  // Technically, this is not "at startup", but this is the first chance that
+  // IO data objects can be called.
+  UpdateIOData(true);
 }
 
 void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
@@ -210,6 +222,12 @@ void DataReductionProxySettings::ResetDataReductionStatistics() {
   data_reduction_proxy_service_->compression_stats()->ResetStatistics();
 }
 
+void DataReductionProxySettings::UpdateIOData(bool at_startup) {
+  data_reduction_proxy_service_->SetProxyPrefs(
+      IsDataReductionProxyEnabled(), IsDataReductionProxyAlternativeEnabled(),
+      at_startup);
+}
+
 void DataReductionProxySettings::MaybeActivateDataReductionProxy(
     bool at_startup) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -227,8 +245,10 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
     ResetDataReductionStatistics();
   }
   // Configure use of the data reduction proxy if it is enabled.
-  config_->SetProxyPrefs(IsDataReductionProxyEnabled(),
-                         IsDataReductionProxyAlternativeEnabled(), at_startup);
+  if (at_startup && !data_reduction_proxy_service_->Initialized())
+    deferred_initialization_ = true;
+  else
+    UpdateIOData(at_startup);
 }
 
 // Metrics methods

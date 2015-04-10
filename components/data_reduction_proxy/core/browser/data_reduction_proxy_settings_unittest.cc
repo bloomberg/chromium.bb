@@ -243,14 +243,18 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
   drp_test_context->config()->SetStateForTest(true, false, false);
   drp_test_context->InitSettings();
 
+  MockDataReductionProxyService* mock_service =
+      static_cast<MockDataReductionProxyService*>(
+          drp_test_context->data_reduction_proxy_service());
+
   // The pref is disabled, so correspondingly should be the proxy.
-  EXPECT_CALL(*drp_test_context->mock_config(),
+  EXPECT_CALL(*mock_service,
               SetProxyPrefs(false, false, false));
   drp_test_context->pref_service()->SetBoolean(
       prefs::kDataReductionProxyEnabled, false);
 
   // The pref is enabled, so correspondingly should be the proxy.
-  EXPECT_CALL(*drp_test_context->mock_config(),
+  EXPECT_CALL(*mock_service,
               SetProxyPrefs(true, false, false));
   drp_test_context->pref_service()->SetBoolean(
       prefs::kDataReductionProxyEnabled, true);

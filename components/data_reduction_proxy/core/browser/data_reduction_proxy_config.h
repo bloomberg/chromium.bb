@@ -84,11 +84,17 @@ class DataReductionProxyConfig
   void SetDataReductionProxyService(
       base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service);
 
-  // This method expects to run on the UI thread. It permits the Data Reduction
-  // Proxy configuration to change based on changes initiated by the user.
-  virtual void SetProxyPrefs(bool enabled,
-                             bool alternative_enabled,
-                             bool at_startup);
+  // Sets the proxy configs, enabling or disabling the proxy according to
+  // the value of |enabled| and |alternative_enabled|. Use the alternative
+  // configuration only if |enabled| and |alternative_enabled| are true. If
+  // |restricted| is true, only enable the fallback proxy. |at_startup| is true
+  // when this method is called from InitDataReductionProxySettings.
+  // TODO(jeremyim): Change enabled/alternative_enabled to be a single enum,
+  // since there are only 3 valid states - also update in
+  // DataReductionProxyIOData.
+  void SetProxyConfig(bool enabled,
+                      bool alternative_enabled,
+                      bool at_startup);
 
   // Provides a mechanism for an external object to force |this| to refresh
   // the Data Reduction Proxy configuration from |config_values_| and apply to
@@ -166,15 +172,6 @@ class DataReductionProxyConfig
   bool promo_allowed() const;
 
  protected:
-  // Sets the proxy configs, enabling or disabling the proxy according to
-  // the value of |enabled| and |alternative_enabled|. Use the alternative
-  // configuration only if |enabled| and |alternative_enabled| are true. If
-  // |restricted| is true, only enable the fallback proxy. |at_startup| is true
-  // when this method is called from InitDataReductionProxySettings.
-  void SetProxyConfigOnIOThread(bool enabled,
-                                bool alternative_enabled,
-                                bool at_startup);
-
   // Writes a warning to the log that is used in backend processing of
   // customer feedback. Virtual so tests can mock it for verification.
   virtual void LogProxyState(bool enabled, bool restricted, bool at_startup);

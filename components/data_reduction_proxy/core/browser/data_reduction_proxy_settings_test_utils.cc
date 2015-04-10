@@ -102,6 +102,8 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
   settings->prefs_ = test_context_->pref_service();
   settings->data_reduction_proxy_service_ =
       test_context_->CreateDataReductionProxyService();
+  settings->data_reduction_proxy_service_->SetIOData(
+      test_context_->io_data()->GetWeakPtr());
   test_context_->config()->ResetParamFlagsForTest(flags);
   settings->UpdateConfigValues();
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
@@ -126,9 +128,10 @@ void DataReductionProxySettingsTestBase::ExpectSetProxyPrefs(
     bool expected_enabled,
     bool expected_alternate_enabled,
     bool expected_at_startup) {
-  MockDataReductionProxyConfig* config =
-      static_cast<MockDataReductionProxyConfig*>(test_context_->config());
-  EXPECT_CALL(*config,
+  MockDataReductionProxyService* mock_service =
+      static_cast<MockDataReductionProxyService*>(
+          settings_->data_reduction_proxy_service());
+  EXPECT_CALL(*mock_service,
               SetProxyPrefs(expected_enabled, expected_alternate_enabled,
                             expected_at_startup));
 }
@@ -154,6 +157,8 @@ void DataReductionProxySettingsTestBase::InitDataReductionProxy(
   settings_->InitDataReductionProxySettings(
       test_context_->pref_service(), test_context_->io_data(),
       test_context_->CreateDataReductionProxyService());
+  settings_->data_reduction_proxy_service()->SetIOData(
+      test_context_->io_data()->GetWeakPtr());
   settings_->SetCallbackToRegisterSyntheticFieldTrial(
       base::Bind(&DataReductionProxySettingsTestBase::
                  SyntheticFieldTrialRegistrationCallback,

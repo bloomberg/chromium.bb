@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/single_thread_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
@@ -38,10 +39,11 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       net_log_(net_log),
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
-      shutdown_on_ui_(false) {
+      shutdown_on_ui_(false),
+      weak_factory_(this) {
   DCHECK(net_log);
-  DCHECK(io_task_runner_.get());
-  DCHECK(ui_task_runner_.get());
+  DCHECK(io_task_runner_);
+  DCHECK(ui_task_runner_);
   scoped_ptr<DataReductionProxyParams> params(
       new DataReductionProxyParams(param_flags));
   params->EnableQuic(enable_quic);
@@ -83,7 +85,9 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       new DataReductionProxyDelegate(request_options_.get(), config_.get()));
  }
 
-DataReductionProxyIOData::DataReductionProxyIOData() : shutdown_on_ui_(false) {
+DataReductionProxyIOData::DataReductionProxyIOData()
+    : shutdown_on_ui_(false),
+      weak_factory_(this) {
 }
 
 DataReductionProxyIOData::~DataReductionProxyIOData() {
@@ -107,6 +111,21 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
     base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service) {
   service_ = data_reduction_proxy_service;
   config()->SetDataReductionProxyService(data_reduction_proxy_service);
+  // Using base::Unretained is safe here, unless the browser is being shut down
+  // before the Initialize task can be executed. The task is only created as
+  // part of class initialization.
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyIOData::InitializeOnIOThread,
+                 base::Unretained(this)));
+}
+
+void DataReductionProxyIOData::InitializeOnIOThread() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyService::SetIOData,
+                 service_, weak_factory_.GetWeakPtr()));
 }
 
 bool DataReductionProxyIOData::IsEnabled() const {
@@ -135,6 +154,13 @@ DataReductionProxyIOData::CreateNetworkDelegate(
   if (track_proxy_bypass_statistics)
     network_delegate->InitIODataAndUMA(this, &enabled_, bypass_stats_.get());
   return network_delegate.Pass();
+}
+
+void DataReductionProxyIOData::SetProxyPrefs(bool enabled,
+                                             bool alternative_enabled,
+                                             bool at_startup) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  config_->SetProxyConfig(enabled, alternative_enabled, at_startup);
 }
 
 void DataReductionProxyIOData::UpdateContentLengths(

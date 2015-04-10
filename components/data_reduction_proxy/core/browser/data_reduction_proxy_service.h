@@ -7,8 +7,11 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -32,8 +35,10 @@ namespace data_reduction_proxy {
 typedef base::Callback<void(const std::string&, const net::URLRequestStatus&)>
     FetcherResponseCallback;
 
-class DataReductionProxySettings;
 class DataReductionProxyCompressionStats;
+class DataReductionProxyIOData;
+class DataReductionProxyServiceObserver;
+class DataReductionProxySettings;
 
 // Contains and initializes all Data Reduction Proxy objects that have a
 // lifetime based on the UI thread.
@@ -48,11 +53,19 @@ class DataReductionProxyService : public base::NonThreadSafe,
   DataReductionProxyService(
       scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
       DataReductionProxySettings* settings,
-      net::URLRequestContextGetter* request_context_getter);
+      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   ~DataReductionProxyService() override;
 
+  // Sets the DataReductionProxyIOData weak pointer.
+  void SetIOData(base::WeakPtr<DataReductionProxyIOData> io_data);
+
   void Shutdown();
+
+  // Indicates whether |this| has been fully initialized. |SetIOData| is the
+  // final step in initialization.
+  bool Initialized() const;
 
   // Requests the given |secure_proxy_check_url|. Upon completion, returns the
   // results to the caller via the |fetcher_callback|. Virtualized for unit
@@ -75,6 +88,16 @@ class DataReductionProxyService : public base::NonThreadSafe,
 
   // Records whether the Data Reduction Proxy is unreachable or not.
   void SetUnreachable(bool unreachable);
+
+  // Bridge methods to safely call to the UI thread objects.
+  // Virtual for testing.
+  virtual void SetProxyPrefs(bool enabled,
+                             bool alternative_enabled,
+                             bool at_startup);
+
+  // Methods for adding/removing observers on |this|.
+  void AddObserver(DataReductionProxyServiceObserver* observer);
+  void RemoveObserver(DataReductionProxyServiceObserver* observer);
 
   // Accessor methods.
   DataReductionProxyCompressionStats* compression_stats() const {
@@ -107,6 +130,17 @@ class DataReductionProxyService : public base::NonThreadSafe,
   scoped_ptr<DataReductionProxyCompressionStats> compression_stats_;
 
   DataReductionProxySettings* settings_;
+
+  // Used to post tasks to |io_data_|.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // A weak pointer to DataReductionProxyIOData so that UI based objects can
+  // make calls to IO based objects.
+  base::WeakPtr<DataReductionProxyIOData> io_data_;
+
+  ObserverList<DataReductionProxyServiceObserver> observer_list_;
+
+  bool initialized_;
 
   base::WeakPtrFactory<DataReductionProxyService> weak_factory_;
 

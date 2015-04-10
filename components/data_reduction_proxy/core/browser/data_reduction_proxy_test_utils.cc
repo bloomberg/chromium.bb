@@ -162,9 +162,10 @@ TestDataReductionProxyConfigServiceClient::TestBackoffEntry::ImplGetTimeNow()
 MockDataReductionProxyService::MockDataReductionProxyService(
     scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
     DataReductionProxySettings* settings,
-    net::URLRequestContextGetter* request_context)
+    net::URLRequestContextGetter* request_context,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : DataReductionProxyService(
-        compression_stats.Pass(), settings, request_context) {
+        compression_stats.Pass(), settings, request_context, io_task_runner) {
 }
 
 MockDataReductionProxyService::~MockDataReductionProxyService() {
@@ -442,6 +443,7 @@ void DataReductionProxyTestContext::InitSettingsWithoutCheck() {
       CreateDataReductionProxyServiceInternal());
   io_data_->SetDataReductionProxyService(
       settings_->data_reduction_proxy_service()->GetWeakPtr());
+  settings_->data_reduction_proxy_service()->SetIOData(io_data_->GetWeakPtr());
 }
 
 scoped_ptr<DataReductionProxyService>
@@ -460,11 +462,11 @@ DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal() {
   if (test_context_flags_ & DataReductionProxyTestContext::USE_MOCK_SERVICE) {
     return make_scoped_ptr(new MockDataReductionProxyService(
         compression_stats.Pass(), settings_.get(),
-        request_context_getter_.get()));
+        request_context_getter_.get(), task_runner_));
   } else {
-    return make_scoped_ptr(
-        new DataReductionProxyService(compression_stats.Pass(), settings_.get(),
-                                      request_context_getter_.get()));
+    return make_scoped_ptr(new DataReductionProxyService(
+        compression_stats.Pass(), settings_.get(),
+        request_context_getter_.get(), task_runner_));
   }
 }
 

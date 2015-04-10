@@ -80,16 +80,6 @@ void DataReductionProxyConfig::SetDataReductionProxyService(
   data_reduction_proxy_service_ = data_reduction_proxy_service;
 }
 
-void DataReductionProxyConfig::SetProxyPrefs(bool enabled,
-                                             bool alternative_enabled,
-                                             bool at_startup) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DataReductionProxyConfig::SetProxyConfigOnIOThread,
-                            base::Unretained(this), enabled,
-                            alternative_enabled, at_startup));
-}
-
 void DataReductionProxyConfig::ReloadConfig() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
@@ -244,7 +234,7 @@ bool DataReductionProxyConfig::promo_allowed() const {
   return config_values_->promo_allowed();
 }
 
-void DataReductionProxyConfig::SetProxyConfigOnIOThread(
+void DataReductionProxyConfig::SetProxyConfig(
     bool enabled, bool alternative_enabled, bool at_startup) {
   enabled_by_user_ = enabled;
   alternative_enabled_by_user_ = alternative_enabled;

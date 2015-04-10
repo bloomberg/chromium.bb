@@ -16,6 +16,7 @@
 #include "base/prefs/pref_member.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service_observer.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -48,7 +49,7 @@ enum ProxyStartupState {
 // be called from there.
 // TODO(marq): Convert this to be a KeyedService with an
 // associated factory class, and refactor the Java call sites accordingly.
-class DataReductionProxySettings {
+class DataReductionProxySettings : public DataReductionProxyServiceObserver {
  public:
   typedef base::Callback<bool(const std::string&, const std::string&)>
       SyntheticFieldTrialRegistrationCallback;
@@ -203,6 +204,9 @@ class DataReductionProxySettings {
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            CheckInitMetricsWhenNotAllowed);
 
+  // Override of DataReductionProxyService::Observer.
+  void OnServiceInitialized() override;
+
   // Returns true if both LoFi and the proxy are enabled.
   bool IsLoFiEnabled() const;
 
@@ -223,7 +227,18 @@ class DataReductionProxySettings {
 
   void ResetDataReductionStatistics();
 
+  // Update IO thread objects in response to UI thread changes.
+  void UpdateIOData(bool at_startup);
+
   bool unreachable_;
+
+  // A call to MaybeActivateDataReductionProxy may take place before the
+  // |data_reduction_proxy_service_| has received a DataReductionProxyIOData
+  // pointer. In that case, the operation against the IO objects will not
+  // succeed and |deferred_initialization_| will be set to true. When
+  // OnServiceInitialized is called, if |deferred_initialization_| is true,
+  // IO object calls will be performed at that time.
+  bool deferred_initialization_;
 
   // The following values are cached in order to access the values on the
   // correct thread.

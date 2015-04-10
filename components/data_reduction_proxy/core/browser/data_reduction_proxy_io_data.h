@@ -68,6 +68,14 @@ class DataReductionProxyIOData {
       scoped_ptr<net::NetworkDelegate> wrapped_network_delegate,
       bool track_proxy_bypass_statistics);
 
+  // Sets user defined preferences for how the Data Reduction Proxy
+  // configuration should be set. Use the alternative configuration only if
+  // |enabled| and |alternative_enabled| are true. |at_startup| is true only
+  // when DataReductionProxySettings is initialized.
+  void SetProxyPrefs(bool enabled,
+                     bool alternative_enabled,
+                     bool at_startup);
+
   // Bridge methods to safely call to the UI thread objects.
   void UpdateContentLengths(int received_content_length,
                             int original_content_length,
@@ -102,8 +110,8 @@ class DataReductionProxyIOData {
     return net_log_;
   }
 
-  base::WeakPtr<DataReductionProxyService> service() const {
-    return service_;
+  const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner() const {
+    return io_task_runner_;
   }
 
   // Used for testing.
@@ -125,6 +133,11 @@ class DataReductionProxyIOData {
 
   // Used for testing.
   DataReductionProxyIOData();
+
+  // Initializes the weak pointer to |this| on the IO thread. It must be done
+  // on the IO thread, since it is used for posting tasks from the UI thread
+  // to IO thread objects in a thread safe manner.
+  void InitializeOnIOThread();
 
   // Records that the data reduction proxy is unreachable or not.
   void SetUnreachable(bool unreachable);
@@ -174,6 +187,8 @@ class DataReductionProxyIOData {
   // Preference that determines if the Data Reduction Proxy has been enabled
   // by the user. In practice, this can be overridden by the command line.
   BooleanPrefMember enabled_;
+
+  base::WeakPtrFactory<DataReductionProxyIOData> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyIOData);
 };

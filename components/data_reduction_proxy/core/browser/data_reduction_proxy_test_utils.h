@@ -157,12 +157,15 @@ class MockDataReductionProxyService : public DataReductionProxyService {
   MockDataReductionProxyService(
       scoped_ptr<DataReductionProxyCompressionStats> compression_stats,
       DataReductionProxySettings* settings,
-      net::URLRequestContextGetter* request_context);
+      net::URLRequestContextGetter* request_context,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~MockDataReductionProxyService() override;
 
   MOCK_METHOD2(SecureProxyCheck,
       void(const GURL& secure_proxy_check_url,
            FetcherResponseCallback fetcher_callback));
+  MOCK_METHOD3(SetProxyPrefs,
+               void(bool enabled, bool alternative_enabled, bool at_startup));
 };
 
 // Test version of |DataReductionProxyIOData|, which bypasses initialization in
@@ -185,6 +188,10 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
 
   DataReductionProxyConfigServiceClient* config_client() const {
     return config_client_.get();
+  }
+
+  base::WeakPtr<DataReductionProxyIOData> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
   }
 };
 
