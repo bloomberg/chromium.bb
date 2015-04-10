@@ -1181,7 +1181,6 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
     layer_->SetIsDrawable(true);
     layer_->SetContentsOpaque(true);
     layer_->SetBounds(content_size_in_layer_);
-    layer_->SetNeedsDisplay();
   }
 
   base::Closure ack_callback =
