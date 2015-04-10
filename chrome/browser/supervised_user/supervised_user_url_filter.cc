@@ -425,9 +425,8 @@ void SupervisedUserURLFilter::SetManualURLs(
 }
 
 void SupervisedUserURLFilter::InitAsyncURLChecker(
-    net::URLRequestContextGetter* context,
-    const std::string& cx) {
-  async_url_checker_.reset(new SupervisedUserAsyncURLChecker(context, cx));
+    net::URLRequestContextGetter* context) {
+  async_url_checker_.reset(new SupervisedUserAsyncURLChecker(context));
 }
 
 bool SupervisedUserURLFilter::HasAsyncURLChecker() const {

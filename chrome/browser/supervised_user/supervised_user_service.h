@@ -80,16 +80,6 @@ class SupervisedUserService : public KeyedService,
     // Returns true to indicate that the delegate handled the (de)activation, or
     // false to indicate that the SupervisedUserService itself should handle it.
     virtual bool SetActive(bool active) = 0;
-    // Returns the path to a blacklist file to load, or an empty path to
-    // indicate "none".
-    virtual base::FilePath GetBlacklistPath() const;
-    // Returns the URL from which to download a blacklist if no local one exists
-    // yet. The blacklist file will be stored at |GetBlacklistPath()|.
-    virtual GURL GetBlacklistURL() const;
-    // Returns the identifier ("cx") of the Custom Search Engine to use for the
-    // experimental "SafeSites" feature, or the empty string to disable the
-    // feature.
-    virtual std::string GetSafeSitesCx() const;
   };
 
   ~SupervisedUserService() override;
@@ -215,8 +205,7 @@ class SupervisedUserService : public KeyedService,
     void SetManualURLs(scoped_ptr<std::map<GURL, bool>> url_map);
 
     void InitAsyncURLChecker(
-        const scoped_refptr<net::URLRequestContextGetter>& context,
-        const std::string& cx);
+        const scoped_refptr<net::URLRequestContextGetter>& context);
 
     void Clear();
 

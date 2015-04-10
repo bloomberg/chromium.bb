@@ -31,7 +31,7 @@ using net::URLRequestStatus;
 namespace {
 
 const char kQueryFormat[] = "https://www.googleapis.com/customsearch/v1"
-    "?cx=%s&key=%s&q=inurl%%3A%s";
+    "?cx=017993620680222980993%%3A1wdumejvx5i&key=%s&q=inurl%%3A%s";
 const char kQuerySafeParam[] = "&safe=high";
 
 const char kIdSearchInfo[] = "searchInformation";
@@ -60,17 +60,15 @@ GURL GetNormalizedURL(const GURL& url) {
 }
 
 // Builds a URL for a web search for |url| (using the "inurl:" query parameter
-// and a Custom Search Engine identified by |cx|, using the specified
-// |api_key|). If |safe| is specified, enables the SafeSearch query parameter.
-GURL BuildSearchURL(const std::string& cx,
-                    const std::string& api_key,
+// and a Custom Search Engine, using the specified |api_key|). If |safe| is
+// specified, enables the SafeSearch query parameter.
+GURL BuildSearchURL(const std::string& api_key,
                     const GURL& url,
                     bool safe) {
   // Strip the scheme, so that we'll match any scheme.
   std::string query = net::EscapeQueryParamValue(url.GetContent(), true);
   std::string search_url = base::StringPrintf(
       kQueryFormat,
-      cx.c_str(),
       api_key.c_str(),
       query.c_str());
   if (safe)
@@ -83,7 +81,6 @@ GURL BuildSearchURL(const std::string& cx,
 scoped_ptr<net::URLFetcher> CreateFetcher(
     URLFetcherDelegate* delegate,
     URLRequestContextGetter* context,
-    const std::string& cx,
     const std::string& api_key,
     const GURL& url,
     bool safe) {
@@ -91,7 +88,7 @@ scoped_ptr<net::URLFetcher> CreateFetcher(
   const int kUnsafeId = 1;
   int id = safe ? kSafeId : kUnsafeId;
   scoped_ptr<net::URLFetcher> fetcher(URLFetcher::Create(
-      id, BuildSearchURL(cx, api_key, url, safe), URLFetcher::GET, delegate));
+      id, BuildSearchURL(api_key, url, safe), URLFetcher::GET, delegate));
   fetcher->SetRequestContext(context);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES);
@@ -182,16 +179,14 @@ SupervisedUserAsyncURLChecker::CheckResult::CheckResult(
 }
 
 SupervisedUserAsyncURLChecker::SupervisedUserAsyncURLChecker(
-    URLRequestContextGetter* context,
-    const std::string& cx)
-    : context_(context), cx_(cx), cache_(kDefaultCacheSize) {
+    URLRequestContextGetter* context)
+    : context_(context), cache_(kDefaultCacheSize) {
 }
 
 SupervisedUserAsyncURLChecker::SupervisedUserAsyncURLChecker(
     URLRequestContextGetter* context,
-    const std::string& cx,
     size_t cache_size)
-    : context_(context), cx_(cx), cache_(cache_size) {
+    : context_(context), cache_(cache_size) {
 }
 
 SupervisedUserAsyncURLChecker::~SupervisedUserAsyncURLChecker() {}
@@ -237,9 +232,9 @@ bool SupervisedUserAsyncURLChecker::CheckURL(const GURL& url,
   DVLOG(1) << "Checking URL " << url;
   std::string api_key = google_apis::GetSafeSitesAPIKey();
   scoped_ptr<URLFetcher> fetcher_safe(
-      CreateFetcher(this, context_, cx_, api_key, url, true));
+      CreateFetcher(this, context_, api_key, url, true));
   scoped_ptr<URLFetcher> fetcher_unsafe(
-      CreateFetcher(this, context_, cx_, api_key, url, false));
+      CreateFetcher(this, context_, api_key, url, false));
   fetcher_safe->Start();
   fetcher_unsafe->Start();
   checks_in_progress_.push_back(

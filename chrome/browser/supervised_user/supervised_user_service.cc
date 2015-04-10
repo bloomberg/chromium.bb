@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -69,6 +71,12 @@ using content::BrowserThread;
 
 namespace {
 
+// The URL from which to download a host blacklist if no local one exists yet.
+const char kBlacklistURL[] =
+    "https://www.gstatic.com/chrome/supervised_user/blacklist-20141001-1k.bin";
+// The filename under which we'll store the blacklist (in the user data dir).
+const char kBlacklistFilename[] = "su-blacklist.bin";
+
 const char* const kCustodianInfoPrefs[] = {
   prefs::kSupervisedUserCustodianName,
   prefs::kSupervisedUserCustodianEmail,
@@ -92,6 +100,12 @@ void CreateExtensionUpdateRequest(
     PermissionRequestCreator* creator,
     const SupervisedUserService::SuccessCallback& callback) {
   creator->CreateExtensionUpdateRequest(id, callback);
+}
+
+base::FilePath GetBlacklistPath() {
+  base::FilePath blacklist_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &blacklist_dir);
+  return blacklist_dir.AppendASCII(kBlacklistFilename);
 }
 
 #if defined(ENABLE_EXTENSIONS)
@@ -129,18 +143,6 @@ ExtensionState GetExtensionState(const extensions::Extension* extension) {
 #endif
 
 }  // namespace
-
-base::FilePath SupervisedUserService::Delegate::GetBlacklistPath() const {
-  return base::FilePath();
-}
-
-GURL SupervisedUserService::Delegate::GetBlacklistURL() const {
-  return GURL();
-}
-
-std::string SupervisedUserService::Delegate::GetSafeSitesCx() const {
-  return std::string();
-}
 
 SupervisedUserService::URLFilterContext::URLFilterContext()
     : ui_url_filter_(new SupervisedUserURLFilter),
@@ -229,14 +231,13 @@ void SupervisedUserService::URLFilterContext::OnBlacklistLoaded(
 }
 
 void SupervisedUserService::URLFilterContext::InitAsyncURLChecker(
-    const scoped_refptr<net::URLRequestContextGetter>& context,
-    const std::string& cx) {
-  ui_url_filter_->InitAsyncURLChecker(context.get(), cx);
+    const scoped_refptr<net::URLRequestContextGetter>& context) {
+  ui_url_filter_->InitAsyncURLChecker(context.get());
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&SupervisedUserURLFilter::InitAsyncURLChecker,
-                 io_url_filter_, context, cx));
+                 io_url_filter_, context));
 }
 
 SupervisedUserService::SupervisedUserService(Profile* profile)
@@ -616,6 +617,7 @@ void SupervisedUserService::OnSiteListUpdated() {
 
 void SupervisedUserService::LoadBlacklist(const base::FilePath& path,
                                           const GURL& url) {
+  // TODO(treib): Don't re-download the blacklist if the local file exists!
   if (!url.is_valid()) {
     LoadBlacklistFromFile(path);
     return;
@@ -798,17 +800,11 @@ void SupervisedUserService::SetActive(bool active) {
     UpdateManualURLs();
     if (profile_->IsChild() &&
         supervised_users::IsSafeSitesBlacklistEnabled()) {
-      base::FilePath blacklist_path = delegate_->GetBlacklistPath();
-      if (!blacklist_path.empty())
-        LoadBlacklist(blacklist_path, delegate_->GetBlacklistURL());
+      LoadBlacklist(GetBlacklistPath(), GURL(kBlacklistURL));
     }
     if (profile_->IsChild() &&
         supervised_users::IsSafeSitesOnlineCheckEnabled()) {
-      const std::string& cx = delegate_->GetSafeSitesCx();
-      if (!cx.empty()) {
-        url_filter_context_.InitAsyncURLChecker(
-            profile_->GetRequestContext(), cx);
-      }
+      url_filter_context_.InitAsyncURLChecker(profile_->GetRequestContext());
     }
 
 #if !defined(OS_ANDROID)

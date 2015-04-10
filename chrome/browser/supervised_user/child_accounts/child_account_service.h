@@ -69,9 +69,6 @@ class ChildAccountService : public KeyedService,
 
   // SupervisedUserService::Delegate implementation.
   bool SetActive(bool active) override;
-  base::FilePath GetBlacklistPath() const override;
-  GURL GetBlacklistURL() const override;
-  std::string GetSafeSitesCx() const override;
 
   // SigninManagerBase::Observer implementation.
   void GoogleSigninSucceeded(const std::string& account_id,

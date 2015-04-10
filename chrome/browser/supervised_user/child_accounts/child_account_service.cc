@@ -6,11 +6,8 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
-#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,7 +21,6 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -202,28 +198,6 @@ bool ChildAccountService::SetActive(bool active) {
     sync_service->ReconfigureDatatypeManager();
 
   return true;
-}
-
-base::FilePath ChildAccountService::GetBlacklistPath() const {
-  if (!active_)
-    return base::FilePath();
-  base::FilePath blacklist_path;
-  PathService::Get(chrome::DIR_USER_DATA, &blacklist_path);
-  blacklist_path = blacklist_path.AppendASCII("su-blacklist.bin");
-  return blacklist_path;
-}
-
-GURL ChildAccountService::GetBlacklistURL() const {
-  if (!active_)
-    return GURL();
-  return GURL("https://www.gstatic.com/chrome/supervised_user/"
-              "blacklist-20141001-1k.bin");
-}
-
-std::string ChildAccountService::GetSafeSitesCx() const {
-  if (!active_)
-    return std::string();
-  return "017993620680222980993%3A1wdumejvx5i";
 }
 
 void ChildAccountService::GoogleSigninSucceeded(const std::string& account_id,

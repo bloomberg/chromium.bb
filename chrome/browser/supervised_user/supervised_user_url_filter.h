@@ -146,9 +146,7 @@ class SupervisedUserURLFilter
   void SetManualURLs(const std::map<GURL, bool>* url_map);
 
   // Initializes the experimental asynchronous checker.
-  // |cx| is the identifier of the Custom Search Engine to use.
-  void InitAsyncURLChecker(net::URLRequestContextGetter* context,
-                           const std::string& cx);
+  void InitAsyncURLChecker(net::URLRequestContextGetter* context);
   // Returns whether the asynchronous checker is set up.
   bool HasAsyncURLChecker() const;
 

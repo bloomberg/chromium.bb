@@ -31,10 +31,8 @@ class SupervisedUserAsyncURLChecker : net::URLFetcherDelegate {
                               bool /* uncertain */)>
       CheckCallback;
 
+  SupervisedUserAsyncURLChecker(net::URLRequestContextGetter* context);
   SupervisedUserAsyncURLChecker(net::URLRequestContextGetter* context,
-                                const std::string& cx);
-  SupervisedUserAsyncURLChecker(net::URLRequestContextGetter* context,
-                                const std::string& cx,
                                 size_t cache_size);
   ~SupervisedUserAsyncURLChecker() override;
 
@@ -54,7 +52,6 @@ class SupervisedUserAsyncURLChecker : net::URLFetcherDelegate {
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   net::URLRequestContextGetter* context_;
-  std::string cx_;
 
   ScopedVector<Check> checks_in_progress_;
 
