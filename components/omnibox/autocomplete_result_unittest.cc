@@ -60,9 +60,22 @@ void PopulateAutocompleteMatchesFromTestData(
   }
 }
 
+// A simple AutocompleteProvider that does nothing.
+class MockAutocompleteProvider : public AutocompleteProvider {
+ public:
+  MockAutocompleteProvider(Type type): AutocompleteProvider(type) {}
+
+  void Start(const AutocompleteInput& input,
+             bool minimal_changes,
+             bool called_due_to_focus) override {}
+
+ private:
+  ~MockAutocompleteProvider() override {}
+};
+
 }  // namespace
 
-class AutocompleteResultTest : public testing::Test  {
+class AutocompleteResultTest : public testing::Test {
  public:
   struct TestData {
     // Used to build a url for the AutocompleteMatch. The URL becomes
@@ -75,6 +88,9 @@ class AutocompleteResultTest : public testing::Test  {
     // Relevance score.
     int relevance;
 
+    // Allowed to be default match status.
+    bool allowed_to_be_default_match;
+
     // Duplicate matches.
     std::vector<AutocompleteMatch> duplicate_matches;
   };
@@ -86,6 +102,12 @@ class AutocompleteResultTest : public testing::Test  {
     field_trial_list_.reset(new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("foo")));
     variations::testing::ClearAllVariationParams();
+
+    // Create the list of mock providers.  5 is enough.
+    for (size_t i = 0; i < 5; ++i) {
+      mock_provider_list_.push_back(new MockAutocompleteProvider(
+              static_cast<AutocompleteProvider::Type>(i)));
+    }
   }
 
   void SetUp() override {
@@ -94,13 +116,13 @@ class AutocompleteResultTest : public testing::Test  {
   }
 
   // Configures |match| from |data|.
-  static void PopulateAutocompleteMatch(const TestData& data,
-                                        AutocompleteMatch* match);
+  void PopulateAutocompleteMatch(const TestData& data,
+                                 AutocompleteMatch* match);
 
   // Adds |count| AutocompleteMatches to |matches|.
-  static void PopulateAutocompleteMatches(const TestData* data,
-                                          size_t count,
-                                          ACMatches* matches);
+  void PopulateAutocompleteMatches(const TestData* data,
+                                   size_t count,
+                                   ACMatches* matches);
 
   // Asserts that |result| has |expected_count| matches matching |expected|.
   void AssertResultMatches(const AutocompleteResult& result,
@@ -113,29 +135,36 @@ class AutocompleteResultTest : public testing::Test  {
                              const TestData* current, size_t current_size,
                              const TestData* expected, size_t expected_size);
 
+  // Returns a (mock) AutocompleteProvider of given |provider_id|.
+  MockAutocompleteProvider* GetProvider(int provider_id) {
+    EXPECT_LT(provider_id, static_cast<int>(mock_provider_list_.size()));
+    return mock_provider_list_[provider_id].get();
+  }
+
  protected:
   scoped_ptr<TemplateURLService> template_url_service_;
 
  private:
   scoped_ptr<base::FieldTrialList> field_trial_list_;
 
+  // For every provider mentioned in TestData, we need a mock provider.
+  std::vector<scoped_refptr<MockAutocompleteProvider> > mock_provider_list_;
+
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResultTest);
 };
 
-// static
 void AutocompleteResultTest::PopulateAutocompleteMatch(
     const TestData& data,
     AutocompleteMatch* match) {
-  match->provider = reinterpret_cast<AutocompleteProvider*>(data.provider_id);
+  match->provider = GetProvider(data.provider_id);
   match->fill_into_edit = base::IntToString16(data.url_id);
   std::string url_id(1, data.url_id + 'a');
   match->destination_url = GURL("http://" + url_id);
   match->relevance = data.relevance;
-  match->allowed_to_be_default_match = true;
+  match->allowed_to_be_default_match = data.allowed_to_be_default_match;
   match->duplicate_matches = data.duplicate_matches;
 }
 
-// static
 void AutocompleteResultTest::PopulateAutocompleteMatches(
     const TestData* data,
     size_t count,
@@ -158,6 +187,8 @@ void AutocompleteResultTest::AssertResultMatches(
     const AutocompleteMatch& match = *(result.begin() + i);
     EXPECT_EQ(expected_match.provider, match.provider) << i;
     EXPECT_EQ(expected_match.relevance, match.relevance) << i;
+    EXPECT_EQ(expected_match.allowed_to_be_default_match,
+              match.allowed_to_be_default_match) << i;
     EXPECT_EQ(expected_match.destination_url.spec(),
               match.destination_url.spec()) << i;
   }
@@ -227,15 +258,41 @@ TEST_F(AutocompleteResultTest, Swap) {
 // any copied results have their relevance shifted down.
 TEST_F(AutocompleteResultTest, CopyOldMatches) {
   TestData last[] = {
-    { 0, 0, 1000 },
-    { 1, 0, 500 },
+    { 0, 1, 1000, true },
+    { 1, 1, 500,  true },
   };
   TestData current[] = {
-    { 2, 0, 400 },
+    { 2, 1, 400,  true },
   };
   TestData result[] = {
-    { 2, 0, 400 },
-    { 1, 0, 399 },
+    { 2, 1, 400,  true },
+    { 1, 1, 399,  true },
+  };
+
+  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, arraysize(last),
+                                                current, arraysize(current),
+                                                result, arraysize(result)));
+}
+
+// Tests that if the new results have a lower max relevance score than last,
+// any copied results have their relevance shifted down when the allowed to
+// be default constraint comes into play.
+TEST_F(AutocompleteResultTest, CopyOldMatchesAllowedToBeDefault) {
+  TestData last[] = {
+    { 0, 1, 1300,  true },
+    { 1, 1, 1200,  true },
+    { 2, 1, 1100,  true },
+  };
+  TestData current[] = {
+    { 3, 1, 1000, false },
+    { 4, 1, 900,  true  },
+  };
+  // The expected results are out of relevance order because the top-scoring
+  // allowed to be default match is always pulled to the top.
+  TestData result[] = {
+    { 4, 1, 900,  true  },
+    { 3, 1, 1000, false },
+    { 2, 1, 899,  true },
   };
 
   ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, arraysize(last),
@@ -244,22 +301,55 @@ TEST_F(AutocompleteResultTest, CopyOldMatches) {
 }
 
 // Tests that matches are copied correctly from two distinct providers.
-TEST_F(AutocompleteResultTest, CopyOldMatches2) {
+TEST_F(AutocompleteResultTest, CopyOldMatchesMultipleProviders) {
   TestData last[] = {
-    { 0, 0, 1000 },
-    { 1, 1, 500 },
-    { 2, 0, 400 },
-    { 3, 1, 300 },
+    { 0, 1, 1300, false },
+    { 1, 2, 1250, true  },
+    { 2, 1, 1200, false },
+    { 3, 2, 1150, true  },
+    { 4, 1, 1100, false },
   };
   TestData current[] = {
-    { 4, 0, 1100 },
-    { 5, 1, 550 },
+    { 5, 1, 1000, false },
+    { 6, 2, 800,  true  },
+    { 7, 1, 500,  true  },
+  };
+  // The expected results are out of relevance order because the top-scoring
+  // allowed to be default match is always pulled to the top.
+  TestData result[] = {
+    { 6, 2, 800,  true  },
+    { 5, 1, 1000, false },
+    { 3, 2, 799,  true  },
+    { 7, 1, 500,  true  },
+    { 4, 1, 499,  false  },
+  };
+
+  ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, arraysize(last),
+                                                current, arraysize(current),
+                                                result, arraysize(result)));
+}
+
+// Tests that matches are copied correctly from two distinct providers when
+// one provider doesn't have a current legal default match.
+TEST_F(AutocompleteResultTest, CopyOldMatchesWithOneProviderWithoutDefault) {
+  TestData last[] = {
+    { 0, 2, 1250, true  },
+    { 1, 2, 1150, true  },
+    { 2, 1, 900,  false },
+    { 3, 1, 800,  false },
+    { 4, 1, 700,  false },
+  };
+  TestData current[] = {
+    { 5, 1, 1000, true },
+    { 6, 2, 800,  false },
+    { 7, 1, 500,  true  },
   };
   TestData result[] = {
-    { 4, 0, 1100 },
-    { 5, 1, 550 },
-    { 2, 0, 400 },
-    { 3, 1, 300 },
+    { 5, 1, 1000, true  },
+    { 1, 2, 999,  true  },
+    { 6, 2, 800,  false },
+    { 4, 1, 700,  false },
+    { 7, 1, 500,  true  },
   };
 
   ASSERT_NO_FATAL_FAILURE(RunCopyOldMatchesTest(last, arraysize(last),
@@ -271,11 +361,11 @@ TEST_F(AutocompleteResultTest, CopyOldMatches2) {
 // and culled.
 TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
   TestData data[] = {
-    { 1, 0, 500 },
-    { 0, 0, 1100 },
-    { 1, 0, 1000 },
-    { 0, 0, 1300 },
-    { 0, 0, 1200 },
+    { 1, 1, 500,  true },
+    { 0, 1, 1100, true },
+    { 1, 1, 1000, true },
+    { 0, 1, 1300, true },
+    { 0, 1, 1200, true },
   };
 
   ACMatches matches;
@@ -316,11 +406,11 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   template_url_service_.get()->Add(new TemplateURL(url_data));
 
   TestData data[] = {
-    { 0, 0, 1300 },
-    { 1, 0, 1200 },
-    { 2, 0, 1100 },
-    { 3, 0, 1000 },
-    { 4, 1, 900 },
+    { 0, 1, 1300, true },
+    { 1, 1, 1200, true },
+    { 2, 1, 1100, true },
+    { 3, 1, 1000, true },
+    { 4, 2, 900,  true },
   };
 
   ACMatches matches;
@@ -367,12 +457,12 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   dups.push_back(dup_match);
 
   TestData data[] = {
-    { 0, 0, 1300, dups },
-    { 1, 0, 1200 },
-    { 2, 0, 1100 },
-    { 3, 0, 1000, dups },
-    { 4, 1, 900 },
-    { 5, 0, 800 },
+    { 0, 1, 1300, true, dups },
+    { 1, 1, 1200, true  },
+    { 2, 1, 1100, true  },
+    { 3, 1, 1000, true, dups },
+    { 4, 2, 900,  true  },
+    { 5, 1, 800,  true  },
   };
 
   ACMatches matches;
@@ -512,10 +602,10 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDupsAndDemotionsByType) {
 
 TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
   TestData data[] = {
-    { 0, 0, 1300 },
-    { 1, 0, 1200 },
-    { 2, 0, 1100 },
-    { 3, 0, 1000 }
+    { 0, 1, 1300, true },
+    { 1, 1, 1200, true },
+    { 2, 1, 1100, true },
+    { 3, 1, 1000, true }
   };
 
   {

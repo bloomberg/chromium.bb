@@ -410,15 +410,32 @@ void AutocompleteResult::MergeMatchesByProvider(
   if (new_matches.size() >= old_matches.size())
     return;
 
-  size_t delta = old_matches.size() - new_matches.size();
-  const int max_relevance = (new_matches.empty() ?
-      matches_.front().relevance : new_matches[0].relevance) - 1;
+  // Prevent old matches from this provider from outranking new ones and
+  // becoming the default match by capping old matches' scores to be less than
+  // the highest-scoring allowed-to-be-default match from this provider.
+  ACMatches::const_iterator i = std::find_if(
+      new_matches.begin(), new_matches.end(),
+      [] (const AutocompleteMatch& m) {
+        return m.allowed_to_be_default_match;
+      });
+
+  // If the provider doesn't have any matches that are allowed-to-be-default,
+  // cap scores below the global allowed-to-be-default match.
+  // AutocompleteResult maintains the invariant that the first item in
+  // |matches_| is always such a match.
+  if (i == new_matches.end())
+    i = matches_.begin();
+
+  DCHECK(i->allowed_to_be_default_match);
+  const int max_relevance = i->relevance - 1;
+
   // Because the goal is a visibly-stable popup, rather than one that preserves
   // the highest-relevance matches, we copy in the lowest-relevance matches
   // first. This means that within each provider's "group" of matches, any
   // synchronous matches (which tend to have the highest scores) will
   // "overwrite" the initial matches from that provider's previous results,
   // minimally disturbing the rest of the matches.
+  size_t delta = old_matches.size() - new_matches.size();
   for (ACMatches::const_reverse_iterator i(old_matches.rbegin());
        i != old_matches.rend() && delta > 0; ++i) {
     if (!HasMatchByDestination(*i, new_matches)) {
