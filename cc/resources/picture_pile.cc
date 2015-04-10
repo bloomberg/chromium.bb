@@ -189,8 +189,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
   bool updated = ApplyInvalidationAndResize(interest_rect, invalidation,
                                             layer_size, frame_number);
   std::vector<gfx::Rect> invalid_tiles;
-  GetInvalidTileRects(interest_rect, invalidation, visible_layer_rect,
-                      frame_number, &invalid_tiles);
+  GetInvalidTileRects(interest_rect, &invalid_tiles);
   std::vector<gfx::Rect> record_rects;
   ClusterTiles(invalid_tiles, &record_rects);
 
@@ -482,9 +481,6 @@ bool PicturePile::ApplyInvalidationAndResize(const gfx::Rect& interest_rect,
 }
 
 void PicturePile::GetInvalidTileRects(const gfx::Rect& interest_rect,
-                                      Region* invalidation,
-                                      const gfx::Rect& visible_layer_rect,
-                                      int frame_number,
                                       std::vector<gfx::Rect>* invalid_tiles) {
   // Make a list of all invalid tiles; we will attempt to
   // cluster these into multiple invalidation regions.

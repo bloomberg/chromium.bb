@@ -89,9 +89,6 @@ class CC_EXPORT PicturePile : public RecordingSource {
                       RecordingMode recording_mode,
                       const std::vector<gfx::Rect>& record_rects);
   void GetInvalidTileRects(const gfx::Rect& interest_rect,
-                           Region* invalidation,
-                           const gfx::Rect& visible_layer_rect,
-                           int frame_number,
                            std::vector<gfx::Rect>* invalid_tiles);
   bool ApplyInvalidationAndResize(const gfx::Rect& interest_rect,
                                   Region* invalidation,
