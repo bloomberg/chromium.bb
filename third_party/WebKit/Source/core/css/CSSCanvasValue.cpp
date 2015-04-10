@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/css/CSSCanvasValue.h"
 
+#include "core/frame/UseCounter.h"
 #include "core/layout/LayoutObject.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -91,6 +92,7 @@ PassRefPtr<Image> CSSCanvasValue::image(LayoutObject* renderer, const IntSize& /
     HTMLCanvasElement* elt = element(&renderer->document());
     if (!elt)
         return nullptr;
+    UseCounter::count(renderer->document(), UseCounter::WebkitCanvas);
     return elt->copiedImage(FrontBuffer);
 }
 
