@@ -116,7 +116,8 @@ INSTANTIATE_TEST_CASE_P(NextProto,
 TEST_P(SpdyStreamTest, SendDataAfterOpen) {
   GURL url(kStreamUrl);
 
-  session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
@@ -137,12 +138,12 @@ TEST_P(SpdyStreamTest, SendDataAfterOpen) {
 
   AddReadEOF();
 
-  OrderedSocketData data(GetReads(), GetNumReads(),
-                         GetWrites(), GetNumWrites());
+  DeterministicSocketData data(GetReads(), GetNumReads(), GetWrites(),
+                               GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
 
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -163,6 +164,7 @@ TEST_P(SpdyStreamTest, SendDataAfterOpen) {
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
+  data.RunFor(GetNumReads() + GetNumWrites());
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
   EXPECT_TRUE(delegate.send_headers_completed());
@@ -173,16 +175,17 @@ TEST_P(SpdyStreamTest, SendDataAfterOpen) {
 }
 
 TEST_P(SpdyStreamTest, PushedStream) {
-  session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
 
   AddReadEOF();
 
-  OrderedSocketData data(GetReads(), GetNumReads(),
-                         GetWrites(), GetNumWrites());
+  DeterministicSocketData data(GetReads(), GetNumReads(), GetWrites(),
+                               GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
 
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
   base::WeakPtr<SpdySession> spdy_session(CreateDefaultSpdySession());
 
@@ -218,7 +221,7 @@ TEST_P(SpdyStreamTest, PushedStream) {
   StreamDelegateDoNothing delegate(stream.GetWeakPtr());
   stream.SetDelegate(&delegate);
 
-  base::MessageLoop::current()->RunUntilIdle();
+  data.RunFor(GetNumReads() + GetNumWrites());
 
   EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy_util_.GetStatusKey()));
   EXPECT_EQ("beta", delegate.GetResponseHeaderValue("alpha"));
@@ -229,7 +232,8 @@ TEST_P(SpdyStreamTest, PushedStream) {
 TEST_P(SpdyStreamTest, StreamError) {
   GURL url(kStreamUrl);
 
-  session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
@@ -252,12 +256,12 @@ TEST_P(SpdyStreamTest, StreamError) {
 
   CapturingBoundNetLog log;
 
-  OrderedSocketData data(GetReads(), GetNumReads(),
-                         GetWrites(), GetNumWrites());
+  DeterministicSocketData data(GetReads(), GetNumReads(), GetWrites(),
+                               GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
 
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -278,6 +282,7 @@ TEST_P(SpdyStreamTest, StreamError) {
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
+  data.RunFor(GetNumReads() + GetNumWrites());
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
   const SpdyStreamId stream_id = delegate.stream_id();
@@ -309,7 +314,8 @@ TEST_P(SpdyStreamTest, StreamError) {
 TEST_P(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
   GURL url(kStreamUrl);
 
-  session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
@@ -333,12 +339,12 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
 
   AddReadEOF();
 
-  OrderedSocketData data(GetReads(), GetNumReads(),
-                         GetWrites(), GetNumWrites());
+  DeterministicSocketData data(GetReads(), GetNumReads(), GetWrites(),
+                               GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
 
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -360,6 +366,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
+  data.RunFor(GetNumReads() + GetNumWrites());
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
   EXPECT_TRUE(delegate.send_headers_completed());
@@ -374,7 +381,8 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
 TEST_P(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
   GURL url(kStreamUrl);
 
-  session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+  session_ =
+      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(
@@ -394,12 +402,12 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
 
   AddReadEOF();
 
-  OrderedSocketData data(GetReads(), GetNumReads(),
-                         GetWrites(), GetNumWrites());
+  DeterministicSocketData data(GetReads(), GetNumReads(), GetWrites(),
+                               GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
 
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -421,6 +429,7 @@ TEST_P(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
   EXPECT_TRUE(stream->HasUrlFromHeaders());
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
+  data.RunFor(GetNumReads() + GetNumWrites());
   EXPECT_EQ(ERR_CONNECTION_CLOSED, delegate.WaitForClose());
 
   EXPECT_TRUE(delegate.send_headers_completed());
