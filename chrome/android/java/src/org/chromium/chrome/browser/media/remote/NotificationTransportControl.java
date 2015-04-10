@@ -19,7 +19,6 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.RemoteViews;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
@@ -577,8 +576,7 @@ public class NotificationTransportControl
                             videoInfo.currentTimeMillis, false);
                     contentView.setImageViewResource(R.id.playpause,
                             R.drawable.ic_vidcontrol_pause);
-                    ApiCompatibilityUtils.setContentDescriptionForRemoteView(contentView,
-                            R.id.playpause, mPauseDescription);
+                    contentView.setContentDescription(R.id.playpause, mPauseDescription);
                     contentView.setOnClickPendingIntent(R.id.playpause,
                             getService().getPendingIntent(ListenerService.ACTION_ID_PAUSE));
                     break;
@@ -588,8 +586,7 @@ public class NotificationTransportControl
                     contentView.setProgressBar(R.id.progress, videoInfo.durationMillis,
                             videoInfo.currentTimeMillis, false);
                     contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_play);
-                    ApiCompatibilityUtils.setContentDescriptionForRemoteView(contentView,
-                            R.id.playpause, mPlayDescription);
+                    contentView.setContentDescription(R.id.playpause, mPlayDescription);
                     contentView.setOnClickPendingIntent(R.id.playpause,
                             getService().getPendingIntent(ListenerService.ACTION_ID_PLAY));
                     break;

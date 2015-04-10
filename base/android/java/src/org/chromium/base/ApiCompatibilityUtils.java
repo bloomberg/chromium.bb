@@ -4,11 +4,9 @@
 
 package org.chromium.base;
 
-import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.ActivityOptions;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -20,16 +18,12 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.RemoteViews;
 import android.widget.TextView;
 
 /**
@@ -241,120 +235,7 @@ public class ApiCompatibilityUtils {
         }
     }
 
-    /**
-     * @see android.view.View#postInvalidateOnAnimation()
-     */
-    public static void postInvalidateOnAnimation(View view) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            view.postInvalidateOnAnimation();
-        } else {
-            view.postInvalidate();
-        }
-    }
-
-    /**
-     * @see android.view.View#postOnAnimation()
-     */
-    public static void postOnAnimation(View view, Runnable action) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            view.postOnAnimation(action);
-        } else {
-            view.postDelayed(action, getFrameTime());
-        }
-    }
-
-    /**
-     * @see android.view.View#postOnAnimationDelayed()
-     */
-    public static void postOnAnimationDelayed(View view, Runnable action, long delayMillis) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            view.postOnAnimationDelayed(action, delayMillis);
-        } else {
-            view.postDelayed(action, getFrameTime() + delayMillis);
-        }
-    }
-
-    private static long getFrameTime() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            return ValueAnimator.getFrameDelay();
-        } else {
-            // Any reasonable fake frame delay will have to do.
-            return 10;
-        }
-    }
-
-    /**
-     * @see android.widget.RemoteViews#setContentDescription(int, CharSequence)
-     */
-    public static void setContentDescriptionForRemoteView(RemoteViews remoteViews, int viewId,
-            CharSequence contentDescription) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-            remoteViews.setContentDescription(viewId, contentDescription);
-        } else {
-            // setContentDescription() is unavailable in earlier versions.
-        }
-    }
-
-    /**
-     * @see android.app.Activity#startActivity(Intent, Bundle)
-     */
-    public static void startActivity(Context context, Intent intent, Bundle options) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            context.startActivity(intent, options);
-        } else {
-            context.startActivity(intent);
-        }
-    }
-
-    /**
-     * @see android.app.ActivityOptions#toBundle()
-     */
-    public static Bundle toBundle(ActivityOptions options) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            return options.toBundle();
-        } else {
-            return null;
-        }
-    }
-
     // These methods have a new name, and the old name is deprecated.
-
-    /**
-     * @see android.view.View#setBackground(Drawable)
-     */
-    @SuppressWarnings("deprecation")
-    public static void setBackgroundForView(View view, Drawable drawable) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            view.setBackground(drawable);
-        } else {
-            view.setBackgroundDrawable(drawable);
-        }
-    }
-
-    /**
-     * @see android.view.ViewTreeObserver#removeOnGlobalLayoutListener()
-     */
-    @SuppressWarnings("deprecation")
-    public static void removeOnGlobalLayoutListener(
-            View view, ViewTreeObserver.OnGlobalLayoutListener listener) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            view.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
-        } else {
-            view.getViewTreeObserver().removeGlobalOnLayoutListener(listener);
-        }
-    }
-
-    /**
-     * @see android.widget.ImageView#setImageAlpha(int)
-     */
-    @SuppressWarnings("deprecation")
-    public static void setImageAlpha(ImageView iv, int alpha) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            iv.setImageAlpha(alpha);
-        } else {
-            iv.setAlpha(alpha);
-        }
-    }
 
     /**
      * @see android.app.PendingIntent#getCreatorPackage()
@@ -492,15 +373,6 @@ public class ApiCompatibilityUtils {
             return res.getDrawable(id, null);
         } else {
             return res.getDrawable(id);
-        }
-    }
-
-    /**
-     * @see android.view.View#announceForAccessibility(CharSequence text)
-     */
-    public static void announceForAccessibility(View view, CharSequence text) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            view.announceForAccessibility(text);
         }
     }
 }

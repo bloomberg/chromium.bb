@@ -15,7 +15,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.ChromeSwitchCompat;
 
@@ -72,7 +71,7 @@ public class ChromeSwitchPreference extends SwitchPreference {
             int right = view.getPaddingRight();
             int top = view.getPaddingTop();
             int bottom = view.getPaddingBottom();
-            ApiCompatibilityUtils.setBackgroundForView(view, DividerDrawable.create(getContext()));
+            view.setBackground(DividerDrawable.create(getContext()));
             view.setPadding(left, top, right, bottom);
         }
 

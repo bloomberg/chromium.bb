@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.PopupWindow;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.PositionObserver;
@@ -244,7 +243,7 @@ public class PopupTouchHandleDrawable extends View {
 
         if (mHasPendingInvalidate) return;
         mHasPendingInvalidate = true;
-        ApiCompatibilityUtils.postOnAnimation(this, mInvalidationRunnable);
+        postOnAnimation(mInvalidationRunnable);
     }
 
     private void rescheduleFadeIn() {
@@ -263,8 +262,7 @@ public class PopupTouchHandleDrawable extends View {
         }
 
         removeCallbacks(mDeferredHandleFadeInRunnable);
-        ApiCompatibilityUtils.postOnAnimationDelayed(
-                this, mDeferredHandleFadeInRunnable, FADE_IN_DELAY_MS);
+        postOnAnimationDelayed(mDeferredHandleFadeInRunnable, FADE_IN_DELAY_MS);
     }
 
     private void beginFadeIn() {

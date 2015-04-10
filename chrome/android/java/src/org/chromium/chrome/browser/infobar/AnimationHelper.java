@@ -17,7 +17,6 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 import java.util.ArrayList;
@@ -122,7 +121,7 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
      */
     @Override
     public void onGlobalLayout() {
-        ApiCompatibilityUtils.removeOnGlobalLayoutListener(mTargetWrapperView, this);
+        mTargetWrapperView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
         continueAnimation();
     }
 

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ProgressBar;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 
@@ -65,8 +64,7 @@ public class SmoothProgressBar extends ProgressBar {
             // Every time, the progress bar get's at least 20% closer to mTargetProcess.
             // Add 3 to guarantee progressing even if they only differ by 1.
             setProgressInternal(getProgress() + (mTargetProgress - getProgress() + 3) / 4);
-            ApiCompatibilityUtils.postOnAnimationDelayed(
-                    SmoothProgressBar.this, this, PROGRESS_UPDATE_DELAY_MS);
+            postOnAnimationDelayed(this, PROGRESS_UPDATE_DELAY_MS);
         }
     };
 
@@ -118,7 +116,7 @@ public class SmoothProgressBar extends ProgressBar {
         if (mTargetProgress == targetProgress) return;
         mTargetProgress = targetProgress;
         removeCallbacks(mUpdateProgressRunnable);
-        ApiCompatibilityUtils.postOnAnimation(this, mUpdateProgressRunnable);
+        postOnAnimation(mUpdateProgressRunnable);
     }
 
     /**
