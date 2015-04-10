@@ -4,4 +4,7 @@
   {
     "test": "mojo:network_service_apptests",
   },
+  {
+    "test": "mojo:html_viewer_apptests",
+  },
 ]
