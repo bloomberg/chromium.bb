@@ -12,6 +12,7 @@ import os
 from chromite.cbuildbot import binhost
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import toolchain
@@ -55,6 +56,8 @@ exec pkg-config "$@"
 _wrapper_dir = '/usr/local/bin'
 
 _CONFIGURATION_PATH = 'etc/make.conf.board_setup'
+
+_CACHE_PATH = 'var/cache/edb/chromeos'
 
 _CHROME_BINHOST_SUFFIX = '-LATEST_RELEASE_CHROME_BINHOST.conf'
 
@@ -119,6 +122,8 @@ class Sysroot(object):
   def __init__(self, path):
     self.path = path
     self._config_file = os.path.join(path, _CONFIGURATION_PATH)
+    self._cache_file = os.path.join(path, _CACHE_PATH)
+    self._cache_file_lock = self._cache_file + '.lock'
 
   def GetStandardField(self, field):
     """Returns the value of a standard field.
@@ -128,6 +133,53 @@ class Sysroot(object):
     """
     return osutils.SourceEnvironment(self._config_file,
                                      [field], multiline=True).get(field)
+
+  def GetCachedField(self, field):
+    """Returns the value of |field| in the sysroot cache file.
+
+    Access to the cache is thread-safe as long as we access it through this
+    methods or the bash helper in common.sh.
+
+    Args:
+      field: name of the field.
+    """
+    if not os.path.exists(self._cache_file):
+      return None
+
+    with locking.FileLock(
+        self._cache_file_lock, locktype=locking.FLOCK,
+        world_writable=True).read_lock():
+      return osutils.SourceEnvironment(self._cache_file, [field]).get(field)
+
+  def SetCachedField(self, field, value):
+    """Sets |field| to |value| in the sysroot cache file.
+
+    Access to the cache is thread-safe as long as we access it through this
+    methods or the bash helper in common.sh.
+
+    Args:
+      field: name of the field.
+      value: value to set. If |value| is None, the field is unset.
+    """
+    # TODO(bsimonnet): add support for values with quotes and newlines.
+    # crbug.com/476764.
+    for symbol in '\n`$"\\':
+      if value and symbol in value:
+        raise ValueError('Cannot use \\n, `, $, \\ or " in cached value.')
+
+    with locking.FileLock(
+        self._cache_file_lock, locktype=locking.FLOCK,
+        world_writable=True).write_lock():
+      lines = []
+      if os.path.exists(self._cache_file):
+        lines = osutils.ReadFile(self._cache_file).splitlines()
+
+        # Remove the old value for field if it exists.
+        lines = [l for l in lines if not l.startswith(field + '=')]
+
+      if value is not None:
+        lines.append('%s="%s"' % (field, value))
+      osutils.WriteFile(self._cache_file, '\n'.join(lines), sudo=True)
 
   def _WrapperPath(self, command, friendly_name=None):
     """Returns the path to the wrapper for |command|.

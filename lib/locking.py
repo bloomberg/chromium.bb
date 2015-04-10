@@ -9,27 +9,49 @@ from __future__ import print_function
 import os
 import errno
 import fcntl
+import stat
 import tempfile
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import osutils
+
+
+LOCKF = 'lockf'
+FLOCK = 'flock'
+
 
 class _Lock(cros_build_lib.MasterPidContextManager):
-
   """Base lockf based locking.  Derivatives need to override _GetFd"""
 
-  def __init__(self, description=None, verbose=True):
+  def __init__(self, description=None, verbose=True, locktype=LOCKF):
     """Initialize this instance.
+
+    Two types of locks are available: LOCKF and FLOCK.
+
+    Use LOCKF (POSIX locks) if:
+      - you need to lock a file between processes created by the
+        parallel/multiprocess libraries
+
+    Use FLOCK (BSD locks) if these scenarios apply:
+      - you need to lock a file between shell scripts running the flock program
+      - you need the lock to be bound to the fd and thus inheritable across
+        execs
+
+    Note: These two locks are completely independent; using one on a path will
+          not block using the other on the same path.
 
     Args:
       path: On disk pathway to lock.  Can be a directory or a file.
       description: A description for this lock- what is it protecting?
       verbose: Verbose logging?
+      locktype: Type of lock to use (lockf or flock).
     """
     cros_build_lib.MasterPidContextManager.__init__(self)
     self._verbose = verbose
     self.description = description
     self._fd = None
+    self.locking_mechanism = fcntl.flock if locktype == FLOCK else fcntl.lockf
 
   @property
   def fd(self):
@@ -48,7 +70,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     # Try nonblocking first, if it fails, display the context/message,
     # and then wait on the lock.
     try:
-      fcntl.lockf(self.fd, flags|fcntl.LOCK_NB)
+      self.locking_mechanism(self.fd, flags|fcntl.LOCK_NB)
       return
     except EnvironmentError as e:
       if e.errno == errno.EDEADLOCK:
@@ -60,12 +82,12 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     if self._verbose:
       logging.info(message)
     try:
-      fcntl.lockf(self.fd, flags)
+      self.locking_mechanism(self.fd, flags)
     except EnvironmentError as e:
       if e.errno != errno.EDEADLOCK:
         raise
       self.unlock()
-      fcntl.lockf(self.fd, flags)
+      self.locking_mechanism(self.fd, flags)
 
   def read_lock(self, message="taking read lock"):
     """Take a read lock (shared), downgrading from write if required.
@@ -110,7 +132,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
       IOError if the operation fails in some way.
     """
     if self._fd is not None:
-      fcntl.lockf(self._fd, fcntl.LOCK_UN)
+      self.locking_mechanism(self._fd, fcntl.LOCK_UN)
 
   def __del__(self):
     # TODO(ferringb): Convert this to snakeoil.weakref.WeakRefFinalizer
@@ -142,20 +164,39 @@ class _Lock(cros_build_lib.MasterPidContextManager):
 class FileLock(_Lock):
   """Use a specified file as a locking mechanism."""
 
-  def __init__(self, path, description=None, verbose=True):
+  def __init__(self, path, description=None, verbose=True,
+               locktype=LOCKF, world_writable=False):
     """Initializer for FileLock.
 
     Args:
       path: On disk pathway to lock.  Can be a directory or a file.
       description: A description for this lock- what is it protecting?
       verbose: Verbose logging?
+      locktype: Type of lock to use (lockf or flock).
+      world_writable: If true, the lock file will be created as root and be made
+        writable to all users.
     """
     if description is None:
       description = "lock %s" % (path,)
-    _Lock.__init__(self, description=description, verbose=verbose)
+    _Lock.__init__(self, description=description, verbose=verbose,
+                   locktype=locktype)
     self.path = os.path.abspath(path)
+    self.world_writable = world_writable
 
   def _GetFd(self):
+    if self.world_writable:
+      create = True
+      try:
+        create = stat.S_IMODE(os.stat(self.path).st_mode) != 0o666
+      except OSError as e:
+        if e.errno != errno.ENOENT:
+          raise
+      if create:
+        osutils.SafeMakedirs(os.path.dirname(self.path), sudo=True)
+        cros_build_lib.SudoRunCommand(['touch', self.path], print_cmd=False)
+        cros_build_lib.SudoRunCommand(['chmod', '666', self.path],
+                                      print_cmd=False)
+
     # If we're on py3.4 and this attribute is exposed, use it to close
     # the threading race between open and fcntl setting; this is
     # extremely paranoid code, but might as well.
