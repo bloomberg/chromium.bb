@@ -117,6 +117,14 @@ AnimationPlayer::~AnimationPlayer()
     destroyCompositorPlayer();
 }
 
+#if !ENABLE(OILPAN)
+void AnimationPlayer::detachFromTimeline()
+{
+    dispose();
+    m_timeline = nullptr;
+}
+#endif
+
 double AnimationPlayer::sourceEnd() const
 {
     return m_content ? m_content->endTimeInternal() : 0;

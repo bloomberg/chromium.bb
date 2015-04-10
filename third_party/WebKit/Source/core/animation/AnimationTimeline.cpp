@@ -84,12 +84,9 @@ AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<
 
 AnimationTimeline::~AnimationTimeline()
 {
-    for (const auto& player : m_players)
-        player->dispose();
-
 #if !ENABLE(OILPAN)
     for (const auto& player : m_players)
-        player->timelineDestroyed();
+        player->detachFromTimeline();
 #endif
 }
 

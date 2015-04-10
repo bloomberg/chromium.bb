@@ -122,7 +122,7 @@ public:
     AnimationTimeline* timeline() { return m_timeline; }
 
 #if !ENABLE(OILPAN)
-    void timelineDestroyed() { m_timeline = nullptr; }
+    void detachFromTimeline();
 #endif
 
     double calculateStartTime(double currentTime) const;
