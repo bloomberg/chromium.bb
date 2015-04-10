@@ -98,7 +98,7 @@ SVGLengthType stringToLengthType(const CharType*& ptr, const CharType* end)
             if (secondChar == 'x')
                 type = LengthTypeEXS;
         } else if (firstChar == 'r') {
-            if (secondChar == 'e') {
+            if (secondChar == 'e' && ptr < end) {
                 const CharType thirdChar = *ptr++;
                 if (thirdChar == 'm')
                     type = LengthTypeREMS;
