@@ -725,8 +725,8 @@ scoped_refptr<Connection::StatementRef> Connection::GetUniqueStatement(
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
   if (rc != SQLITE_OK) {
     // This is evidence of a syntax error in the incoming SQL.
-    DLOG_IF(FATAL, !ShouldIgnoreSqliteError(rc))
-        << "SQL compile error " << GetErrorMessage();
+    if (!ShouldIgnoreSqliteError(rc))
+      DLOG(FATAL) << "SQL compile error " << GetErrorMessage();
 
     // It could also be database corruption.
     OnSqliteError(rc, NULL, sql);
@@ -745,8 +745,8 @@ scoped_refptr<Connection::StatementRef> Connection::GetUntrackedStatement(
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, NULL);
   if (rc != SQLITE_OK) {
     // This is evidence of a syntax error in the incoming SQL.
-    DLOG_IF(FATAL, !ShouldIgnoreSqliteError(rc))
-        << "SQL compile error " << GetErrorMessage();
+    if (!ShouldIgnoreSqliteError(rc))
+      DLOG(FATAL) << "SQL compile error " << GetErrorMessage();
     return new StatementRef(NULL, NULL, false);
   }
   return new StatementRef(NULL, stmt, true);
