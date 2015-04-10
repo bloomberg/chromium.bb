@@ -6,5 +6,6 @@ include_rules = [
   "+components/crash",
   "+components/network_hints/browser",
   "+content/public/browser",
+  "+gin/v8_initializer.h",
   "+media/base",
 ]

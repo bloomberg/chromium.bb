@@ -114,6 +114,9 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
   std::map<std::string, breakpad::CrashHandlerHostLinux*> crash_handlers_;
 #endif
 
+  base::ScopedFD v8_natives_fd_;
+  base::ScopedFD v8_snapshot_fd_;
+
   scoped_ptr<URLRequestContextFactory> url_request_context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);

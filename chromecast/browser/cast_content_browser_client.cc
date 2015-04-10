@@ -37,6 +37,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "gin/v8_initializer.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ui/gl/gl_switches.h"
 
@@ -52,7 +53,9 @@ namespace chromecast {
 namespace shell {
 
 CastContentBrowserClient::CastContentBrowserClient()
-    : url_request_context_factory_(new URLRequestContextFactory()) {
+    : v8_natives_fd_(-1),
+      v8_snapshot_fd_(-1),
+      url_request_context_factory_(new URLRequestContextFactory()) {
 }
 
 CastContentBrowserClient::~CastContentBrowserClient() {
@@ -284,6 +287,20 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
     content::FileDescriptorInfo* mappings) {
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  if (v8_natives_fd_.get() == -1 || v8_snapshot_fd_.get() == -1) {
+    int v8_natives_fd = -1;
+    int v8_snapshot_fd = -1;
+    if (gin::V8Initializer::OpenV8FilesForChildProcesses(&v8_natives_fd,
+                                                         &v8_snapshot_fd)) {
+      v8_natives_fd_.reset(v8_natives_fd);
+      v8_snapshot_fd_.reset(v8_snapshot_fd);
+    }
+  }
+  DCHECK(v8_natives_fd_.get() != -1 && v8_snapshot_fd_.get() != -1);
+  mappings->Share(kV8NativesDataDescriptor, v8_natives_fd_.get());
+  mappings->Share(kV8SnapshotDataDescriptor, v8_snapshot_fd_.get());
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
 #if defined(OS_ANDROID)
   const int flags_open_read = base::File::FLAG_OPEN | base::File::FLAG_READ;
   base::FilePath pak_file_path;
