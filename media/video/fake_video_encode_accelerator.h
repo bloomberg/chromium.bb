@@ -28,8 +28,7 @@ class MEDIA_EXPORT FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~FakeVideoEncodeAccelerator() override;
 
-  std::vector<VideoEncodeAccelerator::SupportedProfile> GetSupportedProfiles()
-      override;
+  VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
   bool Initialize(VideoFrame::Format input_format,
                   const gfx::Size& input_visible_size,
                   VideoCodecProfile output_profile,

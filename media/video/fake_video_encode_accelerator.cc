@@ -26,9 +26,9 @@ FakeVideoEncodeAccelerator::~FakeVideoEncodeAccelerator() {
   weak_this_factory_.InvalidateWeakPtrs();
 }
 
-std::vector<VideoEncodeAccelerator::SupportedProfile>
+VideoEncodeAccelerator::SupportedProfiles
 FakeVideoEncodeAccelerator::GetSupportedProfiles() {
-  std::vector<VideoEncodeAccelerator::SupportedProfile> profiles;
+  SupportedProfiles profiles;
   SupportedProfile profile;
   profile.max_resolution.SetSize(1920, 1088);
   profile.max_framerate_numerator = 30;

@@ -127,6 +127,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Destroy all PictureBuffers in |buffers|, and delete their textures.
   void DestroyPictureBuffers(PictureBufferMap* buffers);
 
+  // Returns true if the video decoder can support |profile| and |coded_size|.
+  bool IsProfileSupported(VideoCodecProfile profile,
+                          const gfx::Size& coded_size);
+
   // Assert the contract that this class is operated on the right thread.
   void DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent() const;
 

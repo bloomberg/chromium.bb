@@ -11,11 +11,6 @@
 #include "content/common/gpu/media/tegra_v4l2_device.h"
 #endif
 
-// TODO(posciak): remove this once V4L2 headers are updated.
-#define V4L2_PIX_FMT_VP9 v4l2_fourcc('V', 'P', '9', '0')
-#define V4L2_PIX_FMT_H264_SLICE v4l2_fourcc('S', '2', '6', '4')
-#define V4L2_PIX_FMT_VP8_FRAME v4l2_fourcc('V', 'P', '8', 'F')
-
 namespace content {
 
 V4L2Device::~V4L2Device() {

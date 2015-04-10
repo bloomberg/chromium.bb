@@ -748,4 +748,10 @@ bool VaapiVideoDecodeAccelerator::CanDecodeOnIOThread() {
   return false;
 }
 
+// static
+media::VideoDecodeAccelerator::SupportedProfiles
+VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
+  return VaapiWrapper::GetSupportedDecodeProfiles();
+}
+
 }  // namespace content

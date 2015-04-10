@@ -27,8 +27,8 @@ CreateVideoEncodeAccelerator(
     const OnCreateVideoEncodeAcceleratorCallback& callback);
 
 // Returns list of encoding profiles supported by VideoEncodeAccelerator.
-CONTENT_EXPORT std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-GetSupportedVideoEncodeAcceleratorProfiles();
+CONTENT_EXPORT media::VideoEncodeAccelerator::SupportedProfiles
+    GetSupportedVideoEncodeAcceleratorProfiles();
 
 }  // namespace content
 

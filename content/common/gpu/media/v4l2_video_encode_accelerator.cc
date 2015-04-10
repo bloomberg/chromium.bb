@@ -285,9 +285,9 @@ void V4L2VideoEncodeAccelerator::Destroy() {
   delete this;
 }
 
-std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+media::VideoEncodeAccelerator::SupportedProfiles
 V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
-  std::vector<SupportedProfile> profiles;
+  SupportedProfiles profiles;
   SupportedProfile profile;
   profile.max_resolution.SetSize(1920, 1088);
   profile.max_framerate_numerator = 30;
@@ -304,6 +304,10 @@ V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
         break;
       case V4L2_PIX_FMT_VP8:
         profile.profile = media::VP8PROFILE_ANY;
+        profiles.push_back(profile);
+        break;
+      case V4L2_PIX_FMT_VP9:
+        profile.profile = media::VP9PROFILE_ANY;
         profiles.push_back(profile);
         break;
     }

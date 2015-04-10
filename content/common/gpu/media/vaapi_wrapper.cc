@@ -167,9 +167,9 @@ scoped_ptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
 }
 
 // static
-std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+media::VideoEncodeAccelerator::SupportedProfiles
 VaapiWrapper::GetSupportedEncodeProfiles() {
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles;
+  media::VideoEncodeAccelerator::SupportedProfiles profiles;
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode))
     return profiles;
@@ -188,6 +188,31 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
         profile.max_resolution = profile_info.max_resolution;
         profile.max_framerate_numerator = kMaxEncoderFramerate;
         profile.max_framerate_denominator = 1;
+        profiles.push_back(profile);
+        break;
+      }
+    }
+  }
+  return profiles;
+}
+
+// static
+media::VideoDecodeAccelerator::SupportedProfiles
+VaapiWrapper::GetSupportedDecodeProfiles() {
+  media::VideoDecodeAccelerator::SupportedProfiles profiles;
+  std::vector<ProfileInfo> decode_profile_infos =
+      profile_infos_.Get().GetSupportedProfileInfosForCodecMode(kDecode);
+
+  for (size_t i = 0; i < arraysize(kProfileMap); ++i) {
+    VAProfile va_profile = ProfileToVAProfile(kProfileMap[i].profile, kDecode);
+    if (va_profile == VAProfileNone)
+      continue;
+    for (const auto& profile_info : decode_profile_infos) {
+      if (profile_info.va_profile == va_profile) {
+        media::VideoDecodeAccelerator::SupportedProfile profile;
+        profile.profile = kProfileMap[i].profile;
+        profile.max_resolution = profile_info.max_resolution;
+        profile.min_resolution.SetSize(16, 16);
         profiles.push_back(profile);
         break;
       }

@@ -15,6 +15,7 @@
 
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message_macros.h"
@@ -249,7 +250,8 @@ void GpuVideoDecodeAccelerator::Initialize(
 #endif
 
   // Array of Create..VDA() function pointers, maybe applicable to the current
-  // platform. This list is ordered by priority of use.
+  // platform. This list is ordered by priority of use and it should be the
+  // same as the order of querying supported profiles of VDAs.
   const GpuVideoDecodeAccelerator::CreateVDAFp create_vda_fps[] = {
       &GpuVideoDecodeAccelerator::CreateDXVAVDA,
       &GpuVideoDecodeAccelerator::CreateV4L2VDA,
@@ -381,6 +383,39 @@ GpuVideoDecodeAccelerator::CreateAndroidVDA() {
       make_context_current_));
 #endif
   return decoder.Pass();
+}
+
+// static
+gpu::VideoDecodeAcceleratorSupportedProfiles
+GpuVideoDecodeAccelerator::GetSupportedProfiles() {
+  media::VideoDecodeAccelerator::SupportedProfiles profiles;
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
+    return gpu::VideoDecodeAcceleratorSupportedProfiles();
+
+  // Query supported profiles for each VDA. The order of querying VDAs should
+  // be the same as the order of initializing VDAs. Then the returned profile
+  // can be initialized by corresponding VDA successfully.
+#if defined(OS_WIN)
+  profiles = DXVAVideoDecodeAccelerator::GetSupportedProfiles();
+#elif defined(OS_CHROMEOS)
+  media::VideoDecodeAccelerator::SupportedProfiles vda_profiles;
+#if defined(USE_V4L2_CODEC)
+  vda_profiles = V4L2VideoDecodeAccelerator::GetSupportedProfiles();
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(vda_profiles, &profiles);
+  vda_profiles = V4L2SliceVideoDecodeAccelerator::GetSupportedProfiles();
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(vda_profiles, &profiles);
+#endif
+#if defined(ARCH_CPU_X86_FAMILY)
+  vda_profiles = VaapiVideoDecodeAccelerator::GetSupportedProfiles();
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(vda_profiles, &profiles);
+#endif
+#elif defined(OS_MACOSX)
+  profiles = VTVideoDecodeAccelerator::GetSupportedProfiles();
+#elif defined(OS_ANDROID)
+  profiles = AndroidVideoDecodeAccelerator::GetSupportedProfiles();
+#endif
+  return GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeProfiles(profiles);
 }
 
 // Runs on IO thread if video_decode_accelerator_->CanDecodeOnIOThread() is

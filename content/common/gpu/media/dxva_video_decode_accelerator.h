@@ -75,6 +75,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   bool CanDecodeOnIOThread() override;
   GLenum GetSurfaceInternalFormat() const override;
 
+  static media::VideoDecodeAccelerator::SupportedProfiles
+      GetSupportedProfiles();
+
  private:
   typedef void* EGLConfig;
   typedef void* EGLSurface;

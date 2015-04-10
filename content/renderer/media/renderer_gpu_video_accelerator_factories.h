@@ -60,8 +60,11 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   void WaitSyncPoint(uint32 sync_point) override;
   scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
+
+  std::vector<media::VideoDecodeAccelerator::SupportedProfile>
+      GetVideoDecodeAcceleratorSupportedProfiles() override;
   std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-  GetVideoEncodeAcceleratorSupportedProfiles() override;
+      GetVideoEncodeAcceleratorSupportedProfiles() override;
 
  private:
   friend class base::RefCountedThreadSafe<RendererGpuVideoAcceleratorFactories>;

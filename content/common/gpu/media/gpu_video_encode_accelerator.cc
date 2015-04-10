@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/limits.h"
@@ -163,9 +164,9 @@ void GpuVideoEncodeAccelerator::OnWillDestroyStub() {
 }
 
 // static
-std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>
+gpu::VideoEncodeAcceleratorSupportedProfiles
 GpuVideoEncodeAccelerator::GetSupportedProfiles() {
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles;
+  media::VideoEncodeAccelerator::SupportedProfiles profiles;
   std::vector<GpuVideoEncodeAccelerator::CreateVEAFp>
       create_vea_fps = CreateVEAFps();
 
@@ -174,29 +175,12 @@ GpuVideoEncodeAccelerator::GetSupportedProfiles() {
         encoder = (*create_vea_fps[i])();
     if (!encoder)
       continue;
-    std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-        vea_profiles = encoder->GetSupportedProfiles();
-    profiles.insert(profiles.end(), vea_profiles.begin(), vea_profiles.end());
+    media::VideoEncodeAccelerator::SupportedProfiles vea_profiles =
+        encoder->GetSupportedProfiles();
+    GpuVideoAcceleratorUtil::InsertUniqueEncodeProfiles(
+        vea_profiles, &profiles);
   }
-  return ConvertMediaToGpuProfiles(profiles);
-}
-
-// static
-std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>
-GpuVideoEncodeAccelerator::ConvertMediaToGpuProfiles(const std::vector<
-    media::VideoEncodeAccelerator::SupportedProfile>& media_profiles) {
-  std::vector<gpu::VideoEncodeAcceleratorSupportedProfile> profiles;
-  for (size_t i = 0; i < media_profiles.size(); i++) {
-    gpu::VideoEncodeAcceleratorSupportedProfile profile;
-    profile.profile =
-        static_cast<gpu::VideoCodecProfile>(media_profiles[i].profile);
-    profile.max_resolution = media_profiles[i].max_resolution;
-    profile.max_framerate_numerator = media_profiles[i].max_framerate_numerator;
-    profile.max_framerate_denominator =
-        media_profiles[i].max_framerate_denominator;
-    profiles.push_back(profile);
-  }
-  return profiles;
+  return GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(profiles);
 }
 
 // static

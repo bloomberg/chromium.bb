@@ -103,9 +103,8 @@ struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
   const size_t size;
 };
 
-std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+media::VideoEncodeAccelerator::SupportedProfiles
 VaapiVideoEncodeAccelerator::GetSupportedProfiles() {
-
   return VaapiWrapper::GetSupportedEncodeProfiles();
 }
 

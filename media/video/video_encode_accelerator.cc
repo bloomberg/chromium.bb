@@ -8,6 +8,15 @@ namespace media {
 
 VideoEncodeAccelerator::~VideoEncodeAccelerator() {}
 
+VideoEncodeAccelerator::SupportedProfile::SupportedProfile()
+    : profile(media::VIDEO_CODEC_PROFILE_UNKNOWN),
+      max_framerate_numerator(0),
+      max_framerate_denominator(0) {
+}
+
+VideoEncodeAccelerator::SupportedProfile::~SupportedProfile() {
+}
+
 }  // namespace media
 
 namespace base {

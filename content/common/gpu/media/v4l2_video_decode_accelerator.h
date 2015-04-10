@@ -98,6 +98,9 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   void Destroy() override;
   bool CanDecodeOnIOThread() override;
 
+  static media::VideoDecodeAccelerator::SupportedProfiles
+      GetSupportedProfiles();
+
  private:
   // These are rather subjectively tuned.
   enum {

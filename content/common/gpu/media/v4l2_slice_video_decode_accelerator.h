@@ -53,6 +53,9 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   void Destroy() override;
   bool CanDecodeOnIOThread() override;
 
+  static media::VideoDecodeAccelerator::SupportedProfiles
+      GetSupportedProfiles();
+
  private:
   class V4L2H264Accelerator;
   class V4L2VP8Accelerator;

@@ -44,7 +44,7 @@ void VEAToWebRTCCodecs(
 RTCVideoEncoderFactory::RTCVideoEncoderFactory(
     const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
     : gpu_factories_(gpu_factories) {
-  const std::vector<media::VideoEncodeAccelerator::SupportedProfile>& profiles =
+  const media::VideoEncodeAccelerator::SupportedProfiles& profiles =
       gpu_factories_->GetVideoEncodeAcceleratorSupportedProfiles();
   for (const auto& profile : profiles)
     VEAToWebRTCCodecs(&codecs_, profile);

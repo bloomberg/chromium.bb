@@ -58,12 +58,9 @@ class GpuVideoEncodeAccelerator
   void OnWillDestroyStub() override;
 
   // Static query for supported profiles.  This query calls the appropriate
-  // platform-specific version.
-  static std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>
-      GetSupportedProfiles();
-  static std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>
-      ConvertMediaToGpuProfiles(const std::vector<
-          media::VideoEncodeAccelerator::SupportedProfile>& media_profiles);
+  // platform-specific version. The returned supported profiles vector will
+  // not contain duplicates.
+  static gpu::VideoEncodeAcceleratorSupportedProfiles GetSupportedProfiles();
 
  private:
   typedef scoped_ptr<media::VideoEncodeAccelerator>(*CreateVEAFp)();

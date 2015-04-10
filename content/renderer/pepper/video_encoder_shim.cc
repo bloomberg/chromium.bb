@@ -178,14 +178,14 @@ VideoEncoderShim::~VideoEncoderShim() {
                             base::Owned(encoder_impl_.release())));
 }
 
-std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+media::VideoEncodeAccelerator::SupportedProfiles
 VideoEncoderShim::GetSupportedProfiles() {
-  media::VideoEncodeAccelerator::SupportedProfile profile = {
-      media::VP8PROFILE_ANY,
-      gfx::Size(kMaxWidth, kMaxHeight),
-      media::cast::kDefaultMaxFrameRate,
-      1};
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles;
+  media::VideoEncodeAccelerator::SupportedProfile profile;
+  profile.profile = media::VP8PROFILE_ANY;
+  profile.max_resolution = gfx::Size(kMaxWidth, kMaxHeight);
+  profile.max_framerate_numerator = media::cast::kDefaultMaxFrameRate;
+  profile.max_framerate_denominator = 1;
+  media::VideoEncodeAccelerator::SupportedProfiles profiles;
   profiles.push_back(profile);
   return profiles;
 }

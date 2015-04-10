@@ -46,8 +46,8 @@ class CONTENT_EXPORT V4L2VideoEncodeAccelerator
   ~V4L2VideoEncodeAccelerator() override;
 
   // media::VideoEncodeAccelerator implementation.
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-      GetSupportedProfiles() override;
+  media::VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles()
+      override;
   bool Initialize(media::VideoFrame::Format format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,

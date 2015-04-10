@@ -103,6 +103,14 @@ DEFINE_GUID(MF_XVP_PLAYBACK_MODE, 0x3c5d293f, 0xad67, 0x4e29, 0xaf, 0x12,
 
 namespace content {
 
+static const media::VideoCodecProfile kSupportedProfiles[] = {
+  media::H264PROFILE_BASELINE,
+  media::H264PROFILE_MAIN,
+  media::H264PROFILE_HIGH,
+  media::VP8PROFILE_ANY,
+  media::VP9PROFILE_ANY
+};
+
 CreateDXGIDeviceManager DXVAVideoDecodeAccelerator::create_dxgi_device_manager_
     = NULL;
 
@@ -534,11 +542,14 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
 
   main_thread_task_runner_ = base::MessageLoop::current()->task_runner();
 
-  if (profile != media::H264PROFILE_BASELINE &&
-      profile != media::H264PROFILE_MAIN &&
-      profile != media::H264PROFILE_HIGH &&
-      profile != media::VP8PROFILE_ANY &&
-      profile != media::VP9PROFILE_ANY) {
+  bool profile_supported = false;
+  for (const auto& supported_profile : kSupportedProfiles) {
+    if (profile == supported_profile) {
+      profile_supported = true;
+      break;
+    }
+  }
+  if (!profile_supported) {
     RETURN_AND_NOTIFY_ON_FAILURE(false,
         "Unsupported h.264, vp8, or vp9 profile", PLATFORM_FAILURE, false);
   }
@@ -909,6 +920,25 @@ bool DXVAVideoDecodeAccelerator::CanDecodeOnIOThread() {
 
 GLenum DXVAVideoDecodeAccelerator::GetSurfaceInternalFormat() const {
   return GL_BGRA_EXT;
+}
+
+// static
+media::VideoDecodeAccelerator::SupportedProfiles
+DXVAVideoDecodeAccelerator::GetSupportedProfiles() {
+  // TODO(henryhsu): Need to ensure the profiles are actually supported.
+  SupportedProfiles profiles;
+  for (const auto& supported_profile : kSupportedProfiles) {
+    SupportedProfile profile;
+    profile.profile = supported_profile;
+    // Windows Media Foundation H.264 decoding does not support decoding videos
+    // with any dimension smaller than 48 pixels:
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd797815
+    profile.min_resolution.SetSize(48, 48);
+    // Use 1088 to account for 16x16 macroblocks.
+    profile.max_resolution.SetSize(1920, 1088);
+    profiles.push_back(profile);
+  }
+  return profiles;
 }
 
 bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {

@@ -65,6 +65,9 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   void Destroy() override;
   bool CanDecodeOnIOThread() override;
 
+  static media::VideoDecodeAccelerator::SupportedProfiles
+      GetSupportedProfiles();
+
 private:
   // Notify the client that an error has occurred and decoding cannot continue.
   void NotifyError(Error error);

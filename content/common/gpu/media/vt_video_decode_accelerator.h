@@ -58,6 +58,9 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
       OSStatus status,
       CVImageBufferRef image_buffer);
 
+  static media::VideoDecodeAccelerator::SupportedProfiles
+      GetSupportedProfiles();
+
  private:
   // Logged to UMA, so never reuse values. Make sure to update
   // VTVDASessionFailureType in histograms.xml to match.

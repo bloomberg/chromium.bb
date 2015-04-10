@@ -104,9 +104,9 @@ AndroidVideoEncodeAccelerator::~AndroidVideoEncodeAccelerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+media::VideoEncodeAccelerator::SupportedProfiles
 AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
-  std::vector<SupportedProfile> profiles;
+  SupportedProfiles profiles;
 
 #if defined(ENABLE_WEBRTC)
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();

@@ -47,6 +47,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   void Destroy() override;
   bool CanDecodeOnIOThread() override;
 
+  static media::VideoDecodeAccelerator::SupportedProfiles
+      GetSupportedProfiles();
+
  private:
   enum State {
     NO_ERROR,

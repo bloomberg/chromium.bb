@@ -6,8 +6,8 @@
 
 namespace {
 
-void EnumerateGPUDevice(gpu::GPUInfo::Enumerator* enumerator,
-                        const gpu::GPUInfo::GPUDevice& device) {
+void EnumerateGPUDevice(const gpu::GPUInfo::GPUDevice& device,
+                        gpu::GPUInfo::Enumerator* enumerator) {
   enumerator->BeginGPUDevice();
   enumerator->AddInt("vendorId", device.vendor_id);
   enumerator->AddInt("deviceId", device.device_id);
@@ -17,9 +17,21 @@ void EnumerateGPUDevice(gpu::GPUInfo::Enumerator* enumerator,
   enumerator->EndGPUDevice();
 }
 
+void EnumerateVideoDecodeAcceleratorSupportedProfile(
+    const gpu::VideoDecodeAcceleratorSupportedProfile& profile,
+    gpu::GPUInfo::Enumerator* enumerator) {
+  enumerator->BeginVideoDecodeAcceleratorSupportedProfile();
+  enumerator->AddInt("profile", profile.profile);
+  enumerator->AddInt("maxResolutionWidth", profile.max_resolution.width());
+  enumerator->AddInt("maxResolutionHeight", profile.max_resolution.height());
+  enumerator->AddInt("minResolutionWidth", profile.min_resolution.width());
+  enumerator->AddInt("minResolutionHeight", profile.min_resolution.height());
+  enumerator->EndVideoDecodeAcceleratorSupportedProfile();
+}
+
 void EnumerateVideoEncodeAcceleratorSupportedProfile(
-    gpu::GPUInfo::Enumerator* enumerator,
-    const gpu::VideoEncodeAcceleratorSupportedProfile profile) {
+    const gpu::VideoEncodeAcceleratorSupportedProfile& profile,
+    gpu::GPUInfo::Enumerator* enumerator) {
   enumerator->BeginVideoEncodeAcceleratorSupportedProfile();
   enumerator->AddInt("profile", profile.profile);
   enumerator->AddInt("maxResolutionWidth", profile.max_resolution.width());
@@ -101,7 +113,9 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     CollectInfoResult dx_diagnostics_info_state;
     DxDiagNode dx_diagnostics;
 #endif
-    std::vector<VideoEncodeAcceleratorSupportedProfile>
+    VideoDecodeAcceleratorSupportedProfiles
+        video_decode_accelerator_supported_profiles;
+    VideoEncodeAcceleratorSupportedProfiles
         video_encode_accelerator_supported_profiles;
   };
 
@@ -115,10 +129,9 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   // Required fields (according to DevTools protocol) first.
   enumerator->AddString("machineModelName", machine_model_name);
   enumerator->AddString("machineModelVersion", machine_model_version);
-  EnumerateGPUDevice(enumerator, gpu);
-  for (size_t ii = 0; ii < secondary_gpus.size(); ++ii) {
-    EnumerateGPUDevice(enumerator, secondary_gpus[ii]);
-  }
+  EnumerateGPUDevice(gpu, enumerator);
+  for (const auto& secondary_gpu: secondary_gpus)
+    EnumerateGPUDevice(secondary_gpu, enumerator);
 
   enumerator->BeginAuxAttributes();
   enumerator->AddTimeDeltaInSecondsF("initializationTime",
@@ -159,11 +172,10 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt("DxDiagnosticsInfoState", dx_diagnostics_info_state);
 #endif
   // TODO(kbr): add dx_diagnostics on Windows.
-  for (size_t ii = 0; ii < video_encode_accelerator_supported_profiles.size();
-       ++ii) {
-    EnumerateVideoEncodeAcceleratorSupportedProfile(
-        enumerator, video_encode_accelerator_supported_profiles[ii]);
-  }
+  for (const auto& profile : video_decode_accelerator_supported_profiles)
+    EnumerateVideoDecodeAcceleratorSupportedProfile(profile, enumerator);
+  for (const auto& profile : video_encode_accelerator_supported_profiles)
+    EnumerateVideoEncodeAcceleratorSupportedProfile(profile, enumerator);
   enumerator->EndAuxAttributes();
 }
 

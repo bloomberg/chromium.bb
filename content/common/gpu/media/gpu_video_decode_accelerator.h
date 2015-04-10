@@ -14,6 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/config/gpu_info.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/video/video_decode_accelerator.h"
@@ -65,6 +66,11 @@ class GpuVideoDecodeAccelerator
   // VDA can decode on IO thread.
   void Initialize(const media::VideoCodecProfile profile,
                   IPC::Message* init_done_msg);
+
+  // Static query for supported profiles. This query calls the appropriate
+  // platform-specific version. The returned supported profiles vector will
+  // not contain duplicates.
+  static gpu::VideoDecodeAcceleratorSupportedProfiles GetSupportedProfiles();
 
  private:
   typedef scoped_ptr<media::VideoDecodeAccelerator>(

@@ -45,16 +45,12 @@ class GpuVideoEncodeAcceleratorHost
   GpuVideoEncodeAcceleratorHost(GpuChannelHost* channel,
                                 CommandBufferProxyImpl* impl);
 
-  static std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-  ConvertGpuToMediaProfiles(const std::vector<
-      gpu::VideoEncodeAcceleratorSupportedProfile>& gpu_profiles);
-
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelError() override;
 
   // media::VideoEncodeAccelerator implementation.
-  std::vector<SupportedProfile> GetSupportedProfiles() override;
+  SupportedProfiles GetSupportedProfiles() override;
   bool Initialize(media::VideoFrame::Format input_format,
                   const gfx::Size& input_visible_size,
                   media::VideoCodecProfile output_profile,

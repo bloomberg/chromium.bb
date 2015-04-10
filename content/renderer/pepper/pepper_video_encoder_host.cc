@@ -6,7 +6,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_math.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
-#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
+#include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/common/pepper_file_util.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/pepper/gfx_conversion.h"
@@ -450,10 +450,10 @@ void PepperVideoEncoderHost::GetSupportedProfiles(
     std::vector<PP_VideoProfileDescription>* pp_profiles) {
   DCHECK(RenderThreadImpl::current());
 
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles;
+  media::VideoEncodeAccelerator::SupportedProfiles profiles;
 
   if (EnsureGpuChannel()) {
-    profiles = GpuVideoEncodeAcceleratorHost::ConvertGpuToMediaProfiles(
+    profiles = GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
         channel_->gpu_info().video_encode_accelerator_supported_profiles);
     for (media::VideoEncodeAccelerator::SupportedProfile profile : profiles) {
       pp_profiles->push_back(PP_FromVideoEncodeAcceleratorSupportedProfile(

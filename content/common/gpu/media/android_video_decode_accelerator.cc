@@ -554,4 +554,20 @@ void AndroidVideoDecodeAccelerator::NotifyError(
   client_->NotifyError(error);
 }
 
+// static
+media::VideoDecodeAccelerator::SupportedProfiles
+AndroidVideoDecodeAccelerator::GetSupportedProfiles() {
+  SupportedProfiles profiles;
+  if (media::VideoCodecBridge::IsKnownUnaccelerated(
+          media::kCodecVP8, media::MEDIA_CODEC_DECODER)) {
+    return profiles;
+  }
+  SupportedProfile profile;
+  profile.profile = media::VP8PROFILE_ANY;
+  profile.min_resolution.SetSize(16, 16);
+  profile.max_resolution.SetSize(1920, 1088);
+  profiles.push_back(profile);
+  return profiles;
+}
+
 }  // namespace content

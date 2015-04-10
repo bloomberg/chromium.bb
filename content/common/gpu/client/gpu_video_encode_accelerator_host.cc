@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/media/gpu_video_encode_accelerator.h"
+#include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "media/base/video_frame.h"
 
 namespace content {
@@ -69,54 +69,13 @@ void GpuVideoEncodeAcceleratorHost::OnChannelError() {
   NOTIFY_ERROR(kPlatformFailureError) << "OnChannelError()";
 }
 
-std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+media::VideoEncodeAccelerator::SupportedProfiles
 GpuVideoEncodeAcceleratorHost::GetSupportedProfiles() {
   DCHECK(CalledOnValidThread());
   if (!channel_)
-    return std::vector<media::VideoEncodeAccelerator::SupportedProfile>();
-  return ConvertGpuToMediaProfiles(
+    return media::VideoEncodeAccelerator::SupportedProfiles();
+  return GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
       channel_->gpu_info().video_encode_accelerator_supported_profiles);
-}
-
-// Make sure the enum values of media::VideoCodecProfile and
-// gpu::VideoCodecProfile match.
-#define STATIC_ASSERT_ENUM_MATCH(name)                                 \
-  static_assert(                                                       \
-      media::name == static_cast<media::VideoCodecProfile>(gpu::name), \
-      #name " value must match in media and gpu.")
-
-STATIC_ASSERT_ENUM_MATCH(VIDEO_CODEC_PROFILE_UNKNOWN);
-STATIC_ASSERT_ENUM_MATCH(VIDEO_CODEC_PROFILE_MIN);
-STATIC_ASSERT_ENUM_MATCH(H264PROFILE_BASELINE);
-STATIC_ASSERT_ENUM_MATCH(H264PROFILE_MAIN);
-STATIC_ASSERT_ENUM_MATCH(H264PROFILE_EXTENDED);
-STATIC_ASSERT_ENUM_MATCH(H264PROFILE_HIGH);
-STATIC_ASSERT_ENUM_MATCH(H264PROFILE_HIGH10PROFILE);
-STATIC_ASSERT_ENUM_MATCH(H264PROFILE_HIGH422PROFILE);
-STATIC_ASSERT_ENUM_MATCH(H264PROFILE_HIGH444PREDICTIVEPROFILE);
-STATIC_ASSERT_ENUM_MATCH(H264PROFILE_SCALABLEBASELINE);
-STATIC_ASSERT_ENUM_MATCH(H264PROFILE_SCALABLEHIGH);
-STATIC_ASSERT_ENUM_MATCH(H264PROFILE_STEREOHIGH);
-STATIC_ASSERT_ENUM_MATCH(H264PROFILE_MULTIVIEWHIGH);
-STATIC_ASSERT_ENUM_MATCH(VP8PROFILE_ANY);
-STATIC_ASSERT_ENUM_MATCH(VP9PROFILE_ANY);
-STATIC_ASSERT_ENUM_MATCH(VIDEO_CODEC_PROFILE_MAX);
-
-std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-GpuVideoEncodeAcceleratorHost::ConvertGpuToMediaProfiles(const std::vector<
-    gpu::VideoEncodeAcceleratorSupportedProfile>& gpu_profiles) {
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles;
-  for (size_t i = 0; i < gpu_profiles.size(); i++) {
-    media::VideoEncodeAccelerator::SupportedProfile profile;
-    profile.profile =
-        static_cast<media::VideoCodecProfile>(gpu_profiles[i].profile);
-    profile.max_resolution = gpu_profiles[i].max_resolution;
-    profile.max_framerate_numerator = gpu_profiles[i].max_framerate_numerator;
-    profile.max_framerate_denominator =
-        gpu_profiles[i].max_framerate_denominator;
-    profiles.push_back(profile);
-  }
-  return profiles;
 }
 
 bool GpuVideoEncodeAcceleratorHost::Initialize(

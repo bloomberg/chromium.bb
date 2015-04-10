@@ -21,6 +21,13 @@ GLenum VideoDecodeAccelerator::GetSurfaceInternalFormat() const {
   return GL_RGBA;
 }
 
+VideoDecodeAccelerator::SupportedProfile::SupportedProfile()
+    : profile(media::VIDEO_CODEC_PROFILE_UNKNOWN) {
+}
+
+VideoDecodeAccelerator::SupportedProfile::~SupportedProfile() {
+}
+
 } // namespace media
 
 namespace base {

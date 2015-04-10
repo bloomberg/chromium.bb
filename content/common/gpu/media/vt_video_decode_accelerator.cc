@@ -33,6 +33,19 @@ using content_common_gpu_media::StubPathMap;
 
 namespace content {
 
+// Only H.264 with 4:2:0 chroma sampling is supported.
+static const media::VideoCodecProfile kSupportedProfiles[] = {
+  media::H264PROFILE_BASELINE,
+  media::H264PROFILE_MAIN,
+  media::H264PROFILE_EXTENDED,
+  media::H264PROFILE_HIGH,
+  media::H264PROFILE_HIGH10PROFILE,
+  media::H264PROFILE_SCALABLEBASELINE,
+  media::H264PROFILE_SCALABLEHIGH,
+  media::H264PROFILE_STEREOHIGH,
+  media::H264PROFILE_MULTIVIEWHIGH,
+};
+
 // Size to use for NALU length headers in AVC format (can be 1, 2, or 4).
 static const int kNALUHeaderLength = 4;
 
@@ -289,13 +302,15 @@ bool VTVideoDecodeAccelerator::Initialize(
   if (!InitializeVideoToolbox())
     return false;
 
-  // Only H.264 with 4:2:0 chroma sampling is supported.
-  if (profile < media::H264PROFILE_MIN ||
-      profile > media::H264PROFILE_MAX ||
-      profile == media::H264PROFILE_HIGH422PROFILE ||
-      profile == media::H264PROFILE_HIGH444PREDICTIVEPROFILE) {
-    return false;
+  bool profile_supported = false;
+  for (const auto& supported_profile : kSupportedProfiles) {
+    if (profile == supported_profile) {
+      profile_supported = true;
+      break;
+    }
   }
+  if (!profile_supported)
+    return false;
 
   // Spawn a thread to handle parsing and calling VideoToolbox.
   if (!decoder_thread_.Start())
@@ -1030,6 +1045,20 @@ void VTVideoDecodeAccelerator::Destroy() {
 
 bool VTVideoDecodeAccelerator::CanDecodeOnIOThread() {
   return false;
+}
+
+// static
+media::VideoDecodeAccelerator::SupportedProfiles
+VTVideoDecodeAccelerator::GetSupportedProfiles() {
+  SupportedProfiles profiles;
+  for (const auto& supported_profile : kSupportedProfiles) {
+    SupportedProfile profile;
+    profile.profile = supported_profile;
+    profile.min_resolution.SetSize(480, 360);
+    profile.max_resolution.SetSize(4096, 2160);
+    profiles.push_back(profile);
+  }
+  return profiles;
 }
 
 }  // namespace content

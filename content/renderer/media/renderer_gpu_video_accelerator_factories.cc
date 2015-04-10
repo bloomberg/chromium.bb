@@ -12,8 +12,8 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "media/video/video_decode_accelerator.h"
@@ -200,10 +200,18 @@ RendererGpuVideoAcceleratorFactories::GetTaskRunner() {
   return task_runner_;
 }
 
-std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+media::VideoDecodeAccelerator::SupportedProfiles
+RendererGpuVideoAcceleratorFactories::
+    GetVideoDecodeAcceleratorSupportedProfiles() {
+  return GpuVideoAcceleratorUtil::ConvertGpuToMediaDecodeProfiles(
+      gpu_channel_host_->gpu_info()
+          .video_decode_accelerator_supported_profiles);
+}
+
+media::VideoEncodeAccelerator::SupportedProfiles
 RendererGpuVideoAcceleratorFactories::
     GetVideoEncodeAcceleratorSupportedProfiles() {
-  return GpuVideoEncodeAcceleratorHost::ConvertGpuToMediaProfiles(
+  return GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
       gpu_channel_host_->gpu_info()
           .video_encode_accelerator_supported_profiles);
 }
