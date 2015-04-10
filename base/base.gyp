@@ -492,6 +492,7 @@
         'file_version_info_unittest.cc',
         'files/dir_reader_posix_unittest.cc',
         'files/file_path_unittest.cc',
+        'files/file_path_watcher_unittest.cc',
         'files/file_proxy_unittest.cc',
         'files/file_unittest.cc',
         'files/file_util_proxy_unittest.cc',
@@ -827,6 +828,7 @@
         ['OS == "android"', {
           'sources/': [
             ['include', '^debug/proc_maps_linux_unittest\\.cc$'],
+            ['exclude', '^files/file_path_watcher_unittest\\.cc$'],
           ],
         }],
         # Enable more direct string conversions on platforms with native utf8

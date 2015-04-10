@@ -24,9 +24,6 @@
       # The list of sources which is only used by chrome browser tests.
       '../apps/app_restore_service_browsertest.cc',
       '../apps/load_and_launch_browsertest.cc',
-      # TODO(craig): Rename this and run from base_unittests when the test
-      # is safe to run there. See http://crbug.com/78722 for details.
-      '../base/files/file_path_watcher_browsertest.cc',
       '../components/autofill/content/renderer/test_password_autofill_agent.cc',
       '../components/autofill/content/renderer/test_password_autofill_agent.h',
       '../components/autofill/content/renderer/test_password_generation_agent.cc',

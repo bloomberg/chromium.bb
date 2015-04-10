@@ -1115,6 +1115,7 @@ test("base_unittests") {
     "file_version_info_unittest.cc",
     "files/dir_reader_posix_unittest.cc",
     "files/file_path_unittest.cc",
+    "files/file_path_watcher_unittest.cc",
     "files/file_proxy_unittest.cc",
     "files/file_unittest.cc",
     "files/file_util_proxy_unittest.cc",
@@ -1373,6 +1374,7 @@ test("base_unittests") {
     set_sources_assignment_filter([])
     sources += [ "debug/proc_maps_linux_unittest.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
+    sources -= [ "files/file_path_watcher_unittest.cc" ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
