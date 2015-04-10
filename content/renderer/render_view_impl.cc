@@ -601,6 +601,24 @@ void ApplyFontsFromMap(const ScriptFontFamilyMap& map,
   }
 }
 
+void ApplyBlinkSettings(const base::CommandLine& command_line,
+                        WebSettings* settings) {
+  if (!command_line.HasSwitch(switches::kBlinkSettings))
+    return;
+
+  std::vector<std::string> blink_settings;
+  base::SplitString(
+      command_line.GetSwitchValueASCII(switches::kBlinkSettings), ',',
+      &blink_settings);
+  for (const std::string& setting : blink_settings) {
+    size_t pos = setting.find('=');
+    settings->setFromStrings(
+        blink::WebString::fromLatin1(setting.substr(0, pos)),
+        blink::WebString::fromLatin1(
+            pos == std::string::npos ? "" : setting.substr(pos + 1)));
+  }
+}
+
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
@@ -749,6 +767,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     webview()->setOpenedByDOM();
 
   OnSetRendererPrefs(params.renderer_preferences);
+
+  ApplyBlinkSettings(command_line, webview()->settings());
 
   if (!params.enable_auto_resize) {
     OnResize(params.initial_size);

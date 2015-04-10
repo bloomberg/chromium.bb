@@ -1210,6 +1210,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kAuditAllHandles,
     switches::kAuditHandles,
     switches::kBlinkPlatformLogChannels,
+    switches::kBlinkSettings,
     switches::kBlockCrossSiteDocuments,
     switches::kDefaultTileWidth,
     switches::kDefaultTileHeight,

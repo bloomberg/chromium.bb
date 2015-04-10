@@ -40,6 +40,12 @@ const char kAuditHandles[]                  = "enable-handle-auditing";
 // Logging.cpp in blink's Source/platform for a list of available channels.
 const char kBlinkPlatformLogChannels[]      = "blink-platform-log-channels";
 
+// Set blink settings. Format is <name>[=<value],<name>[=<value>],...
+// The names are declared in Settings.in. For boolean type, use "true", "false",
+// or omit '=<value>' part to set to true. For enum type, use the int value of
+// the enum value. Applied after other command line flags and prefs.
+const char kBlinkSettings[]                 = "blink-settings";
+
 // Block cross-site documents (i.e., HTML/XML/JSON) from being loaded in
 // subresources when a document is not supposed to read them.  This will later
 // allow us to block them from the entire renderer process when site isolation
