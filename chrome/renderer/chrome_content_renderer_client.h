@@ -147,6 +147,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       content::RenderFrame* render_frame,
       const std::string& mime_type,
       const GURL& original_url) override;
+  void RecordRappor(const std::string& metric,
+                    const std::string& sample) override;
+  void RecordRapporURL(const std::string& metric, const GURL& url) override;
 
 #if defined(ENABLE_EXTENSIONS)
   // Takes ownership.

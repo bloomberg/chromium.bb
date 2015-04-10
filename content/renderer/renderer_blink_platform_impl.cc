@@ -1027,6 +1027,18 @@ blink::WebString RendererBlinkPlatformImpl::convertIDNToUnicode(
 
 //------------------------------------------------------------------------------
 
+void RendererBlinkPlatformImpl::recordRappor(const char* metric,
+                                             const blink::WebString& sample) {
+  GetContentClient()->renderer()->RecordRappor(metric, sample.utf8());
+}
+
+void RendererBlinkPlatformImpl::recordRapporURL(const char* metric,
+                                                const blink::WebURL& url) {
+  GetContentClient()->renderer()->RecordRapporURL(metric, url);
+}
+
+//------------------------------------------------------------------------------
+
 // static
 void RendererBlinkPlatformImpl::SetMockDeviceLightDataForTesting(double data) {
   g_test_device_light_data = data;

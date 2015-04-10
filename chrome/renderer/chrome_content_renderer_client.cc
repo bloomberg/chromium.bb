@@ -1636,3 +1636,13 @@ ChromeContentRendererClient::CreateBrowserPluginDelegate(
   return NULL;
 #endif
 }
+
+void ChromeContentRendererClient::RecordRappor(const std::string& metric,
+                                               const std::string& sample) {
+  RenderThread::Get()->Send(new ChromeViewHostMsg_RecordRappor(metric, sample));
+}
+
+void ChromeContentRendererClient::RecordRapporURL(const std::string& metric,
+                                                  const GURL& url) {
+  RenderThread::Get()->Send(new ChromeViewHostMsg_RecordRapporURL(metric, url));
+}

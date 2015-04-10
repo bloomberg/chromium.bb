@@ -159,6 +159,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual void cancelVibration();
   virtual blink::WebScheduler* scheduler();
   virtual blink::WebThread* currentThread();
+  virtual void recordRappor(const char* metric, const blink::WebString& sample);
+  virtual void recordRapporURL(const char* metric, const blink::WebURL& url);
 
   // Set the PlatformEventObserverBase in |platform_event_observers_| associated
   // with |type| to |observer|. If there was already an observer associated to
