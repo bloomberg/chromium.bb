@@ -18,8 +18,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/metro.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/sha2.h"
@@ -375,12 +375,14 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
   base::string16 title = web_contents()->GetTitle();
   // TODO(oshima): Use scoped_ptr::Pass to pass it to other thread.
   SkBitmap favicon;
-  FaviconTabHelper* favicon_tab_helper = FaviconTabHelper::FromWebContents(
-      web_contents());
-  if (favicon_tab_helper->FaviconIsValid()) {
+  favicon::FaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(web_contents());
+  if (favicon_driver->FaviconIsValid()) {
     // Only the 1x bitmap data is needed.
-    favicon = favicon_tab_helper->GetFavicon().AsImageSkia().GetRepresentation(
-        1.0f).sk_bitmap();
+    favicon = favicon_driver->GetFavicon()
+                  .AsImageSkia()
+                  .GetRepresentation(1.0f)
+                  .sk_bitmap();
   }
 
   favicon_chooser_.reset(new FaviconChooser(this, title, url_str, favicon));

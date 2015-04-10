@@ -58,7 +58,6 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/history/top_sites_factory.h"
@@ -155,6 +154,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "components/search/search.h"
@@ -584,9 +584,11 @@ gfx::Image Browser::GetCurrentPageIcon() const {
   WebContents* web_contents = tab_strip_model_->GetActiveWebContents();
   // |web_contents| can be NULL since GetCurrentPageIcon() is called by the
   // window during the window's creation (before tabs have been added).
-  FaviconTabHelper* favicon_tab_helper =
-      web_contents ? FaviconTabHelper::FromWebContents(web_contents) : NULL;
-  return favicon_tab_helper ? favicon_tab_helper->GetFavicon() : gfx::Image();
+  favicon::FaviconDriver* favicon_driver =
+      web_contents
+          ? favicon::ContentFaviconDriver::FromWebContents(web_contents)
+          : nullptr;
+  return favicon_driver ? favicon_driver->GetFavicon() : gfx::Image();
 }
 
 base::string16 Browser::GetWindowTitleForCurrentTab() const {

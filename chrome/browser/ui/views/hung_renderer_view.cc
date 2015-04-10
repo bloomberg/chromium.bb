@@ -7,7 +7,6 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -111,8 +111,10 @@ base::string16 HungPagesTableModel::GetText(int row, int column_id) {
 
 gfx::ImageSkia HungPagesTableModel::GetIcon(int row) {
   DCHECK(row >= 0 && row < RowCount());
-  return FaviconTabHelper::FromWebContents(
-      tab_observers_[row]->web_contents())->GetFavicon().AsImageSkia();
+  return favicon::ContentFaviconDriver::FromWebContents(
+             tab_observers_[row]->web_contents())
+      ->GetFavicon()
+      .AsImageSkia();
 }
 
 void HungPagesTableModel::SetObserver(ui::TableModelObserver* observer) {

@@ -11,13 +11,13 @@
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/api/tabs/windows_event_router.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -150,7 +150,8 @@ void TabsEventRouter::RegisterForTabNotifications(WebContents* contents) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::Source<WebContents>(contents));
 
-  favicon_scoped_observer_.Add(FaviconTabHelper::FromWebContents(contents));
+  favicon_scoped_observer_.Add(
+      favicon::ContentFaviconDriver::FromWebContents(contents));
 
   ZoomController::FromWebContents(contents)->AddObserver(this);
 }
@@ -160,7 +161,8 @@ void TabsEventRouter::UnregisterForTabNotifications(WebContents* contents) {
       content::Source<NavigationController>(&contents->GetController()));
   registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<WebContents>(contents));
-  favicon_scoped_observer_.Remove(FaviconTabHelper::FromWebContents(contents));
+  favicon_scoped_observer_.Remove(
+      favicon::ContentFaviconDriver::FromWebContents(contents));
 
   ZoomController::FromWebContents(contents)->RemoveObserver(this);
 }
@@ -502,7 +504,7 @@ void TabsEventRouter::Observe(int type,
     registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
         content::Source<WebContents>(contents));
     favicon_scoped_observer_.Remove(
-        FaviconTabHelper::FromWebContents(contents));
+        favicon::ContentFaviconDriver::FromWebContents(contents));
   } else {
     NOTREACHED();
   }
@@ -587,9 +589,9 @@ void TabsEventRouter::OnFaviconAvailable(const gfx::Image& image) {
 void TabsEventRouter::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
                                        bool icon_url_changed) {
   if (icon_url_changed) {
-    FaviconTabHelper* favicon_tab_helper =
-        static_cast<FaviconTabHelper*>(favicon_driver);
-    FaviconUrlUpdated(favicon_tab_helper->web_contents());
+    favicon::ContentFaviconDriver* content_favicon_driver =
+        static_cast<favicon::ContentFaviconDriver*>(favicon_driver);
+    FaviconUrlUpdated(content_favicon_driver->web_contents());
   }
 }
 

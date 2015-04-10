@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -14,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -69,7 +69,9 @@ NSPasteboard* LocationIconDecoration::GetDragPasteboard() {
 NSImage* LocationIconDecoration::GetDragImage() {
   content::WebContents* web_contents = owner_->GetWebContents();
   NSImage* favicon =
-      FaviconTabHelper::FromWebContents(web_contents)->GetFavicon().AsNSImage();
+      favicon::ContentFaviconDriver::FromWebContents(web_contents)
+          ->GetFavicon()
+          .AsNSImage();
   NSImage* iconImage = favicon ? favicon : GetImage();
 
   NSImage* image =

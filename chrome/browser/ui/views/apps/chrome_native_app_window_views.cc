@@ -7,11 +7,11 @@
 #include "apps/ui/views/app_window_frame_view.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/apps/desktop_keyboard_capture.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "ui/views/controls/webview/webview.h"
@@ -263,9 +263,9 @@ gfx::ImageSkia ChromeNativeAppWindowViews::GetWindowAppIcon() {
 gfx::ImageSkia ChromeNativeAppWindowViews::GetWindowIcon() {
   content::WebContents* web_contents = app_window()->web_contents();
   if (web_contents) {
-    FaviconTabHelper* favicon_tab_helper =
-        FaviconTabHelper::FromWebContents(web_contents);
-    gfx::Image app_icon = favicon_tab_helper->GetFavicon();
+    favicon::FaviconDriver* favicon_driver =
+        favicon::ContentFaviconDriver::FromWebContents(web_contents);
+    gfx::Image app_icon = favicon_driver->GetFavicon();
     if (!app_icon.IsEmpty())
       return *app_icon.ToImageSkia();
   }

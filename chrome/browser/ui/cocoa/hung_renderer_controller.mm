@@ -9,7 +9,6 @@
 #include "base/mac/bundle_locations.h"
 #include "base/process/process.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"

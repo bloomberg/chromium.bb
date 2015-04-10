@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,6 +66,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -1364,9 +1364,9 @@ gfx::Image ChromeLauncherController::GetAppListIcon(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (IsIncognito(web_contents))
     return rb.GetImageNamed(IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER);
-  FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(web_contents);
-  gfx::Image result = favicon_tab_helper->GetFavicon();
+  favicon::FaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(web_contents);
+  gfx::Image result = favicon_driver->GetFavicon();
   if (result.IsEmpty())
     return rb.GetImageNamed(IDR_DEFAULT_FAVICON);
   return result;

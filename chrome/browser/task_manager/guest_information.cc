@@ -6,13 +6,13 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/renderer_resource.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -77,9 +77,11 @@ base::string16 GuestResource::GetTitle() const {
 
 gfx::ImageSkia GuestResource::GetIcon() const {
   WebContents* web_contents = GetWebContents();
-  if (web_contents && FaviconTabHelper::FromWebContents(web_contents)) {
-    return FaviconTabHelper::FromWebContents(web_contents)->
-        GetFavicon().AsImageSkia();
+  if (web_contents) {
+    favicon::FaviconDriver* favicon_driver =
+        favicon::ContentFaviconDriver::FromWebContents(web_contents);
+    if (favicon_driver)
+      return favicon_driver->GetFavicon().AsImageSkia();
   }
   return gfx::ImageSkia();
 }

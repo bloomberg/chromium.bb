@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -58,6 +57,7 @@
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/language_state.h"
@@ -1275,9 +1275,9 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
             ui::DragDropTypes::DRAG_NONE);
 
   WebContents* web_contents = GetWebContents();
-  FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(web_contents);
-  gfx::ImageSkia favicon = favicon_tab_helper->GetFavicon().AsImageSkia();
+  favicon::FaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(web_contents);
+  gfx::ImageSkia favicon = favicon_driver->GetFavicon().AsImageSkia();
   button_drag_utils::SetURLAndDragImage(web_contents->GetURL(),
                                         web_contents->GetTitle(),
                                         favicon,

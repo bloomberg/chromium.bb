@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "components/favicon/content/content_favicon_driver.h"
 
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -88,11 +88,11 @@ class TestResourceDispatcherHostDelegate
   DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcherHostDelegate);
 };
 
-// Checks whether the FaviconTabHelper is waiting for a download to complete or
+// Checks whether the FaviconDriver is waiting for a download to complete or
 // for data from the FaviconService.
-class FaviconTabHelperPendingTaskChecker {
+class FaviconDriverPendingTaskChecker {
  public:
-  virtual ~FaviconTabHelperPendingTaskChecker() {}
+  virtual ~FaviconDriverPendingTaskChecker() {}
 
   virtual bool HasPendingTasks() = 0;
 };
@@ -105,7 +105,7 @@ class PendingTaskWaiter : public content::NotificationObserver,
                           public favicon::FaviconDriverObserver {
  public:
   PendingTaskWaiter(content::WebContents* web_contents,
-                    FaviconTabHelperPendingTaskChecker* checker)
+                    FaviconDriverPendingTaskChecker* checker)
       : checker_(checker),
         load_stopped_(false),
         scoped_observer_(this),
@@ -113,7 +113,8 @@ class PendingTaskWaiter : public content::NotificationObserver,
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    content::Source<content::NavigationController>(
                        &web_contents->GetController()));
-    scoped_observer_.Add(FaviconTabHelper::FromWebContents(web_contents));
+    scoped_observer_.Add(
+        favicon::ContentFaviconDriver::FromWebContents(web_contents));
   }
   ~PendingTaskWaiter() override {}
 
@@ -163,11 +164,11 @@ class PendingTaskWaiter : public content::NotificationObserver,
     }
   }
 
-  FaviconTabHelperPendingTaskChecker* checker_;  // Not owned.
+  FaviconDriverPendingTaskChecker* checker_;  // Not owned.
   bool load_stopped_;
   base::Closure quit_closure_;
   content::NotificationRegistrar registrar_;
-  ScopedObserver<FaviconTabHelper, PendingTaskWaiter> scoped_observer_;
+  ScopedObserver<favicon::FaviconDriver, PendingTaskWaiter> scoped_observer_;
   base::WeakPtrFactory<PendingTaskWaiter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingTaskWaiter);
@@ -175,30 +176,30 @@ class PendingTaskWaiter : public content::NotificationObserver,
 
 }  // namespace
 
-class FaviconTabHelperTest : public InProcessBrowserTest,
-                             public FaviconTabHelperPendingTaskChecker {
+class ContentFaviconDriverTest : public InProcessBrowserTest,
+                                 public FaviconDriverPendingTaskChecker {
  public:
-  FaviconTabHelperTest() {}
-  ~FaviconTabHelperTest() override {}
+  ContentFaviconDriverTest() {}
+  ~ContentFaviconDriverTest() override {}
 
   content::WebContents* web_contents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  // FaviconTabHelperPendingTaskChecker:
+  // FaviconDriverPendingTaskChecker:
   bool HasPendingTasks() override {
-    return FaviconTabHelper::FromWebContents(web_contents())
+    return favicon::ContentFaviconDriver::FromWebContents(web_contents())
         ->HasPendingTasksForTest();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FaviconTabHelperTest);
+  DISALLOW_COPY_AND_ASSIGN(ContentFaviconDriverTest);
 };
 
 // Test that when a user reloads a page ignoring the cache that the favicon is
 // is redownloaded and (not returned from either the favicon cache or the HTTP
 // cache).
-IN_PROC_BROWSER_TEST_F(FaviconTabHelperTest, ReloadIgnoringCache) {
+IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadIgnoringCache) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL("files/favicon/page_with_favicon.html");
   GURL icon_url = test_server()->GetURL("files/favicon/icon.ico");

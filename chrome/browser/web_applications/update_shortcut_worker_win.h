@@ -35,7 +35,7 @@ class UpdateShortcutWorker : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  // Downloads icon via the FaviconTabHelper.
+  // Downloads icon via the FaviconDriver.
   void DownloadIcon();
 
   // Favicon download callback.

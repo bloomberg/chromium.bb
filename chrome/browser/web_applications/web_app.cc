@@ -44,7 +44,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #endif
 
 using content::BrowserThread;
@@ -180,8 +180,8 @@ ShortcutLocations::ShortcutLocations()
 #if defined(TOOLKIT_VIEWS)
 scoped_ptr<ShortcutInfo> GetShortcutInfoForTab(
     content::WebContents* web_contents) {
-  const FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(web_contents);
+  const favicon::FaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(web_contents);
   const extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(web_contents);
   const WebApplicationInfo& app_info = extensions_tab_helper->web_app_info();
@@ -194,7 +194,7 @@ scoped_ptr<ShortcutInfo> GetShortcutInfoForTab(
                                           web_contents->GetTitle()) :
       app_info.title;
   info->description = app_info.description;
-  info->favicon.Add(favicon_tab_helper->GetFavicon());
+  info->favicon.Add(favicon_driver->GetFavicon());
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

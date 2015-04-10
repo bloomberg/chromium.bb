@@ -20,7 +20,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/favicon/favicon_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -1555,7 +1555,8 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   TabController* tabController = [tabArray_ objectAtIndex:index];
 
   bool oldHasIcon = [tabController iconView] != nil;
-  bool newHasIcon = FaviconTabHelper::ShouldDisplayFavicon(contents) ||
+  bool newHasIcon =
+      favicon::ShouldDisplayFavicon(contents) ||
       tabStripModel_->IsMiniTab(modelIndex);  // Always show icon if mini.
 
   TabLoadingState oldState = [tabController loadingState];

@@ -8,7 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/chrome_content_settings_client.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/favicon/favicon_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
@@ -141,7 +141,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       autofill::ChromeAutofillClient::FromWebContents(web_contents));
   ChromeTranslateClient::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
-  FaviconTabHelper::CreateForWebContents(web_contents);
+  favicon::CreateContentFaviconDriverForWebContents(web_contents);
   FindTabHelper::CreateForWebContents(web_contents);
   HistoryTabHelper::CreateForWebContents(web_contents);
   InfoBarService::CreateForWebContents(web_contents);

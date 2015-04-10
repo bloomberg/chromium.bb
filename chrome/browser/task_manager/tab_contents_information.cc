@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/favicon/favicon_helper.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -123,9 +124,10 @@ base::string16 TabContentsResource::GetTitle() const {
 gfx::ImageSkia TabContentsResource::GetIcon() const {
   if (IsContentsPrerendering(web_contents_))
     return *prerender_icon_;
-  FaviconTabHelper::CreateForWebContents(web_contents_);
-  return FaviconTabHelper::FromWebContents(web_contents_)->
-      GetFavicon().AsImageSkia();
+  favicon::CreateContentFaviconDriverForWebContents(web_contents_);
+  return favicon::ContentFaviconDriver::FromWebContents(web_contents_)
+      ->GetFavicon()
+      .AsImageSkia();
 }
 
 WebContents* TabContentsResource::GetWebContents() const {

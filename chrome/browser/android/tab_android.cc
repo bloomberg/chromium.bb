@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -53,6 +52,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/dom_distiller/core/url_utils.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "components/infobars/core/infobar_container.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/navigation_interception/navigation_params.h"
@@ -446,11 +446,11 @@ void TabAndroid::InitWebContents(JNIEnv* env,
       content::Source<content::NavigationController>(
            &web_contents()->GetController()));
 
-  FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(web_contents_.get());
+  favicon::FaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(web_contents_.get());
 
-  if (favicon_tab_helper)
-    favicon_tab_helper->AddObserver(this);
+  if (favicon_driver)
+    favicon_driver->AddObserver(this);
 
   synced_tab_delegate_->SetWebContents(web_contents());
 
@@ -485,11 +485,11 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
       content::Source<content::NavigationController>(
            &web_contents()->GetController()));
 
-  FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(web_contents_.get());
+  favicon::FaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(web_contents_.get());
 
-  if (favicon_tab_helper)
-    favicon_tab_helper->RemoveObserver(this);
+  if (favicon_driver)
+    favicon_driver->RemoveObserver(this);
 
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(GetProfile());
@@ -672,14 +672,14 @@ ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(JNIEnv* env,
                                                    jobject obj) {
 
   ScopedJavaLocalRef<jobject> bitmap;
-  FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(web_contents_.get());
+  favicon::FaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(web_contents_.get());
 
-  if (!favicon_tab_helper)
+  if (!favicon_driver)
     return bitmap;
 
   // Always return the default favicon in Android.
-  SkBitmap favicon = favicon_tab_helper->GetFavicon().AsBitmap();
+  SkBitmap favicon = favicon_driver->GetFavicon().AsBitmap();
   if (!favicon.empty()) {
     gfx::DeviceDisplayInfo device_info;
     const float device_scale_factor = device_info.GetDIPScale();

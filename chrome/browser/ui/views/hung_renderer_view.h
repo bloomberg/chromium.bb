@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_HUNG_RENDERER_VIEW_H_
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/models/table_model.h"
 #include "ui/views/controls/button/button.h"
@@ -64,8 +64,8 @@ class HungPagesTableModel : public ui::TableModel, public views::TableGrouper {
     WebContentsObserverImpl(HungPagesTableModel* model,
                             content::WebContents* tab);
 
-    FaviconTabHelper* favicon_tab_helper() {
-      return FaviconTabHelper::FromWebContents(web_contents());
+    favicon::FaviconDriver* favicon_driver() {
+      return favicon::ContentFaviconDriver::FromWebContents(web_contents());
     }
 
     // WebContentsObserver overrides:

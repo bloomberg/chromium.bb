@@ -8,13 +8,13 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/extensions/webstore_install_with_prompt.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -204,9 +204,10 @@ ChromeLauncherAppMenuItems AppWindowLauncherItemController::GetApplicationList(
 
     // If the app's web contents provides a favicon, use it. Otherwise, use a
     // scaled down app icon.
-    FaviconTabHelper* favicon_tab_helper =
-        FaviconTabHelper::FromWebContents(app_window->web_contents());
-    gfx::Image result = favicon_tab_helper->GetFavicon();
+    favicon::FaviconDriver* favicon_driver =
+        favicon::ContentFaviconDriver::FromWebContents(
+            app_window->web_contents());
+    gfx::Image result = favicon_driver->GetFavicon();
     if (result.IsEmpty())
       result = GetAppListIcon(app_window);
 

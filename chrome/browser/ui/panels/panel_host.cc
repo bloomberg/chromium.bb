@@ -10,12 +10,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/window_controller.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/favicon/favicon_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "components/ui/zoom/page_zoom.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/invalidate_type.h"
@@ -66,7 +67,7 @@ void PanelHost::Init(const GURL& url) {
   SessionTabHelper::FromWebContents(web_contents_.get())->SetWindowID(
       panel_->session_id());
 
-  FaviconTabHelper::CreateForWebContents(web_contents_.get());
+  favicon::CreateContentFaviconDriverForWebContents(web_contents_.get());
   PrefsTabHelper::CreateForWebContents(web_contents_.get());
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents_.get());
@@ -88,10 +89,10 @@ gfx::Image PanelHost::GetPageIcon() const {
   if (!web_contents_.get())
     return gfx::Image();
 
-  FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(web_contents_.get());
-  CHECK(favicon_tab_helper);
-  return favicon_tab_helper->GetFavicon();
+  favicon::FaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(web_contents_.get());
+  CHECK(favicon_driver);
+  return favicon_driver->GetFavicon();
 }
 
 content::WebContents* PanelHost::OpenURLFromTab(

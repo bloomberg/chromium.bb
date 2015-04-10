@@ -26,7 +26,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
@@ -53,6 +52,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_provider.h"
 #include "components/omnibox/keyword_provider.h"
@@ -428,7 +428,8 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
   if (*url == delegate_->GetURL()) {
     content::WebContents* web_contents = controller_->GetWebContents();
     *title = web_contents->GetTitle();
-    *favicon = FaviconTabHelper::FromWebContents(web_contents)->GetFavicon();
+    *favicon = favicon::ContentFaviconDriver::FromWebContents(web_contents)
+                   ->GetFavicon();
   }
 }
 

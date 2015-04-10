@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -68,6 +67,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -138,7 +138,8 @@ class FaviconUpdateWatcher : public favicon::FaviconDriverObserver {
  public:
   explicit FaviconUpdateWatcher(content::WebContents* web_contents)
       : seen_(false), running_(false), scoped_observer_(this) {
-    scoped_observer_.Add(FaviconTabHelper::FromWebContents(web_contents));
+    scoped_observer_.Add(
+        favicon::ContentFaviconDriver::FromWebContents(web_contents));
   }
 
   void Wait() {
@@ -164,7 +165,7 @@ class FaviconUpdateWatcher : public favicon::FaviconDriverObserver {
 
   bool seen_;
   bool running_;
-  ScopedObserver<FaviconTabHelper, FaviconUpdateWatcher> scoped_observer_;
+  ScopedObserver<favicon::FaviconDriver, FaviconUpdateWatcher> scoped_observer_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconUpdateWatcher);
@@ -3182,14 +3183,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
                        1);
   NavigateToDestURL();
 
-  if (!FaviconTabHelper::FromWebContents(
-          GetActiveWebContents())->FaviconIsValid()) {
+  favicon::FaviconDriver* favicon_driver =
+      favicon::ContentFaviconDriver::FromWebContents(GetActiveWebContents());
+  if (!favicon_driver->FaviconIsValid()) {
     // If the favicon has not been set yet, wait for it to be.
     FaviconUpdateWatcher favicon_update_watcher(GetActiveWebContents());
     favicon_update_watcher.Wait();
   }
-  EXPECT_TRUE(FaviconTabHelper::FromWebContents(
-      GetActiveWebContents())->FaviconIsValid());
+  EXPECT_TRUE(favicon_driver->FaviconIsValid());
 }
 
 // Checks that when a prerendered page is swapped in to a referring page, the

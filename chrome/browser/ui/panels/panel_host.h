@@ -12,7 +12,6 @@
 #include "content/public/common/page_zoom.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 
-class FaviconTabHelper;
 class GURL;
 class Panel;
 class PrefsTabHelper;

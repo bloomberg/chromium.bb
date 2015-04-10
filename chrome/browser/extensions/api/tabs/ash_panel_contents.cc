@@ -176,15 +176,15 @@ void AshPanelContents::Initialize(content::BrowserContext* context,
           context, content::SiteInstance::CreateForURL(context, url_))));
 
   // Needed to give the web contents a Window ID. Extension APIs expect web
-  // contents to have a Window ID. Also required for FaviconTabHelper to
-  // correctly set the window icon and title.
+  // contents to have a Window ID. Also required for FaviconDriver to correctly
+  // set the window icon and title.
   SessionTabHelper::CreateForWebContents(web_contents_.get());
   SessionTabHelper::FromWebContents(web_contents_.get())->SetWindowID(
       host_->session_id());
 
   // Responsible for loading favicons for the Launcher, which uses different
-  // logic than the FaviconTabHelper associated with web_contents_
-  // (instantiated in AppWindow::Init())
+  // logic than the FaviconDriver associated with web_contents_ (instantiated in
+  // AppWindow::Init())
   launcher_favicon_loader_.reset(
       new LauncherFaviconLoader(this, web_contents_.get()));
 

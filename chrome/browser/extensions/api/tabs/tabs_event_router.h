@@ -19,10 +19,12 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_router.h"
 
-class FaviconTabHelper;
-
 namespace content {
 class WebContents;
+}
+
+namespace favicon {
+class FaviconDriver;
 }
 
 namespace extensions {
@@ -179,7 +181,8 @@ class TabsEventRouter : public TabStripModelObserver,
   // The main profile that owns this event router.
   Profile* profile_;
 
-  ScopedObserver<FaviconTabHelper, TabsEventRouter> favicon_scoped_observer_;
+  ScopedObserver<favicon::FaviconDriver, TabsEventRouter>
+      favicon_scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TabsEventRouter);
 };

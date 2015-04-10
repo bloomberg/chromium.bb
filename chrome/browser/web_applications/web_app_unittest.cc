@@ -16,7 +16,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/favicon/favicon_helper.h"
 #endif
 
 using content::RenderViewHostTester;
@@ -27,7 +27,7 @@ class WebApplicationTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 #if defined(TOOLKIT_VIEWS)
     extensions::TabHelper::CreateForWebContents(web_contents());
-    FaviconTabHelper::CreateForWebContents(web_contents());
+    favicon::CreateContentFaviconDriverForWebContents(web_contents());
 #endif
   }
 };

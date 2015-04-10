@@ -6,7 +6,7 @@
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/favicon/favicon_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
@@ -87,7 +87,7 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
 // extension module in the future.
 void ChromeWebViewGuestDelegate::OnAttachWebViewHelpers(
     content::WebContents* contents) {
-  FaviconTabHelper::CreateForWebContents(contents);
+  favicon::CreateContentFaviconDriverForWebContents(contents);
   ChromeExtensionWebContentsObserver::CreateForWebContents(contents);
 #if defined(ENABLE_PRINTING)
 #if defined(ENABLE_PRINT_PREVIEW)

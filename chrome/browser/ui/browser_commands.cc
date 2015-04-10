@@ -16,7 +16,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
-#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -58,6 +57,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/favicon/content/content_favicon_driver.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/ui/zoom/page_zoom.h"
@@ -732,7 +732,7 @@ void BookmarkCurrentPageIgnoringExtensionOverrides(Browser* browser) {
       web_contents->GetBrowserContext()->IsOffTheRecord()) {
     // If we're incognito the favicon may not have been saved. Save it now
     // so that bookmarks have an icon for the page.
-    FaviconTabHelper::FromWebContents(web_contents)->SaveFavicon();
+    favicon::ContentFaviconDriver::FromWebContents(web_contents)->SaveFavicon();
   }
   bool was_bookmarked_by_user = bookmarks::IsBookmarkedByUser(model, url);
   bookmarks::AddIfNotBookmarked(model, url, title);
