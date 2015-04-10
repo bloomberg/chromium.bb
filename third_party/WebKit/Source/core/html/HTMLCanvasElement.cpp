@@ -327,11 +327,17 @@ void HTMLCanvasElement::doDeferredPaintInvalidation()
         didFinalizeFrame();
     } else {
         ASSERT(hasImageBuffer());
-        m_imageBuffer->finalizeFrame(m_dirtyRect);
+        FloatRect srcRect(0, 0, size().width(), size().height());
+        m_dirtyRect.intersect(srcRect);
+        LayoutBox* ro = layoutBox();
+        if (ro) {
+            m_imageBuffer->finalizeFrame(mapRect(m_dirtyRect, srcRect, ro->contentBoxRect()));
+        } else {
+            m_imageBuffer->finalizeFrame(m_dirtyRect);
+        }
     }
     ASSERT(m_dirtyRect.isEmpty());
 }
-
 
 void HTMLCanvasElement::notifyObserversCanvasChanged(const FloatRect& rect)
 {
