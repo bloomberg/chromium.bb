@@ -1,4 +1,6 @@
 include_rules = [
+  "+base",
+  "+base/test",
   "+blink/public/resources",
   "+cc",
   "+gin",
@@ -8,6 +10,7 @@ include_rules = [
   "+mojo/application",
   "+mojo/services/network",
   "+net/base",
+  "+net/test/spawned_test_server",
   "+skia",
   "+third_party/mojo_services/src",
   "+third_party/WebKit/public",

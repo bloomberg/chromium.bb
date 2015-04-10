@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "gin/v8_initializer.h"
@@ -25,13 +27,8 @@
 #include "third_party/mojo/src/mojo/public/cpp/application/interface_factory_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/mojo_services/src/content_handler/public/interfaces/content_handler.mojom.h"
-
-#if !defined(COMPONENT_BUILD)
-#include "base/i18n/icu_util.h"
-#include "base/path_service.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#endif
 
 using mojo::ApplicationConnection;
 using mojo::Array;

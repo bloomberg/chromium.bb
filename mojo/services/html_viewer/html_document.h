@@ -109,6 +109,7 @@ class HTMLDocument : public blink::WebViewClient,
                               const blink::WebString& source_name,
                               unsigned source_line,
                               const blink::WebString& stack_trace) override;
+  void didFinishLoad(blink::WebLocalFrame* frame) override;
   void didNavigateWithinPage(blink::WebLocalFrame* frame,
                              const blink::WebHistoryItem& history_item,
                              blink::WebHistoryCommitType commit_type) override;
@@ -127,7 +128,7 @@ class HTMLDocument : public blink::WebViewClient,
   void OnViewDestroyed(mojo::View* view) override;
   void OnViewInputEvent(mojo::View* view, const mojo::EventPtr& event) override;
 
-  // InterfaceFactory<AxProvider>
+  // mojo::InterfaceFactory<mojo::AxProvider>
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::AxProvider> request) override;
 
@@ -154,8 +155,12 @@ class HTMLDocument : public blink::WebViewClient,
   scoped_ptr<media::MediaPermission> media_permission_;
   scoped_ptr<media::CdmFactory> cdm_factory_;
 
-  // HTMLDocument owns these pointers.
-  std::set<AxProviderImpl*> ax_provider_impls_;
+  // HTMLDocument owns these pointers; binding requests after document load.
+  std::set<mojo::InterfaceRequest<mojo::AxProvider>*> ax_provider_requests_;
+  std::set<AxProviderImpl*> ax_providers_;
+
+  // A flag set on didFinishLoad.
+  bool did_finish_load_ = false;
 
   // Set if the content will never be displayed.
   bool is_headless_;

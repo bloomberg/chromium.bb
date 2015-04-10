@@ -214,3 +214,20 @@ test("tests") {
     "//base/test:run_all_unittests",
   ]
 }
+
+mojo_native_application("apptests") {
+  output_name = "html_viewer_apptests"
+  testonly = true
+
+  sources = [
+    "ax_provider_apptest.cc",
+  ]
+
+  deps = [
+    ":lib",
+    ":html_viewer",
+    "//mojo/application:test_support",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+}

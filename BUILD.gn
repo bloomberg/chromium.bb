@@ -648,6 +648,7 @@ group("gn_mojo_targets") {
 
     if (!is_debug) {
       deps += [
+        "//mojo/services/html_viewer:apptests",
         "//mojo/services/html_viewer:tests",
         "//mojo/services/network:apptests",
       ]

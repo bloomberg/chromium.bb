@@ -127,7 +127,8 @@ HTMLDocument::HTMLDocument(
 }
 
 HTMLDocument::~HTMLDocument() {
-  STLDeleteElements(&ax_provider_impls_);
+  STLDeleteElements(&ax_providers_);
+  STLDeleteElements(&ax_provider_requests_);
 
   if (web_view_)
     web_view_->close();
@@ -148,21 +149,25 @@ void HTMLDocument::OnEmbed(
   root_->AddObserver(this);
 }
 
-void HTMLDocument::Create(mojo::ApplicationConnection* connection,
-                          mojo::InterfaceRequest<AxProvider> request) {
-  if (!web_view_)
-    return;
-  ax_provider_impls_.insert(
-      WeakBindToRequest(new AxProviderImpl(web_view_), &request));
-}
-
 void HTMLDocument::OnViewManagerDisconnected(ViewManager* view_manager) {
   // TODO(aa): Need to figure out how shutdown works.
 }
 
+void HTMLDocument::Create(mojo::ApplicationConnection* connection,
+                          mojo::InterfaceRequest<AxProvider> request) {
+  if (!did_finish_load_) {
+    // Cache AxProvider interface requests until the document finishes loading.
+    auto cached_request = new mojo::InterfaceRequest<AxProvider>();
+    *cached_request = request.Pass();
+    ax_provider_requests_.insert(cached_request);
+  } else {
+    ax_providers_.insert(
+        WeakBindToRequest(new AxProviderImpl(web_view_), &request));
+  }
+}
+
 void HTMLDocument::Load(URLResponsePtr response) {
   DCHECK(!web_view_);
-
   web_view_ = blink::WebView::create(this);
   touch_handler_.reset(new TouchHandler(web_view_));
   web_layer_tree_view_impl_->set_widget(web_view_);
@@ -294,6 +299,15 @@ void HTMLDocument::didAddMessageToConsole(
     const blink::WebString& stack_trace) {
   VLOG(1) << "[" << source_name.utf8() << "(" << source_line << ")] "
           << message.text.utf8();
+}
+
+void HTMLDocument::didFinishLoad(blink::WebLocalFrame* frame) {
+  DCHECK(!did_finish_load_);
+  did_finish_load_ = true;
+  // Bind any pending AxProviderImpl interface requests.
+  for (auto it : ax_provider_requests_)
+    ax_providers_.insert(WeakBindToRequest(new AxProviderImpl(web_view_), it));
+  STLDeleteElements(&ax_provider_requests_);
 }
 
 void HTMLDocument::didNavigateWithinPage(
