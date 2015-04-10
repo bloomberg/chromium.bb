@@ -153,6 +153,23 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
                         int dest_id,
                         gfx::Transform* transform) const;
 
+  // Computes the change of basis transform from node |source_id| to |dest_id|,
+  // including any sublayer scale at |dest_id|.  The function returns false iff
+  // the inverse of a singular transform was used (and the result should,
+  // therefore, not be trusted).
+  bool ComputeTransformWithDestinationSublayerScale(
+      int source_id,
+      int dest_id,
+      gfx::Transform* transform) const;
+
+  // Computes the change of basis transform from node |source_id| to |dest_id|,
+  // including any sublayer scale at |source_id|.  The function returns false
+  // iff the inverse of a singular transform was used (and the result should,
+  // therefore, not be trusted).
+  bool ComputeTransformWithSourceSublayerScale(int source_id,
+                                               int dest_id,
+                                               gfx::Transform* transform) const;
+
   // Returns true iff the nodes indexed by |source_id| and |dest_id| are 2D axis
   // aligned with respect to one another.
   bool Are2DAxisAligned(int source_id, int dest_id) const;

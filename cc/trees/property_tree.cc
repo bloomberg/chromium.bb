@@ -74,6 +74,36 @@ bool TransformTree::ComputeTransform(int source_id,
   return CombineInversesBetween(source_id, dest_id, transform);
 }
 
+bool TransformTree::ComputeTransformWithDestinationSublayerScale(
+    int source_id,
+    int dest_id,
+    gfx::Transform* transform) const {
+  bool success = ComputeTransform(source_id, dest_id, transform);
+
+  const TransformNode* dest_node = Node(dest_id);
+  if (!dest_node->data.needs_sublayer_scale)
+    return success;
+
+  transform->matrix().postScale(dest_node->data.sublayer_scale.x(),
+                                dest_node->data.sublayer_scale.y(), 1.f);
+  return success;
+}
+
+bool TransformTree::ComputeTransformWithSourceSublayerScale(
+    int source_id,
+    int dest_id,
+    gfx::Transform* transform) const {
+  bool success = ComputeTransform(source_id, dest_id, transform);
+
+  const TransformNode* source_node = Node(source_id);
+  if (!source_node->data.needs_sublayer_scale)
+    return success;
+
+  transform->Scale(1.f / source_node->data.sublayer_scale.x(),
+                   1.f / source_node->data.sublayer_scale.y());
+  return success;
+}
+
 bool TransformTree::Are2DAxisAligned(int source_id, int dest_id) const {
   gfx::Transform transform;
   return ComputeTransform(source_id, dest_id, &transform) &&
@@ -235,8 +265,8 @@ void TransformTree::UpdateSublayerScale(TransformNode* node) {
 
 void TransformTree::UpdateTargetSpaceTransform(TransformNode* node,
                                                TransformNode* target_node) {
-  node->data.to_target.MakeIdentity();
   if (node->data.needs_sublayer_scale) {
+    node->data.to_target.MakeIdentity();
     node->data.to_target.Scale(node->data.sublayer_scale.x(),
                                node->data.sublayer_scale.y());
   } else {
@@ -244,14 +274,8 @@ void TransformTree::UpdateTargetSpaceTransform(TransformNode* node,
     // In order to include the root transform for the root surface, we walk up
     // to the root of the transform tree in ComputeTransform.
     int target_id = target_is_root_surface ? 0 : target_node->id;
-    if (target_node) {
-      node->data.to_target.Scale(target_node->data.sublayer_scale.x(),
-                                 target_node->data.sublayer_scale.y());
-    }
-
-    gfx::Transform unscaled_target_transform;
-    ComputeTransform(node->id, target_id, &unscaled_target_transform);
-    node->data.to_target.PreconcatTransform(unscaled_target_transform);
+    ComputeTransformWithDestinationSublayerScale(node->id, target_id,
+                                                 &node->data.to_target);
   }
 
   if (!node->data.to_target.GetInverse(&node->data.from_target))

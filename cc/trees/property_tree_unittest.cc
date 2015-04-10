@@ -212,4 +212,108 @@ TEST(PropertyTreeTest, ComputeTransformWithUninvertibleTransform) {
   EXPECT_FALSE(success);
 }
 
+TEST(PropertyTreeTest, ComputeTransformWithSublayerScale) {
+  TransformTree tree;
+  TransformNode& root = *tree.Node(0);
+  root.data.target_id = 0;
+  tree.UpdateTransforms(0);
+
+  TransformNode grand_parent;
+  grand_parent.data.local.Scale(2.f, 2.f);
+  grand_parent.data.target_id = 0;
+  grand_parent.data.needs_sublayer_scale = true;
+  int grand_parent_id = tree.Insert(grand_parent, 0);
+  tree.UpdateTransforms(grand_parent_id);
+
+  TransformNode parent;
+  parent.data.local.Translate(15.f, 15.f);
+  parent.data.target_id = grand_parent_id;
+  int parent_id = tree.Insert(parent, grand_parent_id);
+  tree.UpdateTransforms(parent_id);
+
+  TransformNode child;
+  child.data.local.Scale(3.f, 3.f);
+  child.data.target_id = grand_parent_id;
+  int child_id = tree.Insert(child, parent_id);
+  tree.UpdateTransforms(child_id);
+
+  TransformNode grand_child;
+  grand_child.data.local.Scale(5.f, 5.f);
+  grand_child.data.target_id = grand_parent_id;
+  grand_child.data.needs_sublayer_scale = true;
+  int grand_child_id = tree.Insert(grand_child, child_id);
+  tree.UpdateTransforms(grand_child_id);
+
+  EXPECT_EQ(gfx::Vector2dF(2.f, 2.f),
+            tree.Node(grand_parent_id)->data.sublayer_scale);
+  EXPECT_EQ(gfx::Vector2dF(30.f, 30.f),
+            tree.Node(grand_child_id)->data.sublayer_scale);
+
+  // Compute transform from grand_parent to grand_child.
+  gfx::Transform expected_transform_without_sublayer_scale;
+  expected_transform_without_sublayer_scale.Scale(1.f / 15.f, 1.f / 15.f);
+  expected_transform_without_sublayer_scale.Translate(-15.f, -15.f);
+
+  gfx::Transform expected_transform_with_dest_sublayer_scale;
+  expected_transform_with_dest_sublayer_scale.Scale(30.f, 30.f);
+  expected_transform_with_dest_sublayer_scale.Scale(1.f / 15.f, 1.f / 15.f);
+  expected_transform_with_dest_sublayer_scale.Translate(-15.f, -15.f);
+
+  gfx::Transform expected_transform_with_source_sublayer_scale;
+  expected_transform_with_source_sublayer_scale.Scale(1.f / 15.f, 1.f / 15.f);
+  expected_transform_with_source_sublayer_scale.Translate(-15.f, -15.f);
+  expected_transform_with_source_sublayer_scale.Scale(0.5f, 0.5f);
+
+  gfx::Transform transform;
+  bool success =
+      tree.ComputeTransform(grand_parent_id, grand_child_id, &transform);
+  EXPECT_TRUE(success);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform_without_sublayer_scale,
+                                  transform);
+
+  success = tree.ComputeTransformWithDestinationSublayerScale(
+      grand_parent_id, grand_child_id, &transform);
+  EXPECT_TRUE(success);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform_with_dest_sublayer_scale,
+                                  transform);
+
+  success = tree.ComputeTransformWithSourceSublayerScale(
+      grand_parent_id, grand_child_id, &transform);
+  EXPECT_TRUE(success);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform_with_source_sublayer_scale,
+                                  transform);
+
+  // Now compute transform from grand_child to grand_parent.
+  expected_transform_without_sublayer_scale.MakeIdentity();
+  expected_transform_without_sublayer_scale.Translate(15.f, 15.f);
+  expected_transform_without_sublayer_scale.Scale(15.f, 15.f);
+
+  expected_transform_with_dest_sublayer_scale.MakeIdentity();
+  expected_transform_with_dest_sublayer_scale.Scale(2.f, 2.f);
+  expected_transform_with_dest_sublayer_scale.Translate(15.f, 15.f);
+  expected_transform_with_dest_sublayer_scale.Scale(15.f, 15.f);
+
+  expected_transform_with_source_sublayer_scale.MakeIdentity();
+  expected_transform_with_source_sublayer_scale.Translate(15.f, 15.f);
+  expected_transform_with_source_sublayer_scale.Scale(15.f, 15.f);
+  expected_transform_with_source_sublayer_scale.Scale(1.f / 30.f, 1.f / 30.f);
+
+  success = tree.ComputeTransform(grand_child_id, grand_parent_id, &transform);
+  EXPECT_TRUE(success);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform_without_sublayer_scale,
+                                  transform);
+
+  success = tree.ComputeTransformWithDestinationSublayerScale(
+      grand_child_id, grand_parent_id, &transform);
+  EXPECT_TRUE(success);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform_with_dest_sublayer_scale,
+                                  transform);
+
+  success = tree.ComputeTransformWithSourceSublayerScale(
+      grand_child_id, grand_parent_id, &transform);
+  EXPECT_TRUE(success);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform_with_source_sublayer_scale,
+                                  transform);
+}
+
 }  // namespace cc
