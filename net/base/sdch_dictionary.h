@@ -71,8 +71,6 @@ class NET_EXPORT_PRIVATE SdchDictionary {
   // Is this dictionary expired?
   bool Expired() const;
 
-  void SetClockForTesting(scoped_ptr<base::Clock> clock);
-
  private:
   friend class base::RefCountedData<SdchDictionary>;
 
@@ -103,8 +101,6 @@ class NET_EXPORT_PRIVATE SdchDictionary {
   const std::string path_;
   const base::Time expiration_;  // Implied by max-age.
   const std::set<int> ports_;
-
-  scoped_ptr<base::Clock> clock_;
 
   void operator=(const SdchDictionary&) = delete;
 };

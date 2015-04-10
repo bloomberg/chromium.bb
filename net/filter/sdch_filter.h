@@ -81,8 +81,8 @@ class NET_EXPORT_PRIVATE SdchFilter : public Filter {
   // ReadFilteredData.
   scoped_ptr<open_vcdiff::VCDiffStreamingDecoder> vcdiff_streaming_decoder_;
 
-  // In case we need to assemble the hash piecemeal, we have a place to store
-  // a part of the hash until we "get all 8 bytes plus a null."
+  // After the encoded response SDCH header is read, this variable contains
+  // the server hash with trailing null byte.
   std::string dictionary_hash_;
 
   // After assembling an entire dictionary hash (the first 9 bytes of the
@@ -92,11 +92,6 @@ class NET_EXPORT_PRIVATE SdchFilter : public Filter {
   // an SDCH encoded bundle, and various error recovery strategies can be
   // attempted.
   bool dictionary_hash_is_plausible_;
-
-  // Validity of this pointer is guaranteed by either the FilterContext holding
-  // a containing SdchManager::DictionarySet, or this object holding a
-  // container in |unexpected_dictionary_handle_| below.
-  const SdchDictionary* dictionary_;
 
   // We keep a copy of the URLRequestContext for use in the destructor, (at
   // which point GetURLRequestContext() will likely return null because of

@@ -175,7 +175,7 @@ static std::string NewSdchExpiredDictionary(const std::string& domain) {
     dictionary.append(domain);
     dictionary.append("\n");
   }
-  dictionary.append("Max-Age: 0\n");
+  dictionary.append("Max-Age: -1\n");
   dictionary.append("\n");
   dictionary.append(kTestVcdiffDictionary, sizeof(kTestVcdiffDictionary) - 1);
   return dictionary;
@@ -1211,19 +1211,12 @@ TEST_F(SdchFilterTest, UnexpectedDictionary) {
   std::string server_hash;
   SdchManager::GenerateHash(expired_dictionary, &client_hash, &server_hash);
 
-  // Make sure Max-Age: 0 shows up as expired.
-  scoped_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
-  clock->SetNow(base::Time::Now());
-  clock->Advance(base::TimeDelta::FromMinutes(5));
   SdchProblemCode problem_code;
   scoped_ptr<SdchManager::DictionarySet> hash_set(
       sdch_manager_->GetDictionarySetByHash(
           url, server_hash, &problem_code).Pass());
   ASSERT_TRUE(hash_set);
   ASSERT_EQ(SDCH_OK, problem_code);
-
-  const_cast<SdchDictionary*>(hash_set->GetDictionary(server_hash))
-      ->SetClockForTesting(clock.Pass());
 
   // Encode output with the second dictionary.
   std::string sdch_compressed(NewSdchCompressedData(expired_dictionary));

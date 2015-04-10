@@ -640,7 +640,7 @@ TEST_F(SdchOwnerTest, PinRemoveUse) {
       sdch_manager().GetDictionarySet(
           GURL(std::string(generic_url) + "/x.html")));
   ASSERT_TRUE(return_set.get());
-  EXPECT_TRUE(return_set->GetDictionary(server_hash_d1));
+  EXPECT_TRUE(return_set->GetDictionaryText(server_hash_d1));
 
   const base::Value* result = nullptr;
   const base::DictionaryValue* dict_result = nullptr;

@@ -36,8 +36,7 @@ SdchDictionary::SdchDictionary(const std::string& dictionary_text,
       domain_(domain),
       path_(path),
       expiration_(expiration),
-      ports_(ports),
-      clock_(new base::DefaultClock) {
+      ports_(ports) {
 }
 
 SdchDictionary::SdchDictionary(const SdchDictionary& rhs)
@@ -48,8 +47,7 @@ SdchDictionary::SdchDictionary(const SdchDictionary& rhs)
       domain_(rhs.domain_),
       path_(rhs.path_),
       expiration_(rhs.expiration_),
-      ports_(rhs.ports_),
-      clock_(new base::DefaultClock) {
+      ports_(rhs.ports_) {
 }
 
 SdchDictionary::~SdchDictionary() {
@@ -160,11 +158,7 @@ bool SdchDictionary::PathMatch(const std::string& path,
 }
 
 bool SdchDictionary::Expired() const {
-  return clock_->Now() > expiration_;
-}
-
-void SdchDictionary::SetClockForTesting(scoped_ptr<base::Clock> clock) {
-  clock_ = clock.Pass();
+  return base::Time::Now() > expiration_;
 }
 
 }  // namespace net

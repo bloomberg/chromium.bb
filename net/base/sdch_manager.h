@@ -67,13 +67,14 @@ class NET_EXPORT SdchManager {
     // Return a comma separated list of client hashes.
     std::string GetDictionaryClientHashList() const;
 
-    // Lookup a given dictionary based on server hash. Returned pointer
-    // is guaranteed to be valid for the lifetime of the DictionarySet.
-    // Returns NULL if hash is not a valid server hash for a dictionary
-    // named by DictionarySet.
-    const SdchDictionary* GetDictionary(const std::string& hash) const;
-
     bool Empty() const;
+
+    // Lookup the dictionary contents based on the server hash.  Returns
+    // a null pointer if the specified hash is not present in the dictionary
+    // set.
+    // The pointer is guaranteed to be valid as long as the DictionarySet
+    // is alive.
+    const std::string* GetDictionaryText(const std::string& server_hash) const;
 
    private:
     // A DictionarySet may only be constructed by the SdchManager.

@@ -23,6 +23,8 @@ namespace net {
 
 namespace {
 
+const size_t kServerIdLength = 9;  // Dictionary hash plus null from server.
+
 // Disambiguate various types of responses that trigger a meta-refresh,
 // failure, or fallback to pass-through.
 enum ResponseCorruptionDetectionCause {
@@ -106,7 +108,6 @@ SdchFilter::SdchFilter(FilterType type, const FilterContext& filter_context)
       decoding_status_(DECODING_UNINITIALIZED),
       dictionary_hash_(),
       dictionary_hash_is_plausible_(false),
-      dictionary_(NULL),
       url_request_context_(filter_context.GetURLRequestContext()),
       dest_buffer_excess_(),
       dest_buffer_excess_index_(0),
@@ -123,6 +124,12 @@ SdchFilter::SdchFilter(FilterType type, const FilterContext& filter_context)
 SdchFilter::~SdchFilter() {
   // All code here is for gathering stats, and can be removed when SDCH is
   // considered stable.
+
+  // References to filter_context_ and vcdiff_streaming_decoder_ (which
+  // contains a reference to the dictionary text) are safe because
+  // ~URLRequestHttpJob calls URLRequestJob::DestroyFilters, destroying
+  // this object before the filter context in URLRequestHttpJob and its
+  // members go out of scope.
 
   static int filter_use_count = 0;
   ++filter_use_count;
@@ -183,7 +190,7 @@ SdchFilter::~SdchFilter() {
 
       // Notify successful dictionary usage.
       url_request_context_->sdch_manager()->OnDictionaryUsed(
-          dictionary_->server_hash());
+          std::string(dictionary_hash_, 0, kServerIdLength - 1));
 
       return;
     }
@@ -438,7 +445,6 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
 }
 
 Filter::FilterStatus SdchFilter::InitializeDictionary() {
-  const size_t kServerIdLength = 9;  // Dictionary hash plus null from server.
   size_t bytes_needed = kServerIdLength - dictionary_hash_.size();
   DCHECK_GT(bytes_needed, 0u);
   if (!next_stream_data_)
@@ -458,7 +464,7 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
   else
     next_stream_data_ = NULL;
 
-  DCHECK(!dictionary_);
+  const std::string* dictionary_text = nullptr;
   dictionary_hash_is_plausible_ = true;  // Assume plausible, but check.
 
   SdchProblemCode rv = SDCH_OK;
@@ -467,8 +473,8 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
     SdchManager::DictionarySet* handle =
         filter_context_.SdchDictionariesAdvertised();
     if (handle)
-      dictionary_ = handle->GetDictionary(server_hash);
-    if (!dictionary_) {
+      dictionary_text = handle->GetDictionaryText(server_hash);
+    if (!dictionary_text) {
       // This is a hack. Naively, the dictionaries available for
       // decoding should be only the ones advertised. However, there are
       // cases, specifically resources encoded with old dictionaries living
@@ -486,7 +492,8 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
           url_request_context_->sdch_manager()->GetDictionarySetByHash(
               url_, server_hash, &rv);
       if (unexpected_dictionary_handle_) {
-        dictionary_ = unexpected_dictionary_handle_->GetDictionary(server_hash);
+        dictionary_text =
+            unexpected_dictionary_handle_->GetDictionaryText(server_hash);
         // Override SDCH_OK rv; this is still worth logging.
         rv = (filter_context_.IsCachedContent() ?
               SDCH_UNADVERTISED_DICTIONARY_USED_CACHED :
@@ -515,15 +522,21 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
   if (rv != SDCH_OK)
     LogSdchProblem(rv);
 
-  if (!dictionary_) {
+  if (!dictionary_text) {
     decoding_status_ = DECODING_ERROR;
     return FILTER_ERROR;
   }
 
   vcdiff_streaming_decoder_.reset(new open_vcdiff::VCDiffStreamingDecoder);
   vcdiff_streaming_decoder_->SetAllowVcdTarget(false);
-  vcdiff_streaming_decoder_->StartDecoding(dictionary_->text().data(),
-                                           dictionary_->text().size());
+
+  // The validity of the dictionary_text pointer is guaranteed for the
+  // lifetime of the SdchFilter by the ownership of the DictionarySet by
+  // the FilterContext/URLRequestHttpJob.  All URLRequestJob filters are
+  // torn down in ~URLRequestHttpJob by a call to
+  // URLRequestJob::DestroyFilters.
+  vcdiff_streaming_decoder_->StartDecoding(dictionary_text->data(),
+                                           dictionary_text->size());
   decoding_status_ = DECODING_IN_PROGRESS;
   return FILTER_OK;
 }

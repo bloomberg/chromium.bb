@@ -61,17 +61,16 @@ std::string SdchManager::DictionarySet::GetDictionaryClientHashList() const {
   return result;
 }
 
-const SdchDictionary* SdchManager::DictionarySet::GetDictionary(
-    const std::string& hash) const {
-  auto it = dictionaries_.find(hash);
-  if (it == dictionaries_.end())
-    return NULL;
-
-  return &it->second->data;
-}
-
 bool SdchManager::DictionarySet::Empty() const {
   return dictionaries_.empty();
+}
+
+const std::string* SdchManager::DictionarySet::GetDictionaryText(
+    const std::string& server_hash) const {
+  auto it = dictionaries_.find(server_hash);
+  if (it == dictionaries_.end())
+    return nullptr;
+  return &it->second->data.text();
 }
 
 void SdchManager::DictionarySet::AddDictionary(
