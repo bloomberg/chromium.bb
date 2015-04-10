@@ -107,3 +107,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Navigator) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ParamsParser) {
   RunTestsInFile("params_parser_test.js", "test.pdf");
 }
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ZoomManager) {
+  RunTestsInFile("zoom_manager_test.js", "test.pdf");
+}

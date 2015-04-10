@@ -176,30 +176,22 @@ function PDFViewer(streamDetails) {
                                     [this.bookmarksPane_]);
   }
 
-  // Setup the keyboard event listener.
-  document.onkeydown = this.handleKeyEvent_.bind(this);
-
   // Set up the zoom API.
   if (this.shouldManageZoom_()) {
     chrome.tabs.setZoomSettings(this.streamDetails_.tabId,
-                                {mode: 'manual', scope: 'per-tab'},
-                                this.afterZoom_.bind(this));
-    chrome.tabs.onZoomChange.addListener(function(zoomChangeInfo) {
-      if (zoomChangeInfo.tabId != this.streamDetails_.tabId)
-        return;
-      // If the zoom level is close enough to the current zoom level, don't
-      // change it. This avoids us getting into an infinite loop of zoom changes
-      // due to floating point error.
-      var MIN_ZOOM_DELTA = 0.01;
-      var zoomDelta = Math.abs(this.viewport_.zoom -
-                               zoomChangeInfo.newZoomFactor);
-      // We should not change zoom level when we are responsible for initiating
-      // the zoom. onZoomChange() is called before setZoomComplete() callback
-      // when we initiate the zoom.
-      if ((zoomDelta > MIN_ZOOM_DELTA) && !this.setZoomInProgress_)
-        this.viewport_.setZoom(zoomChangeInfo.newZoomFactor);
+                                {mode: 'manual', scope: 'per-tab'}, function() {
+      this.zoomManager_ =
+          new ZoomManager(this.viewport_, this.setZoom_.bind(this));
+      chrome.tabs.onZoomChange.addListener(function(zoomChangeInfo) {
+        if (zoomChangeInfo.tabId != this.streamDetails_.tabId)
+          return;
+        this.zoomManager_.onBrowserZoomChange(zoomChangeInfo.newZoomFactor);
+      }.bind(this));
     }.bind(this));
   }
+
+  // Setup the keyboard event listener.
+  document.onkeydown = this.handleKeyEvent_.bind(this);
 
   // Parse open pdf parameters.
   this.paramsParser_ =
@@ -481,7 +473,6 @@ PDFViewer.prototype = {
           this.pageIndicator_.initialFadeIn();
           this.toolbar_.initialFadeIn();
         }
-
         break;
       case 'email':
         var href = 'mailto:' + message.data.to + '?cc=' + message.data.cc +
@@ -574,35 +565,20 @@ PDFViewer.prototype = {
     var zoom = this.viewport_.zoom;
     if (this.isMaterial_)
       this.zoomSelector_.zoomValue = 100 * zoom;
-    if (this.shouldManageZoom_() && !this.setZoomInProgress_) {
-      this.setZoomInProgress_ = true;
-      chrome.tabs.setZoom(this.streamDetails_.tabId, zoom,
-                          this.setZoomComplete_.bind(this, zoom));
-    }
     this.plugin_.postMessage({
       type: 'viewport',
       zoom: zoom,
       xOffset: position.x,
       yOffset: position.y
     });
+    if (this.zoomManager_)
+      this.zoomManager_.onPdfZoomChange();
   },
 
-  /**
-   * @private
-   * A callback that's called after chrome.tabs.setZoom is complete. This will
-   * call chrome.tabs.setZoom again if the zoom level has changed since it was
-   * last called.
-   * @param {number} lastZoom the zoom level that chrome.tabs.setZoom was called
-   *     with.
-   */
-  setZoomComplete_: function(lastZoom) {
-    var zoom = this.viewport_.zoom;
-    if (zoom !== lastZoom) {
-      chrome.tabs.setZoom(this.streamDetails_.tabId, zoom,
-                          this.setZoomComplete_.bind(this, zoom));
-    } else {
-      this.setZoomInProgress_ = false;
-    }
+  setZoom_: function(zoom) {
+    return new Promise(function(resolve, reject) {
+      chrome.tabs.setZoom(this.streamDetails_.tabId, zoom, resolve);
+    }.bind(this));
   },
 
   /**
