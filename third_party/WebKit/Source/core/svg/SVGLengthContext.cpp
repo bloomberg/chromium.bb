@@ -53,6 +53,54 @@ static float convertValueFromPercentageToUserUnits(const SVGLength& value, const
     return CSSPrimitiveValue::clampToCSSLengthRange(value.scaleByPercentage(dimensionForLengthMode(value.unitMode(), viewportSize)));
 }
 
+static const ComputedStyle* computedStyleForLengthResolving(const SVGElement* context)
+{
+    if (!context)
+        return 0;
+
+    const ContainerNode* currentContext = context;
+    do {
+        if (currentContext->layoutObject())
+            return currentContext->layoutObject()->style();
+        currentContext = currentContext->parentNode();
+    } while (currentContext);
+
+    // There must be at least a LayoutSVGRoot renderer, carrying a style.
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+static const ComputedStyle* rootElementStyle(const Node* context)
+{
+    if (!context)
+        return 0;
+
+    const Document& document = context->document();
+    Node* documentElement = document.documentElement();
+    const ComputedStyle* documentStyle = document.computedStyle();
+    const ComputedStyle* style = documentElement && context != documentElement ? documentElement->computedStyle() : documentStyle;
+    if (!style)
+        style = documentStyle;
+    return style;
+}
+
+static float convertValueFromUserUnitsToEMS(const ComputedStyle* style, float value)
+{
+    if (!style)
+        return 0;
+    float fontSize = style->specifiedFontSize();
+    if (!fontSize)
+        return 0;
+    return value / fontSize;
+}
+
+static float convertValueFromEMSToUserUnits(const ComputedStyle* style, float value)
+{
+    if (!style)
+        return 0;
+    return value * style->specifiedFontSize();
+}
+
 SVGLengthContext::SVGLengthContext(const SVGElement* context)
     : m_context(context)
 {
@@ -149,7 +197,7 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
         break;
     }
     case LengthTypeEMS:
-        userUnits = convertValueFromEMSToUserUnits(value);
+        userUnits = convertValueFromEMSToUserUnits(computedStyleForLengthResolving(m_context), value);
         break;
     case LengthTypeEXS:
         userUnits = convertValueFromEXSToUserUnits(value);
@@ -170,7 +218,7 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
         userUnits = value * cssPixelsPerPica;
         break;
     case LengthTypeREMS:
-        userUnits = convertValueFromREMSToUserUnits(value);
+        userUnits = convertValueFromEMSToUserUnits(rootElementStyle(m_context), value);
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -199,11 +247,11 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
         return value * 100 / dimensionForLengthMode(mode, viewportSize);
     }
     case LengthTypeEMS:
-        return convertValueFromUserUnitsToEMS(value);
+        return convertValueFromUserUnitsToEMS(computedStyleForLengthResolving(m_context), value);
     case LengthTypeEXS:
         return convertValueFromUserUnitsToEXS(value);
     case LengthTypeREMS:
-        return convertValueFromUserUnitsToREMS(value);
+        return convertValueFromUserUnitsToEMS(rootElementStyle(m_context), value);
     case LengthTypePX:
         return value;
     case LengthTypeCM:
@@ -220,86 +268,6 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
 
     ASSERT_NOT_REACHED();
     return 0;
-}
-
-static inline const ComputedStyle* computedStyleForLengthResolving(const SVGElement* context)
-{
-    if (!context)
-        return 0;
-
-    const ContainerNode* currentContext = context;
-    do {
-        if (currentContext->layoutObject())
-            return currentContext->layoutObject()->style();
-        currentContext = currentContext->parentNode();
-    } while (currentContext);
-
-    // There must be at least a LayoutSVGRoot renderer, carrying a style.
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-float SVGLengthContext::convertValueFromUserUnitsToEMS(float value) const
-{
-    const ComputedStyle* style = computedStyleForLengthResolving(m_context);
-    if (!style)
-        return 0;
-
-    float fontSize = style->specifiedFontSize();
-    if (!fontSize)
-        return 0;
-
-    return value / fontSize;
-}
-
-float SVGLengthContext::convertValueFromEMSToUserUnits(float value) const
-{
-    const ComputedStyle* style = computedStyleForLengthResolving(m_context);
-    if (!style)
-        return 0;
-    return value * style->specifiedFontSize();
-}
-
-float SVGLengthContext::convertValueFromUserUnitsToREMS(float value) const
-{
-    if (!m_context)
-        return 0;
-
-    const ComputedStyle* style = 0;
-    const Document& document = m_context->document();
-    Node* documentElement = document.documentElement();
-    const ComputedStyle* documentStyle = document.computedStyle();
-    style = documentElement && (static_cast<const Node*>(m_context.get()) != documentElement) ? documentElement->computedStyle() : documentStyle;
-    if (!style)
-        style = documentStyle;
-
-    if (!style)
-        return 0;
-
-    float fontSize = style->specifiedFontSize();
-    if (!fontSize)
-        return 0;
-
-    return value / fontSize;
-}
-
-float SVGLengthContext::convertValueFromREMSToUserUnits(float value) const
-{
-    if (!m_context)
-        return 0;
-
-    const ComputedStyle* style = 0;
-    const Document& document = m_context->document();
-    Node* documentElement = document.documentElement();
-    const ComputedStyle* documentStyle = document.computedStyle();
-    style = documentElement && (static_cast<const Node*>(m_context.get()) != documentElement) ? documentElement->computedStyle() : documentStyle;
-    if (!style)
-        style = documentStyle;
-
-    if (!style)
-        return 0;
-
-    return value * style->specifiedFontSize();
 }
 
 float SVGLengthContext::convertValueFromUserUnitsToEXS(float value) const

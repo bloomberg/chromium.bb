@@ -80,14 +80,8 @@ private:
     float valueForLength(const Length&, float zoom, SVGLengthMode) const;
     static float valueForLength(const Length&, float zoom, float dimension);
 
-    float convertValueFromUserUnitsToEMS(float value) const;
-    float convertValueFromEMSToUserUnits(float value) const;
-
     float convertValueFromUserUnitsToEXS(float value) const;
     float convertValueFromEXSToUserUnits(float value) const;
-
-    float convertValueFromUserUnitsToREMS(float value) const;
-    float convertValueFromREMSToUserUnits(float value) const;
 
     RawPtrWillBeMember<const SVGElement> m_context;
 };
