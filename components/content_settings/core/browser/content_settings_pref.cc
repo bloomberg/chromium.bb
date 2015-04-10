@@ -70,9 +70,12 @@ ContentSettingsPref::ContentSettingsPref(
   // of the old preference to this new preference. There is no need
   // to initialize this preference separately (in fact, in the case
   // of migration, we would be writing the empty new preference back to the
-  // old one, erasing it).
-  if (prefs_->GetBoolean(prefs::kMigratedContentSettingsPatternPairs) &&
-      !IsContentSettingsTypeSyncable(content_type_)) {
+  // old one, erasing it). Since copying between preferences is disallowed
+  // in incognito, |ContentSettingsPref| needs to be initialized from the new
+  // preference in incognito as well.
+  if ((prefs_->GetBoolean(prefs::kMigratedContentSettingsPatternPairs) &&
+       !IsContentSettingsTypeSyncable(content_type_))
+      || is_incognito_) {
     ReadContentSettingsFromPrefAndWriteToOldPref();
   }
 

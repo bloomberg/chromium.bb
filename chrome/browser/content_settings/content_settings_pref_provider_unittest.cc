@@ -27,6 +27,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_pref.h"
+#include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -732,6 +733,73 @@ TEST(PrefProviderTest, PrefsMigrateVerbatim) {
   }
 
   provider.ShutdownOnUIThread();
+}
+
+TEST(PrefProviderTest, IncognitoInheritsValueMap) {
+  TestingPrefServiceSyncable prefs;
+  PrefProvider::RegisterProfilePrefs(prefs.registry());
+
+  ContentSettingsPattern pattern_1 =
+      ContentSettingsPattern::FromString("google.com");
+  ContentSettingsPattern pattern_2 =
+      ContentSettingsPattern::FromString("www.google.com");
+  ContentSettingsPattern wildcard =
+      ContentSettingsPattern::FromString("*");
+  scoped_ptr<base::Value> value(
+      new base::FundamentalValue(CONTENT_SETTING_ALLOW));
+
+  // Create a normal provider and set a setting.
+  PrefProvider normal_provider(&prefs, false);
+  normal_provider.SetWebsiteSetting(pattern_1,
+                                    wildcard,
+                                    CONTENT_SETTINGS_TYPE_IMAGES,
+                                    std::string(),
+                                    value->DeepCopy());
+
+  // Non-OTR provider, Non-OTR iterator has one setting (pattern 1).
+  {
+    scoped_ptr<RuleIterator> it (normal_provider.GetRuleIterator(
+        CONTENT_SETTINGS_TYPE_IMAGES, std::string(), false));
+    EXPECT_TRUE(it->HasNext());
+    EXPECT_EQ(pattern_1, it->Next().primary_pattern);
+    EXPECT_FALSE(it->HasNext());
+  }
+
+  // Non-OTR provider, OTR iterator has no settings.
+  {
+    scoped_ptr<RuleIterator> it(normal_provider.GetRuleIterator(
+        CONTENT_SETTINGS_TYPE_IMAGES, std::string(), true));
+    EXPECT_FALSE(it->HasNext());
+  }
+
+  // Create an incognito provider and set a setting.
+  PrefProvider incognito_provider(&prefs, true);
+  incognito_provider.SetWebsiteSetting(pattern_2,
+                                       wildcard,
+                                       CONTENT_SETTINGS_TYPE_IMAGES,
+                                       std::string(),
+                                       value->DeepCopy());
+
+  // OTR provider, non-OTR iterator has one setting (pattern 1).
+  {
+    scoped_ptr<RuleIterator> it(incognito_provider.GetRuleIterator(
+        CONTENT_SETTINGS_TYPE_IMAGES, std::string(), false));
+    EXPECT_TRUE(it->HasNext());
+    EXPECT_EQ(pattern_1, it->Next().primary_pattern);
+    EXPECT_FALSE(it->HasNext());
+  }
+
+  // OTR provider, OTR iterator has one setting (pattern 2).
+  {
+    scoped_ptr<RuleIterator> it(incognito_provider.GetRuleIterator(
+        CONTENT_SETTINGS_TYPE_IMAGES, std::string(), true));
+    EXPECT_TRUE(it->HasNext());
+    EXPECT_EQ(pattern_2, it->Next().primary_pattern);
+    EXPECT_FALSE(it->HasNext());
+  }
+
+  incognito_provider.ShutdownOnUIThread();
+  normal_provider.ShutdownOnUIThread();
 }
 
 }  // namespace content_settings
