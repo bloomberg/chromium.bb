@@ -38,6 +38,7 @@
         Dictionary dictionaryArg,
         sequence<DOMString> sequenceStringArg,
         sequence<Dictionary> sequenceDictionaryArg,
+        sequence<(long or TestDictionary)> sequenceLongOrTestDictionaryArg,
         optional Dictionary optionalDictionaryArg,
         [Default=Undefined] optional TestInterfaceEmpty optionalTestInterfaceEmptyArg),
     Constructor(DOMString arg, optional DOMString optArg),

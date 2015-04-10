@@ -209,6 +209,64 @@ struct NativeValueTraits<DoubleOrString> {
     static DoubleOrString nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
+class CORE_EXPORT LongOrTestDictionary final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    LongOrTestDictionary();
+    bool isNull() const { return m_type == SpecificTypeNone; }
+
+    bool isLong() const { return m_type == SpecificTypeLong; }
+    int getAsLong() const;
+    void setLong(int);
+    static LongOrTestDictionary fromLong(int);
+
+    bool isTestDictionary() const { return m_type == SpecificTypeTestDictionary; }
+    TestDictionary getAsTestDictionary() const;
+    void setTestDictionary(TestDictionary);
+    static LongOrTestDictionary fromTestDictionary(TestDictionary);
+
+#if COMPILER(MSVC) && defined(COMPONENT_BUILD) && LINK_CORE_MODULES_SEPARATELY
+    // Explicit declarations of copy constructor, destructor and operator=,
+    // because msvc automatically generates them if they are not declared in
+    // this header.
+    LongOrTestDictionary(const LongOrTestDictionary&);
+    ~LongOrTestDictionary();
+    LongOrTestDictionary& operator=(const LongOrTestDictionary&);
+#endif
+    DECLARE_TRACE();
+
+private:
+    enum SpecificTypes {
+        SpecificTypeNone,
+        SpecificTypeLong,
+        SpecificTypeTestDictionary,
+    };
+    SpecificTypes m_type;
+
+    int m_long;
+    TestDictionary m_testDictionary;
+
+    friend CORE_EXPORT v8::Local<v8::Value> toV8(const LongOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
+};
+
+class V8LongOrTestDictionary final {
+public:
+    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, LongOrTestDictionary&, ExceptionState&);
+};
+
+CORE_EXPORT v8::Local<v8::Value> toV8(const LongOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
+
+template <class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, LongOrTestDictionary& impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template <>
+struct NativeValueTraits<LongOrTestDictionary> {
+    static LongOrTestDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+};
+
 class CORE_EXPORT NodeOrNodeList final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:

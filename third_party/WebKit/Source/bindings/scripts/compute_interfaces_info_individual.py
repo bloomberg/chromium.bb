@@ -47,6 +47,7 @@ import os
 import posixpath
 import sys
 
+from idl_definitions import Visitor
 from idl_reader import IdlReader
 from utilities import get_file_contents, read_file_to_list, idl_filename_to_interface_name, idl_filename_to_component, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl
 
@@ -131,32 +132,22 @@ def get_put_forward_interfaces_from_definition(definition):
 
 def collect_union_types_from_definitions(definitions):
     """Traverse definitions and collect all union types."""
+    class UnionTypeCollector(Visitor):
+        def collect(self, definitions):
+            self._union_types = set()
+            definitions.accept(self)
+            return self._union_types
 
-    def union_types_from(things):
-        return (thing.idl_type for thing in things
-                if thing.idl_type.is_union_type)
+        def visit_typed_object(self, typed_object):
+            for attribute_name in typed_object.idl_type_attributes:
+                attribute = getattr(typed_object, attribute_name, None)
+                if not attribute:
+                    continue
+                for idl_type in attribute.idl_types():
+                    if idl_type.is_union_type:
+                        self._union_types.add(idl_type)
 
-    this_union_types = set()
-    for interface in definitions.interfaces.itervalues():
-        this_union_types.update(union_types_from(interface.attributes))
-        for operation in interface.operations:
-            this_union_types.update(union_types_from(operation.arguments))
-            if operation.idl_type.is_union_type:
-                this_union_types.add(operation.idl_type)
-        for constructor in interface.constructors:
-            this_union_types.update(union_types_from(constructor.arguments))
-        for constructor in interface.custom_constructors:
-            this_union_types.update(union_types_from(constructor.arguments))
-    for callback_function in definitions.callback_functions.itervalues():
-        this_union_types.update(union_types_from(callback_function.arguments))
-        if callback_function.idl_type.is_union_type:
-            this_union_types.add(callback_function.idl_type)
-    for dictionary in definitions.dictionaries.itervalues():
-        this_union_types.update(union_types_from(dictionary.members))
-    for typedef in definitions.typedefs.itervalues():
-        if typedef.idl_type.is_union_type:
-            this_union_types.add(typedef.idl_type)
-    return this_union_types
+    return UnionTypeCollector().collect(definitions)
 
 
 class InterfaceInfoCollector(object):
