@@ -1,6 +1,27 @@
 {
   "tests": [
     {
+      "app": "base_unittests"
+    },
+    {
+      "app": "components_unittests"
+    },
+    {
+      "app": "content_unittests"
+    },
+    {
+      "app": "crypto_unittests"
+    },
+    {
+      "app": "gcm_unit_tests"
+    },
+    {
+      "app": "gfx_unittests"
+    },
+    {
+      "app": "google_apis_unittests"
+    },
+    {
       "app": "ios_chrome_unittests"
     },
     {
@@ -10,37 +31,22 @@
       "app": "ios_web_unittests"
     },
     {
-      "app": "base_unittests"
-    },
-    {
-      "app": "components_unittests"
-    },
-    {
-      "app": "crypto_unittests"
-    },
-    {
-      "app": "gfx_unittests"
-    },
-    {
-      "app": "url_unittests"
-    },
-    {
-      "app": "content_unittests"
-    },
-    {
       "app": "net_unittests"
     },
     {
-      "app": "ui_base_unittests"
-    },
-    {
-      "app": "sync_unit_tests"
+      "app": "skia_unittests"
     },
     {
       "app": "sql_unittests"
     },
     {
-      "app": "skia_unittests"
+      "app": "sync_unit_tests"
+    },
+    {
+      "app": "ui_base_unittests"
+    },
+    {
+      "app": "url_unittests"
     }
   ]
 }
