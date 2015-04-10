@@ -8,7 +8,6 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/debug/profiler.h"
 #include "base/files/file_util.h"
 #include "base/hash.h"
@@ -745,11 +744,6 @@ base::Process StartSandboxedProcess(
                                       "Process.Sandbox.Lowbox.Launch.Error" :
                                       "Process.Sandbox.Launch.Error",
                                   last_error);
-      // Trigger a minidump without crashing the browser.
-      // Note that this function will only generate minidump if content host
-      // has already done pre-setup by calling
-      // base::debug::SetDumpWithoutCrashingFunction
-      base::debug::DumpWithoutCrashing();
     } else
       DLOG(ERROR) << "Failed to launch process. Error: " << result;
 
