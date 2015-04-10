@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
+#include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
+#include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_toolbar_icon_surfacing_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container_observer.h"
@@ -337,6 +339,30 @@ void BrowserActionsContainer::OnOverflowedActionWantsToRunChanged(
   BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->
       app_menu()->SetOverflowedToolbarActionWantsToRun(
           overflowed_action_wants_to_run);
+}
+
+void BrowserActionsContainer::ShowExtensionMessageBubble(
+    scoped_ptr<extensions::ExtensionMessageBubbleController> controller) {
+  if (animating()) {
+    // If the container is animating, we can't effectively anchor the bubble,
+    // so wait until animation stops.
+    pending_extension_bubble_controller_ = controller.Pass();
+    return;
+  }
+
+  views::View* reference_view = VisibleBrowserActions() > 0 ?
+      static_cast<views::View*>(toolbar_action_views_[0]) :
+      BrowserView::GetBrowserViewForBrowser(browser_)->toolbar()->app_menu();
+
+  extensions::ExtensionMessageBubbleController* weak_controller =
+      controller.get();
+  extensions::ExtensionMessageBubbleView* bubble =
+      new extensions::ExtensionMessageBubbleView(
+          reference_view,
+          views::BubbleBorder::TOP_RIGHT,
+          controller.Pass());
+  views::BubbleDelegateView::CreateBubble(bubble);
+  weak_controller->Show(bubble);
 }
 
 void BrowserActionsContainer::AddObserver(
@@ -668,6 +694,9 @@ void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
   FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
                     observers_,
                     OnBrowserActionsContainerAnimationEnded());
+
+  if (pending_extension_bubble_controller_)
+    ShowExtensionMessageBubble(pending_extension_bubble_controller_.Pass());
 }
 
 content::WebContents* BrowserActionsContainer::GetCurrentWebContents() {

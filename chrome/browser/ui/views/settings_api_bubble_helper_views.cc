@@ -25,13 +25,12 @@ namespace extensions {
 namespace {
 
 void ShowSettingsApiBubble(SettingsApiOverrideType type,
-                           const std::string& extension_id,
                            Profile* profile,
                            views::View* anchor_view,
                            views::BubbleBorder::Arrow arrow) {
   scoped_ptr<SettingsApiBubbleController> settings_api_bubble(
       new SettingsApiBubbleController(profile, type));
-  if (!settings_api_bubble->ShouldShow(extension_id))
+  if (!settings_api_bubble->ShouldShow())
     return;
 
   SettingsApiBubbleController* controller = settings_api_bubble.get();
@@ -48,18 +47,13 @@ void MaybeShowExtensionControlledHomeNotification(Browser* browser) {
   return;
 #endif
 
-  const Extension* extension =
-      GetExtensionOverridingHomepage(browser->profile());
-  if (extension) {
-    // The bubble will try to anchor itself against the home button
-    views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)->
-        toolbar()->home_button();
-    ShowSettingsApiBubble(BUBBLE_TYPE_HOME_PAGE,
-                          extension->id(),
-                          browser->profile(),
-                          anchor_view,
-                          views::BubbleBorder::TOP_LEFT);
-  }
+  // The bubble will try to anchor itself against the home button
+  views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)->
+      toolbar()->home_button();
+  ShowSettingsApiBubble(BUBBLE_TYPE_HOME_PAGE,
+                        browser->profile(),
+                        anchor_view,
+                        views::BubbleBorder::TOP_LEFT);
 }
 
 void MaybeShowExtensionControlledSearchNotification(
@@ -72,17 +66,13 @@ void MaybeShowExtensionControlledSearchNotification(
 
   if (AutocompleteMatch::IsSearchType(match.type) &&
       match.type != AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
-    const Extension* extension = GetExtensionOverridingSearchEngine(profile);
-    if (extension) {
-      ToolbarView* toolbar =
-          BrowserView::GetBrowserViewForBrowser(
-              chrome::FindBrowserWithWebContents(web_contents))->toolbar();
-      ShowSettingsApiBubble(BUBBLE_TYPE_SEARCH_ENGINE,
-                            extension->id(),
-                            profile,
-                            toolbar->app_menu(),
-                            views::BubbleBorder::TOP_RIGHT);
-    }
+    ToolbarView* toolbar =
+        BrowserView::GetBrowserViewForBrowser(
+            chrome::FindBrowserWithWebContents(web_contents))->toolbar();
+    ShowSettingsApiBubble(BUBBLE_TYPE_SEARCH_ENGINE,
+                          profile,
+                          toolbar->app_menu(),
+                          views::BubbleBorder::TOP_RIGHT);
   }
 }
 

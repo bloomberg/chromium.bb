@@ -47,6 +47,7 @@ class NtpOverriddenBubbleDelegate
   base::string16 GetActionButtonLabel() const override;
   base::string16 GetDismissButtonLabel() const override;
   bool ShouldShowExtensionList() const override;
+  bool ShouldHighlightExtensions() const override;
   void RestrictToSingleExtension(const std::string& extension_id) override;
   void LogExtensionCount(size_t count) override;
   void LogAction(extensions::ExtensionMessageBubbleController::BubbleAction
@@ -139,6 +140,10 @@ base::string16 NtpOverriddenBubbleDelegate::GetDismissButtonLabel() const {
 }
 
 bool NtpOverriddenBubbleDelegate::ShouldShowExtensionList() const {
+  return false;
+}
+
+bool NtpOverriddenBubbleDelegate::ShouldHighlightExtensions() const {
   return false;
 }
 

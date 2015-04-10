@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_message_bubble.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -122,21 +123,15 @@ const ExtensionIdList& ExtensionMessageBubbleController::GetExtensionIdList() {
 
 bool ExtensionMessageBubbleController::CloseOnDeactivate() { return false; }
 
-void ExtensionMessageBubbleController::Show(ExtensionMessageBubble* bubble) {
-  // Wire up all the callbacks, to get notified what actions the user took.
-  base::Closure dismiss_button_callback =
-      base::Bind(&ExtensionMessageBubbleController::OnBubbleDismiss,
-      base::Unretained(this));
-  base::Closure action_button_callback =
-      base::Bind(&ExtensionMessageBubbleController::OnBubbleAction,
-      base::Unretained(this));
-  base::Closure link_callback =
-      base::Bind(&ExtensionMessageBubbleController::OnLinkClicked,
-      base::Unretained(this));
-  bubble->OnActionButtonClicked(action_button_callback);
-  bubble->OnDismissButtonClicked(dismiss_button_callback);
-  bubble->OnLinkClicked(link_callback);
+void ExtensionMessageBubbleController::HighlightExtensionsIfNecessary() {
+  if (delegate_->ShouldHighlightExtensions()) {
+    const ExtensionIdList& extension_ids = GetExtensionIdList();
+    DCHECK(!extension_ids.empty());
+    ExtensionToolbarModel::Get(profile_)->HighlightExtensions(extension_ids);
+  }
+}
 
+void ExtensionMessageBubbleController::Show(ExtensionMessageBubble* bubble) {
   bubble->Show();
 }
 

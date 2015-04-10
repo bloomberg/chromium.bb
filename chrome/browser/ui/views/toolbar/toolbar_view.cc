@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
@@ -130,10 +129,7 @@ ToolbarView::ToolbarView(Browser* browser)
       browser_actions_(NULL),
       app_menu_(NULL),
       browser_(browser),
-      badge_controller_(browser->profile(), this),
-      extension_message_bubble_factory_(
-          new extensions::ExtensionMessageBubbleFactory(browser->profile(),
-                                                        this)) {
+      badge_controller_(browser->profile(), this) {
   set_id(VIEW_ID_TOOLBAR);
 
   SetEventTargeter(
@@ -268,14 +264,6 @@ void ToolbarView::Init() {
         l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_BACK));
     forward_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_FORWARD));
-  }
-}
-
-void ToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
-                                            bool visible) {
-  if (visible) {
-    // Safe to call multiple times; the bubble will only appear once.
-    extension_message_bubble_factory_->MaybeShow(app_menu_);
   }
 }
 

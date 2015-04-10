@@ -7,12 +7,14 @@
 #include "base/auto_reset.h"
 #include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
+#include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
@@ -418,7 +420,8 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       model_observer_(this),
       suppress_layout_(false),
       suppress_animation_(true),
-      overflowed_action_wants_to_run_(false) {
+      overflowed_action_wants_to_run_(false),
+      checked_extension_bubble_(false) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
 
@@ -631,6 +634,11 @@ void ToolbarActionsBar::CreateActions() {
 
   // Once the actions are created, we should animate the changes.
   suppress_animation_ = false;
+
+  // CreateActions() can be called multiple times, so we need to make sure we
+  // haven't already shown the bubble.
+  if (!checked_extension_bubble_)
+    MaybeShowExtensionBubble();
 }
 
 void ToolbarActionsBar::DeleteActions() {
@@ -727,6 +735,16 @@ bool ToolbarActionsBar::ShouldShowInfoBubble() {
   }
 
   return true;
+}
+
+void ToolbarActionsBar::MaybeShowExtensionBubble() {
+  checked_extension_bubble_ = true;
+  scoped_ptr<extensions::ExtensionMessageBubbleController> controller =
+      ExtensionMessageBubbleFactory(browser_->profile()).GetController();
+  if (controller) {
+    controller->HighlightExtensionsIfNecessary();
+    delegate_->ShowExtensionMessageBubble(controller.Pass());
+  }
 }
 
 void ToolbarActionsBar::OnToolbarExtensionAdded(

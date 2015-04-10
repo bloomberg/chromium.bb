@@ -59,6 +59,10 @@ class ExtensionMessageBubbleController {
     // Whether to show a list of extensions in the bubble.
     virtual bool ShouldShowExtensionList() const = 0;
 
+    // Returns true if the set of affected extensions should be highlighted in
+    // the toolbar.
+    virtual bool ShouldHighlightExtensions() const = 0;
+
     // In some cases, we want the delegate only to handle a single extension
     // and this sets which extension.
     virtual void RestrictToSingleExtension(const std::string& extension_id);
@@ -100,6 +104,9 @@ class ExtensionMessageBubbleController {
 
   // Whether to close the bubble when it loses focus.
   virtual bool CloseOnDeactivate();
+
+  // Highlights the affected extensions if appropriate.
+  void HighlightExtensionsIfNecessary();
 
   // Sets up the callbacks and shows the bubble.
   virtual void Show(ExtensionMessageBubble* bubble);

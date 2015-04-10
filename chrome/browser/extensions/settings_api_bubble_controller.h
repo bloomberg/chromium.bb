@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_SETTINGS_API_BUBBLE_CONTROLLER_H_
 
 #include <string>
+
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 
@@ -18,9 +19,9 @@ class SettingsApiBubbleController : public ExtensionMessageBubbleController {
   SettingsApiBubbleController(Profile* profile, SettingsApiOverrideType type);
   ~SettingsApiBubbleController() override;
 
-  // Whether the controller knows that we should show the bubble for extension
-  // with |extension_id|. Returns true if so.
-  bool ShouldShow(const std::string& extension_id);
+  // Returns true if we should show the bubble for the extension actively
+  // overriding the setting of |type_|.
+  bool ShouldShow();
 
   // ExtensionMessageBubbleController:
   bool CloseOnDeactivate() override;
