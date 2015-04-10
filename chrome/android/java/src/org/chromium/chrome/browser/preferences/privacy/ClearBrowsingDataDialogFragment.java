@@ -16,8 +16,14 @@ import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckedTextView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -26,16 +32,56 @@ import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.text.SpanApplier;
 
-import java.util.Arrays;
 import java.util.EnumSet;
 
 /**
  * Modal dialog with options for selection the type of browsing data
  * to clear (history, cookies), triggered from a preference.
  */
-public class ClearBrowsingDataDialogFragment extends DialogFragment implements
-        PrefServiceBridge.OnClearBrowsingDataListener,
-        DialogInterface.OnMultiChoiceClickListener, DialogInterface.OnClickListener {
+public class ClearBrowsingDataDialogFragment extends DialogFragment
+        implements PrefServiceBridge.OnClearBrowsingDataListener, DialogInterface.OnClickListener {
+    private class ClearBrowsingDataAdapter extends ArrayAdapter<String> {
+        final DialogOption[] mOptions;
+        final EnumSet<DialogOption> mDisabledOptions;
+
+        private ClearBrowsingDataAdapter(DialogOption[] options, String[] optionNames,
+                EnumSet<DialogOption> disabledOptions) {
+            super(getActivity(), android.R.layout.simple_list_item_multiple_choice, optionNames);
+            assert options.length == optionNames.length;
+            mOptions = options;
+            mDisabledOptions = disabledOptions;
+        }
+
+        @Override
+        public boolean hasStableIds() {
+            return true;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            CheckedTextView view = (CheckedTextView) super.getView(position, convertView, parent);
+            DialogOption option = mOptions[position];
+            view.setChecked(mSelectedOptions.contains(option));
+            view.setEnabled(!mDisabledOptions.contains(option));
+            return view;
+        }
+
+        public void onClick(int position) {
+            DialogOption selectedOption = mOptions[position];
+            if (mDisabledOptions.contains(selectedOption)) {
+                Toast.makeText(getActivity(), R.string.can_not_clear_browsing_history_toast,
+                              Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (mSelectedOptions.contains(selectedOption)) {
+                mSelectedOptions.remove(selectedOption);
+            } else {
+                mSelectedOptions.add(selectedOption);
+            }
+            updateButtonState();
+            notifyDataSetChanged();
+        }
+    }
 
     /** The tag used when showing the clear browsing fragment. */
     public static final String FRAGMENT_TAG = "ClearBrowsingDataDialogFragment";
@@ -66,10 +112,11 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment implements
         }
     }
 
-    private EnumSet<DialogOption> mSelectedOptions;
-    private DialogOption[] mOptions;
     private AlertDialog mDialog;
     private ProgressDialog mProgressDialog;
+    private ClearBrowsingDataAdapter mAdapter;
+    private boolean mCanDeleteBrowsingHistory;
+    private EnumSet<DialogOption> mSelectedOptions;
 
     protected final void clearBrowsingData(EnumSet<DialogOption> selectedOptions) {
         PrefServiceBridge.getInstance().clearBrowsingData(this,
@@ -107,8 +154,23 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment implements
      * @return EnumSet containing dialog options to be selected.
      */
     protected EnumSet<DialogOption> getDefaultDialogOptionsSelections() {
-        return EnumSet.of(DialogOption.CLEAR_HISTORY, DialogOption.CLEAR_CACHE,
-                DialogOption.CLEAR_COOKIES_AND_SITE_DATA);
+        EnumSet<DialogOption> defaultOptions = EnumSet.of(DialogOption.CLEAR_CACHE,
+                DialogOption.CLEAR_COOKIES_AND_SITE_DATA, DialogOption.CLEAR_HISTORY);
+        if (!mCanDeleteBrowsingHistory) {
+            defaultOptions.remove(DialogOption.CLEAR_HISTORY);
+        }
+        return defaultOptions;
+    }
+
+    /**
+     * Get the selections that have been disabled for the dialog.
+     * @return EnumSet containing dialog options that have been disabled.
+     */
+    protected EnumSet<DialogOption> getDisabledDialogOptions() {
+        if (!mCanDeleteBrowsingHistory) {
+            return EnumSet.of(DialogOption.CLEAR_HISTORY);
+        }
+        return EnumSet.noneOf(DialogOption.class);
     }
 
     // Called when "clear browsing data" completes.
@@ -119,8 +181,8 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment implements
     }
 
     @Override
-    public void onClick(DialogInterface dialog, int which) {
-        if (which == AlertDialog.BUTTON_POSITIVE) {
+    public void onClick(DialogInterface dialog, int whichButton) {
+        if (whichButton == AlertDialog.BUTTON_POSITIVE) {
             dismissProgressDialog();
             onOptionSelected(mSelectedOptions);
         }
@@ -135,34 +197,23 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment implements
     }
 
     @Override
-    public void onClick(DialogInterface dialog, int whichButton, boolean isChecked) {
-        if (isChecked) {
-            mSelectedOptions.add(mOptions[whichButton]);
-        } else {
-            mSelectedOptions.remove(mOptions[whichButton]);
-        }
-        updateButtonState();
-    }
-
-    @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        mCanDeleteBrowsingHistory = PrefServiceBridge.getInstance().canDeleteBrowsingHistory();
+
         DialogOption[] options = getDialogOptions();
-        mOptions = Arrays.copyOf(options, options.length);
-        mSelectedOptions = getDefaultDialogOptionsSelections();
-
-        String[] items = new String[mOptions.length];
-        boolean[] itemsChecked = new boolean[mOptions.length];
+        String[] optionNames = new String[options.length];
         Resources resources = getResources();
-        for (int i = 0; i < mOptions.length; i++) {
-            items[i] = resources.getString(mOptions[i].getResourceId());
-            itemsChecked[i] = mSelectedOptions.contains(mOptions[i]);
+        for (int i = 0; i < options.length; i++) {
+            optionNames[i] = resources.getString(options[i].getResourceId());
         }
-
-        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.clear_browsing_data_title)
-                .setPositiveButton(R.string.clear_data_delete, this)
-                .setNegativeButton(R.string.cancel, this)
-                .setMultiChoiceItems(items, itemsChecked, this);
+        mSelectedOptions = getDefaultDialogOptionsSelections();
+        mAdapter = new ClearBrowsingDataAdapter(options, optionNames, getDisabledDialogOptions());
+        final AlertDialog.Builder builder =
+                new AlertDialog.Builder(getActivity())
+                        .setTitle(R.string.clear_browsing_data_title)
+                        .setPositiveButton(R.string.clear_data_delete, this)
+                        .setNegativeButton(R.string.cancel, this)
+                        .setAdapter(mAdapter, null);  // OnClickListener is registered manually.
 
         if (ChromeSigninController.get(getActivity()).isSignedIn()) {
             final String message = getString(R.string.clear_cookies_no_sign_out_summary);
@@ -193,6 +244,14 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment implements
         }
 
         mDialog = builder.create();
+        mDialog.getListView().setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                // The present behaviour of AlertDialog is to dismiss after the onClick event.
+                // Hence we are manually overriding this outside the builder.
+                mAdapter.onClick(position);
+            }
+        });
         return mDialog;
     }
 
@@ -205,7 +264,6 @@ public class ClearBrowsingDataDialogFragment extends DialogFragment implements
 
     /**
      * Called when PositiveButton is clicked for the dialog.
-     *
      * @param selectedOptions options which were selected.
      */
     protected void onOptionSelected(final EnumSet<DialogOption> selectedOptions) {
