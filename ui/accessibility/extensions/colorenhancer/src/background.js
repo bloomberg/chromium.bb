@@ -42,15 +42,15 @@ function updateTabs() {
         if (isDisallowedUrl(url)) {
           continue;
         }
-        debugPrint('sending  to ' + siteFromUrl(url) + ' ' +
-            getSiteDelta(siteFromUrl(url)) + ',' +
-            getSiteSeverity(siteFromUrl(url)));
         var msg = {
           'delta': getSiteDelta(siteFromUrl(url)),
-          'severity': getSiteSeverity(siteFromUrl(url)),
+          'severity': getDefaultSeverity(),
           'type': getDefaultType(),
-          'simulate': getDefaultSimulate()
+          'simulate': getDefaultSimulate(),
+          'enable': getDefaultEnable()
         };
+        debugPrint('updateTabs: sending ' + JSON.stringify(msg) + ' to ' +
+            siteFromUrl(url));
         chrome.tabs.sendRequest(tabs[j].id, msg);
       }
     }
@@ -72,23 +72,18 @@ function updateTabs() {
             delta = getSiteDelta(siteFromUrl(sender.tab.url));
           }
 
-          var severity = getDefaultSeverity();
-          if (sender.tab) {
-            severity = getSiteSeverity(siteFromUrl(sender.tab.url));
-          }
-
-          var type = getDefaultType();
-          var simulate = getDefaultSimulate();
-
           var msg = {
             'delta': delta,
-            'severity': severity,
+            'severity': getDefaultSeverity(),
             'type': getDefaultType(),
-            'simulate': getDefaultSimulate()
+            'simulate': getDefaultSimulate(),
+            'enable': getDefaultEnable()
           };
           sendResponse(msg);
         }
       });
+
+  //TODO(mustaq): Handle uninstall
 
   document.addEventListener('storage', function(evt) {
     updateTabs();

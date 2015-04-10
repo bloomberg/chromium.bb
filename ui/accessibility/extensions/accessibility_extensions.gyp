@@ -108,20 +108,31 @@
         {
           'destination': '<(dest_dir)/colorenhancer',
           'files': [
+            'colorenhancer/manifest.json',
+          ]
+        },
+        {
+          'destination': '<(dest_dir)/colorenhancer/src',
+          'files': [
+            'colorenhancer/src/background.js',
+            'colorenhancer/src/common.js',
+            'colorenhancer/src/cvd.js',
+            'colorenhancer/src/popup.html',
+            'colorenhancer/src/popup.js',
+            'colorenhancer/src/storage.js',
+          ]
+        },
+        {
+          'destination': '<(dest_dir)/colorenhancer/res',
+          'files': [
             'colorenhancer/res/cvd-128.png',
             'colorenhancer/res/cvd-16.png',
             'colorenhancer/res/cvd-19.png',
             'colorenhancer/res/cvd-38.png',
             'colorenhancer/res/cvd-48.png',
             'colorenhancer/res/cvd.css',
-            'colorenhancer/manifest.json',
-            'colorenhancer/src/background.js',
-            'colorenhancer/src/common.js',
-            'colorenhancer/src/cvd.js',
-            'colorenhancer/src/popup.html',
-            'colorenhancer/src/popup.js',
           ]
-        }
+        },
       ],
       'actions': [
         {

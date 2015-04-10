@@ -10,23 +10,24 @@ var site;
  */
 function update() {
   if (site) {
-    debugPrint('updated site ' + site + ' to ' +
-        getSiteDelta(site) + ',' + getSiteSeverity(site));
     $('delta').value = getSiteDelta(site);
-    $('severity').value = getSiteSeverity(site);
   } else {
-    debugPrint('updated site ' + site + ' to ' +
-        getDefaultDelta() + ',' + getDefaultSeverity());
     $('delta').value = getDefaultDelta();
-    $('severity').value = getDefaultSeverity();
   }
 
-  debugPrint('updated site ' + site + ' type ' + getDefaultType());
+  $('severity').value = getDefaultSeverity();
   $('type').value = getDefaultType();
+  $('simulate').checked = getDefaultSimulate();
+  $('enable').checked = getDefaultEnable();
 
-  // TODO(mustaq): Finish simulate feature.
-  //debugPrint('updated site ' + site + ' simulate ' + getDefaultSimulate());
-  //$('simulate').checked = getDefaultSimulate();
+  debugPrint('update: ' +
+      ' del=' + $('delta').value +
+      ' sev=' + $('severity').value +
+      ' typ=' + $('type').value +
+      ' sim=' + $('simulate').checked +
+      ' enb=' + $('enable').checked +
+      ' for ' + site
+  );
 
   chrome.extension.getBackgroundPage().updateTabs();
 }
@@ -38,7 +39,7 @@ function update() {
  * @param {number} value Parsed value of slider element.
  */
 function onDeltaChange(value) {
-  debugPrint('delta changing to ' + value + ' for site ' + site);
+  debugPrint('onDeltaChange: ' + value + ' for ' + site);
   if (site) {
     setSiteDelta(site, value);
   }
@@ -53,10 +54,7 @@ function onDeltaChange(value) {
  * @param {number} value Parsed value of slider element.
  */
 function onSeverityChange(value) {
-  debugPrint('severity changing to ' + value + ' for site ' + site);
-  if (site) {
-    setSiteSeverity(site, value);
-  }
+  debugPrint('onSeverityChange: ' + value + ' for ' + site);
   setDefaultSeverity(value);
   update();
 }
@@ -68,32 +66,42 @@ function onSeverityChange(value) {
  * @param {string} value Value of dropdown element.
  */
 function onTypeChange(value) {
-  debugPrint('type changing to ' + value + ' for site ' + site);
+  debugPrint('onTypeChange: ' + value + ' for ' + site);
   setDefaultType(value);
   update();
 }
 
 
 /**
- * TODO(mustaq): JsDoc.
- */
+ * Callback for simulation setting.
+ *
+ * @param {boolean} value Value of checkbox element.
+l*/
 function onSimulateChange(value) {
-  debugPrint('simulate changing to ' + value + ' for site ' + site);
+  debugPrint('onSimulateChange: ' + value + ' for ' + site);
   setDefaultSimulate(value);
   update();
 }
 
-
 /**
- * Reset all stored per-site and default values.
- */
-function onReset() {
-  debugPrint('resetting sites');
-  resetSiteDeltas();
-  resetSiteSeverities();
+ * Callback for enable/disable setting.
+ *
+ * @param {boolean} value Value of checkbox element.
+*/
+function onEnableChange(value) {
+  debugPrint('onEnableChange: ' + value + ' for ' + site);
+  setDefaultEnable(value);
   update();
 }
 
+/**
+ * Callback for resetting stored per-site values.
+ */
+function onReset() {
+  debugPrint('onReset');
+  resetSiteDeltas();
+  update();
+}
 
 /**
  * Attach event handlers to controls and update the filter config values for the
@@ -109,10 +117,12 @@ function initialize() {
   $('type').addEventListener('input', function() {
     onTypeChange(this.value);
   });
-  // TODO(mustaq): Finish simulate feature.
-  //$('simulate').addEventListener('change', function() {
-  //  onSimulateChange(!this.checked);
-  //});
+  $('simulate').addEventListener('change', function() {
+    onSimulateChange(this.checked);
+  });
+  $('enable').addEventListener('change', function() {
+    onEnableChange(this.checked);
+  });
   $('resetall').addEventListener('click', function() {
     onReset();
   });
@@ -122,7 +132,7 @@ function initialize() {
       var tab = window.tabs[i];
       if (tab.active) {
         site = siteFromUrl(tab.url);
-        debugPrint('active tab update ' + site);
+        debugPrint('init: active tab update for ' + site);
         update();
         return;
       }

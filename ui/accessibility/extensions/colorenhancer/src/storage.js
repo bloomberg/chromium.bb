@@ -4,9 +4,25 @@
 
 // TODO(wnwen): Move to chrome.storage.local, wrap calls, add JsDocs.
 
-var DEFAULT_DELTA = 1.0;
-var LOCAL_STORAGE_TAG_DELTA = 'cvd_delta';
-var LOCAL_STORAGE_TAG_SITE_DELTA = 'cvd_site_deltas';
+/**
+ * Convert the string to boolean if possible.
+ * @return {(boolean|string)} The Boolean value if possible, 'undefined'
+ *     otherwise.
+ */
+function stringToBoolean(str) {
+  return (str == 'true') ? true : (str == 'false') ? false : 'undefined';
+}
+
+function validBoolean(b) {
+  return b == true || b == false;
+}
+
+
+// ======= Delta setting =======
+
+/** @const {number} */ var DEFAULT_DELTA = 0.5;
+/** @const {string} */ var LOCAL_STORAGE_TAG_DELTA = 'cvd_delta';
+/** @const {string} */ var LOCAL_STORAGE_TAG_SITE_DELTA = 'cvd_site_delta';
 
 
 function validDelta(delta) {
@@ -71,9 +87,8 @@ function resetSiteDeltas() {
 
 // ======= Severity setting =======
 
-var DEFAULT_SEVERITY = 1.0;
-var LOCAL_STORAGE_TAG_SEVERITY = 'cvd_severity';
-var LOCAL_STORAGE_TAG_SITE_SEVERITY = 'cvd_severities';
+/** @const {number} */ var DEFAULT_SEVERITY = 1.0;
+/** @const {string} */ var LOCAL_STORAGE_TAG_SEVERITY = 'cvd_severity';
 
 
 function validSeverity(severity) {
@@ -100,51 +115,10 @@ function setDefaultSeverity(severity) {
 }
 
 
-// TODO(mustaq): Remove site-specific severity setting.
-function getSiteSeverity(site) {
-  var severity = getDefaultSeverity();
-  try {
-    var siteSeverities =
-        JSON.parse(localStorage[LOCAL_STORAGE_TAG_SITE_SEVERITY]);
-    severity = siteSeverities[site];
-    if (!validSeverity(severity)) {
-      severity = getDefaultSeverity();
-    }
-  } catch (e) {
-    severity = getDefaultSeverity();
-  }
-  return severity;
-}
-
-
-function setSiteSeverity(site, severity) {
-  if (!validSeverity(severity)) {
-    severity = getDefaultSeverity();
-  }
-  var siteSeverities = {};
-  try {
-    siteSeverities = JSON.parse(localStorage[LOCAL_STORAGE_TAG_SITE_SEVERITY]);
-  } catch (e) {
-    siteSeverities = {};
-  }
-  siteSeverities[site] = severity;
-  localStorage[LOCAL_STORAGE_TAG_SITE_SEVERITY] =
-      JSON.stringify(siteSeverities);
-}
-
-
-function resetSiteSeverities() {
-  var siteSeverities = {};
-  localStorage[LOCAL_STORAGE_TAG_SITE_SEVERITY] =
-      JSON.stringify(siteSeverities);
-}
-
-
 // ======= Type setting =======
 
-// TODO(wnwen): Use enums rather than strings.
-var DEFAULT_TYPE = 'PROTANOMALY';
-var LOCAL_STORAGE_TAG_TYPE = 'cvd_type';
+/** @const {string} */ var DEFAULT_TYPE = 'PROTANOMALY';
+/** @const {string} */ var LOCAL_STORAGE_TAG_TYPE = 'cvd_type';
 
 
 function validType(type) {
@@ -175,28 +149,16 @@ function setDefaultType(type) {
 
 // ======= Simulate setting =======
 
-var DEFAULT_SIMULATE = false;
-var LOCAL_STORAGE_TAG_SIMULATE = 'cvd_simulate';
-
-
-function validSimulate(simulate) {
-  return simulate == true || simulate == false;
-}
+/** @const {boolean} */ var DEFAULT_SIMULATE = false;
+/** @const {string} */ var LOCAL_STORAGE_TAG_SIMULATE = 'cvd_simulate';
 
 
 function getDefaultSimulate() {
   var simulate = localStorage[LOCAL_STORAGE_TAG_SIMULATE];
 
-  //Make it a boolean if possible
-  if (simulate === 'true') {
-    simulate = true;
-  } else if (simulate === 'false') {
-    simulate = false;
-  } else {
-    simulate = 'undef';
-  }
+  simulate = stringToBoolean(simulate);
 
-  if (validSimulate(simulate)) {
+  if (validBoolean(simulate)) {
     return simulate;
   }
   simulate = DEFAULT_SIMULATE;
@@ -206,8 +168,41 @@ function getDefaultSimulate() {
 
 
 function setDefaultSimulate(simulate) {
-  if (!validSimulate(simulate)) {
+  if (!validBoolean(simulate)) {
     simulate = DEFAULT_SIMULATE;
   }
   localStorage[LOCAL_STORAGE_TAG_SIMULATE] = simulate;
+}
+
+
+// ======= Enable setting =======
+
+/** @const {boolean} */ var DEFAULT_ENABLE = false;
+/** @const {string} */ var LOCAL_STORAGE_TAG_ENABLE = 'cvd_enable';
+
+
+function validEnable(enable) {
+  return enable == true || enable == false;
+}
+
+
+function getDefaultEnable() {
+  var enable = localStorage[LOCAL_STORAGE_TAG_ENABLE];
+
+  enable = stringToBoolean(enable);
+
+  if (validBoolean(enable)) {
+    return enable;
+  }
+  enable = DEFAULT_ENABLE;
+  localStorage[LOCAL_STORAGE_TAG_ENABLE] = enable;
+  return enable;
+}
+
+
+function setDefaultEnable(enable) {
+  if (!validBoolean(enable)) {
+    enable = DEFAULT_ENABLE;
+  }
+  localStorage[LOCAL_STORAGE_TAG_ENABLE] = enable;
 }

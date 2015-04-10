@@ -5,16 +5,21 @@
 
 // ======= Global state =======
 
-var storedDelta = 0;
-var storedSeverity = 0;
-var storedType = 'PROTANOMALY';
-var storedSimulate = false;
+var curDelta = 0;
+var curSeverity = 0;
+var curType = 'PROTANOMALY';
+var curSimulate = false;
+var curEnable = false;
 var curFilter = 0;
 
 
 // ======= 3x3 matrix ops =======
 
-var identityMatrix3x3 = [
+/**
+ * The 3x3 identity matrix.
+ * @const {object}
+ */
+var IDENTITY_MATRIX_3x3 = [
   [1, 0, 0],
   [0, 1, 0],
   [0, 0, 1]
@@ -22,64 +27,112 @@ var identityMatrix3x3 = [
 
 
 /**
- * TODO(mustaq): JsDoc
+ * Adds two matrices.
+ * @param {!object} m1 A 3x3 matrix.
+ * @param {!object} m2 A 3x3 matrix.
+ * @return {!object} The 3x3 matrix m1 + m2.
  */
 function add3x3(m1, m2) {
-    var result = [];
-    for (var i = 0; i < 3; i++) {
-        result[i] = [];
-        for (var j = 0; j < 3; j++) {
-            result[i].push(m1[i][j] + m2[i][j]);
-        }
+  var result = [];
+  for (var i = 0; i < 3; i++) {
+    result[i] = [];
+    for (var j = 0; j < 3; j++) {
+      result[i].push(m1[i][j] + m2[i][j]);
     }
-    return result;
+  }
+  return result;
 }
 
 
 /**
- * TODO(mustaq): JsDoc
+ * Subtracts one matrix from another.
+ * @param {!object} m1 A 3x3 matrix.
+ * @param {!object} m2 A 3x3 matrix.
+ * @return {!object} The 3x3 matrix m1 - m2.
  */
 function sub3x3(m1, m2) {
-    var result = [];
-    for (var i = 0; i < 3; i++) {
-        result[i] = [];
-        for (var j = 0; j < 3; j++) {
-            result[i].push(m1[i][j] - m2[i][j]);
-        }
+  var result = [];
+  for (var i = 0; i < 3; i++) {
+    result[i] = [];
+    for (var j = 0; j < 3; j++) {
+      result[i].push(m1[i][j] - m2[i][j]);
     }
-    return result;
+  }
+  return result;
 }
 
 
 /**
- * TODO(mustaq): JsDoc
+ * Multiplies one matrix with another.
+ * @param {!object} m1 A 3x3 matrix.
+ * @param {!object} m2 A 3x3 matrix.
+ * @return {!object} The 3x3 matrix m1 * m2.
  */
 function mul3x3(m1, m2) {
-    var result = [];
-    for (var i = 0; i < 3; i++) {
-        result[i] = [];
-        for (var j = 0; j < 3; j++) {
-            var sum = 0;
-            for (var k = 0; k < 3; k++) {
-                sum += m1[i][k] * m2[k][j];
-            }
-            result[i].push(sum);
-        }
+  var result = [];
+  for (var i = 0; i < 3; i++) {
+    result[i] = [];
+    for (var j = 0; j < 3; j++) {
+      var sum = 0;
+      for (var k = 0; k < 3; k++) {
+        sum += m1[i][k] * m2[k][j];
+      }
+      result[i].push(sum);
     }
-    return result;
+  }
+  return result;
 }
 
 
 /**
- * TODO(mustaq): JsDoc
+ * Multiplies a matrix with a number.
+ * @param {!object} m A 3x3 matrix.
+ * @param {!number} k A scalar multiplier.
+ * @return {!object} The 3x3 matrix m * k.
  */
 function mul3x3Scalar(m, k) {
-    var result = [];
+  var result = [];
+  for (var i = 0; i < 3; i++) {
+    result[i] = [];
+    for (var j = 0; j < 3; j++) {
+      result[i].push(k * m[i][j]);
+    }
+  }
+  return result;
+}
+
+
+// ======= 3x3 matrix utils =======
+
+/**
+ * Makes the SVG matrix string (of 20 values) for a given matrix.
+ * @param {!object} m A 3x3 matrix.
+ * @return {!string} The SVG matrix string for m.
+ */
+function svgMatrixStringFrom3x3(m) {
+  var outputRows = [];
+  for (var i = 0; i < 3; i++) {
+    outputRows.push(m[i].join(' ') + ' 0 0');
+  }
+  // Add the alpha row
+  outputRows.push('0 0 0 1 0');
+  return outputRows.join(' ');
+}
+
+
+/**
+ * Makes a human readable string for a given matrix.
+ * @param {!object} m A 3x3 matrix.
+ * @return {!string} A human-readable string for m.
+ */
+function humanReadbleStringFrom3x3(m) {
+    var result = '';
     for (var i = 0; i < 3; i++) {
-        result[i] = [];
+        result += (i ? ', ' : '') + '[';
         for (var j = 0; j < 3; j++) {
-            result[i].push(k * m[i][j]);
+            result += (j ? ', ' : '') + m[i][j].toFixed(2);
         }
+        result += ']';
     }
     return result;
 }
@@ -132,47 +185,41 @@ var cvdSimulationParams = {
 };
 
 
-// TODO(mustaq): A common matrix for all types? E.g. Kevin's experiment
-//   suggested: Mx[1][0] = 0.7+0.3*delta and Mx[2][0] = 0.7-0.3*delta
-/**
- * TODO(mustaq): JsDoc
- *
- * @enum {string}
- */
+// TODO(mustaq): This should be nuked, see getCvdCorrectionMatrix().
 var cvdCorrectionParams = {
   PROTANOMALY: {
     addendum: [
-      [-1.0, 0.0, 0.0],
-      [0.5, 1.0, 0.0],
-      [1.5, 0.0, 1.0]
+      [0.0, 0.0, 0.0],
+      [0.7, 1.0, 0.0],
+      [0.7, 0.0, 1.0]
     ],
     delta_factor: [
       [0.0, 0.0, 0.0],
-      [1.0, 0.0, 0.0],
-      [-1.0, 0.0, 0.0]
+      [0.3, 0.0, 0.0],
+      [-0.3, 0.0, 0.0]
     ]
   },
   DEUTERANOMALY: {
     addendum: [
-      [1.0, 0.5, 0.0],
-      [0.5, -1.0, 0.0],
-      [1.5, 1.5, 1.0]
+      [0.0, 0.0, 0.0],
+      [0.7, 1.0, 0.0],
+      [0.7, 0.0, 1.0]
     ],
     delta_factor: [
-      [0.0, 1.0, 0.0],
       [0.0, 0.0, 0.0],
-      [0.0, -1.0, 0.0]
+      [0.3, 0.0, 0.0],
+      [-0.3, 0.0, 0.0]
     ]
   },
   TRITANOMALY: {
     addendum: [
-      [1.0, 0.0, 1.5],
-      [0.0, 1.0, 0.5],
-      [0.0, 0.0, -1.0]
+      [1.0, 0.0, 0.7],
+      [0.0, 1.0, 0.7],
+      [0.0, 0.0, 0.0]
     ],
     delta_factor: [
-      [0.0, 0.0, -1.0],
-      [0.0, 0.0, 1.0],
+      [0.0, 0.0, 0.3],
+      [0.0, 0.0, -0.3],
       [0.0, 0.0, 0.0]
     ]
   }
@@ -182,7 +229,11 @@ var cvdCorrectionParams = {
 // =======  CVD matrix builders =======
 
 /**
- * TODO(mustaq): JsDoc
+ * Returns a 3x3 matrix for simulating the given type of CVD with the given
+ * severity.
+ * @param {string} cvdType Type of CVD, either "PROTANOMALY" or "DEUTERANOMALY"
+ *     or "TRITANOMALY".
+ * @param {number} severity A real number in [0,1] denoting severity.
  */
 function getCvdSimulationMatrix(cvdType, severity) {
   var cvdSimulationParam = cvdSimulationParams[cvdType];
@@ -204,7 +255,11 @@ function getCvdSimulationMatrix(cvdType, severity) {
 
 
 /**
- * TODO(mustaq): JsDoc
+ * Returns a 3x3 matrix for correcting the given type of CVD using the given
+ * color adjustment.
+ * @param {string} cvdType Type of CVD, either "PROTANOMALY" or "DEUTERANOMALY"
+ *     or "TRITANOMALY".
+ * @param {number} delta A real number in [0,1] denoting color adjustment.
  */
 function getCvdCorrectionMatrix(cvdType, delta) {
   cvdCorrectionParam = cvdCorrectionParams[cvdType];
@@ -215,9 +270,20 @@ function getCvdCorrectionMatrix(cvdType, delta) {
 
 
 /**
- * TODO(mustaq): JsDoc
+ * Returns the 3x3 matrix to be used for the given settings.
+ * @param {string} cvdType Type of CVD, either "PROTANOMALY" or "DEUTERANOMALY"
+ *     or "TRITANOMALY".
+ * @param {number} severity A real number in [0,1] denoting severity.
+ * @param {number} delta A real number in [0,1] denoting color adjustment.
+ * @param {boolean} simulate Whether to simulate the CVD type.
+ * @param {boolean} enable Whether to enable color filtering.
  */
-function getCvdMatrixAsString(cvdType, severity, delta, simulate) {
+function getEffectiveCvdMatrix(cvdType, severity, delta, simulate, enable) {
+  if (!enable) {
+    //TODO(mustaq): we should remove matrices at the svg level
+    return IDENTITY_MATRIX_3x3;
+  }
+
   var effectiveMatrix = getCvdSimulationMatrix(cvdType, severity);
 
   if (!simulate) {
@@ -225,38 +291,33 @@ function getCvdMatrixAsString(cvdType, severity, delta, simulate) {
     var tmpProduct = mul3x3(cvdCorrectionMatrix, effectiveMatrix);
 
     effectiveMatrix = sub3x3(
-        add3x3(identityMatrix3x3, cvdCorrectionMatrix),
+        add3x3(IDENTITY_MATRIX_3x3, cvdCorrectionMatrix),
         tmpProduct);
   }
 
-  var outputRows = [];
-  for (var i = 0; i < 3; i++) {
-    outputRows.push(effectiveMatrix[i].join(' ') + ' 0 0');
-  }
-  // Add the alpha row
-  outputRows.push('0 0 0 1 0');
-  return outputRows.join(' ');
+  return effectiveMatrix;
 }
 
 
 // ======= Page linker =======
 
-var svgDefaultMatrix =
+/** @const {string} */
+var SVG_DEFAULT_MATRIX =
   '1 0 0 0 0 ' +
   '0 1 0 0 0 ' +
   '0 0 1 0 0 ' +
   '0 0 0 1 0';
 
 var svgContent =
-  '<svg xmlns='http://www.w3.org/2000/svg' version='1.1'>' +
+  '<svg xmlns="http://www.w3.org/2000/svg" version="1.1">' +
   '  <defs>' +
-  '    <filter id='cvd_extension_0'>' +
-  '      <feColorMatrix id='cvd_filter_matrix_0' type='matrix' values='' +
-  svgDefaultMatrix + ''/>' +
+  '    <filter id="cvd_extension_0">' +
+  '      <feColorMatrix id="cvd_matrix_0" type="matrix" values="' +
+      SVG_DEFAULT_MATRIX + '"/>' +
   '    </filter>' +
-  '    <filter id='cvd_extension_1'>' +
-  '      <feColorMatrix id='cvd_filter_matrix_1' type='matrix' values='' +
-  svgDefaultMatrix + ''/>' +
+  '    <filter id="cvd_extension_1">' +
+  '      <feColorMatrix id="cvd_matrix_1" type="matrix" values="' +
+      SVG_DEFAULT_MATRIX + '"/>' +
   '    </filter>' +
   '  </defs>' +
   '</svg>';
@@ -277,7 +338,7 @@ function addSvgIfMissing() {
 
 
 /**
- * Update matrix when config values change.
+ * Updates the SVG matrix using the current settings.
  */
 function update() {
   if (!document.body) {
@@ -287,15 +348,15 @@ function update() {
   addSvgIfMissing();
   var next = 1 - curFilter;
 
-  debugPrint(
-      'Setting matrix#' + next + ' to ' +
-      getCvdMatrixAsString(
-          storedType, storedSeverity, storedDelta, storedSimulate));
+  var effectiveMatrix = getEffectiveCvdMatrix(
+      curType, curSeverity, curDelta * 2 - 1, curSimulate, curEnable);
+  // TODO(mustaq): delta range fixing needs refactoring.
 
-  var matrix = document.getElementById('cvd_filter_matrix_' + next);
-  matrix.setAttribute(
-      'values', getCvdMatrixAsString(
-          storedType, storedSeverity, storedDelta, storedSimulate));
+  debugPrint('update: matrix#' + next + '=' +
+      humanReadbleStringFrom3x3(effectiveMatrix));
+
+  var matrixElem = document.getElementById('cvd_matrix_' + next);
+  matrixElem.setAttribute('values', svgMatrixStringFrom3x3(effectiveMatrix));
 
   var html = document.documentElement;
   html.classList.remove('filter' + curFilter);
@@ -312,38 +373,48 @@ function update() {
 
 /**
  * Process request from background page.
+ * @param {!object} request An object containing color filter parameters.
  */
 function onExtensionMessage(request) {
+  debugPrint('onExtensionMessage: ' + JSON.stringify(request));
   var changed = false;
 
-  if (request['delta'] !== undefined) {
-    var delta = request.delta;
-    if (storedDelta != delta) {
-      storedDelta = delta;
+  if (request['type'] !== undefined) {
+    var type = request.type;
+    if (curType != type) {
+      curType = type;
       changed = true;
     }
   }
 
   if (request['severity'] !== undefined) {
     var severity = request.severity;
-    if (storedSeverity != severity) {
-      storedSeverity = severity;
+    if (curSeverity != severity) {
+      curSeverity = severity;
       changed = true;
     }
   }
 
-  if (request['type'] !== undefined) {
-    var type = request.type;
-    if (storedType != type) {
-      storedType = type;
+  if (request['delta'] !== undefined) {
+    var delta = request.delta;
+    if (curDelta != delta) {
+      curDelta = delta;
       changed = true;
     }
   }
 
   if (request['simulate'] !== undefined) {
     var simulate = request.simulate;
-    if (storedSimulate != simulate) {
-      storedSimulate = simulate;
+    if (curSimulate != simulate) {
+      curSimulate = simulate;
+      changed = true;
+    }
+  }
+
+  if (request['enable'] !== undefined) {
+    var enable = request.enable;
+    if (curEnable != enable) {
+      curEnable = enable;
       changed = true;
     }
   }

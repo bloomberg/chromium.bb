@@ -35,10 +35,9 @@ function isDisallowedUrl(url) {
 
 /**
  * Whether extension is loaded unpacked or from Chrome Webstore.
+ * @const {boolean}
  */
-function isDevMode = function() {
-  return !('update_url' in chrome.runtime.getManifest());
-}
+var IS_DEV_MODE = !('update_url' in chrome.runtime.getManifest());
 
 
 /**
@@ -46,9 +45,7 @@ function isDevMode = function() {
  *
  * @param {*} message The message to potentially pass to {@code console.log}.
  */
-var debugPrint;
-if (isDevMode()) {
-  debugPrint = console.log;
-} else {
-  debugPrint = function() {};
+function debugPrint(str) {
+  if (IS_DEV_MODE)
+    console.log(str);
 }
