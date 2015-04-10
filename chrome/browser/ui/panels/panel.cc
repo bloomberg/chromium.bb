@@ -785,10 +785,6 @@ void Panel::LoadingStateChanged(bool is_loading) {
   UpdateTitleBar();
 }
 
-void Panel::WebContentsFocused(content::WebContents* contents) {
-  native_panel_->PanelWebContentsFocused(contents);
-}
-
 void Panel::MoveByInstantly(const gfx::Vector2d& delta_origin) {
   gfx::Rect bounds = GetBounds();
   bounds.Offset(delta_origin);

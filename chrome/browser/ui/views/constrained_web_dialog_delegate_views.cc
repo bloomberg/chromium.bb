@@ -51,10 +51,6 @@ class WebDialogWebContentsDelegateViews
   ~WebDialogWebContentsDelegateViews() override {}
 
   // ui::WebDialogWebContentsDelegate:
-  void WebContentsFocused(content::WebContents* contents) override {
-    // Ensure the WebView is focused when its WebContents is focused.
-    web_view_->RequestFocus();
-  }
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override {

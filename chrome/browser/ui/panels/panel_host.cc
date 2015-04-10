@@ -193,10 +193,6 @@ void PanelHost::HandleKeyboardEvent(
   return panel_->HandleKeyboardEvent(event);
 }
 
-void PanelHost::WebContentsFocused(content::WebContents* contents) {
-  panel_->WebContentsFocused(contents);
-}
-
 void PanelHost::ResizeDueToAutoResize(content::WebContents* web_contents,
                                       const gfx::Size& new_size) {
   panel_->OnContentsAutoResized(new_size);

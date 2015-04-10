@@ -690,10 +690,6 @@ void BrowserWindowCocoa::UserChangedTheme() {
   [controller_ userChangedTheme];
 }
 
-void BrowserWindowCocoa::WebContentsFocused(WebContents* contents) {
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowCocoa::ShowWebsiteSettings(
     Profile* profile,
     content::WebContents* web_contents,

@@ -98,12 +98,6 @@ void WebView::SetResizeBackgroundColor(SkColor resize_background_color) {
   holder_->set_resize_background_color(resize_background_color);
 }
 
-void WebView::OnWebContentsFocused(content::WebContents* web_contents) {
-  FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager)
-    focus_manager->SetFocusedView(this);
-}
-
 void WebView::SetPreferredSize(const gfx::Size& preferred_size) {
   preferred_size_ = preferred_size;
   PreferredSizeChanged();
@@ -275,12 +269,6 @@ void WebView::RenderProcessHostDestroyed(content::RenderProcessHost* host) {
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, content::WebContentsDelegate implementation:
 
-void WebView::WebContentsFocused(content::WebContents* web_contents) {
-  DCHECK(wc_owner_.get());
-  // The WebView is only the delegate of WebContentses it creates itself.
-  OnWebContentsFocused(wc_owner_.get());
-}
-
 bool WebView::EmbedsFullscreenWidget() const {
   DCHECK(wc_owner_.get());
   return embed_fullscreen_widget_mode_enabled_;
@@ -334,6 +322,12 @@ void WebView::DidAttachInterstitialPage() {
 
 void WebView::DidDetachInterstitialPage() {
   NotifyMaybeTextInputClientAndAccessibilityChanged();
+}
+
+void WebView::OnWebContentsFocused() {
+  FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager)
+    focus_manager->SetFocusedView(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

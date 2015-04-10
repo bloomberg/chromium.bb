@@ -147,7 +147,6 @@ class Shell : public WebContentsDelegate,
   void DeactivateContents(WebContents* contents) override;
   void WorkerCrashed(WebContents* source) override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
-  void WebContentsFocused(WebContents* contents) override;
 
   static gfx::Size GetShellDefaultSize();
 
@@ -200,9 +199,6 @@ class Shell : public WebContentsDelegate,
                                           bool enter_fullscreen);
   bool PlatformIsFullscreenForTabOrPending(
       const WebContents* web_contents) const;
-#endif
-#if defined(TOOLKIT_VIEWS)
-  void PlatformWebContentsFocused(WebContents* contents);
 #endif
 
   gfx::NativeView GetContentView();

@@ -194,11 +194,6 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     }
   }
 
-  void OnWebContentsFocused(content::WebContents* web_contents) {
-    if (web_view_->GetWebContents() == web_contents)
-      web_view_->OnWebContentsFocused(web_contents);
-  }
-
  private:
   // Initialize the UI control contained in shell window
   void InitShellWindow() {
@@ -557,14 +552,6 @@ bool Shell::PlatformHandleContextMenu(
     static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
   delegate_view->ShowWebViewContextMenu(params);
   return true;
-}
-
-void Shell::PlatformWebContentsFocused(WebContents* contents) {
-  if (headless_)
-    return;
-  ShellWindowDelegateView* delegate_view =
-    static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
-  delegate_view->OnWebContentsFocused(contents);
 }
 
 }  // namespace content

@@ -969,15 +969,6 @@ void DevToolsWindow::RunFileChooser(WebContents* web_contents,
   FileSelectHelper::RunFileChooser(web_contents, params);
 }
 
-void DevToolsWindow::WebContentsFocused(WebContents* contents) {
-  Browser* inspected_browser = NULL;
-  int inspected_tab_index = -1;
-  if (is_docked_ && FindInspectedBrowserAndTabIndex(GetInspectedWebContents(),
-                                                    &inspected_browser,
-                                                    &inspected_tab_index))
-    inspected_browser->window()->WebContentsFocused(contents);
-}
-
 bool DevToolsWindow::PreHandleGestureEvent(
     WebContents* source,
     const blink::WebGestureEvent& event) {

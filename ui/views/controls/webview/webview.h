@@ -78,12 +78,6 @@ class WEBVIEW_EXPORT WebView : public View,
   // by default.
   void SetResizeBackgroundColor(SkColor resize_background_color);
 
-  // Called when the WebContents is focused.
-  // TODO(beng): This view should become a WebContentsViewObserver when a
-  //             WebContents is attached, and not rely on the delegate to
-  //             forward this notification.
-  void OnWebContentsFocused(content::WebContents* web_contents);
-
   // When used to host UI, we need to explicitly allow accelerators to be
   // processed. Default is false.
   void set_allow_accelerators(bool allow_accelerators) {
@@ -123,7 +117,6 @@ class WEBVIEW_EXPORT WebView : public View,
   void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
   // Overridden from content::WebContentsDelegate:
-  void WebContentsFocused(content::WebContents* web_contents) override;
   bool EmbedsFullscreenWidget() const override;
 
   // Overridden from content::WebContentsObserver:
@@ -142,6 +135,7 @@ class WEBVIEW_EXPORT WebView : public View,
   void OnChannelConnected(int32 peer_id) override {}
   void OnChannelError() override {}
   void OnBadMessageReceived(const IPC::Message& message) override {}
+  void OnWebContentsFocused() override;
 
  private:
   friend class WebViewUnitTest;

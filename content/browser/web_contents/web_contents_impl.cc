@@ -1373,11 +1373,11 @@ void WebContentsImpl::RenderWidgetDeleted(
 
 void WebContentsImpl::RenderWidgetGotFocus(
     RenderWidgetHostImpl* render_widget_host) {
-  // Notify the delegate if an embedded fullscreen widget was focused.
-  if (delegate_ && render_widget_host &&
-      delegate_->EmbedsFullscreenWidget() &&
-      render_widget_host->GetView() == GetFullscreenRenderWidgetHostView())
-    delegate_->WebContentsFocused(this);
+  // Notify the observers if an embedded fullscreen widget was focused.
+  if (delegate_ && render_widget_host && delegate_->EmbedsFullscreenWidget() &&
+      render_widget_host->GetView() == GetFullscreenRenderWidgetHostView()) {
+    NotifyWebContentsFocused();
+  }
 }
 
 void WebContentsImpl::RenderWidgetWasResized(
@@ -2375,6 +2375,10 @@ void WebContentsImpl::DidGetRedirectForResourceRequest(
       NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       Source<WebContents>(this),
       Details<const ResourceRedirectDetails>(&details));
+}
+
+void WebContentsImpl::NotifyWebContentsFocused() {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_, OnWebContentsFocused());
 }
 
 void WebContentsImpl::SystemDragEnded() {

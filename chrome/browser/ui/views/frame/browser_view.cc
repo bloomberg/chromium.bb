@@ -1354,13 +1354,6 @@ void BrowserView::UserChangedTheme() {
   frame_->FrameTypeChanged();
 }
 
-void BrowserView::WebContentsFocused(WebContents* contents) {
-  if (contents_web_view_->GetWebContents() == contents)
-    contents_web_view_->OnWebContentsFocused(contents);
-  else
-    devtools_web_view_->OnWebContentsFocused(contents);
-}
-
 void BrowserView::ShowWebsiteSettings(Profile* profile,
                                       content::WebContents* web_contents,
                                       const GURL& url,

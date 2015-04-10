@@ -295,9 +295,6 @@ class Panel : public ui::BaseWindow,
   // Updates UI to reflect change in loading state.
   void LoadingStateChanged(bool is_loading);
 
-  // Updates UI to reflect that the web cotents receives the focus.
-  void WebContentsFocused(content::WebContents* contents);
-
   // Moves the panel by delta instantly.
   void MoveByInstantly(const gfx::Vector2d& delta_origin);
 

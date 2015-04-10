@@ -177,6 +177,9 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHost* render_frame_host,
       const ResourceRedirectDetails& details);
 
+  // Notify observers that the web contents has been focused.
+  void NotifyWebContentsFocused();
+
   WebContentsView* GetView() const;
 
   ScreenOrientationDispatcherHost* screen_orientation_dispatcher_host() {

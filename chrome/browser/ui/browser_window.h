@@ -301,10 +301,6 @@ class BrowserWindow : public ui::BaseWindow {
   // indicating that it's time to redraw everything.
   virtual void UserChangedTheme() = 0;
 
-  // Notification that |contents| got the focus through user action (click
-  // on the page).
-  virtual void WebContentsFocused(content::WebContents* contents) = 0;
-
   // Shows the website settings using the specified information. |url| is the
   // url of the page/frame the info applies to, |ssl| is the SSL information for
   // that page/frame.  If |show_history| is true, a section showing how many

@@ -536,10 +536,6 @@ void PanelView::UpdatePanelLoadingAnimations(bool should_animate) {
   GetFrameView()->UpdateThrobber();
 }
 
-void PanelView::PanelWebContentsFocused(content::WebContents* contents) {
-  web_view_->OnWebContentsFocused(contents);
-}
-
 void PanelView::PanelCut() {
   // Nothing to do since we do not have panel-specific system menu.
   NOTREACHED();

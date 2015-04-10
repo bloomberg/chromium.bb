@@ -1034,8 +1034,7 @@ void WebContentsViewAura::UpdateDragCursor(blink::WebDragOperation operation) {
 }
 
 void WebContentsViewAura::GotFocus() {
-  if (web_contents_->GetDelegate())
-    web_contents_->GetDelegate()->WebContentsFocused(web_contents_);
+  web_contents_->NotifyWebContentsFocused();
 }
 
 void WebContentsViewAura::TakeFocus(bool reverse) {

@@ -569,7 +569,6 @@ class Browser : public TabStripModelObserver,
                           const gfx::Point& location,
                           bool motion) override;
   void ContentsZoomChange(bool zoom_in) override;
-  void WebContentsFocused(content::WebContents* content) override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
   gfx::Rect GetRootWindowResizerRect() const override;
   void BeforeUnloadFired(content::WebContents* source,

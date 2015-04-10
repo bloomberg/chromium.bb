@@ -864,8 +864,8 @@ void InterstitialPageImpl::InterstitialPageRVHDelegateView::UpdateDragCursor(
 
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::GotFocus() {
   WebContents* web_contents = interstitial_page_->web_contents();
-  if (web_contents && web_contents->GetDelegate())
-    web_contents->GetDelegate()->WebContentsFocused(web_contents);
+  if (web_contents)
+    static_cast<WebContentsImpl*>(web_contents)->NotifyWebContentsFocused();
 }
 
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::TakeFocus(

@@ -169,10 +169,6 @@ void PanelCocoa::UpdatePanelLoadingAnimations(bool should_animate) {
   [controller_ updateThrobber:should_animate];
 }
 
-void PanelCocoa::PanelWebContentsFocused(content::WebContents* contents) {
-  // Nothing to do.
-}
-
 void PanelCocoa::PanelCut() {
   // Nothing to do since we do not have panel-specific system menu on Mac.
 }

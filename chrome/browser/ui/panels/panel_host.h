@@ -71,7 +71,6 @@ class PanelHost : public content::WebContentsDelegate,
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  void WebContentsFocused(content::WebContents* contents) override;
   void ResizeDueToAutoResize(content::WebContents* web_contents,
                              const gfx::Size& new_size) override;
 

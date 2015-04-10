@@ -281,7 +281,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       const std::vector<content::ColorSuggestion>& suggestions) override;
   void RunFileChooser(content::WebContents* web_contents,
                       const content::FileChooserParams& params) override;
-  void WebContentsFocused(content::WebContents* contents) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
 

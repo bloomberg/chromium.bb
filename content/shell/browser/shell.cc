@@ -382,12 +382,6 @@ bool Shell::HandleContextMenu(const content::ContextMenuParams& params) {
   return PlatformHandleContextMenu(params);
 }
 
-void Shell::WebContentsFocused(WebContents* contents) {
-#if defined(TOOLKIT_VIEWS)
-  PlatformWebContentsFocused(contents);
-#endif
-}
-
 gfx::Size Shell::GetShellDefaultSize() {
   static gfx::Size default_shell_size;
   if (!default_shell_size.IsEmpty())
