@@ -296,18 +296,6 @@
     ]
   },
   "Win 8 Perf (2)": {
-    "scripts": [
-      {
-        "args": [
-          "performance_browser_tests",
-          "--test-launcher-print-test-stdio=always",
-          "--gtest_filter=TabCapturePerformanceTest.*",
-          "--test-launcher-jobs=1",
-          "--enable-gpu"
-        ],
-        "name": "performance_browser_tests",
-        "script": "gtest_perf_test.py"
-      }
-    ]
+    "scripts": []
   }
 }
