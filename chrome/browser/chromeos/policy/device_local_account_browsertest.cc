@@ -34,6 +34,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -213,12 +214,12 @@ const char kPublicSessionInputMethodIDTemplate[] = "_comp_ime_%sxkb:de:neo:ger";
 const char kSequenceToken[] = "chromeos_login_l10n_util";
 
 // Helper that serves extension update manifests to Chrome.
-class TestingUpdateManifestProvider {
+class TestingUpdateManifestProvider
+    : public base::RefCountedThreadSafe<TestingUpdateManifestProvider> {
  public:
   // Update manifests will be served at |relative_update_url|.
   explicit TestingUpdateManifestProvider(
       const std::string& relative_update_url);
-  ~TestingUpdateManifestProvider();
 
   // When an update manifest is requested for the given extension |id|, indicate
   // that |version| of the extension can be downloaded at |crx_url|.
@@ -241,9 +242,16 @@ class TestingUpdateManifestProvider {
     GURL crx_url;
   };
   typedef std::map<std::string, Update> UpdateMap;
-  UpdateMap updates_;
 
-  const std::string relative_update_url_;
+  ~TestingUpdateManifestProvider();
+  friend class RefCountedThreadSafe<TestingUpdateManifestProvider>;
+
+  // Protects other members against concurrent access from main thread and
+  // test server io thread.
+  base::Lock lock_;
+
+  std::string relative_update_url_;
+  UpdateMap updates_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingUpdateManifestProvider);
 };
@@ -286,18 +294,17 @@ TestingUpdateManifestProvider::TestingUpdateManifestProvider(
     : relative_update_url_(relative_update_url) {
 }
 
-TestingUpdateManifestProvider::~TestingUpdateManifestProvider() {
-}
-
 void TestingUpdateManifestProvider::AddUpdate(const std::string& id,
                                               const std::string& version,
                                               const GURL& crx_url) {
+  base::AutoLock auto_lock(lock_);
   updates_[id] = Update(version, crx_url);
 }
 
 scoped_ptr<net::test_server::HttpResponse>
-    TestingUpdateManifestProvider::HandleRequest(
-        const net::test_server::HttpRequest& request) {
+TestingUpdateManifestProvider::HandleRequest(
+    const net::test_server::HttpRequest& request) {
+  base::AutoLock auto_lock(lock_);
   const GURL url("http://localhost" + request.relative_url);
   if (url.path() != relative_update_url_)
     return scoped_ptr<net::test_server::HttpResponse>();
@@ -326,6 +333,9 @@ scoped_ptr<net::test_server::HttpResponse>
   http_response->set_content(content);
   http_response->set_content_type("text/xml");
   return http_response.Pass();
+}
+
+TestingUpdateManifestProvider::~TestingUpdateManifestProvider() {
 }
 
 DictionaryPrefValueWaiter::DictionaryPrefValueWaiter(
@@ -913,14 +923,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, AccountListChange) {
       .Wait();
 }
 
-// Test fails under MSan, http://crbug.com/446950
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_StartSession DISABLED_StartSession
-#else
-#define MAYBE_StartSession StartSession
-#endif
-
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_StartSession) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
   // Specify startup pages.
   device_local_account_policy_.payload().mutable_restoreonstartup()->set_value(
       SessionStartupPref::kPrefValueURLs);
@@ -960,14 +963,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_StartSession) {
       SigninManagerFactory::GetForProfile(profile)->IsAuthenticated());
 }
 
-// Test fails under MSan, http://crbug.com/446950
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_FullscreenDisallowed DISABLED_FullscreenDisallowed
-#else
-#define MAYBE_FullscreenDisallowed FullscreenDisallowed
-#endif
-
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_FullscreenDisallowed) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -990,29 +986,20 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_FullscreenDisallowed) {
   EXPECT_FALSE(browser_window->IsFullscreen());
 }
 
-// Test fails under MSan, http://crbug.com/446950
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ExtensionsUncached DISABLED_ExtensionsUncached
-#else
-#define MAYBE_ExtensionsUncached ExtensionsUncached
-#endif
-
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_ExtensionsUncached) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   // Make it possible to force-install a hosted app and an extension.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  TestingUpdateManifestProvider testing_update_manifest_provider(
-      kRelativeUpdateURL);
-  testing_update_manifest_provider.AddUpdate(
-      kHostedAppID,
-      kHostedAppVersion,
+  scoped_refptr<TestingUpdateManifestProvider> testing_update_manifest_provider(
+      new TestingUpdateManifestProvider(kRelativeUpdateURL));
+  testing_update_manifest_provider->AddUpdate(
+      kHostedAppID, kHostedAppVersion,
       embedded_test_server()->GetURL(std::string("/") + kHostedAppCRXPath));
-  testing_update_manifest_provider.AddUpdate(
-      kGoodExtensionID,
-      kGoodExtensionVersion,
+  testing_update_manifest_provider->AddUpdate(
+      kGoodExtensionID, kGoodExtensionVersion,
       embedded_test_server()->GetURL(std::string("/") + kGoodExtensionCRXPath));
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&TestingUpdateManifestProvider::HandleRequest,
-                 base::Unretained(&testing_update_manifest_provider)));
+                 testing_update_manifest_provider));
 
   // Specify policy to force-install the hosted app and the extension.
   em::StringList* forcelist = device_local_account_policy_.payload()
@@ -1076,14 +1063,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_ExtensionsUncached) {
   EXPECT_FALSE(cache->GetExtension(kGoodExtensionID, NULL, NULL));
 }
 
-// Test fails under MSan, http://crbug.com/446950
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ExtensionsCached DISABLED_ExtensionsCached
-#else
-#define MAYBE_ExtensionsCached ExtensionsCached
-#endif
-
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_ExtensionsCached) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Pre-populate the device local account's extension cache with a hosted app
@@ -1177,30 +1157,20 @@ static void CreateFile(const base::FilePath& file,
   EXPECT_TRUE(base::TouchFile(file, timestamp, timestamp));
 }
 
-// Test fails under MSan, http://crbug.com/446950
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ExtensionCacheImplTest DISABLED_ExtensionCacheImplTest
-#else
-#define MAYBE_ExtensionCacheImplTest ExtensionCacheImplTest
-#endif
-
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_ExtensionCacheImplTest) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   // Make it possible to force-install a hosted app and an extension.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  TestingUpdateManifestProvider testing_update_manifest_provider(
-      kRelativeUpdateURL);
-  testing_update_manifest_provider.AddUpdate(
-      kHostedAppID,
-      kHostedAppVersion,
+  scoped_refptr<TestingUpdateManifestProvider> testing_update_manifest_provider(
+      new TestingUpdateManifestProvider(kRelativeUpdateURL));
+  testing_update_manifest_provider->AddUpdate(
+      kHostedAppID, kHostedAppVersion,
       embedded_test_server()->GetURL(std::string("/") + kHostedAppCRXPath));
-  testing_update_manifest_provider.AddUpdate(
-      kGoodExtensionID,
-      kGoodExtensionVersion,
+  testing_update_manifest_provider->AddUpdate(
+      kGoodExtensionID, kGoodExtensionVersion,
       embedded_test_server()->GetURL(std::string("/") + kGoodExtensionCRXPath));
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&TestingUpdateManifestProvider::HandleRequest,
-                 base::Unretained(&testing_update_manifest_provider)));
-
+                 testing_update_manifest_provider));
   // Create and initialize local cache.
   base::ScopedTempDir cache_dir;
   EXPECT_TRUE(cache_dir.CreateUniqueTempDir());
@@ -1279,14 +1249,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_ExtensionCacheImplTest) {
   EXPECT_TRUE(PathExists(local_file));
 }
 
-// Test fails under MSan, http://crbug.com/446950
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ExternalData DISABLED_ExternalData
-#else
-#define MAYBE_ExternalData ExternalData
-#endif
-
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_ExternalData) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   // user_manager::UserManager requests an external data fetch whenever
   // the key::kUserAvatarImage policy is set. Since this test wants to
   // verify that the underlying policy subsystem will start a fetch
@@ -1460,16 +1423,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   EXPECT_EQ(policy_image->height(), saved_image->height());
 }
 
-// Test fails under MSan, http://crbug.com/446950
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_LastWindowClosedLogoutReminder \
-  DISABLED_LastWindowClosedLogoutReminder
-#else
-#define MAYBE_LastWindowClosedLogoutReminder LastWindowClosedLogoutReminder
-#endif
-
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
-                       MAYBE_LastWindowClosedLogoutReminder) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -2153,20 +2107,18 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
                 .id());
 }
 
-// Test fails under MSan and is flaky on regular bots: http://crbug.com/446950
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_PolicyForExtensions) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   // Set up a test update server for the Show Managed Storage app.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  TestingUpdateManifestProvider testing_update_manifest_provider(
-      kRelativeUpdateURL);
-  testing_update_manifest_provider.AddUpdate(
-      kShowManagedStorageID,
-      kShowManagedStorageVersion,
+  scoped_refptr<TestingUpdateManifestProvider> testing_update_manifest_provider(
+      new TestingUpdateManifestProvider(kRelativeUpdateURL));
+  testing_update_manifest_provider->AddUpdate(
+      kShowManagedStorageID, kShowManagedStorageVersion,
       embedded_test_server()->GetURL(std::string("/") +
                                      kShowManagedStorageCRXPath));
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&TestingUpdateManifestProvider::HandleRequest,
-                 base::Unretained(&testing_update_manifest_provider)));
+                 testing_update_manifest_provider));
 
   // Force-install the Show Managed Storage app. This app can be installed in
   // public sessions because it's whitelisted for testing purposes.
@@ -2261,14 +2213,7 @@ class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,
                                    public testing::WithParamInterface<bool> {
 };
 
-// Test fails under MSan, http://crbug.com/446950
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TermsOfServiceScreen DISABLED_TermsOfServiceScreen
-#else
-#define MAYBE_TermsOfServiceScreen TermsOfServiceScreen
-#endif
-
-IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, MAYBE_TermsOfServiceScreen) {
+IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   // Specify Terms of Service URL.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
