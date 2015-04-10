@@ -38,14 +38,9 @@ OverscrollWindowAnimation::~OverscrollWindowAnimation() {
 }
 
 void OverscrollWindowAnimation::CancelSlide() {
-  ui::Layer* layer = GetFrontLayer();
-  ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-  settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  settings.SetTweenType(gfx::Tween::EASE_OUT);
-  settings.AddObserver(this);
-  layer->SetTransform(gfx::Transform());
   overscroll_cancelled_ = true;
+  AnimateTranslation(GetBackLayer(), 0, false);
+  AnimateTranslation(GetFrontLayer(), 0, true);
 }
 
 float OverscrollWindowAnimation::GetTranslationForOverscroll(float delta_x) {
@@ -65,9 +60,13 @@ bool OverscrollWindowAnimation::OnOverscrollUpdate(float delta_x,
                                                    float delta_y) {
   if (direction_ == SLIDE_NONE)
     return false;
-  gfx::Transform transform;
-  transform.Translate(GetTranslationForOverscroll(delta_x), 0);
-  GetFrontLayer()->SetTransform(transform);
+  gfx::Transform front_transform;
+  gfx::Transform back_transform;
+  float translate_x = GetTranslationForOverscroll(delta_x);
+  front_transform.Translate(translate_x, 0);
+  back_transform.Translate(translate_x / 2, 0);
+  GetFrontLayer()->SetTransform(front_transform);
+  GetBackLayer()->SetTransform(back_transform);
   return true;
 }
 
@@ -92,14 +91,20 @@ void OverscrollWindowAnimation::OnOverscrollModeChange(
       CancelSlide();
     return;
   }
-  if (is_active())
-    GetFrontLayer()->GetAnimator()->StopAnimating();
-
+  if (is_active()) {
+    slide_window_->layer()->GetAnimator()->StopAnimating();
+    delegate_->GetMainWindow()->layer()->GetAnimator()->StopAnimating();
+  }
   gfx::Rect slide_window_bounds = gfx::Rect(GetVisibleBounds().size());
   if (new_direction == SLIDE_FRONT) {
     slide_window_bounds.Offset(base::i18n::IsRTL()
                                    ? -slide_window_bounds.width()
                                    : slide_window_bounds.width(),
+                               0);
+  } else {
+    slide_window_bounds.Offset(base::i18n::IsRTL()
+                                   ? slide_window_bounds.width() / 2
+                                   : -slide_window_bounds.width() / 2,
                                0);
   }
   slide_window_ = new_direction == SLIDE_FRONT
@@ -128,20 +133,36 @@ void OverscrollWindowAnimation::OnOverscrollComplete(
   } else {
     translate_x = -content_width;
   }
-  ui::Layer* layer = GetFrontLayer();
+  AnimateTranslation(GetBackLayer(), translate_x / 2, false);
+  AnimateTranslation(GetFrontLayer(), translate_x, true);
+}
+
+void OverscrollWindowAnimation::AnimateTranslation(ui::Layer* layer,
+                                                   float translate_x,
+                                                   bool listen_for_completion) {
   gfx::Transform transform;
   transform.Translate(translate_x, 0);
   ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.SetTweenType(gfx::Tween::EASE_OUT);
-  settings.AddObserver(this);
+  if (listen_for_completion)
+    settings.AddObserver(this);
   layer->SetTransform(transform);
 }
 
 ui::Layer* OverscrollWindowAnimation::GetFrontLayer() const {
   DCHECK(direction_ != SLIDE_NONE);
   if (direction_ == SLIDE_FRONT) {
+    DCHECK(slide_window_);
+    return slide_window_->layer();
+  }
+  return delegate_->GetMainWindow()->layer();
+}
+
+ui::Layer* OverscrollWindowAnimation::GetBackLayer() const {
+  DCHECK(direction_ != SLIDE_NONE);
+  if (direction_ == SLIDE_BACK) {
     DCHECK(slide_window_);
     return slide_window_->layer();
   }

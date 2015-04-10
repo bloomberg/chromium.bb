@@ -32,11 +32,12 @@ class CONTENT_EXPORT OverscrollWindowAnimation
     : public OverscrollControllerDelegate,
       ui::ImplicitAnimationObserver {
  public:
-  // The direction of this animation. SLIDE_FRONT indicates that the main window
-  // stays still while the slide window moves on top of it, entering in from the
-  // right. SLIDE_BACK means that the main window is animated to the right,
-  // revealing the slide  window in the back, which stays still. SLIDE_NONE
-  // means we are not animating yet. Left and right are reversed for RTL
+  // The direction of this animation. SLIDE_FRONT indicates that the slide
+  // window moves on top of the main window, entering the screen from the right.
+  // SLIDE_BACK means that the main window is animated to the right, revealing
+  // the slide window in the back. SLIDE_NONE means we are not animating yet.
+  // Both windows are animated at the same time but at different speeds,
+  // creating a parallax scrolling effect. Left and right are reversed for RTL
   // languages, but stack order remains unchanged.
   enum Direction { SLIDE_FRONT, SLIDE_BACK, SLIDE_NONE };
 
@@ -83,15 +84,23 @@ class CONTENT_EXPORT OverscrollWindowAnimation
                               OverscrollMode new_mode) override;
 
  private:
-  // Cancels the slide, animating the front window to its original position.
+  // Cancels the slide, animating the front and back window to their original
+  // positions.
   void CancelSlide();
 
   // Returns a translation on the x axis for the given overscroll.
   float GetTranslationForOverscroll(float delta_x);
 
-  // Returns the layer that is animated for the animation. The caller does not
-  // own it.
+  // Animates a translation of the given |layer|. If |listen_for_completion| is
+  // true, adds |this| as observer of the animation.
+  void AnimateTranslation(ui::Layer* layer,
+                          float translate_x,
+                          bool listen_for_completion);
+
+  // Return the front/back layer that is involved in the animation. The caller
+  // does not own it.
   ui::Layer* GetFrontLayer() const;
+  ui::Layer* GetBackLayer() const;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
@@ -109,8 +118,8 @@ class CONTENT_EXPORT OverscrollWindowAnimation
   // The current animation direction.
   Direction direction_;
 
-  // Indicates if the current animation has been cancelled. True while the
-  // cancel animation is in progress.
+  // Indicates if the current slide has been cancelled. True while the cancel
+  // animation is in progress.
   bool overscroll_cancelled_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollWindowAnimation);
