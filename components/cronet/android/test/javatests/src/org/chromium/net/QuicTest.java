@@ -15,12 +15,19 @@ import java.util.HashMap;
  */
 public class QuicTest extends CronetTestBase {
 
+    private CronetTestActivity mActivity;
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        // Loads library first since native functions are used to retrieve
-        // QuicTestServer info before config is constructed.
-        System.loadLibrary("cronet_tests");
+        mActivity = launchCronetTestApp();
+        QuicTestServer.startQuicTestServer(mActivity.getApplicationContext());
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        QuicTestServer.shutdownQuicTestServer();
+        super.tearDown();
     }
 
     @SmallTest
@@ -34,13 +41,8 @@ public class QuicTest extends CronetTestBase {
                 QuicTestServer.getServerPort(), QuicTestServer.getServerPort());
         config.setExperimentalQuicConnectionOptions("PACE,IW10,FOO,DEADBEEF");
 
-        String[] commandLineArgs = {
-                CronetTestActivity.CONFIG_KEY, config.toString() };
-        CronetTestActivity activity =
-                launchCronetTestAppWithUrlAndCommandLineArgs(null,
-                                                             commandLineArgs);
-        QuicTestServer.startQuicTestServer(activity.getApplicationContext());
-        activity.startNetLog();
+        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(
+                mActivity.getApplicationContext(), config);
 
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
@@ -50,7 +52,7 @@ public class QuicTest extends CronetTestBase {
         // with a 500.
         for (int i = 0; i < 2; i++) {
             HttpUrlRequest request =
-                    activity.mRequestFactory.createRequest(
+                    factory.createRequest(
                             quicURL,
                             HttpUrlRequest.REQUEST_PRIORITY_MEDIUM,
                             headers,
@@ -66,7 +68,5 @@ public class QuicTest extends CronetTestBase {
                 "This is a simple text file served by QUIC.\n",
                 listener.mResponseAsString);
         assertEquals("quic/1+spdy/3", listener.mNegotiatedProtocol);
-        activity.stopNetLog();
-        QuicTestServer.shutdownQuicTestServer();
     }
 }
