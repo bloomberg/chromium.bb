@@ -8,6 +8,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
@@ -81,9 +82,8 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
 
   // Whitelisted ones can (this is the ID corresponding to the base 64 encoded
   // key in the init_platform_app_csp.json manifest.)
-  std::string test_id = "ahplfneplbnjcflhdgkkjeiglkkfeelb";
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kWhitelistedExtensionID, test_id);
+  extensions::SimpleFeature::ScopedWhitelistForTest whitelist(
+      "ahplfneplbnjcflhdgkkjeiglkkfeelb");
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("init_platform_app_csp.json");
   EXPECT_EQ(0U, extension->install_warnings().size())

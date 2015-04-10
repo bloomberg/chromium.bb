@@ -62,6 +62,11 @@ class TestExtensionEnvironment {
   // manifest_extra override these defaults.
   const Extension* MakeExtension(const base::Value& manifest_extra);
 
+  // Use a specific extension ID instead of the default generated in
+  // Extension::Create.
+  const Extension* MakeExtension(const base::Value& manifest_extra,
+                                 const std::string& id);
+
   // Returns a test web contents that has a tab id.
   scoped_ptr<content::WebContents> MakeTab() const;
 

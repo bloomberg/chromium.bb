@@ -29,6 +29,18 @@ class SimpleFeatureTest;
 
 class SimpleFeature : public Feature {
  public:
+  // Used by tests to override the cached --whitelisted-extension-id.
+  class ScopedWhitelistForTest {
+   public:
+    explicit ScopedWhitelistForTest(const std::string& id);
+    ~ScopedWhitelistForTest();
+
+   private:
+    std::string* previous_id_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedWhitelistForTest);
+  };
+
   SimpleFeature();
   ~SimpleFeature() override;
 
