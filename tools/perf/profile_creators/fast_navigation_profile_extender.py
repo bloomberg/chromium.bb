@@ -7,7 +7,6 @@ from profile_creators import profile_extender
 from telemetry.core import browser_finder
 from telemetry.core import browser_finder_exceptions
 from telemetry.core import exceptions
-from telemetry.core import platform
 
 
 class FastNavigationProfileExtender(profile_extender.ProfileExtender):
@@ -30,15 +29,6 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
       simultaneously perform navigations.
     """
     super(FastNavigationProfileExtender, self).__init__()
-
-    # The path of the profile that the browser will use while it's running.
-    # This member is initialized during SetUp().
-    self._profile_path = None
-
-    # A reference to the browser that will be performing all of the tab
-    # navigations.
-    # This member is initialized during SetUp().
-    self._browser = None
 
     # The instance keeps a list of Tabs that can be navigated successfully.
     # This means that the Tab is not crashed, and is processing JavaScript in a
@@ -85,32 +75,6 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
     """
     raise NotImplementedError()
 
-  def SetUp(self, finder_options):
-    """Finds the browser, starts the browser, and opens the requisite number of
-    tabs.
-
-    Can be overridden by subclasses. Subclasses must call the super class
-    implementation.
-    """
-    self._profile_path = finder_options.output_profile_path
-    possible_browser = self._GetPossibleBrowser(finder_options)
-
-    assert possible_browser.supports_tab_control
-    assert (platform.GetHostPlatform().GetOSName() in
-        ["win", "mac", "linux"])
-    self._browser = possible_browser.Create(finder_options)
-
-  def TearDown(self):
-    """Teardown that is guaranteed to be executed before the instance is
-    destroyed.
-
-    Can be overridden by subclasses. Subclasses must call the super class
-    implementation.
-    """
-    if self._browser:
-      self._browser.Close()
-      self._browser = None
-
   def CleanUpAfterBatchNavigation(self):
     """A hook for subclasses to perform cleanup after each batch of
     navigations.
@@ -119,17 +83,13 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
     """
     pass
 
-  @property
-  def profile_path(self):
-    return self._profile_path
-
   def _RefreshNavigationTabs(self):
     """Updates the member self._navigation_tabs to contain self._NUM_TABS
     elements, each of which is not crashed. The crashed tabs are intentionally
     leaked, since Telemetry doesn't have a good way of killing crashed tabs.
 
     It is also possible for a tab to be stalled in an infinite JavaScript loop.
-    These tabs will be in self._browser.tabs, but not in self._navigation_tabs.
+    These tabs will be in self.browser.tabs, but not in self._navigation_tabs.
     There is no way to kill these tabs, so they are also leaked. This method is
     careful to only use tabs in self._navigation_tabs, or newly created tabs.
     """
@@ -137,11 +97,11 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
     self._navigation_tabs = live_tabs
 
     while len(self._navigation_tabs) < self._NUM_TABS:
-      self._navigation_tabs.append(self._browser.tabs.New())
+      self._navigation_tabs.append(self.browser.tabs.New())
 
   def _RemoveNavigationTab(self, tab):
     """Removes a tab which is no longer in a useable state from
-    self._navigation_tabs. The tab is not removed from self._browser.tabs,
+    self._navigation_tabs. The tab is not removed from self.browser.tabs,
     since there is no guarantee that the tab can be safely removed."""
     self._navigation_tabs.remove(tab)
 
