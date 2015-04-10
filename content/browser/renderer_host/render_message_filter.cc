@@ -1014,7 +1014,8 @@ void RenderMessageFilter::OnCacheableMetadataAvailable(
     const std::vector<char>& data) {
   net::HttpCache* cache = request_context_->GetURLRequestContext()->
       http_transaction_factory()->GetCache();
-  DCHECK(cache);
+  if (!cache)
+    return;
 
   // Use the same priority for the metadata write as for script
   // resources (see defaultPriorityForResourceType() in WebKit's
