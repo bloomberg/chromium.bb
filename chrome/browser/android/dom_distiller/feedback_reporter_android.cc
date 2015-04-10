@@ -22,8 +22,8 @@ namespace android {
 
 // static
 jboolean IsEnabled(JNIEnv* env, jclass clazz) {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDomDistiller);
+  // TODO(mdjones): Remove android-view version of feedback overlay.
+  return false;
 }
 
 // static
