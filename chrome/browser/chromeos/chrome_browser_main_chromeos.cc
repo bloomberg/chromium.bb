@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolver_delegate.h"
 #include "chrome/browser/chromeos/dbus/printer_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
-#include "chrome/browser/chromeos/device/input_service_proxy.h"
 #include "chrome/browser/chromeos/events/event_rewriter.h"
 #include "chrome/browser/chromeos/events/event_rewriter_controller.h"
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
@@ -664,9 +663,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
   g_browser_process->platform_part()->oom_priority_manager()->Stop();
-
-  // Early wake-up of HID device service.
-  InputServiceProxy::WarmUp();
 
   // Destroy the application name notifier for Kiosk mode.
   KioskModeIdleAppNameNotification::Shutdown();

@@ -105,14 +105,6 @@ InputServiceProxy::~InputServiceProxy() {
                  base::Unretained(service_observer_.release())));
 }
 
-// static
-void InputServiceProxy::WarmUp() {
-  content::BrowserThread::PostTask(
-      thread_identifier_,
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&InputServiceLinux::GetInstance)));
-}
-
 void InputServiceProxy::AddObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (observer)
