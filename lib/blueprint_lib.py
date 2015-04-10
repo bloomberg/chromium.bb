@@ -30,17 +30,19 @@ class Blueprint(object):
       initial_config: A dictionary of key-value pairs to seed a new blueprint
         with if the specified blueprint doesn't already exist.
     """
-    path = (workspace_lib.LocatorToPath(blueprint_loc)
-            if workspace_lib.IsLocator(blueprint_loc) else blueprint_loc)
-    if not os.path.exists(path):
+    self._path = (workspace_lib.LocatorToPath(blueprint_loc)
+                  if workspace_lib.IsLocator(blueprint_loc) else blueprint_loc)
+    self._locator = workspace_lib.PathToLocator(self._path)
+    if not os.path.exists(self._path):
       if initial_config:
-        osutils.WriteFile(path, json.dumps(initial_config, sort_keys=True,
-                                           indent=4, separators=(',', ': ')),
+        osutils.WriteFile(self._path,
+                          json.dumps(initial_config, sort_keys=True,
+                                     indent=4, separators=(',', ': ')),
                           makedirs=True)
       else:
-        raise BlueprintNotFound('blueprint %s not found.' % path)
+        raise BlueprintNotFound('blueprint %s not found.' % self._path)
 
-    self.config = json.loads(osutils.ReadFile(path))
+    self.config = json.loads(osutils.ReadFile(self._path))
 
   def GetBricks(self):
     """Returns the bricks field of a blueprint."""
@@ -53,3 +55,7 @@ class Blueprint(object):
   def GetMainPackage(self):
     """Returns the main_package field of a blueprint."""
     return self.config.get('main_package')
+
+  def FriendlyName(self):
+    """Returns the friendly name for this blueprint."""
+    return workspace_lib.LocatorToFriendlyName(self._locator)

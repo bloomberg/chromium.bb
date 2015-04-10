@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import glob
 import multiprocessing
 import os
 
@@ -54,6 +55,8 @@ exec pkg-config "$@"
 """
 
 _wrapper_dir = '/usr/local/bin'
+
+_IMPLICIT_SYSROOT_DEPS = 'IMPLICIT_SYSROOT_DEPS'
 
 _CONFIGURATION_PATH = 'etc/make.conf.board_setup'
 
@@ -280,7 +283,7 @@ class Sysroot(object):
     config = {}
     brick_list = brick.BrickStack()
     if bsp:
-      brick_list.extend(bsp.BrickStack())
+      brick_list = bsp.BrickStack() + brick_list
 
     base_brick = bsp or brick
     toolchains = toolchain.GetToolchainsForBrick(base_brick.brick_locator)
@@ -311,6 +314,9 @@ class Sysroot(object):
 
     Args:
       accepted_licenses: Licenses accepted by portage as a string.
+
+    Returns:
+      The make.conf file as a python string.
     """
     config = ["""# AUTO-GENERATED FILE. DO NOT EDIT.
 
@@ -474,3 +480,87 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
         external = candidate
 
     return external, internal
+
+  def CreateSkeleton(self):
+    """Creates a sysroot skeleton."""
+    needed_dirs = [
+        os.path.join(self.path, 'etc', 'portage', 'hooks'),
+        os.path.join(self.path, 'etc'),
+        os.path.join(self.path, 'etc', 'portage', 'profile'),
+        os.path.join('/', 'usr', 'local', 'bin'),
+    ]
+    for d in needed_dirs:
+      osutils.SafeMakedirs(d, sudo=True)
+
+    make_user = os.path.join('/', 'etc', 'make.conf.user')
+    link = os.path.join(self.path, 'etc', 'make.conf.user')
+    if not os.path.exists(make_user):
+      osutils.WriteFile(make_user, '', sudo=True)
+    osutils.SafeSymlink(make_user, link, sudo=True)
+
+    # Create links for portage hooks.
+    hook_glob = os.path.join(constants.CROSUTILS_DIR, 'hooks', '*')
+    for filename in glob.glob(hook_glob):
+      linkpath = os.path.join(self.path, 'etc', 'portage', 'hooks',
+                              os.path.basename(filename))
+      osutils.SafeSymlink(filename, linkpath, sudo=True)
+
+  def _SelectDefaultMakeConf(self):
+    """Selects the best make.conf file possible.
+
+    The best make.conf possible is the ARCH-specific make.conf. If it does not
+    exist, we use the generic make.conf.
+    """
+    for key in (self.GetStandardField('ARCH'), 'generic'):
+      make_conf = os.path.join(
+          constants.SOURCE_ROOT, constants.CHROMIUMOS_OVERLAY_DIR, 'chromeos',
+          'config', 'make.conf.%s-target' % key)
+      if os.path.exists(make_conf):
+        link = os.path.join(self.path, 'etc', 'make.conf')
+        osutils.SafeSymlink(make_conf, link, sudo=True)
+        return
+
+  def GeneratePortageConfig(self):
+    """Generates the portage config.
+
+    This step will:
+    * create the portage wrappers.
+    * create the symlink to the architecture-specific make.conf
+    * generate make.conf.board (binhost, gsutil setup and various portage
+      configuration)
+    * choose the best portage profile possible.
+    """
+    self.CreateAllWrappers()
+    self._SelectDefaultMakeConf()
+
+    make_conf = self.GenerateMakeConf()
+    make_conf_path = os.path.join(self.path, 'etc', 'make.conf.board')
+    osutils.WriteFile(make_conf_path, make_conf, sudo=True)
+
+    # Once make.conf.board has been generated, generate the binhost config.
+    # We need to do this in two steps as the binhost generation step needs
+    # portageq to be available.
+    osutils.WriteFile(make_conf_path,
+                      '\n'.join([make_conf, self.GenerateBinhostConf()]),
+                      sudo=True)
+
+    cros_build_lib.RunCommand(['cros_choose_profile',
+                               '--board_root=%s' % self.path])
+
+  def UpdateToolchain(self):
+    """Updates the toolchain packages.
+
+    This will install both the toolchains and the packages that are implicitly
+    needed (gcc-libs, linux-headers).
+    """
+    cros_build_lib.RunCommand(
+        [os.path.join(constants.CROSUTILS_DIR, 'install_toolchain'),
+         '--sysroot', self.path])
+
+    if not self.GetCachedField(_IMPLICIT_SYSROOT_DEPS):
+      emerge = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge'),
+                '--sysroot=%s' % self.path]
+      cros_build_lib.SudoRunCommand(
+          emerge + ['--root-deps=rdeps', '--usepkg', '--getbinpkg', '--select',
+                    'gcc-libs', 'linux-headers'])
+      self.SetCachedField(_IMPLICIT_SYSROOT_DEPS, 'yes')

@@ -35,25 +35,29 @@ To just build a single package:
     self.chroot_update = options.chroot_update and options.deps
     if options.chroot_update and not options.deps:
       logging.debug('Skipping chroot update due to --nodeps')
-    self.build_pkgs = None
+    self.build_pkgs = options.packages
     self.host = False
     self.board = None
     self.brick = None
+    self.blueprint = None
 
     if self.options.host:
       self.host = True
     elif self.options.board:
       self.board = self.options.board
     elif self.options.blueprint:
-      bricks = blueprint_lib.Blueprint(self.options.blueprint).GetBricks()
-      # TODO(bsimonnet): Support multiple bricks per blueprint (brbug.com/635).
-      if len(bricks) != 1:
-        cros_build_lib.Die('Blueprint contains multiple bricks, but we can '
-                           'only build a single brick at a time')
-      self.brick = brick_lib.Brick(bricks[0])
+      self.blueprint = blueprint_lib.Blueprint(self.options.blueprint)
+
+      if not self.build_pkgs:
+        self.build_pkgs = []
+        for locator in (self.blueprint.GetBricks()[0], self.blueprint.GetBSP()):
+          for brick in brick_lib.Brick(locator).BrickStack():
+            self.build_pkgs.extend(brick.MainPackages())
     elif self.options.brick or self.curr_brick_locator:
       self.brick = brick_lib.Brick(self.options.brick
                                    or self.curr_brick_locator)
+      if not self.build_pkgs:
+        self.build_pkgs = self.brick.MainPackages()
     else:
       # If nothing is explicitly set, use the default board.
       self.board = cros_build_lib.GetDefaultBoard()
@@ -115,7 +119,7 @@ To just build a single package:
 
     Only print the output if this step fails or if we're in debug mode.
     """
-    if self.options.deps and not self.host:
+    if self.options.deps and not self.host and not self.blueprint:
       sysroot = cros_build_lib.GetSysroot(self.board)
       cmd = chroot_util.GetEmergeCommand(sysroot=sysroot)
       cmd += ['-pe', '--backtrack=0'] + self.build_pkgs
@@ -132,7 +136,8 @@ To just build a single package:
       chroot_util.UpdateChroot()
 
     chroot_util.Emerge(self.build_pkgs, brick=self.brick, board=self.board,
-                       host=self.host, with_deps=self.options.deps,
+                       host=self.host, blueprint=self.blueprint,
+                       with_deps=self.options.deps,
                        rebuild_deps=self.options.rebuild_deps,
                        use_binary=self.options.binary, jobs=self.options.jobs,
                        debug_output=(self.options.log_level.lower() == 'debug'))
@@ -140,7 +145,7 @@ To just build a single package:
   def Run(self):
     """Run cros build."""
     if not self.host:
-      if not (self.board or self.brick):
+      if not (self.board or self.brick or self.blueprint):
         cros_build_lib.Die('You did not specify a board/brick to build for. '
                            'You need to be in a brick directory or set '
                            '--board/--brick/--host')
@@ -151,15 +156,20 @@ To just build a single package:
 
     commandline.RunInsideChroot(self, auto_detect_brick=True)
 
-    self.build_pkgs = self.options.packages or (self.brick and
-                                                self.brick.MainPackages())
     if not (self.build_pkgs or self.options.init_only):
       cros_build_lib.Die('No packages found, nothing to build.')
 
-    # Set up board if not building for host.
-    if not self.host:
+    # Set up the sysroots if not building for host.
+    if self.blueprint:
+      if self.chroot_update:
+        chroot_util.UpdateChroot(
+            update_host_packages=self.options.host_packages_update,
+            brick=brick_lib.Brick(self.blueprint.GetBSP()))
+      chroot_util.InitializeSysroots(self.blueprint)
+    elif self.brick or self.board:
       chroot_util.SetupBoard(
-          brick=self.brick, board=self.board, update_chroot=self.chroot_update,
+          brick=self.brick, board=self.board,
+          update_chroot=self.chroot_update,
           update_host_packages=self.options.host_packages_update,
           use_binary=self.options.binary)
 

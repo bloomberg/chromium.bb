@@ -275,4 +275,4 @@ def LocatorToFriendlyName(locator):
   if IsLocator(locator) and locator.startswith(_WORKSPACE_LOCATOR_PREFIX):
     return locator[len(_WORKSPACE_LOCATOR_PREFIX):].replace('/', '.')
 
-  raise ValueError('Not a valid workspace locator.')
+  raise ValueError('Not a valid workspace locator: %s' % locator)

@@ -74,8 +74,7 @@ class ImageCommand(command.CliCommand):
 
       cmd.append('--extra_packages=%s' % ' '.join(packages))
       #TODO(stevefung): Support multiple sysroots (brbug.com/676)
-      cmd.append('--board=%s' %
-                 brick_lib.Brick(blueprint.GetBricks()[0]).FriendlyName())
+      cmd.append('--board=%s' % blueprint.FriendlyName())
     elif self.options.brick:
       brick = brick_lib.Brick(self.options.brick)
       cmd.append('--extra_packages=%s' % ' '.join(brick.MainPackages()))

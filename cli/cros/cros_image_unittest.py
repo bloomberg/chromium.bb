@@ -67,7 +67,7 @@ class ImageCommandTest(cros_test_lib.MockTempDirTestCase,
 
     expected_args = [os.path.join(constants.CROSUTILS_DIR, 'build_image'),
                      '--extra_packages=brick/foo brick/bar bsp/baz',
-                     '--board=brick1', '--noenable_bootcache',
+                     '--board=foo.json', '--noenable_bootcache',
                      '--enable_rootfs_verification', '--loglevel=7']
     self.rc_mock.assertCommandContains(expected_args)
 
@@ -84,7 +84,7 @@ class ImageCommandTest(cros_test_lib.MockTempDirTestCase,
 
     expected_args = [os.path.join(constants.CROSUTILS_DIR, 'build_image'),
                      '--extra_packages=brick/foo bsp/baz',
-                     '--board=brick1', '--noenable_bootcache',
+                     '--board=bar.json', '--noenable_bootcache',
                      '--enable_rootfs_verification',
                      '--output_root=%s' % os.path.join(self.tempdir, 'images'),
                      '--loglevel=7']

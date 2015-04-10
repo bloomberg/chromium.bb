@@ -9,8 +9,10 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import constants
+from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import sysroot_lib
 
 if cros_build_lib.IsInsideChroot():
   # These import libraries outside chromite. See brbug.com/472.
@@ -37,8 +39,9 @@ def GetEmergeCommand(sysroot=None):
   return cmd
 
 
-def Emerge(packages, brick=None, board=None, host=False, with_deps=True,
-           rebuild_deps=True, use_binary=True, jobs=None, debug_output=False):
+def Emerge(packages, brick=None, board=None, host=False, blueprint=None,
+           with_deps=True, rebuild_deps=True, use_binary=True, jobs=None,
+           debug_output=False):
   """Emerge the specified |packages|.
 
   Args:
@@ -46,6 +49,7 @@ def Emerge(packages, brick=None, board=None, host=False, with_deps=True,
     brick: The brick to build packages for. Ignored if |host|.
     board: The board name to build for. Ignored if |host| or |brick|.
     host: If True, emerge to host.
+    blueprint: Blueprint to build.
     with_deps: Whether to include dependencies.
     rebuild_deps: Whether to rebuild dependencies.
     use_binary: Whether to use binary packages.
@@ -58,21 +62,30 @@ def Emerge(packages, brick=None, board=None, host=False, with_deps=True,
   if not packages:
     raise ValueError('No packages provided')
 
+  # TODO(bsimonnet): Once cros_workon supports --sysroot, remove this case
+  # distinction and accept only sysroot as parameter.
   if host:
-    brick = board = None
+    brick = board = sysroot = None
+  elif board:
+    sysroot = cros_build_lib.GetSysroot(board)
   elif brick:
     board = brick.FriendlyName()
+    sysroot = cros_build_lib.GetSysroot(board)
+  elif blueprint:
+    sysroot = cros_build_lib.GetSysroot(blueprint.FriendlyName())
 
-  sysroot = board and cros_build_lib.GetSysroot(board)
   cmd = GetEmergeCommand(sysroot)
   cmd.append('-uNv')
 
-  modified_packages = list(workon.ListModifiedWorkonPackages(
-      None if brick else board, brick, host))
-  if modified_packages:
-    mod_pkg_list = ' '.join(modified_packages)
-    cmd += ['--reinstall-atoms=' + mod_pkg_list,
-            '--usepkg-exclude=' + mod_pkg_list]
+  # Listing the cros workon packages that are modified does not work for
+  # blueprints yet: brbug.com/776.
+  if board or host:
+    modified_packages = list(workon.ListModifiedWorkonPackages(
+        None if brick else board, brick, host))
+    if modified_packages:
+      mod_pkg_list = ' '.join(modified_packages)
+      cmd += ['--reinstall-atoms=' + mod_pkg_list,
+              '--usepkg-exclude=' + mod_pkg_list]
 
   cmd.append('--deep' if with_deps else '--nodeps')
   if use_binary:
@@ -150,3 +163,27 @@ def SetupBoard(brick=None, board=None, update_chroot=True,
     cmd.append('--nousepkg')
 
   cros_build_lib.RunCommand(cmd)
+
+
+def InitializeSysroots(blueprint):
+  """Initialize the sysroots needed by |blueprint|.
+
+  Args:
+    blueprint: a blueprint_lib.Blueprint object.
+  """
+  bsp = brick_lib.Brick(blueprint.GetBSP())
+  bricks = [brick_lib.Brick(b) for b in blueprint.GetBricks()]
+
+  # Regenerate the portage configuration for all bricks used by this blueprint.
+  for b in bricks + [bsp]:
+    for dep in b.BrickStack():
+      dep.GeneratePortageConfig()
+
+  sysroot_path = cros_build_lib.GetSysroot(blueprint.FriendlyName())
+
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+  sysroot.CreateSkeleton()
+  # TODO(bsimonnet): Add support for multiple bricks. brbug.com/803
+  sysroot.WriteConfig(sysroot.GenerateBrickConfig(bricks[0], bsp))
+  sysroot.GeneratePortageConfig()
+  sysroot.UpdateToolchain()
