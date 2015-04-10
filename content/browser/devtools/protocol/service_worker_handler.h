@@ -54,6 +54,9 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   Response StopWorker(const std::string& version_id);
   Response InspectWorker(const std::string& version_id);
   Response SetDebugOnStart(bool debug_on_start);
+  Response DeliverPushMessage(const std::string& origin,
+                              const std::string& registration_id,
+                              const std::string& data);
 
   // WorkerDevToolsManager::Observer implementation.
   void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) override;

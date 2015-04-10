@@ -23,6 +23,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/push_messaging_status.h"
 #include "url/gurl.h"
 
 // Windows headers will redefine SendMessage.
@@ -41,6 +42,8 @@ namespace {
 void ResultNoOp(bool success) {
 }
 void StatusNoOp(ServiceWorkerStatusCode status) {
+}
+void PushDeliveryNoOp(PushDeliveryStatus status) {
 }
 
 const std::string GetVersionRunningStatusString(
@@ -353,6 +356,23 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
 Response ServiceWorkerHandler::SetDebugOnStart(bool debug_on_start) {
   ServiceWorkerDevToolsManager::GetInstance()
       ->set_debug_service_worker_on_start(debug_on_start);
+  return Response::OK();
+}
+
+Response ServiceWorkerHandler::DeliverPushMessage(
+    const std::string& origin,
+    const std::string& registration_id,
+    const std::string& data) {
+  if (!enabled_)
+    return Response::OK();
+  if (!render_frame_host_)
+    return CreateContextErrorResoponse();
+  int64 id = 0;
+  if (!base::StringToInt64(registration_id, &id))
+    return CreateInvalidVersionIdErrorResoponse();
+  BrowserContext::DeliverPushMessage(
+      render_frame_host_->GetProcess()->GetBrowserContext(), GURL(origin), id,
+      data, base::Bind(&PushDeliveryNoOp));
   return Response::OK();
 }
 
