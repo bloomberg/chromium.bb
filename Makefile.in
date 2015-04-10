@@ -433,8 +433,10 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/processor/static_map_iterator.h \
 	src/processor/static_map-inl.h src/processor/static_map.h \
 	src/processor/static_range_map-inl.h \
-	src/processor/static_range_map.h src/processor/tokenize.cc \
-	src/processor/tokenize.h
+	src/processor/static_range_map.h \
+	src/processor/symbolic_constants_win.cc \
+	src/processor/symbolic_constants_win.h \
+	src/processor/tokenize.cc src/processor/tokenize.h
 @DISABLE_PROCESSOR_FALSE@am_src_libbreakpad_a_OBJECTS = src/processor/basic_code_modules.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.$(OBJEXT) \
@@ -470,6 +472,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/symbolic_constants_win.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.$(OBJEXT)
 src_libbreakpad_a_OBJECTS = $(am_src_libbreakpad_a_OBJECTS)
 src_third_party_libdisasm_libdisasm_a_AR = $(AR) $(ARFLAGS)
@@ -862,6 +865,7 @@ src_processor_exploitability_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/symbolic_constants_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
@@ -1022,6 +1026,7 @@ src_processor_minidump_processor_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/symbolic_constants_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
@@ -1063,6 +1068,7 @@ src_processor_minidump_stackwalk_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/symbolic_constants_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 am__src_processor_minidump_unittest_SOURCES_DIST =  \
@@ -2060,6 +2066,8 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @DISABLE_PROCESSOR_FALSE@	src/processor/static_map.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/static_range_map-inl.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/static_range_map.h \
+@DISABLE_PROCESSOR_FALSE@	src/processor/symbolic_constants_win.cc \
+@DISABLE_PROCESSOR_FALSE@	src/processor/symbolic_constants_win.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.h
 
@@ -2421,6 +2429,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/symbolic_constants_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a \
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
@@ -2565,6 +2574,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/symbolic_constants_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a \
 @DISABLE_PROCESSOR_FALSE@	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
@@ -2938,6 +2948,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/symbolic_constants_win.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 
@@ -3400,6 +3411,9 @@ src/processor/stackwalker_sparc.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/stackwalker_x86.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/symbolic_constants_win.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/tokenize.$(OBJEXT): src/processor/$(am__dirstamp) \
@@ -4525,6 +4539,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_selftest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_sparc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_x86.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/symbolic_constants_win.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/tokenize.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-gtest_main.Po@am__quote@

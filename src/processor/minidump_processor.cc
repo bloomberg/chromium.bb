@@ -43,6 +43,7 @@
 #include "google_breakpad/processor/stack_frame_symbolizer.h"
 #include "processor/logging.h"
 #include "processor/stackwalker_x86.h"
+#include "processor/symbolic_constants_win.h"
 
 namespace google_breakpad {
 
@@ -1015,8 +1016,8 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
           // For EXCEPTION_ACCESS_VIOLATION, Windows puts the address that
           // caused the fault in exception_information[1].
           // exception_information[0] is 0 if the violation was caused by
-          // an attempt to read data and 1 if it was an attempt to write
-          // data.
+          // an attempt to read data, 1 if it was an attempt to write data,
+          // and 8 if this was a data execution violation.
           // This information is useful in addition to the code address, which
           // will be present in the crash thread's instruction field anyway.
           if (raw_exception->exception_record.number_parameters >= 1) {
@@ -1047,7 +1048,48 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
           }
           break;
         case MD_EXCEPTION_CODE_WIN_IN_PAGE_ERROR:
-          reason = "EXCEPTION_IN_PAGE_ERROR";
+          // For EXCEPTION_IN_PAGE_ERROR, Windows puts the address that
+          // caused the fault in exception_information[1].
+          // exception_information[0] is 0 if the violation was caused by
+          // an attempt to read data, 1 if it was an attempt to write data,
+          // and 8 if this was a data execution violation.
+          // exception_information[2] contains the underlying NTSTATUS code,
+          // which is the explanation for why this error occured.
+          // This information is useful in addition to the code address, which
+          // will be present in the crash thread's instruction field anyway.
+          if (raw_exception->exception_record.number_parameters >= 1) {
+            MDInPageErrorTypeWin av_type =
+                static_cast<MDInPageErrorTypeWin>
+                (raw_exception->exception_record.exception_information[0]);
+            switch (av_type) {
+              case MD_IN_PAGE_ERROR_WIN_READ:
+                reason = "EXCEPTION_IN_PAGE_ERROR_READ";
+                break;
+              case MD_IN_PAGE_ERROR_WIN_WRITE:
+                reason = "EXCEPTION_IN_PAGE_ERROR_WRITE";
+                break;
+              case MD_IN_PAGE_ERROR_WIN_EXEC:
+                reason = "EXCEPTION_IN_PAGE_ERROR_EXEC";
+                break;
+              default:
+                reason = "EXCEPTION_IN_PAGE_ERROR";
+                break;
+            }
+          } else {
+            reason = "EXCEPTION_IN_PAGE_ERROR";
+          }
+          if (address &&
+              raw_exception->exception_record.number_parameters >= 2) {
+            *address =
+                raw_exception->exception_record.exception_information[1];
+          }
+          if (raw_exception->exception_record.number_parameters >= 3) {
+            uint32_t ntstatus =
+                static_cast<uint32_t>
+                (raw_exception->exception_record.exception_information[2]);
+            reason.append(" / ");
+            reason.append(NTStatusToString(ntstatus));
+          }
           break;
         case MD_EXCEPTION_CODE_WIN_INVALID_HANDLE:
           reason = "EXCEPTION_INVALID_HANDLE";
