@@ -31,6 +31,7 @@ class MockTimerWithMonitoredReset : public base::MockTimer {
 
   // Instrumentation point for determining how many times Reset() was called.
   MOCK_METHOD0(ResetTriggered, void(void));
+  MOCK_METHOD0(Stop, void(void));
 
   // Passes through the Reset call to the base MockTimer and visits the mock
   // ResetTriggered method.
@@ -57,6 +58,8 @@ class KeepAliveDelegateTest : public testing::Test {
         base::TimeDelta::FromMilliseconds(kTestLivenessTimeoutMillis)));
     liveness_timer_ = new MockTimerWithMonitoredReset(true, false);
     ping_timer_ = new MockTimerWithMonitoredReset(true, false);
+    EXPECT_CALL(*liveness_timer_, Stop()).Times(0);
+    EXPECT_CALL(*ping_timer_, Stop()).Times(0);
     keep_alive_->SetTimersForTest(make_scoped_ptr(ping_timer_),
                                   make_scoped_ptr(liveness_timer_));
   }
@@ -72,6 +75,10 @@ class KeepAliveDelegateTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(KeepAliveDelegateTest);
 };
 
+TEST_F(KeepAliveDelegateTest, TestErrorHandledBeforeStarting) {
+  keep_alive_->OnError(CHANNEL_ERROR_CONNECT_ERROR);
+}
+
 TEST_F(KeepAliveDelegateTest, TestPing) {
   EXPECT_CALL(*socket_.mock_transport(),
               SendMessage(EqualsProto(KeepAliveDelegate::CreateKeepAliveMessage(
@@ -80,6 +87,7 @@ TEST_F(KeepAliveDelegateTest, TestPing) {
   EXPECT_CALL(*inner_delegate_, Start());
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(2);
   EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(2);
+  EXPECT_CALL(*ping_timer_, Stop());
 
   keep_alive_->Start();
   ping_timer_->Fire();
@@ -97,6 +105,8 @@ TEST_F(KeepAliveDelegateTest, TestPingFailed) {
   EXPECT_CALL(*inner_delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR));
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(1);
   EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(1);
+  EXPECT_CALL(*liveness_timer_, Stop());
+  EXPECT_CALL(*ping_timer_, Stop()).Times(2);
 
   keep_alive_->Start();
   ping_timer_->Fire();
@@ -115,6 +125,8 @@ TEST_F(KeepAliveDelegateTest, TestPingAndLivenessTimeout) {
   EXPECT_CALL(*inner_delegate_, Start());
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(1);
   EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(1);
+  EXPECT_CALL(*liveness_timer_, Stop()).Times(2);
+  EXPECT_CALL(*ping_timer_, Stop()).Times(2);
 
   keep_alive_->Start();
   ping_timer_->Fire();

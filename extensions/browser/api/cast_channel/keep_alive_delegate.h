@@ -61,14 +61,18 @@ class KeepAliveDelegate : public CastTransport::Delegate {
 
   // Sends a formatted PING or PONG message to the remote side.
   void SendKeepAliveMessage(const CastMessage& message,
-                            const char* message_type) const;
+                            const char* message_type);
 
   // Callback for SendKeepAliveMessage.
-  void SendKeepAliveMessageComplete(const char* message_type, int rv) const;
+  void SendKeepAliveMessageComplete(const char* message_type, int rv);
 
   // Called when the liveness timer expires, indicating that the remote
   // end has not responded within the |liveness_timeout_| interval.
-  void LivenessTimeout() const;
+  void LivenessTimeout();
+
+  // Stops the ping and liveness timers if they are started.
+  // To be called after an error.
+  void Stop();
 
   // Indicates that Start() was called.
   bool started_;

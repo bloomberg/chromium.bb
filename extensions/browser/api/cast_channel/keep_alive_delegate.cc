@@ -141,36 +141,36 @@ void KeepAliveDelegate::ResetTimers() {
 }
 
 void KeepAliveDelegate::SendKeepAliveMessage(const CastMessage& message,
-                                             const char* message_type) const {
+                                             const char* message_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  VLOG(1) << "Sending " << message_type;
+  VLOG(2) << "Sending " << message_type;
   socket_->transport()->SendMessage(
       message, base::Bind(&KeepAliveDelegate::SendKeepAliveMessageComplete,
                           base::Unretained(this), message_type));
 }
 
 void KeepAliveDelegate::SendKeepAliveMessageComplete(const char* message_type,
-                                                     int rv) const {
+                                                     int rv) {
   VLOG(2) << "Sending " << message_type << " complete, rv=" << rv;
   if (rv != net::OK) {
     // An error occurred while sending the ping response.
     VLOG(1) << "Error sending " << message_type;
     logger_->LogSocketEventWithRv(socket_->id(), proto::PING_WRITE_ERROR, rv);
-    inner_delegate_->OnError(cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
+    OnError(cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
   }
 }
 
-void KeepAliveDelegate::LivenessTimeout() const {
-  VLOG(1) << "Ping timeout";
-  inner_delegate_->OnError(cast_channel::CHANNEL_ERROR_PING_TIMEOUT);
+void KeepAliveDelegate::LivenessTimeout() {
+  OnError(cast_channel::CHANNEL_ERROR_PING_TIMEOUT);
+  Stop();
 }
 
 // CastTransport::Delegate interface.
 void KeepAliveDelegate::OnError(ChannelError error_state) {
-  DCHECK(started_);
   DCHECK(thread_checker_.CalledOnValidThread());
-  VLOG(2) << "KeepAlive::OnError";
+  VLOG(1) << "KeepAlive::OnError: " << error_state;
   inner_delegate_->OnError(error_state);
+  Stop();
 }
 
 void KeepAliveDelegate::OnMessage(const CastMessage& message) {
@@ -181,13 +181,21 @@ void KeepAliveDelegate::OnMessage(const CastMessage& message) {
   ResetTimers();
 
   if (NestedPayloadTypeEquals(kHeartbeatPingType, message)) {
-    VLOG(1) << "Received PING.";
+    VLOG(2) << "Received PING.";
     SendKeepAliveMessage(pong_message_, kHeartbeatPongType);
   } else if (NestedPayloadTypeEquals(kHeartbeatPongType, message)) {
-    VLOG(1) << "Received PONG.";
+    VLOG(2) << "Received PONG.";
   } else {
     // PING and PONG messages are intentionally suppressed from layers above.
     inner_delegate_->OnMessage(message);
+  }
+}
+
+void KeepAliveDelegate::Stop() {
+  if (started_) {
+    started_ = false;
+    ping_timer_->Stop();
+    liveness_timer_->Stop();
   }
 }
 
