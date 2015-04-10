@@ -142,7 +142,8 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextRenderer(const Element& e
             return nullptr;
         } else if (firstLetterTextRenderer->isFlexibleBoxIncludingDeprecated() || firstLetterTextRenderer->isLayoutGrid()) {
             firstLetterTextRenderer = firstLetterTextRenderer->nextSibling();
-        } else if (firstLetterTextRenderer->style()->hasPseudoStyle(FIRST_LETTER)
+        } else if (!firstLetterTextRenderer->isInline()
+            && firstLetterTextRenderer->style()->hasPseudoStyle(FIRST_LETTER)
             && canHaveGeneratedChildren(*firstLetterTextRenderer)) {
             // There is a renderer further down the tree which has FIRST_LETTER set. When that node
             // is attached we will handle setting up the first letter then.
