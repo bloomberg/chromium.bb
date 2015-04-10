@@ -130,6 +130,7 @@
   # ignored. This can happen if 6 would have been synced for another platform.)
   "modes": {
     "nacl_core_sdk": [
+      "arm_trusted",
       "nacl_arm_newlib",
       "nacl_x86_glibc",
       "nacl_x86_newlib",
