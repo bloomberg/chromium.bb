@@ -132,7 +132,6 @@ class DevToolsUIBindings : public content::NotificationObserver,
   void ResetZoom() override;
   void SetDevicesUpdatesEnabled(bool enabled) override;
   void SendMessageToBrowser(const std::string& message) override;
-  void RecordActionUMA(const std::string& name, int action) override;
   void RecordEnumeratedHistogram(const std::string& name,
                                  int sample,
                                  int boundary_value) override;

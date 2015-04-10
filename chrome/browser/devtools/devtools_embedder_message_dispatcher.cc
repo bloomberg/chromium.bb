@@ -190,7 +190,6 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      &Delegate::SetDevicesUpdatesEnabled, delegate);
   d->RegisterHandler("sendMessageToBrowser",
                      &Delegate::SendMessageToBrowser, delegate);
-  d->RegisterHandler("recordActionUMA", &Delegate::RecordActionUMA, delegate);
   d->RegisterHandler("recordEnumeratedHistogram",
                      &Delegate::RecordEnumeratedHistogram, delegate);
   d->RegisterHandlerWithCallback("sendJsonRequest",

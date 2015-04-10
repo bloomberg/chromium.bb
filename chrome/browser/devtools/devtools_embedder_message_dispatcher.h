@@ -67,7 +67,6 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void ResetZoom() = 0;
     virtual void SetDevicesUpdatesEnabled(bool enabled) = 0;
     virtual void SendMessageToBrowser(const std::string& message) = 0;
-    virtual void RecordActionUMA(const std::string& name, int action) = 0;
     virtual void RecordEnumeratedHistogram(const std::string& name,
                                            int sample,
                                            int boundary_value) = 0;

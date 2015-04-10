@@ -71,9 +71,7 @@ static const char kFrontendHostParams[] = "params";
 static const char kTitleFormat[] = "Developer Tools - %s";
 
 static const char kDevToolsActionTakenHistogram[] = "DevTools.ActionTaken";
-static const int kDevToolsActionTakenBoundary = 100;
 static const char kDevToolsPanelShownHistogram[] = "DevTools.PanelShown";
-static const int kDevToolsPanelShownBoundary = 20;
 
 // This constant should be in sync with
 // the constant at shell_devtools_frontend.cc.
@@ -740,13 +738,6 @@ void DevToolsUIBindings::SetDevicesUpdatesEnabled(bool enabled) {
 void DevToolsUIBindings::SendMessageToBrowser(const std::string& message) {
   if (agent_host_.get())
     agent_host_->DispatchProtocolMessage(message);
-}
-
-void DevToolsUIBindings::RecordActionUMA(const std::string& name, int action) {
-  if (name == kDevToolsActionTakenHistogram)
-    UMA_HISTOGRAM_ENUMERATION(name, action, kDevToolsActionTakenBoundary);
-  else if (name == kDevToolsPanelShownHistogram)
-    UMA_HISTOGRAM_ENUMERATION(name, action, kDevToolsPanelShownBoundary);
 }
 
 void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
