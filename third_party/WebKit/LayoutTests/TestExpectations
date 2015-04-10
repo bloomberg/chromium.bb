@@ -1040,9 +1040,6 @@ crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Fai
 crbug.com/446406 [ Win ] fast/repaint/quotes.html [ Pass Failure ]
 crbug.com/446406 [ Win ] virtual/slimmingpaint/fast/repaint/quotes.html [ Pass Failure ]
 
-crbug.com/451235 [ Linux Win Android ] virtual/slimmingpaint/fast/repaint/4776765.html [ NeedsRebaseline ]
-crbug.com/451235 [ Mac Linux Android ] virtual/slimmingpaint/fast/repaint/quotes.html [ NeedsRebaseline ]
-
 crbug.com/446408 [ Win Debug ] virtual/display_list_2d_canvas/fast/canvas/webgl/read-pixels-test.html [ Pass Timeout ]
 crbug.com/446408 [ Linux Debug ] virtual/display_list_2d_canvas/fast/canvas/webgl/read-pixels-test.html [ Pass Timeout ]
 
