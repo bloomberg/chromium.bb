@@ -46,13 +46,12 @@ TEST_F('BaseDownloadsWebUITest', 'PauseResumeFocus', function() {
   var manager = downloads.Manager.getInstance();
   assertGE(manager.size(), 0);
 
-  var lastId = manager.items_.slice(-1)[0].view.id_;
-  var freshData = this.createDownload(lastId, Date.now());
-  freshData.state = downloads.Item.States.IN_PROGRESS;
-  freshData.resume = false;
-  downloads.Manager.updateItem(freshData);
+  var freshestDownload = this.createdDownloads[0];
+  freshestDownload.state = downloads.Item.States.IN_PROGRESS;
+  freshestDownload.resume = false;
+  downloads.Manager.updateItem(freshestDownload);
 
-  var node = manager.idMap_[lastId].view.node;
+  var node = manager.idMap_[freshestDownload.id].view.node;
   var pause = node.querySelector('.pause');
   var resume = node.querySelector('.resume');
 
@@ -63,13 +62,38 @@ TEST_F('BaseDownloadsWebUITest', 'PauseResumeFocus', function() {
   pause.focus();
   assertEquals(document.activeElement, pause);
 
-  freshData.state = downloads.Item.States.PAUSED;
-  freshData.resume = true;
-  downloads.Manager.updateItem(freshData);
+  freshestDownload.state = downloads.Item.States.PAUSED;
+  freshestDownload.resume = true;
+  downloads.Manager.updateItem(freshestDownload);
 
   expectTrue(pause.hidden);
   expectFalse(resume.hidden);
   expectEquals(document.activeElement, resume);
+});
+
+TEST_F('BaseDownloadsWebUITest', 'DatesCollapse', function() {
+  function datesShowing() {
+    var displayDiv = $('downloads-display');
+    return displayDiv.querySelectorAll('.date-container:not([hidden])').length;
+  }
+
+  var manager = downloads.Manager.getInstance();
+  var numDownloads = manager.size();
+  assertGE(numDownloads, 2);
+
+  expectEquals(1, datesShowing());
+
+  var freshestId = this.createdDownloads[0].id;
+  this.createDangerousDownload(freshestId + 1, Date.now());
+  manager.updateAll(this.createdDownloads);
+
+  expectEquals(numDownloads + 1, manager.size());
+  expectEquals(1, datesShowing());
+
+  var firstContainer = document.querySelector('.date-container');
+  assertFalse(firstContainer.hidden);
+  expectGT(firstContainer.querySelector('.since').textContent.trim().length, 0);
+  expectGT(firstContainer.querySelector('.date').textContent.trim().length, 0);
 });
 
 /**

@@ -170,6 +170,9 @@ cr.define('downloads', function() {
       this.dangerous_.hidden = !dangerText;
       this.safe_.hidden = !!dangerText;
 
+      this.ensureTextIs_(this.since_, data.since_string);
+      this.ensureTextIs_(this.date_, data.date_string);
+
       if (dangerText) {
         this.ensureTextIs_(this.description_, dangerText);
 
@@ -233,8 +236,6 @@ cr.define('downloads', function() {
           link.textContent = data.by_ext_name;
         }
 
-        this.ensureTextIs_(this.since_, data.since_string);
-        this.ensureTextIs_(this.date_, data.date_string);
         this.ensureTextIs_(this.srcUrl_, data.url);
         this.srcUrl_.href = data.url;
         this.ensureTextIs_(this.status_, this.getStatusText_(data));
