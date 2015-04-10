@@ -28,6 +28,7 @@
 #define ClientRectList_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -38,7 +39,7 @@ namespace blink {
 
 class ClientRect;
 
-class ClientRectList final : public RefCountedWillBeGarbageCollected<ClientRectList>, public ScriptWrappable {
+class CORE_EXPORT ClientRectList final : public RefCountedWillBeGarbageCollected<ClientRectList>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ClientRectList);
     DEFINE_WRAPPERTYPEINFO();
 public:

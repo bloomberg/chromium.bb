@@ -31,6 +31,7 @@
 #ifndef CSSSelectorWatch_h
 #define CSSSelectorWatch_h
 
+#include "core/CoreExport.h"
 #include "core/css/StyleRule.h"
 #include "core/dom/DocumentSupplementable.h"
 #include "platform/Timer.h"
@@ -42,7 +43,7 @@
 
 namespace blink {
 
-class CSSSelectorWatch final : public NoBaseWillBeGarbageCollectedFinalized<CSSSelectorWatch>, public DocumentSupplement {
+class CORE_EXPORT CSSSelectorWatch final : public NoBaseWillBeGarbageCollectedFinalized<CSSSelectorWatch>, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CSSSelectorWatch);
 public:
     virtual ~CSSSelectorWatch() { }

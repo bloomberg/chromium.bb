@@ -27,6 +27,7 @@
 #define TouchList_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/Touch.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
@@ -34,7 +35,7 @@
 
 namespace blink {
 
-class TouchList final : public RefCountedWillBeGarbageCollected<TouchList>, public ScriptWrappable {
+class CORE_EXPORT TouchList final : public RefCountedWillBeGarbageCollected<TouchList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<TouchList> create()

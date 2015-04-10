@@ -28,6 +28,7 @@
 #ifndef ViewportDescription_h
 #define ViewportDescription_h
 
+#include "core/CoreExport.h"
 #include "core/page/PageScaleConstraints.h"
 #include "platform/Length.h"
 #include "platform/geometry/FloatSize.h"
@@ -36,7 +37,7 @@ namespace blink {
 
 class LocalFrame;
 
-struct ViewportDescription {
+struct CORE_EXPORT ViewportDescription {
 
     enum Type {
         // These are ordered in increasing importance.

@@ -28,6 +28,7 @@
 #ifndef Fullscreen_h
 #define Fullscreen_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/Element.h"
@@ -43,7 +44,7 @@ namespace blink {
 class LayoutFullScreen;
 class ComputedStyle;
 
-class Fullscreen final
+class CORE_EXPORT Fullscreen final
     : public NoBaseWillBeGarbageCollectedFinalized<Fullscreen>
     , public DocumentSupplement
     , public DocumentLifecycleObserver {

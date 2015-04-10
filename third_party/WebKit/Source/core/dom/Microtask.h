@@ -31,6 +31,7 @@
 #ifndef Microtask_h
 #define Microtask_h
 
+#include "core/CoreExport.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
@@ -38,7 +39,7 @@
 
 namespace blink {
 
-class Microtask {
+class CORE_EXPORT Microtask {
 public:
     static void performCheckpoint();
     static bool performingCheckpoint(v8::Isolate*);

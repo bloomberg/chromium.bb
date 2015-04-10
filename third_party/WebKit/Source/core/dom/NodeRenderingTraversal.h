@@ -27,6 +27,7 @@
 #ifndef NodeRenderingTraversal_h
 #define NodeRenderingTraversal_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Element.h"
 
 namespace blink {
@@ -56,10 +57,10 @@ private:
     RawPtrWillBeMember<const InsertionPoint> m_insertionPoint;
 };
 
-ContainerNode* parent(const Node&, ParentDetails* = 0);
+CORE_EXPORT ContainerNode* parent(const Node&, ParentDetails* = 0);
 bool contains(const ContainerNode&, const Node&);
-Node* firstChild(const Node&);
-Node* nextSibling(const Node&);
+CORE_EXPORT Node* firstChild(const Node&);
+CORE_EXPORT Node* nextSibling(const Node&);
 Node* previousSibling(const Node&);
 Node* previous(const Node&, const Node* stayWithin);
 Node* next(const Node&, const Node* stayWithin);

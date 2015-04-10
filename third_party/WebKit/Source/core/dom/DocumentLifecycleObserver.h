@@ -26,6 +26,7 @@
 #ifndef DocumentLifecycleObserver_h
 #define DocumentLifecycleObserver_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "platform/LifecycleObserver.h"
 
@@ -33,7 +34,7 @@ namespace blink {
 
 class DocumentLifecycleNotifier;
 
-class DocumentLifecycleObserver : public LifecycleObserver<Document, DocumentLifecycleObserver, DocumentLifecycleNotifier> {
+class CORE_EXPORT DocumentLifecycleObserver : public LifecycleObserver<Document, DocumentLifecycleObserver, DocumentLifecycleNotifier> {
 public:
     virtual void documentWasDetached() { }
 #if !ENABLE(OILPAN)

@@ -24,12 +24,13 @@
 #ifndef DocumentFragment_h
 #define DocumentFragment_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/ParserContentPolicy.h"
 
 namespace blink {
 
-class DocumentFragment : public ContainerNode {
+class CORE_EXPORT DocumentFragment : public ContainerNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DocumentFragment> create(Document&);

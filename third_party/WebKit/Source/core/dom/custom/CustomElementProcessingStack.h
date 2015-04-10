@@ -31,12 +31,13 @@
 #ifndef CustomElementProcessingStack_h
 #define CustomElementProcessingStack_h
 
+#include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class CustomElementProcessingStack {
+class CORE_EXPORT CustomElementProcessingStack {
     WTF_MAKE_NONCOPYABLE(CustomElementProcessingStack);
 public:
     // This is stack allocated in many DOM callbacks. Make it cheap.

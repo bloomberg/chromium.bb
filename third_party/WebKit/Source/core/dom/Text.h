@@ -31,7 +31,7 @@ namespace blink {
 class ExceptionState;
 class LayoutText;
 
-class Text : public CharacterData {
+class CORE_EXPORT Text : public CharacterData {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static const unsigned defaultLengthLimit = 1 << 16;
@@ -48,7 +48,7 @@ public:
 
     // DOM Level 3: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-1312295772
 
-    CORE_EXPORT String wholeText() const;
+    String wholeText() const;
     PassRefPtrWillBeRawPtr<Text> replaceWholeText(const String&);
 
     void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);

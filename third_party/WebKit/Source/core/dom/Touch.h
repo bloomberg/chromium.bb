@@ -27,6 +27,7 @@
 #define Touch_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/events/EventTarget.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
@@ -40,7 +41,7 @@ namespace blink {
 
 class LocalFrame;
 
-class Touch final : public RefCountedWillBeGarbageCollected<Touch>, public ScriptWrappable {
+class CORE_EXPORT Touch final : public RefCountedWillBeGarbageCollected<Touch>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Touch> create(LocalFrame* frame, EventTarget* target,

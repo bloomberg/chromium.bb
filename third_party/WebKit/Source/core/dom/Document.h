@@ -200,7 +200,7 @@ using DocumentClassFlags = unsigned char;
 
 class Document;
 
-class DocumentVisibilityObserver : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT DocumentVisibilityObserver : public WillBeGarbageCollectedMixin {
 public:
     DocumentVisibilityObserver(Document&);
     virtual ~DocumentVisibilityObserver();
@@ -1453,7 +1453,7 @@ DEFINE_TYPE_CASTS(TreeScope, Document, document, true, true);
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showLiveDocumentInstances();
+CORE_EXPORT void showLiveDocumentInstances();
 #endif
 
 #endif // Document_h

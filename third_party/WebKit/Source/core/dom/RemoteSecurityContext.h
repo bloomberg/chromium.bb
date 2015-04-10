@@ -5,11 +5,12 @@
 #ifndef RemoteSecurityContext_h
 #define RemoteSecurityContext_h
 
+#include "core/CoreExport.h"
 #include "core/dom/SecurityContext.h"
 
 namespace blink {
 
-class RemoteSecurityContext : public SecurityContext, public RefCounted<RemoteSecurityContext> {
+class CORE_EXPORT RemoteSecurityContext : public SecurityContext, public RefCounted<RemoteSecurityContext> {
 public:
     static PassRefPtr<RemoteSecurityContext> create();
     void setReplicatedOrigin(PassRefPtr<SecurityOrigin>);

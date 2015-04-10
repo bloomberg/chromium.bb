@@ -27,6 +27,7 @@
 #ifndef ShadowRoot_h
 #define ShadowRoot_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
@@ -43,7 +44,7 @@ class InsertionPoint;
 class ShadowRootRareData;
 class StyleSheetList;
 
-class ShadowRoot final : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
+class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ShadowRoot);
     friend class WTF::DoublyLinkedListNode<ShadowRoot>;

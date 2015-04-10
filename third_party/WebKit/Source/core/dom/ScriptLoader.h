@@ -21,6 +21,7 @@
 #ifndef ScriptLoader_h
 #define ScriptLoader_h
 
+#include "core/CoreExport.h"
 #include "core/dom/PendingScript.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClient.h"
@@ -36,7 +37,7 @@ class ScriptLoaderClient;
 class ScriptSourceCode;
 
 
-class ScriptLoader : public NoBaseWillBeGarbageCollectedFinalized<ScriptLoader>, private ScriptResourceClient {
+class CORE_EXPORT ScriptLoader : public NoBaseWillBeGarbageCollectedFinalized<ScriptLoader>, private ScriptResourceClient {
 public:
     static PassOwnPtrWillBeRawPtr<ScriptLoader> create(Element* element, bool createdByParser, bool isEvaluated)
     {

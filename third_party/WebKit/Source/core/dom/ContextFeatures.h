@@ -27,6 +27,7 @@
 #ifndef ContextFeatures_h
 #define ContextFeatures_h
 
+#include "core/CoreExport.h"
 #include "platform/RefCountedSupplement.h"
 
 namespace blink {
@@ -83,7 +84,7 @@ public:
     virtual void urlDidChange(Document*) { }
 };
 
-void provideContextFeaturesTo(Page&, PassOwnPtr<ContextFeaturesClient>);
+CORE_EXPORT void provideContextFeaturesTo(Page&, PassOwnPtr<ContextFeaturesClient>);
 void provideContextFeaturesToDocumentFrom(Document&, Page&);
 
 inline PassRefPtrWillBeRawPtr<ContextFeatures> ContextFeatures::create(PassOwnPtr<ContextFeaturesClient> client)

@@ -28,6 +28,7 @@
 #ifndef StyleEngine_h
 #define StyleEngine_h
 
+#include "core/CoreExport.h"
 #include "core/css/CSSFontSelectorClient.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -52,7 +53,7 @@ class StyleRuleFontFace;
 class StyleSheet;
 class StyleSheetContents;
 
-class StyleEngine final : public CSSFontSelectorClient  {
+class CORE_EXPORT StyleEngine final : public CSSFontSelectorClient  {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleEngine);
 public:
 

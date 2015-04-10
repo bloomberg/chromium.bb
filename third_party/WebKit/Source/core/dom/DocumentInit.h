@@ -28,8 +28,10 @@
 #ifndef DocumentInit_h
 #define DocumentInit_h
 
+#include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/SecurityContext.h"
+#include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
@@ -38,13 +40,12 @@
 
 namespace blink {
 
-class CustomElementRegistrationContext;
 class Document;
 class LocalFrame;
 class HTMLImportsController;
 class Settings;
 
-class DocumentInit final {
+class CORE_EXPORT DocumentInit final {
     STACK_ALLOCATED();
 public:
     explicit DocumentInit(const KURL& = KURL(), LocalFrame* = 0, WeakPtrWillBeRawPtr<Document> = nullptr, HTMLImportsController* = 0);

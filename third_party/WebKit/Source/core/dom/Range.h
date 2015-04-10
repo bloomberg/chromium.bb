@@ -182,9 +182,9 @@ private:
     RangeBoundaryPoint m_end;
 };
 
-PassRefPtrWillBeRawPtr<Range> rangeOfContents(Node*);
+CORE_EXPORT PassRefPtrWillBeRawPtr<Range> rangeOfContents(Node*);
 
-bool areRangesEqual(const Range*, const Range*);
+CORE_EXPORT bool areRangesEqual(const Range*, const Range*);
 
 } // namespace blink
 

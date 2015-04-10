@@ -27,6 +27,7 @@
 #ifndef MainThreadTaskRunner_h
 #define MainThreadTaskRunner_h
 
+#include "core/CoreExport.h"
 #include "platform/Timer.h"
 
 #include "wtf/FastAllocBase.h"
@@ -41,7 +42,7 @@ namespace blink {
 class ExecutionContext;
 class ExecutionContextTask;
 
-class MainThreadTaskRunner {
+class CORE_EXPORT MainThreadTaskRunner {
     WTF_MAKE_NONCOPYABLE(MainThreadTaskRunner);
     WTF_MAKE_FAST_ALLOCATED(MainThreadTaskRunner);
 

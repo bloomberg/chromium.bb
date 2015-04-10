@@ -27,6 +27,7 @@
 #ifndef ComposedTreeTraversal_h
 #define ComposedTreeTraversal_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -47,7 +48,7 @@ class Node;
 //
 // FIXME: Make some functions inline to optimise the performance.
 // https://bugs.webkit.org/show_bug.cgi?id=82702
-class ComposedTreeTraversal {
+class CORE_EXPORT ComposedTreeTraversal {
 public:
     typedef NodeRenderingTraversal::ParentDetails ParentTraversalDetails;
 

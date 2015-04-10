@@ -31,12 +31,13 @@
 #ifndef DocumentLifecycle_h
 #define DocumentLifecycle_h
 
+#include "core/CoreExport.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class DocumentLifecycle {
+class CORE_EXPORT DocumentLifecycle {
     WTF_MAKE_NONCOPYABLE(DocumentLifecycle);
 public:
     enum State {

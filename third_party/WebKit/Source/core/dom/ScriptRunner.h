@@ -26,6 +26,7 @@
 #ifndef ScriptRunner_h
 #define ScriptRunner_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourcePtr.h"
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
@@ -39,7 +40,7 @@ namespace blink {
 class Document;
 class ScriptLoader;
 
-class ScriptRunner final : public NoBaseWillBeGarbageCollectedFinalized<ScriptRunner> {
+class CORE_EXPORT ScriptRunner final : public NoBaseWillBeGarbageCollectedFinalized<ScriptRunner> {
     WTF_MAKE_NONCOPYABLE(ScriptRunner); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScriptRunner);
 public:
     static PassOwnPtrWillBeRawPtr<ScriptRunner> create(Document* document)

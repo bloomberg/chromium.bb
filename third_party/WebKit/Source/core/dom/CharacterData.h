@@ -23,6 +23,7 @@
 #ifndef CharacterData_h
 #define CharacterData_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "wtf/text/WTFString.h"
 
@@ -30,7 +31,7 @@ namespace blink {
 
 class ExceptionState;
 
-class CharacterData : public Node {
+class CORE_EXPORT CharacterData : public Node {
     DEFINE_WRAPPERTYPEINFO();
 public:
     void atomize();

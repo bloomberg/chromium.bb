@@ -26,6 +26,7 @@
 #ifndef ScriptResource_h
 #define ScriptResource_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/TextResource.h"
 
@@ -33,7 +34,7 @@ namespace blink {
 
 class ScriptResource;
 
-class ScriptResourceClient : public ResourceClient {
+class CORE_EXPORT ScriptResourceClient : public ResourceClient {
 public:
     virtual ~ScriptResourceClient() { }
     static ResourceClientType expectedType() { return ScriptType; }

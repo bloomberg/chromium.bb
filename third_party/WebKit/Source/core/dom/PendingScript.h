@@ -26,6 +26,7 @@
 #ifndef PendingScript_h
 #define PendingScript_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/ScriptResource.h"
 #include "platform/heap/Handle.h"
@@ -44,7 +45,7 @@ class ScriptStreamer;
 // A ResourcePtr alone does not prevent the underlying Resource
 // from purging its data buffer. This class holds a dummy client open for its
 // lifetime in order to guarantee that the data buffer will not be purged.
-class PendingScript final : public ResourceOwner<ScriptResource> {
+class CORE_EXPORT PendingScript final : public ResourceOwner<ScriptResource> {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     enum Type {

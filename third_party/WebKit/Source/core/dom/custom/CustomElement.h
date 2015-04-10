@@ -31,6 +31,7 @@
 #ifndef CustomElement_h
 #define CustomElement_h
 
+#include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -45,7 +46,7 @@ class CustomElementMicrotaskImportStep;
 class Document;
 class HTMLImportChild;
 
-class CustomElement {
+class CORE_EXPORT CustomElement {
 public:
     enum NameSet {
         EmbedderNames = 1 << 0,

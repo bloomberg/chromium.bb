@@ -31,6 +31,7 @@
 #ifndef CSSFontSelectorClient_h
 #define CSSFontSelectorClient_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -38,7 +39,7 @@ namespace blink {
 class CSSFontSelector;
 class Visitor;
 
-class CSSFontSelectorClient : public NoBaseWillBeGarbageCollectedFinalized<CSSFontSelectorClient> {
+class CORE_EXPORT CSSFontSelectorClient : public NoBaseWillBeGarbageCollectedFinalized<CSSFontSelectorClient> {
 public:
     virtual ~CSSFontSelectorClient() { }
 
