@@ -22,6 +22,10 @@ class BrowserSavePasswordProgressLogger
       const PasswordManagerClient* client);
   ~BrowserSavePasswordProgressLogger() override;
 
+  // Browser-specific addition to the base class' Log* methods. The input is
+  // sanitized and passed to SendLog for display.
+  void LogFormSignatures(StringID label, const autofill::PasswordForm& form);
+
  protected:
   // autofill::SavePasswordProgressLogger:
   void SendLog(const std::string& log) override;

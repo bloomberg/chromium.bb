@@ -407,6 +407,8 @@ void PasswordManager::CreatePendingLoginManagers(
 
     UMA_HISTOGRAM_BOOLEAN("PasswordManager.EmptyUsernames.ParsedUsernameField",
                           iter->username_element.empty());
+    if (logger)
+      logger->LogFormSignatures(Logger::STRING_ADDING_SIGNATURE, *iter);
     bool ssl_valid = iter->origin.SchemeIsSecure();
     PasswordFormManager* manager = new PasswordFormManager(
         this, client_, driver->AsWeakPtr(), *iter, ssl_valid);

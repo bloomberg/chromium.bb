@@ -25,6 +25,135 @@ namespace autofill {
 
 namespace {
 
+// Removes privacy sensitive parts of |url| (currently all but host and scheme).
+std::string ScrubURL(const GURL& url) {
+  if (url.is_valid())
+    return url.GetWithEmptyPath().spec();
+  return std::string();
+}
+
+// Returns true for all characters which we don't want to see in the logged IDs
+// or names of HTML elements.
+bool IsUnwantedInElementID(char c) {
+  return !(c == '_' || c == '-' || IsAsciiAlpha(c) || IsAsciiDigit(c));
+}
+
+// The UTF-8 version of SavePasswordProgressLogger::ScrubElementID.
+std::string ScrubElementID8Bit(std::string element_id) {
+  std::replace_if(
+      element_id.begin(), element_id.end(), IsUnwantedInElementID, ' ');
+  return base::StringToLowerASCII(element_id);
+}
+
+SavePasswordProgressLogger::StringID FormSchemeToStringID(
+    PasswordForm::Scheme scheme) {
+  switch (scheme) {
+    case PasswordForm::SCHEME_HTML:
+      return SavePasswordProgressLogger::STRING_SCHEME_HTML;
+    case PasswordForm::SCHEME_BASIC:
+      return SavePasswordProgressLogger::STRING_SCHEME_BASIC;
+    case PasswordForm::SCHEME_DIGEST:
+      return SavePasswordProgressLogger::STRING_SCHEME_DIGEST;
+    case PasswordForm::SCHEME_OTHER:
+      return SavePasswordProgressLogger::STRING_OTHER;
+  }
+  NOTREACHED();
+  return SavePasswordProgressLogger::STRING_INVALID;
+}
+
+}  // namespace
+
+SavePasswordProgressLogger::SavePasswordProgressLogger() {
+}
+
+SavePasswordProgressLogger::~SavePasswordProgressLogger() {
+}
+
+void SavePasswordProgressLogger::LogPasswordForm(
+    SavePasswordProgressLogger::StringID label,
+    const PasswordForm& form) {
+  DictionaryValue log;
+  log.SetString(GetStringFromID(STRING_SCHEME_MESSAGE),
+                GetStringFromID(FormSchemeToStringID(form.scheme)));
+  log.SetString(GetStringFromID(STRING_SCHEME_MESSAGE),
+                GetStringFromID(FormSchemeToStringID(form.scheme)));
+  log.SetString(GetStringFromID(STRING_SIGNON_REALM),
+                ScrubURL(GURL(form.signon_realm)));
+  log.SetString(GetStringFromID(STRING_ORIGINAL_SIGNON_REALM),
+                ScrubURL(GURL(form.original_signon_realm)));
+  log.SetString(GetStringFromID(STRING_ORIGIN), ScrubURL(form.origin));
+  log.SetString(GetStringFromID(STRING_ACTION), ScrubURL(form.action));
+  log.SetString(GetStringFromID(STRING_USERNAME_ELEMENT),
+                ScrubElementID(form.username_element));
+  log.SetString(GetStringFromID(STRING_PASSWORD_ELEMENT),
+                ScrubElementID(form.password_element));
+  log.SetBoolean(GetStringFromID(STRING_PASSWORD_AUTOCOMPLETE_SET),
+                 form.password_autocomplete_set);
+  log.SetString(GetStringFromID(STRING_NEW_PASSWORD_ELEMENT),
+                ScrubElementID(form.new_password_element));
+  log.SetBoolean(GetStringFromID(STRING_SSL_VALID), form.ssl_valid);
+  log.SetBoolean(GetStringFromID(STRING_PASSWORD_GENERATED),
+                 form.type == PasswordForm::TYPE_GENERATED);
+  log.SetInteger(GetStringFromID(STRING_TIMES_USED), form.times_used);
+  log.SetBoolean(GetStringFromID(STRING_PSL_MATCH), form.IsPublicSuffixMatch());
+  LogValue(label, log);
+}
+
+void SavePasswordProgressLogger::LogHTMLForm(
+    SavePasswordProgressLogger::StringID label,
+    const std::string& name_or_id,
+    const GURL& action) {
+  DictionaryValue log;
+  log.SetString(GetStringFromID(STRING_NAME_OR_ID),
+                ScrubElementID8Bit(name_or_id));
+  log.SetString(GetStringFromID(STRING_ACTION), ScrubURL(action));
+  LogValue(label, log);
+}
+
+void SavePasswordProgressLogger::LogURL(
+    SavePasswordProgressLogger::StringID label,
+    const GURL& url) {
+  LogValue(label, StringValue(ScrubURL(url)));
+}
+
+void SavePasswordProgressLogger::LogBoolean(
+    SavePasswordProgressLogger::StringID label,
+    bool truth_value) {
+  LogValue(label, FundamentalValue(truth_value));
+}
+
+void SavePasswordProgressLogger::LogNumber(
+    SavePasswordProgressLogger::StringID label,
+    int signed_number) {
+  LogValue(label, FundamentalValue(signed_number));
+}
+
+void SavePasswordProgressLogger::LogNumber(
+    SavePasswordProgressLogger::StringID label,
+    size_t unsigned_number) {
+  int signed_number = checked_cast<int, size_t>(unsigned_number);
+  LogNumber(label, signed_number);
+}
+
+void SavePasswordProgressLogger::LogMessage(
+    SavePasswordProgressLogger::StringID message) {
+  LogValue(STRING_MESSAGE, StringValue(GetStringFromID(message)));
+}
+
+void SavePasswordProgressLogger::LogValue(StringID label, const Value& log) {
+  std::string log_string;
+  bool conversion_to_string_successful = base::JSONWriter::WriteWithOptions(
+      &log, base::JSONWriter::OPTIONS_PRETTY_PRINT, &log_string);
+  DCHECK(conversion_to_string_successful);
+  SendLog(GetStringFromID(label) + ": " + log_string);
+}
+
+// static
+std::string SavePasswordProgressLogger::ScrubElementID(
+    const base::string16& element_id) {
+  return ScrubElementID8Bit(base::UTF16ToUTF8(element_id));
+}
+
 // Note 1: Caching the ID->string map in an array would be probably faster, but
 // the switch statement is (a) robust against re-ordering, and (b) checks in
 // compile-time, that all IDs get a string assigned. The expected frequency of
@@ -33,7 +162,10 @@ namespace {
 // Note 2: Do not use '.' in the message strings -- the ending of the log items
 // should be controlled by the logger. Also, some of the messages below can be
 // used as dictionary keys.
-std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
+//
+// static
+std::string SavePasswordProgressLogger::GetStringFromID(
+    SavePasswordProgressLogger::StringID id) {
   switch (id) {
     case SavePasswordProgressLogger::STRING_DECISION_ASK:
       return "Decision: ASK the user";
@@ -214,146 +346,16 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "Not saving password for a change password form";
     case SavePasswordProgressLogger::PROCESS_FRAME_METHOD:
       return "PasswordFormManager::ProcessFrame";
+    case SavePasswordProgressLogger::STRING_FORM_SIGNATURE:
+      return "Signature of form, followed by field signatures";
+    case SavePasswordProgressLogger::STRING_ADDING_SIGNATURE:
+      return "Adding manager for form with this signature";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.
   }
   NOTREACHED();  // Win compilers don't believe this is unreachable.
   return std::string();
-}
-
-// Removes privacy sensitive parts of |url| (currently all but host and scheme).
-std::string ScrubURL(const GURL& url) {
-  if (url.is_valid())
-    return url.GetWithEmptyPath().spec();
-  return std::string();
-}
-
-// Returns true for all characters which we don't want to see in the logged IDs
-// or names of HTML elements.
-bool IsUnwantedInElementID(char c) {
-  return !(c == '_' || c == '-' || IsAsciiAlpha(c) || IsAsciiDigit(c));
-}
-
-// Replaces all characters satisfying IsUnwantedInElementID by a ' ', and turns
-// all characters to lowercase. This damages some valid HTML element IDs or
-// names, but it is likely that it will be still possible to match the scrubbed
-// string to the original ID or name in the HTML doc. That's good enough for the
-// logging purposes, and provides some security benefits.
-std::string ScrubElementID(std::string element_id) {
-  std::replace_if(
-      element_id.begin(), element_id.end(), IsUnwantedInElementID, ' ');
-  return base::StringToLowerASCII(element_id);
-}
-
-std::string ScrubElementID(const base::string16& element_id) {
-  return ScrubElementID(base::UTF16ToUTF8(element_id));
-}
-
-std::string FormSchemeToString(PasswordForm::Scheme scheme) {
-  SavePasswordProgressLogger::StringID result_id =
-      SavePasswordProgressLogger::STRING_INVALID;
-  switch (scheme) {
-    case PasswordForm::SCHEME_HTML:
-      result_id = SavePasswordProgressLogger::STRING_SCHEME_HTML;
-      break;
-    case PasswordForm::SCHEME_BASIC:
-      result_id = SavePasswordProgressLogger::STRING_SCHEME_BASIC;
-      break;
-    case PasswordForm::SCHEME_DIGEST:
-      result_id = SavePasswordProgressLogger::STRING_SCHEME_DIGEST;
-      break;
-    case PasswordForm::SCHEME_OTHER:
-      result_id = SavePasswordProgressLogger::STRING_OTHER;
-      break;
-  }
-  return GetStringFromID(result_id);
-}
-
-}  // namespace
-
-SavePasswordProgressLogger::SavePasswordProgressLogger() {
-}
-
-SavePasswordProgressLogger::~SavePasswordProgressLogger() {
-}
-
-void SavePasswordProgressLogger::LogPasswordForm(
-    SavePasswordProgressLogger::StringID label,
-    const PasswordForm& form) {
-  DictionaryValue log;
-  log.SetString(GetStringFromID(STRING_SCHEME_MESSAGE),
-                FormSchemeToString(form.scheme));
-  log.SetString(GetStringFromID(STRING_SCHEME_MESSAGE),
-                FormSchemeToString(form.scheme));
-  log.SetString(GetStringFromID(STRING_SIGNON_REALM),
-                ScrubURL(GURL(form.signon_realm)));
-  log.SetString(GetStringFromID(STRING_ORIGINAL_SIGNON_REALM),
-                ScrubURL(GURL(form.original_signon_realm)));
-  log.SetString(GetStringFromID(STRING_ORIGIN), ScrubURL(form.origin));
-  log.SetString(GetStringFromID(STRING_ACTION), ScrubURL(form.action));
-  log.SetString(GetStringFromID(STRING_USERNAME_ELEMENT),
-                ScrubElementID(form.username_element));
-  log.SetString(GetStringFromID(STRING_PASSWORD_ELEMENT),
-                ScrubElementID(form.password_element));
-  log.SetBoolean(GetStringFromID(STRING_PASSWORD_AUTOCOMPLETE_SET),
-                 form.password_autocomplete_set);
-  log.SetString(GetStringFromID(STRING_NEW_PASSWORD_ELEMENT),
-                ScrubElementID(form.new_password_element));
-  log.SetBoolean(GetStringFromID(STRING_SSL_VALID), form.ssl_valid);
-  log.SetBoolean(GetStringFromID(STRING_PASSWORD_GENERATED),
-                 form.type == PasswordForm::TYPE_GENERATED);
-  log.SetInteger(GetStringFromID(STRING_TIMES_USED), form.times_used);
-  log.SetBoolean(GetStringFromID(STRING_PSL_MATCH), form.IsPublicSuffixMatch());
-  LogValue(label, log);
-}
-
-void SavePasswordProgressLogger::LogHTMLForm(
-    SavePasswordProgressLogger::StringID label,
-    const std::string& name_or_id,
-    const GURL& action) {
-  DictionaryValue log;
-  log.SetString(GetStringFromID(STRING_NAME_OR_ID), ScrubElementID(name_or_id));
-  log.SetString(GetStringFromID(STRING_ACTION), ScrubURL(action));
-  LogValue(label, log);
-}
-
-void SavePasswordProgressLogger::LogURL(
-    SavePasswordProgressLogger::StringID label,
-    const GURL& url) {
-  LogValue(label, StringValue(ScrubURL(url)));
-}
-
-void SavePasswordProgressLogger::LogBoolean(
-    SavePasswordProgressLogger::StringID label,
-    bool truth_value) {
-  LogValue(label, FundamentalValue(truth_value));
-}
-
-void SavePasswordProgressLogger::LogNumber(
-    SavePasswordProgressLogger::StringID label,
-    int signed_number) {
-  LogValue(label, FundamentalValue(signed_number));
-}
-
-void SavePasswordProgressLogger::LogNumber(
-    SavePasswordProgressLogger::StringID label,
-    size_t unsigned_number) {
-  int signed_number = checked_cast<int, size_t>(unsigned_number);
-  LogNumber(label, signed_number);
-}
-
-void SavePasswordProgressLogger::LogMessage(
-    SavePasswordProgressLogger::StringID message) {
-  LogValue(STRING_MESSAGE, StringValue(GetStringFromID(message)));
-}
-
-void SavePasswordProgressLogger::LogValue(StringID label, const Value& log) {
-  std::string log_string;
-  bool conversion_to_string_successful = base::JSONWriter::WriteWithOptions(
-      &log, base::JSONWriter::OPTIONS_PRETTY_PRINT, &log_string);
-  DCHECK(conversion_to_string_successful);
-  SendLog(GetStringFromID(label) + ": " + log_string);
 }
 
 }  // namespace autofill
