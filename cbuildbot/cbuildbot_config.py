@@ -2530,16 +2530,6 @@ _config.add_group('x86-zgb-release-group',
   ),
 )
 
-_config.add_group('parrot-release-group',
-  _release.add_config('parrot-release',
-    boards=['parrot'],
-    critical_for_chrome=True,
-  ),
-  _grouped_variant_release.add_config('parrot_ivb-release',
-    boards=['parrot_ivb'],
-  )
-)
-
 ### Release AFDO configs.
 
 release_afdo = _release.derive(
