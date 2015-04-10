@@ -75,7 +75,7 @@ static v8::Local<v8::String> makeExternalString(const String& string, v8::Isolat
     return newString;
 }
 
-v8::Handle<v8::String> StringCache::v8ExternalStringSlow(v8::Isolate* isolate, StringImpl* stringImpl)
+v8::Local<v8::String> StringCache::v8ExternalStringSlow(v8::Isolate* isolate, StringImpl* stringImpl)
 {
     if (!stringImpl->length())
         return v8::String::Empty(isolate);

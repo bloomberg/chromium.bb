@@ -46,14 +46,14 @@ class ScriptWrappable;
 
 class CORE_EXPORT V8HiddenValue {
 public:
-#define V8_DECLARE_METHOD(name) static v8::Handle<v8::String> name(v8::Isolate* isolate);
+#define V8_DECLARE_METHOD(name) static v8::Local<v8::String> name(v8::Isolate* isolate);
     V8_HIDDEN_VALUES(V8_DECLARE_METHOD);
 #undef V8_DECLARE_METHOD
 
-    static v8::Local<v8::Value> getHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>);
-    static bool setHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>, v8::Handle<v8::Value>);
-    static bool deleteHiddenValue(v8::Isolate*, v8::Handle<v8::Object>, v8::Handle<v8::String>);
-    static v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Handle<v8::String>);
+    static v8::Local<v8::Value> getHiddenValue(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::String>);
+    static bool setHiddenValue(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::String>, v8::Local<v8::Value>);
+    static bool deleteHiddenValue(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::String>);
+    static v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Local<v8::String>);
 
 private:
 #define V8_DECLARE_FIELD(name) ScopedPersistent<v8::String> m_##name;

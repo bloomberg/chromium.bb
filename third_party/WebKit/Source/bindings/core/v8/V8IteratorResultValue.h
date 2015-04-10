@@ -12,7 +12,7 @@
 
 namespace blink {
 
-CORE_EXPORT v8::Handle<v8::Object> v8IteratorResultValue(v8::Isolate*, bool done, v8::Handle<v8::Value>);
+CORE_EXPORT v8::Local<v8::Object> v8IteratorResultValue(v8::Isolate*, bool done, v8::Local<v8::Value>);
 
 template<typename T>
 inline ScriptValue v8IteratorResult(ScriptState* scriptState, const T& value)

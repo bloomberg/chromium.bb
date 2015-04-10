@@ -96,12 +96,12 @@ public:
         return current(returnValue.GetIsolate()).setReturnValueFrom(returnValue, ScriptWrappable::fromNode(node));
     }
 
-    static v8::Handle<v8::Object> getWrapper(ScriptWrappable* object, v8::Isolate* isolate)
+    static v8::Local<v8::Object> getWrapper(ScriptWrappable* object, v8::Isolate* isolate)
     {
         return current(isolate).get(object, isolate);
     }
 
-    static v8::Handle<v8::Object> getWrapper(Node* node, v8::Isolate* isolate)
+    static v8::Local<v8::Object> getWrapper(Node* node, v8::Isolate* isolate)
     {
         if (canUseScriptWrappable(node))
             return ScriptWrappable::fromNode(node)->newLocalWrapper(isolate);
@@ -122,12 +122,12 @@ public:
         current(isolate).setReference(parent, ScriptWrappable::fromNode(child), isolate);
     }
 
-    static void setWrapper(ScriptWrappable* object, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
+    static void setWrapper(ScriptWrappable* object, v8::Local<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
     {
         return current(isolate).set(object, wrapper, isolate, wrapperTypeInfo);
     }
 
-    static void setWrapper(Node* node, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
+    static void setWrapper(Node* node, v8::Local<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
     {
         if (canUseScriptWrappable(node)) {
             ScriptWrappable::fromNode(node)->setWrapper(wrapper, isolate, wrapperTypeInfo);
@@ -141,7 +141,7 @@ public:
         return current(isolate).containsWrapper(object);
     }
 
-    v8::Handle<v8::Object> get(ScriptWrappable* object, v8::Isolate* isolate)
+    v8::Local<v8::Object> get(ScriptWrappable* object, v8::Isolate* isolate)
     {
         if (m_isMainWorld)
             return object->newLocalWrapper(isolate);
@@ -172,7 +172,7 @@ public:
     }
 
 private:
-    void set(ScriptWrappable* object, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
+    void set(ScriptWrappable* object, v8::Local<v8::Object> wrapper, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
     {
         ASSERT(object);
         ASSERT(!wrapper.IsEmpty());

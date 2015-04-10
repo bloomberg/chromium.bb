@@ -41,10 +41,10 @@ CORE_EXPORT void convertV8ObjectToNPVariant(v8::Isolate*, v8::Local<v8::Value>, 
 
 // Convert a NPVariant (string, bool, object, etc) back to a V8 Value. The owner object is the NPObject which relates to the
 // object, if the object is an Object. The created NPObject will be tied to the lifetime of the owner.
-CORE_EXPORT v8::Handle<v8::Value> convertNPVariantToV8Object(v8::Isolate*, const NPVariant*, NPObject*);
+CORE_EXPORT v8::Local<v8::Value> convertNPVariantToV8Object(v8::Isolate*, const NPVariant*, NPObject*);
 
 // Helper function to create an NPN String Identifier from a v8 string.
-NPIdentifier getStringIdentifier(v8::Handle<v8::String>);
+NPIdentifier getStringIdentifier(v8::Local<v8::String>);
 
 // The ExceptionHandler will be notified of any exceptions thrown while
 // operating on a NPObject.

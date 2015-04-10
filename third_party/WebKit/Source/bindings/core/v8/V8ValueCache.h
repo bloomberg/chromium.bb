@@ -66,7 +66,7 @@ public:
     StringCache(v8::Isolate* isolate) : m_stringCache(isolate) { }
     ~StringCache();
 
-    v8::Handle<v8::String> v8ExternalString(StringImpl* stringImpl, v8::Isolate* isolate)
+    v8::Local<v8::String> v8ExternalString(StringImpl* stringImpl, v8::Isolate* isolate)
     {
         ASSERT(stringImpl);
         if (m_lastStringImpl.get() == stringImpl)
@@ -86,7 +86,7 @@ public:
     friend class StringCacheMapTraits;
 
 private:
-    v8::Handle<v8::String> v8ExternalStringSlow(v8::Isolate*, StringImpl*);
+    v8::Local<v8::String> v8ExternalStringSlow(v8::Isolate*, StringImpl*);
     void setReturnValueFromStringSlow(v8::ReturnValue<v8::Value>, StringImpl*);
     v8::Local<v8::String> createStringAndInsertIntoCache(v8::Isolate*, StringImpl*);
     void InvalidateLastString();

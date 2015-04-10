@@ -127,8 +127,8 @@ public:
 
         // Casting to a Handle is safe here, since the Persistent doesn't get GCd
         // during the GC prologue.
-        ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
-        v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
+        ASSERT((*reinterpret_cast<v8::Local<v8::Value>*>(value))->IsObject());
+        v8::Local<v8::Object>* wrapper = reinterpret_cast<v8::Local<v8::Object>*>(value);
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(*wrapper));
         ASSERT(V8Node::hasInstance(*wrapper, m_isolate));
         Node* node = V8Node::toImpl(*wrapper);
@@ -260,8 +260,8 @@ public:
 
         // Casting to a Handle is safe here, since the Persistent doesn't get GCd
         // during the GC prologue.
-        ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
-        v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
+        ASSERT((*reinterpret_cast<v8::Local<v8::Value>*>(value))->IsObject());
+        v8::Local<v8::Object>* wrapper = reinterpret_cast<v8::Local<v8::Object>*>(value);
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(*wrapper));
 
         if (value->IsIndependent())
@@ -496,8 +496,8 @@ public:
 
         // Casting to a Handle is safe here, since the Persistent doesn't get GCd
         // during tracing.
-        ASSERT((*reinterpret_cast<v8::Handle<v8::Value>*>(value))->IsObject());
-        v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
+        ASSERT((*reinterpret_cast<v8::Local<v8::Value>*>(value))->IsObject());
+        v8::Local<v8::Object>* wrapper = reinterpret_cast<v8::Local<v8::Object>*>(value);
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(*wrapper));
         if (m_visitor)
             toWrapperTypeInfo(*wrapper)->trace(m_visitor, toScriptWrappable(*wrapper));

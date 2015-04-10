@@ -40,7 +40,7 @@ ScriptString::ScriptString()
 {
 }
 
-ScriptString::ScriptString(v8::Isolate* isolate, v8::Handle<v8::String> string)
+ScriptString::ScriptString(v8::Isolate* isolate, v8::Local<v8::String> string)
     : m_isolate(isolate)
     , m_string(SharedPersistent<v8::String>::create(string, m_isolate))
 {
@@ -55,10 +55,10 @@ ScriptString& ScriptString::operator=(const ScriptString& string)
     return *this;
 }
 
-v8::Handle<v8::String> ScriptString::v8Value()
+v8::Local<v8::String> ScriptString::v8Value()
 {
     if (isEmpty())
-        return v8::Handle<v8::String>();
+        return v8::Local<v8::String>();
     return m_string->newLocal(isolate());
 }
 
@@ -66,7 +66,7 @@ ScriptString ScriptString::concatenateWith(const String& string)
 {
     v8::Isolate* nonNullIsolate = isolate();
     v8::HandleScope handleScope(nonNullIsolate);
-    v8::Handle<v8::String> targetString = v8String(nonNullIsolate, string);
+    v8::Local<v8::String> targetString = v8String(nonNullIsolate, string);
     if (isEmpty())
         return ScriptString(nonNullIsolate, targetString);
     return ScriptString(nonNullIsolate, v8::String::Concat(v8Value(), targetString));

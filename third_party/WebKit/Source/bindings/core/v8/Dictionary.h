@@ -49,7 +49,7 @@ class CORE_EXPORT Dictionary final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     Dictionary();
-    Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate*, ExceptionState&);
+    Dictionary(const v8::Local<v8::Value>& options, v8::Isolate*, ExceptionState&);
     ~Dictionary();
 
     Dictionary& operator=(const Dictionary&);
@@ -60,7 +60,7 @@ public:
     bool get(const String&, Dictionary&) const;
     bool get(const String&, v8::Local<v8::Value>&) const;
 
-    v8::Handle<v8::Value> v8Value() const { return m_options; }
+    v8::Local<v8::Value> v8Value() const { return m_options; }
 
     class CORE_EXPORT ConversionContext {
     public:
@@ -121,14 +121,14 @@ public:
 private:
     bool toObject(v8::Local<v8::Object>&) const;
 
-    v8::Handle<v8::Value> m_options;
+    v8::Local<v8::Value> m_options;
     v8::Isolate* m_isolate;
     ExceptionState* m_exceptionState;
 };
 
 template<>
 struct NativeValueTraits<Dictionary> {
-    static inline Dictionary nativeValue(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+    static inline Dictionary nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
     {
         return Dictionary(value, isolate, exceptionState);
     }

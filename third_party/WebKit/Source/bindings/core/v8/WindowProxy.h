@@ -74,7 +74,7 @@ public:
     bool isGlobalInitialized() { return !m_global.isEmpty(); }
 
     bool initializeIfNeeded();
-    void updateDocumentWrapper(v8::Handle<v8::Object> wrapper);
+    void updateDocumentWrapper(v8::Local<v8::Object> wrapper);
 
     void clearForNavigation();
     void clearForClose();

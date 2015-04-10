@@ -57,7 +57,7 @@ Dictionary::Dictionary()
 {
 }
 
-Dictionary::Dictionary(const v8::Handle<v8::Value>& options, v8::Isolate* isolate, ExceptionState& exceptionState)
+Dictionary::Dictionary(const v8::Local<v8::Value>& options, v8::Isolate* isolate, ExceptionState& exceptionState)
     : m_options(options)
     , m_isolate(isolate)
     , m_exceptionState(&exceptionState)

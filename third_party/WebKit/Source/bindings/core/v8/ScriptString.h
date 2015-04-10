@@ -41,7 +41,7 @@ namespace blink {
 class ScriptString final {
 public:
     ScriptString();
-    ScriptString(v8::Isolate*, v8::Handle<v8::String>);
+    ScriptString(v8::Isolate*, v8::Local<v8::String>);
     ScriptString& operator=(const ScriptString&);
 
     v8::Isolate* isolate()
@@ -52,7 +52,7 @@ public:
     }
     bool isEmpty() const { return !m_string || m_string->isEmpty(); }
     void clear() { m_string = nullptr; }
-    v8::Handle<v8::String> v8Value();
+    v8::Local<v8::String> v8Value();
     ScriptString concatenateWith(const String&);
     String flattenToString();
 

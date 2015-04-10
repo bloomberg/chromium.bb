@@ -63,21 +63,21 @@ void convertV8ObjectToNPVariant(v8::Isolate* isolate, v8::Local<v8::Value> objec
     } else if (object->IsUndefined()) {
         VOID_TO_NPVARIANT(*result);
     } else if (object->IsString()) {
-        v8::Handle<v8::String> str = object.As<v8::String>();
+        v8::Local<v8::String> str = object.As<v8::String>();
         int length = str->Utf8Length() + 1;
         char* utf8Chars = reinterpret_cast<char*>(malloc(length));
         str->WriteUtf8(utf8Chars, length, 0, v8::String::HINT_MANY_WRITES_EXPECTED);
         STRINGN_TO_NPVARIANT(utf8Chars, length-1, *result);
     } else if (object->IsObject()) {
         LocalDOMWindow* window = currentDOMWindow(isolate);
-        NPObject* npobject = npCreateV8ScriptObject(isolate, 0, v8::Handle<v8::Object>::Cast(object), window);
+        NPObject* npobject = npCreateV8ScriptObject(isolate, 0, v8::Local<v8::Object>::Cast(object), window);
         if (npobject)
             _NPN_RegisterObject(npobject, owner);
         OBJECT_TO_NPVARIANT(npobject, *result);
     }
 }
 
-v8::Handle<v8::Value> convertNPVariantToV8Object(v8::Isolate* isolate, const NPVariant* variant, NPObject* owner)
+v8::Local<v8::Value> convertNPVariantToV8Object(v8::Isolate* isolate, const NPVariant* variant, NPObject* owner)
 {
     NPVariantType type = variant->type;
 
@@ -108,7 +108,7 @@ v8::Handle<v8::Value> convertNPVariantToV8Object(v8::Isolate* isolate, const NPV
 }
 
 // Helper function to create an NPN String Identifier from a v8 string.
-NPIdentifier getStringIdentifier(v8::Handle<v8::String> str)
+NPIdentifier getStringIdentifier(v8::Local<v8::String> str)
 {
     const int kStackBufferSize = 100;
 

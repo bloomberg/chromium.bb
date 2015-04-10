@@ -9,10 +9,10 @@
 
 namespace blink {
 
-v8::Handle<v8::Function> ScriptFunction::bindToV8Function()
+v8::Local<v8::Function> ScriptFunction::bindToV8Function()
 {
     v8::Isolate* isolate = m_scriptState->isolate();
-    v8::Handle<v8::External> wrapper = v8::External::New(isolate, this);
+    v8::Local<v8::External> wrapper = v8::External::New(isolate, this);
     m_scriptState->world().registerDOMObjectHolder(isolate, this, wrapper);
     return createClosure(&ScriptFunction::callCallback, wrapper, isolate);
 }
@@ -20,7 +20,7 @@ v8::Handle<v8::Function> ScriptFunction::bindToV8Function()
 void ScriptFunction::callCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     ASSERT(args.Data()->IsExternal());
-    ScriptFunction* scriptFunction = static_cast<ScriptFunction*>(v8::Handle<v8::External>::Cast(args.Data())->Value());
+    ScriptFunction* scriptFunction = static_cast<ScriptFunction*>(v8::Local<v8::External>::Cast(args.Data())->Value());
     ScriptValue result = scriptFunction->call(ScriptValue(scriptFunction->scriptState(), args[0]));
     v8SetReturnValue(args, result.v8Value());
 }

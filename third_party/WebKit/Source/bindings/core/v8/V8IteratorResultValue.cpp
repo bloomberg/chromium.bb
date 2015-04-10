@@ -7,7 +7,7 @@
 
 namespace blink {
 
-v8::Handle<v8::Object> v8IteratorResultValue(v8::Isolate* isolate, bool done, v8::Handle<v8::Value> value)
+v8::Local<v8::Object> v8IteratorResultValue(v8::Isolate* isolate, bool done, v8::Local<v8::Value> value)
 {
     v8::Local<v8::Object> result = v8::Object::New(isolate);
     result->Set(v8String(isolate, "done"), v8Boolean(done, isolate));

@@ -62,7 +62,7 @@ protected:
     {
     }
 
-    v8::Handle<v8::Function> bindToV8Function();
+    v8::Local<v8::Function> bindToV8Function();
 
 private:
     virtual ScriptValue call(ScriptValue) = 0;
