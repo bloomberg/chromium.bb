@@ -3659,7 +3659,18 @@ bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
   if (!is_swapped_out_)
     return false;
 
-  CHECK(render_frame_proxy_);
+  // It is possible to get here on a swapped-out frame without a
+  // |render_frame_proxy_|. This happens when:
+  // - This process only has one active RenderView and is about to go away
+  //   (e.g., due to cross-process navigation).
+  // - The top frame has a subframe with an unload handler.
+  // - The subframe sends a postMessage to the top-level frame in its unload
+  //   handler.
+  // See https://crbug.com/475651 for details.  We return false here, since we
+  // don't want to deliver the message to the new process in this case.
+  if (!render_frame_proxy_)
+    return false;
+
   render_frame_proxy_->postMessageEvent(
       source_frame, render_frame_proxy_->web_frame(), target_origin, event);
   return true;
