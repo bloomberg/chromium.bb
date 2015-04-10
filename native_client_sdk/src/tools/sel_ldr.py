@@ -116,15 +116,16 @@ def main(argv):
   if arch == 'arm':
     # Use the QEMU arm emulator if available.
     qemu_bin = FindQemu()
-    if qemu_bin:
-      qemu = [qemu_bin, '-cpu', 'cortex-a8', '-L',
-              os.path.abspath(os.path.join(NACL_SDK_ROOT, 'toolchain',
-                                           'linux_arm_trusted'))]
-      # '-Q' disables platform qualification, allowing arm binaries to run.
-      cmd = qemu + cmd + ['-Q']
-    else:
+    if not qemu_bin:
       raise Error('Cannot run ARM executables under sel_ldr without an emulator'
-                  '. Try installing QEMU (http://wiki.qemu.org/).')
+          '. Try installing QEMU (http://wiki.qemu.org/).')
+
+    arm_libpath = os.path.join(NACL_SDK_ROOT, 'tools', 'lib', 'arm_trusted')
+    if not os.path.isdir(arm_libpath):
+      raise Error('Could not find ARM library path: %s' % arm_libpath)
+    qemu = [qemu_bin, '-cpu', 'cortex-a8', '-L', arm_libpath]
+    # '-Q' disables platform qualification, allowing arm binaries to run.
+    cmd = qemu + cmd + ['-Q']
 
   if dynamic:
     if options.debug_libs:

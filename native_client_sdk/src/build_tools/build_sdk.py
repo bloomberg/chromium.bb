@@ -170,14 +170,24 @@ def BuildStepDownloadToolchains(toolchains):
   if 'bionic' in toolchains:
     build_platform = '%s_x86' % getos.GetPlatform()
     args.extend(['--append', os.path.join(build_platform, 'nacl_arm_bionic')])
+  if getos.GetPlatform() == 'linux':
+    # TODO(sbc): remove this once this change makes it into chrome
+    # https://codereview.chromium.org/1080513003/
+    args.extend(['--append', 'arm_trusted'])
   args.extend(['sync', '--extract'])
   buildbot_common.Run(args, cwd=NACL_DIR)
 
 
 def BuildStepCleanPepperDirs(pepperdir, pepperdir_old):
   buildbot_common.BuildStep('Clean Pepper Dirs')
-  buildbot_common.RemoveDir(pepperdir_old)
-  buildbot_common.RemoveDir(pepperdir)
+  dirs_to_remove = (
+      pepperdir,
+      pepperdir_old,
+      os.path.join(OUT_DIR, 'arm_trusted')
+  )
+  for dirname in dirs_to_remove:
+    if os.path.exists(dirname):
+      buildbot_common.RemoveDir(dirname)
   buildbot_common.MakeDir(pepperdir)
 
 
@@ -234,6 +244,12 @@ def BuildStepUntarToolchains(pepperdir, toolchains):
                        tcname % {'platform': platform})
       extract_packages.append(package_tuple)
 
+
+  # On linux we also want to extract the arm_trusted package which contains
+  # the ARM libraries we ship in support of sel_ldr_arm.
+  if platform == 'linux':
+    extract_packages.append((os.path.join(build_platform, 'arm_trusted'),
+                            'arm_trusted'))
   if extract_packages:
     # Extract all of the packages into the temp directory.
     package_names = [package_tuple[0] for package_tuple in extract_packages]
@@ -1019,6 +1035,7 @@ def main(args):
     options.build_app_engine = False
 
   print 'Building: ' + ' '.join(toolchains)
+  platform = getos.GetPlatform()
 
   if options.archive and not options.tar:
     parser.error('Incompatible arguments with archive.')
@@ -1033,7 +1050,7 @@ def main(args):
   if options.bionic:
     tarname = 'naclsdk_bionic.tar.bz2'
   else:
-    tarname = 'naclsdk_' + getos.GetPlatform() + '.tar.bz2'
+    tarname = 'naclsdk_%s.tar.bz2' % platform
   tarfile = os.path.join(OUT_DIR, tarname)
 
   if options.release:
@@ -1059,6 +1076,31 @@ def main(args):
       oshelpers.Copy(['-r', srcdir, bionicdir])
     else:
       BuildStepUntarToolchains(pepperdir, toolchains)
+    if platform == 'linux':
+      buildbot_common.Move(os.path.join(pepperdir, 'toolchain', 'arm_trusted'),
+                           os.path.join(OUT_DIR, 'arm_trusted'))
+
+
+  if platform == 'linux':
+    # Linux-only: Copy arm libraries from the arm_trusted package.  These are
+    # needed to be able to run sel_ldr_arm under qemu.
+    arm_libs = [
+      'lib/arm-linux-gnueabihf/librt.so.1',
+      'lib/arm-linux-gnueabihf/libpthread.so.0',
+      'lib/arm-linux-gnueabihf/libgcc_s.so.1',
+      'lib/arm-linux-gnueabihf/libc.so.6',
+      'lib/arm-linux-gnueabihf/ld-linux-armhf.so.3',
+      'lib/arm-linux-gnueabihf/libm.so.6',
+      'usr/lib/arm-linux-gnueabihf/libstdc++.so.6'
+    ]
+    arm_lib_dir = os.path.join(pepperdir, 'tools', 'lib', 'arm_trusted', 'lib')
+    buildbot_common.MakeDir(arm_lib_dir)
+    for arm_lib in arm_libs:
+      arm_lib = os.path.join(OUT_DIR, 'arm_trusted', arm_lib)
+      buildbot_common.CopyFile(arm_lib, arm_lib_dir)
+    buildbot_common.CopyFile(os.path.join(OUT_DIR, 'arm_trusted', 'qemu-arm'),
+                             os.path.join(pepperdir, 'tools'))
+
 
   BuildStepBuildToolchains(pepperdir, toolchains,
                            not options.skip_toolchain,
@@ -1081,14 +1123,14 @@ def main(args):
   if options.tar:
     BuildStepTarBundle(pepper_ver, tarfile)
 
-  if options.build_ports and getos.GetPlatform() == 'linux':
+  if options.build_ports and platform == 'linux':
     ports_tarfile = os.path.join(OUT_DIR, 'naclports.tar.bz2')
     BuildStepSyncNaClPorts()
     BuildStepBuildNaClPorts(pepper_ver, pepperdir)
     if options.tar:
       BuildStepTarNaClPorts(pepper_ver, ports_tarfile)
 
-  if options.build_app_engine and getos.GetPlatform() == 'linux':
+  if options.build_app_engine and platform == 'linux':
     BuildStepBuildAppEngine(pepperdir, chrome_revision)
 
   if options.qemu:
@@ -1099,7 +1141,7 @@ def main(args):
   if options.archive:
     BuildStepArchiveBundle('build', pepper_ver, chrome_revision, nacl_revision,
                            tarfile)
-    if options.build_ports and getos.GetPlatform() == 'linux':
+    if options.build_ports and platform == 'linux':
       BuildStepArchiveBundle('naclports', pepper_ver, chrome_revision,
                              nacl_revision, ports_tarfile)
     BuildStepArchiveSDKTools()

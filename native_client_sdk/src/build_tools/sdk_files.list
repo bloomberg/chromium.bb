@@ -530,6 +530,13 @@ tools/httpd.py
 [linux]tools/irt_core_arm.nexe
 tools/irt_core_x86_32.nexe
 tools/irt_core_x86_64.nexe
+[linux]tools/lib/arm_trusted/lib/ld-linux-armhf.so.3
+[linux]tools/lib/arm_trusted/lib/libc.so.6
+[linux]tools/lib/arm_trusted/lib/libgcc_s.so.1
+[linux]tools/lib/arm_trusted/lib/libm.so.6
+[linux]tools/lib/arm_trusted/lib/libpthread.so.0
+[linux]tools/lib/arm_trusted/lib/librt.so.1
+[linux]tools/lib/arm_trusted/lib/libstdc++.so.6
 tools/lib/elf.py
 tools/lib/get_shared_deps.py
 tools/lib/quote.py
@@ -547,6 +554,7 @@ tools/ncval.py
 [linux]tools/nonsfi_loader_arm${EXE_EXT}
 [linux]tools/nonsfi_loader_x86_32${EXE_EXT}
 tools/oshelpers.py
+[linux]tools/qemu-arm
 tools/run.py
 tools/sel_ldr.py
 [linux]tools/sel_ldr_arm
