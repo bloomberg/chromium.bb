@@ -196,7 +196,13 @@ def Command(command, stdout=None, run_cond=None, **kwargs):
       path_dirs = [subst.Substitute(dirname) for dirname
                    in check_call_kwargs['path_dirs']]
       del check_call_kwargs['path_dirs']
-    check_call_kwargs['env'] = PlatformEnvironment(path_dirs)
+    # Perform substitution on any env overrides.
+    if 'env' in check_call_kwargs:
+      check_call_kwargs['env'] = { k: subst.Substitute(v)
+            for (k, v) in check_call_kwargs['env'].iteritems() }
+      check_call_kwargs['env'].update(PlatformEnvironment(path_dirs))
+    else:
+      check_call_kwargs['env'] = PlatformEnvironment(path_dirs)
 
     if isinstance(command, str):
       command = subst.Substitute(command)

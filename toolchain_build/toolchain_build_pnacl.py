@@ -148,8 +148,8 @@ def ProgramPath(program):
     pass
   return None
 
-# Return a tuple (C compiler, C++ compiler) of the compilers to compile the host
-# toolchains
+# Return a tuple (C compiler, C++ compiler, ar, ranlib) of the compilers and
+# tools to compile the host toolchains.
 def CompilersForHost(host):
   compiler = {
       # For now we only do native builds for linux and mac
@@ -167,7 +167,6 @@ def CompilersForHost(host):
     nacl_sdk = os.environ.get('NACL_SDK_ROOT')
     assert nacl_sdk, 'NACL_SDK_ROOT not set'
     pnacl_bin_dir = os.path.join(nacl_sdk, 'toolchain/linux_pnacl/bin')
-    glibc_bin_dir = os.path.join(nacl_sdk, 'toolchain/linux_x86_glibc/bin')
     compiler.update({
         'le32-nacl': (os.path.join(pnacl_bin_dir, 'pnacl-clang'),
                       os.path.join(pnacl_bin_dir, 'pnacl-clang++'),
@@ -186,6 +185,41 @@ def FlavoredName(component_name, host, options):
   if HostIsDebug(options):
     joined_name= joined_name + '_debug'
   return joined_name
+
+
+def HostArchToolFlags(host, extra_cflags, opts):
+  """Return the appropriate CFLAGS, CXXFLAGS, and LDFLAGS based on host
+  and opts. Does not attempt to determine flags that are attached
+  to CC and CXX directly.
+  """
+  extra_cc_flags = list(extra_cflags)
+  result = { 'LDFLAGS' : [],
+             'CFLAGS' : [],
+             'CXXFLAGS' : []}
+  if TripleIsWindows(host):
+    result['LDFLAGS'] += ['-L%(abs_libdl)s', '-ldl']
+    result['CFLAGS'] += ['-isystem','%(abs_libdl)s']
+    result['CXXFLAGS'] += ['-isystem', '%(abs_libdl)s']
+  else:
+    if TripleIsLinux(host) and not TripleIsX8664(host):
+      # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux.
+      extra_cc_flags += ['-m32']
+    elif TripleIsMac(host):
+      # This is required for building with recent libc++ against OSX 10.6
+      extra_cc_flags += ['-U__STRICT_ANSI__']
+    if opts.gcc or host == 'le32-nacl':
+      result['CFLAGS']  += extra_cc_flags
+      result['CXXFLAGS'] += extra_cc_flags
+    else:
+      result['CFLAGS'] += extra_cc_flags
+      result['LDFLAGS'] += ['-L%(' + FlavoredName('abs_libcxx',
+                                                  host, opts) + ')s/lib']
+      result['CXXFLAGS'] += ([
+        '-stdlib=libc++',
+        '-I%(' + FlavoredName('abs_libcxx', host, opts) + ')s/include/c++/v1'] +
+        extra_cc_flags)
+  return result
+
 
 def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
   """ Return flags passed to LLVM and binutils configure for compilers and
@@ -210,9 +244,6 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
       configure_args.append('--build=' + host)
     else:
       configure_args.append('--host=' + host)
-  if TripleIsLinux(host) and not TripleIsX8664(host):
-    # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux.
-    extra_cc_args += ['-m32']
 
   extra_cxx_args = list(extra_cc_args)
 
@@ -235,34 +266,20 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
     configure_args.append('AR=' + ar)
     configure_args.append('RANLIB=' + ranlib)
 
+  tool_flags = HostArchToolFlags(host, extra_cflags, options)
+  configure_args.extend(
+       ['CFLAGS=' + ' '.join(tool_flags['CFLAGS']),
+        'CXXFLAGS=' + ' '.join(tool_flags['CXXFLAGS']),
+        'LDFLAGS=' + ' '.join(tool_flags['LDFLAGS']),
+       ])
   if TripleIsWindows(host):
     # The i18n support brings in runtime dependencies on MinGW DLLs
     # that we don't want to have to distribute alongside our binaries.
     # So just disable it, and compiler messages will always be in US English.
     configure_args.append('--disable-nls')
-    configure_args.extend(['LDFLAGS=-L%(abs_libdl)s -ldl',
-                           'CFLAGS=-isystem %(abs_libdl)s',
-                           'CXXFLAGS=-isystem %(abs_libdl)s'])
     if is_cross:
       # LLVM's linux->mingw cross build needs this
       configure_args.append('CC_FOR_BUILD=gcc')
-  else:
-    if TripleIsMac(host):
-      # This is required for building with recent libc++ against OSX 10.6
-      extra_cflags.append('-U__STRICT_ANSI__')
-    if options.gcc or host == 'le32-nacl':
-      configure_args.extend(['CFLAGS=' + ' '.join(extra_cflags),
-                             'CXXFLAGS=' + ' '.join(extra_cflags)])
-    else:
-      configure_args.extend(
-       ['CFLAGS=' + ' '.join(extra_cflags),
-        'LDFLAGS=-L%(' + FlavoredName('abs_libcxx',
-                                      host,
-                                      options) + ')s/lib',
-        'CXXFLAGS=-stdlib=libc++ -I%(' +
-            FlavoredName('abs_libcxx', host, options) +
-        ')s/include/c++/v1 ' + ' '.join(extra_cflags)])
-
   return configure_args
 
 
@@ -275,6 +292,7 @@ def LibCxxHostArchFlags(host):
     cmake_flags.extend(['-DCMAKE_C_FLAGS=-m32',
                         '-DCMAKE_CXX_FLAGS=-m32'])
   return cmake_flags
+
 
 def CmakeHostArchFlags(host, options):
   """ Set flags passed to LLVM cmake for compilers and compile flags. """
@@ -290,13 +308,15 @@ def CmakeHostArchFlags(host, options):
   # msan-enabled compiler_rt, leaving references to __msan_allocated_memory
   # undefined.
   cmake_flags.append('-DHAVE_SANITIZER_MSAN_INTERFACE_H=FALSE')
-
+  tool_flags = HostArchToolFlags(host, [], options)
   if options.sanitize:
-    cmake_flags.extend(['-DCMAKE_%s_FLAGS=-fsanitize=%s' % (c, options.sanitize)
-                        for c in ('C', 'CXX')])
-    cmake_flags.append('-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=%s' %
-                       options.sanitize)
-
+    for f in ['CFLAGS', 'CXXFLAGS', 'LDFLAGS']:
+      tool_flags[f] += '-fsanitize=%s' % options.sanitize
+  cmake_flags.extend(['-DCMAKE_C_FLAGS=' + ' '.join(tool_flags['CFLAGS'])])
+  cmake_flags.extend(['-DCMAKE_CXX_FLAGS=' + ' '.join(tool_flags['CXXFLAGS'])])
+  for linker_type in ['EXE', 'SHARED', 'MODULE']:
+    cmake_flags.extend([('-DCMAKE_%s_LINKER_FLAGS=' % linker_type) +
+                        ' '.join(tool_flags['LDFLAGS'])])
   return cmake_flags
 
 
@@ -652,11 +672,19 @@ def HostTools(host, options):
                   '-DLLVM_EXTERNAL_SUBZERO_SOURCE_DIR=%(subzero_src)s',
                   '-DLLVM_INSTALL_UTILS=ON',
                   '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips;JSBackend',
-                  '%(llvm_src)s']),
-              command.Command(['ninja', '-v']),
-              command.Command(['ninja', 'install']),
-              ] +
-          CreateSymLinksToDirectToNaClTools(host)
+                  '%(llvm_src)s'],
+                  # Older CMake ignore CMAKE_*_LINKER_FLAGS during config step.
+                  # https://public.kitware.com/Bug/view.php?id=14066
+                  # The workaround is to set LDFLAGS in the environment.
+                  # TODO(jvoung): remove the ability to override env vars
+                  # from "command" once the CMake fix propagates and we can
+                  # stop using this env var hack.
+                  env={'LDFLAGS' : ' '.join(
+                        HostArchToolFlags(host, [], options)['LDFLAGS'])})] +
+              CopyHostLibcxxForLLVMBuild(host, 'lib', options) +
+              [command.Command(['ninja', '-v']),
+               command.Command(['ninja', 'install'])] +
+              CreateSymLinksToDirectToNaClTools(host)
       },
   }
   cleanup_static_libs = []
