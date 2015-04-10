@@ -890,6 +890,7 @@ void V4L2SliceVideoDecodeAccelerator::Dequeue() {
     }
     InputRecord& input_record = input_buffer_map_[dqbuf.index];
     DCHECK(input_record.at_device);
+    input_record.at_device = false;
     ReuseInputBuffer(dqbuf.index);
     input_buffer_queued_count_--;
     DVLOGF(4) << "Dequeued input=" << dqbuf.index
@@ -916,7 +917,6 @@ void V4L2SliceVideoDecodeAccelerator::Dequeue() {
     OutputRecord& output_record = output_buffer_map_[dqbuf.index];
     DCHECK(output_record.at_device);
     output_record.at_device = false;
-    DCHECK_NE(output_record.picture_id, -1);
     output_buffer_queued_count_--;
     DVLOGF(3) << "Dequeued output=" << dqbuf.index
               << " count " << output_buffer_queued_count_;
@@ -951,26 +951,32 @@ void V4L2SliceVideoDecodeAccelerator::ProcessPendingEventsIfNeeded() {
 }
 
 void V4L2SliceVideoDecodeAccelerator::ReuseInputBuffer(int index) {
-  DCHECK_LT(index, static_cast<int>(input_buffer_map_.size()));
   DVLOGF(4) << "Reusing input buffer, index=" << index;
   DCHECK(decoder_thread_proxy_->BelongsToCurrentThread());
 
+  DCHECK_LT(index, static_cast<int>(input_buffer_map_.size()));
   InputRecord& input_record = input_buffer_map_[index];
-  input_record.at_device = false;
+
+  DCHECK(!input_record.at_device);
   input_record.input_id = -1;
   input_record.bytes_used = 0;
+
+  DCHECK_EQ(std::count(free_input_buffers_.begin(), free_input_buffers_.end(),
+            index), 0);
   free_input_buffers_.push_back(index);
 }
 
 void V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer(int index) {
-  DCHECK_LT(index, static_cast<int>(output_buffer_map_.size()));
   DVLOGF(4) << "Reusing output buffer, index=" << index;
   DCHECK(decoder_thread_proxy_->BelongsToCurrentThread());
 
+  DCHECK_LT(index, static_cast<int>(output_buffer_map_.size()));
   OutputRecord& output_record = output_buffer_map_[index];
   DCHECK(!output_record.at_device);
-  output_record.at_client = false;
+  DCHECK(!output_record.at_client);
 
+  DCHECK_EQ(std::count(free_output_buffers_.begin(), free_output_buffers_.end(),
+            index), 0);
   free_output_buffers_.push_back(index);
 
   ScheduleDecodeBufferTaskIfNeeded();
@@ -1016,6 +1022,7 @@ bool V4L2SliceVideoDecodeAccelerator::EnqueueOutputRecord(int index) {
   DCHECK(!output_record.at_client);
   DCHECK_NE(output_record.egl_image, EGL_NO_IMAGE_KHR);
   DCHECK_NE(output_record.picture_id, -1);
+
   if (output_record.egl_sync != EGL_NO_SYNC_KHR) {
     // If we have to wait for completion, wait.  Note that
     // free_output_buffers_ is a FIFO queue, so we always wait on the
@@ -1116,25 +1123,33 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
   output_streamon_ = false;
 
   if (!keep_input_state) {
-    free_input_buffers_.clear();
-    // We don't care about the buffer state (at_device) here, because
-    // STREAMOFF tells the driver to drop all buffers without DQBUFing them.
-    for (size_t i = 0; i < input_buffer_map_.size(); ++i)
-      ReuseInputBuffer(i);
-    input_buffer_queued_count_ = 0;
+    for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
+      InputRecord& input_record = input_buffer_map_[i];
+      if (input_record.at_device) {
+        input_record.at_device = false;
+        ReuseInputBuffer(i);
+        input_buffer_queued_count_--;
+      }
+    }
+    DCHECK_EQ(input_buffer_queued_count_, 0);
   }
 
-  surfaces_at_device_.clear();
-
-  free_output_buffers_.clear();
+  // STREAMOFF makes the driver drop all buffers without decoding and DQBUFing,
+  // so we mark them all as at_device = false and clear surfaces_at_device_.
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     OutputRecord& output_record = output_buffer_map_[i];
-    DCHECK(!(output_record.at_client && output_record.at_device));
-    output_record.at_device = false;
-    if (!output_record.at_client)
-      free_output_buffers_.push_back(i);
+    if (output_record.at_device) {
+      output_record.at_device = false;
+      output_buffer_queued_count_--;
+    }
   }
-  output_buffer_queued_count_ = 0;
+  surfaces_at_device_.clear();
+  DCHECK_EQ(output_buffer_queued_count_, 0);
+
+  // Drop all surfaces that were awaiting decode before being displayed,
+  // since we've just cancelled all outstanding decodes.
+  while (!decoder_display_queue_.empty())
+    decoder_display_queue_.pop();
 
   DVLOGF(3) << "Device poll stopped";
   return true;
@@ -1318,7 +1333,6 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputs(bool dismiss) {
 
   for (auto output_record : output_buffer_map_) {
     DCHECK(!output_record.at_device);
-    output_record.at_client = false;
 
     if (output_record.egl_sync != EGL_NO_SYNC_KHR) {
       if (eglDestroySyncKHR(egl_display_, output_record.egl_sync) != EGL_TRUE)
@@ -1367,6 +1381,13 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputBuffers() {
   // This will prevent us from reusing old surfaces in case we have some
   // ReusePictureBuffer() pending on ChildThread already. It's ok to ignore
   // them, because we have already dismissed them (in DestroyOutputs()).
+  for (const auto& surface_at_display : surfaces_at_display_) {
+    size_t index = surface_at_display.second->output_record();
+    DCHECK_LT(index, output_buffer_map_.size());
+    OutputRecord& output_record = output_buffer_map_[index];
+    DCHECK(output_record.at_client);
+    output_record.at_client = false;
+  }
   surfaces_at_display_.clear();
   DCHECK_EQ(free_output_buffers_.size(), output_buffer_map_.size());
 
