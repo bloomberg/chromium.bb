@@ -103,7 +103,9 @@ void AshNativeCursorManager::SetCursor(
     gfx::NativeCursor invisible_cursor(ui::kCursorNone);
     image_cursors_->SetPlatformCursor(&invisible_cursor);
     if (cursor == ui::kCursorCustom) {
-      cursor = invisible_cursor;
+      // Fall back to the default pointer cursor for now. (crbug.com/476078)
+      // TODO(oshima): support custom cursor.
+      cursor = ui::kCursorPointer;
     } else {
       cursor.SetPlatformCursor(invisible_cursor.platform());
     }
