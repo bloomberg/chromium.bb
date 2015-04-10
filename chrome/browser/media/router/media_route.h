@@ -17,6 +17,10 @@
 
 namespace media_router {
 
+using RouteRequestId = int64;
+
+class MediaRouteFactory;
+
 // For now, a simple transition graph: NEW -> CONNECTED -> CLOSED.
 enum MediaRouteState {
   // The route is new and not yet connected to a sink.
@@ -44,6 +48,7 @@ class MediaRoute {
              const MediaSink& media_sink,
              const std::string& description,
              bool is_local);
+
   ~MediaRoute();
 
   // The media route identifier.
@@ -70,12 +75,12 @@ class MediaRoute {
   bool Equals(const MediaRoute& other) const;
 
  private:
-  MediaRouteId media_route_id_;
-  MediaSource media_source_;
-  MediaSink media_sink_;
-  std::string description_;
-  bool is_local_;
-  MediaRouteState state_;
+  const MediaRouteId media_route_id_;
+  const MediaSource media_source_;
+  const MediaSink media_sink_;
+  const std::string description_;
+  const bool is_local_;
+  const MediaRouteState state_;
 };
 
 }  // namespace media_router

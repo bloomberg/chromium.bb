@@ -10,8 +10,8 @@ namespace media_router {
 TEST(MediaSinkTest, Equals) {
   MediaSink sink1("sinkId", "Sink");
 
-  // No name, same as sink1.
-  MediaSink sink2("sinkId", "");
+  // Same as sink1.
+  MediaSink sink2("sinkId", "Sink");
   EXPECT_TRUE(sink1.Equals(sink2));
 
   // Sink name is different from sink1's.

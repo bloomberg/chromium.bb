@@ -5,42 +5,20 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_SOURCE_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_SOURCE_H_
 
-#include <ostream>
 #include <string>
-
-#include "base/hash.h"
 
 namespace media_router {
 
-using MediaSourceId = std::string;
-
 class MediaSource {
  public:
-  explicit MediaSource(const MediaSourceId& id);
-  MediaSource();
+  explicit MediaSource(const std::string& id);
   ~MediaSource();
 
   // Gets the ID of the media source.
-  MediaSourceId id() const;
-
-  // Returns true if two MediaSource objects use the same media ID.
-  bool Equals(const MediaSource& other) const;
-
-  // Returns true if a MediaSource is empty or uninitialized.
-  bool Empty() const;
-
-  // Used for logging.
-  std::string ToString() const;
-
-  // Hash operator for hash containers.
-  struct Hash {
-    size_t operator()(const MediaSource& source) const {
-      return base::Hash(source.id());
-    }
-  };
+  std::string id() const;
 
  private:
-  MediaSourceId id_;
+  std::string id_;
 };
 
 }  // namespace media_router

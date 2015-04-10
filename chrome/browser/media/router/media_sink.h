@@ -16,23 +16,20 @@ using MediaSinkId = std::string;
 // Represents a sink to which media can be routed.
 class MediaSink {
  public:
+  // |sink_id|: Unique identifier for the MediaSink.
+  // |name|: Descriptive name of the MediaSink.
   MediaSink(const MediaSinkId& sink_id,
             const std::string& name);
-
   ~MediaSink();
 
-  const MediaSinkId& id() const { return sink_id_; }
+  const MediaSinkId& sink_id() const { return sink_id_; }
   const std::string& name() const { return name_; }
 
   bool Equals(const MediaSink& other) const;
-  bool Empty() const;
 
  private:
-  // Unique identifier for the MediaSink.
-  MediaSinkId sink_id_;
-  // Descriptive name of the MediaSink.
-  // Optional, can use an empty string if no sink name is available.
-  std::string name_;
+  const MediaSinkId sink_id_;
+  const std::string name_;
 };
 
 }  // namespace media_router
