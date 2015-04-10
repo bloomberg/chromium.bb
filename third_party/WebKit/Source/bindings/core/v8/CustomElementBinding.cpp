@@ -33,12 +33,12 @@
 
 namespace blink {
 
-PassOwnPtr<CustomElementBinding> CustomElementBinding::create(v8::Isolate* isolate, v8::Handle<v8::Object> prototype)
+PassOwnPtr<CustomElementBinding> CustomElementBinding::create(v8::Isolate* isolate, v8::Local<v8::Object> prototype)
 {
     return adoptPtr(new CustomElementBinding(isolate, prototype));
 }
 
-CustomElementBinding::CustomElementBinding(v8::Isolate* isolate, v8::Handle<v8::Object> prototype)
+CustomElementBinding::CustomElementBinding(v8::Isolate* isolate, v8::Local<v8::Object> prototype)
     : m_prototype(isolate, prototype)
 {
     ASSERT(!m_prototype.isEmpty());
