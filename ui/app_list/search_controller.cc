@@ -35,7 +35,6 @@ SearchController::SearchController(SearchBoxModel* search_box,
       mixer_(new Mixer(results)),
       history_(history),
       is_voice_query_(false) {
-  mixer_->Init();
 }
 
 SearchController::~SearchController() {
@@ -98,12 +97,20 @@ void SearchController::InvokeResultAction(SearchResult* result,
   result->InvokeAction(action_index, event_flags);
 }
 
-void SearchController::AddProvider(Mixer::GroupId group,
+size_t SearchController::AddGroup(size_t max_results, double boost) {
+  return mixer_->AddGroup(max_results, boost);
+}
+
+size_t SearchController::AddOmniboxGroup(size_t max_results, double boost) {
+  return mixer_->AddOmniboxGroup(max_results, boost);
+}
+
+void SearchController::AddProvider(size_t group_id,
                                    scoped_ptr<SearchProvider> provider) {
   provider->set_result_changed_callback(base::Bind(
       &SearchController::OnResultsChanged,
       base::Unretained(this)));
-  mixer_->AddProviderToGroup(group, provider.get());
+  mixer_->AddProviderToGroup(group_id, provider.get());
   providers_.push_back(provider.release());  // Takes ownership.
 }
 

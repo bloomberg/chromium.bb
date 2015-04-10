@@ -19,11 +19,6 @@ namespace {
 
 // Maximum number of results to show.
 const size_t kMaxResults = 6;
-const size_t kMaxMainGroupResults = 4;
-const size_t kMaxWebstoreResults = 2;
-const size_t kMaxPeopleResults = 2;
-const size_t kMaxSuggestionsResults = 6;
-const size_t kMaxLauncherSearchResults = 2;
 
 // A value to indicate no max number of results limit.
 const size_t kNoMaxResultsLimit = 0;
@@ -126,18 +121,22 @@ Mixer::Mixer(AppListModel::SearchResults* ui_results)
 Mixer::~Mixer() {
 }
 
-void Mixer::Init() {
-  groups_[MAIN_GROUP].reset(new Group(kMaxMainGroupResults, 3.0));
-  groups_[OMNIBOX_GROUP].reset(new Group(kNoMaxResultsLimit, 2.0));
-  groups_[WEBSTORE_GROUP].reset(new Group(kMaxWebstoreResults, 1.0));
-  groups_[PEOPLE_GROUP].reset(new Group(kMaxPeopleResults, 0.0));
-  groups_[SUGGESTIONS_GROUP].reset(new Group(kMaxSuggestionsResults, 3.0));
-  groups_[LAUNCHER_SEARCH_API_GROUP].reset(
-      new Group(kMaxLauncherSearchResults, 0.0));
+size_t Mixer::AddGroup(size_t max_results, double boost) {
+  groups_.push_back(new Group(max_results, boost));
+  return groups_.size() - 1;
 }
 
-void Mixer::AddProviderToGroup(GroupId group, SearchProvider* provider) {
-  groups_[group]->AddProvider(provider);
+size_t Mixer::AddOmniboxGroup(size_t max_results, double boost) {
+  // There should not already be an omnibox group.
+  DCHECK(!has_omnibox_group_);
+  size_t id = AddGroup(max_results, boost);
+  omnibox_group_ = id;
+  has_omnibox_group_ = true;
+  return id;
+}
+
+void Mixer::AddProviderToGroup(size_t group_id, SearchProvider* provider) {
+  groups_[group_id]->AddProvider(provider);
 }
 
 void Mixer::MixAndPublish(bool is_voice_query,
@@ -147,21 +146,14 @@ void Mixer::MixAndPublish(bool is_voice_query,
   SortedResults results;
   results.reserve(kMaxResults);
 
-  const Group& main_group = *groups_[MAIN_GROUP];
-  const Group& omnibox_group = *groups_[OMNIBOX_GROUP];
-  const Group& webstore_group = *groups_[WEBSTORE_GROUP];
-  const Group& people_group = *groups_[PEOPLE_GROUP];
-  const Group& suggestions_group = *groups_[SUGGESTIONS_GROUP];
-
-  // Adds main group and web store results first.
-  results.insert(results.end(), main_group.results().begin(),
-                 main_group.results().end());
-  results.insert(results.end(), webstore_group.results().begin(),
-                 webstore_group.results().end());
-  results.insert(results.end(), people_group.results().begin(),
-                 people_group.results().end());
-  results.insert(results.end(), suggestions_group.results().begin(),
-                 suggestions_group.results().end());
+  // Add results from non-omnibox groups first.
+  for (size_t i = 0; i < groups_.size(); ++i) {
+    if (!has_omnibox_group_ || i != omnibox_group_) {
+      const Group& group = *groups_[i];
+      results.insert(results.end(), group.results().begin(),
+                     group.results().end());
+    }
+  }
 
   // Collapse duplicate apps from local and web store.
   RemoveDuplicates(&results);
@@ -169,11 +161,15 @@ void Mixer::MixAndPublish(bool is_voice_query,
   // Fill the remaining slots with omnibox results. Always add at least one
   // omnibox result (even if there are no more slots; if we over-fill the
   // vector, the web store and people results will be removed in a later step).
-  const size_t omnibox_results =
-      std::min(omnibox_group.results().size(),
-               results.size() < kMaxResults ? kMaxResults - results.size() : 1);
-  results.insert(results.end(), omnibox_group.results().begin(),
-                 omnibox_group.results().begin() + omnibox_results);
+  if (has_omnibox_group_) {
+    CHECK_LT(omnibox_group_, groups_.size());
+    const Group& omnibox_group = *groups_[omnibox_group_];
+    const size_t omnibox_results = std::min(
+        omnibox_group.results().size(),
+        results.size() < kMaxResults ? kMaxResults - results.size() : 1);
+    results.insert(results.end(), omnibox_group.results().begin(),
+                   omnibox_group.results().begin() + omnibox_results);
+  }
 
   std::sort(results.begin(), results.end());
   RemoveDuplicates(&results);
@@ -253,8 +249,8 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
 
 void Mixer::FetchResults(bool is_voice_query,
                          const KnownResults& known_results) {
-  for (const auto& item : groups_)
-    item.second->FetchResults(is_voice_query, known_results);
+  for (auto* group : groups_)
+    group->FetchResults(is_voice_query, known_results);
 }
 
 }  // namespace app_list

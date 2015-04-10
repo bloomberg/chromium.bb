@@ -5,12 +5,11 @@
 #ifndef UI_APP_LIST_SEARCH_MIXER_H_
 #define UI_APP_LIST_SEARCH_MIXER_H_
 
-#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/history_types.h"
@@ -26,30 +25,28 @@ class SearchResult;
 
 // Mixer collects results from providers, sorts them and publishes them to the
 // SearchResults UI model. The targeted results have 6 slots to hold the
-// result. These slots could be viewed as having three groups: main group
-// (local apps and contacts), omnibox group and web store group. The
-// main group takes no more than 4 slots. The web store takes no more than 2
-// slots. The omnibox group takes all the remaining slots.
+// result. The search controller can specify any number of groups, each with a
+// different number of results and priority boost. The "omnibox" group is
+// expected to contain omnibox results, and will be treated specially.
 class APP_LIST_EXPORT Mixer {
  public:
-  // The enum represents mixer groups. Each must have a Group added in Init().
-  enum GroupId {
-    MAIN_GROUP = 0,
-    OMNIBOX_GROUP = 1,
-    WEBSTORE_GROUP = 2,
-    PEOPLE_GROUP = 3,
-    SUGGESTIONS_GROUP = 4,
-    LAUNCHER_SEARCH_API_GROUP = 5
-  };
-
   explicit Mixer(AppListModel::SearchResults* ui_results);
   ~Mixer();
 
-  // Creates mixer groups.
-  void Init();
+  // Adds a new mixer group. A maximum of |max_results| results will be
+  // displayed from this group (if 0, will allow unlimited results from this
+  // group). Each result in the group will have its score boosted by |boost|.
+  // Returns the group's group_id.
+  size_t AddGroup(size_t max_results, double boost);
+
+  // Adds a new mixer group for the special "omnibox" group. This group will be
+  // treated specially by the Mixer (it will be truncated such that it fills the
+  // remaining slots without overflowing, but with at least one result). A
+  // maximum of one group should be added using this method.
+  size_t AddOmniboxGroup(size_t max_results, double boost);
 
   // Associates a provider with a mixer group.
-  void AddProviderToGroup(GroupId group, SearchProvider* provider);
+  void AddProviderToGroup(size_t group_id, SearchProvider* provider);
 
   // Collects the results, sorts and publishes them.
   void MixAndPublish(bool is_voice_query, const KnownResults& known_results);
@@ -70,7 +67,7 @@ class APP_LIST_EXPORT Mixer {
   typedef std::vector<Mixer::SortData> SortedResults;
 
   class Group;
-  typedef std::map<GroupId, linked_ptr<Group>> Groups;
+  typedef ScopedVector<Group> Groups;
 
   // Publishes the given |new_results| to |ui_results|, deleting any existing
   // results that are not in |new_results|. Results that already exist in
@@ -85,6 +82,13 @@ class APP_LIST_EXPORT Mixer {
 
   AppListModel::SearchResults* ui_results_;  // Not owned.
   Groups groups_;
+
+  // The ID of the omnibox group. The group with this ID will be treated
+  // specially by the Mixer.
+  // TODO(mgiuca): Omnibox group should not be treated specially.
+  size_t omnibox_group_ = 0;
+  // Whether |omnibox_group_| has been set.
+  bool has_omnibox_group_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Mixer);
 };

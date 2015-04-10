@@ -19,6 +19,12 @@
 namespace app_list {
 namespace test {
 
+// Maximum number of results to show in each mixer group.
+const size_t kMaxAppsGroupResults = 4;
+const size_t kMaxOmniboxResults = 0;  // Unlimited.
+const size_t kMaxWebstoreResults = 2;
+const size_t kMaxPeopleResults = 2;
+
 class TestSearchResult : public SearchResult {
  public:
   TestSearchResult(const std::string& id, double relevance)
@@ -111,11 +117,16 @@ class MixerTest : public testing::Test {
     is_voice_query_ = false;
 
     mixer_.reset(new Mixer(results_.get()));
-    mixer_->Init();
-    mixer_->AddProviderToGroup(Mixer::MAIN_GROUP, providers_[0]);
-    mixer_->AddProviderToGroup(Mixer::OMNIBOX_GROUP, providers_[1]);
-    mixer_->AddProviderToGroup(Mixer::WEBSTORE_GROUP, providers_[2]);
-    mixer_->AddProviderToGroup(Mixer::PEOPLE_GROUP, providers_[3]);
+
+    size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults, 3.0);
+    size_t omnibox_group_id = mixer_->AddOmniboxGroup(kMaxOmniboxResults, 2.0);
+    size_t webstore_group_id = mixer_->AddGroup(kMaxWebstoreResults, 1.0);
+    size_t people_group_id = mixer_->AddGroup(kMaxPeopleResults, 0.0);
+
+    mixer_->AddProviderToGroup(apps_group_id, providers_[0]);
+    mixer_->AddProviderToGroup(omnibox_group_id, providers_[1]);
+    mixer_->AddProviderToGroup(webstore_group_id, providers_[2]);
+    mixer_->AddProviderToGroup(people_group_id, providers_[3]);
   }
 
   void RunQuery() {
