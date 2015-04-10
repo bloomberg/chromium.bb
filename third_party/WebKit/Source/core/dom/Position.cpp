@@ -86,7 +86,8 @@ const TreeScope* Position::commonAncestorTreeScope(const Position& a, const Posi
     return a.containerNode()->treeScope().commonAncestorTreeScope(b.containerNode()->treeScope());
 }
 
-Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset offset)
+template <typename Strategy>
+PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset offset)
     : m_anchorNode(anchorNode)
     , m_offset(offset.value())
     , m_anchorType(anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset))
@@ -95,31 +96,30 @@ Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset 
     ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement() || m_anchorNode->isFirstLetterPseudoElement());
 }
 
-Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, AnchorType anchorType)
+template <typename Strategy>
+PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, AnchorType anchorType)
     : m_anchorNode(anchorNode)
     , m_offset(0)
     , m_anchorType(anchorType)
     , m_isLegacyEditingPosition(false)
 {
     ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement() || m_anchorNode->isFirstLetterPseudoElement());
-
-    ASSERT(anchorType != PositionIsOffsetInAnchor);
-    ASSERT(!((anchorType == PositionIsBeforeChildren || anchorType == PositionIsAfterChildren)
-        && (m_anchorNode->isTextNode() || editingIgnoresContent(m_anchorNode.get()))));
+    ASSERT(m_anchorType != PositionIsOffsetInAnchor);
 }
 
-Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset, AnchorType anchorType)
+template <typename Strategy>
+PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset, AnchorType anchorType)
     : m_anchorNode(anchorNode)
     , m_offset(offset)
     , m_anchorType(anchorType)
     , m_isLegacyEditingPosition(false)
 {
     ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement() || m_anchorNode->isFirstLetterPseudoElement());
-
     ASSERT(anchorType == PositionIsOffsetInAnchor);
 }
 
-Position::Position(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset)
+template <typename Strategy>
+PositionAlgorithm<Strategy>::PositionAlgorithm(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset)
     : m_anchorNode(textNode)
     , m_offset(static_cast<int>(offset))
     , m_anchorType(PositionIsOffsetInAnchor)
@@ -128,16 +128,54 @@ Position::Position(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset)
     ASSERT(m_anchorNode);
 }
 
-void Position::moveToPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
+template <typename Strategy>
+PositionAlgorithm<Strategy>::PositionAlgorithm(const PositionAlgorithm& other)
+    : m_anchorNode(other.m_anchorNode)
+    , m_offset(other.m_offset)
+    , m_anchorType(other.m_anchorType)
+    , m_isLegacyEditingPosition(other.m_isLegacyEditingPosition)
 {
-    ASSERT(!editingIgnoresContent(node.get()));
+}
+
+// --
+
+Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset offset)
+    : PositionAlgorithm(anchorNode, offset)
+{
+}
+
+Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, AnchorType anchorType)
+    : PositionAlgorithm(anchorNode, anchorType)
+{
+}
+
+Position::Position(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset, AnchorType anchorType)
+    : PositionAlgorithm(anchorNode, offset, anchorType)
+{
+}
+
+Position::Position(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset)
+    : PositionAlgorithm(textNode, offset)
+{
+}
+
+Position::Position(const PositionAlgorithm& other)
+    : PositionAlgorithm(other)
+{
+}
+
+template <typename Strategy>
+void PositionAlgorithm<Strategy>::moveToPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
+{
+    ASSERT(!Strategy::editingIgnoresContent(node.get()));
     ASSERT(anchorType() == PositionIsOffsetInAnchor || m_isLegacyEditingPosition);
     m_anchorNode = node;
     m_offset = offset;
     if (m_isLegacyEditingPosition)
         m_anchorType = anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset);
 }
-void Position::moveToOffset(int offset)
+template <typename Strategy>
+void PositionAlgorithm<Strategy>::moveToOffset(int offset)
 {
     ASSERT(anchorType() == PositionIsOffsetInAnchor || m_isLegacyEditingPosition);
     m_offset = offset;
@@ -145,7 +183,8 @@ void Position::moveToOffset(int offset)
         m_anchorType = anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset);
 }
 
-Node* Position::containerNode() const
+template <typename Strategy>
+Node* PositionAlgorithm<Strategy>::containerNode() const
 {
     if (!m_anchorNode)
         return 0;
@@ -157,13 +196,14 @@ Node* Position::containerNode() const
         return m_anchorNode.get();
     case PositionIsBeforeAnchor:
     case PositionIsAfterAnchor:
-        return m_anchorNode->parentNode();
+        return Strategy::parent(*m_anchorNode);
     }
     ASSERT_NOT_REACHED();
     return 0;
 }
 
-Text* Position::containerText() const
+template <typename Strategy>
+Text* PositionAlgorithm<Strategy>::containerText() const
 {
     switch (anchorType()) {
     case PositionIsOffsetInAnchor:
@@ -180,7 +220,8 @@ Text* Position::containerText() const
     return 0;
 }
 
-int Position::computeOffsetInContainerNode() const
+template <typename Strategy>
+int PositionAlgorithm<Strategy>::computeOffsetInContainerNode() const
 {
     if (!m_anchorNode)
         return 0;
@@ -193,53 +234,57 @@ int Position::computeOffsetInContainerNode() const
     case PositionIsOffsetInAnchor:
         return minOffsetForNode(m_anchorNode.get(), m_offset);
     case PositionIsBeforeAnchor:
-        return m_anchorNode->nodeIndex();
+        return Strategy::index(*m_anchorNode);
     case PositionIsAfterAnchor:
-        return m_anchorNode->nodeIndex() + 1;
+        return Strategy::index(*m_anchorNode) + 1;
     }
     ASSERT_NOT_REACHED();
     return 0;
 }
 
-int Position::offsetForPositionAfterAnchor() const
+template <typename Strategy>
+int PositionAlgorithm<Strategy>::offsetForPositionAfterAnchor() const
 {
     ASSERT(m_anchorType == PositionIsAfterAnchor || m_anchorType == PositionIsAfterChildren);
     ASSERT(!m_isLegacyEditingPosition);
-    return lastOffsetForEditing(m_anchorNode.get());
+    return Strategy::lastOffsetForEditing(m_anchorNode.get());
 }
 
 // Neighbor-anchored positions are invalid DOM positions, so they need to be
 // fixed up before handing them off to the Range object.
-Position Position::parentAnchoredEquivalent() const
+template <typename Strategy>
+typename Strategy::PositionType PositionAlgorithm<Strategy>::parentAnchoredEquivalent() const
 {
     if (!m_anchorNode)
-        return Position();
+        return PositionType();
 
     // FIXME: This should only be necessary for legacy positions, but is also needed for positions before and after Tables
     if (m_offset <= 0 && (m_anchorType != PositionIsAfterAnchor && m_anchorType != PositionIsAfterChildren)) {
-        if (m_anchorNode->parentNode() && (editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get())))
-            return positionInParentBeforeNode(*m_anchorNode);
-        return Position(m_anchorNode.get(), 0, PositionIsOffsetInAnchor);
+        if (Strategy::parent(*m_anchorNode) && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get())))
+            return inParentBeforeNode(*m_anchorNode);
+        return PositionType(m_anchorNode.get(), 0, PositionIsOffsetInAnchor);
     }
     if (!m_anchorNode->offsetInCharacters()
         && (m_anchorType == PositionIsAfterAnchor || m_anchorType == PositionIsAfterChildren || static_cast<unsigned>(m_offset) == m_anchorNode->countChildren())
-        && (editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get()))
+        && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get()))
         && containerNode()) {
-        return positionInParentAfterNode(*m_anchorNode);
+        return inParentAfterNode(*m_anchorNode);
     }
 
-    return Position(containerNode(), computeOffsetInContainerNode(), PositionIsOffsetInAnchor);
+    return PositionType(containerNode(), computeOffsetInContainerNode(), PositionIsOffsetInAnchor);
 }
 
-Position Position::toOffsetInAnchor() const
+template <typename Strategy>
+typename Strategy::PositionType PositionAlgorithm<Strategy>::toOffsetInAnchor() const
 {
     if (isNull())
-        return Position();
+        return PositionType();
 
-    return Position(containerNode(), computeOffsetInContainerNode(), Position::PositionIsOffsetInAnchor);
+    return PositionType(containerNode(), computeOffsetInContainerNode(), PositionIsOffsetInAnchor);
 }
 
-Node* Position::computeNodeBeforePosition() const
+template <typename Strategy>
+Node* PositionAlgorithm<Strategy>::computeNodeBeforePosition() const
 {
     if (!m_anchorNode)
         return 0;
@@ -247,11 +292,11 @@ Node* Position::computeNodeBeforePosition() const
     case PositionIsBeforeChildren:
         return 0;
     case PositionIsAfterChildren:
-        return m_anchorNode->lastChild();
+        return Strategy::lastChild(*m_anchorNode);
     case PositionIsOffsetInAnchor:
-        return m_offset ? NodeTraversal::childAt(*m_anchorNode, m_offset - 1) : 0;
+        return m_offset ? Strategy::childAt(*m_anchorNode, m_offset - 1) : 0;
     case PositionIsBeforeAnchor:
-        return m_anchorNode->previousSibling();
+        return Strategy::previousSibling(*m_anchorNode);
     case PositionIsAfterAnchor:
         return m_anchorNode.get();
     }
@@ -259,75 +304,90 @@ Node* Position::computeNodeBeforePosition() const
     return 0;
 }
 
-Node* Position::computeNodeAfterPosition() const
+template <typename Strategy>
+Node* PositionAlgorithm<Strategy>::computeNodeAfterPosition() const
 {
     if (!m_anchorNode)
         return 0;
 
     switch (anchorType()) {
     case PositionIsBeforeChildren:
-        return m_anchorNode->firstChild();
+        return Strategy::firstChild(*m_anchorNode);
     case PositionIsAfterChildren:
         return 0;
     case PositionIsOffsetInAnchor:
-        return NodeTraversal::childAt(*m_anchorNode, m_offset);
+        return Strategy::childAt(*m_anchorNode, m_offset);
     case PositionIsBeforeAnchor:
         return m_anchorNode.get();
     case PositionIsAfterAnchor:
-        return m_anchorNode->nextSibling();
+        return Strategy::nextSibling(*m_anchorNode);
     }
     ASSERT_NOT_REACHED();
     return 0;
 }
 
 // An implementation of |Range::firstNode()|.
-Node* Position::nodeAsRangeFirstNode() const
+template <typename Strategy>
+Node* PositionAlgorithm<Strategy>::nodeAsRangeFirstNode() const
 {
-    ASSERT(m_anchorType == PositionIsOffsetInAnchor);
     if (!m_anchorNode)
         return nullptr;
+    if (m_anchorType != PositionIsOffsetInAnchor)
+        return toOffsetInAnchor().nodeAsRangeFirstNode();
     if (m_anchorNode->offsetInCharacters())
         return m_anchorNode.get();
-    if (Node* child = NodeTraversal::childAt(*m_anchorNode, m_offset))
+    if (Node* child = Strategy::childAt(*m_anchorNode, m_offset))
         return child;
     if (!m_offset)
         return m_anchorNode.get();
-    return NodeTraversal::nextSkippingChildren(*m_anchorNode);
+    return Strategy::nextSkippingChildren(*m_anchorNode);
 }
 
 // An implementation of |Range::pastLastNode()|.
-Node* Position::nodeAsRangePastLastNode() const
+template <typename Strategy>
+Node* PositionAlgorithm<Strategy>::nodeAsRangePastLastNode() const
 {
-    ASSERT(m_anchorType == PositionIsOffsetInAnchor);
     if (!m_anchorNode)
         return nullptr;
+    if (m_anchorType != PositionIsOffsetInAnchor)
+        return toOffsetInAnchor().nodeAsRangePastLastNode();
     if (m_anchorNode->offsetInCharacters())
-        return NodeTraversal::nextSkippingChildren(*m_anchorNode);
-    if (Node* child = NodeTraversal::childAt(*m_anchorNode, m_offset))
+        return Strategy::nextSkippingChildren(*m_anchorNode);
+    if (Node* child = Strategy::childAt(*m_anchorNode, m_offset))
         return child;
-    return NodeTraversal::nextSkippingChildren(*m_anchorNode);
+    return Strategy::nextSkippingChildren(*m_anchorNode);
 }
 
-Position::AnchorType Position::anchorTypeForLegacyEditingPosition(Node* anchorNode, int offset)
+template <typename Strategy>
+Node* PositionAlgorithm<Strategy>::commonAncestorContainer(const PositionType& other) const
 {
-    if (anchorNode && editingIgnoresContent(anchorNode)) {
+    return Strategy::commonAncestor(*containerNode(), *other.containerNode());
+}
+
+template <typename Strategy>
+typename PositionAlgorithm<Strategy>::AnchorType PositionAlgorithm<Strategy>::anchorTypeForLegacyEditingPosition(Node* anchorNode, int offset)
+{
+    if (anchorNode && Strategy::editingIgnoresContent(anchorNode)) {
         if (offset == 0)
-            return Position::PositionIsBeforeAnchor;
-        return Position::PositionIsAfterAnchor;
+            return PositionIsBeforeAnchor;
+        return PositionIsAfterAnchor;
     }
-    return Position::PositionIsOffsetInAnchor;
+    return PositionIsOffsetInAnchor;
 }
 
 // FIXME: This method is confusing (does it return anchorNode() or containerNode()?) and should be renamed or removed
-Element* Position::element() const
+template <typename Strategy>
+Element* PositionAlgorithm<Strategy>::element() const
 {
     Node* node = anchorNode();
     if (!node || node->isElementNode())
         return toElement(node);
-    return node->parentElement();
+    ContainerNode* parent = Strategy::parent(*node);
+    return parent && parent->isElementNode() ? toElement(parent) : nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> Position::ensureComputedStyle() const
+template <typename Strategy>
+PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> PositionAlgorithm<Strategy>::ensureComputedStyle() const
 {
     Element* elem = element();
     if (!elem)
@@ -335,18 +395,24 @@ PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> Position::ensureComputedStyl
     return CSSComputedStyleDeclaration::create(elem);
 }
 
-Position Position::previous(PositionMoveType moveType) const
+int Position::compareTo(const Position& other) const
+{
+    return comparePositions(*this, other);
+}
+
+template <typename Strategy>
+typename Strategy::PositionType PositionAlgorithm<Strategy>::previous(PositionMoveType moveType) const
 {
     Node* node = deprecatedNode();
     if (!node)
-        return *this;
+        return PositionType(*this);
 
     int offset = deprecatedEditingOffset();
     // FIXME: Negative offsets shouldn't be allowed. We should catch this earlier.
     ASSERT(offset >= 0);
 
     if (offset > 0) {
-        if (Node* child = NodeTraversal::childAt(*node, offset - 1))
+        if (Node* child = Strategy::childAt(*node, offset - 1))
             return lastPositionInOrAfterNode(child);
 
         // There are two reasons child might be 0:
@@ -364,27 +430,28 @@ Position Position::previous(PositionMoveType moveType) const
         }
     }
 
-    if (ContainerNode* parent = node->parentNode())
+    if (ContainerNode* parent = Strategy::parent(*node))
         return createLegacyEditingPosition(parent, node->nodeIndex());
-    return *this;
+    return PositionType(*this);
 }
 
-Position Position::next(PositionMoveType moveType) const
+template <typename Strategy>
+typename Strategy::PositionType PositionAlgorithm<Strategy>::next(PositionMoveType moveType) const
 {
     ASSERT(moveType != BackwardDeletion);
 
     Node* node = deprecatedNode();
     if (!node)
-        return *this;
+        return PositionType(*this);
 
     int offset = deprecatedEditingOffset();
     // FIXME: Negative offsets shouldn't be allowed. We should catch this earlier.
     ASSERT(offset >= 0);
 
-    if (Node* child = NodeTraversal::childAt(*node, offset))
+    if (Node* child = Strategy::childAt(*node, offset))
         return firstPositionInOrBeforeNode(child);
 
-    if (!node->hasChildren() && offset < lastOffsetForEditing(node)) {
+    if (!Strategy::hasChildren(*node) && offset < lastOffsetForEditing(node)) {
         // There are two reasons child might be 0:
         //   1) The node is node like a text node that is not an element, and therefore has no children.
         //      Going forward one character at a time is correct.
@@ -393,27 +460,31 @@ Position Position::next(PositionMoveType moveType) const
         return createLegacyEditingPosition(node, (moveType == Character) ? uncheckedNextOffset(node, offset) : offset + 1);
     }
 
-    if (ContainerNode* parent = node->parentNode())
+    if (ContainerNode* parent = Strategy::parent(*node))
         return createLegacyEditingPosition(parent, node->nodeIndex() + 1);
-    return *this;
+    return PositionType(*this);
 }
 
-int Position::uncheckedPreviousOffset(const Node* n, int current)
+template <typename Strategy>
+int PositionAlgorithm<Strategy>::uncheckedPreviousOffset(const Node* n, int current)
 {
     return n->layoutObject() ? n->layoutObject()->previousOffset(current) : current - 1;
 }
 
-int Position::uncheckedPreviousOffsetForBackwardDeletion(const Node* n, int current)
+template <typename Strategy>
+int PositionAlgorithm<Strategy>::uncheckedPreviousOffsetForBackwardDeletion(const Node* n, int current)
 {
     return n->layoutObject() ? n->layoutObject()->previousOffsetForBackwardDeletion(current) : current - 1;
 }
 
-int Position::uncheckedNextOffset(const Node* n, int current)
+template <typename Strategy>
+int PositionAlgorithm<Strategy>::uncheckedNextOffset(const Node* n, int current)
 {
     return n->layoutObject() ? n->layoutObject()->nextOffset(current) : current + 1;
 }
 
-bool Position::atFirstEditingPositionForNode() const
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::atFirstEditingPositionForNode() const
 {
     if (isNull())
         return true;
@@ -433,7 +504,8 @@ bool Position::atFirstEditingPositionForNode() const
     return false;
 }
 
-bool Position::atLastEditingPositionForNode() const
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::atLastEditingPositionForNode() const
 {
     if (isNull())
         return true;
@@ -449,13 +521,14 @@ bool Position::atLastEditingPositionForNode() const
 //    is non editable.
 // 3. It is an editable position and both the next and previous visually equivalent
 //    positions are both non editable.
-bool Position::atEditingBoundary() const
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::atEditingBoundary() const
 {
-    Position nextPosition = downstream(CanCrossEditingBoundary);
+    PositionType nextPosition = downstream(CanCrossEditingBoundary);
     if (atFirstEditingPositionForNode() && nextPosition.isNotNull() && !nextPosition.deprecatedNode()->hasEditableStyle())
         return true;
 
-    Position prevPosition = upstream(CanCrossEditingBoundary);
+    PositionType prevPosition = upstream(CanCrossEditingBoundary);
     if (atLastEditingPositionForNode() && prevPosition.isNotNull() && !prevPosition.deprecatedNode()->hasEditableStyle())
         return true;
 
@@ -463,7 +536,15 @@ bool Position::atEditingBoundary() const
         && prevPosition.isNotNull() && !prevPosition.deprecatedNode()->hasEditableStyle();
 }
 
-Node* Position::parentEditingBoundary() const
+template <typename Strategy>
+static ContainerNode* nonShadowBoundaryParentNode(Node* node)
+{
+    ContainerNode* parent = Strategy::parent(*node);
+    return parent && !parent->isShadowRoot() ? parent : nullptr;
+}
+
+template <typename Strategy>
+Node* PositionAlgorithm<Strategy>::parentEditingBoundary() const
 {
     if (!m_anchorNode)
         return 0;
@@ -473,28 +554,31 @@ Node* Position::parentEditingBoundary() const
         return 0;
 
     Node* boundary = containerNode();
-    while (boundary != documentElement && boundary->nonShadowBoundaryParentNode() && m_anchorNode->hasEditableStyle() == boundary->parentNode()->hasEditableStyle())
-        boundary = boundary->nonShadowBoundaryParentNode();
+    while (boundary != documentElement && nonShadowBoundaryParentNode<Strategy>(boundary) && m_anchorNode->hasEditableStyle() == Strategy::parent(*boundary)->hasEditableStyle())
+        boundary = nonShadowBoundaryParentNode<Strategy>(boundary);
 
     return boundary;
 }
 
 
-bool Position::atStartOfTree() const
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::atStartOfTree() const
 {
     if (isNull())
         return true;
-    return !deprecatedNode()->parentNode() && m_offset <= 0;
+    return !Strategy::parent(*deprecatedNode()) && m_offset <= 0;
 }
 
-bool Position::atEndOfTree() const
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::atEndOfTree() const
 {
     if (isNull())
         return true;
-    return !deprecatedNode()->parentNode() && m_offset >= lastOffsetForEditing(deprecatedNode());
+    return !Strategy::parent(*deprecatedNode()) && m_offset >= lastOffsetForEditing(deprecatedNode());
 }
 
-int Position::renderedOffset() const
+template <typename Strategy>
+int PositionAlgorithm<Strategy>::renderedOffset() const
 {
     if (!deprecatedNode()->isTextNode())
         return m_offset;
@@ -543,17 +627,19 @@ static bool endsOfNodeAreVisuallyDistinctPositions(Node* node)
     return node->layoutObject()->isReplaced() && canHaveChildrenForEditing(node) && toLayoutBox(node->layoutObject())->size().height() != 0 && !node->hasChildren();
 }
 
+template <typename Strategy>
 static Node* enclosingVisualBoundary(Node* node)
 {
     while (node && !endsOfNodeAreVisuallyDistinctPositions(node))
-        node = node->parentNode();
+        node = Strategy::parent(*node);
 
     return node;
 }
 
 // upstream() and downstream() want to return positions that are either in a
 // text node or at just before a non-text node.  This method checks for that.
-static bool isStreamer(const PositionIterator& pos)
+template <typename Strategy>
+static bool isStreamer(const typename Strategy::PositionIteratorType& pos)
 {
     if (!pos.node())
         return true;
@@ -570,23 +656,23 @@ static bool isStreamer(const PositionIterator& pos)
 // and downstream() will return the right one.
 // Also, upstream() will return [boundary, 0] for any of the positions from [boundary, 0] to the first candidate
 // in boundary, where endsOfNodeAreVisuallyDistinctPositions(boundary) is true.
-Position Position::upstream(EditingBoundaryCrossingRule rule) const
+template <typename Strategy>
+typename Strategy::PositionType PositionAlgorithm<Strategy>::upstream(EditingBoundaryCrossingRule rule) const
 {
     Node* startNode = deprecatedNode();
     if (!startNode)
-        return Position();
+        return PositionType();
 
     // iterate backward from there, looking for a qualified position
-    Node* boundary = enclosingVisualBoundary(startNode);
+    Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    PositionIterator lastVisible = m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : *this;
-    PositionIterator currentPos = lastVisible;
+    typename Strategy::PositionIteratorType lastVisible(m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionType(*this));
+    typename Strategy::PositionIteratorType currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
     bool boundaryCrossed = false;
     for (; !currentPos.atStart(); currentPos.decrement()) {
         Node* currentNode = currentPos.node();
-
         // Don't check for an editability change if we haven't moved to a different node,
         // to avoid the expense of computing hasEditableStyle().
         if (currentNode != lastNode) {
@@ -616,7 +702,7 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
         }
 
         // track last visible streamer position
-        if (isStreamer(currentPos))
+        if (isStreamer<Strategy>(currentPos))
             lastVisible = currentPos;
 
         // Don't move past a position that is visually distinct.  We could rely on code above to terminate and
@@ -625,9 +711,9 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
             return lastVisible;
 
         // Return position after tables and nodes which have content that can be ignored.
-        if (editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
+        if (Strategy::editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
             if (currentPos.atEndOfNode())
-                return positionAfterNode(currentNode);
+                return afterNode(currentNode);
             continue;
         }
 
@@ -638,7 +724,7 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
                 // of a mix-up between offsets in the text in the DOM tree with text in the
                 // render tree which can have a different length due to case transformation.
                 // Until we resolve that, disable this so we can run the layout tests!
-                //ASSERT(currentOffset >= renderer->caretMaxOffset());
+                // ASSERT(currentOffset >= renderer->caretMaxOffset());
                 return createLegacyEditingPosition(currentNode, renderer->caretMaxOffset());
             }
 
@@ -682,7 +768,6 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
             }
         }
     }
-
     return lastVisible;
 }
 
@@ -693,23 +778,23 @@ Position Position::upstream(EditingBoundaryCrossingRule rule) const
 // Also, downstream() will return the last position in the last atomic node in boundary for all of the positions
 // in boundary after the last candidate, where endsOfNodeAreVisuallyDistinctPositions(boundary).
 // FIXME: This function should never be called when the line box tree is dirty. See https://bugs.webkit.org/show_bug.cgi?id=97264
-Position Position::downstream(EditingBoundaryCrossingRule rule) const
+template <typename Strategy>
+typename Strategy::PositionType PositionAlgorithm<Strategy>::downstream(EditingBoundaryCrossingRule rule) const
 {
     Node* startNode = deprecatedNode();
     if (!startNode)
-        return Position();
+        return PositionType();
 
     // iterate forward from there, looking for a qualified position
-    Node* boundary = enclosingVisualBoundary(startNode);
+    Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    PositionIterator lastVisible = m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : *this;
-    PositionIterator currentPos = lastVisible;
+    typename Strategy::PositionIteratorType lastVisible(m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionType(*this));
+    typename Strategy::PositionIteratorType currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
     bool boundaryCrossed = false;
     for (; !currentPos.atEnd(); currentPos.increment()) {
         Node* currentNode = currentPos.node();
-
         // Don't check for an editability change if we haven't moved to a different node,
         // to avoid the expense of computing hasEditableStyle().
         if (currentNode != lastNode) {
@@ -735,7 +820,7 @@ Position Position::downstream(EditingBoundaryCrossingRule rule) const
         // Do not move past a visually disinct position.
         // Note: The first position after the last in a node whose ends are visually distinct
         // positions will be [boundary->parentNode(), originalBlock->nodeIndex() + 1].
-        if (boundary && boundary->parentNode() == currentNode)
+        if (boundary && Strategy::parent(*boundary) == currentNode)
             return lastVisible;
 
         // skip position in unrendered or invisible node
@@ -749,11 +834,11 @@ Position Position::downstream(EditingBoundaryCrossingRule rule) const
         }
 
         // track last visible streamer position
-        if (isStreamer(currentPos))
+        if (isStreamer<Strategy>(currentPos))
             lastVisible = currentPos;
 
         // Return position before tables and nodes which have content that can be ignored.
-        if (editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
+        if (Strategy::editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
             if (currentPos.offsetInLeafNode() <= renderer->caretMinOffset())
                 return createLegacyEditingPosition(currentNode, renderer->caretMinOffset());
             continue;
@@ -815,7 +900,8 @@ static int boundingBoxLogicalHeight(LayoutObject *o, const IntRect &rect)
     return o->style()->isHorizontalWritingMode() ? rect.height() : rect.width();
 }
 
-bool Position::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* renderer)
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* renderer)
 {
     LayoutObject* stop = renderer->nextInPreOrderAfterChildren();
     for (LayoutObject *o = renderer->slowFirstChild(); o && o != stop; o = o->nextInPreOrder())
@@ -828,39 +914,43 @@ bool Position::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* render
     return false;
 }
 
-bool Position::nodeIsUserSelectNone(Node* node)
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::nodeIsUserSelectNone(Node* node)
 {
     return node && node->layoutObject() && !node->layoutObject()->isSelectable();
 }
 
-bool Position::nodeIsUserSelectAll(const Node* node)
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::nodeIsUserSelectAll(const Node* node)
 {
     return RuntimeEnabledFeatures::userSelectAllEnabled() && node && node->layoutObject() && node->layoutObject()->style()->userSelect() == SELECT_ALL;
 }
 
-Node* Position::rootUserSelectAllForNode(Node* node)
+template <typename Strategy>
+Node* PositionAlgorithm<Strategy>::rootUserSelectAllForNode(Node* node)
 {
     if (!node || !nodeIsUserSelectAll(node))
         return 0;
-    Node* parent = node->parentNode();
+    Node* parent = Strategy::parent(*node);
     if (!parent)
         return node;
 
     Node* candidateRoot = node;
     while (parent) {
         if (!parent->layoutObject()) {
-            parent = parent->parentNode();
+            parent = Strategy::parent(*parent);
             continue;
         }
         if (!nodeIsUserSelectAll(parent))
             break;
         candidateRoot = parent;
-        parent = candidateRoot->parentNode();
+        parent = Strategy::parent(*candidateRoot);
     }
     return candidateRoot;
 }
 
-bool Position::isCandidate() const
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::isCandidate() const
 {
     if (isNull())
         return false;
@@ -872,9 +962,10 @@ bool Position::isCandidate() const
     if (renderer->style()->visibility() != VISIBLE)
         return false;
 
-    if (renderer->isBR())
+    if (renderer->isBR()) {
         // FIXME: The condition should be m_anchorType == PositionIsBeforeAnchor, but for now we still need to support legacy positions.
-        return !m_offset && m_anchorType != PositionIsAfterAnchor && !nodeIsUserSelectNone(deprecatedNode()->parentNode());
+        return !m_offset && m_anchorType != PositionIsAfterAnchor && !nodeIsUserSelectNone(Strategy::parent(*deprecatedNode()));
+    }
 
     if (renderer->isText())
         return !nodeIsUserSelectNone(deprecatedNode()) && inRenderedText();
@@ -885,8 +976,8 @@ bool Position::isCandidate() const
         return false;
     }
 
-    if (isRenderedHTMLTableElement(deprecatedNode()) || editingIgnoresContent(deprecatedNode()))
-        return (atFirstEditingPositionForNode() || atLastEditingPositionForNode()) && !nodeIsUserSelectNone(deprecatedNode()->parentNode());
+    if (isRenderedHTMLTableElement(deprecatedNode()) || Strategy::editingIgnoresContent(deprecatedNode()))
+        return (atFirstEditingPositionForNode() || atLastEditingPositionForNode()) && !nodeIsUserSelectNone(Strategy::parent(*deprecatedNode()));
 
     if (isHTMLHtmlElement(*m_anchorNode))
         return false;
@@ -906,7 +997,8 @@ bool Position::isCandidate() const
     return false;
 }
 
-bool Position::inRenderedText() const
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::inRenderedText() const
 {
     if (isNull() || !deprecatedNode()->isTextNode())
         return false;
@@ -931,7 +1023,8 @@ bool Position::inRenderedText() const
     return false;
 }
 
-bool Position::isRenderedCharacter() const
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::isRenderedCharacter() const
 {
     if (isNull() || !deprecatedNode()->isTextNode())
         return false;
@@ -955,7 +1048,8 @@ bool Position::isRenderedCharacter() const
     return false;
 }
 
-bool Position::rendersInDifferentPosition(const Position &pos) const
+template <typename Strategy>
+bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionType &pos) const
 {
     if (isNull() || pos.isNull())
         return false;
@@ -1041,7 +1135,8 @@ bool Position::rendersInDifferentPosition(const Position &pos) const
     return true;
 }
 
-void Position::getInlineBoxAndOffset(EAffinity affinity, InlineBox*& inlineBox, int& caretOffset) const
+template <typename Strategy>
+void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, InlineBox*& inlineBox, int& caretOffset) const
 {
     getInlineBoxAndOffset(affinity, primaryDirection(), inlineBox, caretOffset);
 }
@@ -1082,9 +1177,10 @@ static InlineTextBox* searchAheadForBetterMatch(LayoutObject* renderer)
     return 0;
 }
 
-static Position downstreamIgnoringEditingBoundaries(Position position)
+template <typename PositionType>
+PositionType downstreamIgnoringEditingBoundaries(PositionType position)
 {
-    Position lastPosition;
+    PositionType lastPosition;
     while (position != lastPosition) {
         lastPosition = position;
         position = position.downstream(CanCrossEditingBoundary);
@@ -1092,9 +1188,10 @@ static Position downstreamIgnoringEditingBoundaries(Position position)
     return position;
 }
 
-static Position upstreamIgnoringEditingBoundaries(Position position)
+template <typename PositionType>
+PositionType upstreamIgnoringEditingBoundaries(PositionType position)
 {
-    Position lastPosition;
+    PositionType lastPosition;
     while (position != lastPosition) {
         lastPosition = position;
         position = position.upstream(CanCrossEditingBoundary);
@@ -1102,7 +1199,8 @@ static Position upstreamIgnoringEditingBoundaries(Position position)
     return position;
 }
 
-void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDirection, InlineBox*& inlineBox, int& caretOffset) const
+template <typename Strategy>
+void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDirection, InlineBox*& inlineBox, int& caretOffset) const
 {
     caretOffset = deprecatedEditingOffset();
     LayoutObject* renderer = deprecatedNode()->layoutObject();
@@ -1113,10 +1211,11 @@ void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDi
             // Try a visually equivalent position with possibly opposite editability. This helps in case |this| is in
             // an editable block but surrounded by non-editable positions. It acts to negate the logic at the beginning
             // of LayoutObject::createVisiblePosition().
-            Position equivalent = downstreamIgnoringEditingBoundaries(*this);
-            if (equivalent == *this) {
-                equivalent = upstreamIgnoringEditingBoundaries(*this);
-                if (equivalent == *this || downstreamIgnoringEditingBoundaries(equivalent) == *this)
+            PositionType thisPosition = PositionType(*this);
+            PositionType equivalent = downstreamIgnoringEditingBoundaries<typename Strategy::PositionType>(thisPosition);
+            if (equivalent == thisPosition) {
+                equivalent = upstreamIgnoringEditingBoundaries(thisPosition);
+                if (equivalent == thisPosition || downstreamIgnoringEditingBoundaries<typename Strategy::PositionType>(equivalent) == thisPosition)
                     return;
             }
 
@@ -1258,7 +1357,8 @@ void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDi
     }
 }
 
-TextDirection Position::primaryDirection() const
+template <typename Strategy>
+TextDirection PositionAlgorithm<Strategy>::primaryDirection() const
 {
     TextDirection primaryDirection = LTR;
     for (const LayoutObject* r = m_anchorNode->layoutObject(); r; r = r->parent()) {
@@ -1276,7 +1376,8 @@ DEFINE_TRACE(Position)
     visitor->trace(m_anchorNode);
 }
 
-void Position::debugPosition(const char* msg) const
+template <typename Strategy>
+void PositionAlgorithm<Strategy>::debugPosition(const char* msg) const
 {
     static const char* const anchorTypes[] = {
         "OffsetInAnchor",
@@ -1303,7 +1404,8 @@ void Position::debugPosition(const char* msg) const
 
 #ifndef NDEBUG
 
-void Position::formatForDebugger(char* buffer, unsigned length) const
+template <typename Strategy>
+void PositionAlgorithm<Strategy>::formatForDebugger(char* buffer, unsigned length) const
 {
     StringBuilder result;
 
@@ -1321,7 +1423,8 @@ void Position::formatForDebugger(char* buffer, unsigned length) const
     strncpy(buffer, result.toString().utf8().data(), length - 1);
 }
 
-void Position::showAnchorTypeAndOffset() const
+template <typename Strategy>
+void PositionAlgorithm<Strategy>::showAnchorTypeAndOffset() const
 {
     if (m_isLegacyEditingPosition)
         fputs("legacy, ", stderr);
@@ -1345,7 +1448,8 @@ void Position::showAnchorTypeAndOffset() const
     fprintf(stderr, ", offset:%d\n", m_offset);
 }
 
-void Position::showTreeForThis() const
+template <typename Strategy>
+void PositionAlgorithm<Strategy>::showTreeForThis() const
 {
     if (anchorNode()) {
         anchorNode()->showTreeForThis();
@@ -1355,7 +1459,7 @@ void Position::showTreeForThis() const
 
 #endif
 
-
+template class CORE_EXPORT PositionAlgorithm<EditingStrategy>;
 
 } // namespace blink
 
