@@ -161,8 +161,15 @@ weston_launch_LDADD = $(PAM_LIBS) $(SYSTEMD_LOGIN_LIBS) $(LIBDRM_LIBS)
 
 if ENABLE_SETUID_INSTALL
 install-exec-hook:
-	chown root $(DESTDIR)$(bindir)/weston-launch
-	chmod u+s $(DESTDIR)$(bindir)/weston-launch
+	can_suid_files=no; \
+	chown root $(DESTDIR)$(bindir)/weston-launch \
+		&& chmod u+s $(DESTDIR)$(bindir)/weston-launch \
+		&& can_suid_files=yes;\
+	if test $$can_suid_files=no; then \
+		echo 'Error: unable to unable to change ownership/setuid on weston-launch.'; \
+		echo 'To skip this step, re-run ./configure using --disable-setuid-install'; \
+		false; \
+	fi
 endif
 
 endif # BUILD_WESTON_LAUNCH
