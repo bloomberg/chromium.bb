@@ -32,6 +32,15 @@ message SampledProfile {
 
     // The profile was collected upon restoring a previous session.
     RESTORE_SESSION = 3;
+    
+    // The profile was collected at process startup.
+    PROCESS_STARTUP = 4;
+
+    // The profile was collected after jank was detected while executing a task.
+    JANKY_TASK = 5;
+
+    // The profile was collected after a thread was determined to be hung.
+    THREAD_HUNG = 6;
   }
   optional TriggerEvent trigger_event = 1;
 

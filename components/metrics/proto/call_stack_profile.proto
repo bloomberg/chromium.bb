@@ -40,7 +40,7 @@ message CallStackProfile {
     //   Contents of the .note.gnu.build-id field.
     // On Windows:
     //   GUID + AGE in the debug image headers of a module.
-    optional bytes build_id = 1;
+    optional string build_id = 1;
 
     // MD5Sum Prefix of the module name. This is the same hashing scheme as used
     // to hash UMA histogram names.

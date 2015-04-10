@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <objbase.h>
 #include <windows.h>
 
 #include <map>
@@ -9,6 +10,9 @@
 
 #include "base/logging.h"
 #include "base/profiler/native_stack_sampler.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
@@ -86,6 +90,34 @@ void FreeModuleHandles(int stack_depth, HMODULE module_handles[]) {
     if (module_handles[i])
       ::FreeLibrary(module_handles[i]);
   }
+}
+
+// Gets the unique build ID for a module. Windows build IDs are created by a
+// concatenation of a GUID and AGE fields found in the headers of a module. The
+// GUID is stored in the first 16 bytes and the AGE is stored in the last 4
+// bytes. Returns the empty string if the function fails to get the build ID.
+//
+// Example:
+// dumpbin chrome.exe /headers | find "Format:"
+//   ... Format: RSDS, {16B2A428-1DED-442E-9A36-FCE8CBD29726}, 10, ...
+//
+// The resulting buildID string of this instance of chrome.exe is
+// "16B2A4281DED442E9A36FCE8CBD2972610".
+//
+// Note that the AGE field is encoded in decimal, not hex.
+std::string GetBuildIDForModule(HMODULE module_handle) {
+  GUID guid;
+  DWORD age;
+  win::PEImage(module_handle).GetDebugId(&guid, &age);
+  const int kGUIDSize = 39;
+  std::wstring build_id;
+  int result =
+      ::StringFromGUID2(guid, WriteInto(&build_id, kGUIDSize), kGUIDSize);
+  if (result != kGUIDSize)
+    return std::string();
+  RemoveChars(build_id, L"{}-", &build_id);
+  build_id += StringPrintf(L"%d", age);
+  return WideToUTF8(build_id);
 }
 
 // Disables priority boost on a thread for the lifetime of the object.
@@ -253,11 +285,9 @@ bool NativeStackSamplerWin::GetModuleForHandle(
 
   module->base_address = reinterpret_cast<const void*>(module_handle);
 
-  GUID guid;
-  DWORD age;
-  win::PEImage(module_handle).GetDebugId(&guid, &age);
-  module->id.assign(reinterpret_cast<char*>(&guid), sizeof(guid));
-  module->id.append(reinterpret_cast<char*>(&age), sizeof(age));
+  module->id = GetBuildIDForModule(module_handle);
+  if (module->id.empty())
+    return false;
 
   return true;
 }

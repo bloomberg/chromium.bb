@@ -110,9 +110,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Record time from process startup to present time in an UMA histogram.
   void RecordBrowserStartupTime();
 
-  // Create parameters for sampling stacks during startup.
-  static base::StackSamplingProfiler::SamplingParams GetStartupSamplingParams();
-
   // Methods for Main Message Loop -------------------------------------------
 
   int PreCreateThreadsImpl();

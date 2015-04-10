@@ -169,15 +169,15 @@ void CaptureProfilesWithDefaultCallback(const SamplingParams& params,
 // per-object callback.
 void RunProfilerWithNoCallback(const SamplingParams& params,
                                TimeDelta profiler_wait_time) {
-  WithTargetThread(
-      [&params, profiler_wait_time](PlatformThreadId target_thread_id) {
-        StackSamplingProfiler profiler(target_thread_id, params);
-        profiler.Start();
-        // Since we don't specify a callback, we don't have a synchronization
-        // mechanism with the sampling thread. Just sleep instead.
-        PlatformThread::Sleep(profiler_wait_time);
-        profiler.Stop();
-      });
+  WithTargetThread([&params, profiler_wait_time](
+      PlatformThreadId target_thread_id) {
+    StackSamplingProfiler profiler(target_thread_id, params);
+    profiler.Start();
+    // Since we don't specify a callback, we don't have a synchronization
+    // mechanism with the sampling thread. Just sleep instead.
+    PlatformThread::Sleep(profiler_wait_time);
+    profiler.Stop();
+  });
 }
 
 // If this executable was linked with /INCREMENTAL (the default for non-official
@@ -254,6 +254,8 @@ TEST(StackSamplingProfilerTest, MAYBE_Basic) {
   SamplingParams params;
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_burst = 1;
+  params.user_data = 100;
+  params.preserve_sample_ordering = true;
 
   std::vector<CallStackProfile> profiles;
   CaptureProfilesWithObjectCallback(params, &profiles, AVeryLongTimeDelta());
@@ -269,6 +271,8 @@ TEST(StackSamplingProfilerTest, MAYBE_Basic) {
     ASSERT_GE(frame.module_index, 0u);
     ASSERT_LT(frame.module_index, profile.modules.size());
   }
+  EXPECT_EQ(100u, profile.user_data);
+  EXPECT_EQ(true, profile.preserve_sample_ordering);
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled() and that the frame has this

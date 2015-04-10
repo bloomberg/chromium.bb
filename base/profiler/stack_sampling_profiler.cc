@@ -106,6 +106,7 @@ void DefaultProfileProcessor::GetAndClearPendingProfiles(
   AutoLock scoped_lock(profiles_lock_);
   profiles_.swap(*profiles);
 }
+
 DefaultProfileProcessor::CompletedCallback
 DefaultProfileProcessor::GetCompletedCallback() const {
   AutoLock scoped_lock(callback_lock_);
@@ -136,7 +137,7 @@ StackSamplingProfiler::Frame::~Frame() {}
 // StackSamplingProfiler::CallStackProfile ------------------------------------
 
 StackSamplingProfiler::CallStackProfile::CallStackProfile()
-    : preserve_sample_ordering(false) {}
+    : preserve_sample_ordering(false), user_data(0) {}
 
 StackSamplingProfiler::CallStackProfile::~CallStackProfile() {}
 
@@ -197,6 +198,8 @@ bool StackSamplingProfiler::SamplingThread::CollectProfile(
 
   *elapsed_time = profile_timer.Elapsed();
   current_profile.profile_duration = *elapsed_time;
+  current_profile.preserve_sample_ordering = params_.preserve_sample_ordering;
+  current_profile.user_data = params_.user_data;
   native_sampler_->ProfileRecordingStopped();
 
   if (burst_completed)
@@ -243,7 +246,8 @@ StackSamplingProfiler::SamplingParams::SamplingParams()
       burst_interval(TimeDelta::FromMilliseconds(10000)),
       samples_per_burst(300),
       sampling_interval(TimeDelta::FromMilliseconds(100)),
-      preserve_sample_ordering(false) {
+      preserve_sample_ordering(false),
+      user_data(0) {
 }
 
 StackSamplingProfiler::StackSamplingProfiler(PlatformThreadId thread_id,

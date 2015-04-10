@@ -22,6 +22,14 @@ class ChromeUserMetricsExtension;
 // Performs metrics logging for the stack sampling profiler.
 class CallStackProfileMetricsProvider : public MetricsProvider {
  public:
+  // The event that triggered the profile collection.
+  enum Trigger {
+    UNKNOWN,
+    PROCESS_STARTUP,
+    JANKY_TASK,
+    THREAD_HUNG
+  };
+
   CallStackProfileMetricsProvider();
   ~CallStackProfileMetricsProvider() override;
 

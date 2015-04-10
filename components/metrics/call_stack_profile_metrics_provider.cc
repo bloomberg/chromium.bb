@@ -114,6 +114,28 @@ void CopyProfileToProto(
       profile.sampling_period.InMilliseconds());
 }
 
+// Translates CallStackProfileMetricsProvider's trigger to the corresponding
+// SampledProfile TriggerEvent.
+SampledProfile::TriggerEvent ToSampledProfileTriggerEvent(
+    CallStackProfileMetricsProvider::Trigger trigger) {
+  switch (trigger) {
+    case CallStackProfileMetricsProvider::UNKNOWN:
+      return SampledProfile::UNKNOWN_TRIGGER_EVENT;
+      break;
+    case CallStackProfileMetricsProvider::PROCESS_STARTUP:
+      return SampledProfile::PROCESS_STARTUP;
+      break;
+    case CallStackProfileMetricsProvider::JANKY_TASK:
+      return SampledProfile::JANKY_TASK;
+      break;
+    case CallStackProfileMetricsProvider::THREAD_HUNG:
+      return SampledProfile::THREAD_HUNG;
+      break;
+  }
+  NOTREACHED();
+  return SampledProfile::UNKNOWN_TRIGGER_EVENT;
+}
+
 }  // namespace
 
 const char CallStackProfileMetricsProvider::kFieldTrialName[] =
@@ -148,9 +170,11 @@ void CallStackProfileMetricsProvider::ProvideGeneralMetrics(
   DCHECK(IsSamplingProfilingReportingEnabled() || pending_profiles_.empty());
   for (const StackSamplingProfiler::CallStackProfile& profile :
        pending_profiles_) {
-    CallStackProfile* call_stack_profile =
-        uma_proto->add_sampled_profile()->mutable_call_stack_profile();
-    CopyProfileToProto(profile, call_stack_profile);
+    SampledProfile* sampled_profile = uma_proto->add_sampled_profile();
+    sampled_profile->set_trigger_event(ToSampledProfileTriggerEvent(
+        static_cast<CallStackProfileMetricsProvider::Trigger>(
+            profile.user_data)));
+    CopyProfileToProto(profile, sampled_profile->mutable_call_stack_profile());
   }
   pending_profiles_.clear();
 }

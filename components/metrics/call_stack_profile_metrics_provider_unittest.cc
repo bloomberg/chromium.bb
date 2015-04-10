@@ -187,6 +187,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
     profile.profile_duration = profile_durations[i];
     profile.sampling_period = profile_sampling_periods[i];
     profile.preserve_sample_ordering = false;
+    profile.user_data = CallStackProfileMetricsProvider::PROCESS_STARTUP;
 
     profiles.push_back(profile);
   }
@@ -251,6 +252,8 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
     ASSERT_TRUE(call_stack_profile.has_sampling_period_ms());
     EXPECT_EQ(profile_sampling_periods[i].InMilliseconds(),
               call_stack_profile.sampling_period_ms());
+    ASSERT_TRUE(sampled_profile.has_trigger_event());
+    EXPECT_EQ(SampledProfile::PROCESS_STARTUP, sampled_profile.trigger_event());
   }
 }
 

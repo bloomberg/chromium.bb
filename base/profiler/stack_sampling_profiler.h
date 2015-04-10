@@ -124,6 +124,9 @@ class BASE_EXPORT StackSamplingProfiler {
     // True if sample ordering is important and should be preserved if and when
     // this profile is compressed and processed.
     bool preserve_sample_ordering;
+
+    // User data associated with this profile.
+    uintptr_t user_data;
   };
 
   using CallStackProfiles = std::vector<CallStackProfile>;
@@ -153,6 +156,9 @@ class BASE_EXPORT StackSamplingProfiler {
     // True if sample ordering is important and should be preserved if and when
     // this profile is compressed and processed. Defaults to false.
     bool preserve_sample_ordering;
+
+    // User data associated with this profile.
+    uintptr_t user_data;
   };
 
   // The callback type used to collect completed profiles.

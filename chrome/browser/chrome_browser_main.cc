@@ -108,6 +108,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
+#include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -549,6 +550,18 @@ class LoadCompleteListener : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(LoadCompleteListener);
 };
 
+base::StackSamplingProfiler::SamplingParams GetStartupSamplingParams() {
+  // Sample at 10Hz for 30 seconds.
+  base::StackSamplingProfiler::SamplingParams params;
+  params.initial_delay = base::TimeDelta::FromMilliseconds(0);
+  params.bursts = 1;
+  params.samples_per_burst = 300;
+  params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
+  params.preserve_sample_ordering = false;
+  params.user_data = metrics::CallStackProfileMetricsProvider::PROCESS_STARTUP;
+  return params;
+}
+
 }  // namespace
 
 namespace chrome_browser {
@@ -724,19 +737,6 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
 
   // Deletes self.
   new LoadCompleteListener();
-}
-
-// static
-base::StackSamplingProfiler::SamplingParams
-ChromeBrowserMainParts::GetStartupSamplingParams() {
-  // Sample at 10Hz for 30 seconds.
-  base::StackSamplingProfiler::SamplingParams params;
-  params.initial_delay = base::TimeDelta::FromMilliseconds(0);
-  params.bursts = 1;
-  params.samples_per_burst = 300;
-  params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
-  params.preserve_sample_ordering = false;
-  return params;
 }
 
 // -----------------------------------------------------------------------------
