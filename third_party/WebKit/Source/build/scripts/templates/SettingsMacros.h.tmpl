@@ -9,6 +9,7 @@
     {{setting.type|to_passing_type}} {{setting.name}}() const { return m_{{setting.name}}; } \
     void set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}}); \
     {% endfor %}
+    void setFromStrings(const String& name, const String& value);
 // End of SETTINGS_GETTERS_AND_SETTERS.
 
 #define SETTINGS_MEMBER_VARIABLES \
@@ -41,6 +42,29 @@ void Settings::set{{setting.name|upper_first}}({{setting.type|to_passing_type}} 
     {% endif  %}
 } \
 {% endfor %}
+void Settings::setFromStrings(const String& name, const String& value) \
+{ \
+    {% for setting in settings %}
+    if (equalIgnoringCase(name, "{{setting.name}}")) { \
+        set{{setting.name|upper_first}}( \
+            {% if setting.type == 'String' %}
+            value \
+            {% elif setting.type == 'bool' %}
+            value.isEmpty() || equalIgnoringCase(value, "true") \
+            {% elif setting.type == 'int' %}
+            value.toInt() \
+            {% elif setting.type == 'float' %}
+            value.toFloat() \
+            {% elif setting.type == 'double' %}
+            value.toDouble() \
+            {% else %}
+            static_cast<{{setting.type}}>(value.toInt()) \
+            {% endif %}
+        ); \
+        return; \
+    } \
+    {% endfor %}
+}
 // End of SETTINGS_SETTER_BODIES.
 
 #endif // SettingsMacros_h

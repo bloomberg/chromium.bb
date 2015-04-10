@@ -93,6 +93,11 @@ public:
         HoverTypeHover = 1 << 2
     };
 
+    // Sets value of a setting by its string identifier from Settings.in and
+    // string representation of value. An enum's string representation is the
+    // string representation of the integer value of the enum.
+    virtual void setFromStrings(const WebString& name, const WebString& value) = 0;
+
     virtual bool mainFrameResizesAreOrientationChanges() const = 0;
     virtual int availablePointerTypes() const = 0;
     virtual PointerType primaryPointerType() const = 0;

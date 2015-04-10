@@ -43,6 +43,8 @@ public:
     WebSettingsImpl(Settings*, DevToolsEmulator*);
     virtual ~WebSettingsImpl() { }
 
+    virtual void setFromStrings(const WebString& name, const WebString& value) override;
+
     virtual bool mainFrameResizesAreOrientationChanges() const override;
     virtual bool shrinksViewportContentToFit() const override;
     virtual int availablePointerTypes() const override;

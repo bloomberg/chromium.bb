@@ -59,6 +59,11 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, DevToolsEmulator* devToolsE
     ASSERT(settings);
 }
 
+void WebSettingsImpl::setFromStrings(const WebString& name, const WebString& value)
+{
+    m_settings->setFromStrings(name, value);
+}
+
 void WebSettingsImpl::setStandardFontFamily(const WebString& font, UScriptCode script)
 {
     if (m_settings->genericFontFamilySettings().updateStandard(font, script))
