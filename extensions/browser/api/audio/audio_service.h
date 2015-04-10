@@ -18,6 +18,8 @@ namespace extensions {
 using OutputInfo = std::vector<linked_ptr<core_api::audio::OutputDeviceInfo>>;
 using InputInfo = std::vector<linked_ptr<core_api::audio::InputDeviceInfo>>;
 using DeviceIdList = std::vector<std::string>;
+using DeviceInfoList =
+    std::vector<linked_ptr<core_api::audio::AudioDeviceInfo>>;
 
 class AudioService {
  public:
@@ -26,11 +28,15 @@ class AudioService {
     // Called when anything changes to the audio device configuration.
     virtual void OnDeviceChanged() = 0;
 
-    // Called when the sound level of an active audio node changes.
+    // Called when the sound level of an active audio device changes.
     virtual void OnLevelChanged(const std::string& id, int level) = 0;
 
     // Called when the mute state of audio input/output changes.
     virtual void OnMuteChanged(bool is_input, bool is_muted) = 0;
+
+    // Called when the audio devices change, either new devices being added, or
+    // existing devices being removed.
+    virtual void OnDevicesChanged(const DeviceInfoList&) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -53,14 +59,14 @@ class AudioService {
   // The |callback| will be invoked once the query is completed.
   virtual void StartGetInfo(const GetInfoCallback& callback) = 0;
 
-  // Sets the active nodes to the nodes specified by |device_list|.
-  // It can pass in the "complete" active node list of either input
-  // nodes, or output nodes, or both. If only input nodes are passed in,
-  // it will only change the input nodes' active status, output nodes will NOT
-  // be changed; similarly for the case if only output nodes are passed.
-  // If the nodes specified in |new_active_ids| are already active, they will
-  // remain active. Otherwise, the old active nodes will be de-activated before
-  // we activate the new nodes with the same type(input/output).
+  // Sets the active devices to the devices specified by |device_list|.
+  // It can pass in the "complete" active device list of either input
+  // devices, or output devices, or both. If only input devices are passed in,
+  // it will only change the input devices' active status, output devices will
+  // NOT be changed; similarly for the case if only output devices are passed.
+  // If the devices specified in |new_active_ids| are already active, they will
+  // remain active. Otherwise, the old active devices will be de-activated
+  // before we activate the new devices with the same type(input/output).
   virtual void SetActiveDevices(const DeviceIdList& device_list) = 0;
 
   // Set the muted and volume/gain properties of a device.

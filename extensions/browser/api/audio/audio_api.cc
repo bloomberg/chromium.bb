@@ -64,6 +64,15 @@ void AudioAPI::OnMuteChanged(bool is_input, bool is_muted) {
   }
 }
 
+void AudioAPI::OnDevicesChanged(const DeviceInfoList& devices) {
+  if (EventRouter::Get(browser_context_)) {
+    scoped_ptr<base::ListValue> args = audio::OnDevicesChanged::Create(devices);
+    scoped_ptr<Event> event(
+        new Event(audio::OnDevicesChanged::kEventName, args.Pass()));
+    EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 bool AudioGetInfoFunction::RunAsync() {

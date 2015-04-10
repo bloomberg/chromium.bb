@@ -27,6 +27,7 @@ class AudioAPI : public BrowserContextKeyedAPI, public AudioService::Observer {
   void OnDeviceChanged() override;
   void OnLevelChanged(const std::string& id, int level) override;
   void OnMuteChanged(bool is_input, bool is_muted) override;
+  void OnDevicesChanged(const DeviceInfoList& devices) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<AudioAPI>;

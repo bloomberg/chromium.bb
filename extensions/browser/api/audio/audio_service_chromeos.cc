@@ -17,6 +17,7 @@ namespace extensions {
 
 using core_api::audio::OutputDeviceInfo;
 using core_api::audio::InputDeviceInfo;
+using core_api::audio::AudioDeviceInfo;
 
 class AudioServiceImpl : public AudioService,
                          public chromeos::CrasAudioHandler::AudioObserver {
@@ -50,6 +51,7 @@ class AudioServiceImpl : public AudioService,
   void NotifyDeviceChanged();
   void NotifyLevelChanged(uint64_t id, int level);
   void NotifyMuteChanged(bool is_input, bool is_muted);
+  void NotifyDevicesChanged();
 
   bool FindDevice(uint64_t id, chromeos::AudioDevice* device);
   uint64_t GetIdFromStr(const std::string& id_str);
@@ -210,7 +212,7 @@ void AudioServiceImpl::OnInputMuteChanged(bool mute_on) {
 }
 
 void AudioServiceImpl::OnAudioNodesChanged() {
-  NotifyDeviceChanged();
+  NotifyDevicesChanged();
 }
 
 void AudioServiceImpl::OnActiveOutputNodeChanged() {
@@ -237,6 +239,44 @@ void AudioServiceImpl::NotifyLevelChanged(uint64_t id, int level) {
 void AudioServiceImpl::NotifyMuteChanged(bool is_input, bool is_muted) {
   FOR_EACH_OBSERVER(AudioService::Observer, observer_list_,
                     OnMuteChanged(is_input, is_muted));
+
+  // Notify DeviceChanged event for backward compatibility.
+  // TODO(jennyz): remove this code when the old version of hotrod retires.
+  NotifyDeviceChanged();
+}
+
+void AudioServiceImpl::NotifyDevicesChanged() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(cras_audio_handler_);
+
+  DeviceInfoList devices_info_list;
+  chromeos::AudioDeviceList devices;
+  cras_audio_handler_->GetAudioDevices(&devices);
+  for (size_t i = 0; i < devices.size(); ++i) {
+    linked_ptr<AudioDeviceInfo> info(new AudioDeviceInfo());
+    info->id = base::Uint64ToString(devices[i].id);
+    info->is_input = devices[i].is_input;
+    info->device_type = chromeos::AudioDevice::GetTypeString(devices[i].type);
+    info->display_name = devices[i].display_name;
+    info->device_name = devices[i].device_name;
+    info->is_active = devices[i].active;
+    info->is_muted =
+        devices[i].is_input
+            ? cras_audio_handler_->IsInputMutedForDevice(devices[i].id)
+            : cras_audio_handler_->IsOutputMutedForDevice(devices[i].id);
+    info->level =
+        devices[i].is_input
+            ? cras_audio_handler_->GetOutputVolumePercentForDevice(
+                  devices[i].id)
+            : cras_audio_handler_->GetInputGainPercentForDevice(devices[i].id);
+    // TODO(jennyz): Set stable_device_id once it is implemented.
+    // See crbug.com/466768.
+
+    devices_info_list.push_back(info);
+  }
+
+  FOR_EACH_OBSERVER(AudioService::Observer, observer_list_,
+                    OnDevicesChanged(devices_info_list));
 
   // Notify DeviceChanged event for backward compatibility.
   // TODO(jennyz): remove this code when the old version of hotrod retires.

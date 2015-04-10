@@ -1,0 +1,13 @@
+{
+  "name": "chrome.audio.OnNodesChangedAddNodes",
+  "version": "1.0",
+  "description": "browser test for chrome.audio.OnNodesChanged event",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "audio"
+  ]
+}

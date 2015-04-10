@@ -67,26 +67,33 @@ const AudioNode kUSBCameraMic(true,
 
 class AudioApiTest : public ShellApiTest {
  public:
-  AudioApiTest() : cras_audio_handler_(NULL) {}
+  AudioApiTest() : cras_audio_handler_(NULL), fake_cras_audio_client_(NULL) {}
   ~AudioApiTest() override {}
 
   void SetUpCrasAudioHandlerWithTestingNodes(const AudioNodeList& audio_nodes) {
     chromeos::DBusThreadManager* dbus_manager =
         chromeos::DBusThreadManager::Get();
     DCHECK(dbus_manager);
-    chromeos::FakeCrasAudioClient* fake_cras_audio_client =
-        static_cast<chromeos::FakeCrasAudioClient*>(
-            dbus_manager->GetCrasAudioClient());
-    fake_cras_audio_client->SetAudioNodesAndNotifyObserversForTesting(
+    fake_cras_audio_client_ = static_cast<chromeos::FakeCrasAudioClient*>(
+        dbus_manager->GetCrasAudioClient());
+    fake_cras_audio_client_->SetAudioNodesAndNotifyObserversForTesting(
         audio_nodes);
     cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
     DCHECK(cras_audio_handler_);
     message_loop_.RunUntilIdle();
   }
 
+  void ChangeAudioNodes(const AudioNodeList& audio_nodes) {
+    DCHECK(fake_cras_audio_client_);
+    fake_cras_audio_client_->SetAudioNodesAndNotifyObserversForTesting(
+        audio_nodes);
+    message_loop_.RunUntilIdle();
+  }
+
  protected:
   base::MessageLoopForUI message_loop_;
   chromeos::CrasAudioHandler* cras_audio_handler_;  // Not owned.
+  chromeos::FakeCrasAudioClient* fake_cras_audio_client_;  // Not owned.
 };
 
 IN_PROC_BROWSER_TEST_F(AudioApiTest, Audio) {
@@ -196,6 +203,67 @@ IN_PROC_BROWSER_TEST_F(AudioApiTest, OnInputMuteChanged) {
 
   // Verify the background app got the OnMuteChanged event
   // with the expected input muted state.
+  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
+  EXPECT_EQ("success", result_listener.message());
+}
+
+IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedAddNodes) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kJabraSpeaker1);
+  audio_nodes.push_back(kJabraSpeaker2);
+  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+  const size_t init_device_size = audio_nodes.size();
+
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(init_device_size, audio_devices.size());
+
+  // Load background app.
+  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener result_listener("success", false);
+  result_listener.set_failure_message("failure");
+  ASSERT_TRUE(LoadApp("api_test/audio/add_nodes"));
+  ASSERT_TRUE(load_listener.WaitUntilSatisfied());
+
+  // Plug in HDMI output.
+  audio_nodes.push_back(kHDMIOutput);
+  ChangeAudioNodes(audio_nodes);
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(init_device_size + 1, audio_devices.size());
+
+  // Verify the background app got the OnNodesChanged event
+  // with the new node added.
+  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
+  EXPECT_EQ("success", result_listener.message());
+}
+
+IN_PROC_BROWSER_TEST_F(AudioApiTest, OnNodesChangedRemoveNodes) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kJabraMic1);
+  audio_nodes.push_back(kJabraMic2);
+  audio_nodes.push_back(kUSBCameraMic);
+  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+  const size_t init_device_size = audio_nodes.size();
+
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(init_device_size, audio_devices.size());
+
+  // Load background app.
+  ExtensionTestMessageListener load_listener("loaded", false);
+  ExtensionTestMessageListener result_listener("success", false);
+  result_listener.set_failure_message("failure");
+  ASSERT_TRUE(LoadApp("api_test/audio/remove_nodes"));
+  ASSERT_TRUE(load_listener.WaitUntilSatisfied());
+
+  // Remove camera mic.
+  audio_nodes.erase(audio_nodes.begin() + init_device_size - 1);
+  ChangeAudioNodes(audio_nodes);
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(init_device_size - 1, audio_devices.size());
+
+  // Verify the background app got the onNodesChanged event
+  // with the last node removed.
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
 }
