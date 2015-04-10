@@ -246,7 +246,7 @@ private:
             return true;
 
         if (LIKELY(m_v8Object->IsInt32())) {
-            setString(int32ToWebCoreString(m_v8Object->Int32Value()));
+            setString(int32ToWebCoreString(m_v8Object.As<v8::Int32>()->Value()));
             return true;
         }
 

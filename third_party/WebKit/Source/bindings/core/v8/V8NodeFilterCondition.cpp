@@ -102,7 +102,12 @@ short V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exceptionSta
 
     ASSERT(!result.IsEmpty());
 
-    return result->Int32Value();
+    int32_t int32Value;
+    if (!v8Call(result->Int32Value(m_scriptState->context()), int32Value, exceptionCatcher)) {
+        exceptionState.rethrowV8Exception(exceptionCatcher.Exception());
+        return NodeFilter::FILTER_REJECT;
+    }
+    return int32Value;
 }
 
 void V8NodeFilterCondition::setWeakCallback(const v8::WeakCallbackInfo<V8NodeFilterCondition>& data)

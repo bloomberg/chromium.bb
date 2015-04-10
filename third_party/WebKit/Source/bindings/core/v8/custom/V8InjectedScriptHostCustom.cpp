@@ -435,7 +435,7 @@ void V8InjectedScriptHost::setFunctionVariableValueMethodCustom(const v8::Functi
         return;
 
     v8::Local<v8::Value> functionValue = info[0];
-    int scopeIndex = info[1]->Int32Value();
+    int scopeIndex = info[1].As<v8::Int32>()->Value();
     String variableName = toCoreStringWithUndefinedOrNullCheck(info[2]);
     v8::Local<v8::Value> newValue = info[3];
 

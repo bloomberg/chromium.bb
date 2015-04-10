@@ -4282,16 +4282,16 @@ protected:
         blink::Node* layerOwnerNodeForStart = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(0));
         ASSERT_TRUE(layerOwnerNodeForStart);
         EXPECT_EQ(layerOwnerNodeForStart->layoutObject()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectStart->layerId);
-        EXPECT_EQ(expectedResult.Get(1)->Int32Value(), selectStart->edgeTopInLayer.x);
-        EXPECT_EQ(expectedResult.Get(2)->Int32Value(), selectStart->edgeTopInLayer.y);
-        EXPECT_EQ(expectedResult.Get(3)->Int32Value(), selectStart->edgeBottomInLayer.x);
+        EXPECT_EQ(expectedResult.Get(1).As<v8::Int32>()->Value(), selectStart->edgeTopInLayer.x);
+        EXPECT_EQ(expectedResult.Get(2).As<v8::Int32>()->Value(), selectStart->edgeTopInLayer.y);
+        EXPECT_EQ(expectedResult.Get(3).As<v8::Int32>()->Value(), selectStart->edgeBottomInLayer.x);
 
         blink::Node* layerOwnerNodeForEnd = blink::V8Node::toImplWithTypeCheck(v8::Isolate::GetCurrent(), expectedResult.Get(5));
         ASSERT_TRUE(layerOwnerNodeForEnd);
         EXPECT_EQ(layerOwnerNodeForEnd->layoutObject()->enclosingLayer()->enclosingLayerForPaintInvalidation()->graphicsLayerBacking()->platformLayer()->id(), selectEnd->layerId);
-        EXPECT_EQ(expectedResult.Get(6)->Int32Value(), selectEnd->edgeTopInLayer.x);
-        EXPECT_EQ(expectedResult.Get(7)->Int32Value(), selectEnd->edgeTopInLayer.y);
-        EXPECT_EQ(expectedResult.Get(8)->Int32Value(), selectEnd->edgeBottomInLayer.x);
+        EXPECT_EQ(expectedResult.Get(6).As<v8::Int32>()->Value(), selectEnd->edgeTopInLayer.x);
+        EXPECT_EQ(expectedResult.Get(7).As<v8::Int32>()->Value(), selectEnd->edgeTopInLayer.y);
+        EXPECT_EQ(expectedResult.Get(8).As<v8::Int32>()->Value(), selectEnd->edgeBottomInLayer.x);
 
         // Platform differences can introduce small stylistic deviations in
         // y-axis positioning, the details of which aren't relevant to

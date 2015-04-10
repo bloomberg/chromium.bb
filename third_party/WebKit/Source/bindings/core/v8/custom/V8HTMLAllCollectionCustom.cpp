@@ -80,7 +80,7 @@ static v8::Local<v8::Value> getItem(HTMLAllCollection* collection, v8::Local<v8:
         return result;
     }
 
-    RefPtrWillBeRawPtr<Element> result = collection->item(index->Uint32Value());
+    RefPtrWillBeRawPtr<Element> result = collection->item(index->Value());
     return toV8(result.release(), info.Holder(), info.GetIsolate());
 }
 
@@ -111,7 +111,7 @@ void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Va
     if (!info[1]->ToArrayIndex(info.GetIsolate()->GetCurrentContext()).ToLocal(&index))
         return;
 
-    if (Node* node = impl->namedItemWithIndex(name, index->Uint32Value())) {
+    if (Node* node = impl->namedItemWithIndex(name, index->Value())) {
         v8SetReturnValueFast(info, node, impl);
         return;
     }

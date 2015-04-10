@@ -502,7 +502,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::se
             bool hasStringProperty = propertyName->IsString() && v8CallBoolean(composite()->HasRealNamedProperty(serializer.context(), propertyName.As<v8::String>()));
             if (StateBase* newState = serializer.checkException(this))
                 return newState;
-            bool hasIndexedProperty = !hasStringProperty && propertyName->IsUint32() && v8CallBoolean(composite()->HasRealIndexedProperty(serializer.context(), propertyName->Uint32Value()));
+            bool hasIndexedProperty = !hasStringProperty && propertyName->IsUint32() && v8CallBoolean(composite()->HasRealIndexedProperty(serializer.context(), propertyName.As<v8::Uint32>()->Value()));
             if (StateBase* newState = serializer.checkException(this))
                 return newState;
             if (hasStringProperty || (hasIndexedProperty && !ignoreIndexed)) {
@@ -673,9 +673,9 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
     } else if (value->IsFalse()) {
         m_writer.writeFalse();
     } else if (value->IsInt32()) {
-        m_writer.writeInt32(value->Int32Value());
+        m_writer.writeInt32(value.As<v8::Int32>()->Value());
     } else if (value->IsUint32()) {
-        m_writer.writeUint32(value->Uint32Value());
+        m_writer.writeUint32(value.As<v8::Uint32>()->Value());
     } else if (value->IsNumber()) {
         m_writer.writeNumber(value.As<v8::Number>()->Value());
     } else if (V8ArrayBufferView::hasInstance(value, isolate())) {
