@@ -9,11 +9,17 @@
 <link rel="stylesheet" href="resources/selector-line.css" />
 <script src="../../inspector-test.js"></script>
 <script src="../../elements-test.js"></script>
+<script src="../../debugger-test.js"></script>
 <script>
 
 function test()
 {
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    InspectorTest.waitForScriptSource("selector-line.scss", onSourceMapLoaded);
+
+    function onSourceMapLoaded()
+    {
+        InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    }
 
     function step1()
     {
