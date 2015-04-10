@@ -186,9 +186,13 @@ class HttpStreamFactoryImpl::Job {
   void SetSocketMotivation();
 
   bool IsHttpsProxyAndHttpUrl() const;
+
   // Returns true iff this Job is an alternate, that is, iff MarkAsAlternate has
   // been called.
   bool IsAlternate() const;
+
+  // Returns true if this Job is a SPDY alternate job.
+  bool IsSpdyAlternate() const;
 
   // Sets several fields of |ssl_config| for |server| based on the proxy info
   // and other factors.
@@ -271,12 +275,6 @@ class HttpStreamFactoryImpl::Job {
 
   // AlternateProtocol for this job if this is an alternate job.
   AlternativeService alternative_service_;
-
-  // The URL to be used for proxy resolution and socket pools. If the alternate
-  // service is SPDY, the URL will containg the host:port from
-  // |alternate_service_| and "https://" scheme. Otherwise, this will be the
-  // same as |origin_url_|.
-  GURL alternative_service_url_;
 
   // AlternateProtocol for the other job if this is not an alternate job.
   AlternativeService other_job_alternative_service_;

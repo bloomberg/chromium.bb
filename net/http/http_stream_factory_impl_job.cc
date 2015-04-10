@@ -44,15 +44,16 @@
 namespace net {
 
 // Returns parameters associated with the start of a HTTP stream job.
-base::Value* NetLogHttpStreamJobCallback(const GURL* original_url,
-                                         const GURL* url,
-                                         const GURL* alternate_url,
-                                         RequestPriority priority,
-                                         NetLog::LogLevel /* log_level */) {
+base::Value* NetLogHttpStreamJobCallback(
+    const GURL* original_url,
+    const GURL* url,
+    const AlternativeService* alternative_service,
+    RequestPriority priority,
+    NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("original_url", original_url->GetOrigin().spec());
   dict->SetString("url", url->GetOrigin().spec());
-  dict->SetString("alternate_service_url", alternate_url->GetOrigin().spec());
+  dict->SetString("alternative_service", alternative_service->ToString());
   dict->SetString("priority", RequestPriorityToString(priority));
   return dict;
 }
@@ -287,8 +288,8 @@ bool HttpStreamFactoryImpl::Job::CanUseExistingSpdySession() const {
   // https://crbug.com/133176
   // TODO(ricea): Add "wss" back to this list when SPDY WebSocket support is
   // working.
-  return alternative_service_url_.SchemeIs("https") ||
-         proxy_info_.proxy_server().is_https();
+  return origin_url_.SchemeIs("https") ||
+         proxy_info_.proxy_server().is_https() || IsSpdyAlternate();
 }
 
 void HttpStreamFactoryImpl::Job::OnStreamReadyCallback() {
@@ -622,31 +623,11 @@ int HttpStreamFactoryImpl::Job::DoStart() {
   }
   origin_url_ =
       stream_factory_->ApplyHostMappingRules(request_info_.url, &server_);
-  alternative_service_url_ = origin_url_;
-  // For SPDY via Alt-Svc, set |alternative_service_url_| to
-  // https://<alternative host>:<alternative port>/...
-  // so the proxy resolution works with the actual destination, and so
-  // that the correct socket pool is used.
-  if (alternative_service_.protocol >= NPN_SPDY_MINIMUM_VERSION &&
-      alternative_service_.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
-    // TODO(rch):  Figure out how to make QUIC iteract with PAC
-    // scripts.  By not re-writing the URL, we will query the PAC script
-    // for the proxy to use to reach the original URL via TCP.  But
-    // the alternate request will be going via UDP to a different port.
-    GURL::Replacements replacements;
-    // new_port needs to be in scope here because GURL::Replacements references
-    // the memory contained by it directly.
-    const std::string new_port = base::IntToString(alternative_service_.port);
-    replacements.SetSchemeStr("https");
-    replacements.SetPortStr(new_port);
-    alternative_service_url_ =
-        alternative_service_url_.ReplaceComponents(replacements);
-  }
 
   net_log_.BeginEvent(
       NetLog::TYPE_HTTP_STREAM_JOB,
       base::Bind(&NetLogHttpStreamJobCallback, &request_info_.url, &origin_url_,
-                 &alternative_service_url_, priority_));
+                 &alternative_service_, priority_));
 
   // Don't connect to restricted ports.
   bool is_port_allowed = IsPortAllowedByDefault(server_.port());
@@ -679,9 +660,29 @@ int HttpStreamFactoryImpl::Job::DoResolveProxy() {
     return OK;
   }
 
+  // TODO(rch): remove this code since Alt-Svc seems to prohibit it.
+  GURL url_for_proxy = origin_url_;
+  // For SPDY via Alt-Svc, set |alternative_service_url_| to
+  // https://<alternative host>:<alternative port>/...
+  // so the proxy resolution works with the actual destination, and so
+  // that the correct socket pool is used.
+  if (IsSpdyAlternate()) {
+    // TODO(rch):  Figure out how to make QUIC iteract with PAC
+    // scripts.  By not re-writing the URL, we will query the PAC script
+    // for the proxy to use to reach the original URL via TCP.  But
+    // the alternate request will be going via UDP to a different port.
+    GURL::Replacements replacements;
+    // new_port needs to be in scope here because GURL::Replacements references
+    // the memory contained by it directly.
+    const std::string new_port = base::IntToString(alternative_service_.port);
+    replacements.SetSchemeStr("https");
+    replacements.SetPortStr(new_port);
+    url_for_proxy = url_for_proxy.ReplaceComponents(replacements);
+  }
+
   return session_->proxy_service()->ResolveProxy(
-      alternative_service_url_, request_info_.load_flags, &proxy_info_,
-      io_callback_, &pac_request_, session_->network_delegate(), net_log_);
+      url_for_proxy, request_info_.load_flags, &proxy_info_, io_callback_,
+      &pac_request_, session_->network_delegate(), net_log_);
 }
 
 int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
@@ -755,8 +756,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   DCHECK(proxy_info_.proxy_server().is_valid());
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
-  using_ssl_ = alternative_service_url_.SchemeIs("https") ||
-               alternative_service_url_.SchemeIs("wss");
+  using_ssl_ = origin_url_.SchemeIs("https") || origin_url_.SchemeIs("wss") ||
+               IsSpdyAlternate();
   using_spdy_ = false;
 
   if (ShouldForceQuic())
@@ -1233,6 +1234,11 @@ bool HttpStreamFactoryImpl::Job::IsAlternate() const {
   return alternative_service_.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL;
 }
 
+bool HttpStreamFactoryImpl::Job::IsSpdyAlternate() const {
+  return alternative_service_.protocol >= NPN_SPDY_MINIMUM_VERSION &&
+         alternative_service_.protocol <= NPN_SPDY_MAXIMUM_VERSION;
+}
+
 void HttpStreamFactoryImpl::Job::InitSSLConfig(const HostPortPair& server,
                                                SSLConfig* ssl_config,
                                                bool is_proxy) const {
@@ -1471,12 +1477,12 @@ void HttpStreamFactoryImpl::Job::MaybeMarkAlternativeServiceBroken() {
 
 ClientSocketPoolManager::SocketGroupType
 HttpStreamFactoryImpl::Job::GetSocketGroup() const {
-  std::string scheme = alternative_service_url_.scheme();
+  std::string scheme = origin_url_.scheme();
+  if (scheme == "https" || scheme == "wss" || IsSpdyAlternate())
+    return ClientSocketPoolManager::SSL_GROUP;
+
   if (scheme == "ftp")
     return ClientSocketPoolManager::FTP_GROUP;
-
-  if (scheme == "https" || scheme == "wss")
-    return ClientSocketPoolManager::SSL_GROUP;
 
   return ClientSocketPoolManager::NORMAL_GROUP;
 }
