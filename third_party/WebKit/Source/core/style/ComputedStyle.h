@@ -829,6 +829,7 @@ public:
     EPageBreak columnBreakInside() const { return static_cast<EPageBreak>(rareNonInheritedData->m_multiCol->m_breakInside); }
     EPageBreak columnBreakAfter() const { return static_cast<EPageBreak>(rareNonInheritedData->m_multiCol->m_breakAfter); }
     bool hasInlineTransform() const { return rareNonInheritedData->m_hasInlineTransform; }
+    bool hasCompositorProxy() const { return rareNonInheritedData->m_hasCompositorProxy; }
     const TransformOperations& transform() const { return rareNonInheritedData->m_transform->m_operations; }
     const TransformOrigin& transformOrigin() const { return rareNonInheritedData->m_transform->m_origin; }
     const Length& transformOriginX() const { return transformOrigin().x(); }
@@ -1293,6 +1294,7 @@ public:
     void setColumnBreakAfter(EPageBreak p) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_breakAfter, p); }
     void inheritColumnPropertiesFrom(const ComputedStyle& parent) { rareNonInheritedData.access()->m_multiCol = parent.rareNonInheritedData->m_multiCol; }
     void setHasInlineTransform(bool b) { SET_VAR(rareNonInheritedData, m_hasInlineTransform, b); }
+    void setHasCompositorProxy(bool b) { SET_VAR(rareNonInheritedData, m_hasCompositorProxy, b); }
     void setTransform(const TransformOperations& ops) { SET_VAR(rareNonInheritedData.access()->m_transform, m_operations, ops); }
     void setTransformOriginX(const Length& v) { setTransformOrigin(TransformOrigin(v, transformOriginY(), transformOriginZ())); }
     void setTransformOriginY(const Length& v) { setTransformOrigin(TransformOrigin(transformOriginX(), v, transformOriginZ())); }

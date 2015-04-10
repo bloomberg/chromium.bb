@@ -88,6 +88,8 @@ const uint64_t CompositingReasonLayerForScrollingBlockSelection          = UINT6
 // we can update their transforms quickly.
 const uint64_t CompositingReasonInlineTransform                          = UINT64_C(1) << 59;
 
+const uint64_t CompositingReasonCompositorProxy                          = UINT64_C(1) << 60;
+
 // Various combinations of compositing reasons are defined here also, for more intutive and faster bitwise logic.
 const uint64_t CompositingReasonComboAllDirectReasons =
     CompositingReason3DTransform
@@ -104,7 +106,8 @@ const uint64_t CompositingReasonComboAllDirectReasons =
     | CompositingReasonOutOfFlowClipping
     | CompositingReasonVideoOverlay
     | CompositingReasonWillChangeCompositingHint
-    | CompositingReasonScrollBlocksOn;
+    | CompositingReasonScrollBlocksOn
+    | CompositingReasonCompositorProxy;
 
 const uint64_t CompositingReasonComboAllDirectStyleDeterminedReasons =
     CompositingReason3DTransform
@@ -112,7 +115,8 @@ const uint64_t CompositingReasonComboAllDirectStyleDeterminedReasons =
     | CompositingReasonActiveAnimation
     | CompositingReasonTransitionProperty
     | CompositingReasonWillChangeCompositingHint
-    | CompositingReasonScrollBlocksOn;
+    | CompositingReasonScrollBlocksOn
+    | CompositingReasonCompositorProxy;
 
 const uint64_t CompositingReasonComboCompositedDescendants =
     CompositingReasonTransformWithCompositedDescendants

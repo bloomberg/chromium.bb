@@ -112,7 +112,7 @@ DeprecatedPaintLayerType LayoutBox::layerTypeRequired() const
     // hasAutoZIndex only returns true if the element is positioned or a flex-item since
     // position:static elements that are not flex-items get their z-index coerced to auto.
     if (isPositioned() || createsGroup() || hasClipPath() || hasTransformRelatedProperty()
-        || hasHiddenBackface() || hasReflection() || style()->specifiesColumns()
+        || style()->hasCompositorProxy() || hasHiddenBackface() || hasReflection() || style()->specifiesColumns()
         || !style()->hasAutoZIndex() || style()->shouldCompositeForCurrentAnimations())
         return NormalDeprecatedPaintLayer;
 

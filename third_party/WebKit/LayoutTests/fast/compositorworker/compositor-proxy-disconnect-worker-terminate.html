@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<div id="container"></div>
+<script src="../../fast/workers/resources/worker-util.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+
+var test = async_test(function() {
+    assert_not_equals('undefined', typeof window.internals);
+    var worker = new CompositorWorker('resources/proxy-idle.js');
+    worker.onmessage = function() {
+        var docLayer = JSON.parse(window.internals.layerTreeAsText(document));
+        assert_equals(1, docLayer.children.length);
+        assert_equals(1, docLayer.children[0].children.length);
+
+        worker.terminate();
+
+        // Give some time for the worker to terminate.
+        waitUntilWorkerThreadsExit(function() {
+            docLayer = JSON.parse(window.internals.layerTreeAsText(document));
+            assert_equals(1, docLayer.children.length);
+            assert_equals('undefined', typeof docLayer.children[0].children);
+            test.done();
+        });
+    }
+
+    var proxy = new CompositorProxy(document.getElementById('container'), ['opacity']);
+    worker.postMessage(proxy);
+
+    var container = document.getElementById('container');
+    var docLayer = JSON.parse(window.internals.layerTreeAsText(document));
+    assert_equals(1, docLayer.children.length);
+    assert_equals(1, docLayer.children[0].children.length);
+    proxy.disconnect();
+}, "This test checks that an element's compositor proxy cannot be mutated after disconnect().");
+
+</script>

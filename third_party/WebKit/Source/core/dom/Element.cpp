@@ -951,12 +951,14 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
 
 void Element::incrementProxyCount()
 {
-    ensureElementRareData().incrementProxyCount();
+    if (ensureElementRareData().incrementProxyCount() == 1)
+        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::CompositorProxy));
 }
 
 void Element::decrementProxyCount()
 {
-    ensureElementRareData().decrementProxyCount();
+    if (ensureElementRareData().decrementProxyCount() == 0)
+        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::CompositorProxy));
 }
 
 IntRect Element::boundsInViewportSpace()
@@ -1650,6 +1652,9 @@ PassRefPtr<ComputedStyle> Element::styleForLayoutObject()
         if (const StylePropertySet* inlineStyle = this->inlineStyle())
             style->setHasInlineTransform(inlineStyle->hasProperty(CSSPropertyTransform) || inlineStyle->hasProperty(CSSPropertyWebkitTransform));
     }
+
+    if (hasRareData() && elementRareData()->proxyCount() > 0)
+        style->setHasCompositorProxy(true);
 
     document().didRecalculateStyleForElement();
     return style.release();

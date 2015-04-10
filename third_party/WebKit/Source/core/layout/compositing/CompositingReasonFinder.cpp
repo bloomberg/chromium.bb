@@ -110,6 +110,9 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
     if (style.hasScrollBlocksOn() && !renderer->isDocumentElement())
         reasons |= CompositingReasonScrollBlocksOn;
 
+    if (style.hasCompositorProxy())
+        reasons |= CompositingReasonCompositorProxy;
+
     // If the implementation of createsGroup changes, we need to be aware of that in this part of code.
     ASSERT((renderer->isTransparent() || renderer->hasMask() || renderer->hasFilter() || style.hasBlendMode()) == renderer->createsGroup());
 

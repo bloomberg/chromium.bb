@@ -110,7 +110,7 @@ private:
 
     virtual DeprecatedPaintLayerType layerTypeRequired() const override
     {
-        if (hasTransformRelatedProperty() || hasHiddenBackface() || hasClipPath() || createsGroup() || style()->shouldCompositeForCurrentAnimations())
+        if (hasTransformRelatedProperty() || hasHiddenBackface() || hasClipPath() || createsGroup() || style()->shouldCompositeForCurrentAnimations() || style()->hasCompositorProxy())
             return NormalDeprecatedPaintLayer;
 
         if (hasOverflowClip())
