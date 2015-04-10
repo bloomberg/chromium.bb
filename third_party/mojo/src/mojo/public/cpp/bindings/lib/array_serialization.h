@@ -45,16 +45,11 @@ inline void Deserialize_(internal::Array_Data<F>* data, Array<E>* output);
 
 namespace internal {
 
-template <typename E,
-          typename F,
-          bool move_only = IsMoveOnlyType<E>::value,
-          bool is_union =
-              IsUnionDataType<typename RemovePointer<F>::type>::value>
+template <typename E, typename F, bool move_only = IsMoveOnlyType<E>::value>
 struct ArraySerializer;
 
-// Handles serialization and deserialization of arrays of pod types.
 template <typename E, typename F>
-struct ArraySerializer<E, F, false, false> {
+struct ArraySerializer<E, F, false> {
   static_assert(sizeof(E) == sizeof(F), "Incorrect array serializer");
   static size_t GetSerializedSize(const Array<E>& input) {
     return sizeof(Array_Data<F>) + Align(input.size() * sizeof(E));
@@ -79,9 +74,8 @@ struct ArraySerializer<E, F, false, false> {
   }
 };
 
-// Serializes and deserializes arrays of bools.
 template <>
-struct ArraySerializer<bool, bool, false, false> {
+struct ArraySerializer<bool, bool, false> {
   static size_t GetSerializedSize(const Array<bool>& input) {
     return sizeof(Array_Data<bool>) + Align((input.size() + 7) / 8);
   }
@@ -108,9 +102,8 @@ struct ArraySerializer<bool, bool, false, false> {
   }
 };
 
-// Serializes and deserializes arrays of handles.
 template <typename H>
-struct ArraySerializer<ScopedHandleBase<H>, H, true, false> {
+struct ArraySerializer<ScopedHandleBase<H>, H, true> {
   static size_t GetSerializedSize(const Array<ScopedHandleBase<H>>& input) {
     return sizeof(Array_Data<H>) + Align(input.size() * sizeof(H));
   }
@@ -144,17 +137,17 @@ struct ArraySerializer<ScopedHandleBase<H>, H, true, false> {
 // This template must only apply to pointer mojo entity (structs and arrays).
 // This is done by ensuring that WrapperTraits<S>::DataType is a pointer.
 template <typename S>
-struct ArraySerializer<
-    S,
-    typename EnableIf<IsPointer<typename WrapperTraits<S>::DataType>::value,
-                      typename WrapperTraits<S>::DataType>::type,
-    true,
-    false> {
-  typedef
-      typename RemovePointer<typename WrapperTraits<S>::DataType>::type S_Data;
+struct ArraySerializer<S,
+                       typename internal::EnableIf<
+                           internal::IsPointer<typename internal::WrapperTraits<
+                               S>::DataType>::value,
+                           typename internal::WrapperTraits<S>::DataType>::type,
+                       true> {
+  typedef typename internal::RemovePointer<
+      typename internal::WrapperTraits<S>::DataType>::type S_Data;
   static size_t GetSerializedSize(const Array<S>& input) {
     size_t size = sizeof(Array_Data<S_Data*>) +
-                  input.size() * sizeof(StructPointer<S_Data>);
+                  input.size() * sizeof(internal::StructPointer<S_Data>);
     for (size_t i = 0; i < input.size(); ++i)
       size += GetSerializedSize_(input[i]);
     return size;
@@ -179,7 +172,9 @@ struct ArraySerializer<
                                   Array<S>* output) {
     Array<S> result(input->size());
     for (size_t i = 0; i < input->size(); ++i) {
-      Deserialize_(input->at(i), &result[i]);
+      S element;
+      Deserialize_(input->at(i), &element);
+      result[i] = element.Pass();
     }
     output->Swap(&result);
   }
@@ -189,7 +184,7 @@ struct ArraySerializer<
   struct SerializeCaller {
     static void Run(T input,
                     Buffer* buf,
-                    typename WrapperTraits<T>::DataType* output) {
+                    typename internal::WrapperTraits<T>::DataType* output) {
       static_assert((IsSame<Params, NoValidateParams>::value),
                     "Struct type should not have array validate params");
 
@@ -216,49 +211,11 @@ struct ArraySerializer<
   };
 };
 
-// Handles serialization and deserialization of arrays of unions.
-template <typename U, typename U_Data>
-struct ArraySerializer<U, U_Data, true, true> {
-  static size_t GetSerializedSize(const Array<U>& input) {
-    size_t size = sizeof(Array_Data<U_Data>);
-    for (size_t i = 0; i < input.size(); ++i) {
-      // GetSerializedSize_ will account for both the data in the union and the
-      // space in the array used to hold the union.
-      size += GetSerializedSize_(input[i], false);
-    }
-    return size;
-  }
-
-  template <bool element_is_nullable, typename ElementValidateParams>
-  static void SerializeElements(Array<U> input,
-                                Buffer* buf,
-                                Array_Data<U_Data>* output) {
-    for (size_t i = 0; i < input.size(); ++i) {
-      U_Data* result = output->storage() + i;
-      SerializeUnion_(input[i].Pass(), buf, &result, true);
-      MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-          !element_is_nullable && output->at(i).is_null(),
-          VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
-          MakeMessageWithArrayIndex("null in array expecting valid unions",
-                                    input.size(), i));
-    }
-  }
-
-  static void DeserializeElements(Array_Data<U_Data>* input, Array<U>* output) {
-    Array<U> result(input->size());
-    for (size_t i = 0; i < input->size(); ++i) {
-      Deserialize_(&input->at(i), &result[i]);
-    }
-    output->Swap(&result);
-  }
-};
-
-// Handles serialization and deserialization of arrays of strings.
 template <>
 struct ArraySerializer<String, String_Data*, false> {
   static size_t GetSerializedSize(const Array<String>& input) {
-    size_t size =
-        sizeof(Array_Data<String_Data*>) + input.size() * sizeof(StringPointer);
+    size_t size = sizeof(Array_Data<String_Data*>) +
+                  input.size() * sizeof(internal::StringPointer);
     for (size_t i = 0; i < input.size(); ++i)
       size += GetSerializedSize_(input[i]);
     return size;

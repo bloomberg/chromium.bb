@@ -43,10 +43,6 @@ class ProviderImpl : public sample::Provider {
     callback.Run(a);
   }
 
-  void EchoInt(int32_t a, const EchoIntCallback& callback) override {
-    callback.Run(a);
-  }
-
   Binding<sample::Provider> binding_;
 };
 

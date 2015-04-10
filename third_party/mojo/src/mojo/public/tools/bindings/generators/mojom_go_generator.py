@@ -263,8 +263,6 @@ def GetImports(module):
   if len(all_structs) > 0 or len(module.interfaces) > 0:
     _imports['fmt'] = 'fmt'
     _imports['mojo/public/go/bindings'] = 'bindings'
-  if len(module.interfaces) > 0:
-    _imports['mojo/public/go/system'] = 'system'
   if len(all_structs) > 0:
     _imports['sort'] = 'sort'
 

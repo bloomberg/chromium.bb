@@ -100,9 +100,7 @@ struct IsBaseOf {
 };
 
 template <class T>
-struct RemovePointer {
-  typedef T type;
-};
+struct RemovePointer {};
 template <class T>
 struct RemovePointer<T*> {
   typedef T type;

@@ -4,22 +4,10 @@
 
 class {{class_name}} {
  public:
-  // Used to identify Mojom Union Data Classes.
-  typedef void MojomUnionDataType;
   static {{class_name}}* New(mojo::internal::Buffer* buf);
-  {{class_name}}();
-  // Do nothing in the destructor since it won't be called.
-  ~{{class_name}}() {}
 
   static bool Validate(const void* data,
-                       mojo::internal::BoundsChecker* bounds_checker,
-                       bool inlined);
-
-  bool is_null() const {
-    return size == 0;
-  }
-
-  void set_null();
+                       mojo::internal::BoundsChecker* bounds_checker);
 
   enum class {{enum_name}} : uint32_t {
 {%  for field in union.fields %}
@@ -45,12 +33,16 @@ class {{class_name}} {
     uint64_t unknown;
   };
 
-  uint32_t size;
+  uint32_t reserved;
   {{enum_name}} tag;
   Union_ data;
 
   void EncodePointersAndHandles(std::vector<mojo::Handle>* handles);
   void DecodePointersAndHandles(std::vector<mojo::Handle>* handles);
+ 
+ private:
+  {{class_name}}();
+  ~{{class_name}}() = delete;
 };
 static_assert(sizeof({{class_name}}) == 16,
               "Bad sizeof({{class_name}})");

@@ -9,6 +9,4 @@ mojom("interfaces") {
   sources = [
     "geometry.mojom",
   ]
-
-  import_from = mojo_root
 }

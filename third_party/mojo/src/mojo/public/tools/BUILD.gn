@@ -35,25 +35,15 @@ if (mojo_use_prebuilt_network_service) {
 
   copy("copy_network_service_apptests") {
     filename = "network_service_apptests.mojo"
-    if (defined(mojo_prebuilt_network_service_apptests_location) &&
-        mojo_prebuilt_network_service_apptests_location != "") {
+    if (is_android) {
       sources = [
-        "$mojo_prebuilt_network_service_apptests_location",
+        "prebuilt/network_service_apptests/android-arm/$filename",
       ]
     } else {
-      if (is_android) {
-        assert(
-            cpu_arch == "arm",
-            "Only arm version prebuilt netowrk_service_apptests.mojo is available.")
-        sources = [
-          "prebuilt/network_service_apptests/android-arm/$filename",
-        ]
-      } else {
-        assert(is_linux)
-        sources = [
-          "prebuilt/network_service_apptests/linux-x64/$filename",
-        ]
-      }
+      assert(is_linux)
+      sources = [
+        "prebuilt/network_service_apptests/linux-x64/$filename",
+      ]
     }
     outputs = [
       "$root_out_dir/$filename",
