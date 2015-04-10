@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Note: This file also tests app_child_process.*.
+// Note: This file also tests child_process.*.
 
-#include "mojo/shell/app_child_process_host.h"
+#include "mojo/shell/child_process_host.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -18,20 +18,19 @@ namespace shell {
 namespace {
 
 // Subclass just so we can observe |DidStart()|.
-class TestAppChildProcessHost : public AppChildProcessHost {
+class TestChildProcessHost : public ChildProcessHost {
  public:
-  explicit TestAppChildProcessHost(Context* context)
-      : AppChildProcessHost(context) {}
-  ~TestAppChildProcessHost() override {}
+  explicit TestChildProcessHost(Context* context) : ChildProcessHost(context) {}
+  ~TestChildProcessHost() override {}
 
   void DidStart(bool success) override {
     EXPECT_TRUE(success);
-    AppChildProcessHost::DidStart(success);
+    ChildProcessHost::DidStart(success);
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestAppChildProcessHost);
+  DISALLOW_COPY_AND_ASSIGN(TestChildProcessHost);
 };
 
 #if defined(OS_ANDROID)
@@ -42,16 +41,16 @@ class TestAppChildProcessHost : public AppChildProcessHost {
 #endif  // defined(OS_ANDROID)
 // Just tests starting the child process and joining it (without starting an
 // app).
-TEST(AppChildProcessHostTest, MAYBE_StartJoin) {
+TEST(ChildProcessHostTest, MAYBE_StartJoin) {
   Context context;
   base::MessageLoop message_loop(
       scoped_ptr<base::MessagePump>(new common::MessagePumpMojo()));
   context.Init();
-  TestAppChildProcessHost app_child_process_host(&context);
-  app_child_process_host.Start();
+  TestChildProcessHost child_process_host(&context);
+  child_process_host.Start();
   message_loop.Run();
-  app_child_process_host.ExitNow(123);
-  int exit_code = app_child_process_host.Join();
+  child_process_host.ExitNow(123);
+  int exit_code = child_process_host.Join();
   VLOG(2) << "Joined child: exit_code = " << exit_code;
   EXPECT_EQ(123, exit_code);
 

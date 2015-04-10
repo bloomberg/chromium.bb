@@ -65,7 +65,12 @@ void KioskWM::OnEmbed(
   root_ = root;
   root_->AddObserver(this);
 
+#if defined(OS_ANDROID)
+  // Resize to match the Nexus 5 aspect ratio:
+  window_manager_app_->SetViewportSize(gfx::Size(320, 640));
+#else
   window_manager_app_->SetViewportSize(gfx::Size(1280, 800));
+#endif
 
   content_ = root->view_manager()->CreateView();
   content_->SetBounds(root_->bounds());

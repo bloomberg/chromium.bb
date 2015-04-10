@@ -8,8 +8,8 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "mojo/shell/app_child_process.mojom.h"
-#include "mojo/shell/app_child_process_host.h"
+#include "mojo/shell/child_process.mojom.h"
+#include "mojo/shell/child_process_host.h"
 #include "mojo/shell/in_process_native_runner.h"
 
 namespace mojo {
@@ -20,12 +20,11 @@ OutOfProcessNativeRunner::OutOfProcessNativeRunner(Context* context)
 }
 
 OutOfProcessNativeRunner::~OutOfProcessNativeRunner() {
-  if (app_child_process_host_) {
-    // TODO(vtl): Race condition: If |AppChildProcessHost::DidStart()| hasn't
-    // been called yet, we shouldn't call |Join()| here. (Until |DidStart()|, we
-    // may not have a child process to wait on.) Probably we should fix
-    // |Join()|.
-    app_child_process_host_->Join();
+  if (child_process_host_) {
+    // TODO(vtl): Race condition: If |ChildProcessHost::DidStart()| hasn't been
+    // called yet, we shouldn't call |Join()| here. (Until |DidStart()|, we may
+    // not have a child process to wait on.) Probably we should fix |Join()|.
+    child_process_host_->Join();
   }
 }
 
@@ -39,11 +38,11 @@ void OutOfProcessNativeRunner::Start(
   DCHECK(app_completed_callback_.is_null());
   app_completed_callback_ = app_completed_callback;
 
-  app_child_process_host_.reset(new AppChildProcessHost(context_));
-  app_child_process_host_->Start();
+  child_process_host_.reset(new ChildProcessHost(context_));
+  child_process_host_->Start();
 
   // TODO(vtl): |app_path.AsUTF8Unsafe()| is unsafe.
-  app_child_process_host_->StartApp(
+  child_process_host_->StartApp(
       app_path.AsUTF8Unsafe(), cleanup == NativeApplicationCleanup::DELETE,
       application_request.Pass(),
       base::Bind(&OutOfProcessNativeRunner::AppCompleted,
@@ -53,7 +52,7 @@ void OutOfProcessNativeRunner::Start(
 void OutOfProcessNativeRunner::AppCompleted(int32_t result) {
   DVLOG(2) << "OutOfProcessNativeRunner::AppCompleted(" << result << ")";
 
-  app_child_process_host_.reset();
+  child_process_host_.reset();
   // This object may be deleted by this callback.
   base::Closure app_completed_callback = app_completed_callback_;
   app_completed_callback_.Reset();

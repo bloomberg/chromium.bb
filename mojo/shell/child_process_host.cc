@@ -10,17 +10,22 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/public/cpp/system/core.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/switches.h"
+#include "mojo/shell/task_runners.h"
 
 namespace mojo {
 namespace shell {
 
-ChildProcessHost::ChildProcessHost(Context* context) : context_(context) {
+ChildProcessHost::ChildProcessHost(Context* context)
+    : context_(context), channel_info_(nullptr) {
   platform_channel_ = platform_channel_pair_.PassServerHandle();
   CHECK(platform_channel_.is_valid());
 }
@@ -34,8 +39,14 @@ ChildProcessHost::~ChildProcessHost() {
 
 void ChildProcessHost::Start() {
   DCHECK(!child_process_.IsValid());
+  DCHECK(platform_channel_.is_valid());
 
-  WillStart();
+  ScopedMessagePipeHandle handle(embedder::CreateChannel(
+      platform_channel_.Pass(), context_->task_runners()->io_runner(),
+      base::Bind(&ChildProcessHost::DidCreateChannel, base::Unretained(this)),
+      base::MessageLoop::current()->message_loop_proxy()));
+
+  controller_.Bind(handle.Pass());
 
   CHECK(base::PostTaskAndReplyWithResult(
       context_->task_runners()->blocking_pool(), FROM_HERE,
@@ -50,6 +61,35 @@ int ChildProcessHost::Join() {
       << "Failed to wait for child process";
   child_process_.Close();
   return rv;
+}
+
+void ChildProcessHost::StartApp(
+    const String& app_path,
+    bool clean_app_path,
+    InterfaceRequest<Application> application_request,
+    const ChildController::StartAppCallback& on_app_complete) {
+  DCHECK(controller_);
+
+  on_app_complete_ = on_app_complete;
+  controller_->StartApp(
+      app_path, clean_app_path, application_request.Pass(),
+      base::Bind(&ChildProcessHost::AppCompleted, base::Unretained(this)));
+}
+
+void ChildProcessHost::ExitNow(int32_t exit_code) {
+  DCHECK(controller_);
+
+  controller_->ExitNow(exit_code);
+}
+
+void ChildProcessHost::DidStart(bool success) {
+  DVLOG(2) << "ChildProcessHost::DidStart()";
+
+  if (!success) {
+    LOG(ERROR) << "Failed to start child process";
+    AppCompleted(MOJO_RESULT_UNKNOWN);
+    return;
+  }
 }
 
 bool ChildProcessHost::DoLaunch() {
@@ -83,6 +123,21 @@ bool ChildProcessHost::DoLaunch() {
 
   platform_channel_pair_.ChildProcessLaunched();
   return true;
+}
+
+void ChildProcessHost::AppCompleted(int32_t result) {
+  if (!on_app_complete_.is_null()) {
+    auto on_app_complete = on_app_complete_;
+    on_app_complete_.reset();
+    on_app_complete.Run(result);
+  }
+}
+
+void ChildProcessHost::DidCreateChannel(embedder::ChannelInfo* channel_info) {
+  DVLOG(2) << "AppChildProcessHost::DidCreateChannel()";
+
+  CHECK(channel_info);
+  channel_info_ = channel_info;
 }
 
 }  // namespace shell

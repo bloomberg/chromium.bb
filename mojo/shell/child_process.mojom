@@ -6,7 +6,7 @@ module mojo.shell;
 
 import "mojo/public/interfaces/application/application.mojom";
 
-interface AppChildController {
+interface ChildController {
   // Starts the app at the given path (deleting it if |clean_app_path| is true).
   StartApp(string app_path,
            bool clean_app_path,

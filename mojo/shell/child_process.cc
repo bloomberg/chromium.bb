@@ -25,7 +25,7 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/shell/app_child_process.mojom.h"
+#include "mojo/shell/child_process.mojom.h"
 #include "mojo/shell/native_application_support.h"
 #include "mojo/shell/switches.h"
 
@@ -79,7 +79,7 @@ class Blocker {
 
 // AppContext ------------------------------------------------------------------
 
-class AppChildControllerImpl;
+class ChildControllerImpl;
 
 // Should be created and initialized on the main thread.
 class AppContext : public embedder::ProcessDelegate {
@@ -129,9 +129,9 @@ class AppContext : public embedder::ProcessDelegate {
     return controller_runner_.get();
   }
 
-  AppChildControllerImpl* controller() const { return controller_.get(); }
+  ChildControllerImpl* controller() const { return controller_.get(); }
 
-  void set_controller(scoped_ptr<AppChildControllerImpl> controller) {
+  void set_controller(scoped_ptr<ChildControllerImpl> controller) {
     controller_ = controller.Pass();
   }
 
@@ -156,7 +156,7 @@ class AppContext : public embedder::ProcessDelegate {
   scoped_refptr<base::SingleThreadTaskRunner> controller_runner_;
 
   // Accessed only on the controller thread.
-  scoped_ptr<AppChildControllerImpl> controller_;
+  scoped_ptr<ChildControllerImpl> controller_;
 
   // Used to unblock the main thread on shutdown.
   Blocker::Unblocker shutdown_unblocker_;
@@ -164,18 +164,18 @@ class AppContext : public embedder::ProcessDelegate {
   DISALLOW_COPY_AND_ASSIGN(AppContext);
 };
 
-// AppChildControllerImpl ------------------------------------------------------
+// ChildControllerImpl ------------------------------------------------------
 
-class AppChildControllerImpl : public AppChildController, public ErrorHandler {
+class ChildControllerImpl : public ChildController, public ErrorHandler {
  public:
-  ~AppChildControllerImpl() override {
+  ~ChildControllerImpl() override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     // TODO(vtl): Pass in the result from |MainMain()|.
     on_app_complete_.Run(MOJO_RESULT_UNIMPLEMENTED);
   }
 
-  // To be executed on the controller thread. Creates the |AppChildController|,
+  // To be executed on the controller thread. Creates the |ChildController|,
   // etc.
   static void Init(AppContext* app_context,
                    embedder::ScopedPlatformHandle platform_channel,
@@ -185,12 +185,12 @@ class AppChildControllerImpl : public AppChildController, public ErrorHandler {
 
     DCHECK(!app_context->controller());
 
-    scoped_ptr<AppChildControllerImpl> impl(
-        new AppChildControllerImpl(app_context, unblocker));
+    scoped_ptr<ChildControllerImpl> impl(
+        new ChildControllerImpl(app_context, unblocker));
 
     ScopedMessagePipeHandle host_message_pipe(embedder::CreateChannel(
         platform_channel.Pass(), app_context->io_runner(),
-        base::Bind(&AppChildControllerImpl::DidCreateChannel,
+        base::Bind(&ChildControllerImpl::DidCreateChannel,
                    base::Unretained(impl.get())),
         base::MessageLoopProxy::current()));
 
@@ -209,16 +209,16 @@ class AppChildControllerImpl : public AppChildController, public ErrorHandler {
     _exit(1);
   }
 
-  // |AppChildController| methods:
+  // |ChildController| methods:
   void StartApp(const String& app_path,
                 bool clean_app_path,
                 InterfaceRequest<Application> application_request,
                 const StartAppCallback& on_app_complete) override {
-    DVLOG(2) << "AppChildControllerImpl::StartApp(" << app_path << ", ...)";
+    DVLOG(2) << "ChildControllerImpl::StartApp(" << app_path << ", ...)";
     DCHECK(thread_checker_.CalledOnValidThread());
 
     on_app_complete_ = on_app_complete;
-    unblocker_.Unblock(base::Bind(&AppChildControllerImpl::StartAppOnMainThread,
+    unblocker_.Unblock(base::Bind(&ChildControllerImpl::StartAppOnMainThread,
                                   base::FilePath::FromUTF8Unsafe(app_path),
                                   clean_app_path
                                       ? NativeApplicationCleanup::DELETE
@@ -227,13 +227,13 @@ class AppChildControllerImpl : public AppChildController, public ErrorHandler {
   }
 
   void ExitNow(int32_t exit_code) override {
-    DVLOG(2) << "AppChildControllerImpl::ExitNow(" << exit_code << ")";
+    DVLOG(2) << "ChildControllerImpl::ExitNow(" << exit_code << ")";
     _exit(exit_code);
   }
 
  private:
-  AppChildControllerImpl(AppContext* app_context,
-                         const Blocker::Unblocker& unblocker)
+  ChildControllerImpl(AppContext* app_context,
+                      const Blocker::Unblocker& unblocker)
       : app_context_(app_context),
         unblocker_(unblocker),
         channel_info_(nullptr),
@@ -243,7 +243,7 @@ class AppChildControllerImpl : public AppChildController, public ErrorHandler {
 
   // Callback for |embedder::CreateChannel()|.
   void DidCreateChannel(embedder::ChannelInfo* channel_info) {
-    DVLOG(2) << "AppChildControllerImpl::DidCreateChannel()";
+    DVLOG(2) << "ChildControllerImpl::DidCreateChannel()";
     DCHECK(thread_checker_.CalledOnValidThread());
     channel_info_ = channel_info;
   }
@@ -268,9 +268,9 @@ class AppChildControllerImpl : public AppChildController, public ErrorHandler {
   StartAppCallback on_app_complete_;
 
   embedder::ChannelInfo* channel_info_;
-  Binding<AppChildController> binding_;
+  Binding<ChildController> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppChildControllerImpl);
+  DISALLOW_COPY_AND_ASSIGN(ChildControllerImpl);
 };
 
 }  // namespace
@@ -292,7 +292,7 @@ int ChildProcessMain() {
   Blocker blocker;
   app_context.controller_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&AppChildControllerImpl::Init, base::Unretained(&app_context),
+      base::Bind(&ChildControllerImpl::Init, base::Unretained(&app_context),
                  base::Passed(&platform_channel), blocker.GetUnblocker()));
   // This will block, then run whatever the controller wants.
   blocker.Block();

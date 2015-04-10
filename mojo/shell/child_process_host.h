@@ -7,23 +7,27 @@
 
 #include "base/macros.h"
 #include "base/process/process.h"
+#include "mojo/edk/embedder/channel_info_forward.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/shell/child_process.h"  // For |ChildProcess::Type|.
+#include "mojo/shell/child_process.mojom.h"
+#include "mojo/shell/child_process_host.h"
 
 namespace mojo {
 namespace shell {
 
 class Context;
 
-// (Base) class for a "child process host". Handles launching and connecting a
-// platform-specific "pipe" to the child, and supports joining the child
-// process.
+// This class represents a "child process host". Handles launching and
+// connecting a platform-specific "pipe" to the child, and supports joining the
+// child process. Currently runs a single app (loaded from the file system).
 //
 // This class is not thread-safe. It should be created/used/destroyed on a
 // single thread.
 //
 // Note: Does not currently work on Windows before Vista.
+// Note: After |Start()|, |StartApp| must be called and this object must
+// remained alive until the |on_app_complete| callback is called.
 class ChildProcessHost {
  public:
   explicit ChildProcessHost(Context* context);
@@ -41,24 +45,31 @@ class ChildProcessHost {
   // callback has been called.
   int Join();
 
-  embedder::ScopedPlatformHandle* platform_channel() {
-    return &platform_channel_;
-  }
-
-  virtual void WillStart() = 0;
-  virtual void DidStart(bool success) = 0;
+  // See |ChildController|:
+  void StartApp(const String& app_path,
+                bool clean_app_path,
+                InterfaceRequest<Application> application_request,
+                const ChildController::StartAppCallback& on_app_complete);
+  void ExitNow(int32_t exit_code);
 
  protected:
-  Context* context() const { return context_; }
+  // virtual for testing.
+  virtual void DidStart(bool success);
 
  private:
   bool DoLaunch();
 
+  void AppCompleted(int32_t result);
+
+  // Callback for |embedder::CreateChannel()|.
+  void DidCreateChannel(embedder::ChannelInfo* channel_info);
+
   Context* const context_;
-
   base::Process child_process_;
-
   embedder::PlatformChannelPair platform_channel_pair_;
+  ChildControllerPtr controller_;
+  embedder::ChannelInfo* channel_info_;
+  ChildController::StartAppCallback on_app_complete_;
 
   // Platform-specific "pipe" to the child process. Valid immediately after
   // creation.
