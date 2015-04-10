@@ -12,6 +12,7 @@
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_fifo.h"
 #include "third_party/WebKit/public/platform/WebAudioDestinationConsumer.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace content {
@@ -29,7 +30,8 @@ class WebAudioCapturerSource
     :  public base::RefCountedThreadSafe<WebAudioCapturerSource>,
        public blink::WebAudioDestinationConsumer {
  public:
-  WebAudioCapturerSource();
+  explicit WebAudioCapturerSource(
+      const blink::WebMediaStreamSource& blink_source);
 
   // WebAudioDestinationConsumer implementation.
   // setFormat() is called early on, so that we can configure the audio track.
@@ -53,6 +55,10 @@ class WebAudioCapturerSource
   virtual ~WebAudioCapturerSource();
 
  private:
+  // Removes this object from a blink::WebMediaStreamSource with which it
+  // might be registered. The goal is to avoid dangling pointers.
+  void removeFromBlinkSource();
+
   // Used to DCHECK that some methods are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
@@ -78,6 +84,10 @@ class WebAudioCapturerSource
   // Synchronizes HandleCapture() with AudioCapturerSource calls.
   base::Lock lock_;
   bool started_;
+
+  // This object registers with a blink::WebMediaStreamSource. We keep track of
+  // that in order to be able to deregister before stopping the audio track.
+  blink::WebMediaStreamSource blink_source_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAudioCapturerSource);
 };

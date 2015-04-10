@@ -19,12 +19,16 @@ static const int kMaxNumberOfBuffersInFifo = 5;
 
 namespace content {
 
-WebAudioCapturerSource::WebAudioCapturerSource()
+WebAudioCapturerSource::WebAudioCapturerSource(
+    const blink::WebMediaStreamSource& blink_source)
     : track_(NULL),
-      audio_format_changed_(false) {
+      audio_format_changed_(false),
+      blink_source_(blink_source) {
 }
 
 WebAudioCapturerSource::~WebAudioCapturerSource() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  removeFromBlinkSource();
 }
 
 void WebAudioCapturerSource::setFormat(
@@ -68,6 +72,7 @@ void WebAudioCapturerSource::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   track_ = NULL;
+  removeFromBlinkSource();
 }
 
 void WebAudioCapturerSource::consumeAudio(
@@ -113,6 +118,18 @@ void WebAudioCapturerSource::consumeAudio(
     estimated_capture_time +=
         capture_bus_->frames() * base::TimeDelta::FromSeconds(1) /
             params_.sample_rate();
+  }
+}
+
+// If registered as audio consumer in |blink_source_|, deregister from
+// |blink_source_| and stop keeping a reference to |blink_source_|.
+// Failure to call this method when stopping the track might leave an invalid
+// WebAudioCapturerSource reference still registered as an audio consumer on
+// the blink side.
+void WebAudioCapturerSource::removeFromBlinkSource() {
+  if (!blink_source_.isNull()) {
+    blink_source_.removeAudioConsumer(this);
+    blink_source_.reset();
   }
 }
 

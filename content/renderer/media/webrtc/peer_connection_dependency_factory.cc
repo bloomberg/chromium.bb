@@ -504,7 +504,7 @@ PeerConnectionDependencyFactory::CreateWebAudioSource(
   DVLOG(1) << "PeerConnectionDependencyFactory::CreateWebAudioSource()";
 
   scoped_refptr<WebAudioCapturerSource>
-      webaudio_capturer_source(new WebAudioCapturerSource());
+      webaudio_capturer_source(new WebAudioCapturerSource(*source));
   MediaStreamAudioSource* source_data = new MediaStreamAudioSource();
 
   // Use the current default capturer for the WebAudio track so that the
