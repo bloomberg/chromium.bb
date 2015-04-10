@@ -35,7 +35,6 @@ namespace blink {
 
 static void domExceptionStackGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    ASSERT(info.Data()->IsObject());
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Value> value;
     if (info.Data().As<v8::Object>()->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "stack")).ToLocal(&value))
@@ -44,8 +43,7 @@ static void domExceptionStackGetter(v8::Local<v8::Name> name, const v8::Property
 
 static void domExceptionStackSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
-    ASSERT(info.Data()->IsObject());
-    info.Data()->ToObject(info.GetIsolate())->Set(v8AtomicString(info.GetIsolate(), "stack"), value);
+    info.Data().As<v8::Object>()->Set(v8AtomicString(info.GetIsolate(), "stack"), value);
 }
 
 v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext)
@@ -87,10 +85,10 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate,
     // Attach an Error object to the DOMException. This is then lazily used to get the stack value.
     v8::Local<v8::Value> error = v8::Exception::Error(v8String(isolate, domException->message()));
     ASSERT(!error.IsEmpty());
-    ASSERT(exception->IsObject());
-    v8::Maybe<bool> result = exception->ToObject(isolate)->SetAccessor(isolate->GetCurrentContext(), v8AtomicString(isolate, "stack"), domExceptionStackGetter, domExceptionStackSetter, v8::MaybeLocal<v8::Value>(error));
+    v8::Local<v8::Object> exceptionObject = exception.As<v8::Object>();
+    v8::Maybe<bool> result = exceptionObject->SetAccessor(isolate->GetCurrentContext(), v8AtomicString(isolate, "stack"), domExceptionStackGetter, domExceptionStackSetter, v8::MaybeLocal<v8::Value>(error));
     ASSERT_UNUSED(result, result.FromJust());
-    V8HiddenValue::setHiddenValue(isolate, exception->ToObject(isolate), V8HiddenValue::error(isolate), error);
+    V8HiddenValue::setHiddenValue(isolate, exceptionObject, V8HiddenValue::error(isolate), error);
 
     return exception;
 }

@@ -234,11 +234,12 @@ TEST_F(ToV8Test, dictionaryVector)
     dictionary.append(std::make_pair("one", 1));
     dictionary.append(std::make_pair("two", 2));
     TEST_TOV8("[object Object]", dictionary);
-    v8::Local<v8::Object> result = toV8(dictionary, m_scope.scriptState()->context()->Global(), m_scope.isolate())->ToObject();
-    v8::Local<v8::Value> one = result->Get(m_scope.context(), v8String(m_scope.isolate(), "one")).ToLocalChecked();
-    EXPECT_EQ(1, one->NumberValue(m_scope.context()).FromJust());
-    v8::Local<v8::Value> two = result->Get(m_scope.context(), v8String(m_scope.isolate(), "two")).ToLocalChecked();
-    EXPECT_EQ(2, two->NumberValue(m_scope.context()).FromJust());
+    v8::Local<v8::Context> context = m_scope.scriptState()->context();
+    v8::Local<v8::Object> result = toV8(dictionary, context->Global(), m_scope.isolate())->ToObject(context).ToLocalChecked();
+    v8::Local<v8::Value> one = result->Get(context, v8String(m_scope.isolate(), "one")).ToLocalChecked();
+    EXPECT_EQ(1, one->NumberValue(context).FromJust());
+    v8::Local<v8::Value> two = result->Get(context, v8String(m_scope.isolate(), "two")).ToLocalChecked();
+    EXPECT_EQ(2, two->NumberValue(context).FromJust());
 }
 
 TEST_F(ToV8Test, heapVector)

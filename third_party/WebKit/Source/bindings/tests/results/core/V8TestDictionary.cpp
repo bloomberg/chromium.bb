@@ -31,8 +31,12 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         return;
     }
 
-    v8::Local<v8::Object> v8Object = v8Value->ToObject(isolate);
     v8::TryCatch block;
+    v8::Local<v8::Object> v8Object;
+    if (!v8Call(v8Value->ToObject(isolate->GetCurrentContext()), v8Object, block)) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
     v8::Local<v8::Value> booleanMemberValue = v8Object->Get(v8String(isolate, "booleanMember"));
     if (block.HasCaught()) {
         exceptionState.rethrowV8Exception(block.Exception());

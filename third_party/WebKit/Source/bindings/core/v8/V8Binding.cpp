@@ -637,7 +637,7 @@ PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Isolate* isolate, 
     if (V8XPathNSResolver::hasInstance(value, isolate))
         resolver = V8XPathNSResolver::toImpl(v8::Handle<v8::Object>::Cast(value));
     else if (value->IsObject())
-        resolver = V8CustomXPathNSResolver::create(value->ToObject(isolate), isolate);
+        resolver = V8CustomXPathNSResolver::create(value.As<v8::Object>(), isolate);
     return resolver;
 }
 

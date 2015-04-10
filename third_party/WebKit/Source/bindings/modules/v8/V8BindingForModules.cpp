@@ -125,8 +125,8 @@ v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creationCont
         v8::Local<v8::Value> request = toV8(impl->idbCursor()->request(), creationContext, isolate);
 
         // FIXME: Due to race at worker shutdown, V8 may return empty handles.
-        if (!cursor.IsEmpty())
-            V8HiddenValue::setHiddenValue(isolate, cursor->ToObject(isolate), V8HiddenValue::idbCursorRequest(isolate), request);
+        if (!cursor.IsEmpty() && cursor->IsObject())
+            V8HiddenValue::setHiddenValue(isolate, cursor.As<v8::Object>(), V8HiddenValue::idbCursorRequest(isolate), request);
         return cursor;
     }
     case IDBAny::IDBCursorWithValueType: {
@@ -136,8 +136,8 @@ v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creationCont
         v8::Local<v8::Value> request = toV8(impl->idbCursorWithValue()->request(), creationContext, isolate);
 
         // FIXME: Due to race at worker shutdown, V8 may return empty handles.
-        if (!cursor.IsEmpty())
-            V8HiddenValue::setHiddenValue(isolate, cursor->ToObject(isolate), V8HiddenValue::idbCursorRequest(isolate), request);
+        if (!cursor.IsEmpty() && cursor->IsObject())
+            V8HiddenValue::setHiddenValue(isolate, cursor.As<v8::Object>(), V8HiddenValue::idbCursorRequest(isolate), request);
         return cursor;
     }
     case IDBAny::IDBDatabaseType:
@@ -178,7 +178,7 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> 
     if (value->IsUint8Array() && (allowExperimentalTypes || RuntimeEnabledFeatures::indexedDBExperimentalEnabled())) {
         // Per discussion in https://www.w3.org/Bugs/Public/show_bug.cgi?id=23332 the
         // input type is constrained to Uint8Array to match the output type.
-        DOMArrayBufferView* view = blink::V8ArrayBufferView::toImpl(value->ToObject(isolate));
+        DOMArrayBufferView* view = blink::V8ArrayBufferView::toImpl(value.As<v8::Object>());
         const char* start = static_cast<const char*>(view->baseAddress());
         size_t length = view->byteLength();
         return IDBKey::createBinary(SharedBuffer::create(start, length));

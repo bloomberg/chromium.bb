@@ -65,9 +65,10 @@ public:
         EXPECT_EQ(event->type(), "blah");
 
         ScriptState::Scope scope(scriptState);
-        v8::Local<v8::Value> jsEvent = toV8(event, scriptState->context()->Global(), isolate());
+        v8::Local<v8::Context> context = scriptState->context();
+        v8::Local<v8::Value> jsEvent = toV8(event, context->Global(), isolate());
 
-        EXPECT_EQ(jsEvent->ToObject(isolate())->Get(v8AtomicString(isolate(), "detail")), v8::Boolean::New(isolate(), true));
+        EXPECT_EQ(jsEvent->ToObject(context).ToLocalChecked()->Get(context, v8AtomicString(isolate(), "detail")).ToLocalChecked(), v8::Boolean::New(isolate(), true));
     }
 
     static PassRefPtr<TestListener> create(ScriptState* scriptState)

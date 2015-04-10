@@ -117,7 +117,7 @@ void V8InjectedScriptHost::internalConstructorNameMethodCustom(const v8::Functio
     if (info.Length() < 1 || !info[0]->IsObject())
         return;
 
-    v8::Local<v8::Object> object = info[0]->ToObject(info.GetIsolate());
+    v8::Local<v8::Object> object = info[0].As<v8::Object>();
     v8::Local<v8::String> result = object->GetConstructorName();
 
     if (!result.IsEmpty() && toCoreStringWithUndefinedOrNullCheck(result) == "Object") {
@@ -560,7 +560,7 @@ void V8InjectedScriptHost::setNonEnumPropertyMethodCustom(const v8::FunctionCall
     if (info.Length() < 3 || !info[0]->IsObject() || !info[1]->IsString())
         return;
 
-    v8::Local<v8::Object> object = info[0]->ToObject(info.GetIsolate());
+    v8::Local<v8::Object> object = info[0].As<v8::Object>();
     object->ForceSet(info.GetIsolate()->GetCurrentContext(), info[1], info[2], v8::DontEnum);
 }
 
