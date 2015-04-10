@@ -320,12 +320,7 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
         if (!source->mediaQueryMatches())
             continue;
 
-        String sizes = source->fastGetAttribute(sizesAttr);
-        if (!sizes.isNull())
-            UseCounter::count(document(), UseCounter::Sizes);
-        SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), sizes);
-        float effectiveSize = parser.length();
-        ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), effectiveSize, source->fastGetAttribute(srcsetAttr), &document());
+        ImageCandidate candidate = bestFitSourceForSrcsetAttribute(document().devicePixelRatio(), sourceSize(*source), source->fastGetAttribute(srcsetAttr), &document());
         if (candidate.isEmpty())
             continue;
         return candidate;
@@ -635,6 +630,14 @@ FloatSize HTMLImageElement::defaultDestinationSize() const
     return FloatSize(size);
 }
 
+float HTMLImageElement::sourceSize(Element& element)
+{
+    String sizes = element.fastGetAttribute(sizesAttr);
+    if (!sizes.isNull())
+        UseCounter::count(document(), UseCounter::Sizes);
+    return SizesAttributeParser(MediaValuesDynamic::create(document()), sizes).length();
+}
+
 void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior behavior)
 {
     if (!document().isActive())
@@ -650,12 +653,7 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
     }
 
     if (!foundURL) {
-        String sizes = fastGetAttribute(sizesAttr);
-        if (!sizes.isNull())
-            UseCounter::count(document(), UseCounter::Sizes);
-        SizesAttributeParser parser = SizesAttributeParser(MediaValuesDynamic::create(document()), sizes);
-        float effectiveSize = parser.length();
-        ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), effectiveSize, fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr), &document());
+        ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), sourceSize(*this), fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr), &document());
         setBestFitURLAndDPRFromImageCandidate(candidate);
     }
     if (m_intrinsicSizingViewportDependant && !m_listener) {

@@ -204,6 +204,13 @@ static void configureRequest(FetchRequest& request, ImageLoader::BypassMainWorld
     AtomicString crossOriginMode = element.fastGetAttribute(HTMLNames::crossoriginAttr);
     if (!crossOriginMode.isNull())
         request.setCrossOriginAccessControl(element.document().securityOrigin(), crossOriginMode);
+
+    if (isHTMLImageElement(element)) {
+        FetchRequest::ResourceWidth resourceWidth;
+        resourceWidth.width = toHTMLImageElement(element).sourceSize(element);
+        resourceWidth.isSet = true;
+        request.setResourceWidth(resourceWidth);
+    }
 }
 
 inline void ImageLoader::dispatchErrorEvent()
