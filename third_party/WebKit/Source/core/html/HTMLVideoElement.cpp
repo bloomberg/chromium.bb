@@ -316,7 +316,7 @@ PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageMode mode
 
 bool HTMLVideoElement::wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const
 {
-    return !isMediaDataCORSSameOrigin(destinationSecurityOrigin);
+    return hasAvailableVideoFrame() && !isMediaDataCORSSameOrigin(destinationSecurityOrigin);
 }
 
 FloatSize HTMLVideoElement::elementSize() const
