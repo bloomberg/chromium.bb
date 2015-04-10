@@ -4,9 +4,6 @@
 
 import os
 
-from measurements import smoothness_controller
-from measurements import timeline_controller
-from telemetry import benchmark
 from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
 from telemetry.page import action_runner
