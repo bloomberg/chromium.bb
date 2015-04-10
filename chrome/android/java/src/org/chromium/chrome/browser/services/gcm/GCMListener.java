@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.gcm_driver;
+package org.chromium.chrome.browser.services.gcm;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +11,7 @@ import android.util.Log;
 import com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.components.gcm_driver.GCMDriver;
 
 /**
  * Receives GCM registration events and messages rebroadcast by MultiplexingGcmListener.

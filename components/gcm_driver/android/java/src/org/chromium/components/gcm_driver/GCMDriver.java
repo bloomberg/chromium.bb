@@ -117,7 +117,7 @@ public class GCMDriver {
         }.execute();
     }
 
-    static void onMessageReceived(Context context, final String appId, final Bundle extras) {
+    public static void onMessageReceived(Context context, final String appId, final Bundle extras) {
         // TODO(johnme): Store message and redeliver later if Chrome is killed before delivery.
         ThreadUtils.assertOnUiThread();
         launchNativeThen(context, new Runnable() {

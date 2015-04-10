@@ -141,9 +141,9 @@
 
         <!-- GCMDriver multiplexed GCM receiver -->
         <service android:exported="false"
-                 android:name="org.chromium.components.gcm_driver.GCMListener"/>
+                 android:name="org.chromium.chrome.browser.services.gcm.GCMListener"/>
         <receiver android:exported="false"
-                  android:name="org.chromium.components.gcm_driver.GCMListener$Receiver">
+                  android:name="org.chromium.chrome.browser.services.gcm.GCMListener$Receiver">
             <intent-filter>
                 <action android:name="com.google.ipc.invalidation.gcmmplex.EVENT" />
             </intent-filter>

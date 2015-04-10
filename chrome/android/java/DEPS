@@ -1,9 +1,10 @@
 include_rules = [
-  "+components/navigation_interception",
-  "+components/web_contents_delegate_android",
   "+components/bookmarks/common/android/java/src/org/chromium/components/bookmarks",
   "+components/dom_distiller/android/java/src/org/chromium/components/dom_distiller/core",
+  "+components/gcm_driver/android/java/src/org/chromium/components/gcm_driver",
+  "+components/navigation_interception",
   "+components/precache/android/java",
+  "+components/web_contents_delegate_android",
   "+content/public/android/java",
   "+sync/android/java/src/org/chromium/sync",
 ]
