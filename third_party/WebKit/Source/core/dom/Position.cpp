@@ -1371,11 +1371,6 @@ TextDirection PositionAlgorithm<Strategy>::primaryDirection() const
     return primaryDirection;
 }
 
-DEFINE_TRACE(Position)
-{
-    visitor->trace(m_anchorNode);
-}
-
 template <typename Strategy>
 void PositionAlgorithm<Strategy>::debugPosition(const char* msg) const
 {

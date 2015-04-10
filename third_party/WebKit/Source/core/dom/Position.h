@@ -31,6 +31,7 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/TextAffinity.h"
+#include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
@@ -232,6 +233,11 @@ public:
     void showTreeForThis() const;
 #endif
 
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_anchorNode);
+    }
+
 protected:
     PositionAlgorithm(const PositionAlgorithm&);
 
@@ -273,8 +279,6 @@ public:
     explicit Position(const PositionAlgorithm&);
 
     int compareTo(const Position&) const;
-
-    DECLARE_TRACE();
 
 #ifndef NDEBUG
     Node* nodeAsSelectionStart() const;
