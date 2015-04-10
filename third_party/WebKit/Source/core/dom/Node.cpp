@@ -652,11 +652,11 @@ inline static ShadowRoot* oldestShadowRootFor(const Node* node)
 }
 #endif
 
-inline static Node& rootInTreeOfTrees(Node& node)
+inline static Node& rootInTreeOfTrees(const Node& node)
 {
     if (node.inDocument())
         return node.document();
-    Node* root = &node;
+    Node* root = const_cast<Node*>(&node);
     while (Node* host = root->shadowHost())
         root = host;
     while (Node* ancestor = root->parentNode())
@@ -668,13 +668,7 @@ inline static Node& rootInTreeOfTrees(Node& node)
 #if ENABLE(ASSERT)
 bool Node::needsDistributionRecalc() const
 {
-    // TODO(hayato): If we can prove that this->childNeedsDistributionRecalc()
-    // is enough for either case, in a document, not in a document, remove this
-    // function after renaming Node::childNeedsDistributionRecalc() to a more
-    // appropriate name.
-    if (inDocument())
-        return document().childNeedsDistributionRecalc();
-    return childNeedsDistributionRecalc();
+    return rootInTreeOfTrees(*this).childNeedsDistributionRecalc();
 }
 #endif
 
