@@ -556,23 +556,13 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
 
 void WebsiteSettingsPopupView::SetIdentityInfo(
     const IdentityInfo& identity_info) {
-  base::string16 identity_status_text;
+  base::string16 identity_status_text = identity_info.GetIdentityStatusText();
   SkColor text_color = SK_ColorBLACK;
-  switch (identity_info.identity_status) {
-    case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
-    case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
-      identity_status_text =
-          l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_SECURE_TRANSPORT);
-      text_color = kIdentityVerifiedTextColor;
-      break;
-    case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
-      identity_status_text =
-          l10n_util::GetStringUTF16(IDS_CERT_POLICY_PROVIDED_CERT_HEADER);
-      break;
-    default:
-      identity_status_text =
-         l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_NON_SECURE_TRANSPORT);
-      break;
+  if (identity_info.identity_status ==
+          WebsiteSettings::SITE_IDENTITY_STATUS_CERT ||
+      identity_info.identity_status ==
+          WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
+    text_color = kIdentityVerifiedTextColor;
   }
   header_->SetIdentityName(base::UTF8ToUTF16(identity_info.site_identity));
   header_->SetIdentityStatus(identity_status_text, text_color);
