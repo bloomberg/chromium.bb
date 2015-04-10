@@ -110,20 +110,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <wincrypt.h>
-
-#include "base/win/windows_version.h"
-#elif defined(OS_MACOSX)
-#include <Security/SecBase.h>
-#include <Security/SecCertificate.h>
-#include <Security/SecIdentity.h>
-
-#include "base/mac/mac_logging.h"
-#include "base/synchronization/lock.h"
-#include "crypto/mac_security_services_lock.h"
-#elif defined(USE_NSS)
+#if defined(USE_NSS)
 #include <dlfcn.h>
 #endif
 
@@ -172,16 +159,7 @@ const int kSendBufferSize = 17 * 1024;
 // overlap with any value of the net::Error range, including net::OK).
 const int kNoPendingReadResult = 1;
 
-#if defined(OS_WIN)
-// CERT_OCSP_RESPONSE_PROP_ID is only implemented on Vista+, but it can be
-// set on Windows XP without error. There is some overhead from the server
-// sending the OCSP response if it supports the extension, for the subset of
-// XP clients who will request it but be unable to use it, but this is an
-// acceptable trade-off for simplicity of implementation.
-bool IsOCSPStaplingSupported() {
-  return true;
-}
-#elif defined(USE_NSS)
+#if defined(USE_NSS)
 typedef SECStatus
 (*CacheOCSPResponseFromSideChannelFunction)(
     CERTCertDBHandle *handle, CERTCertificate *cert, PRTime time,
@@ -230,51 +208,6 @@ bool IsOCSPStaplingSupported() {
 bool IsOCSPStaplingSupported() {
   return false;
 }
-#endif
-
-#if defined(OS_WIN)
-
-// This callback is intended to be used with CertFindChainInStore. In addition
-// to filtering by extended/enhanced key usage, we do not show expired
-// certificates and require digital signature usage in the key usage
-// extension.
-//
-// This matches our behavior on Mac OS X and that of NSS. It also matches the
-// default behavior of IE8. See http://support.microsoft.com/kb/890326 and
-// http://blogs.msdn.com/b/askie/archive/2009/06/09/my-expired-client-certificates-no-longer-display-when-connecting-to-my-web-server-using-ie8.aspx
-BOOL WINAPI ClientCertFindCallback(PCCERT_CONTEXT cert_context,
-                                   void* find_arg) {
-  VLOG(1) << "Calling ClientCertFindCallback from _nss";
-  // Verify the certificate's KU is good.
-  BYTE key_usage;
-  if (CertGetIntendedKeyUsage(X509_ASN_ENCODING, cert_context->pCertInfo,
-                              &key_usage, 1)) {
-    if (!(key_usage & CERT_DIGITAL_SIGNATURE_KEY_USAGE))
-      return FALSE;
-  } else {
-    DWORD err = GetLastError();
-    // If |err| is non-zero, it's an actual error. Otherwise the extension
-    // just isn't present, and we treat it as if everything was allowed.
-    if (err) {
-      DLOG(ERROR) << "CertGetIntendedKeyUsage failed: " << err;
-      return FALSE;
-    }
-  }
-
-  // Verify the current time is within the certificate's validity period.
-  if (CertVerifyTimeValidity(NULL, cert_context->pCertInfo) != 0)
-    return FALSE;
-
-  // Verify private key metadata is associated with this certificate.
-  DWORD size = 0;
-  if (!CertGetCertificateContextProperty(
-          cert_context, CERT_KEY_PROV_INFO_PROP_ID, NULL, &size)) {
-    return FALSE;
-  }
-
-  return TRUE;
-}
-
 #endif
 
 // Helper functions to make it possible to log events from within the
@@ -677,28 +610,11 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   // authentication.
   // See the documentation in third_party/nss/ssl/ssl.h for the meanings of
   // the arguments.
-#if defined(NSS_PLATFORM_CLIENT_AUTH)
-  // When NSS has been integrated with awareness of the underlying system
-  // cryptographic libraries, this callback allows the caller to supply a
-  // native platform certificate and key for use by NSS. At most, one of
-  // either (result_certs, result_private_key) or (result_nss_certificate,
-  // result_nss_private_key) should be set.
-  // |arg| contains a pointer to the current SSLClientSocketNSS::Core.
-  static SECStatus PlatformClientAuthHandler(
-      void* arg,
-      PRFileDesc* socket,
-      CERTDistNames* ca_names,
-      CERTCertList** result_certs,
-      void** result_private_key,
-      CERTCertificate** result_nss_certificate,
-      SECKEYPrivateKey** result_nss_private_key);
-#else
   static SECStatus ClientAuthHandler(void* arg,
                                      PRFileDesc* socket,
                                      CERTDistNames* ca_names,
                                      CERTCertificate** result_certificate,
                                      SECKEYPrivateKey** result_private_key);
-#endif
 
   // Called by NSS to determine if we can False Start.
   // |arg| contains a pointer to the current SSLClientSocketNSS::Core.
@@ -1011,14 +927,8 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
     return false;
   }
 
-#if defined(NSS_PLATFORM_CLIENT_AUTH)
-  rv = SSL_GetPlatformClientAuthDataHook(
-      nss_fd_, SSLClientSocketNSS::Core::PlatformClientAuthHandler,
-      this);
-#else
   rv = SSL_GetClientAuthDataHook(
       nss_fd_, SSLClientSocketNSS::Core::ClientAuthHandler, this);
-#endif
   if (rv != SECSuccess) {
     LogFailedNSSFunction(*weak_net_log_, "SSL_GetClientAuthDataHook", "");
     return false;
@@ -1286,222 +1196,9 @@ SECStatus SSLClientSocketNSS::Core::OwnAuthCertHandler(
   return SECSuccess;
 }
 
-#if defined(NSS_PLATFORM_CLIENT_AUTH)
+#if defined(OS_IOS)
+
 // static
-SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
-    void* arg,
-    PRFileDesc* socket,
-    CERTDistNames* ca_names,
-    CERTCertList** result_certs,
-    void** result_private_key,
-    CERTCertificate** result_nss_certificate,
-    SECKEYPrivateKey** result_nss_private_key) {
-  Core* core = reinterpret_cast<Core*>(arg);
-  DCHECK(core->OnNSSTaskRunner());
-
-  core->PostOrRunCallback(
-      FROM_HERE,
-      base::Bind(&AddLogEvent, core->weak_net_log_,
-                 NetLog::TYPE_SSL_CLIENT_CERT_REQUESTED));
-
-  core->client_auth_cert_needed_ = !core->ssl_config_.send_client_cert;
-#if defined(OS_WIN)
-  if (core->ssl_config_.send_client_cert) {
-    if (core->ssl_config_.client_cert.get()) {
-      PCCERT_CONTEXT cert_context =
-          core->ssl_config_.client_cert->os_cert_handle();
-
-      HCRYPTPROV_OR_NCRYPT_KEY_HANDLE crypt_prov = 0;
-      DWORD key_spec = 0;
-      BOOL must_free = FALSE;
-      DWORD flags = 0;
-      if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-        flags |= CRYPT_ACQUIRE_PREFER_NCRYPT_KEY_FLAG;
-
-      BOOL acquired_key = CryptAcquireCertificatePrivateKey(
-          cert_context, flags, NULL, &crypt_prov, &key_spec, &must_free);
-
-      if (acquired_key) {
-        // Should never get a cached handle back - ownership must always be
-        // transferred.
-        CHECK_EQ(must_free, TRUE);
-
-        SECItem der_cert;
-        der_cert.type = siDERCertBuffer;
-        der_cert.data = cert_context->pbCertEncoded;
-        der_cert.len  = cert_context->cbCertEncoded;
-
-        // TODO(rsleevi): Error checking for NSS allocation errors.
-        CERTCertDBHandle* db_handle = CERT_GetDefaultCertDB();
-        CERTCertificate* user_cert = CERT_NewTempCertificate(
-            db_handle, &der_cert, NULL, PR_FALSE, PR_TRUE);
-        if (!user_cert) {
-          // Importing the certificate can fail for reasons including a serial
-          // number collision. See crbug.com/97355.
-          core->AddCertProvidedEvent(0);
-          return SECFailure;
-        }
-        CERTCertList* cert_chain = CERT_NewCertList();
-        CERT_AddCertToListTail(cert_chain, user_cert);
-
-        // Add the intermediates.
-        X509Certificate::OSCertHandles intermediates =
-            core->ssl_config_.client_cert->GetIntermediateCertificates();
-        for (X509Certificate::OSCertHandles::const_iterator it =
-            intermediates.begin(); it != intermediates.end(); ++it) {
-          der_cert.data = (*it)->pbCertEncoded;
-          der_cert.len = (*it)->cbCertEncoded;
-
-          CERTCertificate* intermediate = CERT_NewTempCertificate(
-              db_handle, &der_cert, NULL, PR_FALSE, PR_TRUE);
-          if (!intermediate) {
-            CERT_DestroyCertList(cert_chain);
-            core->AddCertProvidedEvent(0);
-            return SECFailure;
-          }
-          CERT_AddCertToListTail(cert_chain, intermediate);
-        }
-        PCERT_KEY_CONTEXT key_context = reinterpret_cast<PCERT_KEY_CONTEXT>(
-            PORT_ZAlloc(sizeof(CERT_KEY_CONTEXT)));
-        key_context->cbSize = sizeof(*key_context);
-        // NSS will free this context when no longer in use.
-        key_context->hCryptProv = crypt_prov;
-        key_context->dwKeySpec = key_spec;
-        *result_private_key = key_context;
-        *result_certs = cert_chain;
-
-        int cert_count = 1 + intermediates.size();
-        core->AddCertProvidedEvent(cert_count);
-        return SECSuccess;
-      }
-      LOG(WARNING) << "Client cert found without private key";
-    }
-
-    // Send no client certificate.
-    core->AddCertProvidedEvent(0);
-    return SECFailure;
-  }
-
-  core->nss_handshake_state_.cert_authorities.clear();
-
-  std::vector<CERT_NAME_BLOB> issuer_list(ca_names->nnames);
-  for (int i = 0; i < ca_names->nnames; ++i) {
-    issuer_list[i].cbData = ca_names->names[i].len;
-    issuer_list[i].pbData = ca_names->names[i].data;
-    core->nss_handshake_state_.cert_authorities.push_back(std::string(
-        reinterpret_cast<const char*>(ca_names->names[i].data),
-        static_cast<size_t>(ca_names->names[i].len)));
-  }
-
-  // Update the network task runner's view of the handshake state now that
-  // server certificate request has been recorded.
-  core->PostOrRunCallback(
-      FROM_HERE, base::Bind(&Core::OnHandshakeStateUpdated, core,
-                            core->nss_handshake_state_));
-
-  // Tell NSS to suspend the client authentication.  We will then abort the
-  // handshake by returning ERR_SSL_CLIENT_AUTH_CERT_NEEDED.
-  return SECWouldBlock;
-#elif defined(OS_MACOSX)
-  if (core->ssl_config_.send_client_cert) {
-    if (core->ssl_config_.client_cert.get()) {
-      OSStatus os_error = noErr;
-      SecIdentityRef identity = NULL;
-      SecKeyRef private_key = NULL;
-      X509Certificate::OSCertHandles chain;
-      {
-        base::AutoLock lock(crypto::GetMacSecurityServicesLock());
-        os_error = SecIdentityCreateWithCertificate(
-            NULL, core->ssl_config_.client_cert->os_cert_handle(), &identity);
-      }
-      if (os_error == noErr) {
-        os_error = SecIdentityCopyPrivateKey(identity, &private_key);
-        CFRelease(identity);
-      }
-
-      if (os_error == noErr) {
-        // TODO(rsleevi): Error checking for NSS allocation errors.
-        *result_certs = CERT_NewCertList();
-        *result_private_key = private_key;
-
-        chain.push_back(core->ssl_config_.client_cert->os_cert_handle());
-        const X509Certificate::OSCertHandles& intermediates =
-            core->ssl_config_.client_cert->GetIntermediateCertificates();
-        if (!intermediates.empty())
-          chain.insert(chain.end(), intermediates.begin(), intermediates.end());
-
-        for (size_t i = 0, chain_count = chain.size(); i < chain_count; ++i) {
-          CSSM_DATA cert_data;
-          SecCertificateRef cert_ref = chain[i];
-          os_error = SecCertificateGetData(cert_ref, &cert_data);
-          if (os_error != noErr)
-            break;
-
-          SECItem der_cert;
-          der_cert.type = siDERCertBuffer;
-          der_cert.data = cert_data.Data;
-          der_cert.len = cert_data.Length;
-          CERTCertificate* nss_cert = CERT_NewTempCertificate(
-              CERT_GetDefaultCertDB(), &der_cert, NULL, PR_FALSE, PR_TRUE);
-          if (!nss_cert) {
-            // In the event of an NSS error, make up an OS error and reuse
-            // the error handling below.
-            os_error = errSecCreateChainFailed;
-            break;
-          }
-          CERT_AddCertToListTail(*result_certs, nss_cert);
-        }
-      }
-
-      if (os_error == noErr) {
-        core->AddCertProvidedEvent(chain.size());
-        return SECSuccess;
-      }
-
-      OSSTATUS_LOG(WARNING, os_error)
-          << "Client cert found, but could not be used";
-      if (*result_certs) {
-        CERT_DestroyCertList(*result_certs);
-        *result_certs = NULL;
-      }
-      if (*result_private_key)
-        *result_private_key = NULL;
-      if (private_key)
-        CFRelease(private_key);
-    }
-
-    // Send no client certificate.
-    core->AddCertProvidedEvent(0);
-    return SECFailure;
-  }
-
-  core->nss_handshake_state_.cert_authorities.clear();
-
-  // Retrieve the cert issuers accepted by the server.
-  std::vector<CertPrincipal> valid_issuers;
-  int n = ca_names->nnames;
-  for (int i = 0; i < n; i++) {
-    core->nss_handshake_state_.cert_authorities.push_back(std::string(
-        reinterpret_cast<const char*>(ca_names->names[i].data),
-        static_cast<size_t>(ca_names->names[i].len)));
-  }
-
-  // Update the network task runner's view of the handshake state now that
-  // server certificate request has been recorded.
-  core->PostOrRunCallback(
-      FROM_HERE, base::Bind(&Core::OnHandshakeStateUpdated, core,
-                            core->nss_handshake_state_));
-
-  // Tell NSS to suspend the client authentication.  We will then abort the
-  // handshake by returning ERR_SSL_CLIENT_AUTH_CERT_NEEDED.
-  return SECWouldBlock;
-#else
-  return SECFailure;
-#endif
-}
-
-#elif defined(OS_IOS)
-
 SECStatus SSLClientSocketNSS::Core::ClientAuthHandler(
     void* arg,
     PRFileDesc* socket,
@@ -1524,7 +1221,7 @@ SECStatus SSLClientSocketNSS::Core::ClientAuthHandler(
   return SECFailure;
 }
 
-#else  // NSS_PLATFORM_CLIENT_AUTH
+#else   // !OS_IOS
 
 // static
 // Based on Mozilla's NSS_GetClientAuthData.
@@ -1592,7 +1289,7 @@ SECStatus SSLClientSocketNSS::Core::ClientAuthHandler(
   // handshake by returning ERR_SSL_CLIENT_AUTH_CERT_NEEDED.
   return SECWouldBlock;
 }
-#endif  // NSS_PLATFORM_CLIENT_AUTH
+#endif  // OS_IOS
 
 // static
 SECStatus SSLClientSocketNSS::Core::CanFalseStartCallback(
@@ -1683,33 +1380,7 @@ void SSLClientSocketNSS::Core::HandshakeSucceeded() {
 int SSLClientSocketNSS::Core::HandleNSSError(PRErrorCode nss_error) {
   DCHECK(OnNSSTaskRunner());
 
-  int net_error = MapNSSClientError(nss_error);
-
-#if defined(OS_WIN)
-  // On Windows, a handle to the HCRYPTPROV is cached in the X509Certificate
-  // os_cert_handle() as an optimization. However, if the certificate
-  // private key is stored on a smart card, and the smart card is removed,
-  // the cached HCRYPTPROV will not be able to obtain the HCRYPTKEY again,
-  // preventing client certificate authentication. Because the
-  // X509Certificate may outlive the individual SSLClientSocketNSS, due to
-  // caching in X509Certificate, this failure ends up preventing client
-  // certificate authentication with the same certificate for all future
-  // attempts, even after the smart card has been re-inserted. By setting
-  // the CERT_KEY_PROV_HANDLE_PROP_ID to NULL, the cached HCRYPTPROV will
-  // typically be freed. This allows a new HCRYPTPROV to be obtained from
-  // the certificate on the next attempt, which should succeed if the smart
-  // card has been re-inserted, or will typically prompt the user to
-  // re-insert the smart card if not.
-  if ((net_error == ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY ||
-       net_error == ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED) &&
-      ssl_config_.send_client_cert && ssl_config_.client_cert.get()) {
-    CertSetCertificateContextProperty(
-        ssl_config_.client_cert->os_cert_handle(),
-        CERT_KEY_PROV_HANDLE_PROP_ID, 0, NULL);
-  }
-#endif
-
-  return net_error;
+  return MapNSSClientError(nss_error);
 }
 
 int SSLClientSocketNSS::Core::DoHandshakeLoop(int last_io_result) {
@@ -2400,22 +2071,7 @@ void SSLClientSocketNSS::Core::UpdateStapledOCSPResponse() {
       ocsp_responses->items[0].len);
 
   if (IsOCSPStaplingSupported()) {
-  #if defined(OS_WIN)
-    if (nss_handshake_state_.server_cert.get()) {
-      CRYPT_DATA_BLOB ocsp_response_blob;
-      ocsp_response_blob.cbData = ocsp_responses->items[0].len;
-      ocsp_response_blob.pbData = ocsp_responses->items[0].data;
-      BOOL ok = CertSetCertificateContextProperty(
-          nss_handshake_state_.server_cert->os_cert_handle(),
-          CERT_OCSP_RESPONSE_PROP_ID,
-          CERT_SET_PROPERTY_IGNORE_PERSIST_ERROR_FLAG,
-          &ocsp_response_blob);
-      if (!ok) {
-        VLOG(1) << "Failed to set OCSP response property: "
-                << GetLastError();
-      }
-    }
-  #elif defined(USE_NSS)
+#if defined(USE_NSS)
     CacheOCSPResponseFromSideChannelFunction cache_ocsp_response =
         GetCacheOCSPResponseFromSideChannelFunction();
 
@@ -2423,8 +2079,8 @@ void SSLClientSocketNSS::Core::UpdateStapledOCSPResponse() {
         CERT_GetDefaultCertDB(),
         nss_handshake_state_.server_cert_chain[0], PR_Now(),
         &ocsp_responses->items[0], NULL);
-  #endif
-  }  // IsOCSPStaplingSupported()
+#endif
+  }
 }
 
 void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
