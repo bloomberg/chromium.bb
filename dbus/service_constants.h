@@ -422,6 +422,7 @@ const char kWifiPhyMode[] = "WiFi.PhyMode";
 const char kWifiAuthMode[] = "WiFi.AuthMode";
 const char kWifiChannelProperty[] = "WiFi.Channel";
 const char kWifiPreferredDeviceProperty[] = "WiFi.PreferredDevice";
+const char kWifiRoamThresholdProperty[] = "WiFi.RoamThreshold";
 
 // Flimflam EAP property names.
 const char kEapIdentityProperty[] = "EAP.Identity";
