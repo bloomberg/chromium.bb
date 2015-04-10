@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 
 #include "ppapi/shared_impl/ppapi_shared_export.h"
@@ -169,6 +170,10 @@ namespace internal {
 template <typename RunType>
 class RunWhileLockedHelper;
 
+// A helper class to ensure that a callback is always run and destroyed while
+// the ProxyLock is held. A callback that is bound with ref-counted Var or
+// Resource parameters may invoke methods on the VarTracker or the
+// ResourceTracker in its destructor, and these require the ProxyLock.
 template <>
 class RunWhileLockedHelper<void()> {
  public:
@@ -179,50 +184,49 @@ class RunWhileLockedHelper<void()> {
     // creation.
     thread_checker_.DetachFromThread();
   }
-  void CallWhileLocked() {
+  static void CallWhileLocked(scoped_ptr<RunWhileLockedHelper> ptr) {
     // Bind thread_checker_ to this thread so we can check in the destructor.
-    DCHECK(thread_checker_.CalledOnValidThread());
+    // *If* the callback gets invoked, it's important that RunWhileLockedHelper
+    // is destroyed on the same thread (see the comments in the destructor).
+    DCHECK(ptr->thread_checker_.CalledOnValidThread());
     ProxyAutoLock lock;
     {
       // Use a scope and local Callback to ensure that the callback is cleared
       // before the lock is released, even in the unlikely event that Run()
       // throws an exception.
-      scoped_ptr<CallbackType> temp_callback(callback_.Pass());
+      scoped_ptr<CallbackType> temp_callback(ptr->callback_.Pass());
       temp_callback->Run();
     }
   }
 
   ~RunWhileLockedHelper() {
     // Check that the Callback is destroyed on the same thread as where
-    // CallWhileLocked happened (if CallWhileLocked happened).
+    // CallWhileLocked happened if CallWhileLocked happened. If we weren't
+    // invoked, thread_checked_ isn't bound to a thread.
     DCHECK(thread_checker_.CalledOnValidThread());
     // Here we read callback_ without the lock. This is why the callback must be
-    // destroyed on the same thread where it runs. There are 2 cases where
-    // callback_ will be NULL:
-    //   1) This is the original RunWhileLockedHelper that RunWhileLocked
-    //      created. When it was copied somewhere else (e.g., to a MessageLoop
-    //      queue), callback_ was passed to the new copy, and the original
-    //      RunWhileLockedHelper's callback_ was set to NULL (since scoped_ptrs
-    //      only ever have 1 owner). In this case, we don't want to acquire the
-    //      lock, because we already have it.
-    //   2) callback_ has already been run via CallWhileLocked. In this case,
-    //      there's no need to acquire the lock, because we don't touch any
-    //      shared data.
+    // destroyed on the same thread where it runs. Note that callback_ will be
+    // NULL if it has already been run via CallWhileLocked. In this case,
+    // there's no need to acquire the lock, because we don't touch any shared
+    // data.
     if (callback_) {
-      // If the callback was not run, we still need to have the lock when we
-      // destroy the callback in case it had a Resource bound to it. This
-      // ensures that the Resource's destructor is invoked only with the lock
-      // held.
+      // If the callback was *not* run, we're in a case where the task queue
+      // we got pushed to has been destroyed (e.g., the thread is shut down and
+      // its MessageLoop destroyed before all tasks have run.)
       //
-      // Also: Resource and Var inherit RefCounted (not ThreadSafeRefCounted),
-      // and these callbacks need to be usable on any thread. So we need to lock
-      // when releasing the callback to avoid ref counting races.
+      // We still need to have the lock when we destroy the callback:
+      // - Because Resource and Var inherit RefCounted (not
+      //   ThreadSafeRefCounted).
+      // - Because if the callback owns the last ref to a Resource, it will
+      //   call the ResourceTracker and also the Resource's destructor, which
+      //   both require the ProxyLock.
       ProxyAutoLock lock;
       callback_.reset();
     }
   }
 
  private:
+  DISALLOW_COPY_AND_ASSIGN(RunWhileLockedHelper);
   scoped_ptr<CallbackType> callback_;
 
   // Used to ensure that the Callback is run and deleted on the same thread.
@@ -237,11 +241,11 @@ class RunWhileLockedHelper<void(P1)> {
       : callback_(new CallbackType(callback)) {
     thread_checker_.DetachFromThread();
   }
-  void CallWhileLocked(P1 p1) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+  static void CallWhileLocked(scoped_ptr<RunWhileLockedHelper> ptr, P1 p1) {
+    DCHECK(ptr->thread_checker_.CalledOnValidThread());
     ProxyAutoLock lock;
     {
-      scoped_ptr<CallbackType> temp_callback(callback_.Pass());
+      scoped_ptr<CallbackType> temp_callback(ptr->callback_.Pass());
       temp_callback->Run(p1);
     }
   }
@@ -254,6 +258,7 @@ class RunWhileLockedHelper<void(P1)> {
   }
 
  private:
+  DISALLOW_COPY_AND_ASSIGN(RunWhileLockedHelper);
   scoped_ptr<CallbackType> callback_;
   base::ThreadChecker thread_checker_;
 };
@@ -266,11 +271,12 @@ class RunWhileLockedHelper<void(P1, P2)> {
       : callback_(new CallbackType(callback)) {
     thread_checker_.DetachFromThread();
   }
-  void CallWhileLocked(P1 p1, P2 p2) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+  static void CallWhileLocked(
+      scoped_ptr<RunWhileLockedHelper> ptr, P1 p1, P2 p2) {
+    DCHECK(ptr->thread_checker_.CalledOnValidThread());
     ProxyAutoLock lock;
     {
-      scoped_ptr<CallbackType> temp_callback(callback_.Pass());
+      scoped_ptr<CallbackType> temp_callback(ptr->callback_.Pass());
       temp_callback->Run(p1, p2);
     }
   }
@@ -283,6 +289,7 @@ class RunWhileLockedHelper<void(P1, P2)> {
   }
 
  private:
+  DISALLOW_COPY_AND_ASSIGN(RunWhileLockedHelper);
   scoped_ptr<CallbackType> callback_;
   base::ThreadChecker thread_checker_;
 };
@@ -295,11 +302,12 @@ class RunWhileLockedHelper<void(P1, P2, P3)> {
       : callback_(new CallbackType(callback)) {
     thread_checker_.DetachFromThread();
   }
-  void CallWhileLocked(P1 p1, P2 p2, P3 p3) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+  static void CallWhileLocked(
+      scoped_ptr<RunWhileLockedHelper> ptr, P1 p1, P2 p2, P3 p3) {
+    DCHECK(ptr->thread_checker_.CalledOnValidThread());
     ProxyAutoLock lock;
     {
-      scoped_ptr<CallbackType> temp_callback(callback_.Pass());
+      scoped_ptr<CallbackType> temp_callback(ptr->callback_.Pass());
       temp_callback->Run(p1, p2, p3);
     }
   }
@@ -312,6 +320,7 @@ class RunWhileLockedHelper<void(P1, P2, P3)> {
   }
 
  private:
+  DISALLOW_COPY_AND_ASSIGN(RunWhileLockedHelper);
   scoped_ptr<CallbackType> callback_;
   base::ThreadChecker thread_checker_;
 };
@@ -349,11 +358,26 @@ class RunWhileLockedHelper<void(P1, P2, P3)> {
 template <class FunctionType>
 inline base::Callback<FunctionType> RunWhileLocked(
     const base::Callback<FunctionType>& callback) {
-  internal::RunWhileLockedHelper<FunctionType>* helper =
-      new internal::RunWhileLockedHelper<FunctionType>(callback);
+  // NOTE: the reason we use "scoped_ptr" here instead of letting the callback
+  // own it via base::Owned is kind of subtle. Imagine for the moment that we
+  // call RunWhileLocked without the ProxyLock:
+  // {
+  //   base::Callback<void ()> local_callback = base::Bind(&Foo);
+  //   some_task_runner.PostTask(FROM_HERE, RunWhileLocked(local_callback));
+  // }
+  // In this case, since we don't have a lock synchronizing us, it's possible
+  // for the callback to run on the other thread before we return and destroy
+  // |local_callback|. The important thing here is that even though the other
+  // thread gets a copy of the callback, the internal "BindState" of the
+  // callback is refcounted and shared between all copies of the callback. So
+  // in that case, if we used base::Owned, we might delete RunWhileLockedHelper
+  // on this thread, which will violate the RunWhileLockedHelper's assumption
+  // that it is destroyed on the same thread where it is run.
+  scoped_ptr<internal::RunWhileLockedHelper<FunctionType>> helper(
+      new internal::RunWhileLockedHelper<FunctionType>(callback));
   return base::Bind(
       &internal::RunWhileLockedHelper<FunctionType>::CallWhileLocked,
-      base::Owned(helper));
+      base::Passed(helper.Pass()));
 }
 
 }  // namespace ppapi

@@ -355,18 +355,17 @@ UDPSOCKET_TEST(UDPSocket_Multicast)
 
 // UDPSocketPrivate tests.
 // UDPSocketPrivate_Broadcast is disabled for OSX because it requires root
-// permissions on OSX 10.7+. Also flaky on other platforms
-// http://crbug.com/475544
+// permissions on OSX 10.7+.
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Connect)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_ConnectFailure)
 #if !defined(OS_MACOSX)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(DISABLED_UDPSocketPrivate_Broadcast)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Broadcast)
 #endif  // !defined(OS_MACOSX)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_SetSocketFeatureErrors)
 TEST_PPAPI_NACL(UDPSocketPrivate_Connect)
 TEST_PPAPI_NACL(UDPSocketPrivate_ConnectFailure)
 #if !defined(OS_MACOSX)
-TEST_PPAPI_NACL(DISABLED_UDPSocketPrivate_Broadcast)
+TEST_PPAPI_NACL(UDPSocketPrivate_Broadcast)
 #endif  // !defined(OS_MACOSX)
 TEST_PPAPI_NACL(UDPSocketPrivate_SetSocketFeatureErrors)
 
