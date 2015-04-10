@@ -47,28 +47,38 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
 #include "wtf/testing/WTFTestHelpers.h"
 #include <gtest/gtest.h>
+#include <string>
 
 using namespace blink;
 
 namespace {
 
+struct DOMTree : NodeTraversal {
+    using PositionType = Position;
+    using TextIteratorType = TextIterator;
+};
+
 class TextIteratorTest : public ::testing::Test {
 protected:
     virtual void SetUp() override;
 
-    HTMLDocument& document() const;
+    HTMLDocument& document() const { return *m_document; }
 
-    Vector<String> iterate(TextIteratorBehavior = TextIteratorDefaultBehavior);
-    Vector<String> iteratePartial(const Position& start, const Position& end, TextIteratorBehavior = TextIteratorDefaultBehavior);
+    template <typename Tree>
+    std::string iterate(TextIteratorBehavior = TextIteratorDefaultBehavior);
+
+    template <typename Tree>
+    std::string iteratePartial(const typename Tree::PositionType& start, const typename Tree::PositionType& end, TextIteratorBehavior = TextIteratorDefaultBehavior);
 
     void setBodyInnerHTML(const char*);
+
     PassRefPtrWillBeRawPtr<Range> getBodyRange() const;
 
 private:
-    Vector<String> iterateWithIterator(TextIterator&);
+    template <typename Tree>
+    std::string iterateWithIterator(typename Tree::TextIteratorType&);
 
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
 
@@ -82,32 +92,34 @@ void TextIteratorTest::SetUp()
     ASSERT(m_document);
 }
 
-Vector<String> TextIteratorTest::iterate(TextIteratorBehavior iteratorBehavior)
+template <typename Tree>
+std::string TextIteratorTest::iterate(TextIteratorBehavior iteratorBehavior)
 {
-    RefPtrWillBeRawPtr<Range> range = getBodyRange();
-    TextIterator iterator(range->startPosition(), range->endPosition(), iteratorBehavior);
-    return iterateWithIterator(iterator);
+    RefPtrWillBeRawPtr<Element> body = document().body();
+    using PositionType = typename Tree::PositionType;
+    auto start = PositionType(body, 0, PositionType::PositionIsOffsetInAnchor);
+    auto end = PositionType(body, Tree::countChildren(*body), PositionType::PositionIsOffsetInAnchor);
+    typename Tree::TextIteratorType iterator(start, end, iteratorBehavior);
+    return iterateWithIterator<Tree>(iterator);
 }
 
-Vector<String> TextIteratorTest::iteratePartial(const Position& start, const Position& end, TextIteratorBehavior iteratorBehavior)
+template <typename Tree>
+std::string TextIteratorTest::iteratePartial(const typename Tree::PositionType& start, const typename Tree::PositionType& end, TextIteratorBehavior iteratorBehavior)
 {
-    TextIterator iterator(start, end, iteratorBehavior);
-    return iterateWithIterator(iterator);
+    typename Tree::TextIteratorType iterator(start, end, iteratorBehavior);
+    return iterateWithIterator<Tree>(iterator);
 }
 
-Vector<String> TextIteratorTest::iterateWithIterator(TextIterator& iterator)
+template <typename Tree>
+std::string TextIteratorTest::iterateWithIterator(typename Tree::TextIteratorType& iterator)
 {
-    Vector<String> textChunks;
-    while (!iterator.atEnd()) {
+    String textChunks;
+    for (; !iterator.atEnd(); iterator.advance()) {
+        textChunks.append('[');
         textChunks.append(iterator.text().substring(0, iterator.text().length()));
-        iterator.advance();
+        textChunks.append(']');
     }
-    return textChunks;
-}
-
-HTMLDocument& TextIteratorTest::document() const
-{
-    return *m_document;
+    return std::string(textChunks.utf8().data());
 }
 
 void TextIteratorTest::setBodyInnerHTML(const char* bodyContent)
@@ -120,13 +132,6 @@ PassRefPtrWillBeRawPtr<Range> TextIteratorTest::getBodyRange() const
     RefPtrWillBeRawPtr<Range> range(Range::create(document()));
     range->selectNode(document().body());
     return range.release();
-}
-
-Vector<String> createVectorString(const char* const* rawStrings, size_t size)
-{
-    Vector<String> result;
-    result.append(rawStrings, size);
-    return result;
 }
 
 PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
@@ -152,374 +157,224 @@ TEST_F(TextIteratorTest, BitStackOverflow)
 TEST_F(TextIteratorTest, BasicIteration)
 {
     static const char* input = "<p>Hello, \ntext</p><p>iterator.</p>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello, ",
-        "text",
-        "\n",
-        "\n",
-        "iterator."
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(input);
-    EXPECT_EQ(expectedTextChunks, iterate());
+    EXPECT_EQ("[Hello, ][text][\n][\n][iterator.]", iterate<DOMTree>());
 }
 
 TEST_F(TextIteratorTest, IgnoreAltTextInTextControls)
 {
-    static const char* input = "<p>Hello <input type=\"text\" value=\"alt\">!</p>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello ",
-        "",
-        "!",
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
+    static const char* input = "<p>Hello <input type='text' value='value'>!</p>";
     setBodyInnerHTML(input);
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEmitsImageAltText));
+    EXPECT_EQ("[Hello ][][!]", iterate<DOMTree>(TextIteratorEmitsImageAltText));
 }
 
 TEST_F(TextIteratorTest, DisplayAltTextInImageControls)
 {
-    static const char* input = "<p>Hello <input type=\"image\" alt=\"alt\">!</p>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello ",
-        "alt",
-        "!",
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
+    static const char* input = "<p>Hello <input type='image' alt='alt'>!</p>";
     setBodyInnerHTML(input);
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEmitsImageAltText));
+    EXPECT_EQ("[Hello ][alt][!]", iterate<DOMTree>(TextIteratorEmitsImageAltText));
 }
 
 TEST_F(TextIteratorTest, NotEnteringTextControls)
 {
-    static const char* input = "<p>Hello <input type=\"text\" value=\"input\">!</p>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello ",
-        "",
-        "!",
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
+    static const char* input = "<p>Hello <input type='text' value='input'>!</p>";
     setBodyInnerHTML(input);
-    EXPECT_EQ(expectedTextChunks, iterate());
+    EXPECT_EQ("[Hello ][][!]", iterate<DOMTree>());
 }
 
 TEST_F(TextIteratorTest, EnteringTextControlsWithOption)
 {
-    static const char* input = "<p>Hello <input type=\"text\" value=\"input\">!</p>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello ",
-        "\n",
-        "input",
-        "!",
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
+    static const char* input = "<p>Hello <input type='text' value='input'>!</p>";
     setBodyInnerHTML(input);
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersTextControls));
+    EXPECT_EQ("[Hello ][\n][input][!]", iterate<DOMTree>(TextIteratorEntersTextControls));
 }
 
 TEST_F(TextIteratorTest, EnteringTextControlsWithOptionComplex)
 {
-    static const char* input = "<input type=\"text\" value=\"Beginning of range\"><div><div><input type=\"text\" value=\"Under DOM nodes\"></div></div><input type=\"text\" value=\"End of range\">";
-    static const char* expectedTextChunksRawString[] = {
-        "\n", // FIXME: Why newline here?
-        "Beginning of range",
-        "\n",
-        "Under DOM nodes",
-        "\n",
-        "End of range"
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
+    static const char* input = "<input type='text' value='Beginning of range'><div><div><input type='text' value='Under DOM nodes'></div></div><input type='text' value='End of range'>";
     setBodyInnerHTML(input);
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersTextControls));
+    EXPECT_EQ("[\n][Beginning of range][\n][Under DOM nodes][\n][End of range]", iterate<DOMTree>(TextIteratorEntersTextControls));
 }
 
 TEST_F(TextIteratorTest, NotEnteringTextControlHostingShadowTreeEvenWithOption)
 {
-    static const char* bodyContent = "<div>Hello, <input type=\"text\" value=\"input\" id=\"input\"> iterator.</div>";
+    static const char* bodyContent = "<div>Hello, <input type='text' value='input' id='input'> iterator.</div>";
     static const char* shadowContent = "<span>shadow</span>";
     // TextIterator doesn't emit "input" nor "shadow" since (1) the renderer for <input> is not created; and
     // (2) we don't (yet) recurse into shadow trees.
-    static const char* expectedTextChunksRawString[] = {
-        "Hello, ",
-        "", // FIXME: Why is an empty string emitted here?
-        " iterator."
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "input", shadowContent);
-
-    EXPECT_EQ(expectedTextChunks, iterate());
+    // FIXME: Why is an empty string emitted here?
+    EXPECT_EQ("[Hello, ][][ iterator.]", iterate<DOMTree>());
 }
 
 TEST_F(TextIteratorTest, NotEnteringShadowTree)
 {
-    static const char* bodyContent = "<div>Hello, <span id=\"host\">text</span> iterator.</div>";
+    static const char* bodyContent = "<div>Hello, <span id='host'>text</span> iterator.</div>";
     static const char* shadowContent = "<span>shadow</span>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello, ", // TextIterator doesn't emit "text" since its renderer is not created. The shadow tree is ignored.
-        " iterator."
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-
-    EXPECT_EQ(expectedTextChunks, iterate());
+    // TextIterator doesn't emit "text" since its renderer is not created. The shadow tree is ignored.
+    EXPECT_EQ("[Hello, ][ iterator.]", iterate<DOMTree>());
 }
 
 TEST_F(TextIteratorTest, NotEnteringShadowTreeWithMultipleShadowTrees)
 {
-    static const char* bodyContent = "<div>Hello, <span id=\"host\">text</span> iterator.</div>";
+    static const char* bodyContent = "<div>Hello, <span id='host'>text</span> iterator.</div>";
     static const char* shadowContent1 = "<span>first shadow</span>";
     static const char* shadowContent2 = "<span>second shadow</span>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello, ",
-        " iterator."
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent2);
-
-    EXPECT_EQ(expectedTextChunks, iterate());
+    EXPECT_EQ("[Hello, ][ iterator.]", iterate<DOMTree>());
 }
 
 TEST_F(TextIteratorTest, NotEnteringShadowTreeWithNestedShadowTrees)
 {
-    static const char* bodyContent = "<div>Hello, <span id=\"host-in-document\">text</span> iterator.</div>";
-    static const char* shadowContent1 = "<span>first <span id=\"host-in-shadow\">shadow</span></span>";
+    static const char* bodyContent = "<div>Hello, <span id='host-in-document'>text</span> iterator.</div>";
+    static const char* shadowContent1 = "<span>first <span id='host-in-shadow'>shadow</span></span>";
     static const char* shadowContent2 = "<span>second shadow</span>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello, ",
-        " iterator."
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot1, "host-in-shadow", shadowContent2);
-
-    EXPECT_EQ(expectedTextChunks, iterate());
+    EXPECT_EQ("[Hello, ][ iterator.]", iterate<DOMTree>());
 }
 
 TEST_F(TextIteratorTest, NotEnteringShadowTreeWithContentInsertionPoint)
 {
-    static const char* bodyContent = "<div>Hello, <span id=\"host\">text</span> iterator.</div>";
+    static const char* bodyContent = "<div>Hello, <span id='host'>text</span> iterator.</div>";
     static const char* shadowContent = "<span>shadow <content>content</content></span>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello, ",
-        "text", // In this case a renderer for "text" is created, so it shows up here.
-        " iterator."
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-
-    EXPECT_EQ(expectedTextChunks, iterate());
+    // In this case a renderer for "text" is created, so it shows up here.
+    EXPECT_EQ("[Hello, ][text][ iterator.]", iterate<DOMTree>());
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithOption)
 {
-    static const char* bodyContent = "<div>Hello, <span id=\"host\">text</span> iterator.</div>";
+    static const char* bodyContent = "<div>Hello, <span id='host'>text</span> iterator.</div>";
     static const char* shadowContent = "<span>shadow</span>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello, ",
-        "shadow", // TextIterator emits "shadow" since TextIteratorEntersOpenShadowRoots is specified.
-        " iterator."
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
+    // TextIterator emits "shadow" since TextIteratorEntersOpenShadowRoots is specified.
+    EXPECT_EQ("[Hello, ][shadow][ iterator.]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithMultipleShadowTreesWithOption)
 {
-    static const char* bodyContent = "<div>Hello, <span id=\"host\">text</span> iterator.</div>";
+    static const char* bodyContent = "<div>Hello, <span id='host'>text</span> iterator.</div>";
     static const char* shadowContent1 = "<span>first shadow</span>";
     static const char* shadowContent2 = "<span>second shadow</span>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello, ",
-        "second shadow", // The first isn't emitted because a renderer for the first is not created.
-        " iterator."
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent2);
-
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
+    // The first isn't emitted because a renderer for the first is not created.
+    EXPECT_EQ("[Hello, ][second shadow][ iterator.]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithNestedShadowTreesWithOption)
 {
-    static const char* bodyContent = "<div>Hello, <span id=\"host-in-document\">text</span> iterator.</div>";
-    static const char* shadowContent1 = "<span>first <span id=\"host-in-shadow\">shadow</span></span>";
+    static const char* bodyContent = "<div>Hello, <span id='host-in-document'>text</span> iterator.</div>";
+    static const char* shadowContent1 = "<span>first <span id='host-in-shadow'>shadow</span></span>";
     static const char* shadowContent2 = "<span>second shadow</span>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello, ",
-        "first ",
-        "second shadow",
-        " iterator."
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot1 = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host-in-document", shadowContent1);
     createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot1, "host-in-shadow", shadowContent2);
-
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
+    EXPECT_EQ("[Hello, ][first ][second shadow][ iterator.]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, EnteringShadowTreeWithContentInsertionPointWithOption)
 {
-    static const char* bodyContent = "<div>Hello, <span id=\"host\">text</span> iterator.</div>";
+    static const char* bodyContent = "<div>Hello, <span id='host'>text</span> iterator.</div>";
     static const char* shadowContent = "<span><content>content</content> shadow</span>";
     // In this case a renderer for "text" is created, and emitted AFTER any nodes in the shadow tree.
     // This order does not match the order of the rendered texts, but at this moment it's the expected behavior.
     // FIXME: Fix this. We probably need pure-renderer-based implementation of TextIterator to achieve this.
-    static const char* expectedTextChunksRawString[] = {
-        "Hello, ",
-        " shadow",
-        "text",
-        " iterator."
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
+    EXPECT_EQ("[Hello, ][ shadow][text][ iterator.]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot)
 {
-    static const char* bodyContent = "<div id=\"outer\">Hello, <span id=\"host\">text</span> iterator.</div>";
+    static const char* bodyContent = "<div id='outer'>Hello, <span id='host'>text</span> iterator.</div>";
     static const char* shadowContent = "<span><content>content</content> shadow</span>";
-    static const char* expectedTextChunksRawString[] = {
-        " shadow",
-        "text",
-        " iterator."
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     Node* outerDiv = document().getElementById("outer");
     Node* spanInShadow = shadowRoot->firstChild();
     Position start(spanInShadow, Position::PositionIsBeforeChildren);
     Position end(outerDiv, Position::PositionIsAfterChildren);
-
-    EXPECT_EQ(expectedTextChunks, iteratePartial(start, end, TextIteratorEntersOpenShadowRoots));
+    EXPECT_EQ("[ shadow][text][ iterator.]", iteratePartial<DOMTree>(start, end, TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot)
 {
-    static const char* bodyContent = "<div id=\"outer\">Hello, <span id=\"host\">text</span> iterator.</div>";
+    static const char* bodyContent = "<div id='outer'>Hello, <span id='host'>text</span> iterator.</div>";
     static const char* shadowContent = "<span><content>content</content> shadow</span>";
-    static const char* expectedTextChunksRawString[] = {
-        "Hello, ",
-        " shadow"
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     Node* outerDiv = document().getElementById("outer");
     Node* spanInShadow = shadowRoot->firstChild();
     Position start(outerDiv, Position::PositionIsBeforeChildren);
     Position end(spanInShadow, Position::PositionIsAfterChildren);
-
-    EXPECT_EQ(expectedTextChunks, iteratePartial(start, end, TextIteratorEntersOpenShadowRoots));
+    EXPECT_EQ("[Hello, ][ shadow]", iteratePartial<DOMTree>(start, end, TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, FullyClipsContents)
 {
     static const char* bodyContent =
-        "<div style=\"overflow: hidden; width: 200px; height: 0;\">"
+        "<div style='overflow: hidden; width: 200px; height: 0;'>"
         "I'm invisible"
         "</div>";
-    Vector<String> expectedTextChunks; // Empty.
-
     setBodyInnerHTML(bodyContent);
-    EXPECT_EQ(expectedTextChunks, iterate());
+    EXPECT_EQ("", iterate<DOMTree>());
 }
 
 TEST_F(TextIteratorTest, IgnoresContainerClip)
 {
     static const char* bodyContent =
-        "<div style=\"overflow: hidden; width: 200px; height: 0;\">"
+        "<div style='overflow: hidden; width: 200px; height: 0;'>"
         "<div>I'm not visible</div>"
-        "<div style=\"position: absolute; width: 200px; height: 200px; top: 0; right: 0;\">"
+        "<div style='position: absolute; width: 200px; height: 200px; top: 0; right: 0;'>"
         "but I am!"
         "</div>"
         "</div>";
-    static const char* expectedTextChunksRawString[] = {
-        "but I am!"
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
-    EXPECT_EQ(expectedTextChunks, iterate());
+    EXPECT_EQ("[but I am!]", iterate<DOMTree>());
 }
 
 TEST_F(TextIteratorTest, FullyClippedContentsDistributed)
 {
     static const char* bodyContent =
-        "<div id=\"host\">"
+        "<div id='host'>"
         "<div>Am I visible?</div>"
         "</div>";
     static const char* shadowContent =
-        "<div style=\"overflow: hidden; width: 200px; height: 0;\">"
+        "<div style='overflow: hidden; width: 200px; height: 0;'>"
         "<content></content>"
         "</div>";
-    static const char* expectedTextChunksRawString[] = {
-        "\n",
-        // FIXME: The text below is actually invisible but TextIterator currently thinks it's visible.
-        "Am I visible?"
-    };
-    Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
+    // FIXME: The text below is actually invisible but TextIterator currently thinks it's visible.
+    EXPECT_EQ("[\n][Am I visible?]", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, IgnoresContainersClipDistributed)
 {
     static const char* bodyContent =
-        "<div id=\"host\" style=\"overflow: hidden; width: 200px; height: 0;\">"
+        "<div id='host' style='overflow: hidden; width: 200px; height: 0;'>"
         "<div>Nobody can find me!</div>"
         "</div>";
     static const char* shadowContent =
-        "<div style=\"position: absolute; width: 200px; height: 200px; top: 0; right: 0;\">"
+        "<div style='position: absolute; width: 200px; height: 200px; top: 0; right: 0;'>"
         "<content></content>"
         "</div>";
-    // FIXME: The text below is actually visible but TextIterator currently thinks it's invisible.
-    // static const char* expectedTextChunksRawString[] = {
-    //     "\n",
-    //     "Nobody can find me!"
-    // };
-    // Vector<String> expectedTextChunks = createVectorString(expectedTextChunksRawString, WTF_ARRAY_LENGTH(expectedTextChunksRawString));
-    Vector<String> expectedTextChunks; // Empty.
-
     setBodyInnerHTML(bodyContent);
     createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
-
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEntersOpenShadowRoots));
+    // FIXME: The text below is actually visible but TextIterator currently thinks it's invisible.
+    // [\n][Nobody can find me!]
+    EXPECT_EQ("", iterate<DOMTree>(TextIteratorEntersOpenShadowRoots));
 }
 
 TEST_F(TextIteratorTest, FindPlainTextInvalidTarget)
@@ -559,29 +414,19 @@ TEST_F(TextIteratorTest, FindPlainTextInvalidTarget)
 TEST_F(TextIteratorTest, EmitsReplacementCharForInput)
 {
     static const char* bodyContent =
-        "<div contenteditable=\"true\">"
+        "<div contenteditable='true'>"
         "Before"
-        "<img src=\"foo.png\">"
+        "<img src='foo.png'>"
         "After"
         "</div>";
-    // "Before".
-    static const UChar expectedRawString1[] = { 0x42, 0x65, 0x66, 0x6F, 0x72, 0x65, 0 };
-    // Object replacement char.
-    static const UChar expectedRawString2[] = { 0xFFFC, 0 };
-    // "After".
-    static const UChar expectedRawString3[] = { 0x41, 0x66, 0x74, 0x65, 0x72, 0 };
-    static const UChar* expectedRawStrings[] = { expectedRawString1, expectedRawString2, expectedRawString3 };
-    Vector<String> expectedTextChunks;
-    expectedTextChunks.append(expectedRawStrings, WTF_ARRAY_LENGTH(expectedRawStrings));
-
     setBodyInnerHTML(bodyContent);
-    EXPECT_EQ(expectedTextChunks, iterate(TextIteratorEmitsObjectReplacementCharacter));
+    EXPECT_EQ("[Before][\xEF\xBF\xBC][After]", iterate<DOMTree>(TextIteratorEmitsObjectReplacementCharacter));
 }
 
 TEST_F(TextIteratorTest, RangeLengthWithReplacedElements)
 {
     static const char* bodyContent =
-        "<div id=\"div\" contenteditable=\"true\">1<img src=\"foo.png\">3</div>";
+        "<div id='div' contenteditable='true'>1<img src='foo.png'>3</div>";
     setBodyInnerHTML(bodyContent);
     document().view()->updateLayoutAndStyleIfNeededRecursive();
 
@@ -594,7 +439,7 @@ TEST_F(TextIteratorTest, RangeLengthWithReplacedElements)
 TEST_F(TextIteratorTest, SubrangeWithReplacedElements)
 {
     static const char* bodyContent =
-        "<div id=\"div\" contenteditable=\"true\">1<img src=\"foo.png\">345</div>";
+        "<div id='div' contenteditable='true'>1<img src='foo.png'>345</div>";
     setBodyInnerHTML(bodyContent);
     document().view()->updateLayoutAndStyleIfNeededRecursive();
 
