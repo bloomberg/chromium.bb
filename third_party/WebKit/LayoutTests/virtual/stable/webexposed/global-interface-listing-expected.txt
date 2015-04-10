@@ -3381,12 +3381,6 @@ interface ReadableStream
     method cancel
     method constructor
     method getReader
-interface ReadableStreamReader
-    getter closed
-    method cancel
-    method constructor
-    method read
-    method releaseLock
 interface ReferenceError
     attribute name
     getter stack
