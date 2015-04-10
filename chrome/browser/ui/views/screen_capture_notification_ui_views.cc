@@ -4,15 +4,14 @@
 
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 
-#include "ash/shell.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
@@ -26,6 +25,10 @@
 
 #if defined(OS_WIN)
 #include "ui/views/win/hwnd_util.h"
+#endif
+
+#if defined(USE_ASH)
+#include "ash/shell.h"
 #endif
 
 namespace {
@@ -175,11 +178,13 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   params.remove_standard_frame = true;
   params.keep_on_top = true;
 
+#if defined(USE_ASH)
   // TODO(sergeyu): The notification bar must be shown on the monitor that's
   // being captured. Make sure it's always the case. Currently we always capture
   // the primary monitor.
   if (ash::Shell::HasInstance())
     params.context = ash::Shell::GetPrimaryRootWindow();
+#endif
 
   widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   widget->Init(params);

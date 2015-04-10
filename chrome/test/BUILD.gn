@@ -1282,19 +1282,10 @@ if (!is_android) {
     }
 
     if (enable_one_click_signin) {
-      sources += rebase_path(
-              unit_gypi_values.chrome_unit_tests_one_click_signin_sources,
-              ".",
-              "//chrome")
-      if (is_chromeos) {
-        sources -= [
-          "../browser/ui/sync/one_click_signin_helper_unittest.cc",
-          "../browser/ui/sync/one_click_signin_sync_starter_unittest.cc",
-        ]
-      }
-      if (!toolkit_views) {
-        sources -= [ "../browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc" ]
-      }
+      sources += [
+        "../browser/ui/sync/one_click_signin_sync_observer_unittest.cc",
+        "../browser/ui/sync/one_click_signin_sync_starter_unittest.cc",
+      ]
     }
 
     if (enable_extensions) {
@@ -1506,6 +1497,7 @@ if (!is_android) {
         "../browser/signin/signin_names_io_thread_unittest.cc",
         "../browser/ui/views/app_list/linux/app_list_linux_unittest.cc",
         "../browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc",
+        "../browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc",
       ]
       if (use_ozone) {
         # crbug.com/354036

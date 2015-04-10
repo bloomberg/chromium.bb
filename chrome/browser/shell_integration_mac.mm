@@ -6,6 +6,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/common/chrome_version_info.h"
 #import "third_party/mozilla/NSWorkspace+Utils.h"
 
@@ -94,6 +95,27 @@ bool IsIdentifierDefaultProtocolClient(NSString* identifier,
 }
 
 }  // namespace
+
+// static
+base::string16 ShellIntegration::GetApplicationNameForProtocol(
+    const GURL& url) {
+  NSURL* ns_url = [NSURL URLWithString:
+      base::SysUTF8ToNSString(url.possibly_invalid_spec())];
+  CFURLRef openingApp = NULL;
+  OSStatus status = LSGetApplicationForURL((CFURLRef)ns_url,
+                                           kLSRolesAll,
+                                           NULL,
+                                           &openingApp);
+  if (status != noErr) {
+    // likely kLSApplicationNotFoundErr
+    return base::string16();
+  }
+  NSString* appPath = [(NSURL*)openingApp path];
+  CFRelease(openingApp);  // NOT A BUG; LSGetApplicationForURL retains for us
+  NSString* appDisplayName =
+      [[NSFileManager defaultManager] displayNameAtPath:appPath];
+  return base::SysNSStringToUTF16(appDisplayName);
+}
 
 // Attempt to determine if this instance of Chrome is the default browser and
 // return the appropriate state. (Defined as being the handler for HTTP/HTTPS

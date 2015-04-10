@@ -461,6 +461,7 @@
       'browser/ui/cocoa/omnibox/omnibox_popup_separator_view_unittest.mm',
       'browser/ui/cocoa/omnibox/omnibox_popup_view_mac_unittest.mm',
       'browser/ui/cocoa/omnibox/omnibox_view_mac_unittest.mm',
+      'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
       'browser/ui/cocoa/panels/panel_cocoa_unittest.mm',
       'browser/ui/cocoa/passwords/credential_item_view_unittest.mm',
       'browser/ui/cocoa/passwords/manage_password_item_view_controller_unittest.mm',
@@ -612,12 +613,6 @@
       '../tools/json_schema_compiler/test/objects_unittest.cc',
       '../tools/json_schema_compiler/test/simple_api_unittest.cc',
       '../ui/webui/resources/js/cr.js',
-    ],
-    'chrome_unit_tests_one_click_signin_sources': [
-      'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
-      'browser/ui/sync/one_click_signin_sync_observer_unittest.cc',
-      'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
-      'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
     ],
     'chrome_unit_tests_spellchecker_sources': [
       'browser/spellchecker/feedback_sender_unittest.cc',
@@ -1367,6 +1362,7 @@
       'browser/ui/views/frame/web_contents_close_handler_unittest.cc',
       'browser/ui/views/omnibox/omnibox_view_views_unittest.cc',
       'browser/ui/views/status_icons/status_tray_win_unittest.cc',
+      'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
       'browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views_unittest.cc',
       'browser/ui/views/tabs/fake_base_tab_strip_controller.cc',
       'browser/ui/views/tabs/fake_base_tab_strip_controller.h',
@@ -2184,19 +2180,10 @@
             }],
           ],
         }],
-        ['enable_one_click_signin==1', {
-          'sources': [ '<@(chrome_unit_tests_one_click_signin_sources)' ],
-          'conditions': [
-            ['chromeos == 1', {
-              'sources!': [
-                'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
-              ],
-            }],
-            ['toolkit_views == 0', {
-              'sources!': [
-                'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
-              ],
-            }],
+        ['enable_one_click_signin==1', {        
+          'sources': [
+            'browser/ui/sync/one_click_signin_sync_observer_unittest.cc',
+            'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
           ],
         }],
         ['enable_extensions==1', {
@@ -2381,6 +2368,7 @@
             'browser/signin/signin_names_io_thread_unittest.cc',
             'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
             'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
+            'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
           ],
           'conditions': [
             ['use_ozone==1', {

@@ -79,12 +79,6 @@ source_set("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_ios_sources,
                            ".",
                            "//chrome")
-    sources += rebase_path(gypi_values.chrome_browser_ui_global_error_sources,
-                           ".",
-                           "//chrome")
-    sources += rebase_path(gypi_values.chrome_browser_ui_omnibox_sources,
-                           ".",
-                           "//chrome")
     sources += rebase_path(gypi_values.chrome_browser_ui_toolbar_model_sources,
                            ".",
                            "//chrome")
@@ -143,12 +137,6 @@ source_set("ui") {
     deps += [ "//printing" ]
   }
 
-  if (enable_one_click_signin) {
-    sources +=
-        rebase_path(gypi_values.chrome_browser_ui_one_click_signin_sources,
-                    ".",
-                    "//chrome")
-  }
   if (enable_nacl) {
     sources +=
         rebase_path(gypi_values.chrome_browser_ui_nacl_sources, ".", "//chrome")
@@ -217,45 +205,7 @@ source_set("ui") {
                       ".",
                       "//chrome")
     }
-    if (is_mac) {
-      if (mac_views_browser) {
-        sources += rebase_path(
-                gypi_values.chrome_browser_ui_views_mac_experimental_sources,
-                ".",
-                "//chrome")
-        sources +=
-            rebase_path(gypi_values.chrome_browser_ui_views_non_mac_sources,
-                        ".",
-                        "//chrome")
-        sources -= [
-          "cocoa/apps/chrome_app_window_client_cocoa.mm",
-          "cocoa/autofill/card_unmask_prompt_view_bridge.mm",
-          "cocoa/autofill/generated_credit_card_bubble_cocoa.mm",
-          "cocoa/autofill/new_credit_card_bubble_cocoa.mm",
-          "cocoa/bookmarks/bookmark_drag_drop_cocoa.mm",
-          "cocoa/browser_window_factory_cocoa.mm",
-          "cocoa/constrained_web_dialog_delegate_mac.mm",
-          "cocoa/extensions/browser_action_test_util_mac.mm",
-          "cocoa/extensions/extension_action_platform_delegate_cocoa.mm",
-          "cocoa/extensions/extension_install_dialog_controller.mm",
-          "cocoa/extensions/extension_installed_bubble_bridge.mm",
-          "cocoa/extensions/extension_uninstall_dialog_cocoa.mm",
-          "cocoa/extensions/media_galleries_dialog_cocoa.mm",
-          "cocoa/infobars/alternate_nav_infobar_controller.mm",
-          "cocoa/infobars/confirm_infobar_controller.mm",
-          "cocoa/login_prompt_cocoa.mm",
-          "cocoa/panels/panel_stack_window_cocoa.mm",
-          "cocoa/simple_message_box_mac.mm",
-          "cocoa/single_web_contents_dialog_manager_cocoa.cc",
-          "cocoa/ssl_client_certificate_selector_cocoa.mm",
-          "cocoa/tab_dialogs_cocoa.mm",
-          "cocoa/tab_modal_confirm_dialog_mac.mm",
-          "cocoa/task_manager_mac.mm",
-          "cocoa/web_dialog_window_controller.mm",
-        ]
-        deps += [ "//extensions/components/native_app_window" ]
-      }
-    } else {
+    if (!is_mac) {
       sources +=
           rebase_path(gypi_values.chrome_browser_ui_views_non_mac_sources,
                       ".",
@@ -347,6 +297,21 @@ source_set("ui") {
       "//third_party/molokocacao",
       "//third_party/mozilla",
     ]
+    if (mac_views_browser) {
+      sources += rebase_path(
+              gypi_values.chrome_browser_ui_views_mac_experimental_sources,
+              ".",
+              "//chrome")
+      sources +=
+          rebase_path(gypi_values.chrome_browser_ui_views_non_mac_sources,
+                      ".",
+                      "//chrome")
+      deps += [ "//extensions/components/native_app_window" ]
+    } else {
+      sources += rebase_path(gypi_values.chrome_browser_ui_cocoa_sources,
+                             ".",
+                             "//chrome")
+    }
     include_dirs = [ "$target_gen_dir" ]
     libs += [ "Quartz.framework" ]
     configs +=

@@ -7,9 +7,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
-#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -33,7 +33,6 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 - (void)alertEnded:(NSAlert *)alert
         returnCode:(int)returnCode
        contextInfo:(void*)contextInfo;
-- (base::string16)appNameForProtocol;
 @end
 
 @implementation ExternalProtocolDialogController
@@ -50,7 +49,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   routing_id_ = routingId;
   creation_time_ = base::Time::Now();
 
-  base::string16 appName = [self appNameForProtocol];
+  base::string16 appName =
+      ShellIntegration::GetApplicationNameForProtocol(url_);
   if (appName.length() == 0) {
     // No registered apps for this protocol; give up and go home.
     [self autorelease];
@@ -138,26 +138,6 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   }
 
   [self autorelease];
-}
-
-- (base::string16)appNameForProtocol {
-  NSURL* url = [NSURL URLWithString:
-      base::SysUTF8ToNSString(url_.possibly_invalid_spec())];
-  CFURLRef openingApp = NULL;
-  OSStatus status = LSGetApplicationForURL((CFURLRef)url,
-                                           kLSRolesAll,
-                                           NULL,
-                                           &openingApp);
-  if (status != noErr) {
-    // likely kLSApplicationNotFoundErr
-    return base::string16();
-  }
-  NSString* appPath = [(NSURL*)openingApp path];
-  CFRelease(openingApp);  // NOT A BUG; LSGetApplicationForURL retains for us
-  NSString* appDisplayName =
-      [[NSFileManager defaultManager] displayNameAtPath:appPath];
-
-  return base::SysNSStringToUTF16(appDisplayName);
 }
 
 @end
