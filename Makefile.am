@@ -165,7 +165,7 @@ install-exec-hook:
 	chown root $(DESTDIR)$(bindir)/weston-launch \
 		&& chmod u+s $(DESTDIR)$(bindir)/weston-launch \
 		&& can_suid_files=yes;\
-	if test $$can_suid_files=no; then \
+	if test $$can_suid_files = no; then \
 		echo 'Error: unable to unable to change ownership/setuid on weston-launch.'; \
 		echo 'To skip this step, re-run ./configure using --disable-setuid-install'; \
 		false; \
