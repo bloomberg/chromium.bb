@@ -29,6 +29,17 @@ namespace {
 // Used by TestAPI.
 bool has_created_instance = false;
 
+std::vector<std::string> Concatenate(const std::vector<std::string>& v1,
+                                     const std::vector<std::string>& v2) {
+  if (!v1.size())
+    return v2;
+  if (!v2.size())
+    return v1;
+  std::vector<std::string> result(v1);
+  result.insert(result.end(), v1.begin(), v1.end());
+  return result;
+}
+
 }  // namespace
 
 ApplicationManager::Delegate::~Delegate() {
@@ -143,31 +154,32 @@ void ApplicationManager::ConnectToApplicationWithParameters(
   }
 
   // The application is not running, let's compute the parameters.
+  std::vector<std::string> parameters =
+      Concatenate(pre_redirect_parameters, GetArgsForURL(resolved_url));
+
   if (ConnectToApplicationWithLoader(mapped_url, requestor_url, &services,
                                      &exposed_services, on_application_end,
-                                     pre_redirect_parameters,
-                                     GetLoaderForURL(mapped_url))) {
-    return;
-  }
-
-  if (ConnectToApplicationWithLoader(resolved_url, requestor_url, &services,
-                                     &exposed_services, on_application_end,
-                                     pre_redirect_parameters,
-                                     GetLoaderForURL(resolved_url))) {
+                                     parameters, GetLoaderForURL(mapped_url))) {
     return;
   }
 
   if (ConnectToApplicationWithLoader(
           resolved_url, requestor_url, &services, &exposed_services,
-          on_application_end, pre_redirect_parameters, default_loader_.get())) {
+          on_application_end, parameters, GetLoaderForURL(resolved_url))) {
     return;
   }
 
-  auto callback = base::Bind(&ApplicationManager::HandleFetchCallback,
-                             weak_ptr_factory_.GetWeakPtr(), requestor_url,
-                             base::Passed(services.Pass()),
-                             base::Passed(exposed_services.Pass()),
-                             on_application_end, pre_redirect_parameters);
+  if (ConnectToApplicationWithLoader(resolved_url, requestor_url, &services,
+                                     &exposed_services, on_application_end,
+                                     parameters, default_loader_.get())) {
+    return;
+  }
+
+  auto callback = base::Bind(
+      &ApplicationManager::HandleFetchCallback, weak_ptr_factory_.GetWeakPtr(),
+      requestor_url, base::Passed(services.Pass()),
+      base::Passed(exposed_services.Pass()), on_application_end,
+      parameters);
 
   if (resolved_url.SchemeIsFile()) {
     new LocalFetcher(
@@ -363,6 +375,22 @@ void ApplicationManager::RunNativeApplication(
                            weak_ptr_factory_.GetWeakPtr(), runner));
 }
 
+void ApplicationManager::RegisterExternalApplication(
+    const GURL& url,
+    const std::vector<std::string>& args,
+    ApplicationPtr application) {
+  const auto& args_it = url_to_args_.find(url);
+  if (args_it != url_to_args_.end()) {
+    LOG(WARNING) << "--args-for provided for external application " << url
+                 << " <ignored>";
+  }
+  Identity identity(url);
+  ShellImpl* shell_impl =
+      new ShellImpl(application.Pass(), this, identity, base::Closure());
+  identity_to_shell_impl_[identity] = shell_impl;
+  shell_impl->InitializeApplication(Array<String>::From(args));
+}
+
 void ApplicationManager::RegisterContentHandler(
     const std::string& mime_type,
     const GURL& content_handler_url) {
@@ -404,6 +432,21 @@ void ApplicationManager::SetLoaderForScheme(
   if (it != scheme_to_loader_.end())
     delete it->second;
   scheme_to_loader_[scheme] = loader.release();
+}
+
+void ApplicationManager::SetArgsForURL(const std::vector<std::string>& args,
+                                       const GURL& url) {
+  url_to_args_[url].insert(url_to_args_[url].end(), args.begin(), args.end());
+  GURL mapped_url = delegate_->ResolveMappings(url);
+  if (mapped_url != url) {
+    url_to_args_[mapped_url].insert(url_to_args_[mapped_url].end(),
+                                    args.begin(), args.end());
+  }
+  GURL resolved_url = delegate_->ResolveURL(mapped_url);
+  if (resolved_url != mapped_url) {
+    url_to_args_[resolved_url].insert(url_to_args_[resolved_url].end(),
+                                      args.begin(), args.end());
+  }
 }
 
 void ApplicationManager::SetNativeOptionsForURL(
@@ -462,6 +505,13 @@ ScopedMessagePipeHandle ApplicationManager::ConnectToServiceByName(
   MessagePipe pipe;
   services->ConnectToService(interface_name, pipe.handle1.Pass());
   return pipe.handle0.Pass();
+}
+
+std::vector<std::string> ApplicationManager::GetArgsForURL(const GURL& url) {
+  const auto& args_it = url_to_args_.find(url);
+  if (args_it != url_to_args_.end())
+    return args_it->second;
+  return std::vector<std::string>();
 }
 
 void ApplicationManager::CleanupRunner(NativeRunner* runner) {

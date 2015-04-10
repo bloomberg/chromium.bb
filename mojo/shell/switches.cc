@@ -8,6 +8,18 @@
 
 namespace switches {
 
+namespace {
+// This controls logging verbosity. It's not strictly a switch for mojo_shell,
+// and isn't included in the public switches, but is included here so that it
+// doesn't trigger an error at startup.
+const char kV[] = "v";
+
+}  // namespace
+
+// Specify configuration arguments for a Mojo application URL. For example:
+// --args-for='mojo:wget http://www.google.com'
+const char kArgsFor[] = "args-for";
+
 // Used internally by the main process to indicate that a new process should be
 // a child process. Not for user use.
 const char kChildProcess[] = "child-process";
@@ -54,5 +66,35 @@ const char kPredictableAppFilenames[] = "predictable-app-filenames";
 // Starts tracing when the shell starts up, saving a trace file on disk after 5
 // seconds or when the shell exits.
 const char kTraceStartup[] = "trace-startup";
+
+// Specifies a set of mappings to apply when resolving urls. The value is a set
+// of ',' separated mappings, where each mapping consists of a pair of urls
+// giving the to/from url to map. For example, 'a=b,c=d' contains two mappings,
+// the first maps 'a' to 'b' and the second 'c' to 'd'.
+const char kURLMappings[] = "url-mappings";
+
+// Switches valid for the main process (i.e., that the user may pass in).
+const char* kSwitchArray[] = {kV,
+                              kArgsFor,
+                              // |kChildProcess| not for user use.
+                              kContentHandlers,
+                              kDisableCache,
+                              kDontDeleteOnDownload,
+                              kEnableMultiprocess,
+                              kForceInProcess,
+                              kHelp,
+                              kMapOrigin,
+                              kOrigin,
+                              kPredictableAppFilenames,
+                              kTraceStartup,
+                              kURLMappings};
+
+const std::set<std::string> GetAllSwitches() {
+  std::set<std::string> switch_set;
+
+  for (size_t i = 0; i < arraysize(kSwitchArray); ++i)
+    switch_set.insert(kSwitchArray[i]);
+  return switch_set;
+}
 
 }  // namespace switches

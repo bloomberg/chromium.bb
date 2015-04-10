@@ -84,7 +84,7 @@ class WindowManagerApplicationTest : public test::ApplicationTestBase {
   // ApplicationTestBase:
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    application_impl()->ConnectToService("mojo:test_window_manager",
+    application_impl()->ConnectToService("mojo:window_manager",
                                          &window_manager_);
   }
   ApplicationDelegate* GetApplicationDelegate() override {

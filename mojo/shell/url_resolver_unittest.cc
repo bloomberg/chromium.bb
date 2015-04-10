@@ -115,6 +115,7 @@ TEST_F(URLResolverTest, GetOriginMappings) {
 
   args.clear();
   args.push_back(ARG_LITERAL("mojo_shell"));
+  args.push_back(ARG_LITERAL("--args-for=https://a.org/foo --test"));
   args.push_back(ARG_LITERAL("--map-origin=https://a.org=https://b.org/a"));
   args.push_back(ARG_LITERAL("--map-origin=https://b.org=https://c.org/b"));
   args.push_back(ARG_LITERAL("https://a.org/foo"));

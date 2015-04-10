@@ -112,6 +112,8 @@ source_set("lib") {
     "child_process.h",
     "child_process_host.cc",
     "child_process_host.h",
+    "command_line_util.cc",
+    "command_line_util.h",
     "context.cc",
     "context.h",
     "filename_util.cc",
@@ -359,6 +361,7 @@ mojom("child_process_bindings") {
 test("mojo_shell_tests") {
   sources = [
     "child_process_host_unittest.cc",
+    "command_line_util_unittest.cc",
     "data_pipe_peek_unittest.cc",
     "in_process_native_runner_unittest.cc",
     "native_runner_unittest.cc",

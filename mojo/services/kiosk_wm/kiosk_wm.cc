@@ -4,8 +4,6 @@
 
 #include "mojo/services/kiosk_wm/kiosk_wm.h"
 
-#include "base/command_line.h"
-#include "base/strings/utf_string_conversions.h"
 #include "mojo/services/kiosk_wm/merged_service_provider.h"
 #include "mojo/services/window_manager/basic_focus_rules.h"
 
@@ -30,17 +28,9 @@ base::WeakPtr<KioskWM> KioskWM::GetWeakPtr() {
 void KioskWM::Initialize(mojo::ApplicationImpl* app) {
   window_manager_app_->Initialize(app);
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::CommandLine::StringVector args = command_line->GetArgs();
-  if (args.empty()) {
-    default_url_ = "http://www.google.com/";
-  } else {
-#if defined(OS_WIN)
-    default_url_ = base::WideToUTF8(args[0]);
-#else
-    default_url_ = args[0];
-#endif
-  }
+  // Format: --args-for="app_url default_url"
+  if (app->args().size() > 1)
+    default_url_ = app->args()[1];
 }
 
 bool KioskWM::ConfigureIncomingConnection(

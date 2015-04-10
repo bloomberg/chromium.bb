@@ -26,6 +26,7 @@
 #include "mojo/shell/android/native_viewport_application_loader.h"
 #include "mojo/shell/android/ui_application_loader_android.h"
 #include "mojo/shell/application_manager/application_loader.h"
+#include "mojo/shell/command_line_util.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -45,11 +46,14 @@ const char kFifoPath[] = "fifo-path";
 
 class MojoShellRunner : public base::DelegateSimpleThread::Delegate {
  public:
-  MojoShellRunner(const std::vector<std::string>& parameters) {}
+  MojoShellRunner(const std::vector<std::string>& parameters)
+      : parameters_(parameters) {}
   ~MojoShellRunner() override {}
 
  private:
   void Run() override;
+
+  std::vector<std::string> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellRunner);
 };
@@ -103,7 +107,10 @@ void MojoShellRunner::Run() {
   ConfigureAndroidServices(context);
   context->Init();
 
-  context->Run(GURL("mojo:window_manager"));
+  for (auto& args : parameters_)
+    ApplyApplicationArgs(context, args);
+
+  RunCommandLineApps(context);
   loop.Run();
 
   g_java_message_loop.Pointer()->get()->PostTask(FROM_HERE,

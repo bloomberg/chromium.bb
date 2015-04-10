@@ -13,18 +13,6 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 
-int g_argc;
-const char* const* g_argv;
-#if !defined(OS_WIN)
-extern "C" {
-__attribute__((visibility("default"))) void InitCommandLineArgs(
-    int argc, const char* const* argv) {
-  g_argc = argc;
-  g_argv = argv;
-}
-}
-#endif
-
 namespace mojo {
 
 // static
@@ -54,7 +42,7 @@ MojoResult ApplicationRunnerChromium::Run(
   DCHECK(!has_run_);
   has_run_ = true;
 
-  base::CommandLine::Init(g_argc, g_argv);
+  base::CommandLine::Init(0, NULL);
   base::AtExitManager at_exit;
 
 #ifndef NDEBUG

@@ -5,10 +5,7 @@
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 import("$mojo_sdk_root/mojo/public/tools/bindings/mojom.gni")
 
-# Mojo shell in chromium is only used for Mandoline, and Mandoline only uses
-# kiosk_wm, so we name the target window_manager to avoid having to remap on the
-# command line.
-mojo_native_application("window_manager") {
+mojo_native_application("kiosk_wm") {
   sources = [
     "kiosk_wm.cc",
     "kiosk_wm.h",

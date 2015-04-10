@@ -21,7 +21,7 @@ group("services") {
     deps += [
       "//mojo/services/clipboard",
       "//mojo/services/html_viewer",
-      "//mojo/services/kiosk_wm:window_manager",
+      "//mojo/services/kiosk_wm",
       "//mojo/services/native_viewport",
       "//mojo/services/network",
       "//mojo/services/surfaces",
@@ -33,7 +33,7 @@ group("services") {
     if (is_mac) {
       deps -= [
         "//mojo/services/html_viewer",
-        "//mojo/services/kiosk_wm:window_manager",
+        "//mojo/services/kiosk_wm",
         "//mojo/services/native_viewport",
         "//mojo/services/view_manager",
       ]

@@ -11,7 +11,9 @@
 namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
-// alongside the definition of their values in the .cc file.
+// alongside the definition of their values in the .cc file and, as needed,
+// in mojo_main's Usage() function.
+extern const char kArgsFor[];
 extern const char kChildProcess[];
 extern const char kContentHandlers[];
 extern const char kDisableCache[];
@@ -23,6 +25,9 @@ extern const char kMapOrigin[];
 extern const char kOrigin[];
 extern const char kPredictableAppFilenames[];
 extern const char kTraceStartup[];
+extern const char kURLMappings[];
+
+extern const std::set<std::string> GetAllSwitches();
 
 }  // namespace switches
 
