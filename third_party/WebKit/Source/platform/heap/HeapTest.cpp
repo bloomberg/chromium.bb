@@ -5602,20 +5602,28 @@ public:
 };
 
 class TestMixinAllocationB : public TestMixinAllocationA {
-    USING_GARBAGE_COLLECTED_MIXIN_NESTED(TestMixinAllocationB, TestMixinAllocationA);
+    USING_GARBAGE_COLLECTED_MIXIN(TestMixinAllocationB);
 public:
     TestMixinAllocationB()
+        : m_a(new TestMixinAllocationA()) // Construct object during a mixin construction.
     {
         // Completely wrong in general, but test only
         // runs this constructor while constructing another mixin.
         ASSERT(ThreadState::current()->isGCForbidden());
     }
 
-    DEFINE_INLINE_TRACE() { TestMixinAllocationA::trace(visitor); }
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_a);
+        TestMixinAllocationA::trace(visitor);
+    }
+
+private:
+    Member<TestMixinAllocationA> m_a;
 };
 
 class TestMixinAllocationC final : public TestMixinAllocationB {
-    USING_GARBAGE_COLLECTED_MIXIN_NESTED(TestMixinAllocationC, TestMixinAllocationB);
+    USING_GARBAGE_COLLECTED_MIXIN(TestMixinAllocationC);
 public:
     TestMixinAllocationC()
     {
@@ -5649,7 +5657,7 @@ public:
 };
 
 class TestMixinAllocatingObject final : public TestMixinAllocationB, public ObjectWithLargeAmountsOfAllocationInConstructor {
-    USING_GARBAGE_COLLECTED_MIXIN_NESTED(TestMixinAllocatingObject, TestMixinAllocationB);
+    USING_GARBAGE_COLLECTED_MIXIN(TestMixinAllocatingObject);
 public:
     static TestMixinAllocatingObject* create(ClassWithMember* member)
     {

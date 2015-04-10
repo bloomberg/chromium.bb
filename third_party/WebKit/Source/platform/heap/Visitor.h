@@ -882,10 +882,6 @@ private:
 //    for a field whose only purpose is to leave the GC scope.
 //    GarbageCollectedMixinConstructorMarker's constructor takes care of
 //    this and the field is declared by way of USING_GARBAGE_COLLECTED_MIXIN().
-//
-// If a GC mixin class, declared so using USING_GARBAGE_COLLECTED_MIXIN(), derives
-// leftmost from another such USING_GARBAGE_COLLECTED_MIXIN-mixin class, extra
-// care and handling is needed for the above two steps; see comment below.
 
 #define DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)                         \
 public:                                                                                 \
@@ -894,26 +890,11 @@ public:                                                                         
     {                                                                                   \
         void* object = TYPE::allocateObject(size);                                      \
         ThreadState* state = ThreadStateFor<ThreadingTrait<TYPE>::Affinity>::state();   \
-        state->enterGCForbiddenScope(TYPE::mixinLevels);                                \
+        state->enterGCForbiddenScopeIfNeeded(&(reinterpret_cast<TYPE*>(object)->m_mixinConstructorMarker)); \
         return object;                                                                  \
     }                                                                                   \
-private:                                                                                \
-    GarbageCollectedMixinConstructorMarker<TYPE> m_mixinConstructorMarker;
-
-#if ENABLE(ASSERT)
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_NONNESTED_DEBUG()     \
-protected:                                                   \
-    virtual void mixinsCannotBeImplicitlyNested() final { /* Please use USING_GARBAGE_COLLECTED_MIXIN_NESTED(Mixin, DerivedFromOtherMixin); */ }
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_NESTED_DEBUG(TYPE, SUBTYPE)   \
-protected:                                                           \
-    static void declaredNestedMixinsMustBeAccurate()                 \
-    {                                                                \
-        static_assert(WTF::IsSubclass<blink::TYPE, blink::SUBTYPE>::value, "Mixin class does not derive from its stated, nested mixin class."); \
-    }
-#else
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_NONNESTED_DEBUG()
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_NESTED_DEBUG(TYPE, SUBTYPE)
-#endif
+    GarbageCollectedMixinConstructorMarker m_mixinConstructorMarker;                    \
+private:
 
 // Mixins that wrap/nest others requires extra handling:
 //
@@ -928,57 +909,27 @@ protected:                                                           \
 //
 // The "operator new" for B will enter the forbidden GC scope, but
 // upon construction, two GarbageCollectedMixinConstructorMarker constructors
-// will run -- one for A (first) and another for B (secondly.) Only
-// the second one should leave the forbidden GC scope.
-//
-// Arrange for the balanced use of the forbidden GC scope counter by
-// adding on the number of mixin constructor markers for a type.
-// This is equal to the how many GC mixins that the type nests.
-//
-// FIXME: We currently require that a nested GC mixin (e.g., B)
-// must declare what it nests: USING_GARBAGE_COLLECTED_MIXIN_NESTED(B, A);
-// must be used for it. It's a static error if it doesn't.
-//
-// It would however be preferable to statically derive the
-// "mixin nesting level" for these mixin types and use that without
-// having to explicitly state the particular type that a mixin nests.
-// It seems like it could be expressible as a compile-time type
-// computation..
-
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_NONNESTED()           \
-protected:                                                   \
-    static const unsigned mixinLevels = 1;
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, SUBTYPE)      \
-protected:                                                        \
-    static const unsigned mixinLevels = SUBTYPE::mixinLevels + 1;
-
+// will run -- one for A (first) and another for B (secondly). Only
+// the second one should leave the forbidden GC scope. This is realized by
+// recording the address of B's GarbageCollectedMixinConstructorMarker
+// when the "operator new" for B runs, and leaving the forbidden GC scope
+// when the constructor of the recorded GarbageCollectedMixinConstructorMarker
+// runs.
 #if ENABLE(INLINED_TRACE)
-#define USING_GARBAGE_COLLECTED_MIXIN_BASE(TYPE)                  \
+#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)                       \
     DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE) \
     DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::InlinedGlobalMarkingVisitor, TYPE) \
     DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)
 #else
-#define USING_GARBAGE_COLLECTED_MIXIN_BASE(TYPE)                  \
+#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)                       \
     DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE) \
     DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)
 #endif
 
-#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)          \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_NONNESTED_DEBUG() \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_NONNESTED()       \
-    USING_GARBAGE_COLLECTED_MIXIN_BASE(TYPE)
-
-#define USING_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, SUBTYPE)    \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_NESTED_DEBUG(TYPE, SUBTYPE) \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, SUBTYPE)       \
-    USING_GARBAGE_COLLECTED_MIXIN_BASE(TYPE)
-
 #if ENABLE(OILPAN)
 #define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE) USING_GARBAGE_COLLECTED_MIXIN(TYPE)
-#define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, NESTEDMIXIN) USING_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, NESTEDMIXIN)
 #else
 #define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE)
-#define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, NESTEDMIXIN)
 #endif
 
 // An empty class with a constructor that's arranged invoked when all derived constructors
@@ -988,7 +939,6 @@ protected:                                                        \
 // USING_GARBAGE_COLLECTED_MIXIN() declares a GarbageCollectedMixinConstructorMarker<> private
 // field. By following Blink convention of using the macro at the top of a class declaration,
 // its constructor will run first.
-template<typename T>
 class GarbageCollectedMixinConstructorMarker {
 public:
     GarbageCollectedMixinConstructorMarker()
@@ -998,8 +948,8 @@ public:
         // For now, assume the next out-of-line allocation request will
         // happen soon enough and take care of it. Mixin objects aren't
         // overly common.
-        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-        state->leaveGCForbiddenScope();
+        ThreadState* state = ThreadState::current();
+        state->leaveGCForbiddenScopeIfNeeded(this);
     }
 };
 

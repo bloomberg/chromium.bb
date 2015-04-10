@@ -45,7 +45,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGTextPath
 class SVGTextPathElement final : public SVGTextContentElement,
                                  public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(SVGTextPathElement, SVGGraphicsElement);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGTextPathElement);
 public:
     // Forward declare enumerations in the W3C naming scheme, for IDL generation.
     enum {

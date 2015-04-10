@@ -53,6 +53,7 @@ namespace blink {
 class BasePage;
 class CallbackStack;
 struct GCInfo;
+class GarbageCollectedMixinConstructorMarker;
 class HeapObjectHeader;
 class PageMemoryRegion;
 class PageMemory;
@@ -544,9 +545,20 @@ public:
     // the object being constructed cannot be safely traced & marked
     // fully should a GC be allowed while its subclasses are being
     // constructed.
-    void enterGCForbiddenScope(unsigned delta)
+    void enterGCForbiddenScopeIfNeeded(GarbageCollectedMixinConstructorMarker* gcMixinMarker)
     {
-        m_gcForbiddenCount += delta;
+        if (!m_gcMixinMarker) {
+            m_gcForbiddenCount++;
+            m_gcMixinMarker = gcMixinMarker;
+        }
+    }
+    void leaveGCForbiddenScopeIfNeeded(GarbageCollectedMixinConstructorMarker* gcMixinMarker)
+    {
+        ASSERT(m_gcForbiddenCount > 0);
+        if (m_gcMixinMarker == gcMixinMarker) {
+            m_gcForbiddenCount--;
+            m_gcMixinMarker = nullptr;
+        }
     }
 
 #if ENABLE(ASSERT)
@@ -645,13 +657,6 @@ private:
     void clearHeapAges();
     int heapIndexOfVectorHeapLeastRecentlyExpanded(int beginHeapIndex, int endHeapIndex);
 
-    template<typename U> friend class GarbageCollectedMixinConstructorMarker;
-    void leaveGCForbiddenScope()
-    {
-        ASSERT(m_gcForbiddenCount > 0);
-        m_gcForbiddenCount--;
-    }
-
     friend class SafePointAwareMutexLocker;
     friend class SafePointBarrier;
     friend class SafePointScope;
@@ -689,6 +694,7 @@ private:
     size_t m_currentHeapAges;
 
     bool m_isTerminating;
+    GarbageCollectedMixinConstructorMarker* m_gcMixinMarker;
 
     bool m_shouldFlushHeapDoesNotContainCache;
     GCState m_gcState;
