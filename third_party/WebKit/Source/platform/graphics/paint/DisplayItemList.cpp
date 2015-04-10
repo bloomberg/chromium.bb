@@ -330,19 +330,14 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displ
     }
 
     showUnderInvalidationError("ERROR: under-invalidation: display item changed", displayItem);
-#ifdef NDEBUG
-    ASSERT_NOT_REACHED();
-#else
-    String oldPictureDebugString = pictureAsDebugString(oldPicture.get());
-    String newPictureDebugString = pictureAsDebugString(newPicture.get());
-    if (oldPictureDebugString != newPictureDebugString) {
-        WTFLogAlways("old picture:\n%s\n", oldPictureDebugString.utf8().data());
-        WTFLogAlways("new picture:\n%s\n", newPictureDebugString.utf8().data());
-        ASSERT_NOT_REACHED();
-    } else {
-        WTFLogAlways("However, debug strings of old picture and new picture are the same");
-    }
+#ifndef NDEBUG
+    String oldPictureDebugString = oldPicture ? pictureAsDebugString(oldPicture.get()) : "None";
+    String newPictureDebugString = newPicture ? pictureAsDebugString(newPicture.get()) : "None";
+    WTFLogAlways("old picture:\n%s\n", oldPictureDebugString.utf8().data());
+    WTFLogAlways("new picture:\n%s\n", newPictureDebugString.utf8().data());
 #endif // NDEBUG
+
+    ASSERT_NOT_REACHED();
 }
 
 void DisplayItemList::checkNoRemainingCachedDisplayItems()

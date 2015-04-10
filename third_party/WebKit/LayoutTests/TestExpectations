@@ -86,7 +86,7 @@ crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeo
 crbug.com/316146 [ XP ] http/tests/cache/cached-main-resource.html [ Pass Timeout ]
 
 # Might be a false-positive of under-invalidation checking
-crbug.com/450725 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-2-iframe-scrolled-outer-late-composite.html [ Crash Pass ]
+crbug.com/476069 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-2-iframe-scrolled-outer-late-composite.html [ Crash Pass ]
 
 crbug.com/443596 [ Mac ] media/sources-fallback-codecs.html [ Failure Pass ]
 crbug.com/443596 [ Win ] media/sources-fallback-codecs.html [ Failure Pass ]
