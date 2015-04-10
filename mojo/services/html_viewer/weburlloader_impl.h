@@ -44,9 +44,11 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
   void cancel() override;
   void setDefersLoading(bool defers_loading) override;
 
-  void OnReceivedResponse(mojo::URLResponsePtr response);
+  void OnReceivedResponse(const blink::WebURLRequest& request,
+                          mojo::URLResponsePtr response);
   void OnReceivedError(mojo::URLResponsePtr response);
-  void OnReceivedRedirect(mojo::URLResponsePtr response);
+  void OnReceivedRedirect(const blink::WebURLRequest& request,
+                          mojo::URLResponsePtr response);
   void ReadMore();
   void WaitToReadMore();
   void OnResponseBodyStreamReady(MojoResult result);

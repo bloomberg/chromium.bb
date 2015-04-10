@@ -110,11 +110,13 @@ void WebURLLoaderImpl::loadAsynchronously(const blink::WebURLRequest& request,
         FROM_HERE,
         base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
                    weak_factory_.GetWeakPtr(),
+                   request,
                    base::Passed(&extra_data->synthetic_response)));
   } else {
     url_loader_->Start(url_request.Pass(),
                        base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
-                                  weak_factory_.GetWeakPtr()));
+                                  weak_factory_.GetWeakPtr(),
+                                  request));
   }
 }
 
@@ -131,6 +133,7 @@ void WebURLLoaderImpl::cancel() {
       FROM_HERE,
       base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
                  weak_factory_.GetWeakPtr(),
+                 blink::WebURLRequest(),
                  base::Passed(&failed_response)));
 }
 
@@ -138,13 +141,14 @@ void WebURLLoaderImpl::setDefersLoading(bool defers_loading) {
   NOTIMPLEMENTED();
 }
 
-void WebURLLoaderImpl::OnReceivedResponse(URLResponsePtr url_response) {
+void WebURLLoaderImpl::OnReceivedResponse(const blink::WebURLRequest& request,
+                                          URLResponsePtr url_response) {
   url_ = GURL(url_response->url);
 
   if (url_response->error) {
     OnReceivedError(url_response.Pass());
   } else if (url_response->redirect_url) {
-    OnReceivedRedirect(url_response.Pass());
+    OnReceivedRedirect(request, url_response.Pass());
   } else {
     base::WeakPtr<WebURLLoaderImpl> self(weak_factory_.GetWeakPtr());
     client_->didReceiveResponse(this, ToWebURLResponse(url_response));
@@ -171,12 +175,24 @@ void WebURLLoaderImpl::OnReceivedError(URLResponsePtr url_response) {
   client_->didFail(this, web_error);
 }
 
-void WebURLLoaderImpl::OnReceivedRedirect(URLResponsePtr url_response) {
+void WebURLLoaderImpl::OnReceivedRedirect(const blink::WebURLRequest& request,
+                                          URLResponsePtr url_response) {
+  // TODO(erg): setFirstPartyForCookies() and setHTTPReferrer() are unset here.
   blink::WebURLRequest new_request;
   new_request.initialize();
   new_request.setURL(GURL(url_response->redirect_url));
+  new_request.setDownloadToFile(request.downloadToFile());
+  new_request.setRequestContext(request.requestContext());
+  new_request.setFrameType(request.frameType());
+  new_request.setSkipServiceWorker(request.skipServiceWorker());
+  new_request.setFetchRequestMode(request.fetchRequestMode());
+  new_request.setFetchCredentialsMode(request.fetchCredentialsMode());
+
+  std::string old_method = request.httpMethod().utf8();
   new_request.setHTTPMethod(
       blink::WebString::fromUTF8(url_response->redirect_method));
+  if (url_response->redirect_method == old_method)
+    new_request.setHTTPBody(request.httpBody());
 
   base::WeakPtr<WebURLLoaderImpl> self(weak_factory_.GetWeakPtr());
   client_->willSendRequest(this, new_request, ToWebURLResponse(url_response));
@@ -188,7 +204,8 @@ void WebURLLoaderImpl::OnReceivedRedirect(URLResponsePtr url_response) {
 
   url_loader_->FollowRedirect(
       base::Bind(&WebURLLoaderImpl::OnReceivedResponse,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(),
+                 request));
 }
 
 void WebURLLoaderImpl::ReadMore() {
