@@ -302,7 +302,7 @@ void HTMLDocument::didAddMessageToConsole(
 }
 
 void HTMLDocument::didFinishLoad(blink::WebLocalFrame* frame) {
-  DCHECK(!did_finish_load_);
+  // TODO(msw): Notify AxProvider clients of updates on child frame loads.
   did_finish_load_ = true;
   // Bind any pending AxProviderImpl interface requests.
   for (auto it : ax_provider_requests_)
