@@ -1506,6 +1506,12 @@ class PreCQLauncherStage(SyncStage):
         self.ScreenChangeForPreCQ(change)
         continue
 
+      # TODO(davidjames): Find out why changes are missing in progress_map.
+      # See http://crbug.com/475982
+      if change not in progress_map:
+        logging.warn('Change %s is missing in progress_map', change)
+        continue
+
       self._ProcessTimeouts(change, progress_map, pool, current_db_time)
 
     # Filter out changes that have already failed, and aren't marked trybot
