@@ -55,8 +55,14 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(ScriptState* script
     if (listener->IsFunction())
         return v8::Local<v8::Function>::Cast(listener);
 
+    // The EventHandler callback function type (used for event handler
+    // attributes in HTML) has [TreatNonObjectAsNull], which implies that
+    // non-function objects should be treated as no-op functions that return
+    // undefined.
+    if (isAttribute())
+        return v8::Local<v8::Function>();
+
     if (listener->IsObject()) {
-        ASSERT_WITH_MESSAGE(!isAttribute(), "EventHandler attributes should only accept JS Functions as input.");
         v8::Local<v8::Value> property = listener->Get(v8AtomicString(isolate(), "handleEvent"));
         // Check that no exceptions were thrown when getting the
         // handleEvent property and that the value is a function.

@@ -89,9 +89,7 @@ PassRefPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v
 {
     v8::Isolate* isolate = scriptState->isolate();
     ASSERT(isolate->InContext());
-    if (!value->IsObject()
-        // Non-callable attribute setter input is treated as null (no wrapper)
-        || (isAttribute && !value->IsFunction()))
+    if (!value->IsObject())
         return nullptr;
 
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);

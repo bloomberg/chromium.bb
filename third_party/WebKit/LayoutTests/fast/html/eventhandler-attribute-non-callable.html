@@ -33,9 +33,15 @@ shouldBe('callbackCount', '1');
 var o = { handleEvent: callback };
 shouldNotBe('div.onkeydown', 'null');
 shouldNotThrow('div.onkeydown = o');
-shouldBeNull('div.onkeydown');
+shouldBe('div.onkeydown', 'o');
 dispatchKeyEvent();
 shouldBe('callbackCount', '1');
+
+// Test non-object assignment.
+shouldNotThrow('div.onkeydown = callback');
+shouldBe('div.onkeydown', 'callback');
+shouldNotThrow('div.onkeydown = "non-object"');
+shouldBeNull('div.onkeydown');
 
 // Test null assignment.
 shouldNotThrow('div.onkeydown = callback');
