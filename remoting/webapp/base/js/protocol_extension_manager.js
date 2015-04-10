@@ -38,8 +38,14 @@ remoting.ProtocolExtensionManager.prototype.dispose = function() {
 /** Called by the plugin when the session is connected */
 remoting.ProtocolExtensionManager.prototype.start = function() {
   base.debug.assert(!this.protocolExtensionsStarted_);
+  /** @type {Object<remoting.ProtocolExtension, boolean>} */
+  var started = {};
   for (var type in this.protocolExtensions_) {
-    this.startExtension_(type);
+    var extension = this.protocolExtensions_[type];
+    if (!(extension in started)) {
+      extension.startExtension(this.sendExtensionMessage_);
+      started[extension] = true;
+    }
   }
   this.protocolExtensionsStarted_ = true;
 };
@@ -61,24 +67,18 @@ remoting.ProtocolExtensionManager.prototype.register =
     }
   }
 
+  // Register the extension for each type.
   for (var i=0, len=types.length; i < len; i++) {
     var type = types[i];
     this.protocolExtensions_[type] = extension;
-    if (this.protocolExtensionsStarted_) {
-      this.startExtension_(type);
-    }
   }
-  return true;
-};
 
-/**
- * @param {string} type
- * @private
- */
-remoting.ProtocolExtensionManager.prototype.startExtension_ =
-    function(type) {
-  var extension = this.protocolExtensions_[type];
-  extension.startExtension(this.sendExtensionMessage_);
+  // Start the extension.
+  if (this.protocolExtensionsStarted_) {
+    extension.startExtension(this.sendExtensionMessage_);
+  }
+
+  return true;
 };
 
 /**

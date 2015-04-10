@@ -81,6 +81,16 @@ QUnit.test('should route message to extension by type', function(assert) {
   onExtensionMessage.reset();
 });
 
+QUnit.test('startExtension() should only be called once', function(assert) {
+  var extension = new DummyExtension(['type1', 'type2']);
+  var startExtension = /** @type {(sinon.Spy|Function)} */ (
+      sinon.spy(extension, 'startExtension'));
+
+  assert.ok(extensionManager.register(extension));
+  extensionManager.start();
+  assert.ok(startExtension.calledOnce);
+});
+
 
 QUnit.test('should not register extensions of the same type', function(assert) {
   var extension1 = new DummyExtension(['type1']);
