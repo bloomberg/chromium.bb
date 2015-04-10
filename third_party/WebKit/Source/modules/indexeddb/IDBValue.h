@@ -14,7 +14,6 @@ namespace blink {
 
 class BlobDataHandle;
 class WebBlobInfo;
-struct WebIDBValue;
 
 class IDBValue final : public RefCounted<IDBValue> {
 public:
@@ -24,16 +23,15 @@ public:
     bool isNull() const;
     Vector<String> getUUIDs() const;
     const SharedBuffer* data() const;
-    void copyDataTo(Vector<uint8_t>*) const;
     Vector<WebBlobInfo>* blobInfo() const { return m_blobInfo.get(); }
 
 private:
     IDBValue();
     IDBValue(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&);
 
-    RefPtr<SharedBuffer> m_data;
-    OwnPtr<Vector<RefPtr<BlobDataHandle>>> m_blobData;
-    OwnPtr<Vector<WebBlobInfo>> m_blobInfo;
+    const RefPtr<SharedBuffer> m_data;
+    const OwnPtr<Vector<RefPtr<BlobDataHandle>>> m_blobData;
+    const OwnPtr<Vector<WebBlobInfo>> m_blobInfo;
 };
 
 } // namespace blink

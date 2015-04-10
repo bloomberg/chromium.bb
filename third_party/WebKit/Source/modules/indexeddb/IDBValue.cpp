@@ -14,16 +14,13 @@ namespace blink {
 IDBValue::IDBValue() = default;
 
 IDBValue::IDBValue(PassRefPtr<SharedBuffer> data, const WebVector<WebBlobInfo>& webBlobInfo)
+    : m_data(data)
+    , m_blobData(adoptPtr(new Vector<RefPtr<BlobDataHandle>>()))
+    , m_blobInfo(adoptPtr(new Vector<WebBlobInfo>(webBlobInfo.size())))
 {
-    m_data = data;
-    m_blobInfo = adoptPtr(new Vector<WebBlobInfo>(webBlobInfo.size()));
-    for (size_t i = 0; i < webBlobInfo.size(); ++i)
-        (*m_blobInfo)[i] = webBlobInfo[i];
-
-    if (!m_blobInfo->isEmpty()) {
-        m_blobData = adoptPtr(new Vector<RefPtr<BlobDataHandle>>());
-        for (const WebBlobInfo& info : *m_blobInfo.get())
-            m_blobData->append(BlobDataHandle::create(info.uuid(), info.type(), info.size()));
+    for (size_t i = 0; i < webBlobInfo.size(); ++i) {
+        const WebBlobInfo& info = (*m_blobInfo)[i] = webBlobInfo[i];
+        m_blobData->append(BlobDataHandle::create(info.uuid(), info.type(), info.size()));
     }
 }
 
@@ -44,11 +41,6 @@ Vector<String> IDBValue::getUUIDs() const
     for (const auto& info : *m_blobInfo)
         uuids.append(info.uuid());
     return uuids;
-}
-
-void IDBValue::copyDataTo(Vector<uint8_t>* dest) const
-{
-    dest->append(m_data->data(), m_data->size());
 }
 
 const SharedBuffer* IDBValue::data() const
