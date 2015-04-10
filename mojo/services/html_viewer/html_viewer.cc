@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
-#include "gin/public/isolate_holder.h"
+#include "gin/v8_initializer.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/services/html_viewer/discardable_memory_allocator.h"
 #include "mojo/services/html_viewer/html_document.h"
@@ -178,7 +178,7 @@ class HTMLViewer : public mojo::ApplicationDelegate,
     blink_platform_.reset(new MojoBlinkPlatformImpl(app));
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     // Note: this requires file system access.
-    gin::IsolateHolder::LoadV8Snapshot();
+    gin::V8Initializer::LoadV8Snapshot();
 #endif
     blink::initialize(blink_platform_.get());
     base::i18n::InitializeICU();

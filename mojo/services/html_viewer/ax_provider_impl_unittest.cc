@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "gin/public/isolate_holder.h"
+#include "gin/v8_initializer.h"
 #include "mojo/services/html_viewer/blink_platform_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -47,7 +47,7 @@ class AxProviderImplTest : public testing::Test {
  public:
   AxProviderImplTest() {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-    gin::IsolateHolder::LoadV8Snapshot();
+    gin::V8Initializer::LoadV8Snapshot();
 #endif
     blink::initialize(new html_viewer::BlinkPlatformImpl());
   }

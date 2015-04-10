@@ -85,13 +85,4 @@ void IsolateHolder::RemoveRunMicrotasksObserver() {
   task_observer_.reset();
 }
 
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-
-// static
-bool IsolateHolder::LoadV8Snapshot() {
-  return V8Initializer::LoadV8Snapshot();
-}
-
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
-
 }  // namespace gin

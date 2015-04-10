@@ -16,7 +16,7 @@
 #endif
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#include "gin/public/isolate_holder.h"
+#include "gin/v8_initializer.h"
 #endif
 
 class TestBlinkPlatformSupport : NON_EXPORTED_BASE(public blink::Platform) {
@@ -78,7 +78,7 @@ void BlinkMediaTestSuite::Initialize() {
   media::InitializeMediaLibraryForTesting();
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-    gin::IsolateHolder::LoadV8Snapshot();
+  gin::V8Initializer::LoadV8Snapshot();
 #endif
 
   blink::initialize(blink_platform_support_.get());

@@ -52,15 +52,6 @@ class GIN_EXPORT IsolateHolder {
   // thread.
   void RemoveRunMicrotasksObserver();
 
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-
-  // Deprecated and to be removed: Use gin::V8Initializer::LoadV8Snapshot()
-  // Load V8 snapshot from default resources. Returns true on success or
-  // snapshot is already loaded, false otherwise.
-  static bool LoadV8Snapshot();
-
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
-
  private:
   v8::Isolate* isolate_;
   scoped_ptr<PerIsolateData> isolate_data_;
