@@ -44,7 +44,6 @@ class Resource;
 class Document;
 class DocumentLoader;
 class FrameHost;
-class InjectedScriptManager;
 class InspectorCSSAgent;
 class InspectorDebuggerAgent;
 class InspectorOverlay;
@@ -72,7 +71,7 @@ public:
         OtherResource
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(LocalFrame* inspectedFrame, InjectedScriptManager*, InspectorOverlay*);
+    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(LocalFrame* inspectedFrame, InspectorOverlay*);
     void setDeferredAgents(InspectorDebuggerAgent*, InspectorCSSAgent*);
 
     static Vector<Document*> importsForFrame(LocalFrame*);
@@ -146,7 +145,7 @@ public:
 private:
     class GetResourceContentLoadListener;
 
-    InspectorPageAgent(LocalFrame* inspectedFrame, InjectedScriptManager*, InspectorOverlay*);
+    InspectorPageAgent(LocalFrame* inspectedFrame, InspectorOverlay*);
 
     void finishReload();
     void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
@@ -156,7 +155,6 @@ private:
     PassRefPtr<TypeBuilder::Page::Frame> buildObjectForFrame(LocalFrame*);
     PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
     RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
-    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;

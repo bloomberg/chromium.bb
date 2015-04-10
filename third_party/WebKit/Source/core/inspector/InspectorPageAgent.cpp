@@ -52,7 +52,6 @@
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -277,9 +276,9 @@ bool InspectorPageAgent::dataContent(const char* data, unsigned size, const Stri
     return decodeBuffer(data, size, textEncodingName, result);
 }
 
-PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(LocalFrame* inspectedFrame, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(LocalFrame* inspectedFrame, InspectorOverlay* overlay)
 {
-    return adoptPtrWillBeNoop(new InspectorPageAgent(inspectedFrame, injectedScriptManager, overlay));
+    return adoptPtrWillBeNoop(new InspectorPageAgent(inspectedFrame, overlay));
 }
 
 void InspectorPageAgent::setDeferredAgents(InspectorDebuggerAgent* debuggerAgent, InspectorCSSAgent* cssAgent)
@@ -367,10 +366,9 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::cachedResourceTypeJson
     return resourceTypeJson(cachedResourceType(cachedResource));
 }
 
-InspectorPageAgent::InspectorPageAgent(LocalFrame* inspectedFrame, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+InspectorPageAgent::InspectorPageAgent(LocalFrame* inspectedFrame, InspectorOverlay* overlay)
     : InspectorBaseAgent<InspectorPageAgent, InspectorFrontend::Page>("Page")
     , m_inspectedFrame(inspectedFrame)
-    , m_injectedScriptManager(injectedScriptManager)
     , m_debuggerAgent(nullptr)
     , m_cssAgent(nullptr)
     , m_overlay(overlay)
@@ -984,7 +982,6 @@ void InspectorPageAgent::setOverlayMessage(ErrorString*, const String* message)
 DEFINE_TRACE(InspectorPageAgent)
 {
     visitor->trace(m_inspectedFrame);
-    visitor->trace(m_injectedScriptManager);
     visitor->trace(m_debuggerAgent);
     visitor->trace(m_cssAgent);
     visitor->trace(m_overlay);

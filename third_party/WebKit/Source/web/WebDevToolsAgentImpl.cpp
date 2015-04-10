@@ -340,7 +340,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_inspectorAgent = inspectorAgentPtr.get();
     m_agents.append(inspectorAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_webLocalFrameImpl->frame(), injectedScriptManager, m_overlay));
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_webLocalFrameImpl->frame(), m_overlay));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
