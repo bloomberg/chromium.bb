@@ -52,20 +52,13 @@ void ContentsView::Init(AppListModel* model) {
   if (app_list::switches::IsExperimentalAppListEnabled()) {
     std::vector<views::View*> custom_page_views =
         view_delegate->CreateCustomPageWebViews(GetLocalBounds().size());
-    for (std::vector<views::View*>::const_iterator it =
-             custom_page_views.begin();
-         it != custom_page_views.end();
-         ++it) {
-      // Only the first launcher page is considered to represent
-      // STATE_CUSTOM_LAUNCHER_PAGE.
-      if (it == custom_page_views.begin()) {
-        custom_page_view_ = new CustomLauncherPageView(*it);
+    // Only add the first custom page view as STATE_CUSTOM_LAUNCHER_PAGE. Ignore
+    // any subsequent custom pages.
+    if (!custom_page_views.empty()) {
+      custom_page_view_ = new CustomLauncherPageView(custom_page_views[0]);
 
-        AddLauncherPage(custom_page_view_,
-                        AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
-      } else {
-        AddLauncherPage(new CustomLauncherPageView(*it));
-      }
+      AddLauncherPage(custom_page_view_,
+                      AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
     }
 
     // Start page.
