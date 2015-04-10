@@ -375,8 +375,11 @@ static void booleanAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v
 static void booleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "booleanAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    bool cppValue = v8Value->BooleanValue();
+    bool cppValue = toBoolean(info.GetIsolate(), v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     impl->setBooleanAttribute(cppValue);
 }
 
@@ -3829,8 +3832,11 @@ static void reflectBooleanAttributeAttributeGetterCallback(v8::Local<v8::Name>, 
 static void reflectBooleanAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectBooleanAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    bool cppValue = v8Value->BooleanValue();
+    bool cppValue = toBoolean(info.GetIsolate(), v8Value, exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
     CustomElementProcessingStack::CallbackDeliveryScope deliveryScope;
     impl->setBooleanAttribute(HTMLNames::reflectbooleanattributeAttr, cppValue);
 }
@@ -5939,14 +5945,18 @@ static void voidMethodDOMTimeStampArgMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodBooleanArg", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        V8ThrowException::throwException(createMinimumArityTypeErrorForMethod(info.GetIsolate(), "voidMethodBooleanArg", "TestObject", 1, info.Length()), info.GetIsolate());
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     bool booleanArg;
     {
-        booleanArg = info[0]->BooleanValue();
+        booleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     impl->voidMethodBooleanArg(booleanArg);
 }
@@ -8219,11 +8229,14 @@ static void voidMethodDefaultDoubleArgMethodCallback(const v8::FunctionCallbackI
 
 static void voidMethodDefaultTrueBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultTrueBooleanArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     bool defaultBooleanArg;
     {
         if (!info[0]->IsUndefined()) {
-            defaultBooleanArg = info[0]->BooleanValue();
+            defaultBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+            if (exceptionState.throwIfNeeded())
+                return;
         } else {
             defaultBooleanArg = true;
         }
@@ -8240,11 +8253,14 @@ static void voidMethodDefaultTrueBooleanArgMethodCallback(const v8::FunctionCall
 
 static void voidMethodDefaultFalseBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultFalseBooleanArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     bool defaultBooleanArg;
     {
         if (!info[0]->IsUndefined()) {
-            defaultBooleanArg = info[0]->BooleanValue();
+            defaultBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+            if (exceptionState.throwIfNeeded())
+                return;
         } else {
             defaultBooleanArg = false;
         }
@@ -9945,6 +9961,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodMethodCallback(const v8:
 
 static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     bool optionalBooleanArg;
     {
@@ -9954,7 +9971,9 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
             impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments.release());
             return;
         }
-        optionalBooleanArg = info[0]->BooleanValue();
+        optionalBooleanArg = toBoolean(info.GetIsolate(), info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, 1));

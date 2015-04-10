@@ -101,7 +101,9 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
         stringArg = info[0];
         if (!stringArg.prepare())
             return;
-        defaultUndefinedOptionalBooleanArg = info[1]->BooleanValue();
+        defaultUndefinedOptionalBooleanArg = toBoolean(info.GetIsolate(), info[1], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
         defaultUndefinedOptionalLongArg = toInt32(info.GetIsolate(), info[2], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;

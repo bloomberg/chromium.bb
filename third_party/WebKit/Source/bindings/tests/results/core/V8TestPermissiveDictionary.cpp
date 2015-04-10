@@ -34,7 +34,9 @@ void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Valu
     if (booleanMemberValue.IsEmpty() || booleanMemberValue->IsUndefined()) {
         // Do nothing.
     } else {
-        bool booleanMember = booleanMemberValue->BooleanValue();
+        bool booleanMember = toBoolean(isolate, booleanMemberValue, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setBooleanMember(booleanMember);
     }
 

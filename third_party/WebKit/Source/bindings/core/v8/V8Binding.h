@@ -387,6 +387,15 @@ enum IntegerConversionConfiguration {
     Clamp
 };
 
+// Convert a value to a boolean.
+CORE_EXPORT bool toBooleanSlow(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+inline bool toBoolean(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
+{
+    if (LIKELY(value->IsBoolean()))
+        return value.As<v8::Boolean>()->Value();
+    return toBooleanSlow(isolate, value, exceptionState);
+}
+
 // Convert a value to a 8-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-byte

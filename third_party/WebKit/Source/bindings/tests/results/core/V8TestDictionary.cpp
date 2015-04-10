@@ -45,7 +45,9 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     if (booleanMemberValue.IsEmpty() || booleanMemberValue->IsUndefined()) {
         // Do nothing.
     } else {
-        bool booleanMember = booleanMemberValue->BooleanValue();
+        bool booleanMember = toBoolean(isolate, booleanMemberValue, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setBooleanMember(booleanMember);
     }
 
@@ -57,7 +59,9 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     if (createValue.IsEmpty() || createValue->IsUndefined()) {
         // Do nothing.
     } else {
-        bool create = createValue->BooleanValue();
+        bool create = toBoolean(isolate, createValue, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setCreateMember(create);
     }
 
@@ -70,7 +74,9 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         // Do nothing.
     } else {
         UseCounter::countDeprecationIfNotPrivateScript(isolate, callingExecutionContext(isolate), UseCounter::CreateMember);
-        bool deprecatedCreateMember = deprecatedCreateMemberValue->BooleanValue();
+        bool deprecatedCreateMember = toBoolean(isolate, deprecatedCreateMemberValue, exceptionState);
+        if (exceptionState.hadException())
+            return;
         impl.setCreateMember(deprecatedCreateMember);
     }
 

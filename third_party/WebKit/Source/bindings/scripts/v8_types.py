@@ -472,7 +472,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'DOMString': '{v8_value}',
     'ByteString': 'toByteString({isolate}, {arguments})',
     'USVString': 'toUSVString({isolate}, {arguments})',
-    'boolean': '{v8_value}->BooleanValue()',
+    'boolean': 'toBoolean({isolate}, {arguments})',
     'float': 'toRestrictedFloat({isolate}, {arguments})',
     'unrestricted float': 'toFloat({isolate}, {arguments})',
     'double': 'toRestrictedDouble({isolate}, {arguments})',
@@ -501,7 +501,7 @@ def v8_conversion_needs_exception_state(idl_type):
     return (idl_type.is_numeric_type or
             idl_type.is_enum or
             idl_type.is_dictionary or
-            idl_type.name in ('ByteString', 'Dictionary', 'USVString', 'SerializedScriptValue'))
+            idl_type.name in ('Boolean', 'ByteString', 'Dictionary', 'USVString', 'SerializedScriptValue'))
 
 IdlType.v8_conversion_needs_exception_state = property(v8_conversion_needs_exception_state)
 IdlArrayOrSequenceType.v8_conversion_needs_exception_state = True

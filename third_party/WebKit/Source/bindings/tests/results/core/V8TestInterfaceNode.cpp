@@ -276,6 +276,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodMethodCallbackForMainWorld(c
 
 static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg", "TestInterfaceNode", info.Holder(), info.GetIsolate());
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
     bool optionalBooleanArgument;
     {
@@ -283,7 +284,9 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(con
             v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()), impl);
             return;
         }
-        optionalBooleanArgument = info[0]->BooleanValue();
+        optionalBooleanArgument = toBoolean(info.GetIsolate(), info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument)), impl);
 }
@@ -297,6 +300,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodCall
 
 static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg", "TestInterfaceNode", info.Holder(), info.GetIsolate());
     TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(info.Holder());
     bool optionalBooleanArgument;
     {
@@ -304,7 +308,9 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForM
             v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg()));
             return;
         }
-        optionalBooleanArgument = info[0]->BooleanValue();
+        optionalBooleanArgument = toBoolean(info.GetIsolate(), info[0], exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
     }
     v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(optionalBooleanArgument)));
 }

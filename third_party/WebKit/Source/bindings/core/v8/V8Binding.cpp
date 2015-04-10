@@ -108,6 +108,16 @@ PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback, 
     return filter.release();
 }
 
+bool toBooleanSlow(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
+{
+    ASSERT(!value->IsBoolean());
+    v8::TryCatch block;
+    bool result = false;
+    if (!v8Call(value->BooleanValue(isolate->GetCurrentContext()), result, block))
+        exceptionState.rethrowV8Exception(block.Exception());
+    return result;
+}
+
 const int32_t kMaxInt32 = 0x7fffffff;
 const int32_t kMinInt32 = -kMaxInt32 - 1;
 const uint32_t kMaxUInt32 = 0xffffffff;
