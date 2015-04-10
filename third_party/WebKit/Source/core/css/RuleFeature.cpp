@@ -484,7 +484,8 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, Ru
             metadata.usesWindowInactiveSelector = true;
         if (current->isDirectAdjacentSelector()) {
             maxDirectAdjacentSelectors++;
-        } else if (maxDirectAdjacentSelectors) {
+        } else if (maxDirectAdjacentSelectors
+            && ((current->relation() != CSSSelector::SubSelector) || current->isLastInTagHistory())) {
             if (maxDirectAdjacentSelectors > metadata.maxDirectAdjacentSelectors)
                 metadata.maxDirectAdjacentSelectors = maxDirectAdjacentSelectors;
             maxDirectAdjacentSelectors = 0;
