@@ -25,7 +25,7 @@ public class QuicTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
-    public void disabled_testQuicLoadUrl() throws Exception {
+    public void testQuicLoadUrl() throws Exception {
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
         config.enableQUIC(true);
@@ -45,17 +45,26 @@ public class QuicTest extends CronetTestBase {
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
 
-        HttpUrlRequest request =
-                activity.mRequestFactory.createRequest(
-                        quicURL,
-                        HttpUrlRequest.REQUEST_PRIORITY_MEDIUM,
-                        headers,
-                        listener);
-        request.start();
-        listener.blockForComplete();
+        // Quic always races the first request with SPDY. Since our test server
+        // only supports Quic, request will either succeed with a 200 or fail
+        // with a 500.
+        for (int i = 0; i < 2; i++) {
+            HttpUrlRequest request =
+                    activity.mRequestFactory.createRequest(
+                            quicURL,
+                            HttpUrlRequest.REQUEST_PRIORITY_MEDIUM,
+                            headers,
+                            listener);
+            request.start();
+            listener.blockForComplete();
+            assertTrue(listener.mHttpStatusCode == 200
+                    || listener.mHttpStatusCode == 500);
+            if (listener.mHttpStatusCode == 200) break;
+        }
         assertEquals(200, listener.mHttpStatusCode);
         assertEquals(
-                "This is a simple text file served by QUIC.\n", listener.mResponseAsString);
+                "This is a simple text file served by QUIC.\n",
+                listener.mResponseAsString);
         assertEquals("quic/1+spdy/3", listener.mNegotiatedProtocol);
         activity.stopNetLog();
         QuicTestServer.shutdownQuicTestServer();
