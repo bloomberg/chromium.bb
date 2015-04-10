@@ -1,3 +1,4 @@
+
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -209,7 +210,7 @@ TEST_F(ServiceWorkerContainerTest, Register_NonSecureOriginIsRejected)
     testRegisterRejected(
         "http://www.example.com/worker.js",
         "http://www.example.com/",
-        ExpectDOMException("NotSupportedError", "Only secure origins are allowed. http://goo.gl/lq4gCo"));
+        ExpectDOMException("NotSupportedError", "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."));
 }
 
 TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScriptIsRejected)
@@ -235,7 +236,7 @@ TEST_F(ServiceWorkerContainerTest, GetRegistration_NonSecureOriginIsRejected)
     setPageURL("http://www.example.com/");
     testGetRegistrationRejected(
         "http://www.example.com/",
-        ExpectDOMException("NotSupportedError", "Only secure origins are allowed. http://goo.gl/lq4gCo"));
+        ExpectDOMException("NotSupportedError", "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."));
 }
 
 TEST_F(ServiceWorkerContainerTest, GetRegistration_CrossOriginURLIsRejected)

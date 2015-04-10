@@ -136,7 +136,7 @@ TEST(SecurityOriginTest, CanAccessFeatureRequringSecureOrigin)
     RefPtr<SecurityOrigin> uniqueOrigin = SecurityOrigin::createUnique();
     String errorMessage;
     EXPECT_FALSE(uniqueOrigin->canAccessFeatureRequiringSecureOrigin(errorMessage));
-    EXPECT_EQ("Only secure origins are allowed. http://goo.gl/lq4gCo", errorMessage);
+    EXPECT_EQ("Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).", errorMessage);
 }
 
 TEST(SecurityOriginTest, IsSecure)

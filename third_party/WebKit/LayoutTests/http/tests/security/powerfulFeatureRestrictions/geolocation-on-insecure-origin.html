@@ -18,7 +18,7 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
                 this.done();
             }),
             this.step_func(function(error) {
-                assert_equals(error.message, 'Only secure origins are allowed. http://goo.gl/lq4gCo');
+                assert_equals(error.message, 'Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).');
                 this.done();
             }));
     }, 'getCurrentPosition');
@@ -30,7 +30,7 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
                 this.done();
             }),
             this.step_func(function(error) {
-                assert_equals(error.message, 'Only secure origins are allowed. http://goo.gl/lq4gCo');
+                assert_equals(error.message, 'Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).');
                 this.done();
             }));
     }, 'watchPosition');

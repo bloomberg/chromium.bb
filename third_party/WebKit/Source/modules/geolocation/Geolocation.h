@@ -164,7 +164,7 @@ private:
 
     // Record whether the origin trying to access Geolocation would be allowed
     // to access a feature that can only be accessed by secure origins.
-    // See http://goo.gl/lq4gCo
+    // See https://goo.gl/Y0ZkNV
     void recordOriginTypeAccess() const;
 
     GeoNotifierSet m_oneShots;

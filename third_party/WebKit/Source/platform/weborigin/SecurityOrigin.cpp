@@ -381,7 +381,7 @@ bool SecurityOrigin::canAccessFeatureRequiringSecureOrigin(String& errorMessage)
     if (SchemeRegistry::shouldTreatURLSchemeAsSecure(m_protocol) || isLocal() || isLocalhost())
         return true;
 
-    errorMessage = "Only secure origins are allowed. http://goo.gl/lq4gCo";
+    errorMessage = "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV).";
     return false;
 }
 
