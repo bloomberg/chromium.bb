@@ -20,7 +20,6 @@ CastNetworkDelegate::~CastNetworkDelegate() {
 
 bool CastNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
                                           const base::FilePath& path) const {
-  // On Chromecast, there's no reason to allow local file access.
   if (base::CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEnableLocalFileAccesses)) {
     return true;
