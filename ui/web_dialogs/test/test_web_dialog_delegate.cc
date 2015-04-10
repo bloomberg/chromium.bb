@@ -4,6 +4,7 @@
 
 #include "ui/web_dialogs/test/test_web_dialog_delegate.h"
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 
 using content::WebContents;
@@ -13,11 +14,20 @@ namespace ui {
 namespace test {
 
 TestWebDialogDelegate::TestWebDialogDelegate(const GURL& url)
-    : url_(url),
-      size_(400, 400) {
+    : url_(url), size_(400, 400), did_delete_(nullptr) {
 }
 
 TestWebDialogDelegate::~TestWebDialogDelegate() {
+  if (did_delete_) {
+    CHECK(!*did_delete_);
+    *did_delete_ = true;
+  }
+}
+
+void TestWebDialogDelegate::SetDeleteOnClosedAndObserve(
+    bool* destroy_observer) {
+  CHECK(destroy_observer);
+  did_delete_ = destroy_observer;
 }
 
 ModalType TestWebDialogDelegate::GetDialogModalType() const {
@@ -45,6 +55,8 @@ std::string TestWebDialogDelegate::GetDialogArgs() const {
 }
 
 void TestWebDialogDelegate::OnDialogClosed(const std::string& json_retval) {
+  if (did_delete_)
+    delete this;
 }
 
 void TestWebDialogDelegate::OnCloseContents(WebContents* source,
