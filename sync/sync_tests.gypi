@@ -469,6 +469,43 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
+          # TODO(pvalenzuela): Create GN version of this target.
+          # http://crbug.com/475612
+          'target_name': 'test_support_sync_proto_java',
+          'type': 'none',
+          'variables': {
+            'proto_in_dir': '<(INTERMEDIATE_DIR)/sync_protos',
+            # Set this variable so that sync_proto_source_paths refers to the
+            # temporary proto definitions created here.
+            'sync_proto_sources_dir': '<(INTERMEDIATE_DIR)/sync_protos',
+          },
+          'actions': [
+            {
+              'action_name': 'run_script',
+              'inputs': [
+                'protocol/prepare_protos_for_java_tests.py',
+                # Use the original list of proto files (defined in sync.gyp).
+                '<@(sync_proto_sources)',
+              ],
+              'outputs': [
+                '<@(sync_proto_source_paths)',
+              ],
+              'action': [
+                'python',
+                'protocol/prepare_protos_for_java_tests.py',
+                '--output_dir',
+                '<(INTERMEDIATE_DIR)/sync_protos',
+                # Use the original list of proto files (defined in sync.gyp).
+                '<@(sync_proto_sources)'
+              ],
+            },
+          ],
+          'sources': [
+            '<@(sync_proto_source_paths)',
+          ],
+          'includes': ['protocol/protocol.gypi', '../build/protoc_java.gypi'],
+        },
+        {
           # GN: //sync:test_support_sync_fake_server_android
           'target_name': 'test_support_sync_fake_server_android',
           'type': 'static_library',

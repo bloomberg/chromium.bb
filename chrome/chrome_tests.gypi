@@ -3001,6 +3001,7 @@
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
             '../content/content_shell_and_tests.gyp:content_java_test_support',
+            '../sync/sync.gyp:test_support_sync_proto_java',
           ],
           'variables': {
             'apk_name': 'ChromeSyncShellTest',

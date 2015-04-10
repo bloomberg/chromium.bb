@@ -6,8 +6,11 @@ package org.chromium.chrome.browser.sync;
 
 import android.content.Context;
 
+import com.google.protobuf.nano.MessageNano;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.protocol.EntitySpecifics;
 
 import java.util.concurrent.Callable;
 
@@ -133,18 +136,22 @@ public class FakeServerHelper {
     }
 
     /**
-     * Injects a typed URL entity into the fake Sync server.
+     * Injects an entity into the fake Sync server. This method only works for entities that will
+     * eventually contain a unique client tag (e.g., preferences, typed URLs).
      *
-     * @param url the URL of the entity. This will also be used as the entity's name.
+     * @param name the human-readable name for the entity. This value will be used for the
+     *             SyncEntity.name value
+     * @param entitySpecifics the EntitySpecifics proto that represents the entity to inject
      */
-    // TODO(pvalenzuela): Generalize this method to injectEntity by serializing an EntitySpecifics
-    // protocol buffer and passing that to the native code.
-    public void injectTypedUrl(String url) {
+    public void injectUniqueClientEntity(String name, EntitySpecifics entitySpecifics) {
         if (sNativeFakeServer == 0L) {
             throw new IllegalStateException(
                 "useFakeServer must be called before data injection.");
         }
-        nativeInjectTypedUrl(mNativeFakeServerHelperAndroid, sNativeFakeServer, url);
+        // The protocol buffer is serialized as a byte array because it can be easily deserialized
+        // from this format in native code.
+        nativeInjectUniqueClientEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, name,
+                MessageNano.toByteArray(entitySpecifics));
     }
 
     // Native methods.
@@ -157,6 +164,7 @@ public class FakeServerHelper {
     private native boolean nativeVerifyEntityCountByTypeAndName(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, int count, String modelType,
             String name);
-    private native void nativeInjectTypedUrl(
-            long nativeFakeServerHelperAndroid, long nativeFakeServer, String url);
+    private native void nativeInjectUniqueClientEntity(
+            long nativeFakeServerHelperAndroid, long nativeFakeServer, String name,
+            byte[] serializedEntitySpecifics);
 }

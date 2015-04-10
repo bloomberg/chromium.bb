@@ -17,6 +17,7 @@
 
 using std::string;
 
+using syncer::GetModelTypeFromSpecifics;
 using syncer::ModelType;
 using syncer::syncable::GenerateSyncableHash;
 
@@ -70,9 +71,9 @@ FakeServerEntity* UniqueClientEntity::Create(
 
 // static
 scoped_ptr<FakeServerEntity> UniqueClientEntity::CreateForInjection(
-    ModelType model_type,
     const string& name,
     const sync_pb::EntitySpecifics& entity_specifics) {
+  ModelType model_type = GetModelTypeFromSpecifics(entity_specifics);
   string client_defined_unique_tag = GenerateSyncableHash(model_type, name);
   string id = FakeServerEntity::CreateId(model_type, client_defined_unique_tag);
   return scoped_ptr<FakeServerEntity>(

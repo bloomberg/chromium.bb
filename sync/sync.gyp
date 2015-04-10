@@ -5,9 +5,16 @@
 {
   'variables': {
     'chromium_code': 1,
+    # Setting these two variables allows other targets to use the
+    # sync_proto_sources variable as the list of sync protocol buffer files.
+    'sync_proto_sources_dir': 'protocol',
+    'sync_proto_sources': [
+      '<@(sync_proto_source_paths)',
+    ],
   },
 
   'includes': [
+    'protocol/protocol.gypi',
     'sync_android.gypi',
     'sync_tests.gypi',
   ],
@@ -470,48 +477,9 @@
         'SYNC_PROTO_IMPLEMENTATION',
       ],
       'sources': [
-        # NOTE: If you add a file to this list, also add it to
-        # sync/protocol/BUILD.gn
-        'protocol/app_notification_specifics.proto',
-        'protocol/app_setting_specifics.proto',
-        'protocol/app_specifics.proto',
-        'protocol/app_list_specifics.proto',
-        'protocol/article_specifics.proto',
-        'protocol/attachments.proto',
-        'protocol/autofill_specifics.proto',
-        'protocol/bookmark_specifics.proto',
-        'protocol/client_commands.proto',
-        'protocol/client_debug_info.proto',
-        'protocol/device_info_specifics.proto',
-        'protocol/dictionary_specifics.proto',
-        'protocol/encryption.proto',
-        'protocol/experiment_status.proto',
-        'protocol/experiments_specifics.proto',
-        'protocol/extension_setting_specifics.proto',
-        'protocol/extension_specifics.proto',
-        'protocol/favicon_image_specifics.proto',
-        'protocol/favicon_tracking_specifics.proto',
-        'protocol/get_updates_caller_info.proto',
-        'protocol/history_delete_directive_specifics.proto',
-        'protocol/nigori_specifics.proto',
-        'protocol/managed_user_setting_specifics.proto',
-        'protocol/managed_user_shared_setting_specifics.proto',
-        'protocol/managed_user_specifics.proto',
-        'protocol/managed_user_whitelist_specifics.proto',
-        'protocol/password_specifics.proto',
-        'protocol/preference_specifics.proto',
-        'protocol/priority_preference_specifics.proto',
-        'protocol/search_engine_specifics.proto',
-        'protocol/session_specifics.proto',
-        'protocol/sync.proto',
-        'protocol/sync_enums.proto',
-        'protocol/synced_notification_app_info_specifics.proto',
-        'protocol/synced_notification_specifics.proto',
-        'protocol/test.proto',
-        'protocol/theme_specifics.proto',
-        'protocol/typed_url_specifics.proto',
-        'protocol/unique_position.proto',
-	'protocol/wifi_credential_specifics.proto',
+        # When adding a new proto source file, add its path to the list defined
+        # in sync/protocol/protocol.gypi.
+        '<@(sync_proto_sources)',
       ],
       'variables': {
         'enable_wexit_time_destructors': 1,

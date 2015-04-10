@@ -62,7 +62,6 @@ void AddDefaultCard(fake_server::FakeServer* server) {
   credit_card->set_type(kDefaultCardType);
 
   server->InjectEntity(fake_server::UniqueClientEntity::CreateForInjection(
-      syncer::AUTOFILL_WALLET_DATA,
       kDefaultCardID,
       specifics));
 }
@@ -151,7 +150,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   experiment_specifics->mutable_wallet_sync()->set_enabled(true);
   GetFakeServer()->InjectEntity(
       fake_server::UniqueClientEntity::CreateForInjection(
-          syncer::EXPERIMENTS,
           kWalletSyncExperimentTag,
           experiment_entity));
 
@@ -176,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   experiment_specifics->mutable_wallet_sync()->set_enabled(true);
   GetFakeServer()->InjectEntity(
       fake_server::UniqueClientEntity::CreateForInjection(
-          syncer::EXPERIMENTS, kWalletSyncExperimentTag, experiment_entity));
+          kWalletSyncExperimentTag, experiment_entity));
   TriggerSyncCycle();
 
   WalletEnabledChecker enabled_checker;
@@ -189,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   experiment_specifics->mutable_wallet_sync()->set_enabled(false);
   GetFakeServer()->InjectEntity(
       fake_server::UniqueClientEntity::CreateForInjection(
-          syncer::EXPERIMENTS, kWalletSyncExperimentTag, experiment_entity));
+          kWalletSyncExperimentTag, experiment_entity));
   TriggerSyncCycle();
 
   WalletDisabledChecker disable_checker;

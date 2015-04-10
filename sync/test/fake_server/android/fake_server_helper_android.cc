@@ -80,29 +80,28 @@ jboolean FakeServerHelperAndroid::VerifyEntityCountByTypeAndName(
   return result;
 }
 
-void FakeServerHelperAndroid::InjectTypedUrl(JNIEnv* env,
-                                             jobject obj,
-                                             jlong fake_server,
-                                             jstring url) {
+void FakeServerHelperAndroid::InjectUniqueClientEntity(
+    JNIEnv* env,
+    jobject obj,
+    jlong fake_server,
+    jstring name,
+    jbyteArray serialized_entity_specifics) {
   fake_server::FakeServer* fake_server_ptr =
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
 
-  // TODO(pvalenzuela): Move this proto creation and serialization to the Java
-  // code once the appropriate Java objects are generated.
-  std::string native_url = base::android::ConvertJavaStringToUTF8(env, url);
+  int specifics_bytes_length = env->GetArrayLength(serialized_entity_specifics);
+  jbyte* specifics_bytes =
+      env->GetByteArrayElements(serialized_entity_specifics, NULL);
+  std::string specifics_string(reinterpret_cast<char *>(specifics_bytes),
+                               specifics_bytes_length);
+
   sync_pb::EntitySpecifics entity_specifics;
-  sync_pb::TypedUrlSpecifics* typed_url_specifics =
-      entity_specifics.mutable_typed_url();
-  typed_url_specifics->set_url(native_url);
-  typed_url_specifics->set_title(native_url);
-  typed_url_specifics->add_visits(1L);
-  typed_url_specifics->add_visit_transitions(
-      sync_pb::SyncEnums_PageTransition_TYPED);
+  if (!entity_specifics.ParseFromString(specifics_string))
+    NOTREACHED() << "Could not deserialize EntitySpecifics";
 
   fake_server_ptr->InjectEntity(
       fake_server::UniqueClientEntity::CreateForInjection(
-          syncer::ModelType::TYPED_URLS,
-          native_url,
+          base::android::ConvertJavaStringToUTF8(env, name),
           entity_specifics));
 }
 

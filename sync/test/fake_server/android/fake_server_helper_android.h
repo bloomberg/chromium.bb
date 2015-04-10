@@ -40,15 +40,12 @@ class FakeServerHelperAndroid {
                                           jstring model_type_string,
                                           jstring name);
 
-  // Injects a typed URL into |fake_server|.
-  //
-  // TODO(pvalenzuela): Generalize this method to accept a serialized
-  // EntitySpecifics so that a separate method is not required for each data
-  // type.
-  void InjectTypedUrl(JNIEnv* env,
-                      jobject obj,
-                      jlong fake_server,
-                      jstring url);
+  // Injects a UniqueClientEntity into |fake_server|.
+  void InjectUniqueClientEntity(JNIEnv* env,
+                                jobject obj,
+                                jlong fake_server,
+                                jstring name,
+                                jbyteArray serialized_entity_specifics);
 
  private:
   virtual ~FakeServerHelperAndroid();

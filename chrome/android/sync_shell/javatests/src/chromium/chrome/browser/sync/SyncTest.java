@@ -26,6 +26,9 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.protocol.EntitySpecifics;
+import org.chromium.sync.protocol.SyncEnums;
+import org.chromium.sync.protocol.TypedUrlSpecifics;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockAccountManager;
@@ -260,9 +263,17 @@ public class SyncTest extends ChromeShellTestBase {
     @Feature({"Sync"})
     public void testDownloadTypedUrl() throws InterruptedException {
         setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
-
         assertLocalEntityCount("Typed URLs", 0);
-        mFakeServerHelper.injectTypedUrl("data:text,testDownloadTypedUrl");
+
+        String url = "data:text,testDownloadTypedUrl";
+        EntitySpecifics specifics = new EntitySpecifics();
+        specifics.typedUrl = new TypedUrlSpecifics();
+        specifics.typedUrl.url = url;
+        specifics.typedUrl.title = url;
+        specifics.typedUrl.visits = new long[]{1L};
+        specifics.typedUrl.visitTransitions = new int[]{SyncEnums.TYPED};
+        mFakeServerHelper.injectUniqueClientEntity(url /* name */, specifics);
+
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         assertLocalEntityCount("Typed URLs", 1);
 

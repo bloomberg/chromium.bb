@@ -43,7 +43,6 @@ class UniqueClientEntity : public FakeServerEntity {
   // Factory function for creating a UniqueClientEntity for use in the
   // FakeServer injection API.
   static scoped_ptr<FakeServerEntity> CreateForInjection(
-      syncer::ModelType model_type,
       const std::string& name,
       const sync_pb::EntitySpecifics& entity_specifics);
 
