@@ -1021,14 +1021,11 @@
         }, {
           'optimize_jni_generation%': 0,
         }],
-
-        # TODO(rmcilroy): Remove ios check. http://crbug.com/421063.
-        ['OS!="ios"', {
-          'v8_use_external_startup_data%': 1,
-        }, {
-          'v8_use_external_startup_data%': 0,
-        }],
       ],
+
+      # Setting this to '0' will cause V8's startup snapshot to be
+      # embedded in the binary instead of being a external files.
+      'v8_use_external_startup_data%': 1,
 
       # Set this to 1 to enable use of concatenated impulse responses
       # for the HRTF panner in WebAudio.

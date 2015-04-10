@@ -964,7 +964,7 @@
             'content.gyp:content_v8_external_data',
           ],
         }],
-        ['v8_use_external_startup_data==1', {
+        ['v8_use_external_startup_data==1 and OS!="ios"', {
           'dependencies': [
             '../gin/gin.gyp:gin',
           ],

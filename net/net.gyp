@@ -424,7 +424,7 @@
             ],
           },
         ],
-        ['v8_use_external_startup_data==1', {
+        ['use_v8_in_net==1 and v8_use_external_startup_data==1', {
           'dependencies': [
             '../gin/gin.gyp:gin',
           ]
