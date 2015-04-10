@@ -392,7 +392,6 @@ Bug(gardener) [ Release SnowLeopard ] fast/sub-pixel/selection/selection-gaps-at
 Bug(gardener) [ Release Mavericks ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Release SnowLeopard ] fast/sub-pixel/shadows-hidpi.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Release Mavericks ] fast/sub-pixel/shadows-hidpi.html [ ImageOnlyFailure Pass ]
-Bug(gardener) [ Release XP ] fast/svg/whitespace-length-invalid.html [ Pass Timeout ]
 Bug(gardener) [ Release Win7 ] fast/table/css-table-max-height.html [ Failure Pass ]
 Bug(gardener) [ Debug Win7 ] fast/table/css-table-max-height.html [ Failure Pass ]
 Bug(gardener) [ Release Win7 ] fast/table/inline-table-in-inline-block-last-baseline-align.html [ ImageOnlyFailure Pass ]
