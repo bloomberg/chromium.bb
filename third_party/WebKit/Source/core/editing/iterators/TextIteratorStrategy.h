@@ -13,12 +13,8 @@ class Position;
 
 class TextIteratorStrategy : public EditingStrategy {
 public:
-    static Node* pastLastNode(const Node&, int);
     static ContainerNode* parentOrShadowHostNode(const Node&);
-    static unsigned depthCrossingShadowBoundaries(const Node&);
     static int shadowDepthOf(const Node&, const Node&);
-
-    static PositionType createLegacyEditingPosition(Node*, unsigned);
 };
 
 } // namespace blink

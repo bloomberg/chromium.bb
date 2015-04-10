@@ -13,7 +13,9 @@
 
 namespace blink {
 
-static inline bool fullyClipsContents(Node* node)
+namespace {
+
+inline bool fullyClipsContents(Node* node)
 {
     LayoutObject* renderer = node->layoutObject();
     if (!renderer || !renderer->isBox() || !renderer->hasOverflowClip())
@@ -21,13 +23,24 @@ static inline bool fullyClipsContents(Node* node)
     return toLayoutBox(renderer)->size().isEmpty();
 }
 
-static inline bool ignoresContainerClip(Node* node)
+inline bool ignoresContainerClip(Node* node)
 {
     LayoutObject* renderer = node->layoutObject();
     if (!renderer || renderer->isText())
         return false;
     return renderer->style()->hasOutOfFlowPosition();
 }
+
+template <typename Strategy>
+unsigned depthCrossingShadowBoundaries(const Node& node)
+{
+    unsigned depth = 0;
+    for (ContainerNode* parent = Strategy::parentOrShadowHostNode(node); parent; parent = Strategy::parentOrShadowHostNode(*parent))
+        ++depth;
+    return depth;
+}
+
+} // namespace
 
 template<typename Strategy>
 FullyClippedStateStackAlgorithm<Strategy>::FullyClippedStateStackAlgorithm()
@@ -42,7 +55,7 @@ FullyClippedStateStackAlgorithm<Strategy>::~FullyClippedStateStackAlgorithm()
 template<typename Strategy>
 void FullyClippedStateStackAlgorithm<Strategy>::pushFullyClippedState(Node* node)
 {
-    ASSERT(size() == Strategy::depthCrossingShadowBoundaries(*node));
+    ASSERT(size() == depthCrossingShadowBoundaries<Strategy>(*node));
 
     // FIXME: m_fullyClippedStack was added in response to <https://bugs.webkit.org/show_bug.cgi?id=26364>
     // ("Search can find text that's hidden by overflow:hidden"), but the logic here will not work correctly if
@@ -72,7 +85,7 @@ void FullyClippedStateStackAlgorithm<Strategy>::setUpFullyClippedStack(Node* nod
         pushFullyClippedState(ancestry[ancestrySize - i - 1]);
     pushFullyClippedState(node);
 
-    ASSERT(size() == 1 + Strategy::depthCrossingShadowBoundaries(*node));
+    ASSERT(size() == 1 + depthCrossingShadowBoundaries<Strategy>(*node));
 }
 
 template class FullyClippedStateStackAlgorithm<TextIteratorStrategy>;

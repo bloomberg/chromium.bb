@@ -60,6 +60,24 @@ namespace blink {
 
 using namespace HTMLNames;
 
+namespace {
+// This function is like Range::pastLastNode, except for the fact that it can
+// climb up out of shadow trees.
+template <typename Strategy>
+Node* pastLastNode(const Node& rangeEndContainer, int rangeEndOffset)
+{
+    if (rangeEndOffset >= 0 && !rangeEndContainer.offsetInCharacters()) {
+        if (Node* next = Strategy::childAt(rangeEndContainer, rangeEndOffset))
+            return next;
+    }
+    for (const Node* node = &rangeEndContainer; node; node = Strategy::parentOrShadowHostNode(*node)) {
+        if (Node* next = Strategy::nextSibling(*node))
+            return next;
+    }
+    return nullptr;
+}
+} // namespace
+
 template<typename Strategy>
 TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const typename Strategy::PositionType& start, const typename Strategy::PositionType& end, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
@@ -123,7 +141,7 @@ void TextIteratorAlgorithm<Strategy>::initialize(Node* startContainer, int start
     m_iterationProgress = HandledNone;
 
     // Calculate first out of bounds node.
-    m_pastEndNode = endContainer? Strategy::pastLastNode(*endContainer, endOffset) : nullptr;
+    m_pastEndNode = endContainer? pastLastNode<Strategy>(*endContainer, endOffset) : nullptr;
 
     // Identify the first run.
     advance();
@@ -970,13 +988,13 @@ Node* TextIteratorAlgorithm<Strategy>::currentContainer() const
 template<typename Strategy>
 typename Strategy::PositionType TextIteratorAlgorithm<Strategy>::startPositionInCurrentContainer() const
 {
-    return Strategy::createLegacyEditingPosition(currentContainer(), startOffsetInCurrentContainer());
+    return Strategy::PositionType::createLegacyEditingPosition(currentContainer(), startOffsetInCurrentContainer());
 }
 
 template<typename Strategy>
 typename Strategy::PositionType TextIteratorAlgorithm<Strategy>::endPositionInCurrentContainer() const
 {
-    return Strategy::createLegacyEditingPosition(currentContainer(), endOffsetInCurrentContainer());
+    return Strategy::PositionType::createLegacyEditingPosition(currentContainer(), endOffsetInCurrentContainer());
 }
 
 template<typename Strategy>

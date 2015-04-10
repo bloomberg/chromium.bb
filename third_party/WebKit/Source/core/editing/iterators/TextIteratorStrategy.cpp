@@ -10,29 +10,6 @@
 
 namespace blink {
 
-// This function is like Range::pastLastNode, except for the fact that it can
-// climb up out of shadow trees.
-Node* TextIteratorStrategy::pastLastNode(const Node& rangeEndContainer, int rangeEndOffset)
-{
-    if (rangeEndOffset >= 0 && !rangeEndContainer.offsetInCharacters()) {
-        if (Node* next = NodeTraversal::childAt(rangeEndContainer, rangeEndOffset))
-            return next;
-    }
-    for (const Node* node = &rangeEndContainer; node; node = node->parentOrShadowHostNode()) {
-        if (Node* next = node->nextSibling())
-            return next;
-    }
-    return nullptr;
-}
-
-unsigned TextIteratorStrategy::depthCrossingShadowBoundaries(const Node& node)
-{
-    unsigned depth = 0;
-    for (ContainerNode* parent = node.parentOrShadowHostNode(); parent; parent = parent->parentOrShadowHostNode())
-        ++depth;
-    return depth;
-}
-
 ContainerNode* TextIteratorStrategy::parentOrShadowHostNode(const Node& node)
 {
     return node.parentOrShadowHostNode();
@@ -48,11 +25,6 @@ int TextIteratorStrategy::shadowDepthOf(const Node& startContainer, const Node& 
     for (const TreeScope* treeScope = &startContainer.treeScope(); treeScope != commonAncestorTreeScope; treeScope = treeScope->parentTreeScope())
         ++shadowDepth;
     return shadowDepth;
-}
-
-TextIteratorStrategy::PositionType TextIteratorStrategy::createLegacyEditingPosition(Node* container, unsigned index)
-{
-    return blink::createLegacyEditingPosition(container, index);
 }
 
 } // namespace blink
