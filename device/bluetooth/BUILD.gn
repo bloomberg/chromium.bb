@@ -103,8 +103,6 @@ component("bluetooth") {
     "bluetooth_task_manager_win.h",
     "bluetooth_uuid.cc",
     "bluetooth_uuid.h",
-    "uribeacon/uri_encoder.cc",
-    "uribeacon/uri_encoder.h",
   ]
 
   defines = [ "DEVICE_BLUETOOTH_IMPLEMENTATION" ]
@@ -113,6 +111,7 @@ component("bluetooth") {
 
   deps = [
     ":strings",
+    "uribeacon",
     "//base",
     "//net",
     "//ui/base",

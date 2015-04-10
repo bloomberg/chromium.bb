@@ -16,6 +16,7 @@
         '../../net/net.gyp:net',
         '../../ui/base/ui_base.gyp:ui_base',
         'bluetooth_strings.gyp:device_bluetooth_strings',
+        'uribeacon',
       ],
       'defines': [
         'DEVICE_BLUETOOTH_IMPLEMENTATION',
@@ -106,8 +107,6 @@
         'bluetooth_task_manager_win.h',
         'bluetooth_uuid.cc',
         'bluetooth_uuid.h',
-        'uribeacon/uri_encoder.cc',
-        'uribeacon/uri_encoder.h',
       ],
       'conditions': [
         ['chromeos==1', {
@@ -156,6 +155,17 @@
           },
         }],
       ],
+    },
+    {
+      'target_name': 'uribeacon',
+      'type': 'static_library',
+      'dependencies': [
+        '../../base/base.gyp:base',
+      ],
+      'sources': [
+        'uribeacon/uri_encoder.cc',
+        'uribeacon/uri_encoder.h'
+      ]
     },
     {
       # GN version: //device/bluetooth:mocks
