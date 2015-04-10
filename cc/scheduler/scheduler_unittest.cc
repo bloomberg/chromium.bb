@@ -1296,26 +1296,26 @@ TEST_F(SchedulerTest,
        SkipMainFrameIfHighLatencyAndCanCommitAndActivateBeforeDeadline) {
   // Set up client so that estimates indicate that we can commit and activate
   // before the deadline (~8ms by default).
-  MainFrameInHighLatencyMode(1, 1, false, false);
+  EXPECT_SCOPED(MainFrameInHighLatencyMode(1, 1, false, false));
 }
 
 TEST_F(SchedulerTest, NotSkipMainFrameIfHighLatencyAndCanCommitTooLong) {
   // Set up client so that estimates indicate that the commit cannot finish
   // before the deadline (~8ms by default).
-  MainFrameInHighLatencyMode(10, 1, false, true);
+  EXPECT_SCOPED(MainFrameInHighLatencyMode(10, 1, false, true));
 }
 
 TEST_F(SchedulerTest, NotSkipMainFrameIfHighLatencyAndCanActivateTooLong) {
   // Set up client so that estimates indicate that the activate cannot finish
   // before the deadline (~8ms by default).
-  MainFrameInHighLatencyMode(1, 10, false, true);
+  EXPECT_SCOPED(MainFrameInHighLatencyMode(1, 10, false, true));
 }
 
 TEST_F(SchedulerTest, NotSkipMainFrameInPreferImplLatencyMode) {
   // Set up client so that estimates indicate that we can commit and activate
   // before the deadline (~8ms by default), but also enable impl latency takes
   // priority mode.
-  MainFrameInHighLatencyMode(1, 1, true, true);
+  EXPECT_SCOPED(MainFrameInHighLatencyMode(1, 1, true, true));
 }
 
 TEST_F(SchedulerTest, PollForCommitCompletion) {
