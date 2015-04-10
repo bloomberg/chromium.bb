@@ -147,10 +147,13 @@ scoped_ptr<cc::OutputSurface>
 SynchronousCompositorFactoryImpl::CreateOutputSurface(
     int routing_id,
     scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue) {
-  scoped_ptr<SynchronousCompositorOutputSurface> output_surface(
-      new SynchronousCompositorOutputSurface(routing_id,
-                                             frame_swap_message_queue));
-  return output_surface.Pass();
+  scoped_refptr<cc::ContextProvider> onscreen_context =
+      CreateContextProviderForCompositor();
+  scoped_refptr<cc::ContextProvider> worker_context =
+      CreateContextProviderForCompositor();
+
+  return make_scoped_ptr(new SynchronousCompositorOutputSurface(
+      onscreen_context, worker_context, routing_id, frame_swap_message_queue));
 }
 
 InputHandlerManagerClient*
@@ -177,8 +180,6 @@ SynchronousCompositorFactoryImpl::CreateOffscreenContextProvider(
 
 scoped_refptr<cc::ContextProvider>
 SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor() {
-  DCHECK(service_.get());
-
   blink::WebGraphicsContext3D::Attributes attributes = GetDefaultAttribs();
   gpu::GLInProcessContextSharedMemoryLimits mem_limits;
   // This is half of what RenderWidget uses because synchronous compositor

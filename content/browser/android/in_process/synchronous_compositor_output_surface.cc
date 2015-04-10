@@ -63,16 +63,19 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
 };
 
 SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
+    const scoped_refptr<cc::ContextProvider>& context_provider,
+    const scoped_refptr<cc::ContextProvider>& worker_context_provider,
     int routing_id,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue)
     : cc::OutputSurface(
+          context_provider,
+          worker_context_provider,
           scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
       routing_id_(routing_id),
       registered_(false),
       current_sw_canvas_(nullptr),
       memory_policy_(0),
       frame_swap_message_queue_(frame_swap_message_queue) {
-  capabilities_.deferred_gl_initialization = true;
   capabilities_.draw_and_swap_full_viewport_every_frame = true;
   capabilities_.adjust_deadline_for_parent = false;
   capabilities_.delegated_rendering = true;
@@ -136,22 +139,6 @@ void AdjustTransform(gfx::Transform* transform, gfx::Rect viewport) {
   transform->matrix().postTranslate(-viewport.x(), -viewport.y(), 0);
 }
 } // namespace
-
-bool SynchronousCompositorOutputSurface::InitializeHwDraw(
-    scoped_refptr<cc::ContextProvider> onscreen_context_provider,
-    scoped_refptr<cc::ContextProvider> worker_context_provider) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(HasClient());
-  DCHECK(!context_provider_.get());
-
-  return InitializeAndSetContext3d(onscreen_context_provider,
-                                   worker_context_provider);
-}
-
-void SynchronousCompositorOutputSurface::ReleaseHwDraw() {
-  DCHECK(CalledOnValidThread());
-  cc::OutputSurface::ReleaseGL();
-}
 
 scoped_ptr<cc::CompositorFrame>
 SynchronousCompositorOutputSurface::DemandDrawHw(

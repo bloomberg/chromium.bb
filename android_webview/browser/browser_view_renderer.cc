@@ -204,16 +204,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
   }
 
   shared_renderer_state_.SetScrollOffsetOnUI(last_on_draw_scroll_offset_);
-
-  if (!hardware_enabled_) {
-    TRACE_EVENT0("android_webview", "InitializeHwDraw");
-    hardware_enabled_ = compositor_->InitializeHwDraw();
-  }
-  if (!hardware_enabled_) {
-    TRACE_EVENT_INSTANT0("android_webview", "EarlyOut_HardwareNotEnabled",
-                         TRACE_EVENT_SCOPE_THREAD);
-    return false;
-  }
+  hardware_enabled_ = true;
 
   return CompositeHw();
 }
@@ -417,7 +408,7 @@ void BrowserViewRenderer::ReleaseHardware() {
   DCHECK(shared_renderer_state_.ReturnedResourcesEmptyOnUI());
 
   if (compositor_) {
-    compositor_->ReleaseHwDraw();
+    compositor_->SetMemoryPolicy(0u);
   }
 
   hardware_enabled_ = false;

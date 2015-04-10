@@ -47,7 +47,9 @@ class WebGraphicsContext3DCommandBufferImpl;
 class SynchronousCompositorOutputSurface
     : NON_EXPORTED_BASE(public cc::OutputSurface) {
  public:
-  explicit SynchronousCompositorOutputSurface(
+  SynchronousCompositorOutputSurface(
+      const scoped_refptr<cc::ContextProvider>& context_provider,
+      const scoped_refptr<cc::ContextProvider>& worker_context_provider,
       int routing_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue);
   ~SynchronousCompositorOutputSurface() override;
@@ -61,10 +63,6 @@ class SynchronousCompositorOutputSurface
   void Invalidate() override;
 
   // Partial SynchronousCompositor API implementation.
-  bool InitializeHwDraw(
-      scoped_refptr<cc::ContextProvider> onscreen_context_provider,
-      scoped_refptr<cc::ContextProvider> worker_context_provider);
-  void ReleaseHwDraw();
   scoped_ptr<cc::CompositorFrame> DemandDrawHw(
       gfx::Size surface_size,
       const gfx::Transform& transform,

@@ -151,31 +151,6 @@ void SynchronousCompositorImpl::NotifyDidDestroyCompositorToClient() {
   compositor_client_ = nullptr;
 }
 
-bool SynchronousCompositorImpl::InitializeHwDraw() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(output_surface_);
-
-  scoped_refptr<cc::ContextProvider> onscreen_context =
-      g_factory.Get().CreateContextProviderForCompositor();
-
-  scoped_refptr<cc::ContextProvider> worker_context =
-      g_factory.Get().CreateContextProviderForCompositor();
-
-  bool success =
-      output_surface_->InitializeHwDraw(onscreen_context, worker_context);
-
-  if (success)
-    g_factory.Get().CompositorInitializedHardwareDraw();
-  return success;
-}
-
-void SynchronousCompositorImpl::ReleaseHwDraw() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(output_surface_);
-  output_surface_->ReleaseHwDraw();
-  g_factory.Get().CompositorReleasedHardwareDraw();
-}
-
 scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
     gfx::Size surface_size,
     const gfx::Transform& transform,

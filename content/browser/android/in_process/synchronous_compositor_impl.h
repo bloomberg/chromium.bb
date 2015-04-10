@@ -65,8 +65,6 @@ class SynchronousCompositorImpl
   void BeginFrame(const cc::BeginFrameArgs& args);
 
   // SynchronousCompositor
-  bool InitializeHwDraw() override;
-  void ReleaseHwDraw() override;
   scoped_ptr<cc::CompositorFrame> DemandDrawHw(
       gfx::Size surface_size,
       const gfx::Transform& transform,

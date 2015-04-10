@@ -18,8 +18,6 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
   void SetClient(SynchronousCompositorClient* client);
 
   // SynchronousCompositor overrides.
-  bool InitializeHwDraw() override;
-  void ReleaseHwDraw() override;
   scoped_ptr<cc::CompositorFrame> DemandDrawHw(
       gfx::Size surface_size,
       const gfx::Transform& transform,
@@ -27,9 +25,9 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
       gfx::Rect clip,
       gfx::Rect viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
-  void ReturnResources(const cc::CompositorFrameAck& frame_ack) override;
+  void ReturnResources(const cc::CompositorFrameAck& frame_ack) override {}
   bool DemandDrawSw(SkCanvas* canvas) override;
-  void SetMemoryPolicy(size_t bytes_limit) override;
+  void SetMemoryPolicy(size_t bytes_limit) override {}
   void DidChangeRootLayerScrollOffset() override {}
   void SetIsActive(bool is_active) override {}
 

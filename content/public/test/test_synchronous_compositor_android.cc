@@ -8,12 +8,10 @@
 
 namespace content {
 
-TestSynchronousCompositor::TestSynchronousCompositor()
-    : client_(NULL), hardware_initialized_(false) {
+TestSynchronousCompositor::TestSynchronousCompositor() : client_(NULL) {
 }
 
 TestSynchronousCompositor::~TestSynchronousCompositor() {
-  DCHECK(!hardware_initialized_);
   SetClient(NULL);
 }
 
@@ -25,17 +23,6 @@ void TestSynchronousCompositor::SetClient(SynchronousCompositorClient* client) {
     client_->DidInitializeCompositor(this);
 }
 
-bool TestSynchronousCompositor::InitializeHwDraw() {
-  DCHECK(!hardware_initialized_);
-  hardware_initialized_ = true;
-  return true;
-}
-
-void TestSynchronousCompositor::ReleaseHwDraw() {
-  DCHECK(hardware_initialized_);
-  hardware_initialized_ = false;
-}
-
 scoped_ptr<cc::CompositorFrame> TestSynchronousCompositor::DemandDrawHw(
     gfx::Size surface_size,
     const gfx::Transform& transform,
@@ -43,7 +30,6 @@ scoped_ptr<cc::CompositorFrame> TestSynchronousCompositor::DemandDrawHw(
     gfx::Rect clip,
     gfx::Rect viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
-  DCHECK(hardware_initialized_);
   scoped_ptr<cc::CompositorFrame> compositor_frame(new cc::CompositorFrame);
   scoped_ptr<cc::DelegatedFrameData> frame(new cc::DelegatedFrameData);
   scoped_ptr<cc::RenderPass> root_pass(cc::RenderPass::Create());
@@ -54,18 +40,9 @@ scoped_ptr<cc::CompositorFrame> TestSynchronousCompositor::DemandDrawHw(
   return compositor_frame.Pass();
 }
 
-void TestSynchronousCompositor::ReturnResources(
-    const cc::CompositorFrameAck& frame_ack) {
-  DCHECK(hardware_initialized_);
-}
-
 bool TestSynchronousCompositor::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(canvas);
   return true;
-}
-
-void TestSynchronousCompositor::SetMemoryPolicy(size_t bytes_limit) {
-  DCHECK(!bytes_limit || hardware_initialized_) << bytes_limit;
 }
 
 }  // namespace content
