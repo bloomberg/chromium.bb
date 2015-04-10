@@ -190,6 +190,11 @@ void FirstLetterPseudoElement::updateTextFragments()
 
         childFragment->setTextFragment(oldText.impl()->substring(0, length), 0, length);
         childFragment->dirtyLineBoxes();
+
+        // Make sure the first-letter layoutObject is set to require a layout as it
+        // needs to re-create the line boxes. The remaining text layoutObject
+        // will be marked by the LayoutText::setText.
+        childFragment->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::TextChanged);
         break;
     }
 }
