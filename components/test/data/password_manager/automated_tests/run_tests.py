@@ -127,7 +127,7 @@ class TestRunner(object):
 
     self.logger.log(
         SCRIPT_DEBUG,
-        "Test run of {0} succeded: {1}".format(self.test_name, success))
+        "Test run of {0} has succeeded: {1}".format(self.test_name, success))
     return success
 
   def _run_test(self):
@@ -175,6 +175,14 @@ def run_tests(config_path):
     config_path: The path to the config INI file. See the top of the file
       for format description.
   """
+  def has_test_run_finished(runner, result):
+    result = runner.get_test_result()
+    if result:  # This test run is finished.
+      status, log = result
+      results.append((runner.test_name, status, log))
+      return True
+    else:
+      return False
 
   defaults = {("run_options", "tests_in_parallel"): "1"}
   config = ConfigParser.ConfigParser()
@@ -193,8 +201,7 @@ def run_tests(config_path):
                       config.get("data_files", "passwords_path")]
   runners = []
   if config.has_option("run_options", "tests_to_run"):
-    user_selected_tests = config.get("run_options", "tests_to_run").split(",")
-    tests_to_run = user_selected_tests
+    tests_to_run = config.get("run_options", "tests_to_run").split(",")
   else:
     tests_to_run = tests.all_tests.keys()
 
@@ -203,16 +210,8 @@ def run_tests(config_path):
              tests_to_run)
   results = []  # List of (name, bool_passed, failure_log).
   while len(runners) + len(tests_to_run) > 0:
-    i = 0
-    # TODO(melandory): Rewrite with list comprehension to increase readability.
-    while i < len(runners):
-      result = runners[i].get_test_result()
-      if result:  # This test run is finished.
-        status, log = result
-        results.append((runners[i].test_name, status, log))
-        del runners[i]
-      else:
-        i += 1
+    runners = [runner for runner in runners if not has_test_run_finished(
+        runner, results)]
     while len(runners) < max_tests_in_parallel and len(tests_to_run):
       test_name = tests_to_run.pop()
       specific_test_cmd = list(general_test_cmd)
