@@ -665,6 +665,68 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
             ExecuteJavascriptAndReturnResult(constraints_1_1));
 }
 
+// This test calls getUserMedia in an iframe and immediately close the iframe
+// in the scope of the success callback.
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       AudioInIFrameAndCloseInSuccessCb) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  std::string call =
+      "getUserMediaInIframeAndCloseInSuccessCb({audio: true});";
+  ExecuteJavascriptAndWaitForOk(call);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       VideoInIFrameAndCloseInSuccessCb) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  std::string call =
+      "getUserMediaInIframeAndCloseInSuccessCb({video: true});";
+  ExecuteJavascriptAndWaitForOk(call);
+}
+
+// This test calls getUserMedia in an iframe and immediately close the iframe
+// in the scope of the failure callback.
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       VideoWithBadConstraintsInIFrameAndCloseInFailureCb) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+
+  int large_value = 99999;
+  std::string call =
+      GenerateGetUserMediaCall("getUserMediaInIframeAndCloseInFailureCb",
+                               large_value,
+                               large_value,
+                               large_value,
+                               large_value,
+                               large_value,
+                               large_value);
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk(call);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       InvalidSourceIdInIFrameAndCloseInFailureCb) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+
+  std::string call =
+      GenerateGetUserMediaWithMandatorySourceID(
+          "getUserMediaInIframeAndCloseInFailureCb", "invalid", "invalid");
+  NavigateToURL(shell(), url);
+
+  ExecuteJavascriptAndWaitForOk(call);
+}
+
 namespace {
 
 struct UserMediaSizes {

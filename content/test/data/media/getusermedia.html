@@ -281,6 +281,58 @@
     }
   }
 
+  function getUserMediaInIframeAndCloseInSuccessCb(constraints) {
+    var iframe = document.createElement('iframe');
+    iframe.onload = onIframeLoaded;
+    document.body.appendChild(iframe);
+    iframe.src = window.location;
+
+    function onIframeLoaded() {
+      var iframe  = window.document.querySelector('iframe');
+      iframe.contentWindow.navigator.webkitGetUserMedia(
+          constraints,
+          function (stream) {
+            // Remove the iframe from the parent within the callback scope.
+            window.parent.document.querySelector('iframe').remove();
+            // This function enqueues reporting test success, rather than doing
+            // it directly. We do this so we catch crashes that occur in the
+            // current execution context, but after reportTestSuccess is
+            // invoked.
+            setTimeout(function () {
+              window.parent.reportTestSuccess();
+            }, 0);
+          }, 
+          window.parent.failedCallback);
+    }
+  }
+
+  function getUserMediaInIframeAndCloseInFailureCb(constraints) {
+    var iframe = document.createElement('iframe');
+    iframe.onload = onIframeLoaded;
+    document.body.appendChild(iframe);
+    iframe.src = window.location;
+
+    function onIframeLoaded() {
+      var iframe  = window.document.querySelector('iframe');
+      iframe.contentWindow.navigator.webkitGetUserMedia(
+          constraints,
+          function (stream) {
+            window.parent.failTest('GetUserMedia call succeeded unexpectedly.');
+          }, 
+          function (error) {
+            // Remove the iframe from the parent within the callback scope.
+            window.parent.document.querySelector('iframe').remove();
+            // This function enqueues reporting test success, rather than doing
+            // it directly. We do this so we catch crashes that occur in the
+            // current execution context, but after reportTestSuccess is
+            // invoked.
+            setTimeout(function () {
+              window.parent.reportTestSuccess();
+            }, 0);
+          });
+    }
+  }
+
   function failedCallback(error) {
     failTest('GetUserMedia call failed with code ' + error.code);
   }
