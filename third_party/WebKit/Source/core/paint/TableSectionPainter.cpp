@@ -172,25 +172,34 @@ void TableSectionPainter::paintCell(LayoutTableCell* cell, const PaintInfo& pain
         LayoutTableCol* column = m_layoutTableSection.table()->colElement(cell->col());
         LayoutTableCol* columnGroup = column ? column->enclosingColumnGroup() : 0;
 
-        TableCellPainter tableCellPainter(*cell);
+        bool columnHasBackground = column && column->hasBackground();
+        bool columnGroupHasBackground = columnGroup && columnGroup->hasBackground();
+        bool sectionHasBackground = m_layoutTableSection.hasBackground();
+        bool rowHasBackground = row->hasBackground();
 
-        LayoutObjectDrawingRecorder recorder(*paintInfo.context, *cell, paintPhase, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent));
-        if (!recorder.canUseCachedDrawing()) {
-            // Column groups and columns first.
-            // FIXME: Columns and column groups do not currently support opacity, and they are being painted "too late" in
-            // the stack, since we have already opened a transparency layer (potentially) for the table row group.
-            // Note that we deliberately ignore whether or not the cell has a layer, since these backgrounds paint "behind" the
-            // cell.
-            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, columnGroup);
-            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, column);
+        if (columnHasBackground || columnGroupHasBackground || sectionHasBackground || rowHasBackground) {
+            TableCellPainter tableCellPainter(*cell);
+            LayoutObjectDrawingRecorder recorder(*paintInfo.context, *cell, paintPhase, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent));
+            if (!recorder.canUseCachedDrawing()) {
+                // Column groups and columns first.
+                // FIXME: Columns and column groups do not currently support opacity, and they are being painted "too late" in
+                // the stack, since we have already opened a transparency layer (potentially) for the table row group.
+                // Note that we deliberately ignore whether or not the cell has a layer, since these backgrounds paint "behind" the
+                // cell.
+                if (columnGroupHasBackground)
+                    tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, columnGroup);
+                if (columnHasBackground)
+                    tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, column);
 
-            // Paint the row group next.
-            tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, &m_layoutTableSection);
+                // Paint the row group next.
+                if (sectionHasBackground)
+                    tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, &m_layoutTableSection);
 
-            // Paint the row next, but only if it doesn't have a layer. If a row has a layer, it will be responsible for
-            // painting the row background for the cell.
-            if (!row->hasSelfPaintingLayer())
-                tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, row);
+                // Paint the row next, but only if it doesn't have a layer. If a row has a layer, it will be responsible for
+                // painting the row background for the cell.
+                if (rowHasBackground && !row->hasSelfPaintingLayer())
+                    tableCellPainter.paintBackgroundsBehindCell(paintInfo, cellPoint, row);
+            }
         }
     }
     if ((!cell->hasSelfPaintingLayer() && !row->hasSelfPaintingLayer()))

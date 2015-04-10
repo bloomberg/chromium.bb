@@ -87,11 +87,6 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (!tableCurrentBorderValue)
         return;
 
-    GraphicsContext* graphicsContext = paintInfo.context;
-    LayoutObjectDrawingRecorder recorder(*graphicsContext, m_layoutTableCell, paintInfo.phase, drawingCullRect);
-    if (recorder.canUseCachedDrawing())
-        return;
-
     const ComputedStyle& styleForCellFlow = m_layoutTableCell.styleForCellFlow();
     const CollapsedBorderValue& leftBorderValue = cachedCollapsedLeftBorder(styleForCellFlow);
     const CollapsedBorderValue& rightBorderValue = cachedCollapsedRightBorder(styleForCellFlow);
@@ -104,6 +99,11 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     bool shouldPaintRight = rightBorderValue.shouldPaint(*tableCurrentBorderValue);
 
     if (!shouldPaintTop && !shouldPaintBottom && !shouldPaintLeft && !shouldPaintRight)
+        return;
+
+    GraphicsContext* graphicsContext = paintInfo.context;
+    LayoutObjectDrawingRecorder recorder(*graphicsContext, m_layoutTableCell, paintInfo.phase, drawingCullRect);
+    if (recorder.canUseCachedDrawing())
         return;
 
     bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
@@ -180,8 +180,12 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
     if (!paintInfo.shouldPaintWithinRoot(&m_layoutTableCell))
         return;
 
-    LayoutTable* tableElt = m_layoutTableCell.table();
-    if (!tableElt->collapseBorders() && m_layoutTableCell.style()->emptyCells() == HIDE && !m_layoutTableCell.firstChild())
+    LayoutTable* table = m_layoutTableCell.table();
+    if (!table->collapseBorders() && m_layoutTableCell.style()->emptyCells() == HIDE && !m_layoutTableCell.firstChild())
+        return;
+
+    bool needsToPaintBorder = m_layoutTableCell.styleRef().hasBorder() && !table->collapseBorders();
+    if (!m_layoutTableCell.hasBackground() && !m_layoutTableCell.styleRef().boxShadow() && !needsToPaintBorder)
         return;
 
     LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
@@ -196,7 +200,7 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
 
     BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutTableCell.styleRef(), Inset);
 
-    if (!m_layoutTableCell.style()->hasBorder() || tableElt->collapseBorders())
+    if (!needsToPaintBorder)
         return;
 
     BoxPainter::paintBorder(m_layoutTableCell, paintInfo, paintRect, m_layoutTableCell.styleRef());
