@@ -2,11 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import os
 import signal
 import tempfile
 
 from pylib import cmd_helper
+from pylib.device import device_errors
 
 # TODO(jbudorick) Remove once telemetry gets switched over.
 import pylib.android_commands
@@ -71,7 +73,10 @@ class VideoRecorder(object):
     self._is_started = False
     if not self._recorder:
       return
-    self._device.KillAll('screenrecord', signum=signal.SIGINT)
+    try:
+      self._device.KillAll('screenrecord', signum=signal.SIGINT)
+    except device_errors.CommandFailedError:
+      logging.warning('Nothing to kill: screenrecord was not running')
     self._recorder.wait()
 
   def Pull(self, host_file=None):
