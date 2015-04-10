@@ -37,6 +37,7 @@ QUnit.module('dns_blackhole_checker', {
     onStateChange = sinon.spy();
     onIncomingStanzaCallback = sinon.spy();
     signalStrategy = new remoting.MockSignalStrategy();
+    sinon.spy(signalStrategy, 'connect');
     checker = new remoting.DnsBlackholeChecker(signalStrategy);
 
     checker.setStateChangedCallback(onStateChange);

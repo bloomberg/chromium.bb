@@ -26,6 +26,12 @@ var mockHostDaemonFacade;
 /** @type {sinon.TestStub} */
 var hostDaemonFacadeCtorStub;
 
+/** @type {remoting.MockSignalStrategy} */
+var mockSignalStrategy;
+
+/** @type {sinon.TestStub} */
+var signalStrategyCreateStub;
+
 var FAKE_HOST_PIN = '<FAKE_HOST_PIN>';
 var FAKE_USER_EMAIL = '<FAKE_USER_EMAIL>';
 var FAKE_USER_NAME = '<FAKE_USER_NAME>';
@@ -38,7 +44,9 @@ var FAKE_AUTH_CODE = '<FAKE_AUTH_CODE>';
 var FAKE_REFRESH_TOKEN = '<FAKE_REFRESH_TOKEN>';
 var FAKE_PIN_HASH = '<FAKE_PIN_HASH>';
 var FAKE_HOST_CLIENT_ID = '<FAKE_HOST_CLIENT_ID>';
+var FAKE_CLIENT_JID = '<FAKE_CLIENT_JID>';
 var FAKE_CLIENT_BASE_JID = '<FAKE_CLIENT_BASE_JID>';
+var FAKE_IDENTITY_TOKEN = '<FAKE_IDENTITY_TOKEN>';
 
 /** @type {sinon.Spy|Function} */
 var getCredentialsFromAuthCodeSpy;
@@ -58,7 +66,7 @@ var onLocalHostStartedSpy;
 QUnit.module('host_controller', {
   beforeEach: function(/** QUnit.Assert */ assert) {
     chromeMocks.activate(['identity', 'runtime']);
-    chromeMocks.identity.mock$setToken('my_token');
+    chromeMocks.identity.mock$setToken(FAKE_IDENTITY_TOKEN);
     remoting.identity = new remoting.Identity();
     remoting.MockXhr.activate();
     base.debug.assert(remoting.oauth2 === null);
@@ -87,6 +95,12 @@ QUnit.module('host_controller', {
               assert.equal(newHostId, FAKE_UUID);
               assert.equal(publicKey, FAKE_PUBLIC_KEY);
             });
+
+    mockSignalStrategy = new remoting.MockSignalStrategy(
+        FAKE_CLIENT_JID + '/extra_junk',
+        remoting.SignalStrategy.Type.XMPP);
+    signalStrategyCreateStub = sinon.stub(remoting.SignalStrategy, 'create');
+    signalStrategyCreateStub.returns(mockSignalStrategy);
 
     hostDaemonFacadeCtorStub = sinon.stub(remoting, 'HostDaemonFacade');
     mockHostDaemonFacade = new remoting.MockHostDaemonFacade();
@@ -126,6 +140,7 @@ QUnit.module('host_controller', {
     getCredentialsFromAuthCodeSpy.restore();
     generateUuidStub.restore();
     hostDaemonFacadeCtorStub.restore();
+    signalStrategyCreateStub.restore();
     remoting.hostList = null;
     remoting.oauth2 = null;
     remoting.MockXhr.restore();
@@ -163,10 +178,19 @@ function queueRegistryResponse(assert, withAuthCode) {
       });
 }
 
-function mockGetClientBaseJid() {
-  sinon.stub(controller, 'getClientBaseJid_').
-      callsArgWith(0, FAKE_CLIENT_BASE_JID);
-};
+/**
+ * @param {boolean} successful
+ */
+function stubSignalStrategyConnect(successful) {
+  sinon.stub(mockSignalStrategy, 'connect', function() {
+    Promise.resolve().then(function() {
+      mockSignalStrategy.setStateForTesting(
+          successful ?
+            remoting.SignalStrategy.State.CONNECTED :
+            remoting.SignalStrategy.State.FAILED);
+    });
+  });
+}
 
 // Check that hasFeature returns false for missing features.
 QUnit.test('hasFeature returns false', function(assert) {
@@ -304,17 +328,15 @@ QUnit.test('start with getRefreshToken+getPinHash failure', function(assert) {
   });
 });
 
-// Check what happens when the HostController's getClientBaseJid_
-// method fails.
-QUnit.test('start with getClientBaseJid_ failure', function(assert) {
+// Check what happens when the SignalStrategy fails to connect.
+QUnit.test('start with signalStrategy failure', function(assert) {
   queueRegistryResponse(assert, true);
-  sinon.stub(controller, 'getClientBaseJid_').
-      callsArgWith(1, remoting.Error.unexpected('getClientBaseJid_'));
+  stubSignalStrategyConnect(false);
   return new Promise(function(resolve, reject) {
     controller.start(FAKE_HOST_PIN, true, function() {
       reject('test failed');
     }, function(/** remoting.Error */ e) {
-      assert.equal(e.getDetail(), 'getClientBaseJid_');
+      assert.equal(e.getDetail(), 'setStateForTesting');
       assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
       assert.equal(unregisterHostByIdSpy.callCount, 1);
       resolve(null);
@@ -326,7 +348,7 @@ QUnit.test('start with getClientBaseJid_ failure', function(assert) {
 // fails and calls its onError argument.
 QUnit.test('start with startDaemon failure', function(assert) {
   queueRegistryResponse(assert, true);
-  mockGetClientBaseJid();
+  stubSignalStrategyConnect(true);
   mockHostDaemonFacade.startDaemonResult = null;
   return new Promise(function(resolve, reject) {
     controller.start(FAKE_HOST_PIN, true, function() {
@@ -345,7 +367,7 @@ QUnit.test('start with startDaemon failure', function(assert) {
 // calls is onDone method with a CANCELLED error code.
 QUnit.test('start with startDaemon cancelled', function(assert) {
   queueRegistryResponse(assert, true);
-  mockGetClientBaseJid();
+  stubSignalStrategyConnect(true);
   mockHostDaemonFacade.startDaemonResult =
       remoting.HostController.AsyncResult.CANCELLED;
   return new Promise(function(resolve, reject) {
@@ -364,7 +386,7 @@ QUnit.test('start with startDaemon cancelled', function(assert) {
 // calls is onDone method with an async error code.
 QUnit.test('start with startDaemon returning failure code', function(assert) {
   queueRegistryResponse(assert, true);
-  mockGetClientBaseJid();
+  stubSignalStrategyConnect(true);
   mockHostDaemonFacade.startDaemonResult =
       remoting.HostController.AsyncResult.FAILED;
   return new Promise(function(resolve, reject) {
@@ -384,7 +406,7 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
 [false, true].forEach(function(/** boolean */ consent) {
   QUnit.test('start succeeds with consent=' + consent, function(assert) {
     queueRegistryResponse(assert, true);
-    mockGetClientBaseJid();
+    stubSignalStrategyConnect(true);
     return new Promise(function(resolve, reject) {
       controller.start(FAKE_HOST_PIN, consent, function() {
         assert.equal(getCredentialsFromAuthCodeSpy.callCount, 1);
@@ -404,7 +426,7 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
             [{
               xmpp_login: FAKE_USER_EMAIL,
               oauth_refresh_token: FAKE_REFRESH_TOKEN,
-              host_owner: FAKE_CLIENT_BASE_JID,
+              host_owner: FAKE_CLIENT_JID.toLowerCase(),
               host_owner_email: FAKE_USER_EMAIL,
               host_id: FAKE_UUID,
               host_name: FAKE_HOST_NAME,

@@ -80,7 +80,9 @@ QUnit.module('fallback_signal_strategy', {
     strategy.setStateChangedCallback(onStateChange);
     strategy.setIncomingStanzaCallback(onIncomingStanzaCallback);
     primary = strategy.primary_;
+    addSpies(primary);
     secondary = strategy.secondary_;
+    addSpies(secondary);
     logToServer = new MockLogToServer(assert);
   },
   afterEach: function() {
@@ -92,6 +94,15 @@ QUnit.module('fallback_signal_strategy', {
     logToServer = null;
   },
 });
+
+/**
+ * @param {remoting.SignalStrategy} strategy
+ */
+function addSpies(strategy) {
+  sinon.spy(strategy, 'connect');
+  sinon.spy(strategy, 'sendMessage');
+  sinon.spy(strategy, 'dispose');
+}
 
 QUnit.test('primary succeeds; send & receive routed to it',
   function(assert) {

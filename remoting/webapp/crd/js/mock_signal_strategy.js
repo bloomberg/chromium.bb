@@ -23,11 +23,26 @@ remoting.MockSignalStrategy = function(jid, type) {
   /** @type {remoting.SignalStrategy.State} */
   this.state_ = remoting.SignalStrategy.State.NOT_CONNECTED;
 
+  /** @type {!remoting.Error} */
+  this.error_ = remoting.Error.none();
+
   this.onIncomingStanzaCallback_ = function() {};
-  this.dispose = sinon.spy();
-  this.connect = sinon.spy();
-  this.sendMessage = sinon.spy();
-  this.sendConnectionSetupResults = sinon.spy();
+};
+
+/** @override */
+remoting.MockSignalStrategy.prototype.dispose = function() {
+};
+
+/** @override */
+remoting.MockSignalStrategy.prototype.connect = function() {
+};
+
+/** @override */
+remoting.MockSignalStrategy.prototype.sendMessage = function() {
+};
+
+/** @override */
+remoting.MockSignalStrategy.prototype.sendConnectionSetupResults = function() {
 };
 
 /**
@@ -57,7 +72,7 @@ remoting.MockSignalStrategy.prototype.getState = function() {
 
 /** @return {!remoting.Error} */
 remoting.MockSignalStrategy.prototype.getError = function() {
-  return remoting.Error.none();
+  return this.error_;
 };
 
 /** @return {string} */
@@ -75,5 +90,10 @@ remoting.MockSignalStrategy.prototype.getType = function() {
  */
 remoting.MockSignalStrategy.prototype.setStateForTesting = function(state) {
   this.state_ = state;
+  if (state == remoting.SignalStrategy.State.FAILED) {
+    this.error_ = remoting.Error.unexpected('setStateForTesting');
+  } else {
+    this.error_ = remoting.Error.none();
+  }
   this.onStateChangedCallback_(state);
 };
