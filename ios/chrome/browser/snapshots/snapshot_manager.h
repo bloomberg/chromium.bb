@@ -7,9 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/web/public/web_view_type.h"
+
 // Snapshot manager for contents of a tab. A snapshot is a full-screen image
 // of the contents of the page at the current scroll offset and zoom level,
-// used to stand in for the UIWebView if it has been purged from memory or when
+// used to stand in for the web view if it has been purged from memory or when
 // quickly switching tabs. Uses |SnapshotCache| to cache (and persist)
 // snapshots.
 //
@@ -17,8 +19,10 @@
 // allows quick identification and replacement as a tab changes pages.
 @interface SnapshotManager : NSObject
 
-// Takes a snapshot for the supplied view. Returns an autoreleased image
-// cropped and scaled appropriately. The image is not yet cached.
+// Takes a snapshot for the supplied view (which should correspond to the given
+// type of web view). Returns an autoreleased image cropped and scaled
+// appropriately.
+// The image is not yet cached.
 // The image can also contain overlays (if |overlays| is not nil and not empty).
 - (UIImage*)generateSnapshotForView:(UIView*)view
                            withRect:(CGRect)rect

@@ -5,10 +5,24 @@
 #import "ios/chrome/browser/snapshots/snapshot_manager.h"
 
 #import <QuartzCore/QuartzCore.h>
+#import <WebKit/WebKit.h>
 
 #include "base/logging.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
+
+namespace {
+// Returns YES if |view| or any view it contains is a WKWebView.
+BOOL ViewHierarchyContainsWKWebView(UIView* view) {
+  if ([view isKindOfClass:[WKWebView class]])
+    return YES;
+  for (UIView* subview in view.subviews) {
+    if (ViewHierarchyContainsWKWebView(subview))
+      return YES;
+  }
+  return NO;
+}
+}  // namespace
 
 @implementation SnapshotManager
 
@@ -29,18 +43,21 @@
     return nil;
   }
 
-  CGContextSaveGState(context);
-  CGContextTranslateCTM(context, -rect.origin.x, -rect.origin.y);
-#if defined(ENABLE_WKWEBVIEW)
-  // -drawViewHierarchyInRect:afterScreenUpdates:YES is buggy as of iOS 8.1.1.
+  // -drawViewHierarchyInRect:afterScreenUpdates:YES is buggy as of iOS 8.3.
   // Using it afterScreenUpdates:YES creates unexpected GPU glitches, screen
   // redraws during animations, broken pinch to dismiss on tablet, etc.  For now
-  // only using this with ENABLE_WKWEBVIEW, which depends on
-  // -drawViewHierarchyInRect.
-  [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:YES];
-#else
-  [[view layer] renderInContext:context];
-#endif
+  // only using this with WKWebView, which depends on -drawViewHierarchyInRect.
+  // TODO(justincohen): Remove this (and always use drawViewHierarchyInRect)
+  // once the iOS 8 bugs have been fixed.
+  BOOL useDrawViewHierarchy = ViewHierarchyContainsWKWebView(view);
+
+  CGContextSaveGState(context);
+  CGContextTranslateCTM(context, -rect.origin.x, -rect.origin.y);
+  if (useDrawViewHierarchy) {
+    [view drawViewHierarchyInRect:view.bounds afterScreenUpdates:YES];
+  } else {
+    [[view layer] renderInContext:context];
+  }
   if ([overlays count]) {
     for (SnapshotOverlay* overlay in overlays) {
       // Render the overlay view at the desired offset. It is achieved
@@ -48,17 +65,17 @@
       // drawing to context.
       CGContextSaveGState(context);
       CGContextTranslateCTM(context, 0, overlay.yOffset);
-#if defined(ENABLE_WKWEBVIEW)
-      CGRect overlayRect = overlay.view.bounds;
-      // TODO(jyquinn): The 0 check is needed for a UIKit crash on iOS 7.  This
-      // can be removed once iOS 7 is dropped. crbug.com/421213
-      if (overlayRect.size.width > 0 && overlayRect.size.height > 0) {
-        [overlay.view drawViewHierarchyInRect:overlay.view.bounds
-                           afterScreenUpdates:YES];
+      if (useDrawViewHierarchy) {
+        CGRect overlayRect = overlay.view.bounds;
+        // TODO(jyquinn): The 0 check is needed for a UIKit crash on iOS 7. This
+        // can be removed once iOS 7 is dropped. crbug.com/421213
+        if (overlayRect.size.width > 0 && overlayRect.size.height > 0) {
+          [overlay.view drawViewHierarchyInRect:overlay.view.bounds
+                             afterScreenUpdates:YES];
+        }
+      } else {
+        [[overlay.view layer] renderInContext:context];
       }
-#else
-      [[overlay.view layer] renderInContext:context];
-#endif
       CGContextRestoreGState(context);
     }
   }
