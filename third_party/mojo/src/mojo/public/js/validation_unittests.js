@@ -225,11 +225,19 @@ define([
     expect(testFiles.length).toBeGreaterThan(0);
 
     for (var i = 0; i < testFiles.length; i++) {
-      // TODO(hansmuller, yzshen): Temporarily skipping:
-      //   - array pointer overflow tests;
-      //   - struct versioning tests (tests with "mthd11" in the name).
+      // TODO(hansmuller) Temporarily skipping array pointer overflow tests
+      // because JS numbers are limited to 53 bits.
+      // TODO(yzshen) Skipping struct versioning tests (tests with "mthd11"
+      // in the name) because the feature is not supported in JS yet.
+      // TODO(rudominer): Temporarily skipping 'no-such-method',
+      // 'invalid_request_flags', and 'invalid_response_flags' until additional
+      // logic in *RequestValidator and *ResponseValidator is ported from
+      // cpp to js.
       if (testFiles[i].indexOf("overflow") != -1 ||
-          testFiles[i].indexOf("mthd11") != -1) {
+          testFiles[i].indexOf("mthd11") != -1 ||
+          testFiles[i].indexOf("no_such_method") != -1 ||
+          testFiles[i].indexOf("invalid_request_flags") != -1 ||
+          testFiles[i].indexOf("invalid_response_flags") != -1) {
         console.log("[Skipping " + testFiles[i] + "]");
         continue;
       }
@@ -257,12 +265,6 @@ define([
     expect(testFiles.length).toBeGreaterThan(0);
 
     for (var i = 0; i < testFiles.length; i++) {
-      // TODO(hansmuller): Temporarily skipping array pointer overflow tests.
-      if (testFiles[i].indexOf("overflow") != -1) {
-        console.log("[Skipping " + testFiles[i] + "]");
-        continue;
-      }
-
       var testMessage = readTestMessage(testFiles[i]);
       var handles = new Array(testMessage.handleCount);
       var testMessagePipe = new core.createMessagePipe();

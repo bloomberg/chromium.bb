@@ -18,4 +18,6 @@ mojom("interfaces") {
     "../../../input_events/public/interfaces",
     "../../../surfaces/public/interfaces:surface_id",
   ]
+
+  import_from = mojo_root
 }

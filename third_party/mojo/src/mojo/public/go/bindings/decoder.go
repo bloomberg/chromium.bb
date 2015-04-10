@@ -290,7 +290,6 @@ func (d *Decoder) ReadString() (string, error) {
 // ReadPointer reads a pointer and reassigns first unclaimed byte index if the
 // pointer is not null.
 func (d *Decoder) ReadPointer() (uint64, error) {
-	oldEnd := d.state().offset
 	pointer, err := d.ReadUint64()
 	if err != nil {
 		return pointer, err
@@ -299,7 +298,7 @@ func (d *Decoder) ReadPointer() (uint64, error) {
 		return pointer, nil
 	}
 
-	newEnd := uint64(oldEnd) + pointer
+	newEnd := uint64(d.state().offset-8) + pointer
 	if newEnd >= uint64(len(d.buf)) {
 		return 0, fmt.Errorf("trying to access out of range memory")
 	}

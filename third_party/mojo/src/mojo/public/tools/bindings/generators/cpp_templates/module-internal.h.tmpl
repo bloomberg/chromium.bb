@@ -50,13 +50,15 @@ class {{union.name}}_Data;
 
 #pragma pack(push, 1)
 
+{#--- Unions must be declared first because they can be members of structs #}
+{#--- Union class declarations #}
+{%  for union in unions %}
+{%    include "union_declaration.tmpl" %}
+{%- endfor %}
+
 {#--- Class declarations #}
 {%  for struct in structs %}
 {%    include "struct_declaration.tmpl" %}
-{%- endfor %}
-
-{%  for union in unions %}
-{%    include "union_declaration.tmpl" %}
 {%- endfor %}
 
 #pragma pack(pop)

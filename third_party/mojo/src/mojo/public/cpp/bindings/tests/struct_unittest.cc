@@ -418,6 +418,5 @@ TEST_F(StructTest, Versioning_NewToOld) {
     EXPECT_TRUE(output->Equals(*expected_output));
   }
 }
-
 }  // namespace test
 }  // namespace mojo

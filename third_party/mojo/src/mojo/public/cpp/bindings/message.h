@@ -106,6 +106,39 @@ class MessageReceiverWithResponder : public MessageReceiver {
       MOJO_WARN_UNUSED_RESULT = 0;
 };
 
+// A MessageReceiver that is also able to provide status about the state
+// of the underlying MessagePipe to which it will be forwarding messages
+// received via the |Accept()| call.
+class MessageReceiverWithStatus : public MessageReceiver {
+ public:
+  ~MessageReceiverWithStatus() override {}
+
+  // Returns |true| if this MessageReceiver is currently bound to a MessagePipe,
+  // the pipe has not been closed, and the pipe has not encountered an error.
+  virtual bool IsValid() = 0;
+};
+
+// An alternative to MessageReceiverWithResponder for cases in which it
+// is necessary for the implementor of this interface to know about the status
+// of the MessagePipe which will carry the responses.
+class MessageReceiverWithResponderStatus : public MessageReceiver {
+ public:
+  ~MessageReceiverWithResponderStatus() override {}
+
+  // A variant on Accept that registers a MessageReceiverWithStatus (known as
+  // the responder) to handle the response message generated from the given
+  // message. Any of the responder's methods (Accept or IsValid) may be called
+  // during  AcceptWithResponder or some time after its return.
+  //
+  // NOTE: Upon returning true, AcceptWithResponder assumes ownership of
+  // |responder| and will delete it after calling |responder->Accept| or upon
+  // its own destruction.
+  //
+  virtual bool AcceptWithResponder(Message* message,
+                                   MessageReceiverWithStatus* responder)
+      MOJO_WARN_UNUSED_RESULT = 0;
+};
+
 // Read a single message from the pipe and dispatch to the given receiver.  The
 // receiver may be null, in which case the message is simply discarded.
 // Returns MOJO_RESULT_SHOULD_WAIT if the caller should wait on the handle to

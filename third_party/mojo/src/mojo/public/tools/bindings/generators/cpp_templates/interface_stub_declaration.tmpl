@@ -1,12 +1,13 @@
-class {{interface.name}}Stub : public mojo::MessageReceiverWithResponder {
+class {{interface.name}}Stub : public mojo::MessageReceiverWithResponderStatus {
  public:
   {{interface.name}}Stub();
+  ~{{interface.name}}Stub() override;
   void set_sink({{interface.name}}* sink) { sink_ = sink; }
   {{interface.name}}* sink() { return sink_; }
 
-  virtual bool Accept(mojo::Message* message) override;
-  virtual bool AcceptWithResponder(mojo::Message* message,
-                                   mojo::MessageReceiver* responder) override;
+  bool Accept(mojo::Message* message) override;
+  bool AcceptWithResponder(mojo::Message* message,
+      mojo::MessageReceiverWithStatus* responder) override;
 
  private:
   {{interface.name}}* sink_;

@@ -76,6 +76,18 @@ struct IsHandle {
   enum { value = IsBaseOf<Handle, H>::value };
 };
 
+template <typename T>
+struct IsUnionDataType {
+  template <typename U>
+  static YesType Test(const typename U::MojomUnionDataType*);
+
+  template <typename U>
+  static NoType Test(...);
+
+  static const bool value =
+      sizeof(Test<T>(0)) == sizeof(YesType) && !IsConst<T>::value;
+};
+
 template <typename T, bool move_only = IsMoveOnlyType<T>::value>
 struct WrapperTraits;
 

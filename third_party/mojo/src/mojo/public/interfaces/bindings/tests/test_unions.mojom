@@ -23,3 +23,22 @@ union ObjectUnion {
   int8   f_int8;
   string f_string;
 };
+
+struct DummyStruct {
+  int8 f_int8;
+};
+
+struct SmallStruct {
+  DummyStruct? dummy_struct;
+  PodUnion? pod_union;
+  array<PodUnion>? pod_union_array;
+  array<DummyStruct>? s_array;
+};
+
+struct SmallStructNonNullableUnion {
+  PodUnion pod_union;
+};
+
+struct SmallObjStruct {
+  ObjectUnion obj_union;
+};

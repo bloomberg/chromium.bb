@@ -1,7 +1,0 @@
-{%- macro declare_serialization(name) %}
-size_t GetSerializedSize_(const {{name}}Ptr& input);
-void Serialize_({{name}}Ptr input, mojo::internal::Buffer* buffer,
-                internal::{{name}}_Data** output);
-void Deserialize_(internal::{{name}}_Data* input,
-                  {{name}}Ptr* output);
-{%- endmacro %}

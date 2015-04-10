@@ -20,6 +20,9 @@ import tempfile
 import zipfile
 
 _ANALYZING_PATTERN = re.compile(r'^Analyzing \[')
+_NO_ISSUES_FOUND_PATTERN = re.compile(r'^No issues found')
+_PART_WARNINGS_PATTERN = re.compile(
+  r'.*is a part and can not|^Only libraries can be analyzed')
 _ERRORS_AND_WARNINGS_PATTERN = re.compile(
   r'^[0-9]+ errors? and [0-9]+ warnings? found.')
 _ERRORS_PATTERN = re.compile(r'^([0-9]+|No) (error|warning|issue)s? found.')
@@ -59,6 +62,8 @@ def main(args):
       raw_lines.pop()
       filtered_lines = [i for i in raw_lines if (
         not re.match(_ANALYZING_PATTERN, i) and
+        not re.match(_NO_ISSUES_FOUND_PATTERN, i) and
+        not re.match(_PART_WARNINGS_PATTERN, i) and
         not re.match(_ERRORS_AND_WARNINGS_PATTERN, i) and
         not re.match(_ERRORS_PATTERN, i))]
       for line in filtered_lines:

@@ -42,8 +42,36 @@ type {{interface|name}} interface {
 {% endfor %}
 }
 
+var {{interface|name(False)}}_Name = "{{interface.module.namespace|replace(".","::")}}::{{interface.name}}"
+
 type {{interface|name}}Request bindings.InterfaceRequest
+
+func (r *{{interface|name}}Request) Name() string {
+	return {{interface|name(False)}}_Name
+}
+
 type {{interface|name}}Pointer bindings.InterfacePointer
+
+func (p *{{interface|name}}Pointer) Name() string {
+	return {{interface|name(False)}}_Name
+}
+
+type {{interface|name}}ServiceFactory struct{
+	Delegate {{interface|name}}Factory
+}
+
+type {{interface|name}}Factory interface {
+	Create(request {{interface|name}}Request)
+}
+
+func (f *{{interface|name}}ServiceFactory) Name() string {
+	return {{interface|name(False)}}_Name
+}
+
+func (f *{{interface|name}}ServiceFactory) Create(messagePipe system.MessagePipeHandle) {
+	request := {{interface|name}}Request{bindings.NewMessagePipeHandleOwner(messagePipe)}
+	f.Delegate.Create(request)
+}
 
 // CreateMessagePipeFor{{interface|name}} creates a message pipe for use with the
 // {{interface|name}} interface with a {{interface|name}}Request on one end and a {{interface|name}}Pointer on the other.

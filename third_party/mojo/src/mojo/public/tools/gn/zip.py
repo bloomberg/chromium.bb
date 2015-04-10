@@ -15,7 +15,7 @@ import zipfile
 
 def DoZip(inputs, zip_inputs, output, base_dir):
   files = []
-  with zipfile.ZipFile(output, 'w') as outfile:
+  with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as outfile:
     for f in inputs:
       file_name = os.path.relpath(f, base_dir)
       files.append(file_name)
