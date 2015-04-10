@@ -345,6 +345,28 @@ bool NetworkingPrivateGetEnabledNetworkTypesFunction::RunSync() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateGetDeviceStatesFunction
+
+NetworkingPrivateGetDeviceStatesFunction::
+    ~NetworkingPrivateGetDeviceStatesFunction() {
+}
+
+bool NetworkingPrivateGetDeviceStatesFunction::RunSync() {
+  scoped_ptr<NetworkingPrivateDelegate::DeviceStateList> device_states(
+      GetDelegate(browser_context())->GetDeviceStateList());
+  if (!device_states) {
+    error_ = networking_private::kErrorNotSupported;
+    return false;
+  }
+
+  scoped_ptr<base::ListValue> device_state_list(new base::ListValue);
+  for (const private_api::DeviceStateProperties* properties : *device_states)
+    device_state_list->Append(properties->ToValue().release());
+  SetResult(device_state_list.release());
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkingPrivateEnableNetworkTypeFunction
 
 NetworkingPrivateEnableNetworkTypeFunction::

@@ -431,6 +431,13 @@ namespace global_network_config {
 ONC_EXPORT extern const char kAllowOnlyPolicyNetworksToAutoconnect[];
 }  // global_network_config
 
+namespace device_state {
+ONC_EXPORT extern const char kUninitialized[];
+ONC_EXPORT extern const char kDisabled[];
+ONC_EXPORT extern const char kEnabling[];
+ONC_EXPORT extern const char kEnabled[];
+}  // device_state
+
 }  // namespace onc
 
 #endif  // COMPONENTS_ONC_ONC_CONSTANTS_H_

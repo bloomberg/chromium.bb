@@ -15,7 +15,6 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_verify_delegate_factory_impl.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
@@ -54,17 +53,18 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
-#include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "apps/browser_context_keyed_service_factories.h"
 #include "chrome/browser/apps/ephemeral_app_service_factory.h"
 #include "chrome/browser/apps/shortcut_manager_factory.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_verify_delegate_factory_impl.h"
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/ui/bookmarks/enhanced_bookmark_key_service_factory.h"
+#include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #endif
 
@@ -220,6 +220,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   SupervisedUserServiceFactory::GetInstance();
   SupervisedUserSyncServiceFactory::GetInstance();
 #endif
+#if defined(ENABLE_EXTENSIONS)
 #if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
   scoped_ptr<extensions::NetworkingPrivateVerifyDelegateFactoryImpl>
       networking_private_verify_delegate_factory(
@@ -227,6 +228,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::NetworkingPrivateDelegateFactory::GetInstance()
       ->SetVerifyDelegateFactory(
           networking_private_verify_delegate_factory.Pass());
+#endif
 #endif
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();

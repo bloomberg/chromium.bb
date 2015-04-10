@@ -204,6 +204,23 @@ class NetworkingPrivateGetEnabledNetworkTypesFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetEnabledNetworkTypesFunction);
 };
 
+// Implements the chrome.networkingPrivate.getDeviceStates method.
+class NetworkingPrivateGetDeviceStatesFunction : public SyncExtensionFunction {
+ public:
+  NetworkingPrivateGetDeviceStatesFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.getDeviceStates",
+                             NETWORKINGPRIVATE_GETDEVICESTATES);
+
+ protected:
+  ~NetworkingPrivateGetDeviceStatesFunction() override;
+
+  // SyncExtensionFunction overrides.
+  bool RunSync() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetDeviceStatesFunction);
+};
+
 // Implements the chrome.networkingPrivate.enableNetworkType method.
 class NetworkingPrivateEnableNetworkTypeFunction
     : public SyncExtensionFunction {

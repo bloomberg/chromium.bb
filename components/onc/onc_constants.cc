@@ -414,4 +414,11 @@ const char kAllowOnlyPolicyNetworksToAutoconnect[] =
     "AllowOnlyPolicyNetworksToAutoconnect";
 }  // global_network_config
 
+namespace device_state {
+const char kUninitialized[] = "Uninitialized";
+const char kDisabled[] = "Disabled";
+const char kEnabling[] = "Enabling";
+const char kEnabled[] = "Enabled";
+}  // device_state
+
 }  // namespace onc

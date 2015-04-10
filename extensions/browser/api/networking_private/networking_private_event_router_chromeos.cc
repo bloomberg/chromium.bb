@@ -45,6 +45,7 @@ class NetworkingPrivateEventRouterImpl
 
   // NetworkStateHandlerObserver overrides:
   void NetworkListChanged() override;
+  void DeviceListChanged() override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
 
   // NetworkPortalDetector::Observer overrides:
@@ -78,6 +79,9 @@ NetworkingPrivateEventRouterImpl::NetworkingPrivateEventRouterImpl(
         this, core_api::networking_private::OnNetworksChanged::kEventName);
     event_router->RegisterObserver(
         this, core_api::networking_private::OnNetworkListChanged::kEventName);
+    event_router->RegisterObserver(
+        this,
+        core_api::networking_private::OnDeviceStateListChanged::kEventName);
     event_router->RegisterObserver(
         this,
         core_api::networking_private::OnPortalDetectionCompleted::kEventName);
@@ -125,6 +129,8 @@ void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
       event_router->HasEventListener(
           core_api::networking_private::OnNetworkListChanged::kEventName) ||
       event_router->HasEventListener(
+          core_api::networking_private::OnDeviceStateListChanged::kEventName) ||
+      event_router->HasEventListener(
           core_api::networking_private::OnPortalDetectionCompleted::kEventName);
 
   if (should_listen && !listening_) {
@@ -143,19 +149,14 @@ void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
 
 void NetworkingPrivateEventRouterImpl::NetworkListChanged() {
   EventRouter* event_router = EventRouter::Get(context_);
-  NetworkStateHandler::NetworkStateList networks;
-  NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkList(
-      &networks);
   if (!event_router->HasEventListener(
           core_api::networking_private::OnNetworkListChanged::kEventName)) {
-    // TODO(stevenjb): Remove logging once crbug.com/256881 is fixed
-    // (or at least reduce to LOG_DEBUG). Same with NET_LOG events below.
-    NET_LOG_EVENT("NetworkingPrivate.NetworkListChanged: No Listeners", "");
     return;
   }
 
-  NET_LOG_EVENT("NetworkingPrivate.NetworkListChanged", "");
-
+  NetworkStateHandler::NetworkStateList networks;
+  NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkList(
+      &networks);
   std::vector<std::string> changes;
   for (NetworkStateHandler::NetworkStateList::const_iterator iter =
            networks.begin();
@@ -168,6 +169,21 @@ void NetworkingPrivateEventRouterImpl::NetworkListChanged() {
   scoped_ptr<Event> extension_event(
       new Event(core_api::networking_private::OnNetworkListChanged::kEventName,
                 args.Pass()));
+  event_router->BroadcastEvent(extension_event.Pass());
+}
+
+void NetworkingPrivateEventRouterImpl::DeviceListChanged() {
+  EventRouter* event_router = EventRouter::Get(context_);
+  if (!event_router->HasEventListener(
+          core_api::networking_private::OnDeviceStateListChanged::kEventName)) {
+    return;
+  }
+
+  scoped_ptr<base::ListValue> args(
+      core_api::networking_private::OnDeviceStateListChanged::Create());
+  scoped_ptr<Event> extension_event(new Event(
+      core_api::networking_private::OnDeviceStateListChanged::kEventName,
+      args.Pass()));
   event_router->BroadcastEvent(extension_event.Pass());
 }
 

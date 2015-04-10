@@ -146,6 +146,19 @@ class TestDelegate : public NetworkingPrivateDelegate {
     return result.Pass();
   }
 
+  scoped_ptr<DeviceStateList> GetDeviceStateList() override {
+    scoped_ptr<DeviceStateList> result;
+    if (fail_)
+      return result.Pass();
+    result.reset(new DeviceStateList);
+    scoped_ptr<core_api::networking_private::DeviceStateProperties> properties(
+        new core_api::networking_private::DeviceStateProperties);
+    properties->type = core_api::networking_private::NETWORK_TYPE_ETHERNET;
+    properties->state = core_api::networking_private::DEVICE_STATE_TYPE_ENABLED;
+    result->push_back(properties.Pass());
+    return result.Pass();
+  }
+
   bool EnableNetworkType(const std::string& type) override {
     enabled_[type] = true;
     return !fail_;
@@ -362,6 +375,10 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetEnabledNetworkTypes) {
   EXPECT_TRUE(RunNetworkingSubtest("getEnabledNetworkTypes")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetDeviceStates) {
+  EXPECT_TRUE(RunNetworkingSubtest("getDeviceStates")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, EnableNetworkType) {
   EXPECT_TRUE(RunNetworkingSubtest("enableNetworkType")) << message_;
   EXPECT_TRUE(GetEnabled(::onc::network_config::kEthernet));
@@ -457,6 +474,10 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, GetVisibleNetworks) {
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, GetEnabledNetworkTypes) {
   EXPECT_FALSE(RunNetworkingSubtest("getEnabledNetworkTypes")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, GetDeviceStates) {
+  EXPECT_FALSE(RunNetworkingSubtest("getDeviceStates")) << message_;
 }
 
 // Note: Synchronous methods never fail:

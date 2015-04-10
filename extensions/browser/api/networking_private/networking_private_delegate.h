@@ -6,11 +6,14 @@
 #define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_DELEGATE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "extensions/common/api/networking_private.h"
 
 namespace content {
 class BrowserContext;
@@ -22,6 +25,7 @@ class NetworkingPrivateDelegateObserver;
 
 namespace core_api {
 namespace networking_private {
+struct DeviceStateProperties;
 struct VerificationProperties;
 }  // networking_private
 }  // core_api
@@ -31,15 +35,17 @@ struct VerificationProperties;
 // networking_private.idl for descriptions of the expected inputs and results.
 class NetworkingPrivateDelegate : public KeyedService {
  public:
-  typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)>
-      DictionaryCallback;
-  typedef base::Callback<void()> VoidCallback;
-  typedef base::Callback<void(bool)> BoolCallback;
-  typedef base::Callback<void(const std::string&)> StringCallback;
-  typedef base::Callback<void(scoped_ptr<base::ListValue>)> NetworkListCallback;
-  typedef base::Callback<void(const std::string&)> FailureCallback;
-  typedef core_api::networking_private::VerificationProperties
-      VerificationProperties;
+  using DictionaryCallback =
+      base::Callback<void(scoped_ptr<base::DictionaryValue>)>;
+  using VoidCallback = base::Callback<void()>;
+  using BoolCallback = base::Callback<void(bool)>;
+  using StringCallback = base::Callback<void(const std::string&)>;
+  using NetworkListCallback = base::Callback<void(scoped_ptr<base::ListValue>)>;
+  using FailureCallback = base::Callback<void(const std::string&)>;
+  using DeviceStateList =
+      ScopedVector<core_api::networking_private::DeviceStateProperties>;
+  using VerificationProperties =
+      core_api::networking_private::VerificationProperties;
 
   // The Verify* methods will be forwarded to a delegate implementation if
   // provided, otherwise they will fail. A separate delegate it used so that the
@@ -135,6 +141,9 @@ class NetworkingPrivateDelegate : public KeyedService {
 
   // Returns a list of ONC type strings.
   virtual scoped_ptr<base::ListValue> GetEnabledNetworkTypes() = 0;
+
+  // Returns a list of DeviceStateProperties.
+  virtual scoped_ptr<DeviceStateList> GetDeviceStateList() = 0;
 
   // Returns true if the ONC network type |type| is enabled.
   virtual bool EnableNetworkType(const std::string& type) = 0;

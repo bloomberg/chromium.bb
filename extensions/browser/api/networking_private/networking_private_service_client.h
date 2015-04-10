@@ -92,6 +92,7 @@ class NetworkingPrivateServiceClient
                               const StringCallback& success_callback,
                               const FailureCallback& failure_callback) override;
   scoped_ptr<base::ListValue> GetEnabledNetworkTypes() override;
+  scoped_ptr<DeviceStateList> GetDeviceStateList() override;
   bool EnableNetworkType(const std::string& type) override;
   bool DisableNetworkType(const std::string& type) override;
   bool RequestScan() override;

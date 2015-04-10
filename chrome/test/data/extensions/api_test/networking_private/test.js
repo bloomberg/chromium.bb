@@ -67,6 +67,9 @@ var availableTests = [
     chrome.networkingPrivate.getEnabledNetworkTypes(
         callbackPass(callbackResult));
   },
+  function getDeviceStates() {
+    chrome.networkingPrivate.getDeviceStates(callbackPass(callbackResult));
+  },
   function enableNetworkType() {
     chrome.networkingPrivate.enableNetworkType('Ethernet');
     chrome.test.succeed();

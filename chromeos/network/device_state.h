@@ -31,13 +31,13 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
 
   // Accessors
   const std::string& mac_address() const { return mac_address_; }
+  bool scanning() const { return scanning_; }
 
   // Cellular specific accessors
   const std::string& home_provider_id() const { return home_provider_id_; }
   bool allow_roaming() const { return allow_roaming_; }
   bool provider_requires_roaming() const { return provider_requires_roaming_; }
   bool support_network_scan() const { return support_network_scan_; }
-  bool scanning() const { return scanning_; }
   const std::string& technology_family() const { return technology_family_; }
   const std::string& carrier() const { return carrier_; }
   const std::string& sim_lock_type() const { return sim_lock_type_; }

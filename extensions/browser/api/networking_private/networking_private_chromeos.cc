@@ -10,6 +10,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_activation_handler.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -26,12 +27,15 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/networking_private/networking_private_api.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/common/api/networking_private.h"
 
+using chromeos::DeviceState;
 using chromeos::NetworkHandler;
+using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 using chromeos::ShillManagerClient;
 using extensions::NetworkingPrivateDelegate;
+
+namespace private_api = extensions::core_api::networking_private;
 
 namespace {
 
@@ -75,6 +79,47 @@ bool GetUserIdHash(content::BrowserContext* browser_context,
   }
   *user_hash = context_user_hash;
   return true;
+}
+
+void AppendDeviceState(
+    const std::string& type,
+    const DeviceState* device,
+    NetworkingPrivateDelegate::DeviceStateList* device_state_list) {
+  DCHECK(!type.empty());
+  NetworkTypePattern pattern =
+      chromeos::onc::NetworkTypePatternFromOncType(type);
+  NetworkStateHandler::TechnologyState technology_state =
+      GetStateHandler()->GetTechnologyState(pattern);
+  private_api::DeviceStateType state = private_api::DEVICE_STATE_TYPE_NONE;
+  switch (technology_state) {
+    case NetworkStateHandler::TECHNOLOGY_UNAVAILABLE:
+      if (!device)
+        return;
+      // If we have a DeviceState entry but the technology is not available,
+      // assume the technology is not initialized.
+      state = private_api::DEVICE_STATE_TYPE_UNINITIALIZED;
+      break;
+    case NetworkStateHandler::TECHNOLOGY_AVAILABLE:
+      state = private_api::DEVICE_STATE_TYPE_DISABLED;
+      break;
+    case NetworkStateHandler::TECHNOLOGY_UNINITIALIZED:
+      state = private_api::DEVICE_STATE_TYPE_UNINITIALIZED;
+      break;
+    case NetworkStateHandler::TECHNOLOGY_ENABLING:
+      state = private_api::DEVICE_STATE_TYPE_ENABLING;
+      break;
+    case NetworkStateHandler::TECHNOLOGY_ENABLED:
+      state = private_api::DEVICE_STATE_TYPE_ENABLED;
+      break;
+  }
+  DCHECK_NE(private_api::DEVICE_STATE_TYPE_NONE, state);
+  scoped_ptr<private_api::DeviceStateProperties> properties(
+      new private_api::DeviceStateProperties);
+  properties->type = private_api::ParseNetworkType(type);
+  properties->state = state;
+  if (device && state == private_api::DEVICE_STATE_TYPE_ENABLED)
+    properties->scanning.reset(new bool(device->scanning()));
+  device_state_list->push_back(properties.Pass());
 }
 
 void NetworkHandlerDictionaryCallback(
@@ -331,6 +376,35 @@ NetworkingPrivateChromeOS::GetEnabledNetworkTypes() {
     network_list->AppendString(::onc::network_type::kCellular);
 
   return network_list.Pass();
+}
+
+scoped_ptr<NetworkingPrivateDelegate::DeviceStateList>
+NetworkingPrivateChromeOS::GetDeviceStateList() {
+  std::set<std::string> technologies_found;
+  NetworkStateHandler::DeviceStateList devices;
+  NetworkHandler::Get()->network_state_handler()->GetDeviceList(&devices);
+
+  scoped_ptr<DeviceStateList> device_state_list(new DeviceStateList);
+  for (const DeviceState* device : devices) {
+    std::string onc_type =
+        chromeos::network_util::TranslateShillTypeToONC(device->type());
+    AppendDeviceState(onc_type, device, device_state_list.get());
+    technologies_found.insert(onc_type);
+  }
+
+  // For any technologies that we do not have a DeviceState entry for, append
+  // an entry if the technolog is available.
+  const char* technology_types[] = {::onc::network_type::kEthernet,
+                                    ::onc::network_type::kWiFi,
+                                    ::onc::network_type::kWimax,
+                                    ::onc::network_type::kCellular};
+  for (const char* technology : technology_types) {
+    if (ContainsValue(technologies_found, technology))
+      continue;
+    AppendDeviceState(technology, nullptr /* device */,
+                      device_state_list.get());
+  }
+  return device_state_list.Pass();
 }
 
 bool NetworkingPrivateChromeOS::EnableNetworkType(const std::string& type) {

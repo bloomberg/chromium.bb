@@ -8,10 +8,10 @@
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/worker_pool.h"
+#include "components/onc/onc_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/networking_private/networking_private_api.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate_observer.h"
-#include "extensions/common/api/networking_private.h"
 
 using content::BrowserThread;
 using wifi::WiFiService;
@@ -313,7 +313,19 @@ void NetworkingPrivateServiceClient::GetCaptivePortalStatus(
 scoped_ptr<base::ListValue>
 NetworkingPrivateServiceClient::GetEnabledNetworkTypes() {
   scoped_ptr<base::ListValue> network_list;
+  network_list->AppendString(::onc::network_type::kWiFi);
   return network_list.Pass();
+}
+
+scoped_ptr<NetworkingPrivateDelegate::DeviceStateList>
+NetworkingPrivateServiceClient::GetDeviceStateList() {
+  scoped_ptr<DeviceStateList> device_state_list(new DeviceStateList);
+  scoped_ptr<core_api::networking_private::DeviceStateProperties> properties(
+      new core_api::networking_private::DeviceStateProperties);
+  properties->type = core_api::networking_private::NETWORK_TYPE_WIFI;
+  properties->state = core_api::networking_private::DEVICE_STATE_TYPE_ENABLED;
+  device_state_list->push_back(properties.Pass());
+  return device_state_list.Pass();
 }
 
 bool NetworkingPrivateServiceClient::EnableNetworkType(

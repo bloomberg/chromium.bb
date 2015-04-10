@@ -40,12 +40,23 @@ namespace networkingPrivate {
     Connected, Connecting, NotConnected
   };
 
+  enum DeviceStateType {
+    // Device is available but not initialized.
+    Uninitialized, 
+    // Device is intialized but not enabled.
+    Disabled, 
+    // Enabled state has been requested but has not completed.
+    Enabling,
+    // Device is enabled.
+    Enabled
+  };
+
   enum IPConfigType {
     DHCP, Static
   };
 
   enum NetworkType {
-    All, Bluetooth, Cellular, Ethernet, VPN, Wireless, WiFi, WiMAX
+    All, Cellular, Ethernet, VPN, Wireless, WiFi, WiMAX
   };
 
   dictionary APNProperties {
@@ -72,6 +83,18 @@ namespace networkingPrivate {
     DOMString? NetworkTechnology;
     DOMString? RoamingState;
     long? SignalStrength;
+  };
+
+  dictionary DeviceStateProperties {
+    // Set if the device is enabled. True if the device is currently scanning.
+    boolean? Scanning;
+
+    // The current state of the device.
+    DeviceStateType State;
+
+    // The network type associated with the device (Cellular, Ethernet, WiFi, or
+    // WiMAX).
+    NetworkType Type;
   };
 
   dictionary EthernetStateProperties {
@@ -221,6 +244,7 @@ namespace networkingPrivate {
   callback GetManagedPropertiesCallback = void(object result);
   callback GetStatePropertiesCallback = void(NetworkStateProperties result);
   callback GetNetworksCallback = void(NetworkStateProperties[] result);
+  callback GetDeviceStatesCallback = void(DeviceStateProperties[] result);
   callback GetEnabledNetworkTypesCallback = void(NetworkType[] result);
   callback CaptivePortalStatusCallback = void(CaptivePortalStatus result);
 
@@ -300,18 +324,20 @@ namespace networkingPrivate {
         NetworkType networkType,
         GetNetworksCallback callback);
 
-    // Returns a list of the enabled network types. Note: this only returns
-    // discrete types that can be enabled or disabled: Cellular, Ethernet, WiFi,
-    // Wimax.
-    // |callback|: Called immediately with the enabled network types.
-    static void getEnabledNetworkTypes(GetEnabledNetworkTypesCallback callback);
+    // Deprecated. Please use $(ref:networkingPrivate.getDeviceStates) instead.
+    [deprecated="Use getDeviceStates."] static void getEnabledNetworkTypes(
+        GetEnabledNetworkTypesCallback callback);
 
-    // Enable the specified network type. Note, the type might represent
-    // multiple network types (e.g. 'Wireless').
+    // Returns a list of $(ref:networkingPrivate.DeviceStateProperties) objects.
+    // |callback|: Called with a list of devices and their state.
+    static void getDeviceStates(GetDeviceStatesCallback callback);
+
+    // Enables any devices matching the specified network type. Note, the type
+    // might represent multiple network types (e.g. 'Wireless').
     // |networkType|: The type of network to enable.
     static void enableNetworkType(NetworkType networkType);
 
-    // Disable the specified network type. See note for
+    // Disables any devices matching the specified network type. See note for
     // $(ref:networkingPrivate.enableNetworkType).
     // |networkType|: The type of network to disable.
     static void disableNetworkType(NetworkType networkType);
@@ -413,6 +439,10 @@ namespace networkingPrivate {
     // Fired when the list of networks has changed.  Sends a complete list of
     // GUIDs for all the current networks.
     static void onNetworkListChanged(DOMString[] changes);
+
+    // Fired when the list of devices has changed or any device state properties
+    // have changed.
+    static void onDeviceStateListChanged();
 
     // Fired when a portal detection for a network completes. Sends the guid of
     // the network and the corresponding captive portal status.

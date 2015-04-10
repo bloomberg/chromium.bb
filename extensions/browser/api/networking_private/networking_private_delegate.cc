@@ -5,7 +5,6 @@
 #include "extensions/browser/api/networking_private/networking_private_delegate.h"
 
 #include "extensions/browser/api/networking_private/networking_private_api.h"
-#include "extensions/common/api/networking_private.h"
 
 namespace extensions {
 

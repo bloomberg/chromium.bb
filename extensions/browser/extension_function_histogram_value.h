@@ -1057,6 +1057,7 @@ enum HistogramValue {
   DATAREDUCTIONPROXY_CLEARDATASAVINGS,
   BLUETOOTHPRIVATE_SETDISCOVERYFILTER,
   FILESYSTEM_GETVOLUMELIST,
+  NETWORKINGPRIVATE_GETDEVICESTATES,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY
