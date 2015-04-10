@@ -161,7 +161,6 @@ class AccountReconcilor : public KeyedService,
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
-  void GetCheckConnectionInfoCompleted(bool succeeded) override;
 
   // Overriden from OAuth2TokenService::Observer.
   void OnEndBatchChanges() override;

@@ -87,13 +87,6 @@ class GaiaCookieManagerService : public KeyedService,
         const std::string& account_id,
         const GoogleServiceAuthError& error) = 0;
 
-    // Called when ExternalCcResultFetcher completes. From this moment
-    // forward calls to AddAccountToCookie() will use the result in merge
-    // session calls. If |succeeded| is false, not all connections were checked,
-    // but some may have been. AddAccountToCookie() will proceed with whatever
-    // partial results were retrieved.
-    virtual void GetCheckConnectionInfoCompleted(bool succeeded) {}
-
    protected:
     virtual ~Observer() {}
   };
@@ -147,14 +140,15 @@ class GaiaCookieManagerService : public KeyedService,
 
     void CleanupTransientState();
 
-    void FireGetCheckConnectionInfoCompleted(bool succeeded);
+    void GetCheckConnectionInfoCompleted(bool succeeded);
 
     GaiaCookieManagerService* helper_;
     base::OneShotTimer<ExternalCcResultFetcher> timer_;
-    scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
     URLToTokenAndFetcher fetchers_;
     ResultMap results_;
     base::Time m_external_cc_result_start_time_;
+
+    base::OneShotTimer<ExternalCcResultFetcher> gaia_auth_fetcher_timer_;
 
     DISALLOW_COPY_AND_ASSIGN(ExternalCcResultFetcher);
   };
@@ -187,9 +181,10 @@ class GaiaCookieManagerService : public KeyedService,
   // Returns true of there are pending log ins or outs.
   bool is_running() const { return requests_.size() > 0; }
 
-  // Start the process of fetching the external check connection result so that
-  // its ready when we try to perform a merge session.
-  void StartFetchingExternalCcResult();
+  // Access the internal object during tests.
+  ExternalCcResultFetcher* external_cc_result_fetcher_for_testing() {
+    return &external_cc_result_fetcher_;
+  }
 
  private:
   net::URLRequestContextGetter* request_context() {
@@ -245,6 +240,9 @@ class GaiaCookieManagerService : public KeyedService,
 
   // Source to use with GAIA endpoints for accounting.
   std::string source_;
+
+  // True once the ExternalCCResultFetcher has completed once.
+  bool external_cc_result_fetched_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaCookieManagerService);
 };

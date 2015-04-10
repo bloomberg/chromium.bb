@@ -76,6 +76,11 @@ class GaiaCookieManagerServiceTest : public testing::Test {
   OAuth2TokenService* token_service() { return &token_service_; }
   SigninClient* signin_client() { return &signin_client_; }
 
+  void SimulateUbertokenSuccess(UbertokenConsumer* consumer,
+                                const std::string& uber_token) {
+    consumer->OnUbertokenSuccess(uber_token);
+  }
+
   void SimulateUbertokenFailure(UbertokenConsumer* consumer,
                                 const GoogleServiceAuthError& error) {
     consumer->OnUbertokenFailure(error);
@@ -460,8 +465,7 @@ TEST_F(GaiaCookieManagerServiceTest, CancelSignIn) {
 TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcher) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   GaiaCookieManagerService::ExternalCcResultFetcher result_fetcher(&helper);
-  MockObserver observer(&helper);
-  EXPECT_CALL(observer, GetCheckConnectionInfoCompleted(true));
+  EXPECT_CALL(helper, StartFetchingMergeSession());
   result_fetcher.Start();
 
   // Simulate a successful completion of GetCheckConnctionInfo.
@@ -491,8 +495,7 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcher) {
 TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTimeout) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   GaiaCookieManagerService::ExternalCcResultFetcher result_fetcher(&helper);
-  MockObserver observer(&helper);
-  EXPECT_CALL(observer, GetCheckConnectionInfoCompleted(false));
+  EXPECT_CALL(helper, StartFetchingMergeSession());
   result_fetcher.Start();
 
   // Simulate a successful completion of GetCheckConnctionInfo.
@@ -525,6 +528,7 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTimeout) {
 TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTruncate) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   GaiaCookieManagerService::ExternalCcResultFetcher result_fetcher(&helper);
+  EXPECT_CALL(helper, StartFetchingMergeSession());
   result_fetcher.Start();
 
   // Simulate a successful completion of GetCheckConnctionInfo.
@@ -543,4 +547,40 @@ TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcherTruncate) {
   SimulateGetCheckConnctionInfoResult(
       fetchers[GURL("http://www.yt.com")].second, "1234567890123456trunc");
   ASSERT_EQ("yt:1234567890123456", result_fetcher.GetExternalCcResult());
+}
+
+TEST_F(GaiaCookieManagerServiceTest, UbertokenSuccessFetchesExternalCC) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+
+  EXPECT_CALL(helper, StartFetchingUbertoken());
+  helper.AddAccountToCookie("acc1@gmail.com");
+
+  ASSERT_FALSE(factory()->GetFetcherByID(0));
+  SimulateUbertokenSuccess(&helper, "token");
+
+  // Check there is now a fetcher that belongs to the ExternalCCResultFetcher.
+  net::TestURLFetcher* fetcher = factory()->GetFetcherByID(0);
+  ASSERT_TRUE(NULL != fetcher);
+  SimulateGetCheckConnctionInfoSuccess(
+      fetcher,
+      "[{\"carryBackToken\": \"bl\", \"url\": \"http://www.bl.com\"}]");
+  GaiaCookieManagerService::ExternalCcResultFetcher* result_fetcher =
+      helper.external_cc_result_fetcher_for_testing();
+  GaiaCookieManagerService::ExternalCcResultFetcher::URLToTokenAndFetcher
+      fetchers = result_fetcher->get_fetcher_map_for_testing();
+  ASSERT_EQ(1u, fetchers.size());
+  ASSERT_EQ(1u, fetchers.count(GURL("http://www.bl.com")));
+}
+
+TEST_F(GaiaCookieManagerServiceTest, UbertokenSuccessFetchesExternalCCOnce) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+
+  helper.external_cc_result_fetcher_for_testing()->Start();
+
+  EXPECT_CALL(helper, StartFetchingUbertoken());
+  helper.AddAccountToCookie("acc2@gmail.com");
+  // There is already a ExternalCCResultFetch underway. This will trigger
+  // StartFetchingMergeSession.
+  EXPECT_CALL(helper, StartFetchingMergeSession());
+  SimulateUbertokenSuccess(&helper, "token3");
 }

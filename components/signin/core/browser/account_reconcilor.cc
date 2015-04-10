@@ -304,10 +304,9 @@ void AccountReconcilor::StartReconcile() {
   add_to_cookie_.clear();
   ValidateAccountsFromTokenService();
 
-  // TODO(mlerman): Call this only from within the GaiaCookieManagerService,
-  // once /ListAccounts is now called from that class instead of the
-  // reconcilor's GaiaAuthFetcher (which will be removed).
-  cookie_manager_service_->StartFetchingExternalCcResult();
+  GetAccountsFromCookie(base::Bind(
+      &AccountReconcilor::ContinueReconcileActionAfterGetGaiaAccounts,
+      base::Unretained(this)));
 }
 
 void AccountReconcilor::GetAccountsFromCookie(
@@ -537,13 +536,5 @@ void AccountReconcilor::OnAddAccountToCookieCompleted(
   if (is_reconcile_started_ && MarkAccountAsAddedToCookie(account_id)) {
     CalculateIfReconcileIsDone();
     ScheduleStartReconcileIfChromeAccountsChanged();
-  }
-}
-
-void AccountReconcilor::GetCheckConnectionInfoCompleted(bool succeeded) {
-  if (is_reconcile_started_) {
-    GetAccountsFromCookie(base::Bind(
-        &AccountReconcilor::ContinueReconcileActionAfterGetGaiaAccounts,
-        base::Unretained(this)));
   }
 }

@@ -136,9 +136,9 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
 
   CleanupTransientState();
   results_.clear();
-  gaia_auth_fetcher_.reset(
+  helper_->gaia_auth_fetcher_.reset(
       new GaiaAuthFetcher(this, helper_->source_, helper_->request_context()));
-  gaia_auth_fetcher_->StartGetCheckConnectionInfo();
+  helper_->gaia_auth_fetcher_->StartGetCheckConnectionInfo();
 
   // Some fetches may timeout.  Start a timer to decide when the result fetcher
   // has waited long enough.
@@ -150,7 +150,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
 }
 
 bool GaiaCookieManagerService::ExternalCcResultFetcher::IsRunning() {
-  return gaia_auth_fetcher_ || fetchers_.size() > 0u;
+  return helper_->gaia_auth_fetcher_ || fetchers_.size() > 0u;
 }
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::TimeoutForTests() {
@@ -159,18 +159,20 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::TimeoutForTests() {
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::
     OnGetCheckConnectionInfoSuccess(const std::string& data) {
+  helper_->gaia_auth_fetcher_backoff_.InformOfRequest(true);
+  gaia_auth_fetcher_timer_.Stop();
   scoped_ptr<base::Value> value(base::JSONReader::Read(data));
   const base::ListValue* list;
   if (!value || !value->GetAsList(&list)) {
     CleanupTransientState();
-    FireGetCheckConnectionInfoCompleted(false);
+    GetCheckConnectionInfoCompleted(false);
     return;
   }
 
   // If there is nothing to check, terminate immediately.
   if (list->GetSize() == 0) {
     CleanupTransientState();
-    FireGetCheckConnectionInfoCompleted(true);
+    GetCheckConnectionInfoCompleted(true);
     return;
   }
 
@@ -193,8 +195,17 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::
     OnGetCheckConnectionInfoError(const GoogleServiceAuthError& error) {
+  if (++helper_->gaia_auth_fetcher_retries_ < kMaxGaiaAuthFetcherRetries &&
+      IsTransientError(error)) {
+    helper_->gaia_auth_fetcher_backoff_.InformOfRequest(false);
+    gaia_auth_fetcher_timer_.Start(
+        FROM_HERE, helper_->gaia_auth_fetcher_backoff_.GetTimeUntilRelease(),
+        this, &GaiaCookieManagerService::ExternalCcResultFetcher::Start);
+    return;
+  }
+
   CleanupTransientState();
-  FireGetCheckConnectionInfoCompleted(false);
+  GetCheckConnectionInfoCompleted(false);
 }
 
 net::URLFetcher*
@@ -237,20 +248,20 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::OnURLFetchComplete(
     // report the result.
     if (fetchers_.empty()) {
       CleanupTransientState();
-      FireGetCheckConnectionInfoCompleted(true);
+      GetCheckConnectionInfoCompleted(true);
     }
   }
 }
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::Timeout() {
   CleanupTransientState();
-  FireGetCheckConnectionInfoCompleted(false);
+  GetCheckConnectionInfoCompleted(false);
 }
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::
     CleanupTransientState() {
   timer_.Stop();
-  gaia_auth_fetcher_.reset();
+  helper_->gaia_auth_fetcher_.reset();
 
   for (URLToTokenAndFetcher::const_iterator it = fetchers_.begin();
        it != fetchers_.end(); ++it) {
@@ -260,13 +271,18 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::
 }
 
 void GaiaCookieManagerService::ExternalCcResultFetcher::
-    FireGetCheckConnectionInfoCompleted(bool succeeded) {
+    GetCheckConnectionInfoCompleted(bool succeeded) {
   base::TimeDelta time_to_check_connections =
       base::Time::Now() - m_external_cc_result_start_time_;
   signin_metrics::LogExternalCcResultFetches(succeeded,
                                              time_to_check_connections);
-  FOR_EACH_OBSERVER(Observer, helper_->observer_list_,
-                    GetCheckConnectionInfoCompleted(succeeded));
+
+  helper_->external_cc_result_fetched_ = true;
+  // Since the ExternalCCResultFetcher is only Started in place of calling
+  // StartFetchingMergeSession, we can assume we need to call
+  // StartFetchingMergeSession. If this assumption becomes invalid, a Callback
+  // will need to be passed to Start() and Run() here.
+  helper_->StartFetchingMergeSession();
 }
 
 GaiaCookieManagerService::GaiaCookieManagerService(
@@ -278,7 +294,8 @@ GaiaCookieManagerService::GaiaCookieManagerService(
       external_cc_result_fetcher_(this),
       gaia_auth_fetcher_backoff_(&kBackoffPolicy),
       gaia_auth_fetcher_retries_(0),
-      source_(source) {
+      source_(source),
+      external_cc_result_fetched_(false) {
 }
 
 GaiaCookieManagerService::~GaiaCookieManagerService() {
@@ -387,11 +404,6 @@ void GaiaCookieManagerService::SignalComplete(
                     OnAddAccountToCookieCompleted(account_id, error));
 }
 
-void GaiaCookieManagerService::StartFetchingExternalCcResult() {
-  if (!external_cc_result_fetcher_.IsRunning())
-    external_cc_result_fetcher_.Start();
-}
-
 void GaiaCookieManagerService::StartLogOutUrlFetch() {
   DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
   VLOG(1) << "GaiaCookieManagerService::StartLogOutUrlFetch";
@@ -405,10 +417,19 @@ void GaiaCookieManagerService::StartLogOutUrlFetch() {
 
 void GaiaCookieManagerService::OnUbertokenSuccess(
     const std::string& uber_token) {
+  DCHECK(requests_.front().request_type() ==
+      GaiaCookieRequestType::ADD_ACCOUNT);
   VLOG(1) << "GaiaCookieManagerService::OnUbertokenSuccess"
           << " account=" << requests_.front().account_id();
   gaia_auth_fetcher_retries_ = 0;
   uber_token_ = uber_token;
+
+  if (!external_cc_result_fetched_ &&
+      !external_cc_result_fetcher_.IsRunning()) {
+    external_cc_result_fetcher_.Start();
+    return;
+  }
+
   StartFetchingMergeSession();
 }
 
@@ -469,8 +490,6 @@ void GaiaCookieManagerService::StartFetchingMergeSession() {
       new GaiaAuthFetcher(this, source_,
                           signin_client_->GetURLRequestContext()));
 
-  // It's possible that not all external checks have completed.
-  // GetExternalCcResult() returns results for those that have.
   gaia_auth_fetcher_->StartMergeSession(uber_token_,
       external_cc_result_fetcher_.GetExternalCcResult());
 }

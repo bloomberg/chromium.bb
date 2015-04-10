@@ -149,8 +149,9 @@ void AccountReconcilorTest::SetUp() {
       GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
           GaiaConstants::kChromeSource);
 
-  SetFakeResponse(get_check_connection_info_url().spec(), "[]",
-      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  // Specific tests may set a response that includes specific accounts.
+  SetFakeResponse(list_accounts_url().spec(), "",
+      net::HTTP_NOT_FOUND, net::URLRequestStatus::SUCCESS);
 
   testing_profile_manager_.reset(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
