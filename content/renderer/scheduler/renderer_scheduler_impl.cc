@@ -21,7 +21,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
               this,
               "renderer.scheduler",
               TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-              TASK_QUEUE_COUNT),
+              TASK_QUEUE_COUNT,
+              base::TimeDelta()),
       control_task_runner_(helper_.ControlTaskRunner()),
       compositor_task_runner_(
           helper_.SchedulerTaskQueueManager()->TaskRunnerForQueue(
@@ -141,7 +142,7 @@ void RendererSchedulerImpl::BeginFrameNotExpectedSoon() {
   // instead of this approximation.
   DidProcessInputEvent(base::TimeTicks());
 
-  helper_.InitiateLongIdlePeriod();
+  helper_.EnableLongIdlePeriod();
 }
 
 void RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread(

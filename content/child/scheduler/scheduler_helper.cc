@@ -16,7 +16,8 @@ SchedulerHelper::SchedulerHelper(
     SchedulerHelperDelegate* scheduler_helper_delegate,
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
-    size_t total_task_queue_count)
+    size_t total_task_queue_count,
+    base::TimeDelta required_quiescence_duration_before_long_idle_period)
     : task_queue_selector_(new PrioritizingTaskQueueSelector()),
       task_queue_manager_(
           new TaskQueueManager(total_task_queue_count,
@@ -31,6 +32,13 @@ SchedulerHelper::SchedulerHelper(
           QueueId::CONTROL_TASK_AFTER_WAKEUP_QUEUE)),
       default_task_runner_(
           task_queue_manager_->TaskRunnerForQueue(QueueId::DEFAULT_TASK_QUEUE)),
+      quiescence_monitored_task_queue_mask_(
+          ((1ull << total_task_queue_count) - 1ull) &
+          ~(1ull << QueueId::IDLE_TASK_QUEUE) &
+          ~(1ull << QueueId::CONTROL_TASK_QUEUE) &
+          ~(1ull << QueueId::CONTROL_TASK_AFTER_WAKEUP_QUEUE)),
+      required_quiescence_duration_before_long_idle_period_(
+          required_quiescence_duration_before_long_idle_period),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
@@ -40,11 +48,10 @@ SchedulerHelper::SchedulerHelper(
   weak_scheduler_ptr_ = weak_factory_.GetWeakPtr();
   end_idle_period_closure_.Reset(
       base::Bind(&SchedulerHelper::EndIdlePeriod, weak_scheduler_ptr_));
-  initiate_next_long_idle_period_closure_.Reset(base::Bind(
-      &SchedulerHelper::InitiateLongIdlePeriod, weak_scheduler_ptr_));
-  initiate_next_long_idle_period_after_wakeup_closure_.Reset(
-      base::Bind(&SchedulerHelper::InitiateLongIdlePeriodAfterWakeup,
-                 weak_scheduler_ptr_));
+  enable_next_long_idle_period_closure_.Reset(
+      base::Bind(&SchedulerHelper::EnableLongIdlePeriod, weak_scheduler_ptr_));
+  enable_next_long_idle_period_after_wakeup_closure_.Reset(base::Bind(
+      &SchedulerHelper::EnableLongIdlePeriodAfterWakeup, weak_scheduler_ptr_));
 
   idle_task_runner_ = make_scoped_refptr(new SingleThreadIdleTaskRunner(
       task_queue_manager_->TaskRunnerForQueue(QueueId::IDLE_TASK_QUEUE),
@@ -144,17 +151,47 @@ SchedulerHelper::IdlePeriodState SchedulerHelper::ComputeNewLongIdlePeriodState(
   } else {
     // If we can't start the idle period yet then try again after wakeup.
     *next_long_idle_period_delay_out = base::TimeDelta::FromMilliseconds(
-        kRetryInitiateLongIdlePeriodDelayMillis);
+        kRetryEnableLongIdlePeriodDelayMillis);
     return IdlePeriodState::NOT_IN_IDLE_PERIOD;
   }
 }
 
-void SchedulerHelper::InitiateLongIdlePeriod() {
-  TRACE_EVENT0(disabled_by_default_tracing_category_, "InitiateLongIdlePeriod");
+bool SchedulerHelper::ShouldWaitForQuiescence() {
+  CheckOnValidThread();
+
+  if (!task_queue_manager_)
+    return false;
+
+  if (required_quiescence_duration_before_long_idle_period_ ==
+      base::TimeDelta())
+    return false;
+
+  uint64 task_queues_run_since_last_check_bitmap =
+      task_queue_manager_->GetAndClearTaskWasRunOnQueueBitmap() &
+      quiescence_monitored_task_queue_mask_;
+
+  TRACE_EVENT1(disabled_by_default_tracing_category_, "ShouldWaitForQuiescence",
+               "task_queues_run_since_last_check_bitmap",
+               task_queues_run_since_last_check_bitmap);
+
+  // If anything was run on the queues we care about, then we're not quiescent
+  // and we should wait.
+  return task_queues_run_since_last_check_bitmap != 0;
+}
+
+void SchedulerHelper::EnableLongIdlePeriod() {
+  TRACE_EVENT0(disabled_by_default_tracing_category_, "EnableLongIdlePeriod");
   CheckOnValidThread();
 
   // End any previous idle period.
   EndIdlePeriod();
+
+  if (ShouldWaitForQuiescence()) {
+    control_task_runner_->PostDelayedTask(
+        FROM_HERE, enable_next_long_idle_period_closure_.callback(),
+        required_quiescence_duration_before_long_idle_period_);
+    return;
+  }
 
   base::TimeTicks now(Now());
   base::TimeDelta next_long_idle_period_delay;
@@ -172,19 +209,19 @@ void SchedulerHelper::InitiateLongIdlePeriod() {
     // tasks might be eligible to run or more idle tasks posted).
     control_task_after_wakeup_runner_->PostDelayedTask(
         FROM_HERE,
-        initiate_next_long_idle_period_after_wakeup_closure_.callback(),
+        enable_next_long_idle_period_after_wakeup_closure_.callback(),
         next_long_idle_period_delay);
   } else {
     // Otherwise post on the normal control task queue.
     control_task_runner_->PostDelayedTask(
-        FROM_HERE, initiate_next_long_idle_period_closure_.callback(),
+        FROM_HERE, enable_next_long_idle_period_closure_.callback(),
         next_long_idle_period_delay);
   }
 }
 
-void SchedulerHelper::InitiateLongIdlePeriodAfterWakeup() {
+void SchedulerHelper::EnableLongIdlePeriodAfterWakeup() {
   TRACE_EVENT0(disabled_by_default_tracing_category_,
-               "InitiateLongIdlePeriodAfterWakeup");
+               "EnableLongIdlePeriodAfterWakeup");
   CheckOnValidThread();
 
   if (IsInIdlePeriod(idle_period_state_)) {
@@ -202,7 +239,7 @@ void SchedulerHelper::InitiateLongIdlePeriodAfterWakeup() {
   // on the idle task queue before the next idle period starts so they are
   // eligible to be run during the new idle period.
   control_task_runner_->PostTask(
-      FROM_HERE, initiate_next_long_idle_period_closure_.callback());
+      FROM_HERE, enable_next_long_idle_period_closure_.callback());
 }
 
 void SchedulerHelper::StartIdlePeriod(IdlePeriodState new_state,
@@ -234,8 +271,8 @@ void SchedulerHelper::EndIdlePeriod() {
   CheckOnValidThread();
 
   end_idle_period_closure_.Cancel();
-  initiate_next_long_idle_period_closure_.Cancel();
-  initiate_next_long_idle_period_after_wakeup_closure_.Cancel();
+  enable_next_long_idle_period_closure_.Cancel();
+  enable_next_long_idle_period_after_wakeup_closure_.Cancel();
 
   // If we weren't already within an idle period then early-out.
   if (!IsInIdlePeriod(idle_period_state_))

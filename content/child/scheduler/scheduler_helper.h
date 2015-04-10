@@ -43,7 +43,8 @@ class CONTENT_EXPORT SchedulerHelper {
       SchedulerHelperDelegate* scheduler_helper_delegate,
       const char* tracing_category,
       const char* disabled_by_default_tracing_category,
-      size_t total_task_queue_count);
+      size_t total_task_queue_count,
+      base::TimeDelta required_quiescence_duration_before_long_idle_period);
   ~SchedulerHelper();
 
   // Returns the default task runner.
@@ -109,7 +110,7 @@ class CONTENT_EXPORT SchedulerHelper {
   static const int kMaximumIdlePeriodMillis = 50;
 
   // The minimum delay to wait between retrying to initiate a long idle time.
-  static const int kRetryInitiateLongIdlePeriodDelayMillis = 1;
+  static const int kRetryEnableLongIdlePeriodDelayMillis = 1;
 
   // IdleTaskDeadlineSupplier Implementation:
   void CurrentIdleTaskDeadlineCallback(base::TimeTicks* deadline_out) const;
@@ -121,9 +122,15 @@ class CONTENT_EXPORT SchedulerHelper {
       const base::TimeTicks now,
       base::TimeDelta* next_long_idle_period_delay_out);
 
-  // Initiate a long idle period.
-  void InitiateLongIdlePeriod();
-  void InitiateLongIdlePeriodAfterWakeup();
+  // If |required_quiescence_duration_before_long_idle_period_| is zero then
+  // immediately initiate a long idle period, otherwise check if any tasks have
+  // run recently and if so, check again after a delay of
+  // |required_quiescence_duration_before_long_idle_period_|.
+  // Calling this function will end any previous idle period immediately, and
+  // potentially again later if
+  // |required_quiescence_duration_before_long_idle_period_| is non-zero.
+  // NOTE EndIdlePeriod will disable the long idle periods.
+  void EnableLongIdlePeriod();
 
   // Start and end an idle period. If |post_end_idle_period| is true, it will
   // post a delayed EndIdlePeriod scheduled to occur at |idle_period_deadline|.
@@ -132,6 +139,8 @@ class CONTENT_EXPORT SchedulerHelper {
                        base::TimeTicks idle_period_deadline,
                        bool post_end_idle_period);
 
+  // This will end an idle period either started with StartIdlePeriod or
+  // EnableLongIdlePeriod.
   void EndIdlePeriod();
 
   // Returns true if |state| represents being within an idle period state.
@@ -154,13 +163,16 @@ class CONTENT_EXPORT SchedulerHelper {
  private:
   friend class SchedulerHelperTest;
 
+  bool ShouldWaitForQuiescence();
+  void EnableLongIdlePeriodAfterWakeup();
+
   base::ThreadChecker thread_checker_;
   scoped_ptr<PrioritizingTaskQueueSelector> task_queue_selector_;
   scoped_ptr<TaskQueueManager> task_queue_manager_;
 
   CancelableClosureHolder end_idle_period_closure_;
-  CancelableClosureHolder initiate_next_long_idle_period_closure_;
-  CancelableClosureHolder initiate_next_long_idle_period_after_wakeup_closure_;
+  CancelableClosureHolder enable_next_long_idle_period_closure_;
+  CancelableClosureHolder enable_next_long_idle_period_after_wakeup_closure_;
 
   IdlePeriodState idle_period_state_;
   SchedulerHelperDelegate* scheduler_helper_delegate_;  // NOT OWNED
@@ -169,6 +181,11 @@ class CONTENT_EXPORT SchedulerHelper {
   scoped_refptr<base::SingleThreadTaskRunner> control_task_after_wakeup_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
+
+  // A bitmap which controls the set of queues that are checked for quiescence
+  // before triggering a long idle period.
+  uint64 quiescence_monitored_task_queue_mask_;
+  base::TimeDelta required_quiescence_duration_before_long_idle_period_;
 
   base::TimeTicks idle_period_deadline_;
   scoped_refptr<cc::TestNowSource> time_source_;

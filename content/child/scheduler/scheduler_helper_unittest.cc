@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::AnyNumber;
 using testing::Invoke;
 using testing::Return;
 
@@ -85,6 +86,26 @@ void UpdateClockToDeadlineIdleTestTask(
   (*run_count)++;
 }
 
+void RepeatingTask(base::SingleThreadTaskRunner* task_runner,
+                   int num_repeats,
+                   base::TimeDelta delay) {
+  if (num_repeats > 1) {
+    task_runner->PostDelayedTask(
+        FROM_HERE, base::Bind(&RepeatingTask, base::Unretained(task_runner),
+                              num_repeats - 1, delay),
+        delay);
+  }
+}
+
+scoped_refptr<NestableSingleThreadTaskRunner>
+CreateNestableSingleThreadTaskRunner(
+    base::MessageLoop* message_loop,
+    scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner) {
+  if (message_loop)
+    return SchedulerMessageLoopDelegate::Create(message_loop);
+
+  return NestableTaskRunnerForTest::Create(mock_task_runner);
+}
 
 };  // namespace
 
@@ -92,19 +113,21 @@ class SchedulerHelperForTest : public SchedulerHelper,
                                public SchedulerHelper::SchedulerHelperDelegate {
  public:
   explicit SchedulerHelperForTest(
-      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner)
+      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
+      base::TimeDelta required_quiescence_duration_before_long_idle_period)
       : SchedulerHelper(main_task_runner,
                         this,
                         "test.scheduler",
                         TRACE_DISABLED_BY_DEFAULT("test.scheduler"),
-                        TASK_QUEUE_COUNT) {}
+                        TASK_QUEUE_COUNT,
+                        required_quiescence_duration_before_long_idle_period) {}
 
   ~SchedulerHelperForTest() override {}
 
   using SchedulerHelper::CanExceedIdleDeadlineIfRequired;
   using SchedulerHelper::EndIdlePeriod;
   using SchedulerHelper::StartIdlePeriod;
-  using SchedulerHelper::InitiateLongIdlePeriod;
+  using SchedulerHelper::EnableLongIdlePeriod;
 
   // SchedulerHelperDelegate implementation:
   MOCK_METHOD2(CanEnterLongIdlePeriod,
@@ -112,30 +135,28 @@ class SchedulerHelperForTest : public SchedulerHelper,
                     base::TimeDelta* next_long_idle_period_delay_out));
 };
 
-class SchedulerHelperTest : public testing::Test {
+class BaseSchedulerHelperTest : public testing::Test {
  public:
-  SchedulerHelperTest()
+  BaseSchedulerHelperTest(
+      base::MessageLoop* message_loop,
+      base::TimeDelta required_quiescence_duration_before_long_idle_period)
       : clock_(cc::TestNowSource::Create(5000)),
-        mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_, false)),
+        mock_task_runner_(message_loop
+                              ? nullptr
+                              : new cc::OrderedSimpleTaskRunner(clock_, false)),
+        message_loop_(message_loop),
         nestable_task_runner_(
-            NestableTaskRunnerForTest::Create(mock_task_runner_)),
-        scheduler_helper_(new SchedulerHelperForTest(nestable_task_runner_)),
+            CreateNestableSingleThreadTaskRunner(message_loop,
+                                                 mock_task_runner_)),
+        scheduler_helper_(new SchedulerHelperForTest(
+            nestable_task_runner_,
+            required_quiescence_duration_before_long_idle_period)),
         default_task_runner_(scheduler_helper_->DefaultTaskRunner()),
         idle_task_runner_(scheduler_helper_->IdleTaskRunner()) {
     scheduler_helper_->SetTimeSourceForTesting(clock_);
   }
 
-  SchedulerHelperTest(base::MessageLoop* message_loop)
-      : clock_(cc::TestNowSource::Create(5000)),
-        message_loop_(message_loop),
-        nestable_task_runner_(
-            SchedulerMessageLoopDelegate::Create(message_loop)),
-        scheduler_helper_(new SchedulerHelperForTest(nestable_task_runner_)),
-        default_task_runner_(scheduler_helper_->DefaultTaskRunner()),
-        idle_task_runner_(scheduler_helper_->IdleTaskRunner()) {
-    scheduler_helper_->SetTimeSourceForTesting(clock_);
-  }
-  ~SchedulerHelperTest() override {}
+  ~BaseSchedulerHelperTest() override {}
 
   void TearDown() override {
     DCHECK(!mock_task_runner_.get() || !message_loop_.get());
@@ -207,6 +228,16 @@ class SchedulerHelperTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
 
+  DISALLOW_COPY_AND_ASSIGN(BaseSchedulerHelperTest);
+};
+
+class SchedulerHelperTest : public BaseSchedulerHelperTest {
+ public:
+  SchedulerHelperTest() : BaseSchedulerHelperTest(nullptr, base::TimeDelta()) {}
+
+  ~SchedulerHelperTest() override {}
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerHelperTest);
 };
 
@@ -431,10 +462,10 @@ TEST_F(SchedulerHelperTest, TestDelayedEndIdlePeriod) {
       .Times(2)
       .WillRepeatedly(Return(true));
 
-  // We need an idle task posted or InitiateLongIdlePeriod will use the
+  // We need an idle task posted or EnableLongIdlePeriod will use the
   // control_task_after_wakeup_runner_ instead of the control_task_runner_.
   idle_task_runner_->PostIdleTask(FROM_HERE, base::Bind(&NullIdleTask));
-  scheduler_helper_->InitiateLongIdlePeriod();
+  scheduler_helper_->EnableLongIdlePeriod();
 
   // Check there is a pending delayed task.
   EXPECT_GT(
@@ -442,7 +473,7 @@ TEST_F(SchedulerHelperTest, TestDelayedEndIdlePeriod) {
 
   RunUntilIdle();
 
-  // If the delayed task ran, it will an InitiateLongIdlePeriod on the control
+  // If the delayed task ran, it will an EnableLongIdlePeriod on the control
   // task after wake up queue.
   EXPECT_FALSE(task_queue_manager->IsQueueEmpty(
       SchedulerHelper::CONTROL_TASK_AFTER_WAKEUP_QUEUE));
@@ -457,10 +488,10 @@ TEST_F(SchedulerHelperTest, TestDelayedEndIdlePeriodCanceled) {
       .Times(1)
       .WillRepeatedly(Return(true));
 
-  // We need an idle task posted or InitiateLongIdlePeriod will use the
+  // We need an idle task posted or EnableLongIdlePeriod will use the
   // control_task_after_wakeup_runner_ instead of the control_task_runner_.
   idle_task_runner_->PostIdleTask(FROM_HERE, base::Bind(&NullIdleTask));
-  scheduler_helper_->InitiateLongIdlePeriod();
+  scheduler_helper_->EnableLongIdlePeriod();
 
   // Check there is a pending delayed task.
   EXPECT_GT(
@@ -475,10 +506,10 @@ TEST_F(SchedulerHelperTest, TestDelayedEndIdlePeriodCanceled) {
       SchedulerHelper::CONTROL_TASK_AFTER_WAKEUP_QUEUE));
 }
 
-class SchedulerHelperWithMessageLoopTest : public SchedulerHelperTest {
+class SchedulerHelperWithMessageLoopTest : public BaseSchedulerHelperTest {
  public:
   SchedulerHelperWithMessageLoopTest()
-      : SchedulerHelperTest(new base::MessageLoop()) {}
+      : BaseSchedulerHelperTest(new base::MessageLoop(), base::TimeDelta()) {}
   ~SchedulerHelperWithMessageLoopTest() override {}
 
   void PostFromNestedRunloop(std::vector<
@@ -557,7 +588,7 @@ TEST_F(SchedulerHelperTest, TestLongIdlePeriod) {
   RunUntilIdle();
   EXPECT_EQ(0, run_count);  // Shouldn't run yet as no idle period.
 
-  scheduler_helper_->InitiateLongIdlePeriod();
+  scheduler_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
   EXPECT_EQ(1, run_count);  // Should have run in a long idle time.
   EXPECT_EQ(expected_deadline, deadline_in_task);
@@ -578,7 +609,7 @@ TEST_F(SchedulerHelperTest, TestLongIdlePeriodWithPendingDelayedTask) {
   default_task_runner_->PostDelayedTask(FROM_HERE, base::Bind(&NullTask),
                                         pending_task_delay);
 
-  scheduler_helper_->InitiateLongIdlePeriod();
+  scheduler_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
   EXPECT_EQ(1, run_count);  // Should have run in a long idle time.
   EXPECT_EQ(expected_deadline, deadline_in_task);
@@ -599,11 +630,11 @@ TEST_F(SchedulerHelperTest, TestLongIdlePeriodWithLatePendingDelayedTask) {
   // Advance clock until after delayed task was meant to be run.
   clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(20));
 
-  // Post an idle task and then InitiateLongIdlePeriod. Since there is a late
+  // Post an idle task and then EnableLongIdlePeriod. Since there is a late
   // pending delayed task this shouldn't actually start an idle period.
   idle_task_runner_->PostIdleTask(
       FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-  scheduler_helper_->InitiateLongIdlePeriod();
+  scheduler_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
   EXPECT_EQ(0, run_count);
 
@@ -625,7 +656,7 @@ TEST_F(SchedulerHelperTest, TestLongIdlePeriodRepeating) {
       FROM_HERE,
       base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
 
-  scheduler_helper_->InitiateLongIdlePeriod();
+  scheduler_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
   EXPECT_EQ(1, run_count);  // Should only run once per idle period.
 
@@ -652,7 +683,7 @@ TEST_F(SchedulerHelperTest, TestLongIdlePeriodDoesNotWakeScheduler) {
       .WillRepeatedly(Return(true));
 
   // Start a long idle period and get the time it should end.
-  scheduler_helper_->InitiateLongIdlePeriod();
+  scheduler_helper_->EnableLongIdlePeriod();
   // The scheduler should not run the initiate_next_long_idle_period task if
   // there are no idle tasks and no other task woke up the scheduler, thus
   // the idle period deadline shouldn't update at the end of the current long
@@ -707,7 +738,7 @@ TEST_F(SchedulerHelperTest, TestLongIdlePeriodWhenNotCanEnterLongIdlePeriod) {
       FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
 
   // Make sure Idle tasks don't run until the delay has occured.
-  scheduler_helper_->InitiateLongIdlePeriod();
+  scheduler_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
   EXPECT_EQ(0, run_count);
 
@@ -762,7 +793,7 @@ TEST_F(SchedulerHelperTest, CanExceedIdleDeadlineIfRequired) {
       FROM_HERE, base::Bind(&TestCanExceedIdleDeadlineIfRequiredTask,
                             scheduler_helper_.get(), &can_exceed_idle_deadline,
                             &run_count));
-  scheduler_helper_->InitiateLongIdlePeriod();
+  scheduler_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
   EXPECT_EQ(2, run_count);
   EXPECT_FALSE(can_exceed_idle_deadline);
@@ -784,6 +815,130 @@ TEST_F(SchedulerHelperTest, IsShutdown) {
 
   scheduler_helper_->Shutdown();
   EXPECT_TRUE(scheduler_helper_->IsShutdown());
+}
+
+class SchedulerHelperWithQuiescencePeriodTest : public BaseSchedulerHelperTest {
+ public:
+  enum {
+    kQuiescenceDelayMs = 100,
+    kLongIdlePeriodMs = 50,
+  };
+
+  SchedulerHelperWithQuiescencePeriodTest()
+      : BaseSchedulerHelperTest(
+            nullptr,
+            base::TimeDelta::FromMilliseconds(kQuiescenceDelayMs)) {}
+
+  ~SchedulerHelperWithQuiescencePeriodTest() override {}
+
+  void MakeNonQuiescent() {
+    // Run an arbitrary task so we're deemed to be not quiescent.
+    default_task_runner_->PostTask(FROM_HERE, base::Bind(NullTask));
+    RunUntilIdle();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SchedulerHelperWithQuiescencePeriodTest);
+};
+
+TEST_F(SchedulerHelperWithQuiescencePeriodTest,
+       LongIdlePeriodStartsImmediatelyIfQuiescent) {
+  EXPECT_CALL(*scheduler_helper_, CanEnterLongIdlePeriod(_, _))
+      .Times(2)
+      .WillRepeatedly(Return(true));
+
+  int run_count = 0;
+  max_idle_task_reposts = 1;
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
+
+  scheduler_helper_->EnableLongIdlePeriod();
+  RunUntilIdle();
+
+  EXPECT_EQ(1, run_count);
+}
+
+TEST_F(SchedulerHelperWithQuiescencePeriodTest,
+       LongIdlePeriodDoesNotStartsImmediatelyIfBusy) {
+  MakeNonQuiescent();
+  EXPECT_CALL(*scheduler_helper_, CanEnterLongIdlePeriod(_, _)).Times(0);
+
+  int run_count = 0;
+  max_idle_task_reposts = 1;
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
+
+  scheduler_helper_->EnableLongIdlePeriod();
+  RunUntilIdle();
+
+  EXPECT_EQ(0, run_count);
+
+  scheduler_helper_->Shutdown();
+}
+
+TEST_F(SchedulerHelperWithQuiescencePeriodTest,
+       LongIdlePeriodStartsAfterQuiescence) {
+  MakeNonQuiescent();
+  EXPECT_CALL(*scheduler_helper_, CanEnterLongIdlePeriod(_, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(true));
+  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  // Run a repeating task so we're deemed to be busy for the next 400ms.
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RepeatingTask, base::Unretained(default_task_runner_.get()),
+                 10, base::TimeDelta::FromMilliseconds(40)));
+
+  int run_count = 0;
+  // In this scenario EnableLongIdlePeriod deems us not to be quiescent 5x in
+  // a row.
+  base::TimeTicks expected_deadline =
+      clock_->Now() + base::TimeDelta::FromMilliseconds(5 * kQuiescenceDelayMs +
+                                                        kLongIdlePeriodMs);
+  base::TimeTicks deadline_in_task;
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  scheduler_helper_->EnableLongIdlePeriod();
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);
+  EXPECT_EQ(expected_deadline, deadline_in_task);
+}
+
+TEST_F(SchedulerHelperWithQuiescencePeriodTest,
+       QuescienceCheckedForAfterLongIdlePeriodEnds) {
+  EXPECT_CALL(*scheduler_helper_, CanEnterLongIdlePeriod(_, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(true));
+  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  idle_task_runner_->PostIdleTask(FROM_HERE, base::Bind(&NullIdleTask));
+  scheduler_helper_->EnableLongIdlePeriod();
+  RunUntilIdle();
+
+  int run_count = 0;
+  base::TimeTicks deadline_in_task;
+  // Post an idle task, it won't run initially because the
+  // EnableLongIdlePeriod task was posted on an after wakeup runner.
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);
+
+  // Post a normal task to wake the system up.  The idle task won't run
+  // immediately because the system isn't judged to be quiescent until the
+  // second time EnableLongIdlePeriod is run.
+  base::TimeTicks expected_deadline =
+      clock_->Now() +
+      base::TimeDelta::FromMilliseconds(kQuiescenceDelayMs + kLongIdlePeriodMs);
+  default_task_runner_->PostTask(FROM_HERE, base::Bind(NullTask));
+  RunUntilIdle();
+
+  EXPECT_EQ(1, run_count);
+  EXPECT_EQ(expected_deadline, deadline_in_task);
 }
 
 }  // namespace content
