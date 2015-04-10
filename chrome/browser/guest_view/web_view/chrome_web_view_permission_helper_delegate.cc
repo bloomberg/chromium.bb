@@ -10,6 +10,7 @@
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
+#include "components/content_settings/content/common/content_settings_messages.h"
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"

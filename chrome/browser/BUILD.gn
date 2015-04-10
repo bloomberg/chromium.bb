@@ -86,6 +86,7 @@ source_set("browser") {
     "//components/captive_portal",
     "//components/cloud_devices/common",
     "//components/component_updater",
+    "//components/content_settings/content/common",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/crx_file",

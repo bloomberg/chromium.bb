@@ -120,6 +120,7 @@ enum IPCMessageStart {
   // Contact gunsch@ before changing/removing.
   CastCryptoMsgStart,
   DataReductionProxyStart,
+  ContentSettingsMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

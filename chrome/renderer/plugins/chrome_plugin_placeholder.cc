@@ -14,6 +14,7 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/custom_menu_commands.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
+#include "components/content_settings/content/common/content_settings_messages.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/render_frame.h"

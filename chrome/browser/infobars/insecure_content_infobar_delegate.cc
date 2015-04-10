@@ -8,6 +8,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/content/common/content_settings_messages.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/render_frame_host.h"

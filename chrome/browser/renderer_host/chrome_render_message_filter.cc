@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/render_messages.h"
+#include "components/content_settings/content/common/content_settings_messages.h"
 #include "components/network_hints/common/network_hints_common.h"
 #include "components/network_hints/common/network_hints_messages.h"
 #include "components/rappor/rappor_service.h"
@@ -49,6 +50,7 @@ namespace {
 
 const uint32 kFilteredMessageClasses[] = {
   ChromeMsgStart,
+  ContentSettingsMsgStart,
   NetworkHintsMsgStart,
 };
 

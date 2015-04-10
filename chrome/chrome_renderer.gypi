@@ -251,6 +251,7 @@
         'chrome_resources.gyp:chrome_strings',
         '../third_party/re2/re2.gyp:re2',
         '../components/components.gyp:autofill_content_renderer',
+        '../components/components.gyp:content_settings_content_common',
         '../components/components.gyp:cdm_renderer',
         '../components/components.gyp:data_reduction_proxy_content_common',
         '../components/components.gyp:network_hints_renderer',

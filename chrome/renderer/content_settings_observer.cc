@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "chrome/common/render_messages.h"
+#include "components/content_settings/content/common/content_settings_messages.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
