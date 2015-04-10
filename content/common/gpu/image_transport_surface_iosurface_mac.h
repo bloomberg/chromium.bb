@@ -27,7 +27,9 @@ class IOSurfaceStorageProvider
       CGLContextObj context, const base::Closure& context_dirtied_callback,
       GLuint texture, gfx::Size pixel_size, float scale_factor) override;
   void FreeColorBufferStorage() override;
-  void SwapBuffers(const gfx::Size& size, float scale_factor) override;
+  void FrameSizeChanged(
+      const gfx::Size& pixel_size, float scale_factor) override;
+  void SwapBuffers() override;
   void WillWriteToBackbuffer() override;
   void DiscardBackbuffer() override;
   void SwapBuffersAckedByBrowser(bool disable_throttling) override;
@@ -36,6 +38,8 @@ class IOSurfaceStorageProvider
   ImageTransportSurfaceFBO* transport_surface_;
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
+  gfx::Size frame_pixel_size_;
+  float frame_scale_factor_;
 
   // The list of IOSurfaces that have been sent to the browser process but have
   // not been opened in the browser process yet. This list should never have

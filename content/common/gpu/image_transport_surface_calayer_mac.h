@@ -29,7 +29,9 @@ class CALayerStorageProvider
       CGLContextObj context, const base::Closure& context_dirtied_callback,
       GLuint texture, gfx::Size pixel_size, float scale_factor) override;
   void FreeColorBufferStorage() override;
-  void SwapBuffers(const gfx::Size& size, float scale_factor) override;
+  void FrameSizeChanged(
+      const gfx::Size& pixel_size, float scale_factor) override;
+  void SwapBuffers() override;
   void WillWriteToBackbuffer() override;
   void DiscardBackbuffer() override;
   void SwapBuffersAckedByBrowser(bool disable_throttling) override;

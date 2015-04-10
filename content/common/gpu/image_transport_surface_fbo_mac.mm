@@ -169,6 +169,10 @@ void ImageTransportSurfaceFBO::AdjustBufferAllocation() {
 }
 
 bool ImageTransportSurfaceFBO::SwapBuffers() {
+  return SwapBuffersInternal();
+}
+
+bool ImageTransportSurfaceFBO::SwapBuffersInternal() {
   DCHECK(backbuffer_suggested_allocation_);
   if (!frontbuffer_suggested_allocation_)
     return true;
@@ -176,7 +180,7 @@ bool ImageTransportSurfaceFBO::SwapBuffers() {
 
   // It is the responsibility of the storage provider to send the swap IPC.
   is_swap_buffers_send_pending_ = true;
-  storage_provider_->SwapBuffers(pixel_size_, scale_factor_);
+  storage_provider_->SwapBuffers();
 
   // The call to swapBuffers could potentially result in an immediate draw.
   // Ensure that any changes made to the context's state are restored.
@@ -203,13 +207,11 @@ void ImageTransportSurfaceFBO::SetRendererID(int renderer_id) {
 
 bool ImageTransportSurfaceFBO::PostSubBuffer(
     int x, int y, int width, int height) {
-  // Mac does not support sub-buffer swaps.
-  NOTREACHED();
-  return false;
+  return SwapBuffersInternal();
 }
 
 bool ImageTransportSurfaceFBO::SupportsPostSubBuffer() {
-  return false;
+  return true;
 }
 
 gfx::Size ImageTransportSurfaceFBO::GetSize() {
@@ -302,8 +304,10 @@ void ImageTransportSurfaceFBO::AllocateOrResizeFramebuffer(
   rounded_pixel_size_ = new_rounded_pixel_size;
   scale_factor_ = new_scale_factor;
 
-  if (!needs_new_storage)
+  if (!needs_new_storage) {
+    storage_provider_->FrameSizeChanged(pixel_size_, scale_factor_);
     return;
+  }
 
   TRACE_EVENT2("gpu", "ImageTransportSurfaceFBO::AllocateOrResizeFramebuffer",
                "width", new_rounded_pixel_size.width(),
@@ -398,6 +402,7 @@ void ImageTransportSurfaceFBO::AllocateOrResizeFramebuffer(
   }
 
   has_complete_framebuffer_ = true;
+  storage_provider_->FrameSizeChanged(pixel_size_, scale_factor_);
 
   glBindTexture(texture_target, previous_texture_id);
   // The FBO remains bound for this GL context.

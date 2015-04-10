@@ -290,8 +290,13 @@ void CALayerStorageProvider::FreeColorBufferStorage() {
   can_draw_returned_false_count_ = 0;
 }
 
-void CALayerStorageProvider::SwapBuffers(
-    const gfx::Size& size, float scale_factor) {
+void CALayerStorageProvider::FrameSizeChanged(const gfx::Size& pixel_size,
+                                              float scale_factor) {
+  DCHECK_EQ(fbo_pixel_size_.ToString(), pixel_size.ToString());
+  DCHECK_EQ(fbo_scale_factor_, scale_factor);
+}
+
+void CALayerStorageProvider::SwapBuffers() {
   DCHECK(!has_pending_draw_);
 
   // Recreate the CALayer on the new GPU if a GPU switch has occurred. Note

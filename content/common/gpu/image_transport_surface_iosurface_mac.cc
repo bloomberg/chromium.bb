@@ -42,7 +42,8 @@ void AddIntegerValue(CFMutableDictionaryRef dictionary,
 
 IOSurfaceStorageProvider::IOSurfaceStorageProvider(
     ImageTransportSurfaceFBO* transport_surface)
-        : transport_surface_(transport_surface) {}
+        : transport_surface_(transport_surface),
+          frame_scale_factor_(1) {}
 
 IOSurfaceStorageProvider::~IOSurfaceStorageProvider() {
   DCHECK(!io_surface_);
@@ -105,8 +106,13 @@ void IOSurfaceStorageProvider::FreeColorBufferStorage() {
   io_surface_id_ = 0;
 }
 
-void IOSurfaceStorageProvider::SwapBuffers(
-    const gfx::Size& size, float scale_factor) {
+void IOSurfaceStorageProvider::FrameSizeChanged(const gfx::Size& pixel_size,
+                                                float scale_factor) {
+  frame_pixel_size_ = pixel_size;
+  frame_scale_factor_ = scale_factor;
+}
+
+void IOSurfaceStorageProvider::SwapBuffers() {
   // The browser compositor will throttle itself, so we are free to unblock the
   // context immediately. Make sure that the browser is doing its throttling
   // appropriately by ensuring that the previous swap was acknowledged before
@@ -115,7 +121,9 @@ void IOSurfaceStorageProvider::SwapBuffers(
   pending_swapped_surfaces_.push_back(io_surface_);
 
   transport_surface_->SendSwapBuffers(
-      ui::SurfaceHandleFromIOSurfaceID(io_surface_id_), size, scale_factor);
+      ui::SurfaceHandleFromIOSurfaceID(io_surface_id_),
+      frame_pixel_size_,
+      frame_scale_factor_);
 }
 
 void IOSurfaceStorageProvider::WillWriteToBackbuffer() {

@@ -41,9 +41,13 @@ class ImageTransportSurfaceFBO
     // GL texture that was bound has already been deleted by the caller.
     virtual void FreeColorBufferStorage() = 0;
 
-    // Swap buffers and return the handle for the surface to send to the browser
-    // process to display.
-    virtual void SwapBuffers(const gfx::Size& size, float scale_factor) = 0;
+    // Called when the frame size has changed (the buffer may not have been
+    // reallocated, since its size may be rounded).
+    virtual void FrameSizeChanged(
+        const gfx::Size& pixel_size, float scale_factor) = 0;
+
+    // Swap buffers, or post sub-buffer.
+    virtual void SwapBuffers() = 0;
 
     // Indicate that the backbuffer will be written to.
     virtual void WillWriteToBackbuffer() = 0;
@@ -103,6 +107,7 @@ class ImageTransportSurfaceFBO
   void DestroyFramebuffer();
   void AllocateOrResizeFramebuffer(
       const gfx::Size& pixel_size, float scale_factor);
+  bool SwapBuffersInternal();
 
   scoped_ptr<StorageProvider> storage_provider_;
 
