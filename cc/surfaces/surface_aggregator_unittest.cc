@@ -1283,16 +1283,27 @@ class ResourceTrackingSurfaceFactoryClient : public SurfaceFactoryClient {
 
 void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
                               size_t num_resource_ids,
+                              bool valid,
+                              SurfaceId child_id,
                               SurfaceFactory* factory,
                               SurfaceId surface_id) {
   scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
   scoped_ptr<RenderPass> pass = RenderPass::Create();
   pass->id = RenderPassId(1, 1);
   SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
+  sqs->opacity = 1.f;
+  if (!child_id.is_null()) {
+    SurfaceDrawQuad* surface_quad =
+        pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    surface_quad->SetNew(sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
+                         child_id);
+  }
+
   for (size_t i = 0u; i < num_resource_ids; ++i) {
     TransferableResource resource;
     resource.id = resource_ids[i];
-    resource.is_software = true;
+    // ResourceProvider is software, so only software resources are valid.
+    resource.is_software = valid;
     frame_data->resource_list.push_back(resource);
     TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     const gfx::Rect rect;
@@ -1319,8 +1330,6 @@ void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
                  vertex_opacity,
                  flipped,
                  nearest_neighbor);
-
-    quad->shared_quad_state = sqs;
   }
   frame_data->render_pass_list.push_back(pass.Pass());
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
@@ -1336,14 +1345,15 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   factory.Create(surface_id);
 
   ResourceProvider::ResourceId ids[] = {11, 12, 13};
-  SubmitFrameWithResources(ids, arraysize(ids), &factory, surface_id);
+  SubmitFrameWithResources(ids, arraysize(ids), true, SurfaceId(), &factory,
+                           surface_id);
 
   scoped_ptr<CompositorFrame> frame = aggregator_->Aggregate(surface_id);
 
   // Nothing should be available to be returned yet.
   EXPECT_TRUE(client.returned_resources().empty());
 
-  SubmitFrameWithResources(NULL, 0u, &factory, surface_id);
+  SubmitFrameWithResources(NULL, 0u, true, SurfaceId(), &factory, surface_id);
 
   frame = aggregator_->Aggregate(surface_id);
 
@@ -1383,7 +1393,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
   // Nothing should be available to be returned yet.
   EXPECT_TRUE(client.returned_resources().empty());
 
-  SubmitFrameWithResources(NULL, 0u, &factory, surface_id);
+  SubmitFrameWithResources(NULL, 0, true, SurfaceId(), &factory, surface_id);
   ASSERT_EQ(1u, client.returned_resources().size());
   EXPECT_EQ(11u, client.returned_resources()[0].id);
 
@@ -1399,13 +1409,15 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
   factory.Create(surface_id2);
 
   ResourceProvider::ResourceId ids[] = {11, 12, 13};
-  SubmitFrameWithResources(ids, arraysize(ids), &factory, surface_id);
+  SubmitFrameWithResources(ids, arraysize(ids), true, SurfaceId(), &factory,
+                           surface_id);
   ResourceProvider::ResourceId ids2[] = {14, 15, 16};
-  SubmitFrameWithResources(ids2, arraysize(ids2), &factory, surface_id2);
+  SubmitFrameWithResources(ids2, arraysize(ids2), true, SurfaceId(), &factory,
+                           surface_id2);
 
   scoped_ptr<CompositorFrame> frame = aggregator_->Aggregate(surface_id);
 
-  SubmitFrameWithResources(NULL, 0, &factory, surface_id);
+  SubmitFrameWithResources(NULL, 0, true, SurfaceId(), &factory, surface_id);
 
   // Nothing should be available to be returned yet.
   EXPECT_TRUE(client.returned_resources().empty());
@@ -1423,6 +1435,53 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
   EXPECT_EQ(3u, resource_provider_->num_resources());
   factory.Destroy(surface_id);
   factory.Destroy(surface_id2);
+}
+
+// Ensure that aggregator completely ignores Surfaces that reference invalid
+// resources.
+TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
+  ResourceTrackingSurfaceFactoryClient client;
+  SurfaceFactory factory(&manager_, &client);
+  SurfaceId root_surface_id(7u);
+  factory.Create(root_surface_id);
+  SurfaceId middle_surface_id(8u);
+  factory.Create(middle_surface_id);
+  SurfaceId child_surface_id(9u);
+  factory.Create(child_surface_id);
+
+  ResourceProvider::ResourceId ids[] = {14, 15, 16};
+  SubmitFrameWithResources(ids, arraysize(ids), true, SurfaceId(), &factory,
+                           child_surface_id);
+
+  ResourceProvider::ResourceId ids2[] = {17, 18, 19};
+  SubmitFrameWithResources(ids2, arraysize(ids2), false, child_surface_id,
+                           &factory, middle_surface_id);
+
+  ResourceProvider::ResourceId ids3[] = {20, 21, 22};
+  SubmitFrameWithResources(ids3, arraysize(ids3), true, middle_surface_id,
+                           &factory, root_surface_id);
+
+  scoped_ptr<CompositorFrame> frame;
+  frame = aggregator_->Aggregate(root_surface_id);
+
+  RenderPassList* pass_list = &frame->delegated_frame_data->render_pass_list;
+  ASSERT_EQ(1u, pass_list->size());
+  EXPECT_EQ(1u, pass_list->back()->shared_quad_state_list.size());
+  EXPECT_EQ(3u, pass_list->back()->quad_list.size());
+
+  SubmitFrameWithResources(ids2, arraysize(ids), true, child_surface_id,
+                           &factory, middle_surface_id);
+
+  frame = aggregator_->Aggregate(root_surface_id);
+
+  pass_list = &frame->delegated_frame_data->render_pass_list;
+  ASSERT_EQ(1u, pass_list->size());
+  EXPECT_EQ(3u, pass_list->back()->shared_quad_state_list.size());
+  EXPECT_EQ(9u, pass_list->back()->quad_list.size());
+
+  factory.Destroy(root_surface_id);
+  factory.Destroy(child_surface_id);
+  factory.Destroy(middle_surface_id);
 }
 
 }  // namespace

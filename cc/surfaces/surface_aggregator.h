@@ -10,6 +10,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
@@ -64,6 +65,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                            RenderPass* dest_render_pass);
   void CopyQuadsToPass(const QuadList& source_quad_list,
                        const SharedQuadStateList& source_shared_quad_state_list,
+                       const DrawQuad::ResourceIteratorCallback& remap,
                        const gfx::Transform& content_to_target_transform,
                        const ClipData& clip_rect,
                        RenderPass* dest_pass,
@@ -74,9 +76,8 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   // referenced from the ResourceProvider.
   void RemoveUnreferencedChildren();
 
-  bool TakeResources(Surface* surface,
-                     const DelegatedFrameData* frame_data,
-                     RenderPassList* render_pass_list);
+  bool ValidateResources(Surface* surface,
+                         const DelegatedFrameData* frame_data);
   int ChildIdForSurface(Surface* surface);
   gfx::Rect DamageRectForSurface(const Surface* surface,
                                  const RenderPass& source,
