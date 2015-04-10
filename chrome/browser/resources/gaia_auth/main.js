@@ -105,6 +105,7 @@ Authenticator.prototype = {
 
     document.addEventListener('DOMContentLoaded', function() {
       window.addEventListener('message', handleInitializeMessage);
+      window.parent.postMessage({'method': 'loginUIDOMContentLoaded'}, '*');
     });
   },
 

@@ -286,12 +286,6 @@ cr.define('cr.login', function() {
      * Reloads the auth extension.
      */
     reload: function() {
-      var sendParamsOnLoad = function() {
-        this.frame_.removeEventListener('load', sendParamsOnLoad);
-        this.frame_.contentWindow.postMessage(this.authParams_, AUTH_URL_BASE);
-      }.bind(this);
-
-      this.frame_.addEventListener('load', sendParamsOnLoad);
       this.frame_.src = this.reloadUrl_;
       this.authFlow = AuthFlow.GAIA;
     },
@@ -341,6 +335,11 @@ cr.define('cr.login', function() {
 
       if (!this.isAuthExtMessage_(e))
         return;
+
+      if (msg.method == 'loginUIDOMContentLoaded') {
+        this.frame_.contentWindow.postMessage(this.authParams_, AUTH_URL_BASE);
+        return;
+      }
 
       if (msg.method == 'loginUILoaded') {
         cr.dispatchSimpleEvent(this, 'ready');
