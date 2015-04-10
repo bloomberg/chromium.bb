@@ -27,7 +27,7 @@ static GraphicsContext* beginRecordingContent(GraphicsContext* context, FilterDa
     // filter can be drawn and cached.
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         filterData->m_displayItemList = DisplayItemList::create();
-        filterData->m_context = adoptPtr(new GraphicsContext(nullptr, filterData->m_displayItemList.get()));
+        filterData->m_context = adoptPtr(new GraphicsContext(filterData->m_displayItemList.get()));
         context = filterData->m_context.get();
     }
 

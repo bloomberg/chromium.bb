@@ -249,7 +249,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
 
     // Record using a dedicated GC, to avoid inheriting unwanted state (pending color filters
     // for example must be applied atomically during the final fill/composite phase).
-    GraphicsContext recordingContext(nullptr, displayItemList.get());
+    GraphicsContext recordingContext(displayItemList.get());
     recordingContext.beginRecording(spacedTile);
     {
         // When generating an expanded tile, make sure we don't draw into the spacing area.
@@ -286,9 +286,8 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
 
     // TODO(fmalita): this recorder is only needed because CompositingRecorder below appears to be
     // dropping the current color filter on the floor. Find a proper fix and get rid of it.
-    GraphicsContext recordingContext(nullptr, nullptr);
-    recordingContext.beginRecording(dstRect);
-
+    OwnPtr<GraphicsContext> recordingContext = GraphicsContext::deprecatedCreateWithCanvas(nullptr);
+    recordingContext->beginRecording(dstRect);
 
     FrameView* view = frameView();
     view->resize(containerSize());
@@ -298,7 +297,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     view->scrollToFragment(m_url);
 
     {
-        DisplayItemListContextRecorder contextRecorder(recordingContext);
+        DisplayItemListContextRecorder contextRecorder(*recordingContext);
         GraphicsContext& paintContext = contextRecorder.context();
 
         ClipRecorder clipRecorder(paintContext, *this, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
@@ -321,7 +320,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         view->paint(&paintContext, enclosingIntRect(srcRect));
         ASSERT(!view->needsLayout());
     }
-    RefPtr<const SkPicture> recording = recordingContext.endRecording();
+    RefPtr<const SkPicture> recording = recordingContext->endRecording();
     context->drawPicture(recording.get());
 
     if (imageObserver())

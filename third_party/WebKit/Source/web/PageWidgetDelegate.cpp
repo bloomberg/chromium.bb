@@ -72,9 +72,9 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
     if (rect.isEmpty())
         return;
 
-    GraphicsContext context(canvas, nullptr);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
     {
-        DisplayItemListContextRecorder contextRecorder(context);
+        DisplayItemListContextRecorder contextRecorder(*context);
         GraphicsContext& paintContext = contextRecorder.context();
 
         // FIXME: device scale factor settings are layering violations and should not

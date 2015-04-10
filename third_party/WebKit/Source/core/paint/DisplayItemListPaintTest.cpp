@@ -94,7 +94,7 @@ TEST_F(DisplayItemListPaintTest, FullDocumentPaintingWithCaret)
     LayoutObject& divLayoutObject = *document().body()->firstChild()->layoutObject();
     InlineTextBox& textInlineBox = *toLayoutText(div.firstChild()->layoutObject())->firstTextBox();
 
-    GraphicsContext context(nullptr, &rootDisplayItemList());
+    GraphicsContext context(&rootDisplayItemList());
     DeprecatedPaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();
@@ -129,7 +129,7 @@ TEST_F(DisplayItemListPaintTest, InlineRelayout)
     InlineTextBox& firstTextBox = *text.firstTextBox();
     DisplayItemClient firstTextBoxDisplayItemClient = firstTextBox.displayItemClient();
 
-    GraphicsContext context(nullptr, &rootDisplayItemList());
+    GraphicsContext context(&rootDisplayItemList());
     DeprecatedPaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
     DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().commitNewDisplayItems();

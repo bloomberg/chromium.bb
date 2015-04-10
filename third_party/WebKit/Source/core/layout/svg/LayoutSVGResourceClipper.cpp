@@ -157,7 +157,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(Affin
     OwnPtr<DisplayItemList> displayItemList;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
         displayItemList = DisplayItemList::create();
-    GraphicsContext context(nullptr, displayItemList.get());
+    GraphicsContext context(displayItemList.get());
     context.beginRecording(bounds);
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {

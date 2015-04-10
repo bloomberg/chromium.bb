@@ -169,7 +169,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect&
     OwnPtr<DisplayItemList> displayItemList;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
         displayItemList = DisplayItemList::create();
-    GraphicsContext recordingContext(nullptr, displayItemList.get());
+    GraphicsContext recordingContext(displayItemList.get());
     recordingContext.beginRecording(FloatRect(FloatPoint(), tileBounds.size()));
 
     ASSERT(attributes().patternContentElement());

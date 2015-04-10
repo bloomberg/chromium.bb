@@ -1366,9 +1366,9 @@ float WebLocalFrameImpl::printPage(int page, WebCanvas* canvas)
 #if ENABLE(PRINTING)
     ASSERT(m_printContext && page >= 0 && frame() && frame()->document());
 
-    GraphicsContext graphicsContext(canvas, nullptr);
-    graphicsContext.setPrinting(true);
-    return m_printContext->spoolSinglePage(graphicsContext, page);
+    OwnPtr<GraphicsContext> graphicsContext = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    graphicsContext->setPrinting(true);
+    return m_printContext->spoolSinglePage(*graphicsContext, page);
 #else
     return 0;
 #endif
@@ -1546,10 +1546,10 @@ void WebLocalFrameImpl::printPagesWithBoundaries(WebCanvas* canvas, const WebSiz
 {
     ASSERT(m_printContext);
 
-    GraphicsContext graphicsContext(canvas, nullptr);
-    graphicsContext.setPrinting(true);
+    OwnPtr<GraphicsContext> graphicsContext = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    graphicsContext->setPrinting(true);
 
-    m_printContext->spoolAllPagesWithBoundaries(graphicsContext, FloatSize(pageSizeInPixels.width, pageSizeInPixels.height));
+    m_printContext->spoolAllPagesWithBoundaries(*graphicsContext, FloatSize(pageSizeInPixels.width, pageSizeInPixels.height));
 }
 
 WebRect WebLocalFrameImpl::selectionBoundsRect() const

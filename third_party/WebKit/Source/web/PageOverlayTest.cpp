@@ -199,14 +199,14 @@ void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()
         // a display list, and then replay that onto the mock canvas for
         // examination. This is about as close to the real path as we can easily
         // get.
-        GraphicsContext graphicsContext(nullptr /* canvas */, graphicsLayer->displayItemList());
+        GraphicsContext graphicsContext(graphicsLayer->displayItemList());
         graphicsLayer->paint(graphicsContext, WebRect(0, 0, viewportWidth, viewportHeight));
 
-        GraphicsContext replayContext(&canvas, nullptr /* displayItemList */);
-        graphicsLayer->displayItemList()->commitNewDisplayItemsAndReplay(replayContext);
+        OwnPtr<GraphicsContext> replayContext = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
+        graphicsLayer->displayItemList()->commitNewDisplayItemsAndReplay(*replayContext);
     } else {
-        GraphicsContext graphicsContext(&canvas, nullptr /* displayItemList */);
-        graphicsLayer->paint(graphicsContext, WebRect(0, 0, viewportWidth, viewportHeight));
+        OwnPtr<GraphicsContext> graphicsContext = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
+        graphicsLayer->paint(*graphicsContext, WebRect(0, 0, viewportWidth, viewportHeight));
     }
 }
 

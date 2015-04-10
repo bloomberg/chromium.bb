@@ -65,7 +65,7 @@ void drawRect(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase
 
 TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 {
-    GraphicsContext context(nullptr, &rootDisplayItemList());
+    GraphicsContext context(&rootDisplayItemList());
     FloatRect bound = layoutView().viewRect();
     EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
 
@@ -76,7 +76,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 
 TEST_F(LayoutObjectDrawingRecorderTest, Rect)
 {
-    GraphicsContext context(nullptr, &rootDisplayItemList());
+    GraphicsContext context(&rootDisplayItemList());
     FloatRect bound = layoutView().viewRect();
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
@@ -86,7 +86,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect)
 
 TEST_F(LayoutObjectDrawingRecorderTest, Cached)
 {
-    GraphicsContext context(nullptr, &rootDisplayItemList());
+    GraphicsContext context(&rootDisplayItemList());
     FloatRect bound = layoutView().viewRect();
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);

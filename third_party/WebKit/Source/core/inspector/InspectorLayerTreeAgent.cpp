@@ -328,10 +328,10 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString, const Strin
     IntSize size = expandedIntSize(layer->size());
 
     SkPictureRecorder pictureRecorder;
-    GraphicsContext recordingContext(pictureRecorder.beginRecording(size.width(), size.height()), nullptr);
+    OwnPtr<GraphicsContext> recordingContext = GraphicsContext::deprecatedCreateWithCanvas(pictureRecorder.beginRecording(size.width(), size.height()));
 
     {
-        DisplayItemListContextRecorder contextRecorder(recordingContext);
+        DisplayItemListContextRecorder contextRecorder(*recordingContext);
         layer->paint(contextRecorder.context(), IntRect(IntPoint(0, 0), size));
     }
 

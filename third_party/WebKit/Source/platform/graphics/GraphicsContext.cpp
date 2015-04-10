@@ -74,6 +74,15 @@ private:
     const SkMatrix m_savedMatrix;
 };
 
+GraphicsContext::GraphicsContext(DisplayItemList* displayItemList, DisabledMode disableContextOrPainting)
+    : GraphicsContext(nullptr, displayItemList, disableContextOrPainting)
+{ }
+
+PassOwnPtr<GraphicsContext> GraphicsContext::deprecatedCreateWithCanvas(SkCanvas* canvas, DisabledMode disableContextOrPainting)
+{
+    return adoptPtr(new GraphicsContext(canvas, nullptr, disableContextOrPainting));
+}
+
 GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemList, DisabledMode disableContextOrPainting)
     : m_canvas(canvas)
     , m_displayItemList(displayItemList)

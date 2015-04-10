@@ -27,6 +27,7 @@
 #include "platform/graphics/ContentLayerDelegate.h"
 
 #include "platform/EventTracer.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
@@ -54,31 +55,44 @@ void ContentLayerDelegate::paintContents(
     SkCanvas* canvas, const WebRect& clip,
     WebContentLayerClient::PaintingControlSetting paintingControl)
 {
+    ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
+
     static const unsigned char* annotationsEnabled = 0;
     if (UNLIKELY(!annotationsEnabled))
         annotationsEnabled = EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations"));
 
-    DisplayItemList* displayItemList = m_painter->displayItemList();
-
-    if (displayItemList && paintingControl == WebContentLayerClient::DisplayListCachingDisabled)
-        displayItemList->invalidateAll();
-
-    GraphicsContext context(canvas, displayItemList,
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas,
         paintingControl == WebContentLayerClient::DisplayListConstructionDisabled ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled);
     if (*annotationsEnabled)
-        context.setAnnotationMode(AnnotateAll);
+        context->setAnnotationMode(AnnotateAll);
 
-    m_painter->paint(context, clip);
-
-    if (displayItemList)
-        displayItemList->commitNewDisplayItems();
+    m_painter->paint(*context, clip);
 }
 
 void ContentLayerDelegate::paintContents(
     WebDisplayItemList* webDisplayItemList, const WebRect& clip,
     WebContentLayerClient::PaintingControlSetting paintingControl)
 {
-    paintContents(static_cast<SkCanvas*>(0), clip, paintingControl);
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+
+    static const unsigned char* annotationsEnabled = 0;
+    if (UNLIKELY(!annotationsEnabled))
+        annotationsEnabled = EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations"));
+
+    DisplayItemList* displayItemList = m_painter->displayItemList();
+    ASSERT(displayItemList);
+
+    if (paintingControl == WebContentLayerClient::DisplayListCachingDisabled)
+        displayItemList->invalidateAll();
+
+    GraphicsContext context(displayItemList,
+        paintingControl == WebContentLayerClient::DisplayListConstructionDisabled ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled);
+    if (*annotationsEnabled)
+        context.setAnnotationMode(AnnotateAll);
+
+    m_painter->paint(context, clip);
+
+    displayItemList->commitNewDisplayItems();
 
     const DisplayItems& paintList = m_painter->displayItemList()->displayItems();
     for (DisplayItems::const_iterator it = paintList.begin(); it != paintList.end(); ++it)

@@ -76,17 +76,17 @@ TEST(GraphicsContextTest, trackDisplayListRecording)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas, nullptr);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
 
-    context.fillRect(FloatRect(0, 0, 50, 50), opaque, SkXfermode::kSrcOver_Mode);
+    context->fillRect(FloatRect(0, 0, 50, 50), opaque, SkXfermode::kSrcOver_Mode);
     EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 50, 50))
 
     FloatRect bounds(0, 0, 100, 100);
-    context.beginRecording(bounds);
-    context.fillRect(FloatRect(0, 0, 100, 100), opaque, SkXfermode::kSrcOver_Mode);
-    RefPtr<const SkPicture> picture = context.endRecording();
+    context->beginRecording(bounds);
+    context->fillRect(FloatRect(0, 0, 100, 100), opaque, SkXfermode::kSrcOver_Mode);
+    RefPtr<const SkPicture> picture = context->endRecording();
 
     // Make sure the opaque region was unaffected by the rect drawn during Picture recording.
     EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 50, 50))
@@ -99,7 +99,7 @@ TEST(GraphicsContextTest, trackImageMask)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas, nullptr);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
     Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
@@ -108,19 +108,19 @@ TEST(GraphicsContextTest, trackImageMask)
     // out a transparency layer below that is filled with the mask color. In the end this should
     // not be marked opaque.
 
-    context.beginLayer();
-    context.fillRect(FloatRect(10, 10, 10, 10), opaque, SkXfermode::kSrcOver_Mode);
+    context->beginLayer();
+    context->fillRect(FloatRect(10, 10, 10, 10), opaque, SkXfermode::kSrcOver_Mode);
 
-    context.beginLayer(1, SkXfermode::kDstIn_Mode);
+    context->beginLayer(1, SkXfermode::kDstIn_Mode);
 
     OwnPtr<ImageBuffer> alphaImage = ImageBuffer::create(IntSize(100, 100));
     EXPECT_FALSE(!alphaImage);
     alphaImage->context()->fillRect(IntRect(0, 0, 100, 100), alpha);
 
-    context.drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
+    context->drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
 
-    context.endLayer();
-    context.endLayer();
+    context->endLayer();
+    context->endLayer();
 
     EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect());
 }
@@ -132,7 +132,7 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas, nullptr);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
     Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
@@ -141,22 +141,22 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
     // out a transparency layer below that is filled with the mask color. In the end this should
     // not be marked opaque.
 
-    context.beginLayer();
-    context.fillRect(FloatRect(10, 10, 10, 10), opaque, SkXfermode::kSrcOver_Mode);
+    context->beginLayer();
+    context->fillRect(FloatRect(10, 10, 10, 10), opaque, SkXfermode::kSrcOver_Mode);
 
-    context.beginLayer(1, SkXfermode::kDstIn_Mode);
+    context->beginLayer(1, SkXfermode::kDstIn_Mode);
 
     OwnPtr<ImageBuffer> alphaImage = ImageBuffer::create(IntSize(100, 100));
     EXPECT_FALSE(!alphaImage);
     alphaImage->context()->fillRect(IntRect(0, 0, 100, 100), alpha);
 
-    context.drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
+    context->drawImageBuffer(alphaImage.get(), FloatRect(10, 10, 10, 10));
 
     // We can't have an opaque mask actually, but we can pretend here like it would look if we did.
-    context.fillRect(FloatRect(12, 12, 3, 3), opaque, SkXfermode::kSrcOver_Mode);
+    context->fillRect(FloatRect(12, 12, 3, 3), opaque, SkXfermode::kSrcOver_Mode);
 
-    context.endLayer();
-    context.endLayer();
+    context->endLayer();
+    context->endLayer();
 
     EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(12, 12, 3, 3));
 }
@@ -168,29 +168,29 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas, nullptr);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
     Color alpha(0.0f, 0.0f, 0.0f, 0.0f);
 
-    context.setShouldAntialias(false);
-    context.setMiterLimit(1);
-    context.setStrokeThickness(5);
-    context.setLineCap(SquareCap);
-    context.setStrokeStyle(SolidStroke);
+    context->setShouldAntialias(false);
+    context->setMiterLimit(1);
+    context->setStrokeThickness(5);
+    context->setLineCap(SquareCap);
+    context->setStrokeStyle(SolidStroke);
 
     // Make skia unable to compute fast bounds for our paths.
     DashArray dashArray;
     dashArray.append(1);
     dashArray.append(0);
-    context.setLineDash(dashArray, 0);
+    context->setLineDash(dashArray, 0);
 
     // Make the device opaque in 10,10 40x40.
-    context.fillRect(FloatRect(10, 10, 40, 40), opaque, SkXfermode::kSrcOver_Mode);
+    context->fillRect(FloatRect(10, 10, 40, 40), opaque, SkXfermode::kSrcOver_Mode);
     EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(10, 10, 40, 40));
 
     // Clip to the left edge of the opaque area.
-    context.clip(IntRect(10, 10, 10, 40));
+    context->clip(IntRect(10, 10, 10, 40));
 
     // Draw a path that gets clipped. This should destroy the opaque area but only inside the clip.
     Path path;
@@ -199,13 +199,13 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     SkPaint paint;
     paint.setColor(alpha.rgb());
     paint.setXfermodeMode(SkXfermode::kSrcOut_Mode);
-    context.drawPath(path.skPath(), paint);
+    context->drawPath(path.skPath(), paint);
 
     EXPECT_OPAQUE_PIXELS_IN_RECT(bitmap, IntRect(20, 10, 30, 40));
 }
 
-#define DISPATCH1(c1, c2, op, param1) do { c1.op(param1); c2.op(param1); } while (0);
-#define DISPATCH2(c1, c2, op, param1, param2) do { c1.op(param1, param2); c2.op(param1, param2); } while (0);
+#define DISPATCH1(c1, c2, op, param1) do { c1->op(param1); c2->op(param1); } while (0);
+#define DISPATCH2(c1, c2, op, param1, param2) do { c1->op(param1, param2); c2->op(param1, param2); } while (0);
 
 TEST(GraphicsContextTest, RecordingTotalMatrix)
 {
@@ -213,32 +213,32 @@ TEST(GraphicsContextTest, RecordingTotalMatrix)
     bitmap.allocN32Pixels(400, 400);
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
-    GraphicsContext context(&canvas, nullptr);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
 
     SkCanvas controlCanvas(400, 400);
-    GraphicsContext controlContext(&controlCanvas, nullptr);
+    OwnPtr<GraphicsContext> controlContext = GraphicsContext::deprecatedCreateWithCanvas(&controlCanvas);
 
-    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
+    EXPECT_EQ(context->getCTM(), controlContext->getCTM());
     DISPATCH2(context, controlContext, scale, 2, 2);
-    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
+    EXPECT_EQ(context->getCTM(), controlContext->getCTM());
 
-    controlContext.save();
-    context.beginRecording(FloatRect(0, 0, 200, 200));
+    controlContext->save();
+    context->beginRecording(FloatRect(0, 0, 200, 200));
     DISPATCH2(context, controlContext, translate, 10, 10);
-    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
+    EXPECT_EQ(context->getCTM(), controlContext->getCTM());
 
-    controlContext.save();
-    context.beginRecording(FloatRect(10, 10, 100, 100));
+    controlContext->save();
+    context->beginRecording(FloatRect(10, 10, 100, 100));
     DISPATCH1(context, controlContext, rotate, 45);
-    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
+    EXPECT_EQ(context->getCTM(), controlContext->getCTM());
 
-    controlContext.restore();
-    context.endRecording();
-    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
+    controlContext->restore();
+    context->endRecording();
+    EXPECT_EQ(context->getCTM(), controlContext->getCTM());
 
-    controlContext.restore();
-    context.endRecording();
-    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
+    controlContext->restore();
+    context->endRecording();
+    EXPECT_EQ(context->getCTM(), controlContext->getCTM());
 }
 
 TEST(GraphicsContextTest, RecordingCanvas)
@@ -247,29 +247,29 @@ TEST(GraphicsContextTest, RecordingCanvas)
     bitmap.allocN32Pixels(1, 1);
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
-    GraphicsContext context(&canvas, nullptr);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
 
     FloatRect rect(0, 0, 1, 1);
 
     // Two beginRecordings in a row generate two canvases.
     // Unfortunately the new one could be allocated in the same
     // spot as the old one so ref the first one to prolong its life.
-    context.beginRecording(rect);
-    SkCanvas* canvas1 = context.canvas();
+    context->beginRecording(rect);
+    SkCanvas* canvas1 = context->canvas();
     EXPECT_TRUE(canvas1);
-    context.beginRecording(rect);
-    SkCanvas* canvas2 = context.canvas();
+    context->beginRecording(rect);
+    SkCanvas* canvas2 = context->canvas();
     EXPECT_TRUE(canvas2);
 
     EXPECT_NE(canvas1, canvas2);
     EXPECT_TRUE(canvas1->unique());
 
     // endRecording finally makes the picture accessible
-    RefPtr<const SkPicture> picture = context.endRecording();
+    RefPtr<const SkPicture> picture = context->endRecording();
     EXPECT_TRUE(picture);
     EXPECT_TRUE(picture->unique());
 
-    context.endRecording();
+    context->endRecording();
 }
 
 } // namespace

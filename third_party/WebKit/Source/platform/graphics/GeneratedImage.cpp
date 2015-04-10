@@ -50,10 +50,10 @@ void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& 
     FloatRect tileRect = srcRect;
     tileRect.expand(repeatSpacing);
 
-    GraphicsContext recordingContext(nullptr, nullptr);
-    recordingContext.beginRecording(tileRect);
-    drawTile(&recordingContext, srcRect);
-    RefPtr<const SkPicture> tilePicture = recordingContext.endRecording();
+    OwnPtr<GraphicsContext> recordingContext = GraphicsContext::deprecatedCreateWithCanvas(nullptr);
+    recordingContext->beginRecording(tileRect);
+    drawTile(recordingContext.get(), srcRect);
+    RefPtr<const SkPicture> tilePicture = recordingContext->endRecording();
 
     AffineTransform patternTransform;
     patternTransform.translate(phase.x(), phase.y());

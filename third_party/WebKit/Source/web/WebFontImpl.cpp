@@ -92,13 +92,13 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
     TextRun textRun(run);
     TextRunPaintInfo runInfo(textRun);
     runInfo.bounds = textClipRect;
-    GraphicsContext gc(canvas, nullptr);
+    OwnPtr<GraphicsContext> gc = GraphicsContext::deprecatedCreateWithCanvas(canvas);
 
-    gc.save();
-    gc.setFillColor(color);
-    gc.clip(textClipRect);
-    gc.drawText(m_font, runInfo, leftBaseline);
-    gc.restore();
+    gc->save();
+    gc->setFillColor(color);
+    gc->clip(textClipRect);
+    gc->drawText(m_font, runInfo, leftBaseline);
+    gc->restore();
 }
 
 int WebFontImpl::calculateWidth(const WebTextRun& run) const

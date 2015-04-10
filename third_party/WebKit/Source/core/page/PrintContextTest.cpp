@@ -84,9 +84,9 @@ protected:
     void printSinglePage(SkCanvas& canvas)
     {
         IntRect pageRect(0, 0, kPageWidth, kPageHeight);
-        GraphicsContext context(&canvas, nullptr);
+        OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
         printContext().begin(kPageWidth, kPageHeight);
-        printContext().outputLinkAndLinkedDestinations(context, pageRect);
+        printContext().outputLinkAndLinkedDestinations(*context, pageRect);
         printContext().end();
     }
 

@@ -49,8 +49,8 @@ void WebScrollbarThemePainter::paintScrollbarBackground(WebCanvas* canvas, const
     SkRect clip = SkRect::MakeXYWH(rect.x, rect.y, rect.width, rect.height);
     canvas->clipRect(clip);
 
-    GraphicsContext context(canvas, nullptr);
-    DisplayItemListContextRecorder contextRecorder(context);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    DisplayItemListContextRecorder contextRecorder(*context);
     DrawingRecorder drawingRecorder(contextRecorder.context(), *m_theme, DisplayItem::ScrollbarBackground, FloatRect(rect));
     if (!drawingRecorder.canUseCachedDrawing())
         m_theme->paintScrollbarBackground(&contextRecorder.context(), m_scrollbar);
@@ -58,8 +58,8 @@ void WebScrollbarThemePainter::paintScrollbarBackground(WebCanvas* canvas, const
 
 void WebScrollbarThemePainter::paintTrackBackground(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas, nullptr);
-    DisplayItemListContextRecorder contextRecorder(context);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    DisplayItemListContextRecorder contextRecorder(*context);
     DrawingRecorder drawingRecorder(contextRecorder.context(), *m_theme, DisplayItem::ScrollbarTrackBackground, FloatRect(rect));
     if (!drawingRecorder.canUseCachedDrawing())
         m_theme->paintTrackBackground(&contextRecorder.context(), m_scrollbar, IntRect(rect));
@@ -67,8 +67,8 @@ void WebScrollbarThemePainter::paintTrackBackground(WebCanvas* canvas, const Web
 
 void WebScrollbarThemePainter::paintBackTrackPart(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas, nullptr);
-    DisplayItemListContextRecorder contextRecorder(context);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    DisplayItemListContextRecorder contextRecorder(*context);
     DrawingRecorder drawingRecorder(contextRecorder.context(), *m_theme, DisplayItem::ScrollbarBackTrackPart, FloatRect(rect));
     if (!drawingRecorder.canUseCachedDrawing())
         m_theme->paintTrackPiece(&contextRecorder.context(), m_scrollbar, IntRect(rect), BackTrackPart);
@@ -76,8 +76,8 @@ void WebScrollbarThemePainter::paintBackTrackPart(WebCanvas* canvas, const WebRe
 
 void WebScrollbarThemePainter::paintForwardTrackPart(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas, nullptr);
-    DisplayItemListContextRecorder contextRecorder(context);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    DisplayItemListContextRecorder contextRecorder(*context);
     DrawingRecorder drawingRecorder(contextRecorder.context(), *m_theme, DisplayItem::ScrollbarForwardTrackPart, FloatRect(rect));
     if (!drawingRecorder.canUseCachedDrawing())
         m_theme->paintTrackPiece(&contextRecorder.context(), m_scrollbar, IntRect(rect), ForwardTrackPart);
@@ -85,8 +85,8 @@ void WebScrollbarThemePainter::paintForwardTrackPart(WebCanvas* canvas, const We
 
 void WebScrollbarThemePainter::paintBackButtonStart(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas, nullptr);
-    DisplayItemListContextRecorder contextRecorder(context);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    DisplayItemListContextRecorder contextRecorder(*context);
     DrawingRecorder drawingRecorder(contextRecorder.context(), *m_theme, DisplayItem::ScrollbarBackButtonStart, FloatRect(rect));
     if (!drawingRecorder.canUseCachedDrawing())
         m_theme->paintButton(&contextRecorder.context(), m_scrollbar, IntRect(rect), BackButtonStartPart);
@@ -94,8 +94,8 @@ void WebScrollbarThemePainter::paintBackButtonStart(WebCanvas* canvas, const Web
 
 void WebScrollbarThemePainter::paintBackButtonEnd(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas, nullptr);
-    DisplayItemListContextRecorder contextRecorder(context);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    DisplayItemListContextRecorder contextRecorder(*context);
     DrawingRecorder drawingRecorder(contextRecorder.context(), *m_theme, DisplayItem::ScrollbarBackButtonEnd, FloatRect(rect));
     if (!drawingRecorder.canUseCachedDrawing())
         m_theme->paintButton(&contextRecorder.context(), m_scrollbar, IntRect(rect), BackButtonEndPart);
@@ -103,8 +103,8 @@ void WebScrollbarThemePainter::paintBackButtonEnd(WebCanvas* canvas, const WebRe
 
 void WebScrollbarThemePainter::paintForwardButtonStart(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas, nullptr);
-    DisplayItemListContextRecorder contextRecorder(context);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    DisplayItemListContextRecorder contextRecorder(*context);
     DrawingRecorder drawingRecorder(contextRecorder.context(), *m_theme, DisplayItem::ScrollbarForwardButtonStart, FloatRect(rect));
     if (!drawingRecorder.canUseCachedDrawing())
         m_theme->paintButton(&contextRecorder.context(), m_scrollbar, IntRect(rect), ForwardButtonStartPart);
@@ -112,8 +112,8 @@ void WebScrollbarThemePainter::paintForwardButtonStart(WebCanvas* canvas, const 
 
 void WebScrollbarThemePainter::paintForwardButtonEnd(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas, nullptr);
-    DisplayItemListContextRecorder contextRecorder(context);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    DisplayItemListContextRecorder contextRecorder(*context);
     DrawingRecorder drawingRecorder(contextRecorder.context(), *m_theme, DisplayItem::ScrollbarForwardButtonEnd, FloatRect(rect));
     if (!drawingRecorder.canUseCachedDrawing())
         m_theme->paintButton(&contextRecorder.context(), m_scrollbar, IntRect(rect), ForwardButtonEndPart);
@@ -121,8 +121,8 @@ void WebScrollbarThemePainter::paintForwardButtonEnd(WebCanvas* canvas, const We
 
 void WebScrollbarThemePainter::paintTickmarks(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas, nullptr);
-    DisplayItemListContextRecorder contextRecorder(context);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    DisplayItemListContextRecorder contextRecorder(*context);
     DrawingRecorder drawingRecorder(contextRecorder.context(), *m_theme, DisplayItem::ScrollbarTickMarks, FloatRect(rect));
     if (!drawingRecorder.canUseCachedDrawing())
         m_theme->paintTickmarks(&contextRecorder.context(), m_scrollbar, IntRect(rect));
@@ -130,8 +130,8 @@ void WebScrollbarThemePainter::paintTickmarks(WebCanvas* canvas, const WebRect& 
 
 void WebScrollbarThemePainter::paintThumb(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas, nullptr);
-    DisplayItemListContextRecorder contextRecorder(context);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    DisplayItemListContextRecorder contextRecorder(*context);
     DrawingRecorder drawingRecorder(contextRecorder.context(), *m_theme, DisplayItem::ScrollbarThumb, FloatRect(rect));
     if (!drawingRecorder.canUseCachedDrawing())
         m_theme->paintThumb(&contextRecorder.context(), m_scrollbar, IntRect(rect));

@@ -355,14 +355,14 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
     SkCanvas canvas(bitmap);
     canvas.clear(kAlphaRed);
 
-    GraphicsContext context(&canvas, nullptr);
+    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(&canvas);
 
     // Paint the root of the main frame in the way that CompositedLayerMapping would.
     FrameView* view = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
     DeprecatedPaintLayer* rootLayer = view->layoutView()->layer();
     LayoutRect paintRect(0, 0, kWidth, kHeight);
     DeprecatedPaintLayerPaintingInfo paintingInfo(rootLayer, paintRect, PaintBehaviorNormal, LayoutSize());
-    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(context.get(), paintingInfo, PaintLayerPaintingCompositingAllPhases);
 
     // The result should be a blend of red and green.
     SkColor color = bitmap.getColor(kWidth / 2, kHeight / 2);

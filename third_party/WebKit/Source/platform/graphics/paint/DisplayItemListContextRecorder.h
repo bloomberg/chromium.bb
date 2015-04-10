@@ -23,7 +23,7 @@ public:
             return;
 
         m_displayItemList = DisplayItemList::create();
-        m_displayItemListContext = adoptPtr(new GraphicsContext(nullptr, m_displayItemList.get(),
+        m_displayItemListContext = adoptPtr(new GraphicsContext(m_displayItemList.get(),
             context.contextDisabled() ? GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled));
     }
 

@@ -73,7 +73,7 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
     OwnPtr<DisplayItemList> displayItemList;
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
         displayItemList = DisplayItemList::create();
-    GraphicsContext context(nullptr, displayItemList.get());
+    GraphicsContext context(displayItemList.get());
     context.beginRecording(bounds);
 
     ColorFilter maskContentFilter = style()->svgStyle().colorInterpolation() == CI_LINEARRGB

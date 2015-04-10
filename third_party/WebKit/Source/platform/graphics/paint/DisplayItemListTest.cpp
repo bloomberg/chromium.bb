@@ -95,7 +95,7 @@ void drawClippedRect(GraphicsContext& context, const TestDisplayItemClient& clie
 
 TEST_F(DisplayItemListTest, NestedRecorders)
 {
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
 
     TestDisplayItemClient client("client");
 
@@ -112,7 +112,7 @@ TEST_F(DisplayItemListTest, UpdateBasic)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 200, 200));
@@ -139,7 +139,7 @@ TEST_F(DisplayItemListTest, UpdateSwapOrder)
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
     TestDisplayItemClient unaffected("unaffected");
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
@@ -168,7 +168,7 @@ TEST_F(DisplayItemListTest, UpdateNewItemInMiddle)
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
     TestDisplayItemClient third("third");
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
@@ -194,7 +194,7 @@ TEST_F(DisplayItemListTest, UpdateInvalidationWithPhases)
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
     TestDisplayItemClient third("third");
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
@@ -234,7 +234,7 @@ TEST_F(DisplayItemListTest, UpdateAddFirstOverlap)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
 
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
@@ -272,7 +272,7 @@ TEST_F(DisplayItemListTest, UpdateAddLastOverlap)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
@@ -311,7 +311,7 @@ TEST_F(DisplayItemListTest, UpdateClip)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
 
     {
         ClipRecorder clipRecorder(context, first, clipType, LayoutRect(1, 1, 2, 2));
@@ -354,7 +354,7 @@ TEST_F(DisplayItemListTest, CachedDisplayItems)
 {
     TestDisplayItemClient first("first");
     TestDisplayItemClient second("second");
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
@@ -397,7 +397,7 @@ TEST_F(DisplayItemListTest, ComplexUpdateSwapOrder)
     TestDisplayItemClient content1("content1");
     TestDisplayItemClient container2("container2");
     TestDisplayItemClient content2("content2");
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
 
     drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
@@ -551,7 +551,7 @@ TEST_F(DisplayItemListTest, Scope)
 {
     TestDisplayItemClient multicol("multicol");
     TestDisplayItemClient content("content");
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
 
     FloatRect rect1(100, 100, 50, 50);
     FloatRect rect2(150, 100, 50, 50);
