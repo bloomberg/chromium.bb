@@ -654,8 +654,7 @@ void SafeBrowsingDatabaseManager::ResetDatabase() {
 void SafeBrowsingDatabaseManager::StartOnIOThread() {
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is fixed.
   tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455469 SafeBrowsingDatabaseManager::StartOnIOThread1"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455469 StartOnIOThread"));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
     return;
@@ -663,11 +662,6 @@ void SafeBrowsingDatabaseManager::StartOnIOThread() {
   // Only get a new task runner if there isn't one already. If the service has
   // previously been started and stopped, a task runner could already exist.
   if (!safe_browsing_task_runner_) {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455469 SafeBrowsingDatabaseManager::StartOnIOThread2"));
     base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
     safe_browsing_task_runner_ =
         pool->GetSequencedTaskRunnerWithShutdownBehavior(

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string16.h"
 #include "content/common/child_process_messages.h"
 
@@ -23,6 +24,10 @@ class FontCache {
   }
 
   void PreCacheFont(const LOGFONT& font, FontCacheDispatcher* dispatcher) {
+    // TODO(ananta): Remove ScopedTracker below once crbug.com/90127 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("90127 FontCache::PreCacheFont"));
+
     typedef std::map<base::string16, FontCache::CacheElement> FontNameToElement;
 
     base::AutoLock lock(mutex_);
