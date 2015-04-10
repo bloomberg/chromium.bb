@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 
@@ -14,18 +13,18 @@ namespace ui {
 
 int GetLocalizedContentsWidthForFont(int col_resource_id,
                                      const gfx::Font& font) {
-  double chars = 0;
-  base::StringToDouble(l10n_util::GetStringUTF8(col_resource_id), &chars);
-  int width = font.GetExpectedTextWidth(static_cast<int>(chars));
+  int chars = 0;
+  base::StringToInt(l10n_util::GetStringUTF8(col_resource_id), &chars);
+  int width = font.GetExpectedTextWidth(chars);
   DCHECK_GT(width, 0);
   return width;
 }
 
 int GetLocalizedContentsHeightForFont(int row_resource_id,
                                       const gfx::Font& font) {
-  double lines = 0;
-  base::StringToDouble(l10n_util::GetStringUTF8(row_resource_id), &lines);
-  int height = static_cast<int>(font.GetHeight() * lines);
+  int lines = 0;
+  base::StringToInt(l10n_util::GetStringUTF8(row_resource_id), &lines);
+  int height = font.GetHeight() * lines;
   DCHECK_GT(height, 0);
   return height;
 }

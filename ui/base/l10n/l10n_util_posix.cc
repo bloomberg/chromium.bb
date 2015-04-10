@@ -11,19 +11,19 @@
 
 namespace l10n_util {
 
-// Return true blindly for now.
 bool IsLocaleSupportedByOS(const std::string& locale) {
-#if !defined(OS_CHROMEOS)
-  return true;
-#else
+#if defined(OS_CHROMEOS)
   // We don't have translations yet for am, and sw.
   // TODO(jungshik): Once the above issues are resolved, change this back
   // to return true.
-  static const char* kUnsupportedLocales[] = {"am", "sw"};
+  static const char kUnsupportedLocales[][3] = {"am", "sw"};
   for (size_t i = 0; i < arraysize(kUnsupportedLocales); ++i) {
     if (LowerCaseEqualsASCII(locale, kUnsupportedLocales[i]))
       return false;
   }
+  return true;
+#else
+  // Return true blindly for now.
   return true;
 #endif
 }

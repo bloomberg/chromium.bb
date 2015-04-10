@@ -19,8 +19,8 @@ UI_BASE_EXPORT bool formatter_force_fallback = false;
 
 struct Pluralities {
   int id;
-  const char* fallback_one;
-  const char* fallback_other;
+  const char* const fallback_one;
+  const char* const fallback_other;
 };
 
 static const Pluralities IDS_ELAPSED_SHORT_SEC = {
