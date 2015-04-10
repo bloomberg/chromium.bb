@@ -224,7 +224,7 @@ class MEDIA_EXPORT AudioRendererImpl
   base::Lock lock_;
 
   // Algorithm for scaling audio.
-  float playback_rate_;
+  double playback_rate_;
   scoped_ptr<AudioRendererAlgorithm> algorithm_;
 
   // Simple state tracking variable.

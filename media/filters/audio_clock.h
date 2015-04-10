@@ -57,7 +57,7 @@ class MEDIA_EXPORT AudioClock {
   void WroteAudio(int frames_written,
                   int frames_requested,
                   int delay_frames,
-                  float playback_rate);
+                  double playback_rate);
 
   // Returns the bounds of media data currently buffered by the audio hardware,
   // taking silence and changes in playback rate into account. Buffered audio
@@ -102,14 +102,14 @@ class MEDIA_EXPORT AudioClock {
   //
   // 32 bits on the other hand would top out at measly 2 hours and 20 minutes.
   struct AudioData {
-    AudioData(int64_t frames, float playback_rate);
+    AudioData(int64_t frames, double playback_rate);
 
     int64_t frames;
-    float playback_rate;
+    double playback_rate;
   };
 
   // Helpers for operating on |buffered_|.
-  void PushBufferedAudioData(int64_t frames, float playback_rate);
+  void PushBufferedAudioData(int64_t frames, double playback_rate);
   void PopBufferedAudioData(int64_t frames);
   base::TimeDelta ComputeBufferedMediaTime(int64_t frames) const;
 

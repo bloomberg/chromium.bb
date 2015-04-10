@@ -28,7 +28,7 @@ AudioClock::~AudioClock() {
 void AudioClock::WroteAudio(int frames_written,
                             int frames_requested,
                             int delay_frames,
-                            float playback_rate) {
+                            double playback_rate) {
   DCHECK_GE(frames_written, 0);
   DCHECK_LE(frames_written, frames_requested);
   DCHECK_GE(delay_frames, 0);
@@ -117,11 +117,11 @@ base::TimeDelta AudioClock::TimeUntilPlayback(base::TimeDelta timestamp) const {
                                            microseconds_per_frame_);
 }
 
-AudioClock::AudioData::AudioData(int64_t frames, float playback_rate)
+AudioClock::AudioData::AudioData(int64_t frames, double playback_rate)
     : frames(frames), playback_rate(playback_rate) {
 }
 
-void AudioClock::PushBufferedAudioData(int64_t frames, float playback_rate) {
+void AudioClock::PushBufferedAudioData(int64_t frames, double playback_rate) {
   if (frames == 0)
     return;
 

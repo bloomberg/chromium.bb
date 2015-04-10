@@ -41,7 +41,7 @@ class MEDIA_EXPORT WallClockTimeSource : public TimeSource {
   // While ticking we can interpolate the current media time by measuring the
   // delta between our reference ticks and the current system ticks and scaling
   // that time by the playback rate.
-  float playback_rate_;
+  double playback_rate_;
   base::TimeDelta base_time_;
   base::TimeTicks reference_wall_ticks_;
 
