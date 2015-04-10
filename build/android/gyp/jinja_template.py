@@ -34,15 +34,17 @@ class RecordingFileSystemLoader(jinja2.FileSystemLoader):
     return list(self.loaded_templates)
 
 
-def ProcessFile(env, input_filename, output_filename, variables):
-  input_rel_path = os.path.relpath(input_filename, build_utils.CHROMIUM_SRC)
+def ProcessFile(env, input_filename, loader_base_dir, output_filename,
+                variables):
+  input_rel_path = os.path.relpath(input_filename, loader_base_dir)
   template = env.get_template(input_rel_path)
   output = template.render(variables)
   with codecs.open(output_filename, 'w', 'utf-8') as output_file:
     output_file.write(output)
 
 
-def ProcessFiles(env, input_filenames, inputs_base_dir, outputs_zip, variables):
+def ProcessFiles(env, input_filenames, loader_base_dir, inputs_base_dir,
+                 outputs_zip, variables):
   with build_utils.TempDir() as temp_dir:
     for input_filename in input_filenames:
       relpath = os.path.relpath(os.path.abspath(input_filename),
@@ -54,7 +56,8 @@ def ProcessFiles(env, input_filenames, inputs_base_dir, outputs_zip, variables):
       output_filename = os.path.join(temp_dir, relpath)
       parent_dir = os.path.dirname(output_filename)
       build_utils.MakeDirectory(parent_dir)
-      ProcessFile(env, input_filename, output_filename, variables)
+      ProcessFile(env, input_filename, loader_base_dir, output_filename,
+                  variables)
 
     build_utils.ZipDir(outputs_zip, temp_dir)
 
@@ -71,6 +74,10 @@ def main():
                     'the inputs. Each output\'s path in the output zip will '
                     'match the relative path from INPUTS_BASE_DIR to the '
                     'input. Required if --output-zip is given.')
+  parser.add_option('--loader-base-dir', help='Base path used by the template '
+                    'loader. Must be a common ancestor directory of '
+                    'the inputs. Defaults to CHROMIUM_SRC.',
+                    default=build_utils.CHROMIUM_SRC)
   parser.add_option('--variables', help='Variables to be made available in the '
                     'template processing environment, as a GYP list (e.g. '
                     '--variables "channel=beta mstone=39")', default='')
@@ -95,14 +102,15 @@ def main():
     name, _, value = v.partition('=')
     variables[name] = value
 
-  loader = RecordingFileSystemLoader(build_utils.CHROMIUM_SRC)
+  loader = RecordingFileSystemLoader(options.loader_base_dir)
   env = jinja2.Environment(loader=loader, undefined=jinja2.StrictUndefined,
                            line_comment_prefix='##')
   if options.output:
-    ProcessFile(env, inputs[0], options.output, variables)
+    ProcessFile(env, inputs[0], options.loader_base_dir, options.output,
+                variables)
   else:
-    ProcessFiles(env, inputs, options.inputs_base_dir, options.outputs_zip,
-                 variables)
+    ProcessFiles(env, inputs, options.loader_base_dir, options.inputs_base_dir,
+                 options.outputs_zip, variables)
 
   if options.depfile:
     deps = loader.get_loaded_templates() + build_utils.GetPythonDependencies()
