@@ -1266,7 +1266,7 @@ int ComputedStyle::computedLineHeight() const
     if (lh.isPercent())
         return minimumValueForLength(lh, fontSize());
 
-    return lh.value();
+    return std::min(lh.value(), LayoutUnit::max().toFloat());
 }
 
 void ComputedStyle::setWordSpacing(float wordSpacing)
