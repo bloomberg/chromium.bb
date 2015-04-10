@@ -97,8 +97,14 @@
 }
 
 .image-loading.user-image .new-gaia-flow #user-image {
+  height: 528px; /* Should be the same as #gaia-signin height. */
   padding: 0 0 0;
-  width: 522px;
+  width: 448px; /* Should be the same as #gaia-signin width. */
+}
+
+#user-image.loading {
+  height: 528px; /* Should be the same as #gaia-signin height. */
+  width: 448px; /* Should be the same as #gaia-signin width. */
 }
 
 .new-gaia-flow #old-flow-throbber {

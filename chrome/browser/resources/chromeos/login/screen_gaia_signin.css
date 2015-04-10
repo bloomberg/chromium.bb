@@ -14,8 +14,9 @@
 }
 
 .new-gaia-flow #gaia-signin {
+  height: 528px;
   padding: 0 0 0;
-  width: 522px;
+  width: 448px;
 }
 
 .new-gaia-flow .throbber {
@@ -165,12 +166,12 @@ html[dir=rtl] #back-button-item {
 webview#signin-frame {
   -webkit-transition: opacity 500ms ease-in;
   display: block;
-  height: 609px;
+  height: 528px;
   margin-left: 0;
   opacity: 0;
   overflow: hidden;
   padding: 0;
-  width: 522px;
+  width: 448px;
 }
 
 webview#signin-frame.show {
