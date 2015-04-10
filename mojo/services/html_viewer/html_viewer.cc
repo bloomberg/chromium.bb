@@ -47,8 +47,7 @@ using mojo::URLResponsePtr;
 
 namespace html_viewer {
 
-// Switches for html_viewer to be used with "--args-for". For example:
-// --args-for='mojo:html_viewer --enable-mojo-media-renderer'
+// Switches for html_viewer.
 
 // Enable MediaRenderer in media pipeline instead of using the internal
 // media::Renderer implementation.
@@ -186,16 +185,7 @@ class HTMLViewer : public mojo::ApplicationDelegate,
 
     ui::RegisterPathProvider();
 
-    base::CommandLine::StringVector command_line_args;
-#if defined(OS_WIN)
-    for (const auto& arg : app->args())
-      command_line_args.push_back(base::UTF8ToUTF16(arg));
-#elif defined(OS_POSIX)
-    command_line_args = app->args();
-#endif
-
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    command_line->InitFromArgv(command_line_args);
 
     logging::LoggingSettings settings;
     settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
