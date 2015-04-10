@@ -255,7 +255,14 @@ void GetPasswordForm(
         layout_sequence.push_back('N');
     }
 
-    if (input_element->isPasswordField()) {
+    // If the password field is readonly, the page is likely using a virtual
+    // keyboard and bypassing the password field value (see
+    // http://crbug.com/475488). There is nothing Chrome can do to fill
+    // passwords for now.
+    if (input_element->isPasswordField() &&
+        (!input_element->isReadOnly() ||
+         HasAutocompleteAttributeValue(*input_element, "current_password") ||
+         HasAutocompleteAttributeValue(*input_element, "new-password"))) {
       passwords.push_back(*input_element);
       // If we have not yet considered any element to be the username so far,
       // provisionally select the input element just before the first password
