@@ -36,7 +36,6 @@ GraphicsLayerDebugInfo::~GraphicsLayerDebugInfo() { }
 void GraphicsLayerDebugInfo::appendAsTraceFormat(WebString* out) const
 {
     RefPtr<JSONObject> jsonObject = JSONObject::create();
-    appendLayoutRects(jsonObject.get());
     appendAnnotatedInvalidateRects(jsonObject.get());
     appendCompositingReasons(jsonObject.get());
     appendDebugName(jsonObject.get());
@@ -47,30 +46,11 @@ void GraphicsLayerDebugInfo::appendAsTraceFormat(WebString* out) const
 GraphicsLayerDebugInfo* GraphicsLayerDebugInfo::clone() const
 {
     GraphicsLayerDebugInfo* toReturn = new GraphicsLayerDebugInfo();
-    for (size_t i = 0; i < m_currentLayoutRects.size(); ++i)
-        toReturn->currentLayoutRects().append(m_currentLayoutRects[i]);
     toReturn->setCompositingReasons(m_compositingReasons);
     toReturn->setOwnerNodeId(m_ownerNodeId);
     toReturn->m_invalidations = m_invalidations;
     toReturn->m_previousInvalidations = m_previousInvalidations;
     return toReturn;
-}
-
-void GraphicsLayerDebugInfo::appendLayoutRects(JSONObject* jsonObject) const
-{
-    RefPtr<JSONArray> jsonArray = JSONArray::create();
-    for (size_t i = 0; i < m_currentLayoutRects.size(); i++) {
-        const LayoutRect& rect = m_currentLayoutRects[i];
-        RefPtr<JSONObject> rectContainer = JSONObject::create();
-        RefPtr<JSONArray> rectArray = JSONArray::create();
-        rectArray->pushNumber(rect.x().toFloat());
-        rectArray->pushNumber(rect.y().toFloat());
-        rectArray->pushNumber(rect.maxX().toFloat());
-        rectArray->pushNumber(rect.maxY().toFloat());
-        rectContainer->setArray("geometry_rect", rectArray);
-        jsonArray->pushObject(rectContainer);
-    }
-    jsonObject->setArray("layout_rects", jsonArray);
 }
 
 void GraphicsLayerDebugInfo::appendAnnotatedInvalidateRects(JSONObject* jsonObject) const

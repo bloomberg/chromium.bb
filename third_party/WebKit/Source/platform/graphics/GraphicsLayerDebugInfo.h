@@ -33,7 +33,6 @@
 
 #include "platform/JSONValues.h"
 #include "platform/geometry/FloatRect.h"
-#include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/PaintInvalidationReason.h"
 #include "public/platform/WebGraphicsLayerDebugInfo.h"
@@ -55,13 +54,11 @@ public:
     CompositingReasons compositingReasons() const { return m_compositingReasons; }
     void setCompositingReasons(CompositingReasons reasons) { m_compositingReasons = reasons; }
     void setOwnerNodeId(int id) { m_ownerNodeId = id; }
-    Vector<LayoutRect>& currentLayoutRects() { return m_currentLayoutRects; }
 
     void appendAnnotatedInvalidateRect(const FloatRect&, PaintInvalidationReason);
     void clearAnnotatedInvalidateRects();
 
 private:
-    void appendLayoutRects(JSONObject*) const;
     void appendAnnotatedInvalidateRects(JSONObject*) const;
     void appendCompositingReasons(JSONObject*) const;
     void appendDebugName(JSONObject*) const;
@@ -75,7 +72,6 @@ private:
     String m_debugName;
     CompositingReasons m_compositingReasons;
     int m_ownerNodeId;
-    Vector<LayoutRect> m_currentLayoutRects;
     Vector<AnnotatedInvalidationRect> m_invalidations;
     Vector<AnnotatedInvalidationRect> m_previousInvalidations;
 };

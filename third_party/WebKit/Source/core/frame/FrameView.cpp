@@ -813,37 +813,10 @@ void FrameView::performPreLayoutTasks()
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 }
 
-static void gatherDebugLayoutRects(LayoutObject& layoutRoot)
-{
-    bool isTracing;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), &isTracing);
-    if (!isTracing)
-        return;
-    if (!layoutRoot.enclosingLayer()->hasCompositedDeprecatedPaintLayerMapping())
-        return;
-    // For access to compositedDeprecatedPaintLayerMapping().
-    DisableCompositingQueryAsserts disabler;
-    GraphicsLayer* graphicsLayer = layoutRoot.enclosingLayer()->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer();
-    if (!graphicsLayer)
-        return;
-
-    GraphicsLayerDebugInfo& debugInfo = graphicsLayer->debugInfo();
-
-    debugInfo.currentLayoutRects().clear();
-    for (LayoutObject* renderer = &layoutRoot; renderer; renderer = renderer->nextInPreOrder()) {
-        if (renderer->layoutDidGetCalledSinceLastFrame()) {
-            FloatQuad quad = renderer->localToAbsoluteQuad(FloatQuad(renderer->previousPaintInvalidationRect()));
-            LayoutRect rect = LayoutRect(quad.enclosingBoundingBox());
-            debugInfo.currentLayoutRects().append(rect);
-        }
-    }
-}
-
 static inline void layoutFromRootObject(LayoutObject& root)
 {
     LayoutState layoutState(root);
     root.layout();
-    gatherDebugLayoutRects(root);
 }
 
 void FrameView::prepareAnalyzer()
