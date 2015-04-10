@@ -123,6 +123,14 @@ public:
     bool hasPseudoElements() const;
     void clearPseudoElements();
 
+    uint32_t incrementProxyCount() { return ++m_proxyCount; }
+    uint32_t decrementProxyCount()
+    {
+        ASSERT(m_proxyCount);
+        return --m_proxyCount;
+    }
+    uint32_t proxyCount() const { return m_proxyCount; }
+
     void setCustomElementDefinition(PassRefPtrWillBeRawPtr<CustomElementDefinition> definition) { m_customElementDefinition = definition; }
     CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
 
@@ -134,7 +142,8 @@ public:
 
 private:
     short m_tabindex;
-    bool m_tabStop;
+    unsigned short m_tabStop : 1;
+    unsigned short m_proxyCount : 10;
 
     LayoutSize m_minimumSizeForResizing;
     IntSize m_savedLayerScrollOffset;
@@ -168,6 +177,7 @@ inline ElementRareData::ElementRareData(LayoutObject* renderer)
     : NodeRareData(renderer)
     , m_tabindex(0)
     , m_tabStop(true)
+    , m_proxyCount(0)
     , m_minimumSizeForResizing(defaultMinimumSizeForResizing())
 {
     m_isElementRareData = true;

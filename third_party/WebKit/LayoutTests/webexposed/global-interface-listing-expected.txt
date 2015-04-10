@@ -547,6 +547,7 @@ interface CompositorProxy
     getter scrollTop
     getter transform
     method constructor
+    method disconnect
     method supports
     setter opacity
     setter scrollLeft

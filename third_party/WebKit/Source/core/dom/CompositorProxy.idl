@@ -16,4 +16,5 @@
     [RaisesException] attribute DOMMatrix transform;
 
     boolean supports(DOMString attribute);
+    void disconnect();
 };

@@ -10,6 +10,8 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebTraceLocation.h"
 
 namespace blink {
 
@@ -56,6 +58,26 @@ static bool isCallingCompositorFrameCallback()
 {
     // TODO(sad): Check that the requestCompositorFrame callbacks are currently being called.
     return true;
+}
+
+static void decrementCountForElement(uint64_t elementId)
+{
+    ASSERT(isMainThread());
+    Node* node = DOMNodeIds::nodeForId(elementId);
+    if (!node)
+        return;
+    Element* element = toElement(node);
+    element->decrementProxyCount();
+}
+
+static void incrementProxyCountForElement(uint64_t elementId)
+{
+    ASSERT(isMainThread());
+    Node* node = DOMNodeIds::nodeForId(elementId);
+    if (!node)
+        return;
+    Element* element = toElement(node);
+    element->incrementProxyCount();
 }
 
 static bool raiseExceptionIfMutationNotAllowed(ExceptionState& exceptionState)
@@ -114,6 +136,8 @@ CompositorProxy::CompositorProxy(Element& element, const Vector<String>& attribu
     ASSERT(isMainThread());
     ASSERT(m_bitfieldsSupported);
     ASSERT(sanityCheckAttributeFlags(m_bitfieldsSupported));
+
+    incrementProxyCountForElement(m_elementId);
 }
 
 CompositorProxy::CompositorProxy(uint64_t elementId, uint32_t attributeFlags)
@@ -122,10 +146,13 @@ CompositorProxy::CompositorProxy(uint64_t elementId, uint32_t attributeFlags)
 {
     ASSERT(isControlThread());
     ASSERT(sanityCheckAttributeFlags(m_bitfieldsSupported));
+    Platform::current()->mainThread()->postTask(FROM_HERE, bind(&incrementProxyCountForElement, m_elementId));
 }
 
 CompositorProxy::~CompositorProxy()
 {
+    if (m_connected)
+        disconnect();
 }
 
 bool CompositorProxy::supports(const String& attributeName) const
@@ -211,10 +238,20 @@ void CompositorProxy::setTransform(DOMMatrix* transform, ExceptionState& excepti
 
 bool CompositorProxy::raiseExceptionIfNotMutable(Attributes attribute, ExceptionState& exceptionState) const
 {
-    if (m_bitfieldsSupported & static_cast<uint32_t>(attribute))
+    if (m_connected && (m_bitfieldsSupported & static_cast<uint32_t>(attribute)))
         return false;
-    exceptionState.throwDOMException(NoModificationAllowedError, "Attempted to mutate non-mutable attribute.");
+    exceptionState.throwDOMException(NoModificationAllowedError,
+        m_connected ? "Attempted to mutate non-mutable attribute." : "Attempted to mutate attribute on a disconnected proxy.");
     return true;
+}
+
+void CompositorProxy::disconnect()
+{
+    m_connected = false;
+    if (isMainThread())
+        decrementCountForElement(m_elementId);
+    else
+        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&decrementCountForElement, m_elementId));
 }
 
 } // namespace blink

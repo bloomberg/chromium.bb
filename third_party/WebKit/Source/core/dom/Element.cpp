@@ -949,6 +949,16 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
     view->setScrollPosition(DoublePoint(scaledLeft, scaledTop), scrollBehavior);
 }
 
+void Element::incrementProxyCount()
+{
+    ensureElementRareData().incrementProxyCount();
+}
+
+void Element::decrementProxyCount()
+{
+    ensureElementRareData().decrementProxyCount();
+}
+
 IntRect Element::boundsInViewportSpace()
 {
     document().updateLayoutIgnorePendingStylesheets();

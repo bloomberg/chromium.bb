@@ -836,6 +836,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeCompositorProxy(v8
     CompositorProxy* compositorProxy = V8CompositorProxy::toImpl(value.As<v8::Object>());
     if (!compositorProxy)
         return nullptr;
+    if (!compositorProxy->connected())
+        return handleError(DataCloneError, "A CompositorProxy object has been disconnected, and could therefore not be cloned.", next);
     m_writer.writeCompositorProxy(*compositorProxy);
     return nullptr;
 }

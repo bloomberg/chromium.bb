@@ -45,6 +45,9 @@ public:
     uint32_t bitfieldsSupported() const { return m_bitfieldsSupported; }
     bool supports(const String& attribute) const;
 
+    bool connected() const { return m_connected; }
+    void disconnect();
+
     double opacity(ExceptionState&) const;
     double scrollLeft(ExceptionState&) const;
     double scrollTop(ExceptionState&) const;
@@ -70,6 +73,8 @@ private:
     double m_scrollLeft = 0;
     double m_scrollTop = 0;
     Member<DOMMatrix> m_transform;
+
+    bool m_connected = true;
 };
 
 } // namespace blink

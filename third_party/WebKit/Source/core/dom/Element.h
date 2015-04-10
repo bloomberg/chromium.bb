@@ -502,6 +502,9 @@ public:
     void setTabIndex(int);
     virtual short tabIndex() const override;
 
+    void incrementProxyCount();
+    void decrementProxyCount();
+
     DECLARE_VIRTUAL_TRACE();
 
     SpellcheckAttributeState spellcheckAttributeState() const;
