@@ -1488,7 +1488,6 @@ _x86_internal_release_boards = frozenset([
   'parrot',
   'parrot_freon',
   'parrot_ivb',
-  'parrot_ivb-freon',
   'parry',
   'peppy',
   'quawks',
@@ -2831,7 +2830,7 @@ _AddGroupConfig('sandybridge-freon', 'parrot_freon', (
 _AddGroupConfig('ivybridge-freon', 'stout_freon', (
   'link',
 ), (
-    'parrot_ivb-freon',
+    'parrot_ivb',
 ))
 
 # slippy-based haswell boards
