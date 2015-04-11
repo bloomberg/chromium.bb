@@ -82,6 +82,7 @@
 } while (0)
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#define MAX2(A, B) ((A) > (B) ? (A) : (B))
 
 typedef struct _drm_intel_bo_gem drm_intel_bo_gem;
 
@@ -524,9 +525,10 @@ drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
 
 static void
 drm_intel_bo_gem_set_in_aperture_size(drm_intel_bufmgr_gem *bufmgr_gem,
-				      drm_intel_bo_gem *bo_gem)
+				      drm_intel_bo_gem *bo_gem,
+				      unsigned int alignment)
 {
-	int size;
+	unsigned int size;
 
 	assert(!bo_gem->used_as_reloc_target);
 
@@ -538,7 +540,7 @@ drm_intel_bo_gem_set_in_aperture_size(drm_intel_bufmgr_gem *bufmgr_gem,
 	 */
 	size = bo_gem->bo.size;
 	if (bufmgr_gem->gen < 4 && bo_gem->tiling_mode != I915_TILING_NONE) {
-		int min_size;
+		unsigned int min_size;
 
 		if (bufmgr_gem->has_relaxed_fencing) {
 			if (bufmgr_gem->gen == 3)
@@ -552,10 +554,10 @@ drm_intel_bo_gem_set_in_aperture_size(drm_intel_bufmgr_gem *bufmgr_gem,
 			min_size = size;
 
 		/* Account for worst-case alignment. */
-		size = 2 * min_size;
+		alignment = MAX2(alignment, min_size);
 	}
 
-	bo_gem->reloc_tree_size = size;
+	bo_gem->reloc_tree_size = size + alignment;
 }
 
 static int
@@ -660,7 +662,8 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr,
 				unsigned long size,
 				unsigned long flags,
 				uint32_t tiling_mode,
-				unsigned long stride)
+				unsigned long stride,
+				unsigned int alignment)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
 	drm_intel_bo_gem *bo_gem;
@@ -702,7 +705,9 @@ retry:
 					      bucket->head.prev, head);
 			DRMLISTDEL(&bo_gem->head);
 			alloc_from_cache = true;
+			bo_gem->bo.align = alignment;
 		} else {
+			assert(alignment == 0);
 			/* For non-render-target BOs (where we're probably
 			 * going to map it first thing in order to fill it
 			 * with data), check if the last BO in the cache is
@@ -759,6 +764,7 @@ retry:
 			return NULL;
 		}
 		bo_gem->bo.bufmgr = bufmgr;
+		bo_gem->bo.align = alignment;
 
 		bo_gem->tiling_mode = I915_TILING_NONE;
 		bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
@@ -786,7 +792,7 @@ retry:
 	bo_gem->aub_annotations = NULL;
 	bo_gem->aub_annotation_count = 0;
 
-	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
+	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, alignment);
 
 	DBG("bo_create: buf %d (%s) %ldb\n",
 	    bo_gem->gem_handle, bo_gem->name, size);
@@ -802,7 +808,8 @@ drm_intel_gem_bo_alloc_for_render(drm_intel_bufmgr *bufmgr,
 {
 	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size,
 					       BO_ALLOC_FOR_RENDER,
-					       I915_TILING_NONE, 0);
+					       I915_TILING_NONE, 0,
+					       alignment);
 }
 
 static drm_intel_bo *
@@ -812,7 +819,7 @@ drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr,
 		       unsigned int alignment)
 {
 	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size, 0,
-					       I915_TILING_NONE, 0);
+					       I915_TILING_NONE, 0, 0);
 }
 
 static drm_intel_bo *
@@ -864,7 +871,7 @@ drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
 		stride = 0;
 
 	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size, flags,
-					       tiling, stride);
+					       tiling, stride, 0);
 }
 
 static drm_intel_bo *
@@ -931,7 +938,7 @@ drm_intel_gem_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
 	bo_gem->has_error = false;
 	bo_gem->reusable = false;
 
-	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
+	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, 0);
 
 	DBG("bo_create_userptr: "
 	    "ptr %p buf %d (%s) size %ldb, stride 0x%x, tile mode %d\n",
@@ -1099,7 +1106,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	bo_gem->tiling_mode = get_tiling.tiling_mode;
 	bo_gem->swizzle_mode = get_tiling.swizzle_mode;
 	/* XXX stride is unknown */
-	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
+	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, 0);
 
 	DRMINITLISTHEAD(&bo_gem->vma_list);
 	DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
@@ -2694,7 +2701,7 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 
 	ret = drm_intel_gem_bo_set_tiling_internal(bo, *tiling_mode, stride);
 	if (ret == 0)
-		drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
+		drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, 0);
 
 	*tiling_mode = bo_gem->tiling_mode;
 	return ret;
@@ -2792,7 +2799,7 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	bo_gem->tiling_mode = get_tiling.tiling_mode;
 	bo_gem->swizzle_mode = get_tiling.swizzle_mode;
 	/* XXX stride is unknown */
-	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
+	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, 0);
 
 	return &bo_gem->bo;
 }
