@@ -122,9 +122,7 @@ body {
 }
 
 #category-container {
-  display: flex;
   flex: 1;
-  flex-direction: column;
   position: relative;
 }
 
@@ -175,12 +173,12 @@ body {
   -webkit-padding-end: 5px;
   -webkit-padding-start: 15px;
   display: block;
-  flex: 1;
   /* Set font size to 0 to remove the extra vertical margin between two rows of
    * thumbnails.
    * TODO(bshe): Find the root cause of the margin.
    */
   font-size: 0;
+  height: 287px;
   outline: none;
   overflow-y: auto;
   padding-bottom: 15px;
