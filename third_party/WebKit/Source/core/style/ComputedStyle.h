@@ -1191,6 +1191,10 @@ public:
     int zIndex() const { return m_box->zIndex(); }
     void setZIndex(int v) { SET_VAR(m_box, m_hasAutoZIndex, false); SET_VAR(m_box, m_zIndex, v); }
 
+    // Returns whether an object with this style should be considered a stacking context.
+    // This is dependent on logic in StyleAdjuster that sets z-index to 0 for anything that
+    // should be a static context.
+    bool isStackingContext() const { return !hasAutoZIndex(); }
     void setHasAutoWidows() { SET_VAR(rareInheritedData, widows, initialWidows()); }
     void setWidows(short w) { SET_VAR(rareInheritedData, widows, w); }
 

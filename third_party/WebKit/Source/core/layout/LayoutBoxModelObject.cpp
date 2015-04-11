@@ -133,10 +133,7 @@ void LayoutBoxModelObject::styleWillChange(StyleDifference diff, const ComputedS
     // This object's layer may cease to be a stacking context, in which case the paint
     // invalidation container of the children may change. Thus we need to invalidate paint
     // eagerly for all such children.
-    if (hasLayer()
-        && enclosingLayer()->stackingNode()
-        && enclosingLayer()->stackingNode()->isStackingContext()
-        && newStyle.hasAutoZIndex()) {
+    if (style() && style()->isStackingContext() && !newStyle.isStackingContext()) {
         // The following disablers are valid because we need to invalidate based on the current
         // status.
         DisableCompositingQueryAsserts compositingDisabler;
