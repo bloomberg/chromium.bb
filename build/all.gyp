@@ -113,6 +113,8 @@
             '../cc/blink/cc_blink_tests.gyp:*',
             '../cc/cc_tests.gyp:*',
             '../device/usb/usb.gyp:*',
+            '../extensions/extensions.gyp:*',
+            '../extensions/extensions_tests.gyp:*',
             '../gin/gin.gyp:*',
             '../gpu/gpu.gyp:*',
             '../gpu/tools/tools.gyp:*',
