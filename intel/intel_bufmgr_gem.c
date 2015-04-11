@@ -465,7 +465,7 @@ drm_intel_add_validate_buffer(drm_intel_bo *bo)
 	bufmgr_gem->exec_objects[index].handle = bo_gem->gem_handle;
 	bufmgr_gem->exec_objects[index].relocation_count = bo_gem->reloc_count;
 	bufmgr_gem->exec_objects[index].relocs_ptr = (uintptr_t) bo_gem->relocs;
-	bufmgr_gem->exec_objects[index].alignment = 0;
+	bufmgr_gem->exec_objects[index].alignment = bo->align;
 	bufmgr_gem->exec_objects[index].offset = 0;
 	bufmgr_gem->exec_bos[index] = bo;
 	bufmgr_gem->exec_count++;
@@ -507,7 +507,7 @@ drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
 	bufmgr_gem->exec2_objects[index].handle = bo_gem->gem_handle;
 	bufmgr_gem->exec2_objects[index].relocation_count = bo_gem->reloc_count;
 	bufmgr_gem->exec2_objects[index].relocs_ptr = (uintptr_t)bo_gem->relocs;
-	bufmgr_gem->exec2_objects[index].alignment = 0;
+	bufmgr_gem->exec2_objects[index].alignment = bo->align;
 	bufmgr_gem->exec2_objects[index].offset = 0;
 	bufmgr_gem->exec_bos[index] = bo;
 	bufmgr_gem->exec2_objects[index].flags = 0;
