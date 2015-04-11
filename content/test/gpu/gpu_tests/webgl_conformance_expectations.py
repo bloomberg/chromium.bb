@@ -196,6 +196,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', ('amd', 0x6779)], bug=436212)
     self.Fail('conformance/textures/texture-sub-image-cube-maps.html',
         ['linux', ('amd', 0x6779)], bug=436212)
+    self.Fail('conformance/more/functions/uniformf.html',
+        ['linux', ('amd', 0x6779)], bug=436212)
 
     # Android failures
     # The following test is very slow and therefore times out on Android bot.
