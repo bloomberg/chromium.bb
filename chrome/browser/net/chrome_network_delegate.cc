@@ -20,7 +20,6 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -468,31 +467,11 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
 
 void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
                                            int bytes_read) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ChromeNetworkDelegate::OnRawBytesRead"));
-
 #if defined(ENABLE_TASK_MANAGER)
   // This is not completely accurate, but as a first approximation ignore
   // requests that are served from the cache. See bug 330931 for more info.
-  if (!request.was_cached()) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    // I suspect that the jank is in creating a TaskManager instance. After the
-    // bug is fixed, rewrite the operators below as one line.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 ChromeNetworkDelegate::OnRawBytesRead1"));
-
-    TaskManager* task_manager = TaskManager::GetInstance();
-
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 ChromeNetworkDelegate::OnRawBytesRead2"));
-
-    task_manager->model()->NotifyBytesRead(request, bytes_read);
-  }
+  if (!request.was_cached())
+    TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 

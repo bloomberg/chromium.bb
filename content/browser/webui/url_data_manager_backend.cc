@@ -350,11 +350,6 @@ void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
 
 bool URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size,
                                       int* bytes_read) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 URLRequestChromeJob::ReadRawData"));
-
   if (!data_.get()) {
     SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
     DCHECK(!pending_buf_.get());

@@ -4,7 +4,6 @@
 
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -145,11 +144,6 @@ bool ServiceWorkerWriteToCacheJob::ReadRawData(
     net::IOBuffer* buf,
     int buf_size,
     int *bytes_read) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ServiceWorkerWriteToCacheJob::ReadRawData"));
-
   net::URLRequestStatus status = ReadNetData(buf, buf_size, bytes_read);
   SetStatus(status);
   if (status.is_io_pending())
@@ -364,11 +358,6 @@ void ServiceWorkerWriteToCacheJob::OnBeforeNetworkStart(
 
 void ServiceWorkerWriteToCacheJob::OnResponseStarted(
     net::URLRequest* request) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ServiceWorkerWriteToCacheJob::OnResponseStarted"));
-
   DCHECK_EQ(net_request_, request);
   if (!request->status().is_success()) {
     AsyncNotifyDoneHelper(request->status(), kFetchScriptError);
@@ -428,11 +417,6 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(
 void ServiceWorkerWriteToCacheJob::OnReadCompleted(
     net::URLRequest* request,
     int bytes_read) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ServiceWorkerWriteToCacheJob::OnReadCompleted"));
-
   DCHECK_EQ(net_request_, request);
   if (bytes_read < 0) {
     DCHECK(!request->status().is_success());

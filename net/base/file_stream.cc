@@ -57,9 +57,9 @@ int FileStream::Seek(base::File::Whence whence,
 int FileStream::Read(IOBuffer* buf,
                      int buf_len,
                      const CompletionCallback& callback) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  // TODO(rvargas): Remove ScopedTracker below once crbug.com/475751 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 FileStream::Read"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("475751 FileStream::Read"));
 
   if (!IsOpen())
     return ERR_UNEXPECTED;

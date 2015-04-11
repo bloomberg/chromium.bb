@@ -9,7 +9,6 @@
 #include "base/files/file_util_proxy.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/net_errors.h"
@@ -92,11 +91,6 @@ void FileWriterDelegate::OnSSLCertificateError(net::URLRequest* request,
 }
 
 void FileWriterDelegate::OnResponseStarted(net::URLRequest* request) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 FileWriterDelegate::OnResponseStarted"));
-
   DCHECK_EQ(request_.get(), request);
   if (!request->status().is_success() || request->GetResponseCode() != 200) {
     OnError(base::File::FILE_ERROR_FAILED);
@@ -107,11 +101,6 @@ void FileWriterDelegate::OnResponseStarted(net::URLRequest* request) {
 
 void FileWriterDelegate::OnReadCompleted(net::URLRequest* request,
                                          int bytes_read) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 FileWriterDelegate::OnReadCompleted"));
-
   DCHECK_EQ(request_.get(), request);
   if (!request->status().is_success()) {
     OnError(base::File::FILE_ERROR_FAILED);

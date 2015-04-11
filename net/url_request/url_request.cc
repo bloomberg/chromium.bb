@@ -729,17 +729,9 @@ bool URLRequest::Read(IOBuffer* dest, int dest_size, int* bytes_read) {
     return true;
   }
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 URLRequest::Read1"));
-
   bool rv = job_->Read(dest, dest_size, bytes_read);
   // If rv is false, the status cannot be success.
   DCHECK(rv || status_.status() != URLRequestStatus::SUCCESS);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 URLRequest::Read2"));
 
   if (rv && *bytes_read <= 0 && status_.is_success())
     NotifyRequestCompleted();
@@ -763,11 +755,6 @@ void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
     RestartWithJob(job);
   } else if (delegate_) {
     OnCallToDelegate();
-
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 URLRequest::Delegate::OnReceivedRedirect"));
     delegate_->OnReceivedRedirect(this, redirect_info, defer_redirect);
     // |this| may be have been destroyed here.
   }
@@ -776,14 +763,7 @@ void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
 void URLRequest::NotifyBeforeNetworkStart(bool* defer) {
   if (delegate_ && !notified_before_network_start_) {
     OnCallToDelegate();
-    {
-      // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "423948 URLRequest::Delegate::OnBeforeNetworkStart"));
-      delegate_->OnBeforeNetworkStart(this, defer);
-    }
+    delegate_->OnBeforeNetworkStart(this, defer);
     if (!*defer)
       OnCallToDelegateComplete();
     notified_before_network_start_ = true;
@@ -824,11 +804,6 @@ void URLRequest::NotifyResponseStarted() {
         NotifyRequestCompleted();
 
       OnCallToDelegate();
-      // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "423948 URLRequest::Delegate::OnResponseStarted"));
       delegate_->OnResponseStarted(this);
       // Nothing may appear below this line as OnResponseStarted may delete
       // |this|.
@@ -1069,14 +1044,8 @@ void URLRequest::NotifyAuthRequiredComplete(
     case NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION:
       // Defer to the URLRequest::Delegate, since the NetworkDelegate
       // didn't take an action.
-      if (delegate_) {
-        // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is
-        // fixed.
-        tracked_objects::ScopedTracker tracking_profile(
-            FROM_HERE_WITH_EXPLICIT_FUNCTION(
-                "423948 URLRequest::Delegate::OnAuthRequired"));
+      if (delegate_)
         delegate_->OnAuthRequired(this, auth_info.get());
-      }
       break;
 
     case NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH:
@@ -1095,24 +1064,14 @@ void URLRequest::NotifyAuthRequiredComplete(
 
 void URLRequest::NotifyCertificateRequested(
     SSLCertRequestInfo* cert_request_info) {
-  if (delegate_) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 URLRequest::Delegate::OnCertificateRequested"));
+  if (delegate_)
     delegate_->OnCertificateRequested(this, cert_request_info);
-  }
 }
 
 void URLRequest::NotifySSLCertificateError(const SSLInfo& ssl_info,
                                            bool fatal) {
-  if (delegate_) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 URLRequest::Delegate::OnSSLCertificateError"));
+  if (delegate_)
     delegate_->OnSSLCertificateError(this, ssl_info, fatal);
-  }
 }
 
 bool URLRequest::CanGetCookies(const CookieList& cookie_list) const {
@@ -1153,13 +1112,8 @@ void URLRequest::NotifyReadCompleted(int bytes_read) {
   if (bytes_read > 0 && !was_cached())
     NetworkChangeNotifier::NotifyDataReceived(*this, bytes_read);
 
-  if (delegate_) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 URLRequest::Delegate::OnReadCompleted"));
+  if (delegate_)
     delegate_->OnReadCompleted(this, bytes_read);
-  }
 
   // Nothing below this line as OnReadCompleted may delete |this|.
 }

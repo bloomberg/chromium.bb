@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "net/base/data_url.h"
 #include "net/base/io_buffer.h"
@@ -203,11 +202,6 @@ void ProxyScriptFetcherImpl::OnSSLCertificateError(URLRequest* request,
 }
 
 void ProxyScriptFetcherImpl::OnResponseStarted(URLRequest* request) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ProxyScriptFetcherImpl::OnResponseStarted"));
-
   DCHECK_EQ(request, cur_request_.get());
 
   if (!request->status().is_success()) {
@@ -243,11 +237,6 @@ void ProxyScriptFetcherImpl::OnResponseStarted(URLRequest* request) {
 
 void ProxyScriptFetcherImpl::OnReadCompleted(URLRequest* request,
                                              int num_bytes) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ProxyScriptFetcherImpl::OnReadCompleted"));
-
   DCHECK_EQ(request, cur_request_.get());
   if (ConsumeBytesRead(request, num_bytes)) {
     // Keep reading.

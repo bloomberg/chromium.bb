@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/memory/scoped_vector.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "content/browser/resource_context_impl.h"
@@ -145,11 +144,6 @@ void ServiceWorkerURLRequestJob::SetExtraRequestHeaders(
 
 bool ServiceWorkerURLRequestJob::ReadRawData(
     net::IOBuffer* buf, int buf_size, int *bytes_read) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ServiceWorkerURLRequestJob::ReadRawData"));
-
   DCHECK(buf);
   DCHECK_GE(buf_size, 0);
   DCHECK(bytes_read);
@@ -221,11 +215,6 @@ void ServiceWorkerURLRequestJob::OnBeforeNetworkStart(net::URLRequest* request,
 }
 
 void ServiceWorkerURLRequestJob::OnResponseStarted(net::URLRequest* request) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ServiceWorkerURLRequestJob::OnResponseStarted"));
-
   // TODO(falken): Add Content-Length, Content-Type if they were not provided in
   // the ServiceWorkerResponse.
   response_time_ = base::Time::Now();
@@ -234,11 +223,6 @@ void ServiceWorkerURLRequestJob::OnResponseStarted(net::URLRequest* request) {
 
 void ServiceWorkerURLRequestJob::OnReadCompleted(net::URLRequest* request,
                                                  int bytes_read) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ServiceWorkerURLRequestJob::OnReadCompleted"));
-
   SetStatus(request->status());
   if (!request->status().is_success()) {
     NotifyDone(request->status());

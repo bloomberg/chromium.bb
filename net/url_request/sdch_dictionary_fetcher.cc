@@ -11,7 +11,6 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -144,11 +143,6 @@ void SdchDictionaryFetcher::Cancel() {
 }
 
 void SdchDictionaryFetcher::OnResponseStarted(URLRequest* request) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 SdchDictionaryFetcher::OnResponseStarted"));
-
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(request, current_request_.get());
   DCHECK_EQ(next_state_, STATE_SEND_REQUEST_COMPLETE);
@@ -174,11 +168,6 @@ void SdchDictionaryFetcher::OnResponseStarted(URLRequest* request) {
 
 void SdchDictionaryFetcher::OnReadCompleted(URLRequest* request,
                                             int bytes_read) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 SdchDictionaryFetcher::OnReadCompleted"));
-
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(request, current_request_.get());
   DCHECK_EQ(next_state_, STATE_READ_BODY_COMPLETE);

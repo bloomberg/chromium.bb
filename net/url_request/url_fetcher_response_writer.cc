@@ -6,7 +6,6 @@
 
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "net/base/file_stream.h"
@@ -174,11 +173,6 @@ void URLFetcherFileWriter::DidCreateTempFile(const CompletionCallback& callback,
 
 void URLFetcherFileWriter::DidOpenFile(const CompletionCallback& callback,
                                        int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 URLFetcherFileWriter::DidOpenFile"));
-
   if (result == OK)
     owns_file_ = true;
   else

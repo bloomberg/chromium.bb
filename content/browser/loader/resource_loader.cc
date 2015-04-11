@@ -112,16 +112,9 @@ void ResourceLoader::StartRequest() {
 
   // Give the handler a chance to delay the URLRequest from being started.
   bool defer_start = false;
-  {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 ResourceLoader::StartRequest"));
-
-    if (!handler_->OnWillStart(request_->url(), &defer_start)) {
-      Cancel();
-      return;
-    }
+  if (!handler_->OnWillStart(request_->url(), &defer_start)) {
+    Cancel();
+    return;
   }
 
   if (defer_start) {
@@ -170,12 +163,6 @@ void ResourceLoader::ReportUploadProgress() {
   if (is_finished || enough_new_progress || too_much_time_passed) {
     ResourceRequestInfoImpl* info = GetRequestInfo();
     if (info->is_upload_progress_enabled()) {
-      // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is
-      // fixed.
-      tracked_objects::ScopedTracker tracking_profile(
-          FROM_HERE_WITH_EXPLICIT_FUNCTION(
-              "423948 ResourceLoader::ReportUploadProgress"));
-
       handler_->OnUploadProgress(progress.position(), progress.size());
       waiting_for_upload_progress_ack_ = true;
     }
@@ -264,12 +251,6 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse());
   PopulateResourceResponse(info, request_.get(), response.get());
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ResourceLoader::OnReceivedRedirect"));
-
   if (!handler_->OnRequestRedirected(redirect_info, response.get(), defer)) {
     Cancel();
   } else if (*defer) {
@@ -339,11 +320,6 @@ void ResourceLoader::OnBeforeNetworkStart(net::URLRequest* unused,
                                           bool* defer) {
   DCHECK_EQ(request_.get(), unused);
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ResourceLoader::OnBeforeNetworkStart"));
-
   // Give the handler a chance to delay the URLRequest from using the network.
   if (!handler_->OnBeforeNetworkStart(request_->url(), defer)) {
     Cancel();
@@ -354,11 +330,6 @@ void ResourceLoader::OnBeforeNetworkStart(net::URLRequest* unused,
 }
 
 void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ResourceLoader::OnResponseStarted"));
-
   DCHECK_EQ(request_.get(), unused);
 
   VLOG(1) << "OnResponseStarted: " << request_->url().spec();
@@ -377,19 +348,9 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
   }
 
   if (!request_->status().is_success()) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 ResourceLoader::OnResponseStarted1"));
-
     ResponseCompleted();
     return;
   }
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ResourceLoader::OnResponseStarted2"));
 
   // We want to send a final upload progress message prior to sending the
   // response complete message even if we're waiting for an ack to to a
@@ -397,56 +358,27 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
   waiting_for_upload_progress_ack_ = false;
   ReportUploadProgress();
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ResourceLoader::OnResponseStarted3"));
-
   CompleteResponseStarted();
 
   if (is_deferred())
     return;
 
-  if (request_->status().is_success()) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 ResourceLoader::OnResponseStarted4"));
-
+  if (request_->status().is_success())
     StartReading(false);  // Read the first chunk.
-  } else {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile5(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 ResourceLoader::OnResponseStarted5"));
-
+  else
     ResponseCompleted();
-  }
 }
 
 void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ResourceLoader::OnReadCompleted"));
-
   DCHECK_EQ(request_.get(), unused);
   VLOG(1) << "OnReadCompleted: \"" << request_->url().spec() << "\""
           << " bytes_read = " << bytes_read;
 
   // bytes_read == -1 always implies an error.
   if (bytes_read == -1 || !request_->status().is_success()) {
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 ResourceLoader::OnReadCompleted1"));
-
     ResponseCompleted();
     return;
   }
-
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ResourceLoader::OnReadCompleted2"));
 
   CompleteRead(bytes_read);
 
@@ -461,15 +393,11 @@ void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
     return;
 
   if (bytes_read > 0) {
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 ResourceLoader::OnReadCompleted3"));
-
     StartReading(true);  // Read the next chunk.
   } else {
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 ResourceLoader::OnReadCompleted4"));
+    // TODO(darin): Remove ScopedTracker below once crbug.com/475761 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 ResponseCompleted()"));
 
     // URLRequest reported an EOF. Call ResponseCompleted.
     DCHECK_EQ(0, bytes_read);
@@ -627,27 +555,11 @@ void ResourceLoader::StoreSignedCertificateTimestamps(
 }
 
 void ResourceLoader::CompleteResponseStarted() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ResourceLoader::CompleteResponseStarted1"));
-
   ResourceRequestInfoImpl* info = GetRequestInfo();
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ResourceLoader::CompleteResponseStarted2"));
-
   scoped_refptr<ResourceResponse> response(new ResourceResponse());
   PopulateResourceResponse(info, request_.get(), response.get());
 
   if (request_->ssl_info().cert.get()) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 ResourceLoader::CompleteResponseStarted3"));
-
     int cert_id = CertStore::GetInstance()->StoreCert(
         request_->ssl_info().cert.get(), info->GetChildID());
 
@@ -670,17 +582,11 @@ void ResourceLoader::CompleteResponseStarted() {
            !request_->ssl_info().connection_status);
   }
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile5(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ResourceLoader::CompleteResponseStarted5"));
-
   delegate_->DidReceiveResponse(this);
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  // TODO(darin): Remove ScopedTracker below once crbug.com/475761 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 ResourceLoader::CompleteResponseStarted"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnResponseStarted()"));
 
   bool defer = false;
   if (!handler_->OnResponseStarted(response.get(), &defer)) {
@@ -692,10 +598,6 @@ void ResourceLoader::CompleteResponseStarted() {
 }
 
 void ResourceLoader::StartReading(bool is_continuation) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 ResourceLoader::StartReading"));
-
   int bytes_read = 0;
   ReadMore(&bytes_read);
 
@@ -733,10 +635,6 @@ void ResourceLoader::ResumeReading() {
 }
 
 void ResourceLoader::ReadMore(int* bytes_read) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 ResourceLoader::ReadMore1"));
-
   DCHECK(!is_deferred());
 
   // Make sure we track the buffer in at least one place.  This ensures it gets
@@ -745,9 +643,9 @@ void ResourceLoader::ReadMore(int* bytes_read) {
   scoped_refptr<net::IOBuffer> buf;
   int buf_size;
   {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    // TODO(darin): Remove ScopedTracker below once crbug.com/475761 is fixed.
     tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 ResourceLoader::ReadMore2"));
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnWillRead()"));
 
     if (!handler_->OnWillRead(&buf, &buf_size, -1)) {
       Cancel();
@@ -768,9 +666,9 @@ void ResourceLoader::CompleteRead(int bytes_read) {
   DCHECK(bytes_read >= 0);
   DCHECK(request_->status().is_success());
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  // TODO(darin): Remove ScopedTracker below once crbug.com/475761 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 ResourceLoader::CompleteRead"));
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnReadCompleted()"));
 
   bool defer = false;
   if (!handler_->OnReadCompleted(bytes_read, &defer)) {
@@ -808,10 +706,9 @@ void ResourceLoader::ResponseCompleted() {
 
   bool defer = false;
   {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    // TODO(darin): Remove ScopedTracker below once crbug.com/475761 is fixed.
     tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 ResourceLoader::ResponseCompleted"));
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("475761 OnResponseCompleted()"));
 
     handler_->OnResponseCompleted(request_->status(), security_info, &defer);
   }

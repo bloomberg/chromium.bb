@@ -10,7 +10,6 @@
 #include "base/guid.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
@@ -216,11 +215,6 @@ class CacheStorageCache::BlobReader : public net::URLRequest::Delegate {
   }
 
   void OnResponseStarted(net::URLRequest* request) override {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 CacheStorageCache::BlobReader::OnResponseStarted"));
-
     if (!request->status().is_success()) {
       callback_.Run(entry_.Pass(), false);
       return;
@@ -237,11 +231,6 @@ class CacheStorageCache::BlobReader : public net::URLRequest::Delegate {
   }
 
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "423948 CacheStorageCache::BlobReader::OnReadCompleted"));
-
     if (!request->status().is_success()) {
       callback_.Run(entry_.Pass(), false);
       return;
