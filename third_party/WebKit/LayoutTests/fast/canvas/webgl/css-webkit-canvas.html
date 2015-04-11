@@ -1,7 +1,7 @@
 <html>
     <head>
         <style>
-            div {
+            #target {
                 width:200px;
                 height:200px;
                 border:2px solid black;
@@ -102,6 +102,28 @@
         </script>
     </head>
     <body>
-        <div></div>
+        <div id="target"></div>
+        <div id="console"></div>
     </body>
+     <script>
+        function log(str) {
+            var li = document.createElement("li");
+            li.appendChild(document.createTextNode(str));
+            var console = document.getElementById("console");
+            console.appendChild(li);
+        }
+        function assert(bool, text) {
+            if (!bool)
+                log(text + "Failure");
+        }
+        window.onload = function() {
+            if (window.testRunner && window.internals) {
+                window.testRunner.displayAsyncThen(function() {
+                    assert(window.internals.isUseCounted(document, 753), "has -webkit-canvas UseCounter: "); // 753 == UseCounter::Feature::WebkitCanvas
+                    testRunner.notifyDone();
+                });
+            }
+        }
+        testRunner.waitUntilDone();
+    </script>
 </html>

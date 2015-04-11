@@ -348,6 +348,10 @@ public:
 
     void setVisualViewportOffset(int x, int y);
 
+    // Return true if the given use counter exists for the given document.
+    // |useCounterId| must be one of the values from the UseCounter::Feature enum.
+    bool isUseCounted(Document*, int useCounterId);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

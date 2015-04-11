@@ -727,6 +727,10 @@ public:
     static void countDeprecationIfNotPrivateScript(v8::Isolate*, ExecutionContext*, Feature);
     static String deprecationMessage(Feature);
 
+    // Return whether the Feature was previously counted for this document.
+    // NOTE: only for use in testing.
+    static bool isCounted(Document&, Feature);
+
     void didCommitLoad();
 
     static UseCounter* getFrom(const Document*);
@@ -759,6 +763,13 @@ public:
         }
         void updateMeasurements();
 
+        // NOTE: only for use in testing.
+        bool hasRecordedMeasurement(Feature feature) const
+        {
+            ASSERT(feature >= 0 && feature < NumberOfFeatures);
+            return m_bits->get(feature);
+        }
+
     private:
         OwnPtr<BitVector> m_bits;
     };
@@ -768,6 +779,8 @@ private:
 
     bool recordMeasurement(Feature feature) { return m_countBits.recordMeasurement(feature); }
     void updateMeasurements();
+
+    bool hasRecordedMeasurement(Feature feature) const { return m_countBits.hasRecordedMeasurement(feature); }
 
     CountBits m_countBits;
     BitVector m_CSSFeatureBits;

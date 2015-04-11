@@ -602,6 +602,17 @@ void UseCounter::count(const Document& document, Feature feature)
     count(document.frame(), feature);
 }
 
+bool UseCounter::isCounted(Document& document, Feature feature)
+{
+    Frame* frame = document.frame();
+    if (!frame)
+        return false;
+    FrameHost* host = frame->host();
+    if (!host)
+        return false;
+    return host->useCounter().hasRecordedMeasurement(feature);
+}
+
 void UseCounter::count(const ExecutionContext* context, Feature feature)
 {
     if (!context)

@@ -2353,4 +2353,10 @@ ValueIterable<int>::IterationSource* Internals::startIteration(ScriptState*, Exc
     return new InternalsIterationSource();
 }
 
+bool Internals::isUseCounted(Document* document, int useCounterId)
+{
+    return UseCounter::isCounted(*document, static_cast<UseCounter::Feature>(useCounterId));
+}
+
+
 } // namespace blink
