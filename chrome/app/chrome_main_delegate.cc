@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
@@ -169,6 +170,14 @@ void SuppressWindowsErrorDialogs() {
   // Preserve existing error mode.
   UINT existing_flags = SetErrorMode(new_flags);
   SetErrorMode(existing_flags | new_flags);
+}
+
+bool IsSandboxedProcess() {
+  typedef bool (*IsSandboxedProcessFunc)();
+  IsSandboxedProcessFunc is_sandboxed_process_func =
+      reinterpret_cast<IsSandboxedProcessFunc>(
+          GetProcAddress(GetModuleHandle(NULL), "IsSandboxedProcess"));
+  return is_sandboxed_process_func && is_sandboxed_process_func();
 }
 
 #endif  // defined(OS_WIN)
@@ -405,6 +414,16 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+
+
+#if defined(OS_WIN)
+  // Browser should not be sandboxed.
+  const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
+  if (is_browser && IsSandboxedProcess()) {
+    *exit_code = chrome::RESULT_CODE_INVALID_SANDBOX_STATE;
+    return true;
+  }
+#endif
 
 #if defined(OS_MACOSX)
   // Give the browser process a longer treadmill, since crashes

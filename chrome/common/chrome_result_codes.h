@@ -92,6 +92,9 @@ enum ResultCode {
   // The action is not allowed by a policy.
   RESULT_CODE_ACTION_DISALLOWED_BY_POLICY,
 
+  // An browser process was sandboxed. This should never happen.
+  RESULT_CODE_INVALID_SANDBOX_STATE,
+
   // Last return code (keep this last).
   RESULT_CODE_CHROME_LAST_CODE,
 };
