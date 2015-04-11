@@ -1766,6 +1766,7 @@ _chrome_pfq_important_boards = frozenset([
   'peppy',
   'rush_ryu',
   'veyron_pinky',
+  'x86-alex_freon',
   ])
 
 
@@ -3312,7 +3313,6 @@ _waterfall_config_map = {
       # Experimental PFQs.
       'peach_pit-chrome-pfq',
       'tricky-chrome-pfq',
-      'x86-alex_freon-chrome-pfq',
 
       # Incremental Builders.
       'mario-incremental',
