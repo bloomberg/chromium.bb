@@ -87,7 +87,7 @@ Background.prototype = {
       desktop.addEventListener(eventType, this.listeners_[eventType], true);
 
     // Register a tree change observer.
-    desktop.addTreeChangeObserver(this.onTreeChange);
+    chrome.automation.addTreeChangeObserver(this.onTreeChange);
 
     // The focused state gets set on the containing webView node.
     var webView = desktop.find({role: chrome.automation.RoleType.webView,
