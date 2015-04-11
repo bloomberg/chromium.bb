@@ -378,7 +378,6 @@ def FindInPathParents(path_to_find, start_path, test_func=None, end_path=None):
   return None
 
 
-# pylint: disable=W0212,R0904,W0702
 def SetGlobalTempDir(tempdir_value, tempdir_env=None):
   """Set the global temp directory to the specified |tempdir_value|
 
@@ -396,6 +395,7 @@ def SetGlobalTempDir(tempdir_value, tempdir_env=None):
       environment and were set prior to this function. If the environment
       variable was not set, it is recorded as None.
   """
+  # pylint: disable=protected-access
   with tempfile._once_lock:
     old_tempdir_value = tempfile._get_default_tempdir()
     old_tempdir_env = tuple((x, os.environ.get(x)) for x in _TEMPDIR_ENV_VARS)
@@ -456,6 +456,7 @@ def _TempDirTearDown(self, force_sudo):
   # Restore environment modification if necessary.
   orig_tempdir_value = getattr(self, '_orig_tempdir_value', None)
   if orig_tempdir_value is not None:
+    # pylint: disable=protected-access
     SetGlobalTempDir(orig_tempdir_value, self._orig_tempdir_env)
 
 
@@ -528,7 +529,6 @@ class TempDir(object):
     self.Cleanup()
 
 
-# pylint: disable=W0212,R0904,W0702
 def TempDirDecorator(func):
   """Populates self.tempdir with path to a temporary writeable directory."""
   def f(self, *args, **kwargs):
