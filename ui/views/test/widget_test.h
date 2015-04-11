@@ -81,20 +81,23 @@ class WidgetTest : public ViewsTestBase {
   WidgetTest();
   ~WidgetTest() override;
 
-  NativeWidget* CreatePlatformNativeWidget(
-      internal::NativeWidgetDelegate* delegate);
-
+  // Create Widgets with |native_widget| in InitParams set to an instance of
+  // test::NativeWidgetCapture.
   Widget* CreateTopLevelPlatformWidget();
-
   Widget* CreateTopLevelFramelessPlatformWidget();
-
   Widget* CreateChildPlatformWidget(gfx::NativeView parent_native_view);
 
+  // Create Widgets initialized without a |native_widget| set in InitParams.
+  // Depending on the test environment, ViewsDelegate::OnBeforeWidgetInit() may
+  // still provide one.
   Widget* CreateTopLevelNativeWidget();
-
   Widget* CreateChildNativeWidgetWithParent(Widget* parent);
-
   Widget* CreateChildNativeWidget();
+
+  // Create a top-level Widget with |native_widget| in InitParams set to an
+  // instance of the "native desktop" type. This is a PlatformNativeWidget on
+  // ChromeOS, and a PlatformDesktopNativeWidget everywhere else.
+  Widget* CreateNativeDesktopWidget();
 
   View* GetMousePressedHandler(internal::RootView* root_view);
 

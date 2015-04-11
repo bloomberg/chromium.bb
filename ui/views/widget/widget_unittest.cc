@@ -1045,6 +1045,78 @@ TEST_F(WidgetObserverTest, ClosingOnHiddenParent) {
   parent->CloseNow();
 }
 
+// Test behavior of NativeWidget*::GetWindowPlacement on the native desktop.
+TEST_F(WidgetTest, GetWindowPlacement) {
+  Widget* widget;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // On desktop-Linux cheat and use non-desktop widgets. On X11, minimize is
+  // asynchronous. Also (harder) showing a window doesn't activate it without
+  // user interaction (or extra steps only done for interactive ui tests).
+  // Without that, show_state remains in ui::SHOW_STATE_INACTIVE throughout.
+  // TODO(tapted): Find a nice way to run this with desktop widgets on Linux.
+  widget = CreateTopLevelPlatformWidget();
+#else
+  widget = CreateNativeDesktopWidget();
+#endif
+
+  gfx::Rect expected_bounds(100, 110, 200, 220);
+  widget->SetBounds(expected_bounds);
+  widget->Show();
+
+  // Start with something invalid to ensure it changes.
+  ui::WindowShowState show_state = ui::SHOW_STATE_END;
+  gfx::Rect restored_bounds;
+
+  internal::NativeWidgetPrivate* native_widget =
+      widget->native_widget_private();
+
+  native_widget->GetWindowPlacement(&restored_bounds, &show_state);
+  EXPECT_EQ(expected_bounds, restored_bounds);
+#if defined(OS_LINUX)
+  // Non-desktop/Ash widgets start off in "default" until a Restore().
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT, show_state);
+  widget->Restore();
+  native_widget->GetWindowPlacement(&restored_bounds, &show_state);
+#endif
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, show_state);
+
+  widget->Minimize();
+  native_widget->GetWindowPlacement(&restored_bounds, &show_state);
+  EXPECT_EQ(ui::SHOW_STATE_MINIMIZED, show_state);
+  EXPECT_EQ(expected_bounds, restored_bounds);
+
+  widget->Restore();
+  native_widget->GetWindowPlacement(&restored_bounds, &show_state);
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, show_state);
+  EXPECT_EQ(expected_bounds, restored_bounds);
+
+  expected_bounds = gfx::Rect(130, 140, 230, 250);
+  widget->SetBounds(expected_bounds);
+  native_widget->GetWindowPlacement(&restored_bounds, &show_state);
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, show_state);
+  EXPECT_EQ(expected_bounds, restored_bounds);
+
+  widget->SetFullscreen(true);
+  native_widget->GetWindowPlacement(&restored_bounds, &show_state);
+
+#if defined(OS_WIN)
+  // Desktop Aura widgets on Windows currently don't update show_state when
+  // going fullscreen, and report restored_bounds as the full screen size.
+  // See http://crbug.com/475813.
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, show_state);
+#else
+  EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, show_state);
+  EXPECT_EQ(expected_bounds, restored_bounds);
+#endif
+
+  widget->SetFullscreen(false);
+  native_widget->GetWindowPlacement(&restored_bounds, &show_state);
+  EXPECT_EQ(ui::SHOW_STATE_NORMAL, show_state);
+  EXPECT_EQ(expected_bounds, restored_bounds);
+
+  widget->CloseNow();
+}
+
 // Tests that SetBounds() and GetWindowBoundsInScreen() is symmetric when the
 // widget is visible and not maximized or fullscreen.
 TEST_F(WidgetTest, GetWindowBoundsInScreen) {

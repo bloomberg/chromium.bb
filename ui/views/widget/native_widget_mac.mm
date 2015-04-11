@@ -213,9 +213,16 @@ void NativeWidgetMac::CenterWindow(const gfx::Size& size) {
   [GetNativeWindow() center];
 }
 
-void NativeWidgetMac::GetWindowPlacement(gfx::Rect* bounds,
-                                         ui::WindowShowState* maximized) const {
-  NOTIMPLEMENTED();
+void NativeWidgetMac::GetWindowPlacement(
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
+  *bounds = GetRestoredBounds();
+  if (IsFullscreen())
+    *show_state = ui::SHOW_STATE_FULLSCREEN;
+  else if (IsMinimized())
+    *show_state = ui::SHOW_STATE_MINIMIZED;
+  else
+    *show_state = ui::SHOW_STATE_NORMAL;
 }
 
 bool NativeWidgetMac::SetWindowTitle(const base::string16& title) {

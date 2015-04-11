@@ -9,6 +9,22 @@
 
 namespace views {
 namespace test {
+namespace {
+
+// Helper to encapsulate common parts of the WidgetTest::Create* methods,
+template <class NativeWidgetType>
+Widget* CreateHelper(Widget::InitParams params) {
+  Widget* widget = new Widget;
+  params.native_widget = new NativeWidgetType(widget);
+  widget->Init(params);
+  return widget;
+}
+
+Widget* CreateHelper(Widget::InitParams params) {
+  return CreateHelper<NativeWidgetCapture>(params);
+}
+
+}  // namespace
 
 // A widget that assumes mouse capture always works. It won't in testing, so we
 // mock it.
@@ -36,37 +52,19 @@ bool NativeWidgetCapture::HasCapture() const {
 WidgetTest::WidgetTest() {}
 WidgetTest::~WidgetTest() {}
 
-NativeWidget* WidgetTest::CreatePlatformNativeWidget(
-    internal::NativeWidgetDelegate* delegate) {
-  return new NativeWidgetCapture(delegate);
-}
-
 Widget* WidgetTest::CreateTopLevelPlatformWidget() {
-  Widget* toplevel = new Widget;
-  Widget::InitParams toplevel_params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW);
-  toplevel_params.native_widget = CreatePlatformNativeWidget(toplevel);
-  toplevel->Init(toplevel_params);
-  return toplevel;
+  return CreateHelper(CreateParams(Widget::InitParams::TYPE_WINDOW));
 }
 
 Widget* WidgetTest::CreateTopLevelFramelessPlatformWidget() {
-  Widget* toplevel = new Widget;
-  Widget::InitParams toplevel_params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  toplevel_params.native_widget = CreatePlatformNativeWidget(toplevel);
-  toplevel->Init(toplevel_params);
-  return toplevel;
+  return CreateHelper(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
 }
 
 Widget* WidgetTest::CreateChildPlatformWidget(
     gfx::NativeView parent_native_view) {
-  Widget* child = new Widget;
-  Widget::InitParams child_params =
-      CreateParams(Widget::InitParams::TYPE_CONTROL);
-  child_params.native_widget = CreatePlatformNativeWidget(child);
-  child_params.parent = parent_native_view;
-  child->Init(child_params);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_CONTROL);
+  params.parent = parent_native_view;
+  Widget* child = CreateHelper(params);
   child->SetContentsView(new View);
   return child;
 }
@@ -89,6 +87,16 @@ Widget* WidgetTest::CreateChildNativeWidgetWithParent(Widget* parent) {
 
 Widget* WidgetTest::CreateChildNativeWidget() {
   return CreateChildNativeWidgetWithParent(NULL);
+}
+
+Widget* WidgetTest::CreateNativeDesktopWidget() {
+#if defined(OS_CHROMEOS)
+  return CreateHelper<PlatformNativeWidget>(
+      CreateParams(Widget::InitParams::TYPE_WINDOW));
+#else
+  return CreateHelper<PlatformDesktopNativeWidget>(
+      CreateParams(Widget::InitParams::TYPE_WINDOW));
+#endif
 }
 
 View* WidgetTest::GetMousePressedHandler(internal::RootView* root_view) {
