@@ -340,10 +340,10 @@ class NET_EXPORT URLRequestJob
   void SetProxyServer(const HostPortPair& proxy_server);
 
   // The number of bytes read before passing to the filter.
-  int prefilter_bytes_read() const { return prefilter_bytes_read_; }
+  int64 prefilter_bytes_read() const { return prefilter_bytes_read_; }
 
   // The number of bytes read after passing through the filter.
-  int postfilter_bytes_read() const { return postfilter_bytes_read_; }
+  int64 postfilter_bytes_read() const { return postfilter_bytes_read_; }
 
   // Total number of bytes read from network (or cache) and typically handed
   // to filter to process.  Used to histogram compression ratios, and error
@@ -396,8 +396,8 @@ class NET_EXPORT URLRequestJob
   // NotifyDone so that it is kept in sync with the request.
   bool done_;
 
-  int prefilter_bytes_read_;
-  int postfilter_bytes_read_;
+  int64 prefilter_bytes_read_;
+  int64 postfilter_bytes_read_;
   int64 filter_input_byte_count_;
 
   // The data stream filter which is enabled on demand.

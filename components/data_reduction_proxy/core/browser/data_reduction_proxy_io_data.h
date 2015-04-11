@@ -77,8 +77,8 @@ class DataReductionProxyIOData {
                      bool at_startup);
 
   // Bridge methods to safely call to the UI thread objects.
-  void UpdateContentLengths(int received_content_length,
-                            int original_content_length,
+  void UpdateContentLengths(int64 received_content_length,
+                            int64 original_content_length,
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type);
 

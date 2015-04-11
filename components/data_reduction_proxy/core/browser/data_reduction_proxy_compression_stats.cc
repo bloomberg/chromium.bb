@@ -216,7 +216,7 @@ class DailyContentLengthUpdate {
   }
 
   // Update the lengths for the current day.
-  void Add(int content_length) {
+  void Add(int64 content_length) {
     AddInt64ToListPref(kNumDaysInHistory - 1, content_length, update_);
   }
 
@@ -280,7 +280,7 @@ class DailyDataSavingUpdate {
   }
 
   // Update the lengths for the current day.
-  void Add(int original_content_length, int received_content_length) {
+  void Add(int64 original_content_length, int64 received_content_length) {
     original_.Add(original_content_length);
     received_.Add(received_content_length);
   }
@@ -367,8 +367,8 @@ void DataReductionProxyCompressionStats::OnUpdateContentLengths() {
 }
 
 void DataReductionProxyCompressionStats::UpdateContentLengths(
-    int received_content_length,
-    int original_content_length,
+    int64 received_content_length,
+    int64 original_content_length,
     bool data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -594,11 +594,11 @@ int64 DataReductionProxyCompressionStats::GetListPrefInt64Value(
 }
 
 void DataReductionProxyCompressionStats::RecordContentLengthPrefs(
-      int received_content_length,
-      int original_content_length,
-      bool with_data_reduction_proxy_enabled,
-      DataReductionProxyRequestType request_type,
-      base::Time now) {
+    int64 received_content_length,
+    int64 original_content_length,
+    bool with_data_reduction_proxy_enabled,
+    DataReductionProxyRequestType request_type,
+    base::Time now) {
   // TODO(bengr): Remove this check once the underlying cause of
   // http://crbug.com/287821 is fixed. For now, only continue if the current
   // year is reported as being between 1972 and 2970.

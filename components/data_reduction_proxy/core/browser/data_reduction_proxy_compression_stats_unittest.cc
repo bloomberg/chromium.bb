@@ -269,8 +269,8 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     compression_stats_->SetInt64(pref_path, pref_value);
   }
 
-  void RecordContentLengthPrefs(int received_content_length,
-                                int original_content_length,
+  void RecordContentLengthPrefs(int64 received_content_length,
+                                int64 original_content_length,
                                 bool with_data_reduction_proxy_enabled,
                                 DataReductionProxyRequestType request_type,
                                 base::Time now) {
@@ -658,6 +658,23 @@ TEST_F(DataReductionProxyCompressionStatsTest, ForwardOneDay) {
       received_with_data_reduction_proxy_enabled, 2,
       original_via_data_reduction_proxy, 2,
       received_via_data_reduction_proxy, 2);
+
+  // Proxy enabled and via proxy, with content length greater than max int32.
+  const int64 kBigOriginalLength = 0x300000000LL;  // 12G.
+  const int64 kBigReceivedLength = 0x200000000LL;  // 8G.
+  RecordContentLengthPrefs(kBigReceivedLength, kBigOriginalLength, true,
+                           VIA_DATA_REDUCTION_PROXY, FakeNow());
+  original[1] += kBigOriginalLength;
+  received[1] += kBigReceivedLength;
+  original_with_data_reduction_proxy_enabled[1] += kBigOriginalLength;
+  received_with_data_reduction_proxy_enabled[1] += kBigReceivedLength;
+  original_via_data_reduction_proxy[1] += kBigOriginalLength;
+  received_via_data_reduction_proxy[1] += kBigReceivedLength;
+  VerifyDailyDataSavingContentLengthPrefLists(
+      original, 2, received, 2, original_with_data_reduction_proxy_enabled, 2,
+      received_with_data_reduction_proxy_enabled, 2,
+      original_via_data_reduction_proxy, 2, received_via_data_reduction_proxy,
+      2);
 }
 
 TEST_F(DataReductionProxyCompressionStatsTest, PartialDayTimeChange) {

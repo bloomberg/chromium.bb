@@ -81,7 +81,7 @@ namespace data_reduction_proxy {
 bool DataReductionProxyTamperDetection::DetectAndReport(
     const net::HttpResponseHeaders* headers,
     bool scheme_is_https,
-    int content_length) {
+    int64 content_length) {
   if (headers == nullptr) {
     return false;
   }
@@ -140,7 +140,7 @@ bool DataReductionProxyTamperDetection::DetectAndReport(
 
   if (GetDataReductionProxyActionFingerprintContentLength(
       headers, &fingerprint)) {
-    int original_content_length;
+    int64 original_content_length;
     if (tamper_detection.ValidateContentLength(fingerprint,
                                                content_length,
                                                &original_content_length)) {
@@ -305,20 +305,20 @@ void DataReductionProxyTamperDetection::
 
 bool DataReductionProxyTamperDetection::ValidateContentLength(
     const std::string& fingerprint,
-    int content_length,
-    int* original_content_length) const {
+    int64 content_length,
+    int64* original_content_length) const {
   DCHECK(original_content_length);
   // Abort, if Content-Length value from the Data Reduction Proxy does not
   // exist or it cannot be converted to an integer.
-  if (!base::StringToInt(fingerprint, original_content_length))
+  if (!base::StringToInt64(fingerprint, original_content_length))
     return false;
 
   return *original_content_length != content_length;
 }
 
-void DataReductionProxyTamperDetection::
-    ReportUMAForContentLength(int content_length,
-                              int original_content_length) const {
+void DataReductionProxyTamperDetection::ReportUMAForContentLength(
+    int64 content_length,
+    int64 original_content_length) const {
   // Gets MIME type of the response and reports to UMA histograms separately.
   // Divides MIME types into 4 groups: JavaScript, CSS, Images, and others.
   REPORT_TAMPER_DETECTION_UMA(

@@ -71,7 +71,7 @@ class DataReductionProxyTamperDetection {
   // response had been tampered with.
   static bool DetectAndReport(const net::HttpResponseHeaders* headers,
                               bool scheme_is_https,
-                              int content_length);
+                              int64 content_length);
 
   // Tamper detection checks |response_headers|. Histogram events are reported
   // by |carrier_id|; |scheme_is_https| determines which histogram to report
@@ -131,16 +131,16 @@ class DataReductionProxyTamperDetection {
   // |original_content_length| for future use, |original_content_length| cannot
   // be NULL.
   bool ValidateContentLength(const std::string& fingerprint,
-                             int received_content_length,
-                             int* original_content_length) const;
+                             int64 received_content_length,
+                             int64* original_content_length) const;
 
   // Reports UMA for tampering of the contents and the compression ratio. The
   // compression ratio is calculated from |content_length|, which is the
   // content length received by the Chromium client, and
   // |original_content_length|, which is the content length sent by the Data
   // Reduction Proxy.
-  void ReportUMAForContentLength(int content_length,
-                                 int original_content_length) const;
+  void ReportUMAForContentLength(int64 content_length,
+                                 int64 original_content_length) const;
 
   // Returns a string representation of |values|.
   static std::string ValuesToSortedString(std::vector<std::string>* values);

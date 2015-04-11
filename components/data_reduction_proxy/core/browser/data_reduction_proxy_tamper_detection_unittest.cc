@@ -466,8 +466,8 @@ TEST_F(DataReductionProxyTamperDetectionTest, ContentLength) {
   struct {
     std::string label;
     std::string received_fingerprint;
-    int actual_content_length;
-    int expected_original_content_length;
+    int64 actual_content_length;
+    int64 expected_original_content_length;
     bool expected_tampered_with;
   } test[] = {
     {
@@ -494,7 +494,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, ContentLength) {
 
     DataReductionProxyTamperDetection tamper_detection(headers.get(), true, 0);
 
-    int original_content_length;
+    int64 original_content_length;
     bool tampered = tamper_detection.ValidateContentLength(
         test[i].received_fingerprint,
         test[i].actual_content_length,
@@ -599,7 +599,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
   struct {
     std::string label;
     std::string raw_header;
-    int content_length;
+    int64 content_length;
     bool expected_tampered_with;
   } test[] = {
     {

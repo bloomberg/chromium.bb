@@ -81,8 +81,8 @@ class DataReductionProxyService : public base::NonThreadSafe,
       const base::TimeDelta& commit_delay);
 
   // Records daily data savings statistics in |compression_stats_|.
-  void UpdateContentLengths(int received_content_length,
-                            int original_content_length,
+  void UpdateContentLengths(int64 received_content_length,
+                            int64 original_content_length,
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type);
 

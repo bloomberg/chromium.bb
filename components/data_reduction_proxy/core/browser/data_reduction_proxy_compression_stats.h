@@ -47,8 +47,8 @@ class DataReductionProxyCompressionStats {
 
   // Records daily data savings statistics to prefs and reports data savings
   // UMA.
-  void UpdateContentLengths(int received_content_length,
-                            int original_content_length,
+  void UpdateContentLengths(int64 received_content_length,
+                            int64 original_content_length,
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type);
 
@@ -126,12 +126,11 @@ class DataReductionProxyCompressionStats {
   int64 GetListPrefInt64Value(const base::ListValue& list_update, size_t index);
 
   // Records content length updates to prefs.
-  void RecordContentLengthPrefs(
-      int received_content_length,
-      int original_content_length,
-      bool with_data_reduction_proxy_enabled,
-      DataReductionProxyRequestType request_type,
-      base::Time now);
+  void RecordContentLengthPrefs(int64 received_content_length,
+                                int64 original_content_length,
+                                bool with_data_reduction_proxy_enabled,
+                                DataReductionProxyRequestType request_type,
+                                base::Time now);
 
   PrefService* pref_service_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
