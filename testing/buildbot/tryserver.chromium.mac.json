@@ -1,1 +1,12 @@
-{}
+{
+  "mac_chromium_gn_dbg": {
+    "additional_compile_targets": [
+      "gn_all"
+    ],
+    "gtest_tests": [
+      {
+        "test": "base_unittests"
+      }
+    ]
+  }
+}

@@ -337,10 +337,24 @@ class MetaBuildWrapper(object):
       raise MBErr('The last component of the path (%s) must match the '
                   'GYP configuration specified in the config (%s), and '
                   'it does not.' % (gyp_config, vals['gyp_config']))
+    if self.args.verbose:
+      inp = self.GetAnalyzeInput()
+      self.Print()
+      self.Print('analyze input:')
+      self.PrintJSON(inp)
+      self.Print()
+
     cmd = self.GYPCmd(output_dir, vals['gyp_defines'], config=gyp_config)
     cmd.extend(['-G', 'config_path=%s' % self.args.input_path[0],
                 '-G', 'analyzer_output_path=%s' % self.args.output_path[0]])
     ret, _, _ = self.Run(cmd)
+    if not ret and self.args.verbose:
+      outp = json.loads(self.ReadFile(self.args.output_path[0]))
+      self.Print()
+      self.Print('analyze output:')
+      self.PrintJSON(inp)
+      self.Print()
+
     return ret
 
   def ToSrcRelPath(self, path):
@@ -378,80 +392,94 @@ class MetaBuildWrapper(object):
 
   def RunGNAnalyze(self, _vals):
     inp = self.GetAnalyzeInput()
+    if self.args.verbose:
+      self.Print()
+      self.Print('analyze input:')
+      self.PrintJSON(inp)
+      self.Print()
+
+    output_path = self.args.output_path[0]
 
     # Bail out early if a GN file was modified, since 'gn refs' won't know
     # what to do about it.
     if any(f.endswith('.gn') or f.endswith('.gni') for f in inp['files']):
-      self.WriteJSONOutput({'status': 'Found dependency (all)'})
+      self.WriteJSONOutput({'status': 'Found dependency (all)'}, output_path)
       return 0
 
-    # TODO: Break long lists of files that might exceed the max command line
-    # up into chunks so that we can return more accurate info.
-    if len(' '.join(inp['files'])) > 1024:
-      self.WriteJSONOutput({'status': 'Found dependency (all)'})
-      return 0
+    all_needed_targets = set()
+    for f in inp['files']:
+      cmd = ['gn', 'refs', self.args.path[0], '//' + f,
+             '--type=executable', '--all', '--as=output']
+      ret, out, _ = self.Run(cmd)
+      if ret:
+        self.WriteFailureAndRaise('gn refs returned %d: %s' % (ret, out),
+                                  output_path)
 
-    cmd = (['gn', 'refs', self.args.path[0] ] +
-           ['//' + f for f in inp['files']] +
-           ['--type=executable', '--all', '--as=output'])
-    needed_targets = []
-    ret, out, _ = self.Run(cmd)
-    if ret:
-      self.WriteFailureAndRaise('gn refs returned %d: %s' % (ret, out))
+      rpath = self.ToSrcRelPath(self.args.path[0]) + os.sep
+      needed_targets = [t.replace(rpath, '') for t in out.splitlines()]
+      needed_targets = [nt for nt in needed_targets if nt in inp['targets']]
+      all_needed_targets.update(set(needed_targets))
 
-    rpath = self.ToSrcRelPath(self.args.path[0]) + os.sep
-    needed_targets = [t.replace(rpath, '') for t in out.splitlines()]
-    needed_targets = [nt for nt in needed_targets if nt in inp['targets']]
-
-    if needed_targets:
+    if all_needed_targets:
       # TODO: it could be that a target X might depend on a target Y
       # and both would be listed in the input, but we would only need
       # to specify target X as a build_target (whereas both X and Y are
       # targets). I'm not sure if that optimization is generally worth it.
-      self.WriteJSON({'targets': needed_targets,
-                      'build_targets': needed_targets,
-                      'status': 'Found dependency'})
+      self.WriteJSON({'targets': sorted(all_needed_targets),
+                      'build_targets': sorted(all_needed_targets),
+                      'status': 'Found dependency'}, output_path)
     else:
       self.WriteJSON({'targets': [],
                       'build_targets': [],
-                      'status': 'No dependency'})
+                      'status': 'No dependency'}, output_path)
+
+    if not ret and self.args.verbose:
+      outp = json.loads(self.ReadFile(output_path))
+      self.Print()
+      self.Print('analyze output:')
+      self.PrintJSON(outp)
+      self.Print()
 
     return 0
 
   def GetAnalyzeInput(self):
     path = self.args.input_path[0]
+    output_path = self.args.output_path[0]
     if not self.Exists(path):
-      self.WriteFailureAndRaise('"%s" does not exist' % path)
+      self.WriteFailureAndRaise('"%s" does not exist' % path, output_path)
 
     try:
       inp = json.loads(self.ReadFile(path))
     except Exception as e:
       self.WriteFailureAndRaise('Failed to read JSON input from "%s": %s' %
-                                (path, e))
+                                (path, e), output_path)
     if not 'files' in inp:
-      self.WriteFailureAndRaise('input file is missing a "files" key')
+      self.WriteFailureAndRaise('input file is missing a "files" key',
+                                output_path)
     if not 'targets' in inp:
-      self.WriteFailureAndRaise('input file is missing a "targets" key')
+      self.WriteFailureAndRaise('input file is missing a "targets" key',
+                                output_path)
 
     return inp
 
-  def WriteFailureAndRaise(self, msg):
-    self.WriteJSON({'error': msg})
+  def WriteFailureAndRaise(self, msg, path):
+    self.WriteJSON({'error': msg}, path)
     raise MBErr(msg)
 
-  def WriteJSON(self, obj):
-    output_path = self.args.output_path[0]
-    if output_path:
-      try:
-        self.WriteFile(output_path, json.dumps(obj, indent=2) + '\n')
-      except Exception as e:
-        raise MBErr('Error %s writing to the output path "%s"' %
-                   (e, output_path))
+  def WriteJSON(self, obj, path):
+    try:
+      self.WriteFile(path, json.dumps(obj, indent=2, sort_keys=True) + '\n')
+    except Exception as e:
+      raise MBErr('Error %s writing to the output path "%s"' %
+                 (e, path))
 
   def PrintCmd(self, cmd):
     if cmd[0] == sys.executable:
       cmd = ['python'] + cmd[1:]
     self.Print(*[pipes.quote(c) for c in cmd])
+
+  def PrintJSON(self, obj):
+    self.Print(json.dumps(obj, indent=2, sort_keys=True))
 
   def Print(self, *args, **kwargs):
     # This function largely exists so it can be overridden for testing.
