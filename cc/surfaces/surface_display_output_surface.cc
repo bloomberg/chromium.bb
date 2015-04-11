@@ -27,6 +27,9 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
   capabilities_.max_frames_pending = 1;
   capabilities_.adjust_deadline_for_parent = true;
   capabilities_.can_force_reclaim_resources = true;
+  // Display and SurfaceDisplayOutputSurface share a GL context, so sync
+  // points aren't needed when passing resources between them.
+  capabilities_.delegated_sync_points_required = false;
 }
 
 SurfaceDisplayOutputSurface::~SurfaceDisplayOutputSurface() {

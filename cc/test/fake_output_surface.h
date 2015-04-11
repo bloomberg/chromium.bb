@@ -88,6 +88,13 @@ class FakeOutputSurface : public OutputSurface {
     return surface.Pass();
   }
 
+  static scoped_ptr<FakeOutputSurface> CreateNoRequireSyncPoint(
+      scoped_ptr<TestWebGraphicsContext3D> context) {
+    scoped_ptr<FakeOutputSurface> surface(Create3d(context.Pass()));
+    surface->capabilities_.delegated_sync_points_required = false;
+    return surface.Pass();
+  }
+
   static scoped_ptr<FakeOutputSurface> CreateOffscreen(
       scoped_ptr<TestWebGraphicsContext3D> context) {
     scoped_ptr<FakeOutputSurface> surface(new FakeOutputSurface(

@@ -380,7 +380,7 @@ void GetResourcePixels(ResourceProvider* resource_provider,
 class ResourceProviderTest
     : public testing::TestWithParam<ResourceProvider::ResourceType> {
  public:
-  ResourceProviderTest()
+  explicit ResourceProviderTest(bool child_needs_sync_point)
       : shared_data_(ContextSharedData::Create()),
         context3d_(NULL),
         child_context_(NULL),
@@ -399,8 +399,13 @@ class ResourceProviderTest
         scoped_ptr<ResourceProviderContext> child_context_owned =
             ResourceProviderContext::Create(shared_data_.get());
         child_context_ = child_context_owned.get();
-        child_output_surface_ =
-            FakeOutputSurface::Create3d(child_context_owned.Pass());
+        if (child_needs_sync_point) {
+          child_output_surface_ =
+              FakeOutputSurface::Create3d(child_context_owned.Pass());
+        } else {
+          child_output_surface_ = FakeOutputSurface::CreateNoRequireSyncPoint(
+              child_context_owned.Pass());
+        }
         break;
       }
       case ResourceProvider::RESOURCE_TYPE_BITMAP:
@@ -436,6 +441,8 @@ class ResourceProviderTest
                                  false,
                                  1);
   }
+
+  ResourceProviderTest() : ResourceProviderTest(true) {}
 
   static void CollectResources(ReturnedResourceArray* array,
                                const ReturnedResourceArray& returned,
@@ -884,6 +891,80 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   EXPECT_FALSE(returned_to_child[2].lost);
   EXPECT_FALSE(returned_to_child[3].lost);
 }
+
+class ResourceProviderTestNoSyncPoint : public ResourceProviderTest {
+ public:
+  ResourceProviderTestNoSyncPoint() : ResourceProviderTest(false) {
+    EXPECT_EQ(ResourceProvider::RESOURCE_TYPE_GL_TEXTURE, GetParam());
+  }
+};
+
+TEST_P(ResourceProviderTestNoSyncPoint, TransferGLResources) {
+  gfx::Size size(1, 1);
+  ResourceFormat format = RGBA_8888;
+  size_t pixel_size = TextureSizeBytes(size, format);
+  ASSERT_EQ(4U, pixel_size);
+
+  ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+  uint8_t data1[4] = {1, 2, 3, 4};
+  child_resource_provider_->CopyToResource(id1, data1, size);
+
+  ResourceProvider::ResourceId id2 = child_resource_provider_->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+  {
+    // Ensure locking the memory buffer doesn't create an unnecessary sync
+    // point.
+    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
+        child_resource_provider_.get(), id2);
+    EXPECT_TRUE(!!lock.GetGpuMemoryBuffer());
+  }
+
+  GLuint external_texture_id = child_context_->createExternalTexture();
+
+  // A sync point is specified directly and should be used.
+  gpu::Mailbox external_mailbox;
+  child_context_->genMailboxCHROMIUM(external_mailbox.name);
+  child_context_->produceTextureDirectCHROMIUM(
+      external_texture_id, GL_TEXTURE_EXTERNAL_OES, external_mailbox.name);
+  const GLuint external_sync_point = child_context_->insertSyncPoint();
+  ResourceProvider::ResourceId id3 =
+      child_resource_provider_->CreateResourceFromTextureMailbox(
+          TextureMailbox(external_mailbox, GL_TEXTURE_EXTERNAL_OES,
+                         external_sync_point),
+          SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback)));
+
+  ReturnedResourceArray returned_to_child;
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+  {
+    // Transfer some resources to the parent.
+    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    resource_ids_to_transfer.push_back(id1);
+    resource_ids_to_transfer.push_back(id2);
+    resource_ids_to_transfer.push_back(id3);
+    TransferableResourceArray list;
+    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                  &list);
+    ASSERT_EQ(3u, list.size());
+    // Standard resources shouldn't require creating and sending a sync point.
+    EXPECT_EQ(0u, list[0].mailbox_holder.sync_point);
+    EXPECT_EQ(0u, list[1].mailbox_holder.sync_point);
+    // A given sync point should be passed through.
+    EXPECT_EQ(external_sync_point, list[2].mailbox_holder.sync_point);
+    resource_provider_->ReceiveFromChild(child_id, list);
+
+    resource_provider_->DeclareUsedResourcesFromChild(child_id,
+                                                      resource_ids_to_transfer);
+  }
+
+  resource_provider_->DestroyChild(child_id);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    ResourceProviderTests,
+    ResourceProviderTestNoSyncPoint,
+    ::testing::Values(ResourceProvider::RESOURCE_TYPE_GL_TEXTURE));
 
 TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)

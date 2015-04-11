@@ -1363,7 +1363,8 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
     ++resources_.find(*it)->second.exported_count;
     list->push_back(resource);
   }
-  if (need_sync_point) {
+  if (need_sync_point &&
+      output_surface_->capabilities().delegated_sync_points_required) {
     GLuint sync_point = gl->InsertSyncPointCHROMIUM();
     for (TransferableResourceArray::iterator it = list->begin();
          it != list->end();
