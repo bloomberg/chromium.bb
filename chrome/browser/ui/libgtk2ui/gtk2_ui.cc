@@ -380,16 +380,20 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
   return params;
 }
 
-// Queries GTK for its font DPI setting and returns the number of pixels in a
-// point.
-double GetPixelsInPoint(float device_scale_factor) {
+double GetDPI() {
   GtkSettings* gtk_settings = gtk_settings_get_default();
   CHECK(gtk_settings);
   gint gtk_dpi = -1;
   g_object_get(gtk_settings, "gtk-xft-dpi", &gtk_dpi, NULL);
 
   // GTK multiplies the DPI by 1024 before storing it.
-  double dpi = (gtk_dpi > 0) ? gtk_dpi / 1024.0 : 96.0;
+  return (gtk_dpi > 0) ? gtk_dpi / 1024.0 : 96.0;
+}
+
+// Queries GTK for its font DPI setting and returns the number of pixels in a
+// point.
+double GetPixelsInPoint(float device_scale_factor) {
+  double dpi = GetDPI();
 
   // Take device_scale_factor into account — if Chrome already scales the
   // entire UI up by 2x, we should not also scale up.
@@ -1418,6 +1422,12 @@ void Gtk2UI::UpdateDeviceScaleFactor(float device_scale_factor) {
   device_scale_factor_ = device_scale_factor;
   GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
   UpdateDefaultFont(label_style->font_desc);
+}
+
+float Gtk2UI::GetDeviceScaleFactor() const {
+  const int kCSSDefaultDPI = 96;
+  const float scale = GetDPI() / kCSSDefaultDPI;
+  return ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(scale));
 }
 
 }  // namespace libgtk2ui
