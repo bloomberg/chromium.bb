@@ -789,6 +789,9 @@ void PluginServiceImpl::GetInternalPlugins(
 }
 
 bool PluginServiceImpl::NPAPIPluginsSupported() {
+  if (npapi_plugins_enabled_)
+    return true;
+
   static bool command_line_checked = false;
 
   if (!command_line_checked) {
@@ -812,8 +815,13 @@ void PluginServiceImpl::DisablePluginsDiscoveryForTesting() {
   PluginList::Singleton()->DisablePluginsDiscovery();
 }
 
-void PluginServiceImpl::EnableNpapiPluginsForTesting() {
+void PluginServiceImpl::EnableNpapiPlugins() {
   npapi_plugins_enabled_ = true;
+  RefreshPlugins();
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PluginService::PurgePluginListCache,
+                 static_cast<BrowserContext*>(NULL), false));
 }
 
 #if defined(OS_MACOSX)

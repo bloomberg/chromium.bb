@@ -88,8 +88,6 @@ void ChromeBrowserPolicyConnector::Init(
 
   BrowserPolicyConnector::Init(
       local_state, request_context, device_management_service.Pass());
-
-  AppendExtraFlagsPerPolicy();
 }
 
 ConfigurationPolicyProvider*
@@ -121,30 +119,6 @@ ConfigurationPolicyProvider*
 #else
   return NULL;
 #endif
-}
-
-void ChromeBrowserPolicyConnector::AppendExtraFlagsPerPolicy() {
-  PolicyService* policy_service = GetPolicyService();
-  PolicyNamespace chrome_ns = PolicyNamespace(POLICY_DOMAIN_CHROME, "");
-  const PolicyMap& chrome_policy = policy_service->GetPolicies(chrome_ns);
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  if (command_line->HasSwitch(switches::kEnableNpapi))
-    return;
-
-  // The list of Plugin related policies that re-enable NPAPI. Remove once NPAPI
-  // is dead.
-  const std::string plugin_policies[] = { key::kEnabledPlugins,
-                                          key::kPluginsAllowedForUrls,
-                                          key::kPluginsBlockedForUrls,
-                                          key::kDisabledPluginsExceptions,
-                                          key::kDisabledPlugins };
-  for (auto policy : plugin_policies) {
-    if (chrome_policy.GetValue(policy)) {
-      command_line->AppendSwitch(switches::kEnableNpapi);
-      break;
-    }
-  }
 }
 
 }  // namespace policy

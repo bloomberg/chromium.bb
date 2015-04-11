@@ -61,6 +61,10 @@
 #include "extensions/common/manifest.h"
 #endif
 
+#if defined(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/enable_npapi_plugins_policy_handler.h"
+#endif
+
 namespace policy {
 
 namespace {
@@ -596,6 +600,10 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       base::Bind(GetExtensionAllowedTypesMap))));
   handlers->AddHandler(make_scoped_ptr(
       new extensions::ExtensionSettingsPolicyHandler(chrome_schema)));
+#endif
+
+#if defined(ENABLE_PLUGINS)
+  handlers->AddHandler(make_scoped_ptr(new EnableNpapiPluginsPolicyHandler()));
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
