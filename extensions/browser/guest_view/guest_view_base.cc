@@ -295,6 +295,17 @@ void GuestViewBase::DispatchOnResizeEvent(const gfx::Size& old_size,
   DispatchEventToGuestProxy(new Event(guestview::kEventResize, args.Pass()));
 }
 
+gfx::Size GuestViewBase::GetDefaultSize() const {
+  if (is_full_page_plugin()) {
+    // Full page plugins default to the size of the owner's viewport.
+    return owner_web_contents()
+        ->GetRenderWidgetHostView()
+        ->GetVisibleViewportSize();
+  } else {
+    return gfx::Size(guestview::kDefaultWidth, guestview::kDefaultHeight);
+  }
+}
+
 void GuestViewBase::SetSize(const SetSizeParams& params) {
   bool enable_auto_size =
       params.enable_auto_size ? *params.enable_auto_size : auto_size_enabled_;
@@ -321,9 +332,9 @@ void GuestViewBase::SetSize(const SetSizeParams& params) {
     // Autosize is being disabled.
     // Use default width/height if missing from partially defined normal size.
     if (normal_size_.width() && !normal_size_.height())
-      normal_size_.set_height(guestview::kDefaultHeight);
+      normal_size_.set_height(GetDefaultSize().height());
     if (!normal_size_.width() && normal_size_.height())
-      normal_size_.set_width(guestview::kDefaultWidth);
+      normal_size_.set_width(GetDefaultSize().width());
 
     gfx::Size new_size;
     if (!normal_size_.IsEmpty()) {
@@ -331,7 +342,7 @@ void GuestViewBase::SetSize(const SetSizeParams& params) {
     } else if (!guest_size_.IsEmpty()) {
       new_size = guest_size_;
     } else {
-      new_size = gfx::Size(guestview::kDefaultWidth, guestview::kDefaultHeight);
+      new_size = GetDefaultSize();
     }
 
     if (auto_size_enabled_) {
@@ -546,13 +557,13 @@ void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
   WillAttachToEmbedder();
 }
 
-int GuestViewBase::LogicalPixelsToPhysicalPixels(double logical_pixels) {
+int GuestViewBase::LogicalPixelsToPhysicalPixels(double logical_pixels) const {
   DCHECK(logical_pixels >= 0);
   double zoom_factor = GetEmbedderZoomFactor();
   return lround(logical_pixels * zoom_factor);
 }
 
-double GuestViewBase::PhysicalPixelsToLogicalPixels(int physical_pixels) {
+double GuestViewBase::PhysicalPixelsToLogicalPixels(int physical_pixels) const {
   DCHECK(physical_pixels >= 0);
   double zoom_factor = GetEmbedderZoomFactor();
   return physical_pixels / zoom_factor;
@@ -784,7 +795,7 @@ void GuestViewBase::CompleteInit(
   callback.Run(guest_web_contents);
 }
 
-double GuestViewBase::GetEmbedderZoomFactor() {
+double GuestViewBase::GetEmbedderZoomFactor() const {
   if (!embedder_web_contents())
     return 1.0;
 
@@ -808,36 +819,26 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   params.GetInteger(guestview::kAttributeMinHeight, &min_height);
   params.GetInteger(guestview::kAttributeMinWidth, &min_width);
 
+  double element_height = 0.0;
+  double element_width = 0.0;
+  params.GetDouble(guestview::kElementHeight, &element_height);
+  params.GetDouble(guestview::kElementWidth, &element_width);
+
+  // Set the normal size to the element size so that the guestview will fit
+  // the element initially if autosize is disabled.
   int normal_height = normal_size_.height();
   int normal_width = normal_size_.width();
-  if (is_full_page_plugin()) {
-    // The initial size of a full page plugin should be set to fill the
-    // owner's visible viewport.
-    auto owner_size = owner_web_contents()->GetRenderWidgetHostView()->
-        GetVisibleViewportSize();
-    normal_height = owner_size.height();
-    normal_width = owner_size.width();
+  // If the element size was provided in logical units (versus physical), then
+  // it will be converted to physical units.
+  bool element_size_is_logical = false;
+  params.GetBoolean(guestview::kElementSizeIsLogical, &element_size_is_logical);
+  if (element_size_is_logical) {
+    // Convert the element size from logical pixels to physical pixels.
+    normal_height = LogicalPixelsToPhysicalPixels(element_height);
+    normal_width = LogicalPixelsToPhysicalPixels(element_width);
   } else {
-    // Set the normal size to the element size so that the guestview will fit
-    // the element initially if autosize is disabled.
-    double element_height = 0.0;
-    double element_width = 0.0;
-    params.GetDouble(guestview::kElementHeight, &element_height);
-    params.GetDouble(guestview::kElementWidth, &element_width);
-
-    // If the element size was provided in logical units (versus physical), then
-    // it will be converted to physical units.
-    bool element_size_is_logical = false;
-    params.GetBoolean(guestview::kElementSizeIsLogical,
-                      &element_size_is_logical);
-    if (element_size_is_logical) {
-      // Convert the element size from logical pixels to physical pixels.
-      normal_height = LogicalPixelsToPhysicalPixels(element_height);
-      normal_width = LogicalPixelsToPhysicalPixels(element_width);
-    } else {
-      normal_height = lround(element_height);
-      normal_width = lround(element_width);
-    }
+    normal_height = lround(element_height);
+    normal_width = lround(element_width);
   }
 
   SetSizeParams set_size_params;

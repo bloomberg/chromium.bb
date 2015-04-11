@@ -276,7 +276,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   const GURL& GetOwnerSiteURL() const;
 
   // Whether the guest view is inside a plugin document.
-  bool is_full_page_plugin() { return is_full_page_plugin_; }
+  bool is_full_page_plugin() const { return is_full_page_plugin_; }
 
   // Returns the routing ID of the guest proxy in the owner's renderer process.
   // This value is only valid after attachment or first navigation.
@@ -321,14 +321,14 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // (hence |logical_pixels| is represented as a double), but will always
   // consist of an integral number of physical pixels (hence the return value
   // is represented as an int).
-  int LogicalPixelsToPhysicalPixels(double logical_pixels);
+  int LogicalPixelsToPhysicalPixels(double logical_pixels) const;
 
   // Convert sizes in pixels from physical to logical numbers of pixels.
   // Note that a size can consist of a fractional number of logical pixels
   // (hence the return value is represented as a double), but will always
   // consist of an integral number of physical pixels (hence |physical_pixels|
   // is represented as an int).
-  double PhysicalPixelsToLogicalPixels(int physical_pixels);
+  double PhysicalPixelsToLogicalPixels(int physical_pixels) const;
 
   // WebContentsObserver implementation.
   void DidStopLoading() final;
@@ -382,8 +382,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void DispatchOnResizeEvent(const gfx::Size& old_size,
                              const gfx::Size& new_size);
 
+  // Returns the default size of the guestview.
+  gfx::Size GetDefaultSize() const;
+
   // Get the zoom factor for the embedder's web contents.
-  double GetEmbedderZoomFactor();
+  double GetEmbedderZoomFactor() const;
 
   void SetUpSizing(const base::DictionaryValue& params);
 
