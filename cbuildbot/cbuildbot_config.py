@@ -1430,7 +1430,6 @@ _arm_internal_release_boards = frozenset([
   'peach_pi-freon',
   'peach_pit',
   'peach_pit-freon',
-  'purin',
   'storm',
   'rush',
   'rush_ryu',
@@ -1475,7 +1474,6 @@ _x86_internal_release_boards = frozenset([
   'guado',
   'jecht',
   'kip',
-  'lemmings',
   'leon',
   'link',
   'lulu',
@@ -1534,12 +1532,6 @@ _x86_external_boards = frozenset([
 ])
 
 _mips_internal_release_boards = frozenset([
-  'urara',
-  'buranku',
-  'derwent',
-  'jaguar',
-  'kennet',
-  'space',
 ])
 
 _mips_external_boards = frozenset([
@@ -1614,19 +1606,11 @@ _internal_boards = _all_release_boards
 
 # Board can appear in 1 or more of the following sets.
 _brillo_boards = frozenset([
-  'buranku',
   'cosmos',
-  'derwent',
   'gizmo',
-  'jaguar',
   'kayle',
-  'kennet',
-  'lemmings',
   'panther_embedded',
-  'purin',
-  'space',
   'storm',
-  'urara',
   'whirlwind',
 ])
 
@@ -2187,7 +2171,6 @@ _paladin_important_boards = frozenset([
   'stout',
   'stumpy',
   'stumpy_moblab',
-  'urara',
   'veyron_pinky',
   'wolf',
   'x86-alex',
@@ -2402,7 +2385,6 @@ _config.add_group('kernel-3_14-a-pre-cq',
 
 _config.add_group('kernel-3_14-b-pre-cq',
   config['storm-no-vmtest-pre-cq'],
-  config['urara-no-vmtest-pre-cq']
 )
 
 _config.add_group('kernel-3_14-c-pre-cq',
@@ -2646,13 +2628,6 @@ _release.add_config('gizmo-release',
   signer_tests=False,
 )
 
-_release.add_config('lemmings-release',
-  _base_configs['lemmings'],
-  important=True,
-  paygen=False,
-  signer_tests=False,
-)
-
 _release.add_config('samus-release',
   _base_configs['samus'],
   important=True,
@@ -2739,13 +2714,6 @@ _release.add_config('storm-release',
   paygen_skip_testing=True,
   important=True,
   signer_tests=False
-)
-
-_release.add_config('urara-release',
-  _base_configs['urara'],
-  paygen=False,
-  signer_tests=False,
-  important=False,
 )
 
 _release.add_config('mipsel-o32-generic-release',
@@ -2999,16 +2967,6 @@ _AddGroupConfig('jecht', 'jecht', (
     'guado',
     'tidus',
     'rikku',
-    ),
-    important=False,
-)
-
-_AddGroupConfig('urara', 'urara', (
-    'buranku',
-    'derwent',
-    'jaguar',
-    'kennet',
-    'space',
     ),
     important=False,
 )
@@ -3308,7 +3266,6 @@ _waterfall_config_map = {
       'panther_moblab-release',
       'rush_ryu-release',
       'strago-release',
-      'urara-release',
 
       # Experimental PFQs.
       'peach_pit-chrome-pfq',
