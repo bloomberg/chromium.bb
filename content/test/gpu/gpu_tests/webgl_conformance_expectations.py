@@ -147,8 +147,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['lion', 'intel'], bug=393331)
 
     # Linux failures
+    # NVIDIA
     self.Fail('conformance/textures/default-texture.html',
         ['linux', ('nvidia', 0x104a)], bug=422152)
+    # AMD Radeon 5450
     self.Fail('conformance/programs/program-test.html',
         ['linux', ('amd', 0x68f9)], bug=436212)
     self.Fail('conformance/rendering/multisample-corruption.html',
@@ -183,6 +185,17 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', ('amd', 0x68f9)], bug=436212)
     self.Fail('conformance/more/functions/texSubImage2DHTML.html',
         ['linux', ('amd', 0x68f9)], bug=436212)
+    # AMD Radeon 6450
+    self.Fail('conformance/extensions/ext-texture-filter-anisotropic.html',
+        ['linux', ('amd', 0x6779)], bug=436212)
+    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
+        ['linux', ('amd', 0x6779)], bug=436212)
+    self.Fail('conformance/glsl/misc/struct-nesting-of-variable-names.html',
+        ['linux', ('amd', 0x6779)], bug=436212)
+    self.Fail('conformance/rendering/point-size.html',
+        ['linux', ('amd', 0x6779)], bug=436212)
+    self.Fail('conformance/textures/texture-sub-image-cube-maps.html',
+        ['linux', ('amd', 0x6779)], bug=436212)
 
     # Android failures
     # The following test is very slow and therefore times out on Android bot.
