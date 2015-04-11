@@ -53,7 +53,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
 
     public static PrivacyPreferencesManager getInstance(Context context) {
         if (sInstance == null) {
-            sInstance = new PrivacyPreferencesManager(context);
+            sInstance = new PrivacyPreferencesManager(context.getApplicationContext());
         }
         return sInstance;
     }

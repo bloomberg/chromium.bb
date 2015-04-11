@@ -140,7 +140,7 @@ public abstract class FirstRunFlowSequencer  {
             // The user can turn it off on the Welcome page.
             // This is controlled by the administrator via a policy on EDU devices.
             if (!ChromeVersionInfo.isStableBuild()) {
-                PrivacyPreferencesManager.getInstance(mActivity).initCrashUploadPreference(true);
+                PrivacyPreferencesManager.getInstance(context).initCrashUploadPreference(true);
             }
 
             // We show the sign-in page if sync is allowed, and this is not an EDU device, and
