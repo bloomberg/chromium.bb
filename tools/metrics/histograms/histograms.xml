@@ -9012,6 +9012,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.EnhancedBookmarksManagerNumEventListeners">
+  <owner>kalman@chromium.org</owner>
+  <owner>wittman@chromium.org</owner>
+  <summary>
+    The number of event listeners the Enhanced Bookmarks Manager has, measured
+    at profile startup. A value of 0 implies that Chrome has a general bug with
+    event page management, since the bookmarks manager should always have at
+    least one event listener - but a bug with event page management that affects
+    the bookmarks manager is particularly dire.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ErrorCodeFromCrxOpen">
   <owner>asargent@chromium.org</owner>
   <summary>
@@ -9024,7 +9036,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>yoz@chromium.org</owner>
   <summary>
     The number of extensions with event pages that have no registered event
-    listeners at browser startup. (This may indicate something has gone wrong;
+    listeners at profile startup. (This may indicate something has gone wrong;
     such event pages will never get started.)
   </summary>
 </histogram>
