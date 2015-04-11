@@ -23,12 +23,6 @@ struct ManagedMemoryPolicy;
 
 class CC_EXPORT OutputSurfaceClient {
  public:
-  // Called to synchronously re-initialize using the Context3D. Upon returning
-  // the compositor should be able to draw using GL what was previously
-  // committed.
-  virtual void DeferredInitialize() = 0;
-  // Must call OutputSurface::ReleaseContextProvider inside this call.
-  virtual void ReleaseGL() = 0;
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval) = 0;
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;

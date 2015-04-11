@@ -6492,13 +6492,9 @@ TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
   // No main thread evictions in resourceless software mode.
   set_reduce_memory_result(false);
   CountingSoftwareDevice* software_device = new CountingSoftwareDevice();
-  bool delegated_rendering = false;
-  FakeOutputSurface* output_surface =
-      FakeOutputSurface::CreateDeferredGL(
-          scoped_ptr<SoftwareOutputDevice>(software_device),
-          delegated_rendering).release();
-  EXPECT_TRUE(CreateHostImpl(DefaultSettings(),
-                             scoped_ptr<OutputSurface>(output_surface)));
+  EXPECT_TRUE(CreateHostImpl(
+      DefaultSettings(),
+      FakeOutputSurface::CreateSoftware(make_scoped_ptr(software_device))));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
 
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
@@ -6531,13 +6527,9 @@ TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
 TEST_F(LayerTreeHostImplTest,
        ForcedDrawToSoftwareDeviceSkipsUnsupportedLayers) {
   set_reduce_memory_result(false);
-  bool delegated_rendering = false;
-  FakeOutputSurface* output_surface =
-      FakeOutputSurface::CreateDeferredGL(
-          scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice()),
-          delegated_rendering).release();
   EXPECT_TRUE(CreateHostImpl(DefaultSettings(),
-                             scoped_ptr<OutputSurface>(output_surface)));
+                             FakeOutputSurface::CreateSoftware(
+                                 make_scoped_ptr(new CountingSoftwareDevice))));
 
   const gfx::Transform external_transform;
   const gfx::Rect external_viewport;
@@ -6571,87 +6563,6 @@ TEST_F(LayerTreeHostImplTest,
 
   EXPECT_EQ(1u, frame.will_draw_layers.size());
   EXPECT_EQ(host_impl_->active_tree()->root_layer(), frame.will_draw_layers[0]);
-}
-
-class LayerTreeHostImplTestDeferredInitialize : public LayerTreeHostImplTest {
- protected:
-  void SetUp() override {
-    LayerTreeHostImplTest::SetUp();
-
-    set_reduce_memory_result(false);
-
-    bool delegated_rendering = false;
-    scoped_ptr<FakeOutputSurface> output_surface(
-        FakeOutputSurface::CreateDeferredGL(
-            scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice()),
-            delegated_rendering));
-    output_surface_ = output_surface.get();
-
-    EXPECT_TRUE(CreateHostImpl(DefaultSettings(), output_surface.Pass()));
-
-    scoped_ptr<SolidColorLayerImpl> root_layer =
-        SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
-    SetupRootLayerImpl(root_layer.Pass());
-
-    onscreen_context_provider_ = TestContextProvider::Create();
-  }
-
-  void UpdateRendererCapabilitiesOnImplThread() override {
-    did_update_renderer_capabilities_ = true;
-  }
-
-  FakeOutputSurface* output_surface_;
-  scoped_refptr<TestContextProvider> onscreen_context_provider_;
-  bool did_update_renderer_capabilities_;
-};
-
-
-TEST_F(LayerTreeHostImplTestDeferredInitialize, Success) {
-  // Software draw.
-  DrawFrame();
-
-  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-
-  // DeferredInitialize and hardware draw.
-  did_update_renderer_capabilities_ = false;
-  EXPECT_TRUE(output_surface_->InitializeAndSetContext3d(
-      onscreen_context_provider_, nullptr));
-  EXPECT_EQ(onscreen_context_provider_.get(),
-            host_impl_->output_surface()->context_provider());
-  EXPECT_TRUE(did_update_renderer_capabilities_);
-
-  // Defer intialized GL draw.
-  DrawFrame();
-
-  // Revert back to software.
-  did_update_renderer_capabilities_ = false;
-  output_surface_->ReleaseGL();
-  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_TRUE(did_update_renderer_capabilities_);
-
-  // Software draw again.
-  DrawFrame();
-}
-
-TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails) {
-  // Software draw.
-  DrawFrame();
-
-  // Fail initialization of the onscreen context before the OutputSurface binds
-  // it to the thread.
-  onscreen_context_provider_->UnboundTestContext3d()->set_context_lost(true);
-
-  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-
-  // DeferredInitialize fails.
-  did_update_renderer_capabilities_ = false;
-  EXPECT_FALSE(output_surface_->InitializeAndSetContext3d(
-      onscreen_context_provider_, nullptr));
-  EXPECT_FALSE(host_impl_->output_surface()->context_provider());
-  EXPECT_FALSE(did_update_renderer_capabilities_);
-
-  // Software draw again.
-  DrawFrame();
 }
 
 // Checks that we have a non-0 default allocation if we pass a context that

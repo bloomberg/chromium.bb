@@ -89,9 +89,6 @@ class CC_EXPORT ResourceProvider {
       size_t id_allocation_chunk_size);
   virtual ~ResourceProvider();
 
-  void InitializeSoftware();
-  void InitializeGL();
-
   void DidLoseOutputSurface() { lost_output_surface_ = true; }
 
   int max_texture_size() const { return max_texture_size_; }
@@ -537,7 +534,8 @@ class CC_EXPORT ResourceProvider {
                    bool use_rgba_4444_texture_format,
                    size_t id_allocation_chunk_size);
 
-  void CleanUpGLIfNeeded();
+  void InitializeSoftware();
+  void InitializeGL();
 
   Resource* GetResource(ResourceId id);
   const Resource* LockForRead(ResourceId id);

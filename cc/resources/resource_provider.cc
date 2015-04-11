@@ -454,7 +454,27 @@ ResourceProvider::~ResourceProvider() {
   while (!resources_.empty())
     DeleteResourceInternal(resources_.begin(), FOR_SHUTDOWN);
 
-  CleanUpGLIfNeeded();
+  GLES2Interface* gl = ContextGL();
+  if (default_resource_type_ != RESOURCE_TYPE_GL_TEXTURE) {
+    // We are not in GL mode, but double check before returning.
+    DCHECK(!gl);
+    DCHECK(!texture_uploader_);
+    return;
+  }
+
+  DCHECK(gl);
+#if DCHECK_IS_ON()
+  // Check that all GL resources has been deleted.
+  for (ResourceMap::const_iterator itr = resources_.begin();
+       itr != resources_.end(); ++itr) {
+    DCHECK_NE(RESOURCE_TYPE_GL_TEXTURE, itr->second.type);
+  }
+#endif  // DCHECK_IS_ON()
+
+  texture_uploader_ = nullptr;
+  texture_id_allocator_ = nullptr;
+  buffer_id_allocator_ = nullptr;
+  gl->Finish();
 }
 
 bool ResourceProvider::InUseByConsumer(ResourceId id) {
@@ -1232,8 +1252,6 @@ void ResourceProvider::InitializeSoftware() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(RESOURCE_TYPE_BITMAP, default_resource_type_);
 
-  CleanUpGLIfNeeded();
-
   default_resource_type_ = RESOURCE_TYPE_BITMAP;
   // Pick an arbitrary limit here similar to what hardware might.
   max_texture_size_ = 16 * 1024;
@@ -1272,31 +1290,6 @@ void ResourceProvider::InitializeGL() {
       new TextureIdAllocator(gl, id_allocation_chunk_size_));
   buffer_id_allocator_.reset(
       new BufferIdAllocator(gl, id_allocation_chunk_size_));
-}
-
-void ResourceProvider::CleanUpGLIfNeeded() {
-  GLES2Interface* gl = ContextGL();
-  if (default_resource_type_ != RESOURCE_TYPE_GL_TEXTURE) {
-    // We are not in GL mode, but double check before returning.
-    DCHECK(!gl);
-    DCHECK(!texture_uploader_);
-    return;
-  }
-
-  DCHECK(gl);
-#if DCHECK_IS_ON()
-  // Check that all GL resources has been deleted.
-  for (ResourceMap::const_iterator itr = resources_.begin();
-       itr != resources_.end();
-       ++itr) {
-    DCHECK_NE(RESOURCE_TYPE_GL_TEXTURE, itr->second.type);
-  }
-#endif  // DCHECK_IS_ON()
-
-  texture_uploader_ = nullptr;
-  texture_id_allocator_ = nullptr;
-  buffer_id_allocator_ = nullptr;
-  gl->Finish();
 }
 
 int ResourceProvider::CreateChild(const ReturnCallback& return_callback) {

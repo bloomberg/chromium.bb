@@ -3041,128 +3041,6 @@ TEST_F(LayerTreeHostTestNumFramesPending, DISABLED_GLRenderer) {
   RunTest(true, false, true);
 }
 
-class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // PictureLayer can only be used with impl side painting enabled.
-    settings->impl_side_painting = true;
-  }
-
-  void SetupTree() override {
-    layer_ = FakePictureLayer::Create(&client_);
-    // Force commits to not be aborted so new frames get drawn, otherwise
-    // the renderer gets deferred initialized but nothing new needs drawing.
-    layer_->set_always_update_resources(true);
-    layer_tree_host()->SetRootLayer(layer_);
-    LayerTreeHostTest::SetupTree();
-  }
-
-  void BeginTest() override {
-    did_initialize_gl_ = false;
-    did_release_gl_ = false;
-    last_source_frame_number_drawn_ = -1;  // Never drawn.
-    PostSetNeedsCommitToMainThread();
-  }
-
-  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
-    scoped_ptr<TestWebGraphicsContext3D> context3d(
-        TestWebGraphicsContext3D::Create());
-
-    return FakeOutputSurface::CreateDeferredGL(
-        scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice),
-        delegating_renderer());
-  }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    ASSERT_TRUE(host_impl->RootLayer());
-    FakePictureLayerImpl* layer_impl =
-        static_cast<FakePictureLayerImpl*>(host_impl->RootLayer());
-
-    // The same frame can be draw multiple times if new visible tiles are
-    // rasterized. But we want to make sure we only post DeferredInitialize
-    // and ReleaseGL once, so early out if the same frame is drawn again.
-    if (last_source_frame_number_drawn_ ==
-        host_impl->active_tree()->source_frame_number())
-      return;
-
-    last_source_frame_number_drawn_ =
-        host_impl->active_tree()->source_frame_number();
-
-    if (!did_initialize_gl_) {
-      EXPECT_LE(1u, layer_impl->append_quads_count());
-      ImplThreadTaskRunner()->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &LayerTreeHostTestDeferredInitialize::DeferredInitializeAndRedraw,
-              base::Unretained(this),
-              base::Unretained(host_impl)));
-    } else if (did_initialize_gl_ && !did_release_gl_) {
-      EXPECT_LE(2u, layer_impl->append_quads_count());
-      ImplThreadTaskRunner()->PostTask(
-          FROM_HERE,
-          base::Bind(&LayerTreeHostTestDeferredInitialize::ReleaseGLAndRedraw,
-                     base::Unretained(this),
-                     base::Unretained(host_impl)));
-    } else if (did_initialize_gl_ && did_release_gl_) {
-      EXPECT_LE(3u, layer_impl->append_quads_count());
-      EndTest();
-    }
-  }
-
-  void DeferredInitializeAndRedraw(LayerTreeHostImpl* host_impl) {
-    EXPECT_FALSE(did_initialize_gl_);
-    // SetAndInitializeContext3D calls SetNeedsCommit.
-    FakeOutputSurface* fake_output_surface =
-        static_cast<FakeOutputSurface*>(host_impl->output_surface());
-    scoped_refptr<TestContextProvider> context_provider =
-        TestContextProvider::Create();  // Not bound to thread.
-    scoped_refptr<TestContextProvider> worker_context_provider =
-        TestContextProvider::Create();  // Not bound to thread.
-    EXPECT_TRUE(fake_output_surface->InitializeAndSetContext3d(
-        context_provider, worker_context_provider));
-    did_initialize_gl_ = true;
-  }
-
-  void ReleaseGLAndRedraw(LayerTreeHostImpl* host_impl) {
-    EXPECT_TRUE(did_initialize_gl_);
-    EXPECT_FALSE(did_release_gl_);
-    // ReleaseGL calls SetNeedsCommit.
-    static_cast<FakeOutputSurface*>(host_impl->output_surface())->ReleaseGL();
-    did_release_gl_ = true;
-  }
-
-  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
-    ASSERT_TRUE(result);
-    DelegatedFrameData* delegated_frame_data =
-        output_surface()->last_sent_frame().delegated_frame_data.get();
-    if (!delegated_frame_data)
-      return;
-
-    // Return all resources immediately.
-    TransferableResourceArray resources_to_return =
-        output_surface()->resources_held_by_parent();
-
-    CompositorFrameAck ack;
-    for (size_t i = 0; i < resources_to_return.size(); ++i)
-      output_surface()->ReturnResource(resources_to_return[i].id, &ack);
-    host_impl->ReclaimResources(&ack);
-  }
-
-  void AfterTest() override {
-    EXPECT_TRUE(did_initialize_gl_);
-    EXPECT_TRUE(did_release_gl_);
-  }
-
- private:
-  FakeContentLayerClient client_;
-  scoped_refptr<FakePictureLayer> layer_;
-  bool did_initialize_gl_;
-  bool did_release_gl_;
-  int last_source_frame_number_drawn_;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitialize);
-
 class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
  public:
   void SetupTree() override {
@@ -3187,8 +3065,13 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
   }
 
   scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
-    return FakeOutputSurface::CreateDeferredGL(
-        make_scoped_ptr(new SoftwareOutputDevice), delegating_renderer());
+    if (delegating_renderer()) {
+      return FakeOutputSurface::CreateDelegatingSoftware(
+          make_scoped_ptr(new SoftwareOutputDevice));
+    } else {
+      return FakeOutputSurface::CreateSoftware(
+          make_scoped_ptr(new SoftwareOutputDevice));
+    }
   }
 
   void BeginTest() override {
@@ -3248,18 +3131,6 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
 };
 
 MULTI_THREAD_IMPL_TEST_F(LayerTreeHostTestResourcelessSoftwareDraw);
-
-class LayerTreeHostTestDeferredInitializeWithGpuRasterization
-    : public LayerTreeHostTestDeferredInitialize {
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // PictureLayer can only be used with impl side painting enabled.
-    settings->impl_side_painting = true;
-    settings->gpu_rasterization_enabled = true;
-    settings->gpu_rasterization_forced = true;
-  }
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitializeWithGpuRasterization);
 
 // Test for UI Resource management.
 class LayerTreeHostTestUIResource : public LayerTreeHostTest {

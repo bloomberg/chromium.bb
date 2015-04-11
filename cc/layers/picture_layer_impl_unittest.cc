@@ -2582,52 +2582,6 @@ TEST_F(PictureLayerImplTest, PinchingTooSmallWithContentsScale) {
                   pending_layer_->HighResTiling()->contents_scale());
 }
 
-class DeferredInitPictureLayerImplTest : public PictureLayerImplTest {
- public:
-  void InitializeRenderer() override {
-    bool delegated_rendering = false;
-    host_impl_.InitializeRenderer(FakeOutputSurface::CreateDeferredGL(
-        scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice),
-        delegated_rendering));
-  }
-
-  void SetUp() override {
-    PictureLayerImplTest::SetUp();
-
-    // Create some default active and pending trees.
-    gfx::Size tile_size(100, 100);
-    gfx::Size layer_bounds(400, 400);
-
-    scoped_refptr<FakePicturePileImpl> pending_pile =
-        FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-    scoped_refptr<FakePicturePileImpl> active_pile =
-        FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-
-    SetupTrees(pending_pile, active_pile);
-  }
-};
-
-// This test is really a LayerTreeHostImpl test, in that it makes sure
-// that trees need update draw properties after deferred initialization.
-// However, this is also a regression test for PictureLayerImpl in that
-// not having this update will cause a crash.
-TEST_F(DeferredInitPictureLayerImplTest, PreventUpdateTilesDuringLostContext) {
-  host_impl_.pending_tree()->UpdateDrawProperties(true);
-  host_impl_.active_tree()->UpdateDrawProperties(false);
-  EXPECT_FALSE(host_impl_.pending_tree()->needs_update_draw_properties());
-  EXPECT_FALSE(host_impl_.active_tree()->needs_update_draw_properties());
-
-  FakeOutputSurface* fake_output_surface =
-      static_cast<FakeOutputSurface*>(host_impl_.output_surface());
-  ASSERT_TRUE(fake_output_surface->InitializeAndSetContext3d(
-      TestContextProvider::Create(), TestContextProvider::Create()));
-
-  // These will crash PictureLayerImpl if this is not true.
-  ASSERT_TRUE(host_impl_.pending_tree()->needs_update_draw_properties());
-  ASSERT_TRUE(host_impl_.active_tree()->needs_update_draw_properties());
-  host_impl_.active_tree()->UpdateDrawProperties(false);
-}
-
 TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForCpuRasterization) {
   gfx::Size viewport_size(1000, 1000);
   host_impl_.SetViewportSize(viewport_size);

@@ -279,8 +279,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetNeedsRedrawForScrollbarAnimation() override;
 
   // OutputSurfaceClient implementation.
-  void DeferredInitialize() override;
-  void ReleaseGL() override;
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
   void SetNeedsRedrawRect(const gfx::Rect& rect) override;
@@ -578,7 +576,6 @@ class CC_EXPORT LayerTreeHostImpl
   void DestroyTileManager();
   void ReleaseTreeResources();
   void RecreateTreeResources();
-  void EnforceZeroBudget(bool zero_budget);
 
   bool IsSynchronousSingleThreaded() const;
 
@@ -619,8 +616,7 @@ class CC_EXPORT LayerTreeHostImpl
   float DeviceSpaceDistanceToLayer(const gfx::PointF& device_viewport_point,
                                    LayerImpl* layer_impl);
   void StartScrollbarFadeRecursive(LayerImpl* layer);
-  void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy,
-                              bool zero_budget);
+  void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
   void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
 
   void MarkUIResourceNotEvicted(UIResourceId uid);
@@ -711,8 +707,6 @@ class CC_EXPORT LayerTreeHostImpl
   // The maximum memory that would be used by the prioritized resource
   // manager, if there were no limit on memory usage.
   size_t max_memory_needed_bytes_;
-
-  bool zero_budget_;
 
   // Viewport size passed in from the main thread, in physical pixels.  This
   // value is the default size for all concepts of physical viewport (draw

@@ -15,21 +15,10 @@ class OutputSurface;
 class FakeOutputSurfaceClient : public OutputSurfaceClient {
  public:
   FakeOutputSurfaceClient()
-      : output_surface_(NULL),
-        swap_count_(0),
-        deferred_initialize_called_(false),
+      : swap_count_(0),
         did_lose_output_surface_called_(false),
         memory_policy_(0) {}
 
-  explicit FakeOutputSurfaceClient(OutputSurface* output_surface)
-      : output_surface_(output_surface),
-        swap_count_(0),
-        deferred_initialize_called_(false),
-        did_lose_output_surface_called_(false),
-        memory_policy_(0) {}
-
-  void DeferredInitialize() override;
-  void ReleaseGL() override;
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override {}
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override {}
@@ -50,10 +39,6 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
 
   int swap_count() { return swap_count_; }
 
-  bool deferred_initialize_called() {
-    return deferred_initialize_called_;
-  }
-
   bool did_lose_output_surface_called() {
     return did_lose_output_surface_called_;
   }
@@ -61,9 +46,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   const ManagedMemoryPolicy& memory_policy() const { return memory_policy_; }
 
  private:
-  OutputSurface* output_surface_;
   int swap_count_;
-  bool deferred_initialize_called_;
   bool did_lose_output_surface_called_;
   ManagedMemoryPolicy memory_policy_;
 };

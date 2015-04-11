@@ -200,14 +200,6 @@ void Display::OnDraw() {
   NOTREACHED();
 }
 
-void Display::DeferredInitialize() {
-  NOTREACHED();
-}
-
-void Display::ReleaseGL() {
-  NOTREACHED();
-}
-
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   NOTREACHED();
 }

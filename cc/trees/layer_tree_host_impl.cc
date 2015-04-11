@@ -214,7 +214,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
           proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
                                   : proxy_->MainThreadTaskRunner())),
       max_memory_needed_bytes_(0),
-      zero_budget_(false),
       device_scale_factor_(1.f),
       resourceless_software_draw_(false),
       begin_impl_frame_interval_(BeginFrameArgs::DefaultInterval()),
@@ -592,11 +591,6 @@ DrawMode LayerTreeHostImpl::GetDrawMode() const {
   } else if (output_surface_->context_provider()) {
     return DRAW_MODE_HARDWARE;
   } else {
-    DCHECK_EQ(!output_surface_->software_device(),
-              output_surface_->capabilities().delegated_rendering &&
-                  !output_surface_->capabilities().deferred_gl_initialization)
-        << output_surface_->capabilities().delegated_rendering << " "
-        << output_surface_->capabilities().deferred_gl_initialization;
     return DRAW_MODE_SOFTWARE;
   }
 }
@@ -1323,7 +1317,7 @@ void LayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {
 }
 
 void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
-  SetManagedMemoryPolicy(policy, zero_budget_);
+  SetManagedMemoryPolicy(policy);
 }
 
 void LayerTreeHostImpl::SetTreeActivationCallback(
@@ -1334,14 +1328,13 @@ void LayerTreeHostImpl::SetTreeActivationCallback(
 }
 
 void LayerTreeHostImpl::SetManagedMemoryPolicy(
-    const ManagedMemoryPolicy& policy, bool zero_budget) {
-  if (cached_managed_memory_policy_ == policy && zero_budget_ == zero_budget)
+    const ManagedMemoryPolicy& policy) {
+  if (cached_managed_memory_policy_ == policy)
     return;
 
   ManagedMemoryPolicy old_policy = ActualManagedMemoryPolicy();
 
   cached_managed_memory_policy_ = policy;
-  zero_budget_ = zero_budget;
   ManagedMemoryPolicy actual_policy = ActualManagedMemoryPolicy();
 
   if (old_policy == actual_policy)
@@ -1928,11 +1921,6 @@ ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
     actual.priority_cutoff_when_visible =
         gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
   }
-
-  if (zero_budget_) {
-    actual.bytes_limit_when_visible = 0;
-  }
-
   return actual;
 }
 
@@ -2133,10 +2121,6 @@ bool LayerTreeHostImpl::IsSynchronousSingleThreaded() const {
   return !proxy_->HasImplThread() && !settings_.single_thread_proxy_scheduler;
 }
 
-void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {
-  SetManagedMemoryPolicy(cached_managed_memory_policy_, zero_budget);
-}
-
 bool LayerTreeHostImpl::InitializeRenderer(
     scoped_ptr<OutputSurface> output_surface) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::InitializeRenderer");
@@ -2166,9 +2150,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
       settings_.renderer_settings.highp_threshold_min,
       settings_.renderer_settings.use_rgba_4444_textures,
       settings_.renderer_settings.texture_id_allocation_chunk_size);
-
-  if (output_surface_->capabilities().deferred_gl_initialization)
-    EnforceZeroBudget(true);
 
   CreateAndSetRenderer();
 
@@ -2208,45 +2189,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
 void LayerTreeHostImpl::CommitVSyncParameters(base::TimeTicks timebase,
                                               base::TimeDelta interval) {
   client_->CommitVSyncParameters(timebase, interval);
-}
-
-void LayerTreeHostImpl::DeferredInitialize() {
-  DCHECK(output_surface_->capabilities().deferred_gl_initialization);
-  DCHECK(settings_.impl_side_painting);
-  DCHECK(output_surface_->context_provider());
-
-  ReleaseTreeResources();
-  renderer_ = nullptr;
-  DestroyTileManager();
-
-  resource_provider_->InitializeGL();
-
-  CreateAndSetRenderer();
-  EnforceZeroBudget(false);
-  CreateAndSetTileManager();
-  RecreateTreeResources();
-
-  client_->SetNeedsCommitOnImplThread();
-}
-
-void LayerTreeHostImpl::ReleaseGL() {
-  DCHECK(output_surface_->capabilities().deferred_gl_initialization);
-  DCHECK(settings_.impl_side_painting);
-  DCHECK(output_surface_->context_provider());
-
-  ReleaseTreeResources();
-  renderer_ = nullptr;
-  DestroyTileManager();
-
-  resource_provider_->InitializeSoftware();
-  output_surface_->ReleaseContextProvider();
-
-  CreateAndSetRenderer();
-  EnforceZeroBudget(true);
-  CreateAndSetTileManager();
-  RecreateTreeResources();
-
-  client_->SetNeedsCommitOnImplThread();
 }
 
 void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {

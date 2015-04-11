@@ -73,15 +73,6 @@ class FakeOutputSurface : public OutputSurface {
         new FakeOutputSurface(software_device.Pass(), true));
   }
 
-  static scoped_ptr<FakeOutputSurface> CreateDeferredGL(
-      scoped_ptr<SoftwareOutputDevice> software_device,
-      bool delegated_rendering) {
-    scoped_ptr<FakeOutputSurface> result(
-        new FakeOutputSurface(software_device.Pass(), delegated_rendering));
-    result->capabilities_.deferred_gl_initialization = true;
-    return result.Pass();
-  }
-
   static scoped_ptr<FakeOutputSurface> CreateAlwaysDrawAndSwap3d() {
     scoped_ptr<FakeOutputSurface> surface(Create3d());
     surface->capabilities_.draw_and_swap_full_viewport_every_frame = true;
@@ -113,9 +104,6 @@ class FakeOutputSurface : public OutputSurface {
 
   void set_framebuffer(unsigned framebuffer) { framebuffer_ = framebuffer; }
   void BindFramebuffer() override;
-
-  using OutputSurface::ReleaseGL;
-  using OutputSurface::InitializeAndSetContext3d;
 
   void SetTreeActivationCallback(const base::Closure& callback);
 

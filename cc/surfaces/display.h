@@ -66,8 +66,6 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   int GetMaxFramesPending();
 
   // OutputSurfaceClient implementation.
-  void DeferredInitialize() override;
-  void ReleaseGL() override;
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;

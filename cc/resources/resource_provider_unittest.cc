@@ -3605,59 +3605,6 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   resource_provider->DeleteResource(dest_id);
 }
 
-void InitializeGLAndCheck(ContextSharedData* shared_data,
-                          ResourceProvider* resource_provider,
-                          FakeOutputSurface* output_surface) {
-  scoped_ptr<ResourceProviderContext> context_owned =
-      ResourceProviderContext::Create(shared_data);
-  ResourceProviderContext* context = context_owned.get();
-
-  scoped_refptr<TestContextProvider> context_provider =
-      TestContextProvider::Create(context_owned.Pass());
-  output_surface->InitializeAndSetContext3d(context_provider, nullptr);
-  resource_provider->InitializeGL();
-
-  CheckCreateResource(ResourceProvider::RESOURCE_TYPE_GL_TEXTURE,
-                      resource_provider, context);
-}
-
-TEST(ResourceProviderTest, BasicInitializeGLSoftware) {
-  scoped_ptr<ContextSharedData> shared_data = ContextSharedData::Create();
-  bool delegated_rendering = false;
-  scoped_ptr<FakeOutputSurface> output_surface(
-      FakeOutputSurface::CreateDeferredGL(
-          scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice),
-          delegated_rendering));
-  FakeOutputSurfaceClient client(output_surface.get());
-  EXPECT_TRUE(output_surface->BindToClient(&client));
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(output_surface.get(),
-                               shared_bitmap_manager.get(),
-                               NULL,
-                               NULL,
-                               0,
-                               false,
-                               1));
-
-  CheckCreateResource(ResourceProvider::RESOURCE_TYPE_BITMAP,
-                      resource_provider.get(), NULL);
-
-  InitializeGLAndCheck(shared_data.get(),
-                       resource_provider.get(),
-                       output_surface.get());
-
-  resource_provider->InitializeSoftware();
-  output_surface->ReleaseGL();
-  CheckCreateResource(ResourceProvider::RESOURCE_TYPE_BITMAP,
-                      resource_provider.get(), NULL);
-
-  InitializeGLAndCheck(shared_data.get(),
-                       resource_provider.get(),
-                       output_surface.get());
-}
-
 TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     return;

@@ -7,15 +7,6 @@
 
 namespace cc {
 
-void FakeOutputSurfaceClient::DeferredInitialize() {
-  deferred_initialize_called_ = true;
-}
-
-void FakeOutputSurfaceClient::ReleaseGL() {
-  if (output_surface_)
-    output_surface_->ReleaseContextProvider();
-}
-
 void FakeOutputSurfaceClient::DidSwapBuffers() {
   swap_count_++;
 }

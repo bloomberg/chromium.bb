@@ -65,7 +65,6 @@ class CC_EXPORT OutputSurface {
     Capabilities()
         : delegated_rendering(false),
           max_frames_pending(0),
-          deferred_gl_initialization(false),
           draw_and_swap_full_viewport_every_frame(false),
           adjust_deadline_for_parent(true),
           uses_default_gl_framebuffer(true),
@@ -74,7 +73,6 @@ class CC_EXPORT OutputSurface {
           delegated_sync_points_required(true) {}
     bool delegated_rendering;
     int max_frames_pending;
-    bool deferred_gl_initialization;
     bool draw_and_swap_full_viewport_every_frame;
     // This doesn't handle the <webview> case, but once BeginFrame is
     // supported natively, we shouldn't need adjust_deadline_for_parent.
@@ -115,11 +113,6 @@ class CC_EXPORT OutputSurface {
   // this point on the output surface will only be used on the compositor
   // thread.
   virtual bool BindToClient(OutputSurfaceClient* client);
-
-  // This is called by the compositor on the compositor thread inside ReleaseGL
-  // in order to release the ContextProvider. Only used with
-  // deferred_gl_initialization capability.
-  void ReleaseContextProvider();
 
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
@@ -164,13 +157,6 @@ class CC_EXPORT OutputSurface {
  protected:
   OutputSurfaceClient* client_;
 
-  // Synchronously initialize context3d and enter hardware mode.
-  // This can only supported in threaded compositing mode.
-  bool InitializeAndSetContext3d(
-      scoped_refptr<ContextProvider> context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider);
-  void ReleaseGL();
-
   void PostSwapBuffersComplete();
 
   struct OutputSurface::Capabilities capabilities_;
@@ -196,9 +182,6 @@ class CC_EXPORT OutputSurface {
       bool resourceless_software_draw);
 
  private:
-  void SetUpContext3d();
-  void ResetContext3d();
-
   bool external_stencil_test_enabled_;
 
   base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
