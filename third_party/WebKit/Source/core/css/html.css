@@ -140,7 +140,8 @@ hr {
     -webkit-margin-start: auto;
     -webkit-margin-end: auto;
     border-style: inset;
-    border-width: 1px
+    border-width: 1px;
+    box-sizing: border-box
 }
 
 map {
