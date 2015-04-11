@@ -758,7 +758,7 @@ class Cues {
   bool DoneParsing() const;
 
  private:
-  void Init() const;
+  bool Init() const;
   void PreloadCuePoint(long&, long long) const;
 
   mutable CuePoint** m_cue_points;

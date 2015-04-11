@@ -2152,9 +2152,9 @@ bool Cues::DoneParsing() const {
   return (m_pos >= stop);
 }
 
-void Cues::Init() const {
+bool Cues::Init() const {
   if (m_cue_points)
-    return;
+    return true;
 
   assert(m_count == 0);
   assert(m_preload_count == 0);
@@ -2172,24 +2172,28 @@ void Cues::Init() const {
     long len;
 
     const long long id = ReadUInt(pReader, pos, len);
-    assert(id >= 0);  // TODO
-    assert((pos + len) <= stop);
+    if (id < 0 || (pos + len) > stop) {
+      return false;
+    }
 
     pos += len;  // consume ID
 
     const long long size = ReadUInt(pReader, pos, len);
-    assert(size >= 0);
-    assert((pos + len) <= stop);
+    if (size < 0 || (pos + len > stop)) {
+      return false;
+    }
 
     pos += len;  // consume Size field
-    assert((pos + size) <= stop);
+    if (pos + size > stop) {
+      return false;
+    }
 
     if (id == 0x3B)  // CuePoint ID
       PreloadCuePoint(cue_points_size, idpos);
 
-    pos += size;  // consume payload
-    assert(pos <= stop);
+    pos += size;  // skip payload
   }
+  return true;
 }
 
 void Cues::PreloadCuePoint(long& cue_points_size, long long pos) const {
@@ -2226,7 +2230,10 @@ bool Cues::LoadCuePoint() const {
   if (m_pos >= stop)
     return false;  // nothing else to do
 
-  Init();
+  if (!Init()) {
+    m_pos = stop;
+    return false;
+  }
 
   IMkvReader* const pReader = m_pSegment->m_pReader;
 
