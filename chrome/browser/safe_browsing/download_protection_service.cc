@@ -771,12 +771,12 @@ class DownloadProtectionService::CheckClientDownloadRequest
     request.mutable_signature()->CopyFrom(signature_info_);
     if (image_headers_)
       request.set_allocated_image_headers(image_headers_.release());
+    if (zipped_executable_)
+      request.mutable_archived_binary()->Swap(&archived_binary_);
     if (!request.SerializeToString(&client_download_request_data_)) {
       FinishRequest(UNKNOWN, REASON_INVALID_REQUEST_PROTO);
       return;
     }
-    if (zipped_executable_)
-      request.mutable_archived_binary()->Swap(&archived_binary_);
     service_->client_download_request_callbacks_.Notify(item_, &request);
 
     DVLOG(2) << "Sending a request for URL: "

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 
+#include <stdint.h>
 #include <map>
 #include <string>
 
@@ -277,6 +278,16 @@ class DownloadProtectionServiceTest : public testing::Test {
       }
     }
     return false;
+  }
+
+  static const ClientDownloadRequest_ArchivedBinary* GetRequestArchivedBinary(
+      const ClientDownloadRequest& request,
+      const std::string& file_basename) {
+    for (const auto& archived_binary : request.archived_binary()) {
+      if (archived_binary.file_basename() == file_basename)
+        return &archived_binary;
+    }
+    return nullptr;
   }
 
   // Flushes any pending tasks in the message loops of all threads.
@@ -1113,6 +1124,15 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // OSX sends pings for evaluation purposes.
   EXPECT_TRUE(HasClientDownloadRequest());
+  const ClientDownloadRequest& request = *GetClientDownloadRequest();
+  EXPECT_EQ(1, request.archived_binary_size());
+  const ClientDownloadRequest_ArchivedBinary* archived_binary =
+      GetRequestArchivedBinary(request, "file.exe");
+  ASSERT_NE(nullptr, archived_binary);
+  EXPECT_EQ(ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+            archived_binary->download_type());
+  EXPECT_EQ(static_cast<int64_t>(file_contents.size()),
+            archived_binary->length());
   ClearClientDownloadRequest();
 #else
   EXPECT_FALSE(HasClientDownloadRequest());
