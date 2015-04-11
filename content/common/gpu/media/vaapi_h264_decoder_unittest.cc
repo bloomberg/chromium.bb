@@ -14,7 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "content/common/gpu/media/vaapi_h264_decoder.h"
+#include "content/common/gpu/media/h264_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "third_party/libyuv/include/libyuv.h"
 

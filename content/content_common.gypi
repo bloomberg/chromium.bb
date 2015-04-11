@@ -820,6 +820,15 @@
         },
       ],
     }],
+    ['chromeos==1', {
+      'sources': [
+        'common/gpu/media/accelerated_video_decoder.h',
+        'common/gpu/media/h264_decoder.cc',
+        'common/gpu/media/h264_decoder.h',
+        'common/gpu/media/h264_dpb.cc',
+        'common/gpu/media/h264_dpb.h',
+      ],
+    }],
     ['chromeos==1 and use_v4l2_codec==1', {
       'direct_dependent_settings': {
         'defines': [
@@ -833,13 +842,8 @@
         '../media/media.gyp:media',
       ],
       'sources': [
-        'common/gpu/media/accelerated_video_decoder.h',
         'common/gpu/media/generic_v4l2_device.cc',
         'common/gpu/media/generic_v4l2_device.h',
-        'common/gpu/media/h264_decoder.cc',
-        'common/gpu/media/h264_decoder.h',
-        'common/gpu/media/h264_dpb.cc',
-        'common/gpu/media/h264_dpb.h',
         'common/gpu/media/v4l2_device.cc',
         'common/gpu/media/v4l2_device.h',
         'common/gpu/media/v4l2_image_processor.cc',
@@ -872,10 +876,6 @@
       ],
       'sources': [
         'common/gpu/media/va_surface.h',
-        'common/gpu/media/vaapi_h264_decoder.cc',
-        'common/gpu/media/vaapi_h264_decoder.h',
-        'common/gpu/media/vaapi_h264_dpb.cc',
-        'common/gpu/media/vaapi_h264_dpb.h',
         'common/gpu/media/vaapi_jpeg_decoder.cc',
         'common/gpu/media/vaapi_jpeg_decoder.h',
         'common/gpu/media/vaapi_picture.cc',

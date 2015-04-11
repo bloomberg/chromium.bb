@@ -17,17 +17,24 @@
 namespace content {
 
 class V4L2H264Picture;
+class VaapiH264Picture;
 
 // A picture (a frame or a field) in the H.264 spec sense.
 // See spec at http://www.itu.int/rec/T-REC-H.264
-struct H264PictureBase {
+class H264Picture : public base::RefCounted<H264Picture> {
+ public:
+  using Vector = std::vector<scoped_refptr<H264Picture>>;
+
   enum Field {
     FIELD_NONE,
     FIELD_TOP,
     FIELD_BOTTOM,
   };
 
-  H264PictureBase();
+  H264Picture();
+
+  virtual V4L2H264Picture* AsV4L2H264Picture();
+  virtual VaapiH264Picture* AsVaapiH264Picture();
 
   // Values calculated per H.264 specification or taken from slice header.
   // See spec for more details on each (some names have been converted from
@@ -65,21 +72,12 @@ struct H264PictureBase {
 
   // Position in DPB (i.e. index in DPB).
   int dpb_position;
-};
-
-class H264Picture : public H264PictureBase,
-                    public base::RefCounted<H264Picture> {
- public:
-  H264Picture();
-
-  virtual V4L2H264Picture* AsV4L2H264Picture();
-
-  using Vector = std::vector<scoped_refptr<H264Picture>>;
 
  protected:
   friend class base::RefCounted<H264Picture>;
   virtual ~H264Picture();
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(H264Picture);
 };
 
@@ -139,8 +137,12 @@ class H264DPB {
   H264Picture::Vector::iterator end() { return pics_.end(); }
   H264Picture::Vector::const_iterator begin() const { return pics_.begin(); }
   H264Picture::Vector::const_iterator end() const { return pics_.end(); }
-  H264Picture::Vector::reverse_iterator rbegin() { return pics_.rbegin(); }
-  H264Picture::Vector::reverse_iterator rend() { return pics_.rend(); }
+  H264Picture::Vector::const_reverse_iterator rbegin() const {
+    return pics_.rbegin();
+  }
+  H264Picture::Vector::const_reverse_iterator rend() const {
+    return pics_.rend();
+  }
 
   size_t size() const { return pics_.size(); }
   bool IsFull() const { return pics_.size() == max_num_pics_; }

@@ -260,46 +260,47 @@ void VaapiVideoEncodeAccelerator::RecycleVASurfaceID(
 }
 
 void VaapiVideoEncodeAccelerator::BeginFrame(bool force_keyframe) {
-  memset(&current_pic_, 0, sizeof(current_pic_));
+  current_pic_ = new H264Picture();
 
   // If the current picture is an IDR picture, frame_num shall be equal to 0.
   if (force_keyframe)
     frame_num_ = 0;
 
-  current_pic_.frame_num = frame_num_++;
+  current_pic_->frame_num = frame_num_++;
   frame_num_ %= idr_period_;
 
-  if (current_pic_.frame_num == 0) {
-    current_pic_.idr = true;
+  if (current_pic_->frame_num == 0) {
+    current_pic_->idr = true;
     // H264 spec mandates idr_pic_id to differ between two consecutive IDRs.
     idr_pic_id_ ^= 1;
     ref_pic_list0_.clear();
   }
 
-  if (current_pic_.frame_num % i_period_ == 0)
-    current_pic_.type = media::H264SliceHeader::kISlice;
+  if (current_pic_->frame_num % i_period_ == 0)
+    current_pic_->type = media::H264SliceHeader::kISlice;
   else
-    current_pic_.type = media::H264SliceHeader::kPSlice;
+    current_pic_->type = media::H264SliceHeader::kPSlice;
 
-  if (current_pic_.type != media::H264SliceHeader::kBSlice)
-    current_pic_.ref = true;
+  if (current_pic_->type != media::H264SliceHeader::kBSlice)
+    current_pic_->ref = true;
 
-  current_pic_.pic_order_cnt = current_pic_.frame_num * 2;
-  current_pic_.top_field_order_cnt = current_pic_.pic_order_cnt;
-  current_pic_.pic_order_cnt_lsb = current_pic_.pic_order_cnt;
+  current_pic_->pic_order_cnt = current_pic_->frame_num * 2;
+  current_pic_->top_field_order_cnt = current_pic_->pic_order_cnt;
+  current_pic_->pic_order_cnt_lsb = current_pic_->pic_order_cnt;
 
-  current_encode_job_->keyframe = current_pic_.idr;
+  current_encode_job_->keyframe = current_pic_->idr;
 
-  DVLOGF(4) << "Starting a new frame, type: " << current_pic_.type
+  DVLOGF(4) << "Starting a new frame, type: " << current_pic_->type
             << (force_keyframe ? " (forced keyframe)" : "")
-            << " frame_num: " << current_pic_.frame_num
-            << " POC: " << current_pic_.pic_order_cnt;
+            << " frame_num: " << current_pic_->frame_num
+            << " POC: " << current_pic_->pic_order_cnt;
 }
 
 void VaapiVideoEncodeAccelerator::EndFrame() {
+  DCHECK(current_pic_);
   // Store the picture on the list of reference pictures and keep the list
   // below maximum size, dropping oldest references.
-  if (current_pic_.ref)
+  if (current_pic_->ref)
     ref_pic_list0_.push_front(current_encode_job_->recon_surface);
   size_t max_num_ref_frames =
       base::checked_cast<size_t>(current_sps_.max_num_ref_frames);
@@ -316,6 +317,7 @@ static void InitVAPicture(VAPictureH264* va_pic) {
 }
 
 bool VaapiVideoEncodeAccelerator::SubmitFrameParameters() {
+  DCHECK(current_pic_);
   VAEncSequenceParameterBufferH264 seq_param;
   memset(&seq_param, 0, sizeof(seq_param));
 
@@ -368,8 +370,8 @@ bool VaapiVideoEncodeAccelerator::SubmitFrameParameters() {
   memset(&pic_param, 0, sizeof(pic_param));
 
   pic_param.CurrPic.picture_id = current_encode_job_->recon_surface->id();
-  pic_param.CurrPic.TopFieldOrderCnt = current_pic_.top_field_order_cnt;
-  pic_param.CurrPic.BottomFieldOrderCnt = current_pic_.bottom_field_order_cnt;
+  pic_param.CurrPic.TopFieldOrderCnt = current_pic_->top_field_order_cnt;
+  pic_param.CurrPic.BottomFieldOrderCnt = current_pic_->bottom_field_order_cnt;
   pic_param.CurrPic.flags = 0;
 
   for (size_t i = 0; i < arraysize(pic_param.ReferenceFrames); ++i)
@@ -387,11 +389,11 @@ bool VaapiVideoEncodeAccelerator::SubmitFrameParameters() {
   pic_param.coded_buf = current_encode_job_->coded_buffer;
   pic_param.pic_parameter_set_id = current_pps_.pic_parameter_set_id;
   pic_param.seq_parameter_set_id = current_pps_.seq_parameter_set_id;
-  pic_param.frame_num = current_pic_.frame_num;
+  pic_param.frame_num = current_pic_->frame_num;
   pic_param.pic_init_qp = qp_;
   pic_param.num_ref_idx_l0_active_minus1 = max_ref_idx_l0_size_ - 1;
-  pic_param.pic_fields.bits.idr_pic_flag = current_pic_.idr;
-  pic_param.pic_fields.bits.reference_pic_flag = current_pic_.ref;
+  pic_param.pic_fields.bits.idr_pic_flag = current_pic_->idr;
+  pic_param.pic_fields.bits.reference_pic_flag = current_pic_->ref;
 #define PPS_TO_PP_PF(a) pic_param.pic_fields.bits.a = current_pps_.a;
   PPS_TO_PP_PF(entropy_coding_mode_flag);
   PPS_TO_PP_PF(transform_8x8_mode_flag);
@@ -408,10 +410,10 @@ bool VaapiVideoEncodeAccelerator::SubmitFrameParameters() {
 
   slice_param.num_macroblocks = mb_width_ * mb_height_;
   slice_param.macroblock_info = VA_INVALID_ID;
-  slice_param.slice_type = current_pic_.type;
+  slice_param.slice_type = current_pic_->type;
   slice_param.pic_parameter_set_id = current_pps_.pic_parameter_set_id;
   slice_param.idr_pic_id = idr_pic_id_;
-  slice_param.pic_order_cnt_lsb = current_pic_.pic_order_cnt_lsb;
+  slice_param.pic_order_cnt_lsb = current_pic_->pic_order_cnt_lsb;
   slice_param.num_ref_idx_active_override_flag = true;
 
   for (size_t i = 0; i < arraysize(slice_param.RefPicList0); ++i)
@@ -471,7 +473,8 @@ bool VaapiVideoEncodeAccelerator::SubmitFrameParameters() {
 }
 
 bool VaapiVideoEncodeAccelerator::SubmitHeadersIfNeeded() {
-  if (current_pic_.type != media::H264SliceHeader::kISlice)
+  DCHECK(current_pic_);
+  if (current_pic_->type != media::H264SliceHeader::kISlice)
     return true;
 
   // Submit PPS.
@@ -509,7 +512,8 @@ bool VaapiVideoEncodeAccelerator::SubmitHeadersIfNeeded() {
 }
 
 bool VaapiVideoEncodeAccelerator::ExecuteEncode() {
-  DVLOGF(3) << "Encoding frame_num: " << current_pic_.frame_num;
+  DCHECK(current_pic_);
+  DVLOGF(3) << "Encoding frame_num: " << current_pic_->frame_num;
   return vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
       current_encode_job_->input_surface->id());
 }

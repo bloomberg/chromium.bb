@@ -14388,7 +14388,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.VAVDA.DecoderFailure" enum="VAVDADecoderFailure">
+  <owner>posciak@chromium.org</owner>
+  <summary>
+    Error codes reported by video decode using VA-API hardware video decoder.
+  </summary>
+</histogram>
+
 <histogram name="Media.VAVDAH264.DecoderFailure" enum="VAVDAH264DecoderFailure">
+  <obsolete>
+    Deprecated as of 4/2015, partially replaced by Media.VAVDA.DecoderFailure.
+  </obsolete>
   <owner>posciak@chromium.org</owner>
   <summary>
     Error codes reported by video decode using VA-API hardware video decoder.
@@ -62684,6 +62694,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="No Vary header present"/>
   <int value="1" label="Vary:User-Agent"/>
   <int value="2" label="Other"/>
+</enum>
+
+<enum name="VAVDADecoderFailure" type="int">
+  <int value="0" label="VAAPI_ERROR"/>
 </enum>
 
 <enum name="VAVDAH264DecoderFailure" type="int">
