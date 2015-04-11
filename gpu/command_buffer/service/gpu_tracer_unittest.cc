@@ -294,11 +294,13 @@ class BaseGpuTest : public GpuServiceTest {
   }
 
   void ExpectOutputterMocks(MockOutputter* outputter,
+                            bool tracing_device,
                             const std::string& category,
                             const std::string& name, int64 expect_start_time,
                             int64 expect_end_time) {
     ExpectOutputterBeginMocks(outputter, category, name);
-    bool valid_timer = gpu_timing_client_->IsAvailable() &&
+    bool valid_timer = tracing_device &&
+                       gpu_timing_client_->IsAvailable() &&
                        gpu_timing_client_->IsTimerOffsetAvailable();
     ExpectOutputterEndMocks(outputter, category, name, expect_start_time,
                             expect_end_time, valid_timer);
@@ -331,7 +333,7 @@ class BaseGpuTraceTest : public BaseGpuTest {
   explicit BaseGpuTraceTest(gfx::GPUTiming::TimerType test_timer_type)
       : BaseGpuTest(test_timer_type) {}
 
-  void DoTraceTest() {
+  void DoTraceTest(bool tracing_service, bool tracing_device) {
     // Expected results
     const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
@@ -344,29 +346,34 @@ class BaseGpuTraceTest : public BaseGpuTest {
     const int64 expect_end_time =
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
-    ExpectTraceQueryMocks();
-    ExpectOutputterMocks(outputter_ref_.get(), category_name, trace_name,
-                         expect_start_time, expect_end_time);
+    if (tracing_service)
+      ExpectOutputterMocks(outputter_ref_.get(), tracing_device, category_name,
+                           trace_name, expect_start_time, expect_end_time);
+
+    if (tracing_device)
+      ExpectTraceQueryMocks();
 
     scoped_refptr<GPUTrace> trace = new GPUTrace(
         outputter_ref_, gpu_timing_client_.get(),
-        category_name, trace_name, true);
+        category_name, trace_name, tracing_service, tracing_device);
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
     g_fakeCPUTime = expect_start_time;
-    trace->Start(true);
+    trace->Start();
 
     // Shouldn't be available before End() call
     gl_fake_queries_.SetCurrentGLTime(end_timestamp);
     g_fakeCPUTime = expect_end_time;
-    EXPECT_FALSE(trace->IsAvailable());
+    if (tracing_device)
+      EXPECT_FALSE(trace->IsAvailable());
 
-    trace->End(true);
+    trace->End();
 
     // Shouldn't be available until the queries complete
     gl_fake_queries_.SetCurrentGLTime(end_timestamp -
                                       base::Time::kNanosecondsPerMicrosecond);
-    EXPECT_FALSE(trace->IsAvailable());
+    if (tracing_device)
+      EXPECT_FALSE(trace->IsAvailable());
 
     // Now it should be available
     gl_fake_queries_.SetCurrentGLTime(end_timestamp);
@@ -393,12 +400,36 @@ class GpuDisjointTimerTraceTest : public BaseGpuTraceTest {
       : BaseGpuTraceTest(gfx::GPUTiming::kTimerTypeDisjoint) {}
 };
 
-TEST_F(GpuARBTimerTraceTest, ARBTimerTraceTest) {
-  DoTraceTest();
+TEST_F(GpuARBTimerTraceTest, ARBTimerTraceTestOff) {
+  DoTraceTest(false, false);
 }
 
-TEST_F(GpuDisjointTimerTraceTest, DisjointTimerTraceTest) {
-  DoTraceTest();
+TEST_F(GpuARBTimerTraceTest, ARBTimerTraceTestServiceOnly) {
+  DoTraceTest(true, false);
+}
+
+TEST_F(GpuARBTimerTraceTest, ARBTimerTraceTestDeviceOnly) {
+  DoTraceTest(false, true);
+}
+
+TEST_F(GpuARBTimerTraceTest, ARBTimerTraceTestBothOn) {
+  DoTraceTest(true, true);
+}
+
+TEST_F(GpuDisjointTimerTraceTest, DisjointTimerTraceTestOff) {
+  DoTraceTest(false, false);
+}
+
+TEST_F(GpuDisjointTimerTraceTest, DisjointTimerTraceTestServiceOnly) {
+  DoTraceTest(true, false);
+}
+
+TEST_F(GpuDisjointTimerTraceTest, DisjointTimerTraceTestDeviceOnly) {
+  DoTraceTest(false, true);
+}
+
+TEST_F(GpuDisjointTimerTraceTest, DisjointTimerTraceTestBothOn) {
+  DoTraceTest(true, true);
 }
 
 // Test GPUTracer calls all the correct gl calls.
