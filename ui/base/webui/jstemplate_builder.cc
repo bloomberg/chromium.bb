@@ -85,7 +85,7 @@ void AppendJsTemplateProcessHtml(
 void AppendI18nTemplateSourceHtml(std::string* output) {
   base::StringPiece i18n_template_src(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_WEBUI_I18N_TEMPLATE2_JS));
+          IDR_WEBUI_I18N_TEMPLATE_JS));
 
   if (i18n_template_src.empty()) {
     NOTREACHED() << "Unable to get i18n template src";
