@@ -10,7 +10,7 @@ from telemetry import benchmark
 from measurements import session_restore
 import page_sets
 from profile_creators import profile_generator
-from profile_creators import small_profile_creator
+from profile_creators import small_profile_extender
 
 
 class _SessionRestoreTypical25(benchmark.Benchmark):
@@ -47,7 +47,8 @@ class _SessionRestoreTypical25(benchmark.Benchmark):
         new_args.pageset_repeat = 1
         new_args.output_dir = output_dir
         profile_generator.GenerateProfiles(
-            small_profile_creator.SmallProfileCreator, profile_type, new_args)
+            small_profile_extender.SmallProfileExtender,
+            profile_type, new_args)
       args.browser_options.profile_dir = profile_dir
 
   @classmethod
