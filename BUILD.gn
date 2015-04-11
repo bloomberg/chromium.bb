@@ -518,10 +518,16 @@ group("gn_all") {
 group("gn_only") {
   testonly = true
 
+  deps = []
+
+  if (!is_android && !is_ios) {
+    deps += [ "//components/proximity_auth:proximity_auth_unittests" ]
+  }
+
   if (is_linux && !is_chromeos) {
     # TODO(GYP): Figure out if any of these should be in gn_all
     # and figure out how cross-platform they are
-    deps = [
+    deps += [
       ":gn_mojo_targets",
       "//chrome/browser/resources:extension_resource_demo",
       "//chrome/installer/util:strings",
@@ -530,9 +536,8 @@ group("gn_only") {
       "//chrome/tools/convert_dict",
       "//components/constrained_window:unit_tests",
       "//components/enhanced_bookmarks:test_support",
-      "//components/password_manager/content/renderer:browser_tests",
       "//components/metrics:serialization",
-      "//components/proximity_auth:proximity_auth_unittests",
+      "//components/password_manager/content/renderer:browser_tests",
       "//components/rappor:unit_tests",
       "//components/sessions:unit_tests",
       "//media/blink:media_blink_unittests",
