@@ -12,12 +12,11 @@ namespace i18n {
 
 // Compares the character data stored in two different string16 strings by
 // specified Collator instance.
-UCollationResult CompareString16WithCollator(const icu::Collator* collator,
+UCollationResult CompareString16WithCollator(const icu::Collator& collator,
                                              const string16& lhs,
                                              const string16& rhs) {
-  DCHECK(collator);
   UErrorCode error = U_ZERO_ERROR;
-  UCollationResult result = collator->compare(
+  UCollationResult result = collator.compare(
       static_cast<const UChar*>(lhs.c_str()), static_cast<int>(lhs.length()),
       static_cast<const UChar*>(rhs.c_str()), static_cast<int>(rhs.length()),
       error);

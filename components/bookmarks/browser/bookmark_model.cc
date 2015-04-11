@@ -78,7 +78,7 @@ class SortComparator : public std::binary_function<const BookmarkNode*,
       if (!collator_)
         return n1->GetTitle() < n2->GetTitle();
       return base::i18n::CompareString16WithCollator(
-          collator_, n1->GetTitle(), n2->GetTitle()) == UCOL_LESS;
+                 *collator_, n1->GetTitle(), n2->GetTitle()) == UCOL_LESS;
     }
     // Types differ, sort such that folders come first.
     return n1->is_folder();

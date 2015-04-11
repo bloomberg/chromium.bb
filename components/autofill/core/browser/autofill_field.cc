@@ -396,7 +396,7 @@ base::string16 RemoveWhitespace(const base::string16& value) {
 
 bool StringsEqualWithCollator(const base::string16& lhs,
                               const base::string16& rhs,
-                              icu::Collator* collator) {
+                              const icu::Collator& collator) {
   return base::i18n::CompareString16WithCollator(collator, lhs, rhs) ==
       UCOL_EQUAL;
 }
@@ -555,16 +555,14 @@ bool AutofillField::FindValueInSelectControl(const FormFieldData& field,
 
   for (size_t i = 0; i < field.option_values.size(); ++i) {
     base::string16 option_value = RemoveWhitespace(field.option_values[i]);
-    if (StringsEqualWithCollator(value_stripped, option_value,
-                                 collator.get())) {
+    if (StringsEqualWithCollator(value_stripped, option_value, *collator)) {
       if (index)
         *index = i;
       return true;
     }
 
     base::string16 option_contents = RemoveWhitespace(field.option_contents[i]);
-    if (StringsEqualWithCollator(value_stripped, option_contents,
-                                 collator.get())) {
+    if (StringsEqualWithCollator(value_stripped, option_contents, *collator)) {
       if (index)
         *index = i;
       return true;

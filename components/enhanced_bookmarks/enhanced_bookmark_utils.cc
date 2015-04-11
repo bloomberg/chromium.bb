@@ -26,8 +26,8 @@ class BookmarkNameComparator : public std::binary_function<const BookmarkNode*,
     DCHECK(!n2->is_folder());
     if (!collator_)
       return n1->GetTitle() < n2->GetTitle();
-    return base::i18n::CompareString16WithCollator(
-               collator_, n1->GetTitle(), n2->GetTitle()) == UCOL_LESS;
+    return base::i18n::CompareString16WithCollator(*collator_, n1->GetTitle(),
+                                                   n2->GetTitle()) == UCOL_LESS;
   }
 
  private:

@@ -104,7 +104,7 @@ class NotifierComparator {
       return n1->notifier_id.type < n2->notifier_id.type;
 
     if (collator_) {
-      return base::i18n::CompareString16WithCollator(collator_, n1->name,
+      return base::i18n::CompareString16WithCollator(*collator_, n1->name,
                                                      n2->name) == UCOL_LESS;
     }
     return n1->name < n2->name;

@@ -87,8 +87,8 @@ class CertNameComparator {
     base::string16 rhs_name = GetDisplayString(rhs.get(), false);
     if (collator_ == NULL)
       return lhs_name < rhs_name;
-    return base::i18n::CompareString16WithCollator(
-        collator_, lhs_name, rhs_name) == UCOL_LESS;
+    return base::i18n::CompareString16WithCollator(*collator_, lhs_name,
+                                                   rhs_name) == UCOL_LESS;
   }
 
  private:

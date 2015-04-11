@@ -92,8 +92,8 @@ struct DictionaryIdComparator {
     b_dict->GetString(kNameId, &b_str);
     if (collator_ == NULL)
       return a_str < b_str;
-    return base::i18n::CompareString16WithCollator(
-        collator_, a_str, b_str) == UCOL_LESS;
+    return base::i18n::CompareString16WithCollator(*collator_, a_str, b_str) ==
+           UCOL_LESS;
   }
 
   icu::Collator* collator_;

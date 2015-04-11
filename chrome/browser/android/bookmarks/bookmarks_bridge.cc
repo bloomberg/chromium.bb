@@ -66,8 +66,8 @@ class BookmarkTitleComparer {
   bool operator()(const BookmarkNode* lhs, const BookmarkNode* rhs) {
     if (collator_) {
       return base::i18n::CompareString16WithCollator(
-          collator_, bookmarks_bridge_->GetTitle(lhs),
-          bookmarks_bridge_->GetTitle(rhs)) == UCOL_LESS;
+                 *collator_, bookmarks_bridge_->GetTitle(lhs),
+                 bookmarks_bridge_->GetTitle(rhs)) == UCOL_LESS;
     } else {
       return lhs->GetTitle() < rhs->GetTitle();
     }

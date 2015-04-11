@@ -31,8 +31,9 @@ class StringMethodComparatorWithCollator
 
   // Returns true if lhs preceeds rhs.
   bool operator() (T* lhs_t, T* rhs_t) {
-    return base::i18n::CompareString16WithCollator(collator_,
-        (lhs_t->*method_)(), (rhs_t->*method_)()) == UCOL_LESS;
+    return base::i18n::CompareString16WithCollator(
+               *collator_, (lhs_t->*method_)(), (rhs_t->*method_)()) ==
+           UCOL_LESS;
   }
 
  private:
@@ -114,8 +115,8 @@ UI_BASE_EXPORT inline bool StringComparator<base::string16>::operator()(
   // string compare.
   if (!collator_)
     return lhs < rhs;
-  return base::i18n::CompareString16WithCollator(collator_, lhs, rhs) ==
-      UCOL_LESS;
+  return base::i18n::CompareString16WithCollator(*collator_, lhs, rhs) ==
+         UCOL_LESS;
 }
 
 // In place sorting of |elements| of a vector according to the string key of

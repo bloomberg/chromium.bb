@@ -76,7 +76,7 @@ int TableModel::CompareValues(int row1, int row2, int column_id) {
   icu::Collator* collator = GetCollator();
 
   if (collator)
-    return base::i18n::CompareString16WithCollator(collator, value1, value2);
+    return base::i18n::CompareString16WithCollator(*collator, value1, value2);
 
   NOTREACHED();
   return 0;
