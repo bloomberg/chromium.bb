@@ -20,6 +20,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/effects/SkBitmapSource.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -217,6 +218,40 @@ TEST(DisplayItemList, FilterItem) {
   expected_bitmap.installPixels(info, expected_pixels, info.minRowBytes());
   SkCanvas expected_canvas(expected_bitmap);
   expected_canvas.drawRect(RectFToSkRect(filter_bounds), paint);
+
+  EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
+}
+
+TEST(DisplayItemListTest, CompactingItems) {
+  gfx::Rect layer_rect(100, 100);
+  SkPictureRecorder recorder;
+  skia::RefPtr<SkCanvas> canvas;
+  skia::RefPtr<SkPicture> picture;
+  SkPaint blue_paint;
+  blue_paint.setColor(SK_ColorBLUE);
+  SkPaint red_paint;
+  red_paint.setColor(SK_ColorRED);
+  unsigned char pixels[4 * 100 * 100] = {0};
+
+  gfx::PointF offset(8.f, 9.f);
+  gfx::RectF recording_rect(offset, layer_rect.size());
+
+  scoped_refptr<DisplayItemList> list = DisplayItemList::Create();
+  list->set_layer_rect(ToEnclosingRect(recording_rect));
+
+  canvas = skia::SharePtr(
+      recorder.beginRecording(gfx::RectFToSkRect(recording_rect)));
+  canvas->translate(offset.x(), offset.y());
+  canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
+  canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
+  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
+  list->AppendItem(DrawingDisplayItem::Create(picture));
+  DrawDisplayList(pixels, layer_rect, list);
+
+  list->CreateAndCacheSkPicture();
+
+  unsigned char expected_pixels[4 * 100 * 100] = {0};
+  DrawDisplayList(expected_pixels, layer_rect, list);
 
   EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
 }

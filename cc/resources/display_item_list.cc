@@ -46,6 +46,7 @@ void DisplayItemList::Raster(SkCanvas* canvas,
 
     canvas->save();
     canvas->scale(contents_scale, contents_scale);
+    canvas->translate(layer_rect_.x(), layer_rect_.y());
     if (callback) {
       // If we have a callback, we need to call |draw()|, |drawPicture()|
       // doesn't take a callback.  This is used by |AnalysisCanvas| to early
