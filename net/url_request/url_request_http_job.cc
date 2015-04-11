@@ -114,7 +114,7 @@ URLRequestHttpJob::HttpFilterContext::SdchDictionariesAdvertised() const {
 }
 
 int64 URLRequestHttpJob::HttpFilterContext::GetByteReadCount() const {
-  return job_->filter_input_byte_count();
+  return job_->prefilter_bytes_read();
 }
 
 int URLRequestHttpJob::HttpFilterContext::GetResponseCode() const {
@@ -1378,17 +1378,14 @@ void URLRequestHttpJob::UpdatePacketReadTimes() {
   if (!packet_timing_enabled_)
     return;
 
-  if (filter_input_byte_count() <= bytes_observed_in_packets_) {
-    DCHECK_EQ(filter_input_byte_count(), bytes_observed_in_packets_);
-    return;  // No new bytes have arrived.
-  }
+  DCHECK_GT(prefilter_bytes_read(), bytes_observed_in_packets_);
 
   base::Time now(base::Time::Now());
   if (!bytes_observed_in_packets_)
     request_time_snapshot_ = now;
   final_packet_time_ = now;
 
-  bytes_observed_in_packets_ = filter_input_byte_count();
+  bytes_observed_in_packets_ = prefilter_bytes_read();
 }
 
 void URLRequestHttpJob::RecordPacketStats(

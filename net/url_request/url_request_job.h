@@ -339,16 +339,13 @@ class NET_EXPORT URLRequestJob
   // Set the proxy server that was used, if any.
   void SetProxyServer(const HostPortPair& proxy_server);
 
-  // The number of bytes read before passing to the filter.
+  // The number of bytes read before passing to the filter. This value reflects
+  // bytes read even when there is no filter.
   int64 prefilter_bytes_read() const { return prefilter_bytes_read_; }
 
-  // The number of bytes read after passing through the filter.
+  // The number of bytes read after passing through the filter. This value
+  // reflects bytes read even when there is no filter.
   int64 postfilter_bytes_read() const { return postfilter_bytes_read_; }
-
-  // Total number of bytes read from network (or cache) and typically handed
-  // to filter to process.  Used to histogram compression ratios, and error
-  // recovery scenarios in filters.
-  int64 filter_input_byte_count() const { return filter_input_byte_count_; }
 
   // The request that initiated this job. This value MAY BE NULL if the
   // request was released by DetachRequest().
@@ -384,7 +381,8 @@ class NET_EXPORT URLRequestJob
   bool FilterHasData();
 
   // Subclasses may implement this method to record packet arrival times.
-  // The default implementation does nothing.
+  // The default implementation does nothing.  Only invoked when bytes have been
+  // read since the last invocation.
   virtual void UpdatePacketReadTimes();
 
   // Computes a new RedirectInfo based on receiving a redirect response of
@@ -398,7 +396,6 @@ class NET_EXPORT URLRequestJob
 
   int64 prefilter_bytes_read_;
   int64 postfilter_bytes_read_;
-  int64 filter_input_byte_count_;
 
   // The data stream filter which is enabled on demand.
   scoped_ptr<Filter> filter_;

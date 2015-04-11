@@ -60,7 +60,6 @@ URLRequestJob::URLRequestJob(URLRequest* request,
       done_(false),
       prefilter_bytes_read_(0),
       postfilter_bytes_read_(0),
-      filter_input_byte_count_(0),
       filter_needs_more_output_space_(false),
       filtered_read_buffer_len_(0),
       has_handled_response_(false),
@@ -804,7 +803,6 @@ void URLRequestJob::OnRawReadComplete(int bytes_read) {
 }
 
 void URLRequestJob::RecordBytesRead(int bytes_read) {
-  filter_input_byte_count_ += bytes_read;
   prefilter_bytes_read_ += bytes_read;
   if (!filter_.get())
     postfilter_bytes_read_ += bytes_read;
