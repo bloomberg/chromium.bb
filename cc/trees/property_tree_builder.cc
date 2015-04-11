@@ -210,7 +210,7 @@ bool AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   node->data.content_target_id =
       data_for_children->render_target->transform_tree_index();
   DCHECK_NE(node->data.target_id, -1);
-  node->data.is_animated = layer->TransformIsAnimating();
+  node->data.is_animated = has_animated_transform;
 
   float scale_factors = 1.0f;
   if (is_root) {
