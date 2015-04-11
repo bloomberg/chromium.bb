@@ -39,6 +39,7 @@ var FAKE_HOST_PIN = '<FAKE_HOST_PIN>';
 var FAKE_PIN_HASH = '<FAKE_PIN_HASH>';
 var FAKE_NEW_HOST_PIN = '<FAKE_NEW_HOST_PIN>';
 var FAKE_USER_EMAIL = '<FAKE_USER_EMAIL>';
+var FAKE_XMPP_LOGIN = '<FAKE_XMPP_LOGIN>';
 var FAKE_USER_NAME = '<FAKE_USER_NAME>';
 var FAKE_HOST_ID = '0bad0bad-0bad-0bad-0bad-0bad0bad0bad';
 var FAKE_DAEMON_VERSION = '1.2.3.4';
@@ -134,7 +135,7 @@ QUnit.module('host_controller', {
     mockHostDaemonFacade.privateKey = FAKE_PRIVATE_KEY;
     mockHostDaemonFacade.publicKey = FAKE_PUBLIC_KEY;
     mockHostDaemonFacade.hostClientId = FAKE_HOST_CLIENT_ID;
-    mockHostDaemonFacade.userEmail = FAKE_USER_EMAIL;
+    mockHostDaemonFacade.userEmail = FAKE_XMPP_LOGIN;
     mockHostDaemonFacade.refreshToken = FAKE_REFRESH_TOKEN;
     mockHostDaemonFacade.pinHashFunc = fakePinHashFunc;
     mockHostDaemonFacade.startDaemonResult =
@@ -439,7 +440,7 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
 // Check what happens when the entire host registration process
 // succeeds.
 [false, true].forEach(function(/** boolean */ consent) {
-  QUnit.test('start succeeds with consent=' + consent, function(assert) {
+  QUnit.test('start succeeds(1) with consent=' + consent, function(assert) {
     /** @const */
     var fakePinHash = fakePinHashFunc(FAKE_HOST_ID, FAKE_HOST_PIN);
     queueRegistryResponse(assert, true);
@@ -460,10 +461,43 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
         assert.deepEqual(
             startDaemonSpy.args[0].slice(0, 2),
             [{
-              xmpp_login: FAKE_USER_EMAIL,
+              xmpp_login: FAKE_XMPP_LOGIN,
               oauth_refresh_token: FAKE_REFRESH_TOKEN,
               host_owner: FAKE_CLIENT_JID.toLowerCase(),
               host_owner_email: FAKE_USER_EMAIL,
+              host_id: FAKE_HOST_ID,
+              host_name: FAKE_HOST_NAME,
+              host_secret_hash: fakePinHash,
+              private_key: FAKE_PRIVATE_KEY
+            }, consent]);
+        resolve(null);
+      }, reject);
+    });
+  });
+});
+
+// Check alternative host registration without a registry-supplied
+// auth code.
+[false, true].forEach(function(/** boolean */ consent) {
+  QUnit.test('start succeeds(2) with consent=' + consent, function(assert) {
+    /** @const */
+    var fakePinHash = fakePinHashFunc(FAKE_HOST_ID, FAKE_HOST_PIN);
+    queueRegistryResponse(assert, false);
+    stubSignalStrategyConnect(true);
+    return new Promise(function(resolve, reject) {
+      controller.start(FAKE_HOST_PIN, consent, function() {
+        assert.equal(getPinHashSpy.callCount, 1);
+        assert.deepEqual(
+            getPinHashSpy.args[0].slice(0, 2),
+            [FAKE_HOST_ID, FAKE_HOST_PIN]);
+        assert.equal(unregisterHostByIdSpy.callCount, 0);
+        assert.equal(onLocalHostStartedSpy.callCount, 1);
+        assert.equal(startDaemonSpy.callCount, 1);
+        assert.deepEqual(
+            startDaemonSpy.args[0].slice(0, 2),
+            [{
+              xmpp_login: FAKE_USER_EMAIL,
+              oauth_refresh_token: FAKE_REFRESH_TOKEN,
               host_id: FAKE_HOST_ID,
               host_name: FAKE_HOST_NAME,
               host_secret_hash: fakePinHash,
