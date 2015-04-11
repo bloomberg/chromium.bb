@@ -122,11 +122,11 @@ var i18nTemplate = (function() {
 
   /**
    * Processes a DOM tree with the {@code dictionary} map.
-   * @param {HTMLElement} node The root of the DOM tree to process.
+   * @param {Document|Element} root The root of the DOM tree to process.
    * @param {LoadTimeData} dictionary The dictionary to draw from.
    */
-  function process(node, dictionary) {
-    var elements = node.querySelectorAll(selector);
+  function process(root, dictionary) {
+    var elements = root.querySelectorAll(selector);
     for (var element, i = 0; element = elements[i]; i++) {
       for (var j = 0; j < attributeNames.length; j++) {
         var name = attributeNames[j];
@@ -135,6 +135,9 @@ var i18nTemplate = (function() {
           handlers[name](element, attribute, dictionary);
       }
     }
+    var doc = root instanceof Document ? root : root.ownerDocument;
+    if (doc)
+      doc.documentElement.classList.add('i18n-processed');
   }
 
   return {

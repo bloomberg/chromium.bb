@@ -209,20 +209,25 @@ without changes to the corresponding grd file. -->
     <structures>
       <structure name="IDR_WEBUI_CSS_ALERT_OVERLAY"
                  file="css/alert_overlay.css" type="chrome_html" />
+      <structure name="IDR_WEBUI_CSS_APPS_COMMON"
+                 file="css/apps/common.css" type="chrome_html" />
+      <structure name="IDR_WEBUI_CSS_APPS_TOPBUTTON_BAR"
+                 file="css/apps/topbutton_bar.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_BUBBLE"
                  file="css/bubble.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_BUBBLE_BUTTON"
                  file="css/bubble_button.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_BUTTER_BAR"
                  file="css/butter_bar.css" type="chrome_html" />
+      <structure name="IDR_WEBUI_CSS_CHROME"
+                 file="css/chrome_shared.css" type="chrome_html"
+                 flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_CONTROLLED_INDICATOR"
                  file="css/controlled_indicator.css" type="chrome_html" />
-      <structure name="IDR_WEBUI_CSS_APPS_COMMON"
-                 file="css/apps/common.css" type="chrome_html" />
-      <structure name="IDR_WEBUI_CSS_APPS_TOPBUTTON_BAR"
-                 file="css/apps/topbutton_bar.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_DIALOGS"
                  file="css/dialogs.css" type="chrome_html" />
+      <structure name="IDR_WEBUI_CSS_I18N_PROCESS"
+                 file="css/i18n_process.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_LIST"
                  file="css/list.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_MENU"
@@ -230,9 +235,6 @@ without changes to the corresponding grd file. -->
                  flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_MENU_BUTTON"
                  file="css/menu_button.css" type="chrome_html"
-                 flattenhtml="true" />
-      <structure name="IDR_WEBUI_CSS_CHROME"
-                 file="css/chrome_shared.css" type="chrome_html"
                  flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_TEXT_DEFAULTS"
                  file="css/text_defaults.css" type="chrome_html" />
