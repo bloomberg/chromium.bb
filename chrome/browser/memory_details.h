@@ -162,7 +162,7 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   // for processing.  If data has already been collected, clears old
   // data and re-collects the data.
   // Note - this function enumerates memory details from many processes
-  // and is fairly expensive to run, hence it's run on the file thread.
+  // and is fairly expensive to run, hence it's run on the blocking pool.
   // The parameter holds information about processes from the IO thread.
   void CollectProcessData(
       CollectionMode mode,

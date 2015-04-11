@@ -163,7 +163,7 @@ ProcessData* MemoryDetails::ChromeBrowser() {
 void MemoryDetails::CollectProcessData(
     CollectionMode mode,
     const std::vector<ProcessMemoryInformation>& child_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   ProcessMap process_map = GetProcesses();
   std::set<pid_t> browsers_found;

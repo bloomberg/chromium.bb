@@ -127,7 +127,7 @@ ProcessData& ProcessData::operator=(const ProcessData& rhs) {
 //
 // This operation can take 30-100ms to complete.  We never want to have
 // one task run for that long on the UI or IO threads.  So, we run the
-// expensive parts of this operation over on the file thread.
+// expensive parts of this operation over on the blocking pool.
 //
 void MemoryDetails::StartFetch(CollectionMode mode) {
   // This might get called from the UI or FILE threads, but should not be
@@ -200,10 +200,11 @@ void MemoryDetails::CollectChildInfoOnIOThread(CollectionMode mode) {
     child_info.push_back(info);
   }
 
-  // Now go do expensive memory lookups from the file thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MemoryDetails::CollectProcessData, this, mode, child_info));
+  // Now go do expensive memory lookups on the blocking pool.
+  BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
+      FROM_HERE,
+      base::Bind(&MemoryDetails::CollectProcessData, this, mode, child_info),
+      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 
 void MemoryDetails::CollectChildInfoOnUIThread() {

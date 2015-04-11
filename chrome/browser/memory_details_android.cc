@@ -106,7 +106,7 @@ ProcessData* MemoryDetails::ChromeBrowser() {
 void MemoryDetails::CollectProcessData(
     CollectionMode mode,
     const std::vector<ProcessMemoryInformation>& chrome_processes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   std::vector<ProcessMemoryInformation> all_processes(chrome_processes);
   AddNonChildChromeProcesses(&all_processes);

@@ -74,7 +74,7 @@ ProcessData* MemoryDetails::ChromeBrowser() {
 void MemoryDetails::CollectProcessData(
     CollectionMode mode,
     const std::vector<ProcessMemoryInformation>& child_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   // Clear old data.
   for (unsigned int index = 0; index < process_data_.size(); index++)

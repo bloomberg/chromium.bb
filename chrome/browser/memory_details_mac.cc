@@ -183,9 +183,9 @@ ProcessData* MemoryDetails::ChromeBrowser() {
 void MemoryDetails::CollectProcessData(
     CollectionMode mode,
     const std::vector<ProcessMemoryInformation>& child_info) {
-  // This must be run on the file thread to avoid jank (|ProcessInfoSnapshot|
+  // This must be run on the blocking pool to avoid jank (|ProcessInfoSnapshot|
   // runs /bin/ps, which isn't instantaneous).
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   // Clear old data.
   for (size_t index = 0; index < MAX_BROWSERS; index++)
