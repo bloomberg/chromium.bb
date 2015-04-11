@@ -17,7 +17,6 @@ import re
 import shutil
 import tempfile
 
-from chromite.cbuildbot import autotest_rpc_errors
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cli.cros.tests import cros_vm_test
@@ -823,40 +822,6 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
   return tar_files
 
 
-def RunRPCCommand(cmd, max_retry=0):
-  """Run an autotest RPC based command, retrying/restarting it as necessary.
-
-  Args:
-    cmd: The autotest RPC based command.
-    max_retry: How many times to retry things before giving up. (default: 0)
-  """
-  try:
-    retry_on = (autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,)
-    return retry_util.RunCommandWithRetries(max_retry, cmd, retry_on=retry_on,
-                                            capture_output=True)
-  # If we got some other error code, handle that here.
-  except cros_build_lib.RunCommandError as e:
-    m = re.search(r'Created suite job:.*object_id=(?P<job_id>\d*)',
-                  e.result.output)
-    # If the RPC connection dropped while executing a command and we could
-    # extract a suite job ID, we should try to reconnect.
-    if e.result.returncode == autotest_rpc_errors.PROXY_CONNECTION_LOST and m:
-      job_id = m.group('job_id')
-      cmd = cmd[:] + ['-m', job_id]
-      logging.info('Retrying RPC for suite job %s.', job_id)
-    # Otherwise, pass on the exception.
-    else:
-      return e.result
-  # Try reconnecting to the RPC, even if we can't connect or are disconnected
-  # again.
-  try:
-    retry_on = (autotest_rpc_errors.PROXY_CANNOT_SEND_REQUEST,
-                autotest_rpc_errors.PROXY_CONNECTION_LOST,)
-    return retry_util.RunCommandWithRetries(max_retry, cmd, retry_on=retry_on)
-  except cros_build_lib.RunCommandError as e:
-    return e.result
-
-
 @failures_lib.SetFailureType(failures_lib.SuiteTimedOut,
                              timeout_util.TimeoutError)
 def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
@@ -932,11 +897,11 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     logging.info('RunHWTestSuite would run: %s', cros_build_lib.CmdToStr(cmd))
   else:
     if timeout_mins is None:
-      result = RunRPCCommand(cmd, max_retry=10)
+      result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
     else:
       with timeout_util.Timeout(
           timeout_mins * 60 + constants.HWTEST_TIMEOUT_EXTENSION):
-        result = RunRPCCommand(cmd, max_retry=10)
+        result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
 
     # run_suite error codes:
     #   0 - OK: Tests ran and passed.

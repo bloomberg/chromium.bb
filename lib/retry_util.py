@@ -198,4 +198,3 @@ def RunCurl(args, **kwargs):
                                      **kwargs)
       except cros_build_lib.RunCommandError as e:
         cros_build_lib.Die("Curl failed w/ exit code %i", code)
-

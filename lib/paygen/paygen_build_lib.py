@@ -38,6 +38,7 @@ from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import urilib
+from chromite.lib.paygen import utils
 
 
 # For crostools access.
@@ -1032,14 +1033,13 @@ class _PaygenBuild(object):
           '--suite_min_duts', '2',
       ]
       logging.info('Running autotest suite: %s', ' '.join(cmd))
-      try:
-        commands.RunRPCCommand(cmd, max_retry=10)
-      except cros_build_lib.RunCommandError as e:
-        if e.result.returncode:
-          logging.error('Error (%d) running test suite; error output:\n%s',
-                        e.result.returncode, e.result.error)
-          raise PayloadTestError('failed to run test (return code %d)' %
-                                 e.result.returncode)
+      cmd_result = utils.RunCommand(cmd, error_ok=True, redirect_stdout=True,
+                                    redirect_stderr=True, return_result=True)
+      if cmd_result.returncode:
+        logging.error('Error (%d) running test suite; error output:\n%s',
+                      cmd_result.returncode, cmd_result.error)
+        raise PayloadTestError('failed to run test (return code %d)' %
+                               cmd_result.returncode)
 
   def _AutotestPayloads(self, payload_tests):
     """Create necessary test artifacts and initiate Autotest runs.
