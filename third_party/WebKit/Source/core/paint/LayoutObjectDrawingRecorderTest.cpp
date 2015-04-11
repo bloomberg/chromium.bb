@@ -11,6 +11,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DrawingDisplayItem.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -71,7 +72,9 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 
     drawNothing(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_EQ((size_t)0, rootDisplayItemList().displayItems().size());
+    EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
+    ASSERT_TRUE(rootDisplayItemList().displayItems()[0]->isDrawing());
+    EXPECT_FALSE(static_cast<DrawingDisplayItem*>(rootDisplayItemList().displayItems()[0].get())->picture());
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Rect)
@@ -91,8 +94,9 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
+    EXPECT_EQ((size_t)2, rootDisplayItemList().displayItems().size());
     EXPECT_TRUE(rootDisplayItemList().displayItems()[0]->isDrawing());
+    EXPECT_TRUE(rootDisplayItemList().displayItems()[1]->isDrawing());
 
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
@@ -100,8 +104,9 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
     EXPECT_TRUE(newdisplayItemsBeforeUpdate()[0]->isCached());
     EXPECT_TRUE(newdisplayItemsBeforeUpdate()[1]->isCached());
     rootDisplayItemList().commitNewDisplayItems();
-    EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
+    EXPECT_EQ((size_t)2, rootDisplayItemList().displayItems().size());
     EXPECT_TRUE(rootDisplayItemList().displayItems()[0]->isDrawing());
+    EXPECT_TRUE(rootDisplayItemList().displayItems()[1]->isDrawing());
 }
 
 }

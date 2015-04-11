@@ -12,26 +12,30 @@ namespace blink {
 
 void DrawingDisplayItem::replay(GraphicsContext& context)
 {
-    context.drawPicture(m_picture.get());
+    if (m_picture)
+        context.drawPicture(m_picture.get());
 }
 
 void DrawingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
-    list->appendDrawingItem(m_picture.get());
+    if (m_picture)
+        list->appendDrawingItem(m_picture.get());
 }
 
 bool DrawingDisplayItem::drawsContent() const
 {
-    return m_picture->approximateOpCount() > 0;
+    return m_picture;
 }
 
 #ifndef NDEBUG
 void DrawingDisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder) const
 {
     DisplayItem::dumpPropertiesAsDebugString(stringBuilder);
-    stringBuilder.append(WTF::String::format(", rect: [%f,%f,%f,%f]",
-        m_picture->cullRect().x(), m_picture->cullRect().y(),
-        m_picture->cullRect().width(), m_picture->cullRect().height()));
+    if (m_picture) {
+        stringBuilder.append(WTF::String::format(", rect: [%f,%f,%f,%f]",
+            m_picture->cullRect().x(), m_picture->cullRect().y(),
+            m_picture->cullRect().width(), m_picture->cullRect().height()));
+    }
 }
 #endif
 

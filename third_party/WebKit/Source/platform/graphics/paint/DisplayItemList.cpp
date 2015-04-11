@@ -315,7 +315,9 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displ
     // Remove the display item from cache so that we can check if there are any remaining cached display items after merging.
     m_currentDisplayItems[index] = nullptr;
 
-    if (newPicture->approximateOpCount() == oldPicture->approximateOpCount()) {
+    if (!newPicture && !oldPicture)
+        return;
+    if (newPicture && oldPicture && newPicture->approximateOpCount() == oldPicture->approximateOpCount()) {
         SkDynamicMemoryWStream newPictureSerialized;
         newPicture->serialize(&newPictureSerialized);
         SkDynamicMemoryWStream oldPictureSerialized;

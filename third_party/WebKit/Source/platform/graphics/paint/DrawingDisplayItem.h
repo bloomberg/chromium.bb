@@ -27,9 +27,9 @@ public:
     PassRefPtr<const SkPicture> picture() const { return m_picture; }
 
     DrawingDisplayItem(const DisplayItemClientWrapper& client, Type type, PassRefPtr<const SkPicture> picture)
-        : DisplayItem(client, type), m_picture(picture)
+        : DisplayItem(client, type)
+        , m_picture(picture && picture->approximateOpCount() ? picture : nullptr)
     {
-        ASSERT(m_picture);
         ASSERT(isDrawingType(type));
     }
 
