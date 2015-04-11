@@ -115,7 +115,7 @@ void WebIDBCallbacksImpl::onSuccess(const WebData& value, const WebVector<WebBlo
 void WebIDBCallbacksImpl::onSuccess(const WebData& value, const WebVector<WebBlobInfo>& webBlobInfo, const WebIDBKey& key, const WebIDBKeyPath& keyPath)
 {
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
-    m_request->onSuccess(IDBValue::create(value, webBlobInfo), key, keyPath);
+    m_request->onSuccess(IDBValue::create(value, webBlobInfo, key, keyPath));
     InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 

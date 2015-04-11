@@ -146,19 +146,19 @@ v8::Local<v8::Value> toV8(const IDBAny* impl, v8::Local<v8::Object> creationCont
         return toV8(impl->idbIndex(), creationContext, isolate);
     case IDBAny::IDBObjectStoreType:
         return toV8(impl->idbObjectStore(), creationContext, isolate);
-    case IDBAny::IDBValueType:
-        return deserializeIDBValue(isolate, impl->value());
+    case IDBAny::IDBValueType: {
+        v8::Local<v8::Value> value = deserializeIDBValue(isolate, impl->value());
+        if (impl->value()->primaryKey()) {
+            v8::Local<v8::Value> key = toV8(impl->value()->primaryKey(), creationContext, isolate);
+            bool injected = injectV8KeyIntoV8Value(isolate, key, value, impl->value()->keyPath());
+            ASSERT_UNUSED(injected, injected);
+        }
+        return value;
+    }
     case IDBAny::IntegerType:
         return v8::Number::New(isolate, impl->integer());
     case IDBAny::KeyType:
         return toV8(impl->key(), creationContext, isolate);
-    case IDBAny::IDBValueKeyAndKeyPathType: {
-        v8::Local<v8::Value> value = deserializeIDBValue(isolate, impl->value());
-        v8::Local<v8::Value> key = toV8(impl->key(), creationContext, isolate);
-        bool injected = injectV8KeyIntoV8Value(isolate, key, value, impl->keyPath());
-        ASSERT_UNUSED(injected, injected);
-        return value;
-    }
     }
 
     ASSERT_NOT_REACHED();
@@ -444,19 +444,19 @@ IDBKeyRange* NativeValueTraits<IDBKeyRange*>::nativeValue(v8::Isolate* isolate, 
 }
 
 #if ENABLE(ASSERT)
-void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, IDBValue* value, IDBKey* key, const IDBKeyPath& keyPath)
+void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, const IDBValue* value)
 {
     ScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
-    ScriptValue keyValue = ScriptValue::from(scriptState, key);
+    ScriptValue keyValue = ScriptValue::from(scriptState, value->primaryKey());
     ScriptValue scriptValue(scriptState, deserializeIDBValue(isolate, value));
 
     // This assertion is about already persisted data, so allow experimental types.
     const bool allowExperimentalTypes = true;
-    IDBKey* expectedKey = createIDBKeyFromScriptValueAndKeyPathInternal(isolate, scriptValue.v8Value(), keyPath, allowExperimentalTypes);
-    ASSERT(!expectedKey || expectedKey->isEqual(key));
+    IDBKey* expectedKey = createIDBKeyFromScriptValueAndKeyPathInternal(isolate, scriptValue.v8Value(), value->keyPath(), allowExperimentalTypes);
+    ASSERT(!expectedKey || expectedKey->isEqual(value->primaryKey()));
 
-    bool injected = injectV8KeyIntoV8Value(isolate, keyValue.v8Value(), scriptValue.v8Value(), keyPath);
+    bool injected = injectV8KeyIntoV8Value(isolate, keyValue.v8Value(), scriptValue.v8Value(), value->keyPath());
     ASSERT_UNUSED(injected, injected);
 }
 #endif

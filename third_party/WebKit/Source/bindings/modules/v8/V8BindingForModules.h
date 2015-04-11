@@ -27,7 +27,7 @@ bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBK
 ScriptValue deserializeScriptValue(ScriptState*, SerializedScriptValue*, const Vector<blink::WebBlobInfo>*);
 
 #if ENABLE(ASSERT)
-void assertPrimaryKeyValidOrInjectable(ScriptState*, IDBValue*, IDBKey*, const IDBKeyPath&);
+void assertPrimaryKeyValidOrInjectable(ScriptState*, const IDBValue*);
 #endif
 
 template <>

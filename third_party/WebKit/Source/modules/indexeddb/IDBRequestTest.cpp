@@ -92,7 +92,6 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
     request->onSuccess(nullptr, IDBKey::createInvalid(), IDBKey::createInvalid(), IDBValue::create());
     request->onSuccess(IDBKey::createInvalid());
     request->onSuccess(IDBValue::create());
-    request->onSuccess(IDBValue::create(), IDBKey::createInvalid(), IDBKeyPath());
     request->onSuccess(static_cast<int64_t>(0));
     request->onSuccess();
     request->onSuccess(IDBKey::createInvalid(), IDBKey::createInvalid(), IDBValue::create());

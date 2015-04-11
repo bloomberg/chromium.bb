@@ -283,26 +283,6 @@ void IDBRequest::onSuccess(IDBKey* idbKey)
         onSuccessInternal(IDBAny::createUndefined());
 }
 
-void IDBRequest::onSuccess(PassRefPtr<IDBValue> prpValue)
-{
-    IDB_TRACE("IDBRequest::onSuccess(SharedBuffer)");
-    if (!shouldEnqueueEvent())
-        return;
-
-    RefPtr<IDBValue> value(prpValue);
-
-    if (m_pendingCursor) {
-        // Value should be null, signifying the end of the cursor's range.
-        ASSERT(value->isNull());
-        ASSERT(!value->blobInfo()->size());
-        m_pendingCursor->close();
-        m_pendingCursor.clear();
-    }
-
-    ackReceivedBlobs(value.get());
-    onSuccessInternal(IDBAny::create(value));
-}
-
 #if ENABLE(ASSERT)
 static IDBObjectStore* effectiveObjectStore(IDBAny* source)
 {
@@ -316,23 +296,31 @@ static IDBObjectStore* effectiveObjectStore(IDBAny* source)
 }
 #endif
 
-void IDBRequest::onSuccess(PassRefPtr<IDBValue> prpValue, IDBKey* prpPrimaryKey, const IDBKeyPath& keyPath)
+void IDBRequest::onSuccess(PassRefPtr<IDBValue> prpValue)
 {
-    IDB_TRACE("IDBRequest::onSuccess(SharedBuffer, IDBKey, IDBKeyPath)");
+    IDB_TRACE("IDBRequest::onSuccess(IDBValue)");
     if (!shouldEnqueueEvent())
         return;
 
-    ASSERT(keyPath == effectiveObjectStore(m_source)->metadata().keyPath);
-
     RefPtr<IDBValue> value(prpValue);
-    IDBKey* primaryKey = prpPrimaryKey;
     ackReceivedBlobs(value.get());
 
+    if (m_pendingCursor) {
+        // Value should be null, signifying the end of the cursor's range.
+        ASSERT(value->isNull());
+        ASSERT(!value->blobInfo()->size());
+        m_pendingCursor->close();
+        m_pendingCursor.clear();
+    }
+
 #if ENABLE(ASSERT)
-    assertPrimaryKeyValidOrInjectable(m_scriptState.get(), value.get(), primaryKey, keyPath);
+    if (value->primaryKey()) {
+        ASSERT(value->keyPath() == effectiveObjectStore(m_source)->metadata().keyPath);
+        assertPrimaryKeyValidOrInjectable(m_scriptState.get(), value.get());
+    }
 #endif
 
-    onSuccessInternal(IDBAny::create(value.release(), primaryKey, keyPath));
+    onSuccessInternal(IDBAny::create(value.release()));
 }
 
 void IDBRequest::onSuccess(int64_t value)

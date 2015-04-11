@@ -28,7 +28,6 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBValue.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
@@ -50,10 +49,6 @@ class WebBlobInfo;
 //
 // This allows for lazy conversion to script values (via IDBBindingUtilities),
 // and avoids the need for many dedicated union types.
-//
-// Values may be represented as just serialized data plus blob references
-// (IDBValueType), or serialized data, blob references, and a key to be injected
-// at a given path (IDBValueKeyAndKeyPathType).
 
 class IDBAny : public GarbageCollectedFinalized<IDBAny> {
 public:
@@ -76,10 +71,6 @@ public:
     {
         return new IDBAny(value);
     }
-    static IDBAny* create(PassRefPtr<IDBValue> value, IDBKey* key, const IDBKeyPath& keyPath)
-    {
-        return new IDBAny(value, key, keyPath);
-    }
     ~IDBAny();
     DECLARE_TRACE();
     void contextWillBeDestroyed();
@@ -95,7 +86,6 @@ public:
         IDBObjectStoreType,
         IntegerType,
         KeyType,
-        IDBValueKeyAndKeyPathType,
         IDBValueType,
     };
 
@@ -110,7 +100,6 @@ public:
     IDBValue* value() const;
     int64_t integer() const;
     const IDBKey* key() const;
-    const IDBKeyPath& keyPath() const;
 
 private:
     explicit IDBAny(Type);
@@ -121,19 +110,17 @@ private:
     explicit IDBAny(IDBObjectStore*);
     explicit IDBAny(IDBKey*);
     IDBAny(PassRefPtr<IDBValue>);
-    IDBAny(PassRefPtr<IDBValue>, IDBKey*, const IDBKeyPath&);
     explicit IDBAny(int64_t);
 
     const Type m_type;
 
-    // Only one of the following should ever be in use at any given time, except IDBValueKeyAndKeyPathType uses three.
+    // Only one of the following should ever be in use at any given time.
     const RefPtrWillBeMember<DOMStringList> m_domStringList;
     const Member<IDBCursor> m_idbCursor;
     const Member<IDBDatabase> m_idbDatabase;
     const Member<IDBIndex> m_idbIndex;
     const Member<IDBObjectStore> m_idbObjectStore;
     const Member<IDBKey> m_idbKey;
-    const IDBKeyPath m_idbKeyPath;
     const RefPtr<IDBValue> m_idbValue;
     const int64_t m_integer = 0;
 };

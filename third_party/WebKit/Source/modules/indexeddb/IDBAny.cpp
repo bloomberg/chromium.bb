@@ -100,19 +100,14 @@ IDBObjectStore* IDBAny::idbObjectStore() const
 
 const IDBKey* IDBAny::key() const
 {
-    ASSERT(m_type == KeyType || m_type == IDBValueKeyAndKeyPathType);
+    // If type is IDBValueType then instead use value()->primaryKey().
+    ASSERT(m_type == KeyType);
     return m_idbKey.get();
-}
-
-const IDBKeyPath& IDBAny::keyPath() const
-{
-    ASSERT(m_type == IDBValueKeyAndKeyPathType);
-    return m_idbKeyPath;
 }
 
 IDBValue* IDBAny::value() const
 {
-    ASSERT(m_type == IDBValueType || m_type == IDBValueKeyAndKeyPathType);
+    ASSERT(m_type == IDBValueType);
     return m_idbValue.get();
 }
 
@@ -154,14 +149,6 @@ IDBAny::IDBAny(IDBObjectStore* value)
 
 IDBAny::IDBAny(PassRefPtr<IDBValue> value)
     : m_type(IDBValueType)
-    , m_idbValue(value)
-{
-}
-
-IDBAny::IDBAny(PassRefPtr<IDBValue> value, IDBKey* key, const IDBKeyPath& keyPath)
-    : m_type(IDBValueKeyAndKeyPathType)
-    , m_idbKey(key)
-    , m_idbKeyPath(keyPath)
     , m_idbValue(value)
 {
 }
