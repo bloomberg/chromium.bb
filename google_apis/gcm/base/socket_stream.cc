@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/profiler/scoped_tracker.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/stream_socket.h"
 
@@ -163,11 +162,6 @@ SocketInputStream::State SocketInputStream::GetState() const {
 
 void SocketInputStream::RefreshCompletionCallback(
     const base::Closure& callback, int result) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/462788 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "462788 SocketInputStream::RefreshCompletionCallback"));
-
   // If an error occurred before the completion callback could complete, ignore
   // the result.
   if (GetState() == CLOSED)

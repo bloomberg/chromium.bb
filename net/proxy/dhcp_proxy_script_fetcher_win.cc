@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/dhcp_proxy_script_adapter_fetcher_win.h"
@@ -75,6 +76,11 @@ DhcpProxyScriptFetcherWin::~DhcpProxyScriptFetcherWin() {
 
 int DhcpProxyScriptFetcherWin::Fetch(base::string16* utf16_text,
                                      const CompletionCallback& callback) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/476182 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "476182 DhcpProxyScriptFetcherWin::Fetch"));
+
   DCHECK(CalledOnValidThread());
   if (state_ != STATE_START && state_ != STATE_DONE) {
     NOTREACHED();
@@ -125,6 +131,11 @@ void DhcpProxyScriptFetcherWin::CancelImpl() {
 
 void DhcpProxyScriptFetcherWin::OnGetCandidateAdapterNamesDone(
     scoped_refptr<AdapterQuery> query) {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/476182 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "476182 DhcpProxyScriptFetcherWin::OnGetCandidateAdapterNamesDone"));
+
   DCHECK(CalledOnValidThread());
 
   // This can happen if this object is reused for multiple queries,
@@ -343,6 +354,12 @@ DhcpProxyScriptFetcherWin::AdapterQuery::~AdapterQuery() {
 }
 
 void DhcpProxyScriptFetcherWin::AdapterQuery::GetCandidateAdapterNames() {
+  // TODO(pkasting): Remove ScopedTracker below once crbug.com/476182 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "476182 DhcpProxyScriptFetcherWin::AdapterQuery::"
+          "GetCandidateAdapterNames"));
+
   ImplGetCandidateAdapterNames(&adapter_names_);
 }
 
