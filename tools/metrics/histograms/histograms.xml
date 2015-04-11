@@ -50322,6 +50322,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="997" label="BLUETOOTHPRIVATE_SETDISCOVERYFILTER"/>
   <int value="998" label="FILESYSTEM_GETVOLUMELIST"/>
   <int value="999" label="NETWORKINGPRIVATE_GETDEVICESTATES"/>
+  <int value="1000" label="DEVELOPERPRIVATE_GETPROFILECONFIGURATION"/>
+  <int value="1001" label="DEVELOPERPRIVATE_UPDATEPROFILECONFIGURATION"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

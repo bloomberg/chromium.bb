@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,14 +23,18 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -88,6 +93,8 @@ const char kManifestKeyIsRequiredError[] =
     "The 'manifestKey' argument is required for manifest files.";
 const char kCouldNotFindWebContentsError[] =
     "Could not find a valid web contents.";
+const char kCannotUpdateSupervisedProfileSettingsError[] =
+    "Cannot change settings for a supervised profile.";
 
 const char kUnpackedAppsFolder[] = "apps_target";
 const char kManifestFile[] = "manifest.json";
@@ -175,6 +182,31 @@ bool UserCanModifyExtensionConfiguration(
   }
 
   return true;
+}
+
+// Runs the install verifier for all extensions that are enabled, disabled, or
+// terminated.
+void PerformVerificationCheck(content::BrowserContext* context) {
+  scoped_ptr<ExtensionSet> extensions =
+      ExtensionRegistry::Get(context)->GenerateInstalledExtensionsSet(
+          ExtensionRegistry::ENABLED |
+          ExtensionRegistry::DISABLED |
+          ExtensionRegistry::TERMINATED);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
+  bool should_do_verification_check = false;
+  for (const scoped_refptr<const Extension>& extension : *extensions) {
+    if (ui_util::ShouldDisplayInExtensionSettings(extension.get(), context) &&
+        ((prefs->GetDisableReasons(extension->id()) &
+             Extension::DISABLE_NOT_VERIFIED) != 0)) {
+      should_do_verification_check = true;
+      break;
+    }
+  }
+
+  UMA_HISTOGRAM_BOOLEAN("ExtensionSettings.ShouldDoVerificationCheck",
+                        should_do_verification_check);
+  if (should_do_verification_check)
+    ExtensionSystem::Get(context)->install_verifier()->VerifyAllExtensions();
 }
 
 }  // namespace
@@ -454,6 +486,57 @@ void DeveloperPrivateGetItemsInfoFunction::GetIconsOnFileThread(
 
 void DeveloperPrivateGetItemsInfoFunction::Finish() {
   Respond(ArgumentList(developer::GetItemsInfo::Results::Create(item_list_)));
+}
+
+DeveloperPrivateGetProfileConfigurationFunction::
+~DeveloperPrivateGetProfileConfigurationFunction() {
+}
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateGetProfileConfigurationFunction::Run() {
+  developer::ProfileInfo info;
+  info.is_supervised = GetProfile()->IsSupervised();
+  info.is_incognito_available =
+      IncognitoModePrefs::GetAvailability(GetProfile()->GetPrefs()) !=
+          IncognitoModePrefs::DISABLED;
+  info.in_developer_mode =
+      !info.is_supervised &&
+      GetProfile()->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  info.app_info_dialog_enabled = CanShowAppInfoDialog();
+  info.can_load_unpacked =
+      !ExtensionManagementFactory::GetForBrowserContext(browser_context())
+          ->BlacklistedByDefault();
+
+  // If this is called from the chrome://extensions page, we use this as a
+  // heuristic that it's a good time to verify installs. We do this on startup,
+  // but there's a chance that it failed erroneously, so it's good to double-
+  // check.
+  if (source_context_type() == Feature::WEBUI_CONTEXT)
+    PerformVerificationCheck(browser_context());
+
+  return RespondNow(OneArgument(info.ToValue()));
+}
+
+DeveloperPrivateUpdateProfileConfigurationFunction::
+~DeveloperPrivateUpdateProfileConfigurationFunction() {
+}
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateUpdateProfileConfigurationFunction::Run() {
+  scoped_ptr<developer::UpdateProfileConfiguration::Params> params(
+      developer::UpdateProfileConfiguration::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const developer::ProfileConfigurationUpdate& update = params->update;
+  PrefService* prefs = GetProfile()->GetPrefs();
+  if (update.in_developer_mode) {
+    if (GetProfile()->IsSupervised())
+      return RespondNow(Error(kCannotUpdateSupervisedProfileSettingsError));
+    prefs->SetBoolean(prefs::kExtensionsUIDeveloperMode,
+                      *update.in_developer_mode);
+  }
+
+  return RespondNow(NoArguments());
 }
 
 DeveloperPrivateUpdateExtensionConfigurationFunction::
@@ -1109,7 +1192,7 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
     if (!extension)
       return RespondNow(Error(kNoSuchExtensionError));
 
-    Profile* profile = Profile::FromBrowserContext(browser_context());
+    Profile* profile = GetProfile();
     if (properties.incognito && *properties.incognito)
       profile = profile->GetOffTheRecordProfile();
 
@@ -1171,8 +1254,7 @@ DeveloperPrivateDeleteExtensionErrorsFunction::Run() {
   const developer::DeleteExtensionErrorsProperties& properties =
       params->properties;
 
-  ErrorConsole* error_console =
-      ErrorConsole::Get(Profile::FromBrowserContext(browser_context()));
+  ErrorConsole* error_console = ErrorConsole::Get(GetProfile());
   int type = -1;
   if (properties.type != developer::ERROR_TYPE_NONE) {
     type = properties.type == developer::ERROR_TYPE_MANIFEST ?
