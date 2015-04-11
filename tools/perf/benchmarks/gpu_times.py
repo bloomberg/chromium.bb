@@ -9,7 +9,6 @@ from telemetry.web_perf import timeline_based_measurement
 from benchmarks import silk_flags
 import page_sets
 
-TOPLEVEL_GL_CATEGORY = 'gpu_toplevel'
 TOPLEVEL_CATEGORIES = ['disabled-by-default-gpu.device',
                        'disabled-by-default-gpu.service']
 
