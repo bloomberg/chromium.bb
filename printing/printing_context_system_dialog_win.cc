@@ -69,6 +69,7 @@ void PrintingContextSytemDialogWin::AskUserForSettings(
   if (ShowPrintDialog(&dialog_options) != S_OK) {
     ResetSettings();
     callback.Run(FAILED);
+    return;
   }
 
   // TODO(maruel):  Support PD_PRINTTOFILE.

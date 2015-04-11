@@ -114,11 +114,6 @@ class PrintJobWorker {
       bool has_selection,
       bool is_scripted);
 
-  // The callback used by PrintingContext::GetSettingsWithUI() to notify this
-  // object that the print settings are set.  This is needed in order to bounce
-  // back into the IO thread for GetSettingsDone().
-  void GetSettingsWithUIDone(PrintingContext::Result result);
-
   // Called on the UI thread to update the print settings.
   void UpdatePrintSettings(scoped_ptr<base::DictionaryValue> new_settings);
 
