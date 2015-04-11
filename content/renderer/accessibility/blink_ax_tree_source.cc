@@ -218,7 +218,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   dst->state = AXStateFromBlink(src);
   dst->location = src.boundingBoxRect();
   dst->id = src.axID();
-  std::string name = UTF16ToUTF8(src.title());
+  std::string name = UTF16ToUTF8(src.deprecatedTitle());
 
   std::string value;
   if (src.valueDescription().length()) {
@@ -288,27 +288,29 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddBoolAttribute(ui::AX_ATTR_BUTTON_MIXED, true);
   if (src.canSetValueAttribute())
     dst->AddBoolAttribute(ui::AX_ATTR_CAN_SET_VALUE, true);
-  if (src.accessibilityDescription().length()) {
-    dst->AddStringAttribute(ui::AX_ATTR_DESCRIPTION,
-                            UTF16ToUTF8(src.accessibilityDescription()));
+  if (src.deprecatedAccessibilityDescription().length()) {
+    dst->AddStringAttribute(
+        ui::AX_ATTR_DESCRIPTION,
+        UTF16ToUTF8(src.deprecatedAccessibilityDescription()));
   }
   if (src.hasComputedStyle()) {
     dst->AddStringAttribute(ui::AX_ATTR_DISPLAY,
                             UTF16ToUTF8(src.computedStyleDisplay()));
   }
-  if (src.helpText().length())
-    dst->AddStringAttribute(ui::AX_ATTR_HELP, UTF16ToUTF8(src.helpText()));
-  if (src.placeholder().length()) {
+  if (src.deprecatedHelpText().length())
+    dst->AddStringAttribute(ui::AX_ATTR_HELP,
+                            UTF16ToUTF8(src.deprecatedHelpText()));
+  if (src.deprecatedPlaceholder().length()) {
     dst->AddStringAttribute(ui::AX_ATTR_PLACEHOLDER,
-                            UTF16ToUTF8(src.placeholder()));
+                            UTF16ToUTF8(src.deprecatedPlaceholder()));
   }
   if (src.keyboardShortcut().length()) {
     dst->AddStringAttribute(ui::AX_ATTR_SHORTCUT,
                             UTF16ToUTF8(src.keyboardShortcut()));
   }
-  if (!src.titleUIElement().isDetached()) {
+  if (!src.deprecatedTitleUIElement().isDetached()) {
     dst->AddIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT,
-                         src.titleUIElement().axID());
+                         src.deprecatedTitleUIElement().axID());
   }
   if (!src.ariaActiveDescendant().isDetached()) {
     dst->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID,
@@ -574,7 +576,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     AddIntListAttributeFromWebObjects(ui::AX_ATTR_CONTROLS_IDS, controls, dst);
 
   WebVector<WebAXObject> describedby;
-  if (src.ariaDescribedby(describedby)) {
+  if (src.deprecatedAriaDescribedby(describedby)) {
     AddIntListAttributeFromWebObjects(
         ui::AX_ATTR_DESCRIBEDBY_IDS, describedby, dst);
   }
@@ -589,7 +591,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     AddIntListAttributeFromWebObjects(ui::AX_ATTR_FLOWTO_IDS, flowTo, dst);
 
   WebVector<WebAXObject> labelledby;
-  if (src.ariaLabelledby(labelledby)) {
+  if (src.deprecatedAriaLabelledby(labelledby)) {
     AddIntListAttributeFromWebObjects(
         ui::AX_ATTR_LABELLEDBY_IDS, labelledby, dst);
   }

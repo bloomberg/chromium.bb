@@ -58,9 +58,6 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
 
   // Bound properties.
   std::string Role();
-  std::string Title();
-  std::string Description();
-  std::string HelpText();
   std::string StringValue();
   std::string Language();
   int X();
@@ -118,7 +115,6 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   std::string RowIndexRange();
   std::string ColumnIndexRange();
   v8::Handle<v8::Object> CellForColumnAndRow(int column, int row);
-  v8::Handle<v8::Object> TitleUIElement();
   void SetSelectedTextRange(int selection_start, int length);
   bool IsAttributeSettable(const std::string& attribute);
   bool IsPressActionSupported();
@@ -138,6 +134,18 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   void ScrollToGlobalPoint(int x, int y);
   int WordStart(int character_index);
   int WordEnd(int character_index);
+
+  // DEPRECATED accessible name and description accessors
+  std::string DeprecatedTitle();
+  std::string DeprecatedDescription();
+  std::string DeprecatedHelpText();
+  v8::Handle<v8::Object> DeprecatedTitleUIElement();
+
+  // NEW accessible name and description accessors
+  std::string Name();
+  std::string NameFrom();
+  int NameElementCount();
+  v8::Handle<v8::Object> NameElementAtIndex(unsigned index);
 
   blink::WebAXObject accessibility_object_;
   Factory* factory_;
