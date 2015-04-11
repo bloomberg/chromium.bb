@@ -52,6 +52,7 @@ MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, con
     : ActiveDOMObject(executionContext)
     , m_accessor(accessor)
     , m_sysexEnabled(sysexEnabled)
+    , m_hasPendingActivity(false)
 {
     m_accessor->setClient(this);
     for (size_t i = 0; i < ports.size(); ++i) {
@@ -66,6 +67,22 @@ MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, con
 
 MIDIAccess::~MIDIAccess()
 {
+}
+
+EventListener* MIDIAccess::onstatechange()
+{
+    return getAttributeEventListener(EventTypeNames::statechange);
+}
+
+void MIDIAccess::setOnstatechange(PassRefPtr<EventListener> listener)
+{
+    m_hasPendingActivity = listener;
+    setAttributeEventListener(EventTypeNames::statechange, listener);
+}
+
+bool MIDIAccess::hasPendingActivity() const
+{
+    return m_hasPendingActivity && !executionContext()->activeDOMObjectsAreStopped();
 }
 
 MIDIInputMap* MIDIAccess::inputs() const
@@ -176,16 +193,6 @@ void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, siz
     }
 
     m_accessor->sendMIDIData(portIndex, data, length, timeStamp);
-}
-
-bool MIDIAccess::hasPendingActivity() const
-{
-    // Force to call onstatechange() just to check if it returns nullptr.
-    // TODO(toyoshim): Stop using const_cast.
-    MIDIAccess* nonConstThis = const_cast<MIDIAccess*>(this);
-
-    // MIDIAccess servives if an onstatechange handler is set.
-    return nonConstThis->onstatechange();
 }
 
 void MIDIAccess::stop()

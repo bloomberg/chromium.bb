@@ -64,7 +64,8 @@ public:
     MIDIInputMap* inputs() const;
     MIDIOutputMap* outputs() const;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
+    EventListener* onstatechange();
+    void setOnstatechange(PassRefPtr<EventListener>);
 
     bool sysexEnabled() const { return m_sysexEnabled; }
 
@@ -99,6 +100,7 @@ private:
 
     OwnPtr<MIDIAccessor> m_accessor;
     bool m_sysexEnabled;
+    bool m_hasPendingActivity;
     HeapVector<Member<MIDIInput>> m_inputs;
     HeapVector<Member<MIDIOutput>> m_outputs;
 };
