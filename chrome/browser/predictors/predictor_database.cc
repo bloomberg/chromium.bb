@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "sql/connection.h"
-#include "sql/statement.h"
 
 using content::BrowserThread;
 

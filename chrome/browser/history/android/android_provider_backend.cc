@@ -17,7 +17,6 @@
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/thumbnail_database.h"
-#include "sql/connection.h"
 
 
 namespace history {

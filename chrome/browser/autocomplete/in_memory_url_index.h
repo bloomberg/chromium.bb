@@ -23,7 +23,6 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "sql/connection.h"
 
 class HistoryQuickProviderTest;
 

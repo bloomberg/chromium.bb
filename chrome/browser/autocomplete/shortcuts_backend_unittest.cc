@@ -15,7 +15,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_browser_thread.h"
-#include "sql/statement.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

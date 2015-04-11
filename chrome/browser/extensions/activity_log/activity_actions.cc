@@ -27,7 +27,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/dom_action_types.h"
-#include "sql/statement.h"
 #include "url/gurl.h"
 
 namespace constants = activity_log_constants;

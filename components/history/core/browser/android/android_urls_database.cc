@@ -5,6 +5,8 @@
 #include "components/history/core/browser/android/android_urls_database.h"
 
 #include "base/logging.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
 
 namespace history {
 

@@ -19,7 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "extensions/common/dom_action_types.h"
 #include "extensions/common/extension.h"
-#include "sql/error_delegate_util.h"
+#include "sql/statement.h"
 #include "sql/transaction.h"
 #include "url/gurl.h"
 

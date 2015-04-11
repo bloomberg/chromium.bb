@@ -18,8 +18,6 @@
 #include "components/history/core/browser/android/android_cache_database.h"
 #include "components/history/core/browser/android/android_history_types.h"
 #include "components/history/core/browser/android/sql_handler.h"
-#include "sql/statement.h"
-#include "sql/transaction.h"
 
 namespace history {
 

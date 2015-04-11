@@ -40,7 +40,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/ChromeBrowserProvider_jni.h"
-#include "sql/statement.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/favicon_size.h"

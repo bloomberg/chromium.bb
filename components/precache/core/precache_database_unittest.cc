@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/time/time.h"
-#include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

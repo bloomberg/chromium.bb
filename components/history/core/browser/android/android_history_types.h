@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
-#include "sql/statement.h"
 
 namespace sql {
 class Statement;

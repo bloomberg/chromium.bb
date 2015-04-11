@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/android/android_history_types.h"
 
+#include "sql/statement.h"
+
 namespace history {
 
 namespace {

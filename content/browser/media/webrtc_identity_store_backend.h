@@ -7,10 +7,12 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "sql/connection.h"
-#include "sql/meta_table.h"
 
 class GURL;
 

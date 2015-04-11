@@ -7,6 +7,10 @@
 
 #include "components/history/core/browser/android/android_history_types.h"
 
+namespace sql {
+class Connection;
+}
+
 namespace history {
 
 // The table is used to stores the raw url which was passed in from

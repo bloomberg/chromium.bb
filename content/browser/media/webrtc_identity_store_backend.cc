@@ -10,7 +10,6 @@
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
-#include "sql/error_delegate_util.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "storage/browser/quota/special_storage_policy.h"

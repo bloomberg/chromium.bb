@@ -20,8 +20,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "crypto/sha2.h"
 #include "net/base/net_util.h"
-#include "sql/connection.h"
-#include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"

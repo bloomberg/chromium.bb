@@ -11,7 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/threading/platform_thread.h"
 #include "components/history/core/browser/download_types.h"
-#include "sql/meta_table.h"
 
 namespace sql {
 class Connection;

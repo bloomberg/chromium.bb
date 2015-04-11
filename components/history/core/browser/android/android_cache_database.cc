@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "components/history/core/browser/android/android_time.h"
+#include "sql/connection.h"
 #include "sql/statement.h"
 
 using base::Time;

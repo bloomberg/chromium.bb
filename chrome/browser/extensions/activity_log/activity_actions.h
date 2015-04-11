@@ -12,9 +12,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/activity_log_private.h"
-#include "sql/connection.h"
-#include "sql/statement.h"
-#include "sql/transaction.h"
 #include "url/gurl.h"
 
 namespace base {

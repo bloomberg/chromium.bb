@@ -41,6 +41,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_constants.h"
+#include "sql/statement.h"
+#include "sql/transaction.h"
 
 using content::BrowserThread;
 

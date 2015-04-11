@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "sql/error_delegate_util.h"
+#include "sql/init_status.h"
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
 

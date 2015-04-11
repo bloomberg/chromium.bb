@@ -10,7 +10,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/history/core/browser/android/android_history_types.h"
-#include "sql/statement.h"
 
 class Profile;
 

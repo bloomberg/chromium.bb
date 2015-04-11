@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
-#include "sql/statement.h"
 #include "sql/transaction.h"
 
 // Current version number.  Note: when changing the current version number,

@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "extensions/common/extension.h"
 #include "sql/connection.h"
-#include "sql/init_status.h"
 
 namespace base {
 class Clock;
