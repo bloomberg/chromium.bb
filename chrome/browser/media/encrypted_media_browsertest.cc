@@ -52,14 +52,11 @@ const char kExternalClearKeyCrashKeySystem[] =
 const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
-// Some tests are disabled in Chrome OS official builds. http://crbug.com/430711
-#if !(defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD))
 const char kWebMVP9VideoOnly[] = "video/webm; codecs=\"vp9\"";
 #if defined(USE_PROPRIETARY_CODECS)
 const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"";
 #endif  // defined(USE_PROPRIETARY_CODECS)
-#endif  // !(defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD))
 
 // Sessions to load.
 const char kNoSessionToLoad[] = "";
@@ -521,6 +518,12 @@ INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKeyDecryptOnly,
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
+
+// Prefixed Widevine tests fail in Chrome OS official builds due to the request
+// for permissions. Since prefixed EME is deprecated and will be removed soon,
+// don't run these tests. http://crbug.com/430711
+#if !(defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD))
+
 // This test doesn't fully test playback with Widevine. So we only run Widevine
 // test with MSE (no SRC) to reduce test time. Also, on Android EME only works
 // with MSE and we cannot run this test with SRC.
@@ -529,6 +532,7 @@ INSTANTIATE_TEST_CASE_P(MSE_Widevine_Prefixed,
                         Combine(Values(kWidevineKeySystem),
                                 Values(MSE),
                                 Values(PREFIXED)));
+#endif  // !(defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD))
 
 INSTANTIATE_TEST_CASE_P(MSE_Widevine,
                         EncryptedMediaTest,
@@ -537,8 +541,6 @@ INSTANTIATE_TEST_CASE_P(MSE_Widevine,
                                 Values(UNPREFIXED)));
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
-// These tests time out in Chrome OS official builds. http://crbug.com/430711
-#if !(defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD))
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a_enc-a.webm", kWebMAudioOnly);
 }
@@ -631,7 +633,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
   TestSimplePlayback("bear-640x360-a_frag-cenc.mp4", kMP4AudioOnly);
 }
 #endif  // defined(USE_PROPRIETARY_CODECS)
-#endif  // !(defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD))
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // The parent key system cannot be used in generateKeyRequest.
