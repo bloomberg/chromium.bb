@@ -401,6 +401,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   class WindowObserver;
   friend class WindowObserver;
 
+  class WindowAncestorObserver;
+  friend class WindowAncestorObserver;
+
   void UpdateCursorIfOverSelf();
 
   // Tracks whether SnapToPhysicalPixelBoundary() has been called.
@@ -500,6 +503,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                               bool mouse_locked,
                               bool selection_popup);
 
+  // Called when the parent window bounds change.
+  void HandleParentBoundsChanged();
+
+  // Called when the parent window hierarchy for our window changes.
+  void ParentHierarchyChanged();
+
   // The model object.
   RenderWidgetHostImpl* host_;
 
@@ -508,6 +517,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   scoped_ptr<DelegatedFrameHost> delegated_frame_host_;
 
   scoped_ptr<WindowObserver> window_observer_;
+
+  // Tracks the ancestors of the RWHVA window for window location changes.
+  scoped_ptr<WindowAncestorObserver> ancestor_window_observer_;
 
   // Are we in the process of closing?  Tracked so fullscreen views can avoid
   // sending a second shutdown request to the host when they lose the focus

@@ -429,21 +429,6 @@ class WebContentsViewAura::WindowObserver
 #endif
   }
 
-  // Overridden from aura::WindowObserver:
-  void OnWindowHierarchyChanged(
-      const aura::WindowObserver::HierarchyChangeParams& params) override {
-    if (params.receiver != view_->window_.get() ||
-        !params.target->Contains(view_->window_.get())) {
-      return;
-    }
-
-    // Use the new parent's root window for calculating HiDPI subpixel offset.
-    RenderWidgetHostViewAura* rwhv = ToRenderWidgetHostViewAura(
-        view_->web_contents_->GetRenderWidgetHostView());
-    if (rwhv)
-      rwhv->SnapToPhysicalPixelBoundary();
-  }
-
 #if defined(OS_WIN)
   // Constrained windows are added as children of the parent's parent's view
   // which may overlap with windowed NPAPI plugins. In that case, tell the RWHV
