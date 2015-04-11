@@ -33,17 +33,21 @@ remoting.AppConnectedView = function(containerElement, connectionInfo) {
       this.plugin_, containerElement,
       containerElement.querySelector('.mouse-cursor-overlay'));
 
-  var eventHook = new base.EventHook(
+  var windowShapeHook = new base.EventHook(
       this.plugin_.hostDesktop(),
       remoting.HostDesktop.Events.shapeChanged,
       remoting.windowShape.setDesktopRects.bind(remoting.windowShape));
 
-  /** @private */
-  this.disposables_ = new base.Disposables(baseView, eventHook);
+  var desktopSizeHook = new base.EventHook(
+      this.plugin_.hostDesktop(),
+      remoting.HostDesktop.Events.sizeChanged,
+      this.onDesktopSizeChanged_.bind(this));
 
-  this.resizeHostToClientArea_().then(
-    this.setPluginSize_.bind(this)
-  );
+  /** @private */
+  this.disposables_ = new base.Disposables(
+      baseView, windowShapeHook, desktopSizeHook);
+
+  this.resizeHostToClientArea_();
 };
 
 /**
@@ -55,24 +59,15 @@ remoting.AppConnectedView.prototype.dispose = function() {
 
 /**
  * Resize the host to the dimensions of the current window.
- *
- * @return {Promise} A promise that resolves when the host finishes responding
- *   to the resize request.
  * @private
  */
 remoting.AppConnectedView.prototype.resizeHostToClientArea_ = function() {
   var hostDesktop = this.plugin_.hostDesktop();
   var desktopScale = this.host_.options.desktopScale;
-
-  return new Promise(function(/** Function */ resolve) {
-    var eventHook = new base.EventHook(
-        hostDesktop, remoting.HostDesktop.Events.sizeChanged, resolve);
-    hostDesktop.resize(window.innerWidth * desktopScale,
-                       window.innerHeight * desktopScale,
-                       window.devicePixelRatio);
-  });
+  hostDesktop.resize(window.innerWidth * desktopScale,
+                     window.innerHeight * desktopScale,
+                     window.devicePixelRatio);
 };
-
 
 /**
  * Adjust the size of the plugin according to the dimensions of the hostDesktop.
@@ -80,15 +75,19 @@ remoting.AppConnectedView.prototype.resizeHostToClientArea_ = function() {
  * @param {{width:number, height:number, xDpi:number, yDpi:number}} hostDesktop
  * @private
  */
-remoting.AppConnectedView.prototype.setPluginSize_ = function(hostDesktop) {
+remoting.AppConnectedView.prototype.onDesktopSizeChanged_ =
+    function(hostDesktop) {
+  // The first desktop size change indicates that we can close the loading
+  // window.
   remoting.LoadingWindow.close();
+
   var hostSize = { width: hostDesktop.width, height: hostDesktop.height };
   var hostDpi = { x: hostDesktop.xDpi, y: hostDesktop.yDpi };
   var clientArea = { width: window.innerWidth, height: window.innerHeight };
   var newSize = remoting.DesktopViewport.choosePluginSize(
       clientArea, window.devicePixelRatio,
       hostSize, hostDpi, this.host_.options.desktopScale,
-      true /* fullscreen */ , false /* shrinkToFit */ );
+      true /* fullscreen */ , true /* shrinkToFit */ );
 
   this.plugin_.element().style.width = newSize.width + 'px';
   this.plugin_.element().style.height = newSize.height + 'px';
