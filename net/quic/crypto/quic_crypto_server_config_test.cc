@@ -446,28 +446,17 @@ TEST_F(SourceAddressTokenTest, SourceAddressTokenWithNetworkParams) {
       NewSourceAddressToken(kPrimary, ip4_, &cached_network_params_input);
 
   CachedNetworkParameters cached_network_params_output;
-#if 0
-  // TODO(rtenneti): For server, enable the following check after serialization
-  // of optional CachedNetworkParameters is implemented.
-  EXPECT_NE(cached_network_params_output.DebugString(),
-            cached_network_params_input.DebugString());
-#endif
+  EXPECT_NE(cached_network_params_output.SerializeAsString(),
+            cached_network_params_input.SerializeAsString());
   ValidateSourceAddressToken(kPrimary, token4_with_cached_network_params, ip4_,
                              &cached_network_params_output);
-#if 0
-  // TODO(rtenneti): For server, enable the following check after serialization
-  // of optional CachedNetworkParameters is implemented.
-  EXPECT_EQ(cached_network_params_output.DebugString(),
-            cached_network_params_input.DebugString());
-#endif
+  EXPECT_EQ(cached_network_params_output.SerializeAsString(),
+            cached_network_params_input.SerializeAsString());
 }
 
 // Test basic behavior of source address tokens including being specific
 // to a single IP address and server config.
-//
-// TODO(rtenneti): For server, enable the following test after serialization of
-// SourceAddressTokens is implemented.
-TEST_F(SourceAddressTokenTest, DISABLED_NewSourceAddressToken) {
+TEST_F(SourceAddressTokenTest, NewSourceAddressToken) {
   ValueRestore<bool> old_flag(&FLAGS_quic_use_multiple_address_in_source_tokens,
                               true);
 
@@ -509,9 +498,7 @@ TEST_F(SourceAddressTokenTest, DISABLED_NewSourceAddressToken) {
             ValidateSourceAddressTokens(kPrimary, override_token6, ip6_));
 }
 
-// TODO(rtenneti): For server, enable the following test after serialization of
-// SourceAddressTokens is implemented.
-TEST_F(SourceAddressTokenTest, DISABLED_NewSourceAddressTokenExpiration) {
+TEST_F(SourceAddressTokenTest, NewSourceAddressTokenExpiration) {
   ValueRestore<bool> old_flag(&FLAGS_quic_use_multiple_address_in_source_tokens,
                               true);
 
@@ -540,28 +527,17 @@ TEST_F(SourceAddressTokenTest, NewSourceAddressTokenWithNetworkParams) {
       NewSourceAddressToken(kPrimary, ip4_, &cached_network_params_input);
 
   CachedNetworkParameters cached_network_params_output;
-#if 0
-  // TODO(rtenneti): For server, enable the following check after serialization
-  // of optional CachedNetworkParameters is implemented.
-  EXPECT_NE(cached_network_params_output.DebugString(),
-            cached_network_params_input.DebugString());
-#endif
+  EXPECT_NE(cached_network_params_output.SerializeAsString(),
+            cached_network_params_input.SerializeAsString());
   ValidateSourceAddressTokens(kPrimary, token4_with_cached_network_params, ip4_,
                               &cached_network_params_output);
-#if 0
-  // TODO(rtenneti): For server, enable the following check after serialization
-  // of optional CachedNetworkParameters is implemented.
-  EXPECT_EQ(cached_network_params_output.DebugString(),
-            cached_network_params_input.DebugString());
-#endif
+  EXPECT_EQ(cached_network_params_output.SerializeAsString(),
+            cached_network_params_input.SerializeAsString());
 }
 
 // Test the ability for a source address token to be valid for multiple
 // addresses.
-//
-// TODO(rtenneti): For server, enable the following test after serialization of
-// SourceAddressTokens is implemented.
-TEST_F(SourceAddressTokenTest, DISABLED_SourceAddressTokenMultipleAddresses) {
+TEST_F(SourceAddressTokenTest, SourceAddressTokenMultipleAddresses) {
   ValueRestore<bool> old_flag(&FLAGS_quic_use_multiple_address_in_source_tokens,
                               true);
 
