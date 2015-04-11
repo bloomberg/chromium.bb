@@ -30,5 +30,24 @@ if (!is_ios) {
       "//ui/gfx",
       "//url",
     ]
+
+    if (is_android) {
+      sources += [
+        "distillable_page_utils_android.cc",
+        "distillable_page_utils_android.h",
+      ]
+      deps += [ ":jni_headers" ]
+    }
+  }
+
+  if (is_android) {
+    import("//build/config/android/rules.gni")
+
+    generate_jni("jni_headers") {
+      sources = [
+        "../android/java/src/org/chromium/components/dom_distiller/content/DistillablePageUtils.java",
+      ]
+      jni_package = "dom_distiller_content"
+    }
   }
 }

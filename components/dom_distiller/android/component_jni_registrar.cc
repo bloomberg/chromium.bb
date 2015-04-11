@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/basictypes.h"
+#include "components/dom_distiller/content/distillable_page_utils_android.h"
 #include "components/dom_distiller/core/distilled_page_prefs_android.h"
 #include "components/dom_distiller/core/dom_distiller_service_android.h"
 #include "components/dom_distiller/core/url_utils_android.h"
@@ -20,6 +21,8 @@ static base::android::RegistrationMethod kDomDistillerRegisteredMethods[] = {
     {"DomDistillerService", DomDistillerServiceAndroid::Register},
     {"DomDistillerUrlUtils",
      dom_distiller::url_utils::android::RegisterUrlUtils},
+    {"DistillablePageUtils",
+     dom_distiller::android::RegisterDistillablePageUtils},
 };
 
 bool RegisterDomDistiller(JNIEnv* env) {

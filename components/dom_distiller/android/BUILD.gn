@@ -4,18 +4,29 @@
 
 import("//build/config/android/rules.gni")
 
-# GYP: //components/dom_distiller.gypi:dom_distiller_core_java
 android_library("dom_distiller_core_java") {
   deps = [
     "//base:base_java",
+  ]
+  java_files = [
+    "java/src/org/chromium/components/dom_distiller/core/DomDistillerService.java",
+    "java/src/org/chromium/components/dom_distiller/core/DomDistillerUrlUtils.java",
+    "java/src/org/chromium/components/dom_distiller/core/DistilledPagePrefs.java",
   ]
 
   srcjar_deps = [
     ":dom_distiller_core_font_family_javagen",
     ":dom_distiller_core_theme_javagen",
   ]
+}
 
-  DEPRECATED_java_in_dir = "java/src"
+# GYP: //components/dom_distiller.gypi:dom_distiller_java
+android_library("dom_distiller_content_java") {
+  deps = [
+    ":dom_distiller_core_java",
+    "//content/public/android:content_java",
+  ]
+  java_files = [ "java/src/org/chromium/components/dom_distiller/content/DistillablePageUtils.java" ]
 }
 
 # GYP: //components/dom_distiller.gypi:dom_distiller_core_font_family_java
