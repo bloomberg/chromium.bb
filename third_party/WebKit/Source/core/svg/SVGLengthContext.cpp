@@ -220,6 +220,9 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
     case LengthTypeREMS:
         userUnits = convertValueFromEMSToUserUnits(rootElementStyle(m_context), value);
         break;
+    case LengthTypeCHS:
+        userUnits = convertValueFromCHSToUserUnits(value);
+        break;
     default:
         ASSERT_NOT_REACHED();
         break;
@@ -252,6 +255,8 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
         return convertValueFromUserUnitsToEXS(value);
     case LengthTypeREMS:
         return convertValueFromUserUnitsToEMS(rootElementStyle(m_context), value);
+    case LengthTypeCHS:
+        return convertValueFromUserUnitsToCHS(value);
     case LengthTypePX:
         return value;
     case LengthTypeCM:
@@ -268,6 +273,28 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
 
     ASSERT_NOT_REACHED();
     return 0;
+}
+
+float SVGLengthContext::convertValueFromUserUnitsToCHS(float value) const
+{
+    const ComputedStyle* style = computedStyleForLengthResolving(m_context);
+    if (!style)
+        return 0;
+
+    float zeroWidth = style->fontMetrics().zeroWidth();
+    if (!zeroWidth)
+        return 0;
+
+    return value / zeroWidth;
+}
+
+float SVGLengthContext::convertValueFromCHSToUserUnits(float value) const
+{
+    const ComputedStyle* style = computedStyleForLengthResolving(m_context);
+    if (!style)
+        return 0;
+
+    return value * style->fontMetrics().zeroWidth();
 }
 
 float SVGLengthContext::convertValueFromUserUnitsToEXS(float value) const

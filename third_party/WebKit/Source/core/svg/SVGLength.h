@@ -58,6 +58,8 @@ public:
 
         if (m_unitType == LengthTypeREMS)
             return CSSPrimitiveValue::UnitType::CSS_REMS;
+        if (m_unitType == LengthTypeCHS)
+            return CSSPrimitiveValue::UnitType::CSS_CHS;
 
         return static_cast<CSSPrimitiveValue::UnitType>(m_unitType);
     }
@@ -94,7 +96,8 @@ public:
         return unitType == LengthTypePercentage
             || unitType == LengthTypeEMS
             || unitType == LengthTypeEXS
-            || unitType == LengthTypeREMS;
+            || unitType == LengthTypeREMS
+            || unitType == LengthTypeCHS;
     }
     inline bool isRelative() const { return isRelativeUnit(unitType()); }
 

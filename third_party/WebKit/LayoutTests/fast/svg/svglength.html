@@ -23,7 +23,8 @@ var units = {
     "in": 8,
     "pt": 9,
     "pc": 10,
-    "rem": 11
+    "rem": 11,
+    "ch":12
 };
 var highestExposedUnit = 10; // SVG_LENGTHTYPE_PC
 var unitconstants = {
@@ -40,7 +41,8 @@ var unitconstants = {
     "PC": 10,
 };
 var nonexposedunitconstants = {
-    "REMS": 11
+    "REMS": 11,
+    "CHS":12
 };
 
 function convertTo(value, unit, outunit) {
@@ -60,6 +62,7 @@ function convertTo(value, unit, outunit) {
         case "em":
         case "ex":
         case "rem":
+        case "ch":
             return value;
         case "cm":
             userUnits = value * cssPixelsPerCentimeter;
@@ -86,6 +89,7 @@ function convertTo(value, unit, outunit) {
         case "em":
         case "ex":
         case "rem":
+        case "ch":
             return value;
         case "cm":
             return userUnits / cssPixelsPerCentimeter;

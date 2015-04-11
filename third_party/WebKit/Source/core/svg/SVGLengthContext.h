@@ -43,7 +43,8 @@ enum SVGLengthType {
     LengthTypeIN,
     LengthTypePT,
     LengthTypePC,
-    LengthTypeREMS
+    LengthTypeREMS,
+    LengthTypeCHS
 };
 
 enum class SVGLengthMode {
@@ -82,6 +83,9 @@ private:
 
     float convertValueFromUserUnitsToEXS(float value) const;
     float convertValueFromEXSToUserUnits(float value) const;
+
+    float convertValueFromUserUnitsToCHS(float value) const;
+    float convertValueFromCHSToUserUnits(float value) const;
 
     RawPtrWillBeMember<const SVGElement> m_context;
 };
