@@ -59,8 +59,10 @@ void DownloadPermissionRequest::PermissionDenied() {
 }
 
 void DownloadPermissionRequest::Cancelled() {
-  // TODO(gbillock): There's currently no suitable method for telling the host
-  // that a request is cancelled.
+  if (host_) {
+    // This may invalidate |host_|.
+    host_->CancelOnce();
+  }
 }
 
 void DownloadPermissionRequest::RequestFinished() {

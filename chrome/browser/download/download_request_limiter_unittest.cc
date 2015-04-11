@@ -144,16 +144,6 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
       state->DidGetUserGesture();
   }
 
-  void DidNavigateMainFrame() {
-    view_->Close();
-    DownloadRequestLimiter::TabDownloadState* state =
-        download_request_limiter_->GetDownloadState(
-            web_contents(), NULL, false);
-    content::LoadCommittedDetails details;
-    content::FrameNavigateParams params;
-    state->DidNavigateMainFrame(details, params);
-  }
-
   void ExpectAndResetCounts(
       int expect_continues,
       int expect_cancels,
@@ -416,7 +406,8 @@ TEST_P(DownloadRequestLimiterParamTests,
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
-  DidNavigateMainFrame();
+  Reload();
+  BubbleManagerDocumentLoadCompleted();
   base::RunLoop().RunUntilIdle();
   ExpectAndResetCounts(0, 1, 0, __LINE__);
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
@@ -433,7 +424,8 @@ TEST_P(DownloadRequestLimiterParamTests,
             download_request_limiter_->GetDownloadStatus(web_contents()));
   ExpectAndResetCounts(0, 1, 1, __LINE__);
 
-  DidNavigateMainFrame();
+  Reload();
+  BubbleManagerDocumentLoadCompleted();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents()));
