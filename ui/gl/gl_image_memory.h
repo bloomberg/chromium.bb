@@ -20,18 +20,18 @@ namespace gfx {
 
 class GL_EXPORT GLImageMemory : public GLImage {
  public:
-  GLImageMemory(const gfx::Size& size, unsigned internalformat);
+  GLImageMemory(const Size& size, unsigned internalformat);
 
   static bool StrideInBytes(size_t width,
-                            gfx::GpuMemoryBuffer::Format format,
+                            GpuMemoryBuffer::Format format,
                             size_t* stride_in_bytes);
 
   bool Initialize(const unsigned char* memory,
-                  gfx::GpuMemoryBuffer::Format format);
+                  GpuMemoryBuffer::Format format);
 
   // Overridden from GLImage:
   void Destroy(bool have_context) override;
-  gfx::Size GetSize() override;
+  Size GetSize() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override {}
   bool CopyTexImage(unsigned target) override;
@@ -39,7 +39,7 @@ class GL_EXPORT GLImageMemory : public GLImage {
   void DidUseTexImage() override;
   void WillModifyTexImage() override {}
   void DidModifyTexImage() override {}
-  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+  bool ScheduleOverlayPlane(AcceleratedWidget widget,
                             int z_order,
                             OverlayTransform transform,
                             const Rect& bounds_rect,
@@ -51,10 +51,10 @@ class GL_EXPORT GLImageMemory : public GLImage {
  private:
   void DoBindTexImage(unsigned target);
 
-  const gfx::Size size_;
+  const Size size_;
   const unsigned internalformat_;
   const unsigned char* memory_;
-  gfx::GpuMemoryBuffer::Format format_;
+  GpuMemoryBuffer::Format format_;
   bool in_use_;
   unsigned target_;
   bool need_do_bind_tex_image_;

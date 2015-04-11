@@ -16,48 +16,48 @@
 namespace gfx {
 namespace {
 
-bool ValidFormat(unsigned internalformat, gfx::GpuMemoryBuffer::Format format) {
+bool ValidFormat(unsigned internalformat, GpuMemoryBuffer::Format format) {
   switch (internalformat) {
     case GL_ATC_RGB_AMD:
-      return format == gfx::GpuMemoryBuffer::ATC;
+      return format == GpuMemoryBuffer::ATC;
     case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
-      return format == gfx::GpuMemoryBuffer::ATCIA;
+      return format == GpuMemoryBuffer::ATCIA;
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-      return format == gfx::GpuMemoryBuffer::DXT1;
+      return format == GpuMemoryBuffer::DXT1;
     case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-      return format == gfx::GpuMemoryBuffer::DXT5;
+      return format == GpuMemoryBuffer::DXT5;
     case GL_ETC1_RGB8_OES:
-      return format == gfx::GpuMemoryBuffer::ETC1;
+      return format == GpuMemoryBuffer::ETC1;
     case GL_RGB:
       switch (format) {
-        case gfx::GpuMemoryBuffer::RGBX_8888:
+        case GpuMemoryBuffer::RGBX_8888:
           return true;
-        case gfx::GpuMemoryBuffer::ATC:
-        case gfx::GpuMemoryBuffer::ATCIA:
-        case gfx::GpuMemoryBuffer::DXT1:
-        case gfx::GpuMemoryBuffer::DXT5:
-        case gfx::GpuMemoryBuffer::ETC1:
-        case gfx::GpuMemoryBuffer::R_8:
-        case gfx::GpuMemoryBuffer::RGBA_8888:
-        case gfx::GpuMemoryBuffer::BGRA_8888:
-        case gfx::GpuMemoryBuffer::YUV_420:
+        case GpuMemoryBuffer::ATC:
+        case GpuMemoryBuffer::ATCIA:
+        case GpuMemoryBuffer::DXT1:
+        case GpuMemoryBuffer::DXT5:
+        case GpuMemoryBuffer::ETC1:
+        case GpuMemoryBuffer::R_8:
+        case GpuMemoryBuffer::RGBA_8888:
+        case GpuMemoryBuffer::BGRA_8888:
+        case GpuMemoryBuffer::YUV_420:
           return false;
       }
       NOTREACHED();
       return false;
     case GL_RGBA:
       switch (format) {
-        case gfx::GpuMemoryBuffer::BGRA_8888:
+        case GpuMemoryBuffer::BGRA_8888:
           return true;
-        case gfx::GpuMemoryBuffer::ATC:
-        case gfx::GpuMemoryBuffer::ATCIA:
-        case gfx::GpuMemoryBuffer::DXT1:
-        case gfx::GpuMemoryBuffer::DXT5:
-        case gfx::GpuMemoryBuffer::ETC1:
-        case gfx::GpuMemoryBuffer::R_8:
-        case gfx::GpuMemoryBuffer::RGBX_8888:
-        case gfx::GpuMemoryBuffer::RGBA_8888:
-        case gfx::GpuMemoryBuffer::YUV_420:
+        case GpuMemoryBuffer::ATC:
+        case GpuMemoryBuffer::ATCIA:
+        case GpuMemoryBuffer::DXT1:
+        case GpuMemoryBuffer::DXT5:
+        case GpuMemoryBuffer::ETC1:
+        case GpuMemoryBuffer::R_8:
+        case GpuMemoryBuffer::RGBX_8888:
+        case GpuMemoryBuffer::RGBA_8888:
+        case GpuMemoryBuffer::YUV_420:
           return false;
       }
       NOTREACHED();
@@ -69,20 +69,20 @@ bool ValidFormat(unsigned internalformat, gfx::GpuMemoryBuffer::Format format) {
   }
 }
 
-EGLint FourCC(gfx::GpuMemoryBuffer::Format format) {
+EGLint FourCC(GpuMemoryBuffer::Format format) {
   switch (format) {
-    case gfx::GpuMemoryBuffer::BGRA_8888:
+    case GpuMemoryBuffer::BGRA_8888:
       return DRM_FORMAT_ARGB8888;
-    case gfx::GpuMemoryBuffer::RGBX_8888:
+    case GpuMemoryBuffer::RGBX_8888:
       return DRM_FORMAT_XRGB8888;
-    case gfx::GpuMemoryBuffer::ATC:
-    case gfx::GpuMemoryBuffer::ATCIA:
-    case gfx::GpuMemoryBuffer::DXT1:
-    case gfx::GpuMemoryBuffer::DXT5:
-    case gfx::GpuMemoryBuffer::ETC1:
-    case gfx::GpuMemoryBuffer::R_8:
-    case gfx::GpuMemoryBuffer::RGBA_8888:
-    case gfx::GpuMemoryBuffer::YUV_420:
+    case GpuMemoryBuffer::ATC:
+    case GpuMemoryBuffer::ATCIA:
+    case GpuMemoryBuffer::DXT1:
+    case GpuMemoryBuffer::DXT5:
+    case GpuMemoryBuffer::ETC1:
+    case GpuMemoryBuffer::R_8:
+    case GpuMemoryBuffer::RGBA_8888:
+    case GpuMemoryBuffer::YUV_420:
       NOTREACHED();
       return 0;
   }
@@ -97,7 +97,7 @@ bool IsHandleValid(const base::FileDescriptor& handle) {
 
 }  // namespace
 
-GLImageLinuxDMABuffer::GLImageLinuxDMABuffer(const gfx::Size& size,
+GLImageLinuxDMABuffer::GLImageLinuxDMABuffer(const Size& size,
                                              unsigned internalformat)
     : GLImageEGL(size), internalformat_(internalformat) {
 }
@@ -106,7 +106,7 @@ GLImageLinuxDMABuffer::~GLImageLinuxDMABuffer() {
 }
 
 bool GLImageLinuxDMABuffer::Initialize(const base::FileDescriptor& handle,
-                                       gfx::GpuMemoryBuffer::Format format,
+                                       GpuMemoryBuffer::Format format,
                                        int pitch) {
   if (!ValidFormat(internalformat_, format)) {
     LOG(ERROR) << "Invalid format: " << internalformat_;

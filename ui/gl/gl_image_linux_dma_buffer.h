@@ -12,12 +12,12 @@ namespace gfx {
 
 class GL_EXPORT GLImageLinuxDMABuffer : public GLImageEGL {
  public:
-  GLImageLinuxDMABuffer(const gfx::Size& size, unsigned internalformat);
+  GLImageLinuxDMABuffer(const Size& size, unsigned internalformat);
 
   // Returns true on success and the file descriptor can be closed as the
   // implementation will take a reference to the dma_buf.
   bool Initialize(const base::FileDescriptor& handle,
-                  gfx::GpuMemoryBuffer::Format format,
+                  GpuMemoryBuffer::Format format,
                   int pitch);
 
  protected:

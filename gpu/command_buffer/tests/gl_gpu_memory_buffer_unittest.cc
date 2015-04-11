@@ -77,7 +77,7 @@ SHADER(
 );
 // clang-format on
 
-std::vector<uint8> GetTexturePixel(const gfx::GpuMemoryBuffer::Format format) {
+std::vector<uint8> GetTexturePixel(gfx::GpuMemoryBuffer::Format format) {
   std::vector<uint8> pixel;
   switch (format) {
     case gfx::GpuMemoryBuffer::R_8:
@@ -111,7 +111,7 @@ std::vector<uint8> GetTexturePixel(const gfx::GpuMemoryBuffer::Format format) {
 }
 
 std::vector<uint8> GetFramebufferPixel(
-    const gfx::GpuMemoryBuffer::Format format) {
+    gfx::GpuMemoryBuffer::Format format) {
   std::vector<uint8> pixel;
   switch (format) {
     case gfx::GpuMemoryBuffer::R_8:

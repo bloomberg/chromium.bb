@@ -135,7 +135,6 @@ bool GpuMemoryBufferImpl::StrideInBytes(size_t width,
       *stride_in_bytes = width / SubsamplingFactor(format, plane);
       return true;
   }
-
   NOTREACHED();
   return false;
 }
