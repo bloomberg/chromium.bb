@@ -75,7 +75,8 @@ bool GpuMemoryBufferImplSharedMemory::BufferSizeInBytes(const gfx::Size& size,
                                                         Format format,
                                                         size_t* size_in_bytes) {
   base::CheckedNumeric<size_t> checked_size_in_bytes = 0u;
-  for (size_t i = 0; i < NumberOfPlanesForGpuMemoryBufferFormat(format); ++i) {
+  size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
+  for (size_t i = 0; i < num_planes; ++i) {
     size_t stride_in_bytes = 0;
     if (!StrideInBytes(size.width(), format, i, &stride_in_bytes))
       return false;
@@ -159,8 +160,8 @@ bool GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(
     case RGBX_8888:
       return true;
     case YUV_420: {
-      for (size_t i = 0; i < NumberOfPlanesForGpuMemoryBufferFormat(format);
-           ++i) {
+      size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
+      for (size_t i = 0; i < num_planes; ++i) {
         size_t factor = SubsamplingFactor(format, i);
         if (size.width() % factor || size.height() % factor)
           return false;
@@ -177,8 +178,8 @@ bool GpuMemoryBufferImplSharedMemory::Map(void** data) {
   DCHECK(!mapped_);
   data[0] = shared_memory_->memory();
   // Map the other planes if they exist.
-  for (size_t i = 0; i < NumberOfPlanesForGpuMemoryBufferFormat(format_) - 1;
-       ++i) {
+  size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
+  for (size_t i = 0; i < num_planes - 1; ++i) {
     size_t stride_in_bytes = 0;
     bool valid_stride =
         StrideInBytes(size_.width(), format_, i, &stride_in_bytes);
@@ -197,7 +198,8 @@ void GpuMemoryBufferImplSharedMemory::Unmap() {
 }
 
 void GpuMemoryBufferImplSharedMemory::GetStride(uint32* stride) const {
-  for (size_t i = 0; i < NumberOfPlanesForGpuMemoryBufferFormat(format_); ++i) {
+  size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
+  for (size_t i = 0; i < num_planes; ++i) {
     size_t stride_in_bytes = 0;
     bool valid_stride =
         StrideInBytes(size_.width(), format_, i, &stride_in_bytes);
