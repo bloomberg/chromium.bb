@@ -76,37 +76,24 @@ class SpdyHttpStreamTest : public testing::Test,
     return deterministic_data_.get();
   }
 
-  OrderedSocketData* data() { return data_.get(); }
-
  protected:
   void TearDown() override {
     crypto::ECSignatureCreator::SetFactoryForTesting(NULL);
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  // Initializes the session using DeterministicSocketData.  It's advisable
-  // to use this function rather than the OrderedSocketData, since the
-  // DeterministicSocketData behaves in a reasonable manner.
-  void InitSessionDeterministic(MockRead* reads, size_t reads_count,
-                                MockWrite* writes, size_t writes_count,
-                                const SpdySessionKey& key) {
+  // Initializes the session using DeterministicSocketData.
+  void InitSession(MockRead* reads,
+                   size_t reads_count,
+                   MockWrite* writes,
+                   size_t writes_count,
+                   const SpdySessionKey& key) {
     deterministic_data_.reset(
         new DeterministicSocketData(reads, reads_count, writes, writes_count));
     session_deps_.deterministic_socket_factory->AddSocketDataProvider(
         deterministic_data_.get());
     http_session_ =
         SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
-    session_ = CreateInsecureSpdySession(http_session_, key, BoundNetLog());
-  }
-
-  // Initializes the session using the finicky OrderedSocketData class.
-  void InitSession(MockRead* reads, size_t reads_count,
-                   MockWrite* writes, size_t writes_count,
-                   const SpdySessionKey& key) {
-    data_.reset(new OrderedSocketData(reads, reads_count,
-                                      writes, writes_count));
-    session_deps_.socket_factory->AddSocketDataProvider(data_.get());
-    http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
     session_ = CreateInsecureSpdySession(http_session_, key, BoundNetLog());
   }
 
@@ -118,7 +105,6 @@ class SpdyHttpStreamTest : public testing::Test,
   SpdyTestUtil spdy_util_;
   CapturingNetLog net_log_;
   SpdySessionDependencies session_deps_;
-  scoped_ptr<OrderedSocketData> data_;
   scoped_ptr<DeterministicSocketData> deterministic_data_;
   scoped_refptr<HttpNetworkSession> http_session_;
   base::WeakPtr<SpdySession> session_;
@@ -158,12 +144,11 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   MockWrite writes[] = {
-    CreateMockWrite(*req.get(), 1),
+      CreateMockWrite(*req.get(), 0),
   };
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-    CreateMockRead(*resp, 2),
-    MockRead(SYNCHRONOUS, 0, 3)  // EOF
+      CreateMockRead(*resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
 
   HostPortPair host_port_pair("www.google.com", 80);
@@ -194,20 +179,18 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
   EXPECT_FALSE(http_stream->GetLoadTimingInfo(&load_timing_info));
 
-  // This triggers the MockWrite and read 2
+  deterministic_data()->RunFor(3);
+
   callback.WaitForResult();
 
   // Can get timing information once the stream connects.
   TestLoadTimingNotReused(*http_stream);
 
-  // This triggers read 3. The empty read causes the session to shut down.
-  data()->CompleteRead();
-
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
-  EXPECT_TRUE(data()->at_read_eof());
-  EXPECT_TRUE(data()->at_write_eof());
+  EXPECT_TRUE(deterministic_data()->at_read_eof());
+  EXPECT_TRUE(deterministic_data()->at_write_eof());
 
   TestLoadTimingNotReused(*http_stream);
   http_stream->Close(true);
@@ -244,9 +227,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   HostPortPair host_port_pair("www.google.com", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
-  InitSessionDeterministic(reads, arraysize(reads),
-                           writes, arraysize(writes),
-                           key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
 
   HttpRequestInfo request1;
   request1.method = "GET";
@@ -333,9 +314,8 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   HostPortPair host_port_pair("www.google.com", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
-  InitSession(vector_as_array(&reads), reads.size(),
-              vector_as_array(&writes), writes.size(),
-              key);
+  InitSession(vector_as_array(&reads), reads.size(), vector_as_array(&writes),
+              writes.size(), key);
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
   ChunkedUploadDataStream upload_stream(0);
@@ -365,19 +345,14 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
       headers, &response, callback.callback()));
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
-  // This results in writing the post body and reading the response headers.
+  deterministic_data()->RunFor(seq);
   callback.WaitForResult();
-
-  // This triggers reading the body and the EOF, causing the session to shut
-  // down.
-  data()->CompleteRead();
-  base::MessageLoop::current()->RunUntilIdle();
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
-  EXPECT_TRUE(data()->at_read_eof());
-  EXPECT_TRUE(data()->at_write_eof());
+  EXPECT_TRUE(deterministic_data()->at_read_eof());
+  EXPECT_TRUE(deterministic_data()->at_write_eof());
 }
 
 // Test to ensure the SpdyStream state machine does not get confused when a
@@ -409,9 +384,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   HostPortPair host_port_pair("www.google.com", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
-  InitSessionDeterministic(reads, arraysize(reads),
-                           writes, arraysize(writes),
-                           key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
 
   ChunkedUploadDataStream upload_stream(0);
 
@@ -508,9 +481,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   HostPortPair host_port_pair("www.google.com", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
-  InitSessionDeterministic(reads, arraysize(reads),
-                           writes, arraysize(writes),
-                           key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
 
   ChunkedUploadDataStream upload_stream(0);
 
@@ -593,9 +564,7 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   HostPortPair host_port_pair("www.google.com", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
-  InitSessionDeterministic(reads, arraysize(reads),
-                           writes, arraysize(writes),
-                           key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
 
   ChunkedUploadDataStream upload_stream(0);
 
@@ -652,12 +621,11 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(base_url, false, 1, LOWEST));
   MockWrite writes[] = {
-    CreateMockWrite(*req.get(), 1),
+      CreateMockWrite(*req.get(), 0),
   };
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-    CreateMockRead(*resp, 2),
-    MockRead(SYNCHRONOUS, 0, 3)  // EOF
+      CreateMockRead(*resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
 
   HostPortPair host_port_pair("www.google.com", 80);
@@ -682,17 +650,14 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
 
   EXPECT_EQ(base_url, http_stream->stream()->GetUrlFromHeaders().spec());
 
-  // This triggers the MockWrite and read 2
+  deterministic_data()->RunFor(3);
   callback.WaitForResult();
-
-  // This triggers read 3. The empty read causes the session to shut down.
-  data()->CompleteRead();
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
-  EXPECT_TRUE(data()->at_read_eof());
-  EXPECT_TRUE(data()->at_write_eof());
+  EXPECT_TRUE(deterministic_data()->at_read_eof());
+  EXPECT_TRUE(deterministic_data()->at_write_eof());
 }
 
 // The tests below are only for SPDY/3 and above.
@@ -720,9 +685,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
 
-  InitSessionDeterministic(reads, arraysize(reads),
-                           writes, arraysize(writes),
-                           key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
 
   ChunkedUploadDataStream upload_stream(0);
 
