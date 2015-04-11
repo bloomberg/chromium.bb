@@ -228,6 +228,94 @@ var testSetPaused = function() {
   }
 }
 
+var testBroadcast = function() {
+  var listeningSocketId;
+  var sendingSocketId;
+
+  console.log("testBroadcast");
+  chrome.sockets.udp.create({}, onCreate);
+
+  function onCreate(socketInfo) {
+    console.log("socket created: " + socketInfo.socketId);
+    chrome.test.assertTrue(socketId > 0, "failed to create socket");
+
+    if (listeningSocketId == undefined) {
+      listeningSocketId = socketInfo.socketId;
+      chrome.sockets.udp.onReceive.addListener(onReceive);
+      chrome.sockets.udp.onReceiveError.addListener(onReceiveError);
+      chrome.sockets.udp.bind(
+          listeningSocketId, "0.0.0.0", 8000, onBindListening);
+    } else {
+      sendingSocketId = socketInfo.socketId;
+      chrome.sockets.udp.bind(
+          sendingSocketId, "127.0.0.1", 8001, onBindSending);
+    }
+  }
+
+  function onBindListening(result) {
+    chrome.test.assertEq(0, result, "Bind failed with error: " + result);
+    if (result < 0) {
+      return;
+    }
+
+    chrome.sockets.udp.setBroadcast(
+        listeningSocketId, true, onSetBroadcastListening);
+  }
+
+  function onSetBroadcastListening(result) {
+    chrome.test.assertEq(0, result, "Failed to enable broadcast: " + result);
+    if (result < 0) {
+      return;
+    }
+
+    // Create the sending socket.
+    chrome.sockets.udp.create({}, onCreate);
+  }
+
+  function onBindSending(result) {
+    chrome.test.assertEq(0, result, "Bind failed with error: " + result);
+    if (result < 0) {
+      return;
+    }
+
+    chrome.sockets.udp.setBroadcast(
+        sendingSocketId, true, onSetBroadcastSending);
+  }
+
+  function onSetBroadcastSending(result) {
+    chrome.test.assertEq(0, result, "Failed to enable broadcast: " + result);
+    if (result < 0) {
+      return;
+    }
+
+    string2ArrayBuffer("broadcast packet", onArrayBuffer);
+  }
+
+  function onArrayBuffer(arrayBuffer) {
+    console.log("sending bytes to broadcast: " + arrayBuffer.byteLength);
+    chrome.sockets.udp.send(sendingSocketId, arrayBuffer, "127.255.255.255",
+                            8000, function(sendInfo) {
+      chrome.test.assertEq(0, sendInfo.resultCode);
+      chrome.test.assertEq(sendInfo.bytesSent, arrayBuffer.byteLength);
+    });
+  }
+
+  function onReceiveError(info) {
+    chrome.test.fail("Socket receive error: " + info.resultCode);
+  }
+
+  function onReceive(info) {
+    console.log("Received data on socket" + "(" + info.socketId + ")");
+    chrome.test.assertEq(listeningSocketId, info.socketId);
+    chrome.test.assertEq("127.0.0.1", info.remoteAddress);
+    chrome.test.assertEq(8001, info.remotePort);
+    arrayBuffer2String(info.data, function(string) {
+      chrome.test.assertEq("broadcast packet", string);
+      chrome.test.succeed();
+    });
+  }
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Test driver
 //
@@ -244,7 +332,8 @@ var onMessageReply = function(message) {
     chrome.test.runTests([ testMulticast ]);
   } else {
     console.log("Running udp tests");
-    chrome.test.runTests([ testSocketCreation, testSending, testSetPaused ]);
+    chrome.test.runTests([ testSocketCreation, testSending, testSetPaused,
+                           testBroadcast ]);
   }
 };
 

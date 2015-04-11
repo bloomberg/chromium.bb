@@ -297,6 +297,13 @@ int UDPSocket::SetMulticastLoopbackMode(bool loopback) {
   return socket_.SetMulticastLoopbackMode(loopback);
 }
 
+int UDPSocket::SetBroadcast(bool enabled) {
+  if (!socket_.is_connected()) {
+    return net::ERR_SOCKET_NOT_CONNECTED;
+  }
+  return socket_.SetBroadcast(enabled);
+}
+
 const std::vector<std::string>& UDPSocket::GetJoinedGroups() const {
   return multicast_groups_;
 }

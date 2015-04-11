@@ -45,6 +45,8 @@ class UDPSocket : public Socket {
   int SetMulticastTimeToLive(int ttl);
   int SetMulticastLoopbackMode(bool loopback);
 
+  int SetBroadcast(bool enabled);
+
   const std::vector<std::string>& GetJoinedGroups() const;
 
  protected:

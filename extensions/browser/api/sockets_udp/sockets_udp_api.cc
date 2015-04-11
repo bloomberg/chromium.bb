@@ -506,5 +506,31 @@ void SocketsUdpGetJoinedGroupsFunction::Work() {
   results_ = sockets_udp::GetJoinedGroups::Results::Create(groups);
 }
 
+SocketsUdpSetBroadcastFunction::SocketsUdpSetBroadcastFunction() {
+}
+
+SocketsUdpSetBroadcastFunction::~SocketsUdpSetBroadcastFunction() {
+}
+
+bool SocketsUdpSetBroadcastFunction::Prepare() {
+  params_ = core_api::sockets_udp::SetBroadcast::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void SocketsUdpSetBroadcastFunction::Work() {
+  ResumableUDPSocket* socket = GetUdpSocket(params_->socket_id);
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    return;
+  }
+
+  int net_result = socket->SetBroadcast(params_->enabled);
+  if (net_result != net::OK) {
+    error_ = net::ErrorToString(net_result);
+  }
+  results_ = sockets_udp::SetBroadcast::Results::Create(net_result);
+}
+
 }  // namespace core_api
 }  // namespace extensions

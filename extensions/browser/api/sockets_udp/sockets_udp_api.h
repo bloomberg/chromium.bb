@@ -273,6 +273,24 @@ class SocketsUdpGetJoinedGroupsFunction : public UDPSocketAsyncApiFunction {
   scoped_ptr<sockets_udp::GetJoinedGroups::Params> params_;
 };
 
+class SocketsUdpSetBroadcastFunction : public UDPSocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("sockets.udp.setBroadcast",
+                             SOCKETS_UDP_SETBROADCAST)
+
+  SocketsUdpSetBroadcastFunction();
+
+ protected:
+  ~SocketsUdpSetBroadcastFunction() override;
+
+  // AsyncApiFunction
+  bool Prepare() override;
+  void Work() override;
+
+ private:
+  scoped_ptr<sockets_udp::SetBroadcast::Params> params_;
+};
+
 }  // namespace core_api
 }  // namespace extensions
 
