@@ -1478,6 +1478,7 @@ _NAMED_TYPE_INFO = {
     'type': 'GLenum',
     'valid': [
       'GL_RGB',
+      'GL_RGB_YUV_420_CHROMIUM',
       'GL_RGBA',
     ],
   },

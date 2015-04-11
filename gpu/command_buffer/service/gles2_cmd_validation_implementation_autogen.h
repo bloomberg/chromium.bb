@@ -276,6 +276,7 @@ static const GLenum valid_hint_target_table[] = {
 
 static const GLenum valid_image_internal_format_table[] = {
     GL_RGB,
+    GL_RGB_YUV_420_CHROMIUM,
     GL_RGBA,
 };
 

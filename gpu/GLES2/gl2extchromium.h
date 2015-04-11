@@ -136,6 +136,10 @@ typedef void (
 #define GL_SCANOUT_CHROMIUM 0x78F2
 #endif
 
+#ifndef GL_RGB_YUV_420_CHROMIUM
+#define GL_RGB_YUV_420_CHROMIUM 0x78FA
+#endif
+
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL GLuint GL_APIENTRY glCreateGpuMemoryBufferImageCHROMIUM(
     GLsizei width,

@@ -329,6 +329,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      "GL_SYNC_OBJECT_APPLE",
     },
     {
+     0x78FB,
+     "GL_RGBA_YUV_420_CHROMIUM",
+    },
+    {
      0x8DF8,
      "GL_SHADER_BINARY_FORMATS",
     },
@@ -3765,6 +3769,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      "GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM",
     },
     {
+     0x78FA,
+     "GL_RGB_YUV_420_CHROMIUM",
+    },
+    {
      0x00008000,
      "GL_COVERAGE_BUFFER_BIT_NV",
     },
@@ -4814,7 +4822,9 @@ std::string GLES2Util::GetStringHintTarget(uint32_t value) {
 
 std::string GLES2Util::GetStringImageInternalFormat(uint32_t value) {
   static const EnumToString string_table[] = {
-      {GL_RGB, "GL_RGB"}, {GL_RGBA, "GL_RGBA"},
+      {GL_RGB, "GL_RGB"},
+      {GL_RGB_YUV_420_CHROMIUM, "GL_RGB_YUV_420_CHROMIUM"},
+      {GL_RGBA, "GL_RGBA"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

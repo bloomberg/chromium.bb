@@ -37,6 +37,8 @@ gfx::GpuMemoryBuffer::Format ImageFactory::ImageFormatToGpuMemoryBufferFormat(
       return gfx::GpuMemoryBuffer::DXT5;
     case GL_ETC1_RGB8_OES:
       return gfx::GpuMemoryBuffer::ETC1;
+    case GL_RGB_YUV_420_CHROMIUM:
+      return gfx::GpuMemoryBuffer::YUV_420;
     default:
       NOTREACHED();
       return gfx::GpuMemoryBuffer::RGBA_8888;
@@ -109,8 +111,10 @@ bool ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(
     case gfx::GpuMemoryBuffer::RGBA_8888:
     case gfx::GpuMemoryBuffer::BGRA_8888:
     case gfx::GpuMemoryBuffer::RGBX_8888:
-    case gfx::GpuMemoryBuffer::YUV_420:
       return true;
+    case gfx::GpuMemoryBuffer::YUV_420:
+      // U and V planes are subsampled by a factor of 2.
+      return size.width() % 2 == 0 && size.height() % 2 == 0;
   }
 
   NOTREACHED();
