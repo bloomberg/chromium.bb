@@ -533,10 +533,7 @@ void DeprecatedPaintLayerCompositor::frameViewDidScroll()
 
     bool scrollingCoordinatorHandlesOffset = false;
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
-        if (Settings* settings = m_layoutView.document().settings()) {
-            if (m_layoutView.frame()->isLocalRoot() || settings->preferCompositingToLCDTextEnabled())
-                scrollingCoordinatorHandlesOffset = scrollingCoordinator->scrollableAreaScrollLayerDidChange(frameView);
-        }
+        scrollingCoordinatorHandlesOffset = scrollingCoordinator->scrollableAreaScrollLayerDidChange(frameView);
     }
 
     // Scroll position = scroll minimum + scroll offset. Adjust the layer's
