@@ -8,13 +8,25 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 
+namespace {
+
+bool DesktopCoreCommonCheck(
+    bool is_es, unsigned major_version, unsigned minor_version) {
+  return (!is_es &&
+          ((major_version == 3 && minor_version >= 2) ||
+           major_version > 3));
+}
+
+}
+
+
 namespace gfx {
 
 GLVersionInfo::GLVersionInfo(const char* version_str, const char* renderer_str,
                              const char* extensions_str)
     : GLVersionInfo(version_str, renderer_str) {
   is_desktop_core_profile =
-      !is_es && major_version >= 3 &&
+      DesktopCoreCommonCheck(is_es, major_version, minor_version) &&
       !strstr(extensions_str, "GL_ARB_compatibility");
 }
 
@@ -22,7 +34,7 @@ GLVersionInfo::GLVersionInfo(const char* version_str, const char* renderer_str,
                              const std::set<std::string>& extensions)
     : GLVersionInfo(version_str, renderer_str) {
   is_desktop_core_profile =
-      !is_es && major_version >= 3 &&
+      DesktopCoreCommonCheck(is_es, major_version, minor_version) &&
       extensions.find("GL_ARB_compatibility") == extensions.end();
 }
 
