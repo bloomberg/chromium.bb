@@ -103,8 +103,7 @@ struct MockReadWrite {
         result(0),
         data(NULL),
         data_len(0),
-        sequence_number(0),
-        time_stamp(base::Time::Now()) {}
+        sequence_number(0) {}
 
   // Read/write failure (no data).
   MockReadWrite(IoMode io_mode, int result)
@@ -112,8 +111,7 @@ struct MockReadWrite {
         result(result),
         data(NULL),
         data_len(0),
-        sequence_number(0),
-        time_stamp(base::Time::Now()) {}
+        sequence_number(0) {}
 
   // Read/write failure (no data), with sequence information.
   MockReadWrite(IoMode io_mode, int result, int seq)
@@ -121,8 +119,7 @@ struct MockReadWrite {
         result(result),
         data(NULL),
         data_len(0),
-        sequence_number(seq),
-        time_stamp(base::Time::Now()) {}
+        sequence_number(seq) {}
 
   // Asynchronous read/write success (inferred data length).
   explicit MockReadWrite(const char* data)
@@ -130,8 +127,7 @@ struct MockReadWrite {
         result(0),
         data(data),
         data_len(strlen(data)),
-        sequence_number(0),
-        time_stamp(base::Time::Now()) {}
+        sequence_number(0) {}
 
   // Read/write success (inferred data length).
   MockReadWrite(IoMode io_mode, const char* data)
@@ -139,8 +135,7 @@ struct MockReadWrite {
         result(0),
         data(data),
         data_len(strlen(data)),
-        sequence_number(0),
-        time_stamp(base::Time::Now()) {}
+        sequence_number(0) {}
 
   // Read/write success.
   MockReadWrite(IoMode io_mode, const char* data, int data_len)
@@ -148,8 +143,7 @@ struct MockReadWrite {
         result(0),
         data(data),
         data_len(data_len),
-        sequence_number(0),
-        time_stamp(base::Time::Now()) {}
+        sequence_number(0) {}
 
   // Read/write success (inferred data length) with sequence information.
   MockReadWrite(IoMode io_mode, int seq, const char* data)
@@ -157,8 +151,7 @@ struct MockReadWrite {
         result(0),
         data(data),
         data_len(strlen(data)),
-        sequence_number(seq),
-        time_stamp(base::Time::Now()) {}
+        sequence_number(seq) {}
 
   // Read/write success with sequence information.
   MockReadWrite(IoMode io_mode, const char* data, int data_len, int seq)
@@ -166,8 +159,7 @@ struct MockReadWrite {
         result(0),
         data(data),
         data_len(data_len),
-        sequence_number(seq),
-        time_stamp(base::Time::Now()) {}
+        sequence_number(seq) {}
 
   IoMode mode;
   int result;
@@ -179,7 +171,6 @@ struct MockReadWrite {
   // an ERR_IO_PENDING is returned.
   int sequence_number;    // The sequence number at which a read is allowed
                           // to occur.
-  base::Time time_stamp;  // The time stamp at which the operation occurred.
 };
 
 typedef MockReadWrite<MOCK_READ> MockRead;

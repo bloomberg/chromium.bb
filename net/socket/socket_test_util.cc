@@ -120,8 +120,7 @@ void DumpMockReadWrite(const MockReadWrite<type>& r) {
            << "\nResult:  " << r.result;
   DumpData(r.data, r.data_len);
   const char* stop = (r.sequence_number & MockRead::STOPLOOP) ? " (STOP)" : "";
-  DVLOG(1) << "Stage:   " << (r.sequence_number & ~MockRead::STOPLOOP) << stop
-           << "\nTime:    " << r.time_stamp.ToInternalValue();
+  DVLOG(1) << "Stage:   " << (r.sequence_number & ~MockRead::STOPLOOP) << stop;
 }
 
 }  // namespace
@@ -191,7 +190,6 @@ const MockWrite& StaticSocketDataProvider::PeekWrite(size_t index) const {
 
 MockRead StaticSocketDataProvider::GetNextRead() {
   CHECK(!at_read_eof());
-  reads_[read_index_].time_stamp = base::Time::Now();
   return reads_[read_index_++];
 }
 
@@ -209,26 +207,25 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
 
   // Check that what we are writing matches the expectation.
   // Then give the mocked return value.
-  MockWrite* w = &writes_[write_index_++];
-  w->time_stamp = base::Time::Now();
-  int result = w->result;
-  if (w->data) {
+  const MockWrite& w = writes_[write_index_++];
+  int result = w.result;
+  if (w.data) {
     // Note - we can simulate a partial write here.  If the expected data
     // is a match, but shorter than the write actually written, that is legal.
     // Example:
     //   Application writes "foobarbaz" (9 bytes)
     //   Expected write was "foo" (3 bytes)
     //   This is a success, and we return 3 to the application.
-    std::string expected_data(w->data, w->data_len);
+    std::string expected_data(w.data, w.data_len);
     EXPECT_GE(data.length(), expected_data.length());
-    std::string actual_data(data.substr(0, w->data_len));
+    std::string actual_data(data.substr(0, w.data_len));
     EXPECT_EQ(expected_data, actual_data);
     if (expected_data != actual_data)
       return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
     if (result == OK)
-      result = w->data_len;
+      result = w.data_len;
   }
-  return MockWriteResult(w->mode, result);
+  return MockWriteResult(w.mode, result);
 }
 
 void StaticSocketDataProvider::Reset() {
