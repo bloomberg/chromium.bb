@@ -150,6 +150,8 @@
         'test/fake_server/fake_server_verifier.h',
         'test/fake_server/permanent_entity.cc',
         'test/fake_server/permanent_entity.h',
+        'test/fake_server/sessions_hierarchy.cc',
+        'test/fake_server/sessions_hierarchy.h',
         'test/fake_server/tombstone_entity.cc',
         'test/fake_server/tombstone_entity.h',
         'test/fake_server/unique_client_entity.cc',

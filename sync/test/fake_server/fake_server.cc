@@ -144,6 +144,12 @@ scoped_ptr<UpdateSieve> UpdateSieve::Create(
       new UpdateSieve(request_from_version, min_version));
 }
 
+// Returns whether |entity| is deleted or a folder.
+bool IsDeletedOrFolder(const FakeServerEntity* entity) {
+  DCHECK(entity);
+  return entity->IsDeleted() || entity->IsFolder();
+}
+
 }  // namespace
 
 FakeServer::FakeServer() : version_(0),
@@ -472,7 +478,7 @@ scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     FakeServerEntity* entity = it->second;
-    if (entity->IsDeleted() || entity->IsFolder()) {
+    if (IsDeletedOrFolder(entity)) {
       // Tombstones are ignored as they don't represent current data. Folders
       // are also ignored as current verification infrastructure does not
       // consider them.
@@ -490,6 +496,21 @@ scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
   }
 
   return dictionary.Pass();
+}
+
+std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
+    ModelType model_type) {
+  std::vector<sync_pb::SyncEntity> sync_entities;
+  for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
+       ++it) {
+    FakeServerEntity* entity = it->second;
+    if (!IsDeletedOrFolder(entity) && entity->GetModelType() == model_type) {
+      sync_pb::SyncEntity sync_entity;
+      entity->SerializeAsProto(&sync_entity);
+      sync_entities.push_back(sync_entity);
+    }
+  }
+  return sync_entities;
 }
 
 void FakeServer::InjectEntity(scoped_ptr<FakeServerEntity> entity) {

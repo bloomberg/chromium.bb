@@ -11,8 +11,11 @@
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/session_types.h"
+#include "sync/test/fake_server/fake_server_verifier.h"
+#include "sync/test/fake_server/sessions_hierarchy.h"
 #include "sync/util/time.h"
 
+using fake_server::SessionsHierarchy;
 using sessions_helper::CheckInitialState;
 using sessions_helper::GetLocalWindows;
 using sessions_helper::GetSessionData;
@@ -47,9 +50,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_Sanity) {
 
   // Add a new session to client 0 and wait for it to sync.
   ScopedWindowMap old_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0,
-                                        GURL("http://127.0.0.1/bubba"),
-                                        old_windows.GetMutable()));
+  GURL url = GURL("http://127.0.0.1/bubba");
+  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, old_windows.GetMutable()));
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
   // Get foreign session data from client 0.
@@ -61,6 +63,19 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_Sanity) {
   ScopedWindowMap new_windows;
   ASSERT_TRUE(GetLocalWindows(0, new_windows.GetMutable()));
   ASSERT_TRUE(WindowsMatch(*old_windows.Get(), *new_windows.Get()));
+
+  fake_server::FakeServerVerifier fake_server_verifier(GetFakeServer());
+  SessionsHierarchy expected_sessions;
+  expected_sessions.AddWindow(url.spec());
+  ASSERT_TRUE(fake_server_verifier.VerifySessions(expected_sessions));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NoSessions) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  fake_server::FakeServerVerifier fake_server_verifier(GetFakeServer());
+  SessionsHierarchy expected_sessions;
+  ASSERT_TRUE(fake_server_verifier.VerifySessions(expected_sessions));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TimestampMatchesHistory) {

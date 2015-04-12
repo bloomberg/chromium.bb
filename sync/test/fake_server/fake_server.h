@@ -52,6 +52,13 @@ class FakeServer {
   // names.
   scoped_ptr<base::DictionaryValue> GetEntitiesAsDictionaryValue();
 
+  // Returns all entities stored by the server of the given |model_type|.
+  // This method returns SyncEntity protocol buffer objects (instead of
+  // FakeServerEntity) so that callers can inspect datatype-specific data
+  // (e.g., the URL of a session tab).
+  std::vector<sync_pb::SyncEntity> GetSyncEntitiesByModelType(
+      syncer::ModelType model_type);
+
   // Adds the FakeServerEntity* owned by |entity| to the server's collection
   // of entities. This method makes no guarantees that the added entity will
   // result in successful server operations.

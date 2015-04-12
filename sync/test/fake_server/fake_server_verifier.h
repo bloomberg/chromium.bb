@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/test/fake_server/sessions_hierarchy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace fake_server {
@@ -41,6 +42,11 @@ class FakeServerVerifier {
       size_t expected_count,
       syncer::ModelType model_type,
       const std::string& name) const;
+
+  // Returns a successful result if |expected_sessions| matches the sessions
+  // hierarchy present on the server. This method only supports one session.
+  testing::AssertionResult VerifySessions(
+      const SessionsHierarchy& expected_sessions);
 
  private:
   FakeServer* const fake_server_;
