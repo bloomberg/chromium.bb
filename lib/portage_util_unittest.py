@@ -541,6 +541,22 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     # Sanity check.
     self.assertEqual(exists.call_count, 1)
 
+  def testUpdateEBuildRecovery(self):
+    """Make sure UpdateEBuild can be called more than once even w/failures."""
+    ebuild = os.path.join(self.tempdir, 'test.ebuild')
+    content = '# Some data\nVAR=val\n'
+    osutils.WriteFile(ebuild, content)
+
+    # First run: pass in an invalid redirect file to trigger an exception.
+    try:
+      portage_util.EBuild.UpdateEBuild(ebuild, {'VAR': 'a'}, redirect_file=1234)
+      assert False, 'this should have thrown an exception ...'
+    except Exception:
+      pass
+
+    # Second run: it should pass normally.
+    portage_util.EBuild.UpdateEBuild(ebuild, {'VAR': 'b'})
+
 
 class ListOverlaysTest(cros_test_lib.MockTempDirTestCase):
   """Tests related to listing overlays."""

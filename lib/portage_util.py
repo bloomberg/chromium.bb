@@ -334,6 +334,9 @@ class EBuild(object):
 
     This function takes an ebuild_path and updates WORKON information.
 
+    Note: If an exception is thrown, the |ebuild_path| is left in a corrupt
+    state.  You should try to avoid causing exceptions ;).
+
     Args:
       ebuild_path: The path of the ebuild.
       variables: Dictionary of variables to update in ebuild.
@@ -341,29 +344,30 @@ class EBuild(object):
       make_stable: Actually make the ebuild stable.
     """
     written = False
-    for line in fileinput.input(ebuild_path, inplace=1):
-      # Has to be done here to get changes to sys.stdout from fileinput.input.
-      if not redirect_file:
-        redirect_file = sys.stdout
+    try:
+      for line in fileinput.input(ebuild_path, inplace=1):
+        # Has to be done here to get changes to sys.stdout from fileinput.input.
+        if not redirect_file:
+          redirect_file = sys.stdout
 
-      # Always add variables at the top of the ebuild, before the first
-      # nonblank line other than the EAPI line.
-      if not written and not _blank_or_eapi_re.match(line):
-        for key, value in sorted(variables.items()):
-          assert key is not None and value is not None
-          redirect_file.write('%s=%s\n' % (key, value))
-        written = True
+        # Always add variables at the top of the ebuild, before the first
+        # nonblank line other than the EAPI line.
+        if not written and not _blank_or_eapi_re.match(line):
+          for key, value in sorted(variables.items()):
+            assert key is not None and value is not None
+            redirect_file.write('%s=%s\n' % (key, value))
+          written = True
 
-      # Mark KEYWORDS as stable by removing ~'s.
-      if line.startswith('KEYWORDS=') and make_stable:
-        line = line.replace('~', '')
+        # Mark KEYWORDS as stable by removing ~'s.
+        if line.startswith('KEYWORDS=') and make_stable:
+          line = line.replace('~', '')
 
-      varname, eq, _ = line.partition('=')
-      if not (eq == '=' and varname.strip() in variables):
-        # Don't write out the old value of the variable.
-        redirect_file.write(line)
-
-    fileinput.close()
+        varname, eq, _ = line.partition('=')
+        if not (eq == '=' and varname.strip() in variables):
+          # Don't write out the old value of the variable.
+          redirect_file.write(line)
+    finally:
+      fileinput.close()
 
   @classmethod
   def MarkAsStable(cls, unstable_ebuild_path, new_stable_ebuild_path,
