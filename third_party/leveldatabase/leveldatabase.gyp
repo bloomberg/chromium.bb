@@ -3,9 +3,6 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 {
-  'variables': {
-    'use_snappy%': 1,
-  },
   'conditions': [
     ['OS=="android"', {
       'targets': [{
@@ -25,6 +22,7 @@
   'target_defaults': {
     'defines': [
       'LEVELDB_PLATFORM_CHROMIUM=1',
+      'USE_SNAPPY=1',
     ],
     'include_dirs': [
       '.',
@@ -35,11 +33,6 @@
       ['OS!="win"', {
         'sources/': [ ['exclude', '_win.(h|cc)$'], ],
       }],
-      ['use_snappy', {
-        'defines': [
-          'USE_SNAPPY=1',
-        ],
-      }],
     ],
   },
   'targets': [
@@ -47,18 +40,12 @@
       'target_name': 'leveldatabase',
       'type': 'static_library',
       'dependencies': [
-        '../../third_party/re2/re2.gyp:re2',
         '../../base/base.gyp:base',
         # base::LazyInstance is a template that pulls in dynamic_annotations so
         # we need to explictly link in the code for dynamic_annotations.
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-      ],
-      'conditions': [
-        ['use_snappy', {
-          'dependencies': [
-            '../../third_party/snappy/snappy.gyp:snappy',
-          ],
-        }],
+        '../../third_party/re2/re2.gyp:re2',
+        '../../third_party/snappy/snappy.gyp:snappy',
       ],
       'direct_dependent_settings': {
         'include_dirs': [

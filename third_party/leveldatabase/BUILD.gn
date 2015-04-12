@@ -2,12 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Snappy is a compression library we use.
-# TODO(brettw) It's not clear why this needs to be parameterized.
-
 import("//testing/test.gni")
-
-use_snappy = true
 
 defines = [ "LEVELDB_PLATFORM_CHROMIUM=1" ]
 
@@ -112,6 +107,8 @@ static_library("leveldatabase") {
     "src/util/status.cc",
   ]
 
+  defines += [ "USE_SNAPPY=1" ]
+
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
@@ -121,12 +118,8 @@ static_library("leveldatabase") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//third_party/re2",
+    "//third_party/snappy",
   ]
-
-  if (use_snappy) {
-    defines += [ "USE_SNAPPY=1" ]
-    deps += [ "//third_party/snappy" ]
-  }
 }
 
 if (!is_android) {
