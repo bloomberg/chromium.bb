@@ -83,9 +83,6 @@ crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Fail
 crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
 crbug.com/316146 [ XP ] http/tests/cache/cached-main-resource.html [ Pass Timeout ]
 
-# Might be a false-positive of under-invalidation checking
-crbug.com/476069 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-2-iframe-scrolled-outer-late-composite.html [ Crash Pass ]
-
 crbug.com/443596 [ Mac ] media/sources-fallback-codecs.html [ Failure Pass ]
 crbug.com/443596 [ Win ] media/sources-fallback-codecs.html [ Failure Pass ]
 

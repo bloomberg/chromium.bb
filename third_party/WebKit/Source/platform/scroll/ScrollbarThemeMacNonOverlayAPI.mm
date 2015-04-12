@@ -79,9 +79,9 @@ void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement()
 bool ScrollbarThemeMacNonOverlayAPI::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* context, const IntRect& damageRect)
 {
     DisplayItem::Type displayItemType = scrollbar->orientation() == HorizontalScrollbar ? DisplayItem::ScrollbarHorizontal : DisplayItem::ScrollbarVertical;
-    DrawingRecorder recorder(*context, *scrollbar, displayItemType, damageRect);
+    DrawingRecorder recorder(*context, *scrollbar, displayItemType, scrollbar->frameRect());
     if (recorder.canUseCachedDrawing())
-        return false;
+        return true;
 
     // Get the tickmarks for the frameview.
     Vector<IntRect> tickmarks;

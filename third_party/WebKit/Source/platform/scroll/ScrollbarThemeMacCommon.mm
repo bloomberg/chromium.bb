@@ -33,6 +33,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/Pattern.h"
 #include "platform/mac/ColorMac.h"
@@ -275,6 +276,10 @@ void ScrollbarThemeMacCommon::paintTickmarks(GraphicsContext* context, Scrollbar
     Vector<IntRect> tickmarks;
     scrollbar->getTickmarks(tickmarks);
     if (!tickmarks.size())
+        return;
+
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTickmarks, rect);
+    if (recorder.canUseCachedDrawing())
         return;
 
     // Inset a bit.

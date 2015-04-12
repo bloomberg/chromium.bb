@@ -33,6 +33,7 @@
 
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/mac/LocalCurrentGraphicsContext.h"
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
@@ -85,6 +86,10 @@ ScrollbarPainter ScrollbarThemeMacOverlayAPI::painterForScrollbar(ScrollbarTheme
 }
 
 void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTrackBackground, rect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
     ASSERT(isOverlayAPIAvailable());
 
     GraphicsContextStateSaver stateSaver(*context);
@@ -101,6 +106,10 @@ void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context,
 }
 
 void ScrollbarThemeMacOverlayAPI::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarThumb, rect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
     ASSERT(isOverlayAPIAvailable());
 
     GraphicsContextStateSaver stateSaver(*context);

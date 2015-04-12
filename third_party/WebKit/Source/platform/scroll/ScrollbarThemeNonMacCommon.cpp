@@ -29,6 +29,7 @@
 
 #include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 
@@ -104,6 +105,10 @@ void ScrollbarThemeNonMacCommon::paintTickmarks(GraphicsContext* context, Scroll
     Vector<IntRect> tickmarks;
     scrollbar->getTickmarks(tickmarks);
     if (!tickmarks.size())
+        return;
+
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTickmarks, rect);
+    if (recorder.canUseCachedDrawing())
         return;
 
     GraphicsContextStateSaver stateSaver(*context);

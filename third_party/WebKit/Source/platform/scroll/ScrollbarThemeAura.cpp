@@ -35,6 +35,7 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "platform/scroll/ScrollbarThemeOverlay.h"
 #include "public/platform/Platform.h"
@@ -76,22 +77,24 @@ void ScrollbarThemeAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClie
     if (useMockTheme() && !scrollbar->enabled())
         state = WebThemeEngine::StateDisabled;
 
+    DrawingRecorder recorder(*gc, *scrollbar, trackPiecePartToDisplayItemType(partType), rect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
     IntRect alignRect = trackRect(scrollbar, false);
     WebThemeEngine::ExtraParams extraParams;
-    WebCanvas* canvas = gc->canvas();
     extraParams.scrollbarTrack.isBack = (partType == BackTrackPart);
     extraParams.scrollbarTrack.trackX = alignRect.x();
     extraParams.scrollbarTrack.trackY = alignRect.y();
     extraParams.scrollbarTrack.trackWidth = alignRect.width();
     extraParams.scrollbarTrack.trackHeight = alignRect.height();
-    Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? WebThemeEngine::PartScrollbarHorizontalTrack : WebThemeEngine::PartScrollbarVerticalTrack, state, WebRect(rect), &extraParams);
+    Platform::current()->themeEngine()->paint(gc->canvas(), scrollbar->orientation() == HorizontalScrollbar ? WebThemeEngine::PartScrollbarHorizontalTrack : WebThemeEngine::PartScrollbarVerticalTrack, state, WebRect(rect), &extraParams);
 }
 
 void ScrollbarThemeAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
 {
     WebThemeEngine::Part paintPart;
     WebThemeEngine::State state = WebThemeEngine::StateNormal;
-    WebCanvas* canvas = gc->canvas();
     bool checkMin = false;
     bool checkMax = false;
 
@@ -116,6 +119,11 @@ void ScrollbarThemeAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* 
             checkMax = true;
         }
     }
+
+    DrawingRecorder recorder(*gc, *scrollbar, buttonPartToDisplayItemType(part), rect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
     if (useMockTheme() && !scrollbar->enabled()) {
         state = WebThemeEngine::StateDisabled;
     } else if (!useMockTheme() && ((checkMin && (scrollbar->currentPos() <= 0))
@@ -127,11 +135,15 @@ void ScrollbarThemeAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* 
         else if (part == scrollbar->hoveredPart())
             state = WebThemeEngine::StateHover;
     }
-    Platform::current()->themeEngine()->paint(canvas, paintPart, state, WebRect(rect), 0);
+    Platform::current()->themeEngine()->paint(gc->canvas(), paintPart, state, WebRect(rect), 0);
 }
 
 void ScrollbarThemeAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
+    DrawingRecorder recorder(*gc, *scrollbar, DisplayItem::ScrollbarThumb, rect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
     WebThemeEngine::State state;
     WebCanvas* canvas = gc->canvas();
     if (scrollbar->pressedPart() == ThumbPart)
