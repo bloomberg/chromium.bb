@@ -429,7 +429,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       ValidateClientHelloResultCallback* done_cb) const;
 
   // BuildRejection sets |out| to be a REJ message in reply to |client_hello|.
-  void BuildRejection(const IPAddressNumber& server_address,
+  void BuildRejection(const IPAddressNumber& server_ip,
                       const Config& config,
                       const CryptoHandshakeMessage& client_hello,
                       const ClientHelloInfo& info,
@@ -461,20 +461,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       const Config& config,
       base::StringPiece token,
       SourceAddressTokens* tokens) const;
-
-  // ValidateSourceAddressToken returns HANDSHAKE_OK if the source address
-  // tokens in |tokens| contain a valid and timely token for the IP address
-  // |ip| given that the current time is |now|. Otherwise it returns the
-  // reason for failure. |cached_network_params| is populated if the valid
-  // token contains a CachedNetworkParameters proto.
-  // TODO(rch): remove this method when we remove:
-  // FLAGS_quic_use_multiple_address_in_source_tokens.
-  HandshakeFailureReason ValidateSourceAddressToken(
-      const Config& config,
-      base::StringPiece token,
-      const IPAddressNumber& ip,
-      QuicWallTime now,
-      CachedNetworkParameters* cached_network_params) const;
 
   // ValidateSourceAddressTokens returns HANDSHAKE_OK if the source address
   // tokens in |tokens| contain a valid and timely token for the IP address

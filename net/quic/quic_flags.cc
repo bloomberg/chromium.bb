@@ -25,10 +25,6 @@ bool FLAGS_quic_use_bbr_congestion_control = false;
 // connection options.
 bool FLAGS_quic_allow_bbr = false;
 
-// If true, then the source address tokens generated for QUIC connects will
-// store multiple addresses.
-bool FLAGS_quic_use_multiple_address_in_source_tokens = false;
-
 // Time period for which a given connection_id should live in the time-wait
 // state.
 int64 FLAGS_quic_time_wait_list_seconds = 5;
