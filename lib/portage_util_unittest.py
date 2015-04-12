@@ -464,8 +464,8 @@ class EBuildRevWorkonMoxTest(cros_test_lib.MoxTempDirTestCase):
 
   def testGitRepoHasChanges(self):
     """Tests that GitRepoHasChanges works correctly."""
-    url = 'file://' + os.path.join(constants.SOURCE_ROOT, 'chromite')
-    git.RunGit(self.tempdir, ['clone', '--depth=1', url, self.tempdir])
+    git.RunGit(self.tempdir,
+               ['clone', '--depth=1', constants.CHROMITE_DIR, self.tempdir])
     # No changes yet as we just cloned the repo.
     self.assertFalse(portage_util.EBuild.GitRepoHasChanges(self.tempdir))
     # Update metadata but no real changes.
