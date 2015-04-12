@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import copy
 import mock
-import mox
 import os
 import multiprocessing
 import tempfile
@@ -18,6 +17,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import binpkg
 from chromite.lib import osutils
+from chromite.lib import parallel_unittest
 from chromite.lib import portage_util
 
 
@@ -290,7 +290,7 @@ class TestWritePackageIndex(cros_test_lib.MockTestCase, TestPkgIndex):
     self.assertEqual(f.read(), '')
 
 
-class TestUploadPrebuilt(cros_test_lib.MoxTempDirTestCase):
+class TestUploadPrebuilt(cros_test_lib.MockTempDirTestCase):
   """Tests for the _UploadPrebuilt function."""
 
   def setUp(self):
@@ -299,51 +299,48 @@ class TestUploadPrebuilt(cros_test_lib.MoxTempDirTestCase):
       def __init__(self, name):
         self.name = name
     self.pkgindex = SimplePackageIndex()
-    self.mox.StubOutWithMock(binpkg, 'GrabLocalPackageIndex')
-    binpkg.GrabLocalPackageIndex(self.tempdir).AndReturn(self.pkgindex)
-    self.mox.StubOutWithMock(prebuilt, 'RemoteUpload')
-    self.mox.StubOutWithMock(self.pkgindex, 'ResolveDuplicateUploads')
-    self.pkgindex.ResolveDuplicateUploads([]).AndReturn(PRIVATE_PACKAGES)
-    self.mox.StubOutWithMock(self.pkgindex, 'WriteToNamedTemporaryFile')
-    self.mox.StubOutWithMock(prebuilt, '_GsUpload')
-    fake_pkgs_file = MockTemporaryFile('fake')
-    self.pkgindex.WriteToNamedTemporaryFile().AndReturn(fake_pkgs_file)
+    self.PatchObject(binpkg, 'GrabLocalPackageIndex',
+                     return_value=self.pkgindex)
+    self.PatchObject(self.pkgindex, 'ResolveDuplicateUploads',
+                     return_value=PRIVATE_PACKAGES)
+    self.PatchObject(self.pkgindex, 'WriteToNamedTemporaryFile',
+                     return_value=MockTemporaryFile('fake'))
+    self.remote_up_mock = self.PatchObject(prebuilt, 'RemoteUpload')
+    self.gs_up_mock = self.PatchObject(prebuilt, '_GsUpload')
 
   def testSuccessfulGsUpload(self):
     uploads = {
         os.path.join(self.tempdir, 'private.tbz2'): 'gs://foo/private.tbz2'}
-    self.mox.StubOutWithMock(prebuilt, 'GenerateUploadDict')
     packages = list(PRIVATE_PACKAGES)
     packages.append({'CPV': 'dev-only-extras'})
-    osutils.Touch(os.path.join(self.tempdir, 'dev-only-extras.tbz2'), 'w')
-    prebuilt.GenerateUploadDict(self.tempdir, 'gs://foo/suffix',
-                                packages).AndReturn(uploads)
+    osutils.Touch(os.path.join(self.tempdir, 'dev-only-extras.tbz2'))
+    self.PatchObject(prebuilt, 'GenerateUploadDict',
+                     return_value=uploads)
     uploads = uploads.copy()
     uploads['fake'] = 'gs://foo/suffix/Packages'
     acl = 'public-read'
-    prebuilt.RemoteUpload(mox.IgnoreArg(), acl, uploads)
-    prebuilt._GsUpload(mox.IgnoreArg(), mox.IgnoreArg(),
-                       mox.IgnoreArg(), mox.IgnoreArg())
-    self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('gs://foo', acl, uri, [], '/', [],
                                          False, 'foo', False, 'x86-foo', [], '')
     uploader._UploadPrebuilt(self.tempdir, 'suffix')
+    self.remote_up_mock.assert_called_once_with(mock.ANY, acl, uploads)
+    self.assertTrue(self.gs_up_mock.called)
 
 
-class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
+class TestSyncPrebuilts(cros_test_lib.MockTestCase):
   """Tests for the SyncHostPrebuilts function."""
 
   def setUp(self):
-    self.mox.StubOutWithMock(prebuilt, 'DeterminePrebuiltConfFile')
-    self.mox.StubOutWithMock(prebuilt, 'RevGitFile')
-    self.mox.StubOutWithMock(prebuilt, 'UpdateBinhostConfFile')
+    self.rev_mock = self.PatchObject(prebuilt, 'RevGitFile', return_value=None)
+    self.update_binhost_mock = self.PatchObject(
+        prebuilt, 'UpdateBinhostConfFile', return_value=None)
     self.build_path = '/trunk'
     self.upload_location = 'gs://upload/'
     self.version = '1'
     self.binhost = 'http://prebuilt/'
     self.key = 'PORTAGE_BINHOST'
-    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_UploadPrebuilt')
+    self.upload_mock = self.PatchObject(prebuilt.PrebuiltUploader,
+                                        '_UploadPrebuilt', return_value=True)
 
   def testSyncHostPrebuilts(self):
     board = 'x86-foo'
@@ -357,20 +354,20 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
         'target': target,
     }
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
-    prebuilt.PrebuiltUploader._UploadPrebuilt(
-        package_path, packages_url_suffix).AndReturn(True)
     url_value = '%s/%s/' % (self.binhost.rstrip('/'),
                             packages_url_suffix.rstrip('/'))
     urls = [url_value.replace('foo', 'bar'), url_value]
     binhost = ' '.join(urls)
-    prebuilt.RevGitFile(mox.IgnoreArg(), {self.key: binhost}, dryrun=False)
-    prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, binhost)
-    self.mox.ReplayAll()
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
         self.build_path, [], False, 'foo', False, target, slave_targets,
         self.version)
     uploader.SyncHostPrebuilts(self.key, True, True)
+    self.upload_mock.assert_called_once_with(package_path, packages_url_suffix)
+    self.rev_mock.assert_called_once_with(
+        mock.ANY, {self.key: binhost}, dryrun=False)
+    self.update_binhost_mock.assert_called_once_with(
+        mock.ANY, self.key, binhost)
 
   def testSyncBoardPrebuilts(self):
     board = 'x86-foo'
@@ -384,42 +381,40 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
         'target': target,
     }
     packages_url_suffix = '%s/packages' % url_suffix.rstrip('/')
-    self.mox.StubOutWithMock(multiprocessing.Process, '__init__')
-    self.mox.StubOutWithMock(multiprocessing.Process, 'exitcode')
-    self.mox.StubOutWithMock(multiprocessing.Process, 'start')
-    self.mox.StubOutWithMock(multiprocessing.Process, 'join')
-    multiprocessing.Process.__init__(
-        target=mox.IgnoreArg(),
-        args=(board_path, url_suffix, None, None, None))
-    multiprocessing.Process.start()
-    prebuilt.PrebuiltUploader._UploadPrebuilt(
-        package_path, packages_url_suffix).AndReturn(True)
-    multiprocessing.Process.join()
-    multiprocessing.Process.exitcode = 0
     url_value = '%s/%s/' % (self.binhost.rstrip('/'),
                             packages_url_suffix.rstrip('/'))
     bar_binhost = url_value.replace('foo', 'bar')
-    prebuilt.DeterminePrebuiltConfFile(
-        self.build_path, slave_targets[0]).AndReturn('bar')
-    prebuilt.RevGitFile('bar', {self.key: bar_binhost}, dryrun=False)
-    prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, bar_binhost)
-    prebuilt.DeterminePrebuiltConfFile(self.build_path, target).AndReturn('foo')
-    prebuilt.RevGitFile('foo', {self.key: url_value}, dryrun=False)
-    prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
-    self.mox.ReplayAll()
-    uploader = prebuilt.PrebuiltUploader(
-        self.upload_location, 'public-read', self.binhost, [],
-        self.build_path, [], False, 'foo', False, target, slave_targets,
-        self.version)
-    uploader.SyncBoardPrebuilts(self.key, True, True, True, None, None, None)
+    determine_mock = self.PatchObject(prebuilt, 'DeterminePrebuiltConfFile',
+                                      side_effect=('bar', 'foo'))
+    self.PatchObject(prebuilt.PrebuiltUploader, '_UploadSdkTarball')
+    with parallel_unittest.ParallelMock():
+      multiprocessing.Process.exitcode = 0
+      uploader = prebuilt.PrebuiltUploader(
+          self.upload_location, 'public-read', self.binhost, [],
+          self.build_path, [], False, 'foo', False, target, slave_targets,
+          self.version)
+      uploader.SyncBoardPrebuilts(self.key, True, True, True, None, None, None)
+    determine_mock.assert_has_calls([
+        mock.call(self.build_path, slave_targets[0]),
+        mock.call(self.build_path, target),
+    ])
+    self.upload_mock.assert_called_once_with(package_path, packages_url_suffix)
+    self.rev_mock.assert_has_calls([
+        mock.call('bar', {self.key: bar_binhost}, dryrun=False),
+        mock.call('foo', {self.key: url_value}, dryrun=False),
+    ])
+    self.update_binhost_mock.assert_has_calls([
+        mock.call(mock.ANY, self.key, bar_binhost),
+        mock.call(mock.ANY, self.key, url_value),
+    ])
 
 
-class TestMain(cros_test_lib.MoxTestCase):
+class TestMain(cros_test_lib.MockTestCase):
   """Tests for the main() function."""
 
   def testMain(self):
     """Test that the main function works."""
-    options = mox.MockObject(object)
+    options = mock.MagicMock()
     old_binhost = 'http://prebuilt/1'
     options.previous_binhost_url = [old_binhost]
     options.board = 'x86-foo'
@@ -445,33 +440,33 @@ class TestMain(cros_test_lib.MoxTestCase):
     options.binhost_conf_dir = None
     options.sync_binhost_conf = True
     options.slave_targets = [prebuilt.BuildTarget('x86-bar', 'aura')]
-    self.mox.StubOutWithMock(prebuilt, 'ParseOptions')
-    prebuilt.ParseOptions([]).AndReturn(tuple([options, target]))
-    self.mox.StubOutWithMock(binpkg, 'GrabRemotePackageIndex')
-    binpkg.GrabRemotePackageIndex(old_binhost).AndReturn(True)
-    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '__init__')
-    self.mox.StubOutWithMock(portage_util, 'FindOverlayFile')
-    fake_overlay_path = '/fake_path'
-    expected_gs_acl_path = os.path.join(fake_overlay_path,
+    self.PatchObject(prebuilt, 'ParseOptions',
+                     return_value=tuple([options, target]))
+    self.PatchObject(binpkg, 'GrabRemotePackageIndex', return_value=True)
+    init_mock = self.PatchObject(prebuilt.PrebuiltUploader, '__init__',
+                                 return_value=None)
+    expected_gs_acl_path = os.path.join('/fake_path',
                                         prebuilt._GOOGLESTORAGE_GSUTIL_FILE)
-    portage_util.FindOverlayFile(
-        prebuilt._GOOGLESTORAGE_GSUTIL_FILE, board=options.board,
-        buildroot=options.build_path).AndReturn(expected_gs_acl_path)
-    prebuilt.PrebuiltUploader.__init__(options.upload, expected_gs_acl_path,
-                                       options.upload, mox.IgnoreArg(),
-                                       options.build_path, options.packages,
-                                       False, None, False,
-                                       target, options.slave_targets,
-                                       mox.IgnoreArg())
-    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, 'SyncHostPrebuilts')
-    prebuilt.PrebuiltUploader.SyncHostPrebuilts(
-        options.key, options.git_sync, options.sync_binhost_conf)
-    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, 'SyncBoardPrebuilts')
-    prebuilt.PrebuiltUploader.SyncBoardPrebuilts(
+    self.PatchObject(portage_util, 'FindOverlayFile',
+                     return_value=expected_gs_acl_path)
+    host_mock = self.PatchObject(
+        prebuilt.PrebuiltUploader, 'SyncHostPrebuilts', return_value=None)
+    board_mock = self.PatchObject(
+        prebuilt.PrebuiltUploader, 'SyncBoardPrebuilts', return_value=None)
+
+    prebuilt.main([])
+
+    init_mock.assert_called_once_with(options.upload, expected_gs_acl_path,
+                                      options.upload, mock.ANY,
+                                      options.build_path, options.packages,
+                                      False, None, False,
+                                      target, options.slave_targets,
+                                      mock.ANY)
+    board_mock.assert_called_once_with(
         options.key, options.git_sync,
         options.sync_binhost_conf, options.upload_board_tarball, None, [], '')
-    self.mox.ReplayAll()
-    prebuilt.main([])
+    host_mock.assert_called_once_with(
+        options.key, options.git_sync, options.sync_binhost_conf)
 
 
 class TestSdk(cros_test_lib.MockTestCase):
