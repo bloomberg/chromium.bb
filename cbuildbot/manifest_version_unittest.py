@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import mox
 import os
 import tempfile
 
@@ -59,7 +58,7 @@ class HelperMethodsTest(cros_test_lib.TempDirTestCase):
                     'Unable to create symlink to %s' % destfile)
 
 
-class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
+class VersionInfoTest(cros_test_lib.MockTempDirTestCase):
   """Test methods testing methods in VersionInfo class."""
 
   @classmethod
@@ -103,25 +102,23 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
   def CommonTestIncrementVersion(self, incr_type, version, chrome_branch=None):
     """Common test increment.  Returns path to new incremented file."""
     message = 'Incrementing cuz I sed so'
-    self.mox.StubOutWithMock(git, 'CreateBranch')
-    self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
-    self.mox.StubOutWithMock(git, 'CleanAndCheckoutUpstream')
-
-    git.CreateBranch(self.tempdir, manifest_version.PUSH_BRANCH)
+    create_mock = self.PatchObject(git, 'CreateBranch')
+    push_mock = self.PatchObject(manifest_version, '_PushGitChanges')
+    clean_mock = self.PatchObject(git, 'CleanAndCheckoutUpstream')
 
     version_file = self.CreateFakeVersionFile(
         self.tempdir, version=version, chrome_branch=chrome_branch)
-
-    manifest_version._PushGitChanges(self.tempdir, message, dry_run=False,
-                                     push_to=None)
-
-    git.CleanAndCheckoutUpstream(self.tempdir)
-    self.mox.ReplayAll()
     info = manifest_version.VersionInfo(version_file=version_file,
                                         incr_type=incr_type)
     info.IncrementVersion()
     info.UpdateVersionFile(message, dry_run=False)
-    self.mox.VerifyAll()
+
+    create_mock.assert_called_once_with(
+        self.tempdir, manifest_version.PUSH_BRANCH)
+    push_mock.assert_called_once_with(
+        self.tempdir, message, dry_run=False, push_to=None)
+    clean_mock.assert_called_once_with(self.tempdir)
+
     return version_file
 
   def testIncrementVersionPatch(self):
@@ -154,8 +151,7 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
     self.assertEqual(new_info.chrome_branch, '30')
 
 
-class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
-                            cros_test_lib.MockTestCase):
+class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
   """Tests for the BuildSpecs manager."""
 
   def setUp(self):
@@ -184,7 +180,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     """Tests that PublishManifest writes a build id."""
     expected_message = ('Automatic: Start x86-generic-paladin master 1\n'
                         'CrOS-Build-Id: %s' % MOCK_BUILD_ID)
-    self.mox.StubOutWithMock(self.manager, 'PushSpecChanges')
+    push_mock = self.PatchObject(self.manager, 'PushSpecChanges')
 
     info = manifest_version.VersionInfo(
         FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
@@ -194,16 +190,14 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     osutils.Touch(m)
     self.manager.InitializeManifestVariables(info)
 
-    self.manager.PushSpecChanges(expected_message)
-
-    self.mox.ReplayAll()
     self.manager.PublishManifest(m, '1', build_id=MOCK_BUILD_ID)
-    self.mox.VerifyAll()
+
+    push_mock.assert_called_once_with(expected_message)
 
   def testPublishManifestCommitMessageWithNegativeBuildId(self):
     """Tests that PublishManifest doesn't write a negative build_id"""
     expected_message = 'Automatic: Start x86-generic-paladin master 1'
-    self.mox.StubOutWithMock(self.manager, 'PushSpecChanges')
+    push_mock = self.PatchObject(self.manager, 'PushSpecChanges')
 
     info = manifest_version.VersionInfo(
         FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
@@ -213,16 +207,14 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     osutils.Touch(m)
     self.manager.InitializeManifestVariables(info)
 
-    self.manager.PushSpecChanges(expected_message)
-
-    self.mox.ReplayAll()
     self.manager.PublishManifest(m, '1', build_id=-1)
-    self.mox.VerifyAll()
+
+    push_mock.assert_called_once_with(expected_message)
 
   def testPublishManifestCommitMessageWithNoneBuildId(self):
     """Tests that PublishManifest doesn't write a non-existant build_id"""
     expected_message = 'Automatic: Start x86-generic-paladin master 1'
-    self.mox.StubOutWithMock(self.manager, 'PushSpecChanges')
+    push_mock = self.PatchObject(self.manager, 'PushSpecChanges')
 
     info = manifest_version.VersionInfo(
         FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
@@ -232,11 +224,9 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     osutils.Touch(m)
     self.manager.InitializeManifestVariables(info)
 
-    self.manager.PushSpecChanges(expected_message)
-
-    self.mox.ReplayAll()
     self.manager.PublishManifest(m, '1')
-    self.mox.VerifyAll()
+
+    push_mock.assert_called_once_with(expected_message)
 
   def testLoadSpecs(self):
     """Tests whether we can load specs correctly."""
@@ -262,16 +252,14 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
         for_build, 'fail', CHROME_BRANCH, os.path.basename(m1)))
     manifest_version.CreateSymlink(m1, os.path.join(
         for_build, 'pass', CHROME_BRANCH, os.path.basename(m2)))
-    self.mox.StubOutWithMock(self.manager, 'GetBuildStatus')
-    self.manager.GetBuildStatus(self.build_names[0], '1.2.5').AndReturn(missing)
-    self.mox.ReplayAll()
+    m = self.PatchObject(self.manager, 'GetBuildStatus', return_value=missing)
     self.manager.InitializeManifestVariables(info)
-    self.mox.VerifyAll()
     self.assertEqual(self.manager.latest_unprocessed, '1.2.5')
+    m.assert_called_once_with(self.build_names[0], '1.2.5')
 
   def testLatestSpecFromDir(self):
     """Tests whether we can get sorted specs correctly from a directory."""
-    self.mox.StubOutWithMock(repository, 'CloneGitRepo')
+    self.PatchObject(repository, 'CloneGitRepo', side_effect=Exception())
     info = manifest_version.VersionInfo(
         '99.1.2', CHROME_BRANCH, incr_type='branch')
 
@@ -286,9 +274,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     for m in [m1, m2, m3, m4]:
       osutils.Touch(m)
 
-    self.mox.ReplayAll()
     spec = self.manager._LatestSpecFromDir(info, specs_dir)
-    self.mox.VerifyAll()
     # Should be the latest on the 99.1 branch.
     self.assertEqual(spec, '99.1.10')
 
@@ -301,26 +287,22 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
         FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
 
     self.manager.latest = None
-    self.mox.ReplayAll()
     version = self.manager.GetNextVersion(info)
-    self.mox.VerifyAll()
     self.assertEqual(FAKE_VERSION_STRING, version)
 
   def testGetNextVersionIncrement(self):
     """Tests that we create a new version if a previous one exists."""
-    self.mox.StubOutWithMock(manifest_version.VersionInfo, 'UpdateVersionFile')
+    m = self.PatchObject(manifest_version.VersionInfo, 'UpdateVersionFile')
     version_file = VersionInfoTest.CreateFakeVersionFile(self.tempdir)
     info = manifest_version.VersionInfo(version_file=version_file,
                                         incr_type='branch')
-    info.UpdateVersionFile(
-        'Automatic: %s - Updating to a new version number from %s' % (
-            self.build_names[0], FAKE_VERSION_STRING), dry_run=True)
 
     self.manager.latest = FAKE_VERSION_STRING
-    self.mox.ReplayAll()
     version = self.manager.GetNextVersion(info)
-    self.mox.VerifyAll()
     self.assertEqual(FAKE_VERSION_STRING_NEXT, version)
+    m.assert_called_once_with(
+        'Automatic: %s - Updating to a new version number from %s' % (
+            self.build_names[0], FAKE_VERSION_STRING), dry_run=True)
 
   def testGetNextBuildSpec(self):
     """End-to-end test of updating the manifest."""
@@ -333,10 +315,8 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     rc.SetDefaultCmdResult()
 
-    self.mox.ReplayAll()
     self.manager.GetNextBuildSpec(retries=0)
     self.manager.UpdateStatus({self.build_names[0]: True})
-    self.mox.VerifyAll()
 
   def testUnpickleBuildStatus(self):
     """Tests that _UnpickleBuildStatus returns the correct values."""
@@ -366,25 +346,19 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
       builders: List of builders to get status for.
       status_runs: List of dictionaries of expected build and status.
     """
-    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
-                             'GetSlaveStatusesFromCIDB')
-    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
-                             'GetBuildStatus')
-    for status_dict in status_runs:
-      manifest_version.BuildSpecsManager.GetSlaveStatusesFromCIDB(
-          mox.IgnoreArg()).AndReturn(status_dict)
+    self.PatchObject(manifest_version.BuildSpecsManager,
+                     'GetSlaveStatusesFromCIDB', side_effect=status_runs)
 
     final_status_dict = status_runs[-1]
-    for builder in builders:
-      status = manifest_version.BuilderStatus(
-          final_status_dict.get(builder), None)
-      manifest_version.BuildSpecsManager.GetBuildStatus(
-          builder, mox.IgnoreArg()).AndReturn(status)
+    build_statuses = [
+        manifest_version.BuilderStatus(final_status_dict.get(x), None)
+        for x in builders
+    ]
+    self.PatchObject(manifest_version.BuildSpecsManager,
+                     'GetBuildStatus',
+                     side_effect=build_statuses)
 
-    self.mox.ReplayAll()
-    statuses = self.manager.GetBuildersStatus(mox.IgnoreArg, builders)
-    self.mox.VerifyAll()
-    return statuses
+    return self.manager.GetBuildersStatus('builderid', builders)
 
   def testGetBuildersStatusBothFinished(self):
     """Tests GetBuilderStatus where both builds have finished."""
