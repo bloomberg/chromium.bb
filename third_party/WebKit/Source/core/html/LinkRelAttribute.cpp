@@ -44,6 +44,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isPreconnect(false)
     , m_isLinkPrefetch(false)
     , m_isLinkSubresource(false)
+    , m_isLinkPreload(false)
     , m_isLinkPrerender(false)
     , m_isLinkNext(false)
     , m_isImport(false)
@@ -80,6 +81,9 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
                 m_isPreconnect = true;
         } else if (equalIgnoringCase(linkType, "subresource")) {
             m_isLinkSubresource = true;
+        } else if (equalIgnoringCase(linkType, "preload")) {
+            if (RuntimeEnabledFeatures::linkPreloadEnabled())
+                m_isLinkPreload = true;
         } else if (equalIgnoringCase(linkType, "prerender")) {
             m_isLinkPrerender = true;
         } else if (equalIgnoringCase(linkType, "next")) {

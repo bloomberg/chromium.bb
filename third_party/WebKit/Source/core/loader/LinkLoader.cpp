@@ -138,6 +138,37 @@ static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL&
     }
 }
 
+// TODO(yoav): Replace Resource:Type here with some way that conveys priority but not context.
+static bool getTypeFromAsAttribute(const String& as, Resource::Type& type)
+{
+    if (as.isEmpty())
+        return false;
+    // TODO(yoav): Return false also when the `as` value is not a valid one.
+    // TODO(yoav): Add actual types here and make sure priorities work accordingly.
+    type = Resource::Raw;
+    return true;
+}
+
+void LinkLoader::preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as)
+{
+    if (relAttribute.isLinkPreload()) {
+        ASSERT(RuntimeEnabledFeatures::linkPreloadEnabled());
+        if (!href.isValid() || href.isEmpty()) {
+            document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> has an invalid `href` value")));
+            return;
+        }
+        Resource::Type type;
+        if (!getTypeFromAsAttribute(as, type)) {
+            document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> must have a valid `as` value")));
+            return;
+        }
+        FetchRequest linkRequest(ResourceRequest(document.completeURL(href)), FetchInitiatorTypeNames::link);
+        if (document.settings()->logPreload())
+            document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preload triggered for " + href.host() + href.path())));
+        setResource(document.fetcher()->fetchLinkPreloadResource(type, linkRequest));
+    }
+}
+
 bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* document)
 {
     if (!document)
@@ -159,11 +190,14 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
     return true;
 }
 
-bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicString& crossOriginMode, const String& type, const KURL& href, Document& document)
+bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const AtomicString& crossOriginMode, const String& type, const String& as, const KURL& href, Document& document)
 {
+    // FIXME(crbug.com/463266): We're ignoring type here. Maybe we shouldn't.
     dnsPrefetchIfNeeded(relAttribute, href, document);
 
     preconnectIfNeeded(relAttribute, href, document);
+
+    preloadIfNeeded(relAttribute, href, document, as);
 
     // FIXME(crbug.com/323096): Should take care of import.
     if ((relAttribute.isLinkPrefetch() || relAttribute.isLinkSubresource() || relAttribute.isTransitionExitingStylesheet()) && href.isValid() && document.frame()) {

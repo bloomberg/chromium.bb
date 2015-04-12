@@ -133,6 +133,7 @@ public:
     void setAvailableHoverTypes(const String&, ExceptionState&);
     void setPrimaryHoverType(const String&, ExceptionState&);
     void setDnsPrefetchLogging(bool, ExceptionState&);
+    void setPreloadLogging(bool, ExceptionState&);
 
 private:
     explicit InternalSettings(Page&);

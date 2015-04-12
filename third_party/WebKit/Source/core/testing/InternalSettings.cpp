@@ -488,4 +488,10 @@ void InternalSettings::setDnsPrefetchLogging(bool enabled, ExceptionState& excep
     settings()->setLogDnsPrefetchAndPreconnect(enabled);
 }
 
+void InternalSettings::setPreloadLogging(bool enabled, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+    settings()->setLogPreload(enabled);
+}
+
 }

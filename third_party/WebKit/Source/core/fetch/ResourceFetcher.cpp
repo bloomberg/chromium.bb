@@ -333,6 +333,14 @@ ResourcePtr<Resource> ResourceFetcher::fetchLinkResource(Resource::Type type, Fe
     return requestResource(type, request);
 }
 
+ResourcePtr<Resource> ResourceFetcher::fetchLinkPreloadResource(Resource::Type type, FetchRequest& request)
+{
+    // TODO(yoav): Enforce a LinkPreload context here, once we know we're adding one - https://github.com/whatwg/fetch/issues/36
+    ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
+    determineRequestContext(request.mutableResourceRequest(), type);
+    return requestResource(type, request);
+}
+
 ResourcePtr<RawResource> ResourceFetcher::fetchRawResource(FetchRequest& request)
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);

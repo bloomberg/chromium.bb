@@ -172,6 +172,9 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
     } else if (name == typeAttr) {
         m_type = value;
         process();
+    } else if (name == asAttr) {
+        m_as = value;
+        process();
     } else if (name == sizesAttr) {
         m_sizes->setValue(value);
         parseSizesAttribute(value, m_iconSizes);
@@ -197,9 +200,9 @@ bool HTMLLinkElement::shouldLoadLink()
     return inDocument();
 }
 
-bool HTMLLinkElement::loadLink(const String& type, const KURL& url)
+bool HTMLLinkElement::loadLink(const String& type, const String& as, const KURL& url)
 {
-    return m_linkLoader.loadLink(m_relAttribute, fastGetAttribute(HTMLNames::crossoriginAttr), type, url, document());
+    return m_linkLoader.loadLink(m_relAttribute, fastGetAttribute(HTMLNames::crossoriginAttr), type, as, url, document());
 }
 
 LinkResource* HTMLLinkElement::linkResourceToProcess()
@@ -690,6 +693,7 @@ void LinkStyle::process()
 {
     ASSERT(m_owner->shouldProcessStyle());
     String type = m_owner->typeValue().lower();
+    String as = m_owner->asValue().lower();
     LinkRequestBuilder builder(m_owner);
 
     if (m_owner->relAttribute().iconType() != InvalidIcon && builder.url().isValid() && !builder.url().isEmpty()) {
@@ -703,7 +707,7 @@ void LinkStyle::process()
             document().frame()->loader().client()->dispatchDidChangeIcons(m_owner->relAttribute().iconType());
     }
 
-    if (!m_owner->loadLink(type, builder.url()))
+    if (!m_owner->loadLink(type, as, builder.url()))
         return;
 
     if ((m_disabledState != Disabled) && (m_owner->relAttribute().isStyleSheet() || m_owner->relAttribute().isTransitionExitingStylesheet())

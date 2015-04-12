@@ -87,6 +87,7 @@ public:
     ResourcePtr<DocumentResource> fetchSVGDocument(FetchRequest&);
     ResourcePtr<XSLStyleSheetResource> fetchXSLStyleSheet(FetchRequest&);
     ResourcePtr<Resource> fetchLinkResource(Resource::Type, FetchRequest&);
+    ResourcePtr<Resource> fetchLinkPreloadResource(Resource::Type, FetchRequest&);
     ResourcePtr<RawResource> fetchImport(FetchRequest&);
     ResourcePtr<RawResource> fetchMedia(FetchRequest&);
     ResourcePtr<RawResource> fetchTextTrack(FetchRequest&);
