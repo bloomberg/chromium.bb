@@ -2,13 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unittests for lkgm_manager. Needs to be run inside of chroot for mox."""
+"""Unittests for lkgm_manager"""
 
 from __future__ import print_function
 
 import contextlib
 import mock
-import mox
 import os
 import tempfile
 from xml.dom import minidom
@@ -36,8 +35,6 @@ CHROME_BRANCH=13
 
 
 # pylint: disable=protected-access
-# TODO: Re-enable when converted from mox to mock.
-# pylint: disable=no-value-for-parameter
 
 
 class LKGMCandidateInfoTest(cros_test_lib.TestCase):
@@ -113,11 +110,11 @@ def TemporaryManifest():
     yield f
 
 
-class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
+class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
   """Tests for the BuildSpecs manager."""
 
   def setUp(self):
-    self.mox.StubOutWithMock(git, 'CreatePushBranch')
+    self.push_mock = self.PatchObject(git, 'CreatePushBranch')
 
     self.source_repo = 'ssh://source/repo'
     self.manifest_repo = 'ssh://manifest/repo'
@@ -156,16 +153,6 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     """Tests that we can create a new candidate and uprev an old rc."""
     # Let's stub out other LKGMManager calls cause they're already
     # unit tested.
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'RefreshManifestCheckout')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'InitializeManifestVariables')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'HasCheckoutBeenBuilt')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CreateManifest')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PublishManifest')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
@@ -176,37 +163,35 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
 
     build_id = 59271
 
-    lkgm_manager.LKGMManager.CheckoutSourceCode()
-    lkgm_manager.LKGMManager.CreateManifest().AndReturn(new_manifest)
-    lkgm_manager.LKGMManager.HasCheckoutBeenBuilt().AndReturn(False)
+    self.PatchObject(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
+    self.PatchObject(lkgm_manager.LKGMManager, 'CreateManifest',
+                     return_value=new_manifest)
+    self.PatchObject(lkgm_manager.LKGMManager, 'HasCheckoutBeenBuilt',
+                     return_value=False)
 
     # Do manifest refresh work.
-    lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    git.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
-    lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
-    lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
+    self.PatchObject(lkgm_manager.LKGMManager, 'RefreshManifestCheckout')
+    self.PatchObject(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo',
+                     return_value=my_info)
+    init_mock = self.PatchObject(lkgm_manager.LKGMManager,
+                                 'InitializeManifestVariables')
 
     # Publish new candidate.
-    lkgm_manager.LKGMManager.PublishManifest(new_manifest,
-                                             new_candidate.VersionString(),
-                                             build_id=build_id)
+    publish_mock = self.PatchObject(lkgm_manager.LKGMManager, 'PublishManifest')
 
-    self.mox.ReplayAll()
     candidate_path = self.manager.CreateNewCandidate(build_id=build_id)
     self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
-    self.mox.VerifyAll()
+
+    publish_mock.assert_called_once_with(new_manifest,
+                                         new_candidate.VersionString(),
+                                         build_id=build_id)
+    init_mock.assert_called_once_with(my_info)
+    self.push_mock.assert_called_once_with(mock.ANY, mock.ANY, sync=False)
 
   def testCreateFromManifest(self):
     """Tests that we can create a new candidate from another manifest."""
     # Let's stub out other LKGMManager calls cause they're already
     # unit tested.
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'RefreshManifestCheckout')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'InitializeManifestVariables')
-    self.mox.StubOutWithMock(manifest_version, 'FilterManifest')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PublishManifest')
 
     version = '2010.0.0-rc7'
     my_info = lkgm_manager._LKGMCandidateInfo('2010.0.0')
@@ -217,51 +202,49 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
 
     build_id = 20162
 
-    manifest_version.FilterManifest(
-        manifest,
-        whitelisted_remotes=constants.EXTERNAL_REMOTES).AndReturn(new_manifest)
+    filter_mock = self.PatchObject(manifest_version, 'FilterManifest',
+                                   return_value=new_manifest)
 
     # Do manifest refresh work.
-    lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
-    lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
-    git.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
+    self.PatchObject(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo',
+                     return_value=my_info)
+    self.PatchObject(lkgm_manager.LKGMManager, 'RefreshManifestCheckout')
+    init_mock = self.PatchObject(lkgm_manager.LKGMManager,
+                                 'InitializeManifestVariables')
 
     # Publish new candidate.
-    lkgm_manager.LKGMManager.PublishManifest(new_manifest, version,
-                                             build_id=build_id)
+    publish_mock = self.PatchObject(lkgm_manager.LKGMManager, 'PublishManifest')
 
-    self.mox.ReplayAll()
     candidate_path = self.manager.CreateFromManifest(manifest,
                                                      build_id=build_id)
     self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
     self.assertEqual(self.manager.current_version, version)
-    self.mox.VerifyAll()
+
+    filter_mock.assert_called_once_with(
+        manifest, whitelisted_remotes=constants.EXTERNAL_REMOTES)
+    publish_mock.assert_called_once_with(new_manifest, version,
+                                         build_id=build_id)
+    init_mock.assert_called_once_with(my_info)
+    self.push_mock.assert_called_once_with(mock.ANY, mock.ANY, sync=False)
 
   def testCreateNewCandidateReturnNoneIfNoWorkToDo(self):
     """Tests that we return nothing if there is nothing to create."""
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'HasCheckoutBeenBuilt')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CreateManifest')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'RefreshManifestCheckout')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             'InitializeManifestVariables')
-
     new_manifest = 'some_manifest'
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
-    lkgm_manager.LKGMManager.CheckoutSourceCode()
-    lkgm_manager.LKGMManager.CreateManifest().AndReturn(new_manifest)
-    lkgm_manager.LKGMManager.RefreshManifestCheckout()
-    lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
-    lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
-    lkgm_manager.LKGMManager.HasCheckoutBeenBuilt().AndReturn(True)
+    self.PatchObject(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
+    self.PatchObject(lkgm_manager.LKGMManager, 'CreateManifest',
+                     return_value=new_manifest)
+    self.PatchObject(lkgm_manager.LKGMManager, 'RefreshManifestCheckout')
+    self.PatchObject(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo',
+                     return_value=my_info)
+    init_mock = self.PatchObject(lkgm_manager.LKGMManager,
+                                 'InitializeManifestVariables')
+    self.PatchObject(lkgm_manager.LKGMManager, 'HasCheckoutBeenBuilt',
+                     return_value=True)
 
-    self.mox.ReplayAll()
     candidate = self.manager.CreateNewCandidate()
     self.assertEqual(candidate, None)
-    self.mox.VerifyAll()
+    init_mock.assert_called_once_with(my_info)
 
   def _CreateManifest(self):
     """Returns a created test manifest in tmpdir with its dir_pfx."""
@@ -311,37 +294,32 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     Tested-by: Sammy Sosa <fake@fake.com>
     """
     self.manager.incr_type = 'build'
-    self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotLink')
+    self.PatchObject(cros_build_lib, 'RunCommand', side_effect=Exception())
+    exists_mock = self.PatchObject(os.path, 'exists', return_value=True)
+    link_mock = self.PatchObject(cros_build_lib, 'PrintBuildbotLink')
 
-    fake_revision = '1234567890'
-    fake_project_handler = self.mox.CreateMock(git.Manifest)
     project = {
         'name': 'fake/repo',
         'path': 'fake/path',
-        'revision': fake_revision,
+        'revision': '1234567890',
     }
+    fake_project_handler = mock.Mock(spec=git.Manifest)
     fake_project_handler.checkouts_by_path = {project['path']: project}
-    fake_result = self.mox.CreateMock(cros_build_lib.CommandResult)
-    fake_result.output = fake_git_log
+    self.PatchObject(git, 'Manifest', return_value=fake_project_handler)
 
-    self.mox.StubOutWithMock(git, 'Manifest', use_mock_anything=True)
+    fake_result = cros_build_lib.CommandResult(output=fake_git_log)
+    self.PatchObject(git, 'RunGit', return_value=fake_result)
 
-    git.Manifest(
-        self.tmpmandir + '/LKGM/lkgm.xml').AndReturn(fake_project_handler)
-    os.path.exists(mox.StrContains('fake/path')).AndReturn(True)
-    cmd = ['log', '--pretty=full', '%s..HEAD' % fake_revision]
-    git.RunGit(self.tmpdir + '/fake/path', cmd).AndReturn(fake_result)
-    cros_build_lib.PrintBuildbotLink(
-        'CHUMP | repo | fake | 1234',
-        'https://chromium-review.googlesource.com/1234')
-    cros_build_lib.PrintBuildbotLink(
-        'repo | fake | 1235',
-        'https://chromium-review.googlesource.com/1235')
-    self.mox.ReplayAll()
     self.manager._GenerateBlameListSinceLKGM()
-    self.mox.VerifyAll()
+
+    exists_mock.assert_called_once_with(
+        os.path.join(self.tmpdir, project['path']))
+    link_mock.assert_has_calls([
+        mock.call('CHUMP | repo | fake | 1234',
+                  'https://chromium-review.googlesource.com/1234'),
+        mock.call('repo | fake | 1235',
+                  'https://chromium-review.googlesource.com/1235'),
+    ])
 
   def testAddChromeVersionToManifest(self):
     """Tests whether we can write the chrome version to the manifest file."""
