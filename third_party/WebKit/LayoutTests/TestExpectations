@@ -2090,9 +2090,6 @@ crbug.com/471093 [ Win Debug ] inspector/sources/debugger/frameworks-dom-xhr-eve
 
 crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Timeout ]
 
-crbug.com/467386 http/tests/security/window-named-proto.html [ NeedsManualRebaseline ]
-crbug.com/467386 http/tests/security/xss-exception.html [ NeedsManualRebaseline ]
-
 crbug.com/472904 virtual/deferred/inspector/tracing/worker-events.html [ Pass Crash ]
 
 crbug.com/473532 http/tests/inspector/stacktraces/csp-inline-warning-contains-stacktrace.html [ Pass Failure ]
