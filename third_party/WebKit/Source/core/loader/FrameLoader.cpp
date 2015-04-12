@@ -553,6 +553,8 @@ bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
 
 void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource, PassRefPtr<SerializedScriptValue> data, FrameLoadType type)
 {
+    saveScrollState();
+
     // Update the data source's request with the new URL to fake the URL change
     m_frame->document()->setURL(newURL);
     documentLoader()->setReplacesCurrentHistoryItem(type != FrameLoadTypeStandard);
@@ -590,7 +592,6 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
             return;
     }
     m_loadType = type;
-    saveScrollState();
 
     KURL oldURL = m_frame->document()->url();
     // If we were in the autoscroll/panScroll mode we want to stop it before following the link to the anchor
