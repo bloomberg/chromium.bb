@@ -178,6 +178,7 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
 
   if (!stride)
     stride = info.minRowBytes();
+  DCHECK_GT(stride, 0);
 
   if (!needs_copy) {
     skia::RefPtr<SkSurface> surface = skia::AdoptRef(

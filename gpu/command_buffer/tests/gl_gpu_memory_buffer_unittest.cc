@@ -189,9 +189,9 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
   ASSERT_TRUE(mapped_buffer != NULL);
 
   // Assign a value to each pixel.
-  uint32 stride = 0;
+  int stride = 0;
   buffer->GetStride(&stride);
-  ASSERT_NE(stride, 0u);
+  ASSERT_NE(stride, 0);
   std::vector<uint8> pixel = GetTexturePixel(GetParam());
   for (int y = 0; y < kImageHeight; ++y) {
     for (int x = 0; x < kImageWidth; ++x) {

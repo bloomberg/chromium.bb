@@ -49,7 +49,7 @@ void GpuMemoryBufferImplIOSurface::Unmap() {
   mapped_ = false;
 }
 
-void GpuMemoryBufferImplIOSurface::GetStride(uint32* stride) const {
+void GpuMemoryBufferImplIOSurface::GetStride(int* stride) const {
   *stride = IOSurfaceGetBytesPerRow(io_surface_);
 }
 

@@ -123,7 +123,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
   bool IsMapped() const override { return mapped_; }
   Format GetFormat() const override { return format_; }
-  void GetStride(uint32* stride) const override {
+  void GetStride(int* stride) const override {
     for (size_t i = 0; i < NumberOfPlanesForGpuMemoryBufferFormat(format_);
          ++i) {
       stride[i] = StrideInBytes(size_.width(), format_, i);

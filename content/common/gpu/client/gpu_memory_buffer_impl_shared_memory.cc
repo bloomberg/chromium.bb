@@ -197,7 +197,7 @@ void GpuMemoryBufferImplSharedMemory::Unmap() {
   mapped_ = false;
 }
 
-void GpuMemoryBufferImplSharedMemory::GetStride(uint32* stride) const {
+void GpuMemoryBufferImplSharedMemory::GetStride(int* stride) const {
   size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
   for (size_t i = 0; i < num_planes; ++i) {
     size_t stride_in_bytes = 0;

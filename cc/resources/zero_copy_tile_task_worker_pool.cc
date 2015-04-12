@@ -34,7 +34,7 @@ class RasterBufferImpl : public RasterBuffer {
     void* data = NULL;
     bool rv = gpu_memory_buffer->Map(&data);
     DCHECK(rv);
-    uint32 stride;
+    int stride;
     gpu_memory_buffer->GetStride(&stride);
     TileTaskWorkerPool::PlaybackToMemory(data, resource_->format(),
                                          resource_->size(), stride,

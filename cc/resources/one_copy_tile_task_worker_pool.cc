@@ -324,7 +324,7 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
       void* data = NULL;
       bool rv = gpu_memory_buffer->Map(&data);
       DCHECK(rv);
-      uint32 stride;
+      int stride;
       gpu_memory_buffer->GetStride(&stride);
       TileTaskWorkerPool::PlaybackToMemory(data, src->format(), src->size(),
                                            stride, raster_source, rect, scale);

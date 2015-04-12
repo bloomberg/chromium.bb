@@ -101,7 +101,7 @@ void GpuMemoryBufferImplSurfaceTexture::Unmap() {
   mapped_ = false;
 }
 
-void GpuMemoryBufferImplSurfaceTexture::GetStride(uint32* stride) const {
+void GpuMemoryBufferImplSurfaceTexture::GetStride(int* stride) const {
   *stride = stride_;
 }
 

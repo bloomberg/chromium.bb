@@ -21,7 +21,7 @@ class GpuMemoryBufferImplOzoneNativeBuffer : public GpuMemoryBufferImpl {
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map(void** data) override;
   void Unmap() override;
-  void GetStride(uint32* stride) const override;
+  void GetStride(int* stride) const override;
   gfx::GpuMemoryBufferHandle GetHandle() const override;
 
  private:

@@ -106,7 +106,7 @@ TEST_P(GpuMemoryBufferImplTest, Map) {
     EXPECT_TRUE(buffer->IsMapped());
 
     // Get strides.
-    scoped_ptr<uint32[]> strides(new uint32[num_planes]);
+    scoped_ptr<int[]> strides(new int[num_planes]);
     buffer->GetStride(strides.get());
 
     // Copy and compare mapped buffers.
@@ -115,7 +115,6 @@ TEST_P(GpuMemoryBufferImplTest, Map) {
       EXPECT_TRUE(GpuMemoryBufferImpl::StrideInBytes(
           buffer_size.width(), configuration.format, i, &width_in_bytes));
       EXPECT_GT(width_in_bytes, 0u);
-      EXPECT_GE(strides[i], width_in_bytes);
 
       scoped_ptr<char[]> data(new char[width_in_bytes]);
       memset(data.get(), 0x2a + i, width_in_bytes);

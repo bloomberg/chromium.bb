@@ -287,7 +287,7 @@ void VideoCaptureTextureWrapper::TextureWrapperDelegate::OnIncomingCapturedData(
   void* data = NULL;
   bool rv = gpu_memory_buffer->Map(&data);
   DCHECK(rv);
-  uint32 stride;
+  int stride;
   gpu_memory_buffer->GetStride(&stride);
 
   uint8* mapped_buffer = static_cast<uint8*>(data);

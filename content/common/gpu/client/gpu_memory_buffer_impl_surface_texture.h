@@ -24,7 +24,7 @@ class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
   bool Map(void** data) override;
   void Unmap() override;
   gfx::GpuMemoryBufferHandle GetHandle() const override;
-  void GetStride(uint32* stride) const override;
+  void GetStride(int* stride) const override;
 
  private:
   GpuMemoryBufferImplSurfaceTexture(gfx::GpuMemoryBufferId id,

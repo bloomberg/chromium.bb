@@ -40,7 +40,7 @@ void GpuMemoryBufferImplOzoneNativeBuffer::Unmap() {
   NOTREACHED();
 }
 
-void GpuMemoryBufferImplOzoneNativeBuffer::GetStride(uint32* stride) const {
+void GpuMemoryBufferImplOzoneNativeBuffer::GetStride(int* stride) const {
   NOTREACHED();
 }
 
