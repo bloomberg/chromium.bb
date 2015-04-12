@@ -100,8 +100,6 @@ const DataResource kDataResources[] = {
     {"xhtmlmp.css", IDR_UASTYLE_XHTMLMP_CSS},
     {"viewportAndroid.css", IDR_UASTYLE_VIEWPORT_ANDROID_CSS},
     {"InspectorOverlayPage.html", IDR_INSPECTOR_OVERLAY_PAGE_HTML},
-    {"InjectedScriptCanvasModuleSource.js",
-     IDR_INSPECTOR_INJECTED_SCRIPT_CANVAS_MODULE_SOURCE_JS},
     {"InjectedScriptSource.js", IDR_INSPECTOR_INJECTED_SCRIPT_SOURCE_JS},
     {"DebuggerScriptSource.js", IDR_INSPECTOR_DEBUGGER_SCRIPT_SOURCE_JS},
     {"DocumentExecCommand.js", IDR_PRIVATE_SCRIPT_DOCUMENTEXECCOMMAND_JS},
