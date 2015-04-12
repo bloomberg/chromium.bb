@@ -305,10 +305,10 @@ interface InspectorInstrumentation {
     [Page]
     void frameAttachedToParent([Keep] LocalFrame*);
 
-    [Canvas, Page]
+    [Page]
     void frameDetachedFromParent([Keep] LocalFrame*);
 
-    [Resource, DOM, Canvas, Page]
+    [Resource, DOM, Page]
     void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
 
     [DOM, Inline=FastReturn]
@@ -457,16 +457,4 @@ interface InspectorOverrides {
 
     [Resource, Inline=FastReturn]
     bool shouldForceCORSPreflight(Document*);
-}
-
-
-interface InspectorCanvasInstrumentation {
-
-#include "bindings/core/v8/ScriptValue.h"
-
-    [Canvas]
-    ScriptValue wrapCanvas2DRenderingContextForInstrumentation(Document*, const ScriptValue&);
-
-    [Canvas]
-    ScriptValue wrapWebGLRenderingContextForInstrumentation(Document*, const ScriptValue&);
 }

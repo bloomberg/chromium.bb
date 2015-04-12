@@ -134,12 +134,6 @@ void appendAsyncCallStack(ExecutionContext* executionContext, ScriptCallStack* c
         callStack->setAsyncCallStack(debuggerAgent->currentAsyncStackTraceForConsole());
 }
 
-bool canvasAgentEnabled(ExecutionContext* executionContext)
-{
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);
-    return instrumentingAgents && instrumentingAgents->inspectorCanvasAgent();
-}
-
 bool consoleAgentEnabled(ExecutionContext* executionContext)
 {
     InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);

@@ -8,7 +8,6 @@
 #include "bindings/core/v8/V8CanvasRenderingContext2D.h"
 #include "bindings/core/v8/V8WebGLRenderingContext.h"
 #include "core/html/HTMLCanvasElement.h"
-#include "core/inspector/InspectorCanvasInstrumentation.h"
 
 namespace blink {
 
@@ -16,12 +15,6 @@ ScriptValue wrapCanvasContext(ScriptState* scriptState, HTMLCanvasElement* canva
 {
     v8::Handle<v8::Value> v8Result = toV8(value, scriptState->context()->Global(), scriptState->isolate());
     ScriptValue context(scriptState, v8Result);
-    if (InspectorInstrumentation::canvasAgentEnabled(&canvas->document())) {
-        ScriptValue wrapped = InspectorInstrumentation::wrapCanvas2DRenderingContextForInstrumentation(&canvas->document(), context);
-        if (!wrapped.isEmpty()) {
-            return wrapped;
-        }
-    }
     return context;
 }
 
@@ -29,12 +22,6 @@ ScriptValue wrapCanvasContext(ScriptState* scriptState, HTMLCanvasElement* canva
 {
     v8::Handle<v8::Value> v8Result = toV8(value, scriptState->context()->Global(), scriptState->isolate());
     ScriptValue context(scriptState, v8Result);
-    if (InspectorInstrumentation::canvasAgentEnabled(&canvas->document())) {
-        ScriptValue wrapped = InspectorInstrumentation::wrapWebGLRenderingContextForInstrumentation(&canvas->document(), context);
-        if (!wrapped.isEmpty()) {
-            return wrapped;
-        }
-    }
     return context;
 }
 

@@ -41,7 +41,6 @@
 
 namespace blink {
 
-class InjectedScriptModule;
 class Node;
 
 class InjectedScript final : public InjectedScriptBase {
@@ -104,7 +103,6 @@ public:
     void setCustomObjectFormatterEnabled(bool);
 
 private:
-    friend class InjectedScriptModule;
     friend InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState*);
     InjectedScript(ScriptValue, InspectedStateAccessCheck, PassRefPtr<InjectedScriptNative>);
 

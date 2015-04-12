@@ -45,7 +45,6 @@
 #include "core/inspector/InspectorAnimationAgent.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 #include "core/inspector/InspectorCSSAgent.h"
-#include "core/inspector/InspectorCanvasAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
@@ -472,8 +471,6 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorHeapProfilerAgent::create(injectedScriptManager));
 
-    m_agents.append(InspectorCanvasAgent::create(m_pageAgent, injectedScriptManager));
-
     m_pageAgent->setDeferredAgents(debuggerAgent, m_cssAgent);
 
     PageScriptDebugServer* scriptDebugServer = PageScriptDebugServer::instance();
@@ -733,8 +730,6 @@ void WebDevToolsAgentImpl::didProcessTask()
         return;
     if (InspectorProfilerAgent* profilerAgent = m_instrumentingAgents->inspectorProfilerAgent())
         profilerAgent->didProcessTask();
-    if (InspectorCanvasAgent* canvasAgent = m_instrumentingAgents->inspectorCanvasAgent())
-        canvasAgent->didProcessTask();
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "Program");
     flushPendingProtocolNotifications();
 }

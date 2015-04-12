@@ -115,7 +115,6 @@
       '<(blink_core_output_dir)/InspectorTypeBuilder.cpp',
 
       # Additional .cpp files from the inspector_instrumentation_sources list.
-      '<(blink_core_output_dir)/InspectorCanvasInstrumentationInl.h',
       '<(blink_core_output_dir)/InspectorConsoleInstrumentationInl.h',
       '<(blink_core_output_dir)/InspectorInstrumentationInl.h',
       '<(blink_core_output_dir)/InspectorOverridesInl.h',

@@ -41,7 +41,6 @@ bool isDebuggerPausedImpl(InstrumentingAgents*);
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
 void appendAsyncCallStack(ExecutionContext*, ScriptCallStack*);
 
-bool canvasAgentEnabled(ExecutionContext*);
 bool consoleAgentEnabled(ExecutionContext*);
 
 inline bool isDebuggerPaused(LocalFrame* frame)

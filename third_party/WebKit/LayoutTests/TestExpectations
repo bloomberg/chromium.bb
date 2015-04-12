@@ -388,9 +388,6 @@ crbug.com/451577 [ Win ] inspector/console [ Slow ]
 
 crbug.com/463023 inspector/sources/debugger/debugger-reload-breakpoints-with-source-maps.html [ Failure Pass ]
 
-crbug.com/451577 [ Win ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Slow ]
-crbug.com/451577 [ Win ] inspector/profiler/webgl/webgl-get-resource-state.html [ Slow ]
-
 crbug.com/451577 [ Win ] inspector-protocol/loading-iframe-document-node.html [ Crash Pass ]
 
 crbug.com/451577 [ Win ] http/tests/inspector/search/sources-search-scope-in-files.html [ Failure Pass Crash ]
@@ -1495,7 +1492,6 @@ crbug.com/30536 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failu
 crbug.com/30536 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
 crbug.com/394208 [ Win ] http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Timeout Pass ]
-crbug.com/394210 [ Win ] inspector/profiler/webgl/webgl-profiler-api-changes.html [ Timeout Pass ]
 
 # Assertion failures seen only on Slow Leopard.
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-skip-step-in.html [ Crash ]

@@ -116,7 +116,6 @@
             'inspector/InspectorInstrumentation.idl',
           ],
           'outputs': [
-            '<(blink_core_output_dir)/InspectorCanvasInstrumentationInl.h',
             '<(blink_core_output_dir)/InspectorConsoleInstrumentationInl.h',
             '<(blink_core_output_dir)/InspectorInstrumentationInl.h',
             '<(blink_core_output_dir)/InspectorOverridesInl.h',

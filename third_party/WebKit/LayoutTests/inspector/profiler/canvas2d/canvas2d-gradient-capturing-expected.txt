@@ -1,4 +1,0 @@
-CONSOLE WARNING: 'CanvasRenderingContext2D.webkitImageSmoothingEnabled' is deprecated. Please use 'CanvasRenderingContext2D.imageSmoothingEnabled' instead.
-Tests Canvas 2D capturing for CanvasGradient objects.
-
-Bug 101432
