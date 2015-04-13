@@ -281,9 +281,14 @@ const UChar* getFontBasedOnUnicodeBlock(int ucs4, SkFontMgr* fontManager)
     case UBLOCK_EMOTICONS:
         return emojiFont;
     case UBLOCK_PLAYING_CARDS:
+    case UBLOCK_MISCELLANEOUS_SYMBOLS:
     case UBLOCK_MISCELLANEOUS_SYMBOLS_AND_PICTOGRAPHS:
     case UBLOCK_TRANSPORT_AND_MAP_SYMBOLS:
     case UBLOCK_ALCHEMICAL_SYMBOLS:
+    case UBLOCK_RUNIC:
+    case UBLOCK_SUPPLEMENTAL_MATHEMATICAL_OPERATORS:
+    case UBLOCK_DINGBATS:
+    case UBLOCK_GENERAL_PUNCTUATION:
         return symbolFont;
     default:
         return 0;
