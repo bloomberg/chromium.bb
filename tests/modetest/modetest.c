@@ -111,6 +111,7 @@ struct device {
 
 		unsigned int fb_id;
 		struct bo *bo;
+		struct bo *cursor_bo;
 	} mode;
 };
 
@@ -1174,6 +1175,8 @@ static void set_cursors(struct device *dev, struct pipe_arg *pipes, unsigned int
 	if (bo == NULL)
 		return;
 
+	dev->mode.cursor_bo = bo;
+
 	for (i = 0; i < count; i++) {
 		struct pipe_arg *pipe = &pipes[i];
 		ret = cursor_init(dev->fd, handles[0],
@@ -1193,6 +1196,9 @@ static void set_cursors(struct device *dev, struct pipe_arg *pipes, unsigned int
 static void clear_cursors(struct device *dev)
 {
 	cursor_stop();
+
+	if (dev->mode.cursor_bo)
+		bo_destroy(dev->mode.cursor_bo);
 }
 
 static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned int count)
