@@ -45,10 +45,6 @@
 class ResourceHandler;
 struct ResourceHostMsg_Request;
 
-namespace base {
-class FilePath;
-}
-
 namespace net {
 class URLRequestJobFactory;
 }
@@ -246,7 +242,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // it, except on HTTP errors. This is marked virtual so it can be overriden in
   // testing.
   virtual scoped_ptr<ResourceHandler> MaybeInterceptAsStream(
-      const base::FilePath& plugin_path,
       net::URLRequest* request,
       ResourceResponse* response,
       std::string* payload);
