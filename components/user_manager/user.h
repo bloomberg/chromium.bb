@@ -88,6 +88,9 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // The displayed user name.
   base::string16 display_name() const { return display_name_; }
 
+  // If the user has to use SAML to log in.
+  bool using_saml() const { return using_saml_; }
+
   // UserInfo
   std::string GetEmail() const override;
   base::string16 GetDisplayName() const override;
@@ -213,6 +216,8 @@ class USER_MANAGER_EXPORT User : public UserInfo {
     display_email_ = display_email;
   }
 
+  void set_using_saml(const bool using_saml) { using_saml_ = using_saml; }
+
   const UserImage& user_image() const { return user_image_; }
 
   void set_oauth_token_status(OAuthTokenStatus status) {
@@ -244,6 +249,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   base::string16 given_name_;
   // The displayed user email, defaults to |email_|.
   std::string display_email_;
+  bool using_saml_;
   UserImage user_image_;
   OAuthTokenStatus oauth_token_status_;
   bool force_online_signin_;

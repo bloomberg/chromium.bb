@@ -116,8 +116,17 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void SetKnownUserStringPref(const UserID& user_id,
                               const std::string& path,
                               const std::string& in_value) override;
+  bool GetKnownUserBooleanPref(const UserID& user_id,
+                               const std::string& path,
+                               bool* out_value) override;
+  void SetKnownUserBooleanPref(const UserID& user_id,
+                               const std::string& path,
+                               const bool in_value) override;
   void UpdateGaiaID(const UserID& user_id, const std::string& gaia_id) override;
   bool FindGaiaID(const UserID& user_id, std::string* out_value) override;
+  void UpdateUsingSAML(const std::string& user_id,
+                       const bool using_saml) override;
+  bool FindUsingSAML(const std::string& user_id) override;
 
   virtual void SetIsCurrentUserNew(bool is_new);
 

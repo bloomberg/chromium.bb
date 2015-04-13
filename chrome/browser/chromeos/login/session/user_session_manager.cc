@@ -1019,6 +1019,8 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->IsLoggedInAsUserWithGaiaAccount()) {
+    if (user_context_.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML)
+      user_manager->UpdateUsingSAML(user_context_.GetUserID(), true);
     SAMLOfflineSigninLimiter* saml_offline_signin_limiter =
         SAMLOfflineSigninLimiterFactory::GetForProfile(profile);
     if (saml_offline_signin_limiter)

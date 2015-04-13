@@ -82,6 +82,9 @@ const char kCanonicalEmail[] = "email";
 // Key of obfuscated GAIA id value.
 const char kGAIAIdKey[] = "gaia_id";
 
+// Key of whether this user ID refers to a SAML user.
+const char kUsingSAMLKey[] = "using_saml";
+
 // Upper bound for a histogram metric reporting the amount of time between
 // one regular user logging out and a different regular user logging in.
 const int kLogoutToLoginDelayMaxSec = 1800;
@@ -529,6 +532,18 @@ void UserManagerBase::SaveUserType(const std::string& user_id,
   user_type_update->SetWithoutPathExpansion(
       user_id, new base::FundamentalValue(static_cast<int>(user_type)));
   GetLocalState()->CommitPendingWrite();
+}
+
+void UserManagerBase::UpdateUsingSAML(const std::string& user_id,
+                                      const bool using_saml) {
+  SetKnownUserBooleanPref(user_id, kUsingSAMLKey, using_saml);
+}
+
+bool UserManagerBase::FindUsingSAML(const std::string& user_id) {
+  bool using_saml;
+  if (GetKnownUserBooleanPref(user_id, kUsingSAMLKey, &using_saml))
+    return using_saml;
+  return false;
 }
 
 void UserManagerBase::UpdateUserAccountData(
@@ -1035,6 +1050,25 @@ void UserManagerBase::SetKnownUserStringPref(const UserID& user_id,
   ListPrefUpdate update(GetLocalState(), kKnownUsers);
   base::DictionaryValue dict;
   dict.SetString(path, in_value);
+  UpdateKnownUserPrefs(user_id, dict, false);
+}
+
+bool UserManagerBase::GetKnownUserBooleanPref(const UserID& user_id,
+                                              const std::string& path,
+                                              bool* out_value) {
+  const base::DictionaryValue* user_pref_dict = nullptr;
+  if (!FindKnownUserPrefs(user_id, &user_pref_dict))
+    return false;
+
+  return user_pref_dict->GetBoolean(path, out_value);
+}
+
+void UserManagerBase::SetKnownUserBooleanPref(const UserID& user_id,
+                                              const std::string& path,
+                                              const bool in_value) {
+  ListPrefUpdate update(GetLocalState(), kKnownUsers);
+  base::DictionaryValue dict;
+  dict.SetBoolean(path, in_value);
   UpdateKnownUserPrefs(user_id, dict, false);
 }
 
