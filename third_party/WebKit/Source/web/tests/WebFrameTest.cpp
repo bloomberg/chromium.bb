@@ -2838,6 +2838,59 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     EXPECT_FALSE(needAnimation);
 }
 
+TEST_F(WebFrameTest, CharacterIndexAtPointWithPinchZoom)
+{
+    registerMockedHttpURLLoad("sometext.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "sometext.html");
+    webViewHelper.webViewImpl()->resize(WebSize(640, 480));
+    webViewHelper.webViewImpl()->layout();
+
+
+    webViewHelper.webViewImpl()->setPageScaleFactor(2);
+    webViewHelper.webViewImpl()->setPinchViewportOffset(WebFloatPoint(50, 60));
+
+    WebRect baseRect;
+    WebRect extentRect;
+
+    WebFrame* mainFrame = webViewHelper.webViewImpl()->mainFrame();
+    size_t ix = mainFrame->characterIndexForPoint(WebPoint(320, 388));
+
+    EXPECT_EQ(2ul, ix);
+}
+
+TEST_F(WebFrameTest, FirstRectForCharacterRangeWithPinchZoom)
+{
+    registerMockedHttpURLLoad("textbox.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "textbox.html", true);
+    webViewHelper.webViewImpl()->resize(WebSize(640, 480));
+
+    WebFrame* mainFrame = webViewHelper.webViewImpl()->mainFrame();
+    mainFrame->executeScript(WebScriptSource("selectRange();"));
+
+    WebRect oldRect;
+    mainFrame->firstRectForCharacterRange(0, 5, oldRect);
+
+    WebFloatPoint pinchOffset(100, 130);
+    float scale = 2;
+    webViewHelper.webViewImpl()->setPageScaleFactor(scale);
+    webViewHelper.webViewImpl()->setPinchViewportOffset(pinchOffset);
+
+    WebRect baseRect;
+    WebRect extentRect;
+
+    WebRect rect;
+    mainFrame->firstRectForCharacterRange(0, 5, rect);
+
+    EXPECT_EQ((oldRect.x - pinchOffset.x) * scale, rect.x);
+    EXPECT_EQ((oldRect.y - pinchOffset.y) * scale, rect.y);
+    EXPECT_EQ(oldRect.width*scale, rect.width);
+    EXPECT_EQ(oldRect.height*scale, rect.height);
+}
+
 TEST_F(WebFrameTest, DivScrollIntoEditablePreservePageScaleTest)
 {
     registerMockedHttpURLLoad("get_scale_for_zoom_into_editable_test.html");

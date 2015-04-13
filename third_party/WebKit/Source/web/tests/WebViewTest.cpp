@@ -242,8 +242,9 @@ TEST_F(WebViewTest, SaveImageAt)
 
     std::string url = m_baseURL + "image-with-data-url.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "image-with-data-url.html");
-    WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(url, true, 0, &client);
     webView->resize(WebSize(400, 400));
+    webView->layout();
 
     client.reset();
     webView->saveImageAt(WebPoint(1, 1));
@@ -254,6 +255,14 @@ TEST_F(WebViewTest, SaveImageAt)
     webView->saveImageAt(WebPoint(1, 2));
     EXPECT_EQ(WebString(), client.result());
 
+    webView->setPageScaleFactor(4);
+    webView->setPinchViewportOffset(WebFloatPoint(1, 1));
+
+    client.reset();
+    webView->saveImageAt(WebPoint(3, 3));
+    EXPECT_EQ(WebString::fromUTF8("data:image/gif;base64"
+        ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="), client.result());
+
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 };
 
@@ -263,7 +272,35 @@ TEST_F(WebViewTest, CopyImageAt)
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "canvas-copy-image.html");
     WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
     webView->resize(WebSize(400, 400));
+
+    uint64_t sequence = Platform::current()->clipboard()->sequenceNumber(WebClipboard::BufferStandard);
+
     webView->copyImageAt(WebPoint(50, 50));
+
+    EXPECT_NE(sequence, Platform::current()->clipboard()->sequenceNumber(WebClipboard::BufferStandard));
+
+    WebData data = Platform::current()->clipboard()->readImage(WebClipboard::Buffer());
+    WebImage image = WebImage::fromData(data, WebSize());
+
+    SkAutoLockPixels autoLock(image.getSkBitmap());
+    EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.getSkBitmap().getColor(0, 0));
+};
+
+TEST_F(WebViewTest, CopyImageAtWithPinchZoom)
+{
+    std::string url = m_baseURL + "canvas-copy-image.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "canvas-copy-image.html");
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
+    webView->resize(WebSize(400, 400));
+    webView->layout();
+    webView->setPageScaleFactor(2);
+    webView->setPinchViewportOffset(WebFloatPoint(200, 200));
+
+    uint64_t sequence = Platform::current()->clipboard()->sequenceNumber(WebClipboard::BufferStandard);
+
+    webView->copyImageAt(WebPoint(0, 0));
+
+    EXPECT_NE(sequence, Platform::current()->clipboard()->sequenceNumber(WebClipboard::BufferStandard));
 
     WebData data = Platform::current()->clipboard()->readImage(WebClipboard::Buffer());
     WebImage image = WebImage::fromData(data, WebSize());
@@ -1815,6 +1852,41 @@ TEST_F(WebViewTest, SmartClipData)
     webView->resize(WebSize(500, 500));
     webView->layout();
     WebRect cropRect(300, 125, 152, 50);
+    webView->extractSmartClipData(cropRect, clipText, clipHtml, clipRect);
+    EXPECT_STREQ(kExpectedClipText, clipText.utf8().c_str());
+    EXPECT_STREQ(kExpectedClipHtml, clipHtml.utf8().c_str());
+}
+
+TEST_F(WebViewTest, SmartClipDataWithPinchZoom)
+{
+    static const char* kExpectedClipText = "\nPrice 10,000,000won";
+    static const char* kExpectedClipHtml =
+        "<div id=\"div4\" style=\"padding: 10px; margin: 10px; border: 2px "
+        "solid rgb(135, 206, 235); float: left; width: 190px; height: 30px; "
+        "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
+        "normal; font-variant: normal; font-weight: normal; letter-spacing: "
+        "normal; line-height: normal; orphans: auto; text-align: start; "
+        "text-indent: 0px; text-transform: none; white-space: normal; widows: "
+        "1; word-spacing: 0px; -webkit-text-stroke-width: 0px;\">Air "
+        "conditioner</div><div id=\"div5\" style=\"padding: 10px; margin: "
+        "10px; border: 2px solid rgb(135, 206, 235); float: left; width: "
+        "190px; height: 30px; color: rgb(0, 0, 0); font-family: myahem; "
+        "font-size: 8px; font-style: normal; font-variant: normal; "
+        "font-weight: normal; letter-spacing: normal; line-height: normal; "
+        "orphans: auto; text-align: start; text-indent: 0px; text-transform: "
+        "none; white-space: normal; widows: 1; word-spacing: 0px; "
+        "-webkit-text-stroke-width: 0px;\">Price 10,000,000won</div>";
+    WebString clipText;
+    WebString clipHtml;
+    WebRect clipRect;
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("smartclip.html"));
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "smartclip.html");
+    webView->resize(WebSize(500, 500));
+    webView->layout();
+    webView->setPageScaleFactor(1.5);
+    webView->setPinchViewportOffset(WebFloatPoint(167, 100));
+    WebRect cropRect(200, 38, 228, 75);
     webView->extractSmartClipData(cropRect, clipText, clipHtml, clipRect);
     EXPECT_STREQ(kExpectedClipText, clipText.utf8().c_str());
     EXPECT_STREQ(kExpectedClipHtml, clipHtml.utf8().c_str());

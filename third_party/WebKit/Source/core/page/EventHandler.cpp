@@ -2959,11 +2959,11 @@ bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
 
     // Clear mouse press state to avoid initiating a drag while context menu is up.
     m_mousePressed = false;
-    LayoutPoint viewportPos = v->rootFrameToContents(event.position());
+    LayoutPoint positionInContents = v->rootFrameToContents(event.position());
     HitTestRequest request(HitTestRequest::Active);
-    MouseEventWithHitTestResults mev = doc->prepareMouseEvent(request, viewportPos, event);
+    MouseEventWithHitTestResults mev = doc->prepareMouseEvent(request, positionInContents, event);
 
-    if (!m_frame->selection().contains(viewportPos)
+    if (!m_frame->selection().contains(positionInContents)
         && !mev.scrollbar()
         // FIXME: In the editable case, word selection sometimes selects content that isn't underneath the mouse.
         // If the selection is non-editable, we do word selection to make it easier to use the contextual menu items
@@ -3021,8 +3021,10 @@ bool EventHandler::sendContextMenuEventForKey()
         locationInRootFrame = flooredIntPoint(pinchViewport.viewportCSSPixelsToRootFrame(clippedRect.center()));
     } else {
         locationInRootFrame = IntPoint(
-            rightAligned ? pinchViewport.visibleRect().maxX() - kContextMenuMargin : kContextMenuMargin,
-            kContextMenuMargin);
+            rightAligned
+                ? pinchViewport.visibleRect().maxX() - kContextMenuMargin
+                : pinchViewport.location().x() + kContextMenuMargin,
+            pinchViewport.location().y() + kContextMenuMargin);
     }
 
     m_frame->view()->setCursor(pointerCursor());
