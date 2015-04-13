@@ -329,13 +329,13 @@ class Authenticator(object):
         redirections=httplib2.DEFAULT_MAX_REDIRECTS,
         connection_type=None):
       headers = (headers or {}).copy()
-      headers['Authorizaton'] = 'Bearer %s' % self.get_access_token().token
+      headers['Authorization'] = 'Bearer %s' % self.get_access_token().token
       resp, content = request_orig(
           uri, method, body, headers, redirections, connection_type)
       if resp.status in client.REFRESH_STATUS_CODES:
         logging.info('Refreshing due to a %s', resp.status)
         access_token = self.get_access_token(force_refresh=True)
-        headers['Authorizaton'] = 'Bearer %s' % access_token.token
+        headers['Authorization'] = 'Bearer %s' % access_token.token
         return request_orig(
             uri, method, body, headers, redirections, connection_type)
       else:
@@ -358,7 +358,7 @@ class Authenticator(object):
       return None
     if not credentials.access_token or credentials.access_token_expired:
       return None
-    return AccessToken(credentials.access_token, credentials.token_expiry)
+    return AccessToken(str(credentials.access_token), credentials.token_expiry)
 
   def _create_access_token(self, allow_user_interaction=False):
     """Mints and caches a new access token, launching OAuth2 dance if necessary.
@@ -405,7 +405,7 @@ class Authenticator(object):
         credentials.token_expiry - datetime.datetime.utcnow())
     credentials.set_store(storage)
     storage.put(credentials)
-    return AccessToken(credentials.access_token, credentials.token_expiry)
+    return AccessToken(str(credentials.access_token), credentials.token_expiry)
 
 
 ## Private functions.
