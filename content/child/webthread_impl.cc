@@ -5,13 +5,12 @@
 // An implementation of WebThread in terms of base::MessageLoop and
 // base::Thread
 
-#include "content/child/webthread_base.h"
+#include "content/child/webthread_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
-#include "content/child/scheduler/single_thread_idle_task_runner.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
 namespace content {
@@ -30,7 +29,7 @@ class WebThreadBase::TaskObserverAdapter
     observer_->didProcessTask();
   }
 
- private:
+private:
   WebThread::TaskObserver* observer_;
 };
 
@@ -101,13 +100,6 @@ void WebThreadBase::RunWebThreadTask(scoped_ptr<blink::WebThread::Task> task) {
   task->run();
 }
 
-// static
-void WebThreadBase::RunWebThreadIdleTask(
-    scoped_ptr<blink::WebThread::IdleTask> idle_task,
-    base::TimeTicks deadline) {
-  idle_task->run((deadline - base::TimeTicks()).InSecondsF());
-}
-
 void WebThreadBase::postTask(const blink::WebTraceLocation& location,
                              Task* task) {
   postDelayedTask(location, task, 0);
@@ -122,25 +114,6 @@ void WebThreadBase::postDelayedTask(const blink::WebTraceLocation& web_location,
       location,
       base::Bind(RunWebThreadTask, base::Passed(make_scoped_ptr(task))),
       base::TimeDelta::FromMilliseconds(delay_ms));
-}
-
-void WebThreadBase::postIdleTask(const blink::WebTraceLocation& web_location,
-                                 IdleTask* idle_task) {
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
-  IdleTaskRunner()->PostIdleTask(
-      location, base::Bind(&WebThreadBase::RunWebThreadIdleTask,
-                           base::Passed(make_scoped_ptr(idle_task))));
-}
-
-void WebThreadBase::postIdleTaskAfterWakeup(
-    const blink::WebTraceLocation& web_location,
-    IdleTask* idle_task) {
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
-  IdleTaskRunner()->PostIdleTaskAfterWakeup(
-      location, base::Bind(&WebThreadBase::RunWebThreadIdleTask,
-                           base::Passed(make_scoped_ptr(idle_task))));
 }
 
 void WebThreadBase::enterRunLoop() {
@@ -159,6 +132,27 @@ void WebThreadBase::exitRunLoop() {
 
 bool WebThreadBase::isCurrentThread() const {
   return TaskRunner()->BelongsToCurrentThread();
+}
+
+blink::PlatformThreadId WebThreadImpl::threadId() const {
+  return thread_->thread_id();
+}
+
+WebThreadImpl::WebThreadImpl(const char* name)
+    : thread_(new base::Thread(name)) {
+  thread_->Start();
+}
+
+WebThreadImpl::~WebThreadImpl() {
+  thread_->Stop();
+}
+
+base::MessageLoop* WebThreadImpl::MessageLoop() const {
+  return nullptr;
+}
+
+base::SingleThreadTaskRunner* WebThreadImpl::TaskRunner() const {
+  return thread_->message_loop_proxy().get();
 }
 
 }  // namespace content

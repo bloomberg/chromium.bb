@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_WEBTHREAD_BASE_H_
-#define CONTENT_CHILD_WEBTHREAD_BASE_H_
+#ifndef CONTENT_CHILD_WEBTHREAD_IMPL_H_
+#define CONTENT_CHILD_WEBTHREAD_IMPL_H_
 
 #include <map>
 
@@ -17,7 +17,6 @@ class WebTraceLocation;
 }
 
 namespace content {
-class SingleThreadIdleTaskRunner;
 
 class CONTENT_EXPORT WebThreadBase : public blink::WebThread {
  public:
@@ -31,10 +30,6 @@ class CONTENT_EXPORT WebThreadBase : public blink::WebThread {
   virtual void postDelayedTask(const blink::WebTraceLocation& location,
                                Task* task,
                                long long delay_ms);
-  virtual void postIdleTask(const blink::WebTraceLocation& location,
-                            IdleTask* idle_task);
-  virtual void postIdleTaskAfterWakeup(const blink::WebTraceLocation& location,
-                                       IdleTask* idle_task);
 
   virtual void enterRunLoop();
   virtual void exitRunLoop();
@@ -45,10 +40,6 @@ class CONTENT_EXPORT WebThreadBase : public blink::WebThread {
   // Returns the base::Bind-compatible task runner for posting tasks to this
   // thread. Can be called from any thread.
   virtual base::SingleThreadTaskRunner* TaskRunner() const = 0;
-
-  // Returns the base::Bind-compatible task runner for posting idle tasks to
-  // this thread. Can be called from any thread.
-  virtual SingleThreadIdleTaskRunner* IdleTaskRunner() const = 0;
 
  protected:
   class TaskObserverAdapter;
@@ -66,15 +57,29 @@ class CONTENT_EXPORT WebThreadBase : public blink::WebThread {
       base::MessageLoop::TaskObserver* observer);
 
   static void RunWebThreadTask(scoped_ptr<blink::WebThread::Task> task);
-  static void RunWebThreadIdleTask(
-      scoped_ptr<blink::WebThread::IdleTask> idle_task,
-      base::TimeTicks deadline);
 
  private:
   typedef std::map<TaskObserver*, TaskObserverAdapter*> TaskObserverMap;
   TaskObserverMap task_observer_map_;
 };
 
-}  // namespace content
+class CONTENT_EXPORT WebThreadImpl : public WebThreadBase {
+ public:
+  explicit WebThreadImpl(const char* name);
+  virtual ~WebThreadImpl();
 
-#endif  // CONTENT_CHILD_WEBTHREAD_BASE_H_
+  // blink::WebThread implementation.
+  blink::PlatformThreadId threadId() const override;
+
+  // WebThreadBase implementation.
+  base::SingleThreadTaskRunner* TaskRunner() const override;
+
+ private:
+  base::MessageLoop* MessageLoop() const override;
+
+  scoped_ptr<base::Thread> thread_;
+};
+
+} // namespace content
+
+#endif  // CONTENT_CHILD_WEBTHREAD_IMPL_H_
