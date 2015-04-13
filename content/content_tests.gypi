@@ -1660,40 +1660,6 @@
     ['chromeos==1 and target_arch != "arm"', {
       'targets': [
           {
-            'target_name': 'vaapi_h264_decoder_unittest',
-            'type': '<(gtest_target_type)',
-            'dependencies': [
-              'content.gyp:content_common',
-              '../base/base.gyp:base',
-              '../media/media.gyp:media',
-              '../testing/gtest.gyp:gtest',
-              '../third_party/libyuv/libyuv.gyp:libyuv',
-              '../ui/gfx/gfx.gyp:gfx_geometry',
-            ],
-            'sources': [
-              'common/gpu/media/vaapi_h264_decoder_unittest.cc',
-            ],
-            'include_dirs': [
-              '<(DEPTH)/third_party/libva',
-            ],
-            'conditions': [
-              ['use_x11==1', {
-                'dependencies': [
-                  '../build/linux/system.gyp:x11',
-                ]
-              }, {
-                'dependencies': [
-                  '../build/linux/system.gyp:libdrm',
-                ]
-              }],
-              ['use_ozone==1', {
-                'dependencies': [
-                  '../ui/ozone/ozone.gyp:ozone',
-                ],
-              }],
-            ],
-          },
-          {
             'target_name': 'vaapi_jpeg_decoder_unittest',
             'type': '<(gtest_target_type)',
             'dependencies': [
