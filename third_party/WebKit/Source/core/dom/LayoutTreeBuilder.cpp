@@ -34,6 +34,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Text.h"
+#include "core/dom/shadow/InsertionPoint.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
@@ -47,6 +48,7 @@ LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element, Compu
     : LayoutTreeBuilder(element, nullptr)
     , m_style(style)
 {
+    ASSERT(!isActiveInsertionPoint(element));
     if (element.isFirstLetterPseudoElement()) {
         if (LayoutObject* nextLayoutObject = FirstLetterPseudoElement::firstLetterTextRenderer(element))
             m_layoutObjectParent = nextLayoutObject->parent();

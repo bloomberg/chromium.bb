@@ -26,6 +26,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/VisitedLinkState.h"
+#include "core/dom/shadow/InsertionPoint.h"
 
 namespace blink {
 
@@ -44,7 +45,7 @@ ElementResolveContext::ElementResolveContext(Element& element)
     , m_distributedToInsertionPoint(false)
 {
     NodeRenderingTraversal::ParentDetails parentDetails;
-    m_parentNode = NodeRenderingTraversal::parent(element, &parentDetails);
+    m_parentNode = isActiveInsertionPoint(element) ? nullptr : NodeRenderingTraversal::parent(element, &parentDetails);
     m_distributedToInsertionPoint = parentDetails.insertionPoint();
 
     const Document& document = element.document();

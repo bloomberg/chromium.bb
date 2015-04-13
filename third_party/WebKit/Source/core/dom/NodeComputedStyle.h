@@ -27,6 +27,7 @@
 
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderingTraversal.h"
+#include "core/dom/shadow/InsertionPoint.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
@@ -52,6 +53,8 @@ inline ComputedStyle* Node::mutableComputedStyle() const
 
 inline const ComputedStyle* Node::parentComputedStyle() const
 {
+    if (isActiveInsertionPoint(*this))
+        return 0;
     ContainerNode* parent = NodeRenderingTraversal::parent(*this);
     return parent ? parent->computedStyle() : 0;
 }
