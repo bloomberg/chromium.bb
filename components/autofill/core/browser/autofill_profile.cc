@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/components_strings.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
@@ -235,21 +236,6 @@ class FindByPhone {
   base::string16 phone_;
   std::string country_code_;
   std::string app_locale_;
-};
-
-// Functor used to check for case-insensitive equality of two strings.
-struct CaseInsensitiveStringEquals {
- public:
-  CaseInsensitiveStringEquals(const base::string16& other)
-      : other_(other) {}
-
-  bool operator()(const base::string16& x) const {
-    return x.size() == other_.size() &&
-        base::StringToLowerASCII(x) == base::StringToLowerASCII(other_);
-  }
-
- private:
-  const base::string16& other_;
 };
 
 }  // namespace
@@ -577,6 +563,8 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
     const AutofillProfile& profile,
     const std::string& app_locale,
     const ServerFieldTypeSet& types) const {
+  scoped_ptr<l10n::CaseInsensitiveCompare> compare;
+
   for (ServerFieldType type : types) {
     base::string16 value = GetRawInfo(type);
     if (value.empty())
@@ -599,9 +587,11 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
                      app_locale)) {
         return false;
       }
-    } else if (base::StringToLowerASCII(value) !=
-               base::StringToLowerASCII(profile.GetRawInfo(type))) {
-      return false;
+    } else {
+      if (!compare)
+        compare.reset(new l10n::CaseInsensitiveCompare());
+      if (!compare->StringsEqual(value, profile.GetRawInfo(type)))
+        return false;
     }
   }
 
@@ -631,6 +621,7 @@ void AutofillProfile::OverwriteOrAppendNames(
     const std::vector<NameInfo>& names,
     const std::string& app_locale) {
   std::vector<NameInfo> results(name_);
+  l10n::CaseInsensitiveCompare compare;
   for (std::vector<NameInfo>::const_iterator it = names.begin();
        it != names.end();
        ++it) {
@@ -651,8 +642,8 @@ void AutofillProfile::OverwriteOrAppendNames(
 
       AutofillType type = AutofillType(NAME_FULL);
       base::string16 full_name = current_name.GetInfo(type, app_locale);
-      if (base::StringToLowerASCII(full_name) ==
-          base::StringToLowerASCII(imported_name.GetInfo(type, app_locale))) {
+      if (compare.StringsEqual(full_name,
+                               imported_name.GetInfo(type, app_locale))) {
         // The imported name has the same full name string as one of the
         // existing names for this profile.  Because full names are
         // _heuristically_ parsed into {first, middle, last} name components,
@@ -707,6 +698,8 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
   // than full addresses.
   field_types.erase(ADDRESS_HOME_STREET_ADDRESS);
 
+  l10n::CaseInsensitiveCompare compare;
+
   for (ServerFieldTypeSet::const_iterator iter = field_types.begin();
        iter != field_types.end(); ++iter) {
     FieldTypeGroup group = AutofillType(*iter).group();
@@ -719,10 +712,8 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
     // Single value field --- overwrite.
     if (!AutofillProfile::SupportsMultiValue(*iter)) {
       base::string16 new_value = profile.GetRawInfo(*iter);
-      if (base::StringToLowerASCII(GetRawInfo(*iter)) !=
-              base::StringToLowerASCII(new_value)) {
+      if (!compare.StringsEqual(GetRawInfo(*iter), new_value))
         SetRawInfo(*iter, new_value);
-      }
       continue;
     }
 
@@ -754,7 +745,9 @@ void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
       } else {
         existing_iter =
             std::find_if(existing_values.begin(), existing_values.end(),
-                         CaseInsensitiveStringEquals(*value_iter));
+                         [&compare, value_iter](base::string16& rhs) {
+                           return compare.StringsEqual(*value_iter, rhs);
+                         });
       }
 
       if (existing_iter == existing_values.end())

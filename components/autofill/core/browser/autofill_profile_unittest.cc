@@ -74,9 +74,9 @@ void GetNamePartsList(const std::vector<NameParts>& names,
                       std::vector<base::string16>* middle_names,
                       std::vector<base::string16>* last_names) {
   for (size_t i = 0; i < names.size(); ++i) {
-    first_names->push_back(ASCIIToUTF16(names[i].first));
-    middle_names->push_back(ASCIIToUTF16(names[i].middle));
-    last_names->push_back(ASCIIToUTF16(names[i].last));
+    first_names->push_back(UTF8ToUTF16(names[i].first));
+    middle_names->push_back(UTF8ToUTF16(names[i].middle));
+    last_names->push_back(UTF8ToUTF16(names[i].last));
   }
 }
 
@@ -1301,6 +1301,10 @@ TEST(AutofillProfileTest, OverwriteOrAppendNames) {
   test_cases.push_back(TestCase(NameParts("Marion", "Mitchell", "Morrison"),
                                 NameParts("MARION", "MITCHELL", "MORRISON"),
                                 NameParts("Marion", "Mitchell", "Morrison")));
+  // Capital A with acute versus lower case a with acute.
+  test_cases.push_back(TestCase(NameParts("M\xc3\xa1rion", "M", "Morrison"),
+                                NameParts("M\xc3\x81rion", "M", "Morrison"),
+                                NameParts("M\xc3\x81rion", "M", "Morrison")));
 
   // A parse that has a two-word last name should take precedence over a
   // parse that assumes the two names are a middle and a last name.

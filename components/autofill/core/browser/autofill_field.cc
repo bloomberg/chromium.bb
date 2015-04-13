@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/state_names.h"
+#include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "grit/components_strings.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
@@ -380,25 +381,10 @@ std::string Hash32Bit(const std::string& str) {
   return base::UintToString(hash32);
 }
 
-scoped_ptr<icu::Collator> CreateCaseInsensitiveCollator() {
-  UErrorCode error = U_ZERO_ERROR;
-  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
-  DCHECK(U_SUCCESS(error));
-  collator->setStrength(icu::Collator::PRIMARY);
-  return collator;
-}
-
 base::string16 RemoveWhitespace(const base::string16& value) {
   base::string16 stripped_value;
   base::RemoveChars(value, base::kWhitespaceUTF16, &stripped_value);
   return stripped_value;
-}
-
-bool StringsEqualWithCollator(const base::string16& lhs,
-                              const base::string16& rhs,
-                              const icu::Collator& collator) {
-  return base::i18n::CompareString16WithCollator(collator, lhs, rhs) ==
-      UCOL_EQUAL;
 }
 
 }  // namespace
@@ -548,21 +534,20 @@ base::string16 AutofillField::GetPhoneNumberValue(
 bool AutofillField::FindValueInSelectControl(const FormFieldData& field,
                                              const base::string16& value,
                                              size_t* index) {
-  scoped_ptr<icu::Collator> collator = CreateCaseInsensitiveCollator();
-
+  l10n::CaseInsensitiveCompare compare;
   // Strip off spaces for all values in the comparisons.
   const base::string16 value_stripped = RemoveWhitespace(value);
 
   for (size_t i = 0; i < field.option_values.size(); ++i) {
     base::string16 option_value = RemoveWhitespace(field.option_values[i]);
-    if (StringsEqualWithCollator(value_stripped, option_value, *collator)) {
+    if (compare.StringsEqual(value_stripped, option_value)) {
       if (index)
         *index = i;
       return true;
     }
 
     base::string16 option_contents = RemoveWhitespace(field.option_contents[i]);
-    if (StringsEqualWithCollator(value_stripped, option_contents, *collator)) {
+    if (compare.StringsEqual(value_stripped, option_contents)) {
       if (index)
         *index = i;
       return true;

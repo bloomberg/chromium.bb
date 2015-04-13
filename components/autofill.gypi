@@ -43,6 +43,8 @@
         'autofill/core/common/autofill_constants.h',
         'autofill/core/common/autofill_data_validation.cc',
         'autofill/core/common/autofill_data_validation.h',
+        'autofill/core/common/autofill_l10n_util.cc',
+        'autofill/core/common/autofill_l10n_util.h',
         'autofill/core/common/autofill_pref_names.cc',
         'autofill/core/common/autofill_pref_names.h',
         'autofill/core/common/autofill_switches.cc',
