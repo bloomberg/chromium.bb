@@ -51,7 +51,7 @@ class SmoothnessToughCanvasCases(benchmark.Benchmark):
     return 'smoothness.tough_canvas_cases'
 
 
-@benchmark.Disabled('android', 'mac')  # crbug.com/373812
+@benchmark.Disabled('android')  # crbug.com/373812
 class SmoothnessToughWebGLCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughWebglCasesPageSet
