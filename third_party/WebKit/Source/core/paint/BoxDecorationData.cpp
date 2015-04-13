@@ -24,6 +24,45 @@ BoxDecorationData::BoxDecorationData(const LayoutBox& layoutBox, GraphicsContext
     m_bleedAvoidance = determineBackgroundBleedAvoidance(layoutBox, context);
 }
 
+namespace {
+
+bool borderObscuresBackgroundEdge(const GraphicsContext& context, const ComputedStyle& style)
+{
+    // FIXME: See crbug.com/382491. getCTM does not accurately reflect the scale at the time content is
+    // rasterized, and should not be relied on to make decisions about bleeding.
+    AffineTransform ctm = context.getCTM();
+    FloatSize contextScale(static_cast<float>(ctm.xScale()), static_cast<float>(ctm.yScale()));
+
+    // Because RoundedRect uses IntRect internally the inset applied by the
+    // BackgroundBleedShrinkBackground strategy cannot be less than one integer
+    // layout coordinate, even with subpixel layout enabled. To take that into
+    // account, we clamp the contextScaling to 1.0 for the following test so
+    // that borderObscuresBackgroundEdge can only return true if the border
+    // widths are greater than 2 in both layout coordinates and screen
+    // coordinates.
+    // This precaution will become obsolete if RoundedRect is ever promoted to
+    // a sub-pixel representation.
+    if (contextScale.width() > 1)
+        contextScale.setWidth(1);
+    if (contextScale.height() > 1)
+        contextScale.setHeight(1);
+
+    BorderEdge edges[4];
+    style.getBorderEdgeInfo(edges);
+
+    for (int i = BSTop; i <= BSLeft; ++i) {
+        const BorderEdge& currEdge = edges[i];
+        // FIXME: for vertical text
+        float axisScale = (i == BSTop || i == BSBottom) ? contextScale.height() : contextScale.width();
+        if (!currEdge.obscuresBackgroundEdge(axisScale))
+            return false;
+    }
+
+    return true;
+}
+
+} // anonymous namespace
+
 BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(const LayoutBox& layoutBox, GraphicsContext* context)
 {
     if (layoutBox.isDocumentElement())
@@ -38,54 +77,17 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(co
         return BackgroundBleedNone;
     }
 
-    // If display lists are enabled (via Slimming Paint), then simply clip the background and do not
-    // perform advanced bleed-avoidance heuristics. These heuristics are not correct in the presence
+    // If display lists are enabled (via Slimming Paint), then BackgroundBleedShrinkBackground is not
+    // usable as is relies on device-space heuristics. These heuristics are not correct in the presence
     // of impl-side rasterization or layerization, since the actual pixel-relative scaling and rotation
     // of the content is not known to Blink.
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return BackgroundBleedClipBackground;
-
-    // FIXME: See crbug.com/382491. getCTM does not accurately reflect the scale at the time content is
-    // rasterized, and should not be relied on to make decisions about bleeding.
-    AffineTransform ctm = context->getCTM();
-    FloatSize contextScaling(static_cast<float>(ctm.xScale()), static_cast<float>(ctm.yScale()));
-
-    // Because RoundedRect uses IntRect internally the inset applied by the
-    // BackgroundBleedShrinkBackground strategy cannot be less than one integer
-    // layout coordinate, even with subpixel layout enabled. To take that into
-    // account, we clamp the contextScaling to 1.0 for the following test so
-    // that borderObscuresBackgroundEdge can only return true if the border
-    // widths are greater than 2 in both layout coordinates and screen
-    // coordinates.
-    // This precaution will become obsolete if RoundedRect is ever promoted to
-    // a sub-pixel representation.
-    if (contextScaling.width() > 1)
-        contextScaling.setWidth(1);
-    if (contextScaling.height() > 1)
-        contextScaling.setHeight(1);
-
-    if (borderObscuresBackgroundEdge(*layoutBox.style(), contextScaling))
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled() && borderObscuresBackgroundEdge(*context, *layoutBox.style()))
         return BackgroundBleedShrinkBackground;
+
     if (!hasAppearance && layoutBox.style()->borderObscuresBackground() && layoutBox.backgroundHasOpaqueTopLayer())
         return BackgroundBleedBackgroundOverBorder;
 
     return BackgroundBleedClipBackground;
-}
-
-bool BoxDecorationData::borderObscuresBackgroundEdge(const ComputedStyle& style, const FloatSize& contextScale) const
-{
-    BorderEdge edges[4];
-    style.getBorderEdgeInfo(edges);
-
-    for (int i = BSTop; i <= BSLeft; ++i) {
-        const BorderEdge& currEdge = edges[i];
-        // FIXME: for vertical text
-        float axisScale = (i == BSTop || i == BSBottom) ? contextScale.height() : contextScale.width();
-        if (!currEdge.obscuresBackgroundEdge(axisScale))
-            return false;
-    }
-
-    return true;
 }
 
 } // namespace blink

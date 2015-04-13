@@ -48,15 +48,14 @@ private:
     static void applyBoxShadowForBackground(GraphicsContext*, LayoutObject&);
     static bool fixedBackgroundPaintsInLocalCoordinates(const LayoutObject&);
     static IntSize calculateFillTileSize(const LayoutBoxModelObject&, const FillLayer&, const IntSize& scaledPositioningAreaSize);
-    static void paintTranslucentBorderSides(GraphicsContext*, const ComputedStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder, const IntPoint& innerBorderAdjustment,
+    static void paintTranslucentBorderSides(GraphicsContext*, const ComputedStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
         const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias = false);
-    static LayoutRect borderInnerRectAdjustedForBleedAvoidance(GraphicsContext*, const LayoutRect&, BackgroundBleedAvoidance);
     static void paintOneBorderSide(GraphicsContext*, const ComputedStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
         const FloatRect& sideRect, BoxSide, BoxSide adjacentSide1, BoxSide adjacentSide2, const BorderEdge[],
         const Path*, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias, const Color* overrideColor = 0);
     static void paintBorderSides(GraphicsContext*, const ComputedStyle&, const FloatRoundedRect& outerBorder, const FloatRoundedRect& innerBorder,
-        const IntPoint& innerBorderAdjustment, const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance,
-        bool includeLogicalLeftEdge, bool includeLogicalRightEdge, bool antialias = false, const Color* overrideColor = 0);
+        const BorderEdge[], BorderEdgeFlags, BackgroundBleedAvoidance, bool includeLogicalLeftEdge,
+        bool includeLogicalRightEdge, bool antialias = false, const Color* overrideColor = 0);
     static void drawBoxSideFromPath(GraphicsContext*, const LayoutRect&, const Path&, const BorderEdge[],
         float thickness, float drawThickness, BoxSide, const ComputedStyle&,
         Color, EBorderStyle, BackgroundBleedAvoidance, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);

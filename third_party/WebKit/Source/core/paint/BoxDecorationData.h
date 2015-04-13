@@ -26,7 +26,6 @@ public:
 
 private:
     BackgroundBleedAvoidance determineBackgroundBleedAvoidance(const LayoutBox&, GraphicsContext*);
-    bool borderObscuresBackgroundEdge(const ComputedStyle&, const FloatSize& contextScale) const;
     unsigned m_bleedAvoidance : 2; // BackgroundBleedAvoidance
 };
 
