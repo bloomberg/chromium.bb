@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -492,10 +493,15 @@ void PasswordFormManager::ProcessFrame(
   // Note that we provide the choices but don't actually prefill a value if:
   // (1) we are in Incognito mode, (2) the ACTION paths don't match,
   // or (3) if it matched using public suffix domain matching.
-  bool wait_for_username = client_->IsOffTheRecord() ||
-                           observed_form_.action.GetWithEmptyPath() !=
-                               preferred_match_->action.GetWithEmptyPath() ||
-                           preferred_match_->IsPublicSuffixMatch();
+  // However, 2 and 3 should not apply to Android-based credentials found via
+  // affiliation-based matching (we want to autofill them).
+  // TODO(engedy): Clean this up. See: https://crbug.com/476519.
+  bool wait_for_username =
+      client_->IsOffTheRecord() ||
+      (!IsValidAndroidFacetURI(preferred_match_->original_signon_realm) &&
+       (observed_form_.action.GetWithEmptyPath() !=
+            preferred_match_->action.GetWithEmptyPath() ||
+        preferred_match_->IsPublicSuffixMatch()));
   if (wait_for_username)
     manager_action_ = kManagerActionNone;
   else

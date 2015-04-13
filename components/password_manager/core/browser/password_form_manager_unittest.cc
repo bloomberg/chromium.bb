@@ -129,7 +129,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 class TestPasswordManager : public PasswordManager {
  public:
   explicit TestPasswordManager(TestPasswordManagerClient* client)
-      : PasswordManager(client) {}
+      : PasswordManager(client), wait_for_username_(false) {}
 
   void Autofill(password_manager::PasswordManagerDriver* driver,
                 const autofill::PasswordForm& form_for_autofill,
@@ -137,15 +137,21 @@ class TestPasswordManager : public PasswordManager {
                 const autofill::PasswordForm& preferred_match,
                 bool wait_for_username) const override {
     best_matches_ = best_matches;
+    wait_for_username_ = wait_for_username;
   }
 
   const autofill::PasswordFormMap& GetLatestBestMatches() {
     return best_matches_;
   }
 
+  bool GetLatestWaitForUsername() { return wait_for_username_; }
+
  private:
   // Marked mutable to get around constness of Autofill().
+  // TODO(vabr): This should be rewritten as a mock of PasswordManager, and the
+  // interesting arguments should be saved via GMock actions instead.
   mutable autofill::PasswordFormMap best_matches_;
+  mutable bool wait_for_username_;
 };
 
 }  // namespace
@@ -1005,6 +1011,32 @@ TEST_F(PasswordFormManagerTest, TestScoringPublicSuffixMatch) {
   EXPECT_EQ("", password_manager.GetLatestBestMatches()
                     .begin()
                     ->second->original_signon_realm);
+}
+
+TEST_F(PasswordFormManagerTest, AndroidCredentialsAreAutofilled) {
+  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
+
+  TestPasswordManager password_manager(client());
+  PasswordFormManager manager(&password_manager, client(), client()->driver(),
+                              *observed_form(), false);
+
+  // Although Android-based credentials are treated similarly to PSL-matched
+  // credentials in most respects, they should be autofilled as opposed to be
+  // filled on username-select.
+  ScopedVector<PasswordForm> simulated_results;
+  simulated_results.push_back(new PasswordForm());
+  simulated_results[0]->signon_realm = observed_form()->signon_realm;
+  simulated_results[0]->original_signon_realm =
+      "android://hash@com.google.android";
+  simulated_results[0]->origin = observed_form()->origin;
+  simulated_results[0]->username_value = saved_match()->username_value;
+  simulated_results[0]->password_value = saved_match()->password_value;
+
+  manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  manager.OnGetPasswordStoreResults(simulated_results.Pass());
+
+  EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
+  EXPECT_FALSE(password_manager.GetLatestWaitForUsername());
 }
 
 TEST_F(PasswordFormManagerTest, InvalidActionURLsDoNotMatch) {
