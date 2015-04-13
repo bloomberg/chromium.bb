@@ -19,4 +19,8 @@ bool CancellationFlag::IsSet() const {
   return base::subtle::Acquire_Load(&flag_) != 0;
 }
 
+void CancellationFlag::UnsafeResetForTesting() {
+  base::subtle::Release_Store(&flag_, 0);
+}
+
 }  // namespace base

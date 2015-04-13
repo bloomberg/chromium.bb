@@ -184,6 +184,16 @@ class CONTENT_EXPORT BrowserThread {
       const tracked_objects::Location& from_here,
       const base::Closure& task);
 
+  // For use with scheduling non-critical tasks for execution after startup.
+  // The order or execution of tasks posted here is unspecified even when
+  // posting to a SequencedTaskRunner and tasks are not guaranteed to be run
+  // prior to browser shutdown.
+  // Note: see related ContentBrowserClient::PostAfterStartupTask.
+  static void PostAfterStartupTask(
+      const tracked_objects::Location& from_here,
+      const scoped_refptr<base::TaskRunner>& task_runner,
+      const base::Closure& task);
+
   // Returns the thread pool used for blocking file I/O. Use this object to
   // perform random blocking operations such as file writes or querying the
   // Windows registry.

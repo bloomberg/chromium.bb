@@ -15,6 +15,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread_delegate.h"
+#include "content/public/browser/content_browser_client.h"
 #include "net/disk_cache/simple/simple_backend_impl.h"
 
 #if defined(OS_ANDROID)
@@ -362,6 +363,15 @@ bool BrowserThread::PostBlockingPoolSequencedTask(
     const base::Closure& task) {
   return g_globals.Get().blocking_pool->PostNamedSequencedWorkerTask(
       sequence_token_name, from_here, task);
+}
+
+// static
+void BrowserThread::PostAfterStartupTask(
+    const tracked_objects::Location& from_here,
+    const scoped_refptr<base::TaskRunner>& task_runner,
+    const base::Closure& task) {
+  GetContentClient()->browser()->PostAfterStartupTask(from_here, task_runner,
+                                                      task);
 }
 
 // static

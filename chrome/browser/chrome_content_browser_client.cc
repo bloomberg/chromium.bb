@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -718,6 +719,13 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   chrome::AddMetricsExtraParts(main_parts);
 
   return main_parts;
+}
+
+void ChromeContentBrowserClient::PostAfterStartupTask(
+    const tracked_objects::Location& from_here,
+    const scoped_refptr<base::TaskRunner>& task_runner,
+    const base::Closure& task) {
+  AfterStartupTaskUtils::PostTask(from_here, task_runner, task);
 }
 
 std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(

@@ -39,6 +39,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -1127,6 +1128,13 @@ void ChromeBrowserMainParts::PostBrowserStart() {
       base::Bind(&WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles),
       base::TimeDelta::FromMinutes(1));
 #endif  // defined(ENABLE_WEBRTC)
+
+  // At this point, StartupBrowserCreator::Start has run creating initial
+  // browser windows and tabs, but no progress has been made in loading
+  // content as the main message loop hasn't started processing tasks yet.
+  // We setup to observe to the initial page load here to defer running
+  // task posted via PostAfterStartupTask until its complete.
+  AfterStartupTaskUtils::StartMonitoringStartup();
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {

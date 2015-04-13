@@ -29,6 +29,11 @@ class BASE_EXPORT CancellationFlag {
   void Set();
   bool IsSet() const;  // Returns true iff the flag was set.
 
+  // For subtle reasons that may be different on different architectures,
+  // a different thread testing IsSet() may erroneously read 'true' after
+  // this method has been called.
+  void UnsafeResetForTesting();
+
  private:
   base::subtle::Atomic32 flag_;
 #if !defined(NDEBUG)

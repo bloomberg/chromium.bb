@@ -140,6 +140,16 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual BrowserMainParts* CreateBrowserMainParts(
       const MainFunctionParams& parameters);
 
+  // Allows the embedder to change the default behavior of
+  // BrowserThread::PostAfterStartupTask to better match whatever
+  // definition of "startup" the embedder has in mind. This may be
+  // called on any thread.
+  // Note: see related BrowserThread::PostAfterStartupTask.
+  virtual void PostAfterStartupTask(
+      const tracked_objects::Location& from_here,
+      const scoped_refptr<base::TaskRunner>& task_runner,
+      const base::Closure& task);
+
   // If content creates the WebContentsView implementation, it will ask the
   // embedder to return an (optional) delegate to customize it. The view will
   // own the delegate.

@@ -20,6 +20,8 @@
     'chrome_browser_non_ios_sources': [
       'browser/about_flags.cc',
       'browser/about_flags.h',
+      'browser/after_startup_task_utils.cc',
+      'browser/after_startup_task_utils.h',
       'browser/android/accessibility/font_size_prefs_android.cc',
       'browser/android/accessibility/font_size_prefs_android.h',
       'browser/android/accessibility_util.cc',

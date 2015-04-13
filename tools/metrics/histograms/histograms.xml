@@ -38684,6 +38684,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Startup.AfterStartupTaskCount">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    The number of after-startup tasks that were queued prior to startup
+    completion and deferred until that time.
+  </summary>
+</histogram>
+
+<histogram name="Startup.AfterStartupTaskDelayedUntilTime" units="milliseconds">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Time from the process creation until deferred after-startup tasks began
+    running.
+  </summary>
+</histogram>
+
 <histogram name="Startup.AppListFirstPaintColdStart" units="milliseconds">
   <owner>tapted@chromium.org</owner>
   <summary>

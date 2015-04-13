@@ -16,6 +16,13 @@ BrowserMainParts* ContentBrowserClient::CreateBrowserMainParts(
   return nullptr;
 }
 
+void ContentBrowserClient::PostAfterStartupTask(
+    const tracked_objects::Location& from_here,
+    const scoped_refptr<base::TaskRunner>& task_runner,
+    const base::Closure& task) {
+  task_runner->PostTask(from_here, task);
+}
+
 WebContentsViewDelegate* ContentBrowserClient::GetWebContentsViewDelegate(
     WebContents* web_contents) {
   return nullptr;

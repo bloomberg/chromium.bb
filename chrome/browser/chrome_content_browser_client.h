@@ -50,6 +50,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
+  void PostAfterStartupTask(const tracked_objects::Location& from_here,
+                            const scoped_refptr<base::TaskRunner>& task_runner,
+                            const base::Closure& task) override;
   std::string GetStoragePartitionIdForSite(
       content::BrowserContext* browser_context,
       const GURL& site) override;
@@ -241,9 +244,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::FileDescriptorInfo* mappings) override;
 #endif
 #if defined(OS_WIN)
-  virtual const wchar_t* GetResourceDllName() override;
-  virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,
-                                bool* success) override;
+  const wchar_t* GetResourceDllName() override;
+  void PreSpawnRenderer(sandbox::TargetPolicy* policy, bool* success) override;
 #endif
   bool CheckMediaAccessPermission(content::BrowserContext* browser_context,
                                   const GURL& security_origin,
