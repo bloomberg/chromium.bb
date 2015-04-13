@@ -146,7 +146,9 @@ then
   "$SVN" -q up "$base_dir"
   AFTER_REVISION=$(get_svn_revision)
   if [[ "$BEFORE_REVISION" != "$AFTER_REVISION" ]]; then
-    echo "Depot Tools has been updated to revision $AFTER_REVISION." 1>&2
+    if [ -z "$DEPOT_TOOLS_HIDE_UPDATED_MESSAGE" ]; then
+      echo "Depot Tools has been updated to revision $AFTER_REVISION." 1>&2
+    fi
   fi
 fi
 
