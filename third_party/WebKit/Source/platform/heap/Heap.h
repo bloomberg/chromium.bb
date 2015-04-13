@@ -1912,12 +1912,32 @@ struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, T, Traits> {
     }
 };
 
+// Vector backing that needs marking. We don't support weak members in vectors.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::HeapVectorBacking<T, Traits>, void> {
     template<typename VisitorDispatcher>
-    static bool trace(VisitorDispatcher, void*)
+    static bool trace(VisitorDispatcher visitor, void* self)
     {
-        static_assert(sizeof(T) == 0, "Items in HeapVectorBacking must be traced only by HeapVector. HeapVectorBacking should not be traced by another way.");
+        // The allocator can oversize the allocation a little, according to
+        // the allocation granularity.  The extra size is included in the
+        // payloadSize call below, since there is nowhere to store the
+        // originally allocated memory.  This assert ensures that visiting the
+        // last bit of memory can't cause trouble.
+        static_assert(!ShouldBeTraced<Traits>::value || sizeof(T) > blink::allocationGranularity || Traits::canInitializeWithMemset, "heap overallocation can cause spurious visits");
+
+        T* array = reinterpret_cast<T*>(self);
+        blink::HeapObjectHeader* header = blink::HeapObjectHeader::fromPayload(self);
+        // Use the payload size as recorded by the heap to determine how many
+        // elements to mark.
+        size_t length = header->payloadSize() / sizeof(T);
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+        // Have no option but to mark the whole container as accessible, but
+        // this trace() is only used for backing stores that are identified
+        // as roots independent from a vector.
+        ANNOTATE_CHANGE_SIZE(array, length, 0, length);
+#endif
+        for (size_t i = 0; i < length; ++i)
+            blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
         return false;
     }
 };
@@ -2137,17 +2157,17 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
     using Backing = HeapVectorBacking<T, Traits>;
 
     template<typename VisitorDispatcher>
-    static void trace(VisitorDispatcher, void*)
+    static void trace(VisitorDispatcher visitor, void* self)
     {
-        // We don't need to trace HeapVectorBacking here
-        // because HeapVectorBacking is traced by HeapVector.
+        static_assert(!WTF::IsWeak<T>::value, "weakness in HeapVectors and Deques are not supported");
+        if (WTF::ShouldBeTraced<Traits>::value)
+            WTF::TraceInCollectionTrait<WTF::NoWeakHandlingInCollections, WTF::WeakPointersActWeak, HeapVectorBacking<T, Traits>, void>::trace(visitor, self);
     }
 
     template<typename VisitorDispatcher>
-    static void mark(VisitorDispatcher, const Backing*)
+    static void mark(VisitorDispatcher visitor, const Backing* backing)
     {
-        // We don't need to mark HeapVectorBacking here
-        // because HeapVectorBacking is marked by HeapVector.
+        visitor->mark(backing, &trace);
     }
     static void checkGCInfo(Visitor* visitor, const Backing* backing)
     {

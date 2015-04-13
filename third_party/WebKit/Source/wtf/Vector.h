@@ -73,6 +73,24 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         }
     };
 
+    template <bool unusedSlotsMustBeZeroed, typename T>
+    struct VectorUnusedSlotClearer;
+
+    template<typename T>
+    struct VectorUnusedSlotClearer<false, T> {
+        static void clear(T*, T*) { }
+    };
+
+    template<typename T>
+    struct VectorUnusedSlotClearer<true, T> {
+        static void clear(T* begin, T* end)
+        {
+            // We clear out unused slots so that the visitor and the finalizer
+            // do not visit them (or at least it does not matter if they do).
+            memset(begin, 0, sizeof(T) * (end - begin));
+        }
+    };
+
     template <bool canInitializeWithMemset, typename T>
     struct VectorInitializer;
 
@@ -308,6 +326,11 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         const T* buffer() const { return m_buffer; }
         size_t capacity() const { return m_capacity; }
 
+        void clearUnusedSlots(T* from, T* to)
+        {
+            VectorUnusedSlotClearer<Allocator::isGarbageCollected && (VectorTraits<T>::needsDestruction || ShouldBeTraced<VectorTraits<T>>::value), T>::clear(from, to);
+        }
+
     protected:
         VectorBufferBase()
             : m_buffer(0)
@@ -394,6 +417,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         using Base::buffer;
         using Base::capacity;
+
+        using Base::clearUnusedSlots;
 
         bool hasOutOfLineBuffer() const
         {
@@ -582,7 +607,11 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         Vector()
         {
-            static_assert(!WTF::IsWeak<T>::value, "weakness in HeapVectors and Deques are not supported");
+            // Unused slots are initialized to zero so that the visitor and the
+            // finalizer can visit them safely. canInitializeWithMemset tells us
+            // that the class does not expect matching constructor and
+            // destructor calls as long as the memory is zeroed.
+            static_assert(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, "class has problems with finalizers called on cleared memory");
             static_assert(!WTF::IsPolymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "cannot initialize with memset if there is a vtable");
             ANNOTATE_NEW_BUFFER(begin(), capacity(), 0);
             m_size = 0;
@@ -591,8 +620,11 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         explicit Vector(size_t size)
             : Base(size)
         {
-            static_assert(!WTF::IsWeak<T>::value, "weakness in HeapVectors and Deques are not supported");
-            static_assert(!WTF::IsPolymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "cannot initialize with memset if there is a vtable");
+            // Unused slots are initialized to zero so that the visitor and the
+            // finalizer can visit them safely. canInitializeWithMemset tells us
+            // that the class does not expect matching constructor and
+            // destructor calls as long as the memory is zeroed.
+            static_assert(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, "class has problems with finalizers called on cleared memory");
             ANNOTATE_NEW_BUFFER(begin(), capacity(), size);
             m_size = size;
             TypeOperations::initialize(begin(), end());
@@ -746,6 +778,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         using Base::swapVectorBuffer;
         using Base::allocateBuffer;
         using Base::allocationSize;
+        using Base::clearUnusedSlots;
     };
 
     template<typename T, size_t inlineCapacity, typename Allocator>
@@ -953,6 +986,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     {
         ASSERT(size <= m_size);
         TypeOperations::destruct(begin() + size, end());
+        clearUnusedSlots(begin() + size, end());
         ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, size);
         m_size = size;
     }
@@ -1185,6 +1219,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         T* spot = begin() + position;
         spot->~T();
         TypeOperations::moveOverlapping(spot + 1, end(), spot);
+        clearUnusedSlots(end() - 1, end());
         ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size - 1);
         --m_size;
     }
@@ -1198,6 +1233,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         T* endSpot = beginSpot + length;
         TypeOperations::destruct(beginSpot, endSpot);
         TypeOperations::moveOverlapping(endSpot, end(), beginSpot);
+        clearUnusedSlots(end() - length, end());
         ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size - length);
         m_size -= length;
     }
