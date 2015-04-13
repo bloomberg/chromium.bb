@@ -167,7 +167,11 @@ gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
 void RenderWidgetHostViewGuest::RenderProcessGone(
     base::TerminationStatus status,
     int error_code) {
-  platform_view_->RenderProcessGone(status, error_code);
+  // The |platform_view_| gets destroyed before we get here if this view
+  // is for an InterstitialPage.
+  if (platform_view_)
+    platform_view_->RenderProcessGone(status, error_code);
+
   // Destroy the guest view instance only, so we don't end up calling
   // platform_view_->Destroy().
   DestroyGuestView();
@@ -209,6 +213,12 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
 }
 
 bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {
+  if (!platform_view_) {
+    // In theory, we can get here if there's a delay between DestroyGuestView()
+    // being called and when our destructor is invoked.
+    return false;
+  }
+
   return platform_view_->OnMessageReceived(msg);
 }
 

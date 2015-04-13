@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -712,6 +713,38 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     return guest_web_contents;
   }
 
+  // Helper to load interstitial page in a <webview>.
+  void InterstitialTeardownTestHelper() {
+    // Start a HTTPS server so we can load an interstitial page inside guest.
+    net::SpawnedTestServer::SSLOptions ssl_options;
+    ssl_options.server_certificate =
+        net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
+    net::SpawnedTestServer https_server(
+        net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+    ASSERT_TRUE(https_server.Start());
+
+    net::HostPortPair host_and_port = https_server.host_port_pair();
+
+    LoadAndLaunchPlatformApp("web_view/interstitial_teardown",
+                             "EmbedderLoaded");
+
+    // Now load the guest.
+    content::WebContents* embedder_web_contents =
+        GetFirstAppWindowWebContents();
+    ExtensionTestMessageListener second("GuestAddedToDom", false);
+    EXPECT_TRUE(content::ExecuteScript(
+        embedder_web_contents,
+        base::StringPrintf("loadGuest(%d);\n", host_and_port.port())));
+    ASSERT_TRUE(second.WaitUntilSatisfied());
+
+    // Wait for interstitial page to be shown in guest.
+    content::WebContents* guest_web_contents =
+        GetGuestViewManager()->WaitForSingleGuestCreated();
+    ASSERT_TRUE(guest_web_contents->GetRenderProcessHost()->IsIsolatedGuest());
+    content::WaitForInterstitialAttach(guest_web_contents);
+  }
+
   // Runs media_access/allow tests.
   void MediaAccessAPIAllowTestHelper(const std::string& test_name);
 
@@ -1337,8 +1370,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeWebviewResizesContent) {
              NO_TEST_SERVER);
 }
 
-// This test makes sure we do not crash if app is closed while interstitial
-// page is being shown in guest.
+// This test makes sure the browser process does not crash if app is closed
+// while an interstitial page is being shown in guest.
 IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/297014
@@ -1346,36 +1379,33 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
     return;
 #endif
 
-  // Start a HTTPS server so we can load an interstitial page inside guest.
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.server_certificate =
-      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_server.Start());
-
-  net::HostPortPair host_and_port = https_server.host_port_pair();
-
-  LoadAndLaunchPlatformApp("web_view/interstitial_teardown", "EmbedderLoaded");
-
-  // Now load the guest.
-  content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
-  ExtensionTestMessageListener second("GuestAddedToDom", false);
-  EXPECT_TRUE(content::ExecuteScript(
-      embedder_web_contents,
-      base::StringPrintf("loadGuest(%d);\n", host_and_port.port())));
-  ASSERT_TRUE(second.WaitUntilSatisfied());
-
-  // Wait for interstitial page to be shown in guest.
-  content::WebContents* guest_web_contents =
-      GetGuestViewManager()->WaitForSingleGuestCreated();
-  ASSERT_TRUE(guest_web_contents->GetRenderProcessHost()->IsIsolatedGuest());
-  content::WaitForInterstitialAttach(guest_web_contents);
+  InterstitialTeardownTestHelper();
 
   // Now close the app while interstitial page being shown in guest.
   extensions::AppWindow* window = GetFirstAppWindow();
   window->GetBaseWindow()->Close();
+}
+
+// This test makes sure the browser process does not crash if browser is shut
+// down while an interstitial page is being shown in guest.
+IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardownOnBrowserShutdown) {
+#if defined(OS_WIN)
+  // http://crbug.com/297014
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
+
+  InterstitialTeardownTestHelper();
+
+  // Now close the app while interstitial page being shown in guest.
+  extensions::AppWindow* window = GetFirstAppWindow();
+  window->GetBaseWindow()->Close();
+
+  // InterstitialPage is not destroyed immediately, so the
+  // RenderWidgetHostViewGuest for it is still there, closing all
+  // renderer processes will cause the RWHVGuest's RenderProcessGone()
+  // shutdown path to be exercised.
+  chrome::CloseAllBrowsers();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
