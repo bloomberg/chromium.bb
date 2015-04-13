@@ -142,9 +142,17 @@ void HidServiceMac::Connect(const HidDeviceId& device_id,
 
   base::ScopedCFTypeRef<CFDictionaryRef> matching_dict(
       IORegistryEntryIDMatching(device_id));
+  if (!matching_dict.get()) {
+    HID_LOG(EVENT) << "Failed to create matching dictionary for ID: "
+                   << device_id;
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    return;
+  }
 
-  base::mac::ScopedIOObject<io_service_t> service(
-      IOServiceGetMatchingService(kIOMasterPortDefault, matching_dict.get()));
+  // IOServiceGetMatchingService consumes a reference to the matching dictionary
+  // passed to it.
+  base::mac::ScopedIOObject<io_service_t> service(IOServiceGetMatchingService(
+      kIOMasterPortDefault, matching_dict.release()));
   if (!service.get()) {
     HID_LOG(EVENT) << "IOService not found for ID: " << device_id;
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
