@@ -97,8 +97,8 @@ void PaintManager::SetSize(const pp::Size& new_size, float device_scale) {
 }
 
 void PaintManager::Invalidate() {
-  // You must call SetSize before using.
-  DCHECK(!graphics_.is_null() || has_pending_resize_);
+  if (graphics_.is_null() && !has_pending_resize_)
+    return;
 
   EnsureCallbackPending();
   aggregator_.InvalidateRect(pp::Rect(GetEffectiveSize()));
@@ -107,8 +107,8 @@ void PaintManager::Invalidate() {
 void PaintManager::InvalidateRect(const pp::Rect& rect) {
   DCHECK(!in_paint_);
 
-  // You must call SetSize before using.
-  DCHECK(!graphics_.is_null() || has_pending_resize_);
+  if (graphics_.is_null() && !has_pending_resize_)
+    return;
 
   // Clip the rect to the device area.
   pp::Rect clipped_rect = rect.Intersect(pp::Rect(GetEffectiveSize()));
@@ -123,8 +123,8 @@ void PaintManager::ScrollRect(const pp::Rect& clip_rect,
                               const pp::Point& amount) {
   DCHECK(!in_paint_);
 
-  // You must call SetSize before using.
-  DCHECK(!graphics_.is_null() || has_pending_resize_);
+  if (graphics_.is_null() && !has_pending_resize_)
+    return;
 
   EnsureCallbackPending();
 
