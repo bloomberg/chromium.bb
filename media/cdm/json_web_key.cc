@@ -19,8 +19,6 @@ namespace media {
 const char kKeysTag[] = "keys";
 const char kKeyTypeTag[] = "kty";
 const char kKeyTypeOct[] = "oct";  // Octet sequence.
-const char kAlgTag[] = "alg";
-const char kAlgA128KW[] = "A128KW";  // AES key wrap using a 128-bit key.
 const char kKeyTag[] = "k";
 const char kKeyIdTag[] = "kid";
 const char kKeyIdsTag[] = "kids";
@@ -113,7 +111,6 @@ std::string GenerateJWKSet(const uint8* key, int key_length,
   // Create the JWK, and wrap it into a JWK Set.
   scoped_ptr<base::DictionaryValue> jwk(new base::DictionaryValue());
   jwk->SetString(kKeyTypeTag, kKeyTypeOct);
-  jwk->SetString(kAlgTag, kAlgA128KW);
   jwk->SetString(kKeyTag, key_base64);
   jwk->SetString(kKeyIdTag, key_id_base64);
   scoped_ptr<base::ListValue> list(new base::ListValue());
@@ -135,12 +132,6 @@ static bool ConvertJwkToKeyPair(const base::DictionaryValue& jwk,
   std::string type;
   if (!jwk.GetString(kKeyTypeTag, &type) || type != kKeyTypeOct) {
     DVLOG(1) << "Missing or invalid '" << kKeyTypeTag << "': " << type;
-    return false;
-  }
-
-  std::string alg;
-  if (!jwk.GetString(kAlgTag, &alg) || alg != kAlgA128KW) {
-    DVLOG(1) << "Missing or invalid '" << kAlgTag << "': " << alg;
     return false;
   }
 
