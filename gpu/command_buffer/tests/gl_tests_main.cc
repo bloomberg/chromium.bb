@@ -24,7 +24,14 @@
 namespace {
 
 int RunHelper(base::TestSuite* testSuite) {
+#if defined(USE_OZONE)
+  base::MessageLoopForUI main_loop;
+#else
   base::MessageLoopForIO message_loop;
+#endif
+  gfx::GLSurface::InitializeOneOff();
+  ::gles2::Initialize();
+  gpu::ApplyGpuDriverBugWorkarounds(base::CommandLine::ForCurrentProcess());
   return testSuite->Run();
 }
 
@@ -39,9 +46,6 @@ int main(int argc, char** argv) {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
-  gfx::GLSurface::InitializeOneOff();
-  ::gles2::Initialize();
-  gpu::ApplyGpuDriverBugWorkarounds(base::CommandLine::ForCurrentProcess());
   testing::InitGoogleMock(&argc, argv);
   return base::LaunchUnitTestsSerially(
       argc,

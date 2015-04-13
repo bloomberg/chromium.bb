@@ -302,7 +302,7 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
 
   decoder_->set_engine(gpu_scheduler_.get());
 
-  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(options.size);
+  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size());
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
 
   if (base_context_) {

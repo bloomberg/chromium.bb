@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
 #include "gpu/command_buffer/common/command_buffer_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
@@ -10,10 +9,6 @@
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_MACOSX)
-#include "base/mac/scoped_nsautorelease_pool.h"
-#endif
 
 using testing::_;
 using testing::DoAll;
@@ -72,10 +67,6 @@ class GpuSchedulerTest : public testing::Test {
     return command_buffer_->GetLastState().error;
   }
 
-#if defined(OS_MACOSX)
-  base::mac::ScopedNSAutoreleasePool autorelease_pool_;
-#endif
-  base::MessageLoop message_loop;
   scoped_ptr<MockCommandBuffer> command_buffer_;
   scoped_refptr<Buffer> shared_memory_buffer_;
   int32* buffer_;

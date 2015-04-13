@@ -8,4 +8,5 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl",
   "+ui/surface",
+  "+ui/ozone/public",
 ]

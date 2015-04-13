@@ -15,10 +15,6 @@
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/scoped_nsautorelease_pool.h"
-#endif
-
 namespace gpu {
 
 using testing::Return;
@@ -71,10 +67,6 @@ class MappedMemoryTestBase : public testing::Test {
     return command_buffer_->GetLastState().token;
   }
 
-#if defined(OS_MACOSX)
-  base::mac::ScopedNSAutoreleasePool autorelease_pool_;
-#endif
-  base::MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<CommandBufferService> command_buffer_;
