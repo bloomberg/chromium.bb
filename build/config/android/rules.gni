@@ -733,7 +733,7 @@ template("java_strings_grd_prebuilt") {
 #   datadeps, testonly
 #
 # Example
-#   java_library("foo") {
+#   java_binary("foo") {
 #     java_files = [ "org/chromium/foo/FooMain.java" ]
 #     deps = [ ":bar_java" ]
 #     main_class = "org.chromium.foo.FooMain"
@@ -834,7 +834,7 @@ template("junit_binary") {
   }
 }
 
-# Declare an java library target
+# Declare a java library target
 #
 # Variables
 #   deps: Specifies the dependencies of this target. Java targets in this list
@@ -932,7 +932,7 @@ template("java_library") {
   }
 }
 
-# Declare an java library target for a prebuilt jar
+# Declare a java library target for a prebuilt jar
 #
 # Variables
 #   deps: Specifies the dependencies of this target. Java targets in this list
