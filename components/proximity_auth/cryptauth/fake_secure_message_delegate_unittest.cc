@@ -193,4 +193,13 @@ TEST_F(ProximityAuthFakeSecureMessageDelegateTest,
   EXPECT_EQ(kPayload, payload);
 }
 
+TEST_F(ProximityAuthFakeSecureMessageDelegateTest, GetPrivateKeyForPublicKey) {
+  delegate_.set_next_public_key(kTestPublicKey);
+  std::string public_key, private_key;
+  delegate_.GenerateKeyPair(
+      base::Bind(&SaveKeyPair, &public_key, &private_key));
+  EXPECT_EQ(kTestPublicKey, public_key);
+  EXPECT_EQ(private_key, delegate_.GetPrivateKeyForPublicKey(kTestPublicKey));
+}
+
 }  // proximity_auth

@@ -79,6 +79,9 @@
         "proximity_auth/cryptauth/cryptauth_client.h",
         "proximity_auth/cryptauth/cryptauth_client_impl.cc",
         "proximity_auth/cryptauth/cryptauth_client_impl.h",
+        "proximity_auth/cryptauth/cryptauth_enroller.h",
+        "proximity_auth/cryptauth/cryptauth_enroller_impl.cc",
+        "proximity_auth/cryptauth/cryptauth_enroller_impl.h",
         "proximity_auth/cryptauth/cryptauth_enrollment_utils.cc",
         "proximity_auth/cryptauth/cryptauth_enrollment_utils.h",
         "proximity_auth/cryptauth/secure_message_delegate.cc",
@@ -97,10 +100,13 @@
       'dependencies': [
         'cryptauth_proto',
         '../base/base.gyp:base',
+        '../testing/gmock.gyp:gmock',
       ],
       'sources': [
         "proximity_auth/cryptauth/fake_secure_message_delegate.cc",
         "proximity_auth/cryptauth/fake_secure_message_delegate.h",
+        "proximity_auth/cryptauth/mock_cryptauth_client.cc",
+        "proximity_auth/cryptauth/mock_cryptauth_client.h",
       ],
       'export_dependent_settings': [
         'cryptauth_proto',

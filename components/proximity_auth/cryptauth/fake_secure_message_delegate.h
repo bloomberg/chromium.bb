@@ -34,6 +34,9 @@ class FakeSecureMessageDelegate : public SecureMessageDelegate {
       const UnwrapOptions& unwrap_options,
       const UnwrapSecureMessageCallback& callback) override;
 
+  // Returns the corresponding private key for the given |public_key|.
+  std::string GetPrivateKeyForPublicKey(const std::string& public_key);
+
   // Sets the next public key to be returned by GenerateKeyPair(). The
   // corresponding private key will be derived from this public key.
   void set_next_public_key(const std::string& public_key) {

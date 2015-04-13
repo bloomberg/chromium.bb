@@ -189,4 +189,9 @@ void FakeSecureMessageDelegate::UnwrapSecureMessage(
   }
 }
 
+std::string FakeSecureMessageDelegate::GetPrivateKeyForPublicKey(
+    const std::string& public_key) {
+  return kPrivateKeyPrefix + public_key;
+}
+
 }  // namespace proximity_auth
