@@ -766,3 +766,20 @@ name=http://crbug.com/473197
 *!base::internal::InvokeHelper<>::MakeItSo
 *!base::internal::Invoker<>::Run
 *!content::ManifestFetcher::OnLoadComplete
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/476586
+*!blink::WebFrameWidgetImpl::beginFrame
+*!content::RenderWidgetCompositor::BeginMainFrame
+*!cc::LayerTreeHost::BeginMainFrame
+*!cc::ThreadProxy::BeginMainFrame
+*!base::internal::InvokeHelper<>::MakeItSo
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/476586b
+*!blink::PageWidgetDelegate::animate
+*!blink::WebFrameWidgetImpl::beginFrame
+*!content::RenderWidgetCompositor::BeginMainFrame
+*!cc::LayerTreeHost::BeginMainFrame
+*!cc::ThreadProxy::BeginMainFrame
+*!base::internal::InvokeHelper<>::MakeItSo
