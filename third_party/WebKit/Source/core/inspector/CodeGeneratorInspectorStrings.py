@@ -144,13 +144,13 @@ class InspectorBackendDispatcher: public RefCountedWillBeGarbageCollectedFinaliz
 public:
     static PassRefPtrWillBeRawPtr<InspectorBackendDispatcher> create(InspectorFrontendChannel* inspectorFrontendChannel);
     virtual ~InspectorBackendDispatcher() { }
-    virtual void trace(Visitor*) { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     class CallbackBase: public RefCountedWillBeGarbageCollectedFinalized<CallbackBase> {
     public:
         CallbackBase(PassRefPtrWillBeRawPtr<InspectorBackendDispatcherImpl> backendImpl, int id);
         virtual ~CallbackBase();
-        virtual void trace(Visitor*);
+        DECLARE_VIRTUAL_TRACE();
         void sendFailure(const ErrorString&);
         bool isActive();
 
@@ -467,7 +467,7 @@ InspectorBackendDispatcher::CallbackBase::CallbackBase(PassRefPtrWillBeRawPtr<In
 
 InspectorBackendDispatcher::CallbackBase::~CallbackBase() {}
 
-void InspectorBackendDispatcher::CallbackBase::trace(Visitor* visitor)
+DEFINE_TRACE(InspectorBackendDispatcher::CallbackBase)
 {
     visitor->trace(m_backendImpl);
 }
