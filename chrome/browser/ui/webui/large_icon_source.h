@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_UI_WEBUI_LARGE_ICON_SOURCE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/fallback_icon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/url_data_source.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace favicon {
 class FallbackIconService;
@@ -70,8 +72,15 @@ class LargeIconSource : public content::URLDataSource {
       const IconRequest& request,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
-  // Renders and sends a fallback icon.
-  void SendFallbackIcon(const IconRequest& request);
+  // Renders and sends a default fallback icon. This is used when there is no
+  // known text and/or foreground color to use for the generated icon (it
+  // defaults to a light text color on a dark gray background).
+  void SendDefaultFallbackIcon(const IconRequest& request);
+
+  // Renders and sends a fallback icon using the given colors.
+  void SendFallbackIcon(const IconRequest& request,
+                        SkColor text_color,
+                        SkColor background_color);
 
   // Returns null to trigger "Not Found" response.
   void SendNotFoundResponse(
@@ -82,6 +91,12 @@ class LargeIconSource : public content::URLDataSource {
   favicon::FaviconService* favicon_service_;
 
   favicon::FallbackIconService* fallback_icon_service_;
+
+  // A pre-populated list of the types of icon files to consider when looking
+  // for the largest matching icon.
+  // Note: this is simply an optimization over populating an icon type vector
+  //     on each request.
+  std::vector<int> large_icon_types_;
 
   DISALLOW_COPY_AND_ASSIGN(LargeIconSource);
 };
