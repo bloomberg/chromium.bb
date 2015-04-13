@@ -212,6 +212,7 @@ class DromaeoJslibEventJquery(_DromaeoBenchmark):
     return 'dromaeo.jslibeventjquery'
 
 
+@benchmark.Disabled('android', 'linux')  # http://crbug.com/476592
 class DromaeoJslibEventPrototype(_DromaeoBenchmark):
   """Dromaeo JSLib event prototype JavaScript benchmark.
 
