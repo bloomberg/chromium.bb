@@ -49,7 +49,10 @@ class AccountTrackerService : public KeyedService,
     std::string account_id;  // The account ID used by OAuth2TokenService.
     std::string gaia;
     std::string email;
+    std::string full_name;
+    std::string given_name;
     std::string hosted_domain;
+    std::string locale;
     // TODO(rogerta): eventually this structure will include other information
     // about the account, like full name, profile picture URL, etc.
 

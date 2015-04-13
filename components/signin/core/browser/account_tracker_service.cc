@@ -28,6 +28,9 @@ const char kAccountKeyPath[] = "account_id";
 const char kAccountEmailPath[] = "email";
 const char kAccountGaiaPath[] = "gaia";
 const char kAccountHostedDomainPath[] = "hd";
+const char kAccountFullNamePath[] = "full_name";
+const char kAccountGivenNamePath[] = "given_name";
+const char kAccountLocalePath[] = "locale";
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 // IsRefreshTokenDeviceIdExperimentEnabled is called from
@@ -167,8 +170,9 @@ AccountTrackerService::AccountInfo::AccountInfo() {}
 AccountTrackerService::AccountInfo::~AccountInfo() {}
 
 bool AccountTrackerService::AccountInfo::IsValid() {
-  return account_id.empty() || email.empty() || gaia.empty() ||
-         hosted_domain.empty();
+  return !account_id.empty() && !email.empty() && !gaia.empty() &&
+         !hosted_domain.empty() && !full_name.empty() && !given_name.empty() &&
+         !locale.empty();
 }
 
 
@@ -319,7 +323,7 @@ void AccountTrackerService::OnRefreshTokenAvailable(
   // ensure the Fetch doesn't occur until after ProfileImpl::OnPrefsLoaded().
   if (state.info.gaia.empty())
 #else
-  if (state.info.IsValid())
+  if (!state.info.IsValid())
 #endif
     StartFetchingUserInfo(account_id);
 
@@ -420,6 +424,10 @@ void AccountTrackerService::SetAccountStateFromUserInfo(
       state.info.hosted_domain = kNoHostedDomainFound;
     }
 
+    user_info->GetString("name", &state.info.full_name);
+    user_info->GetString("given_name", &state.info.given_name);
+    user_info->GetString("locale", &state.info.locale);
+
     NotifyAccountUpdated(state);
     SaveToPrefs(state);
   }
@@ -470,7 +478,13 @@ void AccountTrackerService::LoadFromPrefs() {
           state.info.email = base::UTF16ToUTF8(value);
         if (dict->GetString(kAccountHostedDomainPath, &value))
           state.info.hosted_domain = base::UTF16ToUTF8(value);
-        if (!state.info.IsValid())
+        if (dict->GetString(kAccountFullNamePath, &value))
+          state.info.full_name = base::UTF16ToUTF8(value);
+        if (dict->GetString(kAccountGivenNamePath, &value))
+          state.info.given_name = base::UTF16ToUTF8(value);
+        if (dict->GetString(kAccountLocalePath, &value))
+          state.info.locale = base::UTF16ToUTF8(value);
+        if (state.info.IsValid())
           NotifyAccountUpdated(state);
       }
     }
@@ -501,6 +515,9 @@ void AccountTrackerService::SaveToPrefs(const AccountState& state) {
   dict->SetString(kAccountEmailPath, state.info.email);
   dict->SetString(kAccountGaiaPath, state.info.gaia);
   dict->SetString(kAccountHostedDomainPath, state.info.hosted_domain);
+  dict->SetString(kAccountFullNamePath, state.info.full_name);
+  dict->SetString(kAccountGivenNamePath, state.info.given_name);
+  dict->SetString(kAccountLocalePath, state.info.locale);
 }
 
 void AccountTrackerService::RemoveFromPrefs(const AccountState& state) {
