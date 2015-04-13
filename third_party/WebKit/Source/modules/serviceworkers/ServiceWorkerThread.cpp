@@ -43,7 +43,7 @@ PassRefPtr<ServiceWorkerThread> ServiceWorkerThread::create(PassRefPtr<WorkerLoa
 }
 
 ServiceWorkerThread::ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
-    : WorkerThread(workerLoaderProxy, workerReportingProxy, startupData)
+    : WorkerThread("ServiceWorker Thread", workerLoaderProxy, workerReportingProxy, startupData)
 {
 }
 

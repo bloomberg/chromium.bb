@@ -20,7 +20,7 @@ PassRefPtr<CompositorWorkerThread> CompositorWorkerThread::create(PassRefPtr<Wor
 }
 
 CompositorWorkerThread::CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtr<WorkerThreadStartupData> startupData)
-    : WorkerThread(workerLoaderProxy, workerObjectProxy, startupData)
+    : WorkerThread("CompositorWorker Thread", workerLoaderProxy, workerObjectProxy, startupData)
     , m_workerObjectProxy(workerObjectProxy)
     , m_timeOrigin(timeOrigin)
 {

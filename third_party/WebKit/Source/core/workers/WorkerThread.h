@@ -110,7 +110,7 @@ public:
     void setWorkerInspectorController(WorkerInspectorController*);
 
 protected:
-    WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
+    WorkerThread(const char* threadName, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
 
     // Factory method for creating a new worker context for the thread.
     virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
@@ -135,6 +135,7 @@ private:
     void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
 
+    const char* m_threadName;
     bool m_terminated;
     MessageQueue<WorkerThreadTask> m_debuggerMessageQueue;
     OwnPtr<WebThread::TaskObserver> m_microtaskRunner;

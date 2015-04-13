@@ -255,8 +255,9 @@ private:
     WorkerThread* m_thread;
 };
 
-WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
-    : m_terminated(false)
+WorkerThread::WorkerThread(const char* threadName, PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
+    : m_threadName(threadName)
+    , m_terminated(false)
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
     , m_startupData(startupData)
@@ -352,7 +353,7 @@ void WorkerThread::initialize()
 
 PassOwnPtr<WebThreadSupportingGC> WorkerThread::createWebThreadSupportingGC()
 {
-    return WebThreadSupportingGC::create("WebCore: Worker");
+    return WebThreadSupportingGC::create(m_threadName);
 }
 
 void WorkerThread::cleanup()

@@ -43,7 +43,7 @@ PassRefPtr<SharedWorkerThread> SharedWorkerThread::create(const String& name, Pa
 }
 
 SharedWorkerThread::SharedWorkerThread(const String& name, PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
-    : WorkerThread(workerLoaderProxy, workerReportingProxy, startupData)
+    : WorkerThread("SharedWorker Thread", workerLoaderProxy, workerReportingProxy, startupData)
     , m_name(name.isolatedCopy())
 {
 }

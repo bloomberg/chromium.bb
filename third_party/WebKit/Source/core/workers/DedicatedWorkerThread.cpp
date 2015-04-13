@@ -44,7 +44,7 @@ PassRefPtr<DedicatedWorkerThread> DedicatedWorkerThread::create(PassRefPtr<Worke
 }
 
 DedicatedWorkerThread::DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtr<WorkerThreadStartupData> startupData)
-    : WorkerThread(workerLoaderProxy, workerObjectProxy, startupData)
+    : WorkerThread("DedicatedWorker Thread", workerLoaderProxy, workerObjectProxy, startupData)
     , m_workerObjectProxy(workerObjectProxy)
     , m_timeOrigin(timeOrigin)
 {
