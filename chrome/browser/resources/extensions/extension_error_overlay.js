@@ -416,13 +416,15 @@ cr.define('extensions', function() {
       }
 
       if (ExtensionErrorOverlay.canLoadFileSource(error.source, extensionUrl)) {
-        var relativeUrl = getRelativeUrl(error.source, extensionUrl);
+        // slice(1) because pathname starts with a /.
+        var pathname = new URL(error.source).pathname.slice(1);
 
+        // Use pathname instead of relativeUrl.
         var requestFileSourceArgs = {extensionId: error.extensionId,
                                      message: error.message,
-                                     pathSuffix: relativeUrl};
+                                     pathSuffix: pathname};
 
-        if (relativeUrl.toLowerCase() ==
+        if (pathname.toLowerCase() ==
                 ExtensionErrorOverlay.MANIFEST_FILENAME_) {
           requestFileSourceArgs.manifestKey = error.manifestKey;
           requestFileSourceArgs.manifestSpecific = error.manifestSpecific;
