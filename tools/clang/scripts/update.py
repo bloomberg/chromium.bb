@@ -236,9 +236,8 @@ def UpdateClang(args):
   cmake_args = ['-GNinja', '-DCMAKE_BUILD_TYPE=Release',
                 '-DLLVM_ENABLE_ASSERTIONS=ON', SubversionCmakeArg(),
                 '-DCHROMIUM_TOOLS_SRC=%s' % os.path.join(
-                    CHROMIUM_DIR, 'tools', 'clang')]
-  if args.tools:
-    cmake_args.append('-DCHROMIUM_TOOLS=%s' % ';'.join(args.tools))
+                    CHROMIUM_DIR, 'tools', 'clang'),
+                '-DCHROMIUM_TOOLS=%s' % ';'.join(args.tools)]
 
   RunCommand(GetVSVersion().SetupScript('x64') +
              ['&&', 'cmake'] + cmake_args + [LLVM_DIR])
@@ -314,7 +313,7 @@ def main():
 
   parser = argparse.ArgumentParser(description='Build Clang.')
   parser.add_argument('--no-clobber', dest='clobber', action='store_false')
-  parser.add_argument('--tools', nargs='*')
+  parser.add_argument('--tools', nargs='*', default=[])
   # For now, this flag is only used for the non-Windows flow, but argparser gets
   # mad if it sees a flag it doesn't recognize.
   parser.add_argument('--if-needed', action='store_true')
