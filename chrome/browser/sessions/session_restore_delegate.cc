@@ -7,6 +7,7 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/sessions/session_restore_stats_collector.h"
 #include "chrome/browser/sessions/tab_loader.h"
+#include "components/favicon/content/content_favicon_driver.h"
 
 // static
 void SessionRestoreDelegate::RestoreTabs(
@@ -20,6 +21,16 @@ void SessionRestoreDelegate::RestoreTabs(
   if (!trial || trial->group_name() == "Restore") {
     TabLoader::RestoreTabs(tabs, restore_started);
     active_only = false;
+  } else {
+    // If we are not loading inactive tabs, restore their favicons (title has
+    // already been set by now).
+    for (auto& tab : tabs) {
+      if (!tab.is_active) {
+        favicon::ContentFaviconDriver* favicon_driver =
+            favicon::ContentFaviconDriver::FromWebContents(tab.contents);
+        favicon_driver->FetchFavicon(favicon_driver->GetActiveURL());
+      }
+    }
   }
   SessionRestoreStatsCollector::TrackTabs(tabs, restore_started, active_only);
 }
