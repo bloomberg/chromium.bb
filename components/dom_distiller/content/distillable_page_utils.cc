@@ -51,9 +51,9 @@ void IsOpenGraphArticle(content::WebContents* web_contents,
 void IsDistillablePage(content::WebContents* web_contents,
                        base::Callback<void(bool)> callback) {
   switch (GetDistillerHeuristicsType()) {
-    case DistillerHeuristicsType::NONE:
+    case DistillerHeuristicsType::ALWAYS_TRUE:
       base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::Bind(callback, false));
+                                             base::Bind(callback, true));
       return;
     case DistillerHeuristicsType::OG_ARTICLE:
       IsOpenGraphArticle(web_contents, callback);
@@ -61,6 +61,11 @@ void IsDistillablePage(content::WebContents* web_contents,
     case DistillerHeuristicsType::ADABOOST_MODEL:
       IsDistillablePageForDetector(
           web_contents, DistillablePageDetector::GetDefault(), callback);
+      return;
+    case DistillerHeuristicsType::NONE:
+    default:
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+                                             base::Bind(callback, false));
       return;
   }
 }

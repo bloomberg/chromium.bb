@@ -12,6 +12,7 @@ namespace switches {
 
 extern const char kEnableReaderModeOGArticleHeuristics[];
 extern const char kEnableReaderModeAdaBoostHeuristics[];
+extern const char kEnableReaderModeAlwaysTrueHeuristics[];
 
 };
 

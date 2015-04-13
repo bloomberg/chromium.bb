@@ -14,8 +14,12 @@ DistillerHeuristicsType GetDistillerHeuristicsType() {
   const std::string group_name =
       base::FieldTrialList::FindFullName("ReaderModeUI");
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableReaderModeOGArticleHeuristics) ||
-      group_name == "OGArticle" || group_name == "ForcedOGArticle") {
+          switches::kEnableReaderModeAlwaysTrueHeuristics) ||
+      group_name == "ForcedAlwaysTrue") {
+    return DistillerHeuristicsType::ALWAYS_TRUE;
+  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kEnableReaderModeOGArticleHeuristics) ||
+             group_name == "OGArticle" || group_name == "ForcedOGArticle") {
     return DistillerHeuristicsType::OG_ARTICLE;
   } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
                  switches::kEnableReaderModeAdaBoostHeuristics) ||

@@ -10,6 +10,7 @@ namespace dom_distiller {
     NONE,
     OG_ARTICLE,
     ADABOOST_MODEL,
+    ALWAYS_TRUE,
   };
 
   DistillerHeuristicsType GetDistillerHeuristicsType();

@@ -9,4 +9,6 @@ const char kEnableReaderModeOGArticleHeuristics[] =
     "enable-reader-mode-og-article-heuristics";
 const char kEnableReaderModeAdaBoostHeuristics[] =
     "enable-reader-mode-adaboost-heuristics";
+const char kEnableReaderModeAlwaysTrueHeuristics[] =
+    "enable-reader-mode-always-true-heuristics";
 };
