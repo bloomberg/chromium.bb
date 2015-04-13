@@ -168,6 +168,7 @@ TracingControllerImpl::TracingControllerImpl()
       pending_trace_log_status_ack_count_(0),
       maximum_trace_buffer_usage_(0),
       approximate_event_count_(0),
+      failed_memory_dump_count_(0),
     // Tracing may have been enabled by ContentMainRunner if kTraceStartup
     // is specified in command line.
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
@@ -649,7 +650,16 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
                      base::trace_event::TraceLogStatus()));
     }
   }
-
+  TraceMessageFilterSet::const_iterator it =
+      pending_memory_dump_filters_.find(trace_message_filter);
+  if (it != pending_memory_dump_filters_.end()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&TracingControllerImpl::OnProcessMemoryDumpResponse,
+                   base::Unretained(this),
+                   make_scoped_refptr(trace_message_filter),
+                   pending_memory_dump_guid_, false /* success */));
+  }
   trace_message_filters_.erase(trace_message_filter);
 }
 
@@ -890,11 +900,34 @@ void TracingControllerImpl::RequestGlobalMemoryDump(
                    base::Unretained(this), args, callback));
     return;
   }
-  // TODO(primiano): send a local dump request to each of the child processes
-  // and do the bookkeeping to keep track of the outstanding requests.
-  // Also, at this point, this should check for collisions and bail out if a
-  // global dump is requested while another is already in progress.
-  NOTIMPLEMENTED();
+  // Abort if another dump is already in progress.
+  if (pending_memory_dump_guid_) {
+    DVLOG(1) << "Requested memory dump " << args.dump_guid
+             << " while waiting for " << pending_memory_dump_guid_;
+    if (!callback.is_null())
+      callback.Run(args.dump_guid, false /* success */);
+    return;
+  }
+
+  pending_memory_dump_filters_.clear();
+  failed_memory_dump_count_ = 0;
+
+  base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(args);
+
+  // If there are no child processes we are just done.
+  TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
+  if (it == trace_message_filters_.end()) {
+    if (!callback.is_null())
+      callback.Run(args.dump_guid, true /* success */);
+    return;
+  }
+
+  pending_memory_dump_guid_ = args.dump_guid;
+  pending_memory_dump_callback_ = callback;
+  pending_memory_dump_filters_ = trace_message_filters_;
+
+  for (; it != trace_message_filters_.end(); ++it)
+    it->get()->SendProcessMemoryDumpRequest(args);
 }
 
 void TracingControllerImpl::OnProcessMemoryDumpResponse(
@@ -910,11 +943,30 @@ void TracingControllerImpl::OnProcessMemoryDumpResponse(
                    success));
     return;
   }
-  // TODO(primiano): update the bookkeeping structs and, if this was the
-  // response from the last pending child, fire the completion callback, which
-  // in turn will cause a GlobalMemoryDumpResponse message to be sent back to
-  // the child, if this global dump was NOT initiated by the browser.
-  NOTIMPLEMENTED();
+
+  TraceMessageFilterSet::iterator it =
+      pending_memory_dump_filters_.find(trace_message_filter);
+
+  if (pending_memory_dump_guid_ != dump_guid ||
+      it == pending_memory_dump_filters_.end()) {
+    DLOG(WARNING) << "Received unexpected memory dump response: " << dump_guid;
+    return;
+  }
+
+  if (!success)
+    failed_memory_dump_count_++;
+
+  pending_memory_dump_filters_.erase(it);
+
+  if (pending_memory_dump_filters_.empty()) {
+    // Got response from all child proceses.
+    if (!pending_memory_dump_callback_.is_null()) {
+      const bool global_success = failed_memory_dump_count_ == 0;
+      pending_memory_dump_callback_.Run(dump_guid, global_success);
+      pending_memory_dump_callback_ = base::trace_event::MemoryDumpCallback();
+    }
+    pending_memory_dump_guid_ = 0;
+  }
 }
 
 void TracingControllerImpl::OnMonitoringStateChanged(bool is_monitoring) {

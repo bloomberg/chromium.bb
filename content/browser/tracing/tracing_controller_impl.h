@@ -156,14 +156,22 @@ class TracingControllerImpl
   // Pending acks for DisableRecording.
   int pending_disable_recording_ack_count_;
   TraceMessageFilterSet pending_disable_recording_filters_;
+
   // Pending acks for CaptureMonitoringSnapshot.
   int pending_capture_monitoring_snapshot_ack_count_;
   TraceMessageFilterSet pending_capture_monitoring_filters_;
+
   // Pending acks for GetTraceLogStatus.
   int pending_trace_log_status_ack_count_;
   TraceMessageFilterSet pending_trace_log_status_filters_;
   float maximum_trace_buffer_usage_;
   size_t approximate_event_count_;
+
+  // Pending acks for memory RequestGlobalDumpPoint.
+  int failed_memory_dump_count_;
+  TraceMessageFilterSet pending_memory_dump_filters_;
+  uint64 pending_memory_dump_guid_;
+  base::trace_event::MemoryDumpCallback pending_memory_dump_callback_;
 
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
   bool is_system_tracing_;
