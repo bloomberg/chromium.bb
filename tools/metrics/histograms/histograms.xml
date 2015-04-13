@@ -38891,21 +38891,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Startup.MobileSessionStartAction"
-    enum="MobileSessionStartAction">
-  <owner>jeremy@chromium.org</owner>
-  <summary>
-    The action requested on the application startup when called from another app
-    or the OS.
-  </summary>
-</histogram>
-
-<histogram name="Startup.MobileSessionStartFromApps"
-    enum="MobileSessionCallerApp">
-  <owner>jeremy@chromium.org</owner>
-  <summary>The calling application (if any).</summary>
-</histogram>
-
 <histogram name="Startup.OSX.AwakeFromNib" units="milliseconds">
   <owner>erikchen@chromium.org</owner>
   <summary>
@@ -55462,29 +55447,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Settings default account"/>
   <int value="3" label="Settings another account"/>
   <int value="4" label="No thanks"/>
-</enum>
-
-<enum name="MobileSessionCallerApp" type="int">
-  <int value="0" label="Google Search"/>
-  <int value="1" label="GMail"/>
-  <int value="2" label="Google+"/>
-  <int value="3" label="Google Drive"/>
-  <int value="4" label="Google Earth"/>
-  <int value="5" label="Other Google Apps"/>
-  <int value="6" label="Others"/>
-  <int value="7" label="Mobile Safari"/>
-  <int value="8" label="Other Apple Apps"/>
-  <int value="9" label="YouTube"/>
-  <int value="10" label="Google Maps"/>
-</enum>
-
-<enum name="MobileSessionStartAction" type="int">
-  <int value="0" label="Open http"/>
-  <int value="1" label="Open https"/>
-  <int value="2" label="Open file"/>
-  <int value="3" label="x-callback-url open"/>
-  <int value="4" label="x-callback-url other"/>
-  <int value="5" label="Others"/>
 </enum>
 
 <enum name="MouseEventFollowedByClick" type="int">
