@@ -37,6 +37,11 @@ Polymer('cr-onc-data', {
     return this.data.ConnectionState == CrOnc.ConnectionState.CONNECTING;
   },
 
+  /** @return {boolean} True if the network is disconnected. */
+  disconnected: function() {
+    return this.data.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
+  },
+
   /** @return {number} The signal strength of the network. */
   getStrength: function() {
     var type = this.data.Type;

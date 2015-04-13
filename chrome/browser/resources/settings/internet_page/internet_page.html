@@ -1,0 +1,13 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="network_summary.html">
+
+<polymer-element name="cr-settings-internet-page">
+  <template>
+    <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
+    <paper-shadow layout vertical cross-fade>
+      <cr-settings-page-header page="{{}}"></cr-settings-page-header>
+      <cr-network-summary></cr-network-summary>
+    </paper-shadow>
+  </template>
+  <script src="internet_page.js"></script>
+</polymer-element>

@@ -223,6 +223,7 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
+      "chrome://md-settings/*",
       "chrome://network/*",
       "chrome://settings/*",
       "chrome://settings-frame/*"

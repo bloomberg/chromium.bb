@@ -85,6 +85,13 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
       IDS_SETTINGS_DOWNLOADS_PROMPT_FOR_DOWNLOAD_LABEL);
 }
 
+#if defined(OS_CHROMEOS)
+void AddInternetStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString(
+      "internetPageTitle", IDS_SETTINGS_INTERNET_PAGE_TITLE);
+}
+#endif
+
 }  // namespace
 
 namespace settings {
@@ -92,7 +99,9 @@ namespace settings {
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   AddA11yStrings(html_source);
   AddDownloadsStrings(html_source);
-
+#if defined(OS_CHROMEOS)
+  AddInternetStrings(html_source);
+#endif
   html_source->SetJsonPath(kLocalizedStringsFile);
 }
 

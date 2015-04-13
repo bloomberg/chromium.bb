@@ -85,26 +85,26 @@
       <structure name="IDR_SETTINGS_DATE_TIME_PAGE_CSS"
                  file="date_time_page/date_time_page.css"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_DATE_TIME_PAGE_JS"
-                 file="date_time_page/date_time_page.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_DATE_TIME_PAGE_HTML"
                  file="date_time_page/date_time_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DATE_TIME_PAGE_JS"
+                 file="date_time_page/date_time_page.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_CSS"
                  file="downloads_page/downloads_page.css"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_JS"
-                 file="downloads_page/downloads_page.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_HTML"
                  file="downloads_page/downloads_page.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_PREFS_JS"
-                 file="prefs/prefs.js"
+      <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_JS"
+                 file="downloads_page/downloads_page.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PREFS_HTML"
                  file="prefs/prefs.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PREFS_JS"
+                 file="prefs/prefs.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PREFS_TYPES_JS"
                  file="prefs/prefs_types.js"
@@ -208,6 +208,23 @@
       <structure name="IDR_SETTINGS_SETTINGS_JS"
                  file="settings.js"
                  type="chrome_html" />
+      <if expr="chromeos">
+        <structure name="IDR_SETTINGS_INTERNET_PAGE_HTML"
+                   file="internet_page/internet_page.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_INTERNET_PAGE_JS"
+                   file="internet_page/internet_page.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_CSS"
+                   file="internet_page/network_summary.css"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_HTML"
+                   file="internet_page/network_summary.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_JS"
+                   file="internet_page/network_summary.js"
+                   type="chrome_html" />
+      </if>
     </structures>
   </release>
 </grit>

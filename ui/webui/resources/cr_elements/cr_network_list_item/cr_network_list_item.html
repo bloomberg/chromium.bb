@@ -1,0 +1,19 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_network_icon/cr_network_icon.html">
+
+<polymer-element name="cr-network-list-item">
+  <template>
+    <link rel="stylesheet" href="cr_network_list_item.css">
+    <div id="divOuter">
+      <div id="divIcon">
+        <cr-network-icon id="icon" networkState="{{networkState}}">
+        </cr-network-icon>
+      </div>
+      <div id="divText">
+        <span id="networkName"></span>
+        <span id="networkState" hidden?="{{isListItem}}"></span>
+      </div>
+    </div>
+  </template>
+  <script src="cr_network_list_item.js"></script>
+</polymer-element>

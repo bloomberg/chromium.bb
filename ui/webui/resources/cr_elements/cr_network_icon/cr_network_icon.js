@@ -119,11 +119,16 @@ Polymer('cr-network-icon', {
    * network state.
    */
   networkStateChanged: function() {
-    this.iconType = getIconTypeFromNetworkType(this.networkState.data.Type);
     var params = /** @type {IconParams} */ {
-      showBadges: true,
-      showDisconnected: !this.isListItem,
-      strength: this.networkState.getStrength(),
+      showBadges: false,
+      showDisconnected: true,
+      strength: 0,
+    };
+    if (this.networkState) {
+      this.iconType = getIconTypeFromNetworkType(this.networkState.data.Type);
+      params.showBadges = true;
+      params.showDisconnected = !this.isListItem;
+      params.strength = this.networkState.getStrength();
     };
     this.setIcon_(params);
   },

@@ -73,4 +73,9 @@
   <message name="IDS_SETTINGS_DOWNLOADS_PROMPT_FOR_DOWNLOAD_LABEL" desc="Label for the checkbox which enables a prompt for the user to choose a download location for each download instead of using the default.">
     Ask where to save each file before downloading
   </message>
+
+  <!-- Internet Page -->
+  <message name="IDS_SETTINGS_INTERNET_PAGE_TITLE" desc="Name of the settings page which displays internet preferences.">
+    Internet Connection
+  </message>
 </grit-part>
