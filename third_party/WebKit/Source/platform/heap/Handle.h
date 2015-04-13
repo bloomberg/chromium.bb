@@ -452,7 +452,8 @@ public:
     template<typename OtherCollection>
     PersistentHeapCollectionBase(const OtherCollection& other) : Collection(other) { }
 
-    void trace(Visitor* visitor)
+    template<typename VisitorDispatcher>
+    void trace(VisitorDispatcher visitor)
     {
 #if ENABLE(GC_PROFILING)
         visitor->setHostInfo(this, "PersistentHeapCollectionBase");

@@ -145,7 +145,6 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reset()
     m_rejected = RejectedType();
 }
 
-#if ENABLE(INLINED_TRACE)
 template<typename HolderType, typename ResolvedType, typename RejectedType>
 void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::trace(Visitor* visitor) { traceImpl(visitor); }
 template<typename HolderType, typename ResolvedType, typename RejectedType>
@@ -154,10 +153,6 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::trace(Inline
 template<typename HolderType, typename ResolvedType, typename RejectedType>
 template <typename VisitorDispatcher>
 void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::traceImpl(VisitorDispatcher visitor)
-#else
-template<typename HolderType, typename ResolvedType, typename RejectedType>
-void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::trace(Visitor* visitor)
-#endif
 {
     TraceIfNeeded<HolderType>::trace(visitor, &m_holder);
     TraceIfNeeded<ResolvedType>::trace(visitor, &m_resolved);

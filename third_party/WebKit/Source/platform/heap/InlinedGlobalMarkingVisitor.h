@@ -113,11 +113,9 @@ struct TraceCompatibilityAdaptor<T, true> {
     }
 };
 
-#if ENABLE(INLINED_TRACE)
 inline void GarbageCollectedMixin::trace(InlinedGlobalMarkingVisitor)
 {
 }
-#endif
 
 } // namespace blink
 

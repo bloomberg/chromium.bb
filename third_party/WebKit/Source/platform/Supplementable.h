@@ -115,7 +115,7 @@ template<>
 class SupplementTracing<true> : public GarbageCollectedMixin { };
 
 template<>
-class SupplementTracing<false> {
+class GC_PLUGIN_IGNORE("crbug.com/476419") SupplementTracing<false> {
 public:
     virtual ~SupplementTracing() { }
     // FIXME: Oilpan: this trace() method is only provided to minimize

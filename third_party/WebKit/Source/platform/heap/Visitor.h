@@ -149,7 +149,6 @@ template <typename T> const bool NeedsAdjustAndMark<T, false>::value;
 // define trace methods supporting both inlined/uninlined tracing.
 template <typename T>
 struct HasInlinedTraceMethod {
-#if ENABLE(INLINED_TRACE)
 private:
     typedef char YesType;
     struct NoType {
@@ -160,9 +159,6 @@ private:
     template <typename U> static NoType checkMarker(...);
 public:
     static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
-#else
-    static const bool value = false;
-#endif
 };
 
 template <typename T, bool = HasInlinedTraceMethod<T>::value>
@@ -208,8 +204,6 @@ public:
 
 template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 
-#if ENABLE(INLINED_TRACE)
-
 #define DECLARE_TRACE_IMPL(maybevirtual)                                     \
 public:                                                                      \
     typedef int HasInlinedTraceMethodMarker;                                 \
@@ -254,27 +248,6 @@ public:
     void traceAfterDispatch(InlinedGlobalMarkingVisitor visitor) { traceAfterDispatchImpl(visitor); } \
     template <typename VisitorDispatcher>                                                             \
     inline void traceAfterDispatchImpl(VisitorDispatcher visitor)
-
-#else // !ENABLE(INLINED_TRACE)
-
-#define DECLARE_TRACE_IMPL(maybevirtual) \
-public:                                  \
-    maybevirtual void trace(Visitor*);
-
-#define DEFINE_TRACE(T) void T::trace(Visitor* visitor)
-
-#define DEFINE_INLINE_TRACE_IMPL(maybevirtual) \
-    maybevirtual void trace(Visitor* visitor)
-
-#define DECLARE_TRACE_AFTER_DISPATCH() void traceAfterDispatch(Visitor*);
-
-#define DEFINE_TRACE_AFTER_DISPATCH(T) \
-    void T::traceAfterDispatch(Visitor* visitor)
-
-#define DEFINE_INLINE_TRACE_AFTER_DISPATCH() \
-    void traceAfterDispatch(Visitor* visitor)
-
-#endif
 
 #define EMPTY_MACRO_ARGUMENT
 
@@ -838,11 +811,9 @@ public:
     virtual void adjustAndMark(Visitor*) const = 0;
     virtual bool isHeapObjectAlive(Visitor*) const = 0;
     virtual void trace(Visitor*) { }
-#if ENABLE(INLINED_TRACE)
     virtual void adjustAndMark(InlinedGlobalMarkingVisitor) const = 0;
     virtual bool isHeapObjectAlive(InlinedGlobalMarkingVisitor) const = 0;
     virtual void trace(InlinedGlobalMarkingVisitor);
-#endif
 };
 
 #define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(VISITOR, TYPE)                                                                           \
@@ -915,16 +886,10 @@ private:
 // when the "operator new" for B runs, and leaving the forbidden GC scope
 // when the constructor of the recorded GarbageCollectedMixinConstructorMarker
 // runs.
-#if ENABLE(INLINED_TRACE)
 #define USING_GARBAGE_COLLECTED_MIXIN(TYPE)                       \
     DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE) \
     DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::InlinedGlobalMarkingVisitor, TYPE) \
     DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)
-#else
-#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)                       \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE) \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)
-#endif
 
 #if ENABLE(OILPAN)
 #define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE) USING_GARBAGE_COLLECTED_MIXIN(TYPE)

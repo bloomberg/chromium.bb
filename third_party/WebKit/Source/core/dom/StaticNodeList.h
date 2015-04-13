@@ -98,7 +98,6 @@ NodeType* StaticNodeTypeList<NodeType>::item(unsigned index) const
     return 0;
 }
 
-#if ENABLE(INLINED_TRACE)
 template <typename NodeType>
 void StaticNodeTypeList<NodeType>::trace(Visitor* visitor) { traceImpl(visitor); }
 template <typename NodeType>
@@ -107,10 +106,6 @@ void StaticNodeTypeList<NodeType>::trace(InlinedGlobalMarkingVisitor visitor) { 
 template <typename NodeType>
 template <typename VisitorDispatcher>
 ALWAYS_INLINE void StaticNodeTypeList<NodeType>::traceImpl(VisitorDispatcher visitor)
-#else
-template <typename NodeType>
-void StaticNodeTypeList<NodeType>::trace(Visitor* visitor)
-#endif
 {
     visitor->trace(m_nodes);
     NodeList::trace(visitor);
