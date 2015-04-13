@@ -23,6 +23,9 @@ void NetworkHandler::SetRenderFrameHost(RenderFrameHost* host) {
   host_ = host;
 }
 
+void NetworkHandler::SetClient(scoped_ptr<DevToolsProtocolClient> client) {
+}
+
 Response NetworkHandler::ClearBrowserCache() {
   if (host_)
     GetContentClient()->browser()->ClearCache(host_);
@@ -32,6 +35,16 @@ Response NetworkHandler::ClearBrowserCache() {
 Response NetworkHandler::ClearBrowserCookies() {
   if (host_)
     GetContentClient()->browser()->ClearCookies(host_);
+  return Response::OK();
+}
+
+Response NetworkHandler::GetCookies(DevToolsCommandId command_id) {
+  return Response::OK();
+}
+
+Response NetworkHandler::DeleteCookie(DevToolsCommandId command_id,
+                                      const std::string& cookie_name,
+                                      const std::string& url) {
   return Response::OK();
 }
 

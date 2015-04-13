@@ -22,11 +22,16 @@ class NetworkHandler {
   virtual ~NetworkHandler();
 
   void SetRenderFrameHost(RenderFrameHost* host);
+  void SetClient(scoped_ptr<DevToolsProtocolClient> client);
 
   Response ClearBrowserCache();
   Response ClearBrowserCookies();
-  Response CanEmulateNetworkConditions(bool* result);
+  Response GetCookies(DevToolsCommandId command_id);
+  Response DeleteCookie(DevToolsCommandId command_id,
+                        const std::string& cookie_name,
+                        const std::string& url);
 
+  Response CanEmulateNetworkConditions(bool* result);
   Response EmulateNetworkConditions(bool offline,
                                     double latency,
                                     double download_throughput,
